@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.20 1999/05/04 20:31:35 balay Exp balay $";
+static char vcid[] = "$Id: mmdense.c,v 1.21 1999/06/08 22:55:41 balay Exp balay $";
 #endif
 
 /*
@@ -183,7 +183,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
     bsz   = rw1[rank];
     ierr  = MPI_Allreduce(w2, rw2, size, MPI_INT, MPI_SUM, comm);CHKERRQ(ierr);
     nrqr  = rw2[rank];
-    PetscFree(rw1);
+    ierr  = PetscFree(rw1);CHKERRQ(ierr);
   }
 
   /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */ 
@@ -303,10 +303,12 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
     }
   }
   /* End Send-Recv of IS + row_numbers */
-  PetscFree(r_status1); PetscFree(r_waits1);
+  ierr = PetscFree(r_status1);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits1);CHKERRQ(ierr);
   s_status1 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(s_status1);
   ierr      = MPI_Waitall(nrqs,s_waits1,s_status1);CHKERRQ(ierr);
-  PetscFree(s_status1); PetscFree(s_waits1);
+  ierr = PetscFree(s_status1);CHKERRQ(ierr);
+  ierr = PetscFree(s_waits1);CHKERRQ(ierr);
 
   /* Create the submatrices */
   if (scall == MAT_REUSE_MATRIX) {
@@ -402,10 +404,12 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
     }
   }
   /* End Send-Recv of row_values */
-  PetscFree(r_status2); PetscFree(r_waits2);
+  ierr = PetscFree(r_status2);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits2);CHKERRQ(ierr);
   s_status2 = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(s_status1);
   ierr      = MPI_Waitall(nrqr,s_waits2,s_status2);CHKERRQ(ierr);
-  PetscFree(s_status2); PetscFree(s_waits2);
+  ierr = PetscFree(s_status2);CHKERRQ(ierr);
+  ierr = PetscFree(s_waits2);CHKERRQ(ierr);
 
   /* Restore the indices */
   for ( i=0; i<ismax; i++ ) {
@@ -414,24 +418,24 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   }
 
   /* Destroy allocated memory */
-  PetscFree(irow);
-  PetscFree(w1);
-  PetscFree(pa);
+  ierr = PetscFree(irow);CHKERRQ(ierr);
+  ierr = PetscFree(w1);CHKERRQ(ierr);
+  ierr = PetscFree(pa);CHKERRQ(ierr);
 
 
   for ( i=0; i<nrqs; ++i ) {
-    PetscFree(rbuf2[i]);
+    ierr = PetscFree(rbuf2[i]);CHKERRQ(ierr);
   }
-  PetscFree(rbuf2);
-  PetscFree(sbuf1);
-  PetscFree(rbuf1);
+  ierr = PetscFree(rbuf2);CHKERRQ(ierr);
+  ierr = PetscFree(sbuf1);CHKERRQ(ierr);
+  ierr = PetscFree(rbuf1);CHKERRQ(ierr);
 
   for ( i=0; i<nrqr; ++i ) {
-    PetscFree(sbuf2[i]);
+    ierr = PetscFree(sbuf2[i]);CHKERRQ(ierr);
   }
 
-  PetscFree(sbuf2);
-  PetscFree(rmap);
+  ierr = PetscFree(sbuf2);CHKERRQ(ierr);
+  ierr = PetscFree(rmap);CHKERRQ(ierr);
 
   ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
 

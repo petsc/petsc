@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmreig.c,v 1.12 1999/05/04 20:34:52 balay Exp bsmith $";
+static char vcid[] = "$Id: gmreig.c,v 1.13 1999/05/12 03:31:46 bsmith Exp balay $";
 #endif
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
@@ -82,7 +82,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
   work     = (double *) PetscMalloc( lwork*sizeof(double) );CHKPTRQ(work);
   zero     = 0;
   LAgeev_(&zero,R,&N,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
-  PetscFree(work);
+  ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* For now we stick with the convention of storing the real and imaginary
      components of evalues separately.  But is this what we really want? */
@@ -109,7 +109,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
     c[i] = PetscImaginary(cwork[perm[i]]);
   }
 #endif
-  PetscFree(perm);
+  ierr = PetscFree(perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #elif !defined(PETSC_USE_COMPLEX)
@@ -146,7 +146,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
     r[i] = realpart[perm[i]];
     c[i] = imagpart[perm[i]];
   }
-  PetscFree(perm);
+  ierr = PetscFree(perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else
@@ -183,7 +183,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
     r[i] = PetscReal(eigs[perm[i]]);
     c[i] = PetscImaginary(eigs[perm[i]]);
   }
-  PetscFree(perm);
+  ierr = PetscFree(perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

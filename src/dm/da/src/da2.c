@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.123 1999/05/04 20:37:25 balay Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.124 1999/05/12 03:34:00 bsmith Exp balay $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -450,7 +450,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }
   ierr = ISCreateGeneral(comm,count,idx,&from);CHKERRQ(ierr);
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
   PLogObjectParent(da,to);
@@ -495,7 +495,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       }
     }
     ierr = ISCreateGeneral(comm,count,idx,&to);CHKERRQ(ierr);
-    PetscFree(idx);
+    ierr = PetscFree(idx);CHKERRQ(ierr);
   }
 
 
@@ -876,7 +876,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }
   /* keep bases for use at end of routine */
-  /* PetscFree(bases); */
+  /* ierr = PetscFree(bases);CHKERRQ(ierr); */
 
   /* construct the local to local scatter context */
   /* 
@@ -895,7 +895,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   /* 
      Build the natural ordering to PETSc ordering mappings.
@@ -914,7 +914,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       }
     }
     ierr = ISCreateGeneral(comm,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
-    PetscFree(lidx);
+    ierr = PetscFree(lidx);CHKERRQ(ierr);
 
     ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
     PLogObjectParent(da,da->ao);
@@ -967,7 +967,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
   for (i=0; i<gdim; i++) da->gtog1[gBall[i]] = gAall[i];
-  PetscFree(gA); PetscFree(bases);
+  ierr = PetscFree(gA);CHKERRQ(ierr);
+  ierr = PetscFree(bases);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);}

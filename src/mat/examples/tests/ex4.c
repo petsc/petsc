@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.8 1999/04/16 16:07:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.9 1999/05/04 20:33:03 balay Exp balay $";
 #endif
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
@@ -33,7 +33,8 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_SELF,3,2,1,&irkeep);CHKERRA(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,5,4,1,&ickeep);CHKERRA(ierr);
   ierr = MatGetSubMatrices(mat,1,&irkeep,&ickeep,MAT_INITIAL_MATRIX,&submatrices);CHKERRA(ierr);
-  submat = *submatrices; PetscFree(submatrices);
+  submat = *submatrices; 
+  ierr = PetscFree(submatrices);CHKERRA(ierr);
   printf("\nsubmatrix:\n");
   ierr = MatView(submat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 

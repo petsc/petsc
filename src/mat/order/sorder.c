@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.60 1999/05/04 20:32:17 balay Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.61 1999/05/12 03:29:35 bsmith Exp balay $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -74,7 +74,7 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   for ( i=0; i<n; i++ ) ii[i] = i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
-  PetscFree(ii);
+  ierr = PetscFree(ii);CHKERRQ(ierr);
 
   ierr = ISSetIdentity(*irow);CHKERRQ(ierr);
   ierr = ISSetIdentity(*icol);CHKERRQ(ierr);
@@ -111,7 +111,7 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,irow);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,icol);CHKERRQ(ierr);
-  PetscFree(lens);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.54 1999/03/23 17:58:05 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.55 1999/05/04 20:36:19 balay Exp balay $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -152,12 +152,12 @@ int main( int argc, char **argv )
   if (flg) {
     ierr = KSPGetResidualHistory(ksp,PETSC_NULL,&res_hist_len);CHKERRA(ierr);
     PetscDoubleView(res_hist_len,res_hist,VIEWER_STDOUT_SELF);
-    PetscFree(res_hist);
+    ierr = PetscFree(res_hist);CHKERRA(ierr);
     ierr = SNESGetConvergenceHistory(snes,PETSC_NULL,PETSC_NULL,&sres_hist_len);CHKERRA(ierr);
     PetscDoubleView(sres_hist_len,sres_hist,VIEWER_STDOUT_SELF);
     PetscIntView(sres_hist_len,sres_hist_its,VIEWER_STDOUT_SELF);
-    PetscFree(sres_hist);
-    PetscFree(sres_hist_its);
+    ierr = PetscFree(sres_hist);CHKERRA(ierr);
+    ierr = PetscFree(sres_hist_its);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

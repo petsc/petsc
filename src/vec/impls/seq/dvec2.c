@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.67 1999/05/04 20:30:44 balay Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.68 1999/05/12 03:28:22 bsmith Exp balay $"
 #endif
 
 /* 
@@ -805,9 +805,10 @@ int VecPlaceArray_Seq(Vec vin,const Scalar *a)
 int VecReplaceArray_Seq(Vec vin,const Scalar *a)
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;
+  int     ierr;
 
   PetscFunctionBegin;
-  if (v->array_allocated) PetscFree(v->array_allocated);
+  if (v->array_allocated) {ierr = PetscFree(v->array_allocated);CHKERRQ(ierr);}
   v->array_allocated = v->array = (Scalar *)a;
   PetscFunctionReturn(0);
 }

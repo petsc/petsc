@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.36 1999/04/23 19:29:19 bsmith Exp balay $";
+static char vcid[] = "$Id: block.c,v 1.37 1999/05/04 20:30:13 balay Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -20,10 +20,11 @@ typedef struct {
 int ISDestroy_Block(IS is)
 {
   IS_Block *is_block = (IS_Block *) is->data;
+  int ierr;
 
   PetscFunctionBegin;
-  PetscFree(is_block->idx); 
-  PetscFree(is_block); 
+  ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
+  ierr = PetscFree(is_block);CHKERRQ(ierr);
   PLogObjectDestroy(is);
   PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
@@ -57,10 +58,11 @@ int ISGetIndices_Block(IS in,int **idx)
 int ISRestoreIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block *) in->data;
+  int      ierr;
 
   PetscFunctionBegin;
   if (sub->bs != 1) {
-    PetscFree(*idx);
+    ierr = PetscFree(*idx);CHKERRQ(ierr);
   } else {
     if (*idx !=  sub->idx) {
       SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must restore with value from ISGetIndices()");
@@ -95,7 +97,7 @@ int ISInvertPermutation_Block(IS is, IS *isout)
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout);CHKERRQ(ierr);
   ISSetPermutation(*isout);
-  PetscFree(ii);
+  ierr = PetscFree(ii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

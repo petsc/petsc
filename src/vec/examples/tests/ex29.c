@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex29.c,v 1.5 1999/04/19 22:11:24 bsmith Exp balay $";
+static char vcid[] = "$Id: ex29.c,v 1.6 1999/05/04 20:30:57 balay Exp balay $";
 #endif
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
-  PetscFree(vals);
+  ierr = PetscFree(vals);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

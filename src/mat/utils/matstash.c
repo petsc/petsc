@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matstash.c,v 1.33 1999/03/19 22:42:58 balay Exp balay $";
+static char vcid[] = "$Id: matstash.c,v 1.34 1999/05/04 20:33:40 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -45,7 +45,7 @@ int MatStashCreate_Private(MPI_Comm comm,int bs, MatStash *stash)
   } else {
     stash->umax = 0;
   }
-  PetscFree(opt);
+  ierr = PetscFree(opt);CHKERRQ(ierr);
   if (bs <= 0) bs = 1;
 
   stash->bs       = bs;
@@ -81,7 +81,10 @@ int MatStashDestroy_Private(MatStash *stash)
 
   PetscFunctionBegin;
   ierr = PetscCommDestroy_Private(&stash->comm);CHKERRQ(ierr);
-  if (stash->array) {PetscFree(stash->array); stash->array = 0;}
+  if (stash->array) {
+    ierr = PetscFree(stash->array);CHKERRQ(ierr);
+    stash->array = 0;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +108,7 @@ int MatStashScatterEnd_Private(MatStash *stash)
   if (nsends) {
     send_status = (MPI_Status *)PetscMalloc(2*nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr        = MPI_Waitall(2*nsends,stash->send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
+    ierr        = PetscFree(send_status);CHKERRQ(ierr);
   }
 
   /* Now update nmaxold to be app 10% more than max n used, this way the
@@ -122,16 +125,31 @@ int MatStashScatterEnd_Private(MatStash *stash)
   stash->nprocessed = 0;
 
   if (stash->array) {
-    PetscFree(stash->array); 
+    ierr         = PetscFree(stash->array);CHKERRQ(ierr);
     stash->array = 0;
     stash->idx   = 0;
     stash->idy   = 0;
   }
-  if (stash->send_waits)  {PetscFree(stash->send_waits);stash->send_waits = 0;}
-  if (stash->recv_waits)  {PetscFree(stash->recv_waits);stash->recv_waits = 0;} 
-  if (stash->svalues)     {PetscFree(stash->svalues);stash->svalues = 0;}
-  if (stash->rvalues)     {PetscFree(stash->rvalues); stash->rvalues = 0;}
-  if (stash->nprocs)      {PetscFree(stash->nprocs); stash->nprocs = 0;}
+  if (stash->send_waits) {
+    ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
+    stash->send_waits = 0;
+  }
+  if (stash->recv_waits) {
+    ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
+    stash->recv_waits = 0;
+  } 
+  if (stash->svalues) {
+    ierr = PetscFree(stash->svalues);CHKERRQ(ierr);
+    stash->svalues = 0;
+  }
+  if (stash->rvalues) {
+    ierr = PetscFree(stash->rvalues);CHKERRQ(ierr);
+    stash->rvalues = 0;
+  }
+  if (stash->nprocs) {
+    ierr = PetscFree(stash->nprocs);
+    stash->nprocs = 0;
+  }
 
   PetscFunctionReturn(0);
 }
@@ -212,7 +230,7 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
   ierr = PetscMemcpy(n_array,stash->array,bs2*stash->nmax*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(n_idy,stash->idy,stash->nmax*sizeof(int));CHKERRQ(ierr);
-  if (stash->array) PetscFree(stash->array);
+  if (stash->array) {ierr = PetscFree(stash->array);CHKERRQ(ierr);}
   stash->array   = n_array; 
   stash->idx     = n_idx; 
   stash->idy     = n_idy;
@@ -434,7 +452,7 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
   nreceives = work[rank]; 
   ierr = MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   nmax = work[rank];
-  PetscFree(work);
+  ierr = PetscFree(work);CHKERRQ(ierr);
   /* post receives: 
      since we don't know how long each individual message is we 
      allocate the largest needed buffer for each receive. Potentially 
@@ -491,8 +509,8 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
                        send_waits+count++);CHKERRQ(ierr);
     }
   }
-  PetscFree(owner);
-  PetscFree(startv); 
+  ierr = PetscFree(owner);CHKERRQ(ierr);
+  ierr = PetscFree(startv);CHKERRQ(ierr);
   /* This memory is reused in scatter end  for a different purpose*/
   for (i=0; i<2*size; i++ ) nprocs[i] = -1;
   stash->nprocs      = nprocs;

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.44 1999/05/04 20:37:10 balay Exp balay $";
+static char vcid[] = "$Id: aobasic.c,v 1.45 1999/06/03 21:10:09 balay Exp balay $";
 #endif
 
 /*
@@ -34,9 +34,10 @@ int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 int AODestroy_Basic(AO ao)
 {
   AO_Basic *aodebug = (AO_Basic *) ao->data;
+  int      ierr;
 
   PetscFunctionBegin;
-  PetscFree(aodebug->app);
+  ierr = PetscFree(aodebug->app);CHKERRQ(ierr);
   PetscFree(ao->data); 
   PLogObjectDestroy(ao);
   PetscHeaderDestroy(ao);
@@ -182,7 +183,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   allapp   = allpetsc + N;
   ierr = MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
-  PetscFree(lens);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
   aodebug->app   = (int *) PetscMalloc(2*N*sizeof(int));CHKPTRQ(aodebug->app);
@@ -197,8 +198,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
     if (aodebug->petsc[ia]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in Application ordering");
     aodebug->petsc[ia] = ip + 1;
   }
-  if (!mypetsc) PetscFree(petsc);
-  PetscFree(allpetsc);
+  if (!mypetsc) {ierr = PetscFree(petsc);CHKERRQ(ierr);}
+  ierr = PetscFree(allpetsc);CHKERRQ(ierr);
   /* shift indices down by one */
   for ( i=0; i<N; i++ ) {
     aodebug->app[i]--;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.131 1999/05/04 20:34:05 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.132 1999/06/08 22:56:50 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -176,11 +176,12 @@ static int PCSetUp_BJacobi(PC pc)
 static int PCDestroy_BJacobi(PC pc)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data;
+  int ierr;
 
   PetscFunctionBegin;
-  if (jac->g_lens) PetscFree(jac->g_lens);
-  if (jac->l_lens) PetscFree(jac->l_lens);
-  PetscFree(jac);
+  if (jac->g_lens) {ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);}
+  if (jac->l_lens) {ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);}
+  ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -590,12 +591,13 @@ int PCDestroy_BJacobi_Singleblock(PC pc)
   }
 
   ierr = SLESDestroy(jac->sles[0]);CHKERRQ(ierr);
-  PetscFree(jac->sles);
+  ierr = PetscFree(jac->sles);CHKERRQ(ierr);
   ierr = VecDestroy(bjac->x);CHKERRQ(ierr);
   ierr = VecDestroy(bjac->y);CHKERRQ(ierr);
-  if (jac->l_lens) PetscFree(jac->l_lens);
-  if (jac->g_lens) PetscFree(jac->g_lens);
-  PetscFree(bjac); PetscFree(jac); 
+  if (jac->l_lens) {ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);}
+  if (jac->g_lens) {ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);}
+  ierr = PetscFree(bjac);CHKERRQ(ierr);
+  ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -762,14 +764,14 @@ int PCDestroy_BJacobi_Multiblock(PC pc)
     ierr = VecDestroy(bjac->y[i]);CHKERRQ(ierr);
     ierr = ISDestroy(bjac->is[i]);CHKERRQ(ierr);
   }
-  PetscFree(jac->sles);
-  PetscFree(bjac->x);
-  PetscFree(bjac->starts);
-  PetscFree(bjac->is);
-  PetscFree(bjac);
-  if (jac->l_lens) PetscFree(jac->l_lens);
-  if (jac->g_lens) PetscFree(jac->g_lens);
-  PetscFree(jac); 
+  ierr = PetscFree(jac->sles);CHKERRQ(ierr);
+  ierr = PetscFree(bjac->x);CHKERRQ(ierr);
+  ierr = PetscFree(bjac->starts);CHKERRQ(ierr);
+  ierr = PetscFree(bjac->is);CHKERRQ(ierr);
+  ierr = PetscFree(bjac);CHKERRQ(ierr);
+  if (jac->l_lens) {ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);}
+  if (jac->g_lens) {ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);}
+  ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

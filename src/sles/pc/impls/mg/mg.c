@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.93 1999/04/21 18:17:23 bsmith Exp balay $";
+static char vcid[] = "$Id: mg.c,v 1.94 1999/05/04 20:34:08 balay Exp balay $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -94,9 +94,9 @@ static int PCDestroy_MG(PC pc)
       ierr = SLESDestroy(mg[i]->smoothd);CHKERRQ(ierr);
     }
     ierr = SLESDestroy(mg[i]->smoothu);CHKERRQ(ierr);
-    PetscFree(mg[i]);
+    ierr = PetscFree(mg[i]);CHKERRQ(ierr);
   }
-  PetscFree(mg);
+  ierr = PetscFree(mg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

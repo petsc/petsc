@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfjdef.c,v 1.3 1999/05/12 03:32:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfjdef.c,v 1.4 1999/06/30 22:51:53 bsmith Exp balay $";
 #endif
 /*
   Implements the default PETSc approach for computing the h 
@@ -199,8 +199,10 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
 */
 static int MatSNESMFDestroy_Default(MatSNESMFCtx ctx)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(ctx->hctx);
+  ierr = PetscFree(ctx->hctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.5 1999/03/19 21:23:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.6 1999/05/04 20:37:15 balay Exp balay $";
 #endif
 
 static char help[] = "Tests AODataRemap \n\n";
@@ -54,8 +54,8 @@ int main(int argc,char **argv)
   }
   data[n-1] = 0; /* make it periodic */
   ierr = AODataSegmentAdd(aodata,"key1","key1",bs,n,keys,data,PETSC_INT);CHKERRA(ierr); 
-  PetscFree(data);
-  PetscFree(keys);
+  ierr = PetscFree(data);CHKERRA(ierr);
+  ierr = PetscFree(keys);CHKERRA(ierr);
 
   /*
         View the database
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
     news[i] = nglobal - i - start - 1;
   }
   ierr = AOCreateBasic(PETSC_COMM_WORLD,n,news,PETSC_NULL,&ao);CHKERRA(ierr);
-  PetscFree(news);
+  ierr = PetscFree(news);CHKERRA(ierr);
   ierr = AODataKeyRemap(aodata,"key1",ao);CHKERRA(ierr);
   ierr = AODestroy(ao);CHKERRA(ierr);
   ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);

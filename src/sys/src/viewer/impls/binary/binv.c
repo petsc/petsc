@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.67 1999/05/06 17:58:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.68 1999/05/12 03:26:16 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -94,7 +94,7 @@ int ViewerDestroy_Binary(Viewer v)
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   if (!rank && vbinary->fdes) close(vbinary->fdes);
   if (vbinary->fdes_info) fclose(vbinary->fdes_info);
-  PetscFree(vbinary);
+  ierr = PetscFree(vbinary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

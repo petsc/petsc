@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.126 1999/05/06 01:17:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.127 1999/06/30 22:51:20 bsmith Exp balay $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -244,7 +244,7 @@ int KSPSolve(KSP ksp, int *its)
       ierr = DrawSPDestroy(drawsp);CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     }
-    PetscFree(r);
+    ierr = PetscFree(r);CHKERRQ(ierr);
   }
 
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ int KSPSolve(KSP ksp, int *its)
       ierr = DrawSPDestroy(drawsp);CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     }
-    PetscFree(r);
+    ierr = PetscFree(r);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

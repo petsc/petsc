@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.53 1999/05/12 03:31:55 bsmith Exp balay $";
+static char vcid[] = "$Id: lsqr.c,v 1.54 1999/06/08 22:57:22 balay Exp balay $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -180,7 +180,7 @@ int KSPDestroy_LSQR(KSP ksp)
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
-  PetscFree(lsqr); 
+  ierr = PetscFree(lsqr); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

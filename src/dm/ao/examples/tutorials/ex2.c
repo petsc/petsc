@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.18 1999/03/19 21:24:03 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.19 1999/05/04 20:37:20 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -242,8 +242,8 @@ int DataRead(GridData *gdata)
       }
       MPI_Send(tmpvert,2*mmlocal_vert[j],MPI_DOUBLE,j,0,PETSC_COMM_WORLD);
     }
-    PetscFree(tmpvert);
-    PetscFree(mmlocal_vert);
+    ierr = PetscFree(tmpvert);CHKERRA(ierr);
+    ierr = PetscFree(mmlocal_vert);CHKERRA(ierr);
 
     fscanf(fd,"Number Elements = %d\n",&n_ele);
     printf("Number of grid elements %d\n",n_ele);
@@ -286,7 +286,7 @@ int DataRead(GridData *gdata)
       }
       MPI_Send(tmpele,3*mmlocal_ele[j],MPI_INT,j,0,PETSC_COMM_WORLD);
     }
-    PetscFree(tmpele);
+    ierr = PetscFree(tmpele);CHKERRA(ierr);
 
     /* 
          Read in element neighbors for processor 0 
@@ -352,9 +352,9 @@ int DataRead(GridData *gdata)
       MPI_Send(iatmp,mmlocal_ele[j]+1,MPI_INT,j,0,PETSC_COMM_WORLD);
       MPI_Send(jatmp,iatmp[mmlocal_ele[j]],MPI_INT,j,0,PETSC_COMM_WORLD);
     }
-    PetscFree(iatmp);
-    PetscFree(jatmp);
-    PetscFree(mmlocal_ele);
+    ierr = PetscFree(iatmp);CHKERRA(ierr);
+    ierr = PetscFree(jatmp);CHKERRA(ierr);
+    ierr = PetscFree(mmlocal_ele);CHKERRA(ierr);
 
     fclose(fd);
   } else {
@@ -530,9 +530,9 @@ int DataMoveElements(GridData *gdata)
   /* 
      Put the element vertex data into a new allocation of the gdata->ele 
   */
-  PetscFree(gdata->ele);
+  ierr = PetscFree(gdata->ele);CHKERRQ(ierr);
   gdata->mlocal_ele = counts[rank];
-  PetscFree(counts);
+  ierr = PetscFree(counts);CHKERRQ(ierr);
   gdata->ele = (int *) PetscMalloc(3*gdata->mlocal_ele*sizeof(int));CHKERRQ(ierr);
   ierr       = VecGetArray(vele,&array);CHKERRQ(ierr);
   for ( i=0; i<3*gdata->mlocal_ele; i++ ) {
@@ -726,7 +726,7 @@ int DataMoveVertices(GridData *gdata)
   */
   for ( i=0; i<gdata->nlocal; i++ ) gdata->localvert[i] *= 2;
   ierr = ISCreateBlock(PETSC_COMM_WORLD,2,gdata->nlocal,gdata->localvert,&isscat);CHKERRQ(ierr);
-  PetscFree(gdata->localvert);
+  ierr = PetscFree(gdata->localvert);CHKERRQ(ierr);
 
   /* 
       Scatter the element vertex information to the correct processor
@@ -738,7 +738,7 @@ int DataMoveVertices(GridData *gdata)
   ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
 
   ierr = VecDestroy(overt);CHKERRQ(ierr);
-  PetscFree(gdata->vert);
+  ierr = PetscFree(gdata->vert);CHKERRQ(ierr);
  
   /*
         Put resulting vertex information into gdata->vert array
@@ -764,9 +764,11 @@ int DataMoveVertices(GridData *gdata)
 #define __FUNC__ "DataDestroy"
 int DataDestroy(GridData *gdata)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(gdata->ele);
-  PetscFree(gdata->vert);
+  ierr = PetscFree(gdata->ele);CHKERRQ(ierr);
+  ierr = PetscFree(gdata->vert);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

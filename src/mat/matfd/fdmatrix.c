@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.46 1999/05/04 20:33:47 balay Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.47 1999/05/12 03:30:49 bsmith Exp balay $";
 #endif
 
 /*
@@ -464,16 +464,16 @@ int MatFDColoringDestroy(MatFDColoring c)
 
 
   for ( i=0; i<c->ncolors; i++ ) {
-    if (c->columns[i])       PetscFree(c->columns[i]);
-    if (c->rows[i])          PetscFree(c->rows[i]);
-    if (c->columnsforrow[i]) PetscFree(c->columnsforrow[i]);
+    if (c->columns[i])       {ierr = PetscFree(c->columns[i]);CHKERRQ(ierr);}
+    if (c->rows[i])          {ierr = PetscFree(c->rows[i]);CHKERRQ(ierr);}
+    if (c->columnsforrow[i]) {ierr = PetscFree(c->columnsforrow[i]);CHKERRQ(ierr);}
   }
-  PetscFree(c->ncolumns);
-  PetscFree(c->columns);
-  PetscFree(c->nrows);
-  PetscFree(c->rows);
-  PetscFree(c->columnsforrow);
-  PetscFree(c->scale);
+  ierr = PetscFree(c->ncolumns);CHKERRQ(ierr);
+  ierr = PetscFree(c->columns);CHKERRQ(ierr);
+  ierr = PetscFree(c->nrows);CHKERRQ(ierr);
+  ierr = PetscFree(c->rows);CHKERRQ(ierr);
+  ierr = PetscFree(c->columnsforrow);CHKERRQ(ierr);
+  ierr = PetscFree(c->scale);CHKERRQ(ierr);
   if (c->w1) {
     ierr = VecDestroy(c->w1);CHKERRQ(ierr);
     ierr = VecDestroy(c->w2);CHKERRQ(ierr);

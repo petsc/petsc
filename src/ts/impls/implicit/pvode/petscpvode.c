@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.40 1999/05/04 20:36:48 balay Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.41 1999/05/12 03:33:28 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -225,7 +225,7 @@ int TSDestroy_PVode(TS ts )
   if (cvode->rhs)    {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
   if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
   if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
-  PetscFree(cvode);
+  ierr = PetscFree(cvode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

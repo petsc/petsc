@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.37 1999/05/04 20:32:47 balay Exp balay $";
+static char vcid[] = "$Id: color.c,v 1.38 1999/06/08 22:56:22 balay Exp balay $";
 #endif
  
 /*
@@ -19,6 +19,7 @@ static char vcid[] = "$Id: color.c,v 1.37 1999/05/04 20:32:47 balay Exp balay $"
 int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int *ria, int **seq)
 {
   int *work;
+  int ierr;
 
   PetscFunctionBegin;
   work = (int *) PetscMalloc( m*sizeof(int) );CHKPTRQ(work);  
@@ -26,7 +27,7 @@ int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int 
 
   MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
 
-  PetscFree(work);
+  ierr = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -77,13 +78,13 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   coloring = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(coloring);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  PetscFree(list);
-  PetscFree(seq);
+  ierr = PetscFree(list);CHKERRQ(ierr);
+  ierr = PetscFree(seq);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
-  PetscFree(coloring);
+  ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -117,14 +118,14 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   coloring = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(coloring);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  PetscFree(list);
-  PetscFree(seq);
+  ierr = PetscFree(list);CHKERRQ(ierr);
+  ierr = PetscFree(seq);CHKERRQ(ierr);
 
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
-  PetscFree(coloring);
+  ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -157,15 +158,15 @@ int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   coloring = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(coloring);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
-  PetscFree(list);
-  PetscFree(seq);
+  ierr = PetscFree(list);CHKERRQ(ierr);
+  ierr = PetscFree(seq);CHKERRQ(ierr);
 
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
 
-  PetscFree(coloring);
+  ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

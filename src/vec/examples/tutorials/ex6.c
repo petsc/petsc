@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.18 1999/04/21 18:16:01 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.19 1999/05/04 20:31:12 balay Exp balay $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   /* Destroy the output viewer and work array */
   ierr = ViewerDestroy(view_out);CHKERRA(ierr);
-  PetscFree(array);
+  ierr = PetscFree(array);CHKERRA(ierr);
 
   /* ---------------------------------------------------------------------- */
   /*          PART 2: Read data from file and form a vector                 */

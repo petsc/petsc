@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.33 1999/05/04 20:32:41 balay Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.34 1999/06/08 22:56:19 balay Exp balay $";
 #endif
 
 /*
@@ -42,7 +42,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, (is_out+i));CHKERRQ(ierr);
   }
   BTDestroy(table);
-  PetscFree(nidx);
+  ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +80,7 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_o
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,nidx,(is_out+i));CHKERRQ(ierr);
   }
-  PetscFree(nidx);
+  ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -106,7 +106,7 @@ static int MatExpandIndices_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_out)
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, n*bs, nidx, (is_out+i));CHKERRQ(ierr);
   }
-  PetscFree(nidx);
+  ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -129,7 +129,7 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C, int imax, IS *is, int ov)
   for (i=0; i<imax; i++) {ierr = ISDestroy(is[i]);CHKERRQ(ierr);}
   ierr = MatExpandIndices_MPIBAIJ(C, imax, is_new,is);CHKERRQ(ierr);
   for (i=0; i<imax; i++) {ierr = ISDestroy(is_new[i]);CHKERRQ(ierr);}
-  PetscFree(is_new);
+  ierr = PetscFree(is_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -248,7 +248,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
     bsz   = rw1[rank];
     ierr  = MPI_Allreduce(w2, rw2, size, MPI_INT, MPI_SUM, comm);CHKERRQ(ierr);
     nrqr  = rw2[rank];
-    PetscFree(rw1);
+    ierr = PetscFree(rw1);CHKERRQ(ierr);
   }
 
   /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */ 
@@ -359,7 +359,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   for (i=0; i<imax; ++i) {
     ierr = ISRestoreIndices(is[i], idx+i);CHKERRQ(ierr);
   }
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
@@ -382,13 +382,13 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
   }
 
   /* Phase 1 sends are complete - deallocate buffers */
-  PetscFree(outdat);
-  PetscFree(w1);
+  ierr = PetscFree(outdat);CHKERRQ(ierr);
+  ierr = PetscFree(w1);CHKERRQ(ierr);
 
   xdata = (int **)PetscMalloc((nrqr+1)*sizeof(int *));CHKPTRQ(xdata);
   isz1  = (int *)PetscMalloc((nrqr+1)*sizeof(int));CHKPTRQ(isz1);
   ierr  = MatIncreaseOverlap_MPIBAIJ_Receive(C,nrqr,rbuf,xdata,isz1);CHKERRQ(ierr);
-  PetscFree(rbuf);
+  ierr = PetscFree(rbuf);CHKERRQ(ierr);
 
   /* Send the data back*/
   /* Do a global reduction to know the buffer space req for incoming messages*/
@@ -405,7 +405,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
       
     ierr   = MPI_Allreduce(rw1, rw2, size, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
     bsz1   = rw2[rank];
-    PetscFree(rw1);
+    ierr = PetscFree(rw1);CHKERRQ(ierr);
   }
 
   /* Allocate buffers*/
@@ -457,25 +457,25 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
       }
     }
     ierr = MPI_Waitall(nrqr,s_waits2,status2);CHKERRQ(ierr);
-    PetscFree(status2); 
+    ierr = PetscFree(status2); CHKERRQ(ierr);
   }
   
   for (i=0; i<imax; ++i) {
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz[i], data[i], is+i);CHKERRQ(ierr);
   }
   
-  PetscFree(pa);
-  PetscFree(rbuf2); 
-  PetscFree(s_waits1);
-  PetscFree(r_waits1);
-  PetscFree(s_waits2);
-  PetscFree(r_waits2);
-  PetscFree(table);
-  PetscFree(s_status);
-  PetscFree(recv_status);
-  PetscFree(xdata[0]); 
-  PetscFree(xdata);
-  PetscFree(isz1);
+  ierr = PetscFree(pa);CHKERRQ(ierr);
+  ierr = PetscFree(rbuf2);CHKERRQ(ierr);
+  ierr = PetscFree(s_waits1);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits1);CHKERRQ(ierr);
+  ierr = PetscFree(s_waits2);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits2);CHKERRQ(ierr);
+  ierr = PetscFree(table);CHKERRQ(ierr);
+  ierr = PetscFree(s_status);CHKERRQ(ierr);
+  ierr = PetscFree(recv_status);CHKERRQ(ierr);
+  ierr = PetscFree(xdata[0]);CHKERRQ(ierr);
+  ierr = PetscFree(xdata);CHKERRQ(ierr);
+  ierr = PetscFree(isz1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -615,7 +615,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
             new_estimate = (int)(1.5*mem_estimate)+1;
             tmp          = (int*) PetscMalloc(new_estimate * sizeof(int));CHKPTRQ(tmp);
             ierr = PetscMemcpy(tmp,xdata[0],mem_estimate*sizeof(int));CHKERRQ(ierr);
-            PetscFree(xdata[0]);
+            ierr = PetscFree(xdata[0]);CHKERRQ(ierr);
             xdata[0]     = tmp;
             mem_estimate = new_estimate; ++no_malloc;
             for (ctr=1; ctr<=i; ctr++) { xdata[ctr] = xdata[ctr-1] + isz1[ctr-1];}
@@ -635,7 +635,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
               new_estimate = (int)(1.5*mem_estimate)+1;
               tmp          = (int*) PetscMalloc(new_estimate * sizeof(int));CHKPTRQ(tmp);
               ierr         = PetscMemcpy(tmp,xdata[0],mem_estimate*sizeof(int));CHKERRQ(ierr);
-              PetscFree(xdata[0]);
+              ierr = PetscFree(xdata[0]);CHKERRQ(ierr);
               xdata[0]     = tmp;
               mem_estimate = new_estimate; ++no_malloc;
               for (ctr=1; ctr<=i; ctr++) { xdata[ctr] = xdata[ctr-1] + isz1[ctr-1];}
@@ -653,7 +653,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
               new_estimate = (int)(1.5*mem_estimate)+1;
               tmp          = (int*) PetscMalloc(new_estimate * sizeof(int));CHKPTRQ(tmp);
               ierr         = PetscMemcpy(tmp,xdata[0],mem_estimate*sizeof(int));CHKERRQ(ierr);
-              PetscFree(xdata[0]);
+              ierr = PetscFree(xdata[0]);CHKERRQ(ierr);
               xdata[0]     = tmp;
               mem_estimate = new_estimate; ++no_malloc;
               for (ctr =1; ctr <=i; ctr++) { xdata[ctr] = xdata[ctr-1] + isz1[ctr-1];}
@@ -720,7 +720,7 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
     ierr = ISDestroy(isrow_new[i]);CHKERRQ(ierr);
     ierr = ISDestroy(iscol_new[i]);CHKERRQ(ierr);
   }
-  PetscFree(isrow_new);
+  ierr = PetscFree(isrow_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -838,7 +838,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
     bsz  = rw1[rank];
     ierr = MPI_Allreduce(w2, rw2, size, MPI_INT, MPI_SUM, comm);CHKERRQ(ierr);
     nrqr = rw2[rank];
-    PetscFree(rw1);
+    ierr = PetscFree(rw1);CHKERRQ(ierr);
   }
 
   /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */ 
@@ -963,7 +963,8 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
       ierr = MPI_Isend(sbuf2_i,end,MPI_INT,req_source[index],tag1,comm,s_waits2+i);CHKERRQ(ierr);
     }
   }
-  PetscFree(r_status1); PetscFree(r_waits1);
+  ierr = PetscFree(r_status1);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits1);CHKERRQ(ierr);
 
   /*  recv buffer sizes */
   /* Receive messages*/
@@ -983,7 +984,8 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
     ierr = MPI_Irecv(rbuf4[index],rbuf2[index][0]*bs2, MPIU_SCALAR, 
                      r_status2[i].MPI_SOURCE, tag3, comm, r_waits4+index);CHKERRQ(ierr);
   } 
-  PetscFree(r_status2); PetscFree(r_waits2);
+  ierr = PetscFree(r_status2);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits2);CHKERRQ(ierr);
   
   /* Wait on sends1 and sends2 */
   s_status1 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(s_status1);
@@ -991,8 +993,10 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
 
   ierr = MPI_Waitall(nrqs,s_waits1,s_status1);CHKERRQ(ierr);
   ierr = MPI_Waitall(nrqr,s_waits2,s_status2);CHKERRQ(ierr);
-  PetscFree(s_status1); PetscFree(s_status2);
-  PetscFree(s_waits1); PetscFree(s_waits2);
+  ierr = PetscFree(s_status1);CHKERRQ(ierr);
+  ierr = PetscFree(s_status2);CHKERRQ(ierr);
+  ierr = PetscFree(s_waits1);CHKERRQ(ierr);
+  ierr = PetscFree(s_waits2);CHKERRQ(ierr);
 
   /* Now allocate buffers for a->j, and send them off */
   sbuf_aj = (int **)PetscMalloc((nrqr+1)*sizeof(int *));CHKPTRQ(sbuf_aj);
@@ -1078,7 +1082,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   } 
   r_status4 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(r_status4);
   s_status4 = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(s_status4);
-  PetscFree(rbuf1);
+  ierr = PetscFree(rbuf1);CHKERRQ(ierr);
 
   /* Form the matrix */
   /* create col map */
@@ -1179,9 +1183,11 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
       }
     }
   }    
-  PetscFree(r_status3); PetscFree(r_waits3);
+  ierr = PetscFree(r_status3);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits3);CHKERRQ(ierr);
   ierr = MPI_Waitall(nrqr,s_waits3,s_status3);CHKERRQ(ierr);
-  PetscFree(s_status3); PetscFree(s_waits3);
+  ierr = PetscFree(s_status3);CHKERRQ(ierr);
+  ierr = PetscFree(s_waits3);CHKERRQ(ierr);
 
   /* Create the submatrices */
   if (scall == MAT_REUSE_MATRIX) {
@@ -1324,9 +1330,11 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
       }
     }
   }    
-  PetscFree(r_status4); PetscFree(r_waits4);
+  ierr = PetscFree(r_status4);CHKERRQ(ierr);
+  ierr = PetscFree(r_waits4);CHKERRQ(ierr);
   ierr = MPI_Waitall(nrqr,s_waits4,s_status4);CHKERRQ(ierr);
-  PetscFree(s_waits4); PetscFree(s_status4);
+  ierr = PetscFree(s_waits4);CHKERRQ(ierr);
+  ierr = PetscFree(s_status4);CHKERRQ(ierr);
 
   /* Restore the indices */
   for (i=0; i<ismax; i++) {
@@ -1335,31 +1343,31 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   }
 
   /* Destroy allocated memory */
-  PetscFree(irow);
-  PetscFree(w1);
-  PetscFree(pa);
+  ierr = PetscFree(irow);CHKERRQ(ierr);
+  ierr = PetscFree(w1);CHKERRQ(ierr);
+  ierr = PetscFree(pa);CHKERRQ(ierr);
 
-  PetscFree(sbuf1);
-  PetscFree(rbuf2);
+  ierr = PetscFree(sbuf1);CHKERRQ(ierr);
+  ierr = PetscFree(rbuf2);CHKERRQ(ierr);
   for (i=0; i<nrqr; ++i) {
-    PetscFree(sbuf2[i]);
+    ierr = PetscFree(sbuf2[i]);CHKERRQ(ierr);
   }
   for (i=0; i<nrqs; ++i) {
-    PetscFree(rbuf3[i]);
-    PetscFree(rbuf4[i]);
+    ierr = PetscFree(rbuf3[i]);CHKERRQ(ierr);
+    ierr = PetscFree(rbuf4[i]);CHKERRQ(ierr);
   }
 
-  PetscFree(sbuf2);
-  PetscFree(rbuf3);
-  PetscFree(rbuf4 );
-  PetscFree(sbuf_aj[0]);
-  PetscFree(sbuf_aj);
-  PetscFree(sbuf_aa[0]);
-  PetscFree(sbuf_aa);
+  ierr = PetscFree(sbuf2);CHKERRQ(ierr);
+  ierr = PetscFree(rbuf3);CHKERRQ(ierr);
+  ierr = PetscFree(rbuf4 );CHKERRQ(ierr);
+  ierr = PetscFree(sbuf_aj[0]);CHKERRQ(ierr);
+  ierr = PetscFree(sbuf_aj);CHKERRQ(ierr);
+  ierr = PetscFree(sbuf_aa[0]);CHKERRQ(ierr);
+  ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
   
-  PetscFree(cmap);
-  PetscFree(rmap);
-  PetscFree(lens);
+  ierr = PetscFree(cmap);CHKERRQ(ierr);
+  ierr = PetscFree(rmap);CHKERRQ(ierr);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) {
     ierr = MatAssemblyBegin(submats[i], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

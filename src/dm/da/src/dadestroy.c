@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.27 1999/03/18 00:28:40 curfman Exp balay $";
+static char vcid[] = "$Id: dadestroy.c,v 1.28 1999/05/04 20:37:25 balay Exp balay $";
 #endif
  
 /*
@@ -39,7 +39,7 @@ int DADestroy(DA da)
   if (da->refct < 0) PetscFunctionReturn(0);
 
   PLogObjectDestroy(da);
-  PetscFree(da->idx);
+  ierr = PetscFree(da->idx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);
@@ -59,17 +59,17 @@ int DADestroy(DA da)
   ierr = AODestroy(da->ao);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(da->ltogmap);CHKERRQ(ierr);
 
-  if (da->lx) PetscFree(da->lx);  
-  if (da->ly) PetscFree(da->ly);  
-  if (da->lz) PetscFree(da->lz);  
+  if (da->lx) {ierr = PetscFree(da->lx);CHKERRQ(ierr);}
+  if (da->ly) {ierr = PetscFree(da->ly);CHKERRQ(ierr);}
+  if (da->lz) {ierr = PetscFree(da->lz);CHKERRQ(ierr);}
 
   for ( i=0; i<da->w; i++ ) {
-    if (da->fieldname[i]) PetscFree(da->fieldname[i]);
+    if (da->fieldname[i]) {ierr = PetscFree(da->fieldname[i]);CHKERRQ(ierr);}
   }
-  PetscFree(da->fieldname);
+  ierr = PetscFree(da->fieldname);CHKERRQ(ierr);
 
   if (da->coordinates) ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);
-  if (da->gtog1) PetscFree(da->gtog1);
+  if (da->gtog1) {ierr = PetscFree(da->gtog1);CHKERRQ(ierr);}
   PetscHeaderDestroy(da);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.84 1999/05/04 18:24:07 balay Exp balay $";
+static char vcid[] = "$Id: sor.c,v 1.85 1999/05/04 20:34:00 balay Exp balay $";
 #endif
 
 /*
@@ -18,9 +18,10 @@ typedef struct {
 static int PCDestroy_SOR(PC pc)
 {
   PC_SOR *jac = (PC_SOR *) pc->data;
+  int    ierr;
 
   PetscFunctionBegin;
-  PetscFree(jac);
+  ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

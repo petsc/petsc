@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.9 1999/03/19 21:18:23 bsmith Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.10 1999/05/04 20:31:12 balay Exp balay $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
     ierr = VecSetLocalToGlobalMapping(x,ltog);CHKERRA(ierr);
     ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRA(ierr);
   }
-  PetscFree(gindices);
+  ierr = PetscFree(gindices);CHKERRA(ierr);
 
   /*
      Set the vector elements.

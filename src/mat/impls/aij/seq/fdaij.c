@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdaij.c,v 1.20 1999/05/04 20:31:42 balay Exp balay $";
+static char vcid[] = "$Id: fdaij.c,v 1.21 1999/06/08 22:55:44 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -140,8 +140,8 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   }
   ierr = MatRestoreColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
 
-  PetscFree(rowhit);
-  PetscFree(columnsforrow);
+  ierr = PetscFree(rowhit);CHKERRQ(ierr);
+  ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
 
   c->scale  = (Scalar *) PetscMalloc( 2*N*sizeof(Scalar) );CHKPTRQ(c->scale);
   c->wscale = c->scale + N;
@@ -182,9 +182,9 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
   (*iscoloring)->n    = ncolors;
   (*iscoloring)->is   = is;
   ierr = PetscCommDuplicate_Private(mat->comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
-  PetscFree(sizes);
-  PetscFree(ii[0]);
-  PetscFree(ii);
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
+  ierr = PetscFree(ii[0]);CHKERRQ(ierr);
+  ierr = PetscFree(ii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -224,10 +224,10 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
   for ( i=0; i<n; i++ ) {
     newcolor[i] = colorused[newcolor[i]-1];
   }
-  PetscFree(colorused);
+  ierr = PetscFree(colorused);CHKERRQ(ierr);
 
   ierr = MatColoringPatch_SeqAIJ(mat,ncolors,newcolor,iscoloring);CHKERRQ(ierr);
-  PetscFree(newcolor);
+  ierr = PetscFree(newcolor);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

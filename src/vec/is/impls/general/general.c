@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.81 1999/04/29 20:28:38 balay Exp balay $";
+static char vcid[] = "$Id: general.c,v 1.82 1999/05/04 20:30:08 balay Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -23,10 +23,11 @@ int ISDuplicate_General(IS is, IS *newIS)
 int ISDestroy_General(IS is)
 {
   IS_General *is_general = (IS_General *) is->data;
+  int ierr;
 
   PetscFunctionBegin;
-  PetscFree(is_general->idx);
-  PetscFree(is_general); 
+  ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
+  ierr = PetscFree(is_general); CHKERRQ(ierr);
   PLogObjectDestroy(is);
   PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
@@ -98,7 +99,7 @@ int ISInvertPermutation_General(IS is, IS *isout)
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,isout);CHKERRQ(ierr);
   ISSetPermutation(*isout);
-  PetscFree(ii);
+  ierr = PetscFree(ii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

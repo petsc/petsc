@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.97 1999/04/19 22:15:42 bsmith Exp balay $";
+static char vcid[] = "$Id: tr.c,v 1.98 1999/05/04 20:35:59 balay Exp balay $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -210,7 +210,7 @@ static int SNESDestroy_EQ_TR(SNES snes )
   if (snes->nwork) {
     ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
   }
-  PetscFree(snes->data);
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

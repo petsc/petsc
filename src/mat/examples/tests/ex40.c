@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex40.c,v 1.10 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex40.c,v 1.11 1999/05/12 03:30:15 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
@@ -73,8 +73,8 @@ int main(int argc,char **args)
     ierr = ISDestroy(is1[i]);CHKERRA(ierr);
     ierr = ISDestroy(is2[i]);CHKERRA(ierr);
   }
-  PetscFree(is1);
-  PetscFree(is2);
+  ierr = PetscFree(is1);CHKERRA(ierr);
+  ierr = PetscFree(is2);CHKERRA(ierr);
   ierr = PetscRandomDestroy(r);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(B);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.12 1999/04/19 22:10:59 bsmith Exp balay $";
+static char vcid[] = "$Id: pipeline.c,v 1.13 1999/05/04 20:30:27 balay Exp balay $";
 #endif
 
 /*
@@ -340,9 +340,11 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirecti
 #define __FUNC__ "VecPipelineDestroy_MPI_General"
 static int VecPipelineDestroy_MPI_General(VecScatter_MPI_General *gen)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  if (gen->sstatus) {PetscFree(gen->sstatus);}
-  PetscFree(gen);
+  if (gen->sstatus) {ierr = PetscFree(gen->sstatus);CHKERRQ(ierr);}
+  ierr = PetscFree(gen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -360,43 +362,43 @@ int VecPipelineDestroy( VecPipeline ctx )
   PetscFunctionBegin;
   /* free the VecScatter_MPI_General data structures */
   if (ctx->upto) {
-    PetscFree(ctx->upto->procs);
-    PetscFree(ctx->upto->starts);
-    PetscFree(ctx->upto->indices);
+    ierr = PetscFree(ctx->upto->procs);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->upto->starts);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->upto->indices);CHKERRQ(ierr);
     ierr = VecPipelineDestroy_MPI_General(ctx->upto);CHKERRQ(ierr);
   }
   if (ctx->upfrom) {
-    PetscFree(ctx->upfrom->procs);
-    PetscFree(ctx->upfrom->starts);
-    PetscFree(ctx->upfrom->indices);
+    ierr = PetscFree(ctx->upfrom->procs);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->upfrom->starts);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->upfrom->indices);CHKERRQ(ierr);
     ierr = VecPipelineDestroy_MPI_General(ctx->upfrom);CHKERRQ(ierr);
   }
   if (ctx->dnto) {
-    PetscFree(ctx->dnto->procs);
-    PetscFree(ctx->dnto->starts);
-    PetscFree(ctx->dnto->indices);
+    ierr = PetscFree(ctx->dnto->procs);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->dnto->starts);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->dnto->indices);CHKERRQ(ierr);
     ierr = VecPipelineDestroy_MPI_General(ctx->dnto);CHKERRQ(ierr);
   }
   if (ctx->dnfrom) {
-    PetscFree(ctx->dnfrom->procs);
-    PetscFree(ctx->dnfrom->starts);
-    PetscFree(ctx->dnfrom->indices);
+    ierr = PetscFree(ctx->dnfrom->procs);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->dnfrom->starts);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->dnfrom->indices);CHKERRQ(ierr);
     ierr = VecPipelineDestroy_MPI_General(ctx->dnfrom);CHKERRQ(ierr);
   }
   if (ctx->scatterto) {
-    PetscFree(ctx->scatterto->values);
-    if (ctx->scatterto->local.slots) PetscFree(ctx->scatterto->local.slots);
+    ierr = PetscFree(ctx->scatterto->values);CHKERRQ(ierr);
+    if (ctx->scatterto->local.slots) {ierr = PetscFree(ctx->scatterto->local.slots);CHKERRQ(ierr);}
     ierr = VecPipelineDestroy_MPI_General(ctx->scatterto);CHKERRQ(ierr);
   }
   if (ctx->scatterfrom) {
-    PetscFree(ctx->scatterfrom->values);
-    if (ctx->scatterfrom->local.slots) PetscFree(ctx->scatterfrom->local.slots);
+    ierr = PetscFree(ctx->scatterfrom->values);CHKERRQ(ierr);
+    if (ctx->scatterfrom->local.slots) {ierr = PetscFree(ctx->scatterfrom->local.slots);CHKERRQ(ierr);}
     ierr = VecPipelineDestroy_MPI_General(ctx->scatterfrom);CHKERRQ(ierr);
   }
 
-  if (ctx->custom_pipe_data) PetscFree(ctx->custom_pipe_data);
+  if (ctx->custom_pipe_data) {ierr = PetscFree(ctx->custom_pipe_data);CHKERRQ(ierr);}
   PetscHeaderDestroy(ctx->scatter);
-  PetscFree(ctx);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -594,8 +596,8 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
       base = base+size;
     }
     /*PetscPrintf(mat->comm,"\n");*/
-    PetscFree(conn);
-    PetscFree(colr);
+    ierr = PetscFree(conn);CHKERRQ(ierr);
+    ierr = PetscFree(colr);CHKERRQ(ierr);
   }
   *obj = (PetscObject) info;
 

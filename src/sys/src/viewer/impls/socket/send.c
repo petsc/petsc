@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.97 1999/05/12 16:28:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.98 1999/06/30 22:48:48 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -75,7 +75,7 @@ static int ViewerDestroy_Socket(Viewer viewer)
       SETERRQ(PETSC_ERR_LIB,0,"System error closing socket");
     }
   }
-  PetscFree(vmatlab);
+  ierr = PetscFree(vmatlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

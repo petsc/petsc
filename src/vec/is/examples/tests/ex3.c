@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.5 1999/04/19 22:10:43 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.6 1999/05/04 20:30:16 balay Exp balay $";
 #endif
 /*
        Tests ISAllGather()
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
     indices[i] = rank + i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,indices,&is);CHKERRA(ierr);
-  PetscFree(indices);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /*
       Stick them together from all processors 

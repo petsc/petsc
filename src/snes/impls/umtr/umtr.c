@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.82 1999/04/19 22:15:45 bsmith Exp balay $";
+static char vcid[] = "$Id: umtr.c,v 1.83 1999/05/04 20:36:02 balay Exp balay $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -207,7 +207,7 @@ static int SNESDestroy_UM_TR(SNES snes )
   if (snes->nwork) {
     ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
   }
-  PetscFree(snes->data);
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

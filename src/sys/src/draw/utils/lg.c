@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.60 1999/05/04 20:28:46 balay Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.61 1999/06/30 22:49:17 bsmith Exp balay $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -95,12 +95,14 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 @*/
 int DrawLGSetDimension(DrawLG lg,int dim)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->dim == dim) PetscFunctionReturn(0);
 
-  PetscFree(lg->x);
+  ierr = PetscFree(lg->x);CHKERRQ(ierr);
   lg->dim = dim;
   lg->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(lg->x);
   PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(double));
@@ -168,7 +170,7 @@ int DrawLGDestroy(DrawLG lg)
     PetscFunctionReturn(0);
   }
   DrawAxisDestroy(lg->axis);
-  PetscFree(lg->x);
+  ierr = PetscFree(lg->x);CHKERRQ(ierr);
   PLogObjectDestroy(lg);
   PetscHeaderDestroy(lg);
   PetscFunctionReturn(0);
@@ -208,7 +210,7 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
     tmpy = tmpx + lg->len + lg->dim*CHUNCKSIZE;
     ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));CHKERRQ(ierr);
-    PetscFree(lg->x);
+    ierr = PetscFree(lg->x);CHKERRQ(ierr);
     lg->x = tmpx; lg->y = tmpy;
     lg->len += lg->dim*CHUNCKSIZE;
   }
@@ -285,7 +287,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
     tmpy = tmpx + lg->len + lg->dim*chunk;
     ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));CHKERRQ(ierr);
-    PetscFree(lg->x);
+    ierr = PetscFree(lg->x);CHKERRQ(ierr);
     lg->x    = tmpx; lg->y = tmpy;
     lg->len += lg->dim*chunk;
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.295 1999/06/08 22:55:49 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.296 1999/06/10 16:08:15 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -90,8 +90,11 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
                                                            len*sizeof(Scalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
  \
-        PetscFree(a->a);  \
-        if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);} \
+        ierr = PetscFree(a->a);CHKERRQ(ierr);  \
+        if (!a->singlemalloc) { \
+           ierr = PetscFree(a->i);CHKERRQ(ierr); \
+           ierr = PetscFree(a->j);CHKERRQ(ierr); \
+        } \
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
         a->singlemalloc = 1; \
  \
@@ -161,8 +164,11 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
                                                            len*sizeof(Scalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
  \
-        PetscFree(b->a);  \
-        if (!b->singlemalloc) {PetscFree(b->i);PetscFree(b->j);} \
+        ierr = PetscFree(b->a);CHKERRQ(ierr);  \
+        if (!b->singlemalloc) { \
+          ierr = PetscFree(b->i);CHKERRQ(ierr); \
+          ierr = PetscFree(b->j);CHKERRQ(ierr); \
+        } \
         ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
         b->singlemalloc = 1; \
  \
@@ -388,7 +394,10 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
 
-  if (aij->rowvalues) {PetscFree(aij->rowvalues); aij->rowvalues = 0;}
+  if (aij->rowvalues) {
+    ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);
+    aij->rowvalues = 0;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -447,7 +456,7 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   nrecvs = work[rank]; 
   ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   nmax = work[rank];
-  PetscFree(work);
+  ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -478,7 +487,7 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
       ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
-  PetscFree(starts);
+  ierr = PetscFree(starts);CHKERRQ(ierr);
 
   base = owners[rank];
 
@@ -495,7 +504,7 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
     slen += n;
     count--;
   }
-  PetscFree(recv_waits); 
+  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
   
   /* move the data into the send scatter */
   lrows = (int *) PetscMalloc( (slen+1)*sizeof(int) );CHKPTRQ(lrows);
@@ -506,8 +515,10 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
       lrows[count++] = values[j] - base;
     }
   }
-  PetscFree(rvalues); PetscFree(lens);
-  PetscFree(owner); PetscFree(nprocs);
+  ierr = PetscFree(rvalues);CHKERRQ(ierr);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
+  ierr = PetscFree(owner);CHKERRQ(ierr);
+  ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
   /* actually zap the local rows */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
@@ -541,15 +552,16 @@ MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCA
     ierr = MatZeroRows(l->A,istmp,0);CHKERRQ(ierr);
   }
   ierr = ISDestroy(istmp);CHKERRQ(ierr);
-  PetscFree(lrows);
+  ierr = PetscFree(lrows);CHKERRQ(ierr);
 
   /* wait on sends */
   if (nsends) {
     send_status = (MPI_Status *) PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr        = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
+    ierr = PetscFree(send_status);CHKERRQ(ierr);
   }
-  PetscFree(send_waits); PetscFree(svalues);
+  ierr = PetscFree(send_waits);CHKERRQ(ierr);
+  ierr = PetscFree(svalues);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -689,19 +701,19 @@ int MatDestroy_MPIAIJ(Mat mat)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",aij->M,aij->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
-  PetscFree(aij->rowners); 
+  ierr = PetscFree(aij->rowners);CHKERRQ(ierr);
   ierr = MatDestroy(aij->A);CHKERRQ(ierr);
   ierr = MatDestroy(aij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
   if (aij->colmap) TableDelete(aij->colmap);
 #else
-  if (aij->colmap) PetscFree(aij->colmap);
+  if (aij->colmap) {ierr = PetscFree(aij->colmap);CHKERRQ(ierr);}
 #endif
-  if (aij->garray) PetscFree(aij->garray);
+  if (aij->garray) {ierr = PetscFree(aij->garray);CHKERRQ(ierr);}
   if (aij->lvec)   VecDestroy(aij->lvec);
   if (aij->Mvctx)  VecScatterDestroy(aij->Mvctx);
-  if (aij->rowvalues) PetscFree(aij->rowvalues);
-  PetscFree(aij); 
+  if (aij->rowvalues) {ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);}
+  ierr = PetscFree(aij);CHKERRQ(ierr);
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);
@@ -805,7 +817,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
       ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],cols,a,INSERT_VALUES);CHKERRQ(ierr);
       row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
     } 
-    PetscFree(ct);
+    ierr = PetscFree(ct);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     /* 
@@ -1242,7 +1254,8 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
       for ( j=0; j<aij->N; j++ ) {
         if (tmp2[j] > *norm) *norm = tmp2[j];
       }
-      PetscFree(tmp); PetscFree(tmp2);
+      ierr = PetscFree(tmp);CHKERRQ(ierr);
+      ierr = PetscFree(tmp2);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row norm */
       double ntemp = 0.0;
       for ( j=0; j<amat->m; j++ ) {
@@ -1305,7 +1318,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     ierr = MatSetValues(B,ai[i+1]-ai[i],cols,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
     row++; array += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
   } 
-  PetscFree(ct);
+  ierr = PetscFree(ct);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (matout != PETSC_NULL) {
@@ -1315,18 +1328,18 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     struct _MatOps *Aops;
 
     /* This isn't really an in-place transpose .... but free data structures from a */
-    PetscFree(a->rowners); 
+    ierr = PetscFree(a->rowners);CHKERRQ(ierr);
     ierr = MatDestroy(a->A);CHKERRQ(ierr);
     ierr = MatDestroy(a->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
     if (a->colmap) TableDelete(a->colmap);
 #else
-    if (a->colmap) PetscFree(a->colmap);
+    if (a->colmap) {ierr = PetscFree(a->colmap);CHKERRQ(ierr);}
 #endif
-    if (a->garray) PetscFree(a->garray);
+    if (a->garray) {ierr = PetscFree(a->garray);CHKERRQ(ierr);}
     if (a->lvec) VecDestroy(a->lvec);
     if (a->Mvctx) VecScatterDestroy(a->Mvctx);
-    PetscFree(a);
+    ierr = PetscFree(a);CHKERRQ(ierr);
 
     /*
        This is horrible, horrible code. We need to keep the 
@@ -1955,7 +1968,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     sndcounts = (int*) PetscMalloc( size*sizeof(int) );CHKPTRQ(sndcounts);
     for ( i=0; i<size; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
     ierr = MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);CHKERRQ(ierr);
-    PetscFree(sndcounts);
+    ierr = PetscFree(sndcounts);CHKERRQ(ierr);
   } else {
     ierr = MPI_Scatterv(0,0,0,MPI_INT,ourlens,rend-rstart,MPI_INT, 0,comm);CHKERRQ(ierr);
   }
@@ -1969,7 +1982,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
         procsnz[i] += rowlengths[j];
       }
     }
-    PetscFree(rowlengths);
+    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
     /* determine max buffer needed and allocate it */
     maxnz = 0;
@@ -1989,7 +2002,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
       ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
       ierr = MPI_Send(cols,nz,MPI_INT,i,tag,comm);CHKERRQ(ierr);
     }
-    PetscFree(cols);
+    ierr = PetscFree(cols);CHKERRQ(ierr);
   } else {
     /* determine buffer space needed for message */
     nz = 0;
@@ -2060,7 +2073,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
       ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
       ierr = MPI_Send(vals,nz,MPIU_SCALAR,i,A->tag,comm);CHKERRQ(ierr);
     }
-    PetscFree(procsnz);
+    ierr = PetscFree(procsnz);CHKERRQ(ierr);
   } else {
     /* receive numeric values */
     vals = (Scalar*) PetscMalloc( nz*sizeof(Scalar) );CHKPTRQ(vals);
@@ -2081,7 +2094,10 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
       jj++;
     }
   }
-  PetscFree(ourlens); PetscFree(vals); PetscFree(mycols); PetscFree(rowners);
+  ierr = PetscFree(ourlens);CHKERRQ(ierr);
+  ierr = PetscFree(vals);CHKERRQ(ierr);
+  ierr = PetscFree(mycols);CHKERRQ(ierr);
+  ierr = PetscFree(rowners);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2116,7 +2132,7 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
   } else {
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     Mreuse = *local;
-    PetscFree(local);
+    ierr = PetscFree(local);CHKERRQ(ierr);
   }
 
   /* 
@@ -2164,7 +2180,7 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
       dlens[i] = dlen;
     }
     ierr = MatCreateMPIAIJ(comm,m,nlocal,PETSC_DECIDE,n,0,dlens,0,olens,&M);CHKERRQ(ierr);
-    PetscFree(dlens);
+    ierr = PetscFree(dlens);CHKERRQ(ierr);
   } else {
     int ml,nl;
 

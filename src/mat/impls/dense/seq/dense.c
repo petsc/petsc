@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.170 1999/05/12 03:28:59 bsmith Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.171 1999/06/08 22:55:39 balay Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -160,11 +160,11 @@ int MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
 int MatCholeskyFactor_SeqDense(Mat A,IS perm,double f)
 {
   Mat_SeqDense  *mat = (Mat_SeqDense *) A->data;
-  int           info;
-
+  int           info,ierr;
+  
   PetscFunctionBegin;
   if (mat->pivots) {
-    PetscFree(mat->pivots);
+    ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
     PLogObjectMemory(A,-mat->m*sizeof(int));
     mat->pivots = 0;
   }
@@ -467,8 +467,10 @@ int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 #define __FUNC__ "MatRestoreRow_SeqDense"
 int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
-  if (cols) { PetscFree(*cols); }
-  if (vals) { PetscFree(*vals); }
+  int ierr;
+  PetscFunctionBegin;
+  if (cols) {ierr = PetscFree(*cols);CHKERRQ(ierr);}
+  if (vals) {ierr = PetscFree(*vals);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
@@ -602,7 +604,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
         *v++ =w[i*N+j];
       }
     }
-    PetscFree(w);
+    ierr = PetscFree(w);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
@@ -627,7 +629,9 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
       for ( j=0; j<rowlengths[i]; j++ ) v[i+M*scols[j]] = svals[j];
       svals += rowlengths[i]; scols += rowlengths[i];
     }
-    PetscFree(vals); PetscFree(cols); PetscFree(rowlengths);   
+    ierr = PetscFree(vals);CHKERRQ(ierr);
+    ierr = PetscFree(cols);CHKERRQ(ierr);
+    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -719,7 +723,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     col_lens[2] = n;
     col_lens[3] = MATRIX_BINARY_FORMAT_DENSE;
     ierr = PetscBinaryWrite(fd,col_lens,4,PETSC_INT,1);CHKERRQ(ierr);
-    PetscFree(col_lens);
+    ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* write out matrix, by rows */
     vals = (Scalar *) PetscMalloc((m*n+1)*sizeof(Scalar));CHKPTRQ(vals);
@@ -730,7 +734,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
       }
     }
     ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,0);CHKERRQ(ierr);
-    PetscFree(vals);
+    ierr = PetscFree(vals);CHKERRQ(ierr);
   } else {
     col_lens = (int *) PetscMalloc( (4+nz)*sizeof(int) );CHKPTRQ(col_lens);
     col_lens[0] = MAT_COOKIE;
@@ -749,7 +753,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
       for ( j=0; j<n; j++ ) col_lens[ict++] = j;
     }
     ierr = PetscBinaryWrite(fd,col_lens,nz,PETSC_INT,0);CHKERRQ(ierr);
-    PetscFree(col_lens);
+    ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
     /* store nonzero values */
     anonz = (Scalar *) PetscMalloc((nz+1)*sizeof(Scalar));CHKPTRQ(anonz);
@@ -761,7 +765,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
       }
     }
     ierr = PetscBinaryWrite(fd,anonz,nz,PETSC_SCALAR,0);CHKERRQ(ierr);
-    PetscFree(anonz);
+    ierr = PetscFree(anonz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -808,9 +812,9 @@ int MatDestroy_SeqDense(Mat mat)
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)mat,"Rows %d Cols %d",l->m,l->n);
 #endif
-  if (l->pivots) PetscFree(l->pivots);
-  if (!l->user_alloc) PetscFree(l->v);
-  PetscFree(l);
+  if (l->pivots) {ierr = PetscFree(l->pivots);CHKERRQ(ierr);}
+  if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
+  ierr = PetscFree(l);CHKERRQ(ierr);
   if (mat->rmap) {
     ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
   }
@@ -841,7 +845,7 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
         }
       }
       ierr = PetscMemcpy(v,w,m*n*sizeof(Scalar));CHKERRQ(ierr);
-      PetscFree(w);
+      ierr = PetscFree(w);CHKERRQ(ierr);
     } else {
       for ( j=0; j<m; j++ ) {
         for ( k=0; k<j; k++ ) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.37 1999/03/17 23:25:31 bsmith Exp balay $";
+static char vcid[] = "$Id: fdda.c,v 1.38 1999/05/04 20:37:48 balay Exp balay $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -133,7 +133,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
     }
   }
   ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
-  PetscFree(colors);
+  ierr = PetscFree(colors);CHKERRQ(ierr);
 
   /* create empty Jacobian matrix */
   ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,col*col*nc,0,0,0,J);CHKERRQ(ierr);  
@@ -169,9 +169,9 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
       ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  PetscFree(values); 
-  PetscFree(rows);
-  PetscFree(cols);
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
@@ -224,7 +224,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
     }
   }
   ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,coloring);CHKERRQ(ierr);
-  PetscFree(colors);
+  ierr = PetscFree(colors);CHKERRQ(ierr);
 
   /* create empty Jacobian matrix */
   ierr = MatCreateMPIAIJ(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,col*col*col*nc,0,0,0,J);CHKERRQ(ierr);  
@@ -264,9 +264,9 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
       }
     }
   }
-  PetscFree(values); 
-  PetscFree(rows);
-  PetscFree(cols);
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
@@ -334,7 +334,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
     }
   }
   ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
-  PetscFree(colors);
+  ierr = PetscFree(colors);CHKERRQ(ierr);
 
   /* create empty Jacobian matrix */
   ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,9*nc,0,0,0,J);CHKERRQ(ierr);  
@@ -503,9 +503,9 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
       ierr = MatSetValuesLocal(*J,nc,cols,9*nc,indices,values,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  PetscFree(values); 
-  PetscFree(cols);
-  PetscFree(indices);
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
@@ -559,7 +559,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
     }
   }
   ierr = ISColoringCreate(comm,nc*nx,colors,coloring);CHKERRQ(ierr);
-  PetscFree(colors);
+  ierr = PetscFree(colors);CHKERRQ(ierr);
 
   /* create empty Jacobian matrix */
   ierr = MatCreateMPIAIJ(comm,nc*nx,nc*nx,PETSC_DECIDE,PETSC_DECIDE,col*nc,0,0,0,J);CHKERRQ(ierr);
@@ -586,9 +586,9 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
     }
     ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
   }
-  PetscFree(values); 
-  PetscFree(rows);
-  PetscFree(cols);
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);

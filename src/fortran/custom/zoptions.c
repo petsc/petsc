@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.58 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.59 1999/05/12 03:34:35 bsmith Exp balay $";
 #endif
 
 /*
@@ -323,7 +323,7 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
     shift = *(int *)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(Scalar));CHKERRQ(ierr);
     tlx   = (Scalar *) (((char *)tlx) - shift);
-    PetscFree(tlx);
+    ierr = PetscFree(tlx);CHKERRQ(ierr);
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);
   } else {

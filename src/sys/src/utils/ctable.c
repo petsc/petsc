@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ctable.c,v 1.6 1999/02/17 21:37:18 balay Exp balay $";
+static char vcid[] = "$Id: ctable.c,v 1.7 1999/05/04 20:29:32 balay Exp balay $";
 #endif
 /* Contributed by - Mark Adams */
 
@@ -68,10 +68,12 @@ int TableCreateCopy(const Table intable,Table *rta)
  */
 int TableDelete(Table ta)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(ta->keytable);
-  PetscFree(ta->table);
-  PetscFree(ta);
+  ierr = PetscFree(ta->keytable);CHKERRQ(ierr);
+  ierr = PetscFree(ta->table);CHKERRQ(ierr);
+  ierr = PetscFree(ta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 #undef __FUNC__  
@@ -146,8 +148,8 @@ int TableAdd(Table ta, const int key, const int data)
     }
     if (ta->count != tcount + 1) SETERRQ(1,1,"Table error");
     
-    PetscFree(oldtab);
-    PetscFree(oldkt);
+    ierr = PetscFree(oldtab);CHKERRQ(ierr);
+    ierr = PetscFree(oldkt);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

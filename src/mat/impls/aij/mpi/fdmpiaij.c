@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.21 1999/05/12 03:29:11 bsmith Exp balay $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.22 1999/06/08 22:55:49 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -214,11 +214,11 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
         fm                           = rowhit[fm];
       } while (fm < M);
     } /* ---------------------------------------------------------------------------------------*/
-    PetscFree(cols);
+    ierr = PetscFree(cols);CHKERRQ(ierr);
   }
-  PetscFree(rowhit);
-  PetscFree(columnsforrow);
-  PetscFree(ncolsonproc);
+  ierr = PetscFree(rowhit);CHKERRQ(ierr);
+  ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
+  ierr = PetscFree(ncolsonproc);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
   ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
 

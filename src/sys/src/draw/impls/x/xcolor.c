@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.49 1999/05/04 20:28:34 balay Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.50 1999/05/12 03:26:40 bsmith Exp balay $";
 #endif
 
 
@@ -118,7 +118,7 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
       gCmapping[i]   = colordef.pixel;
     }
   }
-  PetscFree( red );
+  ierr = PetscFree( red );CHKERRQ(ierr);
   PLogInfo(0,"DrawSetUpColormap_Shared:Successfully allocated colors\n");
 
   PetscFunctionReturn(0);
@@ -201,7 +201,7 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
       gCmapping[i]   = colordef.pixel;
     }
   }
-  PetscFree( red );
+  ierr = PetscFree( red );CHKERRQ(ierr);
   PLogInfo(0,"DrawSetUpColormap_Private:Successfully allocated colors\n");
   PetscFunctionReturn(0);
 }

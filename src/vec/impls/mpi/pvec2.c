@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.38 1999/05/04 20:30:48 balay Exp bsmith $"
+static char vcid[] = "$Id: pvec2.c,v 1.39 1999/05/12 03:28:25 bsmith Exp balay $"
 #endif
 
 /*
@@ -59,7 +59,7 @@ int VecMDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
 #endif
   PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
-    PetscFree(work);
+    ierr = PetscFree(work);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -84,7 +84,7 @@ int VecMTDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
 #endif
   PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
-    PetscFree(work);
+    ierr = PetscFree(work);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.160 1999/06/08 22:55:12 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.161 1999/06/30 22:50:00 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -152,7 +152,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
     xx[i] = (double) i;
   }
 #if !defined(PETSC_USE_COMPLEX)
-  DrawLGAddPoints(lg,n,&xx,&x->array);
+  ierr = DrawLGAddPoints(lg,n,&xx,&x->array);CHKERRQ(ierr);
 #else 
   {
     double *yy;
@@ -160,14 +160,14 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
     for ( i=0; i<n; i++ ) {
       yy[i] = PetscReal(x->array[i]);
     }
-    DrawLGAddPoints(lg,n,&xx,&yy);
-    PetscFree(yy);
+    ierr = DrawLGAddPoints(lg,n,&xx,&yy);CHKERRQ(ierr);
+    ierr = PetscFree(yy);CHKERRQ(ierr);
   }
 #endif
-  PetscFree(xx);
-  DrawLGDraw(lg);
-  DrawSynchronizedFlush(win);
-  DrawPause(win);
+  ierr = PetscFree(xx);CHKERRQ(ierr);
+  ierr = DrawLGDraw(lg);CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(win);CHKERRQ(ierr);
+  ierr = DrawPause(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -321,14 +321,15 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar yin[],In
 int VecDestroy_Seq(Vec v)
 {
   Vec_Seq *vs = (Vec_Seq*) v->data;
+  int     ierr;
 
   PetscFunctionBegin;
 
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
-  if (vs->array_allocated) PetscFree(vs->array_allocated);
-  PetscFree(vs);
+  if (vs->array_allocated) {ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);}
+  ierr = PetscFree(vs);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
 #if defined(PETSC_HAVE_AMS)

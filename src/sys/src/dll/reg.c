@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.38 1999/05/12 03:27:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.39 1999/06/30 22:49:21 bsmith Exp balay $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -54,7 +54,7 @@ int PetscInitialize_DynamicLibraries(void)
   ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);
   for ( i=0; i<nmax; i++ ) {
     ierr = DLLibraryPrepend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-    PetscFree(libname[i]);
+    ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
@@ -113,7 +113,7 @@ int PetscInitialize_DynamicLibraries(void)
   ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);
   for ( i=0; i<nmax; i++ ) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-    PetscFree(libname[i]);
+    ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -233,8 +233,8 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
     while (ne) {
       if (!PetscStrcmp(ne->name,name)) { /* found duplicate */
         ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-        if (ne->path) PetscFree(ne->path);
-        if (ne->rname) PetscFree(ne->rname);
+        if (ne->path) {ierr = PetscFree(ne->path);CHKERRQ(ierr);}
+        if (ne->rname) {ierr = PetscFree(ne->rname);CHKERRQ(ierr);}
         ne->path    = fpath;
         ne->rname   = fname;
         ne->routine = fnc;
@@ -270,6 +270,7 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
 int FListDestroy(FList fl)
 {
   FList   next,entry,tmp = dlallhead;
+  int     ierr;
 
   PetscFunctionBegin;
   if (!fl) PetscFunctionReturn(0);
@@ -299,10 +300,10 @@ int FListDestroy(FList fl)
   entry = fl;
   while (entry) {
     next = entry->next;
-    if (entry->path) PetscFree(entry->path);
-    PetscFree( entry->name );
-    PetscFree( entry->rname );
-    PetscFree( entry );
+    if (entry->path) {ierr = PetscFree(entry->path);CHKERRQ(ierr);}
+    ierr = PetscFree( entry->name );CHKERRQ(ierr);
+    ierr = PetscFree( entry->rname );CHKERRQ(ierr);
+    ierr = PetscFree( entry );CHKERRQ(ierr);
     entry = next;
   }
 
@@ -373,9 +374,9 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 
       if (entry->routine) {
         *r = entry->routine; 
-         if (path) PetscFree(path);
-         PetscFree(function);
-         PetscFunctionReturn(0);
+        if (path) {ierr = PetscFree(path);CHKERRQ(ierr);}
+        ierr = PetscFree(function);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
       }
 
       /* it is not yet in memory so load from dynamic library */
@@ -385,8 +386,8 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
       ierr = DLLibrarySym(comm,&DLLibrariesLoaded,newpath,entry->rname,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
-        if (path) PetscFree(path);
-        PetscFree(function);
+        if (path) {ierr = PetscFree(path);CHKERRQ(ierr);}
+        ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else {
         PetscErrorPrintf("Registered function name: %s\n",entry->rname);
@@ -401,10 +402,10 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   /* Function never registered; try for it anyway */
   ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
-  if (path) PetscFree(path);
+  if (path) {ierr = PetscFree(path);CHKERRQ(ierr);}
   if (*r) {
     ierr = FListAdd(&fl,name,name,r);CHKERRQ(ierr);
-    PetscFree(function);
+    ierr = PetscFree(function);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 #endif
@@ -416,7 +417,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
   SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
   */
 
-  PetscFree(function);
+  ierr = PetscFree(function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

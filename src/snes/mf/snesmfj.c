@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.87 1999/05/12 03:32:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.88 1999/06/30 22:51:53 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -152,8 +152,8 @@ int MatSNESMFDestroy_Private(Mat mat)
   ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
-  PetscFree(ctx->ops);
-  PetscFree(ctx);
+  ierr = PetscFree(ctx->ops);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

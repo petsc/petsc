@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.213 1999/05/12 03:27:11 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.214 1999/06/08 22:54:31 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -219,7 +219,7 @@ int OptionsInsert(int *argc,char ***args,const char file[])
           ierr = PetscStrtok(0," ",&first);CHKERRQ(ierr);
         }
       }
-      if (rank) PetscFree(eoptions);
+      if (rank) {ierr = PetscFree(eoptions);CHKERRQ(ierr);}
     }
   }
 
@@ -878,7 +878,7 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], in
     n++;
   }
   *nmax = n;
-  PetscFree(cpy);
+  ierr = PetscFree(cpy);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
@@ -933,7 +933,7 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
     n++;
   }
   *nmax = n;
-  PetscFree(cpy);
+  ierr = PetscFree(cpy);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
@@ -1045,7 +1045,7 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
     n++;
   }
   *nmax = n;
-  PetscFree(cpy);
+  ierr = PetscFree(cpy);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

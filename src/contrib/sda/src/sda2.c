@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2.c,v 1.13 1999/05/04 20:37:56 balay Exp balay $";
+static char vcid[] = "$Id: sda2.c,v 1.14 1999/06/08 22:58:41 balay Exp balay $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -57,10 +57,10 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
   ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  PetscFree(array);
+  ierr = PetscFree(array);CHKERRQ(ierr);
   ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
   ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  PetscFree(array);
+  ierr = PetscFree(array);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
   ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
 
   ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -124,10 +124,10 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
   ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  PetscFree(array);
+  ierr = PetscFree(array);CHKERRQ(ierr);
   ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
   ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  PetscFree(array);
+  ierr = PetscFree(array);CHKERRQ(ierr);
 
   /* free global vector never needed by user */
   ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
@@ -139,7 +139,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
 
   ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -195,10 +195,10 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
   ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  PetscFree(array);
+  ierr = PetscFree(array);CHKERRQ(ierr);
   ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
   ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  PetscFree(array);
+  ierr = PetscFree(array);CHKERRQ(ierr);
 
   /* free global vector never needed by user */
   ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
 
   ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -223,16 +223,18 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 @*/
 int SDADestroy(SDA sda)
 {
+  int ierr;
+
   PetscFunctionBegin;
   /*
      This doesn't properly distroy these objects, but since 
     I have already illegally freed parts of the objects, I 
     cannot call the proper destroy routines.
     */
-  PetscFree(sda->gvec);
-  PetscFree(sda->lvec);
-  PetscFree(sda->da);
-  PetscFree(sda);
+  ierr = PetscFree(sda->gvec);CHKERRQ(ierr);
+  ierr = PetscFree(sda->lvec);CHKERRQ(ierr);
+  ierr = PetscFree(sda->da);CHKERRQ(ierr);
+  ierr = PetscFree(sda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewers.c,v 1.2 1999/04/19 22:08:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewers.c,v 1.3 1999/04/21 18:14:54 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -34,8 +34,8 @@ int ViewersDestroy(Viewers v)
   for ( i=0; i<v->n; i++ ) {
     if (v->viewer[i]) {ierr = ViewerDestroy(v->viewer[i]);CHKERRQ(ierr);}
   }
-  PetscFree(v->viewer);
-  PetscFree(v);
+  ierr = PetscFree(v->viewer);CHKERRQ(ierr);
+  ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -106,7 +106,7 @@ int ViewersGetViewer(Viewers viewers,int n,Viewer *viewer)
     v    = (Viewer *) PetscMalloc(newn*sizeof(Viewer));CHKPTRQ(v);
     ierr = PetscMemzero(v,newn*sizeof(Viewer));CHKERRQ(ierr);
     ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(Viewer));CHKERRQ(ierr);
-    PetscFree(viewers->viewer);
+    ierr = PetscFree(viewers->viewer);CHKERRQ(ierr);
     viewers->viewer = v;
   }
   if (!viewers->viewer[n]) {

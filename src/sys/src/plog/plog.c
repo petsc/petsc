@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.216 1999/05/12 03:27:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.217 1999/06/30 22:49:31 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -603,11 +602,11 @@ int PLogStagePop(void)
 
 int PLogStageDestroy_Private(void)
 {
-  int i;
+  int i,ierr;
   PetscFunctionBegin;
   for (i=0; i<10; i++) {
     if (EventsStageName[i]) {
-      PetscFree(EventsStageName[i]); 
+      ierr = PetscFree(EventsStageName[i]);CHKERRQ(ierr);
       EventsStageName[i] =0;
     }
   }
@@ -1286,13 +1285,13 @@ int PLogEventRegister(int *e,const char string[],const char color[])
 */
 int PLogEventRegisterDestroy_Private(void)
 {
-  int i;
+  int i,ierr;
   
   PetscFunctionBegin;
   for (i=PLOG_USER_EVENT_LOW-1; i>=PLOG_USER_EVENT_LOW_STATIC; i--) {
-    PetscFree(PLogEventName[i]);
+    ierr = PetscFree(PLogEventName[i]);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPE)
-    if (PLogEventColorMalloced[i]) PetscFree(PLogEventColor[i]);
+    if (PLogEventColorMalloced[i]) {ierr = PetscFree(PLogEventColor[i]);CHKERRQ(ierr);}
 #endif
   }
   PetscFunctionReturn(0);

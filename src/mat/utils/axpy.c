@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.38 1999/03/07 15:15:59 curfman Exp balay $";
+static char vcid[] = "$Id: axpy.c,v 1.39 1999/05/04 20:33:40 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -60,7 +60,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
         ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
         ierr = MatRestoreRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
       }
-      PetscFree(vals);
+      ierr = PetscFree(vals);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

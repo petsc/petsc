@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.9 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex15.c,v 1.10 1999/05/04 20:35:25 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
@@ -327,7 +327,7 @@ int SampleShellPCDestroy(SampleShellPC *shell)
   int ierr;
 
   ierr = VecDestroy(shell->diag);CHKERRQ(ierr);
-  PetscFree(shell);
+  ierr = PetscFree(shell);CHKERRQ(ierr);
 
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex51.c,v 1.6 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex51.c,v 1.7 1999/05/04 20:33:03 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -147,17 +147,17 @@ int main(int argc,char **args)
     ierr = MatDestroy(submatA[i]);CHKERRA(ierr);
     ierr = MatDestroy(submatB[i]);CHKERRA(ierr);
  }
-  PetscFree(is1);
-  PetscFree(is2);
-  PetscFree(idx);
-  PetscFree(rows);
-  PetscFree(cols);
-  PetscFree(vals);
-  MatDestroy(A);
-  MatDestroy(B);
-  PetscFree(submatA); 
-  PetscFree(submatB);
-  PetscRandomDestroy(rand);
+  ierr = PetscFree(is1);CHKERRA(ierr);
+  ierr = PetscFree(is2);CHKERRA(ierr);
+  ierr = PetscFree(idx);CHKERRA(ierr);
+  ierr = PetscFree(rows);CHKERRA(ierr);
+  ierr = PetscFree(cols);CHKERRA(ierr);
+  ierr = PetscFree(vals);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
+  ierr = PetscFree(submatA);CHKERRA(ierr);
+  ierr = PetscFree(submatB);CHKERRA(ierr);
+  ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

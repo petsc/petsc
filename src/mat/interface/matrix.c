@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.337 1999/05/12 03:28:52 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.338 1999/06/08 22:55:30 balay Exp balay $";
 #endif
 
 /*
@@ -3207,7 +3207,7 @@ int MatDestroyMatrices(int n,Mat **mat)
   for ( i=0; i<n; i++ ) {
     ierr = MatDestroy((*mat)[i]);CHKERRQ(ierr);
   }
-  if (n) PetscFree(*mat);
+  if (n) {ierr = PetscFree(*mat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -3744,7 +3744,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
   } else if (!mat->ops->getsubmatrix && size == 1) {
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
-    PetscFree(local);
+    ierr = PetscFree(local);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

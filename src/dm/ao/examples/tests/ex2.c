@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.7 1999/03/19 21:23:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.8 1999/05/04 20:37:15 balay Exp balay $";
 #endif
 
 static char help[] = "Tests application ordering\n\n";
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
     }
   }
 
-  PetscFree(ispetsc);
+  ierr = PetscFree(ispetsc);CHKERRA(ierr);
 
   ierr = AODestroy(ao);CHKERRA(ierr);
   PetscFinalize();

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.32 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.33 1999/05/04 20:35:25 balay Exp balay $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -254,7 +254,7 @@ int main(int argc,char **args)
     for ( i=0; i<Nsub; i++ ) {
       ISDestroy(is[i]);
     }
-    PetscFree(is);
+    ierr = PetscFree(is);CHKERRA(ierr);
   }
   ierr = SLESDestroy(sles);CHKERRA(ierr);
   ierr = VecDestroy(u);CHKERRA(ierr);

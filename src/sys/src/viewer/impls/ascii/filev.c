@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.90 1999/05/12 03:26:11 bsmith Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.91 1999/06/15 15:24:38 balay Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -16,12 +16,12 @@ typedef struct {
 #define __FUNC__ "ViewerDestroy_ASCII"
 int ViewerDestroy_ASCII(Viewer v)
 {
-  int          rank = 0;
+  int          rank = 0,ierr;
   Viewer_ASCII *vascii = (Viewer_ASCII *)v->data;
 
   PetscFunctionBegin;
   if (!rank && vascii->fd != stderr && vascii->fd != stdout) fclose(vascii->fd);
-  PetscFree(vascii);
+  ierr = PetscFree(vascii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

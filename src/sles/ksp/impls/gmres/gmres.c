@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.123 1999/05/11 19:15:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.124 1999/05/12 03:31:46 bsmith Exp balay $";
 #endif
 
 /*
@@ -364,22 +364,22 @@ int KSPDestroy_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrix */
-  if (gmres->hh_origin) PetscFree( gmres->hh_origin );
+  if (gmres->hh_origin) {ierr = PetscFree( gmres->hh_origin );CHKERRQ(ierr);}
 
   /* Free the pointer to user variables */
-  if (gmres->vecs) PetscFree( gmres->vecs );
+  if (gmres->vecs) {ierr = PetscFree( gmres->vecs );CHKERRQ(ierr);}
 
   /* free work vectors */
   for (i=0; i<gmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(gmres->user_work[i], gmres->mwork_alloc[i] );CHKERRQ(ierr);
   }
-  if (gmres->user_work)  PetscFree( gmres->user_work );
-  if (gmres->mwork_alloc) PetscFree( gmres->mwork_alloc );
-  if (gmres->nrs) PetscFree( gmres->nrs );
+  if (gmres->user_work)  {ierr = PetscFree( gmres->user_work );CHKERRQ(ierr);}
+  if (gmres->mwork_alloc) {ierr = PetscFree( gmres->mwork_alloc );CHKERRQ(ierr);}
+  if (gmres->nrs) {ierr = PetscFree( gmres->nrs );CHKERRQ(ierr);}
   if (gmres->sol_temp) {ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);}
-  if (gmres->Rsvd) PetscFree(gmres->Rsvd);
-  if (gmres->Dsvd) PetscFree(gmres->Dsvd);
-  PetscFree( gmres ); 
+  if (gmres->Rsvd) {ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);}
+  if (gmres->Dsvd) {ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);}
+  ierr = PetscFree( gmres ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spqmd.c,v 1.28 1999/05/04 18:25:58 balay Exp balay $";
+static char vcid[] = "$Id: spqmd.c,v 1.29 1999/05/04 20:32:17 balay Exp balay $";
 #endif
 
 #include "mat.h"
@@ -33,13 +33,17 @@ int MatOrdering_QMD(Mat mat, MatOrderingType type, IS *row, IS *col)
   SPARSEPACKgenqmd( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,qlink, &nofsub );
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 
-  PetscFree( deg ); PetscFree( marker ); PetscFree( rchset ); 
-  PetscFree( nbrhd ); PetscFree( qsize );
-  PetscFree( qlink ); PetscFree(iperm);
+  ierr = PetscFree( deg );CHKERRQ(ierr);
+  ierr = PetscFree( marker );CHKERRQ(ierr);
+  ierr = PetscFree( rchset );CHKERRQ(ierr);
+  ierr = PetscFree( nbrhd );CHKERRQ(ierr);
+  ierr = PetscFree( qsize );CHKERRQ(ierr);
+  ierr = PetscFree( qlink );CHKERRQ(ierr);
+  ierr = PetscFree(iperm);CHKERRQ(ierr);
   for (i=0; i<nrow; i++) perm[i]--;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col);CHKERRQ(ierr);
-  PetscFree(perm);
+  ierr = PetscFree(perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

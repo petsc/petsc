@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.56 1999/03/17 23:21:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.57 1999/04/19 22:08:51 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -106,7 +106,7 @@ int DrawSetTitle(Draw draw,char *title)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->title) PetscFree(draw->title);
+  if (draw->title) {ierr = PetscFree(draw->title);CHKERRQ(ierr);}
   if (title) {
     int len = PetscStrlen(title);
     draw->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->title);
@@ -155,7 +155,7 @@ int DrawAppendTitle(Draw draw,char *title)
     PLogObjectMemory(draw,(len+1)*sizeof(char*));
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
-    PetscFree(draw->title);
+    ierr = PetscFree(draw->title);CHKERRQ(ierr);
     draw->title = newtitle;
   } else {
     int len     = PetscStrlen(title);
@@ -195,8 +195,8 @@ int DrawDestroy(Draw draw)
   if (draw->ops->destroy) {
     ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
   }
-  if (draw->title) PetscFree(draw->title);
-  if (draw->display) PetscFree(draw->display);
+  if (draw->title) {ierr = PetscFree(draw->title);CHKERRQ(ierr);}
+  if (draw->display) {ierr = PetscFree(draw->display);CHKERRQ(ierr);}
   PLogObjectDestroy(draw);
   PetscHeaderDestroy(draw);
   PetscFunctionReturn(0);

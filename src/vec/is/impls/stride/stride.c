@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.82 1999/04/23 19:29:25 bsmith Exp balay $";
+static char vcid[] = "$Id: stride.c,v 1.83 1999/05/04 20:30:11 balay Exp balay $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -59,7 +59,7 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
     }
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,perm);CHKERRQ(ierr);
-    PetscFree(ii);
+    ierr = PetscFree(ii);CHKERRQ(ierr);
     ierr = ISSetPermutation(*perm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -141,8 +141,10 @@ int ISStride(IS is,PetscTruth *flag)
 #define __FUNC__ "ISDestroy_Stride" 
 int ISDestroy_Stride(IS is)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(is->data); 
+  ierr = PetscFree(is->data); CHKERRQ(ierr);
   PLogObjectDestroy(is);
   PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
@@ -169,8 +171,10 @@ int ISGetIndices_Stride(IS in,int **idx)
 #define __FUNC__ "ISRestoreIndices_Stride" 
 int ISRestoreIndices_Stride(IS in,int **idx)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(*idx);
+  ierr = PetscFree(*idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.28 1999/05/04 20:30:24 balay Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.29 1999/06/30 22:49:49 bsmith Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -139,6 +138,7 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
 @*/
 int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 {
+  int ierr;
   PetscFunctionBegin;
   PetscValidPointer(mapping);
   if (--mapping->refct > 0) PetscFunctionReturn(0);
@@ -146,8 +146,8 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
     SETERRQ(1,1,"Mapping already destroyed");
   }
 
-  PetscFree(mapping->indices);
-  if (mapping->globals) PetscFree(mapping->globals);
+  ierr = PetscFree(mapping->indices);CHKERRQ(ierr);
+  if (mapping->globals) {ierr = PetscFree(mapping->globals);CHKERRQ(ierr);}
   PLogObjectDestroy(mapping);
   PetscHeaderDestroy(mapping);
   PetscFunctionReturn(0);
@@ -194,7 +194,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
     idxout[i] = idxmap[idxin[i]];
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,newis);CHKERRQ(ierr);
-  PetscFree(idxout);
+  ierr = PetscFree(idxout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex42.c,v 1.10 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex42.c,v 1.11 1999/05/12 03:30:15 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -91,19 +91,19 @@ int main(int argc,char **args)
 
   /* Free Allocated Memory */
   for (i=0; i<nd; ++i) { 
-    ISDestroy(is1[i]); 
-    ISDestroy(is2[i]); 
-    MatDestroy(submatA[i]);
-    MatDestroy(submatB[i]);
+    ierr = ISDestroy(is1[i]);CHKERRA(ierr);
+    ierr = ISDestroy(is2[i]);CHKERRA(ierr);
+    ierr = MatDestroy(submatA[i]);CHKERRA(ierr);
+    ierr = MatDestroy(submatB[i]);CHKERRA(ierr);
   }
-  PetscFree(submatA);
-  PetscFree(submatB);
-  PetscRandomDestroy(r);
-  PetscFree(is1);
-  PetscFree(is2);
-  MatDestroy(A);
-  MatDestroy(B);
-  PetscFree(idx);
+  ierr = PetscFree(submatA);CHKERRA(ierr);
+  ierr = PetscFree(submatB);CHKERRA(ierr);
+  ierr = PetscRandomDestroy(r);CHKERRA(ierr);
+  ierr = PetscFree(is1);CHKERRA(ierr);
+  ierr = PetscFree(is2);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
+  ierr = PetscFree(idx);CHKERRA(ierr);
 
   PetscFinalize();
 #endif

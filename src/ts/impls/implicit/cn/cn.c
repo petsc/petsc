@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.13 1999/05/04 20:36:47 balay Exp balay $";
+static char vcid[] = "$Id: cn.c,v 1.14 1999/06/08 22:58:07 balay Exp balay $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -205,7 +205,7 @@ static int TSDestroy_CN(TS ts )
   if (cn->func) {ierr = VecDestroy(cn->func);CHKERRQ(ierr);}
   if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
   if (ts->Ashell) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
-  PetscFree(cn);
+  ierr = PetscFree(cn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

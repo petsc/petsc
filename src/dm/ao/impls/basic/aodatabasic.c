@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.38 1999/05/12 03:33:45 bsmith Exp balay $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.39 1999/06/08 22:58:16 balay Exp balay $";
 #endif
 
 /*
@@ -30,21 +30,21 @@ int AODataDestroy_Basic(AOData ao)
 
   PetscFunctionBegin;
   while (key) {
-    PetscFree(key->name);
+    ierr = PetscFree(key->name);CHKERRQ(ierr);
     if (key->ltog) {
       ierr = ISLocalToGlobalMappingDestroy(key->ltog);CHKERRQ(ierr);
     }
     seg = key->segments;
     while (seg) {
-      PetscFree(seg->data);
-      PetscFree(seg->name);
+      ierr = PetscFree(seg->data);CHKERRQ(ierr);
+      ierr = PetscFree(seg->name);CHKERRQ(ierr);
       nextseg = seg->next;
-      PetscFree(seg);
+      ierr = PetscFree(seg);CHKERRQ(ierr);
       seg     = nextseg;
     }
-    PetscFree(key->rowners);
+    ierr = PetscFree(key->rowners);CHKERRQ(ierr);
     nextkey = key->next;
-    PetscFree(key);
+    ierr = PetscFree(key);CHKERRQ(ierr);
     key     = nextkey;
   }
   
@@ -143,7 +143,7 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
         }
       }
     }
-    PetscFree(keynames);
+    ierr = PetscFree(keynames);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -263,9 +263,9 @@ int AODataKeyRemove_Basic(AOData aodata,char *name)
   segment = key->segments;
   while (segment) {
     iseg    = segment->next;
-    PetscFree(segment->name); 
-    PetscFree(segment->data);
-    PetscFree(segment);
+    ierr = PetscFree(segment->name);CHKERRQ(ierr);
+    ierr = PetscFree(segment->data);CHKERRQ(ierr);
+    ierr = PetscFree(segment);CHKERRQ(ierr);
     segment = iseg;
   }
   ikey = aodata->keys;
@@ -280,9 +280,9 @@ int AODataKeyRemove_Basic(AOData aodata,char *name)
 
   finishup1:
 
-  PetscFree(key->name);
-  PetscFree(key->rowners);
-  PetscFree(key);
+  ierr = PetscFree(key->name);CHKERRQ(ierr);
+  ierr = PetscFree(key->rowners);CHKERRQ(ierr);
+  ierr = PetscFree(key);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -313,9 +313,9 @@ int AODataSegmentRemove_Basic(AOData aodata,char *name,char *segname)
   
   finishup2:
 
-  PetscFree(segment->name); 
-  PetscFree(segment->data);
-  PetscFree(segment);
+  ierr = PetscFree(segment->name);CHKERRQ(ierr);
+  ierr = PetscFree(segment->data);CHKERRQ(ierr);
+  ierr = PetscFree(segment);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -392,7 +392,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
 
       ierr = PetscDataTypeToMPIDataType(dtype,&mtype);CHKERRQ(ierr);
       ierr = MPI_Allgatherv(data,n*bs,mtype,adata,lens,disp,mtype,comm);CHKERRQ(ierr);
-      PetscFree(lens);
+      ierr = PetscFree(lens);CHKERRQ(ierr);
 
       /*
         Now we have all the keys and data we need to put it in order
@@ -431,7 +431,8 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
       }
 
       ierr = MPI_Allgatherv(values,n*bs,MPI_BYTE,adata,lens,disp,MPI_BYTE,comm);CHKERRQ(ierr);
-      PetscFree(lens); PetscFree(values);
+      ierr = PetscFree(lens);CHKERRQ(ierr);
+      ierr = PetscFree(values);CHKERRQ(ierr);
 
       /*
         Now we have all the keys and data we need to put it in order
@@ -459,9 +460,9 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
       }
       segment->data = (void *) fdata3;
     }
-    PetscFree(akeys);
-    PetscFree(adata);
-    PetscFree(fkeys);
+    ierr = PetscFree(akeys);CHKERRQ(ierr);
+    ierr = PetscFree(adata);CHKERRQ(ierr);
+    ierr = PetscFree(fkeys);CHKERRQ(ierr);
   }
 
   key->nsegments++;
@@ -546,8 +547,10 @@ int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,vo
 #define __FUNC__ "AODataSegmentRestore_Basic"
 int AODataSegmentRestore_Basic(AOData aodata,char *name,char *segname,int n,int *keys,void **data)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(*data);
+  ierr = PetscFree(*data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -584,8 +587,10 @@ int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *ke
 #define __FUNC__ "AODataSegmentRestoreLocal_Basic"
 int AODataSegmentRestoreLocal_Basic(AOData aodata,char *name,char *segname,int n,int *keys,void **data)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(*data);
+  ierr = PetscFree(*data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -639,7 +644,7 @@ int AODataKeyRemap_Basic(AOData aodata, char *keyname,AO ao)
       PetscBitMemcpy(tmpdata,inew[k]*bs,data,k*bs,bs,seg->datatype);
     }
     ierr = PetscMemcpy(data,tmpdata,nkb*dsize);CHKERRQ(ierr);
-    PetscFree(tmpdata);
+    ierr = PetscFree(tmpdata);CHKERRQ(ierr);
     seg = seg->next;
   }
 
@@ -731,7 +736,7 @@ int AODataSegmentPartition_Basic(AOData aodata,char *keyname,char *segname)
   }
 
   ierr = AOCreateBasic(aodata->comm,keyseg->nlocal,isc+keyseg->rstart,PETSC_NULL,&ao);CHKERRQ(ierr);
-  PetscFree(isc);
+  ierr = PetscFree(isc);CHKERRQ(ierr);
 
   ierr = AODataKeyRemap(aodata,segname,ao);CHKERRQ(ierr);
   ierr = AODestroy(ao);CHKERRQ(ierr);
@@ -773,7 +778,7 @@ int AODataKeyGetActive_Basic(AOData aodata,char *name,char *segname,int n,int *k
   }
   
   ierr = ISCreateGeneral(aodata->comm,cnt,fnd,is);CHKERRQ(ierr);
-  PetscFree(fnd);
+  ierr = PetscFree(fnd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -813,9 +818,9 @@ int AODataKeyGetActiveLocal_Basic(AOData aodata,char *name,char *segname,int n,i
   
   locals = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(locals);
   ierr = ISGlobalToLocalMappingApply(key->ltog,IS_GTOLM_MASK,cnt,fnd,PETSC_NULL,locals);CHKERRQ(ierr);  
-  PetscFree(fnd);
+  ierr = PetscFree(fnd);CHKERRQ(ierr);
   ierr = ISCreateGeneral(aodata->comm,cnt,locals,is);CHKERRQ(ierr);
-  PetscFree(locals);
+  ierr = PetscFree(locals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

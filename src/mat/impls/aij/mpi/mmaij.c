@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmaij.c,v 1.46 1999/05/12 03:29:11 bsmith Exp balay $";
+static char vcid[] = "$Id: mmaij.c,v 1.47 1999/06/08 22:55:49 balay Exp balay $";
 #endif
 
 
@@ -97,7 +97,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   B->n = aij->B->n = aij->B->N = ec;
-  PetscFree(indices);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec);CHKERRQ(ierr);
@@ -156,7 +156,8 @@ int DisAssemble_MPIAIJ(Mat A)
 #if defined (PETSC_USE_CTABLE)
     TableDelete(aij->colmap); aij->colmap = 0;
 #else
-    PetscFree(aij->colmap); aij->colmap = 0;
+    ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
+    aij->colmap = 0;
     PLogObjectMemory(A,-Baij->n*sizeof(int));
 #endif
   }
@@ -171,7 +172,7 @@ int DisAssemble_MPIAIJ(Mat A)
     nz[i] = Baij->i[i+1] - Baij->i[i];
   }
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,0,nz,&Bnew);CHKERRQ(ierr);
-  PetscFree(nz);
+  ierr = PetscFree(nz);CHKERRQ(ierr);
   for ( i=0; i<m; i++ ) {
     for ( j=Baij->i[i]+shift; j<Baij->i[i+1]+shift; j++ ) {
       col = garray[Baij->j[ct]+shift];
@@ -179,7 +180,8 @@ int DisAssemble_MPIAIJ(Mat A)
       ierr = MatSetValues(Bnew,1,&i,1,&col,&v,B->insertmode);CHKERRQ(ierr);
     }
   }
-  PetscFree(aij->garray); aij->garray = 0;
+  ierr = PetscFree(aij->garray);CHKERRQ(ierr);
+  aij->garray = 0;
   PLogObjectMemory(A,-ec*sizeof(int));
   ierr = MatDestroy(B);CHKERRQ(ierr);
   PLogObjectParent(A,Bnew);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.132 1999/05/06 17:58:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.133 1999/05/12 03:26:40 bsmith Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -140,7 +140,7 @@ static int DrawStringSetSize_X(Draw Win,double x,double  y)
   PetscFunctionBegin;
   w = (int)((XiWin->w)*x*(Win->port_xr - Win->port_xl)/(Win->coor_xr - Win->coor_xl));
   h = (int)((XiWin->h)*y*(Win->port_yr - Win->port_yl)/(Win->coor_yr - Win->coor_yl));
-  PetscFree(XiWin->font);
+  ierr = PetscFree(XiWin->font);CHKERRQ(ierr);
   ierr = XiFontFixed( XiWin,w, h, &XiWin->font);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -478,8 +478,8 @@ int DrawDestroy_X(Draw ctx)
 
   PetscFunctionBegin;
   if (ctx->popup) {ierr = DrawDestroy(ctx->popup);CHKERRQ(ierr);}
-  PetscFree(win->font);
-  PetscFree(win);
+  ierr = PetscFree(win->font);CHKERRQ(ierr);
+  ierr = PetscFree(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

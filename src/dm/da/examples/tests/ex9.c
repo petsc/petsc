@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.5 1999/03/19 21:24:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.6 1999/05/04 20:37:40 balay Exp balay $";
 #endif
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
@@ -55,7 +55,11 @@ int main(int argc,char **argv)
   /* Create distributed array and get vectors */
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,
                     lx,ly,lz,&da);CHKERRA(ierr);
-  if (lx) {PetscFree(lx); PetscFree(ly); PetscFree(lz);}
+  if (lx) {
+    ierr = PetscFree(lx);CHKERRA(ierr);
+    ierr = PetscFree(ly);CHKERRA(ierr);
+    ierr = PetscFree(lz);CHKERRA(ierr);
+  }
 
   ierr = DAGetColoring(da,&coloring,&mat);CHKERRA(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRA(ierr); 

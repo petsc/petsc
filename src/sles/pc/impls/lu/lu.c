@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.115 1999/04/21 18:17:17 bsmith Exp balay $";
+static char vcid[] = "$Id: lu.c,v 1.116 1999/05/04 20:34:02 balay Exp balay $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -204,7 +204,7 @@ static int PCDestroy_LU(PC pc)
   if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact);CHKERRQ(ierr);}
   if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
-  PetscFree(dir); 
+  ierr = PetscFree(dir); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

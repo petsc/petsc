@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.26 1999/04/29 22:13:43 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.27 1999/05/04 20:30:16 balay Exp balay $";
 #endif
 /*
        Formatted test for ISGeneral routines.
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
     indices[i] = n - i - 1;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRA(ierr);
-  PetscFree(indices);
+  ierr = PetscFree(indices);CHKERRA(ierr);
   ierr = ISSetPermutation(is);CHKERRA(ierr);
   ierr = ISInvertPermutation(is,&newis);CHKERRA(ierr);
   ierr = ISGetIndices(newis,&ii);CHKERRA(ierr);

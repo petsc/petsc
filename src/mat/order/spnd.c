@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spnd.c,v 1.28 1999/05/04 18:25:34 balay Exp balay $";
+static char vcid[] = "$Id: spnd.c,v 1.29 1999/05/04 20:32:17 balay Exp balay $";
 #endif
 
 #include "mat.h"
@@ -33,7 +33,7 @@ int MatOrdering_ND( Mat mat, MatOrderingType type, IS *row, IS *col)
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,row);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,col);CHKERRQ(ierr);
-  PetscFree(mask);
+  ierr = PetscFree(mask);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

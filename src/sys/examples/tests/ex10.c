@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.4 1999/03/19 21:17:16 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.5 1999/05/04 20:29:49 balay Exp balay $";
 #endif
 
 /* 
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = PetscMemmove(a,b,10*sizeof(int));CHKERRA(ierr);
   PetscIntView(10,a,0);
 
-  PetscFree(a);
+  ierr = PetscFree(a);CHKERRA(ierr);
 
   /*
      |        |                |       |
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   a = b + 5;
   ierr = PetscMemmove(a,b,15*sizeof(int));CHKERRA(ierr);
   PetscIntView(15,a,0);
-  PetscFree(b);
+  ierr = PetscFree(b);CHKERRA(ierr);
 
   /*
      |       |                    |       |
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   for (i=0; i<20; i++) b[i] = i;
   ierr = PetscMemmove(a,b,20*sizeof(int));CHKERRA(ierr);
   PetscIntView(20,a,0);
-  PetscFree(a);
+  ierr = PetscFree(a);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

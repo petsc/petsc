@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.11 1999/05/04 20:38:00 balay Exp balay $";
+static char vcid[] = "$Id: milu.c,v 1.12 1999/06/08 22:58:43 balay Exp balay $";
 #endif
 
 /*
@@ -137,7 +137,7 @@ static int PCSetup_mILU(PC pc)
   
   ierr = VecRestoreArray(diag,&dia);CHKERRQ(ierr);
   ierr = VecDestroy(diag);CHKERRQ(ierr);
-  PetscFree(mprop);
+  ierr = PetscFree(mprop);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.23 1999/04/19 22:09:24 bsmith Exp balay $";
+static char vcid[] = "$Id: dscatter.c,v 1.24 1999/05/04 20:28:46 balay Exp balay $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -92,12 +92,14 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
 @*/
 int DrawSPSetDimension(DrawSP sp,int dim)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->dim == dim) PetscFunctionReturn(0);
 
-  PetscFree(sp->x);
+  ierr = PetscFree(sp->x);CHKERRQ(ierr);
   sp->dim     = dim;
   sp->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(sp->x);
   PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(double));
@@ -165,7 +167,7 @@ int DrawSPDestroy(DrawSP sp)
     PetscFunctionReturn(0);
   }
   DrawAxisDestroy(sp->axis);
-  PetscFree(sp->x);
+  ierr = PetscFree(sp->x);CHKERRQ(ierr);
   PLogObjectDestroy(sp);
   PetscHeaderDestroy(sp);
   PetscFunctionReturn(0);
@@ -204,7 +206,7 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
     tmpy = tmpx + sp->len + sp->dim*CHUNCKSIZE;
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));CHKERRQ(ierr);
-    PetscFree(sp->x);
+    ierr = PetscFree(sp->x);CHKERRQ(ierr);
     sp->x = tmpx; sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
   }
@@ -258,7 +260,7 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
     tmpy = tmpx + sp->len + sp->dim*chunk;
     ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));CHKERRQ(ierr);
-    PetscFree(sp->x);
+    ierr = PetscFree(sp->x);CHKERRQ(ierr);
     sp->x   = tmpx; sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
   }

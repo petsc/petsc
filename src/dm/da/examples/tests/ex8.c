@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.14 1999/04/19 22:17:23 bsmith Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.15 1999/05/04 20:37:40 balay Exp balay $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -77,7 +77,7 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
   ierr = ISDestroy(isfrom);CHKERRQ(ierr); 
   ierr = ISDestroy(isto);CHKERRQ(ierr);
 
-  PetscFree(sliceindices);
+  ierr = PetscFree(sliceindices);CHKERRQ(ierr);
   return 0;
 }
 

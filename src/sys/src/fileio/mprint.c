@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.32 1999/05/04 20:29:01 balay Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.33 1999/05/12 03:27:04 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -231,7 +231,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
       ierr     = MPI_Send(next->string,256,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
       previous = next; 
       next     = next->next;
-      PetscFree(previous);
+      ierr = PetscFree(previous);CHKERRQ(ierr);
     }
     queue       = 0;
     queuelength = 0;

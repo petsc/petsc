@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.22 1999/04/19 22:17:13 bsmith Exp balay $";
+static char vcid[] = "$Id: dasub.c,v 1.23 1999/05/04 20:37:25 balay Exp balay $";
 #endif
  
 /*
@@ -72,6 +72,6 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   ierr = MPI_Comm_group(da->comm,&group);CHKERRQ(ierr);
   ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRQ(ierr);
   ierr = MPI_Comm_create(da->comm,subgroup,comm);CHKERRQ(ierr);
-  PetscFree(owners);
+  ierr = PetscFree(owners);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

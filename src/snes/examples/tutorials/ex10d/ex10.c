@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.7 1999/05/04 20:36:35 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.8 1999/05/12 03:33:14 bsmith Exp balay $";
 #endif
 
 /* 
@@ -227,7 +227,7 @@ int main( int argc, char **argv )
     Create the AO object 
   */
   AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao);CHKERRA(ierr);
-  PetscFree(pordering);
+  ierr = PetscFree(pordering);CHKERRA(ierr);
  
   /* 
     Keep the global indices for later use 
@@ -369,7 +369,7 @@ int main( int argc, char **argv )
   svertices = (int *) PetscMalloc(nvertices*sizeof(int));CHKPTRA(svertices);
   for ( i=0; i<nvertices; i++ ) svertices[i] = bs*vertices[i];
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRA(ierr);
-  PetscFree(svertices);
+  ierr = PetscFree(svertices);CHKERRA(ierr);
   ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRA(ierr);
 
   /* 

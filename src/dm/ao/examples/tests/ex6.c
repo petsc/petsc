@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.4 1999/03/19 21:23:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.5 1999/05/04 20:37:15 balay Exp balay $";
 #endif
 
 static char help[] = "Tests removing entries from an AOData \n\n";
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
     data[2*i+1] = -(start + i) - 10000;
   }
   ierr = AODataSegmentAdd(aodata,"key1","seg1",bs,n,keys,data,PETSC_INT);CHKERRA(ierr); 
-  PetscFree(data);
+  ierr = PetscFree(data);CHKERRA(ierr);
 
   /*
       Allocate data for first key and second segment 
@@ -73,8 +73,8 @@ int main(int argc,char **argv)
        Use same data for second key and first segment 
   */
   ierr = AODataSegmentAdd(aodata,"key2","seg1",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
-  PetscFree(gd);
-  PetscFree(keys);
+  ierr = PetscFree(gd);CHKERRA(ierr);
+  ierr = PetscFree(keys);CHKERRA(ierr);
 
   /*
      View the database

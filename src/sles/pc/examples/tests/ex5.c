@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.56 1999/03/19 21:21:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.57 1999/05/04 20:34:27 balay Exp balay $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -158,7 +158,7 @@ int main(int Argc, char **Args)
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
 
-  PetscFree(N);
+  ierr = PetscFree(N);CHKERRA(ierr);
   ierr = VecDestroy(solution);CHKERRA(ierr);
 
   /* note we have to keep a list of all vectors allocated, this is 

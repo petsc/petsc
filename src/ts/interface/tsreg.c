@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.46 1999/05/04 20:36:38 balay Exp balay $";
+static char vcid[] = "$Id: tsreg.c,v 1.47 1999/06/08 22:58:02 balay Exp balay $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -66,7 +66,7 @@ int TSSetType(TS ts,TSType method)
 
   ierr = (*r)(ts);CHKERRQ(ierr);
 
-  if (ts->type_name) PetscFree(ts->type_name);
+  if (ts->type_name) {ierr = PetscFree(ts->type_name);CHKERRQ(ierr);}
   ts->type_name = (char *) PetscMalloc((PetscStrlen(method)+1)*sizeof(char));CHKPTRQ(ts->type_name);
   ierr = PetscStrcpy(ts->type_name,method);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscMalloc.c,v 1.13 1999/03/19 21:24:35 bsmith Exp balay $";
+static char vcid[] = "$Id: PetscMalloc.c,v 1.14 1999/05/04 20:38:02 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -27,7 +27,7 @@ int main( int argc, char **argv)
   
   /* Take care of paging effects */
   dummy = PetscMalloc(100);CHKPTRA(dummy);
-  PetscFree(dummy);
+  ierr = PetscFree(dummy);CHKERRA(ierr);
   ierr = PetscGetTime(&x);CHKERRA(ierr);
 
   /* Do all mallocs */
@@ -39,7 +39,7 @@ int main( int argc, char **argv)
 
   /* Do some frees */
   for (i=0; i< 1000; i+=2) {
-    PetscFree(arr[i]);
+    ierr = PetscFree(arr[i]);CHKERRA(ierr);
   }
 
   /* Do some mallocs */
@@ -49,7 +49,7 @@ int main( int argc, char **argv)
   ierr = PetscGetTime(&y);CHKERRA(ierr);
   
   for (i=0; i< 1000; i++) {
-    PetscFree(arr[i]);
+    ierr = PetscFree(arr[i]);CHKERRA(ierr);
   }
   
   fprintf(stderr,"%-15s : %e sec , with options : ","PetscMalloc",(y-x)/500.0);

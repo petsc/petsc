@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.11 1999/03/19 21:22:11 bsmith Exp balay $";
+static char vcid[] = "$Id: ex13.c,v 1.12 1999/05/04 20:35:25 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -134,10 +134,10 @@ int main(int argc,char **args)
      We are all finished solving linear systems, so we clean up the
      data structures.
   */
-  PetscFree(rho);
-  PetscFree(solution);
-  PetscFree(userx);
-  PetscFree(userb);
+  ierr = PetscFree(rho);CHKERRA(ierr);
+  ierr = PetscFree(solution);CHKERRA(ierr);
+  ierr = PetscFree(userx);CHKERRA(ierr);
+  ierr = PetscFree(userb);CHKERRA(ierr);
   ierr = UserFinalizeLinearSolver(&userctx);CHKERRA(ierr);
   PetscFinalize();
 

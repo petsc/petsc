@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.85 1999/05/04 20:34:35 balay Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.86 1999/05/11 19:15:40 bsmith Exp balay $";
 #endif
 
 /*
@@ -495,9 +495,11 @@ int  KSPDefaultGetWork( KSP ksp, int nw )
 */
 int KSPDefaultDestroy(KSP ksp)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->data) PetscFree(ksp->data);
+  if (ksp->data) {ierr = PetscFree(ksp->data);CHKERRQ(ierr);}
 
   /* free work vectors */
   KSPDefaultFreeWork( ksp );

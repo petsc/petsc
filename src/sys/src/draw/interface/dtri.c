@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.30 1999/05/04 20:28:14 balay Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.31 1999/05/12 03:26:28 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -195,8 +195,8 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
 
   ierr = DrawZoom(win,(int (*)(Draw,void *))DrawTensorContour_Zoom,&ctx);CHKERRQ(ierr);
     
-  if (!xin) PetscFree(ctx.x); 
-  if (!yin) PetscFree(ctx.y);
+  if (!xin) {ierr = PetscFree(ctx.x); CHKERRQ(ierr);}
+  if (!yin) {ierr = PetscFree(ctx.y);CHKERRQ(ierr);}
 
   PetscFunctionReturn(0);
 }

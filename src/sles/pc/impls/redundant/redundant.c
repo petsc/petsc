@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.7 1999/04/21 18:17:36 bsmith Exp balay $";
+static char vcid[] = "$Id: redundant.c,v 1.8 1999/05/04 20:34:24 balay Exp balay $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -156,7 +156,7 @@ static int PCDestroy_Redundant(PC pc)
     ierr = MatDestroyMatrices(1,&red->mats);CHKERRQ(ierr);
   }
   ierr = PCDestroy(red->pc);CHKERRQ(ierr);
-  PetscFree(red);
+  ierr = PetscFree(red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

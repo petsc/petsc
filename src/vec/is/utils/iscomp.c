@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscomp.c,v 1.17 1999/02/01 21:43:50 curfman Exp balay $";
+static char vcid[] = "$Id: iscomp.c,v 1.18 1999/05/04 20:30:24 balay Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -59,8 +59,8 @@ int ISEqual(IS is1, IS is2, PetscTruth *flg)
   ierr = ISRestoreIndices(is1, &ptr1);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is2, &ptr2);CHKERRQ(ierr);
   
-  PetscFree(a1);
-  PetscFree(a2);
+  ierr = PetscFree(a1);CHKERRQ(ierr);
+  ierr = PetscFree(a2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   

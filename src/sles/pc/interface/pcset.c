@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.87 1999/05/04 20:33:53 balay Exp balay $";
+static char vcid[] = "$Id: pcset.c,v 1.88 1999/06/08 22:56:43 balay Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -72,7 +72,7 @@ int PCSetType(PC ctx,PCType type)
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
   ierr =  FListFind(ctx->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) SETERRQ1(1,1,"Unable to find requested PC type %s",type);
-  if (ctx->data) PetscFree(ctx->data);
+  if (ctx->data) {ierr = PetscFree(ctx->data);CHKERRQ(ierr);}
 
   ctx->ops->destroy             = ( int (*)(PC )) 0;
   ctx->ops->view                = ( int (*)(PC,Viewer) ) 0;
@@ -93,7 +93,7 @@ int PCSetType(PC ctx,PCType type)
   ctx->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
   ierr = (*r)(ctx);CHKERRQ(ierr);
 
-  if (ctx->type_name) PetscFree(ctx->type_name);
+  if (ctx->type_name) {ierr = PetscFree(ctx->type_name);CHKERRQ(ierr);}
   ctx->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
   ierr = PetscStrcpy(ctx->type_name,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);

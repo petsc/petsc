@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.56 1999/06/16 19:15:15 balay Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.57 1999/06/21 21:11:40 balay Exp balay $";
 #endif
 
 /* 
@@ -236,7 +236,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
       for ( i=0; i<n; i++ ) {
         p_int[i] = (int) p_short[i];
       }
-      PetscFree(ptmp);
+      ierr = PetscFree(ptmp);CHKERRQ(ierr);
     }
   }
 #elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
@@ -251,7 +251,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     for ( i=0; i<n; i++ ) {
       p_int[i] = (int) p_intl[2*i+1];
     }
-    PetscFree(ptmp);
+    ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }
 #endif
 
@@ -360,7 +360,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
 #if (PETSC_SIZEOF_INT == 8)
   if (type == PETSC_INT){
-    PetscFree(ptmp);
+    ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }
 #endif
 

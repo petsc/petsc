@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iguess.c,v 1.25 1999/01/31 16:08:34 bsmith Exp balay $";
+static char vcid[] = "$Id: iguess.c,v 1.26 1999/05/04 20:34:35 balay Exp balay $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -47,10 +47,10 @@ int KSPGuessDestroy( KSP ksp, KSPIGUESS *itg )
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscFree( itg->alpha );
+  ierr = PetscFree( itg->alpha );CHKERRQ(ierr);
   ierr = VecDestroyVecs( itg->btilde, itg->maxl );CHKERRQ(ierr);
   ierr = VecDestroyVecs( itg->xtilde, itg->maxl );CHKERRQ(ierr);
-  PetscFree( itg );
+  ierr = PetscFree( itg );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

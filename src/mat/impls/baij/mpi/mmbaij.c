@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.24 1999/05/12 03:29:54 bsmith Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.25 1999/06/08 22:56:19 balay Exp balay $";
 #endif
 
 
@@ -103,7 +103,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
   B->nbs = ec;
   B->n   = ec*B->bs;
-  PetscFree(indices);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
 
   for ( i=0,col=0; i<ec; i++ ) {
@@ -126,7 +126,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   stmp = (int *) PetscMalloc( (ec+1)*sizeof(int) );CHKPTRQ(stmp);
   for ( i=0; i<ec; i++ ) { stmp[i] = bs*i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
-  PetscFree(stmp);
+  ierr = PetscFree(stmp);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 
@@ -154,7 +154,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
-  PetscFree(tmp);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -188,7 +188,8 @@ int DisAssemble_MPIBAIJ(Mat A)
 #if defined (PETSC_USE_CTABLE)
     TableDelete(baij->colmap); baij->colmap = 0;
 #else
-    PetscFree(baij->colmap); baij->colmap = 0;
+    ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
+    baij->colmap = 0;
     PLogObjectMemory(A,-Bbaij->nbs*sizeof(int));
 #endif
   }
@@ -203,7 +204,7 @@ int DisAssemble_MPIBAIJ(Mat A)
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,baij->bs,m,n,0,nz,&Bnew);CHKERRQ(ierr);
-  PetscFree(nz);
+  ierr = PetscFree(nz);CHKERRQ(ierr);
   
   rvals = (int *) PetscMalloc(bs*sizeof(int));CHKPTRQ(rvals);
   for ( i=0; i<mbs; i++ ) {
@@ -217,8 +218,9 @@ int DisAssemble_MPIBAIJ(Mat A)
       }
     }
   }
-  PetscFree(baij->garray); baij->garray = 0;
-  PetscFree(rvals);
+  ierr = PetscFree(baij->garray);CHKERRQ(ierr);
+  baij->garray = 0;
+  ierr = PetscFree(rvals);CHKERRQ(ierr);
   PLogObjectMemory(A,-ec*sizeof(int));
   ierr = MatDestroy(B);CHKERRQ(ierr);
   PLogObjectParent(A,Bnew);

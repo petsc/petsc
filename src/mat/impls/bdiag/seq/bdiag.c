@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.175 1999/05/04 20:32:08 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.176 1999/05/12 03:29:27 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -68,17 +68,18 @@ int MatDestroy_SeqBDiag(Mat A)
   if (!a->user_alloc) { /* Free the actual diagonals */
     for (i=0; i<a->nd; i++) {
       if (a->diag[i] > 0) {
-        PetscFree( a->diagv[i] + bs*bs*a->diag[i]  );
+        ierr = PetscFree( a->diagv[i] + bs*bs*a->diag[i]  );CHKERRQ(ierr);
       } else {
-        PetscFree( a->diagv[i] );
+        ierr = PetscFree( a->diagv[i] );CHKERRQ(ierr);
       }
     }
   }
-  if (a->pivot) PetscFree(a->pivot);
-  PetscFree(a->diagv); PetscFree(a->diag);
-  PetscFree(a->colloc);
-  PetscFree(a->dvalue);
-  PetscFree(a);
+  if (a->pivot) {ierr = PetscFree(a->pivot);CHKERRQ(ierr);}
+  ierr = PetscFree(a->diagv);CHKERRQ(ierr);
+  ierr = PetscFree(a->diag);CHKERRQ(ierr);
+  ierr = PetscFree(a->colloc);CHKERRQ(ierr);
+  ierr = PetscFree(a->dvalue);CHKERRQ(ierr);
+  ierr = PetscFree(a);CHKERRQ(ierr);
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
   PetscFunctionReturn(0);
@@ -332,7 +333,9 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Free work space */
-  PetscFree(smap); PetscFree(cwork); PetscFree(vwork);
+  ierr = PetscFree(smap);CHKERRQ(ierr);
+  ierr = PetscFree(cwork);CHKERRQ(ierr);
+  ierr = PetscFree(vwork);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
   *submat = newmat;
@@ -781,9 +784,9 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
     ierr = MatSetValues(B,1,&i,1,&i,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  PetscFree(cols);
-  PetscFree(vals);
-  PetscFree(rowlengths);   
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = PetscFree(vals);CHKERRQ(ierr);
+  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

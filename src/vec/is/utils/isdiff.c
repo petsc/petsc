@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isdiff.c,v 1.9 1999/02/01 21:44:56 curfman Exp balay $";
+static char vcid[] = "$Id: isdiff.c,v 1.10 1999/05/04 20:30:24 balay Exp balay $";
 #endif
 
 #include "is.h"                    /*I "is.h"  I*/
@@ -88,7 +88,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
   }
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
-  PetscFree(iout);
+  ierr = PetscFree(iout);CHKERRQ(ierr);
 
   BTDestroy(mask);
   PetscFunctionReturn(0);
@@ -175,7 +175,7 @@ int ISSum(IS is1,IS is2, IS *isout)
   /* create the new IS containing the sum */
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
-  PetscFree(iout);
+  ierr = PetscFree(iout);CHKERRQ(ierr);
 
   BTDestroy(mask);
   PetscFunctionReturn(0);

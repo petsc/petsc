@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.101 1999/05/04 20:37:25 balay Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.102 1999/05/12 03:34:00 bsmith Exp balay $";
 #endif
 
 /*
@@ -485,7 +485,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     }
   }
   ierr = ISCreateGeneral(comm,count,idx,&from);CHKERRQ(ierr);
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
   PLogObjectParent(da,to);
@@ -534,7 +534,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       }
     }
     ierr = ISCreateGeneral(comm,count,idx,&to);CHKERRQ(ierr);
-    PetscFree(idx);
+    ierr = PetscFree(idx);CHKERRQ(ierr);
   }
 
   /* determine who lies on each side of use stored in    n24 n25 n26
@@ -1748,7 +1748,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     }
   }
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
 
   /* 
@@ -1770,7 +1770,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       }
     }
     ierr = ISCreateGeneral(comm,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
-    PetscFree(lidx);
+    ierr = PetscFree(lidx);CHKERRQ(ierr);
 
     ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
     PLogObjectParent(da,da->ao);
@@ -1829,7 +1829,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   ierr = MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);CHKERRQ(ierr);
   for (i=0; i<gdim; i++) da->gtog1[gBall[i]] = gAall[i];
-  PetscFree(gA); PetscFree(bases);
+  ierr = PetscFree(gA);CHKERRQ(ierr);
+  ierr = PetscFree(bases);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);}

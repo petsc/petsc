@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.18 1999/05/12 03:31:29 bsmith Exp balay $";
+static char vcid[] = "$Id: eige.c,v 1.19 1999/06/08 22:57:10 balay Exp balay $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -78,7 +78,7 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
     ierr = VecRestoreArray(in,&array);CHKERRQ(ierr);
 
   }
-  PetscFree(rows);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = VecDestroy(in);CHKERRQ(ierr);
   ierr = VecDestroy(out);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -180,7 +180,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     realpart = (double *) PetscMalloc( n*sizeof(double) );CHKPTRQ(realpart);
     zero     = 0;
     LAgeev_(&zero,array,&n,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
-    PetscFree(work);
+    ierr = PetscFree(work);CHKERRQ(ierr);
 
     /* For now we stick with the convention of storing the real and imaginary
        components of evalues separately.  But is this what we really want? */
@@ -207,7 +207,9 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
       c[i] = PetscImaginary(cwork[perm[i]]);
     }
 #endif
-    PetscFree(perm); PetscFree(realpart); PetscFree(cwork);
+    ierr = PetscFree(perm);CHKERRQ(ierr);
+    ierr = PetscFree(realpart);CHKERRQ(ierr);
+    ierr = PetscFree(cwork);CHKERRQ(ierr);
   }
 #elif !defined(PETSC_USE_COMPLEX)
   if (!rank) {
@@ -222,7 +224,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     work     = (double *) PetscMalloc( 5*n*sizeof(double) );CHKPTRQ(work);
     LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
     if (ierr) SETERRQ1(PETSC_ERR_LIB,0,"Error in LAPACK routine %d",ierr);
-    PetscFree(work);
+    ierr = PetscFree(work);CHKERRQ(ierr);
     perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
     for ( i=0; i<n; i++ ) { perm[i] = i;}
     ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
@@ -230,8 +232,8 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
       r[i] = realpart[perm[i]];
       c[i] = imagpart[perm[i]];
     }
-    PetscFree(perm);
-    PetscFree(realpart);
+    ierr = PetscFree(perm);CHKERRQ(ierr);
+    ierr = PetscFree(realpart);CHKERRQ(ierr);
   }
 #else
   if (!rank) {
@@ -246,8 +248,8 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     eigs     = (Scalar *) PetscMalloc( n*sizeof(Scalar) );CHKPTRQ(eigs);
     LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
     if (ierr) SETERRQ1(PETSC_ERR_LIB,0,"Error in LAPACK routine %d",ierr);
-    PetscFree(work);
-    PetscFree(rwork);
+    ierr = PetscFree(work);CHKERRQ(ierr);
+    ierr = PetscFree(rwork);CHKERRQ(ierr);
     perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
     for ( i=0; i<n; i++ ) { perm[i] = i;}
     for ( i=0; i<n; i++ ) { r[i]    = PetscReal(eigs[i]);}
@@ -256,8 +258,8 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
       r[i] = PetscReal(eigs[perm[i]]);
       c[i] = PetscImaginary(eigs[perm[i]]);
     }
-    PetscFree(perm);
-    PetscFree(eigs);
+    ierr = PetscFree(perm);CHKERRQ(ierr);
+    ierr = PetscFree(eigs);CHKERRQ(ierr);
   }
 #endif  
   if (size > 1) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.4 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex17.c,v 1.5 1999/05/04 20:35:25 balay Exp balay $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -186,7 +186,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(u);CHKERRA(ierr);  ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(b);CHKERRA(ierr);  ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = PetscRandomDestroy(rctx);CHKERRA(ierr);
-  PetscFree(cols);
+  ierr = PetscFree(cols);CHKERRA(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

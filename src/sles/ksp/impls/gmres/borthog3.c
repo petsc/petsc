@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog3.c,v 1.13 1999/01/31 16:08:49 bsmith Exp balay $";
+static char vcid[] = "$Id: borthog3.c,v 1.14 1999/05/04 20:34:52 balay Exp balay $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: borthog3.c,v 1.13 1999/01/31 16:08:49 bsmith Exp bala
 int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
-  int       j,ncnt;
+  int       j,ncnt,ierr;
   Scalar    *hh, *hes,shh[100], *lhh;
 
   PetscFunctionBegin;
@@ -64,7 +64,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
     }
   } while (ncnt++ < 2);
 
-  if (it >= 100) PetscFree( lhh );
+  if (it >= 100) {ierr = PetscFree( lhh );CHKERRQ(ierr);}
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
   PetscFunctionReturn(0);
 }

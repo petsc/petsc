@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex32.c,v 1.13 1999/04/19 22:13:14 bsmith Exp balay $";
+static char vcid[] = "$Id: ex32.c,v 1.14 1999/05/04 20:33:03 balay Exp balay $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
@@ -77,8 +77,11 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(b);CHKERRA(ierr);
   ierr = VecAssemblyEnd(b);CHKERRA(ierr);
 
-  PetscFree(col); PetscFree(val); PetscFree(row);
-  PetscFree(bval); PetscFree(brow);
+  ierr = PetscFree(col);CHKERRA(ierr);
+  ierr = PetscFree(val);CHKERRA(ierr);
+  ierr = PetscFree(row);CHKERRA(ierr);
+  ierr = PetscFree(bval);CHKERRA(ierr);
+  ierr = PetscFree(brow);CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,&flg);CHKERRA(ierr);

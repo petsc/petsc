@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.11 1999/03/19 21:23:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.12 1999/05/04 20:37:15 balay Exp balay $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
     data[2*i+1] = -(start + i) - 10000;
   }
   ierr = AODataSegmentAdd(aodata,"key1","seg1",bs,n,keys,data,PETSC_INT);CHKERRA(ierr); 
-  PetscFree(data);
+  ierr = PetscFree(data);CHKERRA(ierr);
 
   /*
       Allocate data for first key and second segment 
@@ -84,8 +84,8 @@ int main(int argc,char **argv)
   */
   bs   = 3;
   ierr = AODataSegmentAdd(aodata,"key2","seg1",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
-  PetscFree(gd);
-  PetscFree(keys);
+  ierr = PetscFree(gd);CHKERRA(ierr);
+  ierr = PetscFree(keys);CHKERRA(ierr);
 
   ierr = AODataView(aodata,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 

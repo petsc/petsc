@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.48 1999/05/04 20:36:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.49 1999/05/12 03:32:55 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -145,7 +145,7 @@ int main(int argc,char **argv)
   PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
-  if (user.work) PetscFree(user.work); 
+  if (user.work) {ierr = PetscFree(user.work);CHKERRA(ierr);}
   ierr = VecDestroy(user.s);CHKERRA(ierr);
   ierr = VecDestroy(user.y);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);

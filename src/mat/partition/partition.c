@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.30 1999/05/04 20:32:57 balay Exp balay $";
+static char vcid[] = "$Id: partition.c,v 1.31 1999/06/08 22:56:26 balay Exp balay $";
 #endif
  
 #include "petsc.h"
@@ -436,7 +436,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
   part->view         = ( int (*)(MatPartitioning,Viewer) ) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
 
-  if (part->type_name) PetscFree(part->type_name);
+  if (part->type_name) {ierr = PetscFree(part->type_name);CHKERRQ(ierr);}
   part->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(part->type_name);
   ierr = PetscStrcpy(part->type_name,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);

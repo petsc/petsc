@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex48.c,v 1.5 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex48.c,v 1.6 1999/05/04 20:33:03 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -171,7 +171,7 @@ int main(int argc,char **args)
   for ( i=0; i<M; i++ ) idx[i] = i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is1);CHKERRA(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is2);CHKERRA(ierr);
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRA(ierr);
   ierr = ISSetPermutation(is1);CHKERRA(ierr);
   ierr = ISSetPermutation(is2);CHKERRA(ierr);
   ierr = MatLUFactor(B,is1,is2,3);CHKERRA(ierr);

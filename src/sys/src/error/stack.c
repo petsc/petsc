@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.19 1999/05/12 03:26:57 bsmith Exp balay $";
+static char vcid[] = "$Id: stack.c,v 1.20 1999/06/07 19:15:09 balay Exp balay $";
 #endif
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -135,18 +135,18 @@ int PetscStackView(Viewer viewer)
 #define __FUNC__ "PetscStackDestroy"
 int PetscStackDestroy(void) 
 {
-#if defined(PETSC_HAVE_AMS)
   int ierr;
+#if defined(PETSC_HAVE_AMS)
   ierr = PetscStackDepublish();CHKERRQ(ierr);
 #endif
   if (petscstack){
     PetscStack *petscstack_in = petscstack;
     petscstack = 0;
-    PetscFree(petscstack_in->line);
-    PetscFree(petscstack_in->function);
-    PetscFree(petscstack_in->file);
-    PetscFree(petscstack_in->directory);
-    PetscFree(petscstack_in);
+    ierr = PetscFree(petscstack_in->line);CHKERRQ(ierr);
+    ierr = PetscFree(petscstack_in->function);CHKERRQ(ierr);
+    ierr = PetscFree(petscstack_in->file);CHKERRQ(ierr);
+    ierr = PetscFree(petscstack_in->directory);CHKERRQ(ierr);
+    ierr = PetscFree(petscstack_in);CHKERRQ(ierr);
   }
   return 0;
 }

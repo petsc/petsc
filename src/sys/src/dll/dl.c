@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.45 1999/05/12 03:27:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.46 1999/06/30 22:49:21 bsmith Exp balay $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -222,7 +222,7 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
   }
 
   ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
-  PetscFree(par2);
+  ierr = PetscFree(par2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -322,7 +322,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
     }
   }
 
-  PetscFree(par2);
+  ierr = PetscFree(par2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -426,7 +426,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
     }
   }
 
-  PetscFree(symbol);
+  ierr = PetscFree(symbol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -555,6 +555,7 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 int DLLibraryClose(DLLibraryList next)
 {
   DLLibraryList prev;
+  int           ierr;
 
   PetscFunctionBegin;
 
@@ -562,7 +563,7 @@ int DLLibraryClose(DLLibraryList next)
     prev = next;
     next = next->next;
     /* free the space in the prev data-structure */
-    PetscFree(prev);
+    ierr = PetscFree(prev);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

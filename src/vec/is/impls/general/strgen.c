@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: strgen.c,v 1.4 1999/03/17 23:22:11 bsmith Exp balay $";
+static char vcid[] = "$Id: strgen.c,v 1.5 1999/05/04 20:30:08 balay Exp balay $";
 #endif
 
 #include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
@@ -62,7 +62,7 @@ int ISStrideToGeneral(IS inis)
   if (sub->sorted > 0) sub->sorted = 1; else sub->sorted = 0;
 
   /* Remove the old stride data set */
-  PetscFree(inis->data);
+  ierr = PetscFree(inis->data);CHKERRQ(ierr);
 
   inis->type         = IS_GENERAL;
   inis->data         = (void *) sub;

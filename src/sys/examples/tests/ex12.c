@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.4 1999/03/28 19:37:54 bsmith Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.5 1999/05/04 20:29:49 balay Exp balay $";
 #endif
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   for ( i=1; i<n; i++ ) {
     if (values[i] < values[i-1]) SETERRA(1,1,"Values not sorted");
   }
-  PetscFree(values);
+  ierr = PetscFree(values);CHKERRA(ierr);
   PetscRandomDestroy(rand);
 
   PetscFinalize();

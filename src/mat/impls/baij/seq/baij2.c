@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.46 1999/05/12 03:29:44 bsmith Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.47 1999/06/08 22:56:09 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -69,8 +69,8 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz*bs, nidx2, (is+i));CHKERRQ(ierr);
   }
   BTDestroy(table);
-  PetscFree(nidx);
-  PetscFree(nidx2);
+  ierr = PetscFree(nidx);CHKERRQ(ierr);
+  ierr = PetscFree(nidx2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +145,8 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
     
   /* Free work space */
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
-  PetscFree(smap); PetscFree(lens);
+  ierr = PetscFree(smap);CHKERRQ(ierr);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
@@ -191,7 +192,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
   ierr = ISCreateGeneral(PETSC_COMM_SELF, count, iary,&is2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
-  PetscFree(vary);
+  ierr = PetscFree(vary);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,cs,scall,B);CHKERRQ(ierr);
   ISDestroy(is1);

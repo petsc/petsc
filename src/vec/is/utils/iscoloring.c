@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.44 1999/04/19 22:10:54 bsmith Exp balay $";
+static char vcid[] = "$Id: iscoloring.c,v 1.45 1999/05/04 20:30:24 balay Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -31,8 +31,8 @@ int ISColoringDestroy(ISColoring iscoloring)
     ierr = ISDestroy(iscoloring->is[i]);CHKERRQ(ierr);
   }
   PetscCommDestroy_Private(&iscoloring->comm);
-  PetscFree(iscoloring->is);
-  PetscFree(iscoloring);
+  ierr = PetscFree(iscoloring->is);CHKERRQ(ierr);
+  ierr = PetscFree(iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -189,9 +189,9 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   (*iscoloring)->n    = nc;
   (*iscoloring)->is   = is;
 
-  PetscFree(ii[0]);
-  PetscFree(ii);
-  PetscFree(mcolors);
+  ierr = PetscFree(ii[0]);CHKERRQ(ierr);
+  ierr = PetscFree(ii);CHKERRQ(ierr);
+  ierr = PetscFree(mcolors);CHKERRQ(ierr);
 
 
   ierr = OptionsHasName(0,"-is_coloring_view",&flg);CHKERRQ(ierr);
@@ -274,11 +274,11 @@ int ISPartitioningToNumbering(IS part,IS *is)
   for ( i=0; i<n; i++ ) {
     newi[i] = starts[indices[i]]++;
   }
-  PetscFree(lsizes);
+  ierr = PetscFree(lsizes);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n,newi,is);CHKERRQ(ierr);
-  PetscFree(newi);
+  ierr = PetscFree(newi);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -335,7 +335,7 @@ int ISPartitioningCount(IS part,int count[])
   }  
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
   ierr = MPI_Allreduce(lsizes,count,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  PetscFree(lsizes);
+  ierr = PetscFree(lsizes);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -395,9 +395,9 @@ int ISAllGather(IS is,IS *isout)
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
-  PetscFree(indices);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
 
-  PetscFree(sizes);
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5s.c,v 1.8 1999/05/04 20:36:19 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5s.c,v 1.9 1999/05/12 03:32:58 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -183,7 +183,7 @@ int main( int argc, char **argv )
     colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
   }
   ierr   = ISColoringCreate(PETSC_COMM_WORLD,rend-rstart,colors,&iscoloring);CHKERRA(ierr);
-  PetscFree(colors);
+  ierr = PetscFree(colors);CHKERRA(ierr);
 
   /*
      Create and set the nonzero pattern for the Jacobian: This is not done 

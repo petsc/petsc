@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.137 1999/05/04 20:30:27 balay Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.138 1999/05/12 03:28:02 bsmith Exp balay $";
 #endif
 
 /*
@@ -227,12 +227,13 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 int VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 {
   VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll *) ctx->todata;
+  int ierr;
 
   PetscFunctionBegin;
-  PetscFree(scat->count);
-  if (scat->work1) PetscFree(scat->work1);
-  if (scat->work2) PetscFree(scat->work2);
-  PetscFree(ctx->todata); 
+  ierr = PetscFree(scat->count);CHKERRQ(ierr);
+  if (scat->work1) {ierr = PetscFree(scat->work1);CHKERRQ(ierr);}
+  if (scat->work2) {ierr = PetscFree(scat->work2);CHKERRQ(ierr);}
+  ierr = PetscFree(ctx->todata);CHKERRQ(ierr);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
@@ -590,9 +591,11 @@ int VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
 #define __FUNC__ "VecScatterDestroy_SGtoSG"
 int VecScatterDestroy_SGtoSG(VecScatter ctx)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(ctx->todata); 
-  PetscFree(ctx->fromdata); 
+  ierr = PetscFree(ctx->todata);CHKERRQ(ierr);
+  ierr = PetscFree(ctx->fromdata);CHKERRQ(ierr);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
@@ -1145,7 +1148,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           idy[0] = ystart;
           for ( il=1; il<nx; il++ ) idy[il] = idy[il-1] + bsx; 
           ierr = VecScatterCreate_PtoS(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
-          PetscFree(idy);
+          ierr = PetscFree(idy);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
           *newctx = ctx;
           PLogInfo(xin,"VecScatterCreate:Special case: blocked indices to stride\n");

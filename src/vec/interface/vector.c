@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.178 1999/05/04 20:30:38 balay Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.179 1999/05/12 03:28:18 bsmith Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1143,7 +1143,7 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
   ierr = (*x->ops->setvalues)( x,ni,lix, y,iora );CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {
-    PetscFree(lix);
+    ierr = PetscFree(lix);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1207,7 +1207,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
   ierr = (*x->ops->setvaluesblocked)( x,ni,lix, y,iora );CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {
-    PetscFree(lix);
+    ierr = PetscFree(lix);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1585,7 +1585,7 @@ int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
   for(i=0;i<n;++i) {
     ierr = VecRestoreArray(x[i],&q[i]);CHKERRQ(ierr);
   }
-  PetscFree(q);
+  ierr = PetscFree(q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1897,7 +1897,7 @@ int VecDestroyVecs_Default(const Vec v[], int m )
   PetscValidPointer(v);
   if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0: m = %d",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]);CHKERRQ(ierr);}
-  PetscFree( (Vec*)v );
+  ierr = PetscFree( (Vec*)v );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

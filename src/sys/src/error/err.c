@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.100 1999/05/04 20:28:50 balay Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.101 1999/05/12 03:26:57 bsmith Exp balay $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -88,13 +88,14 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
 @*/
 int PetscPopErrorHandler(void)
 {
-  EH tmp;
+  EH  tmp;
+  int ierr;
 
   PetscFunctionBegin;
   if (!eh) PetscFunctionReturn(0);
-  tmp = eh;
-  eh  = eh->previous;
-  PetscFree(tmp);
+  tmp  = eh;
+  eh   = eh->previous;
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -222,9 +223,9 @@ int PetscIntView(int N,int idx[],Viewer viewer)
         array  = (int *) PetscMalloc(Ntotal*sizeof(int));CHKPTRQ(array);
         ierr   = MPI_Gatherv(idx,N,MPI_INT,array,sizes,displs,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr   = ViewerSocketPutInt_Private(viewer,Ntotal,array);CHKERRQ(ierr);
-        PetscFree(sizes);
-        PetscFree(displs);
-        PetscFree(array);
+        ierr = PetscFree(sizes);CHKERRQ(ierr);
+        ierr = PetscFree(displs);CHKERRQ(ierr);
+        ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
       ierr = ViewerSocketPutInt_Private(viewer,N,idx);CHKERRQ(ierr);
@@ -305,9 +306,9 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
         array  = (double *) PetscMalloc(Ntotal*sizeof(double));CHKPTRQ(array);
         ierr = MPI_Gatherv(idx,N,MPI_DOUBLE,array,sizes,displs,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
         ierr = ViewerSocketPutDouble_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
-        PetscFree(sizes);
-        PetscFree(displs);
-        PetscFree(array);
+        ierr = PetscFree(sizes);CHKERRQ(ierr);
+        ierr = PetscFree(displs);CHKERRQ(ierr);
+        ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
       ierr = ViewerSocketPutDouble_Private(viewer,N,1,idx);CHKERRQ(ierr);
@@ -399,9 +400,9 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
         array  = (Scalar *) PetscMalloc(Ntotal*sizeof(Scalar));CHKPTRQ(array);
         ierr = MPI_Gatherv(idx,N,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
         ierr = ViewerSocketPutScalar_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
-        PetscFree(sizes);
-        PetscFree(displs);
-        PetscFree(array);
+        ierr = PetscFree(sizes);CHKERRQ(ierr);
+        ierr = PetscFree(displs);CHKERRQ(ierr);
+        ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
       ierr = ViewerSocketPutScalar_Private(viewer,N,1,idx);CHKERRQ(ierr);

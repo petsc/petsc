@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.41 1999/05/12 03:27:11 bsmith Exp balay $";
+static char vcid[] = "$Id: init.c,v 1.42 1999/06/08 22:54:31 balay Exp balay $";
 #endif
 /*
 
@@ -485,7 +485,7 @@ int OptionsCheckInitial_Alice(void)
       ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_Abort_Function,&abort_handler);CHKERRQ(ierr);
       ierr = MPI_Errhandler_set(comm,abort_handler);CHKERRQ(ierr);
     }
-    PetscFree(nodes);
+    ierr = PetscFree(nodes);CHKERRQ(ierr);
   }
 
   /*

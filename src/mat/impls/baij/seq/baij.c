@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.177 1999/05/12 03:29:44 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.178 1999/06/08 22:56:09 balay Exp balay $";
 #endif
 
 /*
@@ -90,13 +90,13 @@ static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn
                                 PetscTruth *done)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         i,n = a->mbs;
+  int         i,n = a->mbs,ierr;
 
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
   if (symmetric) {
-    PetscFree(*ia);
-    PetscFree(*ja);
+    ierr = PetscFree(*ia);CHKERRQ(ierr);
+    ierr = PetscFree(*ja);CHKERRQ(ierr);
   } else if (oshift == 1) {
     int nz = a->i[n]; 
     for ( i=0; i<nz; i++ ) a->j[i]--;
@@ -141,16 +141,19 @@ int MatDestroy_SeqBAIJ(Mat A)
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject) A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
-  PetscFree(a->a); 
-  if (!a->singlemalloc) { PetscFree(a->i); PetscFree(a->j);}
-  if (a->diag) PetscFree(a->diag);
-  if (a->ilen) PetscFree(a->ilen);
-  if (a->imax) PetscFree(a->imax);
-  if (a->solve_work) PetscFree(a->solve_work);
-  if (a->mult_work) PetscFree(a->mult_work);
+  ierr = PetscFree(a->a);CHKERRQ(ierr);
+  if (!a->singlemalloc) {
+    ierr = PetscFree(a->i);CHKERRQ(ierr);
+    ierr = PetscFree(a->j);CHKERRQ(ierr);
+  }
+  if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
+  if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
+  if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
+  if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
+  if (a->mult_work) {ierr = PetscFree(a->mult_work);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
-  if (a->saved_values) PetscFree(a->saved_values);
-  PetscFree(a); 
+  if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
+  ierr = PetscFree(a);CHKERRQ(ierr);
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
   PetscFunctionReturn(0);
@@ -264,9 +267,11 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 #define __FUNC__ "MatRestoreRow_SeqBAIJ"
 int MatRestoreRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  if (idx) {if (*idx) PetscFree(*idx);}
-  if (v)   {if (*v)   PetscFree(*v);}
+  if (idx) {if (*idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}}
+  if (v)   {if (*v)   {ierr = PetscFree(*v);CHKERRQ(ierr);}}
   PetscFunctionReturn(0);
 }
 
@@ -287,7 +292,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
 
   for ( i=0; i<ai[mbs]; i++ ) col[aj[i]] += 1;
   ierr = MatCreateSeqBAIJ(A->comm,bs,a->n,a->m,PETSC_NULL,col,&C);CHKERRQ(ierr);
-  PetscFree(col);
+  ierr = PetscFree(col);CHKERRQ(ierr);
   rows = (int *) PetscMalloc(2*bs*sizeof(int));CHKPTRQ(rows);
   cols = rows + bs;
   for ( i=0; i<mbs; i++ ) {
@@ -301,7 +306,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
       array += bs2;
     }
   }
-  PetscFree(rows);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
   
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -313,13 +318,16 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
     MatOps   Aops;
 
     /* This isn't really an in-place transpose */
-    PetscFree(a->a); 
-    if (!a->singlemalloc) {PetscFree(a->i); PetscFree(a->j);}
-    if (a->diag) PetscFree(a->diag);
-    if (a->ilen) PetscFree(a->ilen);
-    if (a->imax) PetscFree(a->imax);
-    if (a->solve_work) PetscFree(a->solve_work);
-    PetscFree(a); 
+    ierr = PetscFree(a->a);CHKERRQ(ierr);
+    if (!a->singlemalloc) {
+      ierr = PetscFree(a->i);CHKERRQ(ierr);
+      ierr = PetscFree(a->j);CHKERRQ(ierr);
+    }
+    if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
+    if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
+    if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
+    if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
+    ierr = PetscFree(a);CHKERRQ(ierr);
 
 
     ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
@@ -368,7 +376,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
     }
   }
   ierr = PetscBinaryWrite(fd,col_lens,4+a->m,PETSC_INT,1);CHKERRQ(ierr);
-  PetscFree(col_lens);
+  ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
   /* store column indices (zero start index) */
   jj = (int *) PetscMalloc( (a->nz+1)*bs2*sizeof(int) );CHKPTRQ(jj);
@@ -383,7 +391,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
     }
   }
   ierr = PetscBinaryWrite(fd,jj,bs2*a->nz,PETSC_INT,0);CHKERRQ(ierr);
-  PetscFree(jj);
+  ierr = PetscFree(jj);CHKERRQ(ierr);
 
   /* store nonzero values */
   aa = (Scalar *) PetscMalloc((a->nz+1)*bs2*sizeof(Scalar));CHKPTRQ(aa);
@@ -398,7 +406,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
     }
   }
   ierr = PetscBinaryWrite(fd,aa,bs2*a->nz,PETSC_SCALAR,0);CHKERRQ(ierr);
-  PetscFree(aa);
+  ierr = PetscFree(aa);CHKERRQ(ierr);
 
   ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file) {
@@ -752,8 +760,11 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
         ierr = PetscMemzero(new_a+bs2*(ai[row]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+bs2*(ai[row]+nrow+CHUNKSIZE),aa+bs2*(ai[row]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
         /* free up old matrix storage */
-        PetscFree(a->a); 
-        if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);}
+        ierr = PetscFree(a->a);CHKERRQ(ierr);
+        if (!a->singlemalloc) {
+          ierr = PetscFree(a->i);CHKERRQ(ierr);
+          ierr = PetscFree(a->j);CHKERRQ(ierr);
+        }
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
         a->singlemalloc = 1;
 
@@ -837,7 +848,7 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 
   /* diagonals may have moved, so kill the diagonal pointers */
   if (fshift && a->diag) {
-    PetscFree(a->diag);
+    ierr = PetscFree(a->diag);CHKERRQ(ierr);
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
@@ -955,7 +966,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
     }
   }
 
-  PetscFree(rows);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = MatAssemblyEnd_SeqBAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1035,8 +1046,11 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
         ierr = PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE),aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
         /* free up old matrix storage */
-        PetscFree(a->a); 
-        if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);}
+        ierr = PetscFree(a->a);CHKERRQ(ierr);
+        if (!a->singlemalloc) {
+          ierr = PetscFree(a->i);CHKERRQ(ierr);
+          ierr = PetscFree(a->j);CHKERRQ(ierr);
+        }
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
         a->singlemalloc = 1;
 
@@ -1786,11 +1800,11 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   }
   if (jcount != a->nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"Bad binary matrix");
 
-  PetscFree(rowlengths);   
-  PetscFree(browlengths);
-  PetscFree(aa);
-  PetscFree(jj);
-  PetscFree(mask);
+  ierr = PetscFree(rowlengths);CHKERRQ(ierr);
+  ierr = PetscFree(browlengths);CHKERRQ(ierr);
+  ierr = PetscFree(aa);CHKERRQ(ierr);
+  ierr = PetscFree(jj);CHKERRQ(ierr);
+  ierr = PetscFree(mask);CHKERRQ(ierr);
 
   B->assembled = PETSC_TRUE;
 

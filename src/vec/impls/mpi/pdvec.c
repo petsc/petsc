@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.120 1999/05/12 03:28:25 bsmith Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.121 1999/06/08 22:55:14 balay Exp balay $ 
 #endif
 
 /*
@@ -29,7 +29,7 @@ int VecDestroy_MPI(Vec v)
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",x->N);
 #endif  
-  if (x->array_allocated) PetscFree(x->array_allocated);
+  if (x->array_allocated) {ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);}
 
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
@@ -39,8 +39,8 @@ int VecDestroy_MPI(Vec v)
   /* Destroy the stashes */
   ierr = VecStashDestroy_Private(&v->stash);CHKERRQ(ierr);
   ierr = VecStashDestroy_Private(&v->bstash);CHKERRQ(ierr);
-  if (x->browners) { PetscFree(x->browners);}
-  PetscFree(x);
+  if (x->browners) {ierr = PetscFree(x->browners);CHKERRQ(ierr);}
+  ierr = PetscFree(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -170,7 +170,7 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
         }          
       }
     }
-    PetscFree(values);
+    ierr = PetscFree(values);CHKERRQ(ierr);
     fflush(fd);
   } else {
     /* send values */
@@ -209,7 +209,7 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
       ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
       ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,0);CHKERRQ(ierr);
     }
-    PetscFree(values);
+    ierr = PetscFree(values);CHKERRQ(ierr);
     ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file && xin->bs > 1) {
       fprintf(file,"-vecload_block_size %d\n",xin->bs);
@@ -261,12 +261,12 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
         xr[i] = PetscReal(x->array[i]);
       }
       ierr = MPI_Gatherv(xr,x->n,MPI_DOUBLE,yy,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
-      PetscFree(xr);
+      ierr = PetscFree(xr);CHKERRQ(ierr);
     }
 #endif
-    PetscFree(lens);
+    ierr = PetscFree(lens);CHKERRQ(ierr);
     ierr = DrawLGAddPoints(lg,N,&xx,&yy);CHKERRQ(ierr);
-    PetscFree(xx);
+    ierr = PetscFree(xx);CHKERRQ(ierr);
     ierr = DrawLGDraw(lg);CHKERRQ(ierr);
   } else {
 #if !defined(PETSC_USE_COMPLEX)
@@ -279,7 +279,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
         xr[i] = PetscReal(x->array[i]);
       }
       ierr = MPI_Gatherv(xr,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
-      PetscFree(xr);
+      ierr = PetscFree(xr);CHKERRQ(ierr);
     }
 #endif
   }
@@ -388,9 +388,9 @@ int VecView_MPI_Socket(Vec xin, Viewer viewer )
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,xx,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
-    PetscFree(lens);
+    ierr = PetscFree(lens);CHKERRQ(ierr);
     ierr = ViewerSocketPutScalar_Private(viewer,N,1,xx);CHKERRQ(ierr);
-    PetscFree(xx);
+    ierr = PetscFree(xx);CHKERRQ(ierr);
   } else {
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.14 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.15 1999/05/04 20:35:25 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -139,7 +139,7 @@ int main(int argc,char **args)
      ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
      ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
   }    
-  PetscFree(rows);
+  ierr = PetscFree(rows);CHKERRA(ierr);
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
   ierr = VecAssemblyEnd(u);CHKERRA(ierr);
   ierr = VecAssemblyBegin(b);CHKERRA(ierr); 

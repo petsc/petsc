@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.14 1999/04/21 18:16:01 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.15 1999/05/04 20:31:12 balay Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
 
   ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRA(ierr); 
   ierr = VecDestroy(gx);CHKERRA(ierr);
-  if (flag) {PetscFree(tarray); }
+  if (flag) {ierr = PetscFree(tarray);CHKERRA(ierr);}
   PetscFinalize();
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex57.c,v 1.10 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex57.c,v 1.11 1999/05/04 20:33:03 balay Exp balay $";
 #endif
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(B[0]);CHKERRA(ierr);
   ierr = VecDestroy(b);CHKERRA(ierr);
-  PetscFree(B);
+  ierr = PetscFree(B);CHKERRA(ierr);
   ierr = ISDestroy(iscol);CHKERRA(ierr);
   ierr = ISDestroy(isrow);CHKERRA(ierr);
   PetscFinalize();

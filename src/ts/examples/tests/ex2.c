@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.17 1999/04/16 16:10:54 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.18 1999/05/04 20:36:53 balay Exp balay $";
 #endif
 /*
        Formatted test for TS routines.
@@ -152,8 +152,8 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
     time,PetscReal(tmp[0]),PetscReal(tmp[1]),PetscReal(tmp[2]));
   PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
     time,PetscReal(tmp[0]-solx(time)),PetscReal(tmp[1]-soly(time)),PetscReal(tmp[2]-solz(time)));
-  ierr = VecRestoreArray(tmp_vec,&tmp);
-  PetscFree(idx);
+  ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRA(ierr);
+  ierr = PetscFree(idx);CHKERRA(ierr);
   return 0;
 }
 
@@ -185,9 +185,9 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRA(ierr);
+ CHKERRQ(ierr);
   ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRA(ierr);
+ CHKERRQ(ierr);
 
   /*Extract income array */ 
   ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
@@ -199,20 +199,20 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   outptr[1] = inptr[0]+2*inptr[1]+inptr[2];
   outptr[2] = inptr[1]+2*inptr[2];
 
-  ierr = VecRestoreArray(globalin,&inptr);
-  ierr = VecRestoreArray(tmp_out,&outptr);
+  ierr = VecRestoreArray(globalin,&inptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(tmp_out,&outptr);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRA(ierr);
+ CHKERRQ(ierr);
   ierr = VecScatterEnd(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRA(ierr);
+ CHKERRQ(ierr);
 
   /* Destroy idx aand scatter */
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
   return 0;
 }
 

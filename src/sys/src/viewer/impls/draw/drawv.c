@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.36 1999/04/21 20:42:32 bsmith Exp balay $";
+static char vcid[] = "$Id: drawv.c,v 1.37 1999/05/04 20:27:58 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -18,7 +18,7 @@ int ViewerDestroy_Draw(Viewer v)
     if (vdraw->drawlg[i])   {ierr = DrawLGDestroy(vdraw->drawlg[i]);CHKERRQ(ierr);}
     if (vdraw->draw[i])     {ierr = DrawDestroy(vdraw->draw[i]);CHKERRQ(ierr);}
   }
-  PetscFree(vdraw);
+  ierr = PetscFree(vdraw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellcnv.c,v 1.6 1999/04/19 22:12:17 bsmith Exp balay $";
+static char vcid[] = "$Id: shellcnv.c,v 1.7 1999/05/04 20:31:58 balay Exp balay $";
 #endif
 
 
@@ -55,7 +55,7 @@ int MatConvert_Shell(Mat oldmat,MatType newtype, Mat *mat)
     ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
 
   }
-  PetscFree(rows);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = VecDestroy(in);CHKERRQ(ierr);
   ierr = VecDestroy(out);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

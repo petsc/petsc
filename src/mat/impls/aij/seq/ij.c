@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ij.c,v 1.30 1999/03/16 21:47:20 curfman Exp balay $";
+static char vcid[] = "$Id: ij.c,v 1.31 1999/05/04 20:31:42 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -78,7 +78,7 @@ int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
       ja[work[row]++] = col + shiftout;
     }
   }
-  PetscFree(work);
+  ierr = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

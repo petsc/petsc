@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.12 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex19.c,v 1.13 1999/05/12 03:30:15 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -114,7 +114,9 @@ int main(int argc,char **args)
       }
     }
     PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
-    PetscFree(rsub); PetscFree(csub); PetscFree(vals);
+    ierr = PetscFree(rsub);CHKERRA(ierr);
+    ierr = PetscFree(csub);CHKERRA(ierr);
+    ierr = PetscFree(vals);CHKERRA(ierr);
   }
 
   /* Free data structures */

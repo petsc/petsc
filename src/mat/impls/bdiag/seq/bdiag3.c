@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag3.c,v 1.9 1999/05/04 20:32:08 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag3.c,v 1.10 1999/05/12 03:29:27 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -305,7 +305,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
     for ( j=0; j<a->n; j++ ) {
       if (tmp[j] > *norm) *norm = tmp[j];
     }
-    PetscFree(tmp);
+    ierr = PetscFree(tmp);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) { /* max row norm */
     tmp = (double *) PetscMalloc( (a->m+1)*sizeof(double) );CHKPTRQ(tmp);
     ierr = PetscMemzero(tmp,a->m*sizeof(double));CHKERRQ(ierr);
@@ -354,7 +354,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
     for ( j=0; j<a->m; j++ ) {
       if (tmp[j] > *norm) *norm = tmp[j];
     }
-    PetscFree(tmp);
+    ierr = PetscFree(tmp);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"No support for two norm");
   }
@@ -377,7 +377,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
   }
   ierr = MatCreateSeqBDiag(A->comm,a->n,a->m,nd,bs,diagnew,0,&tmat);CHKERRQ(ierr);
-  PetscFree(diagnew);
+  ierr = PetscFree(diagnew);CHKERRQ(ierr);
   anew = (Mat_SeqBDiag *) tmat->data;
   for (d=0; d<nd; d++) {
     dvnew = anew->diagv[d];
@@ -410,16 +410,18 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     if (!a->user_alloc) { /* Free the actual diagonals */
       for (i=0; i<a->nd; i++) {
         if (a->diag[i] > 0) {
-          PetscFree( a->diagv[i] + bs*bs*a->diag[i]  );
+          ierr = PetscFree( a->diagv[i] + bs*bs*a->diag[i]  );CHKERRQ(ierr);
         } else {
-          PetscFree( a->diagv[i] );
+          ierr = PetscFree( a->diagv[i] );CHKERRQ(ierr);
         }
       }
     }
-    if (a->pivot) PetscFree(a->pivot);
-    PetscFree(a->diagv); PetscFree(a->diag);
-    PetscFree(a->colloc); PetscFree(a->dvalue);
-    PetscFree(a);
+    if (a->pivot) {ierr = PetscFree(a->pivot);CHKERRQ(ierr);}
+    ierr = PetscFree(a->diagv);CHKERRQ(ierr);
+    ierr = PetscFree(a->diag);CHKERRQ(ierr);
+    ierr = PetscFree(a->colloc);CHKERRQ(ierr);
+    ierr = PetscFree(a->dvalue);CHKERRQ(ierr);
+    ierr = PetscFree(a);CHKERRQ(ierr);
     ierr = PetscMemcpy(A,tmat,sizeof(struct _p_Mat));CHKERRQ(ierr);
     PetscHeaderDestroy(tmat);
   }
@@ -464,7 +466,7 @@ int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
 
   /* Store lengths of each row and write (including header) to file */
   ierr = PetscBinaryWrite(fd,col_lens,4+a->m,PETSC_INT,1);CHKERRQ(ierr);
-  PetscFree(col_lens);
+  ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
   /* Store column indices (zero start index) */
   ierr = PetscBinaryWrite(fd,cval,a->maxnz,PETSC_INT,0);CHKERRQ(ierr);

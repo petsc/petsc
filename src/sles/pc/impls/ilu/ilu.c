@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.126 1999/04/21 18:17:29 bsmith Exp balay $";
+static char vcid[] = "$Id: ilu.c,v 1.127 1999/05/04 20:34:13 balay Exp balay $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -607,12 +607,13 @@ static int PCSetUp_ILU(PC pc)
 static int PCDestroy_ILU(PC pc)
 {
   PC_ILU *ilu = (PC_ILU*) pc->data;
+  int    ierr;
 
   PetscFunctionBegin;
   if (!ilu->inplace && ilu->fact) MatDestroy(ilu->fact);
   if (ilu->row && ilu->col && ilu->row != ilu->col) ISDestroy(ilu->row);
   if (ilu->col) ISDestroy(ilu->col);
-  PetscFree(ilu); 
+  ierr = PetscFree(ilu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

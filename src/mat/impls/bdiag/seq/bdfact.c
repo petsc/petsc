@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.51 1999/01/27 19:47:36 bsmith Exp balay $";
+static char vcid[] = "$Id: bdfact.c,v 1.52 1999/05/04 20:32:08 balay Exp balay $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -122,7 +122,8 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
       }
     }
   }
-  PetscFree(dgptr); PetscFree(v_work);
+  ierr = PetscFree(dgptr);CHKERRQ(ierr);
+  ierr = PetscFree(v_work);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   PetscFunctionReturn(0);
 }
@@ -178,7 +179,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
       }
     }
   }
-  PetscFree(dgptr);
+  ierr = PetscFree(dgptr);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   PetscFunctionReturn(0);
 }

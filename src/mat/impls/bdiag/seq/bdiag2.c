@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag2.c,v 1.6 1999/05/04 20:32:08 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag2.c,v 1.7 1999/05/12 03:29:27 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -78,7 +78,8 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
           }
           a->maxnz += newnz;
           a->nz    += newnz;
-          PetscFree(a->diagv); PetscFree(a->diag); 
+          ierr = PetscFree(a->diagv);CHKERRQ(ierr);
+          ierr = PetscFree(a->diag);CHKERRQ(ierr);
           a->diag  = diag_new; 
           a->bdlen = bdlen_new;
           a->diagv = diagv_new;
@@ -164,7 +165,8 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,
             diagv_new[a->nd] -= bs*bs*diag_new[a->nd];
           }
           a->maxnz += newnz; a->nz += newnz;
-          PetscFree(a->diagv); PetscFree(a->diag); 
+          ierr = PetscFree(a->diagv);CHKERRQ(ierr);
+          ierr = PetscFree(a->diag);CHKERRQ(ierr);
           a->diag  = diag_new; 
           a->bdlen = bdlen_new;
           a->diagv = diagv_new;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbdiag.c,v 1.29 1997/10/19 03:25:52 bsmith Exp balay $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.30 1999/05/04 20:32:14 balay Exp balay $";
 #endif
 
 /*
@@ -62,14 +62,14 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   for ( i=0; i<N; i++ ) {
     if (indices[i]) garray[ec++] = i;
   }
-  PetscFree(indices);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&mbd->lvec);CHKERRQ(ierr);
 
   /* create temporary index set for building scatter-gather */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&tofrom);CHKERRQ(ierr);
-  PetscFree(garray);
+  ierr = PetscFree(garray);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.100 1999/05/12 03:29:04 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.101 1999/06/23 15:17:06 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -141,9 +141,9 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
     if (i2 == i1) ja[work[i1]++] = i2 + oshift;
 
   }
-  PetscFree(work);
-  PetscFree(tns);
-  PetscFree(tvc);
+  ierr = PetscFree(work);CHKERRQ(ierr);
+  ierr = PetscFree(tns);CHKERRQ(ierr);
+  ierr = PetscFree(tvc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -220,10 +220,10 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int 
       i2 = tvc[col];
     }
   }
-  PetscFree(ns_col);
-  PetscFree(work);
-  PetscFree(tns);
-  PetscFree(tvc);
+  ierr = PetscFree(ns_col);CHKERRQ(ierr);
+  ierr = PetscFree(work);CHKERRQ(ierr);
+  ierr = PetscFree(tns);CHKERRQ(ierr);
+  ierr = PetscFree(tvc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -253,10 +253,12 @@ static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n
 static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                      PetscTruth *done)
 {
+  int ierr;
+
   PetscFunctionBegin;  
   if (!ia) PetscFunctionReturn(0);
-  PetscFree(*ia);
-  PetscFree(*ja);
+  ierr = PetscFree(*ia);CHKERRQ(ierr);
+  ierr = PetscFree(*ja);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -334,10 +336,10 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, i
       i2 = tvc[col];
     }
   }
-  PetscFree(ns_col);
-  PetscFree(work);
-  PetscFree(tns);
-  PetscFree(tvc);
+  ierr = PetscFree(ns_col);CHKERRQ(ierr);
+  ierr = PetscFree(work);CHKERRQ(ierr);
+  ierr = PetscFree(tns);CHKERRQ(ierr);
+  ierr = PetscFree(tvc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -368,10 +370,12 @@ static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int
 static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                      PetscTruth *done)
 {
+  int ierr;
+
   PetscFunctionBegin;  
   if (!ia) PetscFunctionReturn(0);
-  PetscFree(*ia);
-  PetscFree(*ja);
+  ierr = PetscFree(*ia);CHKERRQ(ierr);
+  ierr = PetscFree(*ja);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -796,7 +800,7 @@ int Mat_AIJ_CheckInode(Mat A)
   }
   /* If not enough inodes found,, do not use inode version of the routines */
   if (!a->inode.size && m && node_count > 0.9*m) {
-    PetscFree(ns);
+    ierr = PetscFree(ns);CHKERRQ(ierr);
     PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes out of %d rows. Not using Inode routines\n",node_count,m);
   } else {
     A->ops->mult            = MatMult_SeqAIJ_Inode;
@@ -1255,8 +1259,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     tmp_vec2[i] = nsz;
     j        += nsz;
   }
-  PetscFree(nsmap);
-  PetscFree(tmp_vec1);
+  ierr = PetscFree(nsmap);CHKERRQ(ierr);
+  ierr = PetscFree(tmp_vec1);CHKERRQ(ierr);
   /* Now use the correct ns */
   ns = tmp_vec2;
 
@@ -1497,8 +1501,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     }
     row += nsz;                 /* Update the row */
   } 
-  PetscFree(rtmp1);
-  PetscFree(tmp_vec2);
+  ierr = PetscFree(rtmp1);CHKERRQ(ierr);
+  ierr = PetscFree(tmp_vec2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
@@ -1568,11 +1572,11 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   ierr  = ISRestoreIndices(ris,&ridx);CHKERRQ(ierr);
   ierr  = ISRestoreIndices(cis,&cidx);CHKERRQ(ierr);
 
-  PetscFree(ns_col);
-  PetscFree(permr);
+  ierr = PetscFree(ns_col);CHKERRQ(ierr);
+  ierr = PetscFree(permr);CHKERRQ(ierr);
   ierr = ISDestroy(cis);CHKERRQ(ierr);
   ierr = ISDestroy(ris);CHKERRQ(ierr);
-  PetscFree(tns);
+  ierr = PetscFree(tns);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

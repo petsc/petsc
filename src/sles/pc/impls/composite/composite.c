@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.23 1999/05/04 20:34:22 balay Exp balay $";
+static char vcid[] = "$Id: composite.c,v 1.24 1999/06/08 22:57:04 balay Exp balay $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -110,7 +110,7 @@ static int PCDestroy_Composite(PC pc)
 
   if (jac->work1) {ierr = VecDestroy(jac->work1);CHKERRQ(ierr);}
   if (jac->work2) {ierr = VecDestroy(jac->work2);CHKERRQ(ierr);}
-  PetscFree(jac);
+  ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.70 1999/05/14 17:42:22 bsmith Exp balay $";
+static char vcid[] = "$Id: shell.c,v 1.71 1999/06/10 14:23:34 balay Exp balay $";
 #endif
 
 /*
@@ -99,7 +99,7 @@ int MatDestroy_Shell(Mat mat)
   }
   shell = (Mat_Shell *) mat->data;
   if (shell->destroy) {ierr = (*shell->destroy)(mat);CHKERRQ(ierr);}
-  PetscFree(shell); 
+  ierr = PetscFree(shell);CHKERRQ(ierr);
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);

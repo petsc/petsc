@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.48 1999/03/19 21:22:03 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.49 1999/05/04 20:35:14 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -102,7 +102,7 @@ int main(int argc,char **args)
      ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
      ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
   }    
-  PetscFree(rows);
+  ierr = PetscFree(rows);CHKERRA(ierr);
   ierr = VecAssemblyBegin(u);CHKERRA(ierr);
   ierr = VecAssemblyEnd(u);CHKERRA(ierr);
   ierr = VecAssemblyBegin(b);CHKERRA(ierr);

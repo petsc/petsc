@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.98 1999/05/04 20:34:18 balay Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.99 1999/06/08 22:57:01 balay Exp balay $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -334,12 +334,12 @@ static int PCDestroy_ASM(PC pc)
   }
   if (osm->is_flg) {
     for ( i=0; i<osm->n_local_true; i++ ) {ierr = ISDestroy(osm->is[i]);CHKERRQ(ierr);}
-    PetscFree(osm->is);
+    ierr = PetscFree(osm->is);CHKERRQ(ierr);
   }
-  if (osm->sles) PetscFree(osm->sles);
-  if (osm->scat) PetscFree(osm->scat);
-  if (osm->x) PetscFree(osm->x);
-  PetscFree(osm);
+  if (osm->sles) {ierr = PetscFree(osm->sles);CHKERRQ(ierr);}
+  if (osm->scat) {ierr = PetscFree(osm->scat);CHKERRQ(ierr);}
+  if (osm->x) {ierr = PetscFree(osm->x);CHKERRQ(ierr);}
+  ierr = PetscFree(osm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -900,7 +900,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
         }
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,(*is)+loc_outter++);CHKERRQ(ierr);
-      PetscFree(idx);
+      ierr = PetscFree(idx);CHKERRQ(ierr);
       /* ISView((*is)[loc_outter-1],0); */
       xstart += width;
     }

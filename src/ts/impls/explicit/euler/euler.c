@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: euler.c,v 1.15 1998/12/03 04:03:59 bsmith Exp balay $";
+static char vcid[] = "$Id: euler.c,v 1.16 1999/05/04 20:36:43 balay Exp balay $";
 #endif
 /*
        Code for Timestepping with explicit Euler.
@@ -54,10 +54,11 @@ static int TSStep_Euler(TS ts,int *steps,double *time)
 static int TSDestroy_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*) ts->data;
+  int      ierr;
 
   PetscFunctionBegin;
   VecDestroy(euler->update);
-  PetscFree(euler);
+  ierr = PetscFree(euler);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

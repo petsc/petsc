@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.11 1999/03/19 21:17:34 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.12 1999/05/04 20:30:20 balay Exp balay $";
 #endif
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
      Note that ISCreateGeneral() has made a copy of the indices
      so we may (and generally should) free indices[]
   */
-  PetscFree(indices);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /*
      Print the index set to stdout

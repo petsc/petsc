@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.54 1999/04/19 22:10:59 bsmith Exp balay $";
+static char vcid[] = "$Id: vecio.c,v 1.55 1999/05/04 20:30:27 balay Exp balay $";
 #endif
 
 /* 
@@ -115,7 +115,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
         ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
         ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
       }
-      PetscFree(avec);
+      ierr = PetscFree(avec);CHKERRQ(ierr);
     }
   } else {
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
           ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
           ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
         }
-        PetscFree(avec);
+        ierr = PetscFree(avec);CHKERRQ(ierr);
       }
     } else {
       ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);

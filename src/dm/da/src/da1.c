@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.98 1999/05/04 20:37:25 balay Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.99 1999/05/12 03:34:00 bsmith Exp balay $";
 #endif
 
 /* 
@@ -322,7 +322,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
     idx[j] = left + j;
   }  
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 
-  PetscFree(idx);
+  ierr = PetscFree(idx);CHKERRQ(ierr);
 
   /* 
      Build the natural ordering to PETSc ordering mappings.

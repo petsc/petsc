@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.35 1999/03/20 00:36:36 balay Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.36 1999/05/04 20:37:40 balay Exp balay $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -57,7 +57,10 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,wrap,st,M,N,m,n,w,s,lx,ly,&da);CHKERRA(ierr);
-  if (lx) { PetscFree(lx); PetscFree(ly);}
+  if (lx) { 
+    ierr = PetscFree(lx);CHKERRA(ierr);
+    ierr = PetscFree(ly);CHKERRA(ierr);
+  }
 
   ierr = DAView(da,viewer);CHKERRA(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
@@ -135,7 +138,7 @@ int main(int argc,char **argv)
         }
       }
     }
-    PetscFree(iglobal);
+    ierr = PetscFree(iglobal);CHKERRA(ierr);
   } 
 
   /* Free memory */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.89 1999/05/04 20:29:32 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.90 1999/05/12 03:27:21 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"        
@@ -153,7 +153,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
 
   ierr = PetscSequentialPhaseEnd_Private(local_comm,ng);CHKERRQ(ierr);
 
-  PetscFree(addr_local_comm); 
+  ierr = PetscFree(addr_local_comm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   ierr = MPI_Attr_delete(comm,Petsc_Seq_keyval);CHKERRQ(ierr);
 

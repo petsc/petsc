@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.57 1999/05/04 20:34:04 balay Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.58 1999/06/30 22:51:10 bsmith Exp balay $";
 #endif
 
 /*
@@ -80,9 +80,10 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 static int PCDestroy_Shell(PC pc)
 {
   PC_Shell *shell = (PC_Shell *) pc->data;
+  int      ierr;
 
   PetscFunctionBegin;
-  PetscFree(shell);
+  ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

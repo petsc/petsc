@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.19 1999/05/12 03:28:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.20 1999/06/30 22:49:52 bsmith Exp balay $";
 #endif
 
 /*
@@ -203,10 +203,10 @@ int VecSplitReductionExtend(VecSplitReduction *sr)
   ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->invecs,invecs,maxops*sizeof(Vec));CHKERRQ(ierr);
-  PetscFree(lvalues);
-  PetscFree(gvalues);
-  PetscFree(reducetype);
-  PetscFree(invecs);
+  ierr = PetscFree(lvalues);CHKERRQ(ierr);
+  ierr = PetscFree(gvalues);CHKERRQ(ierr);
+  ierr = PetscFree(reducetype);CHKERRQ(ierr);
+  ierr = PetscFree(invecs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -214,12 +214,14 @@ int VecSplitReductionExtend(VecSplitReduction *sr)
 #define __FUNC__ "VecSplitReductionDestroy"
 int VecSplitReductionDestroy(VecSplitReduction *sr)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscFree(sr->lvalues); 
-  PetscFree(sr->gvalues); 
-  PetscFree(sr->reducetype); 
-  PetscFree(sr->invecs); 
-  PetscFree(sr);
+  ierr = PetscFree(sr->lvalues);CHKERRQ(ierr);
+  ierr = PetscFree(sr->gvalues);CHKERRQ(ierr);
+  ierr = PetscFree(sr->reducetype);CHKERRQ(ierr);
+  ierr = PetscFree(sr->invecs);CHKERRQ(ierr);
+  ierr = PetscFree(sr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

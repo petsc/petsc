@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.39 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.40 1999/05/04 20:35:25 balay Exp balay $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -131,7 +131,7 @@ int main(int argc,char **args)
   blks = (int *) PetscMalloc( m*sizeof(int) );CHKPTRA(blks);
   for ( i=0; i<m; i++ ) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);
-  PetscFree(blks); 
+  ierr = PetscFree(blks);CHKERRA(ierr);
 
 
   /* -------------------------------------------------------------------

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.23 1999/05/06 17:59:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.24 1999/05/12 03:27:04 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -105,11 +105,11 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
       if (flag) {
         /* need PetscGetFullPath rather then copy in case path has . in it */
 	ierr = PetscGetFullPath( trial,  fname, MAXPATHLEN );CHKERRQ(ierr);
-	PetscFree( senv );
+	ierr = PetscFree(senv);CHKERRQ(ierr);
         PetscFunctionReturn(1);
       }
     }
-    PetscFree( senv );
+    ierr = PetscFree(senv);CHKERRQ(ierr);
   }
 
   ierr = PetscTestFile( path, mode,&flag);CHKERRQ(ierr);

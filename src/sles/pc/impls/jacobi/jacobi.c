@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.59 1999/04/21 18:17:13 bsmith Exp balay $";
+static char vcid[] = "$Id: jacobi.c,v 1.60 1999/05/04 20:33:57 balay Exp balay $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -271,7 +271,7 @@ static int PCDestroy_Jacobi(PC pc)
   /*
       Free the private data structure that was hanging off the PC
   */
-  PetscFree(jac);
+  ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

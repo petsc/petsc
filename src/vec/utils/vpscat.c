@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.117 1999/05/12 03:28:02 bsmith Exp balay $";
+ static char vcid[] = "$Id: vpscat.c,v 1.118 1999/06/08 22:55:05 balay Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -220,15 +220,18 @@ int VecScatterDestroy_PtoP(VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General *) ctx->todata;
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+  int ierr;
 
   PetscFunctionBegin;
-  if (gen_to->local.slots) PetscFree(gen_to->local.slots);
-  if (gen_from->local.slots) PetscFree(gen_from->local.slots);
-  if (gen_to->local.slots_nonmatching) PetscFree(gen_to->local.slots_nonmatching);
-  if (gen_from->local.slots_nonmatching) PetscFree(gen_from->local.slots_nonmatching);
-  PetscFree(gen_to->sstatus);
-  PetscFree(gen_to->values); PetscFree(gen_to);
-  PetscFree(gen_from->values); PetscFree(gen_from);
+  if (gen_to->local.slots) {ierr = PetscFree(gen_to->local.slots);CHKERRQ(ierr);}
+  if (gen_from->local.slots) {ierr = PetscFree(gen_from->local.slots);CHKERRQ(ierr);}
+  if (gen_to->local.slots_nonmatching) {ierr = PetscFree(gen_to->local.slots_nonmatching);CHKERRQ(ierr);}
+  if (gen_from->local.slots_nonmatching) {ierr = PetscFree(gen_from->local.slots_nonmatching);CHKERRQ(ierr);}
+  ierr = PetscFree(gen_to->sstatus);CHKERRQ(ierr);
+  ierr = PetscFree(gen_to->values); CHKERRQ(ierr);
+  ierr = PetscFree(gen_to);CHKERRQ(ierr);
+  ierr = PetscFree(gen_from->values); CHKERRQ(ierr);
+  ierr = PetscFree(gen_from);CHKERRQ(ierr);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
@@ -1758,10 +1761,10 @@ int VecScatterDestroy_PtoP_X(VecScatter ctx)
     }
   }
 
-  if (gen_to->local.slots) PetscFree(gen_to->local.slots);
-  if (gen_from->local.slots) PetscFree(gen_from->local.slots);
-  if (gen_to->local.slots_nonmatching) PetscFree(gen_to->local.slots_nonmatching);
-  if (gen_from->local.slots_nonmatching) PetscFree(gen_from->local.slots_nonmatching);
+  if (gen_to->local.slots) {ierr = PetscFree(gen_to->local.slots);CHKERRQ(ierr);}
+  if (gen_from->local.slots) {ierr = PetscFree(gen_from->local.slots);CHKERRQ(ierr);}
+  if (gen_to->local.slots_nonmatching) {ierr = PetscFree(gen_to->local.slots_nonmatching);CHKERRQ(ierr);}
+  if (gen_from->local.slots_nonmatching) {ierr = PetscFree(gen_from->local.slots_nonmatching);CHKERRQ(ierr);}
 
   /* release MPI resources obtained with MPI_Send_init() and MPI_Recv_init() */
   /* 
@@ -1786,13 +1789,13 @@ int VecScatterDestroy_PtoP_X(VecScatter ctx)
   }  
 #endif
  
-  PetscFree(gen_to->sstatus);
-  PetscFree(gen_to->values);
-  PetscFree(gen_to->rev_requests);
-  PetscFree(gen_to);
-  PetscFree(gen_from->values); 
-  PetscFree(gen_from->rev_requests);
-  PetscFree(gen_from);
+  ierr = PetscFree(gen_to->sstatus);CHKERRQ(ierr);
+  ierr = PetscFree(gen_to->values);CHKERRQ(ierr);
+  ierr = PetscFree(gen_to->rev_requests);CHKERRQ(ierr);
+  ierr = PetscFree(gen_to);CHKERRQ(ierr);
+  ierr = PetscFree(gen_from->values);CHKERRQ(ierr);
+  ierr = PetscFree(gen_from->rev_requests);CHKERRQ(ierr);
+  ierr = PetscFree(gen_from);CHKERRQ(ierr);
   PLogObjectDestroy(ctx);
   PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
@@ -1854,7 +1857,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   nrecvs = work[rank]; 
   ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   nmax = work[rank];
-  PetscFree(work);
+  ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues    = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -1886,7 +1889,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
       ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
-  PetscFree(starts);
+  ierr = PetscFree(starts);CHKERRQ(ierr);
 
   base = owners[rank];
 
@@ -1904,7 +1907,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
     slen          += n;
     count--;
   }
-  PetscFree(recv_waits); 
+  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
   
   /* allocate entire send scatter context */
   to = PetscNew(VecScatter_MPI_General);CHKPTRQ(to);
@@ -1939,9 +1942,10 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
         to->indices[to->starts[i] + j] = values[j] - base;
       }
     }
-    PetscFree(indx);
+    ierr = PetscFree(indx);CHKERRQ(ierr);
   }
-  PetscFree(rvalues); PetscFree(lens);
+  ierr = PetscFree(rvalues);CHKERRQ(ierr);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
  
   /* allocate entire receive scatter context */
   from = PetscNew(VecScatter_MPI_General);CHKPTRQ(from);
@@ -1976,15 +1980,18 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
       if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Scattering past end of TO vector");
     }
   }
-  PetscFree(lowner); PetscFree(owner); PetscFree(nprocs);
+  ierr = PetscFree(lowner);CHKERRQ(ierr);
+  ierr = PetscFree(owner);CHKERRQ(ierr);
+  ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
   /* wait on sends */
   if (nsends) {
     send_status = (MPI_Status *)PetscMalloc( nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr        = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
+    ierr        = PetscFree(send_status);CHKERRQ(ierr);
   }
-  PetscFree(send_waits); PetscFree(svalues);
+  ierr = PetscFree(send_waits);CHKERRQ(ierr);
+  ierr = PetscFree(svalues);CHKERRQ(ierr);
 
   if (nprocslocal) {
     int nt;
@@ -2176,7 +2183,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   nrecvs = work[rank]; 
   ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   nmax = work[rank];
-  PetscFree(work);
+  ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues    = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -2208,7 +2215,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
       ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
-  PetscFree(starts);
+  ierr = PetscFree(starts);CHKERRQ(ierr);
 
   /* allocate entire send scatter context */
   to = PetscNew(VecScatter_MPI_General);CHKPTRQ(to);
@@ -2245,7 +2252,9 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
       to->indices[start[lowner[owner[i]]]++] = inidx[i];
     }
   }
-  PetscFree(lowner); PetscFree(owner); PetscFree(nprocs);
+  ierr = PetscFree(lowner);CHKERRQ(ierr);
+  ierr = PetscFree(owner);CHKERRQ(ierr);
+  ierr = PetscFree(nprocs);CHKERRQ(ierr);
 
   base = owners[rank];
 
@@ -2262,7 +2271,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
     slen          += n;
     count--;
   }
-  PetscFree(recv_waits); 
+  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
  
   /* allocate entire receive scatter context */
   from = PetscNew( VecScatter_MPI_General );CHKPTRQ(from);
@@ -2290,15 +2299,17 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
       from->indices[from->starts[i] + j] = values[j] - base;
     }
   }
-  PetscFree(rvalues); PetscFree(lens);
+  ierr = PetscFree(rvalues);CHKERRQ(ierr);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
     
   /* wait on sends */
   if (nsends) {
     send_status = (MPI_Status *) PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr        = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
+    ierr        = PetscFree(send_status);CHKERRQ(ierr);
   }
-  PetscFree(send_waits); PetscFree(svalues);
+  ierr = PetscFree(send_waits);CHKERRQ(ierr);
+  ierr = PetscFree(svalues);CHKERRQ(ierr);
 
   if (nprocslocal) {
     int nt;
@@ -2390,7 +2401,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   nrecvs = work[rank]; 
   ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   nmax = work[rank];
-  PetscFree(work);
+  ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues    = (int *) PetscMalloc(2*(nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -2412,7 +2423,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
     svalues[2*starts[owner[i]]]       = inidx[i];
     svalues[1 + 2*starts[owner[i]]++] = inidy[i];
   }
-  PetscFree(owner);
+  ierr = PetscFree(owner);CHKERRQ(ierr);
 
   starts[0] = 0;
   for ( i=1; i<size+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
@@ -2422,8 +2433,8 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
       ierr = MPI_Isend(svalues+2*starts[i],2*nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
-  PetscFree(starts);
-  PetscFree(nprocs);
+  ierr = PetscFree(starts);CHKERRQ(ierr);
+  ierr = PetscFree(nprocs);CHKERRQ(ierr);
 
   base = owners[rank];
 
@@ -2438,7 +2449,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
     slen         += n/2;
     count--;
   }
-  PetscFree(recv_waits); 
+  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
   
   local_inidx = (int *) PetscMalloc( 2*(slen+1)*sizeof(int) );CHKPTRQ(local_inidx);
   local_inidy = local_inidx + slen;
@@ -2451,24 +2462,24 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
       local_inidy[count++] = values[2*j+1];
     }
   }
-  PetscFree(rvalues); 
-  PetscFree(lens);
+  ierr = PetscFree(rvalues);CHKERRQ(ierr);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
  
   /* wait on sends */
   if (nsends) {
     MPI_Status *send_status;
     send_status = (MPI_Status *)PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
+    ierr = PetscFree(send_status);CHKERRQ(ierr);
   }
-  PetscFree(send_waits);
-  PetscFree(svalues);
+  ierr = PetscFree(send_waits);CHKERRQ(ierr);
+  ierr = PetscFree(svalues);CHKERRQ(ierr);
 
   /*
      should sort and remove duplicates from local_inidx,local_inidy 
   */
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,yin,ctx);CHKERRQ(ierr);
-  PetscFree(local_inidx);
+  ierr = PetscFree(local_inidx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

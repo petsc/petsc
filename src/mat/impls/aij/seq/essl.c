@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.31 1999/05/04 20:31:42 balay Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.32 1999/05/12 03:29:04 bsmith Exp balay $";
 #endif
 
 /* 
@@ -39,7 +39,7 @@ extern int MatDestroy_SeqAIJ_Essl(Mat A)
   PetscFunctionBegin;
   if (--A->refct > 0) PetscFunctionReturn(0);
   /* free the Essl datastructures */
-  PetscFree(essl->a);
+  ierr = PetscFree(essl->a);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.10 1999/05/04 20:28:06 balay Exp balay $";
+static char vcid[] = "$Id: viewreg.c,v 1.11 1999/06/04 00:10:15 balay Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -77,7 +77,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
   if (viewer->data) {
     /* destroy the old private Viewer context */
     ierr = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
-    if (viewer->type_name) PetscFree(viewer->type_name);
+    if (viewer->type_name) {ierr = PetscFree(viewer->type_name);CHKERRQ(ierr);}
     viewer->data      = 0;
     viewer->type_name = 0;
   }

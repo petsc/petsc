@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.19 1999/05/04 20:34:21 balay Exp balay $";
+static char vcid[] = "$Id: pcsles.c,v 1.20 1999/06/08 22:57:03 balay Exp balay $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -54,7 +54,7 @@ static int PCDestroy_SLES(PC pc)
 
   PetscFunctionBegin;
   ierr = SLESDestroy(jac->sles);CHKERRQ(ierr);
-  PetscFree(jac);
+  ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

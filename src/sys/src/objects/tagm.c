@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.12 1999/05/12 03:27:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tagm.c,v 1.13 1999/06/30 22:49:26 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites
@@ -42,9 +42,11 @@ EXTERN_C_BEGIN
 */
 int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 {
+  int ierr;
+
   PetscFunctionBegin;
   PLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %d\n",(int) comm);
-  PetscFree( attr_val );
+  ierr = PetscFree( attr_val );CHKERRQ(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 EXTERN_C_END

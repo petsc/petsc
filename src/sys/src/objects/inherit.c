@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.49 1999/05/04 20:29:12 balay Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.50 1999/05/12 03:27:11 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -60,18 +60,18 @@ int PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
   ierr = PetscCommDestroy_Private(&h->comm);CHKERRQ(ierr);
-  PetscFree(h->bops);
-  PetscFree(h->ops);
+  ierr = PetscFree(h->bops);CHKERRQ(ierr);
+  ierr = PetscFree(h->ops);CHKERRQ(ierr);
   ierr = OListDestroy(&h->olist);CHKERRQ(ierr);
   ierr = FListDestroy(h->qlist);CHKERRQ(ierr);
-  if (h->type_name) PetscFree(h->type_name);
-  if (h->name) PetscFree(h->name);
+  if (h->type_name) {ierr = PetscFree(h->type_name);CHKERRQ(ierr);}
+  if (h->name) {ierr = PetscFree(h->name);CHKERRQ(ierr);}
   h->cookie = PETSCFREEDHEADER;
-  if (h->prefix) PetscFree(h->prefix);
+  if (h->prefix) {ierr = PetscFree(h->prefix);CHKERRQ(ierr);}
   if (h->fortran_func_pointers) {
-    PetscFree(h->fortran_func_pointers);
+    ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
   }
-  PetscFree(h);
+  ierr = PetscFree(h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

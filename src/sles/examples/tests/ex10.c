@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.76 1999/03/19 21:22:03 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.77 1999/05/04 20:35:14 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -150,9 +150,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
 
   for ( i=0; i<81; i++ ) {
-    PetscFree(K[i]);
+    ierr = PetscFree(K[i]);CHKERRA(ierr);
   }
-  PetscFree(K);
+  ierr = PetscFree(K);CHKERRA(ierr);
 
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -168,8 +168,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,&iskeep);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb);CHKERRQ(ierr);
-  submat = *submatb; PetscFree(submatb);
-  PetscFree(rowkeep);
+  submat = *submatb; 
+  ierr = PetscFree(submatb);CHKERRA(ierr);
+  ierr = PetscFree(rowkeep);CHKERRA(ierr);
   ierr = ISDestroy(iskeep);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
 

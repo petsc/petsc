@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.90 1999/05/12 03:31:43 bsmith Exp balay $";
+static char vcid[] = "$Id: cg.c,v 1.91 1999/06/08 22:57:15 balay Exp balay $";
 #endif
 
 /*
@@ -221,14 +221,14 @@ int KSPDestroy_CG(KSP ksp)
   PetscFunctionBegin;
   /* free space used for singular value calculations */
   if ( ksp->calc_sings ) {
-    PetscFree(cg->e);
-    PetscFree(cg->ee);
+    ierr = PetscFree(cg->e);CHKERRQ(ierr);
+    ierr = PetscFree(cg->ee);CHKERRQ(ierr);
   }
 
   ierr = KSPDefaultFreeWork( ksp );CHKERRQ(ierr);
   
   /* free the context variable */
-  PetscFree(cg); 
+  ierr = PetscFree(cg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

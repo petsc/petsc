@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmap.c,v 1.10 1999/04/19 22:11:18 bsmith Exp balay $";
+static char vcid[] = "$Id: pmap.c,v 1.11 1999/05/04 20:30:48 balay Exp balay $";
 #endif
 
 /*
@@ -50,9 +50,11 @@ int MapGetGlobalRange_MPI(Map m,int *range[])
 #define __FUNC__ "MapDestroy_MPI"
 int MapDestroy_MPI(Map m)
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (--m->refct > 0) PetscFunctionReturn(0);
-  PetscFree(m->range);
+  ierr = PetscFree(m->range);CHKERRQ(ierr);
   PLogObjectDestroy(m);
   PetscHeaderDestroy(m);
   PetscFunctionReturn(0);
