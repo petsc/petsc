@@ -149,7 +149,7 @@ class Configure(script.Script):
       self.framework.log.write('not found\n')
     return found
 
-  def getExecutable(self, name, path = [], getFullPath = 0, useDefaultPath = 0, resultName = ''):
+  def getExecutable(self, name, path = [], getFullPath = 0, useDefaultPath = 0, resultName = '',setMakeMacro=1):
     found = 0
     index = name.find(' ')
     if index >= 0:
@@ -184,7 +184,8 @@ class Configure(script.Script):
         setattr(self, resultName, os.path.abspath(os.path.join(dir, name))+options)
       else:
         setattr(self, resultName, name+options)
-      self.addMakeMacro(resultName.upper(), getattr(self, resultName))      
+      if setMakeMacro:
+        self.addMakeMacro(resultName.upper(), getattr(self, resultName))      
     return found
 
   def getExecutables(self, names, path = '', getFullPath = 0, useDefaultPath = 0, resultName = ''):
