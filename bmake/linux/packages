@@ -102,6 +102,13 @@ TRILINOS_LIB        = -L/home/alice/software/Trilinos/lib/LINUX.MPI -lpetraesi -
 CCA_INCLUDE    = -I/home/alice/cca/cca-spec/cxx/include/
 PETSC_HAVE_CCA = -DPETSC_HAVE_CCA
 #
+#
+#  Location of hypre
+#
+HYPRE_INCLUDE    = -I/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/include
+HYPRE_LIB        = -L/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/lib
+PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
+
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
