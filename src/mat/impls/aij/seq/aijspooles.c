@@ -62,19 +62,46 @@ int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   PetscFunctionReturn(0); 
 }
 
+/* Note the Petsc r permutation is ignored */
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSAIJ_Spooles"
+int MatCholeskyFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
+{ 
+  Mat_Spooles          *lu;   
+  int                  ierr,m=A->m,n=A->n;
+
+  PetscFunctionBegin;	
+  /* Create the factorization matrix F */  
+  ierr = MatCreateSeqAIJ(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
+
+  (*F)->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
+  (*F)->ops->getinertia             = MatGetInertia_SeqSBAIJ_Spooles;
+  (*F)->factor                      = FACTOR_CHOLESKY;  
+
+  ierr                      = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
+  (*F)->spptr               = (void*)lu;
+  lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
+  lu->options.symflag       = SPOOLES_SYMMETRIC;   /* default */
+  lu->flg                   = DIFFERENT_NONZERO_PATTERN;
+  lu->options.useQR         = PETSC_FALSE;
+
+  PetscFunctionReturn(0); 
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatUseSpooles_SeqAIJ"
 int MatUseSpooles_SeqAIJ(Mat A)
 {
   int          ierr;
   PetscTruth   useQR=PETSC_FALSE;
-
+ 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(A->prefix,"-mat_aij_spooles_qr",&useQR);CHKERRQ(ierr);
   if (useQR){
     A->ops->lufactorsymbolic = MatQRFactorSymbolic_SeqAIJ_Spooles;  
   } else {
-    A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Spooles; 
+    A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ_Spooles;
+    A->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJ_Spooles; 
   } 
   PetscFunctionReturn(0);
 }

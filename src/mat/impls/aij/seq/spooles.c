@@ -120,7 +120,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   Chv                *rootchv ;
   IVL                *adjIVL;
   int                ierr,nz,nrow=A->m,irow,nedges,neqns=A->n,
-                     *ai,*aj,i;
+                     *ai,*aj,i,j,*diag;
   PetscScalar        *av;
   double             cputotal,facops;
 #if defined(PETSC_USE_COMPLEX)
@@ -130,6 +130,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   int                *ivec1, *ivec2;
   double             *dvec;
 #endif
+  PetscTruth         isAIJ;
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
@@ -144,39 +145,66 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   }
 
   /* copy A to Spooles' InpMtx object */
-  if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
+  if (isAIJ){
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
-    nz=mat->nz;
-    ai=mat->i; aj=mat->j;  
-    av=mat->a;
-  } else {
-    Mat_SeqSBAIJ *mat = (Mat_SeqSBAIJ*)A->data;
     ai=mat->i; aj=mat->j; av=mat->a;
-    nz=mat->s_nz;
-  }
-  
-  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ;
-#if defined(PETSC_USE_COMPLEX)
-  for (irow=0; irow<nrow; irow++) {
-    nz_row = ai[irow+1] - ai[irow];
-    aj_tmp = aj + ai[irow];
-    av_tmp = av + ai[irow];
-    for (i=0; i<nz_row; i++){
-      InpMtx_inputComplexEntry(lu->mtxA, irow, *aj_tmp++,PetscRealPart(*av_tmp),PetscImaginaryPart(*av_tmp));
-      av_tmp++;
+    if (lu->options.symflag == SPOOLES_NONSYMMETRIC) {
+      nz=mat->nz;
+    } else { /* SPOOLES_SYMMETRIC || SPOOLES_HERMITIAN */
+      nz=(mat->nz + A->m)/2;
+      if (!mat->diag){
+        ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr); 
+      }
+      diag=mat->diag;
     }
-  }
+  } else { /* A is SBAIJ */
+      Mat_SeqSBAIJ *mat = (Mat_SeqSBAIJ*)A->data;
+      ai=mat->i; aj=mat->j; av=mat->a;
+      nz=mat->s_nz;
+  } 
+  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ;
+ 
+#if defined(PETSC_USE_COMPLEX)
+    for (irow=0; irow<nrow; irow++) {
+      if ( lu->options.symflag == SPOOLES_NONSYMMETRIC || !isAIJ){
+        nz_row = ai[irow+1] - ai[irow];
+        aj_tmp = aj + ai[irow];
+        av_tmp = av + ai[irow];
+      } else {
+        nz_row = ai[irow+1] - diag[irow];
+        aj_tmp = aj + diag[irow];
+        av_tmp = av + diag[irow];
+      }
+      for (i=0; i<nz_row; i++){
+        InpMtx_inputComplexEntry(lu->mtxA, irow, *aj_tmp++,PetscRealPart(*av_tmp),PetscImaginaryPart(*av_tmp));
+        av_tmp++;
+      }
+    }
 #else
-  ivec1 = InpMtx_ivec1(lu->mtxA);  
-  for (irow = 0; irow < nrow; irow++){
-    for (i = ai[irow]; i<ai[irow+1]; i++) ivec1[i] = irow;
-  }
-  ivec2 = InpMtx_ivec2(lu->mtxA); 
-  IVcopy(nz, ivec2, aj);
-  dvec  = InpMtx_dvec(lu->mtxA);
-  DVcopy(nz, dvec, av);
-  InpMtx_inputRealTriples(lu->mtxA, nz, ivec1, ivec2, dvec); 
+    ivec1 = InpMtx_ivec1(lu->mtxA); 
+    ivec2 = InpMtx_ivec2(lu->mtxA);
+    dvec  = InpMtx_dvec(lu->mtxA);
+    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC || !isAIJ){
+      for (irow = 0; irow < nrow; irow++){
+        for (i = ai[irow]; i<ai[irow+1]; i++) ivec1[i] = irow;
+      }
+      IVcopy(nz, ivec2, aj);
+      DVcopy(nz, dvec, av);
+    } else { 
+      nz = 0;
+      for (irow = 0; irow < nrow; irow++){
+        for (j = diag[irow]; j<ai[irow+1]; j++) {
+          ivec1[nz] = irow;
+          ivec2[nz] = aj[j];
+          dvec[nz]  = av[j];
+          nz++;
+        }
+      }
+    }
+    InpMtx_inputRealTriples(lu->mtxA, nz, ivec1, ivec2, dvec); 
 #endif
+
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
   if ( lu->options.msglvl > 0 ) {
     printf("\n\n input matrix") ;
