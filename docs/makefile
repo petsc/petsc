@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.46 2001/02/07 17:01:46 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.47 2001/02/20 15:21:09 bsmith Exp bsmith $ 
 
 CFLAGS   =
 FFLAGS   =
@@ -21,7 +21,7 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test
 
 bib2html:
-	${RM} /mcs/www-unix/petsc/docs/petscapps.html /mcs/www-unix/petsc/docs/petscapps-bib.html
-	/home/gropp/public_html/bib2html -group tex/doctext/petsc.group -listfile /mcs/www-unix/petsc/docs/petscapps.html -listconfig tex/doctext/petscapps.cfg tex/petscapps.bib -nospecials > /mcs/www-unix/petsc/docs/petscapps-bib.html
-	chmod g+w /mcs/www-unix/petsc/docs/petscapps.html /mcs/www-unix/petsc/docs/petscapps-bib.html
+	${RM} /mcs/www-unix/petsc/petscapps.html /mcs/www-unix/petsc/petscapps-bib.html
+	/home/gropp/public_html/bib2html -group tex/doctext/petsc.group -listfile /mcs/www-unix/petsc/petscapps.html -listconfig tex/doctext/petscapps.cfg tex/petscapps.bib -nospecials > /mcs/www-unix/petsc/petscapps-bib.html
+	chmod g+w /mcs/www-unix/petsc/petscapps.html /mcs/www-unix/petsc/petscapps-bib.html
 
