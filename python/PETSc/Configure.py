@@ -63,6 +63,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-debug=<bool>',          nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
     help.addArgument('PETSc', '-with-log=<bool>',            nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-stack=<bool>',          nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
+    help.addArgument('PETSc', '-with-ctable=<bool>',         nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-dynamic=<bool>',        nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
     help.addArgument('PETSc', '-with-shared=<bool>',         nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     help.addArgument('PETSc', '-with-etags=<bool>',          nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
@@ -83,13 +84,15 @@ class Configure(config.base.Configure):
     return
 
   def configureLibraryOptions(self):
-    '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
+    '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
     self.useDebug = self.framework.argDB['with-debug']
     self.addDefine('USE_DEBUG', self.useDebug)
     self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
     self.useStack = self.framework.argDB['with-stack']
     self.addDefine('USE_STACK', self.useStack)
+    self.useCtable = self.framework.argDB['with-ctable']
+    self.addDefine('USE_CTABLE', self.useCtable)
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
     return
