@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.74 1996/11/29 22:20:23 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.75 1996/11/29 22:26:31 curfman Exp curfman $";
 #endif
 
 /*
@@ -610,9 +610,9 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %d X %d, block size %d; storage space: %d unneeded, %d used\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Matrix size: %d X %d, block size %d; storage space: %d unneeded, %d used\n",
            m,a->n,a->bs,fshift*bs2,a->nz*bs2);
-  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is %d\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues is %d\n",
            a->reallocs);
   A->info.nz_unneeded  = (double)fshift*bs2;
 
