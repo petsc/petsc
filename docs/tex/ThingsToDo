@@ -18,26 +18,16 @@ Satish - Make sure one can run block Jacobi on several matrices with number of r
 
 Lois - Add info about which library components do what.  Mention SLES_LIB.
 
-
  - Add table of all preconditioners and options to PETSc manual.
-
-Satish  X MatSetValuesBlocked() TEST
 
 Lois  - add info about help message printout to section 12.1 (version 2.0.15)
     of users manual.
 
-
 Satish/Lois  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
 
-Satish  X Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
-           A prototype is on poseidon:~mcinnes/mpibaij.bak
-
        Maybe, like, say, test one or two BDiag routines before making a release?
        More test cases that involve, zero size vectors, matrices, IS's etc.
-
-Satish  X Try debugger on HP (unset the EDITOR environmental variable)
-        Document in Troubleshooting and Machines
 
 Lois - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
 
@@ -754,3 +744,11 @@ Satish - Subdivide html manpage sections, e.g. elementary, advanced and develope
  X Have PetscFinalize() free linked list of malloced memory in Fortran stubs.
 
  X Get rid of ksp lib.
+
+ X MatSetValuesBlocked() TEST
+
+ X Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
+           A prototype is on poseidon:~mcinnes/mpibaij.bak
+
+ X Try debugger on HP (unset the EDITOR environmental variable)
+        Document in Troubleshooting and Machines
