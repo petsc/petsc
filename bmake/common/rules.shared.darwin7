@@ -15,11 +15,8 @@ shared_darwin7:
         if [ "${LIBNAME}" = "libpetscsles" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_SLES_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscmesh" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscgrid" ]; then OTHERLIBS="${PETSC_MESH_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscgsolver" ]; then OTHERLIBS="${PETSC_GRID_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_GSOLVER_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_GSOLVER_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
 	libtool -v  -noprebind -dynamic -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS ${EXTERNAL_LIB} ${SYS_LIB} -lstdc++ -lgcc -lm -lc;\
 	${RM} -f *
 

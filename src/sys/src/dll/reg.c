@@ -126,13 +126,6 @@ int PetscInitialize_DynamicLibraries(void)
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscgsolver");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
   nmax = 32;
   ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {

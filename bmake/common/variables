@@ -72,10 +72,7 @@ PETSC_DM_LIB_BASIC       = -lpetscdm ${PETSC_MAT_LIB_BASIC}
 PETSC_KSP_LIB_BASIC     = -lpetscksp ${PETSC_DM_LIB_BASIC}
 PETSC_SNES_LIB_BASIC     = -lpetscsnes ${PETSC_KSP_LIB_BASIC}
 PETSC_TS_LIB_BASIC       = -lpetscts ${PETSC_SNES_LIB_BASIC}
-PETSC_MESH_LIB_BASIC     = -lpetscmesh ${PETSC_TS_LIB_BASIC}
-PETSC_GRID_LIB_BASIC     = -lpetscgrid ${PETSC_MESH_LIB_BASIC}
-PETSC_GSOLVER_LIB_BASIC  = -lpetscgsolver ${PETSC_MESH_LIB_BASIC}
-PETSC_LIB_BASIC          = ${PETSC_GSOLVER_LIB_BASIC}
+PETSC_LIB_BASIC          = ${PETSC_TS_LIB_BASIC}
 PETSC_FORTRAN_LIB_BASIC  = -lpetscfortran
 PETSC_CONTRIB_BASIC      = -lpetsccontrib
 
@@ -86,9 +83,6 @@ PETSC_DM_LIB      = -L${PETSC_LIB_DIR} ${PETSC_DM_LIB_BASIC} ${PETSC_EXTERNAL_LI
 PETSC_KSP_LIB    = -L${PETSC_LIB_DIR} ${PETSC_KSP_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_SNES_LIB    = -L${PETSC_LIB_DIR} ${PETSC_SNES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_TS_LIB      = -L${PETSC_LIB_DIR} ${PETSC_TS_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_MESH_LIB    = -L${PETSC_LIB_DIR} ${PETSC_MESH_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_GRID_LIB    = -L${PETSC_LIB_DIR} ${PETSC_GRID_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_GSOLVER_LIB = -L${PETSC_LIB_DIR} ${PETSC_GSOLVER_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_LIB         = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_FORTRAN_LIB = -L${PETSC_LIB_DIR} ${PETSC_FORTRAN_LIB_BASIC}
 PETSC_CONTRIB     = -L${PETSC_LIB_DIR} ${PETSC_CONTRIB_BASIC}
@@ -169,7 +163,7 @@ PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${
 #
 # Some variables used to build shared libraries
 SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts \
-           libpetscmesh libpetscgrid libpetscgsolver libpetsccontrib
+           libpetsccontrib
 #
 # The following include files set customized site, optimization, and version
 # options.  Do NOT remove any of these include files.  You should generally

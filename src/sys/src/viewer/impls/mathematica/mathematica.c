@@ -8,10 +8,7 @@ static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $"
         Reorganized                                    11/8/98
 */
 #include "src/sys/src/viewer/viewerimpl.h"   /* "petsc.h" */
-#include "src/gvec/gvecimpl.h"
-#include "src/mesh/impls/triangular/2d/2dimpl.h"
 #include "src/ksp/pc/pcimpl.h"
-#include "src/ksp/pc/impls/ml/ml.h"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "mathematica.h"
 #include "petscfix.h"

@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = ls tr test ml
+DIRS     = ls tr test
 LOCDIR   = src/snes/impls/
 
 include ${PETSC_DIR}/bmake/common/base

@@ -8,7 +8,6 @@ static char vcid[] = "$Id: vsilo.c,v 1.4 2000/01/10 03:27:03 knepley Exp $";
         Updated by Matt Knepley, knepley@cs.purdue.edu 11/16/99
 */
 #include "vsilo.h"
-#include "gvec.h"
 
 #ifdef PETSC_HAVE_SILO
 
@@ -320,11 +319,6 @@ int PetscViewerSiloClearMeshName(PetscViewer viewer)
 #else
 
 int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
-{
-  SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
-}
-
-int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
