@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.53 1998/04/13 17:25:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.54 1998/04/21 17:32:11 curfman Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -13,13 +13,13 @@ static char vcid[] = "$Id: index.c,v 1.53 1998/04/13 17:25:08 bsmith Exp curfman
 /*@C
    ISIdentity - Determines whether index set is the identity mapping.
 
+   Collective on IS
+
    Input Parmeters:
 .  is - the index set
 
    Output Parameters:
 .  ident - PETSC_TRUE if an identity, else PETSC_FALSE
-
-   Collective on IS
 
 .keywords: IS, index set, identity
 
@@ -39,10 +39,10 @@ int ISIdentity(IS is,PetscTruth *ident)
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
+   Collective on IS
+
    Input Parmeters:
 .  is - the index set
-
-   Collective on IS
 
 .keywords: IS, index set, identity
 
@@ -62,13 +62,13 @@ int ISSetIdentity(IS is)
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
    index set has been declared to be a permutation.
 
+   Collective on IS
+
    Input Parmeters:
 .  is - the index set
 
    Output Parameters:
 .  perm - PETSC_TRUE if a permutation, else PETSC_FALSE
-
-   Collective on IS
 
 .keywords: IS, index set, permutation
 
@@ -88,10 +88,10 @@ int ISPermutation(IS is,PetscTruth *perm)
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
+   Collective on IS
+
    Input Parmeters:
 .  is - the index set
-
-   Collective on IS
 
 .keywords: IS, index set, permutation
 
@@ -110,10 +110,10 @@ int ISSetPermutation(IS is)
 /*@C
    ISDestroy - Destroys an index set.
 
+   Collective on IS
+
    Input Parameters:
 .  is - the index set
-
-   Collective on IS
 
 .keywords: IS, index set, destroy
 
@@ -136,13 +136,13 @@ int ISDestroy(IS is)
    ISInvertPermutation - Creates a new permutation that is the inverse of 
                          a given permutation.
 
+   Collective on IS
+
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
 .  isout - the inverse permutation
-
-   Collective on IS
 
 .keywords: IS, index set, invert, inverse, permutation
 @*/
@@ -162,13 +162,13 @@ int ISInvertPermutation(IS is,IS *isout)
 /*@
    ISGetSize - Returns the global length of an index set. 
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
 .  size - the global size
-
-  Not Collective
 
 .keywords: IS, index set, get, global, size
 
@@ -191,13 +191,13 @@ int ISGetSize(IS is,int *size)
    ISRestoreIndices() after having looked at the indices.  The user should 
    NOT change the indices.
 
+   Not Collective
+
    Input Parameter:
 .  is - the index set
 
    Output Parameter:
 .  ptr - the location to put the pointer to the indices
-
-  Not Collective
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -225,11 +225,11 @@ int ISGetIndices(IS is,int **ptr)
    ISRestoreIndices - Restores an index set to a usable state after a call 
                       to ISGetIndices().
 
-   Input Parameters:
-.  is - the index set
-.  ptr - the pointer obtained by ISGetIndices()
+   Not Collective
 
-  Not Collective
+   Input Parameters:
++  is - the index set
+-  ptr - the pointer obtained by ISGetIndices()
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -257,11 +257,11 @@ int ISRestoreIndices(IS is,int **ptr)
 /*@C
    ISView - Displays an index set.
 
-   Input Parameters:
-.  is - the index set
-.  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
-
    Collective on IS unless Viewer is sequential
+
+   Input Parameters:
++  is - the index set
+-  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
 .keywords: IS, index set, indices
 
@@ -284,10 +284,10 @@ int ISView(IS is, Viewer viewer)
 /*@
    ISSort - Sorts the indices of an index set.
 
+   Collective on IS
+
    Input Parameters:
 .  is - the index set
-
-  Collective on IS
 
 .keywords: IS, index set, sort, indices
 
@@ -308,15 +308,14 @@ int ISSort(IS is)
 /*@C
    ISSorted - Checks the indices to determine whether they have been sorted.
 
-   Input Parameters:
+  Collective on IS
+
+   Input Parameter:
 .  is - the index set
 
-   Output Parameters:
-.  flg - output flag, either
-$     PETSC_TRUE if the index set is sorted;
-$     PETSC_FALSE otherwise.
-
-  Collective on IS
+   Output Parameter:
+.  flg - output flag, either PETSC_TRUE if the index set is sorted, 
+         or PETSC_FALSE otherwise.
 
 .keywords: IS, index set, sort, indices
 
@@ -338,13 +337,13 @@ int ISSorted(IS is, PetscTruth *flg)
 /*@C
    ISDuplicate - Determines whether index set is the identity mapping.
 
+   Collective on IS
+
    Input Parmeters:
 .  is - the index set
 
    Output Parameters:
-.  ident - PETSC_TRUE if an identity, else PETSC_FALSE
-
-  Collective on IS
+.  ident - PETSC_TRUE if an identity, otherwise PETSC_FALSE
 
 .keywords: IS, index set, identity
 
@@ -367,15 +366,17 @@ int ISDuplicate(IS is, IS *newIS)
     The users should call ISRestoreIndicesF90() after having looked at the
     indices.  The user should NOT change the indices.
 
+    Synopsis:
+    ISGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not collective
+
     Input Parameter:
 .   x - index set
 
     Output Parameters:
-.   xx_v - the Fortran90 pointer to the array
-.   ierr - error code
-
-    Synopsis:
-    ISGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
 
     Example of Usage: 
 .vb
@@ -430,16 +431,17 @@ M*/
     The users should call ISBlockRestoreIndicesF90() after having looked at the
     indices.  The user should NOT change the indices.
 
+    Synopsis:
+    ISBlockGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not collective
+
     Input Parameter:
 .   x - index set
 
     Output Parameters:
-.   xx_v - the Fortran90 pointer to the array
-.   ierr - error code
-
-    Synopsis:
-    ISBlockGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
-
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
     Example of Usage: 
 .vb
     Scalar, pointer xx_v(:)
