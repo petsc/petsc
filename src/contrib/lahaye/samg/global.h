@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <iostream.h>
-#include <fstream.h>
 #include <stdarg.h>
 
 #if ( (defined __linux__) || (defined __hpux))
