@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.3 1996/07/25 23:24:29 balay Exp curfman $";
+static char vcid[] = "$Id: ex22.c,v 1.4 1996/07/30 17:17:44 curfman Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -9,6 +9,8 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
   -print_grid : print grid information to stdout\n\
   -print_system : print linear system matrix and vector to stdout\n\
   -print_solution : print solution vector to stdout\n\
+  -print_debug : print deugging information\n\
+  -modify_submat : activate routine to modify submatrices\n\
   -N_eta <N_eta>, -N_xi <N_xi> : number of processors in eta and xi directions\n\
   -m_eta <m_eta>, -m_xi <m_xi> : number of grid points in eta and xi directions\n\
   -xi_max <xi_max> ; maximum xi value\n\
@@ -109,11 +111,14 @@ typedef struct {
   double   rh_xi_sq; 
   double   k1Dbeta_sq; 
   double   ampDbeta;
+  int      print_debug;      /* flag - if 1, print debugging info */
 } Atassi;
 
+/* Declare user-defined routines */
 int UserMatrixCreate(Atassi*,Mat*);
 int FormSystem1(Atassi*,Mat,Vec);
 int UserDetermineMatrixNonzeros(Atassi*,MatType,int**,int**);
+int ModifySubmatrices1(PC,int,IS*,IS*,Mat*,void*);
 #define sqr(x) ((x)*(x))
 
 int main(int argc,char **args)
@@ -122,6 +127,7 @@ int main(int argc,char **args)
   Vec     b2, localv;        /* work vectors */
   Mat     A;                 /* linear system matrix */
   SLES    sles;              /* SLES context */
+  PC      pc;                /* PC context */
   KSP     ksp;               /* KSP context */
   Atassi  user;              /* user-defined work context */
   int     N_eta, N_xi;       /* number of processors in eta and xi directions */
@@ -151,6 +157,7 @@ int main(int argc,char **args)
   ierr = OptionsGetDouble(PETSC_NULL,"-mach",&user.mach,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-k1",&k1,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-xi_max",&user.xi_max,&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-print_debug",&user.print_debug); CHKERRA(ierr);
   user.m_dim      = user.m_eta * user.m_xi;
   user.h_eta      = 1.0/(user.m_eta - 1);
   user.h_xi       = user.xi_max/(user.m_xi - 1);
@@ -200,8 +207,23 @@ int main(int argc,char **args)
   ierr = KSPSetTolerances(ksp,1.e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
-  /* Solve linear system */
+  /* Set routine for modifying submarices that arise in certain preconditioners
+    (block Jacobi, ASM, and block Gauss-Seidel) */
+  ierr = OptionsHasName(PETSC_NULL,"-modify_submat",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+    ierr = PCSetModifySubMatrices(pc,ModifySubmatrices1,(void*)&user); CHKERRA(ierr);
+  }
+
+  /* Here we explicitly call SLESSetUp() and SLESSetUpOnBlocks() to
+     enable more precise profiling of setting up the preconditioner.
+     These calls are optional, since both will be called within
+     SLESSolve() if they haven't been called already. */
+  ierr = SLESSetUp(sles,b,phi); CHKERRA(ierr);
+  ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,phi,&its); CHKERRA(ierr);
+
+  /* View info about linear solver; could use runtime option -sles_view instead */
   ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-print_solution",&flg); CHKERRA(ierr);
@@ -250,8 +272,8 @@ int main(int argc,char **args)
    Additional formats are also available.
 
    Preallocation of matrix memory is crucial for fast matrix assembly!!
-   See the users manual and the file petsc/Performance for details.
-   Use the option -log_info to print info about matrix memory allocation.
+   See the users manual for details.  Use the option -log_info to print
+   info about matrix memory allocation.
  */
 int UserMatrixCreate(Atassi *user,Mat *mat)
 {
@@ -599,6 +621,70 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
     ierr = DFVecView(b,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
+  return 0;
+}
+/* -------------------------------------------------------------------------------- */
+/*
+   ModifySubmatrices1 - Modifies the submatrices that arise in certain
+   preconditioners (block Jacobi, ASM, and block Gauss-Seidel) (for
+   example, to set alternative boundary conditions for the subdomains).
+   This routine is set by calling PCSetModifySubMatrices() within the
+   main program.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  nsub - the number of local submatrices
+.  row - an array of index sets that contain the global row numbers
+         that comprise each local submatrix
+.  col - an array of index sets that contain the global column numbers
+         that comprise each local submatrix
+.  submat - array of local submatrices
+.  ctx - optional user-defined context for private data for the 
+         user-defined func routine (may be null)
+
+   Output Parameter:
+.  submat - array of local submatrices (the entries of which may
+            have been modified)
+
+   Notes:
+   The basic submatrices are extracted from the preconditioner matrix as usual;
+   this routine allows the user to modify the entries within the local submatrices
+   as needed in a particular application before they are used for the local solves.
+
+   This code is intended merely to demonstrate the process of modifying
+   the local submatrices; these particular choices for matrix entries are
+   NOT representative of what would be appropriate in Helmholtz problems
+   (or any particular problems, for that matter).
+*/
+int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
+{
+  Atassi *user = (Atassi*)dummy;
+  int    i, ierr, m, n, rank, lrow, lcol;
+  IS     is;
+  Scalar one = 1.0, val;
+
+  /* Note that one can refer to any data within the user-defined context,
+    as set by the call to PCSetModifySubMatrices() in the main program. */
+    if (user->print_debug)
+      PetscPrintf(user->comm,"grid spacing: h_eta = %g, h_xi = %g\n",
+          user->h_eta,user->h_xi);
+
+  /* Loop over local submatrices */
+  for (i=0; i<nsub; i++) {
+    ierr = MatGetSize(submat[i],&m,&n); CHKERRQ(ierr);
+    if (user->print_debug)
+      printf("[%d] changing submatrix %d of %d local submatrices: dimension %d X %d\n",
+              user->rank,i+1,nsub,m,n);
+    if (m) m--;
+    ierr = ISCreateGeneral(MPI_COMM_SELF,1,&m,&is); CHKERRQ(ierr);
+    ierr = MatZeroRows(submat[i],is,&one); CHKERRQ(ierr);
+    ierr = ISDestroy(is); CHKERRQ(ierr);
+
+    lrow = 1; lcol = 1; val = 0.5;
+    ierr = MatSetValues(submat[i],1,&lrow,1,&lcol,&val,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(submat[i],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(submat[i],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  }
   return 0;
 }
 

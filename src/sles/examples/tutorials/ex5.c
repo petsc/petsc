@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.59 1996/08/17 17:12:42 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.60 1996/08/18 19:49:01 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -29,6 +29,7 @@ T*/
 #include "sles.h"
 #include  <stdio.h>
 
+int ModifySubmatrices(PC,int,IS*,IS*,Mat*,void*);
 int main(int argc,char **args)
 {
   Mat     C; 
@@ -37,6 +38,7 @@ int main(int argc,char **args)
   int     i, j, m = 3, n = 2, rank, size, its, mat_nonsymmetric = 0;
   Vec     x, u, b;
   SLES    sles;
+  PC      pc;
   double  norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -170,13 +172,16 @@ int main(int argc,char **args)
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
 
   /* 
      Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
   */
 
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+
+  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+  ierr = PCSetModifySubMatrices(pc,ModifySubmatrices,0); CHKERRA(ierr);
 
   /* 
      Solve linear system.  Here we explicitly call SLESSetUp() for more
@@ -267,7 +272,11 @@ int main(int argc,char **args)
         will not function correctly.  Thus, use this optimization
         feature with caution!
   */
-  ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
+
+  /* NOTE: We temoprarily change this to use DIFFERENT_NONZERO_PATTERN to
+     enable other experiments */
+  ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  /*  ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr); */
 
   /* 
      Solve linear system
@@ -301,6 +310,25 @@ int main(int argc,char **args)
   PLogStagePop();
 
   PetscFinalize();
+  return 0;
+}
+/* ---------------------------------------------------------- */
+
+int ModifySubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
+{
+  int    i, ierr, m, n, rank;
+  IS     is;
+  Scalar one = 1.0;
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  for (i=0; i<nsub; i++) {
+    ierr = MatGetSize(submat[i],&m,&n); CHKERRQ(ierr);
+    /* printf("[%d] changing submatrix %d: dimension %d X %d\n",rank,i,m,n); */
+    if (m) m--;
+    ierr = ISCreateGeneral(MPI_COMM_SELF,1,&m,&is); CHKERRQ(ierr);
+    ierr = MatZeroRows(submat[i],is,&one); CHKERRQ(ierr);
+    ierr = ISDestroy(is); CHKERRQ(ierr);
+  }
   return 0;
 }
 
