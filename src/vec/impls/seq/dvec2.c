@@ -777,11 +777,12 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMaxPointwiseDivide_Seq"
-int VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscScalar *max)
+int VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
   int          n = xin->n,i,ierr;
-  PetscScalar  *xx = x->array,*yy,m = 0.0;
+  PetscScalar  *xx = x->array,*yy;
+  PetscReal    m = 0.0;
 
   PetscFunctionBegin;
   ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
@@ -792,7 +793,7 @@ int VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscScalar *max)
       m = PetscMax(PetscAbsScalar(xx[i]), m);
     }
   }
-  ierr = MPI_Allreduce(&m,max,1,MPI_DOUBLE,MPI_MAX,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&m,max,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
   ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
   PetscLogFlops(n);
   PetscFunctionReturn(0);
