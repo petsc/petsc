@@ -229,7 +229,6 @@ class Configure(config.base.Configure):
     if not 'CC' in self.framework.argDB or not 'FC' in self.framework.argDB: 
       self.flibs = ''
       self.addSubstitution('FLIBS', '')
-      self.addSubstitution('CFLIBS', '')
       # this is not the correct place for the next 2 lines, but I'm to lazy to figure out where to put them
       self.addSubstitution('FC', '')
       self.addSubstitution('FC_SHARED_OPT', '')
@@ -361,19 +360,15 @@ class Configure(config.base.Configure):
     if ldRunPath: self.flibs = ldRunPath+self.flibs
 
     # g77 shoves this in on darwin, but it is not needed and is incompatible with Apple g++
-    if self.flibs.find('-L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4 ') >= 0:
-      self.flibs = re.sub('-L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4 ','',self.flibs)
-      self.framework.addSubstitution('CFLIBS','-L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4')
-      cflibs = ' -L/sw/lib/gcc/powerpc-apple-darwin7.0.0/3.4 '
-    else:
-      self.framework.addSubstitution('CFLIBS','')
-      cflibs = ''
+    # using darwin7.0.0 is a bug - it could be anything depending upon the osx release and the maching g77 is compiled on
+    if self.flibs.find('-L/sw/lib/gcc/powerpc-apple-darwin') >= 0:
+      self.flibs = re.sub('-L/sw/lib/gcc/powerpc-apple-darwin','-L/usr/lib -L/sw/lib/gcc/powerpc-apple-darwin',self.flibs)
     
     self.framework.log.write('Libraries needed to link against Fortran compiler'+self.flibs+'\n')
     # check that these monster libraries can be used from C
     self.framework.log.write('Check that Fortran libraries can be used from C\n')
     oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+cflibs+self.flibs
+    self.framework.argDB['LIBS'] += ' '+self.flibs
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
