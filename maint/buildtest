@@ -95,7 +95,7 @@ if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
   set RJOBS=""
 endif
 
-make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT all >>& build.log
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT all test >>& build.log
 echo '****************************************************' >>& build.log
 echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& build.log
 tar rf buildoutput.tar build.log

@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
     self.name         = 'MPI'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
-    self.usingMPIUni  = 1
+    self.usingMPIUni  = 0
     return
 
   def __str__(self):

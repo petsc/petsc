@@ -297,7 +297,11 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if (self.framework.argDB['with-scotch'] or self.framework.argDB['download-scotch'] == 1)  and not self.framework.argDB['with-64-bit-ints']:
+    if (self.framework.argDB['with-scotch'] or self.framework.argDB['download-scotch'] == 1):
+      if self.mpi.usingMPIUni:
+        raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+      if self.framework.argDB['with-64-bit-ints']:
+        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')        
       self.executeTest(self.configureLibrary)
       self.framework.packages.append(self)
     return

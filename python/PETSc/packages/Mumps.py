@@ -409,9 +409,12 @@ framework.log)[0]
             
   def configure(self):
     if self.framework.argDB['download-'+self.package]: self.framework.argDB['with-'+self.package] = 1
-    if not self.framework.argDB['with-'+self.package] or self.framework.argDB['with-64-bit-ints']:
-      return
-    self.executeTest(self.configureLibrary)
+    if self.framework.argDB['with-'+self.package]:
+      if self.mpi.usingMPIUni:
+        raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
+      if self.framework.argDB['with-64-bit-ints']:
+        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
+      self.executeTest(self.configureLibrary)
     return
 
 if __name__ == '__main__':
