@@ -9,7 +9,7 @@ BLASLAPACK_LIB = ${CLINKER_SLFLAG}${SOFT_HOME}/mkl-52/lib/32 -L${SOFT_HOME}/mkl-
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /soft/apps/packages/mpich-gm-1.2.4..8-gm-1.5.2.1-intel
+MPI_HOME       = /soft/apps/packages/mpich-gm-1.2.4..8a-gm-1.5.2.1-intel-6.0.1.304
 MPI_LIB        = -L${MPI_HOME}/lib  -lmpich -lgm
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
