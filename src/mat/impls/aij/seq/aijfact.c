@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.110 1998/10/09 19:22:05 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.111 1998/11/30 22:40:16 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -199,7 +199,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   PetscMemzero(rtmp,(n+1)*sizeof(Scalar));
   rtmps = rtmp + shift; ics = ic + shift;
 
-  /* precalcuate row sums */
+  /* precalculate row sums */
   if (preserve_row_sums) {
     rowsums = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(rowsums);
     for ( i=0; i<n; i++ ) {
@@ -223,7 +223,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     for ( j=0; j<nz; j++ ) rtmp[ics[ajtmpold[j]]] =  v[j];
 
     row = *ajtmp++ + shift;
-      while  (row < i ) {
+    while  (row < i ) {
       pc = rtmp + row;
       if (*pc != 0.0) {
         pv         = b->a + diag_offset[row] + shift;
@@ -247,7 +247,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
         LU matrix to have same row sum as initial matrix. 
     */
     if (pv[diag] == 0.0) {
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot row %d",i);
     }
     if (preserve_row_sums) {
       pj  = b->j + ai[i] + shift;
@@ -599,20 +599,31 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
+extern int MatMissingDiag_SeqAIJ(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ "MatILUFactorSymbolic_SeqAIJ"
-int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat *fact)
+int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fact)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b;
   IS         isicol;
   int        *r,*ic, ierr, prow, n = a->m, *ai = a->i, *aj = a->j;
   int        *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
   int        *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0;
-  int        incrlev,nnz,i,shift = a->indexshift;
+  int        incrlev,nnz,i,shift = a->indexshift,levels,diagonal_fill;
   PetscTruth col_identity, row_identity;
+  double     f;
  
   PetscFunctionBegin;
+  if (info) {
+    f             = info->fill;
+    levels        = info->levels;
+    diagonal_fill = info->diagonal_fill;
+  } else {
+    f             = 1.0;
+    levels        = 0;
+    diagonal_fill = 0;
+  }
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
 
   /* special case that simply copies fill pattern */
@@ -624,6 +635,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
     if (!b->diag) {
       ierr = MatMarkDiag_SeqAIJ(*fact); CHKERRQ(ierr);
     }
+    ierr = MatMissingDiag_SeqAIJ(*fact); CHKERRQ(ierr);
     b->row             = isrow;
     b->col             = iscol;
     b->icol            = isicol;
@@ -651,11 +663,13 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   dloc = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(dloc);
   dloc[0]  = 0;
   for ( prow=0; prow<n; prow++ ) {
-    /* first copy previous fill into linked list */
+
+    /* copy current row into linked list */
     nzf     = nz  = ai[r[prow]+1] - ai[r[prow]];
     if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,1,"Empty row in matrix");
     xi      = aj + ai[r[prow]] + shift;
-    fill[n] = n;
+    fill[n]    = n;
+    fill[prow] = -1;
     while (nz--) {
       fm  = n;
       idx = ic[*xi++ + shift];
@@ -667,17 +681,30 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
       fill[idx] = fm;
       im[idx]   = 0;
     }
+
+    /* make sure diagonal entry is included */
+    if (diagonal_fill) {
+      fm = n;
+      do {
+        m = fm;
+        fm = fill[m];
+      } while (fm < prow);
+      if (fm != prow) { /* the diagonal is missing */
+        fill[m]    = prow;
+        fill[prow] = fm;
+        im[prow]   = 0;
+        nzf++;
+      }
+    }
+
     nzi = 0;
     row = fill[n];
     while ( row < prow ) {
       incrlev = im[row] + 1;
       nz      = dloc[row];
-      xi      = ajnew  + ainew[row] + shift + nz;
+      xi      = ajnew  + ainew[row] + shift + nz + 1;
       flev    = ajfill + ainew[row] + shift + nz + 1;
       nnz     = ainew[row+1] - ainew[row] - nz - 1;
-      if (*xi++ + shift != row) {
-        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot: try running with -pc_ilu_nonzeros_along_diagonal");
-      }
       fm      = row;
       while (nnz-- > 0) {
         idx = *xi++ + shift;
@@ -734,6 +761,11 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
       *xi++   = fm - shift;
       *flev++ = im[fm];
       fm      = fill[fm];
+    }
+    /* make sure row has diagonal entry */
+    if (ajnew[ainew[prow]+shift+dloc[prow]]+shift != prow) {
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,1,"Row %d has missing diagonal in factored matrix\n\
+    try running with -pc_ilu_nonzeros_along_diagonal or -pc_ilu_diagonal_fill",prow);
     }
   }
   PetscFree(ajfill); 
