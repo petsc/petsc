@@ -504,10 +504,11 @@ class Configure(config.base.Configure):
     # Borland compiler accepts -PIC as -P, which means compile as C++ code,
     # Using this will force compilation, not linking when used as a link flag!!!
     # Since this is not what we intend with -PIC, just kick out if using borland.
-    if self.CC.find('bcc32'):
+    if self.CC.find('bcc32') >= 0:
+      self.framework.logPrint("Skip checking PIC options since we have a Borland compiler")
       return
     if not self.framework.argDB['with-shared']:
-      self.framework.logPrint("Skipping checking PIC options since shared libraries are turned off")
+      self.framework.logPrint("Skip checking PIC options since shared libraries are turned off")
       return
     languages = ['C']
     if 'CXX' in self.framework.argDB:
