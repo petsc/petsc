@@ -68,7 +68,7 @@ class TreeFileSet (FileSet):
     FileSet.__init__(self, func = self.walkTree)
     if roots:
       if type(roots) == types.StringType:
-        self.roots  = FileSet(roots)
+        self.roots  = FileSet([roots])
       else:
         self.roots  = roots
     else:
