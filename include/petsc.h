@@ -1,11 +1,11 @@
-/* $Id: petsc.h,v 1.122 1996/07/11 18:38:47 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.123 1996/07/15 17:51:50 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.14, Released April ?, 1996."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.15, Released July 25, 1996."
 
 #include <stdio.h>
 
@@ -112,7 +112,6 @@ extern int LARGEST_PETSC_COOKIE;
 #include "options.h"
 
 extern double PetscGetTime();
-extern double PetscGetFlops();
 extern void   PetscSleep(int);
 
 extern int PetscInitialize(int*,char***,char*,char*);
@@ -131,6 +130,8 @@ extern int PetscObjectGetName(PetscObject,char**);
 extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),
                               int (*)(void*));
 extern int PetscObjectReference(PetscObject);
+extern int PetscObjectGetNewTag(PetscObject,int *);
+extern int PetscObjectRestoreNewTag(PetscObject,int *);
 
 extern int PetscTraceBackErrorHandler(int,char*,char*,int,char*,void*);
 extern int PetscStopErrorHandler(int,char*,char*,int,char*,void*);
@@ -175,5 +176,8 @@ extern FILE *PetscFOpen(MPI_Comm,char *,char *);
 extern int  PetscFClose(MPI_Comm,FILE*);
 extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscPrintf(MPI_Comm,char *,...);
+
+extern int PetscIntView(int,int*,Viewer);
+extern int PetscDoubleView(int,double *,Viewer);
 
 #endif
