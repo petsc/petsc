@@ -302,27 +302,10 @@ int checkInit(void) {
       self.math = ['libm.a']
     return
 
-  def checkSuffix(self):
-    '''(Belongs in config.libraries) Determine the suffix used for libraries'''
-    # If MS Windows's kernel32.lib is available then use lib for the suffix, otherwise use a.
-    # Cygwin w32api uses libkernel32.a for this symbol.
-    oldLibs = self.framework.argDB['LIBS']
-    found = self.check(['kernel32.lib'],'GetCurrentProcess',prototype='int __stdcall GetCurrentProcess(void);\n')
-    if not found:
-      found = self.check(['PSDK/kernel32.lib'],'GetCurrentProcess',prototype='int __stdcall GetCurrentProcess(void);\n')
-    if found:
-      self.suffix = 'lib'
-    else:
-      self.suffix = 'a'
-    self.addMakeMacro('AR_LIB_SUFFIX', self.suffix)
-    self.framework.argDB['LIBS'] = oldLibs
-    return
-
   def configure(self):
     self.framework.argDB['LIBS'] = ''
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
-    self.executeTest(self.checkSuffix)
     self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
     self.addArgumentSubstitution('LIBS',    'LIBS')
     return
