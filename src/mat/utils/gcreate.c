@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.108 1998/04/15 22:51:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.109 1998/04/23 21:58:05 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -54,7 +54,7 @@ static char vcid[] = "$Id: gcreate.c,v 1.108 1998/04/15 22:51:03 curfman Exp bsm
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
-          MatCreateMPIRowbs(), MatCreateSeqBAIJ,
+          MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ()
           MatConvert(), MatGetTypeFromOptions()
 @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *A)

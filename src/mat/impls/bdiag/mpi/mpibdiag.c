@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.136 1998/04/15 22:29:07 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.137 1998/04/15 22:50:33 curfman Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -871,31 +871,31 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
 /*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator
++  comm - MPI communicator
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of columns (local and global)
 .  nd - number of block diagonals (global) (optional)
 .  bs - each element of a diagonal is an bs x bs dense matrix
-.  diag - array of block diagonal numbers (length nd),
-$     where for a matrix element A[i,j], 
-$     where i=row and j=column, the diagonal number is
+.  diag - optional array of block diagonal numbers (length nd).
+   For a matrix element A[i,j], where i=row and j=column, the
+   diagonal number is
 $     diag = i/bs - j/bs  (integer division)
-$     Set diag=PETSC_NULL on input for PETSc to dynamically allocate
-$     memory as needed.
-.  diagv  - pointer to actual diagonals (in same order as diag array), 
+   Set diag=PETSC_NULL on input for PETSc to dynamically allocate memory as 
+   needed (expensive).
+-  diagv  - pointer to actual diagonals (in same order as diag array), 
    if allocated by user. Otherwise, set diagv=PETSC_NULL on input for PETSc
    to control memory allocation.
 
    Output Parameter:
 .  A - the matrix 
 
-   Collective on MPI_Comm
-
    Options Database Keys:
-$   -mat_block_size bs
-$   -mat_bdiag_diags s1,s2,s3,...
+.  -mat_block_size <bs> - Sets blocksize
+.  -mat_bdiag_diags <s1,s2,s3,...> - Sets diagonal numbers
 
    Notes:
    The parallel matrix is partitioned across the processors by rows, where
@@ -1050,19 +1050,21 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
    Input Parameters:
 .  mat - the matrix, stored in block diagonal format.
 
+   Not Collective
+
    Output Parameters:
-.  m - number of rows
++  m - number of rows
 .  n - number of columns
 .  nd - number of block diagonals
 .  bs - each element of a diagonal is an bs x bs dense matrix
 .  bdlen - array of total block lengths of block diagonals
-.  diag - array of block diagonal numbers,
-$     where for a matrix element A[i,j], 
-$     where i=row and j=column, the diagonal number is
+.  diag - optional array of block diagonal numbers (length nd).
+   For a matrix element A[i,j], where i=row and j=column, the
+   diagonal number is
 $     diag = i/bs - j/bs  (integer division)
-.  diagv - pointer to actual diagonals (in same order as diag array), 
-
-   Not Collective
+   Set diag=PETSC_NULL on input for PETSc to dynamically allocate memory as 
+   needed (expensive).
+-  diagv - pointer to actual diagonals (in same order as diag array), 
 
    Notes:
    See the users manual for further details regarding this storage format.

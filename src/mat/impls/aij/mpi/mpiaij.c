@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.238 1998/04/15 19:37:32 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.239 1998/04/15 22:50:53 curfman Exp curfman $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1514,8 +1514,10 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator
++  comm - MPI communicator
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
            This value should be the same as the local size used in creating the 
            y vector for the matrix-vector product y = Ax.
@@ -1532,14 +1534,12 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
            it is zero.
 .  o_nz - number of nonzeros per row in the off-diagonal portion of local
            submatrix (same for all local rows).
-.  o_nzz - array containing the number of nonzeros in the various rows of the
+-  o_nzz - array containing the number of nonzeros in the various rows of the
            off-diagonal portion of the local submatrix (possibly different for
            each row) or PETSC_NULL.
 
    Output Parameter:
 .  A - the matrix 
-
-   Collective on MPI_Comm
 
    Notes:
    The AIJ format (also called the Yale sparse matrix format or
@@ -1555,12 +1555,11 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    reusing matrix information to achieve increased efficiency.
 
    Options Database Keys:
-$    -mat_aij_no_inode  - Do not use inodes
-$    -mat_aij_inode_limit <limit> - Set inode limit.
-$        (max limit=5)
-$    -mat_aij_oneindex - Internally use indexing starting at 1
-$        rather than 0.  Note: When calling MatSetValues(),
-$        the user still MUST index entries starting at 0!
++  -mat_aij_no_inode  - Do not use inodes
+.  -mat_aij_inode_limit <limit> - Sets inode limit (max limit=5)
+-  -mat_aij_oneindex - Internally use indexing starting at 1
+        rather than 0.  Note that when calling MatSetValues(),
+        the user still MUST index entries starting at 0!
 
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 
@@ -1577,14 +1576,15 @@ $        the user still MUST index entries starting at 0!
    Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
    the figure below we depict these three local rows and all columns (0-11).
 
-$          0 1 2 3 4 5 6 7 8 9 10 11
-$         -------------------
-$  row 3  |  o o o d d d o o o o o o
-$  row 4  |  o o o d d d o o o o o o
-$  row 5  |  o o o d d d o o o o o o
-$         -------------------
-$ 
-
+.vb
+             0 1 2 3 4 5 6 7 8 9 10 11
+            -------------------
+     row 3  |  o o o d d d o o o o o o
+     row 4  |  o o o d d d o o o o o o
+     row 5  |  o o o d d d o o o o o o
+            -------------------
+.ve 
+ 
    Thus, any entries in the d locations are stored in the d (diagonal) 
    submatrix, and any entries in the o locations are stored in the
    o (off-diagonal) submatrix.  Note that the d and the o submatrices are

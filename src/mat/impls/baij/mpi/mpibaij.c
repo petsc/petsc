@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.117 1998/04/15 19:37:22 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.118 1998/04/15 22:50:46 curfman Exp curfman $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1782,8 +1782,10 @@ static struct _MatOps MatOps = {
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator
++  comm - MPI communicator
 .  bs   - size of blockk
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
            This value should be the same as the local size used in creating the 
@@ -1797,18 +1799,20 @@ static struct _MatOps MatOps = {
            submatrix  (same for all local rows)
 .  d_nzz - array containing the number of block nonzeros in the various block rows 
            of the in diagonal portion of the local (possibly different for each block
-           row) or PETSC_NULL.  You must leave room for the diagonal entry even if
-           it is zero.
+           row) or PETSC_NULL.  You must leave room for the diagonal entry even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
-.  o_nzz - array containing the number of nonzeros in the various block rows of the
+-  o_nzz - array containing the number of nonzeros in the various block rows of the
            off-diagonal portion of the local submatrix (possibly different for
            each block row) or PETSC_NULL.
 
    Output Parameter:
 .  A - the matrix 
 
-   Collective on MPI_Comm
+   Options Database Keys:
+.   -mat_no_unroll - uses code that does not unroll the loops in the 
+                     block calculations (much slower)
+.   -mat_block_size - size of the blocks to use
 
    Notes:
    The user MUST specify either the local or global matrix dimensions
@@ -1829,14 +1833,15 @@ static struct _MatOps MatOps = {
    Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
    the figure below we depict these three local rows and all columns (0-11).
 
-$          0 1 2 3 4 5 6 7 8 9 10 11
-$         -------------------
-$  row 3  |  o o o d d d o o o o o o
-$  row 4  |  o o o d d d o o o o o o
-$  row 5  |  o o o d d d o o o o o o
-$         -------------------
-$ 
-
+.vb
+           0 1 2 3 4 5 6 7 8 9 10 11
+          -------------------
+   row 3  |  o o o d d d o o o o o o
+   row 4  |  o o o d d d o o o o o o
+   row 5  |  o o o d d d o o o o o o
+          -------------------
+.ve
+  
    Thus, any entries in the d locations are stored in the d (diagonal) 
    submatrix, and any entries in the o locations are stored in the
    o (off-diagonal) submatrix.  Note that the d and the o submatrices are
@@ -1851,7 +1856,7 @@ $
 
 .keywords: matrix, block, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues()
+.seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues(), MatCreateMPIAIJ()
 @*/
 int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
                     int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A)

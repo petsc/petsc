@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.86 1998/04/15 19:42:57 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.87 1998/04/15 22:50:39 curfman Exp curfman $";
 #endif
 
 /*
@@ -911,21 +911,19 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
 /*@C
    MatCreateMPIDense - Creates a sparse parallel matrix in dense format.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator
++  comm - MPI communicator
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
-.  n - number of local columns (or PETSC_DECIDE to have calculated 
-           if N is given)
+.  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DECIDE to have calculated 
-           if n is given)
-.  data - optional location of matrix data.  Set data=PETSC_NULL for PETSc
+.  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
+-  data - optional location of matrix data.  Set data=PETSC_NULL for PETSc
    to control all matrix memory allocation.
 
    Output Parameter:
 .  A - the matrix
-
-   Collective on MPI_Comm
 
    Notes:
    The dense format is fully compatible with standard Fortran 77

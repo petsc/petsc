@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.260 1998/04/15 22:50:57 curfman Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.261 1998/04/16 15:25:52 balay Exp curfman $";
 #endif
 
 /*
@@ -1759,18 +1759,18 @@ extern int MatUseDXML_SeqAIJ(Mat);
    (or the array nzz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
-.  nzz - array containing the number of nonzeros in the various rows
+-  nzz - array containing the number of nonzeros in the various rows 
          (possibly different for each row) or PETSC_NULL
 
    Output Parameter:
 .  A - the matrix 
-
-   Collective on MPI_Comm
 
    Notes:
    The AIJ format (also called the Yale sparse matrix format or
@@ -1789,12 +1789,11 @@ extern int MatUseDXML_SeqAIJ(Mat);
    reusing matrix information to achieve increased efficiency.
 
    Options Database Keys:
-$    -mat_aij_no_inode  - Do not use inodes
-$    -mat_aij_inode_limit <limit> - Set inode limit.
-$        (max limit=5)
-$    -mat_aij_oneindex - Internally use indexing starting at 1
-$        rather than 0.  Note: When calling MatSetValues(),
-$        the user still MUST index entries starting at 0!
++  -mat_aij_no_inode  - Do not use inodes
+.  -mat_aij_inode_limit <limit> - Sets inode limit (max limit=5)
+-  -mat_aij_oneindex - Internally use indexing starting at 1
+        rather than 0.  Note that when calling MatSetValues(),
+        the user still MUST index entries starting at 0!
 
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues()
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.133 1998/04/15 19:34:59 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.134 1998/04/15 22:50:50 curfman Exp curfman $";
 #endif
 
 /*
@@ -1165,24 +1165,24 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
    (or the array nzz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to PETSC_COMM_SELF
 .  bs - size of block
 .  m - number of rows
 .  n - number of columns
 .  nz - number of block nonzeros per block row (same for all rows)
-.  nzz - array containing the number of block nonzeros in the various block rows 
+-  nzz - array containing the number of block nonzeros in the various block rows 
          (possibly different for each block row) or PETSC_NULL
 
    Output Parameter:
 .  A - the matrix 
 
-   Collective on MPI_Comm
-
    Options Database Keys:
-$    -mat_no_unroll - uses code that does not unroll the loops in the 
-$                     block calculations (much slower)
-$    -mat_block_size - size of the blocks to use
+.   -mat_no_unroll - uses code that does not unroll the loops in the 
+                     block calculations (much slower)
+.    -mat_block_size - size of the blocks to use
 
    Notes:
    The block AIJ format is fully compatible with standard Fortran 77
@@ -1194,7 +1194,7 @@ $    -mat_block_size - size of the blocks to use
    allocation.  For additional details, see the users manual chapter on
    matrices.
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
 int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 {

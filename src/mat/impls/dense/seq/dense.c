@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.145 1998/04/15 19:38:16 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.146 1998/04/15 22:50:42 curfman Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1226,17 +1226,17 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
    is stored in column major order (the usual Fortran 77 manner). Many 
    of the matrix operations use the BLAS and LAPACK routines.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of rows
 .  n - number of columns
-.  data - optional location of matrix data.  Set data=PETSC_NULL for PETSc
+-  data - optional location of matrix data.  Set data=PETSC_NULL for PETSc
    to control all matrix memory allocation.
 
    Output Parameter:
 .  A - the matrix
-
-   Collective on MPI_Comm
 
    Notes:
    The data input variable is intended primarily for Fortran programmers
@@ -1245,7 +1245,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
 
 .keywords: dense, matrix, LAPACK, BLAS
 
-.seealso: MatCreate(), MatSetValues()
+.seealso: MatCreate(), MatCreateMPIDense(), MatSetValues()
 @*/
 int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
 {

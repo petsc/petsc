@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.154 1998/04/15 19:57:46 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.155 1998/04/15 22:50:26 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2171,30 +2171,30 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
 /*@C
    MatCreateSeqBDiag - Creates a sequential block diagonal matrix.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of rows
 .  n - number of columns
 .  nd - number of block diagonals (optional)
 .  bs - each element of a diagonal is an bs x bs dense matrix
-.  diag - optional array of block diagonal numbers (length nd),
-$     where for a matrix element A[i,j], 
-$     where i=row and j=column, the diagonal number is
+.  diag - optional array of block diagonal numbers (length nd).
+   For a matrix element A[i,j], where i=row and j=column, the
+   diagonal number is
 $     diag = i/bs - j/bs  (integer division)
-$     Set diag=PETSC_NULL on input for PETSc to dynamically allocate memory
-$     as needed.
-.  diagv - pointer to actual diagonals (in same order as diag array), 
+   Set diag=PETSC_NULL on input for PETSc to dynamically allocate memory as 
+   needed (expensive).
+-  diagv - pointer to actual diagonals (in same order as diag array), 
    if allocated by user.  Otherwise, set diagv=PETSC_NULL on input for PETSc
    to control memory allocation.
 
    Output Parameters:
 .  A - the matrix
 
-   Collective on MPI_Comm
-
    Options Database Keys:
-$   -mat_block_size bs
-$   -mat_bdiag_diags s1,s2,s3,...
+.  -mat_block_size <bs> - Sets blocksize
+.  -mat_bdiag_diags <s1,s2,s3,...> - Sets diagonal numbers
 
    Notes:
    See the users manual for further details regarding this storage format.
