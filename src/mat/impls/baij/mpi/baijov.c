@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.27 1997/11/03 04:46:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.28 1997/12/01 01:55:07 bsmith Exp balay $";
 #endif
 
 /*
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: baijov.c,v 1.27 1997/11/03 04:46:15 bsmith Exp bsmith
   and to find submatrices that were shared across processors.
 */
 #include "src/mat/impls/baij/mpi/mpibaij.h"
-#include "src/inline/bitarray.h"
+#include "bitarray.h"
 
 static int MatIncreaseOverlap_MPIBAIJ_Once(Mat, int, IS *);
 static int MatIncreaseOverlap_MPIBAIJ_Local(Mat , int , char **,int*, int**);

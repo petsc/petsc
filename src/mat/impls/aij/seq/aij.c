@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.278 1998/07/14 21:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.279 1998/07/23 22:47:53 bsmith Exp balay $";
 #endif
 
 /*
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: aij.c,v 1.278 1998/07/14 21:27:22 bsmith Exp bsmith $
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/inline/dot.h"
-#include "src/inline/bitarray.h"
+#include "bitarray.h"
 
 /*
     Basic AIJ format ILU based on drop tolerance 

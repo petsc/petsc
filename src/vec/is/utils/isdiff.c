@@ -1,11 +1,11 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isdiff.c,v 1.6 1998/04/27 17:14:05 curfman Exp balay $";
+static char vcid[] = "$Id: isdiff.c,v 1.7 1998/06/01 20:16:26 balay Exp balay $";
 #endif
 
 #include "is.h"                    /*I "is.h"  I*/
 #include "petsc.h"
-#include "src/inline/bitarray.h"
+#include "bitarray.h"
 
 #undef __FUNC__  
 #define __FUNC__ "ISDifference"

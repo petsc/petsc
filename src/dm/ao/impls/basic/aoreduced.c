@@ -1,12 +1,12 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aoreduced.c,v 1.8 1997/12/04 19:40:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aoreduced.c,v 1.9 1997/12/12 19:40:12 bsmith Exp balay $";
 #endif
 
 #include "src/ao/aoimpl.h"
 #include "pinclude/pviewer.h"
 #include "sys.h"
-#include "src/inline/bitarray.h"
+#include "bitarray.h"
 
 int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
 {
