@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  VecGetArray3d(), 4d() also add support for base not 0,0,0 but gstartx,gstarty,gstartz, etc
+
   Change SETERRQ() to SETERR0() and SETERRQn() to SETERRn()
 Lois,
 
