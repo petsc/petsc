@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.31 2000/04/12 04:23:11 bsmith Exp bsmith $*/
+/*$Id: fdmpiaij.c,v 1.32 2000/05/10 16:40:40 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -15,7 +15,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   int        i,*is,n,nrows,j,k,m,*rows = 0,ierr,*A_ci,*A_cj,ncols,col;
   int        nis = iscoloring->n,*ncolsonproc,size,nctot,*cols,*disp,*B_ci,*B_cj;
   int        *rowhit,M = mat->m,cstart = aij->cstart,cend = aij->cend,colb;
-  int        *columnsforrow;
+  int        *columnsforrow,l;
   IS         *isa = iscoloring->is;
   PetscTruth done,flg;
 
@@ -48,9 +48,9 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
   ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
 
-  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
-  ncolsonproc = (int*)PetscMalloc(2*size*sizeof(int *));CHKPTRQ(ncolsonproc);
-  disp        = ncolsonproc + size;
+  ierr          = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
+  ncolsonproc   = (int*)PetscMalloc(2*size*sizeof(int *));CHKPTRQ(ncolsonproc);
+  disp          = ncolsonproc + size;
 
   rowhit        = (int*)PetscMalloc((M+1)*sizeof(int));CHKPTRQ(rowhit);
   columnsforrow = (int*)PetscMalloc((M+1)*sizeof(int));CHKPTRQ(columnsforrow);
@@ -201,6 +201,34 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     } /* ---------------------------------------------------------------------------------------*/
     ierr = PetscFree(cols);CHKERRQ(ierr);
   }
+
+  /* Optimize by adding the vscale, and scaleforrow[][] fields */
+  /*
+       vscale will contain the "diagonal" on processor scalings followed by the off processor
+  */
+  ierr = VecCreateGhost(mat->comm,aij->A->m,PETSC_DETERMINE,aij->B->n,aij->garray,&c->vscale);CHKERRQ(ierr)
+  c->vscaleforrow   = (int**)PetscMalloc(c->ncolors*sizeof(int*));CHKPTRQ(c->vscaleforrow);
+  for (k=0; k<c->ncolors; k++) { 
+    c->vscaleforrow[k] = (int*)PetscMalloc((c->nrows[k]+1)*sizeof(int));CHKPTRQ(c->vscaleforrow[k]);
+    for (l=0; l<c->nrows[k]; l++) {
+      col = c->columnsforrow[k][l];
+      if (col >= cstart && col < cend) {
+        /* column is in diagonal block of matrix */
+        colb = col - cstart;
+      } else {
+        /* column  is in "off-processor" part */
+#if defined (PETSC_USE_CTABLE)
+        ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
+        colb --;
+#else
+        colb = aij->colmap[col] - 1;
+#endif
+        colb += cend - cstart;
+      }
+      c->vscaleforrow[k][l] = colb;
+    }
+  }
+
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
   ierr = PetscFree(ncolsonproc);CHKERRQ(ierr);

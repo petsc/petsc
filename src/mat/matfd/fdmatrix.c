@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.65 2000/05/14 03:57:55 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.66 2000/05/15 17:45:47 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -456,12 +456,11 @@ int MatFDColoringDestroy(MatFDColoring c)
   PetscFunctionBegin;
   if (--c->refct > 0) PetscFunctionReturn(0);
 
-
   for (i=0; i<c->ncolors; i++) {
     if (c->columns[i])         {ierr = PetscFree(c->columns[i]);CHKERRQ(ierr);}
     if (c->rows[i])            {ierr = PetscFree(c->rows[i]);CHKERRQ(ierr);}
     if (c->columnsforrow[i])   {ierr = PetscFree(c->columnsforrow[i]);CHKERRQ(ierr);}
-    if (c->vscaleforrow[i])    {ierr = PetscFree(c->vscaleforrow[i]);CHKERRQ(ierr);} 
+    if (c->vscaleforrow && c->vscaleforrow[i]) {ierr = PetscFree(c->vscaleforrow[i]);CHKERRQ(ierr);} 
   }
   ierr = PetscFree(c->ncolumns);CHKERRQ(ierr);
   ierr = PetscFree(c->columns);CHKERRQ(ierr);
@@ -469,8 +468,8 @@ int MatFDColoringDestroy(MatFDColoring c)
   ierr = PetscFree(c->rows);CHKERRQ(ierr);
   ierr = PetscFree(c->columnsforrow);CHKERRQ(ierr);
   ierr = PetscFree(c->scale);CHKERRQ(ierr);
-  ierr = PetscFree(c->vscaleforrow);CHKERRQ(ierr);
-  if (c->vscale) {ierr = VecDestroy(c->vscale);CHKERRQ(ierr);}
+  if (c->vscaleforrow) {ierr = PetscFree(c->vscaleforrow);CHKERRQ(ierr);}
+  if (c->vscale)       {ierr = VecDestroy(c->vscale);CHKERRQ(ierr);}
   if (c->w1) {
     ierr = VecDestroy(c->w1);CHKERRQ(ierr);
     ierr = VecDestroy(c->w2);CHKERRQ(ierr);
@@ -513,7 +512,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
-  int           (*f)(void *,Vec,Vec,void*)= (int (*)(void *,Vec,Vec,void *))coloring->f;
+  int           (*f)(void *,Vec,Vec,void*)= (int (*)(void *,Vec,Vec,void *))coloring->f,**vscaleforrow;
   void          *fctx = coloring->fctx;
   PetscTruth    flg;
 
@@ -566,13 +565,20 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
-      dx            *= epsilon;
-      wscale[col]   = 1.0/dx;
+      dx                *= epsilon;
+      wscale[col]       = 1.0/dx;
+      vscale_array[col] = 1.0/dx;
     }
   } 
   vscale_array = vscale_array - start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MPI_Allreduce(wscale,scale,N,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
 
+  if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
+  else                        vscaleforrow = coloring->columnsforrow;
+
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   /*
       Loop over each color
   */
@@ -612,12 +618,16 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     for (l=0; l<coloring->nrows[k]; l++) {
       row    = coloring->rows[k][l];
       col    = coloring->columnsforrow[k][l];
+      if (scale[col] != vscale_array[coloring->vscaleforrow[k][l]]) {
+        SETERRQ(1,1,"big trouble");
+      }
       y[row] *= scale[col];
       srow   = row + start;
       ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

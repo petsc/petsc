@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.29 2000/05/04 16:25:26 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.30 2000/05/10 16:40:36 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -11,7 +11,7 @@ EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTr
 int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,ierr,*ci,*cj,ncols,col;
-  int        nis = iscoloring->n,*rowhit,*columnsforrow;
+  int        nis = iscoloring->n,*rowhit,*columnsforrow,l;
   IS         *isa = iscoloring->is;
   PetscTruth done,flg;
 
@@ -138,6 +138,20 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
+
+  /* Optimize by adding the vscale, and scaleforrow[][] fields */
+  /*
+       see the version for MPIAIJ
+  */
+  ierr = VecCreateGhost(mat->comm,mat->m,PETSC_DETERMINE,0,PETSC_NULL,&c->vscale);CHKERRQ(ierr)
+  c->vscaleforrow   = (int**)PetscMalloc(c->ncolors*sizeof(int*));CHKPTRQ(c->vscaleforrow);
+  for (k=0; k<c->ncolors; k++) { 
+    c->vscaleforrow[k] = (int*)PetscMalloc((c->nrows[k]+1)*sizeof(int));CHKPTRQ(c->vscaleforrow[k]);
+    for (l=0; l<c->nrows[k]; l++) {
+      col = c->columnsforrow[k][l];
+      c->vscaleforrow[k][l] = col;
+    }
+  }
 
   c->scale  = (Scalar*)PetscMalloc(2*N*sizeof(Scalar));CHKPTRQ(c->scale);
   c->wscale = c->scale + N;

@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.154 2000/05/05 22:15:06 balay Exp bsmith $*/
+/*$Id: pbvec.c,v 1.155 2000/05/10 16:40:09 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -400,6 +400,7 @@ int VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
 
   v  = (Vec_MPI*)g->data;
   if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG,1,"Vector is not ghosted");
+  if (!v->localupdate) PetscFunctionReturn(0);
  
   if (scattermode == SCATTER_REVERSE) {
     ierr = VecScatterBegin(v->localrep,g,insertmode,scattermode,v->localupdate);CHKERRQ(ierr);
@@ -461,7 +462,8 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 
   v  = (Vec_MPI*)g->data;
   if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG,1,"Vector is not ghosted");
- 
+  if (!v->localupdate) PetscFunctionReturn(0);
+
   if (scattermode == SCATTER_REVERSE) {
     ierr = VecScatterEnd(v->localrep,g,insertmode,scattermode,v->localupdate);CHKERRQ(ierr);
   } else {
@@ -567,8 +569,8 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
 .keywords: vector, create, MPI, ghost points, ghost padding
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
-          VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
-          VecCreateGhostWithArray(), VecCreateMPIWithArray()
+          VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
+          VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecGhostUpdateEnd()
 
 @*/ 
 int VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],Vec *vv)
