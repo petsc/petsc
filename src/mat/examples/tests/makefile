@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.233 2000/07/25 14:12:44 bsmith Exp hzhang $ 
+# $Id: makefile,v 1.234 2000/07/25 14:16:34 hzhang Exp bsmith $ 
 
 ALL: ex1
 
@@ -372,6 +372,10 @@ ex75: ex75.o chkopts
 ex80: ex80.o chkopts
 	-${CLINKER} -o ex80 ex80.o ${PETSC_MAT_LIB}
 	${RM} ex80.o
+
+ex81: ex81.o chkopts
+	-${CLINKER} -o ex81 ex81.o ${PETSC_MAT_LIB}
+	${RM} ex81.o
 
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
