@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.1 1999/01/27 18:49:21 balay Exp balay $ 
+# $Id: common_variables,v 1.2 1999/02/05 00:23:03 balay Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -33,7 +33,7 @@ PETSC_SYS_LIB  = -L${LDIR} -lpetsc \
                  ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
                  ${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
 
-PETSC_VEC_LIB  = -L${LDIR} -lpetscvec -lpetsc ${PETSC_SYS_LIB}
+PETSC_VEC_LIB  = -L${LDIR} -lpetscvec ${PETSC_SYS_LIB}
 
 PETSC_MAT_LIB  = -L${LDIR} -lpetscmat ${PETSC_VEC_LIB}
 
