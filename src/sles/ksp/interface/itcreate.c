@@ -122,7 +122,6 @@ $   KSP_NATURAL_NORM - supported  by cg, cr, and cgs
 @*/
 int KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
-  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

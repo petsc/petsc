@@ -1,23 +1,12 @@
 # $Id: base.site,v 1.31 2001/03/27 22:17:30 balay Exp $ 
-
-#
-#  This file contains site-specific information.  The definitions below
-#  should be changed to match the locations of libraries at your site.
-#  The following naming convention is used:
-#     XXX_LIB - location of library XXX
-#     XXX_INCLUDE - directory for include files needed for library XXX
 #
 # Location of BLAS and LAPACK. See ${PETSC_DIR}/docs/intallation.html for
 # information on retrieving them.
 #
 BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/solaris_gnu -lflapack -lfblas 
 #
-
 # Location of MPI (Message Passing Interface) software
 #
-#MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_shmem/ -lmpi -lnsl -lthread -lgen
-#MPI_INCLUDE    = -I/home/petsc/mpich/include 
-#MPIRUN         = /home/petsc/mpich/lib/solaris/ch_shmem/mpirun
 MPI_HOME       = /home/petsc/software/mpich-1.1.2
 MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_shmem
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib  -lpmpich -lmpich -lthread -lnsl
@@ -34,61 +23,9 @@ X11_INCLUDE    = -I/usr/openwin/include
 X11_LIB        = -L/usr/openwin/lib -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
-# Location of MPE
-# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+# Location of MPE - which is part of MPICH
 #
-#MPE_INCLUDE   = -I/home/petsc/mpich/mpe
-#MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_shmem/ -lmpe -lpmpi
 MPE_INCLUDE   = -I${MPI_HOME}/mpe
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-# Lcation of BlockSolve (MPI version)
-#
-#BLOCKSOLVE_INCLUDE            = -I/home/petsc/BlockSolve95/include
-#BLOCKSOLVE_LIB                = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
-#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
-#
-# Matlab location
-#
-#CMEX              = 
-#MCC               = 
-#MATLABCOMMAND     = matlab
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
-# Location where adiC is installed
-#
-#ADIC_DEFINES    =  -Dad_GRAD_MAX=1
-#ADIC_CC         = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
-#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
-#
-# Location of PVODE; Alan Hindmarsh's parallel ODE solver
-# 
-#PVODE_INCLUDE    = -I/home/petsc/software/MPI_PVODE/include
-#PVODE_LIB        = /home/petsc/software/MPI_PVODE/lib/solaris/libpvode.a
-#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
-#
-# Location of ParMetis
-#
-#PARMETIS_INCLUDE    = -I/home/bsmith/libraries/ParMetis.v1.0
-#PARMETIS_LIB        = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
-#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
-#
-#
-# Location of the LUSOL sparse LU factorization code (part of MINOS)
-# developed by Michael Saunders, saunders@stanford.edu at the
-# Systems Optimization Laboratory, Stanford University.
-#  http://www.sbsi-sol-optimize.com/
-# Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
-# depending on how they are named)
-#
-#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
-#LUSOL_LIB =
-#
-# ---------------------------------------------------------------------------------------
-#
-# If you are using shared version of any external libraries you must make this
-# point to the directories where all your shared libraries are stored.
-#
-C_DYLIBPATH     =  ${CLINKER_SLFLAG}/home/alice/software/gcc-2.95.2/solaris/lib
-F_DYLIBPATH     =  ${FLINKER_SLFLAG}/home/alice/software/gcc-2.95.2/solaris/lib

@@ -26,7 +26,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   MatStructure pflag;
   double       dp;
   PetscScalar  ai, bi;
-  PetscScalar  btop, bbot, bbotold, tmp, zero = 0.0, mone = -1.0;
+  PetscScalar  btop, bbot, bbotold, tmp, mone = -1.0;
   Vec          X,B,R,RT,P,AP,ART,Q;
   Mat          Amat, Pmat;
 

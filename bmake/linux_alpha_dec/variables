@@ -12,6 +12,7 @@ SHELL		   = /bin/sh
 SED		   = /bin/sed
 MKDIR              = mkdir -p
 LIB_SUFFIX         = a
+LD                 = ld
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #

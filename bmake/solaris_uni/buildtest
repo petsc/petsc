@@ -36,9 +36,9 @@ else if ($day == Fri) then
   set BOPT=O
   set JOBS=(1 2 3 8 13)
 else if ($day == Sat) then
-  set ARCH=solaris_uni
-  set BOPT=g_complex
-  set JOBS=(4 9 10 11 13)
+  set ARCH=solaris_gnu
+  set BOPT=O_single
+  set JOBS=(1 3)
 endif
 
 
