@@ -1,12 +1,12 @@
 !
-!  "$Id: fsolve.F,v 1.7 1998/03/25 17:13:03 balay Exp balay $";
+!  "$Id: fsolve.F,v 1.8 1998/04/15 18:03:16 balay Exp balay $";
 !
 !    Fortran kernel for sparse triangular solve in the AIJ matrix format
 !
 !
       subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
       implicit none
-#include "include/finclude/petsc.h"
+#include "include/finclude/petscdef.h"
 
       Scalar           x(0:*),aa(0:*),b(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*)
