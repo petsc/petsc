@@ -91,21 +91,19 @@ typedef std::complex<double> PetscScalar;
 
           EXPERIMENTAL! NOT YET COMPLETELY WORKING
 */
-#if defined(PETSC_USE_COMPLEX)
 
-typedef PetscScalar MatScalar;
-typedef double MatReal;
-
-#elif defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
-
+#if defined(PETSC_USE_MAT_SINGLE)
 typedef float MatScalar;
-typedef float MatReal;
-
 #else
-
 typedef PetscScalar MatScalar;
-typedef double MatReal;
+#endif
 
+#if defined(PETSC_USE_COMPLEX)
+typedef double MatReal;
+#elif defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
+typedef float MatReal;
+#else
+typedef double MatReal;
 #endif
 
 #if defined(PETSC_USE_SINGLE)

@@ -1,4 +1,11 @@
+#include "petscconf.h"
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
+#endif
+
 #include "adic/run-map.h"
     
 #if defined(__cplusplus)

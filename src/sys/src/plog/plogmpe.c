@@ -38,7 +38,6 @@ PetscTruth PetscBeganMPE = PETSC_FALSE;
 int PetscLogMPEBegin(void)
 {
   int        rank,ierr;
-  PetscTruth flg;
     
   PetscFunctionBegin;
   /* Do MPE initialization */

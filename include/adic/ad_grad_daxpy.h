@@ -46,31 +46,31 @@ extern "C" {
     
 #define DAXPY1(ppz, a, pa) \
 {\
-    int i; double*pz;\
+    int _i; double*pz;\
     VALIDATE(ppz);\
     pz = *ppz; \
-    for (i = 0; i < ad_grad_size; i++) {\
-        pz[i] = a*pa[i];\
+    for (_i = 0; _i < ad_grad_size; _i++) {\
+        pz[_i] = a*pa[_i];\
     }\
 }
 
 #define DAXPY2(ppz, a, pa, b, pb) \
 {\
-    int i; double*pz;\
+    int _i; double*pz;\
     VALIDATE(ppz);\
     pz = *ppz;\
-    for (i = 0; i < ad_grad_size; i++) {\
-        pz[i] = a*pa[i] + b*pb[i];\
+    for (_i = 0; _i < ad_grad_size; _i++) {\
+        pz[_i] = a*pa[_i] + b*pb[_i];\
     }\
 }
 
 #define DAXPY3(ppz, a, pa, b, pb, c, pc) \
 {\
-    int i; double*pz;\
+    int _i; double*pz;\
     VALIDATE(ppz);\
     pz = *ppz;\
-    for (i = 0; i < ad_grad_size; i++) {\
-        pz[i] = a*pa[i] + b*pb[i] + c*pc[i];\
+    for (_i = 0; _i < ad_grad_size; _i++) {\
+        pz[_i] = a*pa[_i] + b*pb[_i] + c*pc[_i];\
     }\
 }
 void ad_grad_daxpy_init();
