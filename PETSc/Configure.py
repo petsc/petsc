@@ -17,16 +17,36 @@ class Configure(configure.Configure):
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'readlink',
                  'realpath', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'uname']
     libraries = [('dl', 'dlopen')]
-    framework.checkTypes()
-    framework.checkHeaders(headersC)
-    framework.checkFunctions(functions)
-    framework.checkLibraries(libraries)
-    framework.checkCompilers()
+    self.compilers = self.framework.require('config.compilers', self)
+    self.types     = self.framework.require('config.types',     self)
+    self.headers   = self.framework.require('config.headers',   self)
+    self.functions = self.framework.require('config.functions', self)
+    self.libraries = self.framework.require('config.libraries', self)
+    self.blas      = self.framework.require('PETSc.BLAS',       self)
+    self.lapack    = self.framework.require('PETSc.LAPACK',     self)
+    self.mpi       = self.framework.require('PETSc.MPI',        self)
+    self.framework.require('PETSc.ADIC',        self)
+    self.framework.require('PETSc.Matlab',      self)
+    self.framework.require('PETSc.Mathematica', self)
+    self.framework.require('PETSc.Triangle',    self)
+    self.framework.require('PETSc.ParMetis',    self)
+    self.framework.require('PETSc.PLAPACK',     self)
+    self.framework.require('PETSc.PVODE',       self)
+    self.framework.require('PETSc.BlockSolve',  self)
+    self.headers.headers.extend(headersC)
+    self.functions.functions.extend(functions)
+    self.libraries.libraries.extend(libraries)
     return
 
   def defineAutoconfMacros(self):
     self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     self.xMacro    = 'dnl Version: 2.13\ndnl Variable: X_CFLAGS\ndnl Variable: X_LIBS\ndnl Variable: X_EXTRA_LIBS\ndnl Variable: X_PRE_LIBS\nAC_PATH_XTRA'
+    return
+
+  def checkRequirements(self):
+    '''Checking that packages Petsc required are actually here'''
+    if not self.blas.found: raise RuntimeError('Petsc require BLAS!')
+    if not self.lapack.found: raise RuntimeError('Petsc require LAPACK!')
     return
 
   def configureDirectories(self):
@@ -101,10 +121,11 @@ class Configure(configure.Configure):
     return
 
   def configureCompilerFlags(self):
+    '''Get all compiler flags from the Petsc database'''
     optionsCmd = os.path.join(self.configAuxDir, 'config.options')+' '+self.host_cpu+'-'+self.host_vendor+'-'+self.host_os
-    self.getCompilerFlags('C',   self.framework.compilers.CC)
-    self.getCompilerFlags('CXX', self.framework.compilers.CXX)
-    self.getCompilerFlags('F',   self.framework.compilers.FC)
+    self.getCompilerFlags('C',   self.compilers.CC)
+    self.getCompilerFlags('CXX', self.compilers.CXX)
+    self.getCompilerFlags('F',   self.compilers.FC)
 
     self.addSubstitution('C_VERSION',   self.CVersion)
     self.addSubstitution('CFLAGS_g',    self.CFLAGS_g)
@@ -133,6 +154,7 @@ class Configure(configure.Configure):
     return success
 
   def configureFortranPIC(self):
+    '''Determine the PIC option for the Fortran compiler'''
     option = ''
     if self.checkF77CompilerOption('-PIC'):
       option = '-PIC'
@@ -147,12 +169,13 @@ class Configure(configure.Configure):
     '''Checks for --enable-shared, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.getArgument('shared', 0, '-enable-', int, comment = 'Dynamic libraries flag')
-    self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.framework.libraries.haveLib('dl'))
+    self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.libraries.haveLib('dl'))
     if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
       self.addDefine('HAVE_RTLD_GLOBAL', 1)
     return
 
   def configureDebuggers(self):
+    '''Find a default debugger and determine its arguments'''
     self.getExecutable('gdb', getFullPath = 1, comment = 'GNU debugger')
     self.getExecutable('dbx', getFullPath = 1, comment = 'DBX debugger')
     self.getExecutable('xdb', getFullPath = 1, comment = 'XDB debugger')
@@ -192,6 +215,7 @@ class Configure(configure.Configure):
     return
 
   def checkMkdir(self):
+    '''Make sure we can have mkdir automatically make intermediate directories'''
     self.getExecutable('mkdir', getFullPath = 1, comment = 'Mkdir utility')
     if hasattr(self, 'mkdir'):
       if os.path.exists('.conftest'): os.rmdir('.conftest')
@@ -203,6 +227,7 @@ class Configure(configure.Configure):
     return
 
   def configurePrograms(self):
+    '''Check for the programs needed to build and run PETSc'''
     self.checkMkdir()
     self.getExecutable('sh',   getFullPath = 1, comment = 'Bourne shell', resultName = 'SHELL')
     self.getExecutable('sed',  getFullPath = 1, comment = 'Sed utility')
@@ -230,19 +255,19 @@ class Configure(configure.Configure):
 
   def configureMissingFunctions(self):
     '''Checks for MISSING_GETPWUID and MISSING_SOCKETS'''
-    if not self.framework.functions.defines.has_key(self.framework.functions.getDefineName('getpwuid')):
+    if not self.functions.defines.has_key(self.functions.getDefineName('getpwuid')):
       self.addDefine('MISSING_GETPWUID', 1)
-    if not self.framework.functions.defines.has_key(self.framework.functions.getDefineName('socket')):
+    if not self.functions.defines.has_key(self.functions.getDefineName('socket')):
       self.addDefine('MISSING_SOCKETS', 1)
     return
 
   def configureMissingSignals(self):
     '''Check for missing signals, and define MISSING_<signal name> if necessary'''
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGSYS;\n'):
+    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGSYS;\n\nif (i);\n'):
       self.addDefine('MISSING_SIGSYS', 1)
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGBUS;\n'):
+    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGBUS;\n\nif (i);\n'):
       self.addDefine('MISSING_SIGBUS', 1)
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGQUIT;\n'):
+    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGQUIT;\n\nif (i);\n'):
       self.addDefine('MISSING_SIGQUIT', 1)
     return
 
@@ -262,35 +287,42 @@ class Configure(configure.Configure):
     return
 
   def configureFPTrap(self):
-    if self.framework.headers.check('sigfpe.h'):
-      if self.framework.functions.check(handle_sigfpes, library = 'fpe'):
+    '''Checking the handling of flaoting point traps'''
+    if self.headers.check('sigfpe.h'):
+      if self.functions.check(handle_sigfpes, library = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
-    elif self.framework.headers.check('fpxcp.h') and self.framework.headers.check('fptrap.h'):
-      if reduce(lambda x,y: x and y, map(self.framework.functions.check, ['fp_sh_trap_info', 'fp_trap', 'fp_enable', 'fp_disable'])):
+    elif self.headers.check('fpxcp.h') and self.headers.check('fptrap.h'):
+      if reduce(lambda x,y: x and y, map(self.functions.check, ['fp_sh_trap_info', 'fp_trap', 'fp_enable', 'fp_disable'])):
         self.addDefine('HAVE_RS6000_STYLE_FPTRAP', 1)
-    elif self.framework.headers.check('floatingpoint.h'):
-      if self.framework.functions.check('ieee_flags') and self.framework.functions.check('ieee_handler'):
-        if self.framework.headers.check('sunmath.h'):
+    elif self.headers.check('floatingpoint.h'):
+      if self.functions.check('ieee_flags') and self.functions.check('ieee_handler'):
+        if self.headers.check('sunmath.h'):
           self.addDefine('HAVE_SOLARIS_STYLE_FPTRAP', 1)
         else:
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
     return
 
   def configureIRIX(self):
+    '''IRIX specific stuff'''
     if self.archBase == 'irix6.5':
       self.addDefine('USE_KBYTES_FOR_SIZE', 1)
     return
 
   def configureLinux(self):
+    '''Linux specific stuff'''
     if self.archBase == 'linux':
       self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
     return
 
   def configureMachineInfo(self):
+    '''Define a string incorporating all configuration data needed for a bug report'''
     self.addDefine('PETSC_MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
     return
 
-  def mpiuniWarning(self):
+  def configureMPIUNI(self):
+    '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
+    if self.mpi.foundInclude and self.mpi.foundLib: return
+    raise RuntimeError('Could not find MPI!')
 ##    if self.mpiuni:
 ##      print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
 ##      print '**********     Use --with-mpi option to specify a full MPI     **********'
@@ -300,32 +332,31 @@ class Configure(configure.Configure):
     '''Fix up all the things that we currently need to run'''
     self.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
     self.addSubstitution('CC_SHARED_OPT', '')
-    self.addSubstitution('LDFLAGS', self.framework.argDB['LDFLAGS'])
-    self.addSubstitution('LIBS',    self.framework.argDB['LIBS'])
     return
 
   def configure(self):
-    self.configureDirectories()
-    self.configureArchitecture()
+    self.executeTest(self.checkRequirements)
+    self.executeTest(self.configureDirectories)
+    self.executeTest(self.configureArchitecture)
     self.framework.header = 'bmake/'+self.arch+'-test/petscconf.h'
     self.framework.addSubstitutionFile('bmake/config-test/packages.in',   'bmake/'+self.arch+'-test/packages')
     self.framework.addSubstitutionFile('bmake/config-test/rules.in',      'bmake/'+self.arch+'-test/rules')
     self.framework.addSubstitutionFile('bmake/config-test/variables.in',  'bmake/'+self.arch+'-test/variables')
     self.framework.addSubstitutionFile('bmake/config-test/petscfix.h.in', 'bmake/'+self.arch+'-test/petscfix.h')
-    self.configureLibraryOptions()
-    self.configureCompilerFlags()
-    self.configureFortranPIC()
-    self.configureDynamicLibraries()
-    self.configureDebuggers()
-    self.configurePrograms()
-    self.configureMissingPrototypes()
-    self.configureMissingFunctions()
-    self.configureMissingSignals()
-    self.configureX()
-    self.configureFPTrap()
-    self.configureIRIX()
-    self.configureLinux()
-    self.configureMachineInfo()
-    self.configureMisc()
-    self.mpiuniWarning()
+    self.executeTest(self.configureLibraryOptions)
+    self.executeTest(self.configureCompilerFlags)
+    self.executeTest(self.configureFortranPIC)
+    self.executeTest(self.configureDynamicLibraries)
+    self.executeTest(self.configureDebuggers)
+    self.executeTest(self.configurePrograms)
+    self.executeTest(self.configureMissingPrototypes)
+    self.executeTest(self.configureMissingFunctions)
+    self.executeTest(self.configureMissingSignals)
+    self.executeTest(self.configureX)
+    self.executeTest(self.configureFPTrap)
+    self.executeTest(self.configureIRIX)
+    self.executeTest(self.configureLinux)
+    self.executeTest(self.configureMachineInfo)
+    self.executeTest(self.configureMisc)
+    self.executeTest(self.configureMPIUNI)
     return
