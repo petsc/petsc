@@ -556,6 +556,9 @@ int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
 
    See PetscOptionsEList() for when the choices are given in a string array
 
+   To get a listing of all currently specified options,
+    see PetscOptionsPrint() or PetscOptionsGetAll()
+
    Concepts: options database^list
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
