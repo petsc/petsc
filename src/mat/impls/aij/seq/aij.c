@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.204 1997/01/22 18:42:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.205 1997/01/27 18:16:37 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1457,11 +1457,11 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
 
   for ( i=0; i<is_max; i++ ) {
-    /* Initialise the two local arrays */
+    /* Initialize the two local arrays */
     isz  = 0;
     PetscMemzero(table,(m/BITSPERBYTE +1)*sizeof(char));
                  
-                /* Extract the indices, assume there can be duplicate entries */
+    /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
     ierr = ISGetSize(is[i],&n);  CHKERRQ(ierr);
     
