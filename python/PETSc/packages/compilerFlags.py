@@ -8,7 +8,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.compilers    = self.framework.require('config.compilers', self)
+    self.setCompilers = self.framework.require('config.setCompilers', self)
     return
 
   def __str__(self):
