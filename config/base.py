@@ -62,10 +62,11 @@ class Configure:
       self.framework.cwd       = os.getcwd()+'/'
       if 'with-scroll-output' in self.framework.argDB and self.framework.argDB['with-scroll-output']:
         self.framework.linewidth = -2
+      elif 'with-no-output' in self.framework.argDB and self.framework.argDB['with-no-output']:
+        self.framework.linewidth = -1
       else:
         if not sys.stdout.isatty():
-          self.framework.linewidth = -1
-          return
+          self.framework.linewidth = -2            
         try:
           import curses
           try:
@@ -76,12 +77,11 @@ class Configure:
 
             self.framework.linewidth = x
           except curses.error:
-            self.framework.linewidth = -1
-            return
+            self.framework.linewidth = -2            
         except ImportError:
-          self.framework.linewidth = -1
-          return
-    elif self.framework.linewidth == -1:
+          self.framework.linewidth = -2
+            
+    if self.framework.linewidth == -1:
       return
     elif self.framework.linewidth > 0:
       for i in range(0,self.framework.linewidth):
@@ -93,7 +93,6 @@ class Configure:
     else:
       msg = msg.replace(self.framework.cwd,'')
       print msg      
-
     return
 
   def defaultCheckCommand(command, status, output, error):
