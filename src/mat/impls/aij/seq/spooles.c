@@ -199,9 +199,12 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
 
   } else { /* new num factorization using previously computed symbolic factor */ 
-    if (lu->options.pivotingflag) {              /* different FrontMtx is required */
+
+    if (lu->options.pivotingflag) { /* different FrontMtx is required */
       FrontMtx_free(lu->frontmtx) ;   
       lu->frontmtx   = FrontMtx_new() ;
+    } else {
+      FrontMtx_clearData (lu->frontmtx); 
     }
 
     SubMtxManager_free(lu->mtxmanager) ;  
@@ -218,7 +221,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ; 
     } 
   } /* end of if( lu->flg == DIFFERENT_NONZERO_PATTERN) */
-
+  
   FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->options.symflag, 
                 FRONTMTX_DENSE_FRONTS, lu->options.pivotingflag, NO_LOCK, 0, NULL, 
                 lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;   
