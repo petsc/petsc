@@ -3,8 +3,10 @@
 #
 import os
 import re
-import readline
 import sys
+try:
+import readline
+except ImportError: pass
 
 import RDict
 
