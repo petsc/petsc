@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.15 2000/05/15 22:32:49 balay Exp balay $ 
+# $Id: base_variables,v 1.16 2000/07/27 15:32:24 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -34,7 +34,7 @@ O_FOPTFLAGS	   = -O2
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC -n32 -woff 3262
-CXX_FC		   = f90 -n32 
+CXX_FC		   = f90 -n32 -cpp
 CXX_CLINKER_SLFLAG = -rpath
 CXX_FLINKER_SLFLAG = -rpath
 CXX_CLINKER	   = CC -n32 -Wl,-woff,84,-woff,85,-woff,113

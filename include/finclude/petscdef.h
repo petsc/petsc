@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.18 2000/08/01 22:04:51 balay Exp balay $;
+!  $Id: petscdef.h,v 1.19 2000/08/02 15:10:21 balay Exp balay $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -28,7 +28,7 @@
 #if (PETSC_SIZEOF_VOIDP == 8)
 #define PetscOffset        integer*8
 #define PetscFortranAddr   integer*8
-#elif defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90)
+#elif defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90_OLD)
 #define PetscOffset        integer
 #define PetscFortranAddr   integer
 #else
@@ -38,13 +38,13 @@
 
 #if (PETSC_SIZEOF_INT == 8)
 #define PetscFortranInt integer*8
-#elif defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90)
+#elif defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90_OLD)
 #define PetscFortranInt integer
 #else
 #define PetscFortranInt integer*4
 #endif
 
-#if defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90)
+#if defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90_OLD)
 #define PetscFortranDouble  double precision
 #define PetscFortranComplex complex (KIND=SELECTED_REAL_KIND(14))
 #else
