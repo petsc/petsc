@@ -646,6 +646,21 @@ class Configure(config.base.Configure):
     for lib in flibs: self.flibs += ' '+lib
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs
+    
+    # check that these monster libraries can be used from C
+    oldLibs = self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] += ' '+self.flibs
+    try:
+      self.checkCompiler('C')
+    except:
+#      try removing this one
+      self.flibs = re.sub('-lcrt2.o','',self.flibs)
+      self.framework.argDB['LIBS'] = oldLibs+self.flibs
+      try:
+        self.checkCompiler('C')
+      except:
+        raise RuntimeError('Fortran libraries cannot be used with C compiler')
+    self.framework.argDB['LIBS'] = oldLibs
     self.addSubstitution('FLIBS', self.flibs)
     return
 
