@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.29 1995/07/18 21:18:59 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.30 1995/07/20 04:05:02 curfman Exp curfman $";
 #endif
 
 /*
@@ -100,7 +100,7 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
   else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward"; 
   else                                     sortype = "unknown";
   MPIU_fprintf(pc->comm,fd,
-     "     SOR: type = %s, iterations = %d, omega = %g\n",
+     "    SOR: type = %s, iterations = %d, omega = %g\n",
      sortype,jac->its,jac->omega);
   return 0;
 }
