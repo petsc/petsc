@@ -838,9 +838,16 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     ierr = ISCreateStride(comm,ctx->from_n,0,1,&ix);CHKERRQ(ierr);
     tix  = ix;
   } else if (!ix && xin_type == VEC_MPI_ID) {
-    PetscInt bign;
-    ierr = VecGetSize(xin,&bign);CHKERRQ(ierr);
-    ierr = ISCreateStride(comm,bign,0,1,&ix);CHKERRQ(ierr);
+    if (yin_type == VEC_MPI_ID) {      
+      PetscInt ntmp, low;
+      ierr = VecGetLocalSize(xin,&ntmp);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(xin,&low,PETSC_NULL);CHKERRQ(ierr);
+      ierr = ISCreateStride(comm,ntmp,low,1,&ix);CHKERRQ(ierr);
+    } else{
+      PetscInt Ntmp;
+      ierr = VecGetSize(xin,&Ntmp);CHKERRQ(ierr);
+      ierr = ISCreateStride(comm,Ntmp,0,1,&ix);CHKERRQ(ierr);
+    }
     tix  = ix;
   } else if (!ix) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iy not given, but not Seq or MPI vector");
@@ -850,9 +857,16 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     ierr = ISCreateStride(comm,ctx->to_n,0,1,&iy);CHKERRQ(ierr);
     tiy  = iy;
   } else if (!iy && yin_type == VEC_MPI_ID) {
-    PetscInt bign;
-    ierr = VecGetSize(yin,&bign);CHKERRQ(ierr);
-    ierr = ISCreateStride(comm,bign,0,1,&iy);CHKERRQ(ierr);
+    if (xin_type == VEC_MPI_ID) {
+      PetscInt ntmp, low;
+      ierr = VecGetLocalSize(yin,&ntmp);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(yin,&low,PETSC_NULL);CHKERRQ(ierr);
+      ierr = ISCreateStride(comm,ntmp,low,1,&iy);CHKERRQ(ierr);
+    } else{ 
+      PetscInt Ntmp;
+      ierr = VecGetSize(yin,&Ntmp);CHKERRQ(ierr);
+      ierr = ISCreateStride(comm,Ntmp,0,1,&iy);CHKERRQ(ierr);
+    }
     tiy  = iy;
   } else if (!iy) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iy not given, but not Seq or MPI vector");
