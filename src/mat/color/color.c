@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.19 1997/05/23 18:39:37 balay Exp balay $";
+static char vcid[] = "$Id: color.c,v 1.20 1997/07/09 20:55:35 balay Exp bsmith $";
 #endif
  
 /*
@@ -166,8 +167,9 @@ int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 #define __FUNC__ "MatColoring_Natural" /* ADIC Ignore */
 int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
 {
-  int N,start,end,ierr,i;
-  IS  *is;
+  int      N,start,end,ierr,i,tag;
+  IS       *is;
+  MPI_Comm comm;
 
   ierr = MatGetSize(mat,&N,&N); CHKERRQ(ierr);
   is  = (IS *) PetscMalloc( N*sizeof(IS*) ); CHKPTRQ(is); 
@@ -185,6 +187,8 @@ int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
   for ( i=end; i<N; i++ ) {
     ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
   }
+  PetscObjectGetComm((PetscObject)mat,&comm);
+  PetscCommDup_Private(comm,&(*iscoloring)->comm,&tag);
   return 0;
 }
   

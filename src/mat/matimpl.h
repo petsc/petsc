@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.71 1997/05/23 18:26:59 balay Exp bsmith $ */
+/* $Id: matimpl.h,v 1.72 1997/05/29 03:54:17 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -10,70 +10,71 @@
 */
 
 /*
-    If you add entries here also add them to include/mat.h
+    If you add entries here also add them to the MATOP enum
+    in include/mat.h and include/FINCLUDE/mat.h
 */
 struct _MatOps {
   int       (*setvalues)(Mat,int,int *,int,int *,Scalar *,InsertMode),
             (*getrow)(Mat,int,int *,int **,Scalar **),
             (*restorerow)(Mat,int,int *,int **,Scalar **),
             (*mult)(Mat,Vec,Vec),
-            (*multadd)(Mat,Vec,Vec,Vec),
+/* 4*/      (*multadd)(Mat,Vec,Vec,Vec),
             (*multtrans)(Mat,Vec,Vec),
             (*multtransadd)(Mat,Vec,Vec,Vec),
             (*solve)(Mat,Vec,Vec),
             (*solveadd)(Mat,Vec,Vec,Vec),
             (*solvetrans)(Mat,Vec,Vec),
-            (*solvetransadd)(Mat,Vec,Vec,Vec),
+/*10*/      (*solvetransadd)(Mat,Vec,Vec,Vec),
             (*lufactor)(Mat,IS,IS,double),
             (*choleskyfactor)(Mat,IS,double),
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
             (*transpose)(Mat,Mat *),
-            (*getinfo)(Mat,MatInfoType,MatInfo*),
+/*15*/      (*getinfo)(Mat,MatInfoType,MatInfo*),
             (*equal)(Mat,Mat,PetscTruth *),
             (*getdiagonal)(Mat,Vec),
             (*diagonalscale)(Mat,Vec,Vec),
             (*norm)(Mat,NormType,double *),
-            (*assemblybegin)(Mat,MatAssemblyType),
+/*20*/      (*assemblybegin)(Mat,MatAssemblyType),
             (*assemblyend)(Mat,MatAssemblyType),
             (*compress)(Mat),
             (*setoption)(Mat,MatOption),
             (*zeroentries)(Mat),
-            (*zerorows)(Mat,IS,Scalar *),
+/*25*/      (*zerorows)(Mat,IS,Scalar *),
             (*lufactorsymbolic)(Mat,IS,IS,double,Mat *),
             (*lufactornumeric)(Mat,Mat *),
             (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
             (*choleskyfactornumeric)(Mat,Mat *),
-            (*getsize)(Mat,int *,int *),
+/*30*/      (*getsize)(Mat,int *,int *),
             (*getlocalsize)(Mat,int *,int *),
             (*getownershiprange)(Mat,int *,int *),
             (*ilufactorsymbolic)(Mat,IS,IS,double,int,Mat *),
             (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
-            (*getarray)(Mat,Scalar **),
+/*35*/      (*getarray)(Mat,Scalar **),
             (*restorearray)(Mat,Scalar **),
             (*convertsametype)(Mat,Mat *,int),
             (*forwardsolve)(Mat,Vec,Vec),
             (*backwardsolve)(Mat,Vec,Vec),
-            (*ilufactor)(Mat,IS,IS,double,int),
+/*40*/      (*ilufactor)(Mat,IS,IS,double,int),
             (*incompletecholeskyfactor)(Mat,IS,double),
             (*axpy)(Scalar *,Mat,Mat),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
-            (*getvalues)(Mat,int,int *,int,int *,Scalar *),
+/*45*/      (*getvalues)(Mat,int,int *,int,int *,Scalar *),
             (*copy)(Mat,Mat),
             (*printhelp)(Mat),
             (*scale)(Scalar *,Mat),
             (*shift)(Scalar *,Mat),
-            (*diagonalshift)(Vec,Mat),
+/*50*/      (*diagonalshift)(Vec,Mat),
             (*iludtfactor)(Mat,double,int,IS,IS,Mat *),
             (*getblocksize)(Mat,int *),
             (*getrowij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
             (*restorerowij)(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *),
-            (*getcolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
+/*55*/      (*getcolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
             (*restorecolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
             (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring),
             (*coloringpatch)(Mat,int,int *,ISColoring*),
             (*setunfactored)(Mat),
-            (*permute)(Mat,IS,IS,Mat*),
+/*60*/      (*permute)(Mat,IS,IS,Mat*),
             (*setvaluesblocked)(Mat,int,int *,int,int *,Scalar *,InsertMode);
 };
 
@@ -148,18 +149,20 @@ extern int MatCopy_Basic(Mat,Mat);
     columns       = {{0,2},{1},{3},{}}
     nrows         = {4,2,3,3}
     rows          = {{0,1,2,3},{0,1},{1,2,3},{1,2,3}}
-    columnfromrow = {{0,0,2,2},{1,1},{4,3,3},{5,5,5}}
+    columnsforrow = {{0,0,2,2},{1,1},{4,3,3},{5,5,5}}
 
     ncolumns      = {2,0,2,2}
     columns       = {{6},{},{4},{5}}
     nrows         = {3,0,2,2}
     rows          = {{4,5,6},{},{4,6},{4,5}}
-    columnfromrow = {{6,0,6},{},{4,4},{5,5}}
+    columnsforrow = {{6,0,6},{},{4,4},{5,5}}
 
 */
 
 struct  _p_MatFDColoring{
   PETSCHEADER
+  int    M,N,m;            /* total rows, columns; local rows */
+  int    rstart;           /* first row owned by local processor */
   int    ncolors;          
   int    *ncolumns;        /* number of local columns for a color */ 
   int    **columns;        /* lists the local columns of each color */
@@ -167,8 +170,12 @@ struct  _p_MatFDColoring{
   int    **rows;           /* lists the rows for each color */
   int    **columnsforrow;  /* lists the corresponding columns for those rows */ 
   Scalar *scale,*wscale;   /* workspace using to hold FD scalings */
-  double      error_rel;   /* square root of relative error in computing function */
-  double      umin;        /* minimum allowable u'dx value */
+  double error_rel;        /* square root of relative error in computing function */
+  double umin;             /* minimum allowable u'dx value */
+  int    freq;             /* frequency at which new Jacobian is computed */
+  Vec    w1,w2,w3;         /* work vectors used in computing Jacobian */
+  int    (*f)(void *,Vec,Vec,void *); /* function that defines Jacobian */
+  void   *fctx;
 };
 
 #endif

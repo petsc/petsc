@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.89 1997/08/07 14:41:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.90 1997/08/07 18:55:34 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -192,6 +192,12 @@ static int DrawSyncFlush_X(Draw Win )
       XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
       XFlush( XiWin->disp );
     }
+    XSync(XiWin->disp,False);
+    MPI_Barrier(Win->comm);
+  } else {
+    MPI_Barrier(Win->comm);
+    XSync(XiWin->disp,False);
+    MPI_Barrier(Win->comm);
   }
   return 0;
 }
@@ -236,8 +242,10 @@ static int DrawSyncClear_X(Draw Win)
   MPI_Comm_rank(Win->comm,&rank);
   if (!rank) {
     DrawClear_X(Win);
-    XFlush( XiWin->disp );
   }
+  XFlush( XiWin->disp );
+  MPI_Barrier(Win->comm);
+  XSync(XiWin->disp,False);
   MPI_Barrier(Win->comm);
   return 0;
 }
@@ -379,20 +387,27 @@ static int DrawResizeWindow_X(Draw draw,int w,int h)
 static int DrawCheckResizedWindow_X(Draw draw)
 {
   Draw_X       *win = (Draw_X *) draw->data;
-  int          x,y;
+  int          x,y,rank;
   Window       root;
-  unsigned int w, h, border, depth;
+  unsigned int w, h, border, depth,geo[2];
   double       xl,xr,yl,yr;
   XRectangle   box;
 
-  XGetGeometry(win->disp,win->win,&root,&x,&y,&w,&h,&border,&depth);
+  MPI_Comm_rank(draw->comm,&rank);
+  if (!rank) {
+    XSync(win->disp,False);
+    XGetGeometry(win->disp,win->win,&root,&x,&y,geo,geo+1,&border,&depth);
+  }
+  MPI_Bcast(geo,2,MPI_INT,0,draw->comm);
+  w = geo[0]; 
+  h = geo[1];
   if (w == win->w && h == win->h) return 0;
 
   /* record new window sizes */
 
   win->h = h; win->w = w;
 
-  /* Free buffer space and create new version */
+  /* Free buffer space and create new version (only first processor does this) */
   if (win->drw) {
     win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
   }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.83 1997/07/25 00:46:28 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.84 1997/08/07 14:37:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,15 +18,17 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
   Scalar    sum, work;
   int       ierr;
 
-  VecDot_Seq(  xin, yin, &work );
+  ierr = VecDot_Seq(  xin, yin, &work ); CHKERRQ(ierr);
 /*
    This is a ugly hack. But to do it right is kind of silly.
 */
+  PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
 #if defined(PETSC_COMPLEX)
-  ierr = MPI_Allreduce( &work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm ); CHKERRQ(ierr);
+  MPI_Allreduce(&work,&sum,2,MPI_DOUBLE,MPI_SUM,xin->comm);
 #else
-  ierr = MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm ); CHKERRQ(ierr);
+  MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);
 #endif
+  PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
   return 0;
 }
@@ -40,11 +42,13 @@ int VecTDot_MPI( Vec xin, Vec yin, Scalar *z )
 /*
    This is a ugly hack. But to do it right is kind of silly.
 */
+  PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
 #if defined(PETSC_COMPLEX)
-  MPI_Allreduce( &work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce(&work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
-  MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
 #endif
+  PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
   return 0;
 }

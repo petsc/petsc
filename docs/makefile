@@ -1,4 +1,4 @@
-#PETSC_DIR = ../
+# $Id: makefile,v 1.49 1997/08/09 19:05:11 bsmith Exp $ 
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 SOURCEC  =

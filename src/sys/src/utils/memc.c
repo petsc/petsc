@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.28 1997/07/09 13:02:20 bsmith Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.29 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -16,6 +16,9 @@ static char vcid[] = "$Id: memc.c,v 1.28 1997/07/09 13:02:20 bsmith Exp balay $"
 #if defined(HAVE_STRINGS_H)
 #include <strings.h>
 #endif
+#if defined(HAVE_STRING_H)
+#include <string.h>
+#endif
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -25,19 +28,23 @@ static char vcid[] = "$Id: memc.c,v 1.28 1997/07/09 13:02:20 bsmith Exp balay $"
 #define __FUNC__ "PetscMemcpy" /* ADIC Ignore */
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
-   beginning at location a.
+   beginning at location a. The two memory regions CANNOT overlap, use
+   PetscMemmove() in that case.
 
    Input Parameters:
-.  a - pointer to copy space
 .  b - pointer to initial memory space
 .  n - length (in bytes) of space to copy
+
+   Output Parameter:
+.  a - pointer to copy space
 
    Note:
    This routine is analogous to memcpy().
 
 .keywords: Petsc, copy, memory
 
-.seealso: PetscMemcpy()
+.seealso: PetscMemmove()
+
 @*/
 void PetscMemcpy(void *a,void *b,int n)
 {
@@ -88,6 +95,54 @@ void PetscMemzero(void *a,int n)
 int PetscMemcmp(void * str1, void *str2, int len)
 {
   return memcmp((char *)str1, (char *)str2, len);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscMemmove"
+/*@C
+   PetscMemmove - Copies n bytes, beginning at location b, to the space
+   beginning at location a. Copying  between regions that overlap will
+   take place correctly.
+
+   Input Parameters:
+.  b - pointer to initial memory space
+.  n - length (in bytes) of space to copy
+
+   Output Parameter:
+.  a - pointer to copy space
+
+   Note:
+   This routine is analogous to memmove().
+
+   Contributed by: Mathew Knepley
+
+.keywords: Petsc, copy, memory
+
+.seealso: PetscMemcpy(), PetscMemset()
+
+@*/
+void PetscMemmove(void *a,void *b,int n)
+{
+  /* The sun4 is the only platform I've found without memmove */
+#if defined(PARCH_sun4)
+  if (a < b) {
+    if (a <= b - n) {
+      memcpy(a, b, n);
+    } else {
+      memcpy(a, b, (int) (b - a));
+      PetscMemmove(b, b + (int) (b - a), n - (int) (b - a));
+    }
+  }  else {
+    if (b <= a - n) {
+      memcpy(a, b, n);
+    } else {
+      memcpy(b + n, b + (n - (int) (a - b)), (int) (a - b));
+      PetscMemmove(a, b, n - (int) (a - b));
+    }
+  }
+#else
+  memmove((char*)(a),(char*)(b),n);
+#endif
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.164 1997/07/04 16:09:10 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.165 1997/07/12 17:57:19 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -6,7 +6,7 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.18, Released July 14, 1997."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.19, Released August 13, 1997."
 
 #include <stdio.h>
 #include "mpi.h"
@@ -100,6 +100,7 @@ extern int   PetscTrLogDump(FILE *);
 extern int   PetscGetResidentSetSize(PLogDouble *);
 
 extern void  PetscMemcpy(void *,void *,int);
+extern void  PetscMemmove(void *,void *,int);
 extern void  PetscMemzero(void *,int);
 extern int   PetscMemcmp(void*, void*, int);
 extern int   PetscStrlen(char *);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.125 1997/07/09 20:59:37 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.126 1997/07/29 14:11:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -880,7 +880,7 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
 
    SNESComputeJacobian() is valid only for SNES_NONLINEAR_EQUATIONS
    methods. An analogous routine for SNES_UNCONSTRAINED_MINIMIZATION 
-   methods is SNESComputeJacobian().
+   methods is SNESComputeHessian().
 
 .keywords: SNES, compute, Jacobian, matrix
 

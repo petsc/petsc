@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.24 1997/06/19 22:34:50 balay Exp bsmith $ */
+/* $Id: pvec2.c,v 1.25 1997/07/08 23:28:58 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -19,10 +19,12 @@ int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
     work = (Scalar *) PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
   }
   ierr = VecMDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
+  PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #if defined(PETSC_COMPLEX)
-  MPI_Allreduce( work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
-  MPI_Allreduce( work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #endif
   if (nv > 128) {
     PetscFree(work);
@@ -41,11 +43,13 @@ int VecMTDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
     work = (Scalar *) PetscMalloc(nv * sizeof(Scalar)); CHKPTRQ(work);
   }
   ierr = VecMTDot_Seq(  nv, xin, y, work ); CHKERRQ(ierr);
+  PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #if defined(PETSC_COMPLEX)
-  MPI_Allreduce( work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
-  MPI_Allreduce( work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #endif
+  PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
     PetscFree(work);
   }
@@ -99,25 +103,33 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     } 
     */
 #endif
-    MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
+    MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     *z = sqrt( sum );
     PLogFlops(2*x->n);
   } else if (type == NORM_1) {
     /* Find the local part */
     VecNorm_Seq( xin, NORM_1, &work );
     /* Find the global max */
+    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     VecNorm_Seq( xin, NORM_INFINITY, &work );
     /* Find the global max */
-    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
+    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
+    MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
+    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else if (type == NORM_1_AND_2) {
     double temp[2];
     VecNorm_Seq( xin, NORM_1, temp );
     VecNorm_Seq( xin, NORM_2, temp+1 ); 
     temp[1] = temp[1]*temp[1];
-    MPI_Allreduce( temp, z,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
+    MPI_Allreduce(temp, z,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     z[1] = sqrt(z[1]);
   }
   return 0;
@@ -134,7 +146,9 @@ int VecMax_MPI( Vec xin, int *idx, double *z )
 
   /* Find the global max */
   if (!idx) {
-    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
+    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
+    MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
+    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   }
   else {
     /* Need to use special linked max */
@@ -154,7 +168,9 @@ int VecMin_MPI( Vec xin, int *idx, double *z )
 
   /* Find the global Min */
   if (!idx) {
-    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_MIN,xin->comm );
+    PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
+    MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MIN,xin->comm );
+    PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   }
   else {
     /* Need to use special linked Min */

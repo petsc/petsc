@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.71 1997/05/23 15:55:16 balay Exp balay $ */
+/* $Id: pc.h,v 1.72 1997/05/23 18:33:20 balay Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -47,8 +47,6 @@ extern int    PCGetFactoredMatrix(PC,Mat*);
 extern int    PCSetModifySubMatrices(PC,int(*)(PC,int,IS*,IS*,Mat*,void*),void*);
 extern int    PCModifySubMatrices(PC,int,IS*,IS*,Mat*,void*);
 
-typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} 
-              MatStructure;
 extern int PCSetOperators(PC,Mat,Mat,MatStructure);
 extern int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 

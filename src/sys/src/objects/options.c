@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.135 1997/07/29 14:08:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.136 1997/08/04 17:26:18 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -431,6 +431,8 @@ $  -log_all [filename]: Logs extensive profiling information
 $      (for code compiled with PETSC_LOG). See PLogDump(). 
 $  -log [filename]: Logs basic profiline information (for
 $      code compiled with PETSC_LOG).  See PLogDump().
+$  -log_sync: Log the synchronization in scatters, inner products
+$             and norms
 $  -log_mpe [filename]: Creates a logfile viewable by the 
 $      utility Upshot/Nupshot (in MPICH distribution)
 
@@ -778,6 +780,16 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
   if (flg1)              {  PLogAllBegin();  }
   else if (flg2 || flg3) {  PLogBegin(); }
+  ierr = OptionsHasName(PETSC_NULL,"-log_sync",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    PLogEventActivate(VEC_ScatterBarrier);
+    PLogEventActivate(VEC_NormBarrier);
+    PLogEventActivate(VEC_NormComm);
+    PLogEventActivate(VEC_DotBarrier);
+    PLogEventActivate(VEC_DotComm);
+    PLogEventActivate(VEC_MDotBarrier);
+    PLogEventActivate(VEC_MDotComm);
+  }
   ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1); CHKERRQ(ierr);
   if (flg1) { 
     char fname[256];
@@ -1187,6 +1199,35 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
        *flg = 1;
        break;
      }
+  }
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "OptionsReject" 
+/*@C
+   OptionsReject - Generates an error if a certain option is given.
+
+   Input Parameters:
+.  name - the option one is seeking 
+.  mess - error message 
+
+
+.keywords: options, database, has, name
+
+.seealso: OptionsGetInt(), OptionsGetDouble(),OptionsHasName(),
+           OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
+@*/
+int OptionsReject(char* name,char *mess)
+{
+  int ierr,flag;
+
+  ierr = OptionsHasName(PETSC_NULL,name,&flag); CHKERRQ(ierr);
+  if (flag) {
+
+    PetscPrintf(PETSC_COMM_WORLD,"Cannot run program with option %s\n",name);
+    PetscPrintf(PETSC_COMM_WORLD,"  %s",mess);
+    SETERRQ(1,1,"Program has disabled option");
   }
   return 0;
 }

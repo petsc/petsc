@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.138 1997/07/02 22:28:35 bsmith Exp gropp $ */
+/* $Id: mat.h,v 1.139 1997/07/25 14:08:51 gropp Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -201,6 +201,8 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128} MatSORType;
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
+typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
+
 /* 
     These routines are for efficiently computing Jacobians via finite differences.
 */
@@ -225,11 +227,12 @@ typedef struct _p_MatFDColoring *MatFDColoring;
 extern int MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
 extern int MatFDColoringDestroy(MatFDColoring);
 extern int MatFDColoringView(MatFDColoring,Viewer);
+extern int MatFDColoringSetFunction(MatFDColoring,int (*)(void *,Vec,Vec,void *),void*);
 extern int MatFDColoringSetParameters(MatFDColoring,double,double);
+extern int MatFDColoringSetFrequency(MatFDColoring,int);
 extern int MatFDColoringSetFromOptions(MatFDColoring);
 extern int MatFDColoringPrintHelp(MatFDColoring);
-extern int MatFDColoringApply(Mat,MatFDColoring,Vec,Vec,Vec,Vec,int (*)(void *,Vec,Vec,void*),
-                              void *,void *);
+extern int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 
 /*
     If you add entries here you must also add them to FINCLUDE/mat.h
@@ -272,27 +275,31 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ARRAY=35,
                MATOP_RESTORE_ARRAY=36,
 
-               MATOP_CONVERT_SAME_TYPE=39,
-               MATOP_FORWARD_SOLVE=40,
-               MATOP_BACKWARD_SOLVE=41,
-               MATOP_ILUFACTOR=42,
-               MATOP_INCOMPLETECHOLESKYFACTOR=43,
-               MATOP_AXPY=44,
-               MATOP_GET_SUBMATRICES=45,
-               MATOP_INCREASE_OVERLAP=46,
-               MATOP_GET_VALUES=47,
-               MATOP_COPY=48,
-               MATOP_PRINT_HELP=49,
-               MATOP_SCALE=50,
-               MATOP_SHIFT=51,
-               MATOP_DIAGONAL_SHIFT=52,
-               MATOP_ILUDT_FACTOR=53,
-               MATOP_GET_BLOCK_SIZE=54,
-               MATOP_GET_ROW_IJ=55,
-               MATOP_RESTORE_ROW_IJ=56,
-               MATOP_GET_COLUMN_IJ=57,
-               MATOP_RESTORE_COLUMN_IJ=58,
-               MATOP_FDCOLORING_CREATE=59,
+               MATOP_CONVERT_SAME_TYPE=37,
+               MATOP_FORWARD_SOLVE=38,
+               MATOP_BACKWARD_SOLVE=39,
+               MATOP_ILUFACTOR=40,
+               MATOP_INCOMPLETECHOLESKYFACTOR=41,
+               MATOP_AXPY=42,
+               MATOP_GET_SUBMATRICES=43,
+               MATOP_INCREASE_OVERLAP=44,
+               MATOP_GET_VALUES=45,
+               MATOP_COPY=46,
+               MATOP_PRINT_HELP=47,
+               MATOP_SCALE=48,
+               MATOP_SHIFT=49,
+               MATOP_DIAGONAL_SHIFT=50,
+               MATOP_ILUDT_FACTOR=51,
+               MATOP_GET_BLOCK_SIZE=52,
+               MATOP_GET_ROW_IJ=53,
+               MATOP_RESTORE_ROW_IJ=54,
+               MATOP_GET_COLUMN_IJ=55,
+               MATOP_RESTORE_COLUMN_IJ=56,
+               MATOP_FDCOLORING_CREATE=57,
+               MATOP_COLORING_PATCH=58,
+               MATOP_SET_UNFACTORED=59,
+               MATOP_PERMUTE=60,
+               MATOP_SET_VALUES_BLOCKED=61,
                MATOP_DESTROY=250,
                MATOP_VIEW=251
              } MatOperation;

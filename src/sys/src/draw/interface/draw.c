@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.41 1997/08/06 22:13:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.42 1997/08/06 22:26:42 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -29,6 +29,9 @@ int DrawResizeWindow(Draw draw,int w,int h)
 
   Input Parameter:
 .  draw - the window
+
+     Notes: 
+      All processors that share this drawable must call this routine.
 
 @*/
 int DrawCheckResizedWindow(Draw draw)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.10 1997/05/23 18:38:43 balay Exp balay $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.11 1997/07/09 20:53:23 balay Exp bsmith $";
 #endif
 
 /*
@@ -13,21 +13,86 @@ static char vcid[] = "$Id: fdmatrix.c,v 1.10 1997/05/23 18:38:43 balay Exp balay
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
+#define __FUNC__ "MatFDColoringView_Draw" /* ADIC Ignore */
+static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
+{
+  int         ierr,i,j,pause;
+  PetscTruth  isnull;
+  Draw        draw;
+  double      xr,yr,xl,yl,h,w,x,y,xc,yc,scale;
+  DrawButton  button;
+
+  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+  ierr = DrawSyncClear(draw); CHKERRQ(ierr);
+
+  xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
+  xr += w;    yr += h;  xl = -w;     yl = -h;
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+
+
+  /* loop over colors  */
+  for (i=0; i<fd->ncolors; i++ ) {
+    for ( j=0; j<fd->nrows[i]; j++ ) {
+      y = fd->M - fd->rows[i][j] - fd->rstart;
+      x = fd->columnsforrow[i][j];
+      DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);
+    }
+  }
+  ierr = DrawSyncFlush(draw); CHKERRQ(ierr); 
+  ierr = DrawGetPause(draw,&pause); CHKERRQ(ierr);
+  if (pause >= 0) { PetscSleep(pause); return 0;}
+  ierr = DrawCheckResizedWindow(draw);
+  ierr = DrawSyncGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  while (button != BUTTON_RIGHT) {
+    ierr = DrawSyncClear(draw); CHKERRQ(ierr);
+    if (button == BUTTON_LEFT) scale = .5;
+    else if (button == BUTTON_CENTER) scale = 2.;
+    xl = scale*(xl + w - xc) + xc - w*scale;
+    xr = scale*(xr - w - xc) + xc + w*scale;
+    yl = scale*(yl + h - yc) + yc - h*scale;
+    yr = scale*(yr - h - yc) + yc + h*scale;
+    w *= scale; h *= scale;
+    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+    /* loop over colors  */
+    for (i=0; i<fd->ncolors; i++ ) {
+      for ( j=0; j<fd->nrows[i]; j++ ) {
+        y = fd->M - fd->rows[i][j] - fd->rstart;
+        x = fd->columnsforrow[i][j];
+        DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);
+      }
+    }
+    ierr = DrawCheckResizedWindow(draw);
+    ierr = DrawSyncGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  }
+
+  return 0;
+}
+
+
+#undef __FUNC__  
 #define __FUNC__ "MatFDColoringView" /* ADIC Ignore */
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
    Input  Parameter:
 .   color - the coloring context
-   
 
 .seealso: MatFDColoringCreate()
+
 @*/
 int MatFDColoringView(MatFDColoring color,Viewer viewer)
 {
-  int i,j,format,ierr;
+  ViewerType  vtype;
+  int         i,j,format,ierr;
 
   if (!viewer) viewer = VIEWER_STDOUT_WORLD;
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == DRAW_VIEWER) { 
+    ierr = MatFDColoringView_Draw(color,viewer); CHKERRQ(ierr);
+    return 0;
+  }
 
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
 
@@ -84,6 +149,49 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "MatFDColoringSetFrequency"
+/*@
+   MatFDColoringSetFrequency - Sets the frequency at which new Jacobians
+     are computed.
+
+   Input Parameters:
+.  coloring - the jacobian coloring context
+.  freq - frequency
+
+.keywords: SNES, Jacobian, finite differences, parameters
+@*/
+int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
+{
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
+
+  matfd->freq = freq;
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringSetFunction"
+/*@
+   MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
+
+   Input Parameters:
+.  coloring - the jacobian coloring context
+.  f - the function
+.  fctx - the function context
+
+
+.keywords: SNES, Jacobian, finite differences, parameters, function
+@*/
+int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void *,Vec,Vec,void *),void *fctx)
+{
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
+
+  matfd->f    = f;
+  matfd->fctx = fctx;
+
+  return 0;
+}
+
+#undef __FUNC__  
 #define __FUNC__ "MatFDColoringSetFromOptions" /* ADIC Ignore */
 /*@
    MatFDColoringSetFromOptions - Set coloring finite difference parameters from 
@@ -101,19 +209,22 @@ $   dx_{i} = (0, ... 1, .... 0)
    Options Database:
 .  -mat_fd_coloring_error square root of relative error in function
 .  -mat_fd_coloring_umin  see above
+.  -mat_fd_coloring_freq frequency at which Jacobian is computed
 
 .keywords: SNES, Jacobian, finite differences, parameters
 @*/
 int MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
-  int    ierr,flag;
+  int    ierr,flag,freq = 1;
   double error = PETSC_DEFAULT,umin = PETSC_DEFAULT;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
 
   ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_err",&error,&flag);CHKERRQ(ierr);
   ierr = OptionsGetDouble(matfd->prefix,"-mat_fd_coloring_umin",&umin,&flag);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flag); CHKERRQ(ierr);
   ierr = MatFDColoringSetParameters(matfd,error,umin); CHKERRQ(ierr);
+  ierr = OptionsGetInt(matfd->prefix,"-mat_fd_coloring_freq",&freq,&flag);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFrequency(matfd,freq);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flag); CHKERRQ(ierr);
   if (flag) {
     ierr = MatFDColoringPrintHelp(matfd); CHKERRQ(ierr);
   }
@@ -137,6 +248,28 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
 
   PetscPrintf(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to 1.e-8\n");
   PetscPrintf(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to 1.e-8\n");
+  PetscPrintf(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults 1\n");
+  PetscPrintf(fd->comm,"-mat_fd_coloring_view\n");
+  PetscPrintf(fd->comm,"-mat_fd_coloring_view_draw\n");
+  return 0;
+}
+
+int MatFDColoringView_Private(MatFDColoring fd)
+{
+  int ierr,flg;
+
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(fd->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatFDColoringView(fd,VIEWER_DRAWX_(fd->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAWX_(fd->comm)); CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -153,6 +286,11 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
    Output Parameter:
 .   color - the new coloring context
    
+   Options Database:
+.  -mat_fd_coloring_error square root of relative error in function
+.  -mat_fd_coloring_umin  see above
+.  -mat_fd_coloring_view 
+.  -mat_fd_coloring_view_draw
 
 .seealso: MatFDColoringDestroy()
 @*/
@@ -177,6 +315,9 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 
   c->error_rel = 1.e-8;
   c->umin      = 1.e-5;
+  c->freq      = 1;
+
+  ierr = MatFDColoringView_Private(c); CHKERRQ(ierr);
 
   *color = c;
 
@@ -226,10 +367,17 @@ int MatFDColoringDestroy(MatFDColoring c)
   PetscFree(c->rows);
   PetscFree(c->columnsforrow);
   PetscFree(c->scale);
+  if (c->w1) {
+    ierr = VecDestroy(c->w1); CHKERRQ(ierr);
+    ierr = VecDestroy(c->w2); CHKERRQ(ierr);
+    ierr = VecDestroy(c->w3); CHKERRQ(ierr);
+  }
   PLogObjectDestroy(c);
   PetscHeaderDestroy(c);
   return 0;
 }
+
+#include "snes.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringApply"
@@ -241,21 +389,43 @@ int MatFDColoringDestroy(MatFDColoring c)
 .   mat - location to store Jacobian
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
-.   w1,w2,w3 - three work vectors
-.   f - function for which Jacobian is required
-.   fctx - optional context required by function
+.   sctx - optional context required by function (actually a SNES context)
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,Vec w1,Vec w2,Vec w3,
-                       int (*f)(void *,Vec,Vec,void*),void *sctx,void *fctx)
+int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           k, ierr,N,start,end,l,row,col,srow;
+  int           k, ierr,N,start,end,l,row,col,srow, it;
   Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
   double        epsilon = coloring->error_rel, umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
+  Vec           w1,w2,w3;
+  int           (*f)(void *,Vec,Vec,void *) = coloring->f,freq = coloring->freq;
+  void          *fctx = coloring->fctx;
+
+  ierr = SNESGetIterationNumber((SNES)sctx,&it); CHKERRQ(ierr);
+  if ((freq > 1) && ((it % freq) != 1)) {
+    PLogInfo(coloring,"MatFDColoringApply:Skipping Jacobian, iteration %d, freq %d\n",it,freq);
+    *flag = SAME_PRECONDITIONER;
+    return 0;
+  } else {
+    PLogInfo(coloring,"MatFDColoringApply:Computing Jacobian, iteration %d, freq %d\n",it,freq);
+    *flag = SAME_NONZERO_PATTERN;
+  }
+
+
+
+  if (!coloring->w1) {
+    ierr = VecDuplicate(x1,&coloring->w1); CHKERRQ(ierr);
+    PLogObjectParent(coloring,coloring->w1);
+    ierr = VecDuplicate(x1,&coloring->w2); CHKERRQ(ierr);
+    PLogObjectParent(coloring,coloring->w2);
+    ierr = VecDuplicate(x1,&coloring->w3); CHKERRQ(ierr);
+    PLogObjectParent(coloring,coloring->w3);
+  }
+  w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
   ierr = MatZeroEntries(J); CHKERRQ(ierr);
 

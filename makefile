@@ -1,3 +1,4 @@
+# $Id: makefile,v 1.49 1997/08/09 19:05:11 bsmith Exp $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.

@@ -1,3 +1,4 @@
+# $Id: makefile,v 1.49 1997/08/09 19:05:11 bsmith Exp $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.

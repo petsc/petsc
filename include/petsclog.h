@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.109 1997/08/06 22:32:13 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.110 1997/08/07 14:43:40 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -55,6 +55,7 @@
 #define MAT_IncreaseOverlap                     34
 #define MAT_GetRow                              35
 
+#define VEC_ScatterBarrier                      39
 #define VEC_Dot                                 40
 #define VEC_Norm                                41
 #define VEC_Max                                 42
@@ -80,6 +81,13 @@
 #define VEC_ScatterEnd                          62
 #define VEC_SetRandom                           63
 
+#define VEC_NormBarrier                         64
+#define VEC_NormComm                            65
+#define VEC_DotBarrier                          66
+#define VEC_DotComm                             67
+#define VEC_MDotBarrier                         68
+#define VEC_MDotComm                            69
+
 #define SLES_Solve                              70
 #define SLES_SetUp                              71
 
@@ -104,12 +112,6 @@
 #define TS_PseudoComputeTimeStep                91
 
 #define Petsc_Barrier                           100
-/* 
-   Time spent by processors synchronousing for reduction 
-   and then performing it.
-*/
-#define MPI_ReduceSync                          101
-#define MPI_ReduceComp                          102
 
 #define EC_SetUp                                105
 #define EC_Solve                                106
@@ -166,32 +168,66 @@ extern int (*_PLogPHC)(PetscObject);
 extern int (*_PLogPHD)(PetscObject);
 
 #if defined(HAVE_MPE)
+#define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
+  { \
+    if (_PLogPLB && PLogEventFlags[e]) {                           \
+      PLogEventBegin((e),o1,o2,o3,o4);                                   \
+      if (UseMPE && PLogEventMPEFlags[(e)])\
+        MPE_Log_event(MPEBEGIN+2*(e),0,"");\
+      MPI_Barrier(cm);                                             \
+      PLogEventEnd((e),o1,o2,o3,o4);                                     \
+      if (UseMPE && PLogEventMPEFlags[(e)])\
+        MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");\
+    }                                                                \
+    PLogEventBegin(e+1,o1,o2,o3,o4);                                   \
+    if (UseMPE && PLogEventMPEFlags[(e)+1])\
+      MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");\
+  }
 #define PLogEventBegin(e,o1,o2,o3,o4)  \
   {  \
-   if (_PLogPLB && PLogEventFlags[e]) \
-     (*_PLogPLB)(e,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-   if (UseMPE && PLogEventMPEFlags[e])\
-     MPE_Log_event(MPEBEGIN+2*e,0,"");\
+   if (_PLogPLB && PLogEventFlags[(e)]) \
+     (*_PLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+   if (UseMPE && PLogEventMPEFlags[(e)])\
+     MPE_Log_event(MPEBEGIN+2*(e),0,"");\
   }
 #else
+#define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
+  { \
+    if (_PLogPLB && PLogEventFlags[(e)]) {                           \
+      PLogEventBegin((e),o1,o2,o3,o4);                                   \
+      MPI_Barrier(cm);                                             \
+      PLogEventEnd((e),o1,o2,o3,o4);                                     \
+    }                                                                \
+    PLogEventBegin((e)+1,o1,o2,o3,o4);                                   \
+  }
 #define PLogEventBegin(e,o1,o2,o3,o4)  \
   {  \
-   if (_PLogPLB && PLogEventFlags[e]) \
-     (*_PLogPLB)(e,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+   if (_PLogPLB && PLogEventFlags[(e)]) \
+     (*_PLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   }
 #endif
 
 #if defined(HAVE_MPE)
+#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
+  if (_PLogPLE && PLogEventFlags[(e)+1]) \
+    (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+  if (UseMPE && PLogEventMPEFlags[(e)+1])\
+     MPE_Log_event(MPEBEGIN+2*((e)+1)+1,0,"");\
+  }  
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
-  if (_PLogPLE && PLogEventFlags[e]) \
-    (*_PLogPLE)(e,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-  if (UseMPE && PLogEventMPEFlags[e])\
-     MPE_Log_event(MPEBEGIN+2*e+1,0,"");\
+  if (_PLogPLE && PLogEventFlags[(e)]) \
+    (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+  if (UseMPE && PLogEventMPEFlags[(e)])\
+     MPE_Log_event(MPEBEGIN+2*(e)+1,0,"");\
   }  
 #else
+#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
+  if (_PLogPLE && PLogEventFlags[(e)+1]) \
+    (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+  } 
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
-  if (_PLogPLE && PLogEventFlags[e]) \
-    (*_PLogPLE)(e,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
+  if (_PLogPLE && PLogEventFlags[(e)]) \
+    (*_PLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   } 
 #endif
 
@@ -308,23 +344,8 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
   MPI_Waitall(count, array_of_requests, array_of_statuses)       \
 )
 
-/*
-    If logging is turned on for MPI_ReduceSync then this logs
-  the time to synchronous and then the time to do the reduction.
-*/
-extern int PETSC_DUMMY;
 #define MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
-  (PETSC_DUMMY = 0); {                                               \
-    if (_PLogPLB && PLogEventFlags[MPI_ReduceSync]) {                \
-      PLogEventBegin(MPI_ReduceSync,0,0,0,0);                        \
-      MPI_Barrier(comm);                                             \
-      PLogEventEnd(MPI_ReduceSync,0,0,0,0);                          \
-    }                                                                \
-    PLogEventBegin(MPI_ReduceComp,0,0,0,0);                          \
-    allreduce_ct++;                                                  \
-    MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm);    \
-    PLogEventEnd(MPI_ReduceComp,0,0,0,0);                            \
-  }
+    (allreduce_ct++,MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm))
 
 #else
 
@@ -371,6 +392,8 @@ extern int PLogMPEDump(char *);
 #define PetscGetFlops()               0.0
 #define PLogEventBegin(e,o1,o2,o3,o4)
 #define PLogEventEnd(e,o1,o2,o3,o4)
+#define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm)
+#define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm)
 #define PLogObjectParent(p,c)
 #define PLogObjectParents(p,n,c)
 #define PLogObjectCreate(h)
@@ -512,6 +535,67 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 .keywords: log, event, end
 M*/
 
+/*MC
+   PLogEventBarrierBegin - Logs the time in a barrier before an event.
+
+   Input Parameters:
+.  e - integer associated with the event obtained from PLogEventRegister()
+.  o1,o2,o3,o4 - objects associated with the event, or 0
+.  comm - communicator the barrier takes place over
+
+   Synopsis:
+   void PLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                  PetscObject o4,MPI_Comm comm)
+
+   Notes:
+   This is for logging the amount of time spent in a barrier for an event
+   that requires synchronization. 
+
+    Example of Usage:
+$     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
+$       MPI_Allreduce()
+$     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,comm);
+
+   Additional Notes:
+   Synchronization events always come in pairs; for example, VEC_NormBarrier and 
+   VEC_NormComm = VEC_NormBarrier + 1
+
+.seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
+          PLogEventBarrierEnd()
+
+.keywords: log, event, begin, barrier
+M*/
+
+/*MC
+   PLogEventBarrierEnd - Logs the time in a barrier before an event.
+
+   Input Parameters:
+.  e - integer associated with the event obtained from PLogEventRegister()
+.  o1,o2,o3,o4 - objects associated with the event, or 0
+.  comm - communicator the barrier takes place over
+
+   Synopsis:
+   void PLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                  PetscObject o4,MPI_Comm comm)
+
+   Notes:
+   This is for logging the amount of time spent in a barrier for an event
+   that requires synchronization. 
+
+    Example of Usage:
+$     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
+$       MPI_Allreduce()
+$     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,comm);
+
+   Additional Notes:
+   Synchronization events always come in pairs; for example, VEC_NormBarrier and 
+   VEC_NormComm = VEC_NormBarrier + 1
+
+.seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
+          PLogEventBarrierBegin()
+
+.keywords: log, event, begin, barrier
+M*/
 
 #endif
 

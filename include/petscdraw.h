@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.45 1997/05/23 16:41:17 balay Exp bsmith $ */
+/* $Id: draw.h,v 1.46 1997/08/06 22:13:42 bsmith Exp bsmith $ */
 /*
   Interface to the graphics
 */
@@ -82,6 +82,7 @@ extern int DrawEOP(Draw);
 
 typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton;
 extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
+extern int DrawSyncGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
 
 /*
     Routines for drawing X-Y axises in a Draw object

@@ -1,5 +1,5 @@
 C
-C  $Id: petsclog.h,v 1.5 1997/01/22 18:46:32 bsmith Exp bsmith $;
+C  $Id: petsclog.h,v 1.6 1997/08/07 02:49:47 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Plog package in PETSc
 C
@@ -77,6 +77,8 @@ C
        integer    MAT_GetRow
        parameter (MAT_GetRow = 35)
 
+       integer    VEC_ScatterBarrier
+       parameter (VEC_ScatterBarrier = 39)
        integer    VEC_Dot
        parameter (VEC_Dot = 40)
        integer    VEC_Norm
@@ -125,6 +127,19 @@ C
        parameter (VEC_ScatterEnd = 62)
        integer    VEC_SetRandom
        parameter (VEC_SetRandom = 63)
+       integer    VEC_NormBarrier
+       parameter (VEC_NormBarrier = 64)    
+       integer    VEC_NormComm
+       parameter (VEC_NormComm = 65)    
+       integer    VEC_DotBarrier
+       parameter (VEC_DotBarrier = 66)    
+       integer    VEC_DotComm
+       parameter (VEC_DotComm = 67)    
+       integer    VEC_MDotBarrier
+       parameter (VEC_MDotBarrier = 68)    
+       integer    VEC_MDotComm
+       parameter (VEC_MDotComm = 69)    
+
        integer    SLES_Solve
        parameter (SLES_Solve = 70)
        integer    SLES_SetUp
@@ -165,10 +180,6 @@ C
 
        integer    Petsc_Barrier
        parameter (Petsc_Barrier = 100)
-       integer    MPI_ReduceSync
-       parameter (MPI_ReduceSync = 101)
-       integer    MPI_ReduceComp
-       parameter (MPI_ReduceComp = 102)
 
        integer    EC_SetUp
        parameter (EC_SetUp = 105)

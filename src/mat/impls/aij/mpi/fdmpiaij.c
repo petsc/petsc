@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.9 1997/06/05 12:53:50 bsmith Exp balay $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.10 1997/07/09 20:54:04 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -21,6 +22,11 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   int        *columnsforrow;
   IS         *isa = iscoloring->is;
   PetscTruth done;
+
+  c->M             = mat->M;  /* set the global rows and columns and local rows */
+  c->N             = mat->N;
+  c->m             = mat->m;
+  c->rstart        = aij->rstart;
 
   c->ncolors       = nis;
   c->ncolumns      = (int *) PetscMalloc( nis*sizeof(int) );   CHKPTRQ(c->ncolumns);

@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.33 1997/07/10 23:14:44 balay Exp gropp $;
+C  $Id: mat.h,v 1.34 1997/07/25 14:03:33 gropp Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -198,6 +198,10 @@ C
       integer MATOP_GET_COLUMN_IJ
       integer MATOP_RESTORE_COLUMN_IJ
       integer MATOP_FDCOLORING_CREATE
+      integer MATOP_COLORING_PATCH
+      integer MATOP_SET_UNFACTORED
+      integer MATOP_PERMUTE
+      integer MATOP_SET_VALUES_BLOCKED
 
       integer MATOP_DESTROY
       integer MATOP_VIEW
@@ -240,28 +244,33 @@ C
       parameter(MATOP_GET_ARRAY=35)
       parameter(MATOP_RESTORE_ARRAY=36)
 
-      parameter(MATOP_CONVERT_SAME_TYPE=39)
-      parameter(MATOP_FORWARD_SOLVE=40)
-      parameter(MATOP_BACKWARD_SOLVE=41)
-      parameter(MATOP_ILUFACTOR=42)
-      parameter(MATOP_INCOMPLETECHOLESKYFACTOR=43)
-      parameter(MATOP_AXPY=44)
-      parameter(MATOP_GET_SUBMATRICES=45)
-      parameter(MATOP_INCREASE_OVERLAP=46)
-      parameter(MATOP_GET_VALUES=47)
-      parameter(MATOP_COPY=48)
-      parameter(MATOP_PRINT_HELP=49)
-      parameter(MATOP_SCALE=50)
-      parameter(MATOP_SHIFT=51)
-      parameter(MATOP_DIAGONAL_SHIFT=52)
-      parameter(MATOP_ILUDT_FACTOR=53)
-      parameter(MATOP_GET_BLOCK_SIZE=54)
+      parameter(MATOP_CONVERT_SAME_TYPE=37)
+      parameter(MATOP_FORWARD_SOLVE=38)
+      parameter(MATOP_BACKWARD_SOLVE=39)
+      parameter(MATOP_ILUFACTOR=40)
+      parameter(MATOP_INCOMPLETECHOLESKYFACTOR=41)
+      parameter(MATOP_AXPY=42)
+      parameter(MATOP_GET_SUBMATRICES=43)
+      parameter(MATOP_INCREASE_OVERLAP=44)
+      parameter(MATOP_GET_VALUES=45)
+      parameter(MATOP_COPY=46)
+      parameter(MATOP_PRINT_HELP=47)
+      parameter(MATOP_SCALE=48)
+      parameter(MATOP_SHIFT=49)
+      parameter(MATOP_DIAGONAL_SHIFT=50)
+      parameter(MATOP_ILUDT_FACTOR=51)
+      parameter(MATOP_GET_BLOCK_SIZE=52)
 
-      parameter(MATOP_GET_ROW_IJ=55)
-      parameter(MATOP_RESTORE_ROW_IJ=56)
-      parameter(MATOP_GET_COLUMN_IJ=57)
-      parameter(MATOP_RESTORE_COLUMN_IJ=58)
-      parameter(MATOP_FDCOLORING_CREATE=59)
+      parameter(MATOP_GET_ROW_IJ=53)
+      parameter(MATOP_RESTORE_ROW_IJ=54)
+      parameter(MATOP_GET_COLUMN_IJ=55)
+      parameter(MATOP_RESTORE_COLUMN_IJ=56)
+      parameter(MATOP_FDCOLORING_CREATE=57)
+      parameter(MATOP_COLORING_PATCH=58)
+      parameter(MATOP_SET_UNFACTORED=59)
+      parameter(MATOP_PERMUTE=60)
+      parameter(MATOP_SET_VALUES_BLOCKED=61)
+
 
       parameter(MATOP_DESTROY=250)
       parameter(MATOP_VIEW=251)

@@ -40,7 +40,7 @@ petsc/src/gvec/impls/rectangular/3d/dcimpls/quadratic/RCS
 petsc/docs/man
 petsc/src/contrib/RCS
 petsc/src/contrib/euler
-petsc/src/contrib/pfull
+petsc/src/contrib/pfull/oldversions
 petsc/src/contrib/vankat
 petsc/src/contrib/vrmltest
 petsc/src/contrib/ysmp

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.163 1997/08/07 02:50:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.164 1997/08/07 14:42:59 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -183,13 +183,13 @@ int PLogEventFlags[] = {1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1,
                         1,1,1,1,1,  /* 25 -49 */
                         1,1,1,1,1,
-                        1,1,1,1,1,
+                        1,1,1,1,0,
                         1,1,1,1,1,
                         1,1,1,1,1,
                         1,1,1,1,1, /* 50 - 74 */
                         1,1,1,1,1,
-                        1,1,1,1,1,
-                        1,1,1,1,1,
+                        1,1,1,1,0,
+                        0,0,0,0,0,
                         1,1,1,1,1,
                         1,1,1,1,1, /* 75 - 99 */
                         1,1,1,1,1,
@@ -308,7 +308,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "                ",
                          "                ",
                          "                ",
-                         "                ",
+                         "VecScatterBarrie",
                          "VecDot          ",
                          "VecNorm         ",
                          "VecMax          ",
@@ -333,12 +333,12 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "VecScatterBegin ",
                          "VecScatterEnd   ",
                          "VecSetRandom    ",
-                         " ",
-                         " ",
-                         " ",
-                         " ",
-                         " ",
-                         " ",
+                         "VecNormBarrier  ",
+                         "VecNormComm     ",
+                         "VecDotBarrier   ",
+                         "VecDotComm      ",
+                         "VecMDotBarrier  ",
+                         "VecMDotComm     ",
                          "SLESSolve       ",
                          "SLESSetUp       ",
                          "KSPGMRESOrthog  ",
@@ -370,8 +370,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          " ",
                          " ",
                          "PetscBarrier    ", /* 100 */
-                         "MPI_ReduceSync  ",
-                         "MPI_ReduceComp  ",
+                         "                ",
+                         "                ",
                          " ",
                          " ",
                          "ECSetUp         ",
@@ -1284,9 +1284,6 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   /* pop off any stages the user forgot to remove */
   while (EventsStagePushed) PLogStagePop();
 
-  /* turn off profiling of MPI reductions */
-  PLogEventDeactivate(MPI_ReduceSync);
-  PLogEventDeactivate(MPI_ReduceComp);
 
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
   MPI_Comm_size(comm,&size);
@@ -1329,26 +1326,26 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   MPI_Allreduce(&wdou,&tott,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
   avet = (tott)/((PLogDouble) size);
 
-  PetscFPrintf(comm,fd,"\n                         Max       Max/Min    Avg      Total \n");
+  PetscFPrintf(comm,fd,"\n                         Max       Max/Min      Avg      Total \n");
   if (mint) ratio = maxt/mint; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Time (sec):           %5.3e   %6.1f   %5.3e\n",maxt,ratio,avet);
+  PetscFPrintf(comm,fd,"Time (sec):           %5.3e   %8.3f   %5.3e\n",maxt,ratio,avet);
   if (mino) ratio = maxo/mino; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Objects:              %5.3e   %6.1f   %5.3e\n",maxo,ratio,aveo);
+  PetscFPrintf(comm,fd,"Objects:              %5.3e   %8.3f   %5.3e\n",maxo,ratio,aveo);
   if (minf) ratio = maxf/minf; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Flops:                %5.3e   %6.1f   %5.3e  %5.3e\n",maxf,ratio,avef,totf);
+  PetscFPrintf(comm,fd,"Flops:                %5.3e   %8.3f   %5.3e  %5.3e\n",maxf,ratio,avef,totf);
 
   if (mint) fmin = minf/mint; else fmin = 0;
   if (maxt) fmax = maxf/maxt; else fmax = 0;
   if (maxt) ftot = totf/maxt; else ftot = 0;
   if (fmin) ratio = fmax/fmin; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %6.1f              %5.3e\n",fmax,ratio,ftot);
+  PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %8.3f              %5.3e\n",fmax,ratio,ftot);
   PetscTrSpace(PETSC_NULL,PETSC_NULL,&mem);
   if (mem > 0.0) {
     MPI_Allreduce(&mem,&maxmem,1,MPIU_PLOGDOUBLE,MPI_MAX,comm);
     MPI_Allreduce(&mem,&minmem,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);
     MPI_Allreduce(&mem,&totmem,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
     if (minmem) ratio = maxmem/minmem; else ratio = 0.0;
-    PetscFPrintf(comm,fd,"Memory:               %5.3e   %6.1f              %5.3e\n",maxmem,ratio,totmem);
+    PetscFPrintf(comm,fd,"Memory:               %5.3e   %8.3f              %5.3e\n",maxmem,ratio,totmem);
   }
   wdou = .5*(irecv_ct + isend_ct + recv_ct + send_ct);
   MPI_Allreduce(&wdou,&minm,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);
@@ -1361,14 +1358,14 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   MPI_Allreduce(&wdou,&totml,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
   if (totm) aveml = (totml)/(totm); else aveml = 0;
   if (minm) ratio = maxm/minm; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %6.1f   %5.3e  %5.3e\n",maxm,ratio,avem,totm);
+  PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %8.3f   %5.3e  %5.3e\n",maxm,ratio,avem,totm);
   if (minml) ratio = maxml/minml; else ratio = 0.0;
   PetscFPrintf(comm,fd,"MPI Message Lengths:  %5.3e   %6.1f   %5.3e  %5.3e\n",maxml,ratio,aveml,totml);
   MPI_Allreduce(&allreduce_ct,&minr,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);
   MPI_Allreduce(&allreduce_ct,&maxr,1,MPIU_PLOGDOUBLE,MPI_MAX,comm);
   MPI_Allreduce(&allreduce_ct,&totr,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
   if (minr) ratio = maxr/minr; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %6.1f\n",maxr,ratio);
+  PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %8.3f\n",maxr,ratio);
   PetscFPrintf(comm,fd,"\nFlop counting convention: 1 flop = 1 operation of type (multiply/divide/add/subtract)\n");
   PetscFPrintf(comm,fd,"                           e.g., VecAXPY() for vectors of length N --> 2N flops\n");
 
