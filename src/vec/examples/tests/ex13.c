@@ -1,7 +1,7 @@
 
-
-static char help[] = "Scatters from  a sequential vector to a parallel vector.\n\
-   Does case when each local vector is as long as the entire parallel vector.\n";
+static char help[] = 
+"This example scatters from a sequential vector to a parallel vector.  In\n\
+this case each local vector is as long as the entire parallel vector.\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -45,14 +45,14 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(x,is2,y,is1,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
   ierr = VecScatterEnd(x,is2,y,is1,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
-  VecScatterCtxDestroy(ctx);
+  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  VecView(y,SYNC_STDOUT_VIEWER);
+  ierr = VecView(y,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
-  ierr = ISDestroy(is1);CHKERRA(ierr);
-  ierr = ISDestroy(is2);CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(y); CHKERRA(ierr);
+  ierr = ISDestroy(is1); CHKERRA(ierr);
+  ierr = ISDestroy(is2); CHKERRA(ierr);
 
   PetscFinalize(); 
   return 0;

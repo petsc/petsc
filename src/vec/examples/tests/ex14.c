@@ -1,7 +1,7 @@
 
-
-static char help[] = "Scatters from  a sequential vector to a parallel vector.\n\
-   Does tricky case.\n";
+static char help[] = 
+"This example scatters from a sequential vector to a parallel vector.\n\
+This does the tricky case.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -34,20 +34,21 @@ int main(int argc,char **argv)
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,0,1,&is1); CHKERRA(ierr);
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,mytid,1,&is2); CHKERRA(ierr);
 
-  value = mytid+1; VecSet(&value,x);
-  VecSet(&zero,y);
+  value = mytid+1; 
+  ierr = VecSet(&value,x); CHKERRA(ierr);
+  ierr = VecSet(&zero,y); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterEnd(x,is1,y,is2,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
-  VecScatterCtxDestroy(ctx);
+  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  VecView(y,SYNC_STDOUT_VIEWER);
+  ierr = VecView(y,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
-  ierr = ISDestroy(is1);CHKERRA(ierr);
-  ierr = ISDestroy(is2);CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(y); CHKERRA(ierr);
+  ierr = ISDestroy(is1); CHKERRA(ierr);
+  ierr = ISDestroy(is2); CHKERRA(ierr);
 
   PetscFinalize(); 
   return 0;

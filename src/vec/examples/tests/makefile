@@ -11,9 +11,9 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
-           ex15 ex16
+           ex15 ex16 ex17
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-           ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c
+           ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c
 SYSLIB   = -L$(LDIR) -lpetscvec \
            -lpetscsys $(BLAS_LIB) -lpetscdraw $(X11_LIB) $(MPI_LIB) \
            $(SYS_LIB) -lm 
@@ -93,6 +93,10 @@ runexamples:
            if (diff ex16_1.out ex16_1.tmp) then true; \
            else echo "Possible problem with ex16_1, diffs above"; fi;\
            $(RM) -f ex16_1.tmp
+	-@$(MPIRUN)  -np 2 ex17 > ex17_1.tmp 2>&1;\
+           if (diff ex17_1.out ex17_1.tmp) then true; \
+           else echo "Possible problem with ex17_1, diffs above"; fi;\
+           $(RM) -f ex17_1.tmp
 	
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
@@ -157,6 +161,10 @@ ex15: ex15.o
 ex16: ex16.o 
 	-$(CLINKER) -o ex16 ex16.o  $(SYSLIB) 
 	$(RM) -f ex16.o
+
+ex17: ex17.o 
+	-$(CLINKER) -o ex17 ex17.o  $(SYSLIB)
+	$(RM) -f ex17.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
