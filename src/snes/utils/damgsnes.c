@@ -553,6 +553,16 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 -   admf_function - the name of the function with an ad_ prefix. This is ignored if ADIC is
                   not installed
 
+    Options Database Keys:
++    -dmmg_snes_monitor
+.    -dmmg_jacobian_fd
+.    -dmmg_jacobian_ad
+.    -dmmg_jacobian_mf_fd_operator
+.    -dmmg_jacobian_mf_fd
+.    -dmmg_jacobian_mf_ad_operator
+-    -dmmg_jacobian_mf_ad
+
+
     Level: intermediate
 
     Notes: 

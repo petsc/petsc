@@ -794,7 +794,7 @@ int KSPCreate_FGMRES(KSP ksp)
   fgmres->haptol              = 1.0e-30;
   fgmres->q_preallocate       = 0;
   fgmres->delta_allocate      = FGMRES_DELTA_DIRECTIONS;
-  fgmres->orthog              = KSPGMRESIROrthogonalization;
+  fgmres->orthog              = KSPGMRESUnmodifiedGramSchmidtOrthogonalization;
   fgmres->nrs                 = 0;
   fgmres->sol_temp            = 0;
   fgmres->max_k               = FGMRES_DEFAULT_MAXK;

@@ -14,7 +14,6 @@
 #define __FUNCT__ "MatSolve_SeqAIJ_Matlab"
 int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   int             ierr;
   char            *_A,*_b,*_x;
 
@@ -39,7 +38,6 @@ int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
 int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(A)->data;
   int             ierr,len;
   char            *_A,*name;
 
@@ -60,7 +58,6 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Matlab"
 int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*f;
   int             ierr;
 
   PetscFunctionBegin;
@@ -79,7 +76,6 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 #define __FUNCT__ "MatSolve_SeqAIJ_Matlab_QR"
 int MatSolve_SeqAIJ_Matlab_QR(Mat A,Vec b,Vec x)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   int             ierr;
   char            *_A,*_b,*_x;
 
@@ -103,8 +99,6 @@ int MatSolve_SeqAIJ_Matlab_QR(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Matlab_QR"
 int MatLUFactorNumeric_SeqAIJ_Matlab_QR(Mat A,Mat *F)
 {
-  Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(A)->data;
   int             ierr,len;
   char            *_A,*name;
 
@@ -124,7 +118,6 @@ int MatLUFactorNumeric_SeqAIJ_Matlab_QR(Mat A,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Matlab_QR"
 int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*f;
   int             ierr;
 
   PetscFunctionBegin;
@@ -142,7 +135,6 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 #define __FUNCT__ "MatILUDTFactor_SeqAIJ_Matlab"
 int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   int        ierr,len;
   char       *_A,*name;
 

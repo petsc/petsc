@@ -500,7 +500,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
           ndamp++;
           break;
         } else {
-          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",i,PetscAbsScalar(pv[diag]),zeropivot);
+          SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g * rs %g",i,PetscAbsScalar(pv[diag]),zeropivot,rs);
         }
       }
     }

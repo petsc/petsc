@@ -3894,8 +3894,8 @@ int MatRestoreArray(Mat mat,PetscScalar **v)
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the 
    original matrix has not changed from that last call to MatGetSubMatrices().
 
-   This routine creates the matrices submat; you should NOT create them before
-   calling it.
+   This routine creates the matrices in submat; you should NOT create them before
+   calling it. It also allocates the array of matrix pointers submat.
 
    Fortran Note:
    The Fortran interface is slightly different from that given below; it 
