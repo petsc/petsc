@@ -1,4 +1,4 @@
-# $Id: base,v 1.8 1998/04/13 16:20:43 bsmith Exp balay $ 
+# $Id: base,v 1.9 1998/04/13 18:44:53 balay Exp balay $ 
 
 PARCH    = solaris
 CC       = gcc  -DPARCH_solaris -fPIC
@@ -14,7 +14,7 @@ RM       = rm -f
 OMAKE    = make
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = /ccsthome/balay/egcs/solaris/bin/gcc ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+CLINKER  = gcc ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
 FLINKER  = /ccsthome/balay/egcs/solaris/bin/g77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
 
 
