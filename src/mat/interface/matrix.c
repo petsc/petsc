@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.273 1998/01/27 20:57:00 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.274 1998/01/27 21:32:48 balay Exp curfman $";
 #endif
 
 /*
@@ -236,7 +236,7 @@ int MatDestroy(Mat mat)
 .  m - the matrix to check 
 
    Output Parameter:
-   flg - flag indicating matrix status, eMAT_IGNORE_OFF_PROC_ENTRIESither
+   flg - flag indicating matrix status, either
 $     PETSC_TRUE if matrix is valid;
 $     PETSC_FALSE otherwise.
 
