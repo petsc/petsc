@@ -278,8 +278,17 @@ alladicignore:
 	-@$(RM) $(PDIR)/adicignore
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adicignore  tree 
 
+CFLAGS   =  $(CPPFLAGS) $(CONF)
+
 alladic:
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree 
+	-cd include ; \
+           adiC.new -avud gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) petsc.h 
+
+joe:
+	-cd src/vec/interface ; \
+           adiC.new -avud gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) vector.c 
+
 
 # 
 #  We no longer make Unix manpages
