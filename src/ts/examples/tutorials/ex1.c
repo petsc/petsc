@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/09/27 02:44:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1996/09/30 16:39:03 bsmith Exp curfman $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -13,9 +13,9 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
 
 /*
      Demonstrates how one may solve a nonlinear problem 
-   with pseudo time-stepping. In this simple example, the pseudo-time
+   with pseudo timestepping. In this simple example, the pseudo-time
    step is the same for all grid points, i.e. this is equivalent to 
-   a backward Euler with variable time-step.
+   a backward Euler with variable timestep.
 
      See snes/examples/tutorials/ex4.c[ex4f.F] and 
    snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
@@ -32,8 +32,8 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
 #include <math.h>
 
 /*
-    Create an application context to contain data needed by the 
-  application provided call-back routines, FormJacobian() and
+  Create an application context to contain data needed by the 
+  application-provided call-back routines, FormJacobian() and
   FormFunction().
 */
 typedef struct {
@@ -47,20 +47,23 @@ typedef struct {
   Vec  w;
 } MFCtx_Private;
 
-
+/* 
+   User-defined routines
+*/
 int  FormJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(TS,double,Vec,Vec,void*),
      FormInitialGuess(Vec,AppCtx*);
 
 int main( int argc, char **argv )
 {
-  TS           ts;
-  Vec          x,r;
-  Mat          J;
-  int          ierr, N, its,flg; 
-  AppCtx       user;
-  double       param_max = 6.81, param_min = 0.,dt = 1.e-6;
-  double       ftime;
+  TS     ts;                 /* timestepping context */
+  Vec    x, r;               /* solution, residual vectors */
+  Mat    J;                  /* Jacobian matrix */
+  AppCtx user;               /* user-defined work context */
+  int    its;                /* iterations for convergence */
+  int    ierr, N, flg; 
+  double param_max = 6.81, param_min = 0., dt = 1.e-6;
+  double ftime;
 
   PetscInitialize( &argc, &argv, PETSC_NULL,help );
   user.mx        = 4;
@@ -68,7 +71,7 @@ int main( int argc, char **argv )
   user.param     = 6.0;
   
   /*
-     Allow user to set the grid dimensions at run-time, and parameter
+     Allow user to set the grid dimensions and nonlinearity parameter at run-time
   */
   OptionsGetInt(0,"-mx",&user.mx,&flg);
   OptionsGetInt(0,"-my",&user.my,&flg);
@@ -86,10 +89,10 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
 
   /*
-      Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
-    in the sparse matrix. Note this is not the optimal strategy; see
-    the Performance chapter of PETSc for how to properly pre-allocate
-    memory in sparse matrices.
+    Create matrix to hold Jacobian. Preallocate 5 nonzeros per row
+    in the sparse matrix. Note that this is not the optimal strategy; see
+    the Performance chapter of the users manual for information on 
+    preallocating memory in sparse matrices.
   */
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,0,&J); CHKERRA(ierr);
 
@@ -159,7 +162,7 @@ int main( int argc, char **argv )
   */
   ierr = TSStep(ts,&its,&ftime); CHKERRA(ierr);
   
-  printf( "Number of pseudo time-steps = %d final time %g\n", its,ftime );
+  printf( "Number of pseudo timesteps = %d final time %g\n", its,ftime );
 
   /* 
      Free the data structures constructed above
