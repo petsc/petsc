@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.69 1999/05/04 20:31:58 balay Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.70 1999/05/14 17:42:22 bsmith Exp balay $";
 #endif
 
 /*
@@ -391,7 +391,7 @@ int MatShellGetOperation(Mat mat,MatOperation op, void **f)
   } else if (op == MATOP_VIEW) {
     *f = (void *) mat->ops->view;
   } else {
-    *f = (((void**)&mat->ops)[op]);
+    *f = (((void**)mat->ops)[op]);
   }
 
   PetscFunctionReturn(0);
