@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.4 1997/09/22 15:24:30 balay Exp balay $";
+!  "$Id: ex16f90.F,v 1.5 1998/03/24 16:46:19 balay Exp balay $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -38,7 +38,7 @@
 !
 !      Create a parallel dense matrix shared by all processors 
 !
-      call MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,
+      call MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,             &
      &                        PETSC_DECIDE,m,n,PETSC_NULL,A,ierr)
 
 !

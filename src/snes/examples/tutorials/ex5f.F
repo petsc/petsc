@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.39 1998/03/20 22:52:53 bsmith Exp balay $";
+! "$Id: ex5f.F,v 1.40 1998/03/24 16:42:48 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -107,7 +107,7 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,        &
      &                snes,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -120,15 +120,16 @@
       Ny = PETSC_DECIDE
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      if (Nx*Ny .ne. size .and.
+      if (Nx*Ny .ne. size .and.                                         &
      &      (Nx .ne. PETSC_DECIDE .or. Ny .ne. PETSC_DECIDE)) then
-         if (rank .eq. 0) 
-     &      write(6,*) 'Incompatible number of procs: Nx * Ny != size'
+         if (rank .eq. 0)  then
+            write(6,*) 'Incompatible number of procs: Nx * Ny != size'
+         endif
          SETERRA(1,0,' ')
       endif
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,&
      &                my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
 
 !
@@ -147,7 +148,7 @@
 !  Get local grid boundaries (for 2-dimensional DA)
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,             &
      &                                         PETSC_NULL,ierr)
 
 !  Here we shift the starting indices up by one so that we can easily
@@ -191,14 +192,14 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
      &                    ierr)
       if (matrix_free .eq. 0) then
         if (size .eq. 1) then
           call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
         else
           call VecGetLocalSize(x,m,ierr)
-          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,
+          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,   &
      &                         3,PETSC_NULL,J,ierr)
         endif
         call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL,ierr)
@@ -210,7 +211,7 @@
 !          the C version.  See the Fortran chapter of the users manual for details.
 
         call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
-        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,
+        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,         &
      &       ltog_a(ltog_i),isltog,ierr)
         call MatSetLocalToGlobalMapping(J,isltog,ierr)
         call ISLocalToGlobalMappingDestroy(isltog,ierr)
@@ -356,11 +357,11 @@
       do 20 j=ys,ye
          temp = dble(min(j-1,my-j))*hy
          do 10 i=xs,xe
-            if (i .eq. 1 .or. j .eq. 1
+            if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
               x(i,j) = 0.0
             else
-              x(i,j) = temp1 *
+              x(i,j) = temp1 *                                          &
      &          sqrt(min(dble(min(i-1,mx-i)*hx),dble(temp)))
             endif
  10      continue
@@ -486,12 +487,12 @@
 
       do 20 j=ys,ye
          do 10 i=xs,xe
-            if (i .eq. 1 .or. j .eq. 1
+            if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
                f(i,j) = x(i,j)
             else
                u = x(i,j) 
-               uxx = hydhx * (two*u
+               uxx = hydhx * (two*u                                     &
      &                - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
                f(i,j) = uxx + uyy - sc*exp(u)
@@ -698,15 +699,15 @@
          do 10 i=xs,xe
             row = row + 1
 !           boundary points
-            if (i .eq. 1 .or. j .eq. 1
+            if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
-               call MatSetValuesLocal(jac,1,row,1,row,one,
+               call MatSetValuesLocal(jac,1,row,1,row,one,              &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
                v(1) = -hxdhy
                v(2) = -hydhx
-               v(3) = two*(hydhx + hxdhy) 
+               v(3) = two*(hydhx + hxdhy)                               &
      &                  - sc*lambda*exp(x(i,j))
                v(4) = -hydhx
                v(5) = -hxdhy
@@ -715,7 +716,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + gxm
-               call MatSetValuesLocal(jac,1,row,5,col,v,
+               call MatSetValuesLocal(jac,1,row,5,col,v,                &
      &                                INSERT_VALUES,ierr)
             endif
  10      continue

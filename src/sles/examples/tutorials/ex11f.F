@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.17 1997/11/28 16:20:38 bsmith Exp balay $";
+!    "$Id: ex11f.F,v 1.18 1998/03/24 16:45:33 balay Exp balay $";
 !
 !/*T
 !  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -95,8 +95,8 @@
       n      = 6
       sigma1 = 100.0
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,
-     *                       flg,ierr)
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,      &
+     &                       flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       dim    = n*n
 
@@ -130,8 +130,8 @@
          sigma2 = 10.0*PETSC_i
       else
          use_random = .true.
-         call PetscRandomCreate(PETSC_COMM_WORLD,
-     $        RANDOM_DEFAULT_IMAGINARY,rctx,ierr)
+         call PetscRandomCreate(PETSC_COMM_WORLD,                       &
+     &        RANDOM_DEFAULT_IMAGINARY,rctx,ierr)
       endif
       h2 = 1.0/((n+1)*(n+1))
 
@@ -182,7 +182,7 @@
 !  Set exact solution; then compute right-hand-side vector.
 
       if (use_random) then
-         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,
+         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,        &
      &                          rctx,ierr)
          call VecSetRandom(rctx,u,ierr)
       else
@@ -202,8 +202,8 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
-     *                      ierr)
+      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
+     &                      ierr)
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>

@@ -1,5 +1,5 @@
 
-!    "$Id: ex2f.F,v 1.44 1997/11/28 16:20:38 bsmith Exp balay $";
+!    "$Id: ex2f.F,v 1.45 1998/03/23 23:45:27 balay Exp balay $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -195,10 +195,10 @@
 !  elements of 1.0;  Alternatively, using the runtime option
 !  -random_sol forms a solution vector with random components.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,
+      call OptionsHasName(PETSC_NULL_CHARACTER,                         &
      &             "-random_exact_sol",flg,ierr)
       if (flg .eq. 1) then
-         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,
+         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,        &
      &                          rctx,ierr)
          call VecSetRandom(rctx,u,ierr)
          call PetscRandomDestroy(rctx,ierr)
@@ -209,11 +209,11 @@
 
 !  View the exact solution vector if desired
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,
+      call OptionsHasName(PETSC_NULL_CHARACTER,                         &
      &             "-view_exact_sol",flg,ierr)
-      if (flg .eq. 1)
-     &   call VecView(u,VIEWER_STDOUT_WORLD,ierr)
-
+      if (flg .eq. 1) then
+         call VecView(u,VIEWER_STDOUT_WORLD,ierr)
+      endif
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !         Create the linear solver and set various options
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -225,8 +225,8 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
-     *                      ierr)
+      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
+     &                      ierr)
 
 !  Set linear solver defaults for this problem (optional).
 !   - By extracting the KSP and PC contexts from the SLES context,
@@ -250,7 +250,7 @@
 !  Set user-defined monitoring routine if desired
 
       flg = 0
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',       &
      &                    flg,ierr)
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)

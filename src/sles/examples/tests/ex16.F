@@ -1,5 +1,5 @@
 !
-!      "$Id: ex16.F,v 1.15 1997/09/25 15:27:06 balay Exp balay $";
+!      "$Id: ex16.F,v 1.16 1998/03/24 16:45:45 balay Exp balay $";
 !
        implicit none
 
@@ -38,8 +38,8 @@
 
 ! Read in matrix and RHS
       call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call ViewerFileOpenBinary(PETSC_COMM_WORLD,f,BINARY_RDONLY,
-     $     fd,ierr)
+      call ViewerFileOpenBinary(PETSC_COMM_WORLD,f,BINARY_RDONLY,       &
+     &     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
         SETERRA(1,0,' ')
@@ -62,7 +62,7 @@
       call SLESCreate(PETSC_COMM_WORLD,sles1,ierr)
       call SLESSetOptionsPrefix(sles1,'a', ierr)
       call SLESAppendOptionsPrefix(sles1,'_', ierr)
-      call SLESSetOperators(sles1,A,A,DIFFERENT_NONZERO_PATTERN,
+      call SLESSetOperators(sles1,A,A,DIFFERENT_NONZERO_PATTERN,        &  
      &                      ierr)
       call SLESSetFromOptions(sles1,ierr)
       time = PetscGetTime()
@@ -87,7 +87,7 @@
       call SLESCreate(PETSC_COMM_WORLD,sles2,ierr)
       call SLESSetOptionsPrefix(sles2,'b', ierr)
       call SLESAppendOptionsPrefix(sles2,'_', ierr)
-      call SLESSetOperators(sles2,A,A,DIFFERENT_NONZERO_PATTERN,
+      call SLESSetOperators(sles2,A,A,DIFFERENT_NONZERO_PATTERN,        &
      &                      ierr)
       call SLESSetFromOptions(sles2,ierr)
       time = PetscGetTime()

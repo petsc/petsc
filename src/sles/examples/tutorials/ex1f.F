@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.17 1997/11/28 16:20:38 bsmith Exp balay $";
+!    "$Id: ex1f.F,v 1.18 1998/03/24 16:45:08 balay Exp balay $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -84,8 +84,9 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
          call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-         if (rank .eq. 0)
-     &      write(6,*) 'This is a uniprocessor example only!'
+         if (rank .eq. 0) then
+            write(6,*) 'This is a uniprocessor example only!'
+         endif
          SETERRA(1,0,' ')
       endif
       none = -1.0
@@ -166,7 +167,7 @@
       call SLESGetPC(sles,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
       tol = 1.d-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
 !  Set runtime options, e.g.,

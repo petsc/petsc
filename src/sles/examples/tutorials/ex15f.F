@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.3 1997/09/22 15:21:04 balay Exp balay $";
+!    "$Id: ex15f.F,v 1.4 1998/03/24 16:45:12 balay Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -168,8 +168,7 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
-     &                      ierr)
+      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
 
 !  Set linear solver defaults for this problem (optional).
 !   - By extracting the KSP and PC contexts from the SLES context,
@@ -179,13 +178,13 @@
       call SLESGetKSP(sles,ksp,ierr)
       call SLESGetPC(sles,pc,ierr)
       tol = 1.e-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
 !
 !  Set a user-defined shell preconditioner if desired
 !
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-user_defined_pc',
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-user_defined_pc',      &
      &                    user_defined_pc,ierr)
 
       if (user_defined_pc .eq. 1) then

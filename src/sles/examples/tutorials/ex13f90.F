@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f.F,v 1.5 1998/03/24 16:53:22 bsmith Exp balay $";
+!    "$Id: ex13f.F,v 1.6 1998/03/24 16:57:05 balay Exp balay $";
 !
 !
 !/*T
@@ -90,8 +90,9 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
          call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-         if (rank .eq. 0)
-     &      write(6,*) 'This is a uniprocessor example only!'
+         if (rank .eq. 0) then
+            write(6,*) 'This is a uniprocessor example only!'
+         endif
          SETERRA(1,0,' ')
       endif
 
@@ -132,9 +133,9 @@
          do 10 i=1,m
             rho(i,j)      = x
             solution(i,j) = sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y)
-            userb(i,j)    = -2*PETSC_PI*cos(2*PETSC_PI*x)*
-     &                sin(2*PETSC_PI*y) +
-     &                8*PETSC_PI*PETSC_PI*x*
+            userb(i,j)    = -2*PETSC_PI*cos(2*PETSC_PI*x)*              &
+     &                sin(2*PETSC_PI*y) +                               &
+     &                8*PETSC_PI*PETSC_PI*x*                            &
      &                sin(2*PETSC_PI*x)*sin(2*PETSC_PI*y)
            x = x + hx
  10      continue
@@ -156,9 +157,9 @@
 !        PETSc.
          enorm = 0.0
          do 90 i=1,N
-            enorm = enorm + 
-     &       PetscReal(PetscConj(solution[i]-userx[i])
-     &           *(solution[i]-userx[i]));
+            enorm = enorm +                                             &
+     &       PetscReal(PetscConj(solution[i]-userx[i])                  &
+     &           *(solution[i]-userx[i]))
  90      continue
          enorm = enorm * PetscReal(hx*hy);
          write(6,*) 'm, n, error norm =',m,n,enorm
@@ -229,7 +230,7 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 !   rho is a 2-dimensional array of size m by n, stored in Fortran
 !   style by columns. userb is a standard one-dimensional array.
 
-      integer function UserDoLinearSolver(rho,userctx,
+      integer function UserDoLinearSolver(rho,userctx,                  &
      &                                    userb,userx,ierr)
 
   Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)

@@ -1,5 +1,5 @@
 !
-! "$Id: ex5fs.F,v 1.3 1998/03/24 16:42:25 bsmith Exp balay $";
+! "$Id: ex5fs.F,v 1.4 1998/03/24 16:50:40 balay Exp balay $";
 !
 
 ! ---------------------------------------------------------------------
@@ -47,12 +47,12 @@
 
       do 20 j=1,my
          do 10 i=1,mx
-            if (i .eq. 1 .or. j .eq. 1
+            if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
                f(i,j) = x(i,j)
             else
                u = x(i,j) 
-               uxx = hydhx * (two*u
+               uxx = hydhx * (two*u                                     &
      &                - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
                f(i,j) = uxx + uyy - sc*exp(u)

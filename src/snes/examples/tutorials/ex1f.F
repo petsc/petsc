@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.18 1998/03/12 23:23:23 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.19 1998/03/24 16:43:02 balay Exp balay $";
 !
 !/*T
 !  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -90,8 +90,9 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (size .ne. 1) then
-         if (rank .eq. 0)
-     &      write(6,*) 'This is a uniprocessor example only!'
+         if (rank .eq. 0) then
+            write(6,*) 'This is a uniprocessor example only!'
+         endif
          SETERRA(1,0,' ')
       endif
 
@@ -99,8 +100,8 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
-     $     snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,        &
+     &     snes,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix and vector data structures; set corresponding routines
@@ -136,7 +137,7 @@
       call SLESGetPC(sles,pc,ierr)
       call PCSetType(pc,PCNONE,ierr)
       tol = 1.e-4
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
      &                      PETSC_DEFAULT_DOUBLE_PRECISION,20,ierr)
 
 !  Set SNES/SLES/KSP/PC runtime options, e.g.,
@@ -216,9 +217,9 @@
 
 !  Compute function
 
-      lf_a(1) = lx_a(1)*lx_a(1) 
-     &          + lx_a(1)*lx_a(2) - 3.0
-      lf_a(2) = lx_a(1)*lx_a(2)
+      lf_a(1) = lx_a(1)*lx_a(1)                                         &
+     &          + lx_a(1)*lx_a(2) - 3.0                                 &
+      lf_a(2) = lx_a(1)*lx_a(2)                                         &
      &          + lx_a(2)*lx_a(2) - 6.0
 
 !  Restore vectors

@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.27 1998/03/12 23:23:23 bsmith Exp balay $";
+! "$Id: ex4f.F,v 1.28 1998/03/24 16:42:52 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -105,8 +105,9 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
          call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-         if (rank .eq. 0)
-     &      write(6,*) 'This is a uniprocessor example only!'
+         if (rank .eq. 0) then
+            write(6,*) 'This is a uniprocessor example only!'
+         endif
          SETERRA(1,0,' ')
       endif
 
@@ -130,8 +131,8 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
-     $     snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,        &
+     &     snes,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine
@@ -157,7 +158,7 @@
 !  for the Jacobian.  See the users manual for a discussion of better 
 !  techniques for preallocating matrix memory.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
      &                    ierr)
       if (matrix_free .eq. 0) then
         call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
@@ -207,7 +208,7 @@
 
 !  Draw contour plot of solution
 
-      call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',
+      call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  &
      &               300,0,300,300,draw,ierr)
       call DrawTensorContour(draw,mx,my,PETSC_NULL,PETSC_NULL,x,ierr)
       call DrawSynchronizedFlush(draw,ierr)
@@ -330,11 +331,11 @@
       do 20 j=1,my
          temp = dble(min(j-1,my-j))*hy
          do 10 i=1,mx
-            if (i .eq. 1 .or. j .eq. 1
+            if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
               x(i,j) = 0.0
             else
-              x(i,j) = temp1 *
+              x(i,j) = temp1 *                                          & 
      &          sqrt(min(dble(min(i-1,mx-i)*hx),dble(temp)))
             endif
  10      continue
@@ -459,12 +460,12 @@
 
       do 20 j=1,my
          do 10 i=1,mx
-            if (i .eq. 1 .or. j .eq. 1
+            if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
                f(i,j) = x(i,j)
             else
                u = x(i,j) 
-               uxx = hydhx * (two*u
+               uxx = hydhx * (two*u                                     &
      &                - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
                f(i,j) = uxx + uyy - sc*exp(u)
@@ -623,15 +624,15 @@
          do 10 i=1,mx
             row = row + 1
 !           boundary points
-            if (i .eq. 1 .or. j .eq. 1
+            if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
-               call MatSetValues(jac,1,row,1,row,one,
+               call MatSetValues(jac,1,row,1,row,one,                   &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
                v(1) = -hxdhy
                v(2) = -hydhx
-               v(3) = two*(hydhx + hxdhy) 
+               v(3) = two*(hydhx + hxdhy)                               &
      &                  - sc*lambda*exp(x(i,j))
                v(4) = -hydhx
                v(5) = -hxdhy
@@ -640,7 +641,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + mx
-               call MatSetValues(jac,1,row,5,col,v,
+               call MatSetValues(jac,1,row,5,col,v,                     &
      &                           INSERT_VALUES,ierr)
             endif
  10      continue

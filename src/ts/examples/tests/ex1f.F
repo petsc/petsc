@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.20 1998/03/23 21:24:04 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.21 1998/03/24 16:42:17 balay Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -23,10 +23,10 @@
 #include "FINCLUDE/draw.h"
 #include "FINCLUDE/viewer.h"
 
-      integer   linear_no_matrix,linear_no_time,linear,
-     &          nonlinear_no_jacobian,nonlinear
-      parameter (linear_no_matrix = 0,linear_no_time = 1,linear = 2,
-     &           nonlinear_no_jacobian = 3,nonlinear = 4)
+      integer   linear_no_matrix,linear_no_time,linear
+      integer   nonlinear_no_jacobian,nonlinear
+      parameter (linear_no_matrix = 0,linear_no_time = 1,linear = 2)
+      parameter (nonlinear_no_jacobian = 3,nonlinear = 4)
 
       integer          ierr,  time_steps, steps, flg, size, problem
       Vec              local, global
@@ -48,7 +48,7 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
+      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
      &               nrm_max,nox
 
       external Monitor, RHSFunctionHeat, RHSMatrixFree, Initial
@@ -65,7 +65,7 @@
 
       M = 60
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr) 
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,flg,
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,flg,   &
      &                   ierr)
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-nox',flg,ierr) 
@@ -79,7 +79,7 @@
 
 !   Set up the ghost point communication pattern                       
 
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,            &
      &                PETSC_NULL,da,ierr)
       call DACreateGlobalVector(da,global,ierr) 
       call VecGetLocalSize(global,m,ierr) 
@@ -87,11 +87,11 @@
 
 !   Set up display to show wave graph 
 
-      call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,
+      call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
      &              PETSC_NULL_CHARACTER,80,380,400,160,viewer1,ierr)
       call ViewerDrawGetDraw(viewer1,draw,ierr) 
       call DrawSetDoubleBuffer(draw,ierr) 
-      call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,
+      call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
      &              PETSC_NULL_CHARACTER,80,0,400,160,viewer2,ierr) 
       call ViewerDrawGetDraw(viewer2,draw,ierr) 
       call DrawSetDoubleBuffer(draw,ierr) 
@@ -115,31 +115,31 @@
 !    of TS, we do not expect users to generally need to use more
 !    then a single TSProblemType
 !
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-linear_no_matrix',
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-linear_no_matrix',     &
      &                    flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear_no_matrix
       endif
-      call OptionsHasName(PETSC_NULL_CHARACTER,
+      call OptionsHasName(PETSC_NULL_CHARACTER,                         &
      &                    '-linear_constant_matrix',flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear_no_time
       endif
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-linear_variable_matrix'
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-linear_variable_matrix'&
      &                    ,flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear
       endif
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_no_jacobian',
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_no_jacobian',&
      &                    flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_NONLINEAR
         problem   = nonlinear_no_jacobian
       endif
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_jacobian',
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_jacobian',   &
      &                    flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_NONLINEAR
@@ -214,17 +214,17 @@
         call PetscStrncpy(etype,type,5)
         if (etype .eq. TS_EULER) then
           if (abs(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
-            print*,'Error in Euler method: 2-norm ',nrm_2/steps,
+            print*,'Error in Euler method: 2-norm ',nrm_2/steps,        &
      &            ' expecting: ',0.00257244
           endif
         else
           if (abs(nrm_2/steps - 0.00506174) .gt. 1.e-4) then
-            print*,'Error in ',tsinfo, ': 2-norm ',nrm_2/steps,
+            print*,'Error in ',tsinfo, ': 2-norm ',nrm_2/steps,         &
      &             ' expecting: ',0.00506174
           endif
         endif
       else 
-        print*,size,' Procs Avg. error 2 norm ',nrm_2/steps,
+        print*,size,' Procs Avg. error 2 norm ',nrm_2/steps,            &
      &              nrm_max/steps,tsinfo
       endif
 
@@ -273,7 +273,7 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
+      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
      &               nrm_max,nox
 
 !   determine starting point of each processor 
@@ -284,7 +284,7 @@
 
       call VecGetArray(global,localptr,idx,ierr) 
       do 10, i=mybase,myend-1
-        localptr(i-mybase+1+idx) = sin(PETSC_PI*i*6.*h) + 
+        localptr(i-mybase+1+idx) = sin(PETSC_PI*i*6.*h) +               &
      &                             3.*sin(PETSC_PI*i*2.*h)
  10   continue
       call VecRestoreArray(global,localptr,idx,ierr) 
@@ -323,7 +323,7 @@
       Viewer            viewer1,viewer2
       integer           M
       double precision  h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
+      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
      &               nrm_max,nox
 
 !   determine starting point of each processor 
@@ -372,7 +372,7 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
+      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
      &               nrm_max,nox
 
 
@@ -386,7 +386,7 @@
       call VecNorm(csolution,NORM_MAX,lnrm_max,ierr) 
 
       if (nox .eq. 0) then
-        print*,'timestep ',step,' time ',time,' norm of error ',
+        print*,'timestep ',step,' time ',time,' norm of error ',        &
      &         lnrm_2,lnrm_max
       endif
 
@@ -452,7 +452,7 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
+      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
      &               nrm_max,nox
 
 !  Extract local array  
@@ -474,7 +474,7 @@
       call VecGetLocalSize(local,localsize,ierr) 
       copyptr(1+cdx) = localptr(1+ldx)
       do 10, i=1,localsize-2
-        copyptr(i+1+cdx) = sc * (localptr(i+2+ldx) + localptr(i+ldx) - 
+        copyptr(i+1+cdx) = sc * (localptr(i+2+ldx) + localptr(i+ldx) -  &
      &                     2.0*localptr(i+1+ldx))
  10   continue
       copyptr(localsize-1+1+cdx) = localptr(localsize-1+1+ldx)
@@ -520,7 +520,7 @@
       Viewer           viewer1,viewer2
       integer          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
+      common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
      &               nrm_max,nox
 
       A    = AA

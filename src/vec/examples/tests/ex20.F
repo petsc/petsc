@@ -1,5 +1,5 @@
 !
-!    "$Id: ex20.F,v 1.3 1997/09/26 02:17:54 bsmith Exp balay $";
+!    "$Id: ex20.F,v 1.4 1998/03/24 16:41:43 balay Exp balay $";
 !
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/sys.h"
@@ -38,8 +38,8 @@
 !
 !  Open the file for reading by PETSc
 !
-       call ViewerFileOpenBinary(PETSC_COMM_SELF,'testfile',PETSC_RDONLY,
-     &                           v,ierr)
+       call ViewerFileOpenBinary(PETSC_COMM_SELF,'testfile',            &
+     &                           PETSC_RDONLY,v,ierr)
 !
 !  Load the vector
 !

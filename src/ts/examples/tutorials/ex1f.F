@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.15 1998/03/12 23:21:49 bsmith Exp balay $"
+! "$Id: ex1f.F,v 1.16 1998/03/24 16:42:09 balay Exp balay $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -71,12 +71,12 @@
 !
 !     Allow user to set the grid dimensions and nonlinearity parameter at run-time
 !
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-mx',user(lmx),flg,
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-mx',user(lmx),flg,   &
      &                      ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(lmy),flg,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-param',user(param),
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-param',user(param),  &
      &                      flg,ierr)
-      if (user(param) .ge. param_max .or. 
+      if (user(param) .ge. param_max .or.                               &
      &                                user(param) .le. param_min) then
         print*,'Parameter is out of range'
       endif
@@ -229,11 +229,11 @@
         temp = dble(min(j-1,my-j))*hy
         do 20 i=1,mx
           row = i + (j-1)*mx  
-          if (i .eq. 1 .or. j .eq. 1 .or. 
+          if (i .eq. 1 .or. j .eq. 1 .or.                               &
      &        i .eq. mx .or. j .eq. my ) then
             xx(row+xidx) = 0.0 
           else
-            xx(row+xidx) = 
+            xx(row+xidx) =                                              &
      &        temp1*sqrt(min(dble(min(i-1,mx-i))*hx,temp)) 
           endif
  20     continue
@@ -282,7 +282,7 @@
       do 10 j=1,my
         do 20 i=1,mx
           row = i + (j-1)*mx
-          if (i .eq. 1 .or. j .eq. 1 .or. 
+          if (i .eq. 1 .or. j .eq. 1 .or.                               &
      &        i .eq. mx .or. j .eq. my ) then
             ff(row+fidx) = xx(row+xidx)
           else
@@ -349,7 +349,7 @@
 !
 !       call PetscTrValid(ierr)
           row = i - 1 + (j-1)*mx
-          if (i .eq. 1 .or. j .eq. 1 .or. 
+          if (i .eq. 1 .or. j .eq. 1 .or.                               &
      &        i .eq. mx .or. j .eq. my ) then
             call MatSetValues(jac,1,row,1,row,one,INSERT_VALUES,ierr) 
           else

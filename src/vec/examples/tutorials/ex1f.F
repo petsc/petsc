@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.9 1997/11/28 16:18:34 bsmith Exp balay $"
+!    "$Id: ex1f.F,v 1.10 1998/03/24 16:41:38 balay Exp balay $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
@@ -101,7 +101,7 @@
       if (rank .eq. 0) then
 #if defined(USE_PETSC_COMPLEX)
          write(6,100) int(real(dot))
-         write(6,110) int(real(dots(1))),int(real(dots(2))),
+         write(6,110) int(real(dots(1))),int(real(dots(2))),            &
      &                int(real(dots(3)))
 #else
          write(6,100) int(dot)
@@ -199,8 +199,9 @@
 
       call VecValid(x,flg,ierr)
       if (flg .ne. PETSC_TRUE) then
-         if (rank .eq. 0)
-     &      write(6,*) 'Corrupted vector!'
+         if (rank .eq. 0) then
+            write(6,*) 'Corrupted vector!'
+         endif
          SETERRA(1,0,' ')
       endif
 

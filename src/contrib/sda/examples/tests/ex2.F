@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2.F,v 1.8 1998/03/24 16:42:54 bsmith Exp balay $"
+!    "$Id: ex2.F,v 1.9 1998/03/24 16:50:37 balay Exp balay $"
 !
 
 #include "include/FINCLUDE/petsc.h"
@@ -39,34 +39,34 @@
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',MM,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-N',NN,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-dof',dof,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_width',
-     *                   stencil_width,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-periodic',periodic,
-     *                   flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_type',
-     *                   stencil_type,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_width',         &
+     &                   stencil_width,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-periodic',periodic,     &
+     &                   flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-stencil_type',          &
+     &                   stencil_type,flg,ierr)
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-2d',flg2,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-3d',flg3,ierr)
       if (flg2 .ne. 0) then
-        call DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,
-     *                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,
-     *                  PETSC_NULL,da,ierr)
-        call SDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,
-     *                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,
-     *                  PETSC_NULL,sda,ierr)
+        call DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,         &
+     &                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,         &
+     &                  PETSC_NULL,da,ierr)
+        call SDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,        &
+     &                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,         &
+     &                  PETSC_NULL,sda,ierr)
       else if (flg3 .ne. 0) then
-        call DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,
-     *                  MM,NN,PP,m,n,p,dof,stencil_width,
-                        PETSC_NULL,PETSC_NULL,PETSC_NULL,da,ierr)
-        call SDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,
-     *                  MM,NN,PP,m,n,p,dof,stencil_width,
-                        PETSC_NULL,PETSC_NULL,PETSC_NULL,sda,ierr)
+        call DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,         &
+     &                  MM,NN,PP,m,n,p,dof,stencil_width,               &
+     &                  PETSC_NULL,PETSC_NULL,PETSC_NULL,da,ierr)
+        call SDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,        &
+     &                  MM,NN,PP,m,n,p,dof,stencil_width,               &
+     &                  PETSC_NULL,PETSC_NULL,PETSC_NULL,sda,ierr)
       else
-        call DACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,
-     *                  stencil_width,PETSC_NULL,da,ierr)
-        call SDACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,
-     *                  stencil_width,PETSC_NULL,sda,ierr)
+        call DACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,               &
+     &                  stencil_width,PETSC_NULL,da,ierr)
+        call SDACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,              &
+     &                  stencil_width,PETSC_NULL,sda,ierr)
       endif
 
       call DACreateGlobalVector(da,global,ierr)
@@ -87,23 +87,23 @@
       call VecAssemblyBegin(global,ierr)
       call VecAssemblyEnd(global,ierr)
 
-      call DAGlobalToLocalBegin(da,global,INSERT_VALUES,local,
-     *                          ierr)
+      call DAGlobalToLocalBegin(da,global,INSERT_VALUES,local,          &
+     &                          ierr)
       call DAGlobalToLocalEnd(da,global,INSERT_VALUES,local,ierr)
 
 
       call VecGetArray(local,out,out_idx,ierr)
       call VecGetArray(local_copy,in,in_idx,ierr)
-      call SDALocalToLocalBegin(sda,out(out_idx+1),INSERT_VALUES,
-     *                          in(in_idx+1),ierr)
-      call SDALocalToLocalEnd(sda,out(out_idx+1),INSERT_VALUES,
-     *                        in(in_idx+1),ierr)
+      call SDALocalToLocalBegin(sda,out(out_idx+1),INSERT_VALUES,       &
+     &                          in(in_idx+1),ierr)
+      call SDALocalToLocalEnd(sda,out(out_idx+1),INSERT_VALUES,         &
+     &                        in(in_idx+1),ierr)
 
       mone = -1.0
       call VecAXPY(mone,local,local_copy,ierr)
       call VecNorm(local_copy,NORM_MAX,work,ierr)
-      call MPI_Allreduce( work, norm,1,MPI_DOUBLE_PRECISION,MPI_MAX,
-     *                   PETSC_COMM_WORLD,ierr )
+      call MPI_Allreduce( work, norm,1,MPI_DOUBLE_PRECISION,MPI_MAX,    &
+     &                   PETSC_COMM_WORLD,ierr )
       print*,'Norm of difference ',norm,' should be zero'
    
       call DADestroy(da,ierr)

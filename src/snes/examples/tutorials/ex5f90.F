@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.12 1998/03/20 22:52:53 bsmith Exp balay $";
+! "$Id: ex5f90.F,v 1.13 1998/03/24 16:42:40 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -186,7 +186,7 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,   &
      &               ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -199,13 +199,14 @@
       Ny = PETSC_DECIDE
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      if (Nx*Ny .ne. size .and.
+      if (Nx*Ny .ne. size .and.                                         &
      &      (Nx .ne. PETSC_DECIDE .or. Ny .ne. PETSC_DECIDE)) then
-         if (rank .eq. 0) 
-     &      write(6,*) 'Incompatible number of procs: Nx * Ny != size'
+         if (rank .eq. 0) then
+            write(6,*) 'Incompatible number of procs: Nx * Ny != size'
+         endif
          SETERRA(1,0,' ')
       endif
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,  &
      &                mx,my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
       user(3) = da
 
@@ -253,14 +254,14 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
      &                    ierr)
       if (matrix_free .eq. 0) then
         if (size .eq. 1) then
           call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
         else
           call VecGetLocalSize(x,m,ierr)
-          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,
+          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,   &
      &                         3,PETSC_NULL,J,ierr)
         endif
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
@@ -272,7 +273,7 @@
 !          the C version.  See the Fortran chapter of the users manual for details.
 
         call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
-        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,
+        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,         &
      &                                   ltog_a(ltog_i),isltog,ierr)
         call MatSetLocalToGlobalMapping(J,isltog,ierr)
         call ISLocalToGlobalMappingDestroy(isltog,ierr)
@@ -381,7 +382,7 @@
 !       gxm, gym - widths of local grid (including ghost points)
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,             &
      &                                         PETSC_NULL,ierr)
       ye = ys+ym-1
       xe = xs+xm-1
@@ -392,11 +393,11 @@
          temp = dble(min(j,my-j-1))*hy
          do 10 i=xs,xe
             row = i - gxs + (j - gys)*gxm + 1
-            if (i .eq. 0 .or. j .eq. 0 
+            if (i .eq. 0 .or. j .eq. 0                                  &
      &             .or. i .eq. mx-1 .or. j .eq. my-1) then
               lx_v(row) = 0.0
             else
-              lx_v(row) = temp1 *
+              lx_v(row) = temp1 *                                       &
      &          sqrt(min(dble(min(i,mx-i-1))*hx,temp))
             endif
  10      continue
@@ -482,7 +483,7 @@
 !  Get local grid boundaries
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,             &
      &                                         PETSC_NULL,ierr)
       ye = ys+ym-1
       xe = xs+xm-1
@@ -493,16 +494,16 @@
          row = (j - gys)*gxm + xs - gxs
          do 10 i=xs,xe
             row = row + 1
-            if (i .eq. 0 .or. j .eq. 0 
+            if (i .eq. 0 .or. j .eq. 0                                  &
      &             .or. i .eq. mx-1 .or. j .eq. my-1) then
                lf_v(row) = lx_v(row)
             else
                u = lx_v(row)
-               uxx = hydhx * (two*u
-     &               - lx_v(row-1)
+               uxx = hydhx * (two*u                                     &
+     &               - lx_v(row-1)                                      &
      &               - lx_v(row+1))
-               uyy = hxdhy * (two*u 
-     &               - lx_v(row-gxm) 
+               uyy = hxdhy * (two*u                                     &
+     &               - lx_v(row-gxm)                                    &
      &               - lx_v(row+gxm))
                lf_v(row) = uxx + uyy - sc*exp(u)
             endif
@@ -619,7 +620,7 @@
 !  Get local grid boundaries
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,             &
      &                                         PETSC_NULL,ierr)
       ye = ys+ym-1
       xe = xs+xm-1
@@ -648,15 +649,15 @@
          do 10 i=xs,xe
             row = row + 1
 !           boundary points
-            if (i .eq. 0 .or. j .eq. 0 
+            if (i .eq. 0 .or. j .eq. 0                                  &
      &             .or. i .eq. mx-1 .or. j .eq. my-1) then
-               call MatSetValuesLocal(jac,1,row,1,row,one,
+               call MatSetValuesLocal(jac,1,row,1,row,one,              &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
                v(1) = -hxdhy
                v(2) = -hydhx
-               v(3) = two*(hydhx + hxdhy) 
+               v(3) = two*(hydhx + hxdhy)                               &
      &                  - sc*lambda*exp(lx_v(row))
                v(4) = -hydhx
                v(5) = -hxdhy
@@ -665,7 +666,7 @@
                col(3) = grow
                col(4) = row + 1
                col(5) = row + gxm
-               call MatSetValuesLocal(jac,1,row,5,col,v,
+               call MatSetValuesLocal(jac,1,row,5,col,v,                &
      &                           INSERT_VALUES,ierr)
             endif
  10      continue

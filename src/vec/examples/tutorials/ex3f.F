@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f.F,v 1.4 1997/11/28 16:18:34 bsmith Exp balay $";
+!      "$Id: ex3f.F,v 1.5 1998/03/24 16:41:27 balay Exp balay $";
 !
 !  Description: Displays a vector visually.
 !
@@ -75,7 +75,7 @@
 !               program pauses after DrawPause() has been called
 !              (0 is default, -1 implies until user input).
 
-      call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,
+      call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,       &
      &                     PETSC_NULL_CHARACTER,0,0,300,300,viewer,ierr)
 
 !  View the vector

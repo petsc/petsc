@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.7 1998/03/25 17:22:29 bsmith Exp balay $";
+!    "$Id: ex14f.F,v 1.8 1998/03/25 17:30:20 balay Exp balay $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -98,8 +98,7 @@
 !
       user(1) = 4
       user(2) = 4
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user(1),flg,
-     &                       ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user(1),flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(2),flg,ierr)
       N = user(1)*user(2)
 
@@ -120,7 +119,7 @@
       Ny = PETSC_DECIDE
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user(1),
+      call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user(1),      &
      &          user(2),Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,user(5),ierr)
 
 !  
@@ -150,7 +149,7 @@
 !     for preallocating matrix memory.
 !  
       call VecGetLocalSize(X,m,ierr)
-      call MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,
+      call MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,       &
      &                     J,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -207,7 +206,7 @@
          call VecAYPX(mone,X,Y,ierr)
          call VecCopy(Y,X,ierr)
          call VecNorm(X,NORM_2,xnorm,ierr)
-         print*,'linear solve iterations = ',lin_its,' xnorm = ',
+         print*,'linear solve iterations = ',lin_its,' xnorm = ',       &
      &        xnorm,' ynorm = ',ynorm
 
 !  Evaluate nonlinear function at new location
@@ -305,7 +304,7 @@
 !    gxm, gym - widths of local grid (including ghost points)
 
        call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
+       call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,            &
      &                        PETSC_NULL,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
@@ -399,7 +398,7 @@
 !  Get local grid boundaries
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,PETSC_NULL,
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,PETSC_NULL,  &
      &                        ierr)
 
 !  Compute function over the locally owned part of the grid
@@ -508,7 +507,7 @@
 !  Get local grid boundaries
 
       call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,             &
      &                        PETSC_NULL,ierr)
 
 !  Get the global node numbers for all local nodes, including ghost points
@@ -531,10 +530,9 @@
         do 20 i=xs,xs+xm-1
           row = row + 1
           grow = ltog(idltog+row)
-          if (i.eq.0 .or. j.eq.0 .or. i. eq. (mx-1) .or. 
+          if (i.eq.0 .or. j.eq.0 .or. i. eq. (mx-1) .or.                &
      &        j .eq. (my-1)) then
-             call MatSetValues(jac,1,grow,1,grow,one,INSERT_VALUES,
-     &                         ierr)
+             call MatSetValues(jac,1,grow,1,grow,one,INSERT_VALUES,ierr)
              go to 20
           endif
           v(1)   = -hxdhy

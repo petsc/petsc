@@ -1,5 +1,5 @@
 !
-!      "$Id: ex58f.F,v 1.2 1998/03/24 16:40:30 bsmith Exp balay $";
+!      "$Id: ex58f.F,v 1.3 1998/03/24 16:50:48 balay Exp balay $";
 !
 !   This program demonstrates use of MatGetRow() from Fortran
 !
@@ -16,7 +16,7 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,err)
 
-      call ViewerFileOpenBinary(PETSC_COMM_WORLD,'small',BINARY_RDONLY,
+      call ViewerFileOpenBinary(PETSC_COMM_WORLD,'small',BINARY_RDONLY, &
      &                          v,err)
 
       call MatLoad(v,MATSEQAIJ,A,err)

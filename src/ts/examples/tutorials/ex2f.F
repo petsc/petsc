@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.15 1998/03/20 22:51:44 bsmith Exp balay $";
+! "$Id: ex2f.F,v 1.16 1998/03/24 16:42:05 balay Exp balay $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -107,7 +107,7 @@
       M          = 60
       debug      = 0
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,       &
      &                   flg,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
       one_d0  = 1.0d0
@@ -124,7 +124,7 @@
 !  Set up the ghost point communication pattern.  There are M total
 !  grid values spread equally among all the processors.
 
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,            &
      &     PETSC_NULL,da,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
@@ -143,8 +143,9 @@
 !  Evaluate initial conditions
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (rank .eq. 0) 
-     &  write(6,*) 'Calling InitialConditions() routine ...'
+      if (rank .eq. 0) then
+         write(6,*) 'Calling InitialConditions() routine ...'
+      endif
       call InitialConditions(global)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -398,8 +399,8 @@
 
 !  Print only from processor 0
       if (rank .eq. 0) write(6,100) step,time,en2s,enmax
- 100  format('Timestep = ',i5,', time = ',f8.3,
-     &       ' sec, error [2-norm] = ',e9.3,
+ 100  format('Timestep = ',i5,', time = ',f8.3,                         &
+     &       ' sec, error [2-norm] = ',e9.3,                            &
      &       ', error [max-norm] = ',e9.3)
 
 !  Print debugging information if desired
@@ -480,7 +481,7 @@
 
       do 10, i=2, localsize-1
          il = i + idx_l
-         copyptr(i+idx_c) =  localptr(il) * sc * 
+         copyptr(i+idx_c) =  localptr(il) * sc *                        &
      &     (localptr(il+1) + localptr(il-1) - two_d0*localptr(il))
  10   continue
 
@@ -592,7 +593,7 @@
          col(3) = i+1
          is     = i - mstart + 1 +idx + 1
          v(1)   = sc*localptr(is)
-         v(2)   = sc*(localptr(is+1) + localptr(is-1) -
+         v(2)   = sc*(localptr(is+1) + localptr(is-1) -                 &
      &                four_d0*localptr(is))
          v(3)   = sc*localptr(is)
         call MatSetValues(A,1,i,3,col,v,INSERT_VALUES,ierr)

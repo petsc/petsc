@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.48 1998/03/24 16:43:10 balay Exp balay $";
+!    "$Id: ex12.F,v 1.49 1998/03/28 00:46:28 balay Exp balay $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -47,7 +47,7 @@
       ctx(5) = size
 
 ! Set up data structures
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL, &
      &                ctx(1),ierr)
 
       call DACreateGlobalVector(ctx(1),x,ierr)
@@ -59,8 +59,8 @@
       call VecDuplicate(x,U,ierr)
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
-      call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
-     *                     N,3,PETSC_NULL,0,PETSC_NULL,J,ierr)
+      call MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N, &
+     &                     N,3,PETSC_NULL,0,PETSC_NULL,J,ierr)
 
       call MatGetType(J,PETSC_NULL,matrixname,ierr)
 
@@ -83,7 +83,7 @@
       call VecAssemblyEnd(U,ierr)
 
 ! Create nonlinear solver
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,        &
      &                snes,ierr)
 
 ! Set various routines and options
@@ -184,11 +184,11 @@
       endif
 
       do 10 i=1,n-2
-       ff(i-s+1) = d*(xx(i) - 
-     *                 2.d0*xx(i+1) + 
-     *                 xx(i+2)) 
-     *             + xx(i+1)*xx(i+1) -
-     *               F2(i-s+1)
+       ff(i-s+1) = d*(xx(i) -                                           &
+     &                 2.d0*xx(i+1) +                                   &
+     &                 xx(i+2))                                         &
+     &                 + xx(i+1)*xx(i+1) -                              &
+     &                 F2(i-s+1)
  10   continue
 
       if (rank .eq. size-1) then

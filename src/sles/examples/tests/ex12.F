@@ -1,5 +1,5 @@
 !
-!      "$Id: ex12.F,v 1.23 1998/03/06 00:16:28 bsmith Exp balay $";
+!      "$Id: ex12.F,v 1.24 1998/03/24 16:45:52 balay Exp balay $";
 !
        implicit none
 
@@ -31,26 +31,26 @@
 
 ! Read in matrix and RHS
       call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call ViewerFileOpenBinary(PETSC_COMM_WORLD,f,BINARY_RDONLY,
-     $     fd,ierr)
+      call ViewerFileOpenBinary(PETSC_COMM_WORLD,f,BINARY_RDONLY,       &
+     &     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
         SETERRA(1,0,' ')
       endif
 
-      call MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,
-     *                           mtype,set,ierr)
+      call MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER, &
+     &                           mtype,set,ierr)
       call MatLoad(fd,mtype,A,ierr)
 
 ! Get information about matrix
       call MatGetInfo(A,MAT_GLOBAL_SUM,info,ierr)
-      write(6,100) info(MAT_INFO_ROWS_GLOBAL),
-     *  info(MAT_INFO_COLUMNS_GLOBAL),
-     *  info(MAT_INFO_ROWS_LOCAL),info(MAT_INFO_COLUMNS_LOCAL),
-     *  info(MAT_INFO_BLOCK_SIZE),info(MAT_INFO_NZ_ALLOCATED),
-     *  info(MAT_INFO_NZ_USED),info(MAT_INFO_NZ_UNNEEDED),
-     *  info(MAT_INFO_MEMORY),info(MAT_INFO_ASSEMBLIES),
-     *  info(MAT_INFO_MALLOCS)
+      write(6,100) info(MAT_INFO_ROWS_GLOBAL),                          &
+     &  info(MAT_INFO_COLUMNS_GLOBAL),                                  &
+     &  info(MAT_INFO_ROWS_LOCAL),info(MAT_INFO_COLUMNS_LOCAL),         &
+     &  info(MAT_INFO_BLOCK_SIZE),info(MAT_INFO_NZ_ALLOCATED),          &
+     &  info(MAT_INFO_NZ_USED),info(MAT_INFO_NZ_UNNEEDED),              &
+     &  info(MAT_INFO_MEMORY),info(MAT_INFO_ASSEMBLIES),                &
+     &  info(MAT_INFO_MALLOCS)
 
  100  format(11(g7.1,1x))
       call VecLoad(fd,b,ierr)
@@ -62,7 +62,7 @@
 
 ! Solve system
       call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
+      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,         &
      &                      ierr)
       call SLESSetFromOptions(sles,ierr)
       time = PetscGetTime()
