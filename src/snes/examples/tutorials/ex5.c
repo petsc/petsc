@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.49 1996/04/09 23:13:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.50 1996/04/15 03:58:54 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -54,6 +54,7 @@ int main( int argc, char **argv )
   Vec           x, r;                      /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user-defined work context */
+  MatType       type;
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           matrix_free, size, flg; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
@@ -95,7 +96,15 @@ int main( int argc, char **argv )
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
   if (!matrix_free) {
-    ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
+    ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,PETSC_NULL,&type,&flg); CHKERRA(ierr);
+    if (type == MATSEQAIJ) {
+      ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,0,&J); CHKERRA(ierr);
+    } else if (type == MATMPIAIJ) {
+      ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+             N,N,5,0,3,0,&J); CHKERRA(ierr);
+    } else {
+      ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
+    }
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user); CHKERRA(ierr);
   }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.35 1996/04/17 23:01:40 curfman Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.36 1996/05/02 22:19:18 curfman Exp curfman $";
 #endif
 
 /* 
@@ -243,6 +243,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
     rather then from the plan array.
   */
   ierr = VecScatterCopy(gtol,&da->ltol); CHKERRQ(ierr);
+  PLogObjectParent(da,da->ltol);
   left  = xs - Xs;
   idx = (int *) PetscMalloc( x*sizeof(int) ); CHKPTRQ(idx);
   count = 0;
@@ -269,6 +270,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   /* Create discrete function shell and associate with vectors in DA */
   /* Eventually will pass in optional labels for each component */
   ierr = DFShellCreateDA_Private(comm,PETSC_NULL,da,&da->dfshell); CHKERRQ(ierr);
+  PLogObjectParent(da,da->dfshell);
   ierr = DFShellGetLocalDFShell(da->dfshell,&df_local);
   ierr = DFVecShellAssociate(da->dfshell,global); CHKERRQ(ierr);
   ierr = DFVecShellAssociate(df_local,local); CHKERRQ(ierr);
