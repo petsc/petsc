@@ -22,7 +22,7 @@ class UsingPython (base.Base):
 
   def __getstate__(self):
     '''Do not save the include directories and extra libraries'''
-    d = self.__dict__.copy()
+    d = base.Base.__getstate__(self)
     del d['includeDirs']
     del d['extraLibraries']
     return d
@@ -45,16 +45,7 @@ class UsingPython (base.Base):
         import distutils.sysconfig
         self.argDB['PYTHON_INCLUDE'] = distutils.sysconfig.get_python_inc()
     except: pass
-    if isinstance(self.argDB['PYTHON_INCLUDE'], list):
-      # We need separate includes in separate keys
-      self.includeDirs = []
-      i = 0
-      for dir in self.argDB['PYTHON_INCLUDE']:
-        self.argDB['PYTHON_INCLUDE_'+str(i)] = dir
-        self.includeDirs.append(project.ArgumentPath('PYTHON_INCLUDE_'+str(i)))
-        i += 1
-    else:
-      self.includeDirs = [project.ArgumentPath('PYTHON_INCLUDE')]
+    self.includeDirs = [project.ArgumentPath('PYTHON_INCLUDE')]
     return self.includeDirs
 
   def setupExtraLibraries(self):

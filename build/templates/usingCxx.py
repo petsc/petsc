@@ -26,7 +26,7 @@ class UsingCxx (base.Base):
 
   def __getstate__(self):
     '''Do not save the include directories and extra libraries'''
-    d = self.__dict__.copy()
+    d = base.Base.__getstate__(self)
     del d['includeDirs']
     del d['extraLibraries']
     return d
