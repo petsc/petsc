@@ -3,6 +3,41 @@
 #include "src/sys/src/viewer/viewerimpl.h"
 #include "mat.h"
 
+/*MC
+   PETSC_VIEWER_MATLAB - A viewer that saves the variables into a Matlab .mat file that may be read into Matlab
+       with load('filename').
+
+   Level: intermediate
+
+       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSC_VIEWER_BINARY and 
+             ${PETSC_DIR}/bin/matlab/PetscReadBinary.m to read matrices into matlab).
+
+             For parallel vectors obtained with DACreateGlobalVec() or DAGetGlobalVec() the vectors are saved to
+             the .mat file in natural ordering. You can use DAView() to save the DA information to the .mat file
+             the fields in the Matlab loaded da variable give the array dimensions so you can reshape the Matlab
+             vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
+
+$             In your PETSc C/C++ code (assuming a two dimensional DA with one degree of freedom per node)
+$                PetscObjectSetName((PetscObject)x,"x");
+$                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
+$                PetscObjectSetName((PetscObject)da,"da");
+$                DAView(x,PETSC_VIEWER_MATLAB_WORLD);
+$             Then from Matlab
+$                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
+$                xnew = zeros(da.n,da.m);
+$                xnew(:) = x;    % reshape one dimensional vector back to two dimensions
+
+              If you wish to put the same variable into the .mat file several times you need to give it a new
+              name before each call to view.
+
+              Use PetscViewerMatlabPutArray() to just put an array of doubles into the .mat file
+
+.seealso:  PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF(), PETSC_VIEWER_MATLAB_WORLD(),PetscViewerCreate(),
+           PetscViewerMatlabOpen(), VecView(), DAView(), PetscViewerMatlabPutArray(), PETSC_BINARY_VIEWER,
+           PETSC_ASCII_VIEWER, DAView(), PetscViewerSetFilename(), PetscViewerMatlabSetType()
+
+M*/
+
 typedef struct {
   MATFile               *ep;
   int                   rank;
