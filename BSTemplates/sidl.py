@@ -194,7 +194,7 @@ class CompileDefaults (Defaults):
           libraries.extend(self.extraLibraries[package])
 
         # Allow bootstrap
-        linker = link.LinkSharedLibrary(extraLibraries = self.babelLib)
+        linker = link.LinkSharedLibrary(extraLibraries = libraries)
         if self.project == 'bs':
           linker.doLibraryCheck = 0
 
