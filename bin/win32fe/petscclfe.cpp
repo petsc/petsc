@@ -6,21 +6,18 @@
 using namespace PETScFE;
 
 cl::cl() {
+  compileoutflag = "-Fo";
+  linkoutflag    = "-Fe";
+
   OutputFlag = compilearg.end();
 }
 
-void cl::GetArgs(int argc,char *argv[]) {
-  compiler::GetArgs(argc,argv);
-  if (!verbose) {
-    compilearg.push_front("-nologo");
-  }
-  linkarg.push_front("-link");
-}
-
 void cl::Parse(void) {
+  linkarg.push_front("-link");
   compiler::Parse();
-  /* Fix Output flag for compile or link (-Fe or -Fo) */ 
-  FixFx();
+  if (!verbose) {
+    compilearg.push_back("-nologo");
+  }
 }
 
 void cl::Help(void) {
@@ -30,60 +27,10 @@ void cl::Help(void) {
   system(help.c_str());
 }
 
-void cl::Compile(void) {
-  compileoutflag = "-Fo";
-  compiler::Compile();
-}
-
-void cl::FoundD(LI &i) {
-  string::size_type a,b;
-  string temp = *i;
-  ProtectQuotes(temp);
-  compilearg.push_back(temp);  
-}
-
 void cl::FoundL(LI &i) {
   string temp = i->substr(2);
   ReplaceSlashWithBackslash(temp);
   GetShortPath(temp);
   temp = "-libpath:"+temp;
   linkarg.push_back(temp);
-}
-
-void cl::Foundl(LI &i) {
-  string temp = *i;
-  file.push_back("lib" + temp.substr(2) + ".lib");
-} 
-
-void cl::Foundo(LI &i){ 
-  i++;
-  arg.pop_front();
-  string temp = *i;
-  ReplaceSlashWithBackslash(temp);
-  ProtectQuotes(temp);
-  /* Set Flag then fix later based on compilation or link */
-  compilearg.push_back("-Fx" + temp);
-  OutputFlag = --compilearg.end();
-  /* Should perform some error checking ... */
-}   
-
-void cl::FixFx(void) {
-  if (OutputFlag!=compilearg.end()) {
-    string temp = *OutputFlag;
-    compilearg.erase(OutputFlag);
-    if (linkarg.front()=="-c") {
-      temp[2]='o';
-    } else {
-      temp[2]='e';
-    }
-    compilearg.push_back(temp);
-  }
-}
-
-void df::Foundo(LI &i) {
-  if (*i == "-o") {
-    cl::Foundo(i);
-  } else {
-    compilearg.push_back(*i);
-  }
 }

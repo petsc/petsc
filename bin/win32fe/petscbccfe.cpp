@@ -7,30 +7,24 @@
 using namespace PETScFE;
 
 bcc::bcc() {
+  compileoutflag = "-o";
+  linkoutflag    = "-e";
+
   OutputFlag = compilearg.end();
 }
 
-void bcc::GetArgs(int argc,char *argv[]) {
-  compiler::GetArgs(argc,argv);
-  if (!verbose) {
-    compilearg.push_front("-q");
-  }
-  linkarg.push_front("**");
-}
 void bcc::Parse(void) {
+  linkarg.push_front("**");
   compiler::Parse();
-  FixOutput();
-}
-
-void bcc::Compile(void) {
-  compileoutflag = "-o";
-  compiler::Compile();
+  if (!verbose) {
+    compilearg.push_back("-q");
+  }
 }
 
 void bcc::Link(void) {
   if (OutputFlag==compilearg.end()) {
     linkarg.pop_front();
-    string tempstr = "-e" + file.front();
+    string tempstr = linkoutflag + file.front();
     tempstr.replace(tempstr.rfind("."),string::npos,".exe");
     linkarg.push_front(tempstr);
   }
@@ -62,8 +56,10 @@ void bcc::Link(void) {
   f = compilearg.begin();
   string link = *f++;
   Merge(link,compilearg,f);
-  Merge(link,linkarg,linkarg.begin());
-  Merge(link,file,file.begin());
+  f = linkarg.begin();
+  Merge(link,linkarg,f);
+  f = file.begin();
+  Merge(link,file,f);
   if (verbose) cout << link << endl;
   system(link.c_str());
 
@@ -92,42 +88,11 @@ void bcc::Help(void) {
   system(help.c_str());
 }
 
-void bcc::FoundD(LI &i) {
-  string temp = *i;
-  ProtectQuotes(temp);
-  compilearg.push_back(temp);  
-}
-
 void bcc::Foundl(LI &i) {
   string temp = *i;
   if (temp[2]==':') {
     linkarg.push_back("-l" + temp.substr(3));
   } else {
-    file.push_back("lib" + temp.substr(2) + ".lib");
+    compiler::Foundl(i);
   }
 } 
-
-void bcc::Foundo(LI &i){ 
-  i++;
-  arg.pop_front();
-  string temp = *i;
-  ReplaceSlashWithBackslash(temp);
-  /* Set Flag then fix later based on compilation or link */
-  compilearg.push_back("-x" + temp);
-  OutputFlag = --compilearg.end();
-  /* Should perform some error checking ... */
-}   
-
-void bcc::FixOutput(void) {
-  if (OutputFlag!=compilearg.end()) {
-    string temp = *OutputFlag;
-    if (linkarg.front()=="-c") {
-      temp[1] = 'o';
-    } else {
-      temp[1] = 'e';
-      linkarg.pop_front();
-      linkarg.push_front(temp);
-      compilearg.erase(OutputFlag);
-    }
-  }
-}

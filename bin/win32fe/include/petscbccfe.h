@@ -10,17 +10,12 @@ namespace PETScFE {
   public:
     bcc();
     ~bcc() {}
-    virtual void GetArgs(int,char *[]);
     virtual void Parse(void);
   protected:
-    virtual void Compile(void);
     virtual void Link(void);
     virtual void Help(void);
 
-    virtual void FoundD(LI &);
     virtual void Foundl(LI &);
-    virtual void Foundo(LI &);
-    virtual void FixOutput(void);
   };
 
 }

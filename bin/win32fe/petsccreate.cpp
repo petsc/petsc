@@ -1,4 +1,4 @@
-/* $Id: createfe.cpp,v 1.10 2001/04/17 15:25:47 buschelm Exp buschelm $ */
+/* $Id: petsccreate.cpp,v 1.11 2001/04/17 21:16:55 buschelm Exp $ */
 #include "petscclfe.h"
 #include "petscbccfe.h"
 #include "petsclibfe.h"
@@ -9,7 +9,6 @@ using namespace std;
 namespace PETScFE {
 
   void CreateCL(tool *&Tool) {Tool = new cl;}
-  void CreateDF(tool *&Tool) {Tool = new df;}
   void CreateBCC(tool *&Tool) {Tool = new bcc;}
   void CreateLIB(tool *&Tool) {Tool = new lib;}
   void CreateTLIB(tool *&Tool) {Tool = new tlib;}
@@ -20,8 +19,8 @@ namespace PETScFE {
     CreateTool["cl"] = PETScFE::CreateCL;
     CreateTool["icl"] = PETScFE::CreateCL;
     CreateTool["ifl"] = PETScFE::CreateCL;
-    CreateTool["df"] = PETScFE::CreateDF;
-    CreateTool["f90"] = PETScFE::CreateDF;
+    CreateTool["df"] = PETScFE::CreateCL;
+    CreateTool["f90"] = PETScFE::CreateCL;
     CreateTool["bcc32"] = PETScFE::CreateBCC;
     CreateTool["lib"] = PETScFE::CreateLIB;
     CreateTool["tlib"] = PETScFE::CreateTLIB;

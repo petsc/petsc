@@ -8,7 +8,12 @@ using namespace PETScFE;
 #define UNKNOWN '*'
 
 compiler::compiler() {
+  compileoutflag = linkoutflag = "-o ";
+
+  OutputFlag = compilearg.end();
+
   OptionTags = "DILchlo";
+
   Options['D'] = &compiler::FoundD;
   Options['I'] = &compiler::FoundI;
   Options['L'] = &compiler::FoundL;
@@ -17,10 +22,6 @@ compiler::compiler() {
   Options['l'] = &compiler::Foundl;
   Options['o'] = &compiler::Foundo;
   Options[UNKNOWN] = &compiler::FoundUnknown;
-}
-
-void compiler::GetArgs(int argc,char *argv[]) {
-  tool::GetArgs(argc,argv);
 }
 
 void compiler::Parse(void) {
@@ -52,7 +53,7 @@ void compiler::Execute(void) {
     string dir = compilearg.front();
 
     /* First check if a full path was specified with --use */
-    int n = dir.find(":");
+    string::size_type n = dir.find(":");
     if (n==string::npos) {
       char tmppath[MAX_PATH],*tmp;
       int length = MAX_PATH*sizeof(char);
@@ -61,7 +62,7 @@ void compiler::Execute(void) {
         dir = (string)tmppath;
       } else {
         string compiler=compilearg.front();
-        cerr << endl << "win32fe: Error Compiler Not Found: ";
+        cerr << endl << "Error: win32fe: Compiler Not Found: ";
         cerr << compiler << endl;
         cerr << "\tSpecify the complete path to ";
         cerr << compiler;
@@ -85,6 +86,7 @@ void compiler::Execute(void) {
     FoundL(--i);
     arg.pop_back();
 
+    FixOutput();
     /* Determine if we are compiling, or linking */ 
     i=linkarg.begin();
     string temp = *i;
@@ -122,7 +124,8 @@ void compiler::Compile(void) {
   char directory[MAX_PATH];
   int length=MAX_PATH*sizeof(char);
   GetCurrentDirectory(length,directory);
-  cwd=(string)directory + "\\";
+  cwd=(string)directory;
+  GetShortPath(cwd);
 
   /* Execute each compilation one at a time */ 
   for (i=file.begin();i!=file.end();i++) {
@@ -134,7 +137,7 @@ void compiler::Compile(void) {
       outfile = outfile.substr(0,n) + ".o";
     } else {
       /* remove output file from compilearg list */
-      outfile = OutputFlag->substr(compileoutflag.length());
+      outfile = *OutputFlag;
       compilearg.erase(OutputFlag);
       OutputFlag = compilearg.end();
       LI ii = compilearg.begin();
@@ -142,49 +145,54 @@ void compiler::Compile(void) {
       Merge(compile,compilearg,ii);
     }
 
-    /* outfile is to be specified by the short form of directory and long name */
-    n = outfile.find_last_of("\\");
-    if (n != string::npos) {
-      string path = outfile.substr(0,n);
-      if (GetShortPath(path)) {
-        outfile = path + outfile.substr(n);
+    /* Make sure output directory exists */ 
+    string::size_type n = outfile.find_last_of("\\");
+    if (n!=string::npos) {
+      string dir = outfile.substr(0,n);
+      if (GetShortPath(dir)) {
+        outfile = dir + outfile.substr(n);
       } else {
-        cerr << "Error: win32fe Output Directory Not Found: ";
+        cerr << "Error: win32fe: Output Directory Not Found: ";
         cerr << outfile.substr(0,n) << endl;
         return;
       }
     }
+    outfile = compileoutflag + outfile;
+
     /* Concatenate the current directory with the file name if the file is local */
-    string filename = cwd + *i;
-    if (GetShortPath(filename)) {
-      string compileeach = compile + " " + compileoutflag + outfile + " " + filename;
-      if (verbose) cout << compileeach << endl;
-      system(compileeach.c_str());
-    } else {
-      cerr << "Error: win32fe Input File Not Found: " << *i << endl;
+    string filename = *i;
+    n = filename.find(":");
+    if (n==string::npos) {
+      n = filename.find_last_of("\\");
+      if (n!=string::npos) {
+        if (!GetShortPath(filename)) {
+          cerr << "Error: win32fe: Input File Not Found: " << *i << endl;
+          return;
+        }
+      }
+      filename = cwd + "\\" + filename;
     }
+    string compileeach = compile + " " + outfile + " " + filename;
+    if (verbose) cout << compileeach << endl;
+    system(compileeach.c_str());
   }
+  return;
 }
 
 void compiler::Link(void) {
   LI i = compilearg.begin();
   string link = *i++;
   Merge(link,compilearg,i);
-  Merge(link,file,file.begin());
-  Merge(link,linkarg,linkarg.begin());
+  i = file.begin();
+  Merge(link,file,i);
+  i = linkarg.begin();
+  Merge(link,linkarg,i);
   if (verbose) cout << link << endl;
   system(link.c_str());
 }
 
-void compiler::FoundFile(LI &i) {
-  string temp = *i;
-  ReplaceSlashWithBackslash(temp);
-  file.push_back(temp);
-}
-
 void compiler::FoundD(LI &i) {
   string temp = *i;
-  ReplaceSlashWithBackslash(temp);
   ProtectQuotes(temp);
   compilearg.push_back(temp);
 }
@@ -213,30 +221,56 @@ void compiler::FoundL(LI &i) {
 
 void compiler::Foundc(LI &i) {
   string temp = *i;
-  compilearg.push_back(temp);
-  linkarg.push_front(temp);
+  if (temp=="-c") {
+    compilearg.push_back(temp);
+    linkarg.pop_front();
+    linkarg.push_front(temp);
+  } else {
+    compilearg.push_back(temp);
+  }
 }
 
 void compiler::Foundhelp(LI &i) {
-  helpfound = -1;
+  if (*i=="-help") {
+    helpfound = -1;
+  }
 }
 
 void compiler::Foundl(LI &i) { 
-  file.push_back(*i);
+  string temp = *i;
+  file.push_back("lib" + temp.substr(2) + ".lib");
 } 
 
 void compiler::Foundo(LI &i) {
-  compilearg.push_back(*i);
-  i++;
-  arg.pop_front();
-  string temp = *i;
-  ReplaceSlashWithBackslash(temp);
-  ProtectQuotes(temp);
-  compilearg.push_back(temp);
-  /* Should perform some error checking ... */
+  if (*i == "-o") {
+    i++;
+    arg.pop_front();
+    string temp = *i;
+    ReplaceSlashWithBackslash(temp);
+    compilearg.push_back(temp);
+    /* Set Flag then fix later based on compilation or link */
+    OutputFlag = --compilearg.end();
+  } else {
+    compilearg.push_back(*i);
+  }
 }   
 
 void compiler::FoundUnknown(LI &i) {
   string temp = *i;
   compilearg.push_back(temp);
+}
+
+void compiler::FixOutput(void) {
+  if (OutputFlag!=compilearg.end()) {
+    string outfile = *OutputFlag;
+    compilearg.erase(OutputFlag);
+    if (linkarg.front()=="-c") {
+      compilearg.push_back(outfile);
+      OutputFlag = --compilearg.end();
+    } else {
+      outfile = linkoutflag + outfile;
+      linkarg.push_front(outfile);
+      OutputFlag = --linkarg.begin();
+    }
+  }
 }

@@ -1,4 +1,4 @@
-/* $Id: libfe.h,v 1.4 2001/04/17 20:52:49 buschelm Exp buschelm $ */
+/* $Id: petsclibfe.h,v 1.5 2001/04/17 21:11:14 buschelm Exp $ */
 #ifndef PETScLibFE_h
 #define PETScLibFE_h
 
@@ -9,7 +9,10 @@ namespace PETScFE {
   public:
     lib() {}
     ~lib() {}
+    virtual void Parse(void);
     virtual void Execute(void);
+  protected:
+    virtual void Archive(void);
     virtual void Help(void);
   };
 

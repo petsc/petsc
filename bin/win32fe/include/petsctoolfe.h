@@ -9,14 +9,16 @@ namespace PETScFE {
   class tool {
   public:
     static int Create(tool*&,string);
+    void GetArgs(int argc,char *argv[]);
     virtual void Parse(void);
     virtual void Execute(void);
-    virtual void GetArgs(int argc,char *argv[]);
     virtual void Destroy(void) {delete this;}
   protected:
     tool();
     virtual ~tool() {}
     virtual void Help(void);
+
+    virtual void FoundFile(LI &);
 
     void PrintListString(list<string> &);
     int GetShortPath(string &);
@@ -25,6 +27,7 @@ namespace PETScFE {
     virtual void Merge(string &,list<string> &,LI &);
 
     list<string> arg;
+    list<string> file;
     int verbose;
     int helpfound;
   private:

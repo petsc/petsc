@@ -1,37 +1,37 @@
 /* $Id: petsclibfe.cpp,v 1.7 2001/04/17 21:16:12 buschelm Exp $ */
-#include <fstream>
 #include "petsclibfe.h"
 
 using namespace PETScFE;
   
 void lib::Execute(void) {
-  tool::Execute();
+  archiver::Execute();
   if (!helpfound) {
-    if (!verbose) {
-      string libexe = archivearg.front();
-      archivearg.pop_front();
-      archivearg.push_front("-nologo");
-      archivearg.push_front(libexe);
-    }
-    string archivename = file.front();
+    string temp, archivename = file.front();
     file.pop_front();
     archivearg.push_back("-out:" + archivename);
-    { /* Open file stream */ 
-      ifstream ArchiveExists(archivename.c_str());
-      if (ArchiveExists) archivearg.push_back(archivename);
-    } /* Close file stream */
-    LI li = archivearg.begin();
-    string header = *li++;
-    Merge(header,archivearg,li);
-    li = file.begin();
-    string archive;
-    while (li != file.end()) {
-      archive = header;
-      Merge(archive,file,li);
-      if (verbose) cout << archive << endl;
-      system(archive.c_str());
-      if (archivearg.back()!=archivename)
-        Merge(header,archivearg,archivearg.insert(archivearg.end(),archivename));
+    temp = archivename;
+    if (GetShortPath(temp)) {
+      file.push_front(archivename);
+    }
+  }
+  Archive();
+}
+
+void lib::Archive(void) {
+  LI li = archivearg.begin();
+  string header = *li++;
+  Merge(header,archivearg,li);
+//    PrintListString(archivearg);
+  li = file.begin();
+  string archivename = file.front();
+  while (li != file.end()) {
+    string archive = header;
+    Merge(archive,file,li);
+    if (verbose) cout << archive << endl;
+    system(archive.c_str());
+    if (archivearg.back()!=archivename) {
+      archivearg.push_back(archivename);
+      Merge(header,archivearg,--archivearg.end());
     }
   }
 }
@@ -47,4 +47,11 @@ void lib::Help(void) {
   string help = archivearg.front();
   help += " -? 2>&1"; 
   system(help.c_str());
+}
+
+void lib::Parse(void) {
+  archiver::Parse();
+  if (!verbose) {
+    archivearg.push_back("-nologo");
+  }
 }

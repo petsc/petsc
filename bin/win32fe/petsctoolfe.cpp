@@ -34,7 +34,7 @@ void tool::Parse() {
 }
 
 void tool::Execute(void) {
-  if (verbose) cout << "PETSc Front End v1.0" << endl;
+  if (verbose) cout << "PETSc Front End v1.1" << endl;
   if (helpfound) Help();
 }
 
@@ -89,8 +89,25 @@ void tool::FoundHelp(LI &i) {
   }
 }
 
+void tool::FoundFile(LI &i) {
+  string temp = *i;
+  ReplaceSlashWithBackslash(temp);
+  string::size_type n = temp.find_last_of("\\");
+  if (n!=string::npos) {
+    string dir = temp.substr(0,n);
+    if (GetShortPath(dir)) {
+      temp = dir + temp.substr(n);
+    } else {
+      cerr << "Error: win32fe: File Not Found: ";
+      cerr << temp << endl;
+      return;
+    }
+  }
+  file.push_back(temp);
+}
+
 void tool::ReplaceSlashWithBackslash(string &name) {
-  for (int i=0;i<name.length();i++)
+  for (string::size_type i=0;i<name.length();i++)
     if (name[i]=='/') name[i]='\\';
 }
 
@@ -125,7 +142,7 @@ int tool::GetShortPath(string &name) {
 void tool::PrintListString(list<string> &liststr) {
   cout << "Printing..." << endl;
   LI i = liststr.begin();
-  while (i!=liststr.end()) cout << *i << " ";
+  while (i!=liststr.end()) cout << *i++ << " ";
   cout << endl;
 }
 
