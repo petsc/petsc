@@ -167,7 +167,10 @@ class Make(script.Script):
     self.logPrint('Ending Build', debugSection = 'build')
     return 1
 
-import sets
+try:
+  import sets
+except ImportError:
+  import config.setsBackport
 
 class SIDLMake(Make):
   def __init__(self, builder = None):
