@@ -24,7 +24,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat
   if (!mbs->blocksolveassembly) {
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
   }
-    
+
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mbs->factor == FACTOR_CHOLESKY) {
     /* Copy the nonzeros */
@@ -62,6 +62,10 @@ PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *fact
 #endif
 
   PetscFunctionBegin;
+  if (!mbs->blocksolveassembly) {
+    ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
+  }
+
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mbs->factor == FACTOR_LU) {
     /* Copy the nonzeros */
