@@ -16,10 +16,10 @@
 #define __FUNCT__ "MGMCycle_Private"
 PetscErrorCode MGMCycle_Private(MG *mglevels,PetscTruth *converged)
 {
-  MG          mg = *mglevels,mgc;
+  MG             mg = *mglevels,mgc;
   PetscErrorCode ierr;
-  int         cycles = mg->cycles;
-  PetscScalar zero = 0.0;
+  PetscInt       cycles = mg->cycles;
+  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   if (converged) *converged = PETSC_FALSE;
@@ -67,13 +67,14 @@ PetscErrorCode MGMCycle_Private(MG *mglevels,PetscTruth *converged)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MGCreate_Private"
-static PetscErrorCode MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **result)
+static PetscErrorCode MGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI_Comm *comms,MG **result)
 {
-  MG   *mg;
+  MG             *mg;
   PetscErrorCode ierr;
-  int  i,size;
-  char *prefix;
-  PC   ipc;
+  PetscInt       i;
+  PetscMPIInt    size;
+  char           *prefix;
+  PC             ipc;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(levels*sizeof(MG),&mg);CHKERRQ(ierr);
@@ -87,10 +88,12 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *
     mg[i]->level  = i;
     mg[i]->levels = levels;
     mg[i]->cycles = 1;
+    mg[i]->default_smoothu = 1;
+    mg[i]->default_smoothd = 1;
 
     if (comms) comm = comms[i];
     ierr = KSPCreate(comm,&mg[i]->smoothd);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(mg[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mg[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, mg[i]->default_smoothd);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mg[i]->smoothd,prefix);CHKERRQ(ierr);
 
     /* do special stuff for coarse grid */
@@ -112,8 +115,6 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *
     }
     PetscLogObjectParent(pc,mg[i]->smoothd);
     mg[i]->smoothu         = mg[i]->smoothd;
-    mg[i]->default_smoothu = 1;
-    mg[i]->default_smoothd = 1;
     mg[i]->rtol = 0.0;
     mg[i]->abstol = 0.0;
     mg[i]->dtol = 0.0;
@@ -129,9 +130,9 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *
 #define __FUNCT__ "PCDestroy_MG"
 static PetscErrorCode PCDestroy_MG(PC pc)
 {
-  MG  *mg = (MG*)pc->data;
+  MG             *mg = (MG*)pc->data;
   PetscErrorCode ierr;
-  int i,n = mg[0]->levels;
+  PetscInt       i,n = mg[0]->levels;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
@@ -162,10 +163,10 @@ EXTERN PetscErrorCode MGKCycle_Private(MG*);
 #define __FUNCT__ "PCApply_MG"
 static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 {
-  MG          *mg = (MG*)pc->data;
-  PetscScalar zero = 0.0;
+  MG             *mg = (MG*)pc->data;
+  PetscScalar    zero = 0.0;
   PetscErrorCode ierr;
-  int         levels = mg[0]->levels;
+  PetscInt       levels = mg[0]->levels;
 
   PetscFunctionBegin;
   mg[levels-1]->b = b; 
@@ -188,12 +189,12 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_MG"
-static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,int its)
+static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its)
 {
-  MG         *mg = (MG*)pc->data;
+  MG             *mg = (MG*)pc->data;
   PetscErrorCode ierr;
-  int levels = mg[0]->levels;
-  PetscTruth converged = PETSC_FALSE;
+  PetscInt       levels = mg[0]->levels;
+  PetscTruth     converged = PETSC_FALSE;
 
   PetscFunctionBegin;
   mg[levels-1]->b    = b; 
@@ -225,9 +226,9 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
 static PetscErrorCode PCSetFromOptions_MG(PC pc)
 {
   PetscErrorCode ierr;
-  int indx,m,levels = 1;
-  PetscTruth flg;
-  const char *type[] = {"additive","multiplicative","full","cascade","kascade"};
+  PetscInt       indx,m,levels = 1;
+  PetscTruth     flg;
+  const char     *type[] = {"additive","multiplicative","full","cascade","kascade"};
 
   PetscFunctionBegin;
 
@@ -292,11 +293,11 @@ static PetscErrorCode PCSetFromOptions_MG(PC pc)
 #define __FUNCT__ "PCView_MG"
 static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 {
-  MG         *mg = (MG*)pc->data;
+  MG             *mg = (MG*)pc->data;
   PetscErrorCode ierr;
-  int levels = mg[0]->levels,i;
-  const char *cstring;
-  PetscTruth iascii;
+  PetscInt       levels = mg[0]->levels,i;
+  const char     *cstring;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -335,13 +336,13 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 #define __FUNCT__ "PCSetUp_MG"
 static PetscErrorCode PCSetUp_MG(PC pc)
 {
-  MG          *mg = (MG*)pc->data;
+  MG             *mg = (MG*)pc->data;
   PetscErrorCode ierr;
-  int i,n = mg[0]->levels;
-  PC          cpc;
-  PetscTruth  preonly,lu,redundant,monitor = PETSC_FALSE,dump;
-  PetscViewer ascii;
-  MPI_Comm    comm;
+  PetscInt       i,n = mg[0]->levels;
+  PC             cpc;
+  PetscTruth     preonly,lu,redundant,monitor = PETSC_FALSE,dump;
+  PetscViewer    ascii;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
@@ -475,7 +476,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 PetscErrorCode MGSetLevels(PC pc,int levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
-  MG  *mg;
+  MG             *mg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -582,10 +583,10 @@ $  -pc_mg_cycles n - 1 denotes a V-cycle; 2 denotes a W-cycle.
 
 .seealso: MGSetCyclesOnLevel()
 @*/
-PetscErrorCode MGSetCycles(PC pc,int n)
+PetscErrorCode MGSetCycles(PC pc,PetscInt n)
 { 
-  MG  *mg;
-  int i,levels;
+  MG       *mg;
+  PetscInt i,levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -616,8 +617,8 @@ PetscErrorCode MGSetCycles(PC pc,int n)
 @*/
 PetscErrorCode MGCheck(PC pc)
 {
-  MG  *mg;
-  int i,n,count = 0;
+  MG       *mg;
+  PetscInt i,n,count = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -679,11 +680,11 @@ PetscErrorCode MGCheck(PC pc)
 
 .seealso: MGSetNumberSmoothUp()
 @*/
-PetscErrorCode MGSetNumberSmoothDown(PC pc,int n)
+PetscErrorCode MGSetNumberSmoothDown(PC pc,PetscInt n)
 { 
-  MG  *mg;
+  MG             *mg;
   PetscErrorCode ierr;
-  int i,levels;
+  PetscInt       i,levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -726,11 +727,11 @@ PetscErrorCode MGSetNumberSmoothDown(PC pc,int n)
 
 .seealso: MGSetNumberSmoothDown()
 @*/
-PetscErrorCode  MGSetNumberSmoothUp(PC pc,int n)
+PetscErrorCode  MGSetNumberSmoothUp(PC pc,PetscInt n)
 { 
-  MG  *mg;
+  MG             *mg;
   PetscErrorCode ierr;
-  int i,levels;
+  PetscInt       i,levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -756,7 +757,7 @@ PetscErrorCode  MGSetNumberSmoothUp(PC pc,int n)
    Options Database Keys:
 +  -pc_mg_levels <nlevels> - number of levels including finest
 .  -pc_mg_cycles 1 or 2 - for V or W-cycle
-.  -pc_mg_smoothup <n> - number of smoothing steps before interpolation
+.  -pc_mg_smoothup <n> - number of smoothing steps after interpolation
 .  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
 .  -pc_mg_type <additive,multiplicative,full,cascade> - multiplicative is the default
 .  -pc_mg_log - log information about time spent on each level of the solver

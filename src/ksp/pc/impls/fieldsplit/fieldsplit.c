@@ -14,10 +14,11 @@ struct _PC_FieldSplitLink {
 };
 
 typedef struct {
+  PCCompositeType   type;              /* additive or multiplicative */
   PetscTruth        defaultsplit;
   PetscInt          bs;
   PetscInt          nsplits;
-  Vec               *x,*y;
+  Vec               *x,*y,w1,w2;
   Mat               *pmat;
   IS                *is;
   PC_FieldSplitLink head;
@@ -32,19 +33,25 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
   PetscTruth        iascii;
   PetscInt          i,j;
   PC_FieldSplitLink link = jac->head;
+  const char        *types[] = {"additive","multiplicative"};
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit: total splits = %D",jac->nsplits);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with %s composition: total splits = %D",types[jac->type],jac->nsplits);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following KSP objects:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<jac->nsplits; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"Split number %D Fields ",i);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
       for (j=0; j<link->nfields; j++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%D \n",link->fields[j]);CHKERRQ(ierr);
+        if (j > 0) {
+          ierr = PetscViewerASCIIPrintf(viewer,",");CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer," %D",link->fields[j]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = KSPView(link->ksp,viewer);CHKERRQ(ierr);
       link = link->next;
     }
@@ -63,19 +70,31 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscErrorCode    ierr;
   PC_FieldSplitLink link = jac->head;
   PetscInt          i;
+  PetscTruth        flg = PETSC_FALSE,*fields;
 
   PetscFunctionBegin;
-  /* user has not split fields so use default */
-  if (!link) { 
+  ierr = PetscOptionsGetLogical(pc->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (!link || flg) { 
     ierr = PetscLogInfo(pc,"PCFieldSplitSetDefaults: Using default splitting of fields");CHKERRQ(ierr);
     if (jac->bs <= 0) {
       ierr   = MatGetBlockSize(pc->pmat,&jac->bs);CHKERRQ(ierr);
     }
-    for (i=0; i<jac->bs; i++) {
-      ierr = PCFieldSplitSetFields(pc,1,&i);CHKERRQ(ierr);
+    ierr = PetscMalloc(jac->bs*sizeof(PetscTruth),&fields);CHKERRQ(ierr);
+    ierr = PetscMemzero(fields,jac->bs*sizeof(PetscTruth));CHKERRQ(ierr);
+    while (link) {
+      for (i=0; i<link->nfields; i++) {
+        fields[link->fields[i]] = PETSC_TRUE;
+      }
+      link = link->next;
     }
-    link              = jac->head;
     jac->defaultsplit = PETSC_TRUE;
+    for (i=0; i<jac->bs; i++) {
+      if (!fields[i]) {
+	ierr = PCFieldSplitSetFields(pc,1,&i);CHKERRQ(ierr);
+      } else {
+        jac->defaultsplit = PETSC_FALSE;
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -144,6 +163,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   
   /* create work vectors for each split */
   if (!jac->x) {
+    Vec xtmp;
     ierr = PetscMalloc2(nsplit,Vec,&jac->x,nsplit,Vec,&jac->y);CHKERRQ(ierr);
     link = jac->head;
     for (i=0; i<nsplit; i++) {
@@ -154,20 +174,25 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       jac->y[i] = link->y;
       link      = link->next;
     }
-    if (!jac->defaultsplit) {
-      Vec xtmp;
-
-      link = jac->head;
-      ierr = MatGetVecs(pc->pmat,&xtmp,PETSC_NULL);CHKERRQ(ierr);
-      for (i=0; i<nsplit; i++) {
-        ierr = VecScatterCreate(xtmp,jac->is[i],jac->x[i],PETSC_NULL,&link->sctx);CHKERRQ(ierr);
-        link = link->next;
-      }
-      ierr = VecDestroy(xtmp);CHKERRQ(ierr);
+    /* compute scatter contexts needed by multiplicative versions and non-default splits */
+    
+    link = jac->head;
+    ierr = MatGetVecs(pc->pmat,&xtmp,PETSC_NULL);CHKERRQ(ierr);
+    for (i=0; i<nsplit; i++) {
+      ierr = VecScatterCreate(xtmp,jac->is[i],jac->x[i],PETSC_NULL,&link->sctx);CHKERRQ(ierr);
+      link = link->next;
     }
+    ierr = VecDestroy(xtmp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
+
+#define FieldSplitSplitSolveAdd(link,xx,yy) \
+    (VecScatterBegin(xx,link->x,INSERT_VALUES,SCATTER_FORWARD,link->sctx) || \
+     VecScatterEnd(xx,link->x,INSERT_VALUES,SCATTER_FORWARD,link->sctx) || \
+     KSPSolve(link->ksp,link->x,link->y) || \
+     VecScatterBegin(link->y,yy,ADD_VALUES,SCATTER_REVERSE,link->sctx) || \
+     VecScatterEnd(link->y,yy,ADD_VALUES,SCATTER_REVERSE,link->sctx))
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_FieldSplit"
@@ -176,29 +201,39 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink link = jac->head;
+  PetscScalar       zero = 0.0,mone = -1.0;
 
   PetscFunctionBegin;
-  if (jac->defaultsplit) {
-    ierr = VecStrideGatherAll(x,jac->x,INSERT_VALUES);CHKERRQ(ierr);
-    while (link) {
-      ierr = KSPSolve(link->ksp,link->x,link->y);CHKERRQ(ierr);
-      link = link->next;
+  if (jac->type == PC_COMPOSITE_ADDITIVE) {
+    if (jac->defaultsplit) {
+      ierr = VecStrideGatherAll(x,jac->x,INSERT_VALUES);CHKERRQ(ierr);
+      while (link) {
+	ierr = KSPSolve(link->ksp,link->x,link->y);CHKERRQ(ierr);
+	link = link->next;
+      }
+      ierr = VecStrideScatterAll(jac->y,y,INSERT_VALUES);CHKERRQ(ierr);
+    } else {
+      PetscInt    i = 0;
+
+      ierr = VecSet(&zero,y);CHKERRQ(ierr);
+      while (link) {
+        ierr = FieldSplitSplitSolveAdd(link,x,y);CHKERRQ(ierr);
+	link = link->next;
+	i++;
+      }
     }
-    ierr = VecStrideScatterAll(jac->y,y,INSERT_VALUES);CHKERRQ(ierr);
   } else {
-    PetscScalar zero = 0.0;
-    PetscInt    i = 0;
-
+    if (!jac->w1) {
+      ierr = VecDuplicate(x,&jac->w1);CHKERRQ(ierr);
+      ierr = VecDuplicate(x,&jac->w2);CHKERRQ(ierr);
+    }
     ierr = VecSet(&zero,y);CHKERRQ(ierr);
-    while (link) {
-      ierr = VecScatterBegin(x,link->x,INSERT_VALUES,SCATTER_FORWARD,link->sctx);CHKERRQ(ierr);
-      ierr = VecScatterEnd(x,link->x,INSERT_VALUES,SCATTER_FORWARD,link->sctx);CHKERRQ(ierr);
-      ierr = KSPSolve(link->ksp,link->x,link->y);CHKERRQ(ierr);
-      ierr = VecScatterBegin(link->y,y,ADD_VALUES,SCATTER_REVERSE,link->sctx);CHKERRQ(ierr);
-      ierr = VecScatterEnd(y,link->y,ADD_VALUES,SCATTER_REVERSE,link->sctx);CHKERRQ(ierr);
-
+    ierr = FieldSplitSplitSolveAdd(link,x,y);CHKERRQ(ierr);
+    while (link->next) {
       link = link->next;
-      i++;
+      ierr = MatMult(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+      ierr = VecWAXPY(&mone,jac->w1,x,jac->w2);CHKERRQ(ierr);
+      ierr = FieldSplitSplitSolveAdd(link,jac->w2,y);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -229,6 +264,8 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
     for (i=0; i<jac->nsplits; i++) {ierr = ISDestroy(jac->is[i]);CHKERRQ(ierr);}
     ierr = PetscFree(jac->is);CHKERRQ(ierr);
   }
+  if (jac->w1) {ierr = VecDestroy(jac->w1);CHKERRQ(ierr);}
+  if (jac->w2) {ierr = VecDestroy(jac->w2);CHKERRQ(ierr);}
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -239,12 +276,17 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 /*   This does not call KSPSetFromOptions() on the subksp's, see PCSetFromOptionsBJacobi/ASM() */
 {
   PetscErrorCode ierr;
-  PetscInt       i = 0,nfields,fields[12];
+  PetscInt       i = 0,nfields,fields[12],indx;
   PetscTruth     flg;
   char           optionname[128];
+  const char     *types[] = {"additive","multiplicative"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",types,2,types[0],&indx,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCFieldSplitSetType(pc,(PCCompositeType)indx);CHKERRQ(ierr);
+  }
   while (PETSC_TRUE) {
     sprintf(optionname,"-pc_fieldsplit_%d_fields",i++);
     nfields = 12;
@@ -390,6 +432,53 @@ PetscErrorCode PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFieldSplitSetType_FieldSplit"
+PetscErrorCode PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+
+  PetscFunctionBegin;
+  jac->type = type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCFieldSplitSetType"
+/*@C
+   PCFieldSplitSetType - Sets the type of fieldsplit preconditioner.
+   
+   Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE
+
+   Options Database Key:
+.  -pc_fieldsplit_type <type: one of multiplicative, additive, special> - Sets fieldsplit preconditioner type
+
+   Level: Developer
+
+.keywords: PC, set, type, composite preconditioner, additive, multiplicative
+
+.seealso: PCCompositeSetType()
+
+@*/
+PetscErrorCode PCFieldSplitSetType(PC pc,PCCompositeType type)
+{
+  PetscErrorCode ierr,(*f)(PC,PCCompositeType);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFieldSplitSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,type);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------------------*/
 /*MC
    PCFieldSplit - Preconditioner created by combining seperate preconditioners for individual
@@ -403,6 +492,12 @@ PetscErrorCode PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
          and set the options directly on the resulting KSP object
 
    Level: intermediate
+
+   Options Database Keys:
++   -pc_splitfields_xxx_fields <a,b,..> - indicates the fields to be used in the xxx'th split
+.   -pc_splitfields_default - automatically add any fields to additional splits that have not
+                              been supplied explicitly by -pc_splitfields_xxx_fields
+-   -pc_splitfields_type <additive,multiplicative>
 
    Concepts: physics based preconditioners
 
@@ -424,6 +519,7 @@ PetscErrorCode PCCreate_FieldSplit(PC pc)
   ierr = PetscMemzero(jac,sizeof(PC_FieldSplit));CHKERRQ(ierr);
   jac->bs      = -1;
   jac->nsplits = 0;
+  jac->type    = PC_COMPOSITE_ADDITIVE;
   pc->data     = (void*)jac;
 
   pc->ops->apply             = PCApply_FieldSplit;
@@ -437,6 +533,8 @@ PetscErrorCode PCCreate_FieldSplit(PC pc)
                     PCFieldSplitGetSubKSP_FieldSplit);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetFields_C","PCFieldSplitSetFields_FieldSplit",
                     PCFieldSplitSetFields_FieldSplit);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFieldSplitSetType_C","PCFieldSplitSetType_FieldSplit",
+                    PCFieldSplitSetType_FieldSplit);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

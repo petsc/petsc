@@ -305,6 +305,7 @@ EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,int*,const int*[]);
 EXTERN PetscErrorCode PCBJacobiGetTotalBlocks(PC,int*,const int*[]);
 
 EXTERN PetscErrorCode PCFieldSplitSetFields(PC,PetscInt,PetscInt*);
+EXTERN PetscErrorCode PCFieldSplitSetType(PC,PCCompositeType);
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCPC_H */
