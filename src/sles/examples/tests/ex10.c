@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.59 1996/08/15 12:48:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.60 1996/11/07 15:10:16 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -229,7 +229,7 @@ int     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
  */
 int Elastic20Stiff(double **Ke)
 {
-  double K[60][60],x,y,z,dx,dy,dz,m,v;
+  Scalar K[60][60],x,y,z,dx,dy,dz,m,v;
   int    i,j,k,l,I,J;
 
   paulsetup20();
