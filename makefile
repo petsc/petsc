@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.237 1998/04/24 20:00:01 balay Exp balay $ 
+# $Id: makefile,v 1.238 1998/04/28 03:28:32 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -58,8 +58,7 @@ info:
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
-	   ACTION=libfast  tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=libfast  tree 
 	-@cd ${PETSC_DIR}/src/sys/src ; \
 	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} rs6000_time
 	${RANLIB} ${PDIR}/*.a
@@ -221,7 +220,7 @@ TAGS_FEXAMPLE_FILES = src/*/examples/*/*.[F,f] src/*/examples/*/*/*.[F,f] \
 		      src/fortran/f90/tests/*.[F,f]
 TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
                       docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
-                      docs/tex/manual/part1.tex docs/tex/manual/part2.tex
+                      docs/tex/manual/part1.tex docs/tex/manual/developer.tex docs/tex/manual/part2.tex
 TAGS_SRC_FILES      = src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
                       src/*/utils/*.[c,h] \
                       src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
