@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbasic.c,v 1.8 1998/05/19 01:34:08 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbasic.c,v 1.9 1998/05/19 01:34:21 curfman Exp curfman $";
 #endif
 
 /*
@@ -31,7 +31,7 @@ int MMPrintHelp(MM mm)
   PetscStrcpy(p,"-");
   if (mm->prefix) PetscStrcat(p,mm->prefix);
   PetscPrintf(mm->comm,"MM options --------------------------------------------------\n");
-  ierr = DLRegisterPrintTypes(mm->comm,stdout,mm->prefix,"mm_type",MMList); CHKERRQ(ierr);
+  ierr = FListPrintTypes(mm->comm,stdout,mm->prefix,"mm_type",MMList); CHKERRQ(ierr);
   (*PetscHelpPrintf)(mm->comm,"Run program with -help %smm_type <method> for help on ",p);
   (*PetscHelpPrintf)(mm->comm,"a particular method\n");
   if (mm->printhelp) {ierr = (*mm->printhelp)(mm,p); CHKERRQ(ierr);}

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmset.c,v 1.5 1998/05/13 18:58:46 curfman Exp curfman $";
+static char vcid[] = "$Id: mmset.c,v 1.6 1998/05/16 17:46:26 curfman Exp curfman $";
 #endif
 
 /* 
@@ -16,7 +16,7 @@ int MMRegisterAllCalled = 0;
 /*
    Contains the list of registered KSP routines
 */
-DLList MMList = 0;
+FList MMList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "MMSetType"
@@ -50,7 +50,7 @@ int MMSetType(MM ctx,MMType type)
   }
   /* Get the function pointers for the method requested */
   if (!MMRegisterAllCalled) {ierr = MMRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
-  ierr = DLRegisterFind(ctx->comm,MMList,type,(int (**)(void *))&r); CHKERRQ(ierr);
+  ierr = FListFind(ctx->comm,MMList,type,(int (**)(void *))&r); CHKERRQ(ierr);
   if (!r) SETERRQ(1,1,"Unknown MM type given");
 
   if (ctx->data) PetscFree(ctx->data);
@@ -81,7 +81,7 @@ int MMRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MMList) {
-    ierr = DLRegisterDestroy(MMList); CHKERRQ(ierr);
+    ierr = FListDestroy(MMList); CHKERRQ(ierr);
     MMList = 0;
   }
   MMRegisterAllCalled = 0;
@@ -200,6 +200,6 @@ int MMRegister_Private(char *sname,char *path,char *name,int (*function)(MM))
 
   PetscFunctionBegin;
   PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
-  ierr = DLRegister_Private(&MMList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListAdd_Private(&MMList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

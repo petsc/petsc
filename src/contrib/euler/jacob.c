@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.15 1998/06/05 20:13:07 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.16 1998/06/08 21:21:09 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -116,7 +116,7 @@ int UserSetJacobian(SNES snes,Euler *app)
     ndof_euler = 5;
     ierr = nzmat_(&app->mmtype_int,&mtype,&ndof_euler,&ndof_block,&istart,&iend,
                   app->is1,app->ltog,&app->nloc,&wkdim,nnz_d,nnz_o,
-                  &app->fort_ao,&app->no_wake); CHKERRQ(ierr);
+                  &app->ao,&app->no_wake); CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                     Form Jacobian matrix data structure
@@ -417,7 +417,6 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
   int              flg, ierr, i, rstart, rend, mditer;
   Vec              fvec;
   Scalar           *fvec_array, one = 1.0;
-  PetscFortranAddr fortmat;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set some options; do some preliminary work
@@ -477,9 +476,6 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
   /* Convert vector */
   ierr = UnpackWork(app,app->da,app->xx,app->localX,X); CHKERRQ(ierr);
 
-  /* Form Fortran matrix object */
-  ierr = PetscCObjectToFortranObject(*pjac,&fortmat); CHKERRQ(ierr);
-
   /* Indicate that we're now using an unfactored matrix.  This is needed only
      when using in-place ILU(0) preconditioning to allow repeated assembly of
      the matrix. */
@@ -521,13 +517,13 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
       /* Either assemble the matrix directly (the more efficient route) ... */
       /* We must zero the diagonal block here, since this is not done within jformdt2 */
       PetscMemzero(app->diag,app->diag_len);
-      ierr = jformdt2_(&app->eps_jac,&app->eps_jac_inv,app->ltog,&app->nloc,&fortmat,app->is1,
+      ierr = jformdt2_(&app->eps_jac,&app->eps_jac_inv,app->ltog,&app->nloc,pjac,app->is1,
              app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,app->diag,
 	     app->dt,app->xx,app->p,app->xx_bc,app->p_bc,
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,fvec_array,&app->fort_ao); CHKERRQ(ierr);
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,fvec_array,&app->ao); CHKERRQ(ierr);
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
     /* Or store the matrix in the intermediate Eagle format for later conversion ... */
@@ -541,14 +537,14 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,fvec_array, &app->fort_ao); CHKERRQ(ierr);
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,fvec_array, &app->ao); CHKERRQ(ierr);
       /* Convert Jacobian from Eagle format */
       if (!app->no_output) PetscPrintf(app->comm,"Building PETSc matrix ...\n");
       ierr = MatGetType(*pjac,&type,PETSC_NULL); CHKERRQ(ierr);
-      ierr = buildmat_(&fortmat,&app->sctype,app->is1,
+      ierr = buildmat_(pjac,&app->sctype,app->is1,
 	     app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,
              app->dt,app->ltog,&app->nloc,
-             app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,&app->fort_ao); CHKERRQ(ierr);
+             app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,&app->ao); CHKERRQ(ierr);
     }
 #endif
   }

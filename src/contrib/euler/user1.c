@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.78 1998/06/05 20:38:02 balay Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.79 1998/06/09 00:04:46 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -666,11 +666,8 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
 #if defined(ACTIVATE_OLD_ASSEMBLY)
     if (app->use_vecsetvalues) {
 
-      /* Transform Fvec to a Fortran vector */
-      ierr = PetscCObjectToFortranObject(Fvec,&fortvec); CHKERRQ(ierr);
-
       /* Build Fvec(X) using VecSetValues() */
-      ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dxx, fv_array,
+      ierr = rbuild_(&Fvec, &app->sctype, app->dt, app->dxx, fv_array,
            app->ltog, &app->nloc ); CHKERRQ(ierr);
     } else {
 #endif
@@ -1213,7 +1210,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
          app->Nx,app->Ny,app->Nz,ndof,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da); CHKERRQ(ierr);
   ierr = DAGetAO(app->da,&ao); CHKERRQ(ierr);
-  ierr = PetscCObjectToFortranObject(ao,&app->fort_ao); CHKERRQ(ierr);
 
   /* Get global and local vectors */
   ierr = DACreateGlobalVector(app->da,&app->X); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.39 1998/03/31 17:15:43 balay Exp curfman $ */
+/* $Id: user.h,v 1.40 1998/06/08 21:21:04 curfman Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -54,7 +54,7 @@ typedef struct {
     Vec      localXBC;           /* local BC vector */
     Scalar   *xx, *dxx, *xx_bc;  /* corresponding local arrays */
     MatFDColoring    fdcoloring; /* coloring context for FD Jacobian approx (optional) */
-    PetscFortranAddr fort_ao;    /* Fortran pointer to AO context */
+    AO       ao;                 /* AO context */
 
   /* ----------------- General parameters and flags ------------------- */
 
