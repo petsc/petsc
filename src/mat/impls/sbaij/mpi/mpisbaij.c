@@ -2432,6 +2432,67 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
+  int            ierr,mbs=mat->mbs,bs=mat->bs;
+  PetscScalar    mone=-1.0,*x,*b,*ptr,zero=0.0;
+  Vec            bb1;
+ 
+  PetscFunctionBegin;
+  if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
+  if (bs > 1)
+    SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
+
+  if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
+    if ( flag & SOR_ZERO_INITIAL_GUESS ) {
+      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,lits,xx);CHKERRQ(ierr);
+      its--; 
+    }
+
+    ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+    while (its--){
+ 
+      /* lower triangular part: slvec0b = - B^T*xx */
+      ierr = (*mat->B->ops->multtranspose)(mat->B,xx,mat->slvec0b);CHKERRQ(ierr);
+      
+      /* copy xx into slvec0a */
+      ierr = VecGetArray(mat->slvec0,&ptr);CHKERRQ(ierr);
+      ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+      ierr = PetscMemcpy(ptr,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = VecRestoreArray(mat->slvec0,&ptr);CHKERRQ(ierr);  
+
+      ierr = VecScale(&mone,mat->slvec0);CHKERRQ(ierr);
+
+      /* copy bb into slvec1a */
+      ierr = VecGetArray(mat->slvec1,&ptr);CHKERRQ(ierr);
+      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+      ierr = PetscMemcpy(ptr,b,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
+      ierr = VecRestoreArray(mat->slvec1,&ptr);CHKERRQ(ierr);  
+
+      /* set slvec1b = 0 */
+      ierr = VecSet(&zero,mat->slvec1b);CHKERRQ(ierr); 
+
+      ierr = VecScatterBegin(mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD,mat->sMvctx);CHKERRQ(ierr);  
+      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+      ierr = VecScatterEnd(mat->slvec0,mat->slvec1,ADD_VALUES,SCATTER_FORWARD,mat->sMvctx);CHKERRQ(ierr); 
+
+      /* upper triangular part: bb1 = bb1 - B*x */ 
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->slvec1b,mat->slvec1a,bb1);CHKERRQ(ierr);
+  
+      /* local diagonal sweep */
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,lits,xx);CHKERRQ(ierr); 
+    }
+    ierr = VecDestroy(bb1);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"MatSORType is not supported for SBAIJ matrix format");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRelax_MPISBAIJ_2comm"
+int MatRelax_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
+{
+  Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   int            ierr;
   PetscScalar    mone=-1.0;
   Vec            lvec1,bb1;
