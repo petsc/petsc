@@ -1,6 +1,7 @@
-BASEOPT  = -g -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g
-BASEOPTF = -g -dalign
-SYS_LIB  = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
-CLINKER  = g++ $(BASEOPT)
-CC       = g++  -DPARCH_sun4 
+CLINKER    = g++ $(BASEOPT)
+CC         = g++  -DPARCH_sun4 
+PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g
+COPTFLAGS  = -g -Wall
+FOPTFLAGS  = -g -dalign
+SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
 
