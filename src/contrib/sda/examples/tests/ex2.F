@@ -1,5 +1,5 @@
 
-/* "$Id: ex2.F,v 1.2 1996/04/03 20:15:04 balay Exp bsmith $"; */
+/* "$Id: ex2.F,v 1.3 1996/11/25 23:43:16 bsmith Exp balay $"; */
 
 
 #include "include/FINCLUDE/petsc.h"
@@ -19,6 +19,7 @@ C   not also work with DA contexts.
       integer        sda
       Vec            local,global,local_copy
       Scalar         value,mone,in(1),out(1)
+      common         in, out
       Scalar         norm,work
  
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
