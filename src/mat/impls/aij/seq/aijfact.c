@@ -1135,7 +1135,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *B)
  
     for (k = 0; k<mbs; k++){
       PetscScalar *baval = ba + bi[k];
-      /*initialize k-th row by the perm[k]-th row of A */
+      /* initialize k-th row by the perm[k]-th row of A */
       jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
       for (j = jmin; j < jmax; j++){
         col = rip[aj[j]];
@@ -1268,7 +1268,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_NaturalOrdering(Mat A,Mat *fact)
     }
 
     for (k = 0; k<am; k++){ 
-    /*initialize k-th row with elements nonzero in row perm(k) of A */
+    /* initialize k-th row with elements nonzero in row perm(k) of A */
       nz   = ai[k+1] - ai[k];
       acol = aj + ai[k];
       aval = aa + ai[k];
