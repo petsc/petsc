@@ -1021,6 +1021,38 @@ int TSGetSLES(TS ts,SLES *sles)
 /* ----------- Routines to set solver parameters ---------- */
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSGetDuration"
+/*@
+   TSGetDuration - Gets the maximum number of timesteps to use and 
+   maximum time for iteration.
+
+   Collective on TS
+
+   Input Parameters:
++  ts       - the TS context obtained from TSCreate()
+.  maxsteps - maximum number of iterations to use, or PETSC_NULL
+-  maxtime  - final time to iterate to, or PETSC_NULL
+
+   Level: intermediate
+
+.keywords: TS, timestep, get, maximum, iterations, time
+@*/
+int TSGetDuration(TS ts, int *maxsteps, PetscReal *maxtime)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  if (maxsteps != PETSC_NULL) {
+    PetscValidIntPointer(maxsteps);
+    *maxsteps = ts->max_steps;
+  }
+  if (maxtime  != PETSC_NULL) {
+    PetscValidScalarPointer(maxtime);
+    *maxtime  = ts->max_time;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSSetDuration"
 /*@
    TSSetDuration - Sets the maximum number of timesteps to use and 

@@ -242,8 +242,7 @@ int MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_MFFD"
 /*
-  MatSNESMFMult_Private - Default matrix-free form for Jacobian-vector
-  product, y = F'(u)*a:
+  MatMult_MFFD - Default matrix-free form for Jacobian-vector product, y = F'(u)*a:
 
         y ~= (F(u + ha) - F(u))/h, 
   where F = nonlinear function, as set by SNESSetFunction()
