@@ -96,8 +96,12 @@ class Bootstrapper(script.Script):
   def disableBootstrap(self, url):
     '''Disable the Python bootstrap'''
     self.logPrint('Disabling bootstrap in '+url)
-    dir = install.urlMapping.UrlMappingNew.getRepositoryPath(url)
-    os.rename(os.path.join(dir, 'client-bootstrap'), os.path.join(dir, 'client-bootstrap-old'))
+    baseDir = install.urlMapping.UrlMappingNew.getRepositoryPath(url)
+    bootstrapDir = os.path.join(dir, 'client-bootstrap')
+    inactiveDir = os.path.join(dir, 'client-bootstrap-old')
+    if os.path.isdir(bootstrapDir):
+      self.safeRemove(inactiveDir)
+      os.rename(bootstrapDir, inactiveDir)
     return
 
   def safeRemove(self, f):
