@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.194 1999/11/24 21:53:59 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.195 2000/01/05 04:42:50 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -511,14 +511,6 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
   Viewer       viewer;
 
   PetscFunctionBegin; 
-  /*
-      This is nasty. If this is called from an originally parallel matrix
-   then all processes call this,but only the first has the matrix so the
-   rest should return immediately.
-  */
-  ierr = PetscObjectGetComm((PetscObject)draw,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr); 
 
