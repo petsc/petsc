@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.9 2001/01/19 23:22:01 balay Exp balay $*/
+/*$Id: ex24.c,v 1.10 2001/01/23 20:57:12 balay Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   for (i=0; i<nlevels; i++) {
     packer = (VecPack)dmmg[i]->dm;
     ierr   = VecPackGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
-    ierr   = DAGetColoring(da,&coloring,&J);CHKERRQ(ierr);
+    ierr   = DAGetColoring(da,MATMPIAIJ,&coloring,&J);CHKERRQ(ierr);
     ierr   = MatFDColoringCreate(J,coloring,&fd);CHKERRQ(ierr);
     ierr   = MatFDColoringSetFromOptions(fd);CHKERRQ(ierr);
     ierr   = MatFDColoringSetFunction(fd,(int (*)(void))PDEFormFunction,da);CHKERRQ(ierr);
@@ -189,7 +189,8 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = MatMultTranspose((Mat)dmmg->user,vglambda,vflambda);CHKERRQ(ierr);
 
   PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
-  ierr = MatView((Mat)dmmg->user,PETSC_VIEWER_STDOUT_WORLD); 
+  ierr = MatView((Mat)dmmg->user,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* derivative of constraint portion of L() w.r.t. u */
   ierr = PDEFormFunction(w,vu,vfu,da);CHKERRQ(ierr);
@@ -239,5 +240,6 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscLogFlops(13*N);
   PetscFunctionReturn(0);
 }
+
 
 
