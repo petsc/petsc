@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.33 1999/01/12 23:17:53 bsmith Exp bsmith $";
+! "$Id: ex4f.F,v 1.34 1999/03/02 22:31:09 bsmith Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -267,7 +267,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       if (matrix_free .eq. 0) call MatDestroy(J,ierr)
-      if (fd_coloring) call MatFDColoringDestroy(fdcoloring,ierr)
+      if (fd_coloring .ne. 0) call MatFDColoringDestroy(fdcoloring,ierr)
 
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
