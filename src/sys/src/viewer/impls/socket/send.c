@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.71 1998/08/26 22:03:54 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.72 1998/10/01 22:29:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -122,6 +122,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   PetscFunctionBegin;
   if ( (hp=gethostbyname(hostname)) == NULL ) {
     perror("SEND: error gethostbyname: ");   
+    fprintf(stderr,"hostname tried %s\n",hostname);
     SETERRQ(PETSC_ERR_LIB,0,"system error open connection");
   }
   PetscMemzero(&sa,sizeof(sa));
@@ -167,9 +168,9 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
    Collective on MPI_Comm
 
    Input Parameters:
-.  comm - the MPI communicator
++  comm - the MPI communicator
 .  machine - the machine the server is running on
-.  port - the port to connect to, use -1 for the default
+-  port - the port to connect to, use PETSC_DEFAULT for the default
 
    Output Parameter:
 .  lab - a context to use when communicating with the server
@@ -187,7 +188,8 @@ $    ViewerMatlabOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
 $    VecView(Vec vector,Viewer viewer)
 
    Options Database Keys:
-   For use with the default Matlab viewer, VIEWER_MATLAB_WORLD
+   For use with the default Matlab viewer, VIEWER_MATLAB_WORLD or if 
+    PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_matlab_machine <machine>
 $    -viewer_matlab_port <port>
 
@@ -198,18 +200,32 @@ $    -viewer_matlab_port <port>
 int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
   Viewer v;
-  int    t,rank,ierr;
+  int    t,rank,ierr,flag;
   char   mach[256];
 
   PetscFunctionBegin;
-  if (port <= 0) port = DEFAULTPORT;
+  if (!machine) {
+    ierr = OptionsGetString(PETSC_NULL,"-viewer_matlab_machine",mach,128,&flag);CHKERRQ(ierr);
+    if (!flag) {
+      ierr = PetscGetHostName(mach,128); CHKERRQ(ierr);
+    }
+  } else {
+    PetscStrncpy(mach,machine);
+  }
+
+  if (port <= 0) {
+    ierr = OptionsGetInt(PETSC_NULL,"-viewer_matlab_port",&port,&flag); CHKERRQ(ierr);
+    if (!flag) {
+      port = DEFAULTPORT;
+    }
+  }
+
   PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,MATLAB_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    PetscStrcpy(mach,machine);
-    ierr = SOCKCall_Private(mach,port,&t);CHKERRQ(ierr);
-    v->port        = t;
+    ierr    = SOCKCall_Private(mach,port,&t);CHKERRQ(ierr);
+    v->port = t;
   }
   v->destroy     = ViewerDestroy_Matlab;
   v->flush       = 0;
@@ -223,17 +239,11 @@ Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
 #define __FUNC__ "ViewerInitializeMatlabWorld_Private"
 int ViewerInitializeMatlabWorld_Private(void)
 {
-  int  ierr,port = 5005,flag;
-  char machine[128];
+  int  ierr,flag;
 
   PetscFunctionBegin;
   if (VIEWER_MATLAB_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = OptionsGetString(PETSC_NULL,"-viewer_matlab_machine",machine,128,&flag);CHKERRQ(ierr);
-  if (!flag) {
-    ierr = PetscGetHostName(machine,128); CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(PETSC_NULL,"-viewer_matlab_port",&port,&flag); CHKERRQ(ierr);
-  ierr = ViewerMatlabOpen(PETSC_COMM_WORLD,machine,port,&VIEWER_MATLAB_WORLD_PRIVATE); CHKERRQ(ierr);
+  ierr = ViewerMatlabOpen(PETSC_COMM_WORLD,0,0,&VIEWER_MATLAB_WORLD_PRIVATE); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
