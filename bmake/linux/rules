@@ -1,4 +1,4 @@
-# $Id: base,v 1.21 1997/09/18 19:18:22 balay Exp balay $ 
+# $Id: base,v 1.22 1998/03/19 02:01:29 balay Exp balay $ 
 
 PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
@@ -8,14 +8,14 @@ CC       = gcc  -DPARCH_linux -fPIC
 #
 CCV      = ${CC} --version
 #
-FC       = f77
+FC       = g77
 AR       = ar
 RM       = rm -f
 OMAKE    = make  --no-print-directory
 RANLIB   = ranlib
 SHELL    = /bin/sh
 CLINKER  = gcc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-FLINKER  = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+FLINKER  = g77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 CONF     = -DHAVE_PWD_H -DHAVE_MALLOC_H -DHAVE_STRING_H -DHAVE_X11 \

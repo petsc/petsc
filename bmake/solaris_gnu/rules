@@ -1,4 +1,4 @@
-# $Id: base,v 1.1 1998/03/16 21:10:59 balay Exp balay $ 
+# $Id: base,v 1.2 1998/03/19 02:01:29 balay Exp balay $ 
 
 PARCH    = solaris
 CC       = gcc  -DPARCH_solaris -fPIC
@@ -27,7 +27,7 @@ CONF     = -DHAVE_SYS_WAIT_H -DHAVE_VPRINTF -DSTDC_HEADERS -DHAVE_DRAND48 \
            -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H -DHAVE_SYS_SYSTEMINFO_H ${FCONF} \
            -DHAVE_SWAPPED_BYTES 
 
-SYS_LIB  = -lc
+SYS_LIB  = -lsocket -lc
 
 include ${PETSC_DIR}/bmake/common
 

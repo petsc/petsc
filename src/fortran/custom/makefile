@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.184 1997/09/10 16:23:37 bsmith Exp $ 
+# $Id: makefile,v 1.17 1997/09/11 20:33:21 bsmith Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS   = 
 SOURCEC  = zoptions.c zksp.c zpc.c zsnes.c zsys.c zmat.c zvec.c zsles.c \
            zdraw.c zda.c zviewer.c zis.c zplog.c zstart.c zstartf.c zts.c \
@@ -17,6 +17,6 @@ LIBBASE  = libpetscfortran
 MANSEC   = 7
 LOCDIR   = src/fortran/custom/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 
