@@ -573,7 +573,6 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
 
   /* actually create and open the window */
   ierr = PetscNew(PetscDraw_X,&sXwin);CHKERRQ(ierr);
-  ierr = PetscMemzero(sXwin,sizeof(PetscDraw_X));CHKERRQ(ierr);
   ierr = XiQuickWindowFromWindow(sXwin,draw->display,Xwin->win);CHKERRQ(ierr);
 
   sXwin->x       = Xwin->x;
@@ -731,7 +730,6 @@ PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   /* actually create and open the window */
   ierr = PetscNew(PetscDraw_X,&Xwin);CHKERRQ(ierr);
   PetscLogObjectMemory(draw,sizeof(PetscDraw_X)+sizeof(struct _p_PetscDraw));
-  ierr = PetscMemzero(Xwin,sizeof(PetscDraw_X));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {

@@ -209,49 +209,49 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       PetscBLASInt ione = 1,bell = bcgsl->ell;
 
       AY0c[0] = -1;
-      LApotrf_("Lower", &bell, &MZa[1+ldMZ], &ldMZ, &bierr);
+      LAPACKpotrf_("Lower", &bell, &MZa[1+ldMZ], &ldMZ, &bierr);
       if (ierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         bBombed = PETSC_TRUE;
         break;
       }
-      BLcopy_(&bell, &MZb[1], &ione, &AY0c[1], &ione);
-      LApotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
+      BLAScopy_(&bell, &MZb[1], &ione, &AY0c[1], &ione);
+      LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
     } else {
       PetscBLASInt neqs = bcgsl->ell-1;
       PetscBLASInt ione = 1;
       PetscScalar aone = 1.0, azero = 0.0;
 
-      LApotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr);
+      LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr);
       if (ierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         bBombed = PETSC_TRUE;
         break;
       }
-      BLcopy_(&neqs, &MZb[1], &ione, &AY0c[1], &ione);
-      LApotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
+      BLAScopy_(&neqs, &MZb[1], &ione, &AY0c[1], &ione);
+      LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
       AY0c[0] = -1;
       AY0c[bcgsl->ell] = 0;
 
-      BLcopy_(&neqs, &MZb[1+ldMZ*(bcgsl->ell)], &ione, &AYlc[1], &ione);
-      LApotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr);
+      BLAScopy_(&neqs, &MZb[1+ldMZ*(bcgsl->ell)], &ione, &AYlc[1], &ione);
+      LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr);
 
       AYlc[0] = 0;
       AYlc[bcgsl->ell] = -1;
 
-      LAgemv_("NoTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AY0c, &ione, &azero, AYtc, &ione);
+      BLASgemv_("NoTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AY0c, &ione, &azero, AYtc, &ione);
 
-      kappa0 = BLdot_(&ldMZ, AY0c, &ione, AYtc, &ione);
+      kappa0 = BLASdot_(&ldMZ, AY0c, &ione, AYtc, &ione);
 
       /* round-off can cause negative kappa's */
       if (kappa0<0) kappa0 = -kappa0;
       kappa0 = sqrt(kappa0);
 
-      kappaA = BLdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
+      kappaA = BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
 
-      LAgemv_("noTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AYlc, &ione, &azero, AYtc, &ione);
+      BLASgemv_("noTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AYlc, &ione, &azero, AYtc, &ione);
 
-      kappa1 = BLdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
+      kappa1 = BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
 
       if (kappa1<0) kappa1 = -kappa1;
       kappa1 = sqrt(kappa1);
@@ -574,7 +574,6 @@ PetscErrorCode KSPCreate_BCGSL(KSP ksp)
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
   ierr = PetscNew(KSP_BiCGStabL, &bcgsl);CHKERRQ(ierr);
-  ierr = PetscMemzero(bcgsl, sizeof(KSP_BiCGStabL));CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
   ksp->pc_side              = PC_LEFT;

@@ -1204,7 +1204,7 @@ PetscErrorCode MatScale_SeqSBAIJ(const PetscScalar *alpha,Mat inA)
   PetscBLASInt one = 1,totalnz = (PetscBLASInt)a->bs2*a->nz;
 
   PetscFunctionBegin;
-  BLscal_(&totalnz,(PetscScalar*)alpha,a->a,&one);
+  BLASscal_(&totalnz,(PetscScalar*)alpha,a->a,&one);
   PetscLogFlops(totalnz);
   PetscFunctionReturn(0);
 }

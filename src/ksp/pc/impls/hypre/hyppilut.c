@@ -729,7 +729,6 @@ PetscErrorCode PCCreate_HYPRE(PC pc)
 
   PetscFunctionBegin;
   ierr                     = PetscNew(PC_HYPRE,&jac);CHKERRQ(ierr);
-  ierr                     = PetscMemzero(jac,sizeof(PC_HYPRE));CHKERRQ(ierr);
   pc->data                 = jac;
   pc->ops->setfromoptions  = PCSetFromOptions_HYPRE;
   /* Com_dup for hypre */

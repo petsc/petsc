@@ -875,7 +875,6 @@ PetscErrorCode TSCreate_PVode(TS ts)
   ts->ops->setfromoptions  = TSSetFromOptions_PVode_Nonlinear;
 
   ierr  = PetscNew(TS_PVode,&cvode);CHKERRQ(ierr);
-  ierr  = PetscMemzero(cvode,sizeof(TS_PVode));CHKERRQ(ierr);
   ierr  = PCCreate(ts->comm,&cvode->pc);CHKERRQ(ierr);
   PetscLogObjectParent(ts,cvode->pc);
   ts->data          = (void*)cvode;

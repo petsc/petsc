@@ -3574,7 +3574,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
       /* Can this loop be replaced by a call to MPI_Waitall()? */
       MPI_Wait(ids_in++, &status);
       while (*iptr >= 0) {
-          BLaxpy_(&step,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
+          BLASaxpy_(&step,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
           in2+=step;
           iptr++;
       }
@@ -3632,7 +3632,7 @@ gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step)
   /* copy over my contributions */
   while (*in >= 0)
     { 
-      BLcopy_(&step,vals + *in++*step,&i1,buf + *out++*step,&i1);
+      BLAScopy_(&step,vals + *in++*step,&i1,buf + *out++*step,&i1);
     }
 
   /* perform fan in/out on full buffer */
@@ -3646,7 +3646,7 @@ gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step)
   /* get the portion of the results I need */
   while (*in >= 0)
     {
-      BLcopy_(&step,buf + *out++*step,&i1,vals + *in++*step,&i1);
+      BLAScopy_(&step,buf + *out++*step,&i1,vals + *in++*step,&i1);
     }
 
 }

@@ -56,7 +56,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     }
 #endif
 #else
-    *z = BLnrm2_(&bn,xx,&one);
+    *z = BLASnrm2_(&bn,xx,&one);
 #endif
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(2*n-1);
@@ -75,7 +75,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-    *z = BLasum_(&bn,xx,&one);
+    *z = BLASasum_(&bn,xx,&one);
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(n-1);
   } else if (type == NORM_1_AND_2) {
@@ -516,7 +516,6 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   PetscFunctionBegin;
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscNew(Vec_Seq,&s);CHKERRQ(ierr);
-  ierr = PetscMemzero(s,sizeof(Vec_Seq));CHKERRQ(ierr);
   v->data            = (void*)s;
   v->bops->publish   = VecPublish_Seq;
   v->n               = PetscMax(v->n,v->N); 

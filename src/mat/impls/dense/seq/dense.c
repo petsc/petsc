@@ -17,10 +17,10 @@ PetscErrorCode MatAXPY_SeqDense(const PetscScalar *alpha,Mat X,Mat Y,MatStructur
   if (X->m != Y->m || X->n != Y->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
   if (ldax>m || lday>m) {
     for (j=0; j<X->n; j++) {
-      BLaxpy_(&m,(PetscScalar*)alpha,x->v+j*ldax,&one,y->v+j*lday,&one);
+      BLASaxpy_(&m,(PetscScalar*)alpha,x->v+j*ldax,&one,y->v+j*lday,&one);
     }
   } else {
-    BLaxpy_(&N,(PetscScalar*)alpha,x->v,&one,y->v,&one);
+    BLASaxpy_(&N,(PetscScalar*)alpha,x->v,&one,y->v,&one);
   }
   PetscLogFlops(2*N-1);
   PetscFunctionReturn(0);
@@ -66,11 +66,11 @@ PetscErrorCode MatScale_SeqDense(const PetscScalar *alpha,Mat A)
   if (lda>A->m) {
     nz = (PetscBLASInt)A->m;
     for (j=0; j<A->n; j++) {
-      BLscal_(&nz,(PetscScalar*)alpha,a->v+j*lda,&one);
+      BLASscal_(&nz,(PetscScalar*)alpha,a->v+j*lda,&one);
     }
   } else {
     nz = (PetscBLASInt)A->m*A->n;
-    BLscal_(&nz,(PetscScalar*)alpha,a->v,&one);
+    BLASscal_(&nz,(PetscScalar*)alpha,a->v,&one);
   }
   PetscLogFlops(nz);
   PetscFunctionReturn(0);
@@ -98,7 +98,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
   }
   A->factor = FACTOR_LU;
   if (!A->m || !A->n) PetscFunctionReturn(0);
-  LAgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info);
+  LAPACKgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info);
   if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
   PetscLogFlops((2*A->n*A->n*A->n)/3);
@@ -199,7 +199,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
     mat->pivots = 0;
   }
   if (!A->m || !A->n) PetscFunctionReturn(0);
-  LApotrf_("L",&n,mat->v,&mat->lda,&info);
+  LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info);
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
   A->factor = FACTOR_CHOLESKY;
   PetscLogFlops((A->n*A->n*A->n)/3);
@@ -238,14 +238,14 @@ PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
     SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
-    LAgetrs_("N",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
+    LAPACKgetrs_("N",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"GETRS - Bad solve");
 #endif
   } else if (A->factor == FACTOR_CHOLESKY){
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
     SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
-    LApotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info);
+    LAPACKpotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"POTRS Bad solve");
 #endif
   }
@@ -275,14 +275,14 @@ PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
     SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
-    LAgetrs_("T",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
+    LAPACKgetrs_("T",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"POTRS - Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
     SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
-    LApotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info);
+    LAPACKpotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"POTRS - Bad solve");
 #endif
   }
@@ -317,14 +317,14 @@ PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
     SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
-    LAgetrs_("N",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
+    LAPACKgetrs_("N",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
     SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
-    LApotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info);
+    LAPACKpotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   }
@@ -361,14 +361,14 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
     SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
-    LAgetrs_("T",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
+    LAPACKgetrs_("T",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
     SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
-    LApotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info);
+    LAPACKpotrs_("L",&m,&one,mat->v,&mat->lda,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   }
@@ -398,7 +398,7 @@ PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 
   PetscFunctionBegin;
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    /* this is a hack fix, should have another version without the second BLdot */
+    /* this is a hack fix, should have another version without the second BLASdot */
     ierr = VecSet(&zero,xx);CHKERRQ(ierr);
   }
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
@@ -418,7 +418,7 @@ PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         }
         xt = sum;
 #else
-        xt = b[i] - BLdot_(&bm,v+i,&bm,x,&o);
+        xt = b[i] - BLASdot_(&bm,v+i,&bm,x,&o);
 #endif
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
@@ -435,7 +435,7 @@ PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         }
         xt = sum;
 #else
-        xt = b[i] - BLdot_(&bm,v+i,&bm,x,&o);
+        xt = b[i] - BLASdot_(&bm,v+i,&bm,x,&o);
 #endif
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
@@ -461,7 +461,7 @@ PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   if (!A->m || !A->n) PetscFunctionReturn(0);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  LAgemv_("T",&m,&n,&_DOne,v,&mat->lda,x,&_One,&_DZero,y,&_One);
+  BLASgemv_("T",&m,&n,&_DOne,v,&mat->lda,x,&_One,&_DZero,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->m*A->n - A->n);
@@ -481,7 +481,7 @@ PetscErrorCode MatMult_SeqDense(Mat A,Vec xx,Vec yy)
   if (!A->m || !A->n) PetscFunctionReturn(0);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  LAgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One);
+  BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DZero,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->m*A->n - A->m);
@@ -502,7 +502,7 @@ PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr); 
-  LAgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
+  BLASgemv_("N",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->m*A->n);
@@ -524,7 +524,7 @@ PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  LAgemv_("T",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
+  BLASgemv_("T",&m,&n,&_DOne,v,&(mat->lda),x,&_One,&_DOne,y,&_One);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->m*A->n);
@@ -1688,7 +1688,6 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   B->n = B->N = PetscMax(B->n,B->N);
 
   ierr            = PetscNew(Mat_SeqDense,&b);CHKERRQ(ierr);
-  ierr            = PetscMemzero(b,sizeof(Mat_SeqDense));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
   B->mapping      = 0;

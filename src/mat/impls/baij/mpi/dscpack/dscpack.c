@@ -689,7 +689,6 @@ PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat)
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscNew(Mat_DSC,&lu);CHKERRQ(ierr);
-  ierr = PetscMemzero(lu,sizeof(Mat_DSC));CHKERRQ(ierr);
 
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatView                    = A->ops->view;

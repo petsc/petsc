@@ -55,12 +55,12 @@ def processDir(tagfile,dirname,names):
 	if 'bilinear' in names: del names[names.index('bilinear')]				
 	
 def main():
-	try: os.path.unlink('TAGS')
+	try: os.unlink('TAGS')
 	except: pass
 	tagfile = os.path.join(os.getcwd(),'ETAGS')
 	os.path.walk(os.getcwd(),processDir,tagfile)
         addFileNameTags(tagfile)
-	try: os.path.unlink('ETAGS')
+	try: os.unlink('ETAGS')
 	except: pass
 #
 # The classes in this file can also be used in other python-programs by using 'import'

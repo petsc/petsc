@@ -469,7 +469,7 @@ M*/
 #endif
 
 /*MC
-   PetscNew - Allocates memory of a particular type
+   PetscNew - Allocates memory of a particular type, Zeros the memory!
 
    Input Parameter:
 . type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
@@ -487,7 +487,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNew(A,b)        PetscMalloc(sizeof(A),(b))
+#define PetscNew(A,b)        (PetscMalloc(sizeof(A),(b)) || PetscMemzero(*(b),sizeof(A)))
 
 /*MC
    PetscFree - Frees memory

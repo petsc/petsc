@@ -32,7 +32,6 @@ PetscErrorCode PetscStackCreate(void)
   if (petscstack) return 0;
   
   ierr = PetscNew(PetscStack,&petscstack_in);CHKERRQ(ierr);
-  ierr = PetscMemzero(petscstack_in,sizeof(PetscStack));CHKERRQ(ierr);
   petscstack_in->currentsize = 0;
   petscstack = petscstack_in;
 

@@ -2223,7 +2223,6 @@ PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   ierr = PetscNew(Mat_MPIBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
 
-  ierr    = PetscMemzero(b,sizeof(Mat_MPIBAIJ));CHKERRQ(ierr);
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->mapping    = 0;
   B->factor     = 0;

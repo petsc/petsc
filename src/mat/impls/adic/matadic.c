@@ -423,7 +423,6 @@ PetscErrorCode MatCreate_DAAD(Mat B)
   PetscFunctionBegin;
   ierr    = PetscNew(Mat_DAAD,&b);CHKERRQ(ierr);
   B->data = (void*)b;
-  ierr = PetscMemzero(b,sizeof(Mat_DAAD));CHKERRQ(ierr);
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   
   ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);

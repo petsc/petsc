@@ -1995,7 +1995,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {   
-    BLaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
+    BLASaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -2334,7 +2334,6 @@ PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   B->n = B->N = PetscMax(B->n,B->N);
   ierr    = PetscNew(Mat_SeqBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
-  ierr    = PetscMemzero(b,sizeof(Mat_SeqBAIJ));CHKERRQ(ierr);
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor           = 0;
   B->lupivotthreshold = 1.0;

@@ -283,7 +283,6 @@ PetscErrorCode MatCreate_IS(Mat A)
   PetscFunctionBegin;
   ierr                = PetscNew(Mat_IS,&b);CHKERRQ(ierr);
   A->data             = (void*)b;
-  ierr = PetscMemzero(b,sizeof(Mat_IS));CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->factor           = 0;
   A->mapping          = 0;

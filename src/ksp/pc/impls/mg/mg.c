@@ -84,7 +84,6 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI_C
 
   for (i=0; i<levels; i++) {
     ierr = PetscNew(struct _MG,&mg[i]);CHKERRQ(ierr);
-    ierr = PetscMemzero(mg[i],sizeof(struct _MG));CHKERRQ(ierr);
     mg[i]->level  = i;
     mg[i]->levels = levels;
     mg[i]->cycles = 1;

@@ -844,7 +844,6 @@ PetscErrorCode PCCreate_ASM(PC pc)
   PetscFunctionBegin;
   ierr = PetscNew(PC_ASM,&osm);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_ASM));
-  ierr = PetscMemzero(osm,sizeof(PC_ASM));CHKERRQ(ierr);
   osm->n                 = PETSC_DECIDE;
   osm->n_local           = 0;
   osm->n_local_true      = PETSC_DECIDE;

@@ -29,7 +29,6 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 
     /* create the container 'Mat_MatMatMultMPI' and attach it to P */
     ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
-    ierr = PetscMemzero(mult,sizeof(Mat_MatMatMultMPI));CHKERRQ(ierr);
     mult->B_loc=PETSC_NULL; mult->B_oth=PETSC_NULL;
     mult->abi=PETSC_NULL; mult->abj=PETSC_NULL; 
     mult->abnz_max = 0; /* symbolic A*P is not done yet */
@@ -222,7 +221,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /*----------------------------------------------*/
   /* determine row ownership */
   ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
-  ierr = PetscMemzero(merge,sizeof(Mat_Merge_SeqsToMPI));CHKERRQ(ierr);
   ierr = PetscMapCreate(comm,&merge->rowmap);CHKERRQ(ierr);
   ierr = PetscMapSetLocalSize(merge->rowmap,pn);CHKERRQ(ierr); 
   ierr = PetscMapSetType(merge->rowmap,MAP_MPI);CHKERRQ(ierr);

@@ -331,7 +331,6 @@ PetscErrorCode TSCreate_BEuler(TS ts)
 
   ierr = PetscNew(TS_BEuler,&beuler);CHKERRQ(ierr);
   PetscLogObjectMemory(ts,sizeof(TS_BEuler));
-  ierr     = PetscMemzero(beuler,sizeof(TS_BEuler));CHKERRQ(ierr);
   ts->data = (void*)beuler;
 
   PetscFunctionReturn(0);

@@ -620,7 +620,7 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
     }
     if (usecprow) z = zarray + bs*ridx[i];
     Kernel_w_gets_Ar_times_v(bs,ncols,work,v,z);
-    /* LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DZero,z,&_One); */
+    /* BLASgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DZero,z,&_One); */
     v += n*bs2;
     if (!usecprow) z += bs;
   }
@@ -1116,7 +1116,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     }
     if (usecprow) z = zarray + bs*ridx[i];
     Kernel_w_gets_w_plus_Ar_times_v(bs,ncols,work,v,z);
-    /* LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DOne,z,&_One); */
+    /* BLASgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DOne,z,&_One); */
     v += n*bs2;
     if (!usecprow){
       z += bs;
@@ -1274,7 +1274,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
           xtmp = x + bs*ridx[i];
         } 
         Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,xtmp,v,work);
-        /* LAgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
+        /* BLASgemv_("T",&bs,&ncols,&_DOne,v,&bs,xtmp,&_One,&_DOne,work,&_One); */
         v += n*bs2;
         if (!usecprow) xtmp += bs;
         workt = work;
@@ -1308,7 +1308,7 @@ PetscErrorCode MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
 #if defined(PETSC_USE_MAT_SINGLE)
   for (i=0; i<totalnz; i++) a->a[i] *= *alpha;
 #else
-  BLscal_(&tnz,(PetscScalar*)alpha,a->a,&one);
+  BLASscal_(&tnz,(PetscScalar*)alpha,a->a,&one);
 #endif
   PetscLogFlops(totalnz);
   PetscFunctionReturn(0);

@@ -360,7 +360,6 @@ PetscErrorCode KSPCreate_CG(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_CG,&cg);CHKERRQ(ierr);
-  ierr = PetscMemzero(cg,sizeof(KSP_CG));CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,sizeof(KSP_CG));
 #if !defined(PETSC_USE_COMPLEX)
   cg->type                       = KSP_CG_SYMMETRIC;

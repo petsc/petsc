@@ -509,7 +509,6 @@ PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *new
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  ierr     = PetscMemzero(lu,sizeof(Mat_Spooles));CHKERRQ(ierr); 
   B->spptr = (void*)lu;
 
   lu->basetype                   = MATSEQAIJ;

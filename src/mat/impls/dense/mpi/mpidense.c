@@ -880,7 +880,7 @@ PetscErrorCode MatScale_MPIDense(const PetscScalar *alpha,Mat inA)
   PetscBLASInt one = 1,nz = (PetscBLASInt)inA->m*inA->N;
 
   PetscFunctionBegin;
-  BLscal_(&nz,(PetscScalar*)alpha,a->v,&one);
+  BLASscal_(&nz,(PetscScalar*)alpha,a->v,&one);
   PetscLogFlops(nz);
   PetscFunctionReturn(0);
 }

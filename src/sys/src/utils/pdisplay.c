@@ -105,7 +105,7 @@ PetscErrorCode PetscSetDisplay(void)
   if (!rank) {
     str = getenv("DISPLAY");
     if (!str || (str[0] == ':' && size > 1)) {
-      ierr = PetscGetHostName(display,124);CHKERRQ(ierr);
+      ierr = PetscGetHostName(display,255);CHKERRQ(ierr);
       ierr = PetscStrcat(display,":0.0");CHKERRQ(ierr);
     } else {
       ierr = PetscStrncpy(display,str,256);CHKERRQ(ierr);

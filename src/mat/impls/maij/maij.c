@@ -152,7 +152,6 @@ PetscErrorCode MatCreate_MAIJ(Mat A)
   PetscFunctionBegin;
   ierr     = PetscNew(Mat_MPIMAIJ,&b);CHKERRQ(ierr);
   A->data  = (void*)b;
-  ierr = PetscMemzero(b,sizeof(Mat_MPIMAIJ));CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->factor           = 0;
   A->mapping          = 0;

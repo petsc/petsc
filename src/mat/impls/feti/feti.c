@@ -36,7 +36,6 @@ int MatCreate_Feti(Mat A)    /* Constructor for Mat_Feti() */
     ierr=PetscNew(Mat_Feti, &matfeti);CHKERRQ(ierr);
     A->data=(void*)matfeti;  /* that's actually me in data */
     ierr = PetscMemzero(matfeti,sizeof(Mat_Feti));CHKERRQ(ierr);      /* just for safety, everything to zero */
-    ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr); /* MatCreate was already called */
 
     PetscMalloc(N*sizeof(FetiDomain),&matfeti->domains);
     PetscMemzero(matfeti->domains,N*sizeof(FetiDomain));/* just for safety */

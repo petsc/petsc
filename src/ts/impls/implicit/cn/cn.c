@@ -384,7 +384,6 @@ PetscErrorCode TSCreate_CN(TS ts)
 
   ierr = PetscNew(TS_CN,&cn);CHKERRQ(ierr);
   PetscLogObjectMemory(ts,sizeof(TS_CN));
-  ierr     = PetscMemzero(cn,sizeof(TS_CN));CHKERRQ(ierr);
   ts->data = (void*)cn;
 
   PetscFunctionReturn(0);

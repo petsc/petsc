@@ -870,7 +870,6 @@ PetscErrorCode KSPCreate_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_FGMRES,&fgmres);CHKERRQ(ierr);
-  PetscMemzero(fgmres,sizeof(KSP_FGMRES));
   PetscLogObjectMemory(ksp,sizeof(KSP_FGMRES));
   ksp->data                              = (void*)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;

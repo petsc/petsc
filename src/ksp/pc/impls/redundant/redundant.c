@@ -340,7 +340,6 @@ PetscErrorCode PCCreate_Redundant(PC pc)
   PetscFunctionBegin;
   ierr = PetscNew(PC_Redundant,&red);CHKERRQ(ierr);
   PetscLogObjectMemory(pc,sizeof(PC_Redundant));
-  ierr = PetscMemzero(red,sizeof(PC_Redundant));CHKERRQ(ierr);
   red->useparallelmat   = PETSC_TRUE;
 
   /* create the sequential PC that each processor has copy of */

@@ -188,7 +188,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *
     ierr   = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
     ierr   = PetscMalloc(n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
     zero   = 0;
-    LAgeev_(&zero,array,&n,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
+    LAPACKgeev_(&zero,array,&n,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
     ierr = PetscFree(work);CHKERRQ(ierr);
 
     /* For now we stick with the convention of storing the real and imaginary
@@ -238,7 +238,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *
     {
       PetscBLASInt bn = (PetscBLASInt) n;
       PetscScalar sdummy;
-      LAgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
+      LAPACKgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
     }
 #endif
     if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
@@ -270,7 +270,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *
 #else
     {
       PetscScalar sdummy;
-      LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
+      LAPACKgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
     }
 #endif
     if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);

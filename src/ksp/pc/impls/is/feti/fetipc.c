@@ -18,7 +18,6 @@ int PCCreate_Feti(PC pc)
     PetscFunctionBegin;
 
     PetscNew(PC_Feti,&pcfeti);
-    PetscMemzero(pcfeti,sizeof(PC_Feti));
     PetscMemzero(pc->ops,sizeof(struct _PCOps));
 
     pc->ops->apply               = PCApply_Feti;

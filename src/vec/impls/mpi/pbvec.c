@@ -149,7 +149,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
   v->bops->publish   = VecPublish_MPI;
   PetscLogObjectMemory(v,sizeof(Vec_MPI) + (v->n+nghost+1)*sizeof(PetscScalar));
   ierr           = PetscNew(Vec_MPI,&s);CHKERRQ(ierr);
-  ierr           = PetscMemzero(s,sizeof(Vec_MPI));CHKERRQ(ierr);
   ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   v->data        = (void*)s;
   s->nghost      = nghost;

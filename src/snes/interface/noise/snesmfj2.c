@@ -225,7 +225,6 @@ PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 
   PetscFunctionBegin;
   ierr = PetscNew(MFCtx_Private,&mfctx);CHKERRQ(ierr);
-  ierr  = PetscMemzero(mfctx,sizeof(MFCtx_Private));CHKERRQ(ierr);
   PetscLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->sp   = 0;
   mfctx->snes = snes;

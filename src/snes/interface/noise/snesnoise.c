@@ -33,7 +33,6 @@ PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   PetscFunctionBegin;
 
   ierr = PetscNew(DIFFPAR_MORE,&neP);CHKERRQ(ierr);
-  ierr = PetscMemzero(neP,sizeof(DIFFPAR_MORE));CHKERRQ(ierr);
   PetscLogObjectMemory(snes,sizeof(DIFFPAR_MORE));
   
   neP->function_count = 0;

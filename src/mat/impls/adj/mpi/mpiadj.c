@@ -401,7 +401,6 @@ PetscErrorCode MatCreate_MPIAdj(Mat B)
 
   ierr                = PetscNew(Mat_MPIAdj,&b);CHKERRQ(ierr);
   B->data             = (void*)b;
-  ierr                = PetscMemzero(b,sizeof(Mat_MPIAdj));CHKERRQ(ierr);
   ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor           = 0;
   B->lupivotthreshold = 1.0;

@@ -1626,7 +1626,6 @@ PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 
   ierr    = PetscNew(Mat_MPISBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
-  ierr    = PetscMemzero(b,sizeof(Mat_MPISBAIJ));CHKERRQ(ierr);
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   B->ops->destroy    = MatDestroy_MPISBAIJ;

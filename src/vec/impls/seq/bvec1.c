@@ -34,7 +34,7 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
     *z = sum;
   }
 #else
-  *z = BLdot_(&bn,xa,&one,ya,&one);
+  *z = BLASdot_(&bn,xa,&one,ya,&one);
 #endif
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);}
@@ -66,7 +66,7 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
   }
   *z = sum;
 #else
-  *z = BLdot_(&bn,xa,&one,ya,&one);
+  *z = BLASdot_(&bn,xa,&one,ya,&one);
 #endif
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);}
@@ -82,7 +82,7 @@ PetscErrorCode VecScale_Seq(const PetscScalar *alpha,Vec xin)
   PetscBLASInt bn = (PetscBLASInt)xin->n, one = 1;
 
   PetscFunctionBegin;
-  BLscal_(&bn,(PetscScalar *)alpha,x->array,&one);
+  BLASscal_(&bn,(PetscScalar *)alpha,x->array,&one);
   PetscLogFlops(xin->n);
   PetscFunctionReturn(0);
 }
@@ -116,7 +116,7 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
   PetscFunctionBegin;
   if (xin != yin) {
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    BLswap_(&bn,x->array,&one,ya,&one);
+    BLASswap_(&bn,x->array,&one,ya,&one);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -133,7 +133,7 @@ PetscErrorCode VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
-  BLaxpy_(&bn,(PetscScalar *)alpha,x->array,&one,yarray,&one);
+  BLASaxpy_(&bn,(PetscScalar *)alpha,x->array,&one,yarray,&one);
   ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
   PetscLogFlops(2*xin->n);
   PetscFunctionReturn(0);

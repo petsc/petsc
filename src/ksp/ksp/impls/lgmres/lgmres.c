@@ -983,7 +983,6 @@ PetscErrorCode KSPCreate_LGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_LGMRES,&lgmres);CHKERRQ(ierr);
-  PetscMemzero(lgmres,sizeof(KSP_LGMRES));
   PetscLogObjectMemory(ksp,sizeof(KSP_LGMRES));
   ksp->data                              = (void*)lgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_LGMRES;

@@ -77,75 +77,75 @@ PETSC_EXTERN_CXX_BEGIN
 #if defined(PETSC_USE_SINGLE)
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
-#define LAgeqrf_ sgeqrf_
-#define LAgetrf_ sgetrf_
-#define LAgetf2_ sgetf2_
-#define BLdot_   sdot_
-#define BLnrm2_  snrm2_
-#define BLscal_  sscal_
-#define BLcopy_  scopy_
-#define BLswap_  sswap_
-#define BLaxpy_  saxpy_
-#define BLasum_  sasum_
+#define LAPACKgeqrf_ sgeqrf_
+#define LAPACKgetrf_ sgetrf_
+#define LAPACKgetf2_ sgetf2_
+#define BLASdot_     sdot_
+#define BLASnrm2_    snrm2_
+#define BLASscal_    sscal_
+#define BLAScopy_    scopy_
+#define BLASswap_    sswap_
+#define BLASaxpy_    saxpy_
+#define BLASasum_    sasum_
 #elif defined(PETSC_HAVE_FORTRAN_CAPS)
-#define LAgeqrf_ SGEQRF
-#define LAgetrf_ SGETRF
-#define LAgetf2_ SGETF2
-#define BLdot_   SDOT
-#define BLnrm2_  SNRM2
-#define BLscal_  SSCAL
-#define BLcopy_  SCOPY
-#define BLswap_  SSWAP
-#define BLaxpy_  SAXPY
-#define BLasum_  SASUM
+#define LAPACKgeqrf_ SGEQRF
+#define LAPACKgetrf_ SGETRF
+#define LAPACKgetf2_ SGETF2
+#define BLASdot_     SDOT
+#define BLASnrm2_    SNRM2
+#define BLASscal_    SSCAL
+#define BLAScopy_    SCOPY
+#define BLASswap_    SSWAP
+#define BLASaxpy_    SAXPY
+#define BLASasum_    SASUM
 #else
-#define LAgeqrf_ sgeqrf
-#define LAgetrf_ sgetrf
-#define LAgetf2_ sgetf2
-#define BLdot_   sdot
-#define BLnrm2_  snrm2
-#define BLscal_  sscal
-#define BLcopy_  scopy
-#define BLswap_  sswap
-#define BLaxpy_  saxpy
-#define BLasum_  sasum
+#define LAPACKgeqrf_ sgeqrf
+#define LAPACKgetrf_ sgetrf
+#define LAPACKgetf2_ sgetf2
+#define BLASdot_     sdot
+#define BLASnrm2_    snrm2
+#define BLASscal_    sscal
+#define BLAScopy_    scopy
+#define BLASswap_    sswap
+#define BLASaxpy_    saxpy
+#define BLASasum_    sasum
 #endif
 
 #else
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
-#define LAgeqrf_ dgeqrf_
-#define LAgetrf_ dgetrf_
-#define LAgetf2_ dgetf2_
-#define BLdot_   ddot_
-#define BLnrm2_  dnrm2_
-#define BLscal_  dscal_
-#define BLcopy_  dcopy_
-#define BLswap_  dswap_
-#define BLaxpy_  daxpy_
-#define BLasum_  dasum_
+#define LAPACKgeqrf_ dgeqrf_
+#define LAPACKgetrf_ dgetrf_
+#define LAPACKgetf2_ dgetf2_
+#define BLASdot_     ddot_
+#define BLASnrm2_    dnrm2_
+#define BLASscal_    dscal_
+#define BLAScopy_    dcopy_
+#define BLASswap_    dswap_
+#define BLASaxpy_    daxpy_
+#define BLASasum_    dasum_
 #elif defined(PETSC_HAVE_FORTRAN_CAPS)
-#define LAgeqrf_ DGEQRF
-#define LAgetrf_ DGETRF
-#define LAgetf2_ DGETF2
-#define BLdot_   DDOT
-#define BLnrm2_  DNRM2
-#define BLscal_  DSCAL
-#define BLcopy_  DCOPY
-#define BLswap_  DSWAP
-#define BLaxpy_  DAXPY
-#define BLasum_  DASUM
+#define LAPACKgeqrf_ DGEQRF
+#define LAPACKgetrf_ DGETRF
+#define LAPACKgetf2_ DGETF2
+#define BLASdot_     DDOT
+#define BLASnrm2_    DNRM2
+#define BLASscal_    DSCAL
+#define BLAScopy_    DCOPY
+#define BLASswap_    DSWAP
+#define BLASaxpy_    DAXPY
+#define BLASasum_    DASUM
 #else
-#define LAgeqrf_ dgeqrf
-#define LAgetrf_ dgetrf
-#define LAgetf2_ dgetf2
-#define BLdot_   ddot
-#define BLnrm2_  dnrm2
-#define BLscal_  dscal
-#define BLcopy_  dcopy
-#define BLswap_  dswap
-#define BLaxpy_  daxpy
-#define BLasum_  dasum
+#define LAPACKgeqrf_ dgeqrf
+#define LAPACKgetrf_ dgetrf
+#define LAPACKgetf2_ dgetf2
+#define BLASdot_     ddot
+#define BLASnrm2_    dnrm2
+#define BLASscal_    dscal
+#define BLAScopy_    dcopy
+#define BLASswap_    dswap
+#define BLASaxpy_    daxpy
+#define BLASasum_    dasum
 #endif
 
 #endif
@@ -158,98 +158,97 @@ PETSC_EXTERN_CXX_BEGIN
    Note that this assumes that machines which use cptofcd() use 
   the PETSC_HAVE_FORTRAN_CAPS option. This is true on the Cray T3D/T3E.
 */
-#define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)   DORMQR(_cptofcd((a),1),_cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
-#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j)         DTRTRS(_cptofcd((a),1),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
-#define LApotrf_(a,b,c,d,e)                   DPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
-#define LApotrs_(a,b,c,d,e,f,g,h)             DPOTRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h))
-#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k)        DGEMV(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i)           DGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i)           DGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
-#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)    DGEMM(_cptofcd((a),1), _cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
-#define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) DGESVD(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
-#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  DGEEV(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
-#define LAtrmv_  DTRMV
-#define LAtrsl_  DTRSL
-#define LAgetrf_ DGETRF
+#define LAPACKormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)   DORMQR(_cptofcd((a),1),_cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
+#define LAPACKtrtrs_(a,b,c,d,e,f,g,h,i,j)         DTRTRS(_cptofcd((a),1),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
+#define LAPACKpotrf_(a,b,c,d,e)                   DPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
+#define LAPACKpotrs_(a,b,c,d,e,f,g,h)             DPOTRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h))
+#define BLASgemv_(a,b,c,d,e,f,g,h,i,j,k)        DGEMV(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
+#define LAPACKgetrs_(a,b,c,d,e,f,g,h,i)           DGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
+#define BLASgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)    DGEMM(_cptofcd((a),1), _cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
+#define LAPACKgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) DGESVD(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
+#define LAPACKgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  DGEEV(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
+#define BLAStrmv_  DTRMV
+#define LAPACKtrsl_  DTRSL
+#define LAPACKgetrf_ DGETRF
 
 #elif defined(PETSC_USE_SINGLE)
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
-#define LAormqr_ sormqr_
-#define LAtrtrs_ strtrs_
-#define LApotrf_ spotrf_
-#define LApotrs_ spotrs_
-#define LAgemv_  sgemv_
-#define LAgetrs_ sgetrs_
-#define LAtrmv_  strmv_
-#define LAtrsl_  strsl_
-#define BLgemm_  sgemm_
-#define LAgesvd_ sgesvd_
-#define LAgeev_  sgeev_
+#define LAPACKormqr_ sormqr_
+#define LAPACKtrtrs_ strtrs_
+#define LAPACKpotrf_ spotrf_
+#define LAPACKpotrs_ spotrs_
+#define BLASgemv_  sgemv_
+#define LAPACKgetrs_ sgetrs_
+#define BLAStrmv_  strmv_
+#define LAPACKtrsl_  strsl_
+#define BLASgemm_  sgemm_
+#define LAPACKgesvd_ sgesvd_
+#define LAPACKgeev_  sgeev_
 #elif defined(PETSC_HAVE_FORTRAN_CAPS)
-#define LAormqr_ SORMQR
-#define LAtrtrs_ STRTRS
-#define LApotrf_ SPOTRF
-#define LApotrs_ SPOTRS
-#define LAgemv_  SGEMV
-#define LAgetrs_ SGETRS
-#define LAtrmv_  STRMV
-#define LAtrsl_  STRSL
-#define LAgesvd_ SGESVD
-#define LAgeev_  SGEEV
-#define BLgemm_  SGEMM
+#define LAPACKormqr_ SORMQR
+#define LAPACKtrtrs_ STRTRS
+#define LAPACKpotrf_ SPOTRF
+#define LAPACKpotrs_ SPOTRS
+#define BLASgemv_  SGEMV
+#define LAPACKgetrs_ SGETRS
+#define BLAStrmv_  STRMV
+#define LAPACKtrsl_  STRSL
+#define LAPACKgesvd_ SGESVD
+#define LAPACKgeev_  SGEEV
+#define BLASgemm_  SGEMM
 #else
-#define LAormqr_ sormqr
-#define LAtrtrs_ strtrs
-#define LApotrf_ spotrf
-#define LApotrs_ spotrs
-#define LAgemv_  sgemv
-#define LAgetrs_ sgetrs
-#define LAtrmv_  strmv
-#define LAtrsl_  strsl
-#define BLgemm_  sgemm
-#define LAgesvd_ sgesvd
-#define LAgeev_  sgeev
+#define LAPACKormqr_ sormqr
+#define LAPACKtrtrs_ strtrs
+#define LAPACKpotrf_ spotrf
+#define LAPACKpotrs_ spotrs
+#define BLASgemv_  sgemv
+#define LAPACKgetrs_ sgetrs
+#define BLAStrmv_  strmv
+#define LAPACKtrsl_  strsl
+#define BLASgemm_  sgemm
+#define LAPACKgesvd_ sgesvd
+#define LAPACKgeev_  sgeev
 #endif
 
 #else /* PETSC_USE_SINGLE */
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
-#define LAormqr_ dormqr_
-#define LAtrtrs_ dtrtrs_
-#define LApotrf_ dpotrf_
-#define LApotrs_ dpotrs_
-#define LAgemv_  dgemv_
-#define LAgetrs_ dgetrs_
-#define LAtrmv_  dtrmv_
-#define LAtrsl_  dtrsl_
-#define BLgemm_  dgemm_
-#define LAgesvd_ dgesvd_
-#define LAgeev_  dgeev_
+#define LAPACKormqr_ dormqr_
+#define LAPACKtrtrs_ dtrtrs_
+#define LAPACKpotrf_ dpotrf_
+#define LAPACKpotrs_ dpotrs_
+#define BLASgemv_  dgemv_
+#define LAPACKgetrs_ dgetrs_
+#define BLAStrmv_  dtrmv_
+#define LAPACKtrsl_  dtrsl_
+#define BLASgemm_  dgemm_
+#define LAPACKgesvd_ dgesvd_
+#define LAPACKgeev_  dgeev_
 #elif defined(PETSC_HAVE_FORTRAN_CAPS)
-#define LAormqr_ DORMQR
-#define LAtrtrs_ DTRTRS
-#define LApotrf_ DPOTRF
-#define LApotrs_ DPOTRS
-#define LAgemv_  DGEMV
-#define LAgetrs_ DGETRS
-#define LAtrmv_  DTRMV
-#define LAtrsl_  DTRSL
-#define LAgesvd_ DGESVD
-#define LAgeev_  DGEEV
-#define BLgemm_  DGEMM
+#define LAPACKormqr_ DORMQR
+#define LAPACKtrtrs_ DTRTRS
+#define LAPACKpotrf_ DPOTRF
+#define LAPACKpotrs_ DPOTRS
+#define BLASgemv_  DGEMV
+#define LAPACKgetrs_ DGETRS
+#define BLAStrmv_  DTRMV
+#define LAPACKtrsl_  DTRSL
+#define LAPACKgesvd_ DGESVD
+#define LAPACKgeev_  DGEEV
+#define BLASgemm_  DGEMM
 #else
-#define LAormqr_ dormqr
-#define LAtrtrs_ dtrtrs
-#define LApotrf_ dpotrf
-#define LApotrs_ dpotrs
-#define LAgemv_  dgemv
-#define LAgetrs_ dgetrs
-#define LAtrmv_  dtrmv
-#define LAtrsl_  dtrsl
-#define BLgemm_  dgemm
-#define LAgesvd_ dgesvd
-#define LAgeev_  dgeev
+#define LAPACKormqr_ dormqr
+#define LAPACKtrtrs_ dtrtrs
+#define LAPACKpotrf_ dpotrf
+#define LAPACKpotrs_ dpotrs
+#define BLASgemv_  dgemv
+#define LAPACKgetrs_ dgetrs
+#define BLAStrmv_  dtrmv
+#define LAPACKtrsl_  dtrsl
+#define BLASgemm_  dgemm
+#define LAPACKgesvd_ dgesvd
+#define LAPACKgeev_  dgeev
 #endif
 
 #endif /* PETSC_USES_CPTOFCD */
@@ -280,85 +279,85 @@ PETSC_EXTERN_CXX_BEGIN
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
-#define LAgeqrf_ zgeqrf_
-#define LAgetrf_ zgetrf_
-#define LAgetf2_ zgetf2_
-#define BLdot_   zdotc_
-#define BLnrm2_  dznrm2_
-#define BLscal_  zscal_
-#define BLcopy_  zcopy_
-#define BLswap_  zswap_
-#define BLaxpy_  zaxpy_
-#define BLasum_  dzasum_
+#define LAPACKgeqrf_ zgeqrf_
+#define LAPACKgetrf_ zgetrf_
+#define LAPACKgetf2_ zgetf2_
+#define BLASdot_     zdotc_
+#define BLASnrm2_    dznrm2_
+#define BLASscal_    zscal_
+#define BLAScopy_    zcopy_
+#define BLASswap_    zswap_
+#define BLASaxpy_    zaxpy_
+#define BLASasum_    dzasum_
 #elif defined(PETSC_HAVE_FORTRAN_CAPS)
-#define LAgeqrf_ ZGEQRF
-#define BLdot_   ZDOTC
-#define BLnrm2_  DZNRM2
-#define BLscal_  ZSCAL
-#define BLcopy_  ZCOPY
-#define BLswap_  ZSWAP
-#define BLaxpy_  ZAXPY
-#define BLasum_  DZASUM
-#define LAgetrf_ ZGETRF
+#define LAPACKgeqrf_ ZGEQRF
+#define LAPACKgetrf_ ZGETRF
+#define BLASdot_     ZDOTC
+#define BLASnrm2_    DZNRM2
+#define BLASscal_    ZSCAL
+#define BLAScopy_    ZCOPY
+#define BLASswap_    ZSWAP
+#define BLASaxpy_    ZAXPY
+#define BLASasum_    DZASUM
 #else
-#define LAgeqrf_ zgeqrf
-#define LAgetrf_ zgetrf
-#define LAgetf2_ zgetf2
-#define BLdot_   zdotc
-#define BLnrm2_  dznrm2
-#define BLscal_  zscal
-#define BLcopy_  zcopy
-#define BLswap_  zswap
-#define BLaxpy_  zaxpy
-#define BLasum_  dzasum
+#define LAPACKgeqrf_ zgeqrf
+#define LAPACKgetrf_ zgetrf
+#define LAPACKgetf2_ zgetf2
+#define BLASdot_     zdotc
+#define BLASnrm2_    dznrm2
+#define BLASscal_    zscal
+#define BLAScopy_    zcopy
+#define BLASswap_    zswap
+#define BLASaxpy_    zaxpy
+#define BLASasum_    dzasum
 #endif
 
 #if defined(PETSC_USES_CPTOFCD)
-#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j)           ZTRTRS(_cptofcd((a),1),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
-#define LApotrf_(a,b,c,d,e)                     ZPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
-#define LApotrs_(a,b,c,d,e,f,g,h)               ZPOTRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h))
-#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k)          ZGEMV(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i)             ZGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
-#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)      ZGEMM(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
-#define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,p) ZGESVD(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(p))
-#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n)    ZGEEV(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
-#define LAtrmv_  ZTRMV
-#define LAtrsl_  ZTRSL
+#define LAPACKtrtrs_(a,b,c,d,e,f,g,h,i,j)           ZTRTRS(_cptofcd((a),1),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
+#define LAPACKpotrf_(a,b,c,d,e)                     ZPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
+#define LAPACKpotrs_(a,b,c,d,e,f,g,h)               ZPOTRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h))
+#define BLASgemv_(a,b,c,d,e,f,g,h,i,j,k)          ZGEMV(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
+#define LAPACKgetrs_(a,b,c,d,e,f,g,h,i)             ZGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
+#define BLASgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)      ZGEMM(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
+#define LAPACKgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,p) ZGESVD(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(p))
+#define LAPACKgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n)    ZGEEV(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
+#define BLAStrmv_    ZTRMV
+#define LAPACKtrsl_  ZTRSL
 #elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
-#define LAtrtrs_ ztrtrs_
-#define LApotrf_ zpotrf_
-#define LApotrs_ zpotrs_
-#define LAgemv_  zgemv_
-#define LAgetrs_ zgetrs_
-#define LAtrmv_  ztrmv_
-#define LAtrsl_  ztrsl_
-#define BLgemm_  zgemm_
-#define LAgesvd_ zgesvd_
-#define LAgeev_  zgeev_
+#define LAPACKtrtrs_ ztrtrs_
+#define LAPACKpotrf_ zpotrf_
+#define LAPACKpotrs_ zpotrs_
+#define BLASgemv_    zgemv_
+#define LAPACKgetrs_ zgetrs_
+#define BLAStrmv_    ztrmv_
+#define LAPACKtrsl_  ztrsl_
+#define BLASgemm_    zgemm_
+#define LAPACKgesvd_ zgesvd_
+#define LAPACKgeev_  zgeev_
 #elif defined(PETSC_HAVE_FORTRAN_CAPS)
-#define LAtrtrs_ ZTRTRS
-#define LApotrf_ ZPOTRF
-#define LApotrs_ ZPOTRS
-#define LAgemv_  ZGEMV
-#define LAgetrf_ ZGETRF
-#define LAgetf2_ ZGETF2
-#define LAgetrs_ ZGETRS
-#define LAtrmv_  ZTRMV
-#define LAtrsl_  ZTRSL
-#define BLgemm_  ZGEMM
-#define LAgesvd_ ZGESVD
-#define LAgeev_  ZGEEV
+#define LAPACKtrtrs_ ZTRTRS
+#define LAPACKpotrf_ ZPOTRF
+#define LAPACKpotrs_ ZPOTRS
+#define BLASgemv_    ZGEMV
+#define LAPACKgetrf_ ZGETRF
+#define LAPACKgetf2_ ZGETF2
+#define LAPACKgetrs_ ZGETRS
+#define BLAStrmv_    ZTRMV
+#define LAPACKtrsl_  ZTRSL
+#define BLASgemm_    ZGEMM
+#define LAPACKgesvd_ ZGESVD
+#define LAPACKgeev_  ZGEEV
 #else
-#define LAtrtrs_ ztrtrs
-#define LApotrf_ zpotrf
-#define LApotrs_ zpotrs
-#define LAgemv_  zgemv
-#define LAgetrs_ zgetrs
-#define LAtrmv_  ztrmv
-#define LAtrsl_  ztrsl
-#define BLgemm_  zgemm
-#define LAgesvd_ zgesvd
-#define LAgeev_  zgeev
+#define LAPACKtrtrs_ ztrtrs
+#define LAPACKpotrf_ zpotrf
+#define LAPACKpotrs_ zpotrs
+#define BLASgemv_    zgemv
+#define LAPACKgetrs_ zgetrs
+#define BLAStrmv_    ztrmv
+#define LAPACKtrsl_  ztrsl
+#define BLASgemm_    zgemm
+#define LAPACKgesvd_ zgesvd
+#define LAPACKgeev_  zgeev
 #endif
 
 #endif
@@ -366,19 +365,19 @@ PETSC_EXTERN_CXX_BEGIN
 EXTERN_C_BEGIN
 
 /* 
-   BLdot cannot be used with COMPLEX because it cannot 
+   BLASdot cannot be used with COMPLEX because it cannot 
    handle returing a double complex to C++.
 */
-EXTERN PetscReal BLdot_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
-EXTERN PetscReal BLnrm2_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);
-EXTERN PetscReal BLasum_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);
-EXTERN void      BLscal_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
-EXTERN void      BLcopy_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
-EXTERN void      BLswap_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
-EXTERN void      BLaxpy_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
-EXTERN void      LAgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void      LAgetf2_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void      LAgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN PetscReal BLASdot_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN PetscReal BLASnrm2_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN PetscReal BLASasum_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN void      BLASscal_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void      BLAScopy_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN void      BLASswap_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN void      BLASaxpy_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN void      LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void      LAPACKgetf2_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void      LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 
 #if defined(PETSC_USES_CPTOFCD)
 
@@ -405,27 +404,27 @@ EXTERN void   DGEEV(_fcd,_fcd,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscSc
 #endif
 
 #else
-EXTERN void   LAormqr_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void   LAtrtrs_(const char*,const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void   LApotrf_(const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void   LAgemv_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
-EXTERN void   LApotrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void   LAgetrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void   BLgemm_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void   LAPACKormqr_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAPACKtrtrs_(const char*,const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAPACKpotrf_(const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   BLASgemv_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void   LAPACKpotrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAPACKgetrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   BLASgemm_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 
 /* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
 #if defined(PETSC_HAVE_ESSL) && defined(PETSC_USE_COMPLEX)
-EXTERN void   LAgeev_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
-EXTERN void   LAgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   LAPACKgeev_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 #elif defined(PETSC_HAVE_ESSL)
-EXTERN void   LAgeev_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
-EXTERN void   LAgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAPACKgeev_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #elif !defined(PETSC_USE_COMPLEX)
-EXTERN void   LAgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void   LAgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #else
-EXTERN void   LAgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
-EXTERN void   LAgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 #endif
 #endif
 

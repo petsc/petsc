@@ -451,7 +451,7 @@ xxt_generate(xxt_ADT xxt_handle)
 	  off = *iptr++;
 	  len = *iptr++;
 
-	  uu[k] = BLdot_(&len,u+off,&i1,x_ptr,&i1);
+	  uu[k] = BLASdot_(&len,u+off,&i1,x_ptr,&i1);
 	  x_ptr+=len;
 	}
 
@@ -468,13 +468,13 @@ xxt_generate(xxt_ADT xxt_handle)
 	  off = *iptr++;
 	  len = *iptr++;
 
-	  BLaxpy_(&len,&uu[k],x_ptr,&i1,z+off,&i1);
+	  BLASaxpy_(&len,&uu[k],x_ptr,&i1,z+off,&i1);
 	  x_ptr+=len;
 	}
 
       /* compute v_l = v_l - z */
       rvec_zero(v+a_n,a_m-a_n);
-      BLaxpy_(&n,&dm1,z,&i1,v,&i1);
+      BLASaxpy_(&n,&dm1,z,&i1,v,&i1);
 
       /* compute u_l = A.v_l */
       if (a_n!=a_m)
@@ -483,7 +483,7 @@ xxt_generate(xxt_ADT xxt_handle)
       do_matvec(xxt_handle->mvi,v,u);
 
       /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - local portion */
-      alpha = BLdot_(&n,u,&i1,v,&i1);
+      alpha = BLASdot_(&n,u,&i1,v,&i1);
       /* compute sqrt(alpha) = sqrt(v_l^T.u_l) - comm portion */
       grop_hc(&alpha, &alpha_w, 1, op, dim);
 
@@ -622,7 +622,7 @@ do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   for (x_ptr=x,iptr=col_indices; *iptr!=-1; x_ptr+=len)
     {
       off=*iptr++; len=*iptr++;
-      *uu_ptr++ = BLdot_(&len,uc+off,&i1,x_ptr,&i1);
+      *uu_ptr++ = BLASdot_(&len,uc+off,&i1,x_ptr,&i1);
     }
 
   /* comunication of beta */
@@ -635,7 +635,7 @@ do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   for (x_ptr=x,iptr=col_indices; *iptr!=-1; x_ptr+=len)
     {
       off=*iptr++; len=*iptr++;
-      BLaxpy_(&len,uu_ptr++,x_ptr,&i1,uc+off,&i1);
+      BLASaxpy_(&len,uu_ptr++,x_ptr,&i1,uc+off,&i1);
     }
 
 }

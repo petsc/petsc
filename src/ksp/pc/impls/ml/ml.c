@@ -113,7 +113,6 @@ static PetscErrorCode PCSetUp_ML(PC pc)
 
   /* create and initialize struct 'PetscMLdata' */
   ierr = PetscNew(FineGridCtx,&PetscMLdata);CHKERRQ(ierr);
-  ierr = PetscMemzero(PetscMLdata,sizeof(FineGridCtx));CHKERRQ(ierr);
   PetscMLdata->A    = A;
   PetscMLdata->Aloc = Aloc;
   ierr = PetscMalloc((Aloc->n+1)*sizeof(PetscScalar),&PetscMLdata->pwork);CHKERRQ(ierr);
@@ -492,7 +491,6 @@ PetscErrorCode PCCreate_ML(PC pc)
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNew(PC_ML,&pc_ml);CHKERRQ(ierr);
-  ierr = PetscMemzero(pc_ml,sizeof(PC_ML));CHKERRQ(ierr); 
   ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscObjectContainerSetPointer(container,pc_ml);CHKERRQ(ierr);
   ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_PC_ML);CHKERRQ(ierr); 
@@ -787,7 +785,6 @@ PetscErrorCode MatConvert_ML_SHELL(ML_Operator *mlmat,Mat *newmat)
   } else {
     MLcomm = mlmat->comm;
     ierr = PetscNew(Mat_MLShell,&shellctx);CHKERRQ(ierr);
-    ierr = PetscMemzero(shellctx,sizeof(Mat_MLShell));CHKERRQ(ierr);
     ierr = MatCreateShell(MLcomm->USR_comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,shellctx,newmat);CHKERRQ(ierr);
     ierr = MatShellSetOperation(*newmat,MATOP_MULT,(void *)MatMult_ML);CHKERRQ(ierr); 
     ierr = MatShellSetOperation(*newmat,MATOP_MULT_ADD,(void *)MatMultAdd_ML);CHKERRQ(ierr); 

@@ -329,9 +329,9 @@ PetscErrorCode MatScale_SeqBDiag(const PetscScalar *alpha,Mat inA)
   for (i=0; i<a->nd; i++) {
     len = (PetscBLASInt)bs*bs*a->bdlen[i];
     if (a->diag[i] > 0) {
-      BLscal_(&len,(PetscScalar*)alpha,a->diagv[i] + bs*bs*a->diag[i],&one);
+      BLASscal_(&len,(PetscScalar*)alpha,a->diagv[i] + bs*bs*a->diag[i],&one);
     } else {
-      BLscal_(&len,(PetscScalar*)alpha,a->diagv[i],&one);
+      BLASscal_(&len,(PetscScalar*)alpha,a->diagv[i],&one);
     }
   }
   PetscLogFlops(a->nz);
@@ -818,7 +818,6 @@ PetscErrorCode MatCreate_SeqBDiag(Mat B)
 
   ierr            = PetscNew(Mat_SeqBDiag,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
-  ierr            = PetscMemzero(b,sizeof(Mat_SeqBDiag));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
   B->mapping      = 0;

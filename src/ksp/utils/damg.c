@@ -46,7 +46,6 @@ PetscErrorCode DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg)
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
     ierr           = PetscNew(struct _p_DMMG,&p[i]);CHKERRQ(ierr);
-    ierr           = PetscMemzero(p[i],sizeof(struct _p_DMMG));CHKERRQ(ierr);
     p[i]->nlevels  = nlevels - i;
     p[i]->comm     = comm;
     p[i]->user     = user;

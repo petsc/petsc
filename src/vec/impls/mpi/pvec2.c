@@ -106,7 +106,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 #endif
 #else
     {PetscBLASInt bn = (PetscBLASInt)n, one = 1;
-      work  = BLnrm2_(&bn,xx,&one);
+      work  = BLASnrm2_(&bn,xx,&one);
       work *= work;
     }
 #endif

@@ -1581,11 +1581,11 @@ PetscErrorCode MatAXPY_MPIAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str
     x = (Mat_SeqAIJ *)xx->A->data;
     y = (Mat_SeqAIJ *)yy->A->data;
     bnz = (PetscBLASInt)x->nz;
-    BLaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);    
+    BLASaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);    
     x = (Mat_SeqAIJ *)xx->B->data;
     y = (Mat_SeqAIJ *)yy->B->data;
     bnz = (PetscBLASInt)x->nz;
-    BLaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
+    BLASaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) {  
     ierr = MatAXPY_SeqAIJ(a,xx->A,yy->A,str);CHKERRQ(ierr);
 
@@ -3777,7 +3777,6 @@ PetscErrorCode MatCreate_MPIAIJ(Mat B)
 
   ierr            = PetscNew(Mat_MPIAIJ,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
-  ierr            = PetscMemzero(b,sizeof(Mat_MPIAIJ));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
   B->bs           = 1;

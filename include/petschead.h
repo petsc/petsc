@@ -110,11 +110,8 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)                      \
   { PetscErrorCode _ierr;                                                                          \
     _ierr = PetscNew(struct tp,&(h));CHKERRQ(_ierr);                                      \
-    _ierr = PetscMemzero(h,sizeof(struct tp));CHKERRQ(_ierr);                           \
     _ierr = PetscNew(PetscOps,&((h)->bops));CHKERRQ(_ierr);                               \
-    _ierr = PetscMemzero((h)->bops,sizeof(PetscOps));CHKERRQ(_ierr);                    \
     _ierr = PetscNew(pops,&((h)->ops));CHKERRQ(_ierr);                                    \
-    _ierr = PetscMemzero((h)->ops,sizeof(pops));CHKERRQ(_ierr);                         \
     _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,             \
                                  (PetscObjectFunction)des,                             \
                                  (PetscObjectViewerFunction)vie);CHKERRQ(_ierr);       \
