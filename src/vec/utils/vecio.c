@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.14 1995/09/30 19:26:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.15 1995/10/11 15:18:24 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -32,19 +32,17 @@ static char vcid[] = "$Id: vecio.c,v 1.14 1995/09/30 19:26:26 bsmith Exp bsmith 
 @*/  
 int VecLoad(Viewer bview,Vec *newvec)
 {
-  int         i, rows, ierr, type, fd;
+  int         i, rows, ierr, type, fd,mytid,numtid,n;
   Vec         vec;
   Vec_MPI     *v;
   Scalar      *avec;
-  int         mytid,numtid,n;
   PetscObject obj = (PetscObject) bview;
   MPI_Comm    comm;
   MPI_Request *requests;
   MPI_Status  status,*statuses;
 
   PETSCVALIDHEADERSPECIFIC(obj,VIEWER_COOKIE);
-  if (obj->type != BINARY_FILE_VIEWER)
-   SETERRQ(1,"VecLoad:Invalid viewer;open viewer with ViewerFileOpenBinary()");
+  if (obj->type != BINARY_FILE_VIEWER) SETERRQ(1,"VecLoad:Invalid viewer");
   PLogEventBegin(VEC_Load,bview,0,0,0);
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
   
@@ -72,14 +70,11 @@ int VecLoad(Viewer bview,Vec *newvec)
         n = PETSCMAX(n,v->ownership[i] - v->ownership[i-1]);
       }
       avec = (Scalar *) PETSCMALLOC( n*sizeof(Scalar) ); CHKPTRQ(avec);
-      requests = (MPI_Request *) PETSCMALLOC((numtid-1)*sizeof(MPI_Request)); 
-      CHKPTRQ(requests);
-      statuses = (MPI_Status *) PETSCMALLOC((numtid-1)*sizeof(MPI_Status));
-      CHKPTRQ(statuses);
+      requests = (MPI_Request *) PETSCMALLOC((numtid-1)*sizeof(MPI_Request));CHKPTRQ(requests);
+      statuses = (MPI_Status *) PETSCMALLOC((numtid-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
       for ( i=1; i<numtid; i++ ) {
         n = v->ownership[i+1]-v->ownership[i];
-        ierr = SYRead(fd,avec,n,SYSCALAR);
-        CHKERRQ(ierr);
+        ierr = SYRead(fd,avec,n,SYSCALAR);CHKERRQ(ierr);
         MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);
       }
       MPI_Waitall(numtid-1,requests,statuses);
@@ -97,3 +92,5 @@ int VecLoad(Viewer bview,Vec *newvec)
   PLogEventEnd(VEC_Load,bview,0,0,0);
   return 0;
 }
+
+

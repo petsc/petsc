@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.6 1995/09/21 20:13:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.7 1995/09/30 19:31:46 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
 
-static char help[] = "This example simulates a heat equation.\n\n";
+static char help[] = "Solves the one dimensional heat equation.\n\n";
 
 #include "petsc.h"
 #include "da.h"

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.19 1995/10/01 21:53:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.20 1995/10/02 20:21:18 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1180,7 +1180,7 @@ int SNESSetConvergenceTest(SNES snes,
 .   ynorm - 2-norm of the step
 
     Note:
-    For non-trust region methods such as SNES_NLS, the parameter delta 
+    For non-trust region methods such as SNES_EQ_NLS, the parameter delta 
     is set to be the maximum allowable step size.  
 
 .keywords: SNES, nonlinear, scale, step
@@ -1262,8 +1262,8 @@ NRList *__NLList;
    Notes:
    See "petsc/include/snes.h" for available methods (for instance)
 $  Systems of nonlinear equations:
-$    SNES_NLS - Newton's method with line search
-$    SNES_NTR - Newton's method with trust region
+$    SNES_EQ_NLS - Newton's method with line search
+$    SNES_EQ_NTR - Newton's method with trust region
 $  Unconstrained minimization:
 $    SNES_UM_NTR - Newton's method with trust region 
 
@@ -1292,7 +1292,7 @@ int SNESSetMethod( SNES snes, SNESMethod method)
    a function pointer and a nonlinear solver name of the type SNESMethod.
 
    Input Parameters:
-.  name - for instance SNES_NLS, SNES_NTR, ...
+.  name - for instance SNES_EQ_NLS, SNES_EQ_NTR, ...
 .  sname - corfunPonding string for name
 .  create - routine to create method context
 

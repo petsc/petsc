@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.14 1995/09/21 20:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.15 1995/09/30 19:31:28 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example uses Newton-like methods to solve u`` + u^{2} = f\n\
+static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
  in parallel.\n";
 
 #include "draw.h"
@@ -25,7 +24,7 @@ typedef struct {
 int main( int argc, char **argv )
 {
   SNES           snes;               /* SNES context */
-  SNESMethod     method = SNES_NLS;  /* nonlinear solution method */
+  SNESMethod     method = SNES_EQ_NLS;  /* nonlinear solution method */
   Mat            J;                  /* Jacobian matrix */
   ApplicationCtx ctx;                /* user-defined context */
   Vec            x, r, U, F;

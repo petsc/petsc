@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.15 1995/09/21 20:13:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.16 1995/09/30 19:31:46 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "This example tests various DA routines.\n\n";
+static char help[] = "Tests various DA routines.\n\n";
 
 #include "petsc.h"
 #include "da.h"

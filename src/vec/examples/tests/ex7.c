@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.25 1995/09/30 19:26:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.26 1995/10/11 17:52:58 curfman Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example demonstrates a scatter with a stride and general index set.\n\n";
+static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
 
 #include "petsc.h"
 #include "is.h"

@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.33 1995/09/21 20:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.34 1995/09/30 19:31:28 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
+static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
 
 #include "draw.h"
 #include "snes.h"

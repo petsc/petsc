@@ -1,8 +1,10 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.16 1995/09/30 19:31:46 bsmith Exp $";
+#endif
 
 /* This file was created by Peter Mell  6/30/95 */
  
-static char help[] = 
-"This example tests various 1-dimensional DA routines.\n\n";
+static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
 #include "petsc.h"
 #include "da.h"

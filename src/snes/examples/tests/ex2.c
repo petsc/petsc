@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.28 1995/09/21 20:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.29 1995/09/30 19:31:28 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example uses Newton's method to solve a two-variable system.\n\n";
+static char *help="Uses Newton's method to solve a two-variable system.\n";
 
 #include "snes.h"
 
@@ -27,13 +26,11 @@ int main( int argc, char **argv )
   ierr = MatCreateSeqDense(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); 
-  CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction,0,POSITIVE_FUNCTION_VALUE);
-         CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,0,POSITIVE_FUNCTION_VALUE);CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,0); CHKERRA(ierr);
 

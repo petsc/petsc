@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.28 1995/09/21 20:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.29 1995/09/30 19:30:14 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example solves a linear system with SLES.  The matrix uses simple\n\
+static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
   -m <size> : problem size\n\n";
 

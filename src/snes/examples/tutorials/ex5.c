@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.28 1995/09/21 20:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.29 1995/09/30 19:31:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -54,7 +54,7 @@ int main( int argc, char **argv )
   SLES          sles;
   PC            pc;
   SNES          snes;
-  SNESMethod    method = SNES_NLS;  /* nonlinear solution method */
+  SNESMethod    method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec           x,r;
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, numtids; 
   AppCtx        user;
@@ -88,21 +88,19 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
-         CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); 
+  ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,POSITIVE_FUNCTION_VALUE);
          CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,
-         POSITIVE_FUNCTION_VALUE); CHKERRA(ierr);
 
   /* Set Jacobian evaluation routine */
   if (OptionsHasName(0,"-defaultJ")) { /* default finite differences */
     ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,
-                       (void *)&user); CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,(void *)&user); 
+           CHKERRA(ierr);
   } else if (OptionsHasName(0,"-matrix_freeJ")) { /* default matrix-free */
     ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
     ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
@@ -220,8 +218,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   Mat     jac = *J;
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   int     nloc, *ltog, grow;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx;
-  Scalar  sc, *x;
+  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;

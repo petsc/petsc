@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.31 1995/09/21 20:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.32 1995/09/30 19:30:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
-"This example solves a linear system in parallel with SLES.  The matrix\n\
+"Solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
 matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\

@@ -1,3 +1,4 @@
+C    "$Id: ex5.F,v 1.5 1995/10/10 01:22:43 curfman Exp $";
 C
 C  Simple PETSc Program written in Fortran 77, (shudder)
 C

@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: umls.c,v 1.11 1995/10/01 21:53:38 bsmith Exp $";
+#endif
+
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.
      this is a variant of More' and Thuente's routine.

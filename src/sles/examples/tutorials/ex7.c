@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.7 1995/09/21 20:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.8 1995/09/30 19:30:14 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example illustrates use of the block Jacobi preconditioner for solving\n\
+static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
 a linear system in parallel with SLES.  The code indicates the procedure for\n\
 using different linear solvers on the individual blocks.\n\n";
 

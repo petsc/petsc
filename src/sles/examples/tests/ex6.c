@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.5 1995/10/01 02:27:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.6 1995/10/06 22:25:09 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -21,7 +21,6 @@ int main(int argc,char **args)
   Vec        x, b, u;
   Mat        A;
   SLES       sles;
-/*  DrawCtx    draw; */
   char       file[128]; 
   Viewer     fd;
 
@@ -29,33 +28,21 @@ int main(int argc,char **args)
 
 /*   Read in matrix and RHS   */
   OptionsGetString(0,"-f",file,127);
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); 
-  CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
 
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
-  MPIU_printf(MPI_COMM_SELF,"Reading matrix completes.\n");
-/*
- MatView(A,STDOUT_VIEWER_WORLD); 
- VecView(b,STDOUT_VIEWER_WORLD);
-
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Test1.matrix1",0,0,600,500,&draw);
-
-  CHKERRA(ierr);
-  ierr = MatView(A, (Viewer) draw); CHKERRA(ierr);
-*/
 
 /*   Set up solution   */
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecSet(&zero,x); CHKERRA(ierr);
 
-/*   Solve solution    */
+/*   Solve system    */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN);
-  CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   time = MPI_Wtime();
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
@@ -70,7 +57,7 @@ int main(int argc,char **args)
   MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
   MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f\n",time);
 
-/*   Dumping   */
+/*   cleanup   */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);

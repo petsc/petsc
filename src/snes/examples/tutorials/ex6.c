@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.19 1995/09/21 20:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.20 1995/09/30 19:31:28 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
+static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
 demonstrates the use of matrix-free Newton-Krylov methods in conjunction\n\
 with a user-provided preconditioner.  Input arguments are:\n\
@@ -23,7 +22,7 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main( int argc, char **argv )
 {
   SNES         snes;               /* SNES context */
-  SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
+  SNESMethod   method = SNES_EQ_NLS;  /* nonlinear solution method */
   SLES         sles;               /* SLES context */
   PC           pc;                 /* PC context */
   Vec          x,r,F;              /* solution, residual, work vector */

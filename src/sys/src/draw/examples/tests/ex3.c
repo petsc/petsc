@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.22 1995/09/30 19:26:45 bsmith Exp $";
+#endif
 
 static char help[] = "Plots a simple line graph\n";
 
@@ -21,8 +24,7 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-nolabels")) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
-  ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
-  CHKERRA(ierr);
+  ierr = DrawOpenX(MPI_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
   ierr = DrawLGCreate(draw,1,&lg); CHKERRA(ierr);
   ierr = DrawLGGetAxisCtx(lg,&axis); CHKERRA(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE); CHKERRA(ierr);

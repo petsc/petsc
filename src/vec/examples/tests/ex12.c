@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.25 1995/09/30 19:26:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex12.c,v 1.26 1995/10/11 17:52:58 curfman Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example scatters from a sequential vector to a parallel vector.\n\
+static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does case when we are merely selecting the local part of the\n\
 parallel vector.\n";
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.28 1995/09/06 14:07:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.29 1995/10/01 21:53:33 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -20,8 +20,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   int     ierr, convinfo;
 
   if (snes->ksp_ewconv) {
-    if (!kctx) SETERRQ(1,
-      "SNES_KSP_EW_Converged_Private:Convergence context does not exist");
+    if (!kctx) SETERRQ(1,"SNES_KSP_EW_Converged_Private:Convergence context does not exist");
     if (n == 0) SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);
     kctx->lresid_last = rnorm;
   }
@@ -60,8 +59,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   Vec          X, F, Y, G, TMP, Ytmp;
   int          maxits, i, history_len, ierr, lits;
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
-  double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
-  double       *history, ynorm;
+  double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,*history, ynorm;
   Scalar       one = 1.0,cnorm;
   KSP          ksp;
   SLES         sles;
@@ -90,15 +88,14 @@ static int SNESSolve_TR(SNES snes,int *its)
   /* Set the stopping criteria to use the More' trick. */
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-  ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void *)snes);
-  CHKERRQ(ierr);
+  ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
  
   for ( i=0; i<maxits; i++ ) {
      snes->iter = i+1;
-     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                             &flg); CHKERRQ(ierr);
-     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
-                            flg); CHKERRQ(ierr);
+     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);
+            CHKERRQ(ierr);
+     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
+            CHKERRQ(ierr);
      ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
      ierr = VecNorm(Ytmp,&norm); CHKERRQ(ierr);
      while(1) {
@@ -154,8 +151,7 @@ static int SNESSolve_TR(SNES snes,int *its)
      TMP = F; F = G; snes->vec_func_always = F; G = TMP;
      TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
      VecNorm(X, &xnorm );		/* xnorm = || X || */
-     if (snes->monitor) 
-       {ierr = (*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
+     if (snes->monitor) {ierr = (*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
 
      /* Test for convergence */
      neP->itflag = 1;
@@ -170,8 +166,7 @@ static int SNESSolve_TR(SNES snes,int *its)
      } 
    }
   if (i == maxits) {
-    PLogInfo((PetscObject)snes,
-      "Maximum number of iterations has been reached: %d\n",maxits);
+    PLogInfo((PetscObject)snes,"Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
   *its = i+1;
@@ -237,11 +232,9 @@ static int SNESView_TR(PetscObject obj,Viewer viewer)
   int     ierr;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
-  MPIU_fprintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",
-    tr->mu,tr->eta,tr->sigma);
-  MPIU_fprintf(snes->comm,fd,
-    "    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
-    tr->delta0,tr->delta1,tr->delta2,tr->delta3);
+  MPIU_fprintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
+  MPIU_fprintf(snes->comm,fd,"    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
+               tr->delta0,tr->delta1,tr->delta2,tr->delta3);
   return 0;
 }
 
@@ -283,18 +276,18 @@ $           set with SNESSetRelativeTolerance()
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
 int SNESTrustRegionDefaultConverged(SNES snes,double xnorm,double pnorm,
-                         double fnorm,void *dummy)
+                                    double fnorm,void *dummy)
 {
   SNES_TR *neP = (SNES_TR *)snes->data;
   double  epsmch = 1.0e-14;   /* This must be fixed */
   int     info;
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
-    "SNESDefaultConverged:For SNES_NONLINEAR_EQUATIONS only");
+
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
+    SETERRQ(1,"SNESDefaultConverged:For SNES_NONLINEAR_EQUATIONS only");
 
   if (neP->delta < xnorm * snes->deltatol) {
     PLogInfo((PetscObject)snes,
-      "SNES: Converged due to trust region param %g < %g * %g\n",neP->delta,
-       xnorm, snes->deltatol);
+      "SNES:Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
     return 1;
   }
   if (neP->itflag) {
@@ -303,8 +296,7 @@ int SNESTrustRegionDefaultConverged(SNES snes,double xnorm,double pnorm,
   } 
   if (neP->delta < xnorm * epsmch) {
     PLogInfo((PetscObject)snes,
-      "SNES: Converged due to trust region param %g < %g * %g\n",neP->delta,
-       xnorm, epsmch);
+      "SNES: Converged due to trust region param %g < %g * %g\n",neP->delta,xnorm, epsmch);
     return -1;
   }
   return 0;
@@ -314,8 +306,8 @@ int SNESCreate_TR(SNES snes )
 {
   SNES_TR *neP;
 
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
-    "SNESCreate_TR:For SNES_NONLINEAR_EQUATIONS only");
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
+    SETERRQ(1,"SNESCreate_TR:For SNES_NONLINEAR_EQUATIONS only");
   snes->type 		= SNES_EQ_NTR;
   snes->setup		= SNESSetUp_TR;
   snes->solve		= SNESSolve_TR;

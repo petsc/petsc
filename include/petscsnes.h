@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.31 1995/08/21 18:14:36 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.32 1995/09/21 20:13:13 bsmith Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -20,11 +20,6 @@ typedef enum { SNES_UNKNOWN_METHOD=-1,
 typedef enum { POSITIVE_FUNCTION_VALUE, 
                NEGATIVE_FUNCTION_VALUE } SNESFunctionSign;
 
-#define SNES_NLS         SNES_EQ_NLS
-#define SNES_NTR         SNES_EQ_NTR
-#define SNES_NTR2_LIN    SNES_EQ_NTR2_LIN
-#define SNES_NTR_DOG_LEG SNES_EQ_NTR_DOG_LEG
-#define SNES_NTEST       SNES_EQ_NTEST
 
 typedef enum { SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION } 
         SNESType;

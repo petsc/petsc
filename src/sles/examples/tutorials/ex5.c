@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.32 1995/09/23 00:05:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.33 1995/09/30 19:30:14 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example tests MPI parallel linear solves with SLES.  The code\n\
+static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
 method but different matrices (having the same nonzero structure).  Input\n\
 arguments are\n\
@@ -18,7 +17,6 @@ extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 int main(int argc,char **args)
 {
   Mat     C; 
-  MatType mat_type;
   Scalar  v, none = -1.0;
   int     I, J, ldim, ierr, low, high, iglobal, Istart,Iend;
   int     i, j, m = 3, n = 2, mytid, numtids, its;
@@ -69,6 +67,8 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+  {
+  MatType mat_type;
   ierr = MatGetType(C,&mat_type); CHKERRA(ierr);
   if (mat_type == MATMPIROWBS) {
     PC pc; KSP ksp; PCMethod pcmethod;
@@ -79,6 +79,7 @@ int main(int argc,char **args)
       ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERRA(ierr);
     }
   }
+}
 #endif
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
  

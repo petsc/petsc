@@ -1,6 +1,8 @@
+#ifndef lint
+static char vcid[] = "$Id: ex9.c,v 1.4 1995/09/30 19:31:28 bsmith Exp bsmith $";
+#endif
 
-static char help[] = 
-"This example tests catching of floating point exceptions.\n\n";
+static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #include "petsc.h"
 #include <stdio.h>

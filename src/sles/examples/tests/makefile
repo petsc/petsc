@@ -16,11 +16,11 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex8 runex8_2
 EXAMPLES_2    = ex10 ex11 ex6
 RUNEXAMPLES_2 = runex11
-EXAMPLES_3    = ex7
+EXAMPLES_3    = ex7 ex12
 RUNEXAMPLES_3 = runex7
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c\
                 ex6.c
-EXAMPLESF     = ex7.F
+EXAMPLESF     = ex7.F ex12.F
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
@@ -67,7 +67,7 @@ ex11: ex11.o  chkopts
 	$(RM) ex11.o
 
 ex12: ex12.o  chkopts
-	-$(CLINKER) -o ex12 ex12.o  $(PETSC_LIB)
+	-$(CLINKER) -o ex12 ex12.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex12.o
 
 runex1:

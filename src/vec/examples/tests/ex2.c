@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.28 1995/09/30 19:26:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.29 1995/10/11 17:52:58 curfman Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example tests vector scatter-gather operations.  Input arguments are\n\
+static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
 
 #include "petsc.h"

@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: sp1wd.c,v 1.10 1995/09/30 19:29:19 bsmith Exp $";
+#endif
 
 #include "../../matimpl.h"     /*I       "mat.h"   I*/
 

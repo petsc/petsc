@@ -1,5 +1,8 @@
+#ifndef lint
+static char vcid[] = "$Id: ex9.c,v 1.4 1995/09/30 19:31:28 bsmith Exp bsmith $";
+#endif
 
-static char help[] = "This example passes a sparse matrix to Matlab.\n\n";
+static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 #include "sles.h"
 #include <stdio.h>
 #include "petsc.h"

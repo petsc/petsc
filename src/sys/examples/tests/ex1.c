@@ -1,5 +1,9 @@
+#ifndef lint
+static char vcid[] = "$Id: ex9.c,v 1.4 1995/09/30 19:31:28 bsmith Exp bsmith $";
+#endif
+
 /* 
-   This example demonstrates some features of the options directory.
+   Demonstrates some features of the options directory.
  */
 
 #include "petsc.h"

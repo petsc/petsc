@@ -1,13 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.10 1995/09/30 19:26:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.11 1995/10/12 03:17:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
 user-defined event logging.\n\n";
 
 #include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include "vec.h"
 
 /* Note:  Most applications would not read and write a vector within
@@ -22,8 +20,8 @@ int main(int argc,char **args)
   VecType vtype;
   Viewer  bview;
 
-#define VECTOR_GENERATE 76
-#define VECTOR_READ     77
+#define VECTOR_GENERATE 86
+#define VECTOR_READ     87
 
   PetscInitialize(&argc,&args,0,0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
@@ -49,8 +47,7 @@ int main(int argc,char **args)
 
   MPIU_printf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_CREATE,&bview); 
-         CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_CREATE,&bview);CHKERRA(ierr);
   ierr = VecView(u,bview); CHKERRA(ierr);
   ierr = ViewerDestroy(bview); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
@@ -62,14 +59,11 @@ int main(int argc,char **args)
   MPI_Barrier(MPI_COMM_WORLD);
   PetscSleep(10);
 
-  CHKERRA(ierr);
-
   /* Read new vector in binary format */
   PLogEventRegister(VECTOR_READ,"Read Vector     ");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_RDONLY,&bview); 
-         CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_RDONLY,&bview);CHKERRA(ierr);
   vtype = VECSEQ;
   ierr = VecLoad(bview,&u); CHKERRA(ierr);
   ierr = ViewerDestroy(bview); CHKERRA(ierr);

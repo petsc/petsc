@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.24 1995/09/21 20:09:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.25 1995/09/30 19:28:29 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example demonstrates the use of fast Richardson for SOR, and\n\
+static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
 also tests the MatRelax() routines.  Input parameters are:\n\
  -n <n> : problem dimension\n\n";
 

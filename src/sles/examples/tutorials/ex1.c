@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.32 1995/09/21 20:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.33 1995/09/30 19:30:14 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "This example solves a tridiagonal linear system with SLES.\n\n";
+static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
 
 #include "sles.h"
 #include <stdio.h>

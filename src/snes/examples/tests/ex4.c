@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.20 1995/09/21 20:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.21 1995/09/30 19:31:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -55,7 +55,7 @@ int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main( int argc, char **argv )
 {
   SNES         snes;
-  SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
+  SNESMethod   method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec          x,r;
   Mat          J;
   int          ierr, its, N, nfails; 

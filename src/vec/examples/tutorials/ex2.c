@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.18 1995/09/21 20:08:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.19 1995/09/30 19:26:45 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example builds a parallel vector with 1 component on the first\n\
+static char help[] = "Builds a parallel vector with 1 component on the first\n\
 processor, 2 on the second, etc.  Then each processor adds one to all\n\
 elements except the last mytid.\n\n";
 

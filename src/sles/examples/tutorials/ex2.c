@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.28 1995/09/21 20:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.29 1995/09/30 19:30:14 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example solves a linear system in parallel with SLES.  To test the\n\
+static char help[] = "Solves a linear system in parallel with SLES.  To test the\n\
 parallel matrix assembly, the matrix is intentionally distributed across the\n\
 processors differently from the way it is assembled.\n\n";
 

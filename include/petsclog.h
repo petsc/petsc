@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.19 1995/10/06 22:25:48 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.20 1995/10/11 15:20:50 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -161,7 +161,7 @@ extern int PLogEventRegister(int,char*);
    to supplement this PETSc information.
 
     Example of Usage:
-$     #define USER_EVENT 75
+$     #define USER_EVENT 85
 $     int user_event_flops;
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);

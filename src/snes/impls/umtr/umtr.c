@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.15 1995/09/06 14:31:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.16 1995/10/01 21:53:36 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -64,8 +64,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
   ierr = VecNorm(G,gnorm); CHKERRQ(ierr);               /* gnorm = || G || */
   if (history && history_len > 0) history[0] = *gnorm;
-  if (snes->monitor)
-    {(*snes->monitor)(snes,0,*gnorm,snes->monP); CHKERRQ(ierr);}
+  if (snes->monitor){(*snes->monitor)(snes,0,*gnorm,snes->monP); CHKERRQ(ierr);}
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
@@ -78,10 +77,10 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
     newton = 0;
     neP->success = 0;
     snes->nfailures = 0;
-    ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                            &flg); CHKERRQ(ierr);
+    ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);
+           CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
-    CHKERRQ(ierr);
+           CHKERRQ(ierr);
 
     if (i == 0) {			/* Initialize delta */
       if (delta <= 0) {
@@ -89,12 +88,10 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
         else delta = neP->delta0;
         ierr = MatNorm(snes->jacobian,NORM_1,&max_val);
         if (ierr == PETSC_ERR_SUP) {
-          PLogInfo((PetscObject)snes,
-            "Initial delta computed without matrix norm information.");
+          PLogInfo((PetscObject)snes,"Initial delta computed without matrix norm info");
         } else {
           CHKERRQ(ierr);
-          if (PETSCABS(max_val) < 1.e-14) 
-            SETERRQ(1,"SNESSolve_UMTR:Hessian norm is too small");
+          if (PETSCABS(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UMTR:Hessian norm is too small");
           delta = PETSCMAX(delta,*gnorm/max_val);
         }
       } else { 
@@ -106,9 +103,9 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       qcgP->delta = delta;
       ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
       if (qits < 0) SETERRQ(1,"SNESSolve_UMTR:Failure in SLESSolve");
-      if (qcgP->info == 3) newton=1;	            /* truncated Newton step */
+      if (qcgP->info == 3) newton = 1;	            /* truncated Newton step */
       PLogInfo((PetscObject)snes,"%d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
-        i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
+               i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
 
       ierr = VecWAXPY(&one,X,S,Xtrial); CHKERRQ(ierr); /* Xtrial <- X + S */
       ierr = VecNorm(Xtrial,&xnorm); CHKERRQ(ierr);
@@ -166,8 +163,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
     if (history && history_len > i+1) history[i+1] = *gnorm;
     snes->vec_func_always = G;
 
-    if (snes->monitor) 
-     {ierr = (*snes->monitor)(snes,i+1,*gnorm,snes->monP); CHKERRQ(ierr);}
+    if (snes->monitor) {ierr = (*snes->monitor)(snes,i+1,*gnorm,snes->monP); CHKERRQ(ierr);}
   }
   /* Verify solution is in corect location */
   if (X != snes->vec_sol) {
@@ -176,8 +172,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
     snes->vec_func_always = snes->vec_func; 
   }
   if (i == maxits) {
-    PLogInfo((PetscObject)snes,
-      "Maximum number of iterations has been reached: %d\n",maxits);
+    PLogInfo((PetscObject)snes,"Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
   *outits = i+1;
@@ -187,6 +182,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
 static int SNESSetUp_UMTR(SNES snes)
 {
   int ierr;
+
   snes->nwork = 4;
   ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work); CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work);
@@ -240,43 +236,37 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
                        void *dummy)
 {
   SNES_UMTR *neP = (SNES_UMTR *) snes->data;
-  double    rtol = snes->rtol, delta = neP->delta;
-  double    ared = neP->actred, pred = neP->prered;
+  double    rtol = snes->rtol, delta = neP->delta,ared = neP->actred, pred = neP->prered;
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-   "SNESConverged_UMTR:For SNES_UNCONSTRAINED_MINIMIZATION only");
+    "SNESConverged_UMTR:For SNES_UNCONSTRAINED_MINIMIZATION only");
 
   /* Test for successful convergence */
   if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
     neP->sflag = 0;
-    PLogInfo((PetscObject)snes,
-      "SNES: Trust region param satisfies tolerance: %g <= %g * %g\n",
-      delta,snes->deltatol,xnorm);  
+    PLogInfo((PetscObject)snes,"SNES: Trust region param satisfies tolerance: %g<=%g*%g\n",
+             delta,snes->deltatol,xnorm);  
     return 3;
   }
   if ((fabs(ared) <= fabs(f) * rtol) && (pred) <= rtol*fabs(f)) {
-    PLogInfo((PetscObject)snes,
-      "SNES: Actual (%g) and predicted (%g) reductions < %g * %g\n",
-      fabs(ared),pred,rtol,fabs(f));
+    PLogInfo((PetscObject)snes,"SNES:Actual (%g) and predicted (%g) reductions<%g*%g\n",
+             fabs(ared),pred,rtol,fabs(f));
     return 2;
   }
   if (f < snes->fmin) {
-    PLogInfo((PetscObject)snes,
-      "SNES: function value (%g) < f_{minimum} (%g)\n",f,snes->fmin);
+    PLogInfo((PetscObject)snes,"SNES:Function value (%g)<f_{minimum} (%g)\n",f,snes->fmin);
     return 1;
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
   if ( (fabs(ared) <= epsmch) && pred <= epsmch ) {
-    PLogInfo((PetscObject)snes,
-      "SNES: Actual (%g) and predicted (%g) reductions < epsmch (%g)\n",
-      fabs(ared),pred,epsmch);
+    PLogInfo((PetscObject)snes,"SNES:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
+             fabs(ared),pred,epsmch);
     return -2;
   }
   if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo((PetscObject)snes,
-      "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
-      snes->nfuncs, snes->max_funcs );
+    PLogInfo((PetscObject)snes,"SNES:Exceeded maximum number of function evaluations:%d>%d\n",
+             snes->nfuncs, snes->max_funcs );
     return -1;
   }
   return 0;
@@ -328,8 +318,7 @@ static int SNESView_UMTR(PetscObject obj,Viewer viewer)
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   MPIU_fprintf(snes->comm,fd,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",
     tr->eta1,tr->eta2,tr->eta3,tr->eta4);
-  MPIU_fprintf(snes->comm,fd,
-    "    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
+  MPIU_fprintf(snes->comm,fd,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -337,8 +326,8 @@ int SNESCreate_UMTR(SNES snes)
 {
   SNES_UMTR *neP;
 
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-   "SNESCreate_UMTR:For SNES_UNCONSTRAINED_MINIMIZATION only");
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) 
+    SETERRQ(1,"SNESCreate_UMTR:For SNES_UNCONSTRAINED_MINIMIZATION only");
   snes->type 		= SNES_UM_NTR;
   snes->setup		= SNESSetUp_UMTR;
   snes->solve		= SNESSolve_UMTR;

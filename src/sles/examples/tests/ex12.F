@@ -1,83 +1,68 @@
 
-#ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.6 1995/10/06 22:25:09 bsmith Exp curfman $";
-#endif
+C      "$Id: ex12.F,v 1.1 1995/10/11 17:47:25 bsmith Exp bsmith $";
 
-static char help[] = 
-"Reads a PETSc matrix in from a file and solves linear system with it.\n";
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/viewer.h"
+C
+C  This example is the Fortran version of ex6.c
+C
 
-#include "draw.h"
-#include "mat.h"
-#include "sles.h"
-#include "petsc.h"
-#include <stdio.h>
-#include <stdlib.h>
+      integer          ierr, its
+      double precision time, norm,none
+      Vec              x, b, u
+      Mat              A
+      SLES             sles
+      character*(128)  f 
+      Viewer           fd
 
-int main(int argc,char **args)
-{
-  int        ierr, its;
-  double     time, norm;
-  Scalar     zero = 0.0, none = -1.0;
-  Vec        x, b, u;
-  Mat        A;
-  SLES       sles;
-/*  DrawCtx    draw; */
-  char       file[128]; 
-  Viewer     fd;
+      none = -1.0
+      call PetscInitialize(ierr)
 
-  PetscInitialize(&argc,&args,0,0,help);
+C   /*   Read in matrix and RHS   */
+      call OptionsGetString(' ','-f',f,ierr)
+      call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
+      if (ierr .ne. 0) then
+        print*, 'Unable to open file ',f
+        SETERRA(1,' ')
+      endif
 
-/*   Read in matrix and RHS   */
-  OptionsGetString(0,"-f",file,127);
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); 
-  CHKERRA(ierr);
-  ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
+      call MatLoad(fd,MATSEQAIJ,A,ierr)
 
-  ierr = VecLoad(fd,&b); CHKERRA(ierr);
-  ierr = ViewerDestroy(fd); CHKERRA(ierr);
+      call VecLoad(fd,b,ierr)
+      call ViewerDestroy(fd,ierr)
 
-  MPIU_printf(MPI_COMM_SELF,"Reading matrix completes.\n");
-/*
- MatView(A,STDOUT_VIEWER_WORLD); 
- VecView(b,STDOUT_VIEWER_WORLD);
+C   /*   Set up solution   */
+      call VecDuplicate(b,x,ierr)
+      call VecDuplicate(b,u,ierr)
 
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Test1.matrix1",0,0,600,500,&draw);
+C   /*   Solve system    */
+      call SLESCreate(MPI_COMM_WORLD,sles,ierr)
+      call SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN,
+     &                      ierr)
+      call SLESSetFromOptions(sles,ierr)
+      time = MPI_Wtime()
+      call SLESSolve(sles,b,x,its,ierr)
+      time = MPI_Wtime()-time
 
-  CHKERRA(ierr);
-  ierr = MatView(A, (Viewer) draw); CHKERRA(ierr);
-*/
+C   /*   Show result   */
+      call MatMult(A,x,u,ierr)
+      call VecAXPY(none,b,u,ierr)
+      call VecNorm(u,norm,ierr)
+      print*, 'Number of iterations = ',its
+      print*, 'Residual norm = ',norm
+      print*, 'Time for solve = ',time
 
-/*   Set up solution   */
-  ierr = VecDuplicate(b,&x); CHKERRA(ierr);
-  ierr = VecDuplicate(b,&u); CHKERRA(ierr);
-  ierr = VecSet(&zero,x); CHKERRA(ierr);
+C   /*   Cleanup   */
+      call SLESDestroy(sles,ierr)
+      call VecDestroy(b,ierr)
+      call VecDestroy(u,ierr)
+      call MatDestroy(A,ierr)
 
-/*   Solve solution    */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN);
-  CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
-  time = MPI_Wtime();
-  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  time = MPI_Wtime()-time;
-
-
-/*   Show result   */
-  ierr = MatMult(A,x,u);
-  ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
-  ierr = VecNorm(u,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
-  MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
-  MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f\n",time);
-
-/*   Dumping   */
-  ierr = SLESDestroy(sles); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
-
-  PetscFinalize();
-  return 0;
-}
+      call PetscFinalize(ierr)
+      stop
+      end
 

@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.26 1995/09/21 20:09:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.27 1995/09/30 19:28:29 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example tests the multigrid code.  The input parameters are:\n\
+static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
   -c N              Use N V-cycles.  \n\
   -l N              Use N Levels.  \n\

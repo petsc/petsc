@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.16 1995/09/30 19:30:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.17 1995/10/01 21:53:08 bsmith Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -297,12 +297,12 @@ int DrawDestroy(DrawCtx ctx)
 .   xl,yl,xr,yr - the coordinates of the lower left, upper right corners
 .   c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
  @*/
-int DrawRectangle(DrawCtx ctx,double xl,double yl,double xr,double yr,
+int DrawRectangle(DrawCtx c,double xl,double yl,double xr,double yr,
                               int c1, int c2,int c3,int c4)
 {
-  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
-  if (ctx->type == NULLWINDOW) return 0;
-  return (*ctx->ops.rectangle)(ctx,xl,yl,xr,yr,c1,c2,c3,c4);
+  PETSCVALIDHEADERSPECIFIC(c,DRAW_COOKIE);
+  if (c->type == NULLWINDOW) return 0;
+  return (*c->ops.rectangle)(c,xl,yl,xr,yr,c1,c2,c3,c4);
 }
 
 /*@

@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.28 1995/09/21 20:09:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.29 1995/09/30 19:28:29 bsmith Exp bsmith $";
 #endif
 
-static char help[] = 
-"This example tests PC and KSP on a tridiagonal matrix.  Note that most\n\
+static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";
 
 #include "ksp.h"

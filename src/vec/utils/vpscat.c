@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.29 1995/09/30 19:26:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: vpscat.c,v 1.30 1995/10/11 17:52:38 curfman Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -13,8 +13,7 @@ static char vcid[] = "$Id: vpscat.c,v 1.29 1995/09/30 19:26:26 bsmith Exp curfma
 
 int PrintPVecScatterCtx(VecScatterCtx ctx)
 {
-  VecScatterMPI *to = (VecScatterMPI *) ctx->todata;
-  VecScatterMPI *from = (VecScatterMPI *) ctx->fromdata;
+  VecScatterMPI *to=(VecScatterMPI *) ctx->todata, *from=(VecScatterMPI *) ctx->fromdata;
   int           i,mytid;
 
   MPIU_Seq_begin(ctx->comm,1);
@@ -66,13 +65,10 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
   VecScatterMPI *gen_to, *gen_from;
   Vec_MPI       *x = (Vec_MPI *)xin->data,*y = (Vec_MPI*) yin->data;
   MPI_Comm      comm = ctx->comm;
-  Scalar        *rvalues,*svalues;
-  int           nrecvs, nsends;
+  Scalar        *xv = x->array,*yv = y->array, *val, *rvalues,*svalues;
   MPI_Request   *rwaits, *swaits;
-  Scalar        *xv = x->array,*yv = y->array, *val;
-  int           tag = ctx->tag, i,j,*indices;
-  int           *rstarts,*sstarts;
-  int           *rprocs, *sprocs;
+  int           tag = ctx->tag, i,j,*indices,*rstarts,*sstarts,*rprocs, *sprocs;
+  int           nrecvs, nsends;
 
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatterMPI *) ctx->fromdata;
@@ -98,7 +94,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
   if (mode == SCATTER_ALL) {
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
-      MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
+      MPI_Irecv((rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
                  MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
@@ -117,7 +113,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
       SETERRQ(1,"PtoPScatterbegin:No SCATTER_UP to self");
     /* post receives:   */
     for ( i=gen_from->nbelow; i<nrecvs; i++ ) {
-      MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
+      MPI_Irecv((rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
                  MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
@@ -136,7 +132,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
       SETERRQ(1,"PtoPScatterbegin:No SCATTER_DOWN to self");
     /* post receives:   */
     for ( i=0; i<gen_from->nbelow; i++ ) {
-      MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
+      MPI_Irecv((rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
                  MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
@@ -168,17 +164,12 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
 static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
                           int mode,VecScatterCtx ctx)
 {
-  VecScatterMPI *gen_to;
-  VecScatterMPI *gen_from;
-  Vec_MPI     *y = (Vec_MPI *)yin->data;
-  Scalar        *rvalues;
-  int           nrecvs, nsends;
+  VecScatterMPI *gen_to, *gen_from;
+  Vec_MPI       *y = (Vec_MPI *)yin->data;
+  Scalar        *rvalues, *yv = y->array,*val;
+  int           nrecvs, nsends,i,*indices,count,imdex,n,*rstarts;
   MPI_Request   *rwaits, *swaits;
-  Scalar        *yv = y->array,*val;
-  int           i,*indices,count,imdex,n;
   MPI_Status    rstatus,*sstatus;
-  int           *rstarts;
-
 
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatterMPI *) ctx->fromdata;
@@ -205,8 +196,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) 
-        SETERRQ(1,"PtoPScatterend:Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"PtoPScatterend:Bad message");
 
       if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
@@ -223,26 +213,22 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
  
     /* wait on sends */
     if (nsends) {
-      sstatus = (MPI_Status *) PETSCMALLOC(nsends*sizeof(MPI_Status));
-      CHKPTRQ(sstatus);
+      sstatus = (MPI_Status *) PETSCMALLOC(nsends*sizeof(MPI_Status));CHKPTRQ(sstatus);
       MPI_Waitall(nsends,swaits,sstatus);
       PETSCFREE(sstatus);
     }
   }
   else if (mode == SCATTER_UP) {
-    if (gen_to->nself || gen_from->nself) 
-      SETERRQ(1,"PtoPScatterend:No SCATTER_UP to self");
+    if (gen_to->nself || gen_from->nself) SETERRQ(1,"PtoPScatterend:No SCATTER_UP to self");
     /*  wait on receives */
     count = nrecvs - gen_from->nbelow ;
     while (count) {
-      MPI_Waitany(nrecvs-gen_from->nbelow,rwaits+gen_from->nbelow,&imdex,
-                  &rstatus);
+      MPI_Waitany(nrecvs-gen_from->nbelow,rwaits+gen_from->nbelow,&imdex,&rstatus);
       imdex += gen_from->nbelow;
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) 
-        SETERRQ(1,"PtoPScatterend:Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"PtoPScatterend:Bad message");
       if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
@@ -257,15 +243,13 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
     }
     /* wait on sends */
     if (gen_to->nbelow) {
-      sstatus = (MPI_Status *) PETSCMALLOC(gen_to->nbelow*sizeof(MPI_Status));
-      CHKPTRQ(sstatus);
+      sstatus = (MPI_Status *)PETSCMALLOC(gen_to->nbelow*sizeof(MPI_Status));CHKPTRQ(sstatus);
       MPI_Waitall(gen_to->nbelow,swaits,sstatus);
       PETSCFREE(sstatus);
     }
   }
   else { 
-    if (gen_to->nself || gen_from->nself) 
-      SETERRQ(1,"PtoPScatterend:No SCATTER_DOWN to self");
+    if (gen_to->nself || gen_from->nself)SETERRQ(1,"PtoPScatterend:No SCATTER_DOWN to self");
     /*  wait on receives */
     count = gen_from->nbelow;
     while (count) {
@@ -273,8 +257,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) 
-        SETERRQ(1,"PtoPScatterend:Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"PtoPScatterend:Bad message");
       if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
@@ -301,21 +284,19 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
 static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
 {
   VecScatterMPI *in_to   = (VecScatterMPI *) in->todata;
-  VecScatterMPI *in_from = (VecScatterMPI *) in->fromdata;
-  VecScatterMPI *out_to,*out_from;
+  VecScatterMPI *in_from = (VecScatterMPI *) in->fromdata,*out_to,*out_from;
   int           len, ny;
 
   out->scatterbegin     = in->scatterbegin;
   out->scatterend       = in->scatterend;
   out->pipelinebegin    = in->pipelinebegin;
   out->pipelineend      = in->pipelineend;
-  out->copy      = in->copy;
-  out->destroy   = in->destroy;
-  out->view      = in->view;
+  out->copy             = in->copy;
+  out->destroy          = in->destroy;
+  out->view             = in->view;
 
   /* allocate entire send scatter context */
-  out_to           = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) );
-  CHKPTRQ(out_to);
+  out_to           = (VecScatterMPI *) PETSCMALLOC(sizeof(VecScatterMPI));CHKPTRQ(out_to);
   PLogObjectMemory(out,sizeof(VecScatterMPI));
   ny               = in_to->starts[in_to->n];
   len              = ny*(sizeof(int) + sizeof(Scalar)) +
@@ -338,15 +319,13 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   if (in_to->local.n) {
     out_to->local.slots = (int *) PETSCMALLOC(in_to->local.n*sizeof(int));
     CHKPTRQ(out_to->local.slots);
-    PetscMemcpy(out_to->local.slots,in_to->local.slots,
-                                              in_to->local.n*sizeof(int));
+    PetscMemcpy(out_to->local.slots,in_to->local.slots,in_to->local.n*sizeof(int));
     PLogObjectMemory(out,in_to->local.n*sizeof(int));
   }
   else {out_to->local.slots = 0;}
 
   /* allocate entire receive context */
-  out_from           = (VecScatterMPI *) PETSCMALLOC( sizeof(VecScatterMPI) );
-  CHKPTRQ(out_from);
+  out_from           = (VecScatterMPI *) PETSCMALLOC(sizeof(VecScatterMPI));CHKPTRQ(out_from);
   PLogObjectMemory(out,sizeof(VecScatterMPI));
   ny                 = in_from->starts[in_from->n];
   len                = ny*(sizeof(int) + sizeof(Scalar)) +
@@ -368,39 +347,32 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   out_from->local.n  = in_from->local.n;
   if (in_from->local.n) {
     out_from->local.slots = (int *) PETSCMALLOC(in_from->local.n*sizeof(int));
-    PLogObjectMemory(out,in_from->local.n*sizeof(int));
-    CHKPTRQ(out_from->local.slots);
-    PetscMemcpy(out_from->local.slots,in_from->local.slots,
-                                              in_from->local.n*sizeof(int));
+    PLogObjectMemory(out,in_from->local.n*sizeof(int));CHKPTRQ(out_from->local.slots);
+    PetscMemcpy(out_from->local.slots,in_from->local.slots,in_from->local.n*sizeof(int));
   }
   else {out_from->local.slots = 0;}
   return 0;
 }
 /* --------------------------------------------------------------------*/
-static int PtoPPipelinebegin(Vec xin,Vec yin,
-               InsertMode addv, PipelineMode mode,VecScatterCtx ctx)
+static int PtoPPipelinebegin(Vec xin,Vec yin,InsertMode addv,PipelineMode mode,
+                             VecScatterCtx ctx)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
-  Vec_MPI     *y = (Vec_MPI *)yin->data;
+  Vec_MPI       *y = (Vec_MPI *)yin->data;
   MPI_Comm      comm = ctx->comm;
-  Scalar        *rvalues = gen_from->values;
-  int           nrecvs = gen_from->nbelow;
   MPI_Request   *rwaits = gen_from->requests;
-  int           tag = ctx->tag, i,*indices = gen_from->indices;
-  int           *rstarts = gen_from->starts;
-  int           *rprocs = gen_from->procs;
-  int           count,imdex,n;
+  int           nrecvs = gen_from->nbelow,tag = ctx->tag, i,*indices = gen_from->indices;
+  int           *rstarts = gen_from->starts,*rprocs = gen_from->procs,count,imdex,n;
   MPI_Status    rstatus;
-  Scalar        *yv = y->array,*val;
+  Scalar        *yv = y->array,*val,*rvalues = gen_from->values;
 
-  if (gen_to->nself || gen_from->nself) 
-    SETERRQ(1,"PtoPPipelinebegin:No pipeline to self");
+  if (gen_to->nself || gen_from->nself) SETERRQ(1,"PtoPPipelinebegin:No pipeline to self");
 
   if (mode == PIPELINE_DOWN) {
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
-      MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
+      MPI_Irecv((rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
                                 MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
     /*  wait on receives */
@@ -428,7 +400,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,
   else { /* Pipeline up */
     /* post receives:   */
     for ( i=nrecvs; i<gen_from->n; i++ ) {
-      MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
+      MPI_Irecv((rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
                                 MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
     /*  wait on receives */
@@ -439,8 +411,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,
       imdex += nrecvs;
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) 
-        SETERRQ(1,"PtoPPipelinebegin:Bad message");
+      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"PtoPPipelinebegin:Bad message");
       if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
@@ -457,20 +428,17 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,
   return 0;
 }
 
-static int PtoPPipelineend(Vec xin,Vec yin,
-                 InsertMode addv, PipelineMode mode,VecScatterCtx ctx)
+static int PtoPPipelineend(Vec xin,Vec yin,InsertMode addv, PipelineMode mode,
+                           VecScatterCtx ctx)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
-  Vec_MPI     *x = (Vec_MPI *)xin->data;
+  Vec_MPI       *x = (Vec_MPI *)xin->data;
   MPI_Comm      comm = ctx->comm;
-  Scalar        *svalues = gen_to->values;
-  int           nsends = gen_to->n;
   MPI_Request   *swaits = gen_to->requests;
-  int           tag = ctx->tag, i,j,*indices = gen_to->indices;
   MPI_Status    *sstatus;
-  int           *sstarts = gen_to->starts;
-  int           *sprocs = gen_to->procs;
-  Scalar        *xv = x->array,*val;
+  int           nsends = gen_to->n,tag = ctx->tag, i,j,*indices = gen_to->indices;
+  int           *sstarts = gen_to->starts,*sprocs = gen_to->procs;
+  Scalar        *xv = x->array,*val,*svalues = gen_to->values;
 
   if (mode == PIPELINE_DOWN) {
     /* do sends:  */
@@ -485,8 +453,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,
     }
     /* wait on sends */
     if (nsends-gen_to->nbelow>0) {
-      sstatus = (MPI_Status *)
-                       PETSCMALLOC((nsends-gen_to->nbelow)*sizeof(MPI_Status));
+      sstatus = (MPI_Status *)PETSCMALLOC((nsends-gen_to->nbelow)*sizeof(MPI_Status));
       CHKPTRQ(sstatus);
       MPI_Waitall(nsends-gen_to->nbelow,swaits,sstatus);
       PETSCFREE(sstatus);
@@ -499,13 +466,11 @@ static int PtoPPipelineend(Vec xin,Vec yin,
       for ( j=0; j<sstarts[i+1]-sstarts[i]; j++ ) {
         val[j] = xv[*indices++];
       }
-      MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
-                   MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
+      MPI_Isend((void*)val,sstarts[i+1]-sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
     /* wait on sends */
     if (gen_to->nbelow>0) {
-      sstatus = (MPI_Status *)
-                       PETSCMALLOC((gen_to->nbelow)*sizeof(MPI_Status));
+      sstatus = (MPI_Status *)PETSCMALLOC((gen_to->nbelow)*sizeof(MPI_Status));
       CHKPTRQ(sstatus);
       MPI_Waitall(gen_to->nbelow,swaits,sstatus);
       PETSCFREE(sstatus);
@@ -519,6 +484,7 @@ static int PtoPScatterDestroy(PetscObject obj)
   VecScatterCtx ctx = (VecScatterCtx) obj;
   VecScatterMPI *gen_to   = (VecScatterMPI *) ctx->todata;
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
+
   PETSCFREE(gen_to->values); PETSCFREE(gen_to);
   PETSCFREE(gen_from->values); PETSCFREE(gen_from);
   if (gen_to->local.slots) PETSCFREE(gen_to->local.slots);
@@ -533,17 +499,15 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
                          VecScatterCtx ctx)
 {
   Vec_MPI        *x = (Vec_MPI *)xin->data;
-  int            *source;
   VecScatterMPI  *from,*to;
-  int            *lens,mytid = x->mytid, *owners = x->ownership;
+  int            *source,*lens,mytid = x->mytid, *owners = x->ownership;
   int            numtids = x->numtids,*lowner,*start,found;
   int            *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int            *owner,*starts,count,tag = xin->tag,slen;
-  int            *rvalues,*svalues,base,imdex,nmax,*values,len;
+  int            *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
   MPI_Comm       comm = xin->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-  int            *indx,nprocslocal;
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
@@ -565,20 +529,18 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
 
   /* inform other processors of number of messages and max length*/
   work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
+  MPI_Allreduce( procs, work,numtids,MPI_INT,MPI_SUM,comm);
   nrecvs = work[mytid]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
+  MPI_Allreduce( nprocs, work,numtids,MPI_INT,MPI_MAX,comm);
   nmax = work[mytid];
   PETSCFREE(work);
 
   /* post receives:   */
-  rvalues = (int *) PETSCMALLOC((nrecvs+1)*(nmax+1)*sizeof(int)); /*see note */
-  CHKPTRQ(rvalues);
+  rvalues = (int *) PETSCMALLOC((nrecvs+1)*(nmax+1)*sizeof(int)); CHKPTRQ(rvalues);
   recv_waits = (MPI_Request *) PETSCMALLOC((nrecvs+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nrecvs; i++ ) {
-    MPI_Irecv((void *)(rvalues+nmax*i),nmax,MPI_INT,MPI_ANY_SOURCE,tag,
-              comm,recv_waits+i);
+    MPI_Irecv((rvalues+nmax*i),nmax,MPI_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);
   }
 
   /* do sends:
@@ -586,8 +548,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
          the ith processor
   */
   svalues = (int *) PETSCMALLOC( (nx+1)*sizeof(int) ); CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
-  CHKPTRQ(send_waits);
+  send_waits = (MPI_Request *)PETSCMALLOC((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
   starts = (int *) PETSCMALLOC( (numtids+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
@@ -641,7 +602,6 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   to->procs    = (int *) (to->starts + nrecvs + 1);
   ctx->todata  = (void *) to;
   to->starts[0] = 0;
-
 
   if (nrecvs) {
     indx = (int *) PETSCMALLOC( nrecvs*sizeof(int) ); CHKPTRQ(indx);
@@ -701,8 +661,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
     
   /* wait on sends */
   if (nsends) {
-    send_status = (MPI_Status *) PETSCMALLOC( nsends*sizeof(MPI_Status) );
-    CHKPTRQ(send_status);
+    send_status = (MPI_Status *)PETSCMALLOC( nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     MPI_Waitall(nsends,send_waits,send_status);
     PETSCFREE(send_status);
   }
@@ -728,15 +687,15 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   }
   else { 
     from->local.n = 0; from->local.slots = 0;
-    to->local.n = 0; to->local.slots = 0;
+    to->local.n   = 0; to->local.slots = 0;
   } 
 
-  ctx->destroy    = PtoPScatterDestroy;
-  ctx->scatterbegin      = PtoPScatterbegin;
-  ctx->scatterend        = PtoPScatterend; 
+  ctx->destroy        = PtoPScatterDestroy;
+  ctx->scatterbegin   = PtoPScatterbegin;
+  ctx->scatterend     = PtoPScatterend; 
   ctx->pipelinebegin  = PtoPPipelinebegin;
   ctx->pipelineend    = PtoPPipelineend;
-  ctx->copy       = PtoPCopy;
+  ctx->copy           = PtoPCopy;
   return 0;
 }
 
@@ -744,13 +703,11 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
 /*
      scatter from local Seq vectors to a parallel vector.
 */
-int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
-                         VecScatterCtx ctx)
+int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatterCtx ctx)
 {
-  Vec_MPI      *y = (Vec_MPI *)yin->data;
-  int            *source,nprocslocal;
+  Vec_MPI        *y = (Vec_MPI *)yin->data;
   VecScatterMPI  *from,*to;
-  int            *lens,mytid = y->mytid, *owners = y->ownership;
+  int            *source,nprocslocal,*lens,mytid = y->mytid, *owners = y->ownership;
   int            numtids = y->numtids,*lowner,*start;
   int            *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
   int            *owner,*starts,count,tag = yin->tag,slen;
@@ -758,7 +715,6 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   MPI_Comm       comm = yin->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
@@ -780,9 +736,9 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
 
   /* inform other processors of number of messages and max length*/
   work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
+  MPI_Allreduce( procs, work,numtids,MPI_INT,MPI_SUM,comm);
   nrecvs = work[mytid]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
+  MPI_Allreduce( nprocs, work,numtids,MPI_INT,MPI_MAX,comm);
   nmax = work[mytid];
   PETSCFREE(work);
 
@@ -792,8 +748,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   recv_waits = (MPI_Request *) PETSCMALLOC((nrecvs+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nrecvs; i++ ) {
-    MPI_Irecv((void *)(rvalues+nmax*i),nmax,MPI_INT,MPI_ANY_SOURCE,tag,
-              comm,recv_waits+i);
+    MPI_Irecv(rvalues+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);
   }
 
   /* do sends:
@@ -801,8 +756,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
          the ith processor
   */
   svalues = (int *) PETSCMALLOC( (nx+1)*sizeof(int) ); CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
-  CHKPTRQ(send_waits);
+  send_waits = (MPI_Request *)PETSCMALLOC((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
   starts = (int *) PETSCMALLOC( (numtids+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
@@ -817,8 +771,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   count = 0;
   for ( i=0; i<numtids; i++ ) {
     if (procs[i]) {
-      MPI_Isend((void*)(svalues+starts[i]),nprocs[i],MPI_INT,i,tag,
-                comm,send_waits+count++);
+      MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);
     }
   }
   PETSCFREE(starts);
@@ -903,8 +856,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
     
   /* wait on sends */
   if (nsends) {
-    send_status = (MPI_Status *) PETSCMALLOC( nsends*sizeof(MPI_Status) );
-    CHKPTRQ(send_status);
+    send_status = (MPI_Status *) PETSCMALLOC(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     MPI_Waitall(nsends,send_waits,send_status);
     PETSCFREE(send_status);
   }
@@ -914,11 +866,9 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
     int nt;
     /* we have a scatter to ourselves */
     from->local.n = to->local.n = nt = nprocslocal;    
-    from->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
-    CHKPTRQ(from->local.slots);
-    to->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));
+    from->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));CHKPTRQ(from->local.slots);
+    to->local.slots = (int *) PETSCMALLOC(nt*sizeof(int));CHKPTRQ(to->local.slots);
     PLogObjectMemory(ctx,2*nt*sizeof(int));
-    CHKPTRQ(to->local.slots);
     nt = 0;
     for ( i=0; i<ny; i++ ) {
       idx = inidy[i];
@@ -933,14 +883,13 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
     to->local.n = 0; to->local.slots = 0;
   }
 
-  ctx->destroy    = PtoPScatterDestroy;
+  ctx->destroy           = PtoPScatterDestroy;
   ctx->scatterbegin      = PtoPScatterbegin;
   ctx->scatterend        = PtoPScatterend; 
-  ctx->pipelinebegin  = 0;
-  ctx->pipelineend    = 0;
-  ctx->copy       = 0;
+  ctx->pipelinebegin     = 0;
+  ctx->pipelineend       = 0;
+  ctx->copy              = 0;
 
-  /* PrintPVecScatterCtx(ctx); */
   return 0;
 }
 

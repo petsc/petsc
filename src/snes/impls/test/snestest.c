@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.14 1995/08/23 17:20:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.15 1995/10/01 21:53:35 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -42,8 +42,7 @@ int SNESSolve_Test(SNES snes,int *its)
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
     if (i == 0) {ierr = MatConvert(A,MATSAME,&B); CHKERRQ(ierr);}
-    ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);
-    CHKERRQ(ierr);
+    ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
       MPIU_printf(snes->comm,"Finite difference Jacobian\n");
       ierr = MatView(B,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
@@ -56,8 +55,7 @@ int SNESSolve_Test(SNES snes,int *its)
       MPIU_printf(snes->comm,"Hand-coded Jacobian\n");
       ierr = MatView(A,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
     }
-    MPIU_printf(snes->comm,"Norm of matrix ratio %g difference %g\n",
-                           norm/gnorm,norm);
+    MPIU_printf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);
   }
   ierr = MatDestroy(B); CHKERRQ(ierr);
   return 0;
@@ -93,9 +91,9 @@ int SNESCreate_Test(SNES  snes )
 {
   SNES_Test *neP;
 
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
-    "SNESCreate_Test:For SNES_NONLINEAR_EQUATIONS only");
-  snes->type		= SNES_NTEST;
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS)
+    SETERRQ(1,"SNESCreate_Test:For SNES_NONLINEAR_EQUATIONS only");
+  snes->type		= SNES_EQ_NTEST;
   snes->setup		= 0;
   snes->solve		= SNESSolve_Test;
   snes->destroy		= SNESDestroy_Test;

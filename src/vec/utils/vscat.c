@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.36 1995/09/30 19:26:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.37 1995/10/11 17:52:38 curfman Exp bsmith $";
 #endif
 
 /*
@@ -76,8 +76,7 @@ static int SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatterCtx ctx)
 {
   VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
   VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
-  int               i, n = gen_from->n;
-  int               to_first = gen_to->first,to_step = gen_to->step;
+  int               i, n = gen_from->n, to_first = gen_to->first,to_step = gen_to->step;
   int               from_first = gen_from->first,from_step = gen_from->step;
   Vec_Seq          *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
@@ -159,8 +158,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       VecScatterGeneral *to,*from;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) 
-        SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       len = sizeof(VecScatterGeneral) + nx*sizeof(int);
       to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to)
       PLogObjectMemory(ctx,len);
@@ -184,8 +182,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
       to->n = nx; to->first = to_first; to->step = to_step;
-      from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));
-      CHKPTRQ(from);
+      from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));CHKPTRQ(from);
       PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
       from->n = nx; from->first = from_first; from->step = from_step;
       ctx->todata = (void *) to; ctx->fromdata = (void *) from;
@@ -223,8 +220,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       ISGetLocalSize(ix,&nx); ISGetIndices(iy,&idx);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(ix,&first,&step);
       if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
-      from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); 
-      CHKPTRQ(from);
+      from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));CHKPTRQ(from);
       from->n = nx; from->first = first; from->step = step;
       len = sizeof(VecScatterGeneral) + nx*sizeof(int);
       to = (VecScatterGeneral *) PETSCMALLOC(len); CHKPTRQ(to);
@@ -246,22 +242,19 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
     /* special case extracting (subset of) local portion */ 
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
       Vec_MPI         *x = (Vec_MPI *)xin->data;
-      int               nx,ny,to_first,to_step,from_first,from_step;
-      int               start = x->ownership[x->mytid];
-      int               end = x->ownership[x->mytid+1],islocal,cando;
+      int               nx,ny,to_first,to_step,from_first,from_step,islocal,cando;
+      int               start = x->ownership[x->mytid], end = x->ownership[x->mytid+1];
       VecScatterStride  *from,*to;
+
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
-      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,
-                    MPI_LAND,xin->comm);
+      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,xin->comm);
       if (cando) {
-        to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); 
-        CHKPTRQ(to);
+        to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
         to->n = nx; to->first = to_first; to->step = to_step;
-        from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));
-        CHKPTRQ(from);
+        from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));CHKPTRQ(from);
         PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
         from->n = nx; from->first = from_first-start; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
@@ -287,22 +280,19 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
     /* special case local copy portion */ 
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
       Vec_MPI         *y = (Vec_MPI *)yin->data;
-      int               nx,ny,to_first,to_step,from_first,from_step;
-      int               start = y->ownership[y->mytid];
-      int               end = y->ownership[y->mytid+1],islocal,cando;
+      int               nx,ny,to_first,to_step,from_step, start = y->ownership[y->mytid];
+      int               end = y->ownership[y->mytid+1],islocal,cando,from_first;
       VecScatterStride  *from,*to;
+
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERRQ(1,"VecScatterCtxCreate:Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
-      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,
-                    MPI_LAND,yin->comm);
+      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,yin->comm);
       if (cando) {
-        to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); 
-        CHKPTRQ(to);
+        to = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride)); CHKPTRQ(to);
         to->n = nx; to->first = to_first-start; to->step = to_step;
-        from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));
-        CHKPTRQ(from);
+        from = (VecScatterStride *) PETSCMALLOC(sizeof(VecScatterStride));CHKPTRQ(from);
         PLogObjectMemory(ctx,2*sizeof(VecScatterStride));
         from->n = nx; from->first = from_first; from->step = from_step;
         ctx->todata = (void *) to; ctx->fromdata = (void *) from;
@@ -467,16 +457,14 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 
 .seealso: VecPipelineEnd(), VecScatterCtxCreate()
 @*/
-int VecPipelineBegin(Vec x,Vec y,InsertMode addv,
-                     PipelineMode mode,VecScatterCtx inctx)
+int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx inctx)
 {
   int numtid;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(inctx,VEC_SCATTER_COOKIE);
   MPI_Comm_size(inctx->comm,&numtid);
   if (numtid == 1) return 0;
-  if (!inctx->pipelinebegin) 
-    SETERRQ(1,"VecPipelineBegin:No pipeline for this context");
+  if (!inctx->pipelinebegin) SETERRQ(1,"VecPipelineBegin:No pipeline for this context");
   return (*(inctx)->pipelinebegin)(x,y,addv,mode,inctx);
 }
 
@@ -506,8 +494,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,
 
 .seealso: VecPipelineBegin(), VecScatterCtxCreate()
 @*/
-int VecPipelineEnd(Vec x,Vec y,InsertMode addv,
-                   PipelineMode mode,VecScatterCtx ctx)
+int VecPipelineEnd(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatterCtx ctx)
 {
   int numtid;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);

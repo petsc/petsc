@@ -1,9 +1,10 @@
-
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.22 1995/09/30 19:26:45 bsmith Exp $";
+#endif
 
 static char help[] = "Example demonstrating opening and drawing a window\n";
 
 #include "petsc.h"
-#include "is.h"
 #include "vec.h"
 #include "sys.h"
 #include "petsc.h"
@@ -18,8 +19,7 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
 
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Window Title",x,y,width,height,&draw);
-  CHKERRA(ierr);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
   ierr = DrawSetViewPort(draw,.25,.25,.75,.75); CHKERRA(ierr);
   ierr = DrawLine(draw,0.0,0.0,1.0,1.0,DRAW_BLACK); CHKERRA(ierr);
   ierr = DrawText(draw,.2,.2,DRAW_RED,"Some Text"); CHKERRA(ierr);

@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.3 1995/09/21 20:12:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.4 1995/09/30 19:31:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -51,7 +51,7 @@ int main( int argc, char **argv )
   SLES          sles;
   PC            pc;
   SNES          snes;
-  SNESMethod    method = SNES_NLS;  /* nonlinear solution method */
+  SNESMethod    method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec           x,r;
   int           ierr, its, N,Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           Nz = PETSC_DECIDE; 
