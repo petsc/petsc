@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.113 1999/02/01 16:33:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.114 1999/03/16 16:19:24 bsmith Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -373,9 +373,9 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   PetscValidHeaderSpecific(b,VEC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   ksp = sles->ksp; pc = sles->pc;
-  KSPSetRhs(ksp,b);
-  KSPSetSolution(ksp,x);
-  KSPSetPC(ksp,pc);
+  ierr = KSPSetRhs(ksp,b); CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x); CHKERRQ(ierr);
+  ierr = KSPSetPC(ksp,pc); CHKERRQ(ierr);
   if (!sles->setupcalled) {
     PLogEventBegin(SLES_SetUp,sles,b,x,0);
     ierr = PCSetVector(pc,b); CHKERRQ(ierr);
