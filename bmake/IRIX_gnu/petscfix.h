@@ -240,6 +240,11 @@ extern int    getpagesize();
 
 /* -----------------------linux ------------------------------------------*/
 #if defined(PARCH_linux)
+#if defined(__cplusplus)
+extern "C" {
+extern void memalign (int,int);
+}
+#endif
 #endif
 
 /* -----------------------Windows NT with gcc --------------------------*/
