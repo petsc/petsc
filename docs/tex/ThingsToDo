@@ -40,6 +40,8 @@ Satish NT stuff
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Make src/sys/src/cputime.c compile and run correctly on all machines.
+
   - Have PETSc put some header information in front of -log and -log_all files indicating
     how PETSc generated, where and on what code
 
