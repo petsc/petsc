@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.7 1996/07/26 14:19:56 balay Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.8 1996/08/01 15:01:16 balay Exp balay $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -983,7 +983,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
       for (j=1,max1=rbuf1_i[0]; j<=max1; j++) { 
         kmax = rbuf1[i][2*j];
         for (k=0; k<kmax; k++,ct1++) {
-          row    = rbuf1_i[ct1] - cstart;
+          row    = rbuf1_i[ct1] - rstart;
           nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
           ncols  = nzA + nzB;
           cworkA = a_j + a_i[row]; cworkB = b_j + b_i[row];
@@ -1025,7 +1025,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
       for (j=1,max1=rbuf1_i[0]; j<=max1; j++) {
         kmax = rbuf1_i[2*j];
         for (k=0; k<kmax; k++,ct1++) {
-          row    = rbuf1_i[ct1] - cstart;
+          row    = rbuf1_i[ct1] - rstart;
           nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
           ncols  = nzA + nzB;
           cworkA = a_j + a_i[row];     cworkB = b_j + b_i[row];
