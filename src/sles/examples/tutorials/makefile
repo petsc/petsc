@@ -3,12 +3,6 @@ ALL: ex1
 
 CFLAGS	         = $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"' $(BS_INCLUDE)
 FFLAGS	         = 
-SOURCEC	         = 
-SOURCEF	         =
-SOURCEH	         = 
-OBJSC	         =
-OBJSF	         =
-LIBBASE	         = libpetscsles
 LOCDIR           = src/sles/examples/tutorials/
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
