@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.119 1995/11/20 04:47:11 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.120 1995/11/21 21:07:55 balay Exp curfman $";
 #endif
 
 /*
@@ -135,6 +135,46 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
       low = i + 1;
     }
     ailen[row] = nrow;
+  }
+  return 0;
+} 
+
+static int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        *rp, k, low, high, t, row, nrow, i, col, l, ict, *aj = a->j;
+  int        *ai = a->i, *ailen = a->ilen, shift = a->indexshift;
+  Scalar     *ap, *aa = a->a, zero = 0.0;
+
+  if (!a->assembled) SETERRQ(1,"MatGetValues_SeqAIJ:Not for unassembled matrix");
+  ict = 0;
+  for ( k=0; k<m; k++ ) { /* loop over rows */
+    row  = im[k];   
+    if (row < 0) SETERRQ(1,"MatGetValues_SeqAIJ:Negative row");
+    if (row >= a->m) SETERRQ(1,"MatGetValues_SeqAIJ:Row too large");
+    rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift;
+    nrow = ailen[row]; 
+    for ( l=0; l<n; l++ ) { /* loop over columns */
+      if (in[l] < 0) SETERRQ(1,"MatGetValues_SeqAIJ:Negative column");
+      if (in[l] >= a->n) SETERRQ(1,"MatGetValues_SeqAIJ:Column too large");
+      col = in[l] - shift;
+      high = nrow; low = 0; /* assume unsorted */
+      while (high-low > 5) {
+        t = (low+high)/2;
+        if (rp[t] > col) high = t;
+        else             low  = t;
+      }
+      for ( i=low; i<high; i++ ) {
+        if (rp[i] > col) break;
+        if (rp[i] == col) {
+          v[ict] = ap[i];
+          goto finished;
+        }
+      } 
+      v[ict] = zero;
+      finished:;
+      ict++;
+    }
   }
   return 0;
 } 
@@ -400,7 +440,7 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  /* check out for identical nodes. If found,use inode functions*/
+  /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A); CHKERRQ(ierr);
   a->assembled = 1;
   return 0;
@@ -1017,7 +1057,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
     smap  = (int *) PetscMalloc((1+oldcols)*sizeof(int)); CHKPTRQ(smap);
     ssmap = smap + shift;
-    cwork = (int *) PetscMalloc((1+2*ncols)*sizeof(int)); CHKPTRQ(cwork);
+    cwork = (int *) PetscMalloc((1+nrows+ncols)*sizeof(int)); CHKPTRQ(cwork);
     lens  = cwork + ncols;
     vwork = (Scalar *) PetscMalloc((1+ncols)*sizeof(Scalar)); CHKPTRQ(vwork);
     PetscMemzero(smap,oldcols*sizeof(int));
@@ -1143,8 +1183,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetSubMatrix_SeqAIJ,0,
        MatCopyPrivate_SeqAIJ,0,0,
        MatILUFactor_SeqAIJ,0,0,
-       MatGetSubMatrices_SeqAIJ,
-       MatIncreaseOverlap_SeqAIJ};
+       MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,
+       MatGetValues_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.112 1995/11/20 04:47:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.113 1995/11/22 03:51:11 bsmith Exp curfman $";
 #endif
 
 /*
@@ -243,6 +243,34 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
   ierr = (*mat->ops.setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
+  return 0;
+}
+
+/*@ 
+   MatGetValues - Gets a block of values from a matrix.
+
+   Input Parameters:
+.  mat - the matrix
+.  v - a logically two-dimensional array for storing the values
+.  m, indexm - the number of rows and their global indices 
+.  n, indexn - the number of columns and their global indices
+
+   Notes:
+   The user must allocate space (m*n Scalars) for the values, v.
+   The values, v, are then returned in a row-oriented format, 
+   analogous to that used by default in MatSetValues().
+
+.keywords: matrix, get, values
+
+.seealso: MatGetRow(), MatGetSubmatrix(), MatGetSubmatrices(), MatSetValues()
+@*/
+int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PLogEventBegin(MAT_GetValues,mat,0,0,0);
+  ierr = (*mat->ops.getvalues)(mat,m,idxm,n,idxn,v); CHKERRQ(ierr);
+  PLogEventEnd(MAT_GetValues,mat,0,0,0);
   return 0;
 }
 
@@ -1340,7 +1368,7 @@ int MatGetArray(Mat mat,Scalar **v)
 
 /*@C
    MatGetSubMatrix - Extracts a submatrix from a matrix. If submat points
-                     to a valid matrix it may be reused.
+                     to a valid matrix, it may be reused.
 
    Input Parameters:
 .  mat - the matrix
@@ -1353,9 +1381,11 @@ int MatGetArray(Mat mat,Scalar **v)
    Notes:
    MatGetSubMatrix() can be useful in setting boundary conditions.
 
+   Use MatGetSubMatrices() to extract multiple submatrices.
+
 .keywords: matrix, get, submatrix, boundary conditions
 
-.seealso: MatZeroRows(), MatGetSubMatrixInPlace()
+.seealso: MatZeroRows(), MatGetSubMatrixInPlace(), MatGetSubMatrices()
 @*/
 int MatGetSubMatrix(Mat mat,IS irow,IS icol,MatGetSubMatrixCall scall,Mat *submat)
 {
@@ -1372,8 +1402,8 @@ int MatGetSubMatrix(Mat mat,IS irow,IS icol,MatGetSubMatrixCall scall,Mat *subma
 }
 
 /*@C
-   MatGetSubMatrices - Extracts several submatrices from a matrix. If submat points
-                     to an array of valid matrices it may be reused.
+   MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
+   points to an array of valid matrices, it may be reused.
 
    Input Parameters:
 .  mat - the matrix
@@ -1382,7 +1412,10 @@ int MatGetSubMatrix(Mat mat,IS irow,IS icol,MatGetSubMatrixCall scall,Mat *subma
    Output Parameter:
 .  submat - the submatrices
 
-.keywords: matrix, get, submatrix
+   Note:
+   Use MatGetSubMatrix() for extracting a sinble submatrix.
+
+.keywords: matrix, get, submatrix, submatrices
 
 .seealso: MatGetSubMatrix()
 @*/
@@ -1441,17 +1474,18 @@ int MatGetType(Mat mat,MatType *type)
 }
 
 /*@
-      MatIncreaseOverlap - Given a set of submatrices indicated by index sets,
-          replaces the index by larger ones that represent submatrices with more
-          overlap.
+   MatIncreaseOverlap - Given a set of submatrices indicated by index sets,
+   replaces the index by larger ones that represent submatrices with more
+   overlap.
 
-  Input Parameters:
-.   mat - the matrix
-.   n   - the number of index sets
-.   is  - the array of pointers to index sets
-.   ov  - the additional overlap requested
+   Input Parameters:
+.  mat - the matrix
+.  n   - the number of index sets
+.  is  - the array of pointers to index sets
+.  ov  - the additional overlap requested
 
-.keywords: overlap, Schwarz
+.keywords: matrix, overlap, Schwarz
+
 .seealso: MatGetSubMatrices()
 @*/
 int MatIncreaseOverlap(Mat mat,int n, IS *is, int ov)

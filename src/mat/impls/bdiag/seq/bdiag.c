@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.70 1995/11/01 23:18:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.71 1995/11/09 22:29:26 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -171,6 +171,67 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
             PLogObjectMemory(A,newnz*sizeof(Scalar) + 2*sizeof(int) + sizeof(Scalar*));
           }
         }
+      }
+    }
+  }
+  return 0;
+}
+static int MatGetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,Scalar *v)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          kk, loc, ldiag, shift, row, dfound, j, k, nb = a->nb, ict;
+  Scalar       *valpt, zero = 0.0;
+
+  ict = 0;
+  if (nb == 1) {
+    for ( kk=0; kk<m; kk++ ) { /* loop over rows */
+      row = im[kk];   
+      if (row < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative row");
+      if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBDiag:Row too large");
+      for (j=0; j<n; j++) {
+        if (in[j] < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative column");
+        if (in[j] >= a->n) SETERRQ(1,"MatGetValues_SeqBDiag:Column too large");
+        ldiag = row - in[j]; /* diagonal number */
+        dfound = 0;
+        for (k=0; k<a->nd; k++) {
+	  if (a->diag[k] == ldiag) {
+            dfound = 1;
+	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
+	    else           loc = row;
+	    if ((valpt = &((a->diagv[k])[loc]))) {
+	      v[ict] =  *valpt;
+            } else SETERRQ(1,"MatGetValues_SeqBDiag:Invalid data location");
+            break;
+          }
+        }
+        if (!dfound) v[ict] = zero;
+        ict++;
+      }
+    }
+  } else {
+    for ( kk=0; kk<m; kk++ ) { /* loop over rows */
+      row = im[kk];   
+      if (row < 0) SETERRQ(1,"MatGetValues_SeqBDiag:Negative row");
+      if (row >= a->m) SETERRQ(1,"MatGetValues_SeqBDiag:Row too large");
+      shift = (row/nb)*nb*nb + row%nb;
+      for (j=0; j<n; j++) {
+        ldiag = row/nb - in[j]/nb; /* block diagonal */
+        dfound = 0;
+        for (k=0; k<a->nd; k++) {
+          if (a->diag[k] == ldiag) {
+            dfound = 1;
+	    if (ldiag > 0) /* lower triangle */
+	      loc = shift - ldiag*nb*nb;
+             else
+	      loc = shift;
+	    if ((valpt = &((a->diagv[k])[loc + (in[j]%nb)*nb ]))) {
+              v[ict] =  *valpt;
+            } else SETERRQ(1,"MatGetValues_SeqBDiag:Invalid data location");
+            break;
+          }
+        }
+        if (!dfound) v[ict] = zero;
+        ict++;
       }
     }
   }
@@ -1355,7 +1416,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
        0,0,MatConvert_SeqBDiag,
        MatGetSubMatrix_SeqBDiag,0,
        MatCopyPrivate_SeqBDiag,0,0,
-       MatILUFactor_SeqBDiag,0,0 };
+       MatILUFactor_SeqBDiag,0,0,
+       0,0,MatGetValues_SeqBDiag};
 
 /*@C
    MatCreateSeqBDiag - Creates a sequential block diagonal matrix.
