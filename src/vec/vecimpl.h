@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.55 1999/03/09 16:16:05 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.56 1999/03/11 04:21:30 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -68,7 +68,7 @@ struct _VecOps {
        (*dot_local)(Vec,Vec,Scalar*),
        (*tdot_local)(Vec,Vec,Scalar*),
        (*norm_local)(Vec,NormType,double*),
-       (*loadintovector)(Vec,Viewer);
+       (*loadintovector)(Viewer,Vec);
 };
 
 struct _p_Vec {
@@ -94,6 +94,8 @@ struct _p_Vec {
 /* Default obtain and release vectors; can be used by any implementation */
 extern int     VecDuplicateVecs_Default(Vec, int, Vec *[]);
 extern int     VecDestroyVecs_Default(const Vec [],int);
+
+extern int VecLoadIntoVector_Default(Viewer,Vec);
 
 /* --------------------------------------------------------------------*/
 /*                                                                     */
