@@ -223,7 +223,7 @@ int PCICCSetFill(PC pc,PetscReal fill)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCICCSetFill(), PCLUSetDamp()
+.seealso: PCICCSetFill(), PCLUSetDamping()
 @*/
 int PCICCSetDamping(PC pc,PetscReal damping)
 {

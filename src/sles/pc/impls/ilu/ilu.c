@@ -276,7 +276,7 @@ int PCILUSetZeroPivot(PC pc,PetscReal zero)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCILUSetFill(), PCLUSetDamp()
+.seealso: PCILUSetFill(), PCLUSetDamping()
 @*/
 int PCILUSetDamping(PC pc,PetscReal damping)
 {
