@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.18 1997/10/28 14:21:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.19 1997/11/03 04:42:34 bsmith Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -242,7 +242,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
 
 #undef __FUNC__  
 #define __FUNC__ "ISAllGather"
-/*@
+/*@C
       ISAllGather - Given an IS on each processor, generates a large IS
          on each processor by concatenating together each processors IS.
 

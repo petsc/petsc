@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.15 1997/08/29 18:12:27 balay Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.16 1997/09/03 22:33:08 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -23,6 +23,7 @@ static char vcid[] = "$Id: zis.c,v 1.15 1997/08/29 18:12:27 balay Exp bsmith $";
 #define isview_                ISVIEW
 #define iscoloringcreate_      ISCOLORINGCREATE
 #define islocaltoglobalmappingcreate_ ISLOCALTOGLOBALMAPPINGCREATE
+#define isallgather_                  ISALLGATHER
 
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define isview_                isview
@@ -43,6 +44,7 @@ static char vcid[] = "$Id: zis.c,v 1.15 1997/08/29 18:12:27 balay Exp bsmith $";
 #define isequal_               isequal
 #define iscoloringcreate_      iscoloringcreate
 #define islocaltoglobalmappingcreate_ islocaltoglobalmappingcreate
+#define isallgather_                  isallgather
 #endif
 
 #if defined(__cplusplus)
@@ -166,6 +168,14 @@ void islocaltoglobalmappingcreate_(MPI_Comm *comm,int *n,int *indices,ISLocalToG
   ISLocalToGlobalMapping ii;
   *__ierr = ISLocalToGlobalMappingCreate((MPI_Comm)PetscToPointerComm(*comm),*n,indices,&ii);
   *(int *) mapping = PetscFromPointer(ii);
+}
+
+void isallgather_(IS is,IS *isout, int *__ierr ){
+IS islocal;
+*__ierr = ISAllGather(
+	(IS)PetscToPointer( *(int*)(is)) ,&islocal);
+        *(int*) isout = PetscFromPointer(islocal);
+
 }
 
 #if defined(__cplusplus)
