@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.117 1996/11/19 16:31:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.118 1996/11/29 22:20:48 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1817,6 +1817,9 @@ static int MatZeroEntries_SeqBDiag(Mat A)
 
   for (d=0; d<a->nd; d++) {
     dv  = a->diagv[d];
+    if (a->diag[d] > 0) {
+      dv += bs*bs*a->diag[d];
+    }
     len = a->bdlen[d]*bs*bs;
     for (i=0; i<len; i++) dv[i] = 0.0;
   }
@@ -2163,8 +2166,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
 
   if (!b->user_alloc) {
     for (i=0; i<nd; i++) {
-      b->diagv[i] = (Scalar*)PetscMalloc(bs*bs*b->bdlen[i]*sizeof(Scalar));
-      CHKPTRQ(b->diagv[i]);
+      b->diagv[i] = (Scalar*)PetscMalloc(bs*bs*b->bdlen[i]*sizeof(Scalar));CHKPTRQ(b->diagv[i]);
       PetscMemzero(b->diagv[i],bs*bs*b->bdlen[i]*sizeof(Scalar));
     }
     b->nonew = 0; b->nonew_diag = 0;

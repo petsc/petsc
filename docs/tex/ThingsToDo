@@ -9,6 +9,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+  - Maybe, like, say, test one or two BDiag routines before making a release?
+
   - Purge RCS files of very old stuff to save disk space???
 
   - Add Victor EIJKhout's matrix codes
