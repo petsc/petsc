@@ -44,7 +44,9 @@ class Help:
       items = self.options[section].items()
       items.sort(lambda a, b: a[1][1].__cmp__(b[1][1]))
       for item in items:
-        varName = item[0].split('=')[0].strip('-')
+        # SHOULD BE varName = item[0].split('=')[0].strip('-')
+        varName = item[0].split('=')[0]
+        while varName[0] == '-': varName = varName[1:]
 
         if self.framework.argDB.has_key(varName):
           print formatDef % (item[0], item[1][0], str(self.framework.argDB[varName]))
