@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.92 2000/04/09 04:35:09 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.93 2000/04/12 04:21:58 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -173,7 +173,7 @@ int ISSort_General(IS is)
   PetscFunctionBegin;
   if (sub->sorted) PetscFunctionReturn(0);
   ierr = PetscSortInt(sub->n,sub->idx);CHKERRQ(ierr);
-  sub->sorted = 1;
+  sub->sorted = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +184,7 @@ int ISSorted_General(IS is,PetscTruth *flg)
   IS_General *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
-  *flg = (PetscTruth) sub->sorted;
+  *flg = sub->sorted;
   PetscFunctionReturn(0);
 }
 
@@ -229,7 +229,8 @@ static struct _ISOps myops = { ISGetSize_General,
 @*/
 int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
 {
-  int        i,sorted = 1,min,max,ierr;
+  int        i,min,max,ierr;
+  PetscTruth sorted = PETSC_TRUE;
   IS         Nindex;
   IS_General *sub;
   PetscTruth flg;
@@ -247,7 +248,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   sub->idx       = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;
   for (i=1; i<n; i++) {
-    if (idx[i] < idx[i-1]) {sorted = 0; break;}
+    if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
   }
   if (n) {min = max = idx[0];} else {min = max = 0;}
   for (i=1; i<n; i++) {
