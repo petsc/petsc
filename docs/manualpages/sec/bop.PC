@@ -4,8 +4,7 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Preconditioners - PC
-</H2>
+<H2> Preconditioners - PC: <A HREF="${PETSC_DIR}src/sles/examples/tutorials">Examples</A></H2>
 
 The
 <A HREF="${PETSC_DIR}docs/manualpages/SLES/index.html">Scalable Linear Equations Solvers (SLES)</A>
