@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.3 1995/07/24 22:23:49 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.4 1995/07/26 01:08:08 curfman Exp curfman $";
 #endif
 
 #include <stdio.h>
@@ -74,35 +74,32 @@ int KSPSolve_QCG(KSP itP,int *its)
   X        = itP->vec_sol;
   B        = itP->vec_rhs;
 
-/*  PCGetMethodFromContext(pc,&pcmethod);
-  if (pcmethod != PCICC && pcmethod != PCJACOBI) 
-    SETERRQ(1,"Use only PCICC and PCJACOBI methods"); */
   *its = 0;
   pcgP->info = 0;
   if (pcgP->delta <= dzero) SETERRQ(1,"KSPSolve_QCG: Input error: delta <= 0");
 
   /* Initialize variables */
-  VecSet(&zero,W);			/* W = 0 */
-  VecSet(&zero,X);			/* X = 0 */
+  ierr = VecSet(&zero,W); CHKERRQ(ierr);	/* W = 0 */
+  ierr = VecSet(&zero,X); CHKERRQ(ierr);	/* X = 0 */
   ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
 
   /* Compute:  BS = D^{-1} B */
-  PCApply(pc,B,BS);
+  ierr = PCApply(pc,B,BS); CHKERRQ(ierr);
   /* ierr = MatForwardSolve(Factmat,B,BS); CHKERRQ(ierr); */
-  VecNorm(BS,&bsnrm);
+  ierr = VecNorm(BS,&bsnrm); CHKERRQ(ierr);
   MONITOR(itP,bsnrm,0);
   if (history) history[0] = bsnrm;
   cerr = (*itP->converged)(itP,0,bsnrm,itP->cnvP);
   if (cerr) {*its =  0; return 0;}
 
   /* Compute the initial scaled direction and scaled residual */
-  VecCopy(BS,R);
-  VecScale(&negone,R);
-  VecCopy(R,P);
+  ierr = VecCopy(BS,R); CHKERRQ(ierr);
+  ierr = VecScale(&negone,R); CHKERRQ(ierr);
+  ierr = VecCopy(R,P); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
-  VecDot(R,R,&crtr); rtr = real(crtr);
+  ierr = VecDot(R,R,&crtr); CHKERRQ(ierr); rtr = real(crtr);
 #else
-  VecDot(R,R,&rtr);
+  ierr = VecDot(R,R,&rtr); CHKERRQ(ierr);
 #endif
 
   for (i=0; i<=maxit; i++) {
@@ -112,15 +109,15 @@ int KSPSolve_QCG(KSP itP,int *its)
        MatBackwardSolve(Factmat,WA,WA);
        MatMult(Amat,WA,ASP);
        MatForwardSolve(Factmat,ASP,ASP); */
-    MatMult(Amat,P,WA);
-    PCApply(pc,WA,ASP);
+    ierr = MatMult(Amat,P,WA); CHKERRQ(ierr);
+    ierr = PCApply(pc,WA,ASP); CHKERRQ(ierr);
 
     /* Check for negative curvature */
 #if defined(PETSC_COMPLEX)
-    VecDot(P,ASP,&cptasp);
+    ierr = VecDot(P,ASP,&cptasp); CHKERRQ(ierr);
     ptasp = real(cptasp);
 #else
-    VecDot(P,ASP,&ptasp);		/* ptasp = p^T asp */
+    ierr = VecDot(P,ASP,&ptasp); CHKERRQ(ierr);	/* ptasp = p^T asp */
 #endif
     if (ptasp <= dzero) {
 
@@ -128,30 +125,34 @@ int KSPSolve_QCG(KSP itP,int *its)
          ||w + step*p|| = delta and QS(w + step*p) is least */
 
        if (i == 0) {
-         VecCopy(P,X);
-         VecNorm(X,&xnorm);
+         ierr = VecCopy(P,X); CHKERRQ(ierr);
+         ierr = VecNorm(X,&xnorm); CHKERRQ(ierr);
          scal = pcgP->delta / xnorm;
-         VecScale(&scal,X);
+         ierr = VecScale(&scal,X); CHKERRQ(ierr);
        } else {
          /* Compute roots of quadratic */
          ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);
          CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
-         VecDot(W,ASP,&cwtasp); wtasp = real(cwtasp);
-         VecDot(BS,P,&cbstp);   bstp  = real(cbstp);
+         ierr = VecDot(W,ASP,&cwtasp); CHKERRQ(ierr); wtasp = real(cwtasp);
+         ierr = VecDot(BS,P,&cbstp); CHKERRQ(ierr);   bstp  = real(cbstp);
 #else
-         VecDot(W,ASP,&wtasp);
-         VecDot(BS,P,&bstp);
+         ierr = VecDot(W,ASP,&wtasp); CHKERRQ(ierr);
+         ierr = VecDot(BS,P,&bstp); CHKERRQ(ierr);
 #endif
-         VecCopy(W,X);
+         ierr = VecCopy(W,X); CHKERRQ(ierr);
          q1 = step1*(bstp + wtasp + p5*step1*ptasp);
          q2 = step2*(bstp + wtasp + p5*step2*ptasp);
 #if defined(PETSC_COMPLEX)
-         if (q1 <= q2) {cstep1 = step1; VecAXPY(&cstep1,P,X);}
-         else          {cstep2 = step2; VecAXPY(&cstep2,P,X);}
+         if (q1 <= q2) {
+           cstep1 = step1; ierr = VecAXPY(&cstep1,P,X); CHKERRQ(ierr);
+         }
+         else {
+           cstep2 = step2; ierr = VecAXPY(&cstep2,P,X); CHKERRQ(ierr);
+         }
 #else
-         if (q1 <= q2) VecAXPY(&step1,P,X);
-         else          VecAXPY(&step2,P,X);
+         if (q1 <= q2) {ierr = VecAXPY(&step1,P,X); CHKERRQ(ierr);}
+         else          {ierr = VecAXPY(&step2,P,X); CHKERRQ(ierr);}
 #endif
        }
        pcgP->ltsnrm = pcgP->delta;    /* convergence in direction of */
@@ -170,9 +171,9 @@ int KSPSolve_QCG(KSP itP,int *its)
        /* Compute step along p */
 
        step = rtr/ptasp;
-       VecCopy(W,X);		/*  x = w  */
-       VecAXPY(&step,P,X);	/*  x <- step*p + x  */
-       VecNorm(X,&pcgP->ltsnrm);
+       ierr = VecCopy(W,X); CHKERRQ(ierr);	   /*  x = w  */
+       ierr = VecAXPY(&step,P,X); CHKERRQ(ierr);   /*  x <- step*p + x  */
+       ierr = VecNorm(X,&pcgP->ltsnrm); CHKERRQ(ierr);
 
        if (pcgP->ltsnrm > pcgP->delta ) {
 
@@ -183,16 +184,16 @@ int KSPSolve_QCG(KSP itP,int *its)
 
          if (i == 0) {
            scal = pcgP->delta / pcgP->ltsnrm;
-           VecScale(&scal,X); 
+           ierr = VecScale(&scal,X); CHKERRQ(ierr);
          } else {
            /* Compute roots of quadratic */
            ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);
            CHKERRQ(ierr);
-           VecCopy(W,X);
+           ierr = VecCopy(W,X); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
-           cstep1 = step1; VecAXPY(&cstep1,P,X);
+           cstep1 = step1; ierr = VecAXPY(&cstep1,P,X); CHKERRQ(ierr);
 #else
-           VecAXPY(&step1,P,X);	/*  x <- step1*p + x  */
+           ierr = VecAXPY(&step1,P,X); CHKERRQ(ierr);  /*  x <- step1*p + x  */
 #endif
          }
          pcgP->ltsnrm = pcgP->delta;
@@ -210,10 +211,10 @@ int KSPSolve_QCG(KSP itP,int *its)
 
          /* Evaluate the current step */
 
-         VecCopy(X,W);		/* update interior iterate */
+         ierr = VecCopy(X,W); CHKERRQ(ierr);	/* update interior iterate */
          nstep = -step;
-         VecAXPY(&nstep,ASP,R);	/*  r <- -step*asp + r  */
-         VecNorm(R,&rnrm);
+         ierr = VecAXPY(&nstep,ASP,R); CHKERRQ(ierr); /* r <- -step*asp + r */
+         ierr = VecNorm(R,&rnrm); CHKERRQ(ierr);
 
          if (history && hist_len > i + 1) history[i+1] = rnrm;
          MONITOR(itP,rnrm,i+1);
@@ -234,9 +235,9 @@ int KSPSolve_QCG(KSP itP,int *its)
     }
     if (pcgP->info) break;	/* Convergence has been attained */
     else {		/* Compute a new AS-orthogonal direction */
-      VecDot(R,R,&rntrn);
+      ierr = VecDot(R,R,&rntrn); CHKERRQ(ierr);
       beta = rntrn/rtr;
-      VecAYPX(&beta,R,P);		/*  p <- r + beta*p  */
+      ierr = VecAYPX(&beta,R,P); CHKERRQ(ierr);	/*  p <- r + beta*p  */
 #if defined(PETSC_COMPLEX)
       rtr = real(rntrn);
 #else
@@ -245,9 +246,9 @@ int KSPSolve_QCG(KSP itP,int *its)
     }
   }
 /*  MatBackwardSolve(Factmat,X,X); */                   /* Unscale x */
-  MatMult(Amat,X,WA);
-  VecDot(B,X,&btx);
-  VecDot(X,WA,&xtax);
+  ierr = MatMult(Amat,X,WA); CHKERRQ(ierr);
+  ierr = VecDot(B,X,&btx); CHKERRQ(ierr);
+  ierr = VecDot(X,WA,&xtax); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
   pcgP->quadratic = real(btx) + p5* real(xtax);
 #else
@@ -329,9 +330,10 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,
   SETERRQ(1,"QuadraticRoots_Private:  not done for complex numbers");
 #else
   double zero = 0.0, dsq, ptp, pts, rad, sts;
-  VecDot(p,s,&pts);
-  VecDot(p,p,&ptp);
-  VecDot(s,s,&sts);
+  int    ierr;
+  ierr = VecDot(p,s,&pts); CHKERRQ(ierr);
+  ierr = VecDot(p,p,&ptp); CHKERRQ(ierr);
+  ierr = VecDot(s,s,&sts); CHKERRQ(ierr);
   dsq = NLSQR(*delta);
   rad = sqrt(NLSQR(pts) - ptp*(sts - dsq));
   if (pts > zero) {
