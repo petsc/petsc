@@ -48,7 +48,9 @@ extern int PCSORSetIterations(PC, int);
 
 extern int PCBJacobiSetBlocks(PC, int);
 
-extern int PCICCSetBlockSolveIter(PC);
+extern int PCBSIterSetBlockSolve(PC);
+extern int PCBSIterSetFrompOptions(PC);
+extern int PCBSIterSolve(PC,Vec,Vec,int*);
 
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
