@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesmfj2.c,v 1.1 1997/07/04 03:35:30 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.2 1997/07/04 18:57:55 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -276,9 +276,10 @@ int SNESMatrixFreeMatCreate2(SNES snes,Vec x, Mat *J)
   PetscStrcpy(p,"-");
   if (snes->prefix) PetscStrcat(p,snes->prefix);
   if (flg) {
+    PetscPrintf(snes->comm," Matrix-free Options (via SNES)\n");
     PetscPrintf(snes->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf_compute_err: compute sqrt rel error in function\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);
+    PetscPrintf(snes->comm,"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %g)\n",p,mfctx->error_rel);
     PetscPrintf(snes->comm,"   %ssnes_mf_umin <umin>: see users manual (default %g)\n",p,mfctx->umin);
   }
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
