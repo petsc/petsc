@@ -12,15 +12,10 @@ Additional Capabilities that PETSc Needs:
 
   - Fix VRML vector viewer interface; add documentation about VRML.
 
-  - Aim for more exhaustive PETSc testing.  From 
+  - Aim for more exhaustive PETSc testing.  See
     /home/MPI/mpich/examples/test/rlist.srt:
-        # This is a list of MPI usages in the test programs, generated with 
-        # strings */*.c | grep MPI | tr -cs 'A-Za-z_' '\012' | grep MPI | sort |
-           uniq
-        # This can be used, in comparison with the routine index, to find routines
-        # still needing tests.
 
-  - Create an INDEX for examples
+  - Create an Database for examples
 
   - Reorganize examples, write a SLES tutorial
 
@@ -30,8 +25,8 @@ Additional Capabilities that PETSc Needs:
   - Fix SNES so that calling SNESSolve(), SNESDestroy() (without calling
     SNESSolve() in between) doesn't cause a seg fault.
 
-  * add -mpidump option that lists all unfinished MPI operations at end, including
-    PetscMPIDump()
+  * add -mpidump option that lists all unfinished MPI operations at end, 
+         including PetscMPIDump()
 
   - Add diagnotics for memory allocation using PLogInfo (like already done 
     for AIJ format) for all matrix formats if it's not already in place.
@@ -43,16 +38,15 @@ Additional Capabilities that PETSc Needs:
 
   * Explain profiling, performance tuning in users manual, Performance file
 
-  * Add to documentation tips on getting parallel performance numbers, including
-    how to prevent the paging in of executable from screwing up timings. sles ex21.c
+  * Add to documentation tips on getting parallel performance numbers, 
+    including how to prevent the paging in of executable from screwing 
+    up timings. sles ex21.c
 
   - Provide better registration mechanism for PC, KSP, etc (based on
     MatReroderingRegister) to replace the lame procedure described in,
     e.g., PCRegisterAll.  
 
   - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
-
-  * Better way of dealing with MatAssembly - when elements are not inserted
 
   - Fix MPIRowbs so factorization routiens return NEW matrix, NOT the 
     original matrix. Then fix MatMult() etc to make sure one does not
@@ -97,53 +91,11 @@ Additional Capabilities that PETSc Needs:
   - interface to Tom Coleman's post-docs Cholesky code
 
   - try to set up Fortran error checking with
+          forcheck (http://132.229.167.66:80/forcheck/) or 
+          ftnchek (http://dv.go.dlr.de:8081/pdinfo_dv/ftnchek.html)
+          lintfor (http://www.doc.ic.ac.uk/~mac/manuals/hpux-manual-pages
+                   /hpux/usr/man/man1/lintfor.1.html).
 
-One thing that we could do for routines without "choice" arguments is to
-provide a "stub" file written in Fortran that could be used with a tool like
-forcheck (http://132.229.167.66:80/forcheck/) or ftnchek
-(http://dv.go.dlr.de:8081/pdinfo_dv/ftnchek.html) or lintfor
-(http://www.doc.ic.ac.uk/~mac/manuals/hpux-manual-pages/hpux/usr/man/man1/lintfor.1.html).
-I haven't done this for MPICH because of the choice arguments.
-
-  - check out http://www.c3.lanl.gov/~dquinlan/A++P++.html
-  - checkout http://www-sccm.stanford.edu/~burgess/papers/renumber.ps.gz
-  - checkout http://www.cs.colorado.edu/homes/clive/public_html/MPI-RGL.html
-  - checkout J. Schobel, Linz, 3d grid generation
-  - checkout   -http://www.csl.sri.com/GLU.html
-  - checkout http://nfhsg3.rus.uni-stuttgart.de/projects/ddd
-    Klaus Birhen birhan@rus.uni-stuttgart.de
-  - checkout http://www.cs.utexas.edu/users/rvdg/plapack
-  - checkout 
-
-Date: Wed, 5 Jun 1996 23:08:49 +0300 (EET DST)
-From: Jussi Maki <Jussi.Maki@csc.fi>
-To: rs2hpm@csc.fi
-Subject: rs2hpm list and sources available
-
-Howdy folks,
-
-I finally got the permission from IBM Austin to distribute the source
-code on rs2hpm (on 15th May 1996 Ed Welbon IBM/Austin stated:
-"Jussi, You may release your source code for the SP2 performance
-monitor at your disgression. ... As in the past, we can commit no
-support for the monitor. ")
-
-I have now created the rs2hpm@csc.fi mailing list on the SP2 and
-POWER2 hardware performance monitor subject. Please use it for
-discussion and on distributing new ideas. I hope you don't mind but I
-added all you who have contacted me on the rs2hpm subject to the list.
-
-The source code version is now available at
-http://www.csc.fi/~jmaki/rs2hpm-dist/960605/rs2hpm-2.0-960605-src.tar.Z
-This latest version fixes some bugs including wrong sampling
-collection of data cache counters (my apologies on that).
-
-+------------------------------------------------------------------------+
-! Jussi Maki                          ! Email: Jussi.Maki@csc.fi         !
-! Centre for Scientific Computing     ! URL:   http://www.csc.fi/~jmaki  !
-! P.O. Box 405                        ! Voice:     +358-0-457 2747       !
-! FIN-02101 Espoo, Finland            ! Telefax:   +358-0-457 2302       !
-+------------------------------------------------------------------------+
 
   - MatSetBlockValues()
 
@@ -161,11 +113,11 @@ collection of data cache counters (my apologies on that).
        like:
         MatSetSubmatrix(Mat large,Mat small,int *rows, int *cols)
 
-  - Write uniprocessor ICC code; possibly also introduce symmetric storage variant.
+  - Write uniprocessor ICC code; possibly also introduce symmetric storage 
+    variant.
 
-  - Treat interleaved vector as seperate named vectors
-
-   - Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX everywhere.
+   - Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX
+     everywhere.
 
    - Add viewer for matrix graph - possibly interface to external software?
      (requested by Andreas) 
@@ -192,8 +144,8 @@ collection of data cache counters (my apologies on that).
    - Make PLogFlops() also log loads and stores.
 
 
- (Satish)   * Add functionality to bjacobi to support block Gauss-Seidel including 
-              support for coloring in parallel.
+   * Add functionality to bjacobi to support block Gauss-Seidel
+     including  support for coloring in parallel.
 
    * Develop basic PETSc benchmark suite
 
@@ -206,9 +158,8 @@ collection of data cache counters (my apologies on that).
       - Consider CUTE test suite
 
    - Redo parts of inline for basic operations and improved performance.
-     Associated with MISF.
 
- (Lois)   * Parallel dense matrix implementation.
+   * Parallel dense matrix implementation.
 
    - Introduce a concept of Vecs and provide multiple right hand side
      versions of MatMult.... Then do KSP versions.
@@ -219,25 +170,33 @@ collection of data cache counters (my apologies on that).
 
    * Improve history (-log_history) logging.
 
-
- ----------------------------------------------------------------------------
-              Lower Priority Issues:
- ----------------------------------------------------------------------------
-
    - Finite difference approximations of derivatives using coloring
 
-   - Implement nested factorization preconditioner?
-
-   - Add matrix reduction plus ILU preconditioner. 
-
-   - stride with multicomponent chunks in index sets, also two dimensional
+   * stride with multicomponent chunks in index sets, also two dimensional
      and three dimensional chunks
 
    * Develop code to rebalance matrices (and vectors) for better 
      load balance during matrix vector multiplies.
 
-   NO Interface to ScaLAPACK and BLACS
+------------------------------------------------------------------------
+         Web pages to read and possible software to interface to 
+------------------------------------------------------------------------
 
+
+  - http://www.c3.lanl.gov/~dquinlan/A++P++.html
+  - http://www-sccm.stanford.edu/~burgess/papers/renumber.ps.gz
+  - http://www.cs.colorado.edu/homes/clive/public_html/MPI-RGL.html
+  - J. Schobel, Linz, 3d grid generation
+  - http://www.csl.sri.com/GLU.html
+  - http://nfhsg3.rus.uni-stuttgart.de/projects/ddd
+    Klaus Birhen birhan@rus.uni-stuttgart.de
+  - http://www.cs.utexas.edu/users/rvdg/plapack
+  - http://www.csc.fi/~jmaki/rs2hpm-dist/960605/rs2hpm-2.0-960605-src.tar.Z
+     ! Jussi Maki                          ! Email: Jussi.Maki@csc.fi   
+     ! Centre for Scientific Computing     ! URL:   http://www.csc.fi/~jmaki 
+     ! P.O. Box 405                        ! Voice:     +358-0-457 2747     
+     ! FIN-02101 Espoo, Finland            ! Telefax:   +358-0-457 2302     
+     +---------------------------------------------------------------------+
 
 -------------------------------------------------------------------------
                             Features for TOHTML
@@ -303,10 +262,11 @@ collection of data cache counters (my apologies on that).
 
    X Make it possible to zoom in on viewed matrices.
 
-   X Add iterative refinement or some similar technique to Unmodified Gram-Schmidt
-     code to cheaply stablize.
+   X Add iterative refinement or some similar technique to Unmodified 
+     Gram-Schmidt code to cheaply stablize.
 
-   X Change mytid and numtid(s) throughout code to rank and size to match MPI terms.
+   X Change mytid and numtid(s) throughout code to rank and size to match
+     MPI terms.
 
    X Upgrade WWW pages, especially installation information.  Use MPICH 
      format as a model.
@@ -493,7 +453,8 @@ collection of data cache counters (my apologies on that).
      I have changed the MatCreateMPIRowbs() to create an initial matrix that 
      already has zeros on the diagonal so that the user need not set them
 
-   X Allow column and row oriented input for MatSetValues() for all matrix types,
+   X Allow column and row oriented input for MatSetValues() for all matrix
+     types,
 
    X Increase user-definable events (needed by Tom Canfield).  Maybe now's
      the time to expand base PETSc events as well?
@@ -523,6 +484,12 @@ collection of data cache counters (my apologies on that).
    X Develop TK interfaces for options and monitoring 
 
    X Develop 1 and 3D distributed array code
+
+
+
+
+
+
 
 
 
