@@ -81,8 +81,10 @@ class Configure(config.base.Configure):
     for l in libs:
       alllibs.append(os.path.join(dir,'libHYPRE_'+l+'.a'))
     import config.setCompilers
-    if config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
+    self.framework.pushLanguage('C')
+    if config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
       alllibs.append('-lstdc++')
+    self.framework.popLanguage()    
     return alllibs
           
   def generateLibGuesses(self):

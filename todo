@@ -6,6 +6,8 @@ Before release
 
   keywords in maual pages should get listed in help topic list
 
+  need python tool to find all manual page functions that are missing in the users manual.
+
 PETSc configure
  
    Make test in compilers.py if compiler is f90 or not
