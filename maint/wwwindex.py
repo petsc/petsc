@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.14 1999/02/02 21:11:02 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.15 1999/02/02 21:17:09 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -10,6 +10,7 @@
 #    wwwindex.py PETSC_DIR
 #
 import os
+import glob
 import posixpath
 from exceptions import *
 from sys import *
@@ -29,6 +30,8 @@ def printindex(outfilename,headfilename,titles,tables):
                   exit()
             headbuf = fd.read()
             fd.close()
+      else:
+            print 'Header file \'' + headfilename + '\' does not exist'
 
       # Now open the output file.
       try:
@@ -134,6 +137,8 @@ def createtable(dirname,levels):
 def getallmandirs(dirs):
       mandirs = []
       for filename in dirs:
+            path,name = posixpath.split(filename)
+            if name == 'RCS' or name == 'sec': continue
             if posixpath.isdir(filename):
                   mandirs.append(filename)
       return mandirs
@@ -149,9 +154,10 @@ def main():
             exit()
 
       PETSC_DIR = argv[1]
-      fd        = os.popen('ls -d '+ PETSC_DIR + '/docs/manualpages/man*')
-      buf       = fd.read()
-      dirs      = split(strip(buf),'\n')
+      #fd        = os.popen('/bin/ls -d '+ PETSC_DIR + '/docs/manualpages/*')
+      #buf       = fd.read()
+      #dirs      = split(strip(buf),'\n')
+      dirs      = glob.glob(PETSC_DIR + '/docs/manualpages/*')
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','none']
@@ -163,9 +169,9 @@ def main():
       for dirname in mandirs:
             table       = createtable(dirname,levels)
             if not table: continue
-            outfilename    = dirname + '.html'
+            outfilename    = dirname + '/index.html'
             dname,fname  = posixpath.split(dirname)
-            headfilename = dname + '/sec/' + fname + '.head'
+            headfilename = dname + '/sec/head.' + fname
             printindex(outfilename,headfilename,levels,table)
 
 

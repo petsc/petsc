@@ -1,15 +1,15 @@
-# $Id: makefile,v 1.38 1998/06/15 16:36:29 balay Exp bsmith $ 
+# $Id: makefile,v 1.39 1998/10/19 22:21:03 bsmith Exp balay $ 
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = 
-DOCS     = tex/manual/manual.tex manualpages/manualpages.html tex/manual/part1.tex \
-	   tex/manual/part2.tex tex/manual/intro.tex tex/petsc.bib \
-	   tex/manual/abstract.tex tex/manual/acknowl.tex \
-	   tex/manual/manual_tex.tex \
-           tex/petsc-patches.html tex/petsc-benchmarks.html tex/petsc-components.html
+DOCS     = manualpages/sec/* manualpages/index.html tex/manual/manual.tex \
+	   tex/manual/part1.tex tex/manual/part2.tex tex/manual/intro.tex \
+	   tex/manual/abstract.tex tex/manual/acknowl.tex tex/manual/manual_tex.tex \
+	   tex/petsc.bib tex/petsc-patches.html tex/petsc-benchmarks.html \
+	   tex/petsc-components.html
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
