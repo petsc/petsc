@@ -43,8 +43,11 @@ class Configure(config.base.Configure):
     if not self.functions.haveFunction('socket'):
       # solaris requires these two libraries for socket()
       if self.libraries.haveLib('socket') and self.libraries.haveLib('nsl'):
-        self.addDefine('HAVE_SOCKET', 1)
-        self.framework.argDB['LIBS'] += ' -lsocket -lnsl'
+        # check if it can find the function
+        if self.functions.check('socket',['-lsocket','-lnsl']):
+          self.addDefine('HAVE_SOCKET', 1)
+          self.framework.argDB['LIBS'] += ' -lsocket -lnsl'
+        
       # Windows requires Ws2_32.lib for socket(), uses stdcall, and declspec prototype decoration
       if self.libraries.check('Ws2_32.lib','socket',prototype='#include <Winsock2.h>',call='socket(0,0,0);'):
         self.addDefine('HAVE_WINSOCK2_H',1)

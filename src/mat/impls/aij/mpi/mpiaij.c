@@ -3564,7 +3564,7 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
   PetscMPIInt            *rprocs,*sprocs,tag=ctx->tag,rank; 
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->n,row,*b_othi,*b_othj;
   PetscScalar            *rvalues,*svalues,*b_otha,*bufa,*bufA;
-  PetscInt               i,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
+  PetscInt               i,k,l,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             *sstatus,rstatus;
   PetscInt               *cols;
@@ -3589,7 +3589,6 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
   nsends   = gen_to->n;
   rwaits   = gen_from->requests;
   swaits   = gen_to->requests;
-  rrow     = gen_from->indices; /* local row index to be received */
   srow     = gen_to->indices;   /* local row index to be sent */
   rstarts  = gen_from->starts;
   sstarts  = gen_to->starts; 

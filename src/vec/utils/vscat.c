@@ -1066,8 +1066,8 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     islocal = PETSC_FALSE;
     /* special case extracting (subset of) local portion */ 
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
-      PetscInt                   nx,ny,to_first,to_step,from_first,from_step;
-      PetscInt                   start,end;
+      PetscInt              nx,ny,to_first,to_step,from_first,from_step;
+      PetscInt              start,end;
       VecScatter_Seq_Stride *from12,*to12;
 
       ierr = VecGetOwnershipRange(xin,&start,&end);CHKERRQ(ierr);
@@ -1216,7 +1216,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         PetscInt nx,ny,*idx,*idy,bsx,bsy;
         ierr = ISBlockGetBlockSize(iy,&bsy);CHKERRQ(ierr);
         ierr = ISBlockGetBlockSize(ix,&bsx);CHKERRQ(ierr);
-        if (bsx == bsy && (bsx == 12 || bsx == 5 || bsx == 4 || bsx == 3 || bsx == 2)) {
+        if (bsx == bsy && (bsx == 12 || bsx == 5 || bsx == 4 || bsx == 3 || bsx == 2 || bsx == 6)) {
           ierr = ISBlockGetSize(ix,&nx);CHKERRQ(ierr);
           ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
           ierr = ISBlockGetSize(iy,&ny);CHKERRQ(ierr);
@@ -1235,7 +1235,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ierr = ISGetLocalSize(iy,&ysize);CHKERRQ(ierr);
         ierr = ISBlockGetBlockSize(ix,&bsx);CHKERRQ(ierr);
         /* see if stride index set is equivalent to block index set */
-        if (((bsx == 2) || (bsx == 3) || (bsx == 4) || (bsx == 5) || (bsx == 12)) && 
+        if ((bsx == 2 || bsx == 3 || bsx == 4 || bsx == 5 || bsx == 12 || bsx == 6) && 
             ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           PetscInt nx,*idx,*idy,il;
           ierr = ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
@@ -1264,6 +1264,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
+      PetscLogInfo(xin,"VecScatterCreate:General case: MPI to Seq\n");
       goto functionend;
     }
   }
@@ -1275,7 +1276,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     /* special case local copy portion */ 
     islocal = PETSC_FALSE;
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
-      PetscInt                   nx,ny,to_first,to_step,from_step,start,end,from_first;
+      PetscInt              nx,ny,to_first,to_step,from_step,start,end,from_first;
       VecScatter_Seq_Stride *from,*to;
 
       ierr = VecGetOwnershipRange(yin,&start,&end);CHKERRQ(ierr);
@@ -1303,7 +1304,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SStoSS;
         ctx->copy         = VecScatterCopy_PStoSS;
-        PetscLogInfo(xin,"VecScatterCreate:Special case: sequential stride to stride\n");
+        PetscLogInfo(xin,"VecScatterCreate:Special case: sequential stride to MPI stride\n");
         goto functionend;
       }
     } else {
@@ -1320,6 +1321,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ierr = VecScatterCreate_StoP(nx,idx,ny,idy,yin,ctx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
+      PetscLogInfo(xin,"VecScatterCreate:General case: Seq to MPI\n");
       goto functionend;
     }
   }
@@ -1335,6 +1337,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     ierr    = VecScatterCreate_PtoP(nx,idx,ny,idy,xin,yin,ctx);CHKERRQ(ierr);
     ierr    = ISRestoreIndices(ix,&idx);CHKERRQ(ierr); 
     ierr    = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
+    PetscLogInfo(xin,"VecScatterCreate:General case: MPI to MPI\n");
     goto functionend;
   }
 

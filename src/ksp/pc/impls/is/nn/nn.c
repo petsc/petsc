@@ -340,9 +340,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   {
     PetscMPIInt size;
-    PetscInt    n_neigh_m1;
     ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-    n_neigh_m1 = (n_neigh) ? n_neigh-1 : 0;
     /* Create the global coarse vectors (rhs and solution). */
     ierr = VecCreateMPI(pc->comm,1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
     ierr = VecDuplicate(pcnn->coarse_b,&(pcnn->coarse_x));CHKERRQ(ierr);

@@ -29,6 +29,9 @@ PETSc configure
 
 KSP
 
+   Add new KSP that allows reordering unknowns (parallel or sequential) for better performance
+   and then calls regular KSP.
+
     Add option to KSP to compute and print true residual norm after solve is complete.
 
      Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
@@ -63,6 +66,9 @@ Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
 PC/Mat
+
+  Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
+  in ASM.
 
   Add PCShellSetContext()/GetContext() and remove the ctx and ctxrich passed into setapply and setapplyrichardson()
   indicates limits on context from Fortran. (Make like MatShell())

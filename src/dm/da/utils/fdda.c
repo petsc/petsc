@@ -774,7 +774,6 @@ PetscErrorCode DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
   ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);  
   ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
 
   /*
@@ -1619,7 +1618,6 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
   ierr = MatSeqAIJSetPreallocation(J,0,dnz);CHKERRQ(ierr);  
   ierr = MatMPIAIJSetPreallocation(J,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr); 
-  ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
 
   /*
