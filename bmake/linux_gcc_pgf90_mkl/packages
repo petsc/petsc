@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.22 2001/08/06 21:12:31 bsmith Exp $ 
+# $Id: packages,v 1.1 2001/08/22 20:52:10 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,7 +10,9 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLASLAPACK_LIB = -L${PGI}/linux86/lib -llapack -lblas
+#BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/BIN -lmkl32_lapack -lmkl32_p3 
+BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_p3 /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/libg2c.a -lpthread
+PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 #
 # Location of MPI (Message Passing Interface) software
 #
@@ -35,28 +37,28 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 #  Location for ALICE Memory Snooper
 #
-AMS_HOME       = /home/alice/ams
-AMS_INCLUDE    = -I${AMS_HOME}/include
-AMS_LIBDIR     = ${AMS_HOME}/lib/libg/linux
-AMS_LIB        = -L${AMS_LIBDIR} -lamspub -lamsutilmt -lamsutil -lpthread -lnsl
-PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
+#AMS_HOME       = /home/alice/ams
+#AMS_INCLUDE    = -I${AMS_HOME}/include
+#AMS_LIBDIR     = ${AMS_HOME}/lib/libg/linux
+#AMS_LIB        = -L${AMS_LIBDIR} -lamspub -lamsutilmt -lamsutil -lpthread -lnsl
+#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 #
 # Location of JAVA
 # 
 #JAVAC           = /nfs/software-linux/apps/packages/jdk-1.2.2/bin/javac
 #JAVA            = /nfs/software-linux/apps/packages/jdk-1.2.2/bin/java
 #JAR             = /nfs/software-linux/apps/packages/jdk-1.2.2/bin/jar
-JAVAC            = /home/petsc/software/jdk1.3-linux/bin/javac
-JAVA             = /home/petsc/software/jdk1.3-linux/bin/java
-JAR              = /home/petsc/software/jdk1.3-linux/bin/jar
-PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
+#JAVAC            = /home/petsc/software/jdk1.3-linux/bin/javac
+#JAVA             = /home/petsc/software/jdk1.3-linux/bin/java
+#JAR              = /home/petsc/software/jdk1.3-linux/bin/jar
+#PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 #
 # Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
-MPE_INCLUDE    = -I${MPI_HOME}/mpe -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
-MPE_LIB        = -L${MPI_BUILD_HOME}/lib -lmpe
-PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
+#MPE_INCLUDE    = -I${MPI_HOME}/mpe -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+#MPE_LIB        = -L${MPI_BUILD_HOME}/lib -lmpe
+#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)
 #
@@ -66,9 +68,9 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Matlab location
 #
-CMEX            = /software/linux/com/packages/matlab-r12/bin/mex
-MCC             = gcc
-MATLABCOMMAND   = matlab
+#CMEX            = /software/linux/com/packages/matlab-r12/bin/mex
+#MCC             = gcc
+#MATLABCOMMAND   = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #  The Matlab include file have some bugs in them with C++,  they have a 
@@ -84,22 +86,22 @@ MATLABCOMMAND   = matlab
 #
 # Location where adiC is installed
 #
-ADIC_INCLUDE    = -I${ADIC}/include -Dad_GRAD_MAX=36
-ADIC_LIB        =  -L${ADIC}/lib/${ADIC_ARCH}/ -ladic -lADIntrinsics-C -laif_grad
-ADIC_CC         = adiC -a -d gradient
-PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
+#ADIC_INCLUDE    = -I${ADIC}/include -Dad_GRAD_MAX=36
+#ADIC_LIB        =  -L${ADIC}/lib/${ADIC_ARCH}/ -ladic -lADIntrinsics-C -laif_grad
+#ADIC_CC         = adiC -a -d gradient
+#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
 # Location where adifor is installed
 #
-ADIFOR_LIB        =  /home/derivs/ADIFOR2.0D.lib/lib/ReqADIntrinsics-Linux86.o /home/derivs/ADIFOR2.0D.lib/lib/libADIntrinsics-Linux86.a
-ADIFOR_FC          = /home/derivs/ADIFOR2.0D/bin/Adifor2.1  AD_PMAX=36 AD_IVARS=X AD_DVARS=F AD_PROG=silly.cmp AD_OUTPUT_DIR=. AD_EXCLUDE_PROCS=PETSCLOGFLOPS
-PETSC_HAVE_ADIFOR = -DPETSC_HAVE_ADIFOR
+#ADIFOR_LIB        =  /home/derivs/ADIFOR2.0D.lib/lib/ReqADIntrinsics-Linux86.o /home/derivs/ADIFOR2.0D.lib/lib/libADIntrinsics-Linux86.a
+#ADIFOR_FC          = /home/derivs/ADIFOR2.0D/bin/Adifor2.1  AD_PMAX=36 AD_IVARS=X AD_DVARS=F AD_PROG=silly.cmp AD_OUTPUT_DIR=. AD_EXCLUDE_PROCS=PETSCLOGFLOPS
+#PETSC_HAVE_ADIFOR = -DPETSC_HAVE_ADIFOR
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/libpvode_linux_gcc_pgf90.a
-PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/libpvode_linux_gcc_pgf90.a
+#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
 # Location of ParMetis
 #
@@ -115,8 +117,8 @@ PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 # Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
 # depending on how they are named).
 #
-LUSOL_LIB        = /home/petsc/software/lusol/liblusol_linux_pgf90.a
-PETSC_HAVE_LUSOL = -DPETSC_HAVE_LUSOL
+#LUSOL_LIB        = /home/petsc/software/lusol/liblusol_linux_pgf90.a
+#PETSC_HAVE_LUSOL = -DPETSC_HAVE_LUSOL
 #
 #
 # Location of the AMG library
@@ -126,15 +128,15 @@ PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
 #
 # Location of SPAI;
 #
-SPAI_INCLUDE    = -I/home/petsc/software/spai_3.0/lib
-SPAI_LIB        = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
-PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
+#SPAI_INCLUDE    = -I/home/petsc/software/spai_3.0/lib
+#SPAI_LIB        = /home/petsc/software/spai_3.0/lib/linux_gcc_pgf90/libspai.a
+#PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 #  Location of SuperLU
 #
-SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux.a
-SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC
-PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
+#SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux.a
+#SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC
+#PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
 #
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this
