@@ -721,7 +721,7 @@ acfindx:
         raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
     self.framework.addDefine('HAVE_MPI', 1)
     self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/src/sys/src/mpiuni')
-    self.framework.addSubstitution('MPI_LIB',     '${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a')
+    self.framework.addSubstitution('MPI_LIB',     '-L${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH} -lmpiuni')
     self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/src/sys/src/mpiuni/mpirun')
     self.framework.addSubstitution('MPE_INCLUDE', '')
     self.framework.addSubstitution('MPE_LIB',     '')
