@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.18 1996/07/08 22:20:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.19 1996/08/08 14:44:19 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -19,6 +19,8 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   Scalar *val,*vals;
 
   PetscValidHeaderSpecific(X,MAT_COOKIE);  PetscValidHeaderSpecific(Y,MAT_COOKIE);
+  PetscValidScalarPointer(a);
+
   MatGetSize(X,&m1,&n1);  MatGetSize(X,&m2,&n2);
   if (m1 != m2 || n1 != n2) SETERRQ(1,"MatAXPY:Non conforming matrix add");
 
@@ -27,14 +29,14 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   }
   else {
     vals = (Scalar *) PetscMalloc( n1*sizeof(Scalar) ); CHKPTRQ(vals);
-    MatGetOwnershipRange(X,&start,&end);
+    ierr = MatGetOwnershipRange(X,&start,&end); CHKERRQ(ierr);
     for ( i=start; i<end; i++ ) {
-      MatGetRow(X,i,&ncols,&row,&val);
+      ierr = MatGetRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
       for ( j=0; j<ncols; j++ ) {
         vals[j] = (*a)*val[j];
       }
       ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES); CHKERRQ(ierr);
-      MatRestoreRow(X,i,&ncols,&row,&val);
+      ierr = MatRestoreRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
     }
     PetscFree(vals);
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -60,6 +62,7 @@ int MatShift(Scalar *a,Mat Y)
   int    i,start,end,ierr;
 
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
+  PetscValidScalarPointer(a);
   if (Y->ops.shift) {
     ierr = (*Y->ops.shift)(a,Y); CHKERRQ(ierr);
   }
@@ -94,6 +97,7 @@ int MatDiagonalShift(Mat Y,Vec D)
   int    i,start,end,ierr;
 
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
+  PetscValidHeaderSpecific(D,VEC_COOKIE);
   if (Y->ops.shift) {
     ierr = (*Y->ops.diagonalshift)(D,Y); CHKERRQ(ierr);
   }

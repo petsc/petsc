@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: dxml.c,v 1.4 1996/03/19 21:25:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dxml.c,v 1.5 1996/08/08 14:42:46 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -8,6 +8,7 @@ static char vcid[] = "$Id: dxml.c,v 1.4 1996/03/19 21:25:53 bsmith Exp bsmith $"
      At the moment the DXNL library only offers sparse matrix vector product.
 */
 #include "src/mat/impls/aij/seq/aij.h"
+#include "src/vec/vecimpl.h"
 
 #if defined(HAVE_DXML) && !defined(__cplusplus)
 
@@ -17,8 +18,8 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
   Scalar             *xx,*yy;
   int                ierr, zero = 0;
 
-  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yy); CHKERRQ(ierr);
+  VecGetArray_Fast(x,xx);
+  VecGetArray_Fast(y,yy);
   dmatvec_genr_(&zero,a->a,a->i,a->j,&a->nz,0,xx,yy,&a->m);
   PLogFlops(2*a->nz - a->m);
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.172 1996/11/01 23:25:33 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.173 1996/11/01 23:39:29 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -99,13 +99,15 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
       }
     } 
     else {
-      if (roworiented) {
+      if (roworiented && !aij->donotstash) {
         ierr = StashValues_Private(&aij->stash,im[i],n,in,v+i*n,addv);CHKERRQ(ierr);
       }
       else {
-        row = im[i];
-        for ( j=0; j<n; j++ ) {
-          ierr = StashValues_Private(&aij->stash,row,1,in+j,v+i+j*m,addv);CHKERRQ(ierr);
+        if (!aij->donotstash) {
+          row = im[i];
+          for ( j=0; j<n; j++ ) {
+            ierr = StashValues_Private(&aij->stash,row,1,in+j,v+i+j*m,addv);CHKERRQ(ierr);
+          }
         }
       }
     }
@@ -562,6 +564,9 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
   if (aij->Mvctx)  VecScatterDestroy(aij->Mvctx);
   if (aij->rowvalues) PetscFree(aij->rowvalues);
   PetscFree(aij); 
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
   return 0;
@@ -900,8 +905,9 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
     a->roworiented = 0;
     MatSetOption(a->A,op);
     MatSetOption(a->B,op);
-  }
-  else if (op == MAT_NO_NEW_DIAGONALS)
+  } else if (op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES) {
+    a->donotstash = 1;
+  } else if (op == MAT_NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:MAT_NO_NEW_DIAGONALS");}
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:unknown option");}
@@ -1354,6 +1360,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   B->view       = MatView_MPIAIJ;
   B->factor     = 0;
   B->assembled  = PETSC_FALSE;
+  B->mapping    = 0;
 
   b->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&b->rank);
@@ -1403,6 +1410,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 
   /* build cache for off array entries formed */
   ierr = StashBuild_Private(&b->stash); CHKERRQ(ierr);
+  b->donotstash  = 0;
   b->colmap      = 0;
   b->garray      = 0;
   b->roworiented = 1;

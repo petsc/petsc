@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.107 1996/10/30 19:21:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.108 1996/10/30 23:45:47 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -353,6 +353,7 @@ $      information to screen (for code compiled with
 $      PETSC_LOG)
 $  -log_mpe : creates a logfile viewable by the 
 $      utility upshot/nupshot (in MPICH distribution)
+$  -log_trace : prints traces of all PETSc calls to the screen
 $  -mpidump : Calls PetscMPIDump()
 $  -trdump : Calls PetscTrDump()
 $  -trinfo : Prints total memory usage
@@ -391,7 +392,7 @@ int PetscFinalize()
       if (mname[0]) PLogDump(mname); 
       else          PLogDump(0);
     }
-    PLogDestroy();
+    ierr = PLogDestroy(); CHKERRQ(ierr);
   }
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1);CHKERRQ(ierr);
@@ -491,9 +492,11 @@ extern int PetscSetUseTrMalloc_Private();
 
 int OptionsCheckInitial_Private()
 {
-  char     string[64];
+  char     string[64],mname[256];
   MPI_Comm comm = PETSC_COMM_WORLD;
   int      flg1,flg2,flg3, ierr,*nodes,flag,i,rank;
+
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
 #if defined(PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1); CHKERRQ(ierr);
@@ -574,7 +577,6 @@ int OptionsCheckInitial_Private()
        and kill the program. 
     */
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (size > 2) {
       int        dummy;
       MPI_Status status;
@@ -621,7 +623,6 @@ int OptionsCheckInitial_Private()
   if (!flg1) { PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0); }
 #if defined(PETSC_LOG)
   {
-    char mname[256];
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1);CHKERRQ(ierr);
     if(flg1) {
@@ -635,7 +636,6 @@ int OptionsCheckInitial_Private()
   }
   ierr = OptionsHasName(PETSC_NULL,"-log_info", &flg1); CHKERRQ(ierr);
   if (flg1) { 
-    char mname[256];
     PLogInfoAllow(PETSC_TRUE); 
     ierr = OptionsGetString(PETSC_NULL,"-log_info",mname,256, &flg1);CHKERRQ(ierr);
     if (flg1) {
@@ -656,6 +656,21 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
   if (flg1)              {  PLogAllBegin();  }
   else if (flg2 || flg3) {  PLogBegin(); }
+  ierr = OptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1); CHKERRQ(ierr);
+  if (flg1) { 
+    char fname[256];
+    FILE *file;
+    if (mname[0]) {
+      sprintf(fname,"%s.%d",mname,rank);
+      file = fopen(fname,"w"); 
+      if (!file) {
+        SETERRQ(1,"OptionsCreate_Private:Unable to open trace file");
+      }
+    } else {
+      file = stdout;
+    }
+    ierr = PLogTraceBegin(file); CHKERRQ(ierr);
+  }
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {
@@ -681,6 +696,7 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm," -optionstable: dump list of options inputted\n");
     PetscPrintf(comm," -optionsleft: dump list of unused options\n");
     PetscPrintf(comm," -log[_all _summary]: logging objects and events\n");
+    PetscPrintf(comm," -log_trace [filename]: prints trace of all PETSc calls\n");
 #if defined (HAVE_MPE)
     PetscPrintf(comm," -log_mpe: Also create logfile viewable through upshot\n");
 #endif
@@ -995,7 +1011,7 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
 
 static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
 {
-  int  i, N,ierr;
+  int  i, N,ierr,len;
   char **names,tmp[128];
 
   if (!options) {ierr = OptionsCreate_Private(0,0,0); CHKERRQ(ierr);}
@@ -1006,9 +1022,11 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
 
   /* append prefix to name */
   if (pre) {
-    PetscStrcpy(tmp,pre); PetscStrcat(tmp,name+1);
+    PetscStrncpy(tmp,pre,128); 
+    len = PetscStrlen(tmp);
+    PetscStrncat(tmp,name+1,128-len-1);
   }
-  else PetscStrcpy(tmp,name+1);
+  else PetscStrncpy(tmp,name+1,128);
 
   /* slow search */
   *flg = 0;

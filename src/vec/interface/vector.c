@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.92 1996/10/24 21:22:35 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.93 1996/10/25 18:32:47 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -565,8 +565,6 @@ int VecDestroyVecs(Vec *vv,int m)
 
 /*@
    VecSetValues - Inserts or adds values into certain locations of a vector. 
-   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
-   MUST be called after all calls to VecSetValues() have been completed.
 
    Input Parameters:
 .  x - vector to insert in
@@ -578,9 +576,12 @@ int VecDestroyVecs(Vec *vv,int m)
    Notes: 
    x[ix[i]] = y[i], for i=0,...,ni-1.
 
+   Notes:
    Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
+   MUST be called after all calls to VecSetValues() have been completed.
 
 .keywords: vector, set, values
 
@@ -590,8 +591,86 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 {
   int ierr;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidIntPointer(ix);
+  PetscValidScalarPointer(y);
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ierr = (*x->ops.setvalues)( x, ni,ix, y,iora ); CHKERRQ(ierr);
+  PLogEventEnd(VEC_SetValues,x,0,0,0);  
+  return 0;
+}
+
+/*@
+   VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
+     by the routine VecSetValuesLocal() to allow users to insert vector entries
+     using a local (per-processor) numbering.
+
+   Input Parameters:
+.  x - vector
+.  n - number of local indices
+.  indices - global index for each local index
+
+   Notes: 
+     All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
+
+.keywords: vector, set, values, local ordering
+
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal()
+@*/
+int VecSetLocalToGlobalMapping(Vec x, int n,int *indices)
+{
+  int ierr;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidIntPointer(indices);
+
+  if (x->mapping) {
+    SETERRQ(1,"VecSetLocalToGlobalMapping:Mapping already set for vector");
+  }
+
+  ierr = ISLocalToGlobalMappingCreate(n,indices,&x->mapping);CHKERRQ(ierr);
+  return 0;
+}
+
+/*@
+   VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
+        using a local ordering of the nodes. 
+
+   Input Parameters:
+.  x - vector to insert in
+.  ni - number of elements to add
+.  ix - indices where to add
+.  y - array of values
+.  iora - either INSERT_VALUES or ADD_VALUES
+
+   Notes: 
+   x[ix[i]] = y[i], for i=0,...,ni-1.
+
+   Notes:
+   Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
+   options cannot be mixed without intervening calls to the assembly
+   routines.
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
+   MUST be called after all calls to VecSetValuesLocal() have been completed.
+
+.keywords: vector, set, values, local ordering
+
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping()
+@*/
+int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
+{
+  int ierr,lix[128];
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidIntPointer(ix);
+  PetscValidScalarPointer(y);
+  if (!x->mapping) {
+    SETERRQ(1,"VecSetValuesLocal:Local to global never set with VecSetLocalToGlobalMapping");
+  }
+  if (ni > 128) {
+    SETERRQ(1,"VecSetValuesLocal:Number indices must be <= 128");
+  }
+
+  PLogEventBegin(VEC_SetValues,x,0,0,0);
+  ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix); 
+  ierr = (*x->ops.setvalues)( x,ni,lix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   return 0;
 }
@@ -995,6 +1074,30 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
   PetscValidIntPointer(low);
   PetscValidIntPointer(high);
   return (*x->ops.getownershiprange)(x,low,high);
+}
+
+/*@
+   VecSetOption - Allows one to set options for a vectors behavior.
+
+   Input Parameter:
+.  x - the vector
+.  op - the option
+
+
+  Note: Currently the only option supported is
+$ VEC_IGNORE_OFF_PROCESSOR_ENTRIES which causes VecSetValues() to ignore 
+    entries destined to be stored on a seperate processor.
+
+.keywords: vector, options
+@*/
+int VecSetOption(Vec x,VecOption op)
+{
+  int ierr;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  if (x->ops.setoption) {
+    ierr = (*x->ops.setoption)(x,op); CHKERRQ(ierr);
+  }
+  return 0;
 }
 
 /* Default routines for obtaining and releasing; */

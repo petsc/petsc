@@ -1,10 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.37 1996/08/08 14:43:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.38 1996/08/15 12:47:45 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
+#include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
@@ -168,12 +169,12 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          i, d, loc, mainbd = a->mainbd;
   int          n = a->n, m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], sum, **dv = a->diagv;
 
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  VecGetArray_Fast(xx,x);
+  VecGetArray_Fast(yy,y);
   /* forward solve the lower triangular part */
   for (i=0; i<m; i++) {
     sum = x[i];
@@ -193,22 +194,20 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
     y[i] = sum*dd[i];
   }
   PLogFlops(2*a->nz - a->n);
-  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 
 int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
   int          m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,sum0,sum1;
 
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  VecGetArray_Fast(xx,x);
+  VecGetArray_Fast(yy,y);
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -249,22 +248,20 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
     inb -= 2; inb2 -= 4;
   }
   PLogFlops(2*a->nz - a->n);
-  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 
 int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
   int          m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,sum0,sum1,sum2;
 
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  VecGetArray_Fast(xx,x);
+  VecGetArray_Fast(yy,y);
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -307,22 +304,20 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
     inb -= 3; inb2 -= 9;
   }
   PLogFlops(2*a->nz - a->n);
-  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 
 int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
   int          m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,w3,sum0,sum1,sum2,sum3;
 
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  VecGetArray_Fast(xx,x);
+  VecGetArray_Fast(yy,y);
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -368,22 +363,20 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
     inb -= 4; inb2 -= 16;
   }
   PLogFlops(2*a->nz - a->n);
-  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 
 int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
   int          m = a->m, *diag = a->diag, col;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
 
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  VecGetArray_Fast(xx,x);
+  VecGetArray_Fast(yy,y);
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */
@@ -438,22 +431,20 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
     inb -= 5; inb2 -= 25;
   }
   PLogFlops(2*a->nz - a->n);
-  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 
 int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          i, d, loc, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
   int          bs = a->bs, m = a->m, *diag = a->diag, col, bs2 = bs*bs;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv;
   Scalar       work[25];
 
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  VecGetArray_Fast(xx,x);
+  VecGetArray_Fast(yy,y);
   if (bs > 25) SETERRQ(1,"Blocks must be smaller then 25");
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
@@ -484,8 +475,6 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
     inb -= bs; inb2 -= bs2;
   }
   PLogFlops(2*a->nz - a->n);
-  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 

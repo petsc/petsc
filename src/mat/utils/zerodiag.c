@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.7 1995/11/02 04:19:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.8 1996/08/08 14:44:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,28 +17,28 @@ static char vcid[] = "$Id: zerodiag.c,v 1.7 1995/11/02 04:19:15 bsmith Exp bsmit
 int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
                            double atol,int* rc,double* rcv )
 {
-  int      k, nz, repl, *j, kk, nnz, *jj;
+  int      k, nz, repl, *j, kk, nnz, *jj,ierr;
   Scalar   *v, *vv;
 
-  MatGetRow( mat, row[prow], &nz, &j, &v );
+  ierr = MatGetRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
   for (k=0; k<nz; k++) {
     if (col[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
       /* See if this one will work */
       repl  = col[j[k]];
-      MatGetRow( mat, row[repl], &nnz, &jj, &vv );
+      ierr = MatGetRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
       for (kk=0; kk<nnz; kk++) {
 	if (col[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
 	  *rcv = PetscAbsScalar(v[k]);
 	  *rc  = repl;
-          MatRestoreRow( mat, row[repl], &nnz, &jj, &vv );
-          MatRestoreRow( mat, row[prow], &nz, &j, &v );
+          ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
+          ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
 	  return 1;
 	}
       }
-      MatRestoreRow( mat, row[repl], &nnz, &jj, &vv );
+      ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
     }
   }
-  MatRestoreRow( mat, row[prow], &nz, &j, &v );
+  ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
   return 0;
 }
 
@@ -68,12 +68,16 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
   Scalar   *v;
   double   repla;
 
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(ris,IS_COOKIE);
+  PetscValidHeaderSpecific(cis,IS_COOKIE);
+  
   ierr = ISGetIndices(ris,&row); CHKERRQ(ierr);
   ierr = ISGetIndices(cis,&col); CHKERRQ(ierr);
   ierr = MatGetSize(mat,&m,&n); CHKERRQ(ierr);
 
   for (prow=0; prow<n; prow++) {
-    MatGetRow( mat, row[prow], &nz, &j, &v );
+    ierr = MatGetRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
     for (k=0; k<nz; k++) {if (col[j[k]] == prow) break;}
     if (k >= nz || PetscAbsScalar(v[k]) <= atol) {
       /* Element too small or zero; find the best candidate */
@@ -96,7 +100,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
       }
       SWAP(col[prow],col[repl]); 
     }
-    MatRestoreRow( mat, row[prow], &nz, &j, &v );
+    ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(ris,&row); CHKERRQ(ierr);
   ierr = ISRestoreIndices(cis,&col); CHKERRQ(ierr);

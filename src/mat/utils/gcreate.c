@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.97 1996/08/12 03:42:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.98 1996/09/28 16:06:05 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -49,6 +49,8 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
   int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr,flg11,flg14,flg15;
   char p[64];
+
+  PetscValidIntPointer(type); PetscValidIntPointer(set);
 
   PetscStrcpy(p,"-");
   if (pre) PetscStrcat(p,pre);
@@ -250,6 +252,8 @@ int MatGetType(Mat mat,MatType *type,char **name)
 {
   int  itype = (int)mat->type;
   char *matname[10];
+
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
 
   if (type) *type = (MatType) mat->type;
   if (name) {

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.64 1996/09/12 16:25:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.65 1996/11/07 15:07:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -32,6 +32,16 @@ static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
   return 0;
 }
 
+static int VecSetOption_MPI(Vec v,VecOption op)
+{
+  Vec_MPI *w = (Vec_MPI *) v->data;
+
+  if (op == VEC_IGNORE_OFF_PROCESSOR_ENTRIES) {
+    w->stash.donotstash = 1;
+  }
+  return 0;
+}
+    
 static int VecDuplicate_MPI( Vec, Vec *);
 
 static struct _VeOps DvOps = { VecDuplicate_MPI, 
@@ -48,10 +58,10 @@ static struct _VeOps DvOps = { VecDuplicate_MPI,
             VecAssemblyBegin_MPI,VecAssemblyEnd_MPI,
             VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,
             VecGetOwnershipRange_MPI,0,VecMax_MPI,VecMin_MPI,
-            VecSetRandom_Seq};
+            VecSetRandom_Seq,
+            VecSetOption_MPI};
 
-static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
-                                int rank,int *owners,Vec *vv)
+static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,int rank,int *owners,Vec *vv)
 {
   Vec     v;
   Vec_MPI *s;
@@ -71,6 +81,7 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
   s->N           = N;
   v->n           = n;
   v->N           = N;
+  v->mapping     = 0;
   s->size        = size;
   s->rank        = rank;
   s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
@@ -87,8 +98,10 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
       s->ownership[i] += s->ownership[i-1];
     }
   }
-  s->stash.nmax = 10; s->stash.n = 0;
-  s->stash.array = (Scalar *) PetscMalloc( 10*sizeof(Scalar) + 10*sizeof(int) );
+  s->stash.donotstash = 0;
+  s->stash.nmax       = 10;
+  s->stash.n          = 0;
+  s->stash.array      = (Scalar *) PetscMalloc(10*(sizeof(Scalar)+sizeof(int)));
   CHKPTRQ(s->stash.array);
   PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
   s->stash.idx = (int *) (s->stash.array + 10);
@@ -134,11 +147,21 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 
 static int VecDuplicate_MPI( Vec win, Vec *v)
 {
-  int ierr;
-  Vec_MPI *w = (Vec_MPI *)win->data;
+  int     ierr;
+  Vec_MPI *vw, *w = (Vec_MPI *)win->data;
+
   ierr = VecCreateMPIBase(win->comm,w->n,w->N,w->size,w->rank,w->ownership,v);CHKERRQ(ierr);
+
+  /* New vector should inherit stashing property of parent */
+  vw                   = (Vec_MPI *)(*v)->data;
+  vw->stash.donotstash = w->stash.donotstash;
+  
   (*v)->childcopy    = win->childcopy;
   (*v)->childdestroy = win->childdestroy;
+  if (win->mapping) {
+    (*v)->mapping = win->mapping;
+    ISLocalToGlobalMappingReference(win->mapping);
+  }
   if (win->child) return (*win->childcopy)(win->child,&(*v)->child);
   return 0;
 }

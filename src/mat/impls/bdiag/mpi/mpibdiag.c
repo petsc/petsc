@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.95 1996/09/14 03:08:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.96 1996/10/03 17:31:21 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -502,6 +502,9 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
   if (mbd->lvec) VecDestroy(mbd->lvec);
   if (mbd->Mvctx) VecScatterDestroy(mbd->Mvctx);
   PetscFree(mbd); 
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
   return 0;
@@ -859,6 +862,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   B->destroy	= MatDestroy_MPIBDiag;
   B->view	= MatView_MPIBDiag;
   B->factor	= 0;
+  B->mapping    = 0;
 
   b->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&b->rank);

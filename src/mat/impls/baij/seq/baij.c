@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.69 1996/11/07 15:09:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.70 1996/11/13 21:20:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -630,6 +630,7 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
 {
   Mat         A  = (Mat) obj;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
@@ -642,6 +643,9 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
   if (a->solve_work) PetscFree(a->solve_work);
   if (a->mult_work) PetscFree(a->mult_work);
   PetscFree(a); 
+  if (A->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->mapping); CHKERRQ(ierr);
+  }
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
   return 0;
@@ -658,7 +662,8 @@ static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
-           op == MAT_YES_NEW_DIAGONALS)
+           op == MAT_YES_NEW_DIAGONALS ||
+           op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES)
     PLogInfo(A,"Info:MatSetOption_SeqBAIJ:Option ignored\n");
   else if (op == MAT_NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBAIJ:MAT_NO_NEW_DIAGONALS");}
@@ -1097,8 +1102,8 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
   int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
 
 
-  ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
-  ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
+  VecGetArray_Fast(xx,xg); x = xg;
+  VecGetArray_Fast(zz,zg); z = zg;
   PetscMemzero(z,N*sizeof(Scalar));
 
   idx   = a->j;
@@ -1216,8 +1221,8 @@ static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 
 
-  ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
-  ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
+  VecGetArray_Fast(xx,xg); x = xg;
+  VecGetArray_Fast(zz,zg); z = zg;
 
   if ( yy != zz ) { ierr = VecCopy(yy,zz); CHKERRQ(ierr); }
   else PetscMemzero(z,N*sizeof(Scalar));
@@ -1403,7 +1408,7 @@ static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   bs2  = a->bs2;
 
   VecSet(&zero,v);
-  VecGetArray(v,&x); VecGetLocalSize(v,&n);
+  VecGetArray_Fast(v,x); VecGetLocalSize_Fast(v,n);
   if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqBAIJ:Nonconforming matrix and vector");
   for ( i=0; i<ambs; i++ ) {
     for ( j=ai[i]; j<ai[i+1]; j++ ) {
@@ -1433,7 +1438,7 @@ static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   mbs = a->mbs;
   bs2 = a->bs2;
   if (ll) {
-    VecGetArray(ll,&l); VecGetSize(ll,&lm);
+    VecGetArray_Fast(ll,l); VecGetLocalSize_Fast(ll,lm);
     if (lm != m) SETERRQ(1,"MatDiagonalScale_SeqBAIJ:Left scaling vector wrong length");
     for ( i=0; i<mbs; i++ ) { /* for each block row */
       M  = ai[i+1] - ai[i];
@@ -1448,7 +1453,7 @@ static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   }
   
   if (rr) {
-    VecGetArray(rr,&r); VecGetSize(rr,&rn);
+    VecGetArray_Fast(rr,r); VecGetLocalSize_Fast(rr,rn);
     if (rn != n) SETERRQ(1,"MatDiagonalScale_SeqBAIJ:Right scaling vector wrong length");
     for ( i=0; i<mbs; i++ ) { /* for each block row */
       M  = ai[i+1] - ai[i];
@@ -1780,6 +1785,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   B->view             = MatView_SeqBAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
+  B->mapping          = 0;
   b->row              = 0;
   b->col              = 0;
   b->reallocs         = 0;

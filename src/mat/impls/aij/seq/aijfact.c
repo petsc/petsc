@@ -1,8 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.66 1996/08/22 20:07:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.67 1996/09/14 03:07:52 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
+#include "src/vec/vecimpl.h"
 
 int MatOrder_Flow_SeqAIJ(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
@@ -270,8 +271,6 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   int        ierr;
   Mat        C;
 
-  PetscValidHeaderSpecific(row,IS_COOKIE);
-  PetscValidHeaderSpecific(col,IS_COOKIE);
   ierr = MatLUFactorSymbolic_SeqAIJ(A,row,col,f,&C); CHKERRQ(ierr);
   ierr = MatLUFactorNumeric_SeqAIJ(A,&C); CHKERRQ(ierr);
 
@@ -298,10 +297,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
   int        nz,shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp, *tmps, *aa = a->a, sum, *v;
 
-  if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqAIJ:Not for unfactored matrix");
-
-  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  VecGetArray_Fast(bb,b); 
+  VecGetArray_Fast(xx,x); 
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
@@ -342,11 +339,10 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
   int        nz, shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp, *aa = a->a, sum, *v;
 
-  if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolveAdd_SeqAIJ:Not for unfactored matrix");
   if (yy != xx) {ierr = VecCopy(yy,xx); CHKERRQ(ierr);}
 
-  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  VecGetArray_Fast(bb,b);
+  VecGetArray_Fast(xx,x);
   tmp  = a->solve_work;
 
   ierr = ISGetIndices(isrow,&rout); CHKERRQ(ierr); r = rout;
@@ -389,9 +385,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   int        nz,shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp, *aa = a->a, *v;
 
-  if (A->factor != FACTOR_LU)  SETERRQ(1,"MatSolveTrans_SeqAIJ:Not unfactored matrix");
-  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  VecGetArray_Fast(bb,b);
+  VecGetArray_Fast(xx,x);
   tmp  = a->solve_work;
 
   /* invert the permutations */
@@ -445,11 +440,10 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   int        nz,shift = a->indexshift, *rout, *cout;
   Scalar     *x,*b,*tmp, *aa = a->a, *v;
 
-  if (A->factor != FACTOR_LU)SETERRQ(1,"MatSolveTransAdd_SeqAIJ:Not unfactored matrix");
   if (zz != xx) VecCopy(zz,xx);
 
-  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  VecGetArray_Fast(bb,b);
+  VecGetArray_Fast(xx,x);
   tmp = a->solve_work;
 
   /* invert the permutations */

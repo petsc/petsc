@@ -2,7 +2,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.76 1996/08/08 14:40:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.77 1996/11/07 15:07:46 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -227,12 +227,16 @@ static int VecDestroy_Seq(PetscObject obj )
 {
   Vec      v  = (Vec ) obj;
   Vec_Seq *vs = (Vec_Seq*) v->data;
+  int     ierr;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
   PetscFree(vs->array);
   PetscFree(vs);
+  if (v->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
+  }
   PLogObjectDestroy(v);
   PetscHeaderDestroy(v); 
   return 0;
@@ -292,6 +296,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   s->n           = n;
   v->n           = n; 
   v->N           = n;
+  v->mapping     = 0;
   s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));
   PetscMemzero(s->array,n*sizeof(Scalar));
   *V = v; return 0;
@@ -304,6 +309,10 @@ static int VecDuplicate_Seq(Vec win,Vec *V)
   ierr = VecCreateSeq(win->comm,w->n,V); CHKERRQ(ierr);
   (*V)->childcopy    = win->childcopy;
   (*V)->childdestroy = win->childdestroy;
+  if (win->mapping) {
+    (*V)->mapping = win->mapping;
+    ISLocalToGlobalMappingReference(win->mapping);
+  }
   if (win->child) return (*win->childcopy)(win->child,&(*V)->child);
   return 0;
 }

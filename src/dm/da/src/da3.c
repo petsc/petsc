@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.41 1996/08/15 12:51:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.42 1996/09/27 20:13:22 curfman Exp bsmith $";
 #endif
 
 /*
@@ -942,6 +942,12 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->base   = base;
   da->view   = DAView_3d;
   *inra = da;
+
+  /* 
+     Set the local to global ordering in the global vector, this allows use
+     of VecSetValuesLocal().
+  */
+  ierr = VecSetLocalToGlobalMapping(da->global,nn,idx); CHKERRQ(ierr);
 
   /* redo idx to include "missing" ghost points */
   /* Solve for X,Y, and Z Periodic Case First, Then Modify Solution */

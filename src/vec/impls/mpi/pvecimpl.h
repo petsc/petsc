@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.8 1996/08/04 21:16:15 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.9 1996/08/08 14:40:25 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -14,7 +14,7 @@ typedef struct {
     int         N;           /* length of total vector */
     int         size,rank,*ownership;
     InsertMode  insertmode;
-    struct      {int nmax, n, *idx; Scalar *array;} stash;
+    struct      {int donotstash, nmax, n, *idx; Scalar *array;} stash;
     MPI_Request *send_waits,*recv_waits;
     int         nsends,nrecvs;
     Scalar      *svalues,*rvalues;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbaij.c,v 1.6 1996/08/08 14:43:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbaij.c,v 1.7 1996/08/15 12:48:12 bsmith Exp bsmith $";
 #endif
 
 
@@ -82,6 +82,15 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 
   /* gnerate the scatter context */
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
+
+  /*
+      Post the receives for the first matrix vector product. We sync-chronize after
+    this on the chance that the user immediately calls MatMult() after assemblying 
+    the matrix.
+  */
+  ierr = VecScatterPostRecvs(gvec,baij->lvec,INSERT_VALUES,SCATTER_ALL,baij->Mvctx);CHKERRQ(ierr);
+  MPI_Barrier(mat->comm);
+
   PLogObjectParent(mat,baij->Mvctx);
   PLogObjectParent(mat,baij->lvec);
   PLogObjectParent(mat,from);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.132 1996/09/26 02:16:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.133 1996/11/07 15:12:13 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -755,6 +755,36 @@ int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   return 0;
 }
 
+/*
+     Default trace event logging routines
+*/
+FILE *tracefile = 0;
+
+int plbtrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+{
+  int rank;
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  fprintf(tracefile,"[%d] Event begin: %s\n",rank,PLogEventName[event]); fflush(stdout);
+
+  return 0;
+}
+
+/*
+     Default trace event logging
+*/
+int pletrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+{
+  int rank;
+  if (t != 1) return 0;
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  fprintf(tracefile,"[%d] Event end: %s\n",rank,PLogEventName[event]); fflush(stdout);
+
+  return 0;
+}
+
+/* -------------------------------------------------------------------------------*/
 int PLogObjectState(PetscObject obj,char *format,...)
 {
   va_list Argp;
@@ -766,6 +796,25 @@ int PLogObjectState(PetscObject obj,char *format,...)
   vsprintf(objects[obj->id].string,format,Argp);
 #endif
   va_end( Argp );
+  return 0;
+}
+
+/*@C
+    PLogSet - Sets the logging functions called at the beginning and ending 
+              of every event.
+
+   Input Parameters:
+.    b - function called at beginning of event
+.    e - function called at end of event
+
+.seealso: PLogDump(), PLogBegin(), PLogAllBegin(), PLogTraceBegin()
+
+@*/
+int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
+            int (*e)(int,int,PetscObject,PetscObject,PetscObject,PetscObject))
+{
+  _PLB    = b;
+  _PLE    = e;
   return 0;
 }
 
@@ -784,16 +833,16 @@ $      with PETSC_LOG)
 
 .keywords: log, all, begin
 
-.seealso: PLogDump(), PLogBegin()
+.seealso: PLogDump(), PLogBegin(), PLogTraceBegin()
 @*/
 int PLogAllBegin()
 {
+  int ierr;
   objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
   events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PHC    = phc;
   _PHD    = phd;
-  _PLB    = plball;
-  _PLE    = pleall;
+  ierr    = PLogSet(plball,pleall); CHKERRQ(ierr);
   /* all processors sync here for more consistent logging */
   MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(BaseTime);
@@ -815,11 +864,11 @@ int PLogAllBegin()
 @*/
 int PLogDestroy()
 {
-  /* Destroying phase */
+  int ierr;
+
   if (objects) {free(objects); objects = 0;}
   if (events)  {free(events); events = 0;}
-  _PHC             = 0;
-  _PHD             = 0;
+  ierr    = PLogSet(0,0); CHKERRQ(ierr);
 
   /* Resetting phase */
   PetscMemzero(EventsType,sizeof(EventsType));
@@ -844,20 +893,45 @@ $      to screen (for code compiled with PETSC_LOG)
 
 .keywords: log, begin
 
-.seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary()
+.seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogTraceBegin()
 @*/
 int PLogBegin()
 {
+  int ierr;
+
   objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
   events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PHC    = phc;
   _PHD    = phd;
-  _PLB    = plb;
-  _PLE    = ple;
+  ierr    = PLogSet(plb,ple); CHKERRQ(ierr);
   /* all processors sync here for more consistent logging */
   MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
+  return 0;
+}
+
+/*@
+    PLogTraceBegin - Turns on trace logging. Prints event to screen 
+        every time an event is begun or end.
+
+   Input Parameter:
+.   file - file to print trace in (e.g. stdout)
+
+   Options Database Keyes:
+$   -log_trace :
+
+    Notes:
+      Prints processor number, event begin or end followed by the event name.
+
+.seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogBegin()
+@*/
+int PLogTraceBegin(FILE *file)
+{
+  int ierr;
+
+  ierr      = PLogSet(plbtrace,pletrace); CHKERRQ(ierr);
+  tracefile = file;
   return 0;
 }
 

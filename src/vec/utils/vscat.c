@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.70 1996/11/06 22:28:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.71 1996/11/10 16:09:33 curfman Exp bsmith $";
 #endif
 
 /*
@@ -21,9 +21,9 @@ static char vcid[] = "$Id: vscat.c,v 1.70 1996/11/06 22:28:56 bsmith Exp curfman
    This code was written by Cameron Cooper, Occidental College, Fall 1995,
    will working at ANL as a SERS student.
 */
-static int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+static int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
-  if (mode & SCATTER_REVERSE) {
+  if (mode == SCATTER_REVERSE) {
     Vec_MPI              *yy = (Vec_MPI *) y->data;
     Vec_Seq              *xx = (Vec_Seq *) x->data;
     Scalar               *xv = xx->array, *yv = yy->array, *xvt, *xvt2;
@@ -107,11 +107,12 @@ static int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll *) in->todata, *sto;
   int                  size, i;
 
-  out->scatterbegin  = in->scatterbegin;
-  out->scatterend    = in->scatterend;
-  out->copy          = in->copy;
-  out->destroy       = in->destroy;
-  out->view          = in->view;
+  out->postrecvs = 0;
+  out->begin     = in->begin;
+  out->end       = in->end;
+  out->copy      = in->copy;
+  out->destroy   = in->destroy;
+  out->view      = in->view;
 
   sto       = PetscNew(VecScatter_MPI_ToAll); CHKPTRQ(sto);
   sto->type = VEC_SCATTER_MPI_TOALL;
@@ -131,7 +132,7 @@ static int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 
 /* --------------------------------------------------------------------------------------*/
 /* Scatter: sequential general to sequential general */
-static int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+static int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_General *gen_to = (VecScatter_Seq_General *) ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General *) ctx->fromdata;
@@ -139,10 +140,9 @@ static int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatte
   Vec_Seq                *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar                 *xv = xx->array, *yv = yy->array;
   
-  if (mode & SCATTER_REVERSE ){
+  if (mode == SCATTER_REVERSE ){
     gen_to   = (VecScatter_Seq_General *) ctx->fromdata;
     gen_from = (VecScatter_Seq_General *) ctx->todata;
-    mode    -= SCATTER_REVERSE;
   }
   fslots = gen_from->slots;
   tslots = gen_to->slots;
@@ -157,7 +157,7 @@ static int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatte
 }
 
 /* Scatter: sequential general to sequential stride 1 */
-static int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+static int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General *) ctx->fromdata;
@@ -166,7 +166,7 @@ static int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,int mode,V
   Vec_Seq                *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar                 *xv = xx->array, *yv = yy->array;
   
-  if (mode & SCATTER_REVERSE ){
+  if (mode == SCATTER_REVERSE ){
     xv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
@@ -187,7 +187,7 @@ static int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,int mode,V
 }
 
 /* Scatter: sequential general to sequential stride */
-static int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+static int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General *) ctx->fromdata;
@@ -196,7 +196,7 @@ static int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatte
   Vec_Seq                *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar                 *xv = xx->array, *yv = yy->array;
   
-  if (mode & SCATTER_REVERSE ){
+  if (mode == SCATTER_REVERSE ){
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
     }
@@ -215,7 +215,7 @@ static int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatte
 }
 
 /* Scatter: sequential stride 1 to sequential general */
-static int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+static int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride *) ctx->fromdata;
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General *) ctx->todata;
@@ -224,7 +224,7 @@ static int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,int mode,V
   Vec_Seq                *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar                 *xv = xx->array, *yv = yy->array;
   
-  if (mode & SCATTER_REVERSE ){
+  if (mode == SCATTER_REVERSE ){
     yv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
@@ -245,7 +245,7 @@ static int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,int mode,V
 }
 
 /* Scatter: sequential stride to sequential general */
-static int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+static int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride *) ctx->fromdata;
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General *) ctx->todata;
@@ -254,7 +254,7 @@ static int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatte
   Vec_Seq                *xx = (Vec_Seq *) x->data,*yy = (Vec_Seq *) y->data;
   Scalar                 *xv = xx->array, *yv = yy->array;
   
-  if (mode & SCATTER_REVERSE ){
+  if (mode == SCATTER_REVERSE ){
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
     }
@@ -273,7 +273,7 @@ static int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,int mode,VecScatte
 }
 
 /* Scatter: sequential stride to sequential stride */
-static int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
+static int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
   VecScatter_Seq_Stride *gen_from = (VecScatter_Seq_Stride *) ctx->fromdata;
@@ -283,7 +283,7 @@ static int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,int mode,VecScatte
   Scalar                *xv = xx->array, *yv = yy->array;
   
   /* if reverse then flip the start and stride */
-  if (mode & SCATTER_REVERSE ){
+  if (mode == SCATTER_REVERSE ){
     from_first = gen_to->first; 
     to_first   = gen_from->first;
     from_step  = gen_to->step; 
@@ -331,11 +331,12 @@ static int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
   VecScatter_Seq_Stride *in_to   = (VecScatter_Seq_Stride *) in->todata, *out_to;
   VecScatter_Seq_Stride *in_from = (VecScatter_Seq_Stride *) in->fromdata, *out_from;
 
-  out->scatterbegin     = in->scatterbegin;
-  out->scatterend       = in->scatterend;
-  out->copy             = in->copy;
-  out->destroy          = in->destroy;
-  out->view             = in->view;
+  out->postrecvs = 0;
+  out->begin     = in->begin;
+  out->end       = in->end;
+  out->copy      = in->copy;
+  out->destroy   = in->destroy;
+  out->view      = in->view;
 
   out_to          = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(out_to);
   out_to->n       = in_to->n; 
@@ -417,15 +418,16 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       from->slots       = (int *) (from + 1);
       from->n           = nx; 
       PetscMemcpy(from->slots,idx,nx*sizeof(int));
-      to->type          = VEC_SCATTER_SEQ_GENERAL; 
-      from->type        = VEC_SCATTER_SEQ_GENERAL; 
-      ctx->todata       = (void *) to; 
-      ctx->fromdata     = (void *) from;
-      ctx->scatterbegin = VecScatterBegin_SGtoSG; 
-      ctx->destroy      = VecScatterDestroy_SGtoSG;
-      ctx->scatterend   = 0; 
-      ctx->copy         = 0;
-      *newctx           = ctx;
+      to->type       = VEC_SCATTER_SEQ_GENERAL; 
+      from->type     = VEC_SCATTER_SEQ_GENERAL; 
+      ctx->todata    = (void *) to; 
+      ctx->fromdata  = (void *) from;
+      ctx->postrecvs = 0;
+      ctx->begin     = VecScatterBegin_SGtoSG; 
+      ctx->end       = 0; 
+      ctx->destroy   = VecScatterDestroy_SGtoSG;
+      ctx->copy      = 0;
+      *newctx        = ctx;
       return 0;
     }
     else if (ix->type == IS_STRIDE &&  iy->type == IS_STRIDE){
@@ -441,19 +443,20 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to->step          = to_step;
       from              = PetscNew(VecScatter_Seq_Stride);CHKPTRQ(from);
       PLogObjectMemory(ctx,2*sizeof(VecScatter_Seq_Stride));
-      from->n           = nx;
-      from->first       = from_first; 
-      from->step        = from_step;
-      to->type          = VEC_SCATTER_SEQ_STRIDE; 
-      from->type        = VEC_SCATTER_SEQ_STRIDE; 
-      ctx->todata       = (void *) to; 
-      ctx->fromdata     = (void *) from;
-      ctx->scatterbegin = VecScatterBegin_SStoSS; 
-      ctx->destroy      = VecScatterDestroy_SGtoSG;
-      ctx->scatterend   = 0; 
-      ctx->copy         = 0;
-      *newctx           = ctx;
-      return 0;
+      from->n        = nx;
+      from->first    = from_first; 
+      from->step     = from_step;
+      to->type       = VEC_SCATTER_SEQ_STRIDE; 
+      from->type     = VEC_SCATTER_SEQ_STRIDE; 
+      ctx->todata    = (void *) to; 
+      ctx->fromdata  = (void *) from;
+      ctx->postrecvs = 0;
+      ctx->begin     = VecScatterBegin_SStoSS; 
+      ctx->end       = 0; 
+      ctx->destroy   = VecScatterDestroy_SGtoSG;
+      ctx->copy      = 0;
+      *newctx        = ctx;
+      return 0; 
     }
     else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
       int                    nx,ny,*idx,first,step;
@@ -474,10 +477,11 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       from->n         = nx; 
       PetscMemcpy(from->slots,idx,nx*sizeof(int));
       ctx->todata     = (void *) to; ctx->fromdata = (void *) from;
-      if (step == 1)  ctx->scatterbegin = VecScatterBegin_SGtoSS_Stride1;
-      else            ctx->scatterbegin = VecScatterBegin_SGtoSS;
+      ctx->postrecvs  = 0;
+      if (step == 1)  ctx->begin = VecScatterBegin_SGtoSS_Stride1;
+      else            ctx->begin = VecScatterBegin_SGtoSS;
       ctx->destroy    = VecScatterDestroy_SGtoSG;
-      ctx->scatterend = 0; 
+      ctx->end        = 0; 
       ctx->copy       = 0;
       to->type        = VEC_SCATTER_SEQ_STRIDE; 
       from->type      = VEC_SCATTER_SEQ_GENERAL;
@@ -504,10 +508,11 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PetscMemcpy(to->slots,idx,nx*sizeof(int));
       ctx->todata     = (void *) to; 
       ctx->fromdata   = (void *) from;
-      if (step == 1) ctx->scatterbegin = VecScatterBegin_SStoSG_Stride1; 
-      else           ctx->scatterbegin = VecScatterBegin_SStoSG; 
+      ctx->postrecvs  = 0;
+      if (step == 1) ctx->begin = VecScatterBegin_SStoSG_Stride1; 
+      else           ctx->begin = VecScatterBegin_SStoSG; 
       ctx->destroy    = VecScatterDestroy_SGtoSG;
-      ctx->scatterend = 0; 
+      ctx->end        = 0; 
       ctx->copy       = 0;
       to->type        = VEC_SCATTER_SEQ_GENERAL; 
       from->type      = VEC_SCATTER_SEQ_STRIDE; 
@@ -547,9 +552,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         from->type        = VEC_SCATTER_SEQ_STRIDE; 
         ctx->todata       = (void *) to; 
         ctx->fromdata     = (void *) from;
-        ctx->scatterbegin = VecScatterBegin_SStoSS; 
+        ctx->postrecvs    = 0;
+        ctx->begin        = VecScatterBegin_SStoSS; 
+        ctx->end          = 0; 
         ctx->destroy      = VecScatterDestroy_SGtoSG;
-        ctx->scatterend   = 0; 
         ctx->copy         = VecScatterCopy_PStoSS;
         *newctx           = ctx;
         return 0;
@@ -590,9 +596,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         PLogObjectMemory(ctx,sizeof(VecScatter_MPI_ToAll)+size*sizeof(int));
         ctx->todata       = (void *) sto;
         ctx->fromdata     = 0;
-        ctx->scatterbegin = VecScatterBegin_MPI_ToAll;   
+        ctx->postrecvs    = 0;
+        ctx->begin        = VecScatterBegin_MPI_ToAll;   
+        ctx->end          = 0;
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
-        ctx->scatterend   = 0;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
         *newctx           = ctx;
         return 0;
@@ -661,9 +668,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         from->type        = VEC_SCATTER_SEQ_STRIDE;
         ctx->todata       = (void *) to;
         ctx->fromdata     = (void *) from;
-        ctx->scatterbegin = VecScatterBegin_SStoSS; 
+        ctx->postrecvs    = 0;
+        ctx->begin        = VecScatterBegin_SStoSS; 
+        ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SGtoSG;
-        ctx->scatterend   = 0;  
         ctx->copy         = 0;
         *newctx           = ctx;
         return 0;
@@ -698,6 +706,51 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     return 0;
   }
   SETERRQ(1,"VecScatterCreate:Cannot generate such Scatter Context yet");
+}
+
+/* ------------------------------------------------------------------*/
+/*@
+   VecScatterPostRecvs - Posts the receives required for the ready-receiver
+       version of the VecScatter routines.
+
+   Input Parameters:
+.  x - the vector from which we scatter (not needed, can be null)
+.  y - the vector to which we scatter
+.  addv - either ADD_VALUES or INSERT_VALUES, depending whether values are
+   added or set
+.  mode - the scattering mode, usually SCATTER_ALL.  The available modes are:
+$    SCATTER_ALL, SCATTER_REVERSE
+.  inctx - scatter context generated by VecScatterCreate()
+
+   Output Parameter:
+.  y - the vector to which we scatter
+
+   Notes:
+   If you use SCATTER_REVERSE the first two arguments should be reversed, from 
+   the SCATTER_ALL.
+   The vectors x and y cannot be the same. y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+
+   This scatter is far more general than the conventional
+   scatter, since it can be a gather or a scatter or a combination,
+   depending on the indices ix and iy.  If x is a parallel vector and y
+   is sequential, VecScatterBegin() can serve to gather values to a
+   single processor.  Similarly, if y is parallel and x sequential, the
+   routine can scatter from one processor to many processors.
+
+.keywords: vector, scatter, gather, begin
+
+.seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
+@*/
+int VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
+{
+  int ierr;
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
+
+  if (inctx->postrecvs) {
+    ierr = (*inctx->postrecvs)(x,y,addv,mode,inctx); CHKERRQ(ierr);
+  }
+  return 0;
 }
 
 /* ------------------------------------------------------------------*/
@@ -765,7 +818,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
 
   inctx->inuse = 1;
   PLogEventBegin(VEC_ScatterBegin,inctx,x,y,0);
-  ierr = (*inctx->scatterbegin)(x,y,addv,mode,inctx); CHKERRQ(ierr);
+  ierr = (*inctx->begin)(x,y,addv,mode,inctx); CHKERRQ(ierr);
   PLogEventEnd(VEC_ScatterBegin,inctx,x,y,0);
   return 0;
 }
@@ -803,9 +856,9 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_IDN,"VecScatterEnd:y cannot be x");
   ctx->inuse = 0;
-  if (!(ctx)->scatterend) return 0;
+  if (!ctx->end) return 0;
   PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
-  ierr = (*(ctx)->scatterend)(x,y,addv,mode,ctx); CHKERRQ(ierr);
+  ierr = (*(ctx)->end)(x,y,addv,mode,ctx); CHKERRQ(ierr);
   PLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);
   return 0;
 }

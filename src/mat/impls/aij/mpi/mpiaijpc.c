@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.20 1996/08/08 14:42:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.21 1996/11/07 15:09:25 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -9,6 +9,7 @@ static char vcid[] = "$Id: mpiaijpc.c,v 1.20 1996/08/08 14:42:52 bsmith Exp bsmi
 */
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/pc/pcimpl.h"
+#include "src/vec/vecimpl.h"
 #include "src/pc/impls/bjacobi/bjacobi.h"
 #include "sles.h"
 
@@ -57,15 +58,15 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
     the bjac->x vector is that we need a sequential vector
     for the sequential solve.
   */
-  ierr = VecGetArray(x,&x_array); CHKERRQ(ierr);
-  ierr = VecGetArray(y,&y_array); CHKERRQ(ierr);
-  ierr = VecGetArray(bjac->x,&x_true_array); CHKERRQ(ierr);
-  ierr = VecGetArray(bjac->y,&y_true_array); CHKERRQ(ierr); 
-  ierr = VecPlaceArray(bjac->x,x_array); CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->y,y_array); CHKERRQ(ierr);
-  ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->x,x_true_array); CHKERRQ(ierr);
-  ierr = VecPlaceArray(bjac->y,y_true_array); CHKERRQ(ierr);
+  VecGetArray_Fast(x,x_array); 
+  VecGetArray_Fast(y,y_array); 
+  VecGetArray_Fast(bjac->x,x_true_array); 
+  VecGetArray_Fast(bjac->y,y_true_array);  
+  VecPlaceArray_Fast(bjac->x,x_array); 
+  VecPlaceArray_Fast(bjac->y,y_array); 
+  ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); 
+  VecPlaceArray_Fast(bjac->x,x_true_array); 
+  VecPlaceArray_Fast(bjac->y,y_true_array); 
   return 0;
 }
 

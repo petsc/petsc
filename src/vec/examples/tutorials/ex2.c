@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.24 1996/10/26 18:28:34 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.25 1996/10/28 20:58:21 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
@@ -14,7 +14,7 @@ elements except the last rank.\n\n";
 T*/
 
 /* 
-  Include "vec.h" so that we can use SLES solvers.  Note that this file
+  Include "vec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petsc.h  - base PETSc routines   is.h     - index sets
      sys.h    - system routines       viewer.h - viewers

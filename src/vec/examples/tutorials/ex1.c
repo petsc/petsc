@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.34 1996/10/25 21:34:39 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.35 1996/10/26 15:47:30 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates various vector routines\n\n";
@@ -14,7 +14,7 @@ static char help[] = "Demonstrates various vector routines\n\n";
 T*/
 
 /* 
-  Include "vec.h" so that we can use SLES solvers.  Note that this file
+  Include "vec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petsc.h  - base PETSc routines   is.h     - index sets
      sys.h    - system routines       viewer.h - viewers

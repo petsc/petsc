@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.112 1996/10/01 03:34:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.113 1996/11/07 15:09:12 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -214,8 +214,13 @@ static int MatSolveTransAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
   if (info) SETERRQ(1,"MatSolveTransAdd_SeqDense:Bad solve");
-  if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
-  else VecAXPY(&sone,zz,yy);
+  if (tmp) {
+    ierr = VecAXPY(&sone,tmp,yy);  CHKERRQ(ierr);
+    ierr = VecDestroy(tmp); CHKERRQ(ierr);
+  }
+  else {
+    ierr = VecAXPY(&sone,zz,yy); CHKERRQ(ierr);
+  }
   PLogFlops(mat->n*mat->n - mat->n);
   return 0;
 }
@@ -614,12 +619,17 @@ static int MatDestroy_SeqDense(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
   Mat_SeqDense *l = (Mat_SeqDense *) mat->data;
+  int          ierr;
+
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",l->m,l->n);
 #endif
   if (l->pivots) PetscFree(l->pivots);
   if (!l->user_alloc) PetscFree(l->v);
   PetscFree(l);
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
   return 0;
@@ -783,7 +793,8 @@ static int MatSetOption_SeqDense(Mat A,MatOption op)
            op == MAT_NO_NEW_NONZERO_LOCATIONS ||
            op == MAT_YES_NEW_NONZERO_LOCATIONS ||
            op == MAT_NO_NEW_DIAGONALS ||
-           op == MAT_YES_NEW_DIAGONALS)
+           op == MAT_YES_NEW_DIAGONALS ||
+           op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES)
     PLogInfo(A,"Info:MatSetOption_SeqDense:Option ignored\n");
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqDense:unknown option");}
@@ -1007,6 +1018,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   B->destroy    = MatDestroy_SeqDense;
   B->view       = MatView_SeqDense;
   B->factor     = 0;
+  B->mapping    = 0;
   PLogObjectMemory(B,sizeof(struct _Mat));
   B->data       = (void *) b;
 

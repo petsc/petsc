@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.58 1996/09/27 20:13:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.59 1996/10/03 17:38:33 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -483,6 +483,13 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->wrap         = wrap;
   da->view         = DAView_2d;
   da->stencil_type = stencil_type;
+
+  /* 
+     Set the local to global ordering in the global vector, this allows use
+     of VecSetValuesLocal().
+  */
+  ierr = VecSetLocalToGlobalMapping(da->global,nn,idx); CHKERRQ(ierr);
+
   *inra = da;
 
   /* recalculate the idx including missed ghost points */

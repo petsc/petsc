@@ -15,7 +15,7 @@ LIBBASE	        = libpetscvec
 LOCDIR          = src/vec/examples/tutorials/
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
 		  runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
-                  ex6.PETSc runex6 ex6.rm clean
+                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm clean
 TESTEXAMPLES_2  = ex3.PETSc runex3 ex3.rm clean
 TESTEXAMPLES_3  = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm \
 		  ex4f.PETSc runex4f ex4f.rm ex3f.PETSc runex3f ex3f.rm \
@@ -30,7 +30,7 @@ BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex3f.PETSc ex3f.rm \
 BUILDEXAMPLES_4 = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_9 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c
 EXAMPLESF       = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F
 
 ex1: ex1.o  chkopts 
@@ -158,7 +158,18 @@ runex7:
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi;\
 	   $(RM) -f ex7_1.tmp input.dat
+runex8:
+	-@$(MPIRUN) -np 4 ex8 > ex8_1.tmp 2>&1;\
+	   if (diff output/ex8_1.out ex8_1.tmp) then true; \
+	   else echo "Possible problem with ex8_1, diffs above"; fi;\
+	   $(RM) -f ex8_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
+
+
+
+
+
 
 

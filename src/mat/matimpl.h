@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.63 1996/09/12 16:26:10 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.64 1996/11/07 15:09:06 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -79,18 +79,19 @@ struct _MatOps {
 #define FACTOR_CHOLESKY 2
 
 struct _Mat {
-  PETSCHEADER                         /* general PETSc header */
-  struct _MatOps   ops;               /* matrix operations */
-  void             *data;             /* implementation-specific data */
-  int              factor;            /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
-  double           lupivotthreshold;  /* threshold for pivoting */
-  PetscTruth       assembled;         /* is the matrix assembled? */
-  PetscTruth       was_assembled;     /* new values have been inserted into assembled mat */
-  int              num_ass;           /* number of times matrix has been assembled */
-  PetscTruth       same_nonzero;      /* matrix has same nonzero pattern as previous */
-  int              M, N;              /* global numbers of rows, columns */
-  int              m, n;              /* local numbers of rows, columns */
-  MatInfo          info;              /* matrix information */
+  PETSCHEADER                              /* general PETSc header */
+  struct _MatOps         ops;              /* matrix operations */
+  void                   *data;            /* implementation-specific data */
+  int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
+  double                 lupivotthreshold; /* threshold for pivoting */
+  PetscTruth             assembled;        /* is the matrix assembled? */
+  PetscTruth             was_assembled;    /* new values inserted into assembled mat */
+  int                    num_ass;          /* number of times matrix has been assembled */
+  PetscTruth             same_nonzero;     /* matrix has same nonzero pattern as previous */
+  int                    M, N;             /* global numbers of rows, columns */
+  int                    m, n;             /* local numbers of rows, columns */
+  MatInfo                info;             /* matrix information */
+  ISLocalToGlobalMapping mapping;          /* mapping used in VecSetValuesLocal() */
 };
 
 /* final argument for MatConvertXXX() */

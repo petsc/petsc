@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.193 1996/11/01 16:54:34 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.194 1996/11/15 20:00:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -562,6 +562,7 @@ int MatDestroy_SeqAIJ(PetscObject obj)
 {
   Mat        A  = (Mat) obj;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        ierr;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
@@ -574,6 +575,9 @@ int MatDestroy_SeqAIJ(PetscObject obj)
   if (a->solve_work) PetscFree(a->solve_work);
   if (a->inode.size) PetscFree(a->inode.size);
   PetscFree(a); 
+  if (A->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->mapping); CHKERRQ(ierr);
+  }
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
   return 0;
@@ -595,7 +599,8 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
-           op == MAT_YES_NEW_DIAGONALS)
+           op == MAT_YES_NEW_DIAGONALS ||
+           op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES)
     PLogInfo(A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
   else if (op == MAT_NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:MAT_NO_NEW_DIAGONALS");}
@@ -616,7 +621,7 @@ static int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   Scalar     *x, zero = 0.0;
 
   VecSet(&zero,v);
-  VecGetArray_Fast(v,&x); VecGetLocalSize(v,&n);
+  VecGetArray_Fast(v,x); VecGetLocalSize(v,&n);
   if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqAIJ:Nonconforming matrix and vector");
   for ( i=0; i<a->m; i++ ) {
     for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
@@ -638,7 +643,7 @@ int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
   Scalar     *x, *y, *v, alpha;
   int        m = a->m, n, i, *idx, shift = a->indexshift;
 
-  VecGetArray_Fast(xx,&x); VecGetArray_Fast(yy,&y);
+  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   PetscMemzero(y,a->n*sizeof(Scalar));
   y = y + shift; /* shift for Fortran start by 1 indexing */
   for ( i=0; i<m; i++ ) {
@@ -658,7 +663,7 @@ int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   Scalar     *x, *y, *v, alpha;
   int        m = a->m, n, i, *idx,shift = a->indexshift;
 
-  VecGetArray_Fast(xx,&x); VecGetArray_Fast(yy,&y);
+  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   if (zz != yy) VecCopy(zz,yy);
   y = y + shift; /* shift for Fortran start by 1 indexing */
   for ( i=0; i<m; i++ ) {
@@ -668,6 +673,7 @@ int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
     alpha = x[i];
     while (n-->0) {y[*idx++] += alpha * *v++;}
   }
+  PLogFlops(2*a->nz);
   return 0;
 }
 
@@ -677,7 +683,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   Scalar     *x, *y, *v, sum;
   int        m = a->m, n, i, *idx, shift = a->indexshift,*ii;
 
-  VecGetArray_Fast(xx,&x); VecGetArray_Fast(yy,&y);
+  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v    = a->a;
@@ -700,7 +706,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Scalar     *x, *y, *z, *v, sum;
   int        m = a->m, n, i, *idx, shift = a->indexshift,*ii;
 
-  VecGetArray_Fast(xx,&x); VecGetArray_Fast(yy,&y); VecGetArray_Fast(zz,&z); 
+  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y); VecGetArray_Fast(zz,z); 
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v    = a->a;
@@ -746,7 +752,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
   Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb;
   int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
 
-  VecGetArray_Fast(xx,&x); VecGetArray_Fast(bb,&b);
+  VecGetArray_Fast(xx,x); VecGetArray_Fast(bb,b);
   if (!a->diag) {if ((ierr = MatMarkDiag_SeqAIJ(A))) return ierr;}
   diag = a->diag;
   xs   = x + shift; /* shifted by one for index start of a or a->j*/
@@ -1092,25 +1098,23 @@ static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
        by MatDiagonalScale_MPIAIJ */
     VecGetLocalSize_Fast(ll,m);
     if (m != a->m) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Left scaling vector wrong length");
-    VecGetArray_Fast_Fast(ll,l); 
+    VecGetArray_Fast(ll,l); 
     v = a->a;
     for ( i=0; i<m; i++ ) {
       x = l[i];
       M = a->i[i+1] - a->i[i];
       for ( j=0; j<M; j++ ) { (*v++) *= x;} 
     }
-    VecRestoreArray_Fast(ll,l); 
     PLogFlops(nz);
   }
   if (rr) {
     VecGetLocalSize_Fast(rr,n);
     if (n != a->n) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Right scaling vector wrong length");
-    VecGetArray_Fast_Fast(rr,r); 
+    VecGetArray_Fast(rr,r); 
     v = a->a; jj = a->j;
     for ( i=0; i<nz; i++ ) {
       (*v++) *= r[*jj++ + shift]; 
     }
-    VecRestoreArray_Fast(rr,r);
     PLogFlops(nz);
   }
   return 0;
@@ -1482,6 +1486,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   B->view             = MatView_SeqAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
+  B->mapping          = 0;
   ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,
                           &flg); CHKERRQ(ierr);
   b->ilu_preserve_row_sums = PETSC_FALSE;

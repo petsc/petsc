@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stash.c,v 1.10 1996/04/26 00:52:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stash.c,v 1.11 1996/08/08 14:44:19 bsmith Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -11,8 +11,7 @@ static char vcid[] = "$Id: stash.c,v 1.10 1996/04/26 00:52:43 bsmith Exp bsmith 
    The stash is where elements of a matrix destined to be stored on other 
    processors are kept until matrix assembly is done.
 
-   This is a simple minded stash. Do a linear search to determine if
-   in stash, if not add to end.
+   This is a simple minded stash. Simply add entry to end of stash.
 */
 
 int StashInitialize_Private(Stash *stash)
@@ -52,28 +51,14 @@ int StashInfo_Private(Stash *stash)
 /* 
     Should do this properly. With a sorted array.
 */
-int StashValues_Private(Stash *stash,int row,int n, int *idxn,
-                        Scalar *values,InsertMode addv)
+int StashValues_Private(Stash *stash,int row,int n, int *idxn,Scalar *values,InsertMode addv)
 {
-  int    i, found, *n_idx, *n_idy;  /* int j, N = stash->n, */
+  int    i, found, *n_idx, *n_idy; 
   Scalar val, *n_array;
 
   for ( i=0; i<n; i++ ) {
     found = 0;
     val = *values++;
-/*
-   Removed search!  Now much faster assembly.
-
-    for ( j=0; j<N; j++ ) {
-      if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
-        
-        if (addv == ADD_VALUES) stash->array[j] += val;
-        else stash->array[j] = val;
-        found = 1;
-        break;
-      }
-    }
-*/
     if (!found) { /* not found so add to end */
       if ( stash->n == stash->nmax ) {
         /* allocate a larger stash */

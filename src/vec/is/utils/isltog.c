@@ -1,57 +1,92 @@
 #ifndef lint
-static char vcid[] = "$Id: iscomp.c,v 1.7 1996/08/17 14:35:37 bsmith Exp $";
+static char vcid[] = "$Id: isltog.c,v 1.1 1996/11/17 23:48:28 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
-/*@C
-  ISEqual  - Compares if two index sets have the same set of indices.
+/*@
+    ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
+      ordering and a global parallel ordering.
 
    Input Parameters:
-.  is1, is2 - The index sets being compared
+.    n - the number of local elements
+.    indices - the global index for each local element
 
    Output Parameters:
-.  flg - output flag, either
-$     PETSC_TRUE if both index sets have the same indices;
-$     PETSC_FALSE if either the index sets differ by size or 
-$          by the set of indices.
+.    mapping - new mapping data structure
 
-   Note: 
-   This routine sorts the contents of the index sets before
-   the comparision is made, so the order of the indices is immaterial.
+.keywords: IS, local to global mapping
 
-.keywords: IS, index set, equal
+.seealso: ISLocalToGlobalMappingDestroy(), 
 @*/
-int ISEqual(IS is1, IS is2, PetscTruth *flg)
+int ISLocalToGlobalMappingCreate(int n, int *indices,ISLocalToGlobalMapping *mapping)
 {
+  PetscValidIntPointer(indices);
+  PetscValidPointer(mapping);
 
-  int sz, sz1, sz2, ierr, *ptr1, *ptr2, *a1, *a2;
-  
-  ierr = ISGetSize(is1, &sz1); CHKERRQ(ierr);
-  ierr = ISGetSize(is2, &sz2); CHKERRQ(ierr);
-  if( sz1 != sz2) { *flg = PETSC_FALSE; return 0;}
-  
-  ierr = ISGetIndices(is1, &ptr1); CHKERRQ(ierr);
-  ierr = ISGetIndices(is2, &ptr2); CHKERRQ(ierr);
-  
-  sz   = sz1*sizeof(int);
-  a1   = (int *) PetscMalloc((sz1+1)* sizeof(int));
-  a2   = (int *) PetscMalloc((sz2+1)* sizeof(int));
-
-  PetscMemcpy(a1, ptr1, sz);
-  PetscMemcpy(a2, ptr2, sz);
-
-  ierr = PetscSortInt(sz1,a1); CHKERRQ(ierr);
-  ierr = PetscSortInt(sz2,a2); CHKERRQ(ierr);
-  if(!PetscMemcmp(a1, a2, sz)) {*flg = PETSC_TRUE;}
-  else {*flg = PETSC_FALSE;}
-
-  ierr = ISRestoreIndices(is1, &ptr1); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is2, &ptr2); CHKERRQ(ierr);
-  
-  PetscFree(a1);
-  PetscFree(a2);
+  *mapping = PetscNew(struct _ISLocalToGlobalMapping); CHKPTRQ(*mapping);
+  (*mapping)->refcnt  = 1;
+  (*mapping)->indices = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ((*mapping)->indices);
+  PetscMemcpy((*mapping)->indices,indices,n*sizeof(int));
   return 0;
 }
   
+/*@
+    ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
+      ordering and a global parallel ordering.
+
+   Input Parameters:
+.    mapping - mapping data structure
+
+.keywords: IS, local to global mapping
+
+.seealso: ISLocalToGlobalMappingCreate(), 
+@*/
+int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
+{
+  PetscValidPointer(mapping);
+  if (--mapping->refcnt) return 0;
+
+  PetscFree(mapping->indices);
+  PetscFree(mapping);
+  return 0;
+}
+  
+/*@
+    ISLocalToGlobalMappingApplyIS - Creates a new IS using the global numbering
+      defined in an ISLocalToGlobalMapping from an IS in the local numbering.
+
+   Input Parameters:
+.   ISLocalToGlobalMapping - mapping between local and global numbering
+.   is - index set in local numbering
+
+   Output Parameters:
+.   newis - index set in global numbering
+
+.seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingDestroy()
+
+@*/
+int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *newis)
+{
+  int ierr,n,i,*idxin,*idxmap,*idxout;
+  PetscValidPointer(mapping);
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidPointer(newis);
+
+  ierr   = ISGetSize(is,&n); CHKERRQ(ierr);
+  ierr   = ISGetIndices(is,&idxin); CHKERRQ(ierr);
+  idxmap = mapping->indices;
+  
+  idxout = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(idxout);
+  for ( i=0; i<n; i++ ) {
+    idxout[i] = idxmap[idxin[i]];
+  }
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idxout,newis); CHKERRQ(ierr);
+  PetscFree(idxout);
+  return 0;
+}
+
+
+

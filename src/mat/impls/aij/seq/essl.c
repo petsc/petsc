@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.12 1996/08/08 14:42:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.13 1996/09/14 03:07:52 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -8,6 +8,7 @@ static char vcid[] = "$Id: essl.c,v 1.12 1996/08/08 14:42:46 bsmith Exp bsmith $
 
 */
 #include "src/mat/impls/aij/seq/aij.h"
+#include "src/vec/vecimpl.h"
 
 #if defined(HAVE_ESSL) && !defined(__cplusplus)
 /* #include <essl.h> This doesn't work!  */
@@ -47,9 +48,9 @@ static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
   Scalar          *xx;
   int             ierr,m, zero = 0;
 
-  ierr = VecGetSize(b,&m); CHKERRQ(ierr);
+  VecGetLocalSize_Fast(b,m);
   ierr = VecCopy(b,x); CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+  VecGetArray_Fast(x,xx);
 
   dgss(&zero, &a->n, essl->a, essl->ia, essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
 

@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.2 1996/06/04 21:40:30 balay Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.3 1996/08/08 14:43:40 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -23,6 +23,7 @@ typedef struct {
 
   InsertMode    insertmode;             /* mode for MatSetValues */
   Stash         stash;                  /* stash for non-local elements */
+  int           donotstash;             /* if 1, off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends, nrecvs;         /* numbers of sends and receives */

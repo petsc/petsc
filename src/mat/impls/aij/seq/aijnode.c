@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.57 1996/10/11 21:07:33 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.58 1996/10/24 14:30:43 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
 */
 #include "src/mat/impls/aij/seq/aij.h"                
+#include "src/vec/vecimpl.h"
 
 int Mat_AIJ_CheckInode(Mat);
 static int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
@@ -363,7 +364,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   if (!a->inode.size)SETERRQ(1,"MatMult_SeqAIJ_Inode: Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
+  VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
@@ -540,9 +541,9 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   if (!a->inode.size)SETERRQ(1,"MatMultAdd_SeqAIJ_Inode: Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  VecGetArray(xx,&x);
-  VecGetArray(yy,&y);
-  VecGetArray(zz,&z);
+  VecGetArray_Fast(xx,x);
+  VecGetArray_Fast(yy,y);
+  VecGetArray_Fast(zz,z);
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
@@ -777,8 +778,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
-  ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  VecGetArray_Fast(bb,b);
+  VecGetArray_Fast(xx,x);
   tmp  = a->solve_work;
   
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;

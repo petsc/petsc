@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.31 1996/08/07 03:26:52 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.32 1996/08/15 12:45:05 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -40,14 +40,16 @@ struct _VeOps {
        (*restorearray)(Vec,Scalar**),    /* restore data array */
        (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */
        (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */
-       (*setrandom)(PetscRandom,Vec);       /* set y[j] = random numbers */
+       (*setrandom)(PetscRandom,Vec),    /* set y[j] = random numbers */
+       (*setoption)(Vec,VecOption);
 };
 
 struct _Vec {
-  PETSCHEADER                            /* general PETSc header */
-  struct _VeOps ops;                     /* vector operations */
-  void          *data;                   /* implementation-specific data */
-  int           N, n;                    /* global, local vector size */
+  PETSCHEADER                              /* general PETSc header */
+  struct _VeOps          ops;              /* vector operations */
+  void                   *data;            /* implementation-specific data */
+  int                    N, n;             /* global, local vector size */
+  ISLocalToGlobalMapping mapping;          /* mapping used in VecSetValuesLocal() */
 };
 
 /*
@@ -67,6 +69,7 @@ typedef struct {
   avoid function call overhead.
 */
 #define VecGetArray_Fast(x,a)     a = ((Vec_ArrayBased *)(x->data))->array
+#define VecPlaceArray_Fast(x,a)   ((Vec_ArrayBased *)(x->data))->array = a
 #define VecRestoreArray_Fast(x,a)
 #define VecGetLocalSize_Fast(x,a) a = x->n;
 
@@ -122,24 +125,23 @@ typedef struct {
 typedef struct { 
   VecScatterType         type;
   int                    n;        /* number of processors to send/receive */
-  int                    *starts;  /* starting point in indices and 
-                                      values for each proc*/ 
-  int                    *indices; /* list of all components sent or
-                                      received */
-  int                    *procs;   /* processors we are communicating with
-                                      in scatter */
+  int                    *starts;  /* starting point in indices and values for each proc*/ 
+  int                    *indices; /* list of all components sent or received */
+  int                    *procs;   /* processors we are communicating with in scatter */
   MPI_Request            *requests;
   Scalar                 *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus;
+  int                    use_readyreceiver;
 } VecScatter_MPI_General;
 
 struct _VecScatter {
   PETSCHEADER
   int     to_n,from_n;
   int     inuse;   /* prevents corruption from mixing two scatters */
-  int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatter);
-  int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatter);
+  int     (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  int     (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  int     (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   int     (*copy)(VecScatter,VecScatter);
   void    *fromdata,*todata;
 };

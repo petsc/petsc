@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.51 1996/08/04 23:14:42 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.52 1996/08/05 03:53:16 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component of PETSc.
  */
@@ -53,12 +53,14 @@ extern int VecDuplicate(Vec,Vec*);
 extern int VecDuplicateVecs(Vec,int,Vec**);         
 extern int VecDestroyVecs(Vec*,int); 
 
+
 typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES} InsertMode;
 extern int VecSetValues(Vec,int,int*,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);
 extern int VecAssemblyEnd(Vec);
 
 typedef enum {SCATTER_REVERSE=1,SCATTER_ALL=8} ScatterMode;
+extern int VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 extern int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 extern int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
 extern int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
@@ -82,6 +84,12 @@ extern int VecGetSize(Vec,int*);
 extern int VecGetType(Vec,VecType*,char**);
 extern int VecGetLocalSize(Vec,int*);
 extern int VecGetOwnershipRange(Vec,int*,int*);
+
+extern int VecSetLocalToGlobalMapping(Vec, int,int *);
+extern int VecSetValuesLocal(Vec,int,int*,Scalar*,InsertMode);
+
+typedef enum { VEC_IGNORE_OFF_PROCESSOR_ENTRIES} VecOption;
+extern int VecSetOption(Vec,VecOption);
 
 #if defined(__DRAW_PACKAGE)
 extern int DrawTensorContour(Draw,int,int,double *,double *,Vec);

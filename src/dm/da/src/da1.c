@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.46 1996/08/15 12:51:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.47 1996/09/27 20:12:55 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -251,6 +251,12 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   da->view   = DAView_1d;
   da->wrap   = wrap;
   da->stencil_type = DA_STENCIL_STAR;
+
+  /* 
+     Set the local to global ordering in the global vector, this allows use
+     of VecSetValuesLocal().
+  */
+  ierr = VecSetLocalToGlobalMapping(da->global,nn,idx); CHKERRQ(ierr);
 
   /* construct the local to local scatter context */
   /* 

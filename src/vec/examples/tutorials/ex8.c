@@ -1,15 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.25 1996/10/28 20:58:21 curfman Exp $";
+static char vcid[] = "$Id: ex8.c,v 1.1 1996/11/18 03:37:58 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Builds a parallel vector with 1 component on the first\n\
-processor, 2 on the second, etc.  Then each processor adds one to all\n\
-elements except the last rank.\n\n";
+static char help[] = "Demonstrates using a local ordering to set values into\n\
+a parallel vector.\n\n";
 
 /*T
-   Concepts: Vectors^Assembling vectors;
-   Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValues();
-   Routines: VecView(); VecDestroy();
+   Concepts: Vectors^Assembling vectors; local ordering;
+   Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValuesLocal();
+   Routines: VecView(); VecDestroy(); VecSetLocalToGlobalMapping(); 
    Processors: n
 T*/
 
@@ -24,7 +23,7 @@ T*/
 
 int main(int argc,char **argv)
 {
-  int     i, N, ierr, rank;
+  int     i, N, ierr, rank, ng,*gindices,rstart,rend,M;
   Scalar  one = 1.0;
   Vec     x;
 
@@ -43,8 +42,30 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,x); CHKERRA(ierr);
 
   /*
+      Set the local to global ordering for the vector. Each processor 
+     generates a list of the global indices for each local index. Note that
+     the local indices are just whatever is convenient for a particular application.
+     In this case we treat the vector as lying on a one dimensional grid and 
+     have one ghost point on each end of the blocks owned by each processor. 
+  */
+
+  ierr = VecGetSize(x,&M); CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(x,&rstart,&rend); CHKERRA(ierr);
+  ng   = rend - rstart + 2;
+  gindices = (int*) PetscMalloc(ng*sizeof(int));CHKPTRA(gindices);
+  gindices[0] = rstart - 1; 
+  for (i=0; i<ng-1; i++ ) {
+    gindices[i+1] = gindices[i] + 1;
+  }
+  /* map the first and last point as periodic */
+  if (gindices[0]    == -1) gindices[0]    = M - 1;
+  if (gindices[ng-1] == M)  gindices[ng-1] = 0;
+  ierr = VecSetLocalToGlobalMapping(x,ng,gindices); CHKERRA(ierr);
+  PetscFree(gindices);
+
+  /*
      Set the vector elements.
-      - Always specify global locations of vector entries.
+      - In this case set the values using the local ordering
       - Each processor can contribute any vector entries,
         regardless of which processor "owns" them; any nonlocal
         contributions will be transferred to the appropriate processor
@@ -52,8 +73,8 @@ int main(int argc,char **argv)
       - In this example, the flag ADD_VALUES indicates that all
         contributions will be added together.
   */
-  for ( i=0; i<N-rank; i++ ) {
-    ierr = VecSetValues(x,1,&i,&one,ADD_VALUES); CHKERRA(ierr);  
+  for ( i=0; i<ng; i++ ) {
+    ierr = VecSetValuesLocal(x,1,&i,&one,ADD_VALUES); CHKERRA(ierr);  
   }
 
   /* 

@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.55 1996/09/12 16:25:01 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.56 1996/11/07 15:07:51 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -19,12 +19,17 @@ static int VecDestroy_MPI(PetscObject obj )
 {
   Vec     v = (Vec ) obj;
   Vec_MPI *x = (Vec_MPI *) v->data;
+  int     ierr;
+
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Length=%d",x->N);
 #endif  
   if (x->stash.array) PetscFree(x->stash.array);
   PetscFree(x->array);
   PetscFree(v->data);
+  if (v->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
+  }
   PLogObjectDestroy(v);
   PetscHeaderDestroy(v);
   return 0;
@@ -386,23 +391,23 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
       if (addv == INSERT_VALUES) xx[ix[i]-start] = y[i];
       else                      xx[ix[i]-start] += y[i];
     }
-    else {
+    else if (!x->stash.donotstash) {
       if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"VecSetValues_MPI:Out of range");
-        if (x->stash.n == x->stash.nmax) {/* cache is full */
-          int    *idx, nmax = x->stash.nmax;
-          Scalar *array;
-          array = (Scalar *) PetscMalloc( (nmax+200)*sizeof(Scalar) + 
+      if (x->stash.n == x->stash.nmax) { /* cache is full */
+        int    *idx, nmax = x->stash.nmax;
+        Scalar *array;
+        array = (Scalar *) PetscMalloc( (nmax+200)*sizeof(Scalar) + 
                                      (nmax+200)*sizeof(int) ); CHKPTRQ(array);
-          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
-          idx = (int *) (array + nmax + 200);
-          PetscMemcpy(array,x->stash.array,nmax*sizeof(Scalar));
-          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
-          if (x->stash.array) PetscFree(x->stash.array);
-          x->stash.array = array; x->stash.idx = idx;
-          x->stash.nmax += 200;
-        }
-        x->stash.array[x->stash.n] = y[i];
-        x->stash.idx[x->stash.n++] = ix[i];
+        PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
+        idx = (int *) (array + nmax + 200);
+        PetscMemcpy(array,x->stash.array,nmax*sizeof(Scalar));
+        PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
+        if (x->stash.array) PetscFree(x->stash.array);
+        x->stash.array = array; x->stash.idx = idx;
+        x->stash.nmax += 200;
+      }
+      x->stash.array[x->stash.n] = y[i];
+      x->stash.idx[x->stash.n++] = ix[i];
     }
   }
   return 0;

@@ -3,10 +3,10 @@
 ALL: lib
 
 CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
-SOURCEC	 = iscomp.c iscoloring.c
+SOURCEC	 = iscomp.c iscoloring.c isltog.c
 SOURCEF	 =
 SOURCEH	 =
-OBJSC	 = iscomp.o iscoloring.o
+OBJSC	 = iscomp.o iscoloring.o isltog.o
 OBJSF	 =
 LIBBASE	 = libpetscvec
 DIRS	 = 

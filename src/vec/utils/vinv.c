@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.23 1996/04/20 04:18:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.24 1996/08/08 14:40:07 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -20,11 +20,11 @@ static char vcid[] = "$Id: vinv.c,v 1.23 1996/04/20 04:18:39 bsmith Exp bsmith $
 @*/
 int VecReciprocal(Vec v)
 {
-  int    ierr, i,n;
+  int    i,n;
   Scalar *x;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
+  VecGetLocalSize_Fast(v,n);
+  VecGetArray_Fast(v,x);
   for ( i=0; i<n; i++ ) {
     if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
@@ -46,12 +46,12 @@ int VecReciprocal(Vec v)
 @*/
 int VecSum(Vec v,Scalar *sum)
 {
-  int    ierr, i,n;
+  int    i,n;
   Scalar *x,lsum = 0.0;
 
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
+  VecGetLocalSize_Fast(v,n);
+  VecGetArray_Fast(v,x);
   for ( i=0; i<n; i++ ) {
     lsum += x[i];
   }
@@ -78,12 +78,12 @@ int VecSum(Vec v,Scalar *sum)
 @*/
 int VecShift(Scalar *shift,Vec v)
 {
-  int    ierr, i,n;
+  int    i,n;
   Scalar *x,lsum = *shift;
 
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
+  VecGetLocalSize_Fast(v,n); 
+  VecGetArray_Fast(v,x);
   for ( i=0; i<n; i++ ) {
     x[i] += lsum;
   }
@@ -99,12 +99,12 @@ int VecShift(Scalar *shift,Vec v)
 @*/
 int VecAbs(Vec v)
 {
-  int    ierr, i,n;
+  int    i,n;
   Scalar *x;
 
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
+  VecGetLocalSize_Fast(v,n);
+  VecGetArray_Fast(v,x);
   for ( i=0; i<n; i++ ) {
     x[i] = PetscAbsScalar(x[i]);
   }

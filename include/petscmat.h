@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.116 1996/09/28 23:11:27 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.117 1996/11/07 15:12:51 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -13,9 +13,9 @@ typedef struct _Mat*           Mat;
 /*
    The default matrix data storage formats and routines to create them.
 */
-typedef enum { MATSAME=-1, MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, MATSHELL, 
+typedef enum { MATSAME=-1,  MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ, MATSHELL, 
                MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,
-               MATMPIDENSE, MATSEQBAIJ, MATMPIBAIJ} MatType;
+               MATMPIDENSE, MATSEQBAIJ,  MATMPIBAIJ,  MATMPICSN} MatType;
 
 extern int MatCreate(MPI_Comm,int,int,Mat*);
 extern int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
@@ -47,7 +47,8 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_YES_NEW_NONZERO_LOCATIONS=32,MAT_SYMMETRIC=64,
               MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS,
               MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1,MAT_INODE_LIMIT_2,
-              MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4,MAT_INODE_LIMIT_5} MatOption;
+              MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4,MAT_INODE_LIMIT_5,
+              MAT_IGNORE_OFF_PROCESSOR_ENTRIES} MatOption;
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
 extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,int*);
@@ -120,6 +121,10 @@ extern int MatCompress(Mat);
 
 extern int MatScale(Scalar *,Mat);
 extern int MatShift(Scalar *,Mat);
+
+extern int MatSetLocalToGlobalMapping(Mat, int,int *);
+extern int MatZeroRowsLocal(Mat,IS,Scalar*);
+extern int MatSetValuesLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
