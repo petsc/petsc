@@ -137,7 +137,8 @@ clean:
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
-	       ex[0-9].exe ex[0-9][0-9].exe *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__
+	       ex[0-9].exe ex[0-9][0-9].exe *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__ \
+               .adic*
 
 #
 #  testexamples_X - Runs various PETSc test suites
@@ -255,12 +256,12 @@ wwwpages:
 #.PRECIOUS: $(PRECIOUS) $(LIBNAME)
 .SUFFIXES: .F $(SUFFIXES) .PETSc .C .cc .cpp .r .rm .so
 
-.c.a: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
+.c.a:
+	$(CC) -c $(CFLAGS) $(COPTFLAGS)  $<
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .c.o: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
+	$(CC) -c $(CFLAGS) $(COPTFLAGS)  $<
 .cpp.a .cc.a .C.a: 
 	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
 	$(AR) cr $(LIBNAME) $*.o
@@ -299,17 +300,30 @@ wwwpages:
 #   Rule for generating ADIC derivatives from PETSc .c and .hfiles
 #
 adic:
+	@-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
+          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
+          adiC.new -avud gradient.new -i $(PDIR)/adicignore $(CFLAGS) $$i ; \
+          fi; done ; \
+        fi; fi
+	@-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEH)" != "" ]; then \
+          for i in $(SOURCEH) foo; do if [ -f $$i ]; then \
+          adiC.new -avud gradient.new -i $(PDIR)/adicignore $(CFLAGS) $$i ; \
+          fi; done ; \
+        fi; fi
+
+adic2:
 	-if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-          adiC.new -avud gradient.new $(CFLAGS) $$i ; \
+          adiC.new -avud gradient.new -i $(PDIR)/adicignore $(CFLAGS) $$i ; \
           fi; done ; \
         fi
 	-if [ "$(SOURCEH)" != "" ]; then \
           for i in $(SOURCEH) foo; do if [ -f $$i ]; then \
-          adiC.new -avud gradient.new $(CFLAGS) $$i ; \
+          adiC.new -avud gradient.new -i $(PDIR)/adicignore $(CFLAGS) $$i ; \
           fi; done ; \
         fi
 
+#
 #
 #     Functions that need not be differentiated with ADIC are listed with a
 #   /* ADIC Ignore */ comment. The rule below generates a master list of all
@@ -317,7 +331,7 @@ adic:
 #
 adicignore: chkpetsc_dir
 	-@if [ ! -f $(PDIR)/adicignore ]; then \
-	  echo "FUNCTIONS_TO_IGNORE" > $(PDIR)/adicignore ; fi
+	  echo "[FUNCTIONS_TO_IGNORE]" > $(PDIR)/adicignore ; fi
 	@-if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
            grep "ADIC Ignore" $$i | cut -f2 -d\" >> $(PDIR)/adicignore ; \
@@ -336,7 +350,7 @@ adicnotignore: chkpetsc_dir
 	  echo "PetscDummyFunction" > $(PDIR)/adicnotignore ; fi
 	@-if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-           grep "e __FUNC__" $$i | grep -v "ADIC Ignore" | cut -f2 -d\" >> $(PDIR)/adicnotignore; \
+          grep "ne __FUNC__" $$i | grep -v "ADIC Ignore" | cut -f2 -d\" >> $(PDIR)/adicnotignore; \
           fi; done ; \
         fi
 # -------------------------------------------------------------------------------
