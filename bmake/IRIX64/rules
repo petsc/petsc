@@ -1,4 +1,4 @@
-# $Id: base,v 1.44 1998/09/09 21:18:07 balay Exp balay $ 
+# $Id: base,v 1.45 1998/09/29 20:46:59 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -woff 1164 -woff 1048
@@ -39,7 +39,7 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 # as-fast option produces bad .a files
 #
 SHLIBS = libpetsccontrib libpetscmat libpetscsles libpetscsnes libpetscsys \
-libpetscts libpetscvec libpetscts libpetscgvec libpetscfortran
+libpetscts libpetscvec libpetscts libpetscfortran
 
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
