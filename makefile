@@ -50,6 +50,21 @@ testexamples: chkpetsc_dir
 	-@echo "------------------------------------------"
 
 # Builds PETSc test examples for a given BOPT and architecture
+testexamples_uni: chkpetsc_dir
+	-@echo "Beginning to compile and run uniprocessor test examples"
+	-@echo "Using compiler: $(CC) $(PETSC_INCLUDE) $(PCONF) $(BASEOPT)"
+	-@echo "Using linker: $(CLINKER)"
+	-@echo "Using libraries: $(PETSC_LIB)"
+	-@echo "------------------------------------------"
+	-@echo "Due to different numerical round-off on certain"
+	-@echo "machines some of the numbers may not match exactly."
+	-@echo "------------------------------------------"
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
+           ACTION=testexamples_4  tree 
+	-@echo "Completed compiling and running uniprocessor test examples"
+	-@echo "------------------------------------------"
+
+# Builds PETSc test examples for a given BOPT and architecture
 testfortran: chkpetsc_dir
 	-@echo "Beginning to compile and run Fortran test examples"
 	-@echo "Using compiler: $(FC) $(BASEOPTF)"
