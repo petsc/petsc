@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.42 1996/05/03 19:26:39 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.43 1996/05/07 19:23:39 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -637,6 +637,7 @@ int Mat_AIJ_CheckInode(Mat A)
   }
 
   A->ops.mult            = MatMult_SeqAIJ_Inode;
+  A->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
   A->ops.solve           = MatSolve_SeqAIJ_Inode;
   A->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;
   A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
@@ -1053,6 +1054,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     b->inode.limit         = a->inode.limit;
     b->inode.max_limit     = a->inode.max_limit;
     C->ops.mult            = MatMult_SeqAIJ_Inode;
+    C->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
     C->ops.solve           = MatSolve_SeqAIJ_Inode;
     C->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;
     C->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
