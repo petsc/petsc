@@ -45,10 +45,10 @@ typedef struct {
       int         my;           /* Discretization in y-direction */
 } AppCtx;
 
-int  FormJacobian1(SNES,Vec,Mat*,Mat*,int*,void*),
+int  FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction1(SNES,Vec,Vec,void*),
      FormInitialGuess1(SNES,Vec,void*);
-int  FormJacobian2(SNES,Vec,Mat*,Mat*,int*,void*),
+int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction2(SNES,Vec,Vec,void*),
      FormInitialGuess2(SNES,Vec,void*);
 
@@ -211,7 +211,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-int FormJacobian1(SNES snes,Vec X,Mat *J, Mat *B, int *flag, void *ptr)
+int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   Mat     jac = *J;
@@ -421,7 +421,7 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-int FormJacobian2(SNES snes,Vec X,Mat *J, Mat *B, int *flag, void *pptr)
+int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
 {
   AppCtx *user = (AppCtx *) pptr;
   int     i, j, row, mx, my, col, ierr;

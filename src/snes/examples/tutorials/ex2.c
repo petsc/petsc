@@ -7,7 +7,7 @@ static char help[] =
 #include "options.h"
 #include <math.h>
 
-int  FormJacobian(SNES,Vec,Mat*,Mat*,int*,void*),
+int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
      FormInitialGuess(SNES,Vec,void*),
      Monitor(SNES,int,double,void *);
@@ -107,7 +107,7 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,int *flag,void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
   Scalar *xx, A, d;
   int    i, n, j, ierr;
@@ -130,7 +130,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,int *flag,void *dummy)
   ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
   ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
-  *flag = MAT_SAME_NONZERO_PATTERN;
+/*  *flag = MAT_SAME_NONZERO_PATTERN; */
   return 0;
 }
 /* --------------------  User-defined monitor ----------------------- */
