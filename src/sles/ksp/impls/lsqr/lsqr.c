@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.40 1998/07/28 15:50:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: lsqr.c,v 1.41 1998/08/11 01:02:09 curfman Exp curfman $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -78,7 +78,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 
   /* vectors of length n */
   X        = ksp->vec_sol;
-  W        = lsqr->vwork_m[0];
+  W        = lsqr->vwork_n[0];
   V        = lsqr->vwork_n[1];
   V1       = lsqr->vwork_n[2];
 
@@ -200,7 +200,7 @@ int KSPCreate_LSQR(KSP ksp)
   ksp->setup                = KSPSetUp_LSQR;
   ksp->solve                = KSPSolve_LSQR;
   ksp->adjustwork           = KSPDefaultAdjustWork;
-  ksp->destroy              = KSPDefaultDestroy;
+  ksp->destroy              = KSPDestroy_LSQR;
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
