@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.19 1998/07/15 15:15:27 balay Exp balay $";
+static char vcid[] = "$Id: fpath.c,v 1.20 1998/08/26 22:01:40 balay Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -93,11 +93,7 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
 	/* Find username */
 	name = fullpath + 1;
 	p    = name;
-#if defined( PARCH_nt_gnu)
 	while (*p && isalnum((int)(*p))) p++;
-#else
-	while (*p && isalnum(*p)) p++;
-#endif
 	*p = 0; p++;
 	pwde = getpwnam( name );
 	if (!pwde) PetscFunctionReturn(0);
