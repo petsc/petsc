@@ -2157,7 +2157,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJSetColumnIndices_SeqAIJ"
-
 int MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,int *indices)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)mat->data;

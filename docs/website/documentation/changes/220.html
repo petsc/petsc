@@ -13,6 +13,8 @@
 need to also use the option MAT_SYMMETRY_ETERNAL otherwise at the next MatAssembly
 the matrix will likly lose the symmetry flag.
 
+  Added MatISGetLocalMat() to allow preallocating the local matrix.
+
   changed PetscOptionsEList() to return the index of the string selected by the user
   (error if user enters impossible string)
 

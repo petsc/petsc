@@ -47,33 +47,38 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
     ierr = MGGetSmoother(pc,nlevels-1,&lksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(lksp,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
 
-    for (i=nlevels-1; i>0; i--) {
-
-      if (!dmmg[i-1]->w) {
-        ierr = VecDuplicate(dmmg[i-1]->x,&dmmg[i-1]->w);CHKERRQ(ierr);
+    if (dmmg[0]->galerkin) {
+      for (i=nlevels-2; i>-1; i--) {
+        PetscTruth JeqB = (PetscTruth)( dmmg[i]->B == dmmg[i]->J);
+        ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);
+        ierr = MatSeqAIJPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
+        if (JeqB) dmmg[i]->J = dmmg[i]->B;
+	ierr = MGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
+	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,flg);CHKERRQ(ierr);
+      }   
+    } else {
+      for (i=nlevels-1; i>0; i--) {
+	if (!dmmg[i-1]->w) {
+	  ierr = VecDuplicate(dmmg[i-1]->x,&dmmg[i-1]->w);CHKERRQ(ierr);
+	}
+	W    = dmmg[i-1]->w;
+	/* restrict X to coarser grid */
+	ierr = MatRestrict(dmmg[i]->R,X,W);CHKERRQ(ierr);
+	X    = W;      
+	/* scale to "natural" scaling for that grid */
+	ierr = VecPointwiseMult(dmmg[i]->Rscale,X,X);CHKERRQ(ierr);
+	/* tell the base vector for matrix free multiplies */
+	ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
+	/* compute Jacobian on coarse grid */
+	if (dmmg[i-1]->updatejacobian && ShouldUpdate(i,it)) {
+	  ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
+	} else {
+	  PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %d frequence %d level %d\n",it,dmmg[i-1]->updatejacobianperiod,i-1);
+	  flg = SAME_PRECONDITIONER;
+	}
+	ierr = MGGetSmoother(pc,i-1,&lksp);CHKERRQ(ierr);
+	ierr = KSPSetOperators(lksp,dmmg[i-1]->J,dmmg[i-1]->B,flg);CHKERRQ(ierr);
       }
-
-      W    = dmmg[i-1]->w;
-      /* restrict X to coarser grid */
-      ierr = MatRestrict(dmmg[i]->R,X,W);CHKERRQ(ierr);
-      X    = W;      
-
-      /* scale to "natural" scaling for that grid */
-      ierr = VecPointwiseMult(dmmg[i]->Rscale,X,X);CHKERRQ(ierr);
-
-      /* tell the base vector for matrix free multiplies */
-      ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
-
-      /* compute Jacobian on coarse grid */
-      if (dmmg[i-1]->updatejacobian && ShouldUpdate(i,it)) {
-	ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
-      } else {
-        PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %d frequence %d level %d\n",it,dmmg[i-1]->updatejacobianperiod,i-1);
-        flg = SAME_PRECONDITIONER;
-      }
-
-      ierr = MGGetSmoother(pc,i-1,&lksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(lksp,dmmg[i-1]->J,dmmg[i-1]->B,flg);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

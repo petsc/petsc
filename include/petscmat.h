@@ -1176,6 +1176,8 @@ EXTERN int MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);
 EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
 
+EXTERN int MatISGetLocalMat(Mat,Mat*);
+
 /*S
      MatNullSpace - Object that removes a null space from a vector, i.e.
          orthogonalizes the vector to a subsapce
@@ -1219,19 +1221,7 @@ EXTERN int MatDiagonalScaleLocal(Mat,Vec);
 EXTERN int PetscViewerMathematicaPutMatrix(PetscViewer, int, int, PetscReal *);
 EXTERN int PetscViewerMathematicaPutCSRMatrix(PetscViewer, int, int, int *, int *, PetscReal *);
 
-EXTERN int MatUseSpooles_SeqAIJ(Mat);
-EXTERN int MatUseUMFPACK_SeqAIJ(Mat);
-EXTERN int MatUseSuperLU_SeqAIJ(Mat);
-EXTERN int MatUseEssl_SeqAIJ(Mat);
-EXTERN int MatUseLUSOL_SeqAIJ(Mat);
-EXTERN int MatUseMatlab_SeqAIJ(Mat);
-EXTERN int MatUseDXML_SeqAIJ(Mat);
-EXTERN int MatUsePETSc_SeqAIJ(Mat);
-EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
-EXTERN int MatUseSpooles_MPIAIJ(Mat);
-EXTERN int MatUseSpooles_SeqSBAIJ(Mat); 
-EXTERN int MatUseSpooles_MPISBAIJ(Mat);
-EXTERN int MatUseMUMPS_MPIAIJ(Mat);
+EXTERN int MatSeqAIJPtAP(Mat,Mat,Mat*);
 
 PETSC_EXTERN_CXX_END
 #endif

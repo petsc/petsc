@@ -26,7 +26,7 @@ int PetscViewerDestroy_HDF4(PetscViewer v)
  vhdf4->sd_id = -1;
  }
  if (vhdf4->filename) {
- PetscFree(vhdf4->filename);
+   ierr = PetscFree(vhdf4->filename);CE;
  }
  ierr = PetscFree(vhdf4); CE;
  PetscFunctionReturn(0);

@@ -30,7 +30,6 @@ int MatSeqAIJPtAP(Mat A,Mat P,Mat *C) {
   char funct[80];
 
   PetscFunctionBegin;
-
   ierr = PetscLogEventBegin(MATSeqAIJ_PtAP,A,P,0,0);CHKERRQ(ierr);
 
   ierr = MatSeqAIJPtAPSymbolic(A,P,C);CHKERRQ(ierr);
@@ -41,10 +40,9 @@ int MatSeqAIJPtAP(Mat A,Mat P,Mat *C) {
   /* Query A for ApplyPtAPNumeric implementation based on types of P */
   ierr = PetscStrcpy(funct,"MatApplyPtAPNumeric_seqaij_");CHKERRQ(ierr);
   ierr = PetscStrcat(funct,P->type_name);CHKERRQ(ierr);
-  ierr = PetscTryMethod(A,funct,(Mat,Mat,Mat),(A,P,*C));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,funct,(Mat,Mat,Mat),(A,P,*C));CHKERRQ(ierr);
 
   ierr = PetscLogEventEnd(MATSeqAIJ_PtAP,A,P,0,0);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -84,7 +82,7 @@ int MatSeqAIJPtAPSymbolic(Mat A,Mat P,Mat *C) {
   /* Query A for ApplyPtAP implementation based on types of P */
   ierr = PetscStrcpy(funct,"MatApplyPtAPSymbolic_seqaij_");CHKERRQ(ierr);
   ierr = PetscStrcat(funct,P->type_name);CHKERRQ(ierr);
-  ierr = PetscTryMethod(A,funct,(Mat,Mat,Mat*),(A,P,C));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,funct,(Mat,Mat,Mat*),(A,P,C));CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -379,7 +377,7 @@ int MatSeqAIJPtAPNumeric(Mat A,Mat P,Mat C) {
   /* Query A for ApplyPtAP implementation based on types of P */
   ierr = PetscStrcpy(funct,"MatApplyPtAPNumeric_seqaij_");CHKERRQ(ierr);
   ierr = PetscStrcat(funct,P->type_name);CHKERRQ(ierr);
-  ierr = PetscTryMethod(A,funct,(Mat,Mat,Mat),(A,P,C));CHKERRQ(ierr);
+  ierr = PetscUseMethod(A,funct,(Mat,Mat,Mat),(A,P,C));CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

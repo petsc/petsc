@@ -411,7 +411,12 @@ typedef void (**PetscVoidFunction)(void);
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
 #endif
-
+#define  PetscUseMethod(obj,A,B,C) \
+  0;{ int (*f)B, __ierr; \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidFunction)&f);CHKERRQ(__ierr); \
+    if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
+    else {SETERRQ1(1,"Cannot locate function %s in object",A);} \
+  }
 /*
     Functions that can act on any PETSc object.
 */
