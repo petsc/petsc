@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.49 1997/02/06 15:07:51 curfman Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.50 1997/02/07 15:21:56 balay Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -36,7 +36,7 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
   FILE         *fd;
   PC_ASM       *jac = (PC_ASM *) pc->data;
   int          rank, ierr;
-  char         *cstring;
+  char         *cstring = 0;
   ViewerType   vtype;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
