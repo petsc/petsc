@@ -1,10 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: drawv.c,v 1.11 1996/12/08 20:51:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.12 1996/12/08 23:56:03 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
 #include "src/draw/drawimpl.h" /*I "draw.h" I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDestroy_Draw"
 int ViewerDestroy_Draw(PetscObject obj)
 {
   int    ierr;
@@ -17,11 +19,15 @@ int ViewerDestroy_Draw(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerFlush_Draw"
 int ViewerFlush_Draw(Viewer v)
 {
   return DrawSyncFlush(v->draw);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDrawGetDraw"
 /*@C
     ViewerDrawGetDraw - Returns Draw object from Viewer object.
     This Draw object may then be used to perform graphics using 
@@ -47,6 +53,8 @@ int ViewerDrawGetDraw(Viewer v, Draw *draw)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDrawGetDrawLG"
 /*@C
     ViewerDrawGetDrawLG - Returns DrawLG object from Viewer object.
     This DrawLG object may then be used to perform graphics using 

@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.33 1996/08/08 14:44:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.34 1996/09/12 16:26:48 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawCheckResizedWindow"
 /*@
    DrawCheckResizedWindow - Checks if the user has resized the window.
 
@@ -19,6 +21,8 @@ int DrawCheckResizedWindow(Draw draw)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawGetTitle"
 /*@
    DrawGetTitle - Gets pointer to title of a Draw context.
 
@@ -35,6 +39,8 @@ int DrawGetTitle(Draw draw,char **title)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawSetTitle"
 /*@
    DrawSetTitle - Sets the title of a Draw context.
 
@@ -60,6 +66,8 @@ int DrawSetTitle(Draw draw,char *title)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawAppendTitle"
 /*@
    DrawAppendTitle - Appends to the title of a Draw context.
 
@@ -92,6 +100,8 @@ int DrawAppendTitle(Draw draw,char *title)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawDestroy"
 /*@C
    DrawDestroy - Deletes a draw context.
 
@@ -107,6 +117,8 @@ int DrawDestroy(Draw draw)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawCreatePopUp"
 /*@
    DrawCreatePopUp - Creates a popup window associated with 
       a Draw window.
@@ -127,6 +139,8 @@ int DrawCreatePopUp(Draw draw,Draw *popup)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawDestroy_Null"
 int DrawDestroy_Null(PetscObject obj)
 {
   PLogObjectDestroy(obj);
@@ -134,6 +148,8 @@ int DrawDestroy_Null(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DrawOpenNull"
 /*
   DrawOpenNull - Opens a null drawing context. All draw commands to 
   it are ignored.
