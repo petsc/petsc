@@ -5,6 +5,13 @@ petsc/src/benchmarks/results
 petsc/src/benchmarks/notes
 petsc/src/snes/examples/tutorials/unstruct
 petsc/src/adic
+petsc/src/adic/examples/RCS
+petsc/src/adic/blas/RCS
+petsc/src/adic/src/RCS
+petsc/src/adic/lapack/RCS
+petsc/src/adic/lapack/src1/RCS
+petsc/src/adic/lapack/src2/RCS
+petsc/src/adic/lapack/src3/RCS
 petsc/src/ec
 petsc/src/ec/RCS
 petsc/src/ec/interface/RCS
@@ -47,7 +54,6 @@ petsc/bmake/IRIX_uni
 petsc/bmake/IRIX/make_dso_IRIX
 petsc/bmake/freebsd_nolog
 petsc/bmake/alpha_nolog
-petsc/bmake/nt
 petsc/bmake/rs6000_quad
 petsc/bmake/rs6000_gnu
 petsc/include/finclude/generateincludes
