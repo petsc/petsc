@@ -143,9 +143,8 @@ class UsingSIDL:
     return os.path.abspath(bs.argDB['SIDLRUNTIME_DIR'])
 
   def getServerRootDir(self, lang, package = None):
-    path = self.serverBaseDir
-    if len(self.serverLanguages) > 1:
-      path += '-'+lang.lower()
+    path  = self.serverBaseDir
+    path += '-'+lang.lower()
     if package:
       path += '-'+package
     return path
