@@ -118,15 +118,10 @@ class Configure(config.base.Configure):
     return
 
   def setFoundOutput(self):
-    self.addSubstitution('BLOCKSOLVE_INCLUDE','-I'+self.include)
-    self.addSubstitution('BLOCKSOLVE_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_BLOCKSOLVE',1)
     self.framework.packages.append(self)
     
   def setEmptyOutput(self):
-    #self.addDefine('HAVE_BLOCKSOLVE', 0)
-    self.addSubstitution('BLOCKSOLVE_INCLUDE', '')
-    self.addSubstitution('BLOCKSOLVE_LIB', '')
     return
 
   def configure(self):

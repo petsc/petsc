@@ -22,6 +22,7 @@ class Configure(config.base.Configure):
     self.name         = 'MPI'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
+    self.usingMPIUni  = 1
     return
 
   def __str__(self):
@@ -473,7 +474,6 @@ class Configure(config.base.Configure):
     '''Checking for mpirun'''
     if self.isPOE:
       self.mpirun = os.path.join(self.framework.argDB['PETSC_DIR'], 'bin', 'mpirun.poe')
-      sel.addSubstitution('MPIRUN', self.mpirun)
       return
     if 'with-mpirun' in self.framework.argDB:
       self.framework.argDB['with-mpirun'] = os.path.expanduser(self.framework.argDB['with-mpirun'])
@@ -497,26 +497,7 @@ class Configure(config.base.Configure):
     return
 
   def setOutput(self):
-    '''Add defines and substitutions
-       - HAVE_MPI is defined if a working MPI is found
-       - MPI_INCLUDE and MPI_LIB are command line arguments for the compile and link
-       - MPI_INCLUDE_DIR is the directory containing mpi.h
-       - MPI_LIBRARY is the list of MPI libraries'''
-    if self.foundMPI:
-      self.addDefine('HAVE_MPI', 1)
-      if self.include:
-        self.addSubstitution('MPI_INCLUDE',     ' '.join(['-I'+inc for inc in self.include]))
-        self.addSubstitution('MPI_INCLUDE_DIR', self.include[0])
-      else:
-        self.addSubstitution('MPI_INCLUDE',     '')
-        self.addSubstitution('MPI_INCLUDE_DIR', '')
-      if self.lib:
-        self.addSubstitution('MPI_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
-        self.addSubstitution('MPI_LIBRARY', self.lib)
-      else:
-        self.addSubstitution('MPI_LIB',     '')
-        self.addSubstitution('MPI_LIBRARY', '')
-      self.framework.packages.append(self)
+    self.framework.packages.append(self)
     return
 
   def configureMPIUNI(self):

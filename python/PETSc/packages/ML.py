@@ -125,14 +125,10 @@ class Configure(config.base.Configure):
     return
 
   def setFoundOutput(self):
-    self.addSubstitution(self.PACKAGE+'_INCLUDE','-I'+self.include[0])
-    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_'+self.PACKAGE,1)
     self.framework.packages.append(self)
     
   def setEmptyOutput(self):
-    self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
-    self.addSubstitution(self.PACKAGE+'_LIB', '')
     return
 
   def configure(self):

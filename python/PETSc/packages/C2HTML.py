@@ -78,6 +78,7 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+installDir)
     self.binDir = os.path.join(installDir, 'bin')
     self.c2html = os.path.join(self.binDir, 'c2html')
+    self.addMakeMacro('C2HTML',self.c2html)
     return
 
   def configureC2html(self):
@@ -90,9 +91,7 @@ class Configure(config.base.Configure):
       else:
         self.downLoadC2html()
         
-      if hasattr(self, 'c2html'):
-        self.framework.addSubstitution('C2HTML', self.c2html)
-      else:
+      if not hasattr(self, 'c2html'):
         message = 'See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\nto obtain C2html\n'
         self.framework.log.write(message)
         raise RuntimeError('Could not install C2html\n'+message)

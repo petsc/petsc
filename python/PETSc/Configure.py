@@ -152,20 +152,6 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
 
-    if self.setCompilers.CSharedLinkerFlag is None:
-      self.addSubstitution('C_LINKER_SLFLAG', '-L')
-    else:
-      self.addSubstitution('C_LINKER_SLFLAG', self.setCompilers.CSharedLinkerFlag)
-    if 'CXX' in self.framework.argDB:
-      if self.setCompilers.CxxSharedLinkerFlag is None:
-        self.addSubstitution('CXX_LINKER_SLFLAG', '-L')
-      else:
-        self.addSubstitution('CXX_LINKER_SLFLAG', self.setCompilers.CxxSharedLinkerFlag)
-    if 'FC' in self.framework.argDB:
-      if self.setCompilers.F77SharedLinkerFlag is None:
-        self.addSubstitution('F77_LINKER_SLFLAG', '-L')
-      else:
-        self.addSubstitution('F77_LINKER_SLFLAG', self.setCompilers.F77SharedLinkerFlag)
     return
 
   def configurePIC(self):
@@ -192,84 +178,82 @@ class Configure(config.base.Configure):
       self.popLanguage()
     return
 
-  def setValue(self,name,value):
-    ''' prints a variable and its value to the configure generated file'''
-    self.fd.write(name + ' = ' + value + '\n')
     
   def configureBmake(self):
     ''' Actually put the values into the bmake files '''
-    self.fd = open(os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.framework.argDB['PETSC_ARCH'],'petscconf'),'w')
-    #  Basic shell commands
-    self.setValue('RM' ,             self.framework.rm)
-    self.setValue('SHELL',           self.framework.SHELL)
-    self.setValue('SED',             self.framework.sed)
-    self.setValue('DIFF  ',          self.framework.diff)
-    self.setValue('MKDIR ',          self.framework.mkdir)
-    self.setValue('MV  ',            self.framework.mv)
-    self.setValue('OMAKE ',          self.make.make+' '+self.make.flags)
-
-    # Documentation generation tools
-    self.setValue('BFORT ',          self.sowing.bfort)
-    self.setValue('DOCTEXT ',        self.sowing.doctext)
-    self.setValue('MAPNAMES ',       self.sowing.mapnames)
-    self.setValue('BIB2HTML ',       self.sowing.bib2html)
-    self.setValue('C2HTML  ',        self.c2html.c2html)
-    self.setValue('LGRIND  ',        self.lgrind.lgrind)
 
     # archive management tools
-    self.setValue('AR   ',           self.setCompilers.AR)
-    self.setValue('AR_FLAGS  ',      self.setCompilers.AR_FLAGS)
-    self.setValue('AR_LIB_SUFFIX ',    self.libraries.suffix)
-    self.setValue('RANLIB ',         self.setCompilers.RANLIB)
+    self.addMakeMacro('AR_FLAGS  ',      self.setCompilers.AR_FLAGS)
+    self.addMakeMacro('AR_LIB_SUFFIX ',    self.libraries.suffix)
+    self.addMakeMacro('RANLIB ',         self.setCompilers.RANLIB)
 
     # C preprocessor values
-    self.setValue('CPP',self.setCompilers.CPP)
-    self.setValue('CPP_FLAGS',self.setCompilers.CPPFLAGS)
+    self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
     
     # compiler values
     self.setCompilers.pushLanguage('C')
-    self.setValue('CC',self.setCompilers.getCompiler())
-    self.setValue('CC_FLAGS',self.setCompilers.getCompilerFlags())    
+    self.addMakeMacro('CC',self.setCompilers.getCompiler())
+    self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())    
     self.setCompilers.popLanguage()
     # .o or .obj 
-    self.setValue('CC_SUFFIX','o')
+    self.addMakeMacro('CC_SUFFIX','o')
 
     # executable linker values
     self.setCompilers.pushLanguage('C')
-    self.setValue('CC_LINKER',self.setCompilers.getLinker())
-    self.setValue('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    self.addMakeMacro('CC_LINKER',self.setCompilers.getLinker())
+    self.addMakeMacro('CC_LINKER',self.setCompilers.getLinker())
+    self.addMakeMacro('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
     # -rpath or -R or -L etc
     if not self.setCompilers.CSharedLinkerFlag: value = '-L'
     else: value = self.setCompilers.CSharedLinkerFlag
-    self.setValue('CC_LINKER_SLFLAG',value)    
+    self.addMakeMacro('CC_LINKER_SLFLAG',value)    
     # '' for Unix, .exe for Windows
-    self.setValue('CC_LINKER_SUFFIX','')
-    self.setValue('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
+    self.addMakeMacro('CC_LINKER_SUFFIX','')
+    self.addMakeMacro('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
 
+    # shared library linker values
+    self.setCompilers.pushLanguage('C')
+    # need to fix BuildSystem to collect these seperately
+    self.addMakeMacro('SL_LINKER',self.setCompilers.getLinker())
+    self.addMakeMacro('SL_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    self.setCompilers.popLanguage()
+    # '' for Unix, .exe for Windows
+    self.addMakeMacro('SL_LINKER_SUFFIX','.so')
+    self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
     
     # CONLY or CPP
-    self.setValue('PETSC_LANGUAGE','CONLY')
+    self.addMakeMacro('PETSC_LANGUAGE','CONLY')
     # real or complex
-    self.setValue('PETSC_SCALAR','real')
+    self.addMakeMacro('PETSC_SCALAR','real')
     # double or float
-    self.setValue('PETSC_PRECISION','double')
+    self.addMakeMacro('PETSC_PRECISION','double')
 
     # print include and lib for external packages
     for i in self.framework.packages:
+      self.addDefine('HAVE_'+i.PACKAGE,1)
       if not isinstance(i.lib,list): i.lib = [i.lib]
-      self.setValue(i.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument, i.lib)))
+      self.addMakeMacro(i.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument, i.lib)))
       if hasattr(i,'include'):
         if not isinstance(i.include,list): i.include = [i.include]      
-        self.setValue(i.PACKAGE+'_INCLUDE',' '.join(map(self.libraries.getIncludeArgument, i.include)))
-    self.fd.write('PACKAGES_LIBS = ')
+        self.addMakeMacro(i.PACKAGE+'_INCLUDE',' '.join(map(self.libraries.getIncludeArgument, i.include)))
+    text = ''
     for i in self.framework.packages:
-      self.fd.write('${'+i.PACKAGE+'_LIB} ')
-    self.fd.write('\n')
+      text += '${'+i.PACKAGE+'_LIB} '
+    self.addMakeMacro('PACKAGES_LIBS',text)
 
     # misc package stuff, should be handled better
-    self.setValue('MPIRUN',self.mpi.mpirun)    
-    self.fd.close()
+    self.addMakeMacro('MPIRUN',self.mpi.mpirun)
+
+    if self.matlab.foundMatlab:
+      self.addMakeMacro('MATLAB_MEX',self.matlab.mex)
+      self.addMakeMacro('MATLAB_CC',self.matlab.cc)
+      self.addMakeMacro('MATLAB_COMMAND',self.matlab.command)        
+    
+    self.addMakeMacro('DATAFILESPATH',self.update.datafilespath)
+    self.addMakeMacro('INSTALL_DIR',self.installdir)
+    self.addMakeMacro('top_builddir',self.installdir)                
+
       
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
@@ -332,7 +316,6 @@ class Configure(config.base.Configure):
         (output, error, status) = config.base.Configure.executeShellCommand(self.mkdir+' -p .conftest/.tmp', log = self.framework.log)
         if not status and os.path.isdir('.conftest/.tmp'):
           self.mkdir = self.mkdir+' -p'
-          self.framework.addSubstitution('MKDIR', self.mkdir)
       except RuntimeError: pass
       if os.path.exists('.conftest'): os.removedirs('.conftest/.tmp')
     return
@@ -385,8 +368,8 @@ class Configure(config.base.Configure):
     os.unlink('diff1')
     os.unlink('diff2')
     if not status:    
-      self.framework.addSubstitution('DIFF',getattr(self.framework, 'diff')+' -w')
-    
+      self.framework.diff = self.framework.diff + ' -w'
+      
     self.framework.getExecutable('ps',   path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self.framework, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
@@ -629,7 +612,7 @@ class Configure(config.base.Configure):
       if 'FC' in self.framework.argDB:
         jobs.append('3')
         rjobs.append('8')
-      if self.update.hasdatafiles:
+      if self.update.datafilespath:
         rjobs.append('6')
       # add jobs for each external package (except X11, already done)
       for i in self.framework.packages:
@@ -687,16 +670,15 @@ class Configure(config.base.Configure):
   def configureInstall(self):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
-      self.framework.addSubstitution('INSTALL_DIR', os.path.join(self.framework.argDB['prefix'], os.path.basename(os.getcwd())))
+      self.installdir = os.path.join(self.framework.argDB['prefix'], os.path.basename(os.getcwd()))
     else:
-      self.framework.addSubstitution('INSTALL_DIR', self.framework.argDB['PETSC_DIR'])
+      self.installdir = self.framework.argDB['PETSC_DIR']
     return
 
   def configure(self):
-    self.framework.header  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
-    self.framework.cHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
-    self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.framework.argDB['PETSC_ARCH']+'/rules')
-    self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
+    self.framework.header          = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
+    self.framework.cHeader         = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
+    self.framework.makeMacroHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf'    
     if self.framework.argDB['with-64-bit-ints']:
       self.addDefine('USE_64BIT_INT', 1)
       self.framework.argDB['with-external-packages'] = 0
@@ -730,8 +712,8 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
-    self.executeTest(self.configureBmake)    
     self.executeTest(self.configureInstall)
+    self.executeTest(self.configureBmake)    
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return

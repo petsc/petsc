@@ -11,12 +11,5 @@ class Configure(config.base.Configure):
     self.framework.require('PETSc.packages.MPI', self)
     return
 
-  def setOutput(self):
-    '''Only null values now'''
-    self.addSubstitution('MPE_INCLUDE', '')
-    self.addSubstitution('MPE_LIB',     '')
-    return
-
   def configure(self):
-    self.setOutput()
     return

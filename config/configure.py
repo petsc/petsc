@@ -13,27 +13,15 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
   print '* http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html#Manual   *'
   print '*********************************************************************************'
   sys.exit(4)
-  
+
+class RestartException:
+  def __init__(self,args):
+    self.args = args
+    return 
+    
 def getarch():
   if os.path.basename(sys.argv[0]).startswith('configure'): return ''
   else: return os.path.basename(sys.argv[0])[:-3]
-
-def fixWin32Flinker(filename):
-    '''Change CXX_FLINKER back to f90 for win32 (from cl)'''
-    import fileinput
-    import re
-
-    reglink    = re.compile('CXX_FLINKER ')
-    regwin32fe = re.compile('win32fe',re.I)
-    regcl      = re.compile('cl',re.I)
-
-    for line in fileinput.input(filename,inplace=1):
-      fl = reglink.search(line)
-      fw = regwin32fe.search(line)
-      if fl and fw:
-        line = regcl.sub('f90',line)
-      print line,
-    return
 
 def petsc_configure(configure_options):
   # use the name of the config/configure_arch.py to determine the arch
@@ -65,13 +53,12 @@ def petsc_configure(configure_options):
   sys.path.insert(0, pythonDir)
   import config.framework
   import cPickle
-  
-  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
+
+  framework = []
   try:
-    framework.configure(out = sys.stdout)
+    framework = while_petsc_configure(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options)
     framework.storeSubstitutions(framework.argDB)
     framework.argDB['configureCache'] = cPickle.dumps(framework)
-    fixWin32Flinker('bmake/'+framework.argDB['PETSC_ARCH']+'/variables')
     return 0
   except RuntimeError, e:
     msg = '***** Unable to configure with given options ***** (see configure.log for full details):\n' \
@@ -92,11 +79,37 @@ def petsc_configure(configure_options):
     
   print msg
   if hasattr(framework, 'log'):
-    import traceback
     framework.log.write(msg+se)
-    traceback.print_tb(sys.exc_info()[2], file = framework.log)
-    sys.exit(1)
+    file = framework.log
+  else:
+    print se
+    file = sys.stdout
+  import traceback
+  traceback.print_tb(sys.exc_info()[2], file = file)
+  sys.exit(1)
 
+
+def while_petsc_configure(args):
+  import config.framework
+  while 1:
+    framework = config.framework.Framework(args, loadArgDB = 0)
+    try:
+      framework.configure(out = sys.stdout)
+      break
+    except RestartException, e:
+      # ugly crap; merge additional args
+      for j in e.args:
+        found = 0
+        for i in len(args):
+          if args[i].startswith(j):
+            args[i] += ' '+e.args[j]
+            found = 1
+            break
+        if not found:
+          args.append(j+'='+e.args[j])
+      args.append('-logAppend=1')
+  return framework
+    
 if __name__ == '__main__':
   petsc_configure([])
 

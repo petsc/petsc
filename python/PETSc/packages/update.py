@@ -6,12 +6,12 @@ import re
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix = 'PETSC'
-    self.substPrefix  = 'PETSC'
-    self.updated      = 0
-    self.strmsg       = ''
-    self.hasdatafiles = 0
-    self.arch         = self.framework.require('PETSc.packages.arch', self)
+    self.headerPrefix  = 'PETSC'
+    self.substPrefix   = 'PETSC'
+    self.updated       = 0
+    self.strmsg        = ''
+    self.datafilespath = ''
+    self.arch          = self.framework.require('PETSc.packages.arch', self)
     return
 
   def __str__(self):
@@ -45,27 +45,22 @@ class Configure(config.base.Configure):
       os.unlink(os.path.join('bmake', 'petscconf'))
     return
 
-  def datafilespath(self):
+  def getDatafilespath(self):
     '''Checks what DATAFILESPATH should be'''
-    datafilespath = None
+    self.datafilespath = None
     if self.framework.argDB.has_key('DATAFILESPATH'):
       if os.path.isdir(self.framework.argDB['DATAFILESPATH']) & os.path.isdir(os.path.join(self.framework.argDB['DATAFILESPATH'], 'matrices')):
-        datafilespath = self.framework.argDB['DATAFILESPATH']
+        self.datafilespath = str(self.framework.argDB['DATAFILESPATH'])
       else:
         raise RuntimeError('Path given with option -DATAFILES='+self.framework.argDB['DATAFILESPATH']+' is not a valid datafiles directory')
     elif os.path.isdir(os.path.join('/home','petsc','datafiles')) & os.path.isdir(os.path.join('/home','petsc','datafiles','matrices')):
-      datafilespath = os.path.join('/home','petsc','datafiles')
+      self.datafilespath = os.path.join('/home','petsc','datafiles')
     elif os.path.isdir(os.path.join(self.arch.dir, '..', 'datafiles')) &  os.path.isdir(os.path.join(self.arch.dir, '..', 'datafiles', 'matrices')):
-      datafilespath = os.path.join(self.arch.dir, '..', 'datafiles')
-    if datafilespath:
-      self.framework.addSubstitution('SET_DATAFILESPATH', 'DATAFILESPATH ='+datafilespath)
-      self.hasdatafiles = 1
-    else:
-      self.framework.addSubstitution('SET_DATAFILESPATH', '')
+      self.datafilespath = os.path.join(self.arch.dir, '..', 'datafiles')
     return
 
   def configure(self):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureArchitecture)
-    self.executeTest(self.datafilespath)
+    self.executeTest(self.getDatafilespath)
     return

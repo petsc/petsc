@@ -182,8 +182,9 @@ class Configure(config.base.Configure):
       args.append('--with-CXX="'+self.framework.argDB['CXX']+' '+self.framework.argDB['CXXFLAGS']+'"')
     if 'FC' in self.framework.argDB:
       args.append('--with-F77="'+self.framework.argDB['FC']+' '+self.framework.argDB['FFLAGS']+'"')
-    # TROUBLE if more than one include directory
-    args.append('--with-mpi-include='+self.mpi.include[0])
+    #
+    if self.mpi.include:
+      args.append('--with-mpi-include="'+' '.join(map(self.libraries.getIncludeArgument, self.mpi.include))+'"')
     libdirs = []
     for l in self.mpi.lib:
       ll = os.path.dirname(l)
@@ -268,25 +269,15 @@ class Configure(config.base.Configure):
       self.found = 1
     else:
       self.framework.log.write('Could not find a functional '+self.name+'\n')
-      self.setEmptyOutput()
     return
 
   def setFoundOutput(self):
-    self.addSubstitution(self.PACKAGE+'_INCLUDE','-I'+self.include[0])
-    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
-    self.addDefine('HAVE_'+self.PACKAGE,1)
     self.framework.packages.append(self)
     
-  def setEmptyOutput(self):
-    self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
-    self.addSubstitution(self.PACKAGE+'_LIB', '')
-    return
-
   def configure(self):
     if 'download-'+self.package in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
     if not 'with-'+self.package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-ints']:
-      self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)
     return

@@ -40,8 +40,8 @@ class Configure(config.base.Configure):
     self.flags = ''
     if haveGNUMake:
       self.flags += ' --no-print-directory'
-    self.framework.addSubstitution('MAKE_FLAGS', self.flags.strip())
-    self.framework.addSubstitution('SET_MAKE', '')
+    self.addMakeMacro('OMAKE ', self.make+' '+self.flags)
+      
     # Check to see if make allows rules which look inside archives
     if haveGNUMake:
       self.framework.addSubstitution('LIB_C_TARGET', 'libc: ${LIBNAME}(${OBJSC} ${SOBJSC})')

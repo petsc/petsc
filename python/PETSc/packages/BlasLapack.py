@@ -395,14 +395,10 @@ class Configure(config.base.Configure):
       else:
         lib = self.blasLibrary
       dir = self.unique(map(os.path.dirname, lib))
-      self.addSubstitution('BLAS_DIR', dir)
       libFlag = map(self.libraries.getLibArgument, lib)
-      self.addSubstitution('BLAS_LIB', ' '.join(libFlag))
     if self.foundLapack:
       dir = self.unique(map(os.path.dirname, self.lapackLibrary))
-      self.addSubstitution('LAPACK_DIR', dir)
       libFlag = map(self.libraries.getLibArgument, self.lapackLibrary)
-      self.addSubstitution('LAPACK_LIB', ' '.join(libFlag))
     self.lib = self.lapackLibrary+self.blasLibrary
     self.framework.packages.append(self)
     return

@@ -70,10 +70,10 @@ class Configure(config.base.Configure):
 
             self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+matlab_arch+'\n')
             self.addDefine('HAVE_MATLAB', 1)
-            self.addSubstitution('MATLAB_MEX', os.path.join(matlab,'bin','mex'))
-            self.addSubstitution('MATLAB_CC', '${C_CC}')
-            self.addSubstitution('MATLAB_COMMAND', os.path.join(matlab,'bin','matlab'))
-            self.addSubstitution('MATLAB_INCLUDE', '-I'+os.path.join(matlab,'extern','include'))
+            self.mex = os.path.join(matlab,'bin','mex')
+            self.cc = '${CC}'
+            self.command = os.path.join(matlab,'bin','matlab')
+            self.include = '-I'+os.path.join(matlab,'extern','include')
             if matlab_arch == 'mac':
               matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
             else:
@@ -83,7 +83,7 @@ class Configure(config.base.Configure):
               matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
             else:
               matlab_sys = ''
-            self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            self.lib = '${CC_LINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl
             self.framework.packages.append(self)
             return
       except RuntimeError:
@@ -94,20 +94,9 @@ class Configure(config.base.Configure):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
     return
 
-  def emptySubstitutions(self):
-    self.framework.log.write('Configuring PETSc to not use Matlab\n')
-    self.addSubstitution('MATLAB_MEX', '')
-    self.addSubstitution('MATLAB_CC', '')
-    self.addSubstitution('MATLAB_COMMAND', '')
-    self.addSubstitution('MATLAB_DIR', '')
-    self.addSubstitution('MATLAB_INCLUDE', '')
-    self.addSubstitution('MATLAB_LIB', '')
-
   def configure(self):
     if self.framework.argDB['with-'+self.package] and self.framework.argDB['with-external-packages']:
       self.executeTest(self.configureLibrary)
-    else:
-      self.emptySubstitutions()
     return
 
 if __name__ == '__main__':

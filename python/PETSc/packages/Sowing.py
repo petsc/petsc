@@ -91,6 +91,10 @@ class Configure(config.base.Configure):
     for prog in [self.bfort, self.doctext, self.mapnames]:
       if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
         raise RuntimeError('Error in Sowing installation: Could not find '+prog)
+    self.addMakeMacro('BFORT ', self.bfort)
+    self.addMakeMacro('DOCTEXT ', self.doctext)
+    self.addMakeMacro('MAPNAMES ', self.mapnames)
+    self.addMakeMacro('BIB2HTML ', self.bib2html)    
     return
 
   def configureSowing(self):
