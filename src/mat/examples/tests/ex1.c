@@ -78,7 +78,7 @@ int main(int argc,char **argv)
   luinfo.damping = 0.0; 
   luinfo.zeropivot = 1.e-14; 
   luinfo.pivotinblocks = 1.0; 
-  ierr = MatLUFactorSymbolic(mat,perm,perm,PETSC_NULL,&fact);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(mat,perm,perm,&luinfo,&fact);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(mat,&fact);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRQ(ierr);
