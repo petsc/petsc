@@ -12,9 +12,9 @@ PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert an unfactored PETSc-Spooles matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  Mat         B=*newmat;
-  Mat_Spooles *lu=(Mat_Spooles*)A->spptr;
-  void        (*f)(void);
+  Mat            B=*newmat;
+  Mat_Spooles    *lu=(Mat_Spooles*)A->spptr;
+  void           (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {
@@ -43,7 +43,7 @@ PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,Mat *newmat) {
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaijspooles_mpisbaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpisbaijspooles_C","",PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,lu->basetype);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }    
@@ -53,11 +53,10 @@ EXTERN_C_END
 #define __FUNCT__ "MatDestroy_SeqAIJSpooles"
 PetscErrorCode MatDestroy_SeqAIJSpooles(Mat A)
 {
-  Mat_Spooles *lu = (Mat_Spooles*)A->spptr; 
+  Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
- 
   if (lu->CleanUpSpooles) {
     FrontMtx_free(lu->frontmtx);        
     IV_free(lu->newToOldIV);            
@@ -80,8 +79,8 @@ PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
   Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;
   PetscScalar      *array;
   DenseMtx         *mtxY, *mtxX ;
-  PetscErrorCode ierr;
-  int              irow,neqns=A->n,nrow=A->m,*iv;
+  PetscErrorCode   ierr;
+  PetscInt         irow,neqns=A->n,nrow=A->m,*iv;
 #if defined(PETSC_USE_COMPLEX)
   double           x_real,x_imag;
 #else
@@ -89,7 +88,6 @@ PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
 #endif
 
   PetscFunctionBegin;
-
   mtxY = DenseMtx_new();
   DenseMtx_init(mtxY, lu->options.typeflag, 0, 0, nrow, 1, 1, nrow); /* column major */
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
@@ -148,7 +146,6 @@ PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
   /* free memory */
   DenseMtx_free(mtxX);
   DenseMtx_free(mtxY);
-
   PetscFunctionReturn(0);
 }
 
@@ -160,15 +157,15 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   ChvManager         *chvmanager ;
   Chv                *rootchv ;
   IVL                *adjIVL;
-  PetscErrorCode ierr;
-  int                nz,nrow=A->m,irow,nedges,neqns=A->n,*ai,*aj,i,*diag=0,fierr;
+  PetscErrorCode     ierr;
+  PetscInt           nz,nrow=A->m,irow,nedges,neqns=A->n,*ai,*aj,i,*diag=0,fierr;
   PetscScalar        *av;
   double             cputotal,facops;
 #if defined(PETSC_USE_COMPLEX)
-  int                nz_row,*aj_tmp;
+  PetscInt           nz_row,*aj_tmp;
   PetscScalar        *av_tmp;
 #else
-  int                *ivec1,*ivec2,j;
+  PetscInt           *ivec1,*ivec2,j;
   double             *dvec;
 #endif
   PetscTruth         isAIJ,isSeqAIJ;
@@ -503,8 +500,8 @@ PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *new
   /* This routine is only called to convert a MATSEQAIJ matrix */
   /* to a MATSEQAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  Mat         B=*newmat;
-  Mat_Spooles *lu;
+  Mat            B=*newmat;
+  Mat_Spooles    *lu;
 
   PetscFunctionBegin;
   if (B != A) {
@@ -512,6 +509,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *new
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
+  ierr     = PetscMemzero(lu,sizeof(Mat_Spooles));CHKERRQ(ierr); 
   B->spptr = (void*)lu;
 
   lu->basetype                   = MATSEQAIJ;
@@ -545,7 +543,7 @@ EXTERN_C_END
 #define __FUNCT__ "MatDuplicate_Spooles"
 PetscErrorCode MatDuplicate_Spooles(Mat A, MatDuplicateOption op, Mat *M) {
   PetscErrorCode ierr;
-  Mat_Spooles *lu=(Mat_Spooles *)A->spptr;
+  Mat_Spooles    *lu=(Mat_Spooles *)A->spptr;
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
@@ -646,7 +644,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatCreate_AIJSpooles(Mat A) 
 {
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJSpooles or MPIAIJSpooles */
@@ -659,7 +657,6 @@ PetscErrorCode MatCreate_AIJSpooles(Mat A)
     ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,&A);CHKERRQ(ierr);
   }
-  
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -11,12 +11,12 @@ EXTERN_C_END
 
 typedef struct {
   DSC_Solver	My_DSC_Solver;  
-  int           num_local_strucs, *local_struc_old_num,
+  PetscInt      num_local_strucs, *local_struc_old_num,
                 num_local_cols, num_local_nonz, 
                 *global_struc_new_col_num,
                 *global_struc_new_num, *global_struc_owner,  
                 dsc_id,bs,*local_cols_old_num,*replication; 
-  int           order_code,scheme_code,factor_type, stat, 
+  PetscInt      order_code,scheme_code,factor_type, stat, 
                 LBLASLevel,DBLASLevel,max_mem_allowed;             
   MatStructure  flg;
   IS            my_cols,iden,iden_dsc;
@@ -25,13 +25,13 @@ typedef struct {
   MPI_Comm      comm_dsc;
 
   /* A few inheritance details */
-  int size;
+  PetscMPIInt    size;
   PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*MatView)(Mat,PetscViewer);
   PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
   PetscErrorCode (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
   PetscErrorCode (*MatDestroy)(Mat);
-  PetscErrorCode (*MatPreallocate)(Mat,int,int,int*,int,int*);
+  PetscErrorCode (*MatPreallocate)(Mat,PetscInt,PetscInt,PetscInt*,PetscInt,PetscInt*);
 
   /* Clean up flag for destructor */
   PetscTruth CleanUpDSCPACK;
@@ -45,11 +45,11 @@ EXTERN_C_END
 /* DSC function */
 #undef __FUNCT__  
 #define __FUNCT__ "isort2"
-void isort2(int size, int *list, int *idx_dsc) {
+void isort2(PetscInt size, PetscInt *list, PetscInt *idx_dsc) {
   /* in increasing order */
   /* idx_dsc will contain indices such that */
   /* list can be accessed in sorted order */
-  int i, j, x, y;
+  PetscInt i, j, x, y;
   
   for (i=0; i<size; i++) idx_dsc[i] =i;
 
@@ -64,11 +64,11 @@ void isort2(int size, int *list, int *idx_dsc) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "BAIJtoMyANonz"
-PetscErrorCode  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
-		    RealNumberType *ANonz, int NumLocalStructs, 
-                    int NumLocalNonz,  int *GlobalStructNewColNum,                
-		    int *LocalStructOldNum,
-                    int *LocalStructLocalNum,
+PetscErrorCode  BAIJtoMyANonz( PetscInt *AIndex, PetscInt *AStruct, PetscInt bs,
+		    RealNumberType *ANonz, PetscInt NumLocalStructs, 
+                    PetscInt NumLocalNonz,  PetscInt *GlobalStructNewColNum,                
+		    PetscInt *LocalStructOldNum,
+                    PetscInt *LocalStructLocalNum,
 		    RealNumberType **adr_MyANonz)
 /* 
    Extract non-zero values of lower triangular part
@@ -92,7 +92,7 @@ PetscErrorCode  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
  */ 
 {  
   PetscErrorCode ierr;
-  int            i, j, k, iold,inew, jj, kk, bs2=bs*bs,
+  PetscInt            i, j, k, iold,inew, jj, kk, bs2=bs*bs,
                  *idx, *NewColNum,
                  MyANonz_last, max_struct=0, struct_size;
   RealNumberType *MyANonz;             
@@ -114,7 +114,7 @@ PetscErrorCode  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
   }
 
   /* allocate tmp arrays large enough to hold densest struct */
-  ierr = PetscMalloc((2*max_struct+1)*sizeof(int),&NewColNum);CHKERRQ(ierr);
+  ierr = PetscMalloc((2*max_struct+1)*sizeof(PetscInt),&NewColNum);CHKERRQ(ierr);
   idx = NewColNum + max_struct;
   
   ierr = PetscMalloc(NumLocalNonz*sizeof(RealNumberType),&MyANonz);CHKERRQ(ierr);  
@@ -219,8 +219,7 @@ PetscErrorCode MatDestroy_DSCPACK(Mat A)
     ierr = VecDestroy(lu->vec_dsc);CHKERRQ(ierr); 
     ierr = ISDestroy(lu->iden_dsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
- 
-    if (lu->size >1) ierr = ISDestroy(lu->iden);CHKERRQ(ierr);
+    if (lu->size >1 && lu->iden) {ierr = ISDestroy(lu->iden);CHKERRQ(ierr);}
   }
   if (lu->size == 1) {
     ierr = MatConvert_DSCPACK_Base(A,MATSEQBAIJ,&A);CHKERRQ(ierr);
@@ -276,33 +275,30 @@ PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
 PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
   Mat_SeqBAIJ    *a_seq;
   Mat_DSC        *lu=(Mat_DSC*)(*F)->spptr; 
-  Mat            *tseq,A_seq=0;
+  Mat            *tseq,A_seq=PETSC_NULL;
   RealNumberType *my_a_nonz;
   PetscErrorCode ierr;
-  int        M=A->M, Mbs=M/lu->bs, size,
-                 max_mem_estimate, max_single_malloc_blk,
-                 number_of_procs,i,j,next,iold,
-                 *idx,*iidx=0,*itmp;
+  PetscMPIInt    size;
+  PetscInt       M=A->M,Mbs=M/lu->bs,max_mem_estimate,max_single_malloc_blk,
+                 number_of_procs,i,j,next,iold,*idx,*iidx=0,*itmp;
   IS             my_cols_sorted;
 	
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
- 
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
-
     /* convert A to A_seq */
     if (size > 1) { 
-      ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&lu->iden);CHKERRQ(ierr);
-      ierr = MatGetSubMatrices(A,1,&lu->iden,&lu->iden,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);  
-   
-      A_seq = *tseq;
-      ierr = PetscFree(tseq);CHKERRQ(ierr); 
+      if (!lu->iden){
+        ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&lu->iden);CHKERRQ(ierr);
+      }
+      ierr = MatGetSubMatrices(A,1,&lu->iden,&lu->iden,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr); 
+      A_seq = tseq[0];
       a_seq = (Mat_SeqBAIJ*)A_seq->data;
     } else {
       a_seq = (Mat_SeqBAIJ*)A->data;
     }
    
-    ierr = PetscMalloc(Mbs*sizeof(int),&lu->replication);CHKERRQ(ierr);
+    ierr = PetscMalloc(Mbs*sizeof(PetscInt),&lu->replication);CHKERRQ(ierr);
     for (i=0; i<Mbs; i++) lu->replication[i] = lu->bs;
 
     number_of_procs = DSC_Analyze(Mbs, a_seq->i, a_seq->j, lu->replication);
@@ -347,7 +343,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
       }
 
       /* get local_cols_old_num and IS my_cols to be used later */
-      ierr = PetscMalloc(lu->num_local_cols*sizeof(int),&lu->local_cols_old_num);CHKERRQ(ierr);  
+      ierr = PetscMalloc(lu->num_local_cols*sizeof(PetscInt),&lu->local_cols_old_num);CHKERRQ(ierr);  
       for (next = 0, i=0; i<lu->num_local_strucs; i++){
         iold = lu->bs*lu->local_struc_old_num[i];
         for (j=0; j<lu->bs; j++)
@@ -365,17 +361,18 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
     ierr = ISCreateStride(PETSC_COMM_SELF,lu->num_local_cols,0,1,&lu->iden_dsc);CHKERRQ(ierr); 
     lu->scat = PETSC_NULL;
 
-    if ( size>1 ) {ierr = MatDestroy(A_seq);CHKERRQ(ierr); }
-
+    if ( size>1 ) {
+      ierr = MatDestroyMatrices(1,&tseq);CHKERRQ(ierr); 
+    }
   } else { /* use previously computed symbolic factor */
     /* convert A to my A_seq */
     if (size > 1) { 
       if (lu->dsc_id == -1) {
         itmp = 0;
       } else {     
-        ierr = PetscMalloc(2*lu->num_local_strucs*sizeof(int),&idx);CHKERRQ(ierr);
+        ierr = PetscMalloc(2*lu->num_local_strucs*sizeof(PetscInt),&idx);CHKERRQ(ierr);
         iidx = idx + lu->num_local_strucs;
-        ierr = PetscMalloc(lu->num_local_cols*sizeof(int),&itmp);CHKERRQ(ierr); 
+        ierr = PetscMalloc(lu->num_local_cols*sizeof(PetscInt),&itmp);CHKERRQ(ierr); 
       
         isort2(lu->num_local_strucs, lu->local_struc_old_num, idx);
         for (next=0, i=0; i< lu->num_local_strucs; i++) {
@@ -388,13 +385,11 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
           iidx[idx[i]] = i;       /* inverse of idx */
         }
       } /* end of (lu->dsc_id == -1) */
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,itmp,&my_cols_sorted);CHKERRQ(ierr);     
-      ierr = MatGetSubMatrices(A,1,&my_cols_sorted,&lu->iden,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);        
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,itmp,&my_cols_sorted);CHKERRQ(ierr); 
+      ierr = MatGetSubMatrices(A,1,&my_cols_sorted,&lu->iden,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr); 
       ierr = ISDestroy(my_cols_sorted);CHKERRQ(ierr);
-   
-      A_seq = *tseq;
-      ierr = PetscFree(tseq);CHKERRQ(ierr); 
-     
+      A_seq = tseq[0];
+    
       if (lu->dsc_id != -1) {
         DSC_ReFactorInitialize(lu->My_DSC_Solver);
 
@@ -409,9 +404,8 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
           DSC_ErrorDisplay(lu->My_DSC_Solver);
           SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
         }
-     
-        ierr = PetscFree(idx);
-        ierr = PetscFree(itmp);
+        ierr = PetscFree(idx);CHKERRQ(ierr);
+        ierr = PetscFree(itmp);CHKERRQ(ierr);
       } /* end of if(lu->dsc_id != -1)  */
     } else { /* size == 1 */
       a_seq = (Mat_SeqBAIJ*)A->data;
@@ -427,7 +421,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
         SETERRQ1(PETSC_ERR_LIB,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
       }
     }
-    if ( size>1 ) {ierr = MatDestroy(A_seq);CHKERRQ(ierr); }   
+    if ( size>1 ) {ierr = MatDestroyMatrices(1,&tseq);CHKERRQ(ierr); }   
   }
   
   if (lu->dsc_id != -1) {
@@ -448,7 +442,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
   Mat        B;
   Mat_DSC    *lu;   
   PetscErrorCode ierr;
-  int bs,indx; 
+  PetscInt bs,indx; 
   PetscTruth flg;
   const char *ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
 
@@ -621,8 +615,8 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "MatView_DSCPACK"
 PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer) {
-  PetscErrorCode ierr;
-  int size;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size;
   PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_DSC           *lu=(Mat_DSC*)A->spptr;
@@ -653,7 +647,7 @@ PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIDSCPACK"
-PetscErrorCode MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+PetscErrorCode MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,PetscInt bs,PetscInt d_nz,PetscInt *d_nnz,PetscInt o_nz,PetscInt *o_nnz)
 {
   Mat     A;
   Mat_DSC *lu = (Mat_DSC*)B->spptr;
@@ -695,6 +689,7 @@ PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat)
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscNew(Mat_DSC,&lu);CHKERRQ(ierr);
+  ierr = PetscMemzero(lu,sizeof(Mat_DSC));CHKERRQ(ierr);
 
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatView                    = A->ops->view;
@@ -702,6 +697,7 @@ PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat)
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatDestroy                 = A->ops->destroy;
   lu->CleanUpDSCPACK             = PETSC_FALSE;
+  lu->bs                         = A->bs;
 
   B->spptr                       = (void*)lu;
   B->ops->duplicate              = MatDuplicate_DSCPACK;
@@ -720,7 +716,7 @@ PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat)
       /* I really don't like needing to know the tag: MatMPIBAIJSetPreallocation_C */
     ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
     if (f) {
-      lu->MatPreallocate = (PetscErrorCode (*)(Mat,int,int,int*,int,int*))f;
+      lu->MatPreallocate = (PetscErrorCode (*)(Mat,PetscInt,PetscInt,PetscInt*,PetscInt,PetscInt*))f;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocation_C",
                                                "MatMPIBAIJSetPreallocation_MPIDSCPACK",
                                                MatMPIBAIJSetPreallocation_MPIDSCPACK);CHKERRQ(ierr);
@@ -786,7 +782,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatCreate_DSCPACK(Mat A) 
 {
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqBAIJ or MPIBAIJ */

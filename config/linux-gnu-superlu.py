@@ -7,10 +7,18 @@ if __name__ == '__main__':
         '--with-mpi-include=/home/petsc/soft/linux-rh73/mpich-1.2.4/include',
         '--with-mpi-lib=[/home/petsc/soft/linux-rh73/mpich-1.2.4/lib/libmpich.a,/home/petsc/soft/linux-rh73/mpich-1.2.4/lib/libpmpich.a]',
         '--with-mpirun=mpirun -all-local',
-        #'--with-superlu_dist-dir=/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0',
-        '--with-superlu_dist-include=/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/SRC',
-        #'--with-superlu_dist-lib=/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/superlu_linux.a',
-        '--with-cc=gcc'
+        '--with-cc=gcc',
+        #blocksolve95
+        '--with-blocksolve95-lib=/home/petsc/software/BlockSolve95/lib/libO/linux/libBS95.a',
+        #dscpack
+        '--with-dscpack-dir=/home/petsc/soft/linux-rh73/DSCPACK1.0',
+        #spooles
+        '--with-spooles-dir=/home/petsc/soft/linux-rh73/spooles-2.2',
+        #superlu, superlu_dist
+        '--with-superlu-dir=/home/petsc/soft/linux-rh73/SuperLU_3.0',
+        '--with-superlu_dist-dir=/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0',
+        #umfpack
+        '--with-umfpack-dir=/home/petsc/soft/linux-rh73/UMFPACKv4.3/UMFPACK'
         ]
 
     configure.petsc_configure(configure_options)
