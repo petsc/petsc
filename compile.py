@@ -240,7 +240,14 @@ class CompilePythonC (CompileC):
     if not base[-7:] == '_Module' or not ext == '.c':
       raise RuntimeError('Invalid Python extension module: '+source)
     package     = base[:-7]
-    return os.path.join(dir, package+'module.a')
+    libraryName = os.path.join(dir, package+'module.a')
+    return libraryName
+
+  def setExecute(self, set):
+    Compile.setExecute(self, set)
+    if set.tag == self.tag or set.tag == 'old '+self.tag:
+      for source in set:
+        self.products.append(fileset.FileSet([self.getLibraryName(source)]))
 
 class TagCxx (transform.GenericTag):
   def __init__(self, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh', root = None):

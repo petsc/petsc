@@ -326,11 +326,13 @@ class CompileDefaults (Defaults):
       taggers   = []
       actions   = []
 
-      if lang in ['Python', 'F77', 'C']:
+      if lang in ['C', 'F77']:
         taggers.append(compile.TagC(root = sourceDir))
         actions.append(compile.CompileC(library))
-        if lang == 'Python':
-          actions[0].includeDirs.append(self.pythonIncludeDir)
+      elif lang == 'Python':
+        taggers.append(compile.TagC(root = sourceDir))
+        actions.append(compile.CompilePythonC())
+        actions[0].includeDirs.append(self.pythonIncludeDir)
       elif lang == 'C++':
         taggers.append(compile.TagCxx(root = sourceDir))
         actions.append(compile.CompileCxx(library))
@@ -355,8 +357,8 @@ class CompileDefaults (Defaults):
         libraries.extend(self.extraLibraries[lang])
 
       # TODO: This is part of the Python fix we need
-      if lang == 'Python':
-        actions = (babel.PythonModuleFixup(library, sourceDir), actions)
+      #if lang == 'Python':
+      #  actions = (babel.PythonModuleFixup(library, sourceDir), actions)
 
       # Allow bootstrap
       linker = link.LinkSharedLibrary(extraLibraries = libraries)
