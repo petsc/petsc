@@ -1,10 +1,14 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.2 1998/01/14 02:39:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.3 1998/01/14 14:41:14 bsmith Exp bsmith $";
 #endif
+/*
+      Routines for opening dynamic link libraries (DLLs), keeping a searchable
+   path of DLLs, obtaining remote DLLs via a URL and opening them locally.
+*/
 
 #include "petsc.h"
 #include "sys.h"
+#include "src/sys/src/files.h"
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -33,10 +37,16 @@ struct _DLLibraryList {
 */
 int DLObtainLibrary(char *libname,char *llibname)
 {
+#if defined(USE_EXPECT_FOR_REMOTE_DLLS)
   char *par4;
   int  ierr;
 
   PetscFunctionBegin;
+
+  if (PetscStrncmp(par2,"ftp://",6) {
+    SETERRQ(1,1,"Only support for ftp DLL retrieval with \n\
+      USE_EXPECT_FOR_REMOTE_DLLS installation option");
+  }
 
   /* create name for copy of library in /tmp */
   PetscStrcpy(llibname,"/tmp/PETScLibXXXXXX");
@@ -72,8 +82,13 @@ int DLObtainLibrary(char *libname,char *llibname)
       SETERRQ(1,1,"Unable to retreive FTP library");
     }
   }
-
   PetscFree(par4);
+#else
+  PetscFunctionBegin;
+  SETERRQ(1,1,"Not compiled to obtain remote DLLs\n\
+    Compile with  USE_EXPECT_FOR_REMOTE_DLLS or USE_PYTHON_FOR_REMOTE_DLLS\n\
+    installation option");
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -219,7 +234,7 @@ int DLSym(DLLibraryList list,char *insymbol, void **value)
 
     par1[-1] = 0;
     ierr     = DLOpen(symbol,&handle);CHKERRQ(ierr);
-    *value   =  dlsym(handle,par1);
+    *value   = dlsym(handle,par1);
     if (!*value) {
       PetscErrorPrintf("Library path and function name %s\n",insymbol);
       SETERRQ(1,1,"Unable to locate function in dynamic library");
@@ -263,7 +278,6 @@ int DLAppend(DLLibraryList *outlist,char *libname)
   list = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
   list->next   = 0;
   list->handle = handle;
-
 
   if (!*outlist) {
     *outlist = list;
