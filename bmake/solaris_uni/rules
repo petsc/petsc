@@ -1,4 +1,4 @@
-# $Id: base,v 1.1 1998/02/10 16:37:25 balay Exp balay $ 
+# $Id: base,v 1.2 1998/03/19 02:01:29 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -69,10 +69,18 @@ shared: chkopts_basic
 	mkdir tmp; \
 	cd tmp; \
 	for LIBNAME in ${SHLIBS} ; \
-	  do \
+	do \
+	  flag=""; \
+	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	  else \
+	      flag="true"; \
+	  fi; \
+          if [ "$$flag" != "" ]; then \
 	    ${AR} x ../$$LIBNAME.a ;\
 	    ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
 	    ${RM} -f * ; \
+	  fi; \
 	done ;\
 	cd ../ ; \
 	${RM} -rf tmp
