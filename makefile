@@ -227,8 +227,8 @@ etags_makefiles:
 # 
 ctags:  
 	$(RM) tags
-	ctags -w -f tags $(TAGS_SRC_FILES) 
-	ctags -w -a -f tags $(TAGS_INCLUDE_FILES) 
+	ctags -w -f tags $(TAGS_INCLUDE_FILES) 
+	ctags -w -a -f tags $(TAGS_SRC_FILES) 
 	ctags -w -a -f tags $(TAGS_EXAMPLE_FILES)
 	ctags -w -a -f tags $(TAGS_MAKEFILE_FILES) 
 	ctags -w -a -f tags $(TAGS_BMAKE_FILES)
