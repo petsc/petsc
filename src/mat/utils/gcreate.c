@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.52 1995/10/23 20:30:15 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.53 1995/10/23 20:31:16 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
 /*@
-   MatGetFormatFromOptions - Determines from the options database what matrix format
-   the user has specified.
+   MatGetFormatFromOptions - Determines from the options database what matrix
+   format the user has specified.
 
    Input Parameter:
 .  comm - the MPI communicator
@@ -15,6 +15,9 @@ static char vcid[] = "$Id: gcreate.c,v 1.52 1995/10/23 20:30:15 curfman Exp curf
 
    Output Parameters:
 .  set - flag indicating whether user set matrix type option.
+
+   Note:
+   This routine is automatically called within MatCreate().
 
 .keywords: matrix, get, format, from, options
 
@@ -26,15 +29,15 @@ int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
   MPI_Comm_size(comm,&size);
   if (OptionsHasName(0,"-help")) {
     MPIU_printf(comm,"Matrix format options: -mat_aij, -mat_seqaij, -mat_mpiaij\n");
-    MPIU_printf(comm,"   -mat_row, -mat_seqrow, -mat_mpirow\n");
-    MPIU_printf(comm,"   -mat_dense, -mat_seqdense, -mat_mpidense\n");
-    MPIU_printf(comm,"   -mat_mpirowbs, -mat_bdiag, -mat_seqbdiag, -mat_mpibdiag\n"); 
+    MPIU_printf(comm,"  -mat_row, -mat_seqrow, -mat_mpirow\n");
+    MPIU_printf(comm,"  -mat_dense, -mat_seqdense, -mat_mpidense\n");
+    MPIU_printf(comm,"  -mat_mpirowbs, -mat_bdiag, -mat_seqbdiag, -mat_mpibdiag\n"); 
     MPIU_printf(comm,"More matrix options:\n");
-    MPIU_printf(comm,"   -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"   -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"   -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"       -pause <sec> : set seconds of display pause\n");
-    MPIU_printf(comm,"       -display <name> : set alternate display\n");
+    MPIU_printf(comm,"  -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"  -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"  -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"      -pause <sec> : set seconds of display pause\n");
+    MPIU_printf(comm,"      -display <name> : set alternate display\n");
   }
   if (OptionsHasName(0,"-mat_seqdense")) {
     *type = MATSEQDENSE;
@@ -156,9 +159,9 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   if (type == MATSEQBDIAG || type == MATMPIBDIAG) {
     int nb = 1, ndiag = 0, ndiag2 = 0, *d = 0;
     if (OptionsHasName(0,"-help")) {
-      MPIU_printf(comm,"Options with -mat_bdiag: -mat_bdiag_bsize block_size\n");
-      MPIU_printf(comm,"  -mat_bdiag_ndiag number_diags \n"); 
-      MPIU_printf(comm,"  -mat_bdiag_dvals d1,d2,d3... (diagonal numbers)\n"); 
+      MPIU_printf(comm,"Options with -mat_bdiag: -mat_bdiag_bsize <block_size>\n");
+      MPIU_printf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
+      MPIU_printf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
       MPIU_printf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
     }
     OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
