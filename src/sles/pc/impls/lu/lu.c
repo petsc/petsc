@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.144 2001/04/10 19:36:09 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.145 2001/04/20 03:49:40 bsmith Exp balay $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -502,7 +502,7 @@ int PCLUSetUseInPlace(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetMatOrdering"
-/*@
+/*@C
     PCLUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used in the LU factorization.
 
