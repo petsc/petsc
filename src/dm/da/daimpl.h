@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.37 2001/01/15 21:48:50 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.38 2001/01/17 19:47:36 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -17,7 +17,7 @@ typedef struct _DMOps *DMOps;
 struct _DMOps {
   int  (*view)(DM,PetscViewer);
   int  (*createglobalvector)(DM,Vec*);
-  int  (*getcoloring)(DM,ISColoring*,Mat*);
+  int  (*getcoloring)(DM,MatType,ISColoring*,Mat*);
   int  (*getinterpolation)(DM,DM,Mat*,Vec*);
   int  (*refine)(DM,MPI_Comm,DM*);
 };
@@ -30,7 +30,7 @@ typedef struct _DAOps *DAOps;
 struct _DAOps {
   int  (*view)(DA,PetscViewer);
   int  (*createglobalvector)(DA,Vec*);
-  int  (*getcoloring)(DA,ISColoring*,Mat*);
+  int  (*getcoloring)(DA,MatType,ISColoring*,Mat*);
   int  (*getinterpolation)(DA,DA,Mat*,Vec*);
   int  (*refine)(DA,MPI_Comm,DA*);
 };
