@@ -84,22 +84,21 @@ class Configure:
     sys.stdout.flush()
     return
 
-  def defaultCheckCommand(self, command, status, output):
+  def defaultCheckCommand(self, command, status, output, error):
     '''Raise an error if the exit status is nonzero'''
-    if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output)
+    if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output+error)
 
   def executeShellCommand(self, command, checkCommand = None, timeout = 120.0):
     '''Execute a shell command returning the output, and optionally provide a custom error checker'''
     import threading
-    global status, output
+    global output, error, status
 
     self.framework.log.write('sh: '+command+'\n')
     status = -1
     output = 'Runaway process'
     def run(command):
-      import commands
-      global status, output
-      (status, output) = commands.getstatusoutput(command)
+      global output, error, status
+      (output, error, status) = self.runShellCommand(command)
       return
 
     thread = threading.Thread(target = run, name = 'Shell Command', args = (command,))
@@ -109,12 +108,15 @@ class Configure:
     if thread.isAlive():
       self.framework.log.write('Runaway process exceeded time limit of '+str(timeout)+'s\n')
     else:
-      self.framework.log.write('sh: '+output+'\n')
-      if checkCommand:
-        checkCommand(command, status, output)
+      if len(output) < 200:
+        self.framework.log.write('sh: '+output+'\n')
       else:
-        self.defaultCheckCommand(command, status, output)
-    return output
+        self.framework.log.write('sh: '+output[:200]+'...\n')
+      if checkCommand:
+        checkCommand(command, status, output, error)
+      else:
+        self.defaultCheckCommand(command, status, output, error)
+    return (output, error, status)
 
   def executeTest(self, test, args = []):
     self.framework.log.write('================================================================================\n')
@@ -384,15 +386,10 @@ class Configure:
       (input, output, err) = os.popen3(command)
     return (input, output, err, pipe)
 
-  def preprocess(self, codeStr):
-    command = self.getCppCmd()
+  def runShellCommand(self, command):
     ret     = None
     out     = ''
     err     = ''
-    self.framework.outputHeader(self.compilerDefines)
-    f = file(self.compilerSource, 'w')
-    f.write(self.getCode(codeStr))
-    f.close()
     self.framework.log.write('Executing: '+command+'\n')
     (input, output, error, pipe) = self.openPipe(command)
     input.close()
@@ -420,10 +417,22 @@ class Configure:
     if pipe:
       # We would like the NOHANG argument here
       ret = pipe.wait()
-    if err or ret:
-      self.framework.log.write('ERR (preprocessor): '+err)
-      self.framework.log.write('ret = '+str(ret)+'\n')
-      self.framework.log.write('Source:\n'+self.getCode(codeStr))
+    return (out, err, ret)
+
+  def preprocess(self, codeStr):
+    def report(command, status, output, error):
+      if error or status:
+        self.framework.log.write('ERR (preprocessor): '+error)
+        self.framework.log.write('ret = '+str(status)+'\n')
+        self.framework.log.write('Source:\n'+self.getCode(codeStr))
+      return
+
+    command = self.getCppCmd()
+    self.framework.outputHeader(self.compilerDefines)
+    f = file(self.compilerSource, 'w')
+    f.write(self.getCode(codeStr))
+    f.close()
+    (out, err, ret) = self.executeShellCommand(command, checkCommand = report)
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     return (out, err, ret)
@@ -442,36 +451,20 @@ class Configure:
     return self.framework.filterCompileOutput(output)
 
   def outputCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
-    '''Return the error output from this compile and the return code
-       - It sounds like I could just take some code from MPD here, but that will have to wait I guess'''
+    '''Return the error output from this compile and the return code'''
+    def report(command, status, output, error):
+      if error or status:
+        self.framework.log.write('ERR (compiler): '+output)
+        self.framework.log.write('ret = '+str(status)+'\n')
+        self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+      return
+
     command = self.getCompilerCmd()
-    ret     = None
-    out     = ''
     self.framework.outputHeader(self.compilerDefines)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body, codeBegin, codeEnd))
     f.close()
-    self.framework.log.write('Executing: '+command+'\n')
-    (input, output, err, pipe) = self.openPipe(command)
-    input.close()
-    while 1:
-      ready = select.select([err], [], [], 0.1)
-      if len(ready[0]):
-        error = ready[0][0].readline()
-        if error:
-          # Log failure of compiler
-          out += error
-        else:
-          break
-    output.close()
-    err.close()
-    if pipe:
-      # We would like the NOHANG argument here
-      ret = pipe.wait()
-    if out or ret:
-      self.framework.log.write('ERR (compiler): '+out)
-      self.framework.log.write('ret = '+str(ret)+'\n')
-      self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+    (out, err, ret) = self.executeShellCommand(command, checkCommand = report)
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
@@ -500,38 +493,24 @@ class Configure:
 
     (out, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
     out = self.filterCompileOutput(out)
-    if ret or len(out):return (out, ret)
-    
-    command = self.getLinkerCmd()
-    ret     = None
-    out     = ''
-    self.framework.log.write('Executing: '+command+'\n')
-    (input, output, err, pipe) = self.openPipe(command)
-    input.close()
-    while 1:
-      ready = select.select([err], [], [], 0.1)
-      if len(ready[0]):
-        error = ready[0][0].readline()
-        if error:
-          # Log failure of compiler
-          out += error
-        else:
-          break
-    err.close()
-    output.close()
-    if pipe:
-      # We would like the NOHANG argument here
-      ret = pipe.wait()
-    if out or ret:
-      self.framework.log.write('ERR (linker): '+out)
-      self.framework.log.write('ret = '+str(ret)+'\n')
-      self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
-      self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+    if ret or len(out):
+      return (out, ret)
+
+    def report(command, status, output, error):
+      if error or status:
+        self.framework.log.write('ERR (linker): '+error)
+        self.framework.log.write(' output: '+output)
+        self.framework.log.write('ret = '+str(status)+'\n')
+        self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
+        self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+      return
+
+    (out, err, ret) = self.executeShellCommand(self.getLinkerCmd(), checkCommand = report)
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
-    return (out, ret)
+    return (err, ret)
 
   def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd)
