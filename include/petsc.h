@@ -26,6 +26,10 @@
 #if !defined(PETSC_PRINTF_FORMAT_CHECK)
 #define PETSC_PRINTF_FORMAT_CHECK(a,b)
 #endif
+#if !defined (PETSC_STDCALL)
+#define PETSC_STDCALL
+#endif
+
 
 /* ========================================================================== */
 
@@ -593,16 +597,6 @@ EXTERN int PetscScalarView(int,PetscScalar[],PetscViewer);
 #endif
 
 /* --------------------------------------------------------------------*/
-/*
-    DVF (win32) uses STDCALL calling convention by default.
-    The following is used by the fortran interface.
-*/
-#if defined (PETSC_USE_FORTRAN_STDCALL)
-#define PETSC_STDCALL __stdcall
-#else
-#define PETSC_STDCALL 
-#endif
-
 
 /*M
     size - integer variable used to contain the number of processors in
