@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.59 1999/05/25 20:11:16 bsmith Exp balay $";
+static char vcid[] = "$Id: axis.c,v 1.60 1999/06/08 22:54:21 balay Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -313,9 +313,14 @@ static int PetscStripAllZeros(char *buf)
 */
 static int PetscStripTrailingZeros(char *buf)
 {
-  int i,n,m = -1;
+  int  ierr, i,n,m = -1;
+  char *found;
 
   PetscFunctionBegin;
+  /* if there is an e in string DO NOT strip trailing zeros */
+  ierr = PetscStrchr(buf,'e',&found);CHKERRQ(ierr);
+  if (found) PetscFunctionReturn(0);
+
   n = (int) PetscStrlen(buf);
   /* locate decimal point */
   for ( i=0; i<n; i++ ) {
@@ -487,10 +492,15 @@ int PetscADefTicks( double low, double high, int num, int *ntick,double * ticklo
 
   PetscFunctionBegin;
   /* patch if low == high */
-  if (PetscAbsDouble(low-high) < 1.e-8) {
+  if (low == high) {
     low  -= .01;
     high += .01;
   }
+
+  /*  if (PetscAbsDouble(low-high) < 1.e-8) {
+    low  -= .01;
+    high += .01;
+  } */
 
   ierr = PetscAGetBase( low, high, num, &base, &power );CHKERRQ(ierr);
   ierr = PetscAGetNice( low, base, -1,&x );CHKERRQ(ierr);
