@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.57 1997/07/09 20:59:12 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.58 1997/08/22 15:17:31 bsmith Exp balay $";
 #endif
 
 /* 
@@ -248,8 +248,16 @@ int ViewerDestroyMatlab_Private()
   }
   return 0;
 }
-#else
+#else /* defined (PARCH_nt) */
+ 
 #include "viewer.h"
+Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
+
+int ViewerInitializeMatlabWorld_Private()
+{ 
+  return 0;
+}
+
 int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
 {
 	return 0;
