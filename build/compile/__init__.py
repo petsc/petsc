@@ -1,1 +1,1 @@
-all = ['C', 'Cxx', 'SIDL']
+all = ['C', 'Cxx', 'F90', 'SIDL']
