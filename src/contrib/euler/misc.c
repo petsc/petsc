@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: misc.c,v 1.10 1997/10/11 18:39:18 curfman Exp balay $";
+static char vcid[] = "$Id: misc.c,v 1.11 1998/03/24 20:58:38 balay Exp curfman $";
 #endif
 
 /*
@@ -136,8 +136,8 @@ int UnpackWorkComponent(Euler *app,Scalar *v0,Vec X)
        simple (requiring no communication) and saves the overhead of
        calling VecSetValues().  Note: The work array v0 includes ghost
        points, while x does not! */
-    ierr = VecGetArray(X,&x); CHKERRQ(ierr);
     if (app->bctype == IMPLICIT) {
+      ierr = VecGetArray(X,&x); CHKERRQ(ierr);
       for (k=zs; k<ze; k++) {
         for (j=ys; j<ye; j++) {
           jkx    = (j-gys)*gxm + (k-gzs)*gxm*gym;
@@ -147,6 +147,7 @@ int UnpackWorkComponent(Euler *app,Scalar *v0,Vec X)
           }
         }
       }
+      ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
     } else SETERRQ(1,1,"Unsupported bctype");
   }
   return 0;
@@ -339,5 +340,7 @@ int CheckSolution(Euler *app,Vec X)
       xmin[3],imin[3],jmin[3],kmin[3],xmax[3],imax[3],jmax[3],kmax[3],xmin[3]/xmax[3]);
   PetscPrintf(app->comm,"    energy : min=%g [%d,%d,%d], max=%g [%d,%d,%d], ratio=%g\n",
       xmin[4],imin[4],jmin[4],kmin[4],xmax[4],imax[4],jmax[4],kmax[4],xmin[4]/xmax[4]);
+
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   return 0;
 }

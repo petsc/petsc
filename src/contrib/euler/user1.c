@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.80 1998/08/05 03:23:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: user1.c,v 1.81 1998/09/21 17:28:59 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -489,25 +489,30 @@ int UserDestroyEuler(Euler *app)
   ierr = VecDestroy(app->X); CHKERRQ(ierr);
   ierr = VecDestroy(app->Xbc); CHKERRQ(ierr);
   ierr = VecDestroy(app->F); CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(app->localX,&app->xx);
+  ierr = VecRestoreArray(app->localDX,&app->dxx);
+  ierr = VecRestoreArray(app->localXBC,&app->xx_bc);
+
   ierr = VecDestroy(app->localX); CHKERRQ(ierr);
   ierr = VecDestroy(app->localDX); CHKERRQ(ierr);
   ierr = VecDestroy(app->localXBC); CHKERRQ(ierr);
+
   ierr = DADestroy(app->da); CHKERRQ(ierr);
   ierr = VecScatterDestroy(app->Xbcscatter); CHKERRQ(ierr);
   ierr = MMDestroy(app->multimodel); CHKERRQ(ierr);
   PetscFree(app->label);
   if (app->is1) PetscFree(app->is1);
 
-  if (app->bctype != IMPLICIT || app->dump_vrml || app->dump_general || app->post_process) {
-    ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
-    ierr = DADestroy(app->da1); CHKERRQ(ierr);
-    ierr = VecDestroy(app->Pbc); CHKERRQ(ierr);
-    ierr = VecDestroy(app->P); CHKERRQ(ierr);
-    ierr = VecDestroy(app->localP); CHKERRQ(ierr);
-  }
+  ierr = DADestroy(app->da1); CHKERRQ(ierr);
+  ierr = VecDestroy(app->Pbc); CHKERRQ(ierr);
+  ierr = VecDestroy(app->P); CHKERRQ(ierr);
+  ierr = VecDestroy(app->localP); CHKERRQ(ierr);
+
   if (app->bctype == IMPLICIT) {
     if (!app->mat_assemble_direct) PetscFree(app->b1bc);
   }
+
   ierr = VecDestroy(app->vcoord); CHKERRQ(ierr);
   if (app->fdcoloring) {ierr = MatFDColoringDestroy(app->fdcoloring); CHKERRQ(ierr);}
 
@@ -526,6 +531,10 @@ int UserDestroyEuler(Euler *app)
  
   /* If fp or multimodel */
   if (PetscStrcmp(app->mmtype,MMEULER)) {
+    ierr = VecRestoreArray(app->den,&app->den_a); CHKERRQ(ierr);
+    ierr = VecRestoreArray(app->xvel,&app->xvel_a); CHKERRQ(ierr);
+    ierr = VecRestoreArray(app->yvel,&app->yvel_a); CHKERRQ(ierr);
+    ierr = VecRestoreArray(app->zvel,&app->zvel_a); CHKERRQ(ierr);
     ierr = VecDestroy(app->den); CHKERRQ(ierr);
     ierr = VecDestroy(app->xvel); CHKERRQ(ierr);
     ierr = VecDestroy(app->yvel); CHKERRQ(ierr);
@@ -636,8 +645,6 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
 
     PLogEventBegin(app->event_localf,0,0,0,0);
 
-
-
     ierr =localfortfct_euler_(&jacform,&app->limiter,&app->order,
            &app->order_transition_theta,&app->psi,
            fv_array,app->xx,app->p,app->xx_bc,app->p_bc,
@@ -735,6 +742,7 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
     }
   }
 
+  ierr = VecRestoreArray(Fvec,&fv_array); CHKERRQ(ierr);
   return 0;
 }
 #undef __FUNC__
@@ -771,13 +779,7 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 
     /* Destroy pressure scatters for boundary conditions, since we needed
        them only to computate the initial guess */
-    if (app->bctype == IMPLICIT && !app->dump_vrml && !app->dump_general && !app->post_process) {
-      ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
-      ierr = DADestroy(app->da1); CHKERRQ(ierr);
-      ierr = VecDestroy(app->Pbc); CHKERRQ(ierr);
-      ierr = VecDestroy(app->P); CHKERRQ(ierr);
-      ierr = VecDestroy(app->localP); CHKERRQ(ierr);
-    }
+    ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
 
     /* Exit if we're just testing scatters for boundary conditions */
     if (app->bc_test) {UserDestroyEuler(app); PetscFinalize(); exit(0);}
@@ -804,7 +806,6 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler **newapp)
 {
   Euler  *app;
-  AO     ao;         /* application ordering context */
   int    ni1;        /* x-direction grid dimension */
   int    nj1;	     /* y-direction grid dimension */
   int    nk1;	     /* z-direction grid dimension */
@@ -1209,7 +1210,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->Nx = Nx; app->Ny = Ny; app->Nz = Nz;
   ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
          app->Nx,app->Ny,app->Nz,ndof,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da); CHKERRQ(ierr);
-  ierr = DAGetAO(app->da,&ao); CHKERRQ(ierr);
+  ierr = DAGetAO(app->da,&app->ao); CHKERRQ(ierr);
 
   /* Get global and local vectors */
   ierr = DACreateGlobalVector(app->da,&app->X); CHKERRQ(ierr);
@@ -1254,7 +1255,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   /*
         Publish the pressure array for the AMS
   */
-  ierr = PetscObjectPublish((PetscObject)app->P);CHKERRQ(ierr);
+  ierr = PetscObjectPublish((PetscObject)app->P); CHKERRQ(ierr); 
 
   ierr = VecDuplicate(app->P,&app->Pbc); CHKERRQ(ierr);
   ierr = DACreateLocalVector(app->da1,&app->localP); CHKERRQ(ierr);

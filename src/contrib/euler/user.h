@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.41 1998/08/05 03:24:11 curfman Exp bsmith $ */
+/* $Id: user.h,v 1.42 1998/09/11 20:57:19 bsmith Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -388,7 +388,7 @@ extern int parsetup_(int*,int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,i
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,MMTypeInt*,Scalar*,int*,int*,int*);
-extern int buildmat_(long*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
+extern int buildmat_(Mat*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
 extern int nzmat_(MMTypeInt*,MatType*,int*,int*,int*,int*,int*,int*,int*,int*,

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.17 1998/08/05 03:23:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: jacob.c,v 1.18 1998/09/11 20:57:13 bsmith Exp curfman $";
 #endif
 
 #include "user.h"
@@ -687,6 +687,8 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
   	  }
   	}
         }
+        ierr = VecRestoreArray(yy1,&yy1a); CHKERRQ(ierr);
+        ierr = VecRestoreArray(yy2,&yy2a); CHKERRQ(ierr);
       }
       printf("[%d] maxdiff = %g, %g, %g, %g, %g\n\
       dcount = %d, %d, %d, %d, %d\n",
@@ -705,6 +707,8 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
   }
   app->iter_last_jac  = iter;
   app->fnorm_last_jac = app->fnorm_last;
+
+  ierr = VecRestoreArray(fvec,&fvec_array); CHKERRQ(ierr); 
 
   return 0;
 }

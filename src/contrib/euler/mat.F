@@ -1,5 +1,5 @@
 c
-c  "$Id: mat.F,v 1.19 1998/03/20 14:12:22 curfman Exp curfman $";
+c  "$Id: mat.F,v 1.20 1998/06/05 20:16:06 curfman Exp curfman $";
 c
 c ----------------------------------------------------------------------
 c
@@ -243,10 +243,11 @@ c
 
       integer ijk,ijkn,ndof_ee,istart,iend,ijk_noghosts
       integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,ndof_block
-      integer col,ict,row,id,ijkid,is1(0:*),ierr,ao,m,mmtype
+      integer col,ict,row,id,ijkid,is1(0:*),ierr,m,mmtype
       integer nloc,ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
       integer chunk_loc,chunk_alc,no_wake
       MatType format
+      AO      ao
 
       nzmat = 0
 
