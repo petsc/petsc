@@ -1,6 +1,6 @@
 #! /usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: helpindex.py,v 1.7 2000/09/26 20:44:24 gropp Exp balay $ 
+# $Id: helpindex.py,v 1.8 2000/09/27 16:58:43 balay Exp balay $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -153,8 +153,11 @@ def printdata(fd,dict):
                   concept_filename = replace(lower(prim_key)," ","_")
                   concept_filename = "concepts/" + concept_filename + ".htm"
                   
-                  if os.access(concept_filename,os.F_OK):
-                      fd.write("<A HREF=\"")
+                  #if os.access(concept_filename,os.F_OK):
+                  fd_tmp = os.popen('ls '+ concept_filename)
+                  buf = fd.read()
+                  if not buf == '':
+                       fd.write("<A HREF=\"")
                       fd.write(concept_filename)
                       fd.write("\">")
                       fd.write(prim_key)
