@@ -239,12 +239,13 @@ etags_makefiles:
 # Builds all versions of the man pages
 allmanpages: deletemanpages deletewwwpages deletelatexpages
 	-make ACTION=manpages tree
-	-make ACTION=wwwpages tree
 	-make ACTION=latexpages tree
+	-make ACTION=wwwpages_buildcite tree
+	-make ACTION=wwwpages tree
 	-maint/wwwman
 
 allwwwpages: deletewwwpages
-	-make ACTION=wwwpages_nocite tree
+	-make ACTION=wwwpages_buildcite tree
 	-make ACTION=wwwpages tree
 	-maint/wwwman
 

@@ -16,6 +16,7 @@ printf("<LI><A HREF=\"%s/%s\">%s</A>\n",REF, $1, RNAME );}}' - .tmp > ../$REF.ht
     echo "<MENU>" | cat - ../$REF.html > .tmp
     /bin/rm -f ../$REF.html
     echo "</MENU>" | cat .tmp - > ../$REF.html
+    echo "<A HREF="www.html"><IMG SRC="up.xbm">Table of Contents</A>" >> ../$REF.html
     /bin/rm -f .tmp
     popd
 end
