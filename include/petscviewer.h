@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.62 1999/01/13 21:48:44 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.63 1999/01/14 00:23:47 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -87,6 +87,7 @@ extern int ViewerStringSPrintf(Viewer,char *,...);
 extern int ViewerStringSetString(Viewer,char[],int);
 extern int ViewerDrawClear(Viewer);
 extern int ViewerDrawSetInfo(Viewer,const char[],const char[],int,int,int,int);
+extern int ViewerSocketSetConnection(Viewer v,const char machine[],int port,)
 
 extern int ViewerSetFilename(Viewer,const char[]);
 
