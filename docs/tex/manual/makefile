@@ -64,9 +64,8 @@ splitmanual: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	       -mapref ../../manualpages/manualpages.cit -quietlatex
 	-@chmod g+w manual.hux latex.err 
 	-@chmod -R ug+w splitmanual
-	-@/bin/rm -f ../../splitmanual/*
-	-mv manual splitmanual
-	-mv splitmanual ../..
+	-@/bin/rm -f ../../splitmanual
+	-mv manual ../../splitmanual
 	-@chmod ug+w ../../splitmanual www.cit 
 	rm -f  latex.err findex.tex sindex.tex tmp.html
 

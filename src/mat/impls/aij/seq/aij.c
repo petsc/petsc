@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.316 1999/03/26 00:38:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.317 1999/03/26 15:40:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2115,7 +2115,7 @@ int MatRetrieveValues(Mat mat)
    MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameter nz
-   (or the array nzz).  By setting these parameters accurately, performance
+   (or the array nnz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
    Collective on MPI_Comm
@@ -2125,7 +2125,7 @@ int MatRetrieveValues(Mat mat)
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
--  nzz - array containing the number of nonzeros in the various rows 
+-  nnz - array containing the number of nonzeros in the various rows 
          (possibly different for each row) or PETSC_NULL
 
    Output Parameter:
