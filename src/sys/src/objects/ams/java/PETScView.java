@@ -1,4 +1,4 @@
-/*$Id: PETScView.java,v 1.4 2001/02/19 21:03:06 bsmith Exp bsmith $*/
+/*$Id: PETScView.java,v 1.5 2001/02/19 21:04:35 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published objects
 */
@@ -247,6 +247,7 @@ public class PETScView extends JApplet {
         
     /* Add panel to right for displaying output */
     rpanel = new JDesktopPane();
+    rpanel.setVisible(true);
     /*   rpanel.setMinimumSize(new Dimension(300,400)); */
     japplet.add(rpanel, BorderLayout.CENTER);
 
@@ -317,16 +318,9 @@ public class PETScView extends JApplet {
         jp.setVisible(true);
         jp.validate(); 
         jp.repaint();
-	/*	applet.setContentPane(rpanel); */
         rpanel.add(jp);
         jp.setSize(100,100);
 	/*        jp.setLocation(50,50); */
-        rpanel.setVisible(true);
-        rpanel.validate(); 
-        rpanel.repaint();
-        japplet.setVisible(true);
-        japplet.validate(); 
-        japplet.repaint();
       }
     });
     japplet.add(new JScrollPane(jtree), BorderLayout.WEST); 
