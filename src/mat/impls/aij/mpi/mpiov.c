@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.4 1996/01/23 20:13:36 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.5 1996/01/29 21:12:09 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -8,8 +8,8 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat, int, IS *);
 int MatIncreaseOverlap_MPIAIJ(Mat C, int is_max, IS *is, int ov)
 {
   int i, ierr;
-  if (ov < 1){ SETERRQ(1," MatIncreaseOverlap_MPIAIJ: overlap should be atleast 1\n");}
-  for (i =1; i<=ov; ++i) {
+  if (ov < 0){ SETERRQ(1," MatIncreaseOverlap_MPIAIJ: negative overlap specified\n");}
+  for (i =0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPIAIJ_private(C, is_max, is); CHKERRQ(ierr);
   }
   return 0;
