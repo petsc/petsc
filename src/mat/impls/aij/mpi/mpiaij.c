@@ -56,13 +56,13 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
         } \
       }  \
       if (nonew == 1) goto a_noinsert; \
-      else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero into matrix"); \
+      else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) into matrix", row, col); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int    new_nz = ai[am] + CHUNKSIZE,len,*new_i,*new_j; \
         PetscScalar *new_a; \
  \
-        if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix"); \
+        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) in the matrix", row, col); \
  \
         /* malloc new storage space */ \
         len     = new_nz*(sizeof(int)+sizeof(PetscScalar))+(am+1)*sizeof(int); \
@@ -130,13 +130,13 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
         } \
       }  \
       if (nonew == 1) goto b_noinsert; \
-      else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero into matrix"); \
+      else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) into matrix", row, col); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
         int    new_nz = bi[bm] + CHUNKSIZE,len,*new_i,*new_j; \
         PetscScalar *new_a; \
  \
-        if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix"); \
+        if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%d, %d) in the matrix", row, col); \
  \
         /* malloc new storage space */ \
         len     = new_nz*(sizeof(int)+sizeof(PetscScalar))+(bm+1)*sizeof(int); \
