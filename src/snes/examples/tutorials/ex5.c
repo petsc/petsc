@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.56 1996/08/22 21:10:15 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.57 1996/08/22 21:13:07 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -13,7 +13,18 @@ The command line options include:\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
-/*  
+/*T
+   Concepts: SNES; DA; solving nonlinear equations; using distributed arrays
+   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
+   Routines: SNESSolve(); SNESSetFromOptions();
+   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
+   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
+   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+   Processors: n
+T*/
+
+/* ------------------------------------------------------------------------
+
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
@@ -26,17 +37,8 @@ The command line options include:\n\
     A finite difference approximation with the usual 5-point stencil
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
-*/
 
-/*T
-   Concepts: SNES; DA; solving nonlinear equations; using distributed arrays
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions();
-   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
-   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
-   Processors: n
-T*/
+  ------------------------------------------------------------------------- */
 
 /* 
    Include "da.h" so that we can use distributed arrays (DAs).
@@ -66,8 +68,8 @@ typedef struct {
 /* 
    User-defined routines
 */
-int FormFunction1(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
-int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess(AppCtx*,Vec);
+int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 int main( int argc, char **argv )
 {
@@ -104,7 +106,7 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
                     user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
 
@@ -125,7 +127,7 @@ int main( int argc, char **argv )
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction1,&user); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,&user); CHKERRA(ierr);
 
   /* Set default Jacobian evaluation routine.  User can override with:
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
@@ -135,7 +137,7 @@ int main( int argc, char **argv )
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
   if (!matrix_free) {
     ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user); CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user); CHKERRA(ierr);
   }
 
   /*
@@ -150,7 +152,7 @@ int main( int argc, char **argv )
        to employ an initial guess of zero, the user should explicitly set
        this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
+  ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr); 
   PetscPrintf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
@@ -173,7 +175,7 @@ int main( int argc, char **argv )
 }
 /* ------------------------------------------------------------------- */
 /* 
-   FormInitialGuess1 - Forms initial approximation.
+   FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
    user - user-defined application context
@@ -182,7 +184,7 @@ int main( int argc, char **argv )
    Output Parameter:
    X - vector
  */
-int FormInitialGuess1(AppCtx *user,Vec X)
+int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
   double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
@@ -206,8 +208,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
      Compute initial guess
@@ -237,7 +239,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 } 
 /* ------------------------------------------------------------------- */
 /* 
-   FormFunction1 - Evaluates nonlinear function, F(x).
+   FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
 .  snes - the SNES context
@@ -247,7 +249,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
    Output Parameter:
 .  y - function vector
  */
-int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
+int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
@@ -277,8 +279,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid.
@@ -313,7 +315,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 } 
 /* ------------------------------------------------------------------- */
 /*
-   FormJacobian1 - Evaluates Jacobian matrix.
+   FormJacobian - Evaluates Jacobian matrix.
 
    Input Parameters:
 .  snes - the SNES context
@@ -332,7 +334,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
-int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;  /* user-defined applicatin context */
   Mat     jac = *J;                /* Jacobian matrix */
@@ -363,8 +365,8 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRQ(ierr);
 
   /*
      Get the global node numbers for all local nodes, including ghost points
