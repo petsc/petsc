@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.6 1995/04/17 03:33:14 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.7 1995/04/17 03:35:40 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -204,7 +204,8 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
 
 .keywords: SNES, nonlinear, line search, cubic
 
-.seealso: SNESCubicLineSearch()
+.seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
+.seealso: SNESSetLineSearchRoutine()
 @*/
 int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                              double fnorm, double *ynorm, double *gnorm )
@@ -219,7 +220,8 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 }
 /* ------------------------------------------------------------------ */
 /*@
-   SNESCubicLineSearch - This routine performs a cubic line search.
+   SNESCubicLineSearch - This routine performs a cubic line search and
+   is the default line search method.
 
    Input Parameters:
 .  snes - nonlinear context
@@ -239,15 +241,12 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    1 if the line search succeeds; 0 if the line search fails.
 
    Notes:
-   Use either NLSetStepLineSearchRoutines() or NLSetLineSearchRoutine()
-   to set this routine within the SNES_NLS1 method.  
-
    This line search is taken from "Numerical Methods for Unconstrained 
    Optimization and Nonlinear Equations" by Dennis and Schnabel, page 325.
 
 .keywords: SNES, nonlinear, line search, cubic
 
-.seealso: SNESNoLineSearch()
+.seealso: SNESNoLineSearch(), SNESNoLineSearch(), SNESSetLineSearchRoutine()
 @*/
 int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                               double fnorm, double *ynorm, double *gnorm )
@@ -373,7 +372,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    SNESQuadraticLineSearch - This routine performs a cubic line search.
 
    Input Parameters:
-.  snes - nonlinear context
+.  snes - the SNES context
 .  x - current iterate
 .  f - residual evaluated at x
 .  y - search direction (contains new iterate on output)
@@ -390,9 +389,12 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    1 if the line search succeeds; 0 if the line search fails.
 
    Notes:
-   Use SNESSetLineSearchRoutines()
-   to set this routine within the SNES_NLS1 method.  
+   Use SNESSetLineSearchRoutine()
+   to set this routine within the SNES_NLS method.  
 
+.keywords: SNES, nonlinear, quadratic, line search
+
+.seealso: SNESCubicLineSearch(), SNESNoLineSearch(), SNESSetLineSearchRoutine()
 @*/
 int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                               double fnorm, double *ynorm, double *gnorm )
@@ -482,12 +484,13 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  func - pointer to int function
 
    Possible routines:
-   SNESCubicLineSearch() - default line search
-   SNESNoLineSearch() - the full Newton step (actually not a line search)
+.  SNESCubicLineSearch() - default line search
+.  SNESQuadraticLineSearch() - quadratic line search
+.  SNESNoLineSearch() - the full Newton step (actually not a line search)
 
    Calling sequence of func:
-.  func (SNES snes, Vec x, Vec f, Vec g, Vec y,
-         Vec w, double fnorm, double *ynorm, double *gnorm )
+   func (SNES snes, Vec x, Vec f, Vec g, Vec y,
+         Vec w, double fnorm, double *ynorm, double *gnorm)
 
     Input parameters for func:
 .   snes - nonlinear context
@@ -505,6 +508,10 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
     Returned by func:
     1 if the line search succeeds; 0 if the line search fails.
+
+.keywords: SNES, nonlinear, set, line search, routine
+
+.seealso: SNESNoLineSearch(), SNESQuadraticLineSearch(), SNESCubicLineSearch()
 @*/
 int SNESSetLineSearchRoutine(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
                              double,double *,double*) )
