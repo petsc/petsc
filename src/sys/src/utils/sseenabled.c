@@ -1,4 +1,4 @@
-/* $Id: sseenabled.c,v 1.7 2001/06/20 20:36:53 buschelm Exp curfman $ */
+/* $Id: sseenabled.c,v 1.8 2001/06/21 18:29:04 curfman Exp buschelm $ */
 #include "petsc.h"
 
 #ifdef PETSC_HAVE_SSE
@@ -48,7 +48,9 @@ int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
   signal(SIGILL,SSEEnabledHandler);
   pid = fork();
   if (pid==0) {
-    XOR_PS(XMM0,XMM0);
+    SSE_SCOPE_BEGIN;
+      XOR_PS(XMM0,XMM0);
+    SSE_SCOPE_END;
     exit(0);
   } else {
     wait(&status);
