@@ -147,12 +147,12 @@ void PetscADMax_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
   int         i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPIU_SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+  if (*datatype != MPIU_2SCALAR) {
+    (*PetscErrorPrintf)("Can only handle MPIU_2SCALAR data (i.e. double or complex) types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
 
-  for (i=0; i<count/2; i++) {
+  for (i=0; i<count; i++) {
     if (PetscRealPart(xout[2*i]) < PetscRealPart(xin[2*i])) {
       xout[2*i]   = xin[2*i];
       xout[2*i+1] = xin[2*i+1];
@@ -175,12 +175,12 @@ void PetscADMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
   int         i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPIU_SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+  if (*datatype != MPIU_2SCALAR) {
+    (*PetscErrorPrintf)("Can only handle MPIU_2SCALAR data (i.e. double or complex) types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
 
-  for (i=0; i<count/2; i++) {
+  for (i=0; i<count; i++) {
     if (PetscRealPart(xout[2*i]) > PetscRealPart(xin[2*i])) {
       xout[2*i]   = xin[2*i];
       xout[2*i+1] = xin[2*i+1];
@@ -398,6 +398,8 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   */
   ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);CHKERRQ(ierr);
 
+  ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);CHKERRQ(ierr);
 

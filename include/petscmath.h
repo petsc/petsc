@@ -13,6 +13,7 @@
 #define __PETSCMATH_H
 #include <math.h>
 
+extern  MPI_Datatype        MPIU_2SCALAR;
 /*
 
      Defines operations that are different for complex and real numbers;
@@ -21,6 +22,7 @@
    PetscScalar which is either always a double or a complex.
 
 */
+
 #if defined(PETSC_USE_COMPLEX)
 
 /*
