@@ -32,7 +32,10 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-FC=<prog>',         nargs.Arg(None, None, 'Specify the Fortran compiler'))
     help.addArgument('Compilers', '-FFLAGS=<string>',   nargs.Arg(None, '',   'Specify the Fortran compiler options'))
 
-    help.addArgument('Compilers', '-LD=<prog>',         nargs.Arg(None, None, 'Specify the linker'))
+    help.addArgument('Compilers', '-LD=<prog>',         nargs.Arg(None, None, 'Specify the default linker'))
+    help.addArgument('Compilers', '-LD_CC=<prog>',      nargs.Arg(None, None, 'Specify the linker for C only'))
+    help.addArgument('Compilers', '-LD_CXX=<prog>',     nargs.Arg(None, None, 'Specify the linker for C++ only'))
+    help.addArgument('Compilers', '-LD_FC=<prog>',      nargs.Arg(None, None, 'Specify the linker for Fortran only'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',  nargs.Arg(None, '',   'Specify the linker options'))
     return
 
@@ -52,11 +55,6 @@ class Configure(config.base.Configure):
   def checkCCompiler(self):
     '''Determine the C compiler using --with-cc, then CC, then a search
     - Also determines the preprocessor from --with-cpp, then CPP, then the C compiler'''
-
-    # this is SO WRONG
-    import os
-    if os.environ.has_key('VENDOR') and os.environ['VENDOR'] == 'apple': self.framework.argDB['LD'] = 'ld'
-
     if self.framework.argDB.has_key('with-cc'):
       compilers = self.framework.argDB['with-cc']
     elif self.framework.argDB.has_key('CC'):
@@ -401,6 +399,27 @@ class Configure(config.base.Configure):
     self.addSubstitution('FLIBS', self.flibs)
     return
 
+  def checkSharedLinkerFlag(self):
+    '''Determine what flags are necessary for dynamic library creation'''
+    flag                 = '-shared'
+    (output, status) = self.outputLink('', '')
+    if status or output.find('unrecognized option') >= 0:
+      flag                 = '-dylib'
+      (output, status) = self.outputLink('', '')
+      if status or output.find('unrecognized option') >= 0:
+        flag = ''
+    self.addSubstitution('SHARED_LIBRARY_FLAG', flag)
+    return
+
+  def checkSharedLinkerPaths(self):
+    '''Determine whether the linker accepts the -rpath'''
+    flag                 = '-Wl,-rpath,'
+    (output, status) = self.outputLink('', '')
+    if status or output.find('unknown flag') >= 0:
+      flag = ''
+    self.addSubstitution('RPATH', flag)
+    return
+
   def configure(self):
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCRestrict)
@@ -413,4 +432,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Compiler)
     self.executeTest(self.checkFortran90Interface)
+    self.executeTest(self.checkSharedLinkerFlag)
+    self.executeTest(self.checkSharedLinkerPaths)
     return

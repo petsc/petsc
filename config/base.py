@@ -120,7 +120,7 @@ class Configure:
   def setLanguage(self, language):
     if language == 'C':
       self.compilerDefines = 'confdefs.h'
-    elif language == 'C++':
+    elif language in ['C++', 'Cxx']:
       self.compilerDefines = 'confdefs.h'
     elif language == 'F77':
       self.compilerDefines = 'confdefs.h'
@@ -154,7 +154,7 @@ class Configure:
       self.compilerName   = 'CC'
       self.compilerSource = 'conftest.c'
       self.compilerObj    = 'conftest.o'
-    elif language == 'C++':
+    elif language in ['C++', 'Cxx']:
       self.checkCxxCompilerSetup()
       self.compilerName   = 'CXX'
       self.compilerSource = 'conftest.cc'
@@ -169,6 +169,52 @@ class Configure:
     self.compiler = self.framework.argDB[self.compilerName]
     return self.compiler
 
+  def getLinker(self):
+    language = self.language[-1]
+    if language == 'C':
+      self.checkCCompilerSetup()
+      if 'CC_LD' in self.framework.argDB:
+        self.linkerName  = 'CC_LD'
+        self.linkerFlags = self.framework.argDB['LDFLAGS']
+      elif 'LD' in self.framework.argDB:
+        self.linkerName  = 'LD'
+        self.linkerFlags = self.framework.argDB['LDFLAGS']
+      else:
+        self.linkerName  = 'CC'
+        self.linkerFlags = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
+      self.linkerSource  = 'conftest.o'
+      self.linkerObj     = 'conftest'
+    elif language in ['C++', 'Cxx']:
+      self.checkCxxCompilerSetup()
+      if 'CXX_LD' in self.framework.argDB:
+        self.linkerName  = 'CXX_LD'
+        self.linkerFlags = self.framework.argDB['LDFLAGS']
+      elif 'LD' in self.framework.argDB:
+        self.linkerName  = 'LD'
+        self.linkerFlags = self.framework.argDB['LDFLAGS']
+      else:
+        self.linkerName  = 'CXX'
+        self.linkerFlags = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
+      self.linkerSource  = 'conftest.o'
+      self.linkerObj     = 'conftest'
+    elif language == 'F77':
+      self.checkF77CompilerSetup()
+      if 'FC_LD' in self.framework.argDB:
+        self.linkerName  = 'FC_LD'
+        self.linkerFlags = self.framework.argDB['LDFLAGS']
+      elif 'LD' in self.framework.argDB:
+        self.linkerName  = 'LD'
+        self.linkerFlags = self.framework.argDB['LDFLAGS']
+      else:
+        self.linkerName  = 'FC'
+        self.linkerFlags = self.framework.argDB['FFLAGS']+' '+self.framework.argDB['LDFLAGS']
+      self.linkerSource  = 'conftest.o'
+      self.linkerObj     = 'conftest'
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    self.linker = self.framework.argDB[self.linkerName]
+    return self.linker
+
   def getCppCmd(self):
     language = self.language[-1]
     self.getCompiler()
@@ -176,7 +222,7 @@ class Configure:
       self.cpp      = self.framework.argDB['CPP']
       self.cppFlags = self.framework.argDB['CPPFLAGS']
       self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
-    elif language == 'C++':
+    elif language in ['C++', 'Cxx']:
       self.cpp      = self.framework.argDB['CXXCPP']
       self.cppFlags = self.framework.argDB['CPPFLAGS']
       self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
@@ -194,7 +240,7 @@ class Configure:
     if language == 'C':
       self.compilerFlags   = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
       self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-    elif language == 'C++':
+    elif language in ['C++', 'Cxx']:
       self.compilerFlags   = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
       self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
     elif language == 'F77':
@@ -206,22 +252,9 @@ class Configure:
 
   def getLinkerCmd(self):
     language = self.language[-1]
-    self.getCompiler()
-    if language == 'C':
-      self.linker      = self.compiler
-      self.linkerObj   = 'conftest'
-      self.linkerFlags = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
-      self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
-    elif language == 'C++':
-      self.linker      = self.compiler
-      self.linkerObj   = 'conftest'
-      self.linkerFlags = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
-      self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
-    elif language == 'F77':
-      self.linker      = self.compiler
-      self.linkerObj   = 'conftest'
-      self.linkerFlags = self.framework.argDB['FFLAGS']+' '+self.framework.argDB['LDFLAGS']
-      self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
+    self.getLinker()
+    if language in ['C', 'C++', 'Cxx', 'F77']:
+      self.linkerCmd = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' '+self.linkerSource+' '+self.framework.argDB['LIBS']
     else:
       raise RuntimeError('Unknown language: '+language)
     return self.linkerCmd
@@ -230,7 +263,7 @@ class Configure:
     language = self.language[-1]
     if includes and not includes[-1] == '\n':
       includes += '\n'
-    if language == 'C' or language == 'C++':
+    if language in ['C', 'C++', 'Cxx']:
       codeStr = '#include "confdefs.h"\n'+includes
       if not body is None:
         if self.codeBegin:
