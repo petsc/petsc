@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.188 1997/09/22 14:51:34 balay Exp bsmith $ 
+# $Id: makefile,v 1.189 1997/09/30 03:12:20 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -21,16 +21,19 @@ DIRS	 = src include docs
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
-# Builds PETSc libraries for a given BOPT and architecture
-all: chkpetsc_dir
-	-$(RM) -f $(PDIR)/*
-	-@echo "Beginning to compile libraries in all directories"
+#
+#  Prints information about the system and PETSc being compiled
+#
+info:
+	-@echo "=========================================="
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
-	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
+	-@echo "-----------------------------------------"
+	-@echo "Using C compiler: $(CC) $(COPTFLAGS)"
 	-@if [ "$(CCV)" != "unknown" ] ; then \
 	  echo "Compiler version:" ; \
           $(CCV) ; fi
+	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "-----------------------------------------"
 	-@grep PETSC_VERSION_NUMBER include/petsc.h 
 	-@echo "-----------------------------------------"
@@ -42,6 +45,17 @@ all: chkpetsc_dir
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: $(PETSC_DIR)"
 	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "------------------------------------------"
+	-@echo "Using C linker: $(CLINKER)"
+	-@echo "Using libraries: $(PETSC_LIB)"
+	-@echo "Using Fortran linker: $(FLINKER)"
+	-@echo "Using Fortran libraries: $(PETSC_FORTRAN_LIB) 
+	-@echo "=========================================="
+
+# Builds PETSc libraries for a given BOPT and architecture
+all: info chkpetsc_dir
+	-$(RM) -f $(PDIR)/*
+	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=libfast  tree 
@@ -53,22 +67,8 @@ all: chkpetsc_dir
 	-@echo "========================================="
 
 # Builds PETSc test examples for a given BOPT and architecture
-testexamples: chkopts
-	-@echo "Beginning to compile and run test examples"
-	-@echo On `date` on `hostname`
-	-@echo Machine characteristics: `uname -a`
-	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "-----------------------------------------"
-	-@echo "Using include paths: $(PETSC_INCLUDE)"
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
-	-@echo "------------------------------------------"
-	-@echo "Using linker: $(CLINKER)"
-	-@echo "Using libraries: $(PETSC_LIB)"
-	-@echo "------------------------------------------"
+testexamples: info chkopts
+	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
@@ -78,23 +78,8 @@ testexamples: chkopts
 	-@echo "========================================="
 
 # Builds PETSc test examples for a given BOPT and architecture
-testexamples_uni: chkopts
-	-@echo "Beginning to compile and run uniprocessor test examples"
-	-@echo On `date` on `hostname`
-	-@echo Machine characteristics: `uname -a`
-	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
-	-@echo "Using linker: $(CLINKER)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using include paths: $(PETSC_INCLUDE)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
-	-@echo "------------------------------------------"
-	-@echo "Using linker: $(CLINKER)"
-	-@echo "Using libraries: $(PETSC_LIB)"
-	-@echo "------------------------------------------"
+testexamples_uni: info chkopts
+	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
@@ -107,23 +92,10 @@ testexamples_uni: chkopts
 # Builds PETSc Fortran interface libary
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
-fortran: chkpetsc_dir
-	-$(RM) -f $(PDIR)/libpetscfortran.*
-	-@echo "Beginning to compile Fortran interface library"
-	-@echo On `date` on `hostname`
-	-@echo Machine characteristics: `uname -a`
-	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
-	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using configuration flags: $(CONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using include paths: $(PETSC_INCLUDE)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+fortran: info chkpetsc_dir
+	-@echo "BEGINNING TO COMPILE FORTRAN INTERFACE LIBRARY"
 	-@echo "========================================="
+	-$(RM) -f $(PDIR)/libpetscfortran.*
 	-@cd src/fortran/custom; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
 	  grep -v clog trashz | grep -v "information sections" | \
@@ -141,19 +113,9 @@ fortran: chkpetsc_dir
 # Builds PETSc Fortran kernels; some numerical kernels have
 # a Fortran version that may give better performance on certain 
 # machines. It always gives better performance for complex numbers.
-fortrankernels: chkpetsc_dir 
+fortrankernels: info chkpetsc_dir 
 	-$(RM) -f $(PDIR)/libpetsckernels.*
-	-@echo "Beginning to compile Fortran kernels library"
-	-@echo On `date` on `hostname`
-	-@echo Machine characteristics: `uname -a`
-	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using configuration flags: $(CONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "BEGINNING TO COMPILE FORTRAN KERNELS LIBRARY"
 	-@echo "========================================="
 	-@cd src/fortran/kernels; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib
@@ -162,19 +124,8 @@ fortrankernels: chkpetsc_dir
 	-@echo "========================================="
 
 # Builds PETSc test examples for a given BOPT and architecture
-testfortran: chkopts
-	-@echo "Beginning to compile and run Fortran test examples"
-	-@echo On `date` on `hostname`
-	-@echo Machine characteristics: `uname -a`
-	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
-	-@echo "Using linker: $(FLINKER)"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
-	-@echo "------------------------------------------"
-	-@echo "Using linker: $(FLINKER)"
-	-@echo "Using libraries: $(PETSC_FORTRAN_LIB) $(PETSC_LIB)"
+testfortran: info chkopts
+	-@echo "BEGINNING TO COMPILE AND RUN FORTRAN TEST EXAMPLES"
 	-@echo "========================================="
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines or the way Fortran formats numbers"
@@ -197,21 +148,8 @@ testfortran: chkopts
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
 # Note: F90 interface currently only supported in NAG F90 compiler
-fortran90: chkpetsc_dir fortran
-	-@echo "Beginning to compile Fortran90 interface library"
-	-@echo On `date` on `hostname`
-	-@echo Machine characteristics: `uname -a`
-	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
-	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using configuration flags: $(CONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using include paths: $(PETSC_INCLUDE)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+fortran90: info chkpetsc_dir fortran
+	-@echo "BEGINNING TO COMPILE FORTRAN90 INTERFACE LIBRARY"
 	-@echo "========================================="
 	-@cd src/fortran/f90; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
@@ -227,19 +165,8 @@ fortran90: chkpetsc_dir fortran
 # Builds noise routines (not yet publically available)
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
-noise: chkpetsc_dir
+noise: info chkpetsc_dir
 	-@echo "Beginning to compile noise routines"
-	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
-	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using configuration flags: $(CONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using include paths: $(PETSC_INCLUDE)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
 	-@echo "========================================="
 	-@cd src/snes/interface/noise; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
@@ -252,21 +179,9 @@ noise: chkpetsc_dir
 	-@echo "Completed compiling noise routines"
 	-@echo "========================================="
 
-petscblas: chkpetsc_dir
+petscblas: info chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscblas.*
-	-@echo "Beginning to compile C version of BLAS and LAPACK"
-	-@echo On `date` on `hostname`
-	-@echo Machine characteristics: `uname -a`
-	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using configuration flags: $(CONF)"
-	-@echo "------------------------------------------"
-	-@echo "Using include paths: $(PETSC_INCLUDE)"
-	-@echo "------------------------------------------"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "BEGINNING TO COMPILE C VERSION OF BLAS AND LAPACK"
 	-@echo "========================================="
 	-@cd src/adic/blas; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
