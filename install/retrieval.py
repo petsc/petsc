@@ -13,19 +13,13 @@ class Retriever(install.base.Base):
     install.base.Base.__init__(self, argDB, base)
     return
 
-  def getInstallRoot(self, url):
-    '''Guess the install root from the project URL'''
-    root = self.getRepositoryName(url)
-    if self.base:
-      root = os.path.join(self.base, root)
-    return os.path.abspath(root)
-
   def removeRoot(self,root,canExist,force = 0):
-    'Returns 1 if removes root'
+    '''Returns 1 if removes root'''
     if os.path.exists(root):
       if canExist:
         if force:
-          output = self.executeShellCommand('rm -rf '+root)
+          import shutil
+          shutil.rmtree(root)
           return 1
         else:
           return 0
@@ -56,11 +50,6 @@ class Retriever(install.base.Base):
     return self.genericRetrieve(url, root, canExist, force)
 
   def bkRetrieve(self, url, root, canExist = 0, force = 0):
-    if self.checkBootstrap():
-      path   = os.path.join('/pub', 'petsc', self.getRepositoryPath(url)+'.tgz')
-      newUrl = urlparse.urlunparse(('ftp', 'ftp.mcs.anl.gov', path, parameters, query, fragment))
-      return self.retrieve(newUrl, root, canExist, force)
-
     self.debugPrint('Retrieving '+url+' --> '+root+' via bk', 3, 'install')
     if os.path.exists(root):
       output = self.executeShellCommand('cd '+root+'; bk pull')
@@ -99,27 +88,7 @@ class Retriever(install.base.Base):
     - If force is True, a full dowmload is mandated.
     Providing the root is an easy way to make a copy, for instance when making tarballs.
     '''
-#    remapurls = {'bk://sidl.bkbits.net/Compiler' : 'bk:///home/web/Compiler',
-#                 'bk://sidl.bkbits.net/Runtime' : 'bk:///home/web/Runtime',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Compiler.tgz' : 'file:///home/web/Compiler.tgz',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Runtime.tgz' : 'file:///home/web/Runtime.tgz',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/ply.tgz' : 'file:///home/web/ply.tgz',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Compiler.tgz' : 'file:///home/web/Compiler.tgz',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Runtime.tgz' : 'file:///home/web/Runtime.tgz',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/ply.tgz' : 'file:///home/web/ply.tgz'}
-#    remaproot = {'bk://sidl.bkbits.net/Compiler' : 'Compiler',
-#                 'bk://sidl.bkbits.net/Runtime' : 'Runtime',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Compiler.tgz' : 'Compiler',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/Runtime.tgz' : 'Runtime',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/sidl/ply.tgz' : 'ply-dev',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Compiler.tgz' : 'Compiler',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/Runtime.tgz' : 'Runtime',
-#                 'ftp://ftp.mcs.anl.gov/pub/petsc/home/web/ply.tgz' : 'ply-dev'}
-#    if remaproot.has_key(url):
-#      root = remaproot[url]
-#    if remapurls.has_key(url):
-#      url = remapurls[url]
-
+    url     = self.getMappedUrl(url)
     project = self.getInstalledProject(url)
     if not project is None and root is None:
       root     = project.getRoot()

@@ -22,24 +22,26 @@ class Installer(install.base.Base):
     argDB.setLocalType('backup',            nargs.ArgBool('Backup makes a tar archive of the generated source rather than installing'))
     argDB.setLocalType('forceInstall',      nargs.ArgBool('Forced installation overwrites any existing project'))
     argDB.setLocalType('retrievalCanExist', nargs.ArgBool('Allow a porject to exist prior to installation'))
+    argDB.setLocalType('urlMappingModules', nargs.ArgString('Module name or list of names with a method setupUrlMapping(urlMaps)'))
 
     argDB['backup']            = 0
     argDB['forceInstall']      = 0
     argDB['retrievalCanExist'] = 0
+    argDB['urlMappingModules'] = ''
 
     argDB.insertArgs(clArgs)
     argDB.insertArgs(initDict)
     return argDB
 
-  def install(self, projectUrl):
-    self.debugPrint('Installing '+projectUrl, 3, 'install')
-    root = self.retriever.retrieve(projectUrl, force = self.force);
+  def install(self, url):
+    self.debugPrint('Installing '+url, 3, 'install')
+    root = self.retriever.retrieve(url, force = self.force);
     self.builder.build(root)
     return
 
-  def bootstrapInstall(self, projectUrl, argDB):
-    self.debugPrint('Installing '+projectUrl+' from bootstrap', 3, 'install')
-    root = self.retriever.retrieve(projectUrl, force = self.force);
+  def bootstrapInstall(self, url, argDB):
+    self.debugPrint('Installing '+url+' from bootstrap', 3, 'install')
+    root = self.retriever.retrieve(url, force = self.force);
     # This is for purging the sidl after the build
     self.argDB['fileset'] = 'sidl'
     self.builder.build(root, target = ['default', 'purge'], setupTarget = 'setupBootstrap')
@@ -52,7 +54,7 @@ class Installer(install.base.Base):
     import shutil
 
     self.debugPrint('Backing up '+url, 3, 'install')
-    root = self.retriever.retrieve(url, self.retriever.getInstallRoot(url)+'_backup', force = self.force);
+    root = self.retriever.retrieve(url, self.getInstallRoot(url)+'_backup', force = self.force);
     self.builder.build(root, 'sidl', ignoreDependencies = 1)
     output = self.executeShellCommand('tar -czf '+self.getRepositoryName(url)+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
     shutil.rmtree(root)

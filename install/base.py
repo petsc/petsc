@@ -7,9 +7,11 @@ urlparse.uses_netloc.extend(['bk', 'ssh'])
 class Base (maker.Maker):
   def __init__(self, argDB, base = ''):
     maker.Maker.__init__(self, argDB)
-    self.base = base
+    self.base    = base
+    self.urlMaps = []
     self.checkPython()
     self.checkNumeric()
+    self.setupUrlMapping()
     return
 
   def checkPython(self):
@@ -53,6 +55,7 @@ class Base (maker.Maker):
   def getRepositoryName(self, url):
     '''Return the repository name from a project URL. This is the base filename that should be used for tarball distributions.'''
     import os
+    url = self.getMappedUrl(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     return os.path.basename(path)
 
@@ -60,8 +63,42 @@ class Base (maker.Maker):
     '''Return the repository path from a project URL. This is the name that should be used for alternate retrieval.
     - You can omit the repository name itself by giving the noBase flag'''
     import os
+    url = self.getMappedUrl(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     sitename = location.split('.')[0]
     pathname = path[1:]
     if noBase: pathname = os.path.dirname(pathname)
     return os.path.join(sitename, pathname)
+
+  def getInstallRoot(self, url):
+    '''Guess the install root from the project URL'''
+    url  = self.getMappedUrl(url)
+    root = self.getRepositoryName(url)
+    if self.base:
+      root = os.path.join(self.base, root)
+    return os.path.abspath(root)
+
+  def bootstrapUrlMap(self, url):
+    if self.checkBootstrap():
+      (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+      if scheme == 'bk':
+        path = os.path.join('/pub', 'petsc', self.getRepositoryPath(url)+'.tgz')
+        return (1, urlparse.urlunparse(('ftp', 'ftp.mcs.anl.gov', path, parameters, query, fragment)))
+    return (0, url)
+
+  def setupUrlMapping(self):
+    self.urlMaps.append(self.bootstrapUrlMap)
+    if not self.argDB['urlMappingModules']:
+      self.argDB['urlMappingModules'] = []
+    elif not isinstance(self.argDB['urlMappingModules'], list):
+      self.argDB['urlMappingModules'] = [self.argDB['urlMappingModules']]
+    for moduleName in self.argDB['urlMappingModules']:
+      __import__(moduleName, globals(), locals(), ['setupUrlMapping'])(self.urlMaps)
+    return
+
+  def getMappedUrl(self, url):
+    '''Return a new URL produced by a URL map function. Users can register new maps by adding to the list self.urlMaps'''
+    for map in self.urlMaps:
+      ret, newUrl = map(url)
+      if ret: return newUrl
+    return url
