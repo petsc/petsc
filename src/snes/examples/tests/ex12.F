@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.32 1996/04/12 22:01:17 curfman Exp bsmith $";
+C    "$Id: ex12.F,v 1.33 1996/04/15 22:09:27 bsmith Exp bsmith $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -241,8 +241,8 @@ C --------------------  Evaluate Jacobian --------------------
         call MatSetValues(jac,1,ii,1,ii,A,INSERT_VALUES,ierr)
  10   continue
       call VecRestoreArray(x,vxx,ixx,ierr)
-      call MatAssemblyBegin(jac,FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(jac,FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return
       end
 

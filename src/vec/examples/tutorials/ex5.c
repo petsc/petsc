@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.21 1996/03/11 23:46:43 balay Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.22 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
   ierr = VecAssemblyEnd(u); CHKERRA(ierr);
-  ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   PetscPrintf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
 
@@ -66,7 +66,7 @@ int main(int argc,char **args)
   ierr = VecLoad(viewer,&u); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   PLogEventEnd(VECTOR_READ,0,0,0,0);
-  ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(u); CHKERRA(ierr);

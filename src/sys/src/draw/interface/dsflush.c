@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dsflush.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsflush.c,v 1.4 1996/03/19 21:28:06 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: dsflush.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith
 int DrawSyncFlush(Draw draw)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   if (draw->ops.syncflush) return (*draw->ops.syncflush)(draw);
   return 0;
 }

@@ -26,13 +26,13 @@ libf: $(LIBNAME)($(OBJSF))
 #############
 .F.o:
 	$(RM) $*.f
-	-cpp $(CFLAGS)  $*.F > $*.f 
+	-cpp $(CPPFLAGS)  $*.F > $*.f 
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 
 .F.a: 
 	$(RM) $*.f
-	-cpp $(CFLAGS) $*.F  > $*.f
+	-cpp $(CPPFLAGS) $*.F  > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 	$(AR) cr $(LIBNAME) $*.o

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.22 1996/01/12 22:09:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.23 1996/03/21 16:43:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
@@ -32,8 +32,8 @@ int main(int argc,char **args)
       v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   ierr = MatView(A,viewer); CHKERRA(ierr);
 

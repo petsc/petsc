@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.106 1996/06/14 22:02:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.107 1996/07/02 18:06:31 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1388,8 +1388,8 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
       }
     }
   }
-  ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   if (matout != PETSC_NULL) {
     *matout = tmat;
   } else {
@@ -1666,10 +1666,6 @@ static int MatView_SeqBDiag(PetscObject obj,Viewer viewer)
   ViewerType  vtype;
   int         ierr;
 
-  if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF;
-  }
-
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == MATLAB_VIEWER) {
     SETERRQ(PETSC_ERR_SUP,"MatView_SeqBDiag:Matlab viewer");
@@ -1721,7 +1717,7 @@ static int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
   int          i, k, temp, *diag = a->diag, *bdlen = a->bdlen;
   Scalar       *dtemp, **dv = a->diagv;
 
-  if (mode == FLUSH_ASSEMBLY) return 0;
+  if (mode == MAT_FLUSH_ASSEMBLY) return 0;
 
   /* Sort diagonals */
   for (i=0; i<a->nd; i++) {
@@ -1750,16 +1746,16 @@ static int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 static int MatSetOption_SeqBDiag(Mat A,MatOption op)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  if (op == NO_NEW_NONZERO_LOCATIONS)       a->nonew       = 1;
-  else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
-  else if (op == NO_NEW_DIAGONALS)          a->nonew_diag  = 1;
-  else if (op == YES_NEW_DIAGONALS)         a->nonew_diag  = 0;
-  else if (op == COLUMN_ORIENTED)           a->roworiented = 0;
-  else if (op == ROW_ORIENTED)              a->roworiented = 1;
-  else if (op == ROWS_SORTED || 
-           op == COLUMNS_SORTED || 
-           op == SYMMETRIC_MATRIX ||
-           op == STRUCTURALLY_SYMMETRIC_MATRIX)
+  if (op == MAT_NO_NEW_NONZERO_LOCATIONS)       a->nonew       = 1;
+  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
+  else if (op == MAT_NO_NEW_DIAGONALS)          a->nonew_diag  = 1;
+  else if (op == MAT_YES_NEW_DIAGONALS)         a->nonew_diag  = 0;
+  else if (op == MAT_COLUMN_ORIENTED)           a->roworiented = 0;
+  else if (op == MAT_ROW_ORIENTED)              a->roworiented = 1;
+  else if (op == MAT_ROWS_SORTED || 
+           op == MAT_COLUMNS_SORTED || 
+           op == MAT_SYMMETRIC ||
+           op == MAT_STRUCTURALLY_SYMMETRIC)
     PLogInfo(A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:unknown option");}
@@ -1849,8 +1845,8 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
     for ( i=0; i<N; i++ ) dd[rows[i]] = *diag;
   }
   ISRestoreIndices(is,&rows);
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
@@ -1898,8 +1894,8 @@ static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
     ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Free work space */
   PetscFree(smap); PetscFree(cwork); PetscFree(vwork);
@@ -2192,8 +2188,8 @@ static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
       }
     }
   }
-  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
@@ -2266,8 +2262,8 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   PetscFree(vals);
   PetscFree(rowlengths);   
 
-  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 

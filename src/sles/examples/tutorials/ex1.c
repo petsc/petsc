@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.41 1996/02/08 18:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.42 1996/03/19 21:27:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -36,8 +36,8 @@ int main(int argc,char **args)
   ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
   ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   /* Create SLES context; set operators and options; solve linear system */
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* Check error */
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);

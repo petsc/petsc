@@ -1,11 +1,11 @@
 C
-C  "$Id: ksp.h,v 1.7 1996/02/12 20:26:59 bsmith Exp balay $";
+C  "$Id: ksp.h,v 1.8 1996/04/15 23:36:29 balay Exp bsmith $";
 C
 C  Include file for Fortran use of the KSP package in PETSc
 C
-#define KSP       integer
-#define KSPType   integer
-#define CGType    integer
+#define KSP          integer
+#define KSPType      integer
+#define KSPCGType    integer
 C
 C  Various Krylov subspace methods
 C
@@ -21,9 +21,9 @@ C
 C
 C  CG Types
 C
-      integer CG_SYMMETRIC,CG_HERMITIAN
+      integer KSP_CG_SYMMETRIC,KSP_CG_HERMITIAN
 
-      parameter (CG_SYMMETRIC=1, CG_HERMITIAN=2)
+      parameter (KSP_CG_SYMMETRIC=1, KSP_CG_HERMITIAN=2)
 C
 C  End of Fortran include file for the KSP package in PETSc
 

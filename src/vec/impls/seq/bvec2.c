@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.71 1996/04/07 22:46:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.72 1996/04/20 04:18:48 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -176,10 +176,10 @@ static int VecView_Seq(PetscObject obj,Viewer viewer)
   int         ierr;
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF;
+    viewer = VIEWER_STDOUT_SELF;
   }
 
-  if (((PetscObject)viewer)->cookie == LG_COOKIE){
+  if (((PetscObject)viewer)->cookie == DRAWLG_COOKIE){
     return VecView_Seq_LG(xin,(DrawLG) viewer);
   }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);

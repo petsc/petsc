@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.103 1996/04/09 02:23:22 curfman Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.104 1996/04/12 23:30:30 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -409,8 +409,8 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     /* read in nonzero values */
     ierr = PetscBinaryRead(fd,a->v,M*N,BINARY_SCALAR); CHKERRQ(ierr);
 
-    ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatTranspose(B,PETSC_NULL); CHKERRQ(ierr);
   } else {
     /* read row lengths */
@@ -436,8 +436,8 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     }
     PetscFree(vals); PetscFree(cols); PetscFree(rowlengths);   
 
-    ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -578,9 +578,6 @@ static int MatView_SeqDense(PetscObject obj,Viewer viewer)
   ViewerType   vtype;
   int          ierr;
 
-  if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF;
-  }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
   if (vtype == MATLAB_VIEWER) {
@@ -638,8 +635,8 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
     for ( j=0; j<n; j++ ) {
       for ( k=0; k<m; k++ ) v2[j + k*n] = v[k + j*m];
     }
-    ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     *matout = tmat;
   } 
   return 0;
@@ -759,16 +756,16 @@ static int MatSetOption_SeqDense(Mat A,MatOption op)
 {
   Mat_SeqDense *aij = (Mat_SeqDense *) A->data;
   
-  if (op == ROW_ORIENTED)            aij->roworiented = 1;
-  else if (op == COLUMN_ORIENTED)    aij->roworiented = 0;
-  else if (op == ROWS_SORTED || 
-           op == COLUMNS_SORTED ||
-           op == SYMMETRIC_MATRIX ||
-           op == STRUCTURALLY_SYMMETRIC_MATRIX ||
-           op == NO_NEW_NONZERO_LOCATIONS ||
-           op == YES_NEW_NONZERO_LOCATIONS ||
-           op == NO_NEW_DIAGONALS ||
-           op == YES_NEW_DIAGONALS)
+  if (op == MAT_ROW_ORIENTED)            aij->roworiented = 1;
+  else if (op == MAT_COLUMN_ORIENTED)    aij->roworiented = 0;
+  else if (op == MAT_ROWS_SORTED || 
+           op == MAT_COLUMNS_SORTED ||
+           op == MAT_SYMMETRIC ||
+           op == MAT_STRUCTURALLY_SYMMETRIC ||
+           op == MAT_NO_NEW_NONZERO_LOCATIONS ||
+           op == MAT_YES_NEW_NONZERO_LOCATIONS ||
+           op == MAT_NO_NEW_DIAGONALS ||
+           op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"Info:MatSetOption_SeqDense:Option ignored\n");
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqDense:unknown option");}
@@ -869,8 +866,8 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
     ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERT_VALUES); 
            CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Free work space */
   PetscFree(smap); PetscFree(cwork); PetscFree(vwork);

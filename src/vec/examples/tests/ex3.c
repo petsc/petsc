@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.32 1996/01/12 22:05:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.33 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(y); CHKERRA(ierr);
   ierr = VecAssemblyEnd(y); CHKERRA(ierr);
 
-  ierr = VecView(y,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = VecView(y,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(y); CHKERRA(ierr);

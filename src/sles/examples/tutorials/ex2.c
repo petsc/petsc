@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.38 1996/02/08 18:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.39 1996/03/19 21:27:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  To test the\n\
@@ -32,8 +32,8 @@ int main(int argc,char **args)
       v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Create and set vectors */
   ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);

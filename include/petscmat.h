@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.106 1996/06/17 14:39:52 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.107 1996/07/02 18:09:25 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -35,16 +35,16 @@ extern int MatPrintHelp(Mat);
 
 /* ------------------------------------------------------------*/
 extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
-typedef enum {FLUSH_ASSEMBLY=1,FINAL_ASSEMBLY=0} MatAssemblyType;
+typedef enum {MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0} MatAssemblyType;
 extern int MatAssemblyBegin(Mat,MatAssemblyType);
 extern int MatAssemblyEnd(Mat,MatAssemblyType);
 
-typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
-              COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
-              YES_NEW_NONZERO_LOCATIONS=32,SYMMETRIC_MATRIX=64,
-              STRUCTURALLY_SYMMETRIC_MATRIX,NO_NEW_DIAGONALS,
-              YES_NEW_DIAGONALS,INODE_LIMIT_1,INODE_LIMIT_2,
-              INODE_LIMIT_3,INODE_LIMIT_4,INODE_LIMIT_5} MatOption;
+typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
+              MAT_COLUMNS_SORTED=8,MAT_NO_NEW_NONZERO_LOCATIONS=16,
+              MAT_YES_NEW_NONZERO_LOCATIONS=32,MAT_SYMMETRIC=64,
+              MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS,
+              MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1,MAT_INODE_LIMIT_2,
+              MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4,MAT_INODE_LIMIT_5} MatOption;
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
 extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,int*);
@@ -206,16 +206,6 @@ typedef enum { MAT_SET_VALUES=0,
              } MatOperation;
 extern int MatHasOperation(Mat,MatOperation,PetscTruth*);
 extern int MatShellSetOperation(Mat,MatOperation,void *);
-
-/*  Not currently supported! 
-#define MAT_SCATTER_COOKIE PETSC_COOKIE+15
-typedef struct _MatScatter* MatScatter;
-
-extern int MatScatterBegin(Mat,Mat,InsertMode,MatScatter);
-extern int MatScatterEnd(Mat,Mat,InsertMode,MatScatter);
-extern int MatScatterCreate(Mat,IS,IS,Mat,IS,IS,MatScatter*);
-extern int MatScatterDestroy(MatScatter);
-*/
 
 /*
    Codes for matrices stored on disk. By default they are

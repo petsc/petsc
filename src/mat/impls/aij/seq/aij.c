@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.175 1996/07/02 20:28:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.176 1996/07/03 13:51:05 curfman Exp bsmith $";
 #endif
 
 /*
@@ -463,9 +463,6 @@ static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
   ViewerType  vtype;
   int         ierr;
 
-  if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; 
-  }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == MATLAB_VIEWER) {
     return ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j); 
@@ -490,7 +487,7 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift;
   Scalar     *aa = a->a, *ap;
 
-  if (mode == FLUSH_ASSEMBLY) return 0;
+  if (mode == MAT_FLUSH_ASSEMBLY) return 0;
 
   for ( i=1; i<m; i++ ) {
     /* move each row back by the amount of empty slots (fshift) before it*/
@@ -566,23 +563,23 @@ static int MatCompress_SeqAIJ(Mat A)
 static int MatSetOption_SeqAIJ(Mat A,MatOption op)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  if      (op == ROW_ORIENTED)              a->roworiented = 1;
-  else if (op == COLUMN_ORIENTED)           a->roworiented = 0;
-  else if (op == COLUMNS_SORTED)            a->sorted      = 1;
-  else if (op == NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
-  else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
-  else if (op == ROWS_SORTED || 
-           op == SYMMETRIC_MATRIX ||
-           op == STRUCTURALLY_SYMMETRIC_MATRIX ||
-           op == YES_NEW_DIAGONALS)
+  if      (op == MAT_ROW_ORIENTED)              a->roworiented = 1;
+  else if (op == MAT_COLUMN_ORIENTED)           a->roworiented = 0;
+  else if (op == MAT_COLUMNS_SORTED)            a->sorted      = 1;
+  else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
+  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
+  else if (op == MAT_ROWS_SORTED || 
+           op == MAT_SYMMETRIC ||
+           op == MAT_STRUCTURALLY_SYMMETRIC ||
+           op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
-  else if (op == NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:NO_NEW_DIAGONALS");}
-  else if (op == INODE_LIMIT_1)            a->inode.limit  = 1;
-  else if (op == INODE_LIMIT_2)            a->inode.limit  = 2;
-  else if (op == INODE_LIMIT_3)            a->inode.limit  = 3;
-  else if (op == INODE_LIMIT_4)            a->inode.limit  = 4;
-  else if (op == INODE_LIMIT_5)            a->inode.limit  = 5;
+  else if (op == MAT_NO_NEW_DIAGONALS)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:MAT_NO_NEW_DIAGONALS");}
+  else if (op == MAT_INODE_LIMIT_1)            a->inode.limit  = 1;
+  else if (op == MAT_INODE_LIMIT_2)            a->inode.limit  = 2;
+  else if (op == MAT_INODE_LIMIT_3)            a->inode.limit  = 3;
+  else if (op == MAT_INODE_LIMIT_4)            a->inode.limit  = 4;
+  else if (op == MAT_INODE_LIMIT_5)            a->inode.limit  = 5;
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:unknown option");}
   return 0;
@@ -897,8 +894,8 @@ static int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
     }
   }
   ISRestoreIndices(is,&rows);
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
@@ -1019,8 +1016,8 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
     for ( i=0; i<ai[m]-1; i++ ) aj[i] += 1;
   }
 
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   if (B != PETSC_NULL) {
     *B = C;
@@ -1194,8 +1191,8 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
     PetscFree(smap); PetscFree(lens);
   }
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
   *B = C;
@@ -1348,7 +1345,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,0,
        MatPrintHelp_SeqAIJ,
-       MatScale_SeqAIJ,0,0,MatILUDTFactor};
+       MatScale_SeqAIJ,0,0,MatILUDTFactor_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
@@ -1612,8 +1609,8 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   }
   PetscFree(rowlengths);   
 
-  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 

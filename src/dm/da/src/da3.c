@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.37 1996/06/11 16:38:03 balay Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.38 1996/07/02 18:08:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -22,7 +22,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
   MPI_Comm_rank(da->comm,&rank); 
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; 
+    viewer = VIEWER_STDOUT_SELF; 
   }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
@@ -1483,7 +1483,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = DFVecShellAssociate(df_local,local); CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg1); CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
+  if (flg1) {ierr = DAView(da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
 
   return 0;
 }

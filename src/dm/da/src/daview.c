@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.9 1996/04/16 21:57:00 curfman Exp curfman $";
+static char vcid[] = "$Id: daview.c,v 1.10 1996/06/09 20:02:40 curfman Exp bsmith $";
 #endif
  
 /*
@@ -17,8 +17,8 @@ static char vcid[] = "$Id: daview.c,v 1.9 1996/04/16 21:57:00 curfman Exp curfma
 
    Notes:
    The available visualization contexts include
-$     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_WORLD - synchronized standard
+$     VIEWER_STDOUT_SELF - standard output (default)
+$     VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: drect.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drect.c,v 1.4 1996/03/19 21:28:06 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -20,6 +20,6 @@ int DrawRectangle(Draw draw,double xl,double yl,double xr,double yr,
                               int c1, int c2,int c3,int c4)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   return (*draw->ops.rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4);
 }

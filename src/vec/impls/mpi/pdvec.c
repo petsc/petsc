@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.51 1996/04/13 21:39:29 curfman Exp curfman $ */
+/* $Id: pdvec.c,v 1.52 1996/04/14 13:53:58 curfman Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -323,10 +323,10 @@ static int VecView_MPI(PetscObject obj,Viewer viewer)
   int         ierr;
 
   if (!viewer) { /* so that viewers may be used from debuggers */
-    viewer = STDOUT_VIEWER_SELF;
+    viewer = VIEWER_STDOUT_SELF;
   }
 
-  if (((PetscObject)viewer)->cookie == LG_COOKIE){
+  if (((PetscObject)viewer)->cookie == DRAWLG_COOKIE){
     return VecView_MPI_LG(xin,(DrawLG) viewer);
   }
 

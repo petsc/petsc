@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.33 1996/04/09 02:23:09 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.34 1996/06/27 14:24:44 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   } else {
     ierr = MatCreate(MPI_COMM_SELF,user.ndim,user.ndim,&H); CHKERRA(ierr);
-    ierr = MatSetOption(H,SYMMETRIC_MATRIX); CHKERRA(ierr);
+    ierr = MatSetOption(H,MAT_SYMMETRIC); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
   }
 
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
   }
   ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
-  ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = SNESView(snes,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
   PetscPrintf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
 
@@ -232,8 +232,8 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
     }
     ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   return 0;
 }

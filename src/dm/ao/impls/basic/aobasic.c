@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.2 1996/07/01 14:43:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: aodebug.c,v 1.3 1996/07/02 16:48:50 curfman Exp bsmith $";
 #endif
 
 /*
@@ -40,7 +40,7 @@ static int AOView_Debug(PetscObject obj,Viewer viewer)
   MPI_Comm_rank(ao->comm,&rank); if (rank) return 0;
 
   if (!viewer) {
-    viewer = STDOUT_VIEWER_SELF; 
+    viewer = VIEWER_STDOUT_SELF; 
   }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
@@ -156,7 +156,7 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-ao_view",&flg1); CHKERRQ(ierr);
-  if (flg1) {ierr = AOView(ao,STDOUT_VIEWER_SELF); CHKERRQ(ierr);}
+  if (flg1) {ierr = AOView(ao,VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
 
   *aoout = ao; return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.19 1996/04/05 02:01:15 curfman Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.20 1996/04/09 20:23:59 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -59,7 +59,7 @@ int main(int argc,char **args)
     v = 5.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
     v = 3.0; ierr = MatSetValues(B,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
   }
-  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -0.5; i = I/n;
     if ( i>1 ) { 
@@ -69,9 +69,9 @@ int main(int argc,char **args)
       J=I+n+1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }
-  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Create and set vectors */
   ierr = VecCreate(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 
-C      "$Id: ex21.F,v 1.10 1996/03/07 17:54:00 bsmith Exp bsmith $";
+C      "$Id: ex21.F,v 1.11 1996/03/19 21:23:15 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -33,7 +33,7 @@ C Create initial vector and set values
        call VecAssemblyEnd(x,ierr)
        write(6,20)
   20   format('initial vector:')
-       call VecView(x,STDOUT_VIEWER_SELF,ierr)
+       call VecView(x,VIEWER_STDOUT_SELF,ierr)
        call VecCopy(x,y,ierr)
 
 C Extract vector elements and modify them
@@ -48,11 +48,11 @@ C Extract vector elements and modify them
 
        write(6,40)
   40   format('new vector 1:')
-       call VecView(x,STDOUT_VIEWER_SELF,ierr)
+       call VecView(x,VIEWER_STDOUT_SELF,ierr)
 
        write(6,50)
   50   format('new vector 2:')
-       call VecView(y,STDOUT_VIEWER_SELF,ierr)
+       call VecView(y,VIEWER_STDOUT_SELF,ierr)
 
        call VecDestroy(x,ierr)
        call VecDestroy(y,ierr)

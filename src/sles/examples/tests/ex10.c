@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.54 1996/03/18 00:41:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.55 1996/03/19 21:27:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -149,8 +149,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
   PetscFree(K);
 
-  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
@@ -174,8 +174,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
   ierr = MatDestroy(submat); CHKERRQ(ierr);
 
-  ierr = ViewerSetFormat(STDOUT_VIEWER_WORLD,ASCII_FORMAT_INFO,0); CHKERRQ(ierr);
-  ierr = MatView(*newmat,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,ASCII_FORMAT_INFO,0); CHKERRQ(ierr);
+  ierr = MatView(*newmat,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm); CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD,"matrix 1 norm = %g\n",norm);
 

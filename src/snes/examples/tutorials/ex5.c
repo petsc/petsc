@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.52 1996/07/02 18:08:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.53 1996/07/03 00:06:05 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -241,9 +241,9 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ao.c,v 1.1 1996/06/25 19:20:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.2 1996/07/02 18:09:19 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: ao.c,v 1.1 1996/06/25 19:20:07 bsmith Exp bsmith $";
 
    Input Parameters:
 .  ao - the application ordering context
-.  viewer - viewer used to display the set, for example STDOUT_VIEWER_SELF.
+.  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
 .keywords:application ordering
 

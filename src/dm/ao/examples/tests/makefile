@@ -28,7 +28,7 @@ ex1: ex1.o  chkopts
 	$(RM) -f ex1.o
 
 ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
+	-$(CLINKER) -o ex2 ex2.o $(SLES_LIB)
 	$(RM) -f ex2.o
 
 ex3: ex3.o  chkopts

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.176 1996/07/02 18:06:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.177 1996/07/08 02:07:24 curfman Exp bsmith $";
 #endif
 
 /*
@@ -136,8 +136,8 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 
    Notes:
    The available visualization contexts include
-$     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_WORLD - synchronized standard
+$     VIEWER_STDOUT_SELF - standard output (default)
+$     VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
@@ -153,8 +153,8 @@ $         Currently only the sequential dense and AIJ
 $         matrix types support the Matlab viewer.
 
    The user can call ViewerSetFormat() to specify the output
-   format of ASCII printed objects (when using STDOUT_VIEWER_SELF,
-   STDOUT_VIEWER_WORLD and ViewerFileOpenASCII).  Available formats include
+   format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
+   VIEWER_STDOUT_WORLD and ViewerFileOpenASCII).  Available formats include
 $    ASCII_FORMAT_DEFAULT - default, prints matrix contents
 $    ASCII_FORMAT_MATLAB - Matlab format
 $    ASCII_FORMAT_IMPL - implementation-specific format
@@ -181,7 +181,7 @@ int MatView(Mat mat,Viewer viewer)
   if (!mat->assembled) SETERRQ(1,"MatView:Not for unassembled matrix");
 
   if (!viewer) {
-    viewer = STDOUT_VIEWER_SELF;
+    viewer = VIEWER_STDOUT_SELF;
   }
 
   ierr = ViewerGetType(viewer,&vtype);
@@ -1037,8 +1037,8 @@ int MatCopy_Basic(Mat A,Mat B)
     ierr = MatSetValues(B,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
@@ -1278,13 +1278,13 @@ int MatNorm(Mat mat,NormType type,double *norm)
 
    Input Parameters:
 .  mat - the matrix 
-.  type - type of assembly, either FLUSH_ASSEMBLY or FINAL_ASSEMBLY
+.  type - type of assembly, either MAT_FLUSH_ASSEMBLY or MAT_FINAL_ASSEMBLY
  
    Notes: 
    MatSetValues() generally caches the values.  The matrix is ready to
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
-   Use FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
-   in MatSetValues(); use FINAL_ASSEMBLY for the final assembly before
+   Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
+   in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
    using the matrix.
 
 .keywords: matrix, assembly, assemble, begin
@@ -1311,7 +1311,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 
    Input Parameters:
 .  mat - the matrix 
-.  type - type of assembly, either FLUSH_ASSEMBLY or FINAL_ASSEMBLY
+.  type - type of assembly, either MAT_FLUSH_ASSEMBLY or MAT_FINAL_ASSEMBLY
 
    Options Database Keys:
 $  -mat_view_info : Prints info on matrix at
@@ -1327,8 +1327,8 @@ $  -draw_pause <sec> : Set number of seconds to pause after display
    Notes: 
    MatSetValues() generally caches the values.  The matrix is ready to
    use only after MatAssemblyBegin() and MatAssemblyEnd() have been called.
-   Use FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
-   in MatSetValues(); use FINAL_ASSEMBLY for the final assembly before
+   Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
+   in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
    using the matrix.
 
 .keywords: matrix, assembly, assemble, end
@@ -1418,16 +1418,16 @@ int MatCompress(Mat mat)
    Input Parameters:
 .  mat - the matrix 
 .  option - the option, one of the following:
-$    ROW_ORIENTED
-$    COLUMN_ORIENTED,
-$    ROWS_SORTED,
-$    COLUMNS_SORTED,
-$    NO_NEW_NONZERO_LOCATIONS, 
-$    YES_NEW_NONZERO_LOCATIONS, 
-$    SYMMETRIC_MATRIX,
-$    STRUCTURALLY_SYMMETRIC_MATRIX,
-$    NO_NEW_DIAGONALS,
-$    YES_NEW_DIAGONALS,
+$    MAT_ROW_ORIENTED
+$    MAT_COLUMN_ORIENTED,
+$    MAT_ROWS_SORTED,
+$    MAT_COLUMNS_SORTED,
+$    MAT_NO_NEW_NONZERO_LOCATIONS, 
+$    MAT_YES_NEW_NONZERO_LOCATIONS, 
+$    MAT_SYMMETRIC,
+$    MAT_STRUCTURALLY_SYMMETRIC,
+$    MAT_NO_NEW_DIAGONALS,
+$    MAT_YES_NEW_DIAGONALS,
 $    and possibly others.  
 
    Notes:
@@ -1439,7 +1439,7 @@ $    and possibly others.
    use the column-oriented option (or convert to the row-oriented 
    format).  
 
-   NO_NEW_NONZERO_LOCATIONS indicates that any add or insertion 
+   MAT_NO_NEW_NONZERO_LOCATIONS indicates that any add or insertion 
    that will generate a new entry in the nonzero structure is ignored.
    What this means is if memory is not allocated for this particular 
    lot, then the insertion is ignored. For dense matrices, where  

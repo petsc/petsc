@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.33 1996/01/12 22:05:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.34 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
   
-  if (!rank) {VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
+  if (!rank) {VecView(y,VIEWER_STDOUT_SELF); CHKERRA(ierr);}
 
   ierr = ISDestroy(is1); CHKERRA(ierr);
   ierr = ISDestroy(is2); CHKERRA(ierr);

@@ -1,11 +1,16 @@
 #ifndef lint
-static char vcid[] = "$Id: ex24.c,v 1.3 1996/04/01 01:09:44 curfman Exp balay $";
+static char vcid[] = "$Id: ex24.c,v 1.4 1996/05/28 22:46:47 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
 
 #include <stdio.h>
 #include "vec.h"
+
+int MAIN__()
+{
+  return 0;
+}
 
 /*
   Ugly stuff to insure the function names match between Fortran 
@@ -48,7 +53,7 @@ int main(int argc,char **args)
   ierr = PetscCObjectToFortranObject(vec,&fvec);
   ex24f_(&fvec);
 
-  ierr = VecView(vec,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = VecView(vec,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = VecDestroy(vec); CHKERRA(ierr);
   PetscFinalize();
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.54 1996/03/26 04:47:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.55 1996/04/09 18:23:27 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -49,8 +49,8 @@ int main(int argc,char **args)
       if ( i>1 )   {J = I-n-1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
     }
   }
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Generate vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
@@ -88,7 +88,7 @@ int main(int argc,char **args)
   /* Change matrix (keeping same nonzero structure) and solve again */
   PLogStagePop();
   PLogStagePush(1);
-  ierr = MatSetOption(C,NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
+  ierr = MatSetOption(C,MAT_NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
   ierr = MatZeroEntries(C); CHKERRA(ierr);
   /* Fill matrix again */
   for ( i=0; i<m; i++ ) { 
@@ -108,8 +108,8 @@ int main(int argc,char **args)
       if ( i>1 )   {J = I-n-1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
     }
   }
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr); 
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr); 
 
   /* Compute another right-hand-side; then solve */
   ierr = MatMult(C,u,b); CHKERRA(ierr);

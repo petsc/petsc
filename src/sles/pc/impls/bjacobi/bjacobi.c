@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.75 1996/03/23 18:33:39 bsmith Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.76 1996/06/25 18:38:38 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -73,7 +73,7 @@ static int PCSetFromOptions_BGS(PC pc)
   }
   ierr = OptionsHasName(pc->prefix,"-pc_bgs_symmetric",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = PCBGSSetSymmetric(pc,BGS_SYMMETRIC_SWEEP); CHKERRQ(ierr);
+    ierr = PCBGSSetSymmetric(pc,PCBGS_SYMMETRIC_SWEEP); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -86,8 +86,8 @@ static int PCSetFromOptions_BGS(PC pc)
    Input Parameters:
 .  pc - the preconditioner context
 .  flag - one of the following:
-$    BGS_FORWARD_SWEEP
-$    BGS_SYMMETRIC_SWEEP
+$    PCBGS_FORWARD_SWEEP
+$    PCBGS_SYMMETRIC_SWEEP
 
    Options Database Keys:
 $  -pc_gs_symmetric
@@ -277,7 +277,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
       PetscFPrintf(pc->comm,fd,
       "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
       if (!rank) {
-        ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+        ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
       }           /* now only 1 block per proc */
                 /* This shouldn't really be STDOUT */
     } else {
@@ -286,7 +286,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
       PetscSequentialPhaseBegin(pc->comm,1);
       fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
       rank,jac->n_local,jac->first_local);
-      ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+      ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
            /* now only 1 block per proc */
            /* This shouldn't really be STDOUT */
       fflush(fd);
@@ -336,7 +336,7 @@ int PCCreate_BGS(PC pc)
   ierr          = PCCreate_BJacobi(pc); CHKERRQ(ierr);
   jac           = (PC_BJacobi*) pc->data;
   jac->gs       = PETSC_TRUE;
-  jac->gstype   = BGS_FORWARD_SWEEP;
+  jac->gstype   = PCBGS_FORWARD_SWEEP;
   pc->setfrom   = PCSetFromOptions_BGS;
   pc->printhelp = PCPrintHelp_BGS;
   pc->type      = PCBGS;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.50 1996/03/26 04:48:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.51 1996/06/30 17:36:11 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -127,8 +127,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   }
   i = n-1; A = 1.0; 
   ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
 /*  *flag = MAT_SAME_NONZERO_PATTERN; */
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.44 1996/03/19 21:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.45 1996/07/02 18:07:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -61,8 +61,8 @@ int main(int argc,char **args)
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES); CHKERRA(ierr);
   }
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Create right-hand-side and solution vectors */
   ierr = VecCreate(MPI_COMM_WORLD,N,&u); CHKERRA(ierr); 

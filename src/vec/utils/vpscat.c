@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.50 1996/05/15 16:41:40 balay Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.51 1996/07/02 18:04:36 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -21,7 +21,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   ViewerType     vtype;
 
   if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; 
+    viewer = VIEWER_STDOUT_SELF; 
   }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);

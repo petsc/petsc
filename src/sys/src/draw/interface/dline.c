@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dline.c,v 1.4 1996/03/19 21:28:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dline.c,v 1.5 1996/04/20 04:20:39 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: dline.c,v 1.4 1996/03/19 21:28:06 bsmith Exp bsmith $
 int DrawLine(Draw draw,double xl,double yl,double xr,double yr,int cl)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   return (*draw->ops.line)(draw,xl,yl,xr,yr,cl);
 }
 
@@ -35,7 +35,7 @@ int DrawLine(Draw draw,double xl,double yl,double xr,double yr,int cl)
 @*/
 int DrawIsNull(Draw draw,PetscTruth *yes)
 {
-  if (draw->type == NULLWINDOW) *yes = PETSC_TRUE;
+  if (draw->type == DRAW_NULLWINDOW) *yes = PETSC_TRUE;
   else                          *yes = PETSC_FALSE;
   return 0;
 }

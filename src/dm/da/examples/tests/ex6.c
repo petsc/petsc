@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.20 1996/03/23 00:31:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.21 1996/06/27 20:52:24 curfman Exp bsmith $";
 #endif
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   if (!test_order) { /* turn off printing when testing ordering mappings */
     if (M*N*P<40) {
       PetscPrintf(MPI_COMM_WORLD,"\nGlobal Vector:\n");
-      ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
+      ierr = VecView(global,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
       PetscPrintf(MPI_COMM_WORLD,"\n");
     }
   }
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   if (flg) {
     PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
     printf("\nLocal Vector: processor %d\n",rank);
-    ierr = VecView(local,STDOUT_VIEWER_SELF); CHKERRA(ierr); 
+    ierr = VecView(local,VIEWER_STDOUT_SELF); CHKERRA(ierr); 
     PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
   }
 
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
     ierr = DAGetGhostCorners(da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm); CHKERRA(ierr);
     ierr = DAGetGlobalIndices(da,&nloc,&ltog); CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao); CHKERRA(ierr);
-    /* ierr = AOView(ao,STDOUT_VIEWER_WORLD); CHKERRA(ierr); */
+    /* ierr = AOView(ao,VIEWER_STDOUT_WORLD); CHKERRA(ierr); */
     iglobal = (int *) PetscMalloc( nloc*sizeof(int) ); CHKPTRA(iglobal);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,

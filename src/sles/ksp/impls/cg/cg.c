@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.46 1996/04/09 23:08:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.47 1996/04/20 04:19:03 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: cg.c,v 1.46 1996/04/09 23:08:08 bsmith Exp bsmith $";
 
     By switching to the indefinite vector inner product, VecTDot(), the
     same code is used for the complex symmetric case as well.  The user
-    must call KSPCGSetType(ksp,CG_SYMMETRIC) or use the option 
+    must call KSPCGSetType(ksp,KSP_CG_SYMMETRIC) or use the option 
     -ksp_cg_symmetric to invoke this variant for the complex case.
 */
 #include <stdio.h>
@@ -73,7 +73,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
 #define VecXDot(x,y,a) {ierr = VecDot(x,y,a); CHKERRQ(ierr)}
 #else
 #define VecXDot(x,y,a) \
-  {if (cg->type == CG_HERMITIAN) {ierr = VecDot(x,y,a); CHKERRQ(ierr)} \
+  {if (cg->type == KSP_CG_HERMITIAN) {ierr = VecDot(x,y,a); CHKERRQ(ierr)} \
    else                          {ierr = VecTDot(x,y,a); CHKERRQ(ierr)}}
 #endif
 
@@ -170,8 +170,8 @@ int KSPDestroy_CG(PetscObject obj)
     Input Parameters:
 .   ksp - the iterative context
 .   type - the variant of CG to use, one of
-$     CG_HERMITIAN - complex, Hermitian matrix (default)
-$     CG_SYMMETRIC - complex, symmetric matrix
+$     KSP_CG_HERMITIAN - complex, Hermitian matrix (default)
+$     KSP_CG_SYMMETRIC - complex, symmetric matrix
 
     Options Database Keys:
 $   -ksp_cg_Hermitian
@@ -182,7 +182,7 @@ $   -ksp_cg_symmetric
 
 .keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
 @*/
-int KSPCGSetType(KSP ksp,CGType type)
+int KSPCGSetType(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -205,9 +205,9 @@ static int KSPView_CG(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (cg->type == CG_HERMITIAN)
+    if (cg->type == KSP_CG_HERMITIAN)
       PetscFPrintf(ksp->comm,fd,"    CG: variant for complex, Hermitian system\n");
-    else if (cg->type == CG_SYMMETRIC)
+    else if (cg->type == KSP_CG_SYMMETRIC)
       PetscFPrintf(ksp->comm,fd,"    CG: variant for complex, symmetric system\n");
     else
       PetscFPrintf(ksp->comm,fd,"    CG: unknown variant\n");
@@ -222,9 +222,9 @@ int KSPCreate_CG(KSP ksp)
   PetscMemzero(cg,sizeof(KSP_CG));
   PLogObjectMemory(ksp,sizeof(KSP_CG));
 #if !defined(PETSC_COMPLEX)
-  cg->type                  = CG_SYMMETRIC;
+  cg->type                  = KSP_CG_SYMMETRIC;
 #else
-  cg->type                  = CG_HERMITIAN;
+  cg->type                  = KSP_CG_HERMITIAN;
 #endif
   ksp->data                 = (void *) cg;
   ksp->type                 = KSPCG;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.10 1996/04/12 22:22:22 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.11 1996/04/12 22:55:49 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -94,11 +94,11 @@ int main(int argc,char **args)
       if ( i>0 )   {J = I - n; MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);}
     }
     PLogFlops(2*(Istart-Iend));
-    ierr = MatAssemblyBegin(C1,FINAL_ASSEMBLY); CHKERRA(ierr);
-    ierr = MatAssemblyEnd(C1,FINAL_ASSEMBLY); CHKERRA(ierr);
+    ierr = MatAssemblyBegin(C1,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+    ierr = MatAssemblyEnd(C1,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
     /* Indicate same nonzero structure of successive linear system matrices */
-    ierr = MatSetOption(C1,NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
+    ierr = MatSetOption(C1,MAT_NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
 
     /* Compute right-hand-side */
     ierr = MatMult(C1,u,b1); CHKERRA(ierr);
@@ -139,11 +139,11 @@ int main(int argc,char **args)
       if ( i>0 )   {J = I - n; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
     }
     PLogFlops(2*(Istart-Iend));
-    ierr = MatAssemblyBegin(C2,FINAL_ASSEMBLY); CHKERRA(ierr);
-    ierr = MatAssemblyEnd(C2,FINAL_ASSEMBLY); CHKERRA(ierr); 
+    ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+    ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY); CHKERRA(ierr); 
 
     /* Indicate same nonzero structure of successive linear system matrices */
-    ierr = MatSetOption(C2,NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
+    ierr = MatSetOption(C2,MAT_NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
 
     /* Compute right-hand-side */
     ierr = MatMult(C2,u,b2); CHKERRA(ierr);
@@ -196,7 +196,7 @@ int MyKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
   ierr = KSPBuildSolution(ksp,PETSC_NULL,&x); CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD,"iteration %d solution vector:\n",n);
-  ierr = VecView(x,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD,"iteration %d KSP Residual norm %14.12e \n",n,rnorm);
   return 0;
 }

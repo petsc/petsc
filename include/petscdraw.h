@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.29 1996/03/19 21:30:28 bsmith Exp gropp $ */
+/* $Id: draw.h,v 1.30 1996/07/08 18:25:59 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -9,9 +9,9 @@
 #define DRAW_COOKIE PETSC_COOKIE+6
 
 /* types of draw contexts */
-#define XWINDOW    0
-#define NULLWINDOW 1
-#define VRML       2
+#define DRAW_XWINDOW    0
+#define DRAW_NULLWINDOW 1
+#define DRAW_VRML       2
  
 typedef struct _Draw* Draw;
 
@@ -75,7 +75,7 @@ typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton
 extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
 
 typedef struct _DrawAxis* DrawAxis;
-#define AXIS_COOKIE PETSC_COOKIE+16
+#define DRAWAXIS_COOKIE PETSC_COOKIE+16
 extern int DrawAxisCreate(Draw,DrawAxis *);
 extern int DrawAxisDestroy(DrawAxis);
 extern int DrawAxisDraw(DrawAxis);
@@ -84,7 +84,7 @@ extern int DrawAxisSetColors(DrawAxis,int,int,int);
 extern int DrawAxisSetLabels(DrawAxis,char*,char*,char*);
 
 typedef struct _DrawLG*   DrawLG;
-#define LG_COOKIE PETSC_COOKIE+7
+#define DRAWLG_COOKIE PETSC_COOKIE+7
 extern int DrawLGCreate(Draw,int,DrawLG *);
 extern int DrawLGDestroy(DrawLG);
 extern int DrawLGAddPoint(DrawLG,double*,double*);

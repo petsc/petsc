@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.15 1996/04/13 20:46:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.16 1996/04/13 20:47:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -42,7 +42,7 @@ struct _PetscRandom {
 @*/
 int PetscRandomDestroy(PetscRandom r)
 {
-  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
   PLogObjectDestroy((PetscObject)r);
   PetscHeaderDestroy((PetscObject)r);
   return 0;
@@ -105,7 +105,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL 
                              && type != RANDOM_DEFAULT_IMAGINARY)
     SETERRQ(PETSC_ERR_SUP,"PetscRandomCreate:Not for this random number type");
-  PetscHeaderCreate(rr,_PetscRandom,RANDOM_COOKIE,type,comm);
+  PetscHeaderCreate(rr,_PetscRandom,PETSCRANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
   MPI_Comm_rank(comm,&rank);
   srand48(0x12345678+rank);
@@ -138,13 +138,13 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
 #if defined(PETSC_COMPLEX)
   double zero = 0.0;
-  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
   if (r->type == RANDOM_DEFAULT) *val = complex(drand48(),drand48());
   else if (r->type == RANDOM_DEFAULT_REAL) *val = complex(drand48(),zero);
   else if (r->type == RANDOM_DEFAULT_IMAGINARY) *val = complex(zero,drand48());
   else SETERRQ(1,"PetscRandomGetValue:Invalid random number type");
 #else
-  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
   *val = drand48();
 #endif
   return 0;
@@ -163,7 +163,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   *r = 0;
   if (type != RANDOM_DEFAULT)
     SETERRQ(PETSC_ERR_SUP,"PetscRandomCreate:Not for this random number type");
-  PetscHeaderCreate(rr,_PetscRandom,RANDOM_COOKIE,type,comm);
+  PetscHeaderCreate(rr,_PetscRandom,PETSCRANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
   *r = rr;
   PetscGetArchType(arch,10);
@@ -173,7 +173,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
-  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
 #if defined(PETSC_COMPLEX)
   *val = (0.5,0.5);
 #else

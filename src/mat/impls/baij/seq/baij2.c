@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij2.c,v 1.3 1996/04/30 23:04:35 balay Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.4 1996/05/02 20:50:30 balay Exp bsmith $";
 #endif
 
 #include "baij.h"
@@ -139,8 +139,8 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   /* Free work space */
   ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
   PetscFree(smap); PetscFree(lens);
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   
   ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
   *B = C;

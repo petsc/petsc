@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.29 1995/10/22 04:17:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.30 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,3,0,2,&is2); CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES); CHKERRA(ierr);
-  ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   PetscPrintf(MPI_COMM_SELF,"----\n");
   ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
   
-  ierr = VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);
+  ierr = VecView(y,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   ierr = ISDestroy(is1); CHKERRA(ierr);
   ierr = ISDestroy(is2); CHKERRA(ierr);

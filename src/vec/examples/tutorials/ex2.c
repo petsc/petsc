@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.21 1995/10/19 22:16:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.22 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
-  ierr = VecView(x,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
 
   PetscFinalize();

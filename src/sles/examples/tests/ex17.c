@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.6 1996/03/19 21:27:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.7 1996/03/21 04:09:49 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -48,9 +48,9 @@ int main(int argc,char **args)
   ierr = MatMult(A,u,b); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-printout",&flg); CHKERRA(ierr);
   if (flg) {
-    ierr = MatView(A,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
-    ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
-    ierr = VecView(b,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+    ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+    ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+    ierr = VecView(b,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   }
 
   /* Create SLES context; set operators and options; solve linear system */
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* Check error */
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
@@ -187,8 +187,8 @@ int FormTestMatrix(Mat A,int n,TestType type)
   }
   else SETERRQ(1,"FormTestMatrix: unknown test matrix type");
 
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 #endif
 
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.119 1996/05/28 21:27:58 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.120 1996/07/02 18:09:25 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -125,7 +125,7 @@ extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
 extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),
                               int (*)(void*));
-#define PetscObjectChild(a) (((PetscObject) (a))->child)
+extern int PetscObjectReference(PetscObject);
 
 extern int PetscTraceBackErrorHandler(int,char*,char*,int,char*,void*);
 extern int PetscStopErrorHandler(int,char*,char*,int,char*,void*);
@@ -138,9 +138,9 @@ extern int PetscPopErrorHandler();
 extern int PetscDefaultSignalHandler(int,void*);
 extern int PetscPushSignalHandler(int (*)(int,void *),void*);
 extern int PetscPopSignalHandler();
-#define FP_TRAP_OFF    0
-#define FP_TRAP_ON     1
-#define FP_TRAP_ALWAYS 2
+#define PETSC_FP_TRAP_OFF    0
+#define PETSC_FP_TRAP_ON     1
+#define PETSC_FP_TRAP_ALWAYS 2
 extern int PetscSetFPTrap(int);
 
 #include "phead.h"

@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.15 1996/06/04 20:16:10 balay Exp bsmith $;
+C  $Id: mat.h,v 1.16 1996/07/02 18:09:35 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -8,7 +8,7 @@ C
 #define MatOption           integer 
 #define MatAssemblyType     integer
 #define MatReordering       integer
-#define MATSORType          integer
+#define MatSORType          integer
 #define MatInfoType         integer
 #define MatGetSubMatrixCall integer
 #define MatOperation        integer
@@ -27,26 +27,31 @@ C
 C
 C  Flag for matrix assembly
 C
-      integer FLUSH_ASSEMBLY,FINAL_ASSEMBLY
+      integer MAT_FLUSH_ASSEMBLY,MAT_FINAL_ASSEMBLY
 
-      parameter( FLUSH_ASSEMBLY=1,FINAL_ASSEMBLY=0)
+      parameter( MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
 C
 C  Matrix options
 C
-      integer ROW_ORIENTED,COLUMN_ORIENTED,ROWS_SORTED,
-     *        COLUMNS_SORTED,NO_NEW_NONZERO_LOCATIONS,
-     *        YES_NEW_NONZERO_LOCATIONS,SYMMETRIC_MATRIX,
-     *        STRUCTURALLY_SYMMETRIC_MATRIX,NO_NEW_DIAGONALS,
-     *        YES_NEW_DIAGONALS,INODE_LIMIT_1,INODE_LIMIT_2,
-     *        INODE_LIMIT_3,INODE_LIMIT_4,INODE_LIMIT_5
+      integer MAT_ROW_ORIENTED,MAT_COLUMN_ORIENTED,MAT_ROWS_SORTED,
+     *        MAT_COLUMNS_SORTED,MAT_NO_NEW_NONZERO_LOCATIONS,
+     *        MAT_YES_NEW_NONZERO_LOCATIONS,MAT_SYMMETRIC,
+     *        MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS,
+     *        MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1,
+     *        MAT_INODE_LIMIT_2,MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4,
+     *        MAT_INODE_LIMIT_5
       
-      parameter (ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
-     *           COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
-     *           YES_NEW_NONZERO_LOCATIONS=32,SYMMETRIC_MATRIX=64,
-     *           STRUCTURALLY_SYMMETRIC_MATRIX=65,NO_NEW_DIAGONALS=66,
-     *           YES_NEW_DIAGONALS=67,INODE_LIMIT_1=68,
-     *           INODE_LIMIT_2=69,INODE_LIMIT_3=70,INODE_LIMIT_4=71,
-     *           INODE_LIMIT_5=72)
+      parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,
+     *           MAT_ROWS_SORTED=4,MAT_COLUMNS_SORTED=8,
+     *           MAT_NO_NEW_NONZERO_LOCATIONS=16,
+     *           MAT_YES_NEW_NONZERO_LOCATIONS=32,
+     *           MAT_SYMMETRIC=64,
+     *           MAT_STRUCTURALLY_SYMMETRIC=65,
+     *           MAT_NO_NEW_DIAGONALS=66,
+     *           MAT_YES_NEW_DIAGONALS=67,MAT_INODE_LIMIT_1=68,
+     *           MAT_INODE_LIMIT_2=69,MAT_INODE_LIMIT_3=70,
+     *           MAT_INODE_LIMIT_4=71,
+     *           MAT_INODE_LIMIT_5=72)
 
 C
 C  MatInfoType
@@ -65,11 +70,12 @@ C
 C  Matrix orderings
 C
       integer ORDER_NATURAL,ORDER_ND,ORDER_1WD,
-     *        ORDER_RCM,ORDER_QMD,ORDER_ROWLENGTH,
+     *        ORDER_RCM,ORDER_QMD,ORDER_ROWLENGTH,ORDER_FLOW,
      *        ORDER_APPLICATION_1,ORDER_APPLICATION_2
 
       parameter( ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
      *           ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5,
+     *           ORDER_FLOW=6,
      *           ORDER_APPLICATION_1=6,ORDER_APPLICATION_2=7)
 C
 C  Options for SOR and SSOR

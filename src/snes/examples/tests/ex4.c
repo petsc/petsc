@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.37 1996/03/19 21:29:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.38 1996/03/26 00:10:57 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -236,9 +236,9 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   return 0;
 }
@@ -606,9 +606,9 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
       }
     }
   }
-  ierr = MatAssemblyBegin(*J,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.53 1996/06/26 18:11:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.54 1996/07/02 18:06:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -222,10 +222,6 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
   ViewerType  vtype;
   int         ierr;
 
-  if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; 
-  }
-
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == MATLAB_VIEWER) {
     SETERRQ(1,"MatView_SeqBAIJ:Matlab viewer not supported");
@@ -437,8 +433,8 @@ static int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   }
   PetscFree(rows);
   
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   
   if (B != PETSC_NULL) {
     *B = C;
@@ -466,7 +462,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   int        mbs = a->mbs, bs2 = a->bs2;
   Scalar     *aa = a->a, *ap;
 
-  if (mode == FLUSH_ASSEMBLY) return 0;
+  if (mode == MAT_FLUSH_ASSEMBLY) return 0;
 
   for ( i=1; i<mbs; i++ ) {
     /* move each row back by the amount of empty slots (fshift) before it*/
@@ -534,18 +530,18 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
 static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  if      (op == ROW_ORIENTED)              a->roworiented = 1;
-  else if (op == COLUMN_ORIENTED)           a->roworiented = 0;
-  else if (op == COLUMNS_SORTED)            a->sorted      = 1;
-  else if (op == NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
-  else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
-  else if (op == ROWS_SORTED || 
-           op == SYMMETRIC_MATRIX ||
-           op == STRUCTURALLY_SYMMETRIC_MATRIX ||
-           op == YES_NEW_DIAGONALS)
+  if      (op == MAT_ROW_ORIENTED)              a->roworiented = 1;
+  else if (op == MAT_COLUMN_ORIENTED)           a->roworiented = 0;
+  else if (op == MAT_COLUMNS_SORTED)            a->sorted      = 1;
+  else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
+  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
+  else if (op == MAT_ROWS_SORTED || 
+           op == MAT_SYMMETRIC ||
+           op == MAT_STRUCTURALLY_SYMMETRIC ||
+           op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"Info:MatSetOption_SeqBAIJ:Option ignored\n");
-  else if (op == NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBAIJ:NO_NEW_DIAGONALS");}
+  else if (op == MAT_NO_NEW_DIAGONALS)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBAIJ:MAT_NO_NEW_DIAGONALS");}
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBAIJ:unknown option");}
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.33 1996/02/08 18:26:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.34 1996/03/19 21:25:29 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -42,8 +42,8 @@ int main(int argc,char **args)
   ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
   ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
-  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Compute right-hand-side vector */
   ierr = MatMult(mat,ustar,b); CHKERRA(ierr);

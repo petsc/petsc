@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.68 1996/04/10 04:28:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.69 1996/07/02 18:04:54 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -138,9 +138,9 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_eigen",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetCalculateSingularValues(ksp); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
-  if (flg) { KSPCGSetType(ksp,CG_HERMITIAN); }
+  if (flg) { KSPCGSetType(ksp,KSP_CG_HERMITIAN); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
-  if (flg) { KSPCGSetType(ksp,CG_SYMMETRIC); }
+  if (flg) { KSPCGSetType(ksp,KSP_CG_SYMMETRIC); }
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_richardson_scale",&tmp,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp); CHKERRQ(ierr); }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.10 1996/07/08 01:18:17 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.11 1996/07/08 12:45:27 curfman Exp bsmith $";
 #endif
 
 #include "mpibaij.h"
@@ -334,7 +334,7 @@ static int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr);
   }
 
-  if (!mat->was_assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBAIJ(mat); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(baij->B,mode); CHKERRQ(ierr);
@@ -463,8 +463,8 @@ static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
         }
       } 
       PetscFree(rvals);
-      ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
       if (!rank) {
         ierr = MatView(((Mat_MPIBAIJ*)(A->data))->A,viewer); CHKERRQ(ierr);
       }
@@ -482,9 +482,6 @@ static int MatView_MPIBAIJ(PetscObject obj,Viewer viewer)
   int         ierr;
   ViewerType  vtype;
  
-  if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; 
-  }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER ||
       vtype == DRAW_VIEWER       || vtype == MATLAB_VIEWER) { 
@@ -1088,7 +1085,7 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   /* create our matrix */
   ierr = MatCreateMPIBAIJ(comm,bs,m,PETSC_DECIDE,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat);CHKERRQ(ierr);
   A = *newmat;
-  MatSetOption(A,COLUMNS_SORTED); 
+  MatSetOption(A,MAT_COLUMNS_SORTED); 
   
   if (!rank) {
     buf = (Scalar *) PetscMalloc( maxnz*sizeof(Scalar) ); CHKPTRQ(buf);
@@ -1150,8 +1147,8 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   PetscFree(rowners);
   PetscFree(dlens);
   PetscFree(mask);
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 

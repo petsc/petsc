@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.11 1996/02/28 22:04:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.12 1996/03/19 21:27:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the preconditioner ASM\n\n";
@@ -37,8 +37,8 @@ int main(int argc,char **args)
     if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
     v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
   }
-  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Create and set vectors */
   ierr = VecCreateSeq(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);

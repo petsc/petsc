@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/06/25 21:33:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1996/07/02 18:09:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(ispetsc); CHKERRA(ierr);
   ierr = ISDestroy(isapp); CHKERRA(ierr);
 
-  ierr = AOView(ao,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = AOView(ao,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   ierr = AOPetscToApplication(ao,4,getapp); CHKERRA(ierr);
   printf("[%d] 2,1,3,4 PetscToApplication %d %d %d %d\n",rank,getapp[0],
@@ -40,6 +40,7 @@ int main(int argc,char **argv)
   printf("[%d] 0,3,4 ApplicationToPetsc %d %d %d\n",rank,getpetsc[0],
           getpetsc[1],getpetsc[2]);
 
+  fflush(stdout);
   ierr = AODestroy(ao); CHKERRA(ierr);
   PetscFinalize();
   return 0;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.24 1996/03/19 21:29:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: snestest.c,v 1.25 1996/03/26 00:11:11 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -46,7 +46,7 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
       PetscPrintf(snes->comm,"Finite difference Jacobian\n");
-      ierr = MatView(B,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
+      ierr = MatView(B,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
     }
     /* compare */
     ierr = MatAXPY(&mone,A,B); CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm); CHKERRQ(ierr);
     if (neP->complete_print) {
       PetscPrintf(snes->comm,"Hand-coded Jacobian\n");
-      ierr = MatView(A,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
+      ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
     }
     PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);
   }

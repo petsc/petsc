@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: inherit.c,v 1.6 1996/04/17 20:01:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.7 1996/07/02 18:05:21 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -30,6 +30,23 @@ static int PetscObjectInherit_DefaultDestroy(void *in)
   PetscObject obj = (PetscObject) in;
 
   ierr = (*obj->destroy)(obj); CHKERRQ(ierr);
+  return 0;
+}
+
+/*@C
+   PetscObjectReference - Indicate to any PetscObject that it is being
+       referenced in another PetscObject. This increases the reference
+       count for that object by one.
+
+   Input Parameter:
+.   obj - the PETSc object
+
+.seealso: PetscObjectInherit()
+@*/
+int PetscObjectReference(PetscObject obj)
+{
+  PetscValidHeader(obj);
+  obj->refct++;
   return 0;
 }
 

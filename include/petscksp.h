@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.40 1996/04/09 23:15:10 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.41 1996/04/10 04:31:08 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -87,8 +87,8 @@ extern int KSPGetOptionsPrefix(KSP,char**);
 
 extern int KSPView(KSP,Viewer);
 
-typedef enum {CG_SYMMETRIC=1, CG_HERMITIAN=2} CGType;
-extern int KSPCGSetType(KSP,CGType);
+typedef enum {KSP_CG_SYMMETRIC=1, KSP_CG_HERMITIAN=2} KSPCGType;
+extern int KSPCGSetType(KSP,KSPCGType);
 
 #if defined(__DRAW_PACKAGE)
 extern int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);

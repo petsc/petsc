@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.13 1996/03/08 20:48:32 balay Exp bsmith $";
+C      "$Id: ex36.F,v 1.14 1996/03/19 21:27:18 bsmith Exp bsmith $";
 C
 C   This program demonstrates use of PETSc dense matrices.
 C
@@ -58,11 +58,11 @@ C  Set matrix values directly
       call MatRestoreArray(A,aa,ia,err)
 
 C  Finalize matrix assembly
-      call MatAssemblyBegin(A,FINAL_ASSEMBLY,err)
-      call MatAssemblyEnd(A,FINAL_ASSEMBLY,err)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,err)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
 
 C  View matrix
-      call MatView(A,STDOUT_VIEWER_SELF,err)
+      call MatView(A,VIEWER_STDOUT_SELF,err)
 
 C  Clean up
       call MatDestroy(A,err)     
@@ -92,11 +92,11 @@ C  Set matrix values directly
       call FillUpMatrix(m,n,aa)
 
 C  Finalize matrix assembly
-      call MatAssemblyBegin(A,FINAL_ASSEMBLY,err)
-      call MatAssemblyEnd(A,FINAL_ASSEMBLY,err)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,err)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
 
 C  View matrix
-      call MatView(A,STDOUT_VIEWER_SELF,err)
+      call MatView(A,VIEWER_STDOUT_SELF,err)
 
 C  Clean up
       call MatDestroy(A,err)     

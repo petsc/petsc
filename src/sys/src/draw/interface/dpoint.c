@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dpoint.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpoint.c,v 1.4 1996/03/19 21:28:06 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: dpoint.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith 
 int DrawPoint(Draw draw,double xl,double yl,int cl)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   return (*draw->ops.point)(draw,xl,yl,cl);
 }
 

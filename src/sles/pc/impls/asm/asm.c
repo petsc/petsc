@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.24 1996/04/05 15:29:55 curfman Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.25 1996/06/22 14:54:02 curfman Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -40,7 +40,7 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d\n", jac->n);
     MPI_Comm_rank(pc->comm,&rank);
-    ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+    ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," blks=%d, overlap=%d",jac->n,jac->overlap);
     ierr = SLESView(jac->sles[0],viewer);

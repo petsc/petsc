@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.48 1996/05/03 19:27:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.49 1996/07/02 18:07:09 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -63,8 +63,8 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
     ierr = MatSetValues(*M,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*M,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*M,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 /* -------------------------------------------------------------- */
@@ -121,8 +121,8 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
     ierr = MatSetValues(*B,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------ */
@@ -146,8 +146,8 @@ int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
     ierr = MatSetValues(*B,1,&ig,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,ig,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 ---------------------------------------------------------*/
 }
@@ -210,7 +210,7 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
   PetscFree(cw2); PetscFree(vw2);
-  ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }

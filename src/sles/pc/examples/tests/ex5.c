@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.44 1996/04/08 15:53:45 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.45 1996/04/08 19:18:55 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -321,8 +321,8 @@ int Create1dLaplacian(int n,Mat *mat)
     ierr = MatSetValues(*mat,1,&idx,1,&i,&mone,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatSetValues(*mat,1,&i,1,&idx,&mone,INSERT_VALUES); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------------- */

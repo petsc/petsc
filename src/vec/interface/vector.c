@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.80 1996/04/20 04:18:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.81 1996/06/21 03:16:59 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -266,7 +266,7 @@ int VecSetRandom(PetscRandom rctx,Vec x)
 {
   int ierr;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidHeaderSpecific(rctx,RANDOM_COOKIE);
+  PetscValidHeaderSpecific(rctx,PETSCRANDOM_COOKIE);
   PLogEventBegin(VEC_SetRandom,x,rctx,0,0);
   ierr = (*x->ops.setrandom)(rctx,x); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetRandom,x,rctx,0,0);
@@ -829,8 +829,8 @@ int VecRestoreArray(Vec x,Scalar **a)
 
    Notes:
    The available visualization contexts include
-$     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_WORLD - synchronized standard
+$     VIEWER_STDOUT_SELF - standard output (default)
+$     VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 

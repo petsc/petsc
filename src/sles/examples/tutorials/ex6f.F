@@ -1,5 +1,5 @@
 
-C    "$Id: ex20.F,v 1.5 1996/04/16 14:05:36 balay Exp curfman $";
+C    "$Id: ex20.F,v 1.6 1996/06/22 14:16:24 curfman Exp bsmith $";
 C
 C  This example demonstrates repeated linear solves as well as the use of
 C  different preconditioner and linear system matrices.  This example also
@@ -53,8 +53,8 @@ C Create and assemble initial matrix
         v = 4.0
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
-      call MatAssemblyBegin(A,FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(A,FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
 C Create vectors for exact solution, approx solution, and RHS
       call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
@@ -135,11 +135,11 @@ C Alter the matrix A a bit
         v = 2.0
         call MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  20   continue
-      call MatAssemblyBegin(A,FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       if (pflag .ne. 0) then
         if (rank .eq. 0) write(6,110)
       endif
-      call MatAssemblyEnd(A,FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
 C Set the exact solution; compute the right-hand-side vector
       val = 1.0*count

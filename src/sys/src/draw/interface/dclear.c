@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dclear.c,v 1.4 1996/03/19 21:28:06 bsmith Exp gropp $";
+static char vcid[] = "$Id: dclear.c,v 1.5 1996/07/08 18:31:22 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: dclear.c,v 1.4 1996/03/19 21:28:06 bsmith Exp gropp $
 int DrawClear(Draw draw)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   if (draw->ops.clear) return (*draw->ops.clear)(draw);
   return 0;
 }
@@ -33,7 +33,7 @@ int DrawClear(Draw draw)
 int DrawBOP( Draw draw )
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   if (draw->ops.beginpage) return (*draw->ops.beginpage)(draw);
   return 0;
 }
@@ -49,7 +49,7 @@ int DrawBOP( Draw draw )
 int DrawEOP( Draw draw )
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   if (draw->ops.endpage) return (*draw->ops.endpage)(draw);
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dgcoor.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgcoor.c,v 1.4 1996/03/19 21:28:06 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -23,7 +23,7 @@ int DrawGetCoordinates(Draw draw,double *xl,double *yl,double *xr,double *yr)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (!xl || !xr || !yl || !yr) SETERRQ(1,"DrawGetCoordinates:Bad pointer");
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   *xl = draw->coor_xl; *yl = draw->coor_yl;
   *xr = draw->coor_xr; *yr = draw->coor_yr;
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.17 1996/04/20 04:22:06 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.18 1996/07/02 18:09:25 bsmith Exp bsmith $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -19,7 +19,7 @@ extern int  PetscSortDouble(int,double*);
 extern int  PetscSetDisplay();
 extern int  PetscGetDisplay(char *,int);
 
-#define RANDOM_COOKIE PETSC_COOKIE+19
+#define PETSCRANDOM_COOKIE PETSC_COOKIE+19
 
 typedef enum { RANDOM_DEFAULT, RANDOM_DEFAULT_REAL, 
                RANDOM_DEFAULT_IMAGINARY } PetscRandomType;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.27 1996/04/20 04:18:30 bsmith Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.28 1996/06/21 03:17:50 curfman Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -196,7 +196,7 @@ int ISRestoreIndices(IS is,int **ptr)
 
    Input Parameters:
 .  is - the index set
-.  viewer - viewer used to display the set, for example STDOUT_VIEWER_SELF.
+.  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
 .keywords: IS, index set, restore, indices
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.151 1996/07/08 01:18:41 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.152 1996/07/08 12:42:35 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -290,7 +290,7 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
   }
 
-  if (!mat->was_assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(aij->B,mode); CHKERRQ(ierr);
@@ -666,8 +666,8 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
         row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
       } 
       PetscFree(ct);
-      ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
       if (!rank) {
         ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERRQ(ierr);
       }
@@ -683,9 +683,6 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   int         ierr;
   ViewerType  vtype;
  
-  if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; 
-  }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER ||
       vtype == DRAW_VIEWER       || vtype == MATLAB_VIEWER) { 
@@ -1062,25 +1059,25 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
 
-  if (op == NO_NEW_NONZERO_LOCATIONS ||
-      op == YES_NEW_NONZERO_LOCATIONS ||
-      op == COLUMNS_SORTED ||
-      op == ROW_ORIENTED) {
+  if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
+      op == MAT_YES_NEW_NONZERO_LOCATIONS ||
+      op == MAT_COLUMNS_SORTED ||
+      op == MAT_ROW_ORIENTED) {
         MatSetOption(a->A,op);
         MatSetOption(a->B,op);
   }
-  else if (op == ROWS_SORTED || 
-           op == SYMMETRIC_MATRIX ||
-           op == STRUCTURALLY_SYMMETRIC_MATRIX ||
-           op == YES_NEW_DIAGONALS)
+  else if (op == MAT_ROWS_SORTED || 
+           op == MAT_SYMMETRIC ||
+           op == MAT_STRUCTURALLY_SYMMETRIC ||
+           op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"Info:MatSetOption_MPIAIJ:Option ignored\n");
-  else if (op == COLUMN_ORIENTED) {
+  else if (op == MAT_COLUMN_ORIENTED) {
     a->roworiented = 0;
     MatSetOption(a->A,op);
     MatSetOption(a->B,op);
   }
-  else if (op == NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:NO_NEW_DIAGONALS");}
+  else if (op == MAT_NO_NEW_DIAGONALS)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:MAT_NO_NEW_DIAGONALS");}
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:unknown option");}
   return 0;
@@ -1312,8 +1309,8 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     row++; array += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
   } 
   PetscFree(ct);
-  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   if (matout != PETSC_NULL) {
     *matout = B;
   } else {
@@ -1716,7 +1713,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   }
   ierr = MatCreateMPIAIJ(comm,m,PETSC_DECIDE,M,N,0,ourlens,0,offlens,newmat);CHKERRQ(ierr);
   A = *newmat;
-  MatSetOption(A,COLUMNS_SORTED); 
+  MatSetOption(A,MAT_COLUMNS_SORTED); 
   for ( i=0; i<m; i++ ) {
     ourlens[i] += offlens[i];
   }
@@ -1769,7 +1766,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   }
   PetscFree(ourlens); PetscFree(vals); PetscFree(mycols); PetscFree(rowners);
 
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }

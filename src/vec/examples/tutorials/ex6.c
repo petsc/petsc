@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex23.c,v 1.3 1996/03/18 00:37:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex23.c,v 1.4 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -64,7 +64,7 @@ int main(int argc,char **args)
 
   /* View vector */
   ierr = VecRestoreArray(vec,&avec); CHKERRA(ierr);
-  ierr = VecView(vec,STDOUT_VIEWER_SELF); CHKERRA(ierr);
+  ierr = VecView(vec,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(vec); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.16 1996/04/12 22:21:34 curfman Exp balay $";
+C    "$Id: ex7.F,v 1.17 1996/04/16 13:54:22 balay Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -62,8 +62,8 @@ C Create and assemble matrix
         v = 4.0
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
-      call MatAssemblyBegin(A,FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(A,FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
 C Create vectors for exact solution, approx solution, and RHS
       call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
@@ -133,7 +133,7 @@ C
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       call KSPBuildSolution(ksp,PETSC_NULL,x,ierr)
       if (rank .eq. 0) write(6,100) n
-      call VecView(x,STDOUT_VIEWER_WORLD,ierr)
+      call VecView(x,VIEWER_STDOUT_WORLD,ierr)
       if (rank .eq. 0) write(6,200) n, rnorm
 
  100  format('iteration ',i5,' solution vector:')

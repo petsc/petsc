@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.72 1996/04/04 19:19:25 curfman Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.73 1996/04/26 00:15:32 balay Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -23,8 +23,8 @@ $  -snes_view : calls SNESView() at end of SNESSolve()
 
    Notes:
    The available visualization contexts include
-$     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_WORLD - synchronized standard
+$     VIEWER_STDOUT_SELF - standard output (default)
+$     VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
@@ -1267,7 +1267,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
   ierr = OptionsHasName(PETSC_NULL,"-snes_view", &flg); CHKERRQ(ierr);
-  if (flg) { ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRQ(ierr); }
+  if (flg) { ierr = SNESView(snes,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.16 1996/04/02 04:12:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.17 1996/04/20 04:20:29 bsmith Exp bsmith $";
 #endif
 
 #include "matimpl.h"  /*I   "mat.h"  I*/
@@ -37,8 +37,8 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
       MatRestoreRow(X,i,&ncols,&row,&val);
     }
     PetscFree(vals);
-    ierr = MatAssemblyBegin(Y,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -68,8 +68,8 @@ int MatShift(Scalar *a,Mat Y)
     for ( i=start; i<end; i++ ) {
       ierr = MatSetValues(Y,1,&i,1,&i,a,ADD_VALUES); CHKERRQ(ierr);
     }
-    ierr = MatAssemblyBegin(Y,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -109,8 +109,8 @@ int MatDiagonalShift(Mat Y,Vec D)
     for ( i=start; i<end; i++ ) {
       ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,ADD_VALUES); CHKERRQ(ierr);
     }
-    ierr = MatAssemblyBegin(Y,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
   return 0;
 }

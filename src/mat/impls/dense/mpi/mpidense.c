@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.41 1996/04/11 20:46:42 curfman Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.42 1996/04/26 00:01:47 balay Exp bsmith $";
 #endif
 
 /*
@@ -230,7 +230,7 @@ static int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(mdn->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mdn->A,mode); CHKERRQ(ierr);
 
-  if (!mat->was_assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIDense(mat); CHKERRQ(ierr);
   }
   return 0;
@@ -543,8 +543,8 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
         row++;
       } 
 
-      ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
       if (!rank) {
         ierr = MatView(((Mat_MPIDense*)(A->data))->A,viewer); CHKERRQ(ierr);
       }
@@ -560,9 +560,6 @@ static int MatView_MPIDense(PetscObject obj,Viewer viewer)
   int          ierr;
   ViewerType   vtype;
  
-  if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; 
-  }
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER) {
     ierr = MatView_MPIDense_ASCII(mat,viewer); CHKERRQ(ierr);
@@ -614,21 +611,21 @@ static int MatSetOption_MPIDense(Mat A,MatOption op)
 {
   Mat_MPIDense *a = (Mat_MPIDense *) A->data;
 
-  if (op == NO_NEW_NONZERO_LOCATIONS ||
-      op == YES_NEW_NONZERO_LOCATIONS ||
-      op == COLUMNS_SORTED ||
-      op == ROW_ORIENTED) {
+  if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
+      op == MAT_YES_NEW_NONZERO_LOCATIONS ||
+      op == MAT_COLUMNS_SORTED ||
+      op == MAT_ROW_ORIENTED) {
         MatSetOption(a->A,op);
   }
-  else if (op == ROWS_SORTED || 
-           op == SYMMETRIC_MATRIX ||
-           op == STRUCTURALLY_SYMMETRIC_MATRIX ||
-           op == YES_NEW_DIAGONALS)
+  else if (op == MAT_ROWS_SORTED || 
+           op == MAT_SYMMETRIC ||
+           op == MAT_STRUCTURALLY_SYMMETRIC ||
+           op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"Info:MatSetOption_MPIDense:Option ignored\n");
-  else if (op == COLUMN_ORIENTED)
+  else if (op == MAT_COLUMN_ORIENTED)
     { a->roworiented = 0; MatSetOption(a->A,op);} 
-  else if (op == NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIDense:NO_NEW_DIAGONALS");}
+  else if (op == MAT_NO_NEW_DIAGONALS)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIDense:MAT_NO_NEW_DIAGONALS");}
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIDense:unknown option");}
   return 0;
@@ -748,8 +745,8 @@ static int MatTranspose_MPIDense(Mat A,Mat *matout)
     v += m;
   } 
   PetscFree(rwork);
-  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   if (matout != PETSC_NULL) {
     *matout = B;
   } else {
@@ -1023,8 +1020,8 @@ int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M, int N, Mat *newmat)
   }
   PetscFree(rowners);
   PetscFree(vals);
-  ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
@@ -1196,8 +1193,8 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
   }
   PetscFree(ourlens); PetscFree(vals); PetscFree(mycols); PetscFree(rowners);
 
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.19 1996/03/19 21:29:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.20 1996/03/23 00:34:08 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
 
   ierr = VecView(global,viewer); CHKERRA(ierr); 
   PetscPrintf(MPI_COMM_WORLD,"\nGlobal Vector:\n");
-  ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
+  ierr = VecView(global,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
   PetscPrintf(MPI_COMM_WORLD,"\n");
 
   /* Send ghost points to local vectors */
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   if (flg) {
     PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
     printf("\nLocal Vector: processor %d\n",rank);
-    ierr = VecView(local,STDOUT_VIEWER_SELF); CHKERRA(ierr); 
+    ierr = VecView(local,VIEWER_STDOUT_SELF); CHKERRA(ierr); 
     PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
   }
 

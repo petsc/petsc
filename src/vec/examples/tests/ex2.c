@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.34 1996/01/12 22:05:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.35 1996/03/19 21:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
@@ -36,14 +36,14 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   
-  ierr = VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);
+  ierr = VecView(y,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_ALL,ctx);CHKERRA(ierr);
   ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
 
   PetscPrintf(MPI_COMM_SELF,"-------\n");
-  ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   ierr = ISDestroy(is1); CHKERRA(ierr);
   ierr = ISDestroy(is2); CHKERRA(ierr);

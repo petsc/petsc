@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.20 1996/03/07 14:48:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.21 1996/03/19 21:27:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -39,8 +39,8 @@ int main(int argc,char **args)
     if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
     v = 4.0; MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);
   }
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Create vectors for exact solution, approx solution, and RHS */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
@@ -86,7 +86,7 @@ int main(int argc,char **args)
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-noslesview",&flg); CHKERRA(ierr);
   if (!flg) {
-    ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+    ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   }
 
   /* Check the error */

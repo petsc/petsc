@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.84 1996/04/20 04:18:56 bsmith Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.85 1996/04/25 23:56:24 balay Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -21,8 +21,8 @@ static char vcid[] = "$Id: itcreate.c,v 1.84 1996/04/20 04:18:56 bsmith Exp bala
 
    Note:
    The available visualization contexts include
-$     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_WORLD - synchronized standard
+$     VIEWER_STDOUT_SELF - standard output (default)
+$     VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 

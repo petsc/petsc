@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dmouse.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dmouse.c,v 1.3 1996/03/19 21:28:06 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -24,7 +24,7 @@ int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_use
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   *button = BUTTON_NONE;
-  if (draw->type == NULLWINDOW) return 0;
+  if (draw->type == DRAW_NULLWINDOW) return 0;
   if (!draw->ops.getmousebutton) return 0;
   return (*draw->ops.getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);
 }

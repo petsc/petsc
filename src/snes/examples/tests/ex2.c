@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.43 1996/04/15 20:44:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.44 1996/06/30 17:36:14 curfman Exp bsmith $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -71,8 +71,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
   ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES); CHKERRQ(ierr);
   *flag = DIFFERENT_NONZERO_PATTERN;
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }/* --------------------  User-defined monitor ----------------------- */
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
@@ -92,6 +92,6 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
     PetscPrintf(comm, "iter = %d, SNES Function norm < 1.e-11\n",its);
   }
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
-  ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRQ(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
   return 0;
 }

@@ -1,5 +1,5 @@
 C
-C  $Id: pc.h,v 1.15 1996/04/16 04:00:27 balay Exp bsmith $;
+C  $Id: pc.h,v 1.16 1996/04/16 04:56:29 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the PC (preconditioner) package in PETSc
 C
@@ -41,9 +41,9 @@ C
 C
 C  PCBGSType
 C
-      integer BGS_FORWARD_SWEEP,BGS_SYMMETRIC_SWEEP
+      integer PCBGS_FORWARD_SWEEP,PCBGS_SYMMETRIC_SWEEP
       
-      parameter (BGS_FORWARD_SWEEP=1,BGS_SYMMETRIC_SWEEP=2)
+      parameter (PCBGS_FORWARD_SWEEP=1,PCBGS_SYMMETRIC_SWEEP=2)
 
       integer USE_PRECONDITIONER_MATRIX, USE_TRUE_MATRIX
       parameter (USE_PRECONDITIONER_MATRIX=0, USE_TRUE_MATRIX=1)

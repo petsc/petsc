@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.24 1996/03/18 18:41:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.25 1996/03/18 19:05:19 bsmith Exp bsmith $";
 #endif
 
 #include "drawimpl.h"   /*I "draw.h" I*/
@@ -32,7 +32,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   VecScatter    ctx;
   PetscObject   vobj = (PetscObject) win;
 
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) return 0;
   MPI_Comm_rank(win->comm,&rank);
 
   /* move entire vector to first processor */

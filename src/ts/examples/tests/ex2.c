@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.3 1996/04/04 22:04:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.4 1996/04/20 04:21:08 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem";
@@ -211,9 +211,9 @@ int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr
       ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   return 0;
 }

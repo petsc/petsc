@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.86 1996/05/03 19:26:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.87 1996/07/02 18:06:36 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -239,7 +239,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   }
   mbd->gnd = ict;
 
-  if (!mat->was_assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERRQ(ierr);
   }
   return 0;
@@ -593,8 +593,8 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
         ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
         row++;
       } 
-      ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
       if (!rank) {
         ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,viewer); CHKERRQ(ierr);
       }
@@ -609,10 +609,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   Mat          mat = (Mat) obj;
   int          ierr;
   ViewerType   vtype;
- 
-  if (!viewer) { 
-    viewer = STDOUT_VIEWER_SELF; 
-  }
+
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER  ||  vtype == ASCII_FILES_VIEWER ||
       vtype == DRAW_VIEWER) {
@@ -628,19 +625,19 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
 
-  if (op == NO_NEW_NONZERO_LOCATIONS ||
-      op == YES_NEW_NONZERO_LOCATIONS ||
-      op == NO_NEW_DIAGONALS ||
-      op == YES_NEW_DIAGONALS) {
+  if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
+      op == MAT_YES_NEW_NONZERO_LOCATIONS ||
+      op == MAT_NO_NEW_DIAGONALS ||
+      op == MAT_YES_NEW_DIAGONALS) {
         MatSetOption(mbd->A,op);
   }
-  else if (op == ROW_ORIENTED)    mbd->roworiented = 1;
-  else if (op == COLUMN_ORIENTED) mbd->roworiented = 0;
-  else if (op == ROWS_SORTED || 
-           op == COLUMNS_SORTED || 
-           op == SYMMETRIC_MATRIX ||
-           op == STRUCTURALLY_SYMMETRIC_MATRIX ||
-           op == YES_NEW_DIAGONALS)
+  else if (op == MAT_ROW_ORIENTED)    mbd->roworiented = 1;
+  else if (op == MAT_COLUMN_ORIENTED) mbd->roworiented = 0;
+  else if (op == MAT_ROWS_SORTED || 
+           op == MAT_COLUMNS_SORTED || 
+           op == MAT_SYMMETRIC ||
+           op == MAT_STRUCTURALLY_SYMMETRIC ||
+           op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"Info:MatSetOption_MPIBDiag:Option ignored\n");
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:unknown option");}
@@ -1130,8 +1127,8 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   }
   PetscFree(ourlens); PetscFree(vals); PetscFree(mycols); PetscFree(rowners);
 
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.1 1996/06/26 15:33:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.2 1996/07/02 18:09:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests application ordering\n\n";
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   /* create the application ordering */
   ierr = AOCreateDebug(MPI_COMM_WORLD,n,isapp,ispetsc,&ao); CHKERRA(ierr);
 
-  ierr = AOView(ao,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = AOView(ao,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* check the mapping */
   ierr = AOPetscToApplication(ao,n,ispetsc); CHKERRA(ierr);
