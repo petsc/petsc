@@ -156,6 +156,7 @@ class Configure(config.base.Configure):
 
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for external packages
+    self.framework.packages.reverse()
     for i in self.framework.packages:
       self.addDefine('HAVE_'+i.PACKAGE,1)
       if not isinstance(i.lib,list): i.lib = [i.lib]
@@ -166,7 +167,6 @@ class Configure(config.base.Configure):
     text = ''
     for i in self.framework.packages:
       text += '${'+i.PACKAGE+'_LIB} '
-    text.reverse()
     self.addMakeMacro('PACKAGES_LIBS',text)
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
