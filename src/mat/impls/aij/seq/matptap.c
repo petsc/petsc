@@ -207,15 +207,16 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C)
         /* Get offset within block of P */
         pshift = *ptaj%ppdof;
         /* Get block row of P */
-        prow = (*ptaj++)/ppdof;
+        prow = (*ptaj++)/ppdof; /* integer division */
         /* P has same number of nonzeros per row as the compressed form */
         pnzj = pi[prow+1] - pi[prow];
         pjj  = pj + pi[prow];
         for (k=0;k<pnzj;k++) {
           /* Locations in C are shifted by the offset within the block */
-          if (!denserow[pjj[k]+pshift]) {
-            denserow[pjj[k]+pshift] = -1;
-            sparserow[cnzi++]     = pjj[k]+pshift;
+          /* Note: we cannot use PetscLLAdd here because of the additional offset for the write location */
+          if (!denserow[pjj[k]*ppdof+pshift]) {
+            denserow[pjj[k]*ppdof+pshift] = -1;
+            sparserow[cnzi++]             = pjj[k]*ppdof+pshift;
           }
         }
       }
@@ -320,6 +321,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
     }
 
     /* Sort the j index array for quick sparse axpy. */
+    /* Note: a array does not need sorting as it is in dense storage locations. */
     ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
 
     /* Compute P^T*A*P using outer product (P^T)[:,j]*(A*P)[j,:]. */
@@ -331,6 +333,101 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
       caj    = ca + ci[crow];
       /* Perform sparse axpy operation.  Note cjj includes apj. */
       for (k=0;nextap<apnzj;k++) {
+        if (cjj[k]==apj[nextap]) {
+          caj[k] += (*pA)*apa[apj[nextap++]];
+        }
+      }
+      flops += 2*apnzj;
+      pA++;
+    }
+
+    /* Zero the current row info for A*P */
+    for (j=0;j<apnzj;j++) {
+      apa[apj[j]]      = 0.;
+      apjdense[apj[j]] = 0;
+    }
+  }
+
+  /* Assemble the final matrix and clean up */
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscFree(apa);CHKERRQ(ierr);
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqMAIJ"
+PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C) 
+{
+  PetscErrorCode ierr;
+  PetscInt       flops=0;
+  Mat_SeqMAIJ    *pp=(Mat_SeqMAIJ*)PP->data;
+  Mat            P=pp->AIJ;
+  Mat_SeqAIJ     *a  = (Mat_SeqAIJ *) A->data;
+  Mat_SeqAIJ     *p  = (Mat_SeqAIJ *) P->data;
+  Mat_SeqAIJ     *c  = (Mat_SeqAIJ *) C->data;
+  PetscInt       *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
+  PetscInt       *ci=c->i,*cj=c->j,*cjj;
+  PetscInt       am=A->M,cn=C->N,cm=C->M,ppdof=pp->dof;
+  PetscInt       i,j,k,pshift,poffset,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
+  MatScalar      *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
+
+  PetscFunctionBegin;
+  /* Allocate temporary array for storage of one row of A*P */
+  ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(PetscInt)),&apa);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
+
+  apj      = (PetscInt *)(apa + cn);
+  apjdense = apj + cn;
+
+  /* Clear old values in C */
+  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
+
+  for (i=0;i<am;i++) {
+    /* Form sparse row of A*P */
+    anzi  = ai[i+1] - ai[i];
+    apnzj = 0;
+    for (j=0;j<anzi;j++) {
+      /* Get offset within block of P */
+      pshift = *aj%ppdof;
+      /* Get block row of P */
+      prow   = *aj++/ppdof; /* integer division */
+      pnzj = pi[prow+1] - pi[prow];
+      pjj  = pj + pi[prow];
+      paj  = pa + pi[prow];
+      for (k=0;k<pnzj;k++) {
+        poffset = pjj[k]*ppdof+pshift;
+        if (!apjdense[poffset]) {
+          apjdense[poffset] = -1; 
+          apj[apnzj++]      = poffset;
+        }
+        apa[poffset] += (*aa)*paj[k];
+      }
+      flops += 2*pnzj;
+      aa++;
+    }
+
+    /* Sort the j index array for quick sparse axpy. */
+    /* Note: a array does not need sorting as it is in dense storage locations. */
+    ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
+
+    /* Compute P^T*A*P using outer product (P^T)[:,j]*(A*P)[j,:]. */
+    prow    = i/ppdof; /* integer division */
+    pshift  = i%ppdof; 
+    poffset = pi[prow];
+    pnzi = pi[prow+1] - poffset;
+    /* Reset pJ and pA so we can traverse the same row of P 'dof' times. */
+    pJ   = pj+poffset;
+    pA   = pa+poffset;
+    for (j=0;j<pnzi;j++) {
+      crow   = (*pJ)*ppdof+pshift;
+      cjj    = cj + ci[crow];
+      caj    = ca + ci[crow];
+      pJ++;
+      /* Perform sparse axpy operation.  Note cjj includes apj. */
+      for (k=0,nextap=0;nextap<apnzj;k++) {
         if (cjj[k]==apj[nextap]) {
           caj[k] += (*pA)*apa[apj[nextap++]];
         }
