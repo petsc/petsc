@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.61 2001/06/21 21:16:58 bsmith Exp buschelm $*/
+/*$Id: mpiadj.c,v 1.62 2001/06/21 22:03:59 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -87,6 +87,7 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
   case MAT_STRUCTURALLY_SYMMETRIC:
     a->symmetric = PETSC_TRUE;
     break;
+  case MAT_USE_SINGLE_PRECISION_SOLVES:
   default:
     PetscLogInfo(A,"MatSetOption_MPIAdj:Option ignored\n");
     break;

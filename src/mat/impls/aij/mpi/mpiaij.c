@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.337 2001/06/03 02:51:04 bsmith Exp buschelm $*/
+/*$Id: mpiaij.c,v 1.338 2001/06/21 22:01:35 buschelm Exp buschelm $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1055,6 +1055,7 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
   case MAT_ROWS_SORTED:
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
+  case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"MatSetOption_MPIAIJ:Option ignored\n");
     break;
   case MAT_COLUMN_ORIENTED:

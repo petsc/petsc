@@ -1,5 +1,5 @@
 
-/*$Id: aij.c,v 1.374 2001/06/21 21:16:21 bsmith Exp buschelm $*/
+/*$Id: aij.c,v 1.375 2001/06/21 22:47:38 buschelm Exp buschelm $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -761,6 +761,7 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
   case MAT_YES_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
+  case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"MatSetOption_SeqAIJ:Option ignored\n");
     break;
   case MAT_NO_NEW_DIAGONALS:

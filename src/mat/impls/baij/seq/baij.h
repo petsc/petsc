@@ -37,7 +37,7 @@ typedef struct {
 
 #if defined(PETSC_USE_MAT_SINGLE)
   int              setvalueslen;
-  int              singleprecisionsolves;
+  PetscTruth       singleprecisionsolves;
   MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
                                       before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */
 #endif

@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.193 2001/03/23 23:22:03 balay Exp buschelm $*/
+/*$Id: bdiag.c,v 1.194 2001/06/21 23:01:27 buschelm Exp buschelm $*/
 
 /* Block diagonal matrix format */
 
@@ -136,6 +136,7 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_USE_HASH_TABLE:
+  case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"MatSetOption_SeqBDiag:Option ignored\n");
     break;
   default:
