@@ -44,14 +44,13 @@ int main(int argc,char **args)
 {
   Vec         x,b,u;      /* approx solution, RHS, exact solution */
   Mat         A;            /* linear system matrix */
-  KSP        ksp;         /* linear solver context */
+  KSP         ksp;         /* linear solver context */
   PetscReal   norm;         /* norm of solution error */
   int         dim,i,j,I,J,Istart,Iend,ierr,n = 6,its,use_random;
   PetscScalar v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom rctx;
   PetscReal   h2,sigma1 = 100.0;
   PetscTruth  flg;
-  KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)

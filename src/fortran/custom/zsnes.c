@@ -110,6 +110,55 @@
 #endif
 
 EXTERN_C_BEGIN
+static void (PETSC_STDCALL *f7)(SNES*,int*,PetscReal*,void*,int*);
+static void (PETSC_STDCALL *f71)(void*,int*);
+static void (PETSC_STDCALL *f8)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,int*);
+static void (PETSC_STDCALL *f2)(SNES*,Vec*,Vec*,void*,int*);
+static void (PETSC_STDCALL *f11)(SNES*,Vec*,Vec*,void*,int*);
+static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
+EXTERN_C_END
+
+static int oursnesmonitor(SNES snes,int i,PetscReal d,void*ctx)
+{
+  int              ierr = 0;
+
+  (*f7)(&snes,&i,&d,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+static int ourmondestroy(void* ctx)
+{
+  int              ierr = 0;
+
+  (*f71)(ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+static int oursnestest(SNES snes,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason*reason,void*ctx)
+{
+  int              ierr = 0;
+
+  (*f8)(&snes,&a,&d,&c,reason,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+static int oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
+{
+  int ierr = 0;
+  (*f2)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+static int ourmatsnesmffunction(SNES snes,Vec x,Vec f,void *ctx)
+{
+  int ierr = 0;
+  (*f11)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
+{
+  int              ierr = 0;
+  (*f3)(&snes,&x,m,p,type,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+EXTERN_C_BEGIN
 
 #if defined(notused)
 static int ourrhs(SNES snes,Vec vec,Vec vec2,void*ctx)
@@ -260,22 +309,6 @@ void snesvecviewupdatemonitor_(SNES *snes,int *its,PetscReal *fgnorm,void *dummy
   *ierr = SNESVecViewUpdateMonitor(*snes,*its,*fgnorm,dummy);
 }
 
-static void (PETSC_STDCALL *f7)(SNES*,int*,PetscReal*,void*,int*);
-static int oursnesmonitor(SNES snes,int i,PetscReal d,void*ctx)
-{
-  int              ierr = 0;
-
-  (*f7)(&snes,&i,&d,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-static void (PETSC_STDCALL *f71)(void*,int*);
-static int ourmondestroy(void* ctx)
-{
-  int              ierr = 0;
-
-  (*f71)(ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 
 void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,int*,PetscReal*,void*,int*),
                     void *mctx,void (PETSC_STDCALL *mondestroy)(void *,int *),int *ierr)
@@ -374,14 +407,6 @@ void snesconverged_ls_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESCon
   *ierr = SNESConverged_LS(*snes,*a,*b,*c,r,ct);
 }
 
-static void (PETSC_STDCALL *f8)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,int*);
-static int oursnestest(SNES snes,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason*reason,void*ctx)
-{
-  int              ierr = 0;
-
-  (*f8)(&snes,&a,&d,&c,reason,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 
 void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
        void (PETSC_STDCALL *func)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,int*),
@@ -430,13 +455,6 @@ void PETSC_STDCALL snesgetksp_(SNES *snes,KSP *ksp,int *ierr)
 
 /* ---------------------------------------------------------*/
 
-static void (PETSC_STDCALL *f2)(SNES*,Vec*,Vec*,void*,int*);
-static int oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
-{
-  int ierr = 0;
-  (*f2)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 
 /*
         These are not usually called from Fortran but allow Fortran users 
@@ -464,13 +482,6 @@ void PETSC_STDCALL snessetfunction_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)
 
 /* ---------------------------------------------------------*/
 
-static void (PETSC_STDCALL *f11)(SNES*,Vec*,Vec*,void*,int*);
-static int ourmatsnesmffunction(SNES snes,Vec x,Vec f,void *ctx)
-{
-  int ierr = 0;
-  (*f11)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
 void PETSC_STDCALL matsnesmfsetfunction_(Mat *mat,Vec *r,void (PETSC_STDCALL *func)(SNES*,Vec*,Vec*,void*,int*),
                       void *ctx,int *ierr){
   f11 = func;
@@ -511,14 +522,6 @@ void  snesdacomputejacobian_(SNES *snes,Vec *X,Mat *m,Mat *p,MatStructure* type,
 {
   (*PetscErrorPrintf)("Cannot call this function from Fortran");
   *ierr = 1;
-}
-
-static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
-static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
-{
-  int              ierr = 0;
-  (*f3)(&snes,&x,m,p,type,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
 }
 
 void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,
