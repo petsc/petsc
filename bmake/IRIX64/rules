@@ -1,12 +1,12 @@
-CC       = cc -DPARCH_IRIX64 -woff 1164 -woff 1048
+CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
 FC       = f77
 AR       = ar
 RM       = rm -f
 RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
-CLINKER  = cc $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
-FLINKER  = f77 $(FOPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
+CLINKER  = cc -64 $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
+FLINKER  = f77 -64 $(FOPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
 
 SYS_LIB    = 
 
