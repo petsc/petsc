@@ -147,8 +147,7 @@ of PETSC_ARCH</p>
 <p><b><font color="#551A8B">BOPT</font></b>: this environment/make variable is 
 used to distinguish debug/optimized or c/c++/complex versions of PETSc 
 libraries. One can install, any/all variants of the libraries, and switch 
-between them by changing the value of BOPT. The following BOPT values are 
-usually used.</p>
+between them by changing the value of BOPT. The table below explains the most common BOPT values.</p>
 <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="73%" id="AutoNumber2">
   <tr>
     <td width="13%">&nbsp;g</td>
@@ -367,11 +366,10 @@ associated tools - to enable building PETSc libraries using make and other UNIX
 tools. For additional info, run ${PETSC_DIR}/bin/win32/win32fe without any 
 options.</p>
 <p><b><font color="#551A8B">Compilers:</font></b> Support Microsoft (win32_ms*), 
-Intel (win32_intel), Borland (win32_borlan), Gnu compilers (win32_gnu)</p>
+Intel (win32_intel), Borland (win32_borland), Gnu compilers (win32_gnu)</p>
 <p><font color="#551A8B"><b>Project Files:</b> </font>We provide default project 
-files that work with PETSC_ARCH=win32_ms_mpich</p>
-<p><b><font color="#551A8B">Debugger:&nbsp; </font></b>from bash - the following 
-command should work:&nbsp; msdev ex1.exe</p>
+files that work with PETSC_ARCH=win32_ms_mpich.  Be sure to build the libraries that correspond to the project configuration you are using.  To use a C++ project with Debug configuration, BOPT=g_c++ libraries are required.</p>
+<p><b><font color="#551A8B">Debugger:&nbsp; </font></b>Running PETSc probrams with -start_in_debugger is not supported on this platform, so debuggers will need to be initiated manually.  Make sure your environment is properly configured to use the appropriate debugger for your compiler.  The debuggers can be initiated using Microsoft Visual Studio 6: <b>msdev&nbsp;ex1.exe</b>, Microsoft Visual Studio .NET: <b>devenv&nbsp;ex1.exe</b>, Intel Enhanced Debugger: <b>edb&nbsp;ex1.exe</b>, or GNU Debugger <b>gdb&nbsp;ex1.exe</b>.</p>
 <p>&nbsp;</p>
       </td>
 	<!--##end--> </tr>
