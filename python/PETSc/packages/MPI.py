@@ -406,12 +406,16 @@ class Configure(config.base.Configure):
     include = [[os.path.join(installDir, 'include')]]
     return ('Downloaded MPICH', lib, include)
 
-  def fixSolaris(self):
-    '''I hate this. MPI should report this somehow.'''
-    self.extraLib = []
-    if self.arch.hostOsBase.startswith('solaris'):
-      if self.executeTest(self.libraries.check, [['socket','rt', 'nsl', 'aio'], 'exit']):
-        self.extraLib.extend([self.libraries.toString([l]) for l in ['socket','rt', 'nsl', 'aio']])
+  def addExtraLibraries(self):
+    '''Check for various auxiliary libraries we may need'''
+    extraLib = []
+    if self.executeTest(self.libraries.check, [['rt'], 'timer_create', None, extraLib]):
+      extraLib.append('librt.a')
+    if self.executeTest(self.libraries.check, [['aio'], 'aio_read', None, extraLib]):
+      extraLib.insert(0, 'libaio.a')
+    if self.executeTest(self.libraries.check, [['nsl'], 'exit', None, extraLib]):
+      extraLib.insert(0, 'libnsl.a')
+    self.extraLib = extraLib
     return
 
   def configureLibrary(self):
@@ -419,7 +423,7 @@ class Configure(config.base.Configure):
     functionalMPI = []
     nonsharedMPI  = []
 
-    self.fixSolaris()
+    self.addExtraLibraries()
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
       self.framework.log.write('================================================================================\n')
       self.framework.log.write('Checking for a functional MPI in '+name+'\n')
