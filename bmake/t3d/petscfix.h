@@ -117,7 +117,8 @@ extern int    abort();
 
 #else
 extern int    getdomainname(char *,int);
-/* These were added to the latest freeBSD release, thus no longer needed.
+/* 
+    These were added to the latest freeBSD release, thus no longer needed.
     If you have an old installation of freeBSD you may need the 
     prototypes below.
 */
