@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.225 1997/07/02 03:43:18 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.226 1997/07/02 22:28:48 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3184,11 +3184,13 @@ possible, as demonstrated by the example,
 Jacobian        & Create matrix with MatCreate(). $ ^* $ & Create matrix with MatCreateShell().\\
 (or Hessian)    & Assemble matrix with user-defined     & Use MatShellSetOperation() to set\\
 Matrix          & routine. $ ^\dagger $                         & various matrix actions.\\
+                &                                    & Or use SNESDefaultMatrixFreeMatCreate().\\
 & & \\ \hline
 & & \\
-Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Create PC with PCShellCreate().\\
-Matrix           & Assemble matrix with user-defined & Use SNESGetSLES() and SLESGetPC()\\
-                & routine. $ ^\dagger $         & to set the preconditioner.\\ 
+Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetSLES() and SLESGetPC() \\
+Matrix           & Assemble matrix with user-defined & to access the PC, then use\\
+                & routine. $ ^\dagger $         & PCSetType(pc,PCSHELL);\\ 
+                &             & followed by PCSetApply(). \\
 
 & & \\ \hline
 \end{tabular}
