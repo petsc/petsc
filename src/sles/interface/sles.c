@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.68 1996/09/30 17:42:28 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.69 1996/09/30 17:54:23 curfman Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -273,10 +273,28 @@ $      divergence or breakdown was detected.
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
    then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
    for more details.
-   
+
+   Solving Successive Linear Systems:
+   When solving multiple linear systems of the same size with the
+   same method, several options are available.
+
+   (1) To solve successive linear systems having the SAME
+   preconditioner matrix (i.e., the same data structure with exactly
+   the same matrix elements) but different right-hand-side vectors,
+   the user should simply call SLESSolve() multiple times.  The
+   preconditioner setup operations (e.g., factorization for ILU) will
+   be done during the first call to SLESSolve() only; such operations
+   will NOT be repeated for successive solves.
+
+   (2) To solve successive linear systems that have DIFFERENT
+   preconditioner matrices (i.e., the matrix elements and/or the
+   matrix data structure change), the user MUST call SLESSetOperators()
+   and SLESSolve() for each solve.  See SLESSetOperators() for
+   options that can save work for such cases.
+
 .keywords: SLES, solve, linear system
 
-.seealso: SLESCreate(), SLESDestroy(), KSPSetTolerances(), KSPDefaultConverged()
+.seealso: SLESCreate(), SLESSetOperators(), KSPSetTolerances(), KSPDefaultConverged()
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
