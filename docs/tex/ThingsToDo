@@ -9,6 +9,14 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+  - fix PetscView so that with scrolling in horizontal direction and click on icon
+    it pops up detailed information in correct location.
+
+  - Add some indication to window indicating that it is awaiting input.
+
+  - Provide support somehow for -mat_view_draw and -vec_view_draw etc.
+    to reuse same window for subsequent calls with same matrix or vector.
+
   - Maybe, like, say, test one or two BDiag routines before making a release?
 
   - Purge RCS files of very old stuff to save disk space???
