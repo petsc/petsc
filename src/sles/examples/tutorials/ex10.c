@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.35 1999/11/24 21:55:05 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.36 2000/01/11 21:02:20 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   Vec        x,b,u;          /* approx solution, RHS, exact solution */
   Viewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
-  char       stagename[6][16]; /* names of profiling stages */
+  char       stagename[16]; /* names of profiling stages */
   PetscTruth table,set,flg,trans;
   int        ierr,its,i,loops  = 2;
   double     norm;
@@ -91,9 +91,10 @@ int main(int argc,char **args)
     /*
        Begin profiling next stage
     */
-    PLogStagePush(3*i);
-    sprintf(stagename[3*i],"Load System %d",i);
-    PLogStageRegister(3*i,stagename[3*i]);
+    ierr = PetscBarrier(PETSC_NULL);CHKERRA(ierr);
+    PLogStagePush(PETSC_DETERMINE);
+    sprintf(stagename,"Load System %d",i);
+    PLogStageRegister(PETSC_DETERMINE,stagename);
 
     /* 
        Open binary file.  Note that we use BINARY_RDONLY to indicate
@@ -150,11 +151,11 @@ int main(int argc,char **args)
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
-    /*    PLogStagePop(); */
-    ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
-    PLogStagePush(3*i+1);
-    sprintf(stagename[3*i+1],"SLESSetUp %d",i);
-    PLogStageRegister(3*i+1,stagename[3*i+1]);
+    PLogStagePop();
+    ierr = PetscBarrier(PETSC_NULL);CHKERRA(ierr);
+    PLogStagePush(PETSC_DETERMINE);
+    sprintf(stagename,"SLESSetUp %d",i);
+    PLogStageRegister(PETSC_DETERMINE,stagename);
 
     /*
        We also explicitly time this stage via PetscGetTime()
@@ -191,10 +192,10 @@ int main(int argc,char **args)
     /*
        Begin profiling next stage
     */
-    ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
-    PLogStagePush(3*i+2);
-    sprintf(stagename[3*i+2],"SLESSolve %d",i);
-    PLogStageRegister(3*i+2,stagename[3*i+2]);
+    ierr = PetscBarrier(PETSC_NULL);CHKERRA(ierr);
+    PLogStagePush(PETSC_DETERMINE);
+    sprintf(stagename,"SLESSolve %d",i);
+    PLogStageRegister(PETSC_DETERMINE,stagename);
 
     /*
        Solve linear system; we also explicitly time this stage.
