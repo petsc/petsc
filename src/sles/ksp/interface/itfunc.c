@@ -1031,6 +1031,8 @@ int KSPGetSolution(KSP ksp,Vec *v)
 @*/
 int KSPSetPC(KSP ksp,PC B)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidHeaderSpecific(B,PC_COOKIE);
