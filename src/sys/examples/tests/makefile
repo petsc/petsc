@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
-		  ex13.c ex14.c ex15.c ex16.c
+		  ex13.c ex14.c ex15.c ex16.c ex18.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex7f.F ex13f.F ex17f.F
 MANSEC          = Sys
 
@@ -82,6 +82,9 @@ ex16: ex16.o chkopts
 ex17f: ex17f.o chkopts
 	-${FLINKER} -o ex17f ex17f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
 	${RM} -f ex17f.o
+ex18: ex18.o chkopts
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_SYS_LIB}
+	${RM} -f ex18.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1
