@@ -447,13 +447,14 @@ class Configure(config.base.Configure):
       self.framework.getExecutable('etags', getFullPath = 1)
       if hasattr(self.framework, 'etags'):
         pd = self.framework.argDB['PETSC_DIR']
+        if pd[-1]=='/': pd = pd[:-1] # etags chokes if there's a trailing /
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:
           (output, error, status) = config.base.Configure.executeShellCommand('make PETSC_ARCH=solaris BOPT=g PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
           # filter out the normal messages
           cnt = 0
           for i in output.split('\n'):
-            if not (i.startswith('etags_') or i.find('TAGS') >= 0):
+            if not (i.startswith('etags_') or i.find('TAGS') >= 0 or i.find('Entering') >= 0 or i.find('Leaving') >= 0 or i==''):
               if not cnt:
                 self.framework.log.write('*******Error generating etags files****\n')
               cnt = cnt + 1
