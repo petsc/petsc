@@ -8,15 +8,26 @@
 <H3>
 Patches for PETSc (Release 2.0.24)</H3>
 
-<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.9.tar.gz">petsc-patches-2.0.24.9.tar.gz</A>
+<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.10.tar.gz">petsc-patches-2.0.24.10.tar.gz</A>
 and extracting it with
-<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.9.tar.gz | tar xf -</PRE>
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.10.tar.gz | tar xf -</PRE>
 Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.24)
 before you run the tar command.
 <BR><BR>
-For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.9.exe">petsc-patches-2.0.24.9.exe</A> and rebuild the libraries.
+For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.10.exe">petsc-patches-2.0.24.10.exe</A> and rebuild the libraries.
 <HR>
 <BR>The patch file fixes the following:<BR><BR>
+
+<H3> 2.0.24.10 (Jul 28)</H3>
+<LI>Fortran interface for ISLocalToGlobalMappingApply() </LI>
+<pre>
+<!##>src/fortran/auto/isltogf.c
+</pre>
+<LI>Solaris 5.0 compiler update for complex </LI>
+<pre>
+<!##>include/petscmath.h
+</pre>
+
 
 <H3> 2.0.24.9 (Jul 15)</H3>
 <LI>Dynamic loading of libraries </LI>
