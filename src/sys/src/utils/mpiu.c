@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.69 1997/05/16 22:46:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.70 1997/05/17 18:44:51 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -295,6 +295,47 @@ int PetscGetDisplay(char *display,int n)
   return 0;  
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscSequentialPhaseBegin_Private" /* ADIC Ignore */
+int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng )
+{
+  int        lidx, np, tag = 0;
+  MPI_Status status;
+
+  MPI_Comm_size( comm, &np );
+  if (np == 1) return 0;
+  MPI_Comm_rank( comm, &lidx );
+  if (lidx != 0) {
+    MPI_Recv( 0, 0, MPI_INT, lidx-1, tag, comm, &status );
+  }
+  /* Send to the next process in the group unless we are the last process */ 
+  if ((lidx % ng) < ng - 1 && lidx != np - 1) {
+    MPI_Send( 0, 0, MPI_INT, lidx + 1, tag, comm );
+  }
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscSequentialPhaseEnd_Private" /* ADIC Ignore */
+int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng )
+{
+  int        lidx, np, tag = 0;
+  MPI_Status status;
+
+  MPI_Comm_rank( comm, &lidx );
+  MPI_Comm_size( comm, &np );
+  if (np == 1) return 0;
+
+  /* Send to the first process in the next group */
+  if ((lidx % ng) == ng - 1 || lidx == np - 1) {
+    MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, tag, comm );
+  }
+  if (lidx == 0) {
+    MPI_Recv( 0, 0, MPI_INT, np-1, tag, comm, &status );
+  }
+  return 0;
+}
+
 /* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Seq_keyval is used to indicate an MPI attribute that
@@ -333,40 +374,22 @@ $
 @*/
 int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 {
-  int        lidx, np, tag = 0;
+  int        ierr, np;
   MPI_Comm   local_comm,*addr_local_comm;
-  MPI_Status status;
+
+  MPI_Comm_size( comm, &np );
+  if (np == 1) return 0;
 
   /* Get the private communicator for the sequential operations */
   if (Petsc_Seq_keyval == MPI_KEYVAL_INVALID) {
     MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Seq_keyval,0);
   }
-  MPI_Comm_size( comm, &np );
-  if (np == 1) return 0;
 
-  if (comm != PETSC_COMM_WORLD) {
-    /* 
-      if comm is PETSC_COMM_WORLD we do not generate a new communicator
-      since this requires a malloc, which will cause PetscTrDump() as 
-      called in PetscFinalize() to generate an incorrect report of 
-      unfreed memory 
-    */
-    MPI_Comm_dup( comm, &local_comm );
-    addr_local_comm  = (MPI_Comm *) PetscMalloc(sizeof(MPI_Comm));CHKPTRQ(addr_local_comm);
-    *addr_local_comm = local_comm;
-    MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) addr_local_comm );
-  } else {
-    local_comm = PETSC_COMM_WORLD;
-  }
-
-  MPI_Comm_rank( comm, &lidx );
-  if (lidx != 0) {
-    MPI_Recv( 0, 0, MPI_INT, lidx-1, tag, local_comm, &status );
-  }
-  /* Send to the next process in the group unless we are the last process */ 
-  if ((lidx % ng) < ng - 1 && lidx != np - 1) {
-    MPI_Send( 0, 0, MPI_INT, lidx + 1, tag, local_comm );
-  }
+  MPI_Comm_dup( comm, &local_comm );
+  addr_local_comm  = (MPI_Comm *) PetscMalloc(sizeof(MPI_Comm));CHKPTRQ(addr_local_comm);
+  *addr_local_comm = local_comm;
+  MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) addr_local_comm );
+  ierr = PetscSequentialPhaseBegin_Private(local_comm,ng); CHKERRQ(ierr);
   return 0;
 }
 
@@ -390,34 +413,22 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 @*/
 int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
 {
-  int        lidx, np, flag, tag = 0;
-  MPI_Status status;
+  int        ierr, np, flag;
   MPI_Comm   local_comm,*addr_local_comm;
 
-  MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
   if (np == 1) return 0;
 
-  if (comm != PETSC_COMM_WORLD) {
-    MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag );
-    if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
-    local_comm = *addr_local_comm;
-  } else {
-    local_comm = PETSC_COMM_WORLD;
-  }
+  MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag );
+  if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
+  local_comm = *addr_local_comm;
 
-  /* Send to the first process in the next group */
-  if ((lidx % ng) == ng - 1 || lidx == np - 1) {
-    MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, tag, local_comm );
-  }
-  if (lidx == 0) {
-    MPI_Recv( 0, 0, MPI_INT, np-1, tag, local_comm, &status );
-  }
-  if (comm != PETSC_COMM_WORLD) {
-    PetscFree(addr_local_comm); 
-    MPI_Comm_free(&local_comm);
-    MPI_Attr_delete(comm,Petsc_Seq_keyval);
-  }
+  ierr = PetscSequentialPhaseEnd_Private(local_comm,ng); CHKERRQ(ierr);
+
+  PetscFree(addr_local_comm); 
+  MPI_Comm_free(&local_comm);
+  MPI_Attr_delete(comm,Petsc_Seq_keyval);
+
   return 0;
 }
 /* ---------------------------------------------------------------- */
