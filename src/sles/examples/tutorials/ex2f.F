@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.22 1996/08/16 23:29:20 curfman Exp curfman $";
+C    "$Id: ex7.F,v 1.23 1996/08/17 17:12:38 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -10,8 +10,7 @@ C  Routines: SLESSolve(), SLESView(), SLESGetKSP(), KSPSetMonitor()
 C  Routines: KSPBuildSolution()
 C  Multiprocessor code
 C
-C  The following include statements are required for all SLES Fortran 
-C  programs:
+C  The following include statements are required for SLES Fortran programs:
 C     petsc.h  - base PETSc routines
 C     vec.h    - vectors
 C     mat.h    - matrices

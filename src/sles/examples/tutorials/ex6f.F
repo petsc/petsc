@@ -1,5 +1,5 @@
 
-C    "$Id: ex20.F,v 1.7 1996/07/08 22:20:55 bsmith Exp curfman $";
+C    "$Id: ex20.F,v 1.8 1996/08/22 15:39:11 curfman Exp curfman $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -12,8 +12,7 @@ C  Routines: SLESSolve(), SLESView(), SLESGetKSP(), KSPSetMonitor()
 C  Routines: KSPBuildSolution()
 C  Multiprocessor code
 C
-C  The following include statements are required for all SLES Fortran 
-C  programs:
+C  The following include statements are required for SLES Fortran programs:
 C     petsc.h  - base PETSc routines
 C     vec.h    - vectors
 C     mat.h    - matrices
