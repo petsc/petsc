@@ -1,14 +1,14 @@
-# $Id: makefile,v 1.7 1998/06/15 16:22:49 balay Exp balay $ 
+# $Id: makefile,v 1.8 1998/07/13 17:48:36 balay Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = 
-SOURCEF  = fmaxpy.F fmdot.F fnorm.F fmult.F fmultadd.F fsolve.F
+SOURCEF  = fmaxpy.F fmdot.F fnorm.F fmult.F fmultadd.F fsolve.F fsolvebaij.F
 SOURCEH  = 
 OBJSC    = 
-OBJSF    = fmaxpy.o fmdot.o fnorm.o fmult.o fmultadd.o fsolve.o
+OBJSF    = fmaxpy.o fmdot.o fnorm.o fmult.o fmultadd.o fsolve.o fsolvebaij.o
 LIBBASE  = libpetscsys
 MANSEC   = 7
 LOCDIR   = src/fortran/kernels/
