@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.51 2000/09/28 21:15:40 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.52 2000/11/10 16:15:41 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -25,6 +25,11 @@ EXTERN int DAGetColoring3d(DA,ISColoring *,Mat *);
         (obviously without the correct Jacobian values)
 
     Level: advanced
+
+    Notes: this does not yet handle BAIJ matrices, because
+      1) we need a way for the user to indicate what matrix type they want
+      2) after the matrix is created, for BAIJ matrices we need to set nc to 1 and
+         use MatSetValuesBlockedLocal() instead of MatSetValuesLocal()
 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate()
 
