@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.102 1998/07/28 15:49:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.103 1998/07/29 03:49:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -221,13 +221,12 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   }
   rtol      = ksp->ttol;
   gmres->it = (it - 1);
-  while (!(*converged = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
-           && it < max_k && it + itsSoFar < max_it) {
-    ksp->its++;
+  while (!(*converged = (*ksp->converged)(ksp,ksp->its,res,ksp->cnvP))
+           && it < max_k && ksp->its < max_it) {
     ksp->rnorm = res;
-    if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
+    if (nres && hist_len > ksp->its) nres[ksp->its]   = res;
     gmres->it = (it - 1);
-    KSPMonitor(ksp,it + itsSoFar,res); 
+    KSPMonitor(ksp,ksp->its,res); 
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
       ierr = GMRESGetNewVectors(  ksp, it+1 );CHKERRQ(ierr);
     }
@@ -255,23 +254,25 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     ierr = GMRESUpdateHessenberg( ksp, it, &res ); CHKERRQ(ierr);
     it++;
     gmres->it = (it-1);  /* For converged */
+    ksp->its++;
   }
   ksp->rnorm = res;
-  if (nres && hist_len > it + itsSoFar) nres[it + itsSoFar]   = res; 
-  if (nres) ksp->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it+itsSoFar+1;
-  KSPMonitor( ksp,  it + itsSoFar, res ); 
+  if (nres && hist_len > ksp->its) nres[ksp->its]   = res; 
+  if (nres) ksp->res_act_size = (hist_len < ksp->its) ? hist_len : ksp->its+1;
   if (itcount) *itcount    = it;
+
+
+  /* Didn't go in any direction, current solution is correct */
+  if (it == gmres->nprestart) {
+    *converged = 1;
+    PetscFunctionReturn(0);
+  }
 
   /*
     Down here we have to solve for the "best" coefficients of the Krylov
     columns, add the solution values together, and possibly unwind the
     preconditioning from the solution
    */
-  if (it == 0) {
-    *converged = 1;
-    PetscFunctionReturn(0);
-  }
-
   /* Form the solution (or the solution so far) */
   ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,it-1); CHKERRQ(ierr);
 
@@ -279,7 +280,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   if (gmres->nprestart_requested > 0 && gmres->nprestart == 0) {
     /* 
        Cut off to make sure number of directions is less than or equal
-       number computed so far
+       number of directions actually computed
     */
     gmres->nprestart = PetscMin(it-1,gmres->nprestart_requested);
   }
