@@ -1,0 +1,100 @@
+# $Id: base,v 1.24 1998/12/05 20:43:39 balay Exp $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = ranlib
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc_r
+C_FC             = mpxlf_r
+C_CLINKER        = mpcc_r ${COPTFLAGS} -bmaxdata:0x70000000
+# you may need to add -bI:/usr/lpp/xlf/lib/lowsys.exp to C_LINKER
+C_FLINKER        = mpxlf_r ${FOPTFLAGS} -bmaxdata:0x70000000
+C_CCV            = unknown
+C_SYS_LIB        = /usr/lib/libxlf.a /usr/lib/libxlf90.a  -lisode
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g  -qfullpath
+G_FOPTFLAGS      = -g  -qfullpath
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O3 -qarch=pwr2  -qmaxmem=4000 -w
+O_FOPTFLAGS      = -O3  -qarch=pwr2 -w
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = xlC_r -+
+CXX_FC           = mpxlf_r
+CXX_CLINKER      = mpCC_r ${COPTFLAGS}
+CXX_FLINKER      = mpCC_r ${COPTFLAGS}
+CXX_CCV          = unknown
+CXX_SYS_LIB      = /usr/lib/libxlf.a /usr/lib/libxlf90.a  -lcomplex -lisode
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g  -qfullpath
+GCXX_FOPTFLAGS   = -g  -qfullpath 
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O3  -qmaxmem=4000
+OCXX_FOPTFLAGS   = -O3
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g  -qfullpath
+GCOMP_FOPTFLAGS  = -g  -qfullpath
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O3  -qmaxmem=4000
+OCOMP_FOPTFLAGS  = -O3
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =  -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
+
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+#
+PARCH    = rs6000
+
+include ${PETSC_DIR}/bmake/common
+
+libc:
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+
+libf:
+	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+
+libmember:    ${LIBNAME}(${LIBMEMBER})
+#########
+
+# This F.f rule ensures that the old *.f files are removed.
+#
+.F.f:
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
+	-${RM} __$*.c
+
+.F.o:
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
+	-${RM} $*.f __$*.c
+
+.F.a:
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} $*.f __$*.c
+
+shared:
