@@ -74,14 +74,14 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-enable-fortran-kernels',     nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', 'optionsModule=<module name>', nargs.Arg(None, None, 'The Python module used to determine compiler options and versions'))
     help.addArgument('PETSc', 'C_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
-    help.addArgument('PETSc', 'CFLAGS_g',                    nargs.Arg(None, '-g',      'Flags for the C compiler with BOPT=g'))
-    help.addArgument('PETSc', 'CFLAGS_O',                    nargs.Arg(None, '-O',      'Flags for the C compiler with BOPT=O'))
+    help.addArgument('PETSc', 'CFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=g'))
+    help.addArgument('PETSc', 'CFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=O'))
     help.addArgument('PETSc', 'CXX_VERSION',                 nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
-    help.addArgument('PETSc', 'CXXFLAGS_g',                  nargs.Arg(None, '-g',      'Flags for the C++ compiler with BOPT=g'))
-    help.addArgument('PETSc', 'CXXFLAGS_O',                  nargs.Arg(None, '-O',      'Flags for the C++ compiler with BOPT=O'))
+    help.addArgument('PETSc', 'CXXFLAGS_g',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler with BOPT=g'))
+    help.addArgument('PETSc', 'CXXFLAGS_O',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler with BOPT=O'))
     help.addArgument('PETSc', 'F_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
-    help.addArgument('PETSc', 'FFLAGS_g',                    nargs.Arg(None, '-g',      'Flags for the Fortran compiler with BOPT=g'))
-    help.addArgument('PETSc', 'FFLAGS_O',                    nargs.Arg(None, '-O',      'Flags for the Fortran compiler with BOPT=O'))
+    help.addArgument('PETSc', 'FFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler with BOPT=g'))
+    help.addArgument('PETSc', 'FFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler with BOPT=O'))
     help.addArgument('PETSc', '-with-mpi',                   nargs.ArgBool(None, 1, 'If this is false, MPIUNI will be used as a uniprocessor substitute'))
     help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make',   'Specify make'))
@@ -186,16 +186,25 @@ class Configure(config.base.Configure):
     except ImportError: print 'Failed to load custom options'
     if options:
       # We use the framework in order to remove the PETSC_ namespace
-      self.framework.argDB['C_VERSION']   = options.getCompilerVersion('C',       self.compilers.CC,  self)
-      self.framework.argDB['CXX_VERSION'] = options.getCompilerVersion('Cxx',     self.compilers.CXX, self)
-      self.framework.argDB['F_VERSION']   = options.getCompilerVersion('Fortran', self.compilers.FC,  self)
+      if self.framework.argDB['C_VERSION']   == 'Unknown':
+        self.framework.argDB['C_VERSION']   = options.getCompilerVersion('C',       self.compilers.CC,  self)
+      if self.framework.argDB['CXX_VERSION'] == 'Unknown':
+        self.framework.argDB['CXX_VERSION'] = options.getCompilerVersion('Cxx',     self.compilers.CXX, self)
+      if self.framework.argDB['F_VERSION']   == 'Unknown':
+        self.framework.argDB['F_VERSION']   = options.getCompilerVersion('Fortran', self.compilers.FC,  self)
 
-      self.framework.argDB['CFLAGS_g']    = options.getCompilerFlags('C',       self.compilers.CC,  'g', self)
-      self.framework.argDB['CFLAGS_O']    = options.getCompilerFlags('C',       self.compilers.CC,  'O', self)
-      self.framework.argDB['CXXFLAGS_g']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'g', self)
-      self.framework.argDB['CXXFLAGS_O']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'O', self)
-      self.framework.argDB['FFLAGS_g']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'g', self)
-      self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
+      if self.framework.argDB['CFLAGS_g']   == 'Unknown':
+        self.framework.argDB['CFLAGS_g']    = options.getCompilerFlags('C',       self.compilers.CC,  'g', self)
+      if self.framework.argDB['CFLAGS_O']   == 'Unknown':
+        self.framework.argDB['CFLAGS_O']    = options.getCompilerFlags('C',       self.compilers.CC,  'O', self)
+      if self.framework.argDB['CXXFLAGS_g'] == 'Unknown':
+        self.framework.argDB['CXXFLAGS_g']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'g', self)
+      if self.framework.argDB['CXXFLAGS_O'] == 'Unknown':
+        self.framework.argDB['CXXFLAGS_O']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'O', self)
+      if self.framework.argDB['FFLAGS_g']   == 'Unknown':
+        self.framework.argDB['FFLAGS_g']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'g', self)
+      if self.framework.argDB['FFLAGS_O']   == 'Unknown':
+        self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
 
     self.addSubstitution('C_VERSION',   self.framework.argDB['C_VERSION'])
     self.addSubstitution('CFLAGS_g',    self.framework.argDB['CFLAGS_g'])
