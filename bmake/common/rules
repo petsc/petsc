@@ -9,11 +9,11 @@ INCLUDEDIRS = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
 
 PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
                 -lpetscsnes -lpetscsles -lpetscksp -lpetscmat \
-                -lpetscvec -lpetscsys -lpetscdraw \
+                -lpetscvec -lpetscdraw -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(SYS_LIB) $(FC_LIB) -lm
 SLES_LIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
-                -lpetscvec -lpetscsys -lpetscdraw \
+                -lpetscvec -lpetscdraw -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(SYS_LIB) $(FC_LIB) -lm
 

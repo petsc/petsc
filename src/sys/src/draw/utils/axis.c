@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.6 1995/03/06 04:28:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.7 1995/04/27 22:00:18 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -317,7 +317,7 @@ static char *XiADefLabel(double val,double sep )
     }
   }
   else {
-    sprintf( buf, "%le", val );
+    sprintf( buf, "%e", val );
     /* remove the extraneous 0's before the e */
     StripZeros(buf);
     StripZerosPlus(buf);
