@@ -272,7 +272,7 @@ class Configure(config.base.Configure):
           if output.find('IBM') >= 0:
             fc = os.path.join(os.path.dirname(fc),'xlf')
             self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling BLAS/LAPACK\n')
-        line = 'FC = '+fc+'\n'
+        line = 'FC         = '+fc+'\n'
       if line.startswith('FOPTFLAGS '):
         self.setcompilers.pushLanguage('F77')
         #line = 'FOPTFLAGS  = '+self.setcompilers.getCompilerFlags()+'\n'
@@ -281,13 +281,15 @@ class Configure(config.base.Configure):
       if line.startswith('AR '):
         line = 'AR         = '+self.setcompilers.AR+'\n'
       if line.startswith('AR_FLAGS '):
-        line = 'AR_FLAGS      = '+self.setcompilers.AR_FLAGS+'\n'
-      if line.startswith('LIB_SUFFIX '):
-        line = 'LIB_SUFFIX = '+self.framework.argDB['LIB_SUFFIX']+'\n'
-      if line.startswith('RANLIB '):
-        line = 'RANLIB     = '+self.framework.argDB['RANLIB']+'\n'
-      if line.startswith('RM '):
-        line = 'RM         = '+self.framework.argDB['RM']+'\n'
+        line = 'AR_FLAGS   = '+self.setcompilers.AR_FLAGS+'\n'
+
+      # The following tests are not done yet - so these VARS cannot be set yet.
+      #if line.startswith('LIB_SUFFIX '):
+      #  line = 'LIB_SUFFIX = '+self.framework.argDB['LIB_SUFFIX']+'\n'
+      #if line.startswith('RANLIB '):
+      #  line = 'RANLIB     = '+self.framework.argDB['RANLIB']+'\n'
+      #if line.startswith('RM '):
+      #  line = 'RM         = '+self.framework.argDB['RM']+'\n'
 
       if line.startswith('include'):
         line = '\n'
