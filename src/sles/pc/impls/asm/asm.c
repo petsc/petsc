@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.34 1996/08/15 12:47:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.35 1996/08/19 22:49:58 curfman Exp curfman $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -150,7 +150,7 @@ static int PCSetUp_ASM(PC pc)
          CHKERRQ(ierr);
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
-     different boundary conditions for the submatrices than for the global problem */
+     different boundary conditions for the submatrices than for the global problem) */
   ierr = PCModifySubMatrices(pc,osm->n_local,osm->is,osm->is,osm->pmat,pc->modifysubmatricesP); CHKERRQ(ierr);
 
   /* loop over subdomains putting them into local sles */
