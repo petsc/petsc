@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.19 1996/01/23 00:20:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.20 1996/01/24 18:04:30 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -168,12 +168,15 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 {
   AppCtx     *user = (AppCtx *) ptr;
   int        i, j, ierr, ndim, xs, xe, ys, ye, xm, ym;
-  int        rstart, rend, ldim, iglob;
+  int        rstart, rend, ldim, iglob, ierr;
   Scalar     *y, zero = 0.0, one = 1.0;
   double     gamma1;
   SNESType   method;
 
-  ierr = MatZeroEntries(*H); CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+  if (iter > 1) { /* Zero matrix only after the first iteration */
+    ierr = MatZeroEntries(*H); CHKERRQ(ierr);
+  }
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   xe = xs+xm;
   ye = ys+ym;
