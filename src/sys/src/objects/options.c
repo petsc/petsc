@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.155 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.156 1997/12/10 18:56:37 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -569,7 +569,12 @@ int PetscFinalize()
   PLogEventRegisterDestroy_Private();
 #endif
   OptionsDestroy_Private();
+
+  /*
+     Destroy all the function registration lists created
+  */
   NRDestroyAll(); 
+  DLDestroyAll();
   /*
        Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
      attribute.

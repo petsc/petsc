@@ -1,7 +1,7 @@
-# $Id: base.g,v 1.12 1997/10/19 03:20:08 bsmith Exp bsmith $ 
+# $Id: base.g,v 1.13 1997/12/20 04:35:14 bsmith Exp bsmith $ 
 
 PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-             -DUSE_PETSC_STACK -DUSE_DYNAMIC_LIBRARIES
+             -DUSE_PETSC_STACK 
 
 COPTFLAGS  = -g -Wall -Wshadow
 #
