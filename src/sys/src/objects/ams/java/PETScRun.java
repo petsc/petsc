@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.7 2000/11/06 18:46:54 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.8 2000/11/07 17:33:39 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -22,6 +22,7 @@ public class PETScRun extends java.applet.Applet
   JPanel      tpanel;
 
   Checkbox toptions;
+  Checkbox tbopt;
 
     Choice    arch;
     Choice    dir;
@@ -109,6 +110,8 @@ public class PETScRun extends java.applet.Applet
       toptions = new Checkbox("Set options graphically");
       tpanel.add(toptions);
 
+      tbopt = new Checkbox("Compile debug version");
+      tpanel.add(tbopt);
 
     opanel = new JTextArea(30,60);
     this.add(new JScrollPane(opanel), BorderLayout.NORTH); 
@@ -158,7 +161,12 @@ public class PETScRun extends java.applet.Applet
       properties.setProperty("EXAMPLE",example.getSelectedItem());
       properties.setProperty("NUMBERPROCESSORS",np.getSelectedItem());
       properties.setProperty("COMMAND",what);
-      if (toptions.getState()) {
+      if (tbopt.getState()) {
+        properties.setProperty("BOPT","g");
+      } else {
+        properties.setProperty("BOPT","O");
+      }
+      if (toptions.getState() && what.equals("mpirun")) {
 	URL urlb = this.getDocumentBase();
         properties.setProperty("OPTIONS","-ams_publish_options");
 	try {

@@ -1,4 +1,4 @@
-/*$Id: PETScRund.java,v 1.3 2000/10/25 19:11:57 bsmith Exp bsmith $*/
+/*$Id: PETScRund.java,v 1.4 2000/11/03 21:30:33 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -53,6 +53,7 @@ public class PETScRund
         }
 
         String     arch       = properties.getProperty("PETSC_ARCH");
+        String     bopt       = properties.getProperty("BOPT");
         int        np         = Integer.parseInt(properties.getProperty("NUMBERPROCESSORS"));
         String     directory  = properties.getProperty("DIRECTORY");
         if (!systems[EXAMPLES].containsKey(directory)) { /* bad directory sent from client */
@@ -65,7 +66,7 @@ public class PETScRund
           System.out.println("Requested example "+example+" that does not exist");
           return;
         }
-        String     command    = null;
+        String     command    = null,options = "";
         if (properties.getProperty("COMMAND").equals("make")) {
           command = "petscmake ";
         } else {
@@ -73,12 +74,18 @@ public class PETScRund
 	  int maxnp = Integer.parseInt((String)systems[MAXNP].get(arch));
 	  if (maxnp < np) np = maxnp;
           command = "petscrun "+np+" ";
+          if (properties.getProperty("OPTIONS") != null) {
+	      options = properties.getProperty("OPTIONS");
+          }
+          bopt = "";
         }
         command += systems[MACHINE].get(arch)+" "+
                    arch+" "+
+                   bopt+" "+
                    systems[DIRECTORY].get(arch)+"/ "+
                    directory+" "+
-                   example;
+                   example+" "+
+                   options;
         System.out.println("Running command:"+command);
         Process make = Runtime.getRuntime().exec(command);
         PumpStream pump = new PumpStream(make.getInputStream(),sock.getOutputStream());
