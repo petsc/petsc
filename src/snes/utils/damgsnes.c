@@ -623,12 +623,10 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
       }
     }
 
-    ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
     dmmg[i]->solve           = DMMGSolveSNES;
     dmmg[i]->computejacobian = jacobian;
     dmmg[i]->computefunction = function;
   }
-
 
   if (jacobian == DMMGComputeJacobianWithFD) {
     ISColoring iscoloring;
@@ -653,6 +651,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
   for (i=0; i<nlevels; i++) {
     ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_Multigrid,dmmg);CHKERRQ(ierr);
     ierr = SNESSetFunction(dmmg[i]->snes,dmmg[i]->b,function,dmmg[i]);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
   }
 
   /* Create interpolation scaling */
@@ -734,7 +733,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
     Input Parameter:
 +   dmmg - the context
 .   function - the function that defines the nonlinear system
-.   jacobian - function defines the local part of the Jacobian (not currently supported)
+.   jacobian - function defines the local part of the Jacobian
 .   ad_function - the name of the function with an ad_ prefix. This is ignored if ADIC is
                   not installed
 -   admf_function - the name of the function with an ad_ prefix. This is ignored if ADIC is
