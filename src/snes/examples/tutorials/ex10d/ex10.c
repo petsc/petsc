@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.15 2000/05/05 22:18:47 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.16 2000/09/22 20:46:24 bsmith Exp gropp $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -83,6 +83,8 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
      FormInitialGuess(AppCtx*,Vec);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   SNES     snes;                 /* SNES context */
@@ -158,14 +160,20 @@ int main(int argc,char **argv)
      dynamically by calling partitioning routines (at present, we have 
      a  ready interface to ParMeTiS). 
    */
-  fptr = fopen("adj.in","r");
+  fptr = fopen("adj.in","r"); 
+  if (!fptr) {
+      SETERRQ(0,0,"Could not open adj.in")
+  }
   
   /*
      Each processor writes to the file output.<rank> where rank is the
      processor's rank.
   */
   sprintf(part_name,"output.%d",rank);
-  fptr1 = fopen(part_name,"w");
+  fptr1 = fopen(part_name,"w"); 
+  if (!fptr1) {
+      SETERRQ(0,0,"Could no open output file");
+  }
   user.gloInd = (int*)PetscMalloc(user.Nvglobal*sizeof(int));
   fprintf(fptr1,"Rank is %d\n",rank);
   for (inode = 0; inode < user.Nvglobal; inode++) {
@@ -450,7 +458,8 @@ int main(int argc,char **argv)
 
   return 0;
 }
-
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 /* --------------------  Form initial approximation ----------------- */
 
 /* 
@@ -504,6 +513,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
 /* --------------------  Evaluate Function F(x) --------------------- */
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
@@ -582,6 +593,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0; 
 }
 
+#undef __FUNC__
+#define __FUNC__ "FormJacobian"
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*
    FormJacobian - Evaluates Jacobian matrix.
