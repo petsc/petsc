@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.22 1997/10/19 03:30:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.23 1997/12/01 01:57:22 bsmith Exp balay $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -78,7 +78,7 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
 int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,w,s,N,*cols,k,nc,*rows,col,cnt,l,p;
+  int                    m,n,dim,w,s,*cols,k,nc,*rows,col,cnt,l,p;
   int                    lstart,lend,pstart,pend;
   MPI_Comm               comm;
   Scalar                 *values;
@@ -96,8 +96,6 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 
   nc     = w;
   col    = 2*s + 1;
-
-  N       = m*n;
 
   /*
       Faster code for stencil width of 1 
@@ -179,7 +177,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,N,*cols,k,nc,*rows,col,cnt,l,p;
+  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,i1,j1,k1;
   MPI_Comm               comm;
   Scalar                 *values;
@@ -195,8 +193,6 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap); CHKERRQ(ierr);
   if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
   col    = 2*s + 1;
-
-  N      = m*n;
 
   values  = (Scalar *) PetscMalloc( col*col*col*nc*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
   PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));
@@ -282,7 +278,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr, xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,ys1,ny1;
-  int                    m,n,dim,w,s,N,*indices,k,xs1,nc,*cols;
+  int                    m,n,dim,w,s,*indices,k,xs1,nc,*cols;
   int                    nx1,gnx,gny;           
   MPI_Comm               comm;
   Scalar                 *values;
@@ -312,7 +308,6 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
   PetscMemzero(values,9*nc*nc*sizeof(Scalar));
   cols    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(cols);
   indices = (int *) PetscMalloc( 9*nc*nc*sizeof(int) ); CHKPTRQ(cols);
-  N       = m*n;
 
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0); CHKERRQ(ierr);
