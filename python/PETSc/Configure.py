@@ -156,9 +156,9 @@ class Configure(config.base.Configure):
     
 
 #-----------------------------------------------------------------------------------------------------
-
     if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket'):
-      self.addMakeMacro('PETSC_USE_SOCKET_VIEWER','1')
+      print 'adding macro socket_viewer'
+      self.addDefine('PETSC_USE_SOCKET_VIEWER','1')
 
 
 #-----------------------------------------------------------------------------------------------------
