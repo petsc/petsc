@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.1 2000/09/20 20:15:37 balay Exp hzhang $*/
+/*$Id: ex76.c,v 1.2 2000/09/21 14:05:06 hzhang Exp balay $*/
 
 static char help[] = "Tests vatious sequential routines in MatSBAIJ format. Same as ex74.c except introducing a matrix permutation for factorization and solve.\n";
 
@@ -281,15 +281,17 @@ int main(int argc,char **args)
   /* Test MatReordering() */
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRA(ierr); 
   ierr = ISDestroy(iscol);CHKERRA(ierr); 
+
   if(reorder){
     /* MatView(sA, VIEWER_STDOUT_SELF); */
     ISGetIndices(perm,&ip_ptr);      
-    i = ip_ptr[1]; ip_ptr[1] = ip_ptr[n-2]; ip_ptr[n-2] = i; 
-    i = ip_ptr[0]; ip_ptr[0] = ip_ptr[n-1]; ip_ptr[n-1] = i;
-    /* i = ip_ptr[2]; ip_ptr[2] = ip_ptr[n-3]; ip_ptr[n-3] = i; */    
+    i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 
+    i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i;
+    /* i = ip_ptr[2]; ip_ptr[2] = ip_ptr[mbs-3]; ip_ptr[mbs-3] = i; */    
     ierr= ISRestoreIndices(perm,&ip_ptr);CHKERRA(ierr);    
   }  
   
+
   /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
   if (bs == 1) {
     for (lf=-1; lf<16; lf += 2){   
@@ -318,8 +320,8 @@ int main(int argc,char **args)
     } 
   }
 
-  ierr = ISDestroy(perm);CHKERRA(ierr);
 
+  ierr = ISDestroy(perm);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);

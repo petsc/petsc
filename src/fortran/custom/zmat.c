@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.83 2000/07/25 15:08:46 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.84 2000/08/01 20:58:32 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -456,11 +456,11 @@ void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,vo
 static int ourmult(Mat mat,Vec x,Vec y)
 {
   int              ierr = 0;
-  (*(int (*)(Mat*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&x,&y,&ierr);
+  (*(int (PETSC_STDCALL *)(Mat*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&x,&y,&ierr);
   return ierr;
 }
 
-void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(Mat*,Vec*,Vec*,int*),int *ierr)
+void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,int*),int *ierr)
 {
   if (*op == MATOP_MULT) {
     *ierr = MatShellSetOperation(*mat,*op,(void *)ourmult);
@@ -482,7 +482,7 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(Mat*
    USER CAN HAVE ONLY ONE MatFDColoring in code Because there is no place to hang f7!
 */
 
-static void (*f7)(TS*,double*,Vec*,Vec*,void*,int*);
+static void (PETSC_STDCALL *f7)(TS*,double*,Vec*,Vec*,void*,int*);
 
 static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y,void *ctx)
 {
@@ -491,14 +491,14 @@ static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y,void *ctx)
   return ierr;
 }
 
-void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (*f)(TS*,double*,Vec*,Vec*,void*,int*),
+void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,int*),
                                  void *ctx,int *ierr)
 {
   f7 = f;
   *ierr = MatFDColoringSetFunction(*fd,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
 }
 
-static void (*f8)(SNES*,Vec*,Vec*,void*,int*);
+static void (PETSC_STDCALL *f8)(SNES*,Vec*,Vec*,void*,int*);
 
 static int ourmatfdcoloringfunctionsnes(SNES ts,Vec x,Vec y,void *ctx)
 {
@@ -508,7 +508,7 @@ static int ourmatfdcoloringfunctionsnes(SNES ts,Vec x,Vec y,void *ctx)
 }
 
 
-void PETSC_STDCALL matfdcoloringsetfunctionsnes_(MatFDColoring *fd,void (*f)(SNES*,Vec*,Vec*,void*,int*),
+void PETSC_STDCALL matfdcoloringsetfunctionsnes_(MatFDColoring *fd,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec*,void*,int*),
                                  void *ctx,int *ierr)
 {
   f8 = f;

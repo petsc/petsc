@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.38 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zpc.c,v 1.39 2000/08/01 20:58:32 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -79,7 +79,7 @@ void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *ierr PE
 }
 
 
-static void (*f1)(void *,Vec*,Vec*,int*);
+static void (PETSC_STDCALL *f1)(void *,Vec*,Vec*,int*);
 static int ourshellapply(void *ctx,Vec x,Vec y)
 {
   int              ierr = 0;
@@ -87,14 +87,14 @@ static int ourshellapply(void *ctx,Vec x,Vec y)
   return 0;
 }
 
-void PETSC_STDCALL pcshellsetapply_(PC *pc,void (*apply)(void*,Vec *,Vec *,int*),void *ptr,
+void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,int*),void *ptr,
                       int *ierr)
 {
   f1 = apply;
   *ierr = PCShellSetApply(*pc,ourshellapply,ptr);
 }
 
-static void (*f9)(void *,int*);
+static void (PETSC_STDCALL *f9)(void *,int*);
 static int ourshellsetup(void *ctx)
 {
   int              ierr = 0;
@@ -103,14 +103,14 @@ static int ourshellsetup(void *ctx)
   return 0;
 }
 
-void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (*setup)(void*,int*),int *ierr)
+void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,int*),int *ierr)
 {
   f9 = setup;
   *ierr = PCShellSetSetUp(*pc,ourshellsetup);
 }
 
 /* -----------------------------------------------------------------*/
-static void (*f2)(void*,Vec*,Vec*,Vec*,int*,int*);
+static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,int*,int*);
 static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)
 {
   int              ierr = 0;
@@ -120,7 +120,7 @@ static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)
 }
 
 void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
-         void (*apply)(void*,Vec *,Vec *,Vec *,int*,int*),
+         void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,int*,int*),
          void *ptr,int *ierr)
 {
   f2 = apply;

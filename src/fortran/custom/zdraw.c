@@ -1,4 +1,4 @@
-/*$Id: zdraw.c,v 1.35 1999/11/24 21:55:52 bsmith Exp bsmith $*/
+/*$Id: zdraw.c,v 1.36 2000/01/11 21:03:48 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 
@@ -48,7 +48,7 @@
 
 EXTERN_C_BEGIN
 
-static void (*f1)(Draw *,void *,int *);
+static void (PETSC_STDCALL *f1)(Draw *,void *,int *);
 static int ourdrawzoom(Draw draw,void *ctx)
 {
   int ierr = 0;
@@ -57,7 +57,7 @@ static int ourdrawzoom(Draw draw,void *ctx)
   return 0;
 }
 
-void PETSC_STDCALL drawzoom_(Draw *draw,void (*f)(Draw *,void *,int *),void *ctx,int *ierr)
+void PETSC_STDCALL drawzoom_(Draw *draw,void (PETSC_STDCALL *f)(Draw *,void *,int *),void *ctx,int *ierr)
 {
   f1      = f;
   *ierr = DrawZoom(*draw,ourdrawzoom,ctx);
