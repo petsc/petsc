@@ -185,8 +185,8 @@ void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(SNES*,Vec*,
     Save the fortran rhs function in the DM on each level; ourrhs() pulls it out when needed
   */
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (void (*)(void))rhs;
-    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[1] = (void (*)(void))mat;
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (FCNVOID)rhs;
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[1] = (FCNVOID)mat;
   }
 }
 
@@ -314,13 +314,13 @@ void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,i
                     void *mctx,void (PETSC_STDCALL *mondestroy)(void *,int *),int *ierr)
 {
   CHKFORTRANNULLOBJECT(mctx);
-  if ((void(*)(void))func == (void(*)(void))snesdefaultmonitor_) {
+  if ((FCNVOID)func == (FCNVOID)snesdefaultmonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESDefaultMonitor,0,0);
-  } else if ((void(*)(void))func == (void(*)(void))snesvecviewmonitor_) {
+  } else if ((FCNVOID)func == (FCNVOID)snesvecviewmonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESVecViewMonitor,0,0);
-  } else if ((void(*)(void))func == (void(*)(void))snesvecviewupdatemonitor_) {
+  } else if ((FCNVOID)func == (FCNVOID)snesvecviewupdatemonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESVecViewUpdateMonitor,0,0);
-  } else if ((void(*)(void))func == (void(*)(void))sneslgmonitor_) {
+  } else if ((FCNVOID)func == (FCNVOID)sneslgmonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESLGMonitor,0,0);
   } else {
     f7 = func;
@@ -365,13 +365,13 @@ int OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscRea
 
 void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*),void *ctx,int *ierr)
 {
-  if ((void(*)(void))f == (void(*)(void))snescubiclinesearch_) {
+  if ((FCNVOID)f == (FCNVOID)snescubiclinesearch_) {
     *ierr = SNESSetLineSearch(*snes,SNESCubicLineSearch,ctx);
-  } else if ((void(*)(void))f == (void(*)(void))snesquadraticlinesearch_) {
+  } else if ((FCNVOID)f == (FCNVOID)snesquadraticlinesearch_) {
     *ierr = SNESSetLineSearch(*snes,SNESQuadraticLineSearch,ctx);
-  } else if ((void(*)(void))f == (void(*)(void))snesnolinesearch_) {
+  } else if ((FCNVOID)f == (FCNVOID)snesnolinesearch_) {
     *ierr = SNESSetLineSearch(*snes,SNESNoLineSearch,ctx);
-  } else if ((void(*)(void))f == (void(*)(void))snesnolinesearchnonorms_) {
+  } else if ((FCNVOID)f == (FCNVOID)snesnolinesearchnonorms_) {
     *ierr = SNESSetLineSearch(*snes,SNESNoLineSearchNoNorms,ctx);
   } else {
     f73 = f;
@@ -413,9 +413,9 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
        void *cctx,int *ierr)
 {
   CHKFORTRANNULLOBJECT(cctx);
-  if ((void(*)(void))func == (void(*)(void))snesconverged_ls_){
+  if ((FCNVOID)func == (FCNVOID)snesconverged_ls_){
     *ierr = SNESSetConvergenceTest(*snes,SNESConverged_LS,0);
-  } else if ((void(*)(void))func == (void(*)(void))snesconverged_tr_){
+  } else if ((FCNVOID)func == (FCNVOID)snesconverged_tr_){
     *ierr = SNESSetConvergenceTest(*snes,SNESConverged_TR,0);
   } else {
     f8 = func;
@@ -473,7 +473,7 @@ void PETSC_STDCALL snessetfunction_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)
 {
   CHKFORTRANNULLOBJECT(ctx);
   f2 = func;
-  if ((void(*)(void))func == (void(*)(void))snesdaformfunction_) {
+  if ((FCNVOID)func == (FCNVOID)snesdaformfunction_) {
     *ierr = SNESSetFunction(*snes,*r,SNESDAFormFunction,ctx);
   } else {
     *ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
@@ -528,13 +528,13 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
             MatStructure*,void*,int*),void *ctx,int *ierr)
 {
   CHKFORTRANNULLOBJECT(ctx);
-  if ((void(*)(void))func == (void(*)(void))snesdefaultcomputejacobian_) {
+  if ((FCNVOID)func == (FCNVOID)snesdefaultcomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobian,ctx);
-  } else if ((void(*)(void))func == (void(*)(void))snesdefaultcomputejacobiancolor_) {
+  } else if ((FCNVOID)func == (FCNVOID)snesdefaultcomputejacobiancolor_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianColor,*(MatFDColoring*)ctx);
-  } else if ((void(*)(void))func == (void(*)(void))snesdacomputejacobianwithadifor_) {
+  } else if ((FCNVOID)func == (FCNVOID)snesdacomputejacobianwithadifor_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobianWithAdifor,ctx);
-  } else if ((void(*)(void))func == (void(*)(void))snesdacomputejacobian_) {
+  } else if ((FCNVOID)func == (FCNVOID)snesdacomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobian,ctx);
   } else {
     f3 = func;

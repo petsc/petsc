@@ -62,10 +62,11 @@ int MatSNESMFSetType(Mat mat,const MatSNESMFType ftype)
   PetscFunctionReturn(0);
 }
 
+typedef int (*FCN1)(Vec,void*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunctioniBase_FD"
-int MatSNESMFSetFunctioniBase_FD(Mat mat,int (*func)(Vec,void *))
+int MatSNESMFSetFunctioniBase_FD(Mat mat,FCN1 func)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -75,10 +76,11 @@ int MatSNESMFSetFunctioniBase_FD(Mat mat,int (*func)(Vec,void *))
 }
 EXTERN_C_END
 
+typedef int (*FCN2)(int,Vec,PetscScalar*,void*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunctioni_FD"
-int MatSNESMFSetFunctioni_FD(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
+int MatSNESMFSetFunctioni_FD(Mat mat,FCN2 funci)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -465,10 +467,11 @@ int MatSNESMFSetBase_FD(Mat J,Vec U)
 }
 EXTERN_C_END
 
+typedef int (*FCN3)(Vec,Vec,PetscScalar*,void*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetCheckh_FD"
-int MatSNESMFSetCheckh_FD(Mat J,int (*fun)(Vec,Vec,PetscScalar*,void*),void*ectx)
+int MatSNESMFSetCheckh_FD(Mat J,FCN3 fun,void*ectx)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 

@@ -56,9 +56,13 @@ int DASetCoordinates(DA da,Vec c)
 .  c - coordinate vector
 
    Note:
-    Does NOT nclude the coordinates for the the ghost nodes
+    Each process has only the coordinates for its local nodes (does NOT have the
+  coordinates for the ghost nodes).
 
-    You should not destroy or keep around this vector.
+    For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
+    and (x_0,y_0,z_0,x_1,y_1,z_1...)
+
+    You should not destroy or keep around this vector after the DA is destroyed.
 
   Level: intermediate
 

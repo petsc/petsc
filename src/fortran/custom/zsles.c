@@ -12,20 +12,20 @@
 #define dmmgview_                DMMGVIEW
 #define dmmgsolve_               DMMGSOLVE
 #define dmmggetda_               DMMGGETDA
-#define dmmgsetksp_             DMMGSETKSP
+#define dmmgsetksp_              DMMGSETKSP
 #define dmmggetx_                DMMGGETX
 #define dmmggetj_                DMMGGETJ
 #define dmmggetb_                DMMGGETB
-#define dmmggetksp_             DMMGGETKSP
+#define dmmggetksp_              DMMGGETKSP
 #define dmmggetlevels_           DMMGGETLEVELS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmggetx_                dmmggetx
 #define dmmggetj_                dmmggetj
 #define dmmggetb_                dmmggetb
-#define dmmggetksp_             dmmggetksp
+#define dmmggetksp_              dmmggetksp
 #define dmmggetda_               dmmggetda
 #define dmmggetlevels_           dmmggetlevels
-#define dmmgsetksp_             dmmgsetksp
+#define dmmgsetksp_              dmmgsetksp
 #define dmmgdestroy_             dmmgdestroy
 #define dmmgcreate_              dmmgcreate
 #define dmmgsetup_               dmmgsetup
@@ -95,7 +95,7 @@ void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(DMMG*,Vec*,i
     Save the fortran rhs function in the DM on each level; ourrhs() pulls it out when needed
   */
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (void (*)(void))rhs;
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (FCNVOID)rhs;
   }
 }
 
@@ -113,7 +113,7 @@ void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,int *ierr)
   *ierr = DMMGSetDM(*dmmg,*dm);if (*ierr) return;
   /* loop over the levels added a place to hang the function pointers in the DM for each level*/
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    *ierr = PetscMalloc(3*sizeof(void (*)(void)),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
+    *ierr = PetscMalloc(3*sizeof(FCNVOID),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
   }
 }
 
