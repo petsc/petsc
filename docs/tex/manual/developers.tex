@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.6 1998/04/29 22:11:13 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.7 1998/05/04 18:52:05 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -119,7 +119,7 @@ does {\em not} know how the data is stored internally.
 
 PETSc is designed around several components (e.g. {\tt Vec} (vectors),
 {\tt Mat} (matrices, both dense and sparse)). These components are each 
-implemented using C {\tt struct}s, that contain the data and functions pointers
+implemented using C {\tt struct}s, that contain the data and function pointers
 for operations on the data (much like virtual functions in classes in C++). 
 Each components consists of three parts: 
 \begin{itemize}
@@ -134,9 +134,9 @@ data fields,including matrix size; while a particular matrix implementation in P
 (say compressed sparse row, called AIJ) has its own data fields for storing the actual
 matrix values and sparsity pattern. This will be explained in more detail in the following sections.
 
-We will use <component>\_<implementation> to denote the actual source code and 
+We will use {\tt <component>\_<implementation>} to denote the actual source code and 
 data structures used for a particular implementation of an object that has the 
-<component> interface.
+{\tt <component>} interface.
 
 \section{Organization of the Source Code}
 
@@ -146,7 +146,7 @@ Each component has
 \item Its own directory, {\tt \$\{PETSC\_DIR\}/src/<component>}
 \item A data structure defined in  the file
       {\tt \$\{PETSC\_DIR\}/src/<component>/<component>impl.h}.
-      This data structure is shared by all the different implementations of the 
+      This data structure is shared by all the different PETSc implementations of the 
       component. For example, for matrices it is shared by dense,
       sparse, parallel, and sequential formats.
 \item An abstract interface that defines the application callable 
@@ -342,7 +342,7 @@ We now discuss the specific functions in the common function table.
       the new object. If the 
       second object is null and and object with the same name has already been 
       composed that object is dereferenced (the {\tt destroy()} function is called on 
-      it, and that object is removed from the first object); i.e. it is a way to 
+      it, and that object is removed from the first object); i.e. this is a way to 
       remove, by name, an object that was previously composed. 
 
 \item {\tt query(PetscObject,char *name, PetscObject *)} retrieves an object that was 
@@ -354,6 +354,9 @@ We now discuss the specific functions in the common function table.
       same name, the old one is replace. If the fname is null it is removed from 
       the object. The string {\tt fname} is the  character string name of the function;
       it may include the path name or URL of the dynamic library where the function is located.
+      The argument {\tt name} is a ``short'' name of the function to be used with the 
+      {\tt queryfunction()} call. On systems that support dynamic libraries the {\tt func}
+      argument is ignored.
 
 \item {\tt queryfunction(PetscObject,char *name,void **func)} retreives a function pointer that
       was associated with the object. If dynamic libraries are used the function is loaded
@@ -395,7 +398,6 @@ to manipulate these elementary objects are
   int OListFind(OList fl, char *name, PetscObject *obj)
   int OListDuplicate(OList fl, OList *nl);
 \end{verbatim}
-
 The PETSc object {\tt compose()} and {\tt query()} functions are then simply
 (defined in {\tt src/sys/src/objects/inherit.c})
 \begin{verbatim}
@@ -421,9 +423,8 @@ The PETSc object {\tt compose()} and {\tt query()} functions are then simply
 \subsection{Compose Function and Query Function}
 
 PETSc allows one to compose functions by string name (to be loaded later from 
-a dynamic library) or by function pointer. 
-
-In {\tt src/sys/src/dll/reg.c} PETSc defines the C structs
+a dynamic library) or by function pointer. In {\tt src/sys/src/dll/reg.c}
+PETSc defines the C structs
 \begin{verbatim}
 typedef struct FuncList_struct FuncList;
 struct FuncList_struct {
@@ -443,7 +444,7 @@ struct _DLList {
 \end{verbatim}
 
 The {\tt DLList} object consists of a linked list of {\tt FuncList} objects; each 
-of which consists of 
+of which contains
 \begin{itemize}
 \item a function pointer (if it has already been loaded into memory from the dynamic library)
 \item the directory and library name where the function exists (if it is loaded from a 
@@ -478,7 +479,8 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
 
   Because we need to support function composition on systems both {\bf with} and {\bf without} 
 dynamic link libraries the actual source code is a little messy. The idea is that
-on systems with dynamic libraries all PETSc function calls that take the actual 
+on systems with dynamic libraries all PETSc ``register'' and ``composefunction''
+function calls that take the actual 
 function pointer argument must eliminate this argument in the preprocessor step before 
 the code is compiled. Otherwise, since the compiler sees the function pointer, it will 
 compile it in and link in all those functions; thus one could not take advantage of the
@@ -516,10 +518,10 @@ struct _p_<component> {
   OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
 };
 \end{verbatim}
-model; rather the <component>Ops field is empty and the member functions
+model; rather the {\tt <component>Ops} field is empty and the member functions
 are scattered in the {\tt OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY}
 fields. We hope to rectify this in the next release. Regardless, this does not
-effect (except superficially) the use of the objects.
+effect (except superficially) the development of the objects.
 
 \subsection{Preconditioners: PC}
 The base PETSc PC object is defined in the {\tt src/pc/pcimpl.h} include file. 
