@@ -9,8 +9,6 @@
 #include "stdlib.h"
 #endif
 
-#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
-
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
 #include "superlu_zdefs.h"
@@ -39,10 +37,15 @@ typedef struct {
 #else
   double                  *val;
 #endif
-} Mat_MPIAIJ_SuperLU_DIST;
 
-extern int MatDestroy_MPIAIJ(Mat);
-extern int MatDestroy_SeqAIJ(Mat);
+  /* A few function pointers for inheritance */
+  int (*MatView)(Mat,PetscViewer);
+  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatDestroy)(Mat);
+
+  /* Flag to clean up (non-global) SuperLU objects during Destroy */
+  PetscTruth CleanUpSuperLUDist;
+} Mat_MPIAIJ_SuperLU_DIST;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_SuperLU_DIST"
@@ -50,38 +53,70 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 {
   Mat_MPIAIJ              *a  = (Mat_MPIAIJ*)A->data; 
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr; 
-  int                     ierr, size=a->size;
+  int                     ierr, size=a->size,(*destroy)(Mat);
     
   PetscFunctionBegin;
-  /* Deallocate SuperLU_DIST storage */
-  if (lu->MatInputMode == GLOBAL) { 
-    Destroy_CompCol_Matrix_dist(&lu->A_sup);
-  } else {     
-    Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);  
-    if ( lu->options.SolveInitialized ) {
+  if (lu->CleanUpSuperLUDist) {
+    /* Deallocate SuperLU_DIST storage */
+    if (lu->MatInputMode == GLOBAL) { 
+      Destroy_CompCol_Matrix_dist(&lu->A_sup);
+    } else {     
+      Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);  
+      if ( lu->options.SolveInitialized ) {
 #if defined(PETSC_USE_COMPLEX)
-      zSolveFinalize(&lu->options, &lu->SOLVEstruct);
+        zSolveFinalize(&lu->options, &lu->SOLVEstruct);
 #else
-      dSolveFinalize(&lu->options, &lu->SOLVEstruct);
+        dSolveFinalize(&lu->options, &lu->SOLVEstruct);
 #endif
+      }
+    }
+    Destroy_LU(A->N, &lu->grid, &lu->LUstruct);
+    ScalePermstructFree(&lu->ScalePermstruct);
+    LUstructFree(&lu->LUstruct);
+
+    /* Release the SuperLU_DIST process grid. */
+    superlu_gridexit(&lu->grid);
+    
+    ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
+  }
+  destroy = lu->MatDestroy;
+  ierr = PetscFree(lu);CHKERRQ(ierr); 
+  ierr = (*destroy)(A);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatView_MPIAIJ_Spooles_DIST"
+int MatView_MPIAIJ_SuperLU_DIST(Mat A,PetscViewer viewer)
+{
+  int                     ierr;
+  PetscTruth              isascii;
+  PetscViewerFormat       format;
+  Mat_MPIAIJ_SuperLU_DIST *lu=(Mat_MPIAIJ_SuperLU_DIST*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      ierr = MatMPIAIJFactorInfo_SuperLu(A,viewer);CHKERRQ(ierr);
     }
   }
-  Destroy_LU(A->N, &lu->grid, &lu->LUstruct);
-  ScalePermstructFree(&lu->ScalePermstruct);
-  LUstructFree(&lu->LUstruct);
+  PetscFunctionReturn(0);
+}
 
-  /* Release the SuperLU_DIST process grid. */
-  superlu_gridexit(&lu->grid);
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_MPIAIJ_SuperLU_DIST"
+int MatAssemblyEnd_MPIAIJ_SuperLU_DIST(Mat A,MatAssemblyType mode) {
+  int                     ierr;
+  Mat_MPIAIJ_SuperLU_DIST *lu=(Mat_MPIAIJ_SuperLU_DIST*)(A->spptr);
 
-  ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
-  ierr = PetscFree(lu);CHKERRQ(ierr); 
-  
-  if (size == 1){
-    ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
-  } else {
-    ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
-  } 
-  
+  PetscFunctionBegin;
+  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  ierr = MatUseSuperLU_DIST_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -373,7 +408,7 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST"
 int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat_MPIAIJ              *fac;
+  Mat                     B;
   Mat_MPIAIJ_SuperLU_DIST *lu;   
   int                     ierr,M=A->M,N=A->N,size;
   superlu_options_t       options;
@@ -385,15 +420,17 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
 	
   ierr = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr); 
 
-  /* Create the factorization matrix F */ 
-  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,M,N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  /* Create the factorization matrix */
+  ierr = MatCreate(A->comm,A->m,A->n,M,N,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSUPERLUDIST);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
+  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;
-  (*F)->ops->solve            = MatSolve_MPIAIJ_SuperLU_DIST;
-  (*F)->ops->destroy          = MatDestroy_MPIAIJ_SuperLU_DIST;  
-  (*F)->factor                = FACTOR_LU;  
-  (*F)->spptr                  = (void*)lu;
-  fac                         = (Mat_MPIAIJ*)(*F)->data; 
+  B->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;
+  B->ops->solve            = MatSolve_MPIAIJ_SuperLU_DIST;
+  B->ops->destroy          = MatDestroy_MPIAIJ_SuperLU_DIST;  
+  B->factor                = FACTOR_LU;  
+  B->spptr                 = (void*)lu;
 
   /* Set the input options */
   set_default_options(&options);
@@ -486,10 +523,10 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
   ScalePermstructInit(M, N, &lu->ScalePermstruct);
   LUstructInit(M, N, &lu->LUstruct); 
 
-  lu->options = options;
-  fac->size   = size;
-  lu->flg     = DIFFERENT_NONZERO_PATTERN;
-
+  lu->options            = options;
+  lu->flg                = DIFFERENT_NONZERO_PATTERN;
+  lu->CleanUpSuperLUDist = PETSC_TRUE;
+  *F = B;
   PetscFunctionReturn(0); 
 }
 
@@ -503,6 +540,8 @@ int MatUseSuperLU_DIST_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMPIAIJFactorInfo_SuperLu"
 int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
 {
   Mat_MPIAIJ_SuperLU_DIST *lu= (Mat_MPIAIJ_SuperLU_DIST*)A->spptr;
@@ -536,16 +575,53 @@ int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#else
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_MPIAIJ_SuperLU_DIST"
+int MatCreate_MPIAIJ_SuperLU_DIST(Mat A) {
+  int                     ierr,size;
+  MPI_Comm                comm;
+  Mat_MPIAIJ_SuperLU_DIST *lu;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseSuperLU_DIST_MPIAIJ"
-int MatUseSuperLU_DIST_MPIAIJ(Mat A)
-{
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  }
+  ierr = MatUseSuperLU_SeqAIJ(A);CHKERRQ(ierr);
+
+  ierr                   = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr);
+  lu->MatView            = A->ops->view;
+  lu->MatAssemblyEnd     = A->ops->assemblyend;
+  lu->MatDestroy         = A->ops->destroy;
+  lu->CleanUpSuperLUDist = PETSC_FALSE;
+  A->spptr               = (void*)lu;
+  A->ops->view           = MatView_MPIAIJ_SuperLU_DIST;
+  A->ops->assemblyend    = MatAssemblyEnd_MPIAIJ_SuperLU_DIST;
+  A->ops->destroy        = MatDestroy_MPIAIJ_SuperLU_DIST;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
-#endif
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad_MPIAIJ_SuperLU_DIST"
+int MatLoad_MPIAIJ_SuperLU_DIST(PetscViewer viewer,MatType type,Mat *A) {
+  int      ierr,size,(*r)(PetscViewer,MatType,Mat*);
+  MPI_Comm comm;
 
-
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscFListFind(comm,MatLoadList,MATSEQAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFListFind(comm,MatLoadList,MATMPIAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  }
+  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END

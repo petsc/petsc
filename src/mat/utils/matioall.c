@@ -17,6 +17,9 @@ EXTERN int MatLoad_SeqSBAIJ(PetscViewer,MatType,Mat*);
 EXTERN int MatLoad_MPISBAIJ(PetscViewer,MatType,Mat*);
 EXTERN int MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
 EXTERN int MatLoad_ESI(PetscViewer,MatType,Mat*);
+#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
+EXTERN int MatLoad_MPIAIJ_SuperLU_DIST(PetscViewer,MatType,Mat*);
+#endif
 EXTERN_C_END
 extern PetscTruth MatLoadRegisterAllCalled;
 
@@ -67,6 +70,9 @@ int MatLoadRegisterAll(char *path)
 #endif
 #if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
   ierr = MatLoadRegisterDynamic(MATSUPERLU,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
+  ierr = MatLoadRegisterDynamic(MATSUPERLUDIST,path,"MatLoad_MPIAIJ_SuperLU_DIST",MatLoad_MPIAIJ_SuperLU_DIST);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }  
