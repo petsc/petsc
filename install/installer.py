@@ -56,7 +56,7 @@ class Installer(install.base.Base):
     self.debugPrint('Backing up '+url, 3, 'install')
     root = self.retriever.retrieve(url, self.getInstallRoot(url)+'_backup', force = self.force);
     self.builder.build(root, 'sidl', ignoreDependencies = 1)
-    output = self.executeShellCommand('tar -czf '+self.getRepositoryName(url)+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
+    output = self.executeShellCommand('tar -czf '+self.getRepositoryName(self.getMappedUrl(url))+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
     shutil.rmtree(root)
     return
 

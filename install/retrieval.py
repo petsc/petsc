@@ -28,11 +28,14 @@ class Retriever(install.base.Base):
     return 1
     
   def genericRetrieve(self, url, root, canExist = 0, force = 0):
-    if not self.removeRoot(root,canExist,force): return root
+    '''Fetch the gzipped tarfile indicated by url and expand it into root
+    - We append .tgz to url automatically
+    - There is currently no check that the root inside the tarfile matches the indicated root'''
+    if not self.removeRoot(root, canExist, force): return root
     localFile = root+'.tgz'
     if os.path.exists(localFile):
       os.remove(localFile)
-    urllib.urlretrieve(url, localFile)
+    urllib.urlretrieve(url+'.tgz', localFile)
     output = self.executeShellCommand('tar -zxf '+localFile)
     os.remove(localFile)
     return root

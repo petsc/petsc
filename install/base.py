@@ -1,5 +1,6 @@
 import maker
 
+import os
 import urlparse
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['bk', 'ssh'])
@@ -23,7 +24,6 @@ class Base (maker.Maker):
 
   def checkNumeric(self):
     import distutils.sysconfig
-    import os
 
     try:
       import Numeric
@@ -54,16 +54,12 @@ class Base (maker.Maker):
 
   def getRepositoryName(self, url):
     '''Return the repository name from a project URL. This is the base filename that should be used for tarball distributions.'''
-    import os
-    url = self.getMappedUrl(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     return os.path.basename(path)
 
   def getRepositoryPath(self, url, noBase = 0):
     '''Return the repository path from a project URL. This is the name that should be used for alternate retrieval.
     - You can omit the repository name itself by giving the noBase flag'''
-    import os
-    url = self.getMappedUrl(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     sitename = location.split('.')[0]
     pathname = path[1:]
@@ -71,7 +67,7 @@ class Base (maker.Maker):
     return os.path.join(sitename, pathname)
 
   def getInstallRoot(self, url):
-    '''Guess the install root from the project URL'''
+    '''Guess the install root from the project URL. Note this method automatically remaps the URL.'''
     url  = self.getMappedUrl(url)
     root = self.getRepositoryName(url)
     if self.base:
@@ -93,7 +89,7 @@ class Base (maker.Maker):
     elif not isinstance(self.argDB['urlMappingModules'], list):
       self.argDB['urlMappingModules'] = [self.argDB['urlMappingModules']]
     for moduleName in self.argDB['urlMappingModules']:
-      __import__(moduleName, globals(), locals(), ['setupUrlMapping'])(self.urlMaps)
+      __import__(moduleName, globals(), locals(), ['setupUrlMapping']).setupUrlMapping(self, self.urlMaps)
     return
 
   def getMappedUrl(self, url):
