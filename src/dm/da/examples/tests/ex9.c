@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.16 2001/01/22 23:08:13 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.17 2001/01/23 20:58:05 balay Exp bsmith $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
     ierr = PetscFree(lz);CHKERRQ(ierr);
   }
 
-  ierr = DAGetColoring(da,&coloring,&mat);CHKERRQ(ierr);
+  ierr = DAGetColoring(da,MATMPIAIJ,&coloring,&mat);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRQ(ierr); 
 
   ierr = DACreateGlobalVector(da,&dvec);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.92 2001/02/26 16:06:57 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.93 2001/02/28 16:08:57 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -109,14 +109,18 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,int *ierr)
+void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,int *ic,long *iic,int *ierr)
 {
-  *ierr = MatMPIAIJGetSeqAIJ(*A,Ad,Ao);
+  int *i;
+  *ierr = MatMPIAIJGetSeqAIJ(*A,Ad,Ao,&i);if (*ierr) return;
+  *iic  = PetscIntAddressToFortran(ic,i);
 }
 
-void PETSC_STDCALL matmpibaijgetseqbaij_(Mat *A,Mat *Ad,Mat *Ao,int *ierr)
+void PETSC_STDCALL matmpibaijgetseqbaij_(Mat *A,Mat *Ad,Mat *Ao,int *ic,long *iic,int *ierr)
 {
-  *ierr = MatMPIBAIJGetSeqBAIJ(*A,Ad,Ao);
+  int *i;
+  *ierr = MatMPIBAIJGetSeqBAIJ(*A,Ad,Ao,&i);if (*ierr) return;
+  *iic  = PetscIntAddressToFortran(ic,i);
 }
 
 void PETSC_STDCALL matgetrowij_(Mat *B,int *shift,PetscTruth *sym,int *n,int *ia,long *iia,int *ja,long *jja,

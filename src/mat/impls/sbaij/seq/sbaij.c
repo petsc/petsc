@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.50 2001/03/09 21:42:23 balay Exp balay $*/
+/*$Id: sbaij.c,v 1.51 2001/03/09 21:43:00 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1373,7 +1373,8 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
     SETERRQ(PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
   }
 
-  if (nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than -2: value %d",nz);
+  if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 3;
+  if (nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %d",nz);
   if (nnz) {
     for (i=0; i<mbs; i++) {
       if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
@@ -1439,7 +1440,7 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
   b->nbs = mbs; 
   ierr   = PetscMalloc((mbs+1)*sizeof(int),&b->imax);CHKERRQ(ierr);
   if (!nnz) {
-    if (nz == PETSC_DEFAULT) nz = 5;
+    if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
     else if (nz <= 0)        nz = 1;
     for (i=0; i<mbs; i++) {
       b->imax[i] = nz; 

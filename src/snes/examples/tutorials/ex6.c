@@ -1,8 +1,7 @@
-/*$Id: ex6.c,v 1.67 2001/01/17 22:26:26 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.68 2001/01/23 20:57:12 balay Exp bsmith $*/
 
-static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
-matrices are used for the Jacobian and the preconditioner.  The code also\n\
-demonstrates the use of matrix-free Newton-Krylov methods in conjunction\n\
+static char help[] = "u`` + u^{2} = f. Different matrices for the Jacobian and the preconditioner.\n\
+Demonstrates the use of matrix-free Newton-Krylov methods in conjunction\n\
 with a user-provided preconditioner.  Input arguments are:\n\
    -snes_mf : Use matrix-free Newton methods\n\
    -user_precond : Employ a user-defined preconditioner.  Used only with\n\

@@ -1,4 +1,4 @@
-/*$Id: tcqmr.c,v 1.55 2000/09/28 21:13:28 bsmith Exp bsmith $*/
+/*$Id: tcqmr.c,v 1.56 2001/01/15 21:47:25 bsmith Exp bsmith $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
@@ -23,7 +23,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
   PetscFunctionBegin;
   ksp->its = 0;
 
-  ierr  = KSPResidual(ksp,x,u,v,r,v0,b);CHKERRQ(ierr);
+  ierr  = KSPInitialResidual(ksp,x,u,v,r,v0,b);CHKERRQ(ierr);
   ierr  = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
 
   ierr = (*ksp->converged)(ksp,0,rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);

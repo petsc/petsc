@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.34 2001/01/26 19:00:36 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.35 2001/02/13 17:37:09 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNC__  
@@ -656,7 +656,7 @@ static int TSPublish_Petsc(PetscObject obj)
 
 .keywords: TS, timestep, create, context
 
-.seealso: TSSetUp(), TSStep(), TSDestroy()
+.seealso: TSSetUp(), TSStep(), TSDestroy(), TSProblemType, TS
 @*/
 int TSCreate(MPI_Comm comm,TSProblemType problemtype,TS *outts)
 {

@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.65 2001/01/15 21:43:42 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.66 2001/01/22 23:02:04 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -409,9 +409,8 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],int (**r)(void 
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else {
-        PetscErrorPrintf("Registered function name: %s\n",entry->rname);
         ierr = PetscDLLibraryPrintPath();CHKERRQ(ierr);
-        SETERRQ(1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
+        SETERRQ1(1,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
       }
 #endif
     }

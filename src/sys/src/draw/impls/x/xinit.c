@@ -1,4 +1,4 @@
-/*$Id: xinit.c,v 1.69 2000/09/28 21:08:36 bsmith Exp bsmith $*/
+/*$Id: xinit.c,v 1.70 2001/01/15 21:43:29 bsmith Exp bsmith $*/
 
 /* 
    This file contains routines to open an X window display and window
@@ -155,8 +155,7 @@ int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,
     size_hints.height       = h;
     size_hints.flags        = USPosition | USSize | PMinSize;
  
-    XSetWMProperties(XiWin->disp,XiWin->win,&windowname,&iconname,
-                     0,0,&size_hints,&wm_hints,&class_hints);
+    XSetWMProperties(XiWin->disp,XiWin->win,&windowname,&iconname,0,0,&size_hints,&wm_hints,&class_hints);
   }
   /* make the window visible */
   XSelectInput(XiWin->disp,XiWin->win,ExposureMask | StructureNotifyMask);

@@ -1,4 +1,4 @@
-/*$Id: tfqmr.c,v 1.57 2000/09/28 21:13:30 bsmith Exp bsmith $*/
+/*$Id: tfqmr.c,v 1.58 2001/01/15 21:47:26 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal
@@ -51,7 +51,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   AUQ      = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
+  ierr = KSPInitialResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.23 2000/09/28 21:13:33 bsmith Exp bsmith $*/
+/*$Id: bicg.c,v 1.24 2001/01/15 21:47:28 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -33,7 +33,7 @@ int KSPSetUp_BiCG(KSP ksp)
 int  KSPSolve_BiCG(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
-  PetscTruth   pres;
+  PetscTruth   pres,diagonalscale;
   Scalar       dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
   PetscReal    dp;
   Vec          X,B,Zl,Zr,Rl,Rr,Pl,Pr;
@@ -41,16 +41,19 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   MatStructure pflag;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+
   pres    = ksp->use_pres;
   maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
-  Rl       = ksp->work[0];
-  Zl       = ksp->work[1];
-  Pl       = ksp->work[2];
-  Rr       = ksp->work[3];
-  Zr       = ksp->work[4];
-  Pr       = ksp->work[5];
+  Rl      = ksp->work[0];
+  Zl      = ksp->work[1];
+  Pl      = ksp->work[2];
+  Rr      = ksp->work[3];
+  Zr      = ksp->work[4];
+  Pr      = ksp->work[5];
 
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 

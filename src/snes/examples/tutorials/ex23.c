@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.3 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex23.c,v 1.4 2001/02/26 18:16:14 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -107,14 +107,14 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   h    = 1.0/d;
 
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu[0]   = 2.0*d*(u[0] - .25);
-    else if (i == N-1) fu[N-1] = 2.0*d*u[N-1];
-    else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h);
+    if      (i == 0)   fu[0]   = 2.0*d*(u[0] - .25) + h*u[0]*u[0];
+    else if (i == N-1) fu[N-1] = 2.0*d*u[N-1] + h*u[N-1]*u[N-1];
+    else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h) + h*u[i]*u[i];
   } 
 
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,FU,(void**)&fu);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
-  PetscLogFlops(6*N);
+  PetscLogFlops(9*N);
   PetscFunctionReturn(0);
 }

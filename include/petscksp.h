@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.98 2001/01/15 21:47:09 bsmith Exp bsmith $ */
+/* $Id: petscksp.h,v 1.99 2001/02/15 22:12:30 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -15,7 +15,7 @@
 
   Concepts: Krylov methods
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType
+.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, SLES
 S*/
 typedef struct _p_KSP*     KSP;
 

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.116 2000/10/24 20:25:23 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.117 2001/01/15 21:45:26 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -145,6 +145,13 @@ EXTERN int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2
 
+typedef struct {
+  int        dim;
+  int        dims[4];
+  int        starts[4];
+  PetscTruth noc;        /* this is a single component problem, hence user will not set MatStencil.c */
+} MatStencilInfo;
+
 struct _p_Mat {
   PETSCHEADER(struct _MatOps)
   Map                    rmap,cmap;
@@ -164,6 +171,7 @@ struct _p_Mat {
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
   MatNullSpace           nullsp;
   PetscTruth             preallocated;
+  MatStencilInfo         stencil;          /* information for structured grid */
 };
 
 #define MatPreallocated(A) {int _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}

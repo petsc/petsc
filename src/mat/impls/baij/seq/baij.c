@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.220 2001/03/07 19:19:04 balay Exp balay $*/
+/*$Id: baij.c,v 1.221 2001/03/09 21:49:34 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -87,7 +87,7 @@ static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int
     ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,oshift,ia,ja);CHKERRQ(ierr);
   } else if (oshift == 1) {
     /* temporarily add 1 to i and j indices */
-    int nz = a->i[n] + 1; 
+    int nz = a->i[n]; 
     for (i=0; i<nz; i++) a->j[i]++;
     for (i=0; i<n+1; i++) a->i[i]++;
     *ia = a->i; *ja = a->j;
@@ -100,8 +100,7 @@ static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int
 
 #undef __FUNC__  
 #define __FUNC__ "MatRestoreRowIJ_SeqBAIJ" 
-static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
-                                PetscTruth *done)
+static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         i,n = a->mbs,ierr;
@@ -112,7 +111,7 @@ static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn
     ierr = PetscFree(*ia);CHKERRQ(ierr);
     ierr = PetscFree(*ja);CHKERRQ(ierr);
   } else if (oshift == 1) {
-    int nz = a->i[n]; 
+    int nz = a->i[n]-1; 
     for (i=0; i<nz; i++) a->j[i]--;
     for (i=0; i<n+1; i++) a->i[i]--;
   }
@@ -1891,7 +1890,8 @@ int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
     SETERRQ3(PETSC_ERR_ARG_SIZ,"Number rows %d, cols %d must be divisible by blocksize %d",B->m,B->n,bs);
   }
 
-  if (nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than -2: value %d",nz);
+  if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
+  if (nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %d",nz);
   if (nnz) {
     for (i=0; i<mbs; i++) {
       if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
@@ -1962,7 +1962,7 @@ int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
   b->nbs     = nbs;
   ierr = PetscMalloc((mbs+1)*sizeof(int),&b->imax);CHKERRQ(ierr);
   if (!nnz) {
-    if (nz == PETSC_DEFAULT) nz = 5;
+    if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
     else if (nz <= 0)        nz = 1;
     for (i=0; i<mbs; i++) b->imax[i] = nz;
     nz = nz*mbs;

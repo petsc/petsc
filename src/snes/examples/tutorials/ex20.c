@@ -1,7 +1,7 @@
-/* $Id: ex20.c,v 1.13 2001/03/16 20:55:38 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.14 2001/03/16 21:05:33 bsmith Exp bsmith $ */
 
 
-static char help[] ="Solves nonlinear Radiative Transport PDE with multigrid.\n\
+static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 3d.\n\
 Uses 3-dimensional distributed arrays.\n\
 A 3-dim simplified Radiative Transport test problem is used, with analytic Jacobian. \n\
 \n\

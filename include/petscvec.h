@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.114 2001/01/17 19:43:57 bsmith Exp bsmith $ */
+/* $Id: petscvec.h,v 1.115 2001/02/15 22:02:41 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -202,10 +202,10 @@ EXTERN int VecPipelineDestroy(VecPipeline);
 
 EXTERN int VecGetArray(Vec,Scalar*[]);
 EXTERN int VecRestoreArray(Vec,Scalar*[]);
-EXTERN int VecGetArray4d(Vec,int,int,int,int,int,int,int,int,Scalar**[]);
-EXTERN int VecRestoreArray4d(Vec,int,int,int,int,int,int,int,int,Scalar**[]);
-EXTERN int VecGetArray3d(Vec,int,int,int,int,int,int,Scalar**[]);
-EXTERN int VecRestoreArray3d(Vec,int,int,int,int,int,int,Scalar**[]);
+EXTERN int VecGetArray4d(Vec,int,int,int,int,int,int,int,int,Scalar****[]);
+EXTERN int VecRestoreArray4d(Vec,int,int,int,int,int,int,int,int,Scalar****[]);
+EXTERN int VecGetArray3d(Vec,int,int,int,int,int,int,Scalar***[]);
+EXTERN int VecRestoreArray3d(Vec,int,int,int,int,int,int,Scalar***[]);
 EXTERN int VecGetArray2d(Vec,int,int,int,int,Scalar**[]);
 EXTERN int VecRestoreArray2d(Vec,int,int,int,int,Scalar**[]);
 EXTERN int VecGetArray1d(Vec,int,int,Scalar *[]);

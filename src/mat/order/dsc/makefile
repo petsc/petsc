@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.31 2000/11/28 17:28:44 bsmith Exp $ 
+# $Id: makefile,v 1.2 2001/01/16 18:18:44 balay Exp bsmith $ 
 
 #requirespackage 'PETSC_HAVE_DSCPACK'
 
@@ -10,7 +10,6 @@ SOURCEC  = dscorder.c
 SOURCEH  = 
 OBJSC    = dscorder.o
 LIBBASE  = libpetscmat
-DOCS     = 
 LOCDIR   = src/mat/order/dsc
 MANSEC   = MatOrderings
 

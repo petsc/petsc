@@ -1,4 +1,4 @@
-/*$Id: bcgs.c,v 1.74 2000/09/28 21:13:18 bsmith Exp bsmith $*/
+/*$Id: bcgs.c,v 1.75 2001/01/15 21:47:15 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
@@ -47,7 +47,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   BINVF   = ksp->work[6];
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
+  ierr = KSPInitialResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   if (!ksp->avoidnorms) {
@@ -101,10 +101,10 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
       break;
     }
     omega = d1 / d2;                               /*   w <- (t's) / (t't) */
-    ierr = VecAXPY(&alpha,P,X);CHKERRQ(ierr);     /*   x <- x + a p       */
-    ierr = VecAXPY(&omega,S,X);CHKERRQ(ierr);     /*   x <- x + w s       */
-    tmp = -omega; 
-    ierr = VecWAXPY(&tmp,T,S,R);CHKERRQ(ierr);    /*   r <- s - w t       */
+    ierr  = VecAXPY(&alpha,P,X);CHKERRQ(ierr);     /*   x <- x + a p       */
+    ierr  = VecAXPY(&omega,S,X);CHKERRQ(ierr);     /*   x <- x + w s       */
+    tmp   = -omega; 
+    ierr  = VecWAXPY(&tmp,T,S,R);CHKERRQ(ierr);    /*   r <- s - w t       */
     if (!ksp->avoidnorms) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }

@@ -1,3 +1,4 @@
+/*$Id: sbaijfact.c,v 1.56 2001/01/31 19:06:52 balay Exp bsmith $*/
 #include "sbaij.h"
 #include "src/inline/ilu.h"
 

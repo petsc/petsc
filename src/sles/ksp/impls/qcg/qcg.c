@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.75 2001/01/15 21:47:27 bsmith Exp balay $*/
+/*$Id: qcg.c,v 1.76 2001/01/16 18:19:44 balay Exp bsmith $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -67,9 +67,11 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #if defined(PETSC_USE_COMPLEX)
   Scalar       cstep1,cstep2,ctasp,cbstp,crtr,cwtasp,cptasp;
 #endif
+  PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
-
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
   if (ksp->transpose_solve) {
     SETERRQ(1,"Currently does not support transpose solve");
   }

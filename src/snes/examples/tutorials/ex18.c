@@ -1,7 +1,7 @@
-/* $Id: ex18.c,v 1.17 2001/03/16 03:48:59 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.18 2001/03/16 17:23:23 bsmith Exp bsmith $ */
 
 
-static char help[] ="Solves nonlinear Radiative Transport PDE with multigrid.\n\
+static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 2d.\n\
 Uses 2-dimensional distributed arrays.\n\
 A 2-dim simplified Radiative Transport test problem is used, with analytic Jacobian. \n\
 \n\
@@ -190,22 +190,22 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
         tw = x[j][i-1];
         aw = 0.5*(t0 + tw);                 
-        dw = pow(aw,beta);
+        dw = PetscPowScalar(aw,beta);
         fw = dw*(t0 - tw);
 
 	te = x[j][i+1];
         ae = 0.5*(t0 + te);
-        de = pow(ae,beta);
+        de = PetscPowScalar(ae,beta);
         fe = de*(te - t0);
 
 	ts = x[j-1][i];
         as = 0.5*(t0 + ts);
-        ds = pow(as,beta);
+        ds = PetscPowScalar(as,beta);
         fs = ds*(t0 - ts);
   
         tn = x[j+1][i];
         an = 0.5*(t0 + tn);
-        dn = pow(an,beta);
+        dn = PetscPowScalar(an,beta);
         fn = dn*(tn - t0);
 
       } else if (i == 0) {
@@ -213,18 +213,18 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	/* left-hand boundary */
         tw = tleft;   
         aw = 0.5*(t0 + tw);                 
-        dw = pow(aw,beta);
+        dw = PetscPowScalar(aw,beta);
         fw = dw*(t0 - tw);
 
 	te = x[j][i+1];
         ae = 0.5*(t0 + te);
-        de = pow(ae,beta);
+        de = PetscPowScalar(ae,beta);
         fe = de*(te - t0);
 
 	if (j > 0) {
 	  ts = x[j-1][i];
           as = 0.5*(t0 + ts);
-          ds = pow(as,beta);
+          ds = PetscPowScalar(as,beta);
           fs = ds*(t0 - ts);
 	} else {
  	  fs = zero;
@@ -233,7 +233,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	if (j < my-1) { 
           tn = x[j+1][i];
           an = 0.5*(t0 + tn);
-          dn = pow(an,beta);
+          dn = PetscPowScalar(an,beta);
 	  fn = dn*(tn - t0);
 	} else {
 	  fn = zero; 
@@ -244,18 +244,18 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         /* right-hand boundary */ 
         tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
-        dw = pow(aw,beta);
+        dw = PetscPowScalar(aw,beta);
         fw = dw*(t0 - tw);
  
         te = tright;
         ae = 0.5*(t0 + te);
-        de = pow(ae,beta);
+        de = PetscPowScalar(ae,beta);
         fe = de*(te - t0);
  
         if (j > 0) { 
           ts = x[j-1][i];
           as = 0.5*(t0 + ts);
-          ds = pow(as,beta);
+          ds = PetscPowScalar(as,beta);
           fs = ds*(t0 - ts);
         } else {
           fs = zero;
@@ -264,7 +264,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         if (j < my-1) {
           tn = x[j+1][i];
           an = 0.5*(t0 + tn);
-          dn = pow(an,beta);
+          dn = PetscPowScalar(an,beta);
           fn = dn*(tn - t0); 
         } else {   
           fn = zero; 
@@ -275,19 +275,19 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	/* bottom boundary,and i <> 0 or mx-1 */
         tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
-        dw = pow(aw,beta);
+        dw = PetscPowScalar(aw,beta);
         fw = dw*(t0 - tw);
 
         te = x[j][i+1];
         ae = 0.5*(t0 + te);
-        de = pow(ae,beta);
+        de = PetscPowScalar(ae,beta);
         fe = de*(te - t0);
 
         fs = zero;
 
         tn = x[j+1][i];
         an = 0.5*(t0 + tn);
-        dn = pow(an,beta);
+        dn = PetscPowScalar(an,beta);
         fn = dn*(tn - t0);
 
       } else if (j == my-1) {
@@ -295,17 +295,17 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	/* top boundary,and i <> 0 or mx-1 */ 
         tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
-        dw = pow(aw,beta);
+        dw = PetscPowScalar(aw,beta);
         fw = dw*(t0 - tw);
 
         te = x[j][i+1];
         ae = 0.5*(t0 + te);
-        de = pow(ae,beta);
+        de = PetscPowScalar(ae,beta);
         fe = de*(te - t0);
 
         ts = x[j-1][i];
         as = 0.5*(t0 + ts);
-        ds = pow(as,beta);
+        ds = PetscPowScalar(as,beta);
         fs = ds*(t0 - ts);
 
         fn = zero;
@@ -364,30 +364,30 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 
         tw = x[j][i-1];
         aw = 0.5*(t0 + tw);                 
-        bw = pow(aw,bm1);
+        bw = PetscPowScalar(aw,bm1);
 	/* dw = bw * aw */
-	dw = pow(aw,beta); 
+	dw = PetscPowScalar(aw,beta); 
 	gw = coef*bw*(t0 - tw);
 
         te = x[j][i+1];
         ae = 0.5*(t0 + te);
-        be = pow(ae,bm1);
+        be = PetscPowScalar(ae,bm1);
 	/* de = be * ae; */
-	de = pow(ae,beta);
+	de = PetscPowScalar(ae,beta);
         ge = coef*be*(te - t0);
 
         ts = x[j-1][i];
         as = 0.5*(t0 + ts);
-        bs = pow(as,bm1);
+        bs = PetscPowScalar(as,bm1);
 	/* ds = bs * as; */
-	ds = pow(as,beta);
+	ds = PetscPowScalar(as,beta);
         gs = coef*bs*(t0 - ts);
   
         tn = x[j+1][i];
         an = 0.5*(t0 + tn);
-        bn = pow(an,bm1);
+        bn = PetscPowScalar(an,bm1);
 	/* dn = bn * an; */
-	dn = pow(an,beta);
+	dn = PetscPowScalar(an,beta);
         gn = coef*bn*(tn - t0);
 
         v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i; 
@@ -402,16 +402,16 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
         /* left-hand boundary */
         tw = tleft;
         aw = 0.5*(t0 + tw);                  
-        bw = pow(aw,bm1); 
+        bw = PetscPowScalar(aw,bm1); 
 	/* dw = bw * aw */
-	dw = pow(aw,beta); 
+	dw = PetscPowScalar(aw,beta); 
         gw = coef*bw*(t0 - tw); 
  
         te = x[j][i + 1]; 
         ae = 0.5*(t0 + te); 
-        be = pow(ae,bm1); 
+        be = PetscPowScalar(ae,bm1); 
 	/* de = be * ae; */
-	de = pow(ae,beta);
+	de = PetscPowScalar(ae,beta);
         ge = coef*be*(te - t0);
  
 	/* left-hand bottom boundary */
@@ -419,9 +419,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 
           tn = x[j+1][i];
           an = 0.5*(t0 + tn); 
-          bn = pow(an,bm1); 
+          bn = PetscPowScalar(an,bm1); 
 	  /* dn = bn * an; */
-	  dn = pow(an,beta);
+	  dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0); 
           
           v[0] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); col[0].j = row.j = j; col[0].i = row.i = i;
@@ -434,16 +434,16 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 
           ts = x[j-1][i];
           as = 0.5*(t0 + ts); 
-          bs = pow(as,bm1);  
+          bs = PetscPowScalar(as,bm1);  
 	  /* ds = bs * as; */
-	  ds = pow(as,beta);
+	  ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);  
           
           tn = x[j+1][i];
           an = 0.5*(t0 + tn); 
-          bn = pow(an,bm1);  
+          bn = PetscPowScalar(an,bm1);  
 	  /* dn = bn * an; */
-	  dn = pow(an,beta);
+	  dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);  
           
           v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i; 
@@ -456,9 +456,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 
           ts = x[j-1][i];
           as = 0.5*(t0 + ts);
-          bs = pow(as,bm1);
+          bs = PetscPowScalar(as,bm1);
 	  /* ds = bs * as; */
-	  ds = pow(as,beta);
+	  ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);
           
           v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i; 
@@ -472,16 +472,16 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
         /* right-hand boundary */
         tw = x[j][i-1];
         aw = 0.5*(t0 + tw);                  
-        bw = pow(aw,bm1); 
+        bw = PetscPowScalar(aw,bm1); 
 	/* dw = bw * aw */
-	dw = pow(aw,beta); 
+	dw = PetscPowScalar(aw,beta); 
         gw = coef*bw*(t0 - tw); 
  
         te = tright; 
         ae = 0.5*(t0 + te); 
-        be = pow(ae,bm1); 
+        be = PetscPowScalar(ae,bm1); 
 	/* de = be * ae; */
-	de = pow(ae,beta);
+	de = PetscPowScalar(ae,beta);
         ge = coef*be*(te - t0);
  
 	/* right-hand bottom boundary */
@@ -489,9 +489,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 
           tn = x[j+1][i];
           an = 0.5*(t0 + tn); 
-          bn = pow(an,bm1); 
+          bn = PetscPowScalar(an,bm1); 
 	  /* dn = bn * an; */
-	  dn = pow(an,beta);
+	  dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0); 
           
           v[0] = - hydhx*(dw - gw);                           col[0].j = j;         col[0].i = i-1;  
@@ -504,16 +504,16 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 
           ts = x[j-1][i];
           as = 0.5*(t0 + ts); 
-          bs = pow(as,bm1);  
+          bs = PetscPowScalar(as,bm1);  
 	  /* ds = bs * as; */
-	  ds = pow(as,beta);
+	  ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);  
           
           tn = x[j+1][i];
           an = 0.5*(t0 + tn); 
-          bn = pow(an,bm1);  
+          bn = PetscPowScalar(an,bm1);  
 	  /* dn = bn * an; */
-	  dn = pow(an,beta);
+	  dn = PetscPowScalar(an,beta);
           gn = coef*bn*(tn - t0);  
           
           v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i; 
@@ -526,9 +526,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 
           ts = x[j-1][i];
           as = 0.5*(t0 + ts);
-          bs = pow(as,bm1);
+          bs = PetscPowScalar(as,bm1);
 	  /* ds = bs * as; */
-	  ds = pow(as,beta);
+	  ds = PetscPowScalar(as,beta);
           gs = coef*bs*(t0 - ts);
           
           v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i; 
@@ -542,23 +542,23 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 
         tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
-        bw = pow(aw,bm1);
+        bw = PetscPowScalar(aw,bm1);
 	/* dw = bw * aw */
-	dw = pow(aw,beta); 
+	dw = PetscPowScalar(aw,beta); 
         gw = coef*bw*(t0 - tw);
 
         te = x[j][i+1];
         ae = 0.5*(t0 + te);
-        be = pow(ae,bm1);
+        be = PetscPowScalar(ae,bm1);
 	/* de = be * ae; */
-	de = pow(ae,beta);
+	de = PetscPowScalar(ae,beta);
         ge = coef*be*(te - t0);
 
         tn = x[j+1][i];
         an = 0.5*(t0 + tn);
-        bn = pow(an,bm1);
+        bn = PetscPowScalar(an,bm1);
 	/* dn = bn * an; */
-	dn = pow(an,beta);
+	dn = PetscPowScalar(an,beta);
         gn = coef*bn*(tn - t0);
  
         v[0] = - hydhx*(dw - gw);                           col[0].j = j;         col[0].i = i-1; 
@@ -572,23 +572,23 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
  
         tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
-        bw = pow(aw,bm1);
+        bw = PetscPowScalar(aw,bm1);
 	/* dw = bw * aw */
-	dw = pow(aw,beta); 
+	dw = PetscPowScalar(aw,beta); 
         gw = coef*bw*(t0 - tw);
 
         te = x[j][i+1];
         ae = 0.5*(t0 + te);
-        be = pow(ae,bm1);
+        be = PetscPowScalar(ae,bm1);
 	/* de = be * ae; */
-	de = pow(ae,beta);
+	de = PetscPowScalar(ae,beta);
         ge = coef*be*(te - t0);
 
         ts = x[j-1][i];
         as = 0.5*(t0 + ts);
-        bs = pow(as,bm1);
+        bs = PetscPowScalar(as,bm1);
  	/* ds = bs * as; */
-	ds = pow(as,beta);
+	ds = PetscPowScalar(as,beta);
         gs = coef*bs*(t0 - ts);
 
         v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i; 

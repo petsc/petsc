@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.58 2001/01/29 18:55:17 bsmith Exp balay $";
+! "$Id: ex5f.F,v 1.59 2001/01/31 18:47:09 balay Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -125,7 +125,7 @@
       endif
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,&
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,          &
      &     my,Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
 !
@@ -143,9 +143,9 @@
 
 !  Get local grid boundaries (for 2-dimensional DA)
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
+      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,                      &
      &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,       &
      &     PETSC_NULL_INTEGER,ierr)
 
 !  Here we shift the starting indices up by one so that we can easily

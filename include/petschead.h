@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.80 2001/01/15 21:50:04 bsmith Exp balay $ */
+/* $Id: petschead.h,v 1.81 2001/03/21 15:28:19 balay Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -101,11 +101,11 @@ EXTERN int PetscHeaderDestroy_Private(PetscObject);
 */ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)                      \
   { int _ierr;                                                                          \
-    _ierr = PetscNew(struct tp,&h);CHKERRQ(_ierr);                                      \
+    _ierr = PetscNew(struct tp,&(h));CHKERRQ(_ierr);                                      \
     _ierr = PetscMemzero(h,sizeof(struct tp));CHKERRQ(_ierr);                           \
-    _ierr = PetscNew(PetscOps,&(h)->bops);CHKERRQ(_ierr);                               \
+    _ierr = PetscNew(PetscOps,&((h)->bops));CHKERRQ(_ierr);                               \
     _ierr = PetscMemzero((h)->bops,sizeof(PetscOps));CHKERRQ(_ierr);                    \
-    _ierr = PetscNew(pops,&(h)->ops);CHKERRQ(_ierr);                                    \
+    _ierr = PetscNew(pops,&((h)->ops));CHKERRQ(_ierr);                                    \
     _ierr = PetscMemzero((h)->ops,sizeof(pops));CHKERRQ(_ierr);                         \
     _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,             \
                                  (int (*)(PetscObject))des,                             \

@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.200 2001/02/19 21:51:53 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.201 2001/02/19 21:52:24 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -174,7 +174,7 @@ static int KSPPublish_Petsc(PetscObject obj)
 
 .keywords: KSP, create, context
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP
 @*/
 int KSPCreate(MPI_Comm comm,KSP *inksp)
 {
@@ -269,7 +269,8 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 
 .keywords: KSP, set, method
 
-.seealso: PCSetType()
+.seealso: PCSetType(), KSPType
+
 @*/
 int KSPSetType(KSP ksp,KSPType type)
 {

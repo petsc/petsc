@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.105 2000/08/24 22:43:56 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.106 2001/01/15 21:47:47 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -6,18 +6,43 @@
 #define __PETSCSNES_H
 #include "petscsles.h"
 
+/*S
+     SNES - Abstract PETSc object that manages all nonlinear solves
+
+   Level: beginner
+
+  Concepts: nonlinear solvers
+
+.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, SLES, KSP, PC, SNESProblemType
+S*/
 typedef struct _p_SNES* SNES;
+
 #define SNES_COOKIE         PETSC_COOKIE+13
 #define MATSNESMFCTX_COOKIE PETSC_COOKIE+29
 
+/*E
+    SNESType - String with the name of a PETSc SNES method or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mysnescreate()
+
+   Level: beginner
+
+.seealso: SNESSetType(), SNES
+E*/
 #define SNESEQLS          "ls"
 #define SNESEQTR          "tr"
 #define SNESEQTEST        "test"
 #define SNESUMLS          "umls"
 #define SNESUMTR          "umtr"
-
 typedef char *SNESType;
 
+/*E
+    SNESProblemType - Determines the type of problem this SNES object is to be used to solve
+
+   Level: beginner
+
+.seealso: SNESCreate()
+E*/
 typedef enum {SNES_NONLINEAR_EQUATIONS,SNES_UNCONSTRAINED_MINIMIZATION,SNES_LEAST_SQUARES} SNESProblemType;
 
 EXTERN int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
@@ -53,8 +78,6 @@ EXTERN int SNESGetOptionsPrefix(SNES,char**);
 EXTERN int SNESSetFromOptions(SNES);
 EXTERN int SNESSetTypeFromOptions(SNES);
 
-#define MATSNESMF_DEFAULT "default"
-#define MATSNESMF_WP      "wp"
 EXTERN int MatCreateSNESMF(SNES,Vec,Mat*);
 EXTERN int MatCreateMF(Vec,Mat*);
 EXTERN int MatSNESMFSetBase(Mat,Vec);
@@ -69,6 +92,9 @@ EXTERN int MatSNESMFGetH(Mat,Scalar *);
 EXTERN int MatSNESMFKSPMonitor(KSP,int,double,void *);
 EXTERN int MatSNESMFSetFromOptions(Mat);
 typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
+
+#define MATSNESMF_DEFAULT "default"
+#define MATSNESMF_WP      "wp"
 typedef char* MatSNESMFType;
 EXTERN int MatSNESMFSetType(Mat,MatSNESMFType);
 EXTERN int MatSNESMFRegister(char *,char *,char *,int (*)(MatSNESMFCtx));
@@ -108,6 +134,16 @@ EXTERN int SNESLGMonitorDestroy(PetscDrawLG);
 EXTERN int SNESSetApplicationContext(SNES,void *);
 EXTERN int SNESGetApplicationContext(SNES,void **);
 
+/*E
+    SNESConvergedReason - reason a SNES method was said to 
+         have converged or diverged
+
+   Level: beginner
+
+   Notes: this must match finclude/petscsnes.h 
+
+.seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
+E*/
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* F < F_minabs */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* F < F_mintol*F_initial */

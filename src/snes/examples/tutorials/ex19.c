@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.15 2001/03/16 23:06:36 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.16 2001/03/19 21:01:55 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -177,17 +177,6 @@ int main(int argc,char **argv)
 
 /* ------------------------------------------------------------------- */
 
-/*
-   Define macros to allow us to easily access the components of the PDE
-   solution and nonlinear residual vectors.
-      Note: the "4" below is a hardcoding of "user.mc" 
-*/
-#define U(i)     4*(i)
-#define V(i)     4*(i)+1
-#define Omega(i) 4*(i)+2
-#define Temp(i)  4*(i)+3
-
-/* ------------------------------------------------------------------- */
 typedef struct {
   Scalar u,v,omega,temp;
 } Field;

@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.215 2001/03/07 19:19:15 balay Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.216 2001/03/09 20:08:53 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -2140,8 +2140,10 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
 
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive");
-  if (d_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than -1: value %d",d_nz);
-  if (o_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than -1: value %d",o_nz);
+  if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
+  if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
+  if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %d",d_nz);
+  if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %d",o_nz);
   if (d_nnz) {
   for (i=0; i<B->m/bs; i++) {
       if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than -1: local row %d value %d",i,d_nnz[i]);
@@ -2190,10 +2192,8 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
   b->cstart_bs = b->cstart*bs;
   b->cend_bs   = b->cend*bs;
 
-  if (d_nz == PETSC_DEFAULT) d_nz = 5;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,B->m,B->n,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->A);
-  if (o_nz == PETSC_DEFAULT) o_nz = 0;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,B->m,B->N,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->B);
   ierr = MatStashCreate_Private(B->comm,bs,&B->bstash);CHKERRQ(ierr);
@@ -2661,7 +2661,7 @@ int MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 
 #undef __FUNC__  
 #define __FUNC__ "MatMPIBAIJGetSeqBAIJ"
-int MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,int *colmap)
+int MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,int **colmap)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
   PetscFunctionBegin;

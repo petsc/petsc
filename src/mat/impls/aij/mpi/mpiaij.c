@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.328 2001/03/09 20:10:12 bsmith Exp balay $*/
+/*$Id: mpiaij.c,v 1.329 2001/03/09 21:53:15 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -2141,8 +2141,10 @@ int MatMPIAIJSetPreallocation(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
   ierr = PetscTypeCompare((PetscObject)B,MATMPIAIJ,&flg2);CHKERRQ(ierr);
   if (!flg2) PetscFunctionReturn(0);
   B->preallocated = PETSC_TRUE;
-  if (d_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than -2: value %d",d_nz);
-  if (o_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than -2: value %d",o_nz);
+  if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
+  if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
+  if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %d",d_nz);
+  if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %d",o_nz);
   if (d_nnz) {
     for (i=0; i<B->m; i++) {
       if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %d value %d",i,d_nnz[i]);
@@ -2155,10 +2157,8 @@ int MatMPIAIJSetPreallocation(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
   }
   b = (Mat_MPIAIJ*)B->data;
 
-  if (d_nz == PETSC_DEFAULT) d_nz = 5;
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->n,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->A);
-  if (o_nz == PETSC_DEFAULT) o_nz = 0;
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->N,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->B);
 

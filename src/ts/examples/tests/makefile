@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 2000/08/17 04:53:06 bsmith Exp balay $ 
+# $Id: makefile,v 1.36 2000/08/17 19:50:18 balay Exp bsmith $ 
 
 CFLAGS	        = 
 FFLAGS	        = 
@@ -68,8 +68,8 @@ runex1:
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler -linear_constant_matrix  
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler  -nonlinear_jacobian 
-	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_no_matrix 
-	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_no_jacobian 
+	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_no_matrix -pc_type none
+	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_no_jacobian -pc_type none
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_constant_matrix  -pc_type lu 
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_jacobian 
@@ -80,8 +80,8 @@ runex1f:
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type euler -linear_constant_matrix  
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type euler -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type euler -nonlinear_jacobian 
-	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_no_matrix 
-	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_no_jacobian 
+	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_no_matrix -pc_type none
+	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_no_jacobian -pc_type none
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_constant_matrix  -pc_type lu 
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_jacobian 

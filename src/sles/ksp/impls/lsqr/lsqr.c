@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.65 2001/01/15 21:47:23 bsmith Exp balay $*/
+/*$Id: lsqr.c,v 1.66 2001/01/16 18:19:40 balay Exp bsmith $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -58,8 +58,12 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   Mat          Amat,Pmat;
   MatStructure pflag;
   KSP_LSQR     *lsqr = (KSP_LSQR*)ksp->data;
+  PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   maxit    = ksp->max_it;
 

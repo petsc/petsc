@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.154 2001/02/05 16:36:50 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.155 2001/02/05 16:51:57 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -640,7 +640,7 @@ int PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCApplySymmetricLeft_BJacobi_Singleblock"
 int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
-  int                    ierr,its;
+  int                    ierr;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   Scalar                 *x_array,*y_array;
@@ -673,7 +673,7 @@ int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCApplySymmetricRight_BJacobi_Singleblock"
 int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
-  int                    ierr,its;
+  int                    ierr;
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
   Scalar                 *x_array,*y_array;

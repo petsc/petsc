@@ -1,10 +1,11 @@
-/* "$Id: flow.c,v 1.71 2001/03/07 18:53:34 balay Exp balay $";*/
+/* "$Id: flow.c,v 1.72 2001/03/07 19:07:22 balay Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 
 #include "petscsnes.h"
+#include "petscsys.h"
 #include "petscao.h"
 #include "user.h"
 #if defined(_OPENMP)
@@ -66,7 +67,7 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS
 AMS_Comm ams;
 AMS_Memory memid;
 int ams_err;
@@ -97,7 +98,7 @@ int main(int argc,char **args)
   int 		ierr;
   PetscTruth    flg;
   MPI_Comm      comm;
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS
   int           fdes,i, *itmp;
   Scalar        *qsc;
 #endif  
@@ -162,9 +163,11 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
     /* AMS Stuff */
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS
     /* Create and publish the Communicator */
-    ams_err = AMS_Comm_publish("FUN3D",&ams, MPI_TYPE, comm);
+    ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&ams);CHKERRQ(ierr);
+    /* ams_err = AMS_Comm_publish("FUN3D",&ams, MPI_TYPE, comm); */
+    
     AMS_Check_error(ams_err,&msg);
   
     /* Create a Memory */
@@ -223,7 +226,7 @@ int main(int argc,char **args)
     /* Add cells field */
     /* First read the cells*/
     if (!rank) {
-     ierr = PetscBinaryOpen("cells.msh",PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+     ierr = PetscBinaryOpen("testgrid/cells.msh",PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
     }
     ICALLOC(4*user.grid->ncell,&itmp);
     ICALLOC(4*user.grid->ncell,&user.grid->c2n);
@@ -270,7 +273,7 @@ int main(int argc,char **args)
     ierr = SNESCreate(comm,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
     ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
 
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS
 
  /* Add points field -- temporary fix for Matt*/
     if (!user.PreLoading) {
@@ -373,7 +376,7 @@ int main(int argc,char **args)
       ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
     }
 
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS_no_need
     if (!user.PreLoading) {
     printf("Destroying the Memory\n");
     ams_err = AMS_Memory_destroy(memid);
@@ -641,13 +644,13 @@ int Update(SNES snes,void *ctx)
   ierr = ComputeTimeStep(snes,tsCtx->itstep,user);CHKERRQ(ierr);
   /*tsCtx->ptime +=  tsCtx->dt;*/
 
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS
   ams_err = AMS_Memory_take_write_access(memid);
   AMS_Check_error(ams_err, &msg);
 #endif
   ierr = SNESSolve(snes,grid->qnode,&its);CHKERRQ(ierr);
 
-#ifdef HAVE_AMS
+#ifdef PETSC_HAVE_AMS
   ams_err = AMS_Memory_grant_write_access(memid);
   AMS_Check_error(ams_err, &msg);
   /*sleep(5);*/
@@ -695,6 +698,23 @@ int Update(SNES snes,void *ctx)
   ierr = VecRestoreArray(grid->res,&res);CHKERRQ(ierr);
   fratio = tsCtx->fnorm_ini/tsCtx->fnorm;
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)  
+  if (!user->PreLoading) {
+    AMS_Comm acomm;
+  static AMS_Memory amem = 0;
+  static PetscTruth lock = PETSC_FALSE;
+  if (!amem) {
+    PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&acomm);
+    AMS_Memory_create(acomm,"lock",&amem);
+    AMS_Memory_add_field(amem,"lock",&lock,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);
+    AMS_Memory_publish(amem);
+  }
+  AMS_Memory_lock(amem,20000);  
+  AMS_Memory_take_access(amem);
+  AMS_Memory_grant_access(amem); 
+  }
+#endif
+
  } /* End of time step loop */
 
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)

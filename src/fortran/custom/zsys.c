@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.86 2000/09/29 02:34:59 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.87 2001/01/15 21:49:49 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -445,7 +445,7 @@ void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng,int *ierr){
 }
 
 
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
 
 void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
                                             int *ierr PETSC_END_LEN(len))

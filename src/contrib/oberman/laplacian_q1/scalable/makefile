@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2000/08/17 15:47:45 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 2000/08/24 22:43:40 bsmith Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify  user-defined compiler flags
@@ -16,7 +16,6 @@ LOCDIR     = src/contrib/oberman/laplacian_q1/
 EXAMPLESC      = main.c appload.c appalgebra.c appelement.c apppartition.c
 EXAMPLESO      = main.o appload.o appalgebra.o appelement.o apppartition.o
 EXAMPLECH      = appctx.h
-DOCS           =
 
 main.$(BOPT): chkopts ${EXAMPLESO}
 	-$(RM) main.$(BOPT)

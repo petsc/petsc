@@ -1,8 +1,8 @@
-/*$Id: ex14.c,v 1.15 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.16 2001/03/16 16:57:55 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
-static char help[] = "Solves nonlinear PDE system.\n\
+static char help[] = "Bratu nonlinear PDE in 3d.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 3D rectangular\n\
 domain, using distributed arrays (DAs) to partition the parallel grid.\n\
 The command line options include:\n\
@@ -45,6 +45,7 @@ T*/
 */
 #include "petscda.h"
 #include "petscsnes.h"
+
 
 /* 
    User-defined application context - contains data needed by the 
@@ -206,7 +207,7 @@ int main(int argc,char **argv)
 int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i,j,k,Mx,My,Mz,ierr,xs,ys,zs,xm,ym,zm;
-  double  lambda,temp1,temp,hx,hy,hz,tempk,tempj;
+  double  lambda,temp1,hx,hy,hz,tempk,tempj;
   Scalar  ***x;
 
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 2001/02/09 19:35:11 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.17 2001/02/13 16:41:31 bsmith Exp bsmith $ 
 
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
@@ -9,14 +9,13 @@
 # in compiling these files and you are using the gcc compiler then try 
 # removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 #
-lib:
+SPECIALLIB     = yes
+SPECIALFASTLIB = yes
+speciallib:
 	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
 	-@${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
 	-@mv receive.mex* openport.mex* closeport.mex* launch.mex* readinvecs.mex* ${PETSC_DIR}/bin/matlab
-libfast:
-	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
-	-@${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
-	-@mv receive.mex* openport.mex* closeport.mex* launch.mex* readinvecs.mex* ${PETSC_DIR}/bin/matlab
+specialfastlib: speciallib
 
 matlabcodes: receive openport closeport launch readinvecs
 

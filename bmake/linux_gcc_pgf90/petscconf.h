@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.2 2000/07/10 03:38:14 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.3 2000/11/28 17:26:31 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -25,7 +25,7 @@
 
 #define PETSC_HAVE_READLINK
 #define PETSC_HAVE_MEMMOVE
-#define PETSC_HAVE_TEMPLATED_COMPLEX
+#define PETSC_HAVE_STD_COMPLEX
 
 #define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
 #define PETSC_HAVE_MEMALIGN

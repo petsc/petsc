@@ -1,6 +1,6 @@
-/*$Id: ex1.c,v 1.46 2001/01/23 20:58:05 balay Exp $*/
+/*$Id: ex18.c,v 1.1 2001/01/26 04:56:59 bsmith Exp bsmith $*/
 
-static char help[] = "Tests various DA routines.\n\n";
+static char help[] = "Tests DAGetISLocalToGlobalMappingBlck().\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"

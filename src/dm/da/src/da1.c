@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.123 2001/01/19 23:22:22 balay Exp bsmith $*/
+/*$Id: da1.c,v 1.124 2001/03/13 16:45:04 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -111,6 +111,7 @@ EXTERN int DAPublish_Petsc(PetscObject);
 
    Options Database Key:
 +  -da_view - Calls DAView() at the conclusion of DACreate1d()
+.  -da_grid_x <nx> - number of grid points in x direction
 -  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
@@ -145,7 +146,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"1d DA Options","DA");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_M","Number of grid points in x direction","DACreate1d",M,&M,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate1d",M,&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);

@@ -1,4 +1,4 @@
-/*$Id: pname.c,v 1.38 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: pname.c,v 1.39 2001/01/15 21:43:52 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -53,12 +53,12 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 int PetscObjectName(PetscObject obj)
 {
   int        ierr;
-  char       name[16];
+  char       name[64];
   static int counter = 0;
 
   PetscFunctionBegin;
   if (!obj->name) {
-    sprintf(name,"n_%d",counter++);
+    sprintf(name,"%s_%d",obj->class_name,counter++);
     ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

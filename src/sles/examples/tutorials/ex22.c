@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.12 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex22.c,v 1.13 2001/01/23 20:56:41 balay Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -37,6 +37,7 @@ int main(int argc,char **argv)
   DMMG      *dmmg;
   Scalar    mone = -1.0;
   PetscReal norm;
+  DA        da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(0,"-stencil_width",&sw,0);CHKERRQ(ierr);
@@ -48,7 +49,10 @@ int main(int argc,char **argv)
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&dmmg);CHKERRQ(ierr);
 
-  ierr = DMMGSetDA(dmmg,3,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,sw,dof);CHKERRQ(ierr);  
+  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,sw,dof,0,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMMGSetDM(dmmg,(DM)da);
+  ierr = DADestroy(da);CHKERRQ(ierr);
+
 
   ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
 

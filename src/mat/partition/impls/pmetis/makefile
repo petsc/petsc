@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2000/08/17 04:51:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.4 2000/10/24 20:26:18 bsmith Exp bsmith $ 
 #
 ALL: lib
 
@@ -10,7 +10,6 @@ CPPFLAGS = ${PARMETIS_INCLUDE}
 SOURCEC  = pmetis.c
 SOURCEH  = 
 OBJSC    = pmetis.o
-DOCS     = 
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/partition/impls/pmetis/partition/
 MANSEC   = MatOrderings

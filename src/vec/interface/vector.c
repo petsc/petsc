@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.225 2001/03/09 18:55:27 balay Exp bsmith $*/
+/*$Id: vector.c,v 1.226 2001/03/13 04:19:45 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -2728,4 +2728,117 @@ int VecConjugate(Vec x)
   return(0);
 #endif
 }
+
+#undef __FUNC__  
+#define __FUNC__ "VecGetArray3d"
+/*@C
+   VecGetArray3d - Returns a pointer to a 3d contiguous array that contains this 
+   processor's portion of the vector data.  You MUST call VecRestoreArray3d() 
+   when you no longer need access to the array.
+
+   Not Collective
+
+   Input Parameter:
++  x - the vector
+.  m - first dimension of three dimensional array
+.  n - second dimension of three dimensional array
+.  p - third dimension of three dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+-  pstart - first index in the third coordinate direction (often 0)
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: beginner
+
+  Notes:
+   For a vector obtained from DACreateLocalVector() mstart, nstart, and pstart are likely
+   obtained from the corner indices obtained from DAGetGhostCorners() while for
+   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
+   the arguments from DAGet[Ghost}Corners() are reversed in the call to VecGetArray3d().
+   
+   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+
+   Concepts: vector^accessing local values as 3d array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
+          VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,Scalar ***a[])
+{
+  int    i,ierr,N,j;
+  Scalar *aa,**b;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidPointer(a);
+  PetscValidType(x);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  if (m*n*p != N) SETERRQ4(1,"Local array size %d does not match 3d array dimensions %d by %d by %d",N,m,n,p);
+  ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(m*sizeof(Scalar**)+m*n*sizeof(Scalar*),a);CHKERRQ(ierr);
+  b    = (Scalar **)((*a) + m);
+  for (i=0; i<m; i++)   (*a)[i] = b + i*n - nstart;
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
+      b[i*n+j] = aa + i*n*p + j*p - pstart;
+  CHKMEMQ;
+    }
+  }
+  *a -= mstart;
+  CHKMEMQ;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecRestoreArray3d"
+/*@C
+   VecRestoreArray3d - Restores a vector after VecGetArray3d() has been called.
+
+   Not Collective
+
+   Input Parameters:
++  x - the vector
+.  m - first dimension of three dimensional array
+.  n - second dimension of the three dimensional array
+.  p - third dimension of the three dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+.  pstart - first index in the third coordinate direction (often 0)
+-  a - location of pointer to array obtained from VecGetArray3d()
+
+   Level: beginner
+
+   Notes:
+   For regular PETSc vectors this routine does not involve any copies. For
+   any special vectors that do not store local vector data in a contiguous
+   array, this routine will copy the data back into the underlying 
+   vector data structure from the array obtained with VecGetArray().
+
+   This routine actually zeros out the a pointer. 
+
+.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
+          VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
+@*/
+int VecRestoreArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,Scalar ***a[])
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidType(x);
+  ierr = PetscFree(*a + mstart);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+
+
+
 

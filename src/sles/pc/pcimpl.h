@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.29 2000/09/02 02:48:42 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.30 2001/01/15 21:46:44 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -34,6 +34,8 @@ struct _p_PC {
   MatStructure  flag;
   Mat           mat,pmat;
   Vec           vec;
+  Vec           diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
+  PetscTruth    diagonalscale;
   MatNullSpace  nullsp;
   int           (*modifysubmatrices)(PC,int,IS*,IS*,Mat*,void*); /* user provided routine */
   void          *modifysubmatricesP; /* context for user routine */

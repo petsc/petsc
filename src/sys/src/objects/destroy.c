@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.56 2001/01/15 21:43:52 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.57 2001/01/20 03:34:02 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -101,8 +101,9 @@ int PetscTypeCompare(PetscObject obj,char *type_name,PetscTruth *same)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj);
-  if (type_name == PETSC_NULL && obj->type_name == PETSC_NULL) {
+  if (!obj) {
+    *same = PETSC_FALSE;
+  } else if (type_name == PETSC_NULL && obj->type_name == PETSC_NULL) {
     *same = PETSC_TRUE;
   } else if (type_name == PETSC_NULL || obj->type_name == PETSC_NULL) {
     *same = PETSC_FALSE;

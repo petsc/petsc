@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.65 2000/05/22 15:51:34 balay Exp balay $ 
+# $Id: base.site,v 1.66 2000/09/13 15:18:28 balay Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -73,9 +73,12 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #CMEX           = /home/bsmith/bin/IRIX64/mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
 #CMEX           = mex CFLAGS='-32' LDFLAGS="-32 -mips4 -shared -U -Bsymbolic -exported_symbol mexFunction -exported_symbol mexVersion"
 #MATLABCOMMAND  = matlab -sgi
+#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
+#
+#
 #MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
 #MATLAB_LIB        = -L/software/irix-6/com/packages/matlab-r11.1/extern/lib/sgi -leng -lmx -lmat -lmi -lut
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
+#PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 #
 # Location where adiC is installed

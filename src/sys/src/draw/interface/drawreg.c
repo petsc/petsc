@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.40 2001/01/15 21:43:22 bsmith Exp balay $*/
+/*$Id: drawreg.c,v 1.41 2001/01/17 19:44:01 balay Exp bsmith $*/
 /*
        Provides the registration process for PETSc PetscDraw routines
 */
@@ -226,8 +226,8 @@ $     PetscDrawSetType(ksp,"my_draw_type")
    or at runtime via the option
 $     -draw_type my_draw_type
 
-   Concepts: graphics^registering new PetscDraw classes
-   Concepts: PetscDraw^registering new PetscDraw classes
+   Concepts: graphics^registering new draw classes
+   Concepts: PetscDraw^registering new draw classes
 
 .seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
 M*/

@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.82 2000/10/24 20:24:58 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.83 2001/01/15 21:44:37 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -176,7 +176,7 @@ int VecSetType(Vec vec,VecType type_name)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN

@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.145 2000/11/28 01:07:02 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.146 2001/01/15 21:46:43 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -241,7 +241,7 @@ int SLESSetFromOptions(SLES sles)
 
 .keywords: SLES, create, context
 
-.seealso: SLESSolve(), SLESDestroy()
+.seealso: SLESSolve(), SLESDestroy(), SLES
 @*/
 int SLESCreate(MPI_Comm comm,SLES *outsles)
 {
@@ -514,7 +514,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   }
   ierr = PetscLogEventEnd(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(sles->prefix,"-sles_view",&flg);CHKERRQ(ierr); 
-  if (flg) { ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+  if (flg && !PetscPreLoadingOn) { ierr = SLESView(sles,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.14 2001/03/12 20:55:55 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.15 2001/03/12 20:57:46 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -81,7 +81,7 @@ PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 MATLAB_INCLUDE    = -I/software/linux/com/packages/matlab-r12/extern/include
 MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-MATLAB_LIB        = ${CLINKER_SLFLAG}/software/linux/com/packages/matlab-r12/extern/lib/lnx86 -L/software/linux/com/packages/matlab-r12/extern/lib/lnx86 -leng -lmx -lmat -lmi -lut
+MATLAB_LIB        = ${CLINKER_SLFLAG}/software/linux/com/packages/matlab-r12/extern/lib/glnx86 -L/software/linux/com/packages/matlab-r12/extern/lib/glnx86 -leng -lmx -lmat -lmi -lut
 PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed

@@ -1,8 +1,8 @@
-/*$Id: ex5.c,v 1.128 2001/03/14 20:33:56 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.129 2001/03/16 04:27:55 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
-static char help[] = "Solves nonlinear PDE system.\n\
+static char help[] = "Bratu nonlinear PDE in 2d.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
 domain, using distributed arrays (DAs) to partition the parallel grid.\n\
 The command line options include:\n\
@@ -71,7 +71,10 @@ int main(int argc,char **argv)
   Mat                    J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
   int                    its;                  /* iterations for convergence */
-  PetscTruth             matrix_free,coloring,matlab;
+  PetscTruth             matrix_free,coloring;
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  PetscTruth             matlab;
+#endif
   int                    ierr;
   double                 bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
   MatFDColoring          matfdcoloring;
@@ -112,12 +115,16 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set function evaluation routine and vector
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab",&matlab);CHKERRQ(ierr);
   if (matlab) {
     ierr = SNESSetFunction(snes,r,FormFunctionMatlab,(void*)&user);CHKERRQ(ierr);
   } else {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
   }
+#else
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
+#endif
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -481,6 +488,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 /*
       Variant of FormFunction() that computes the function in Matlab
 */
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 int FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx   *user = (AppCtx*)ptr;
@@ -522,4 +530,14 @@ int FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DARestoreLocalVector(user->da,&localF);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
+#endif
+
+
+
+
+
+
+
+
+
 

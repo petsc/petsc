@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.213 2001/01/19 23:20:23 balay Exp bsmith $ */
+/* $Id: petscmat.h,v 1.214 2001/01/20 23:57:52 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -59,7 +59,7 @@ EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
 #endif
 extern PetscTruth MatRegisterAllCalled;
-extern PetscFList      MatList;
+extern PetscFList MatList;
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 EXTERN int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
@@ -74,11 +74,8 @@ EXTERN int MatCreateMPIBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*)
 EXTERN int MatCreateMPIAdj(MPI_Comm,int,int,int*,int*,int *,Mat*);
 EXTERN int MatCreateSeqSBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
 EXTERN int MatCreateMPISBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
-
-EXTERN int MatDestroy(Mat);
-
 EXTERN int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
-EXTERN int MatShellGetContext(Mat,void **);
+EXTERN int MatDestroy(Mat);
 
 EXTERN int MatPrintHelp(Mat);
 EXTERN int MatGetMaps(Mat,Map*,Map*);
@@ -86,6 +83,13 @@ EXTERN int MatGetMaps(Mat,Map*,Map*);
 /* ------------------------------------------------------------*/
 EXTERN int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
 EXTERN int MatSetValuesBlocked(Mat,int,int*,int,int*,Scalar*,InsertMode);
+
+typedef struct {
+  int k,j,i,c;
+} MatStencil;
+EXTERN int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,Scalar*,InsertMode);
+EXTERN int MatSetValuesBlockedStencil(Mat,int,MatStencil*,int,MatStencil*,Scalar*,InsertMode);
+EXTERN int MatSetStencil(Mat,int,int*,int*,int);
 
 /*E
     MatAssemblyType - Indicates if the matrix is now to be used, or if you plan 
@@ -168,12 +172,12 @@ EXTERN int MatConvertRegister(char*,char*,char*,int (*)(Mat,MatType,Mat*));
 #else
 #define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,d)
 #endif
-EXTERN int MatConvertRegisterAll(char*);
-EXTERN int MatConvertRegisterDestroy(void);
+EXTERN int        MatConvertRegisterAll(char*);
+EXTERN int        MatConvertRegisterDestroy(void);
 extern PetscTruth MatConvertRegisterAllCalled;
-extern PetscFList      MatConvertList;
-EXTERN int MatConvert(Mat,MatType,Mat*);
-EXTERN int MatDuplicate(Mat,MatDuplicateOption,Mat*);
+extern PetscFList MatConvertList;
+EXTERN int        MatConvert(Mat,MatType,Mat*);
+EXTERN int        MatDuplicate(Mat,MatDuplicateOption,Mat*);
 
 /*E
     MatStructure - Indicates if the matrix has the same nonzero structure
@@ -195,11 +199,11 @@ EXTERN int MatLoadRegister(char*,char*,char*,int (*)(PetscViewer,MatType,Mat*));
 #else
 #define MatLoadRegisterDynamic(a,b,c,d) MatLoadRegister(a,b,c,d)
 #endif
-EXTERN int MatLoadRegisterAll(char*);
-EXTERN int MatLoadRegisterDestroy(void);
+EXTERN int        MatLoadRegisterAll(char*);
+EXTERN int        MatLoadRegisterDestroy(void);
 extern PetscTruth MatLoadRegisterAllCalled;
-extern PetscFList      MatLoadList;
-EXTERN int MatLoad(PetscViewer,MatType,Mat*);
+extern PetscFList MatLoadList;
+EXTERN int        MatLoad(PetscViewer,MatType,Mat*);
 
 EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
 EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
@@ -316,7 +320,7 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   __ierr = ISLocalToGlobalMappingApply(map,nrows,rows,rows);CHKERRQ(__ierr);\
   __ierr = ISLocalToGlobalMappingApply(map,ncols,cols,cols);CHKERRQ(__ierr);\
   for (__l=0;__l<nrows;__l++) {\
-    __ierr = MatPreallocateSet(rows[__l],ncols,cols,dnz,onz);CHKERRQ(__ierr);\
+    __ierr = MatPreallocateSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(__ierr);\
   }\
 }
     
@@ -331,6 +335,8 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
 #define MatPreallocateFinalize(dnz,onz) 0;__ierr = PetscFree(dnz);CHKERRQ(__ierr);}
 
 /* Routines unique to particular data structures */
+EXTERN int MatShellGetContext(Mat,void **);
+
 EXTERN int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 EXTERN int MatSeqAIJSetColumnIndices(Mat,int *);
 EXTERN int MatSeqBAIJSetColumnIndices(Mat,int *);
@@ -351,6 +357,8 @@ EXTERN int MatMPIBDiagSetPreallocation(Mat,int,int,int*,Scalar**);
 EXTERN int MatMPIAdjSetPreallocation(Mat,int*,int*,int*);
 EXTERN int MatMPIDenseSetPreallocation(Mat,Scalar*);
 EXTERN int MatMPIRowbsSetPreallocation(Mat,int,int*);
+EXTERN int MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,int**);
+EXTERN int MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,int**);
 
 EXTERN int MatStoreValues(Mat);
 EXTERN int MatRetrieveValues(Mat);

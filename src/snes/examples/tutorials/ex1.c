@@ -1,6 +1,6 @@
-/*$Id: ex1.c,v 1.22 2001/01/17 22:26:26 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.23 2001/01/23 20:57:12 balay Exp bsmith $*/
 
-static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
+static char help[] = "Newton's method to solve a two-variable system, sequentially.\n\n";
 
 /*T
    Concepts: SNES^basic uniprocessor example

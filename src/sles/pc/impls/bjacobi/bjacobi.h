@@ -1,4 +1,4 @@
-/* $Id: bjacobi.h,v 1.22 2000/01/11 21:01:43 bsmith Exp balay $ */
+/* $Id: bjacobi.h,v 1.23 2000/05/05 22:17:09 balay Exp bsmith $ */
 
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
@@ -12,16 +12,15 @@
        This data is general for all implementations
 */
 typedef struct {
-  int       n,n_local;        /* number of blocks (global, local) */
-  int       first_local;       /* number of first block on processor */
-  int       use_true_local;    /* use block from true matrix, not preconditioner matrix
-                                  for local MatMult(). */
-  SLES      *sles;             /* SLES contexts for blocks */
-  void      *data;             /* implementation-specific data */
-  int       same_local_solves; /* flag indicating whether all local solvers are same */
-  int       *l_lens;           /* lens of each block */
-  int       *g_lens;
-  Mat       tp_mat,tp_pmat;    /* diagonal block of matrix for this processor */
+  int        n,n_local;        /* number of blocks (global, local) */
+  int        first_local;       /* number of first block on processor */
+  PetscTruth use_true_local;    /* use block from true matrix, not preconditioner matrix for local MatMult() */
+  SLES       *sles;             /* SLES contexts for blocks */
+  void       *data;             /* implementation-specific data */
+  PetscTruth same_local_solves; /* flag indicating whether all local solvers are same (used for PCView()) */
+  int        *l_lens;           /* lens of each block */
+  int        *g_lens;
+  Mat        tp_mat,tp_pmat;    /* diagonal block of matrix for this processor */
 } PC_BJacobi;
 
 /*

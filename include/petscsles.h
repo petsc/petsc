@@ -1,4 +1,4 @@
-/* $Id: petscsles.h,v 1.35 2000/09/02 02:50:55 bsmith Exp bsmith $ */
+/* $Id: petscsles.h,v 1.36 2001/01/15 21:46:42 bsmith Exp bsmith $ */
 /*
    Defines PETSc interface to the linear solvers. The details of Krylov methods
   and preconditioners are handled in the petscksp.h and petscpc.h files
@@ -10,6 +10,16 @@
 
 #define SLES_COOKIE PETSC_COOKIE+10
 
+/*S
+     SLES - Abstract PETSc object that manages all linear solvers. Essentially contains a 
+         PC, preconditioner and a KSP, Krylov solver.
+
+   Level: beginner
+
+  Concepts: linear solvers
+
+.seealso:  SLESCreate(), SLESGetKSP(), SLESGetPC(), TS, SNES, KSP, PC
+S*/
 typedef struct _p_SLES* SLES;
 
 EXTERN int SLESCreate(MPI_Comm,SLES*);

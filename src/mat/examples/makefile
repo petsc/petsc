@@ -1,8 +1,12 @@
-# $Id: makefile,v 1.13 1999/03/01 04:54:34 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.14 2000/08/17 04:51:47 bsmith Exp bsmith $ 
 
 ALL:
 
-DOCS     = readme
+#The files matbinary.ex and matbinary.cplx.ex
+#contain sample linear systems stored in binary format.
+#These systems can be used to test binary I/O; see, e.g.,
+#the program petsc/src/sles/examples/tutorials/ex10.c
+
 LOCDIR   = src/mat/examples/
 DIRS     = tests tutorials
 

@@ -1,43 +1,66 @@
 
-C      "$Id: ex67f.F,v 1.8 2001/01/15 21:46:09 bsmith Exp $";
-C
-C   This program demonstrates use of MatGetSubMatrices() from Fortran
-C
+!      "$Id: ex79f.F,v 1.1 2001/03/13 21:41:47 bsmith Exp bsmith $";
+!
+!   This program demonstrates use of MatGetRowIJ() from Fortran
+!
       program main
+      implicit none
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscis.h"
 #include "include/finclude/petscviewer.h"
 
-      Mat      A,B
-      integer  ierr
-      PetscViewer   v    
-      IS       isrow
+      Mat         A,Ad,Ao
+      integer     ierr,rank
+      PetscViewer v    
+      integer     i,j,ia(1),ja(1),n,icol(1),rstart,rend
+      PetscTruth  done
+      PetscOffset iia,jja,aaa,iicol
+      Scalar      aa(1)
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
      &                          PETSC_BINARY_RDONLY,v,ierr)
+      call MatLoad(v,MATMPIAIJ,A,ierr)
+      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
-      call MatLoad(v,MATSEQAIJ,A,ierr)
+      call MatMPIAIJGetSeqAIJ(A,Ad,Ao,icol,iicol,ierr)
+      call MatGetOwnershipRange(A,rstart,rend,ierr)
+!
+!   Print diagonal portion of matrix
+!
+      call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
+      call MatGetRowIJ(Ad,1,0,n,ia,iia,ja,jja,done,ierr)
+      call MatGetArray(Ad,aa,aaa,ierr)
+      do 10, i=1,n
+        write(7+rank,*) 'row ',i+rstart,' number nonzeros ',                &
+     &                   ia(iia+i+1)-ia(iia+i)
+        do 20, j=ia(iia+i),ia(iia+i+1)-1
+          write(7+rank,*)'  ',j,ja(jja+j)+rstart,aa(aaa+j)
+ 20     continue
+ 10   continue
+      call MatRestoreRowIJ(Ad,1,0,n,ia,iia,ja,jja,done,ierr)
 
-      call ISCreateGeneral(PETSC_COMM_SELF,1,0,isrow,ierr)
+!
+!   Print off-diagonal portion of matrix
+!
+      call MatGetRowIJ(Ao,1,0,n,ia,iia,ja,jja,done,ierr)
+      call MatGetArray(Ao,aa,aaa,ierr)
+      do 30, i=1,n
+        write(7+rank,*) 'row ',i+rstart,' number nonzeros ',               &
+     &                  ia(iia+i+1)-ia(iia+i)
+        do 40, j=ia(iia+i),ia(iia+i+1)-1
+          write(7+rank,*)'  ',j,icol(iicol+ja(jja+j))+1,aa(aaa+j)
+ 40     continue
+ 30   continue
+      call MatRestoreRowIJ(Ao,1,0,n,ia,iia,ja,jja,done,ierr)
+      call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
-      call MatGetSubmatrices(A,1,isrow,isrow,                           &
-     &        MAT_INITIAL_MATRIX,B,ierr)
-
-      call MatView(B,PETSC_VIEWER_STDOUT_SELF,ierr)
-
-      call MatGetSubmatrices(A,1,isrow,isrow,                           &
-     &        MAT_REUSE_MATRIX,B,ierr)
-
-      call MatView(B,PETSC_VIEWER_STDOUT_SELF,ierr)
-
-      call ISDestroy(isrow,ierr)
+      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call MatDestroy(A,ierr)
-      call MatDestroy(B,ierr)
       call PetscViewerDestroy(v,ierr)
-
       call PetscFinalize(ierr)
       end
 

@@ -1,4 +1,4 @@
-/* $Id: petscts.h,v 1.43 2000/09/02 02:50:55 bsmith Exp bsmith $ */
+/* $Id: petscts.h,v 1.44 2001/01/15 21:48:24 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -7,17 +7,42 @@
 #define __PETSCTS_H
 #include "petscsnes.h"
 
+/*S
+     TS - Abstract PETSc object that manages all time-steppers (ODE integrators)
+
+   Level: beginner
+
+  Concepts: ODE solvers
+
+.seealso:  TSCreate(), TSSetType(), TSType, SNES, SLES, KSP, PC
+S*/
 typedef struct _p_TS* TS;
+
 #define TS_COOKIE PETSC_COOKIE+18
 
+/*E
+    TSType - String with the name of a PETSc TS method or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mytscreate()
+
+   Level: beginner
+
+.seealso: TSSetType(), TS
+E*/
 #define TS_EULER           "euler"
 #define TS_BEULER          "beuler"
 #define TS_PSEUDO          "pseudo"
 #define TS_CRANK_NICHOLSON "crank-nicholson"
 #define TS_PVODE           "pvode"
-
 typedef char *TSType;
 
+/*E
+    TSProblemType - Determines the type of problem this TS object is to be used to solve
+
+   Level: beginner
+
+.seealso: TSCreate()
+E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 EXTERN int TSCreate(MPI_Comm,TSProblemType,TS*);

@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.60 2001/01/15 21:47:14 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.61 2001/01/28 21:46:57 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -28,8 +28,11 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   Scalar       lambda,alpha0,alpha1,btop,bbot,bbotold,tmp,zero = 0.0,mone = -1.0;
   Vec          X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T,Tmp;
   Mat          Amat,Pmat;
+  PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   pres    = ksp->use_pres;
   maxit   = ksp->max_it;

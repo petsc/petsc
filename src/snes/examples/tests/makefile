@@ -1,15 +1,23 @@
-# $Id: makefile,v 1.103 2000/08/17 04:52:48 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.104 2000/10/24 20:27:11 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex4.c ex5.c ex7.c ex9.c ex13.c
+EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex13.c
 EXAMPLESF       = ex12.F
 DIRS	        = umin
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+
+ex1: ex1.o  chkopts
+	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
+	${RM} ex1.o
+
+ex1f: ex1f.o  chkopts
+	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	${RM} ex1f.o
 
 ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_SNES_LIB}
@@ -63,6 +71,37 @@ ex14: ex14.o  chkopts
 	-${FLINKER} -o ex14 ex14.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex14.o
 #--------------------------------------------------------------------------
+runex1:
+	-@${MPIRUN} -np 1 ex1 -nox -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	 \
+	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   ${RM} -f ex1_1.tmp
+runex1_2:
+	-@${MPIRUN} -np 1 ex1 -snes_smonitor -nox -snes_type tr -ksp_gmres_irorthog > ex1_2.tmp 2>&1;\
+	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
+	   else echo "Possible problem with ex1_2, diffs above"; fi; \
+	   ${RM} -f ex1_2.tmp
+runex1_3:
+	-@${MPIRUN} -np 1 ex1 -snes_smonitor -mat_coloring_type sl -nox -snes_fd_coloring -mx 8 -my 11 \
+                -ksp_gmres_irorthog > ex1_3.tmp 2>&1;\
+	   if (diff output/ex1_3.out ex1_3.tmp) then true; \
+	   else echo "Possible problem with ex1_3, diffs above"; fi; \
+	   ${RM} -f ex1_3.tmp
+runex1f:
+	-@${MPIRUN} -np 1 ex1f -snes_smonitor -nox -snes_type tr -ksp_gmres_irorthog > ex1f_1.tmp 2>&1;\
+	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
+	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
+	   ${RM} -f ex1f_1.tmp
+runex1f_2:
+	-@${MPIRUN} -np 1 ex1f -snes_smonitor -nox -snes_fd -ksp_gmres_irorthog > ex1f_2.tmp 2>&1;\
+	   if (diff output/ex1f_2.out ex1f_2.tmp) then true; \
+	   else echo "Possible problem with ex1f_2, diffs above"; fi; \
+	   ${RM} -f ex1f_2.tmp
+runex1f_3:
+	-@${MPIRUN} -np 1 ex1f -snes_smonitor -nox -snes_fd_coloring -ksp_gmres_irorthog > ex1f_3.tmp 2>&1;\
+	   if (diff output/ex1f_2.out ex1f_3.tmp) then true; \
+	   else echo "Possible problem with ex1f_3, diffs above"; fi; \
+	   ${RM} -f ex1f_3.tmp
 runex2:
 	-@${MPIRUN} -np 1 ex2	-ksp_gmres_irorthog > ex2_1.tmp 2>&1;   \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
@@ -200,12 +239,13 @@ runex14_3:
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
 #
-TESTEXAMPLES_1  = 
+TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
 TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
 		  runex9 ex9.rm ex13.PETSc ex13.rm 
-TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm
-TESTEXAMPLES_4  = ex7.PETSc ex7.rm ex9.PETSc ex9.rm
+TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
+TESTEXAMPLES_4  = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
 TESTEXAMPLES_8  = 
-TESTEXAMPLES_9  = 
+TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm
+
 
 include ${PETSC_DIR}/bmake/common_test

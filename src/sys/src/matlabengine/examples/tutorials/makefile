@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2000/05/04 16:24:56 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2000/08/17 04:50:54 bsmith Exp bsmith $ 
 
 
 
@@ -6,7 +6,7 @@ CFLAGS	        =
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
-LOCDIR          = src/sys/src/matlabengine/examples/tutorials
+LOCDIR          = src/sys/src/matlabengine/examples/tutorials/
 EXAMPLESC       = ex1.c
 EXAMPLESF       = 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.70 2000/08/17 19:49:20 balay Exp bsmith $ 
+# $Id: makefile,v 1.71 2001/03/13 04:09:37 bsmith Exp bsmith $ 
 
 # This directory contains example programs for the SNES unconstrained
 # minimization solvers.  Examples of solving systems of nonlinear
@@ -14,7 +14,6 @@ FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/umin/
 EXAMPLESC       = ex2.c ex3.c
 EXAMPLESF       = 
-DOCS            = readme
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.23 2001/01/16 18:19:46 balay Exp bsmith $ */
+/* $Id: fgmres.c,v 1.24 2001/01/31 04:16:19 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -336,8 +336,11 @@ int KSPSolve_FGMRES(KSP ksp,int *outits)
   int        cycle_its; /* iterations done in a call to FGMREScycle */
   int        itcount;   /* running total of iterations, incl. those in restarts */
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
+  PetscTruth diagonalscale;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;

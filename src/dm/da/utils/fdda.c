@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.61 2001/02/19 17:59:17 balay Exp bsmith $*/
+/*$Id: fdda.c,v 1.62 2001/03/14 20:33:38 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -193,7 +193,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
     ierr = MatMPIBAIJSetPreallocation(*J,bs,0,dnz,0,onz);CHKERRQ(ierr);  
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
-    ierr = DAGetGhostCorners(da,&starts[1],&starts[0],PETSC_IGNORE,&dims[1],&dims[0],PETSC_IGNORE);CHKERRQ(ierr);
+    ierr = DAGetGhostCorners(da,&starts[0],&starts[1],PETSC_IGNORE,&dims[0],&dims[1],PETSC_IGNORE);CHKERRQ(ierr);
     ierr = MatSetStencil(*J,2,dims,starts,nc);CHKERRQ(ierr);
 
     /*
@@ -347,7 +347,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
     ierr = MatMPIBAIJSetPreallocation(*J,bs,0,dnz,0,onz);CHKERRQ(ierr);  
     ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
-    ierr = DAGetGhostCorners(da,&starts[2],&starts[1],&starts[0],&dims[2],&dims[1],&dims[0]);CHKERRQ(ierr);
+    ierr = DAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
     ierr = MatSetStencil(*J,3,dims,starts,nc);CHKERRQ(ierr);
 
     /*

@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.191 2001/01/19 23:20:13 balay Exp bsmith $*/
+/*$Id: bvec2.c,v 1.192 2001/01/20 03:34:27 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -439,7 +439,7 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
     ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_SEQ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif

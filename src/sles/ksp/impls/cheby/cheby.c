@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.89 2000/09/28 21:13:23 bsmith Exp bsmith $*/
+/*$Id: cheby.c,v 1.90 2001/01/15 21:47:21 bsmith Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -72,9 +72,12 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   KSP_Chebychev    *chebychevP = (KSP_Chebychev*)ksp->data;
   Mat              Amat,Pmat;
   MatStructure     pflag;
-  PetscTruth       pres;
+  PetscTruth       pres,diagonalscale;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+
   ksp->its = 0;
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   maxit    = ksp->max_it;

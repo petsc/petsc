@@ -1,6 +1,6 @@
-/*$Id: ex3.c,v 1.81 2001/03/13 05:00:26 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.82 2001/03/13 15:56:11 bsmith Exp bsmith $*/
 
-static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
+static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
 routine to check candidate iterates produced by line search routines.  This code also\n\
 demonstrates use of the macro __FUNC__ to define routine names for use in error handling.\n\

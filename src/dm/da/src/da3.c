@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.128 2001/03/09 19:18:44 balay Exp balay $*/
+/*$Id: da3.c,v 1.129 2001/03/09 21:21:35 balay Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -181,6 +181,9 @@ EXTERN int DAPublish_Petsc(PetscObject);
 
    Options Database Key:
 +  -da_view - Calls DAView() at the conclusion of DACreate3d()
+.  -da_grid_x <nx> - number of grid points in x direction
+.  -da_grid_y <ny> - number of grid points in y direction
+.  -da_grid_z <nz> - number of grid points in z direction
 -  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
@@ -228,6 +231,15 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (M < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have M positive");
   if (N < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have N positive");
   if (P < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have P positive");
+
+  ierr = PetscOptionsBegin(comm,PETSC_NULL,"3d DA Options","DA");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate3d",M,&M,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate3d",N,&N,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DACreate3d",P,&P,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate3d",m,&m,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate3d",n,&n,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DACreate3d",p,&p,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   da->bops->publish           = DAPublish_Petsc;

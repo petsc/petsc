@@ -1,7 +1,8 @@
-# $Id: makefile,v 1.27 2000/08/17 04:53:40 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.28 2001/02/26 04:53:38 bsmith Exp bsmith $ 
 
 ALL: lib
-
+SPECIALFASTLIB = yes
+specialfastlib: lib
 
 CFLAGS   =
 FFLAGS   =

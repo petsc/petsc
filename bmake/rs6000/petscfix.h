@@ -1,4 +1,4 @@
-/*$Id: petscfix.h,v 1.99 1999/11/23 18:12:07 bsmith Exp bsmith $*/
+/*$Id: petscfix.h,v 1.100 2000/01/11 20:57:57 bsmith Exp bsmith $*/
 
 /*
     This fixes various things in system files that are incomplete, for 
@@ -37,4 +37,5 @@ extern int    strcasecmp(const char *, const char *);
 extern int    getrusage(int,s_rusage);
 #endif
 #endif
+
 

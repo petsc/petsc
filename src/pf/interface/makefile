@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2000/04/09 03:11:42 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.4 2000/08/17 04:53:36 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = pf.o pfall.o
 OBJSF    =
 LIBBASE  = libpetscvec
-MANSEC   = Vec
+MANSEC   = PF
 LOCDIR   = src/pf/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.37 2001/01/15 21:45:57 bsmith Exp balay $*/
+/*$Id: mmbaij.c,v 1.38 2001/01/16 18:17:55 balay Exp bsmith $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -66,7 +66,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
-  /* For the first stab we make an array as long as the number of columns */
+  /* Make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
   ierr = PetscMalloc((Nbs+1)*sizeof(int),&indices);CHKERRQ(ierr);
   ierr = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
@@ -97,7 +97,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
       aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
     }
   }
-  B->nbs = ec;
+  B->nbs       = ec;
   baij->B->n   = ec*B->bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  

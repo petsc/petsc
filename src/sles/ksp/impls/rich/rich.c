@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.98 2000/11/01 21:46:25 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.99 2001/01/15 21:47:22 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -29,9 +29,11 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   Vec             x,b,r,z;
   Mat             Amat,Pmat;
   KSP_Richardson  *richardsonP = (KSP_Richardson*)ksp->data;
-  PetscTruth      exists,pres;
+  PetscTruth      exists,pres,diagonalscale;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   ksp->its = 0;
 

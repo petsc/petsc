@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.26 2001/03/09 19:24:57 balay Exp balay $*/
+/*$Id: damg.c,v 1.27 2001/03/09 19:25:19 balay Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -169,85 +169,6 @@ int DMMGSetDM(DMMG *dmmg,DM dm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DMMGSetDA"
-/*@C
-    DMMGSetDA - Sets the DA information for the grids
-
-    Collective on DMMG
-
-    Input Parameter:
-+   dmmg - the context
-.   dim - 1, 2, or 3
-.   pt - DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC, DA_XYZPERIODIC, 
-         DA_XZPERIODIC, or DA_YZPERIODIC
-.   st - DA_STENCIL_STAR or DA_STENCIL_BOX
-.   M - grid points in x
-.   N - grid points in y
-.   P - grid points in z
-.   sw - stencil width, often 1
-+   dof - number of degrees of freedom per node
-
-    Level: advanced
-
-.seealso DMMGCreate(), DMMGDestroy
-
-@*/
-int DMMGSetDA(DMMG *dmmg,int dim,DAPeriodicType pt,DAStencilType st,int M,int N,int P,int dof,int sw)
-{
-  int        ierr,i,nlevels = dmmg[0]->nlevels,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
-  int        array[3],narray = 3;
-  PetscTruth flg,split = PETSC_FALSE;
-
-  PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
-
-  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dmmg_mnp",array,&narray,&flg);CHKERRQ(ierr);
-  if (!flg) {
-    ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dmmg_mn",array,&narray,&flg);CHKERRQ(ierr);
-  }
-  if (flg) {
-    if (narray > 0) M = array[0];
-    if (narray > 1) N = array[1]; else N = M;
-    if (narray > 2) P = array[2]; else P = N;
-  }
-  ierr = PetscOptionsGetLogical(PETSC_NULL,"-dmmg_split",&split,PETSC_NULL);CHKERRQ(ierr);
-
-  /* Create DA data structure for all the levels */
-  for (i=0; i<nlevels; i++) {
-    if (dim == 3) {
-      ierr = DACreate3d(dmmg[i]->comm,pt,st,M,N,P,m,n,p,dof,sw,0,0,0,(DA*)&dmmg[i]->dm);CHKERRQ(ierr);
-    } else if (dim == 2) {
-      if (split) {
-        ierr = DASplitComm2d(dmmg[i]->comm,M,N,sw,&dmmg[i]->comm);CHKERRQ(ierr);
-      }
-      ierr = DACreate2d(dmmg[i]->comm,pt,st,M,N,m,n,dof,sw,0,0,(DA*)&dmmg[i]->dm);CHKERRQ(ierr);
-    } else if (dim == 1) {
-      ierr = DACreate1d(dmmg[i]->comm,pt,M,dof,sw,0,(DA*)&dmmg[i]->dm);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(1,"Cannot handle dimension %d",dim);
-    }
-
-    if (DAXPeriodic(pt)) {
-      M = dmmg[i]->ratiox*M;
-    } else {
-      M = dmmg[i]->ratiox*(M-1) + 1;
-    }
-    if (DAYPeriodic(pt)) {
-      N = dmmg[i]->ratioy*N + 1;
-    } else {
-      N = dmmg[i]->ratioy*(N-1) + 1;
-    }
-    if (DAZPeriodic(pt)) {
-      P = dmmg[i]->ratioz*P + 1;
-    } else {
-      P = dmmg[i]->ratioz*(P-1) + 1;
-    }
-  }
-  ierr = DMMGSetUp(dmmg);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ "DMMGSetUp"
 int DMMGSetUp(DMMG *dmmg)
 {
@@ -349,13 +270,13 @@ int DMMGSolveSLES(DMMG *dmmg,int level)
 #define __FUNC__ "DMMGSetUpLevel"
 int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 {
-  int        ierr,i;
-  PC         pc;
-  PetscTruth ismg,monitor;
-  SLES       lsles; /* solver internal to the multigrid preconditioner */
-  MPI_Comm   *comms,comm;
-  PetscViewer     ascii;
-  KSP        ksp;
+  int         ierr,i;
+  PC          pc;
+  PetscTruth  ismg,monitor;
+  SLES        lsles; /* solver internal to the multigrid preconditioner */
+  MPI_Comm    *comms,comm;
+  PetscViewer ascii;
+  KSP         ksp;
 
 
   PetscFunctionBegin;
@@ -372,7 +293,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 
   ierr  = SLESGetPC(sles,&pc);CHKERRQ(ierr);
   ierr  = PCSetType(pc,PCMG);CHKERRQ(ierr);
-  ierr = PetscMalloc(nlevels*sizeof(MPI_Comm),&comms);CHKERRQ(ierr);
+  ierr  = PetscMalloc(nlevels*sizeof(MPI_Comm),&comms);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
     comms[i] = dmmg[i]->comm;
   }
@@ -430,7 +351,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetDA()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetDM()
 
 @*/
 int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))

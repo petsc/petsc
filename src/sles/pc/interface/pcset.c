@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.112 2001/01/20 03:35:20 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.113 2001/02/22 22:58:34 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -49,7 +49,7 @@ PetscFList PCList = 0;
 
 .keywords: PC, set, method, type
 
-.seealso: KSPSetType()
+.seealso: KSPSetType(), PCType
 
 @*/
 int PCSetType(PC pc,PCType type)

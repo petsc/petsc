@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.365 2001/02/27 22:02:32 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.366 2001/03/13 15:53:16 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -28,14 +28,14 @@ int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
   if (symmetric && !a->structurally_symmetric) {
     ierr = MatToSymmetricIJ_SeqAIJ(A->m,a->i,a->j,ishift,oshift,ia,ja);CHKERRQ(ierr);
   } else if (oshift == 0 && ishift == -1) {
-    int nz = a->i[A->m]; 
+    int nz = a->i[A->m] - 1; 
     /* malloc space and  subtract 1 from i and j indices */
     ierr = PetscMalloc((A->m+1)*sizeof(int),ia);CHKERRQ(ierr);
     ierr = PetscMalloc((nz+1)*sizeof(int),ja);CHKERRQ(ierr);
     for (i=0; i<nz; i++) (*ja)[i] = a->j[i] - 1;
     for (i=0; i<A->m+1; i++) (*ia)[i] = a->i[i] - 1;
   } else if (oshift == 1 && ishift == 0) {
-    int nz = a->i[A->m] + 1; 
+    int nz = a->i[A->m]; 
     /* malloc space and  add 1 to i and j indices */
     ierr = PetscMalloc((A->m+1)*sizeof(int),ia);CHKERRQ(ierr);
     ierr = PetscMalloc((nz+1)*sizeof(int),ja);CHKERRQ(ierr);
@@ -311,7 +311,7 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;  
-  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO_LONG || format == PETSC_VIEWER_ASCII_INFO) {
     if (a->inode.size) {
@@ -2320,8 +2320,9 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)B,MATSEQAIJ,&flg2);CHKERRQ(ierr);
   if (!flg2) PetscFunctionReturn(0);
-
-  if (nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than -2: value %d",nz);
+  
+  if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
+  if (nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %d",nz);
   if (nnz) {
     for (i=0; i<B->m; i++) {
       if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
@@ -2333,7 +2334,7 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
 
   ierr = PetscMalloc((B->m+1)*sizeof(int),&b->imax);CHKERRQ(ierr);
   if (!nnz) {
-    if (nz == PETSC_DEFAULT) nz = 10;
+    if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 10;
     else if (nz <= 0)        nz = 1;
     for (i=0; i<B->m; i++) b->imax[i] = nz;
     nz = nz*B->m;

@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.27 2001/01/19 23:20:37 balay Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.28 2001/01/20 03:34:50 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -484,7 +484,7 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
     int nline = PetscMin(10,a->nd),k,nk,np;

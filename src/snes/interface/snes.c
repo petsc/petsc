@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.225 2001/01/20 03:36:08 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.226 2001/02/13 19:01:40 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -542,7 +542,7 @@ static int SNESPublish_Petsc(PetscObject obj)
 
 .keywords: SNES, nonlinear, create, context
 
-.seealso: SNESSolve(), SNESDestroy()
+.seealso: SNESSolve(), SNESDestroy(), SNESProblemType, SNES
 @*/
 int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 {
@@ -1736,7 +1736,7 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,PetscReal,PetscReal,PetscR
 .keywords: SNES, nonlinear, set, convergence, test
 
 .seealso: SNESSetConvergenceTest(), SNESConverged_EQ_LS(), SNESConverged_EQ_TR(), 
-          SNESConverged_UM_LS(), SNESConverged_UM_TR()
+          SNESConverged_UM_LS(), SNESConverged_UM_TR(), SNESConvergedReason
 @*/
 int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 {
@@ -1974,6 +1974,9 @@ int SNESSolve(SNES snes,Vec x,int *its)
   Level: intermediate
 
 .keywords: SNES, set, type
+
+.seealso: SNESType, SNESCreate()
+
 @*/
 int SNESSetType(SNES snes,SNESType type)
 {

@@ -1,6 +1,6 @@
-/*$Id: ex2.c,v 1.78 2001/01/17 22:26:26 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.79 2001/01/23 20:57:12 balay Exp bsmith $*/
 
-static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
+static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example employs a user-defined monitoring routine.\n\n";
 
 /*T

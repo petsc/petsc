@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.46 2001/03/07 19:18:09 balay Exp balay $*/
+/*$Id: mpisbaij.c,v 1.47 2001/03/09 21:38:35 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1711,8 +1711,10 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
 
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive");
-  if (d_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than -2: value %d",d_nz);
-  if (o_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than -2: value %d",o_nz);
+  if (d_nz == PETSC_DECIDE || d_nz == PETSC_DEFAULT) d_nz = 3;
+  if (o_nz == PETSC_DECIDE || o_nz == PETSC_DEFAULT) o_nz = 1;
+  if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %d",d_nz);
+  if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %d",o_nz);
   if (d_nnz) {
     for (i=0; i<B->m/bs; i++) {
       if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than -1: local row %d value %d",i,d_nnz[i]);
@@ -1762,10 +1764,8 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
   b->cend_bs   = b->cend*bs;
   
 
-  if (d_nz == PETSC_DEFAULT) d_nz = 5;
   ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,B->m,B->m,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->A);
-  if (o_nz == PETSC_DEFAULT) o_nz = 0;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,B->m,B->M,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->B);
 

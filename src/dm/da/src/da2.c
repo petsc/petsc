@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.158 2001/03/09 19:18:41 balay Exp balay $*/
+/*$Id: da2.c,v 1.159 2001/03/09 21:26:06 balay Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -249,6 +249,8 @@ EXTERN_C_END
 
    Options Database Key:
 +  -da_view - Calls DAView() at the conclusion of DACreate2d()
+.  -da_grid_x <nx> - number of grid points in x direction
+.  -da_grid_y <ny> - number of grid points in y direction
 -  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
@@ -291,6 +293,13 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
   if (M < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have M positive");
   if (N < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have N positive");
+
+  ierr = PetscOptionsBegin(comm,PETSC_NULL,"2d DA Options","DA");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate2d",M,&M,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate2d",N,&N,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate2d",m,&m,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate2d",n,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PetscLogObjectCreate(da);

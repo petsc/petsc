@@ -1,4 +1,4 @@
-/*$Id: cgs.c,v 1.60 2000/09/28 21:13:20 bsmith Exp bsmith $*/
+/*$Id: cgs.c,v 1.61 2001/01/15 21:47:18 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the CGS (Conjugate Gradient Squared) method. 
@@ -26,12 +26,15 @@ static int KSPSetUp_CGS(KSP ksp)
 #define __FUNC__ "KSPSolve_CGS"
 static int  KSPSolve_CGS(KSP ksp,int *its)
 {
-  int       i,maxit,ierr;
-  Scalar    rho,rhoold,a,s,b,tmp,one = 1.0; 
-  Vec       X,B,V,P,R,RP,T,Q,U,BINVF,AUQ;
-  PetscReal dp = 0.0;
+  int        i,maxit,ierr;
+  Scalar     rho,rhoold,a,s,b,tmp,one = 1.0; 
+  Vec        X,B,V,P,R,RP,T,Q,U,BINVF,AUQ;
+  PetscReal  dp = 0.0;
+  PetscTruth diagonalscale;
 
   PetscFunctionBegin;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   maxit   = ksp->max_it;
   X       = ksp->vec_sol;
@@ -47,7 +50,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   AUQ     = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
+  ierr = KSPInitialResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   if (!ksp->avoidnorms) {
