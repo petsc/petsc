@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.71 1996/11/19 16:31:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.72 1996/11/26 16:23:34 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1509,7 +1509,7 @@ static int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
     *norm = sqrt(sum);
   }
   else {
-    SETERRQ(1,"MatNorm_SeqBAIJ:No support for this norm yet");
+    SETERRQ(PETSC_ERR_SUP,"MatNorm_SeqBAIJ:No support for this norm yet");
   }
   return 0;
 }

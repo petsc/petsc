@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.31 1996/11/20 05:04:27 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.32 1996/11/20 20:00:11 curfman Exp curfman $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -202,7 +202,7 @@ static int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
       *norm = sqrt(*norm);
     }
     else
-      SETERRQ(1,"MatNorm_SeqBAIJ:No support for this norm yet");
+      SETERRQ(PETSC_ERR_SUP,"MatNorm_MPIBAIJ:No support for this norm yet");
   }
   return 0;
 }
@@ -1388,7 +1388,7 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
   M = header[1]; N = header[2];
 
-  if (M != N) SETERRQ(1,"MatLoad_SeqBAIJ:Can only do square matrices");
+  if (M != N) SETERRQ(1,"MatLoad_MPIBAIJ:Can only do square matrices");
 
   /* 
      This code adds extra rows to make sure the number of rows is 
@@ -1399,7 +1399,7 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
   if (extra_rows == bs) extra_rows = 0;
   else                  Mbs++;
   if (extra_rows &&!rank) {
-    PLogInfo(0,"MatLoad_SeqBAIJ:Padding loaded matrix to match blocksize\n");
+    PLogInfo(0,"MatLoad_MPIBAIJ:Padding loaded matrix to match blocksize\n");
   }
 
   /* determine ownership of all rows */
