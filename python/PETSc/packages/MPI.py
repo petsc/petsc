@@ -287,33 +287,36 @@ class Configure(config.base.Configure):
     self.framework.log.write('Downloading MPICH')
     # Check for MPICH
     dirs = []
-    for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
-      if dir.startswith('mpich') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
+    packages = os.path.join(self.framework.argDB['PETSC_DIR'],'packages')
+    if not os.path.isdir(packages):
+      os.mkdir(packages)
+    for dir in os.listdir(packages):
+      if dir.startswith('mpich') and os.path.isdir(os.path.join(packages, dir)):
         dirs.append(dir)
     # Download MPICH if necessary
     if len(dirs) == 0:
       import urllib
       try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/mpi/mpich.tar.gz', 'mpich.tar.gz')
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/mpi/mpich.tar.gz', os.path.join('packages','mpich.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading MPICH: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('gunzip mpich.tar.gz', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd packages; gunzip mpich.tar.gz', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error unzipping mpich.tar.gz: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('tar -xf mpich.tar', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd packages; tar -xf mpich.tar', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf mpich.tar: '+str(e))
-      os.unlink('mpich.tar')
+      os.unlink(os.path.join('packages','mpich.tar'))
     # Get the MPICH directories
     mpichDir = None
-    for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
-      if dir.startswith('mpich') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
+    for dir in os.listdir(packages):
+      if dir.startswith('mpich') and os.path.isdir(os.path.join(packages, dir)):
         mpichDir = dir
     if mpichDir is None:
       raise RuntimeError('Error locating MPICH directory')
-    installDir = os.path.join(self.framework.argDB['PETSC_DIR'], mpichDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(packages, mpichDir, self.framework.argDB['PETSC_ARCH'])
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build MPICH
@@ -337,11 +340,11 @@ class Configure(config.base.Configure):
       oldargs = ''
     if not oldargs == args:
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd packages/'+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd packages/'+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
       fd = file(os.path.join(installDir,'config.args'), 'w')

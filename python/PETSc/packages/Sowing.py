@@ -18,34 +18,37 @@ class Configure(config.base.Configure):
   def downLoadSowing(self):
     self.framework.log.write('Downloading Sowing\n')
     # Check for SOWING
-    dirs = []
-    for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
-      if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
+    dirs     = []
+    packages = os.path.join(self.framework.argDB['PETSC_DIR'],'packages')
+    if not os.path.isdir(packages):
+      os.mkdir(packages)
+    for dir in os.listdir(packages):
+      if dir.startswith('sowing') and os.path.isdir(os.path.join(packages, dir)):
         dirs.append(dir)
     # Download SOWING if necessary
     if len(dirs) == 0:
       import urllib
       try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz', 'sowing.tar.gz')
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz', os.path.join(packages,'sowing.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading Sowing: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('gunzip sowing.tar.gz', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd packages; gunzip sowing.tar.gz', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error unzipping sowing.tar.gz: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('tar -xf sowing.tar', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd packages ;tar -xf sowing.tar', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf sowing.tar: '+str(e))
-      os.unlink('sowing.tar')
+      os.unlink(os.path.join(packages,'sowing.tar'))
     # Get the SOWING directories
     sowingDir = None
-    for dir in os.listdir(self.framework.argDB['PETSC_DIR']):
-      if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
+    for dir in os.listdir(packages):
+      if dir.startswith('sowing') and os.path.isdir(os.path.join(packages, dir)):
         sowingDir = dir
     if sowingDir is None:
       raise RuntimeError('Error locating sowing directory')
-    installDir = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(packages,sowingDir, self.framework.argDB['PETSC_ARCH'])
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build sowing
@@ -59,11 +62,11 @@ class Configure(config.base.Configure):
       oldargs = ''
     if not oldargs == args:
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd packages/'+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Sowing: '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd packages/'+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing: '+str(e))
       fd = file(os.path.join(installDir,'config.args'), 'w')
@@ -89,9 +92,6 @@ class Configure(config.base.Configure):
         self.framework.addSubstitution('DOCTEXT', self.framework.doctext)
         self.framework.addSubstitution('MAPNAMES', self.framework.mapnames)
 
-        self.framework.getExecutable('c2html', getFullPath = 1)
-        if not hasattr(self.framework, 'c2html'): self.framework.c2html = 'CouldNotFind'
-        self.framework.addSubstitution('C2HTML', self.framework.c2html)
         self.framework.getExecutable('pdflatex', getFullPath = 1)
         if not hasattr(self.framework, 'pdflatex'): self.framework.pdflatex = 'CouldNotFind'
         self.framework.addSubstitution('PDFLATEX', self.framework.pdflatex)

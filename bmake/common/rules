@@ -335,9 +335,6 @@ etags_scripts:
 # PETSc users should not generally need to use these commands.
 #
 #
-# External tools required for HMTL version of source
-C2HTML   = c2html
-
 # Builds Fortran-77 wrappers 
 fortranstubs:
 	@-${BFORT} -dir ${PETSC_DIR}/src/fortran/auto \

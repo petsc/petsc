@@ -110,7 +110,7 @@ build:
 #
 #  Compiles the blas and lapack source code if found
 blaslapack:
-	-@if [ -d f2cblaslapack/${PETSC_ARCH} -a ! -s f2cblaslapack/${PETSC_ARCH}/libf2cblas.a ] ; then cd f2cblaslapack;\
+	-@if [ -d packages/f2cblaslapack/${PETSC_ARCH} -a ! -s packages/f2cblaslapack/${PETSC_ARCH}/libf2cblas.a ] ; then cd packages/f2cblaslapack;\
         echo "=========================================";\
         echo "Building C Blas/Lapack libraries";\
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
@@ -118,7 +118,7 @@ blaslapack:
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleanblaslapack ;\
         echo "Completed C building Blas/Lapack libraries";\
         echo "========================================="; fi
-	-@if [ -d fblaslapack/${PETSC_ARCH} -a ! -s fblaslapack/${PETSC_ARCH}/libfblas.a ] ; then cd fblaslapack;\
+	-@if [ -d packages/fblaslapack/${PETSC_ARCH} -a ! -s packages/fblaslapack/${PETSC_ARCH}/libfblas.a ] ; then cd packages/fblaslapack;\
         echo "=========================================";\
         echo "Building Fortran Blas/Lapack libraries";\
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
@@ -129,8 +129,8 @@ blaslapack:
 #
 #  Compiles MPICH if found
 mpich:
-	-@releasename=`ls -d mpich* 2> /dev/null`;\
-        if [ -d $${releasename}/${PETSC_ARCH} -a ! -d $${releasename}/${PETSC_ARCH}/lib ] ; then cd $${releasename} ;\
+	-@releasename=`ls -d packages/mpich* 2> /dev/null`;\
+        if [ -d packages/$${releasename}/${PETSC_ARCH} -a ! -d packages/$${releasename}/${PETSC_ARCH}/lib ] ; then cd packages/$${releasename} ;\
           echo "=========================================";\
           echo "Compiling and installing " $${releasename};\
           make; make install; \
