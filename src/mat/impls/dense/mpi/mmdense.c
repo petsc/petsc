@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.16 1999/01/12 23:15:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmdense.c,v 1.17 1999/02/07 15:57:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: mmdense.c,v 1.16 1999/01/12 23:15:06 bsmith Exp bsmit
 int MatSetUpMultiply_MPIDense(Mat mat)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
-  int          ierr;
+  int          ierr,n;
   IS           tofrom;
   Vec          gvec;
 
