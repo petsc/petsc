@@ -8,7 +8,6 @@ C************************************************************************
       SUBROUTINE BC_UNI(xx,p,sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 c      SUBROUTINE BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-c     &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 c
 c Apply boundary conditions
 #include "param.h"
@@ -174,13 +173,6 @@ C************************************************************************
      &                 br,bl,be,sadai,sadaj,sadak,
      &                 aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                 f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      SUBROUTINE STEP(time_init,eps,epsi,rtol,converge,
-c     &                 b1,b2,b3,b4,b5,b6,d,dt,
-c     &                 r,ru,rv,rw,e,p,
-c     &                 dr,dru,drv,drw,de,
-c     &                 br,bl,be,sadai,sadaj,sadak,
-c     &                 aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &                 f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 
 c STEP is the main driver routine, executing a solve at each time step
 c Uniprocessor version only!
@@ -232,12 +224,6 @@ c Evaluate nonlinear residual
      &           br,bl,be,sadai,sadaj,sadak,
      &           aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &           f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      CALL RESID(r,ru,rv,rw,e,p,
-c     &           dr,dru,drv,drw,de, 
-c     &           br,bl,be,sadai,sadaj,sadak,
-c     &           aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &           f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-
  
       IF (NCYC.NE.1.AND.MOD(NCYC,IFREQ).NE.0) GO TO 10
       do 30 m=1,5
@@ -248,11 +234,6 @@ c Form Jacobian elements in left part of matrix
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      call nd (m,epsi,qer,qel,b1,b2,b3,
-c     &         r,ru,rv,rw,e,p,
-c     &         br,bl,be,sadai,sadaj,sadak,
-c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       qel(m)=0.
    30 continue
       do 31 m=1,5
@@ -263,19 +244,12 @@ c Form Jacobian elements in right part of matrix
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      call nd (m,epsi,qer,qel,b4,b5,b6,
-c     &         r,ru,rv,rw,e,p,
-c     &         br,bl,be,sadai,sadaj,sadak,
-c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       qer(m)=0.
    31 continue
 
 c Find eigendecomposition of diagonal block of Jacobian
       call eigenv(dt,xx,p,sadai,sadaj,sadak,
      &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-c     &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
       DO 21 M=1,5
       DO 21 L=1,5
       DO 21 K=2,NK
@@ -312,10 +286,6 @@ c "Solve" for Newton correction with SGS iteration
       do 16 i=1,isgs
       call doo (2,ni,2,nj,2,nk,+1,b1,b2,b3,d,dxx)
       call doo (ni,2,nj,2,nk,2,-1,b4,b5,b6,d,dxx)
-c      call doo (2,ni,2,nj,2,nk,+1,b1,b2,b3,d,
-c     &                dr,dru,drv,drw,de)
-c      call doo (ni,2,nj,2,nk,2,-1,b4,b5,b6,d,
-c     &                dr,dru,drv,drw,de)
    16 continue
 
       DO 15 K=2,NK
@@ -337,8 +307,6 @@ c Update pressure through equation of state
 c Apply boundary conditions
       CALL BC_UNI(xx,p,sadai,sadaj,sadak,
      &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c      CALL BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-c     &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
 c      if (no_output .eq. 0) then
          write(29,290) ncyc-1, xl2, PetscGetTime()-time_init
@@ -416,8 +384,7 @@ c Compute and tabulate norms and the number of supersonic points in flowfield
 C***********************************************************************
 
       subroutine doo (i1,i2,j1,j2,k1,k2,is,a,b,c,d,dxx)
-c      subroutine doo (i1,i2,j1,j2,k1,k2,is,a,b,c,d,
-c     &                dr, dru, drv, drw, de )
+c
 #include "param.h"
 #include "diag.h"
 #include "dvarbls.h"

@@ -41,14 +41,6 @@ C************************************************************************
      &                    aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz,
      &                    x, y, z, f1, g1, h1,
      &                    sp, sm, sp1, sp2, sm1, sm2, beta1, ifreq1)
-c      integer function JULIANNE( time_init, jsolve, app, cfl_init,
-c     &                    rtol, eps, b1, b2, b3, b4, b5, b6, d, dt,
-c     &                    r, ru, rv, rw, e, p,
-c     &                    dr, dru, drv, drw, de, 
-c     &                    br, bl, be, sadai, sadaj, sadak,
-c     &                    aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz,
-c     &                    x, y, z, f1, g1, h1,
-c     &                    sp, sm, sp1, sp2, sm1, sm2, beta1, ifreq1)
 
 #include "param.h"
 #include "matrixb.h"
@@ -369,10 +361,6 @@ C************************************************************************
       integer function bcpart_j1(xx,p,xx_bc,p_bc,
      &                   sadai,sadaj,sadak,
      &                   aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c      integer function bcpart_j1(r,ru,rv,rw,e,p,
-c     &                   r_bc,ru_bc,rv_bc,rw_bc,e_bc,p_bc,
-c     &                   sadai,sadaj,sadak,
-c     &                   aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
 c
 c Applies boundary conditions for j=1 plane
@@ -468,8 +456,6 @@ C************************************************************************
 
       integer function BC(xx,p,sadai,sadaj,sadak,
      &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c      integer function BC(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-c     &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 c
 c Apply boundary conditions
 #include "param.h"
@@ -612,9 +598,6 @@ C************************************************************************
       SUBROUTINE EIGENV(dt,xx,p,sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                  tstype)
-c      SUBROUTINE EIGENV(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-c     &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &                  tstype)
 c
 c Forms diagonal blocks for eigendecomposition.
 c
@@ -773,8 +756,6 @@ C************************************************************************
 
       SUBROUTINE RLVECS(QER,QEL,I1,J1,K1,IB,JB,KB,AX,AY,AZ,SADA,
      &                   xx,p,br,bl,be)
-c      SUBROUTINE RLVECS(QER,QEL,I1,J1,K1,IB,JB,KB,AX,AY,AZ,SADA,
-c     &                   r,ru,rv,rw,e,p,br,bl,be)
 #include "param.h"
 #include "varbls.h"
 #include "consts.h"

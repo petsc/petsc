@@ -231,13 +231,6 @@ c -------------------------------------------------------------------
      &                       br,bl,be,sadai,sadaj,sadak,
      &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-
-c      integer function jform(eps,epsi,
-c     &                       b1,b2,b3,b4,b5,b6,d,dt,
-c     &                       r,ru,rv,rw,e,p, 
-c     &                       br,bl,be,sadai,sadaj,sadak,
-c     &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 c
 c jform - Computes the Jacobian matrix, J(x) and stores it in the 
 c         (intermediate) Eagle format for later conversion to a PETSc
@@ -285,10 +278,6 @@ c Form Jacobian elements in left part of matrix
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      call nd (m,epsi,qer,qel,b1,b2,b3,r,ru,rv,rw,e,p,
-c     &         br,bl,be,sadai,sadaj,sadak,
-c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 
       qel(m)=zero
    30 continue
@@ -300,19 +289,12 @@ c Form Jacobian elements in right part of matrix
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      call nd (m,epsi,qer,qel,b4,b5,b6,
-c     &         r,ru,rv,rw,e,p,
-c     &         br,bl,be,sadai,sadaj,sadak,
-c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       qer(m)=zero
    31 continue
 c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
 c But really need to recalculate dt only when the iterates change. 
       call eigenv(dt,xx,p,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
       DO 21 M=1,5
       DO 21 L=1,5
       do 21 k=zsf2,zef01
@@ -337,11 +319,6 @@ c -------------------------------------------------------------------
      &                       br,bl,be,sadai,sadaj,sadak,
      &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      integer function jform2(eps,epsi,ltog,nloc,mat,d,dt,
-c     &                       r,ru,rv,rw,e,p, 
-c     &                       br,bl,be,sadai,sadaj,sadak,
-c     &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 c
 c jform2 - Forms the Jacobian matrix, J(x), with direct assembly 
 c          of the matrix into the PETSc formats via calls to
@@ -386,11 +363,6 @@ c Form Jacobian elements in left part of matrix
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      ierr = nd2 (m,epsi,qer,qel,1,mat,ltog,nloc,d,
-c     &         r,ru,rv,rw,e,p,
-c     &         br,bl,be,sadai,sadaj,sadak,
-c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       if (ierr .ne. 0) then
          jform2 = -1
          return 
@@ -406,11 +378,7 @@ c Form Jacobian elements in right part of matrix
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c      ierr = nd2 (m,epsi,qer,qel,2,mat,ltog,nloc,d,
-c     &         r,ru,rv,rw,e,p,
-c     &         br,bl,be,sadai,sadaj,sadak,
-c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+
       if (ierr .ne. 0) then
          jform2 = -1
          return 
@@ -422,8 +390,6 @@ c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
 c But really need to recalculate dt only when the iterates change. 
       call eigenv(dt,xx,p,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
-c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
 c We must specify that we are inserting matrix blocks by columns, since
 c the PETSc default is row-oriented input.
@@ -462,7 +428,6 @@ C  The rest of the input is row-oriented.
 c -------------------------------------------------------------------
 
       integer function jpressure(xx,p)
-c      integer function jpressure(xx,r,ru,rv,rw,e,p)
 
 c jpress - Updates the pressure terms after a Newton step.
 c
@@ -499,10 +464,6 @@ c -------------------------------------------------------------------
 c
       integer function jmonitor(xl2,cfl_new,work,xx,p,dxx,
      &                          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c      integer function jmonitor(xl2,cfl_new,work,
-c     &                          r,ru,rv,rw,e,p,
-c     &                          dr,dru,drv,drw,de,
-c     &                          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 c
 c jmonitor - Writes miscellaneous output information.  Called by
 c            the MonitorEuler().
@@ -639,7 +600,6 @@ c          DO 42 I=ITL+1,ITU
 c -------------------------------------------------------------------
 
       subroutine printjul(xx,p,base)
-c      subroutine printjul(r,ru,rv,rw,e,p,base)
 c
 c printjul - Prints grid points (interior only)
 c
@@ -671,7 +631,6 @@ c
 c -------------------------------------------------------------------
 
       subroutine printgjul(xx,p,base)
-c      subroutine printgjul(r,ru,rv,rw,e,p,base)
 c
 c printjul - Prints grid points (exterior/interior and ghost points)
 c
@@ -704,7 +663,6 @@ c
 c -------------------------------------------------------------------
 
       subroutine printbjul(xx,p,base)
-c      subroutine printbjul(r,ru,rv,rw,e,p,base)
 c
 c printjul - Prints grid points (exterior/interior and ghost points)
 c
@@ -740,7 +698,6 @@ c
 c   rscale - Scales input vector by dt.
 c
       integer function rscale( dt, dxx )
-c      integer function rscale( dt, dr, dru, drv, drw, de )
 
 #include "param.h"
 #include "dt.h"
