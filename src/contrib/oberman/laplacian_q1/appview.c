@@ -1,18 +1,16 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.3 2000/01/06 20:43:19 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 
 /* ----------------------------------------------------------------------- */
 /*
-   AppCtxViewMatlab - Views solution using Matlab via socket connections.
+   AppCtxViewMatlab - Views solution using Matlab interactively
 
    Input Parameter:
    appctx - user-defined application context
 
    Note:
-   See the companion Matlab file mscript.m for usage instructions.
-
-   Only works for one processor
+   See the companion Matlab file bscript.m for usage instructions.
 
 */
 #undef __FUNC__
@@ -24,10 +22,11 @@ int AppCtxViewMatlab(AppCtx* appctx)
   FILE   *fp;
 
   PetscFunctionBegin;
-  /* send the cell_coords */
-  ierr = PetscStartMatlab(PETSC_COMM_WORLD,"fire","bscript(0)",&fp);CHKERRQ(ierr);
-  
+  /* start up the companion Matlab processor to receive the data */
+  ierr = PetscStartMatlab(PETSC_COMM_WORLD,PETSC_NULL,"bscript(0)",&fp);CHKERRQ(ierr);
   viewer = VIEWER_SOCKET_WORLD;
+  
+  /* send the cell_coordinates */
   ierr = PetscDoubleView(2*4*appctx->grid.cell_n,appctx->grid.cell_coords,viewer);CHKERRQ(ierr);
   /* send cell_vertices */
   ierr = PetscIntView(4*appctx->grid.cell_n,appctx->grid.global_cell_vertex,viewer);CHKERRQ(ierr);
@@ -46,7 +45,6 @@ int AppCtxGraphics(AppCtx *appctx)
 {
   int    ierr;
   double maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
-
 
   PetscFunctionBegin;
 
