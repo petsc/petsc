@@ -192,11 +192,10 @@ chk_petsc_dir:
 # Builds all etags files
 alletags:
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_complete
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_noexamples
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_examples
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_makefiles
-# Builds the basic etags file.	This should be employed by most users.
+# Builds complete etags list
 etags:
 	-${RM} ${TAGSDIR}/TAGS
 	-touch ${TAGSDIR}/TAGS
@@ -210,22 +209,8 @@ etags:
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_examplesfh alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_makefile alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS etags_bmakefiles
-# Builds complete etags list; only for PETSc developers.
-etags_complete:
-	-${RM} ${TAGSDIR}/TAGS_COMPLETE
-	-touch ${TAGSDIR}/TAGS_COMPLETE
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_sourcec alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_sourcej alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_sourceh alltree
-	-cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_sourcef alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_examplesc alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_examplesf alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_examplesch alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_examplesfh alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_makefile alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE etags_bmakefiles
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_docs alltree
-	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_scripts alltree
+	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_docs alltree
+	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_scripts alltree
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
 	-${RM} ${TAGSDIR}/TAGS_NO_EXAMPLES
@@ -267,9 +252,7 @@ BMAKEFILES = bmake/common/base bmake/common/test \
 	     bmake/config/variables.in \
              bmake/*/buildtest bmake/adic.init bmake/adicmf.init
 DOCS	   = bmake/readme bmake/petscconf.defs
-SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
-	     maint/xclude maint/crontab  \
-	     maint/autoftp
+SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/crontab  
 
 updatewebdocs:
 	-chmod -R ug+w /mcs/tmp/petsc-tmp

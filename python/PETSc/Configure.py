@@ -747,6 +747,31 @@ acfindx:
     self.framework.addSubstitution('CC_SHARED_OPT', '')
     return
 
+  def configureETags(self):
+    '''Determine if etags files exist and try to create otherwise'''
+    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'TAGS')):
+      print '  WARNING: ETags files have not been created'
+      self.framework.getExecutable('etags', getFullPath = 1)
+      if hasattr(self.framework, 'etags'):
+        print '           Running '+self.framework.etags+' to generate TAGS files'
+        print '           This may tak several minutes'
+        (status,output) = commands.getstatusoutput('make PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags')
+        # filter out the normal messages, user has to cope with error messages
+        cnt = 0
+        for i in output.split('\n'):
+          if not (i.startswith('etags_') or i.find('TAGS') >= 0):
+            if not cnt:
+              print '*******Error generating etags files****'
+            cnt = cnt + 1
+            print i+'\n'
+        if not cnt:
+          print '           Completed generating etags files'
+        else:
+          print '*******End of error messages from generating etags files****'
+      else:
+        print '           The etags command is not in your path, cannot build etags files'
+    return
+
   def configure(self):
     self.executeTest(self.checkRequirements)
     self.executeTest(self.configureDirectories)
@@ -783,4 +808,5 @@ acfindx:
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
+    self.executeTest(self.configureETags)
     return
