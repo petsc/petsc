@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.14 1995/05/10 00:16:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: rich.c,v 1.15 1995/05/11 01:21:01 curfman Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -49,7 +49,7 @@ int KSPRichardsonSetScale(KSP itP,double scale)
 int  KSPSolve_Richardson(KSP itP,int *its)
 {
   int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr = 0;
-  int                pflag;
+  MatStructure       pflag;
   double             rnorm,*history;
   Scalar             scale, mone = -1.0;
   Vec                x,b,r,z;
