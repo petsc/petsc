@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.8 1996/01/12 03:52:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.9 1996/01/17 21:50:45 bsmith Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -65,7 +65,7 @@ static int PCSetUp_ASM(PC pc)
     /* 
        Extend the "overlapping" regions by a number of steps 
     */
-    if (overlap) {
+    if (osm->overlap) {
       ;
     }
 
