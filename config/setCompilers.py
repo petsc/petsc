@@ -636,6 +636,8 @@ class Configure(config.base.Configure):
         testMethod = 'foo'
         self.framework.argDB[flagsArg] += ' '+' '.join(goodFlags)
         if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
+          if not os.path.isfile('libconftest.'+ext):
+            os.rename(self.linkerObj,'libconftest.'+ext)
           oldLibs = self.framework.argDB['LIBS']
           self.framework.argDB['LIBS'] += ' -L. -lconftest'
           self.framework.argDB[flagsArg] = oldFlags
