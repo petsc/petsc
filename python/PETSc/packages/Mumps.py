@@ -130,13 +130,13 @@ class Configure(config.base.Configure):
     g.write('BLACSDEFS = $(DEFS1) $(SENDIS) $(BUFF) $(TRANSCOMM) $(WHATMPI) $(SYSERRORS)\n')
     self.setcompilers.pushLanguage('FC')  
     g.write('F77 ='+self.setcompilers.getCompiler()+'\n')
-    g.write('F77FLAGS ='+self.framework.argDB['FFLAGS']+'\n')
+    g.write('F77FLAGS ='+self.setcompilers.getCompilerFlags()+'\n')
     g.write('F77LOADER ='+self.setcompilers.getLinker()+'\n')      
     g.write('F77LOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
     self.setcompilers.pushLanguage('C')
     g.write('CC ='+self.setcompilers.getCompiler()+'\n')
-    g.write('CCFLAGS ='+self.framework.argDB['CFLAGS']+'\n')      
+    g.write('CCFLAGS ='+self.setcompilers.getCompilerFlags()+'\n')      
     g.write('CCLOADER ='+self.setcompilers.getLinker()+'\n')
     g.write('CCLOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
@@ -148,7 +148,7 @@ class Configure(config.base.Configure):
       os.mkdir(installDir)
     if not os.path.isfile(os.path.join(installDir,'Bmake.Inc')) or not (self.getChecksum(os.path.join(installDir,'Bmake.Inc')) == self.getChecksum(os.path.join(blacsDir,'Bmake.Inc'))):
       try:
-        self.logPrint("Compiling Mumps; this may take several minutes\n", debugSection='screen')
+        self.logPrint("Compiling Blacs; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
@@ -234,14 +234,13 @@ framework.log)[0]
     g.write('REDISTdir     = $(home)/REDIST\n')
     self.setcompilers.pushLanguage('FC')  
     g.write('F77 ='+self.setcompilers.getCompiler()+'\n')
-    if self.setcompilers.getCompiler().find('g77') == -1:    g.write('F77FLAGS ='+self.framework.argDB['FFLAGS']+'\n')
-    else:    g.write('F77FLAGS = -O\n')
+    g.write('F77FLAGS ='+self.setcompilers.getCompilerFlags()+'\n')
     g.write('F77LOADER ='+self.setcompilers.getLinker()+'\n')      
     g.write('F77LOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
     self.setcompilers.pushLanguage('C')
     g.write('CC ='+self.setcompilers.getCompiler()+'\n')
-    g.write('CCFLAGS ='+self.framework.argDB['CFLAGS']+'\n')      
+    g.write('CCFLAGS ='+self.setcompilers.getCompilerFlags()+'\n')      
     g.write('CCLOADER ='+self.setcompilers.getLinker()+'\n')
     g.write('CCLOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
@@ -288,8 +287,7 @@ framework.log)[0]
     if not isinstance(incl,list): incl = [incl]
     incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in incl:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:

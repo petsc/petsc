@@ -64,8 +64,7 @@ class Configure(config.base.Configure):
   def checkInclude(self, includeDir):
     '''Check that mpi.h is present'''
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in includeDir:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir])
     # Should we also look for mpif.h?
     found = self.checkPreprocess('#include <mpi.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
@@ -475,7 +474,7 @@ class Configure(config.base.Configure):
   def configureTypes(self):
     '''Checking for MPI types'''
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
     self.types.checkSizeof('MPI_Comm', 'mpi.h')
     if 'HAVE_MPI_FINT' in self.defines:
       self.types.checkSizeof('MPI_Fint', 'mpi.h')

@@ -51,8 +51,7 @@ class Configure(config.base.Configure):
   def checkInclude(self, includeDir):
     '''Check that parmetis.h is present'''
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in includeDir+self.mpi.include:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir+self.mpi.include])
     found = self.checkPreprocess('#include <parmetis.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     return found
@@ -231,9 +230,9 @@ class Configure(config.base.Configure):
         oldLog = logging.Logger.defaultLog
         logging.Logger.defaultLog = file(os.path.join(parmetisDir, 'build.log'), 'w')
         oldLevel = self.argDB['debugLevel']
-        self.argDB['debugLevel'] = 0
+        #self.argDB['debugLevel'] = 0
         oldIgnore = self.argDB['ignoreCompileOutput']
-        self.argDB['ignoreCompileOutput'] = 1
+        #self.argDB['ignoreCompileOutput'] = 1
         if os.path.exists('RDict.db'):
           os.remove('RDict.db')
         if os.path.exists('bsSource.db'):
