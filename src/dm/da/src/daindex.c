@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.19 1998/04/29 03:33:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.20 1998/05/20 13:48:58 bsmith Exp curfman $";
 #endif
  
 /*
@@ -44,7 +44,7 @@ $
 
 .keywords: distributed array, get, global, indices, local-to-global
 
-.seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
+.seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlobal()
           DAGlobalToLocal(), DALocalToLocal(), DAGetAO(), DAGetGlobalIndicesF90()
 @*/
 int DAGetGlobalIndices(DA da, int *n,int **idx)
