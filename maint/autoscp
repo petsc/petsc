@@ -1,0 +1,16 @@
+#!/usr/local/bin/expect -f
+# $Id: autoftp,v 1.12 1998/10/23 20:55:40 balay Exp $ 
+
+#
+# automatically copy files to a specified site using scp
+  set sourcefile [lindex $argv 0]
+  set destfile   [lindex $argv 1]
+
+     spawn scp $sourcefile $destfile
+     expect {*assword*}
+     set timeout 90
+     send "G88s43pe\r"
+     expect {100\%}
+     send "\r"
+
+
