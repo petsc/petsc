@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.136 1999/12/16 23:35:48 bsmith Exp bsmith $*/
+/*$Id: ilut.c,v 1.2 1999/12/17 19:16:43 bsmith Exp bsmith $*/
 /* ilut.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
         This code is protected by the GNU copyright. See the file 
@@ -92,7 +92,7 @@ L1:
 
 
 /* ---------------------------------------------------------------------- */
-static int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,double *permtol,int *mbloc,Scalar *alu, 
+int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,double *permtol,int *mbloc,Scalar *alu, 
 	int *jlu, int *ju, int *iwk, Scalar *w, int *jw,   int *iperm, int *ierr)
 {
     /* System generated locals */

@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.138 1999/12/16 23:27:51 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.139 1999/12/17 04:24:59 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -420,7 +420,6 @@ int PCILUSetUseInPlace(PC pc)
 #define __FUNC__ "PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
-  PC_ILU     *ilu = (PC_ILU *) pc->data;
   int        levels,ierr,dtmax = 3;
   PetscTruth flg;
   double     dt[3],fill;
