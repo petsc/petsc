@@ -1319,7 +1319,7 @@ int VecSetValues(Vec x,int ni,const int ix[],const PetscScalar y[],InsertMode io
    INSERT_VALUES replaces existing entries with new values
 
    Notes: 
-   VecSetValuesBlocked() sets x[ix[bs*i]+j] = y[bs*i+j], 
+   VecSetValuesBlocked() sets x[bs*ix[i]+j] = y[bs*i+j], 
    for j=0,...,bs, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
 
    Calls to VecSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES 
