@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.27 1995/07/29 03:29:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.28 1995/07/29 03:43:57 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -158,6 +158,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = ISCreateSequential(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
   ierr = MatGetSubMatrix(mat,iskeep,iskeep,&submat); CHKERRQ(ierr);
   PETSCFREE(rowkeep);
+  ierr = ISDestroy(iskeep);  CHKERRQ(ierr);
   ierr = MatDestroy(mat); CHKERRQ(ierr);
 
   /* Convert storage formats -- just to demonstrate conversion to various
