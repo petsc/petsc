@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 1997/09/10 18:08:17 balay Exp balay $ 
+# $Id: base.site,v 1.17 1997/09/11 21:54:19 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -9,10 +9,8 @@
 #
 # FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
-#
-FC_LIB         =  -lftn
-# For IRIX Release less than,6.2 the above should probably be replaced by
-# FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+# 
+FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
@@ -22,8 +20,8 @@ FC_LIB         =  -lftn
 # a bug in it, so if you are using complex numbers we recommend using
 # the SGI BLAS with extreme care.
 #
-BLAS_LIB       = /home/bsmith/lapack/blas_IRIX.a
-LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX.a $(FC_LIB)
+BLAS_LIB       = /home/bsmith/lapack/blas_IRIX5.a
+LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX5.a $(FC_LIB)
 #
 # Location of X-windows software
 #
@@ -32,10 +30,10 @@ X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software  
 #
-MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
+MPI_LIB        = -L/home/petsc/mpich/lib/IRIX5/ch_shmem/ -lmpi
 MPI_INCLUDE    = -I/home/petsc/mpich/include
-MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
-#MPIRUN        = /usr/local/mpi/lib/IRIX/ch_shmem/mpirun.ch_shmem
+MPIRUN         = /home/petsc/mpich/lib/IRIX5/ch_shmem/mpirun.ch_shmem
+#MPIRUN        = /usr/local/mpi/lib/IRIX5/ch_shmem/mpirun.ch_shmem
 #
 # ----------------------------------------------------------------------------------------  
 #
