@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.57 1997/07/02 22:28:35 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.58 1997/08/07 14:43:40 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -41,6 +41,7 @@ extern int KSPSetRhs(KSP,Vec);
 extern int KSPGetRhs(KSP,Vec *);
 extern int KSPSetSolution(KSP,Vec);
 extern int KSPGetSolution(KSP,Vec *);
+extern int KSPGetResidualNorm(KSP,double*);
 
 extern int KSPSetPC(KSP,PC);
 extern int KSPGetPC(KSP,PC*);

@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.30 1997/09/11 02:56:03 curfman Exp bsmith $ */
+/* $Id: plapack.h,v 1.31 1997/10/19 03:32:03 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -55,29 +55,7 @@ Cray T3D/T3E.
 #define DTRSL    STRSL
 #endif
 
-#if defined(HAVE_FORTRAN_CAPS)
-#define LAgeqrf_ DGEQRF
-#define LAgetrf_ DGETRF
-#define LAgetf2_ DGETF2
-#define BLdot_   DDOT
-#define BLnrm2_  DNRM2
-#define BLscal_  DSCAL
-#define BLcopy_  DCOPY
-#define BLswap_  DSWAP
-#define BLaxpy_  DAXPY
-#define BLasum_  DASUM
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define LAgeqrf_ dgeqrf
-#define LAgetrf_ dgetrf
-#define LAgetf2_ dgetf2
-#define BLdot_   ddot
-#define BLnrm2_  dnrm2
-#define BLscal_  dscal
-#define BLcopy_  dcopy
-#define BLswap_  dswap
-#define BLaxpy_  daxpy
-#define BLasum_  dasum
-#else
+#if defined(HAVE_FORTRAN_UNDERSCORE) || defined(USE_CBLASLAPACK)
 #define LAgeqrf_ dgeqrf_
 #define LAgetrf_ dgetrf_
 #define LAgetf2_ dgetf2_
@@ -88,6 +66,28 @@ Cray T3D/T3E.
 #define BLswap_  dswap_
 #define BLaxpy_  daxpy_
 #define BLasum_  dasum_
+#elif defined(HAVE_FORTRAN_CAPS)
+#define LAgeqrf_ DGEQRF
+#define LAgetrf_ DGETRF
+#define LAgetf2_ DGETF2
+#define BLdot_   DDOT
+#define BLnrm2_  DNRM2
+#define BLscal_  DSCAL
+#define BLcopy_  DCOPY
+#define BLswap_  DSWAP
+#define BLaxpy_  DAXPY
+#define BLasum_  DASUM
+#else
+#define LAgeqrf_ dgeqrf
+#define LAgetrf_ dgetrf
+#define LAgetf2_ dgetf2
+#define BLdot_   ddot
+#define BLnrm2_  dnrm2
+#define BLscal_  dscal
+#define BLcopy_  dcopy
+#define BLswap_  dswap
+#define BLaxpy_  daxpy
+#define BLasum_  dasum
 #endif
 
 /*
@@ -123,6 +123,18 @@ Cray T3D/T3E.
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #define LAgetrf_ DGETRF
+#elif defined(HAVE_FORTRAN_UNDERSCORE) || defined(USE_CBLASLAPACK)
+#define LAormqr_ dormqr_
+#define LAtrtrs_ dtrtrs_
+#define LApotrf_ dpotrf_
+#define LApotrs_ dpotrs_
+#define LAgemv_  dgemv_
+#define LAgetrs_ dgetrs_
+#define LAtrmv_  dtrmv_
+#define LAtrsl_  dtrsl_
+#define BLgemm_  dgemm_
+#define LAgesvd_ dgesvd_
+#define LAgeev_  dgeev_
 #elif defined(HAVE_FORTRAN_CAPS)
 #define LAormqr_ DORMQR
 #define LAtrtrs_ DTRTRS
@@ -135,7 +147,7 @@ Cray T3D/T3E.
 #define LAgesvd_ DGESVD
 #define LAgeev_  DGEEV
 #define BLgemm_  DGEMM
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#else
 #define LAormqr_ dormqr
 #define LAtrtrs_ dtrtrs
 #define LApotrf_ dpotrf
@@ -147,18 +159,6 @@ Cray T3D/T3E.
 #define BLgemm_  dgemm
 #define LAgesvd_ dgesvd
 #define LAgeev_  dgeev
-#else
-#define LAormqr_ dormqr_
-#define LAtrtrs_ dtrtrs_
-#define LApotrf_ dpotrf_
-#define LApotrs_ dpotrs_
-#define LAgemv_  dgemv_
-#define LAgetrs_ dgetrs_
-#define LAtrmv_  dtrmv_
-#define LAtrsl_  dtrsl_
-#define BLgemm_  dgemm_
-#define LAgesvd_ dgesvd_
-#define LAgeev_  dgeev_
 #endif
 
 #else
@@ -186,28 +186,7 @@ Cray T3D/T3E.
 #define ZGEEV   CGEEV
 #endif
 
-#if defined(HAVE_FORTRAN_CAPS)
-#define LAgeqrf_ ZGEQRF
-#define BLdot_   ZDOTC
-#define BLnrm2_  DZNRM2
-#define BLscal_  ZSCAL
-#define BLcopy_  ZCOPY
-#define BLswap_  ZSWAP
-#define BLaxpy_  ZAXPY
-#define BLasum_  DZASUM
-#define LAgetrf_ ZGETRF
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define LAgeqrf_ zgeqrf
-#define LAgetrf_ zgetrf
-#define LAgetf2_ zgetf2
-#define BLdot_   zdotc
-#define BLnrm2_  dznrm2
-#define BLscal_  zscal
-#define BLcopy_  zcopy
-#define BLswap_  zswap
-#define BLaxpy_  zaxpy
-#define BLasum_  dzasum
-#else
+#if defined(HAVE_FORTRAN_UNDERSCORE) || defined(USE_CBLASLAPACK)
 #define LAgeqrf_ zgeqrf_
 #define LAgetrf_ zgetrf_
 #define LAgetf2_ zgetf2_
@@ -218,6 +197,27 @@ Cray T3D/T3E.
 #define BLswap_  zswap_
 #define BLaxpy_  zaxpy_
 #define BLasum_  dzasum_
+#elif defined(HAVE_FORTRAN_CAPS)
+#define LAgeqrf_ ZGEQRF
+#define BLdot_   ZDOTC
+#define BLnrm2_  DZNRM2
+#define BLscal_  ZSCAL
+#define BLcopy_  ZCOPY
+#define BLswap_  ZSWAP
+#define BLaxpy_  ZAXPY
+#define BLasum_  DZASUM
+#define LAgetrf_ ZGETRF
+#else
+#define LAgeqrf_ zgeqrf
+#define LAgetrf_ zgetrf
+#define LAgetf2_ zgetf2
+#define BLdot_   zdotc
+#define BLnrm2_  dznrm2
+#define BLscal_  zscal
+#define BLcopy_  zcopy
+#define BLswap_  zswap
+#define BLaxpy_  zaxpy
+#define BLasum_  dzasum
 #endif
 
 #if defined(USES_CPTOFCD)
@@ -241,6 +241,17 @@ Cray T3D/T3E.
                                         (f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
+#elif defined(HAVE_FORTRAN_UNDERSCORE) || defined(USE_CBLASLAPACK)
+#define LAtrtrs_ ztrtrs_
+#define LApotrf_ zpotrf_
+#define LApotrs_ zpotrs_
+#define LAgemv_  zgemv_
+#define LAgetrs_ zgetrs_
+#define LAtrmv_  ztrmv_
+#define LAtrsl_  ztrsl_
+#define BLgemm_  zgemm_
+#define LAgesvd_ zgesvd_
+#define LAgeev_  zgeev_
 #elif defined(HAVE_FORTRAN_CAPS)
 #define LAtrtrs_ ZTRTRS
 #define LApotrf_ ZPOTRF
@@ -254,7 +265,7 @@ Cray T3D/T3E.
 #define BLgemm_  ZGEMM
 #define LAgesvd_ ZGESVD
 #define LAgeev_  ZGEEV
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#else
 #define LAtrtrs_ ztrtrs
 #define LApotrf_ zpotrf
 #define LApotrs_ zpotrs
@@ -265,17 +276,6 @@ Cray T3D/T3E.
 #define BLgemm_  zgemm
 #define LAgesvd_ zgesvd
 #define LAgeev_  zgeev
-#else
-#define LAtrtrs_ ztrtrs_
-#define LApotrf_ zpotrf_
-#define LApotrs_ zpotrs_
-#define LAgemv_  zgemv_
-#define LAgetrs_ zgetrs_
-#define LAtrmv_  ztrmv_
-#define LAtrsl_  ztrsl_
-#define BLgemm_  zgemm_
-#define LAgesvd_ zgesvd_
-#define LAgeev_  zgeev_
 #endif
 
 #endif

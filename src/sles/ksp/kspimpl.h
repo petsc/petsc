@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.28 1997/03/26 01:34:38 bsmith Exp balay $ */
+/* $Id: kspimpl.h,v 1.29 1997/05/23 18:27:09 balay Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -27,8 +27,8 @@ struct _p_KSP {
          atol,                     /* absolute tolerance */
          ttol,                     /* (not set by user)  */
          divtol;                   /* divergence tolerance */
-  double rnorm0;                   /* initial residual norm 
-				      (used for divergence testing) */
+  double rnorm0;                   /* initial residual norm (used for divergence testing) */
+  double rnorm;                    /* current residual norm */
 
   Vec vec_sol, vec_rhs;            /* pointer to where user has stashed 
                                       the solution and rhs, these are 
