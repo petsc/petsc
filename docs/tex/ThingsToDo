@@ -52,7 +52,7 @@ Additional Capabilities that PETSc Needs:
 
  (Lois)   - Complex versions of the Krylov subspace solvers
 
- (Lois)   - Complex version work from Fortran
+   X   - Complex version work from Fortran
 
    X Have -log_summary print percentages for different stages.
 
@@ -142,7 +142,7 @@ Additional Capabilities that PETSc Needs:
         # This can be used, in comparison with the routine index, to find routines
         # still needing tests.
 
-   - When one is using a MatShell it would be nice if PC knew to use no
+   X When one is using a MatShell it would be nice if PC knew to use no
      preconditioning when no special preconditioner is applied. This would 
      prevent the annouying error message about MatGetDiagonal() when it 
      tries to use the default jacobi preconditioner.
