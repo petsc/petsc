@@ -10,15 +10,15 @@ typedef enum {BILINEAR_FACTOR_NONE, BILINEAR_FACTOR_LU, BILINEAR_FACTOR_CHOLESKY
 struct _BilinearOps {
       /* Generic Operations */
   int (*setfromoptions)(Bilinear),
-      (*view)(Bilinear, Viewer),
+      (*view)(Bilinear, PetscViewer),
       (*copy)(Bilinear, Bilinear),
       (*convertsametype)(Bilinear, Bilinear *, int),
       (*destroy)(Bilinear),
       (*printhelp)(Bilinear),
       /* Assembly Operations*/
-      (*setvalues)(Bilinear, int, int *, int, int *, int, int *, Scalar *, InsertMode),
-      (*getarray)(Bilinear, Scalar **),
-      (*restorearray)(Bilinear, Scalar **),
+      (*setvalues)(Bilinear, int, int *, int, int *, int, int *, PetscScalar *, InsertMode),
+      (*getarray)(Bilinear, PetscScalar **),
+      (*restorearray)(Bilinear, PetscScalar **),
       (*assemblybegin)(Bilinear, MatAssemblyType),
       (*assemblyend)(Bilinear, MatAssemblyType),
       (*zeroentries)(Bilinear),

@@ -4,8 +4,8 @@ static char vcid[] = "$Id: bilinearregall.c,v 1.3 1999/06/01 16:44:06 knepley Ex
 
 #include "src/bilinear/bilinearimpl.h"     /*I  "bilinear.h"  I*/
 EXTERN_C_BEGIN
-extern int BilinearSerialize_SeqDense(MPI_Comm, Bilinear *, Viewer, PetscTruth);
-extern int BilinearSerialize_MPIDense(MPI_Comm, Bilinear *, Viewer, PetscTruth);
+extern int BilinearSerialize_SeqDense(MPI_Comm, Bilinear *, PetscViewer, PetscTruth);
+extern int BilinearSerialize_MPIDense(MPI_Comm, Bilinear *, PetscViewer, PetscTruth);
 EXTERN_C_END
 
 #undef __FUNC__  

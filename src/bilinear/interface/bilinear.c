@@ -9,11 +9,11 @@ static char vcid[] = "$Id: bilinear.c,v 1.3 2000/01/10 03:12:26 knepley Exp $";
 #include "src/bilinear/bilinearimpl.h"        /*I "bilinear.h" I*/
 #include "src/vec/vecimpl.h"  
 #include "src/mat/matimpl.h"  
-#include "pinclude/pviewer.h"
 
 /* Logging support */
 int BILINEAR_COOKIE;
-int BilinearEvents[BILINEAR_MAX_EVENTS];
+int BILINEAR_Copy, BILINEAR_Convert, BILINEAR_SetValues, BILINEAR_AssemblyBegin, BILINEAR_AssemblyEnd;
+int BILINEAR_ZeroEntries, BILINEAR_Mult, BILINEAR_FullMult, BILINEAR_Diamond, BILINEAR_LUFactor, BILINEAR_CholeskyFactor;
 
 /*--------------------------------------------- Basic Functions -----------------------------------------------------*/
 #undef __FUNC__  
@@ -27,12 +27,12 @@ int BilinearEvents[BILINEAR_MAX_EVENTS];
 
    Notes:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
+$     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+$     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
-$     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
+$     PETSC_VIEWER_DRAWX_WORLD - graphical display of nonzero structure
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpenASCII() - output to a specified file
@@ -46,23 +46,23 @@ $         bilinear operator types support the Matlab viewer.
 $    ViewerMathematicaOpen() - output bilinear operator to Mathematica.
 
    The user can call ViewerSetFormat() to specify the output
-   format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
-   VIEWER_STDOUT_WORLD and ViewerFileOpenASCII).  Available formats include
-$    VIEWER_FORMAT_ASCII_DEFAULT - default, prints bilinear operator contents
-$    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
-$    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
+   format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
+   PETSC_VIEWER_STDOUT_WORLD and ViewerFileOpenASCII).  Available formats include
+$    PETSC_VIEWER_FORMAT_ASCII_DEFAULT - default, prints bilinear operator contents
+$    PETSC_VIEWER_FORMAT_ASCII_MATLAB - Matlab format
+$    PETSC_VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
-$    VIEWER_FORMAT_ASCII_INFO - basic information about the bilinear operator
+$    PETSC_VIEWER_FORMAT_ASCII_INFO - basic information about the bilinear operator
 $      size and structure (not the bilinear operator entries)
-$    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed information about the 
+$    PETSC_VIEWER_FORMAT_ASCII_INFO_LONG - more detailed information about the 
 $      bilinear operator structure
 
 .keywords: bilinear operator, view, visualize, output, print, write, draw
 
 .seealso: ViewerSetFormat(), ViewerFileOpenASCII(), ViewerDrawOpenX(), 
-          ViewerMatlabOpen(), ViewerMathematicaOpen(), ViewerFileOpenBinary()
+          ViewerMatlabOpen(), PetscViewerMathematicaOpen(), PetscViewerFileOpenBinary()
 @*/
-int BilinearView(Bilinear B, Viewer viewer)
+int BilinearView(Bilinear B, PetscViewer viewer)
 {
   int        format;
   int        n_i, n_j, n_k;
@@ -73,32 +73,31 @@ int BilinearView(Bilinear B, Viewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   if (!viewer)
-    viewer = VIEWER_STDOUT_SELF;
+    viewer = PETSC_VIEWER_STDOUT_SELF;
   else
-    PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
+    PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
 
-  ierr = PetscTypeCompare((PetscObject) viewer, ASCII_VIEWER, &isascii);                                 CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &isascii);                            CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerGetFormat(viewer, &format);                                                             CHKERRQ(ierr);  
-    if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-      ViewerASCIIPrintf(viewer, " Bilinear Object:\n");
-      ierr = BilinearGetType(B, PETSC_NULL, &cstr);                                                      CHKERRQ(ierr);
-      ierr = BilinearGetSize(B, &n_i, &n_j, &n_k);                                                       CHKERRQ(ierr);
-      ViewerASCIIPrintf(viewer, "  type=%s, n_i=%d, n_j=%d, n_k=%d\n", cstr, n_i, n_j, n_k);
+    ierr = PetscViewerGetFormat(viewer, &format);                                                         CHKERRQ(ierr);  
+    if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+      PetscViewerASCIIPrintf(viewer, " Bilinear Object:\n");
+      ierr = BilinearGetType(B, PETSC_NULL, &cstr);                                                       CHKERRQ(ierr);
+      ierr = BilinearGetSize(B, &n_i, &n_j, &n_k);                                                        CHKERRQ(ierr);
+      PetscViewerASCIIPrintf(viewer, "  type=%s, n_i=%d, n_j=%d, n_k=%d\n", cstr, n_i, n_j, n_k);
       if (B->ops->getinfo) {
         BilinearInfo info;
 
-        ierr = BilinearGetInfo(B, INFO_GLOBAL_SUM, &info);                                               CHKERRQ(ierr);
-        ViewerASCIIPrintf(viewer, "  total: nonzeros=%d, allocated nonzeros=%d\n", (int) info.nz_used, (int) info.nz_allocated);
+        ierr = BilinearGetInfo(B, INFO_GLOBAL_SUM, &info);                                                CHKERRQ(ierr);
+        PetscViewerASCIIPrintf(viewer, "  total: nonzeros=%d, allocated nonzeros=%d\n", (int) info.nz_used, (int) info.nz_allocated);
       }
     }
   }
   if (B->ops->view) {
-    ierr = ViewerASCIIPushTab(viewer);                                                                   CHKERRQ(ierr);
-    ierr = (*B->ops->view)(B, viewer);                                                                   CHKERRQ(ierr);
-    ierr = ViewerASCIIPopTab(viewer);                                                                    CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);                                                                    CHKERRQ(ierr);
+    ierr = (*B->ops->view)(B, viewer);                                                                    CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);                                                                     CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -115,46 +114,46 @@ int BilinearView_Private(Bilinear B)
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_info", &opt);                                        CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_info", &opt);                                         CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(B->comm), VIEWER_FORMAT_ASCII_INFO, 0);                       CHKERRQ(ierr);
-    ierr = BilinearView(B, VIEWER_STDOUT_(B->comm));                                                     CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(B->comm));                                                     CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(VIEWER_STDOUT_(B->comm), PETSC_VIEWER_FORMAT_ASCII_INFO, 0);             CHKERRQ(ierr);
+    ierr = BilinearView(B, VIEWER_STDOUT_(B->comm));                                                      CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(VIEWER_STDOUT_(B->comm));                                                 CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_info_detailed", &opt);                               CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_info_detailed", &opt);                                CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(B->comm), VIEWER_FORMAT_ASCII_INFO_LONG, 0);                  CHKERRQ(ierr);
-    ierr = BilinearView(B, VIEWER_STDOUT_(B->comm));                                                     CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(B->comm));                                                     CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(VIEWER_STDOUT_(B->comm), PETSC_VIEWER_FORMAT_ASCII_INFO_LONG, 0);        CHKERRQ(ierr);
+    ierr = BilinearView(B, VIEWER_STDOUT_(B->comm));                                                      CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(VIEWER_STDOUT_(B->comm));                                                 CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view", &opt);                                             CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view", &opt);                                              CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = BilinearView(B, VIEWER_STDOUT_(B->comm));                                                     CHKERRQ(ierr);
+    ierr = BilinearView(B, VIEWER_STDOUT_(B->comm));                                                      CHKERRQ(ierr);
   }
 #if 0
-  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_mathematica", &opt);                                 CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_mathematica", &opt);                                  CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(B->comm), VIEWER_FORMAT_ASCII_MATHEMATICA, "B");              CHKERRQ(ierr);
-    ierr = BilinearView(B, VIEWER_STDOUT_(B->comm));                                                     CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(B->comm));                                                     CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(VIEWER_STDOUT_(B->comm), PETSC_VIEWER_FORMAT_ASCII_MATHEMATICA, "B");    CHKERRQ(ierr);
+    ierr = BilinearView(B, VIEWER_STDOUT_(B->comm));                                                      CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(VIEWER_STDOUT_(B->comm));                                                 CHKERRQ(ierr);
   }
 #endif
-  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_draw", &opt);                                        CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_draw", &opt);                                         CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_contour", &opt);                                   CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_contour", &opt);                                    CHKERRQ(ierr);
     if (opt == PETSC_TRUE) {
-      ViewerPushFormat(VIEWER_DRAW_(B->comm), VIEWER_FORMAT_DRAW_CONTOUR, 0);                            CHKERRQ(ierr);
+      PetscViewerPushFormat(VIEWER_DRAW_(B->comm), PETSC_VIEWER_FORMAT_DRAW_CONTOUR, 0);                  CHKERRQ(ierr);
     }
-    ierr = BilinearView(B, VIEWER_DRAW_(B->comm));                                                       CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_DRAW_(B->comm));                                                           CHKERRQ(ierr);
+    ierr = BilinearView(B, VIEWER_DRAW_(B->comm));                                                        CHKERRQ(ierr);
+    ierr = PetscViewerFlush(VIEWER_DRAW_(B->comm));                                                       CHKERRQ(ierr);
     if (opt == PETSC_TRUE) {
-      ViewerPopFormat(VIEWER_DRAW_(B->comm));                                                            CHKERRQ(ierr);
+      PetscViewerPopFormat(VIEWER_DRAW_(B->comm));                                                             CHKERRQ(ierr);
     }
   }
-  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_socket", &opt);                                      CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL, "-bilinear_view_socket", &opt);                                       CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = BilinearView(B, VIEWER_SOCKET_(B->comm));                                                     CHKERRQ(ierr);
-    ierr = ViewerFlush(VIEWER_SOCKET_(B->comm));                                                         CHKERRQ(ierr);
+    ierr = BilinearView(B, VIEWER_SOCKET_(B->comm));                                                      CHKERRQ(ierr);
+    ierr = PetscViewerFlush(VIEWER_SOCKET_(B->comm));                                                          CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -176,9 +175,8 @@ int BilinearDestroy(Bilinear B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   if (--B->refct > 0) PetscFunctionReturn(0);
-
-  ierr = (*B->ops->destroy)(B);                                                                          CHKERRQ(ierr);
-  PLogObjectDestroy(B);
+  ierr = (*B->ops->destroy)(B);                                                                           CHKERRQ(ierr);
+  PetscLogObjectDestroy(B);
   PetscHeaderDestroy(B); 
   PetscFunctionReturn(0);
 }
@@ -217,7 +215,7 @@ int BilinearPrintHelp(Bilinear B)
     called = 1;
   }
   if (B->ops->printhelp) {
-    ierr = (*B->ops->printhelp)(B);                                                                      CHKERRQ(ierr);
+    ierr = (*B->ops->printhelp)(B);                                                                       CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -261,23 +259,23 @@ int BilinearCopy_Basic(Bilinear A, Bilinear B)
 #if 0
   int    *subcols;
   int     numSubcols;
-  Scalar *values;
+  PetscScalar *values;
 #endif
   int     row;
   int     ierr;
 
   PetscFunctionBegin;
-  ierr = BilinearZeroEntries(B);                                                                         CHKERRQ(ierr);
-  ierr = BilinearGetOwnershipRange(A, &rowStart, &rowEnd);                                               CHKERRQ(ierr);
+  ierr = BilinearZeroEntries(B);                                                                          CHKERRQ(ierr);
+  ierr = BilinearGetOwnershipRange(A, &rowStart, &rowEnd);                                                CHKERRQ(ierr);
   for(row = rowStart; row < rowEnd; row++) {
 #if 0
-    ierr = BilinearGetRow(A, row, col, &numSubcols, &subcols, &values);                                  CHKERRQ(ierr);
-    ierr = BilinearSetValues(B, 1, &row, 1, &col, numSubcols, subcols, values, INSERT_VALUES);           CHKERRQ(ierr);
-    ierr = BilinearRestoreRow(A, row, col, &numSubcols, &subcols, &values);                              CHKERRQ(ierr);
+    ierr = BilinearGetRow(A, row, col, &numSubcols, &subcols, &values);                                   CHKERRQ(ierr);
+    ierr = BilinearSetValues(B, 1, &row, 1, &col, numSubcols, subcols, values, INSERT_VALUES);            CHKERRQ(ierr);
+    ierr = BilinearRestoreRow(A, row, col, &numSubcols, &subcols, &values);                               CHKERRQ(ierr);
 #endif
   }
-  ierr = BilinearAssemblyBegin(B, MAT_FINAL_ASSEMBLY);                                                   CHKERRQ(ierr);
-  ierr = BilinearAssemblyEnd(B, MAT_FINAL_ASSEMBLY);                                                     CHKERRQ(ierr);
+  ierr = BilinearAssemblyBegin(B, MAT_FINAL_ASSEMBLY);                                                    CHKERRQ(ierr);
+  ierr = BilinearAssemblyEnd(B, MAT_FINAL_ASSEMBLY);                                                      CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -308,21 +306,20 @@ int BilinearCopy(Bilinear A, Bilinear B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, BILINEAR_COOKIE);
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
-  if (!A->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (A->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator"); 
-  if (A->N_i != B->N_i || A->N_j != B->N_j || A->N_k != B->N_k)
-    SETERRQ(PETSC_ERR_ARG_SIZ,        0, "Bilinear A, Bilinear B: global dim");
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (A->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator"); 
+  if (A->N_i != B->N_i || A->N_j != B->N_j || A->N_k != B->N_k) {
+    SETERRQ6(PETSC_ERR_ARG_SIZ, "Bilinear global dim: (%d,%d,%d) vs (%d,%d,%d)", A->N_i, A->N_j, A->N_k, B->N_i, B->N_j, B->N_k);
+  }
 
-  BilinearLogEventBegin(BILINEAR_Copy, A, B, 0, 0);
+  PetscLogEventBegin(BILINEAR_Copy, A, B, 0, 0);
   if (A->ops->copy) { 
-    ierr = (*A->ops->copy)(A, B);                                                                        CHKERRQ(ierr);
+    ierr = (*A->ops->copy)(A, B);                                                                         CHKERRQ(ierr);
   }
   else { /* generic conversion */
-    ierr = BilinearCopy_Basic(A, B);                                                                     CHKERRQ(ierr);
+    ierr = BilinearCopy_Basic(A, B);                                                                      CHKERRQ(ierr);
   }
-  BilinearLogEventEnd(BILINEAR_Copy, A, B, 0, 0);
+  PetscLogEventEnd(BILINEAR_Copy, A, B, 0, 0);
   PetscFunctionReturn(0);
 }
 
@@ -349,17 +346,15 @@ int BilinearDuplicate(Bilinear B, Bilinear *C)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidPointer(C);
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator"); 
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (B->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator"); 
 
   *C = PETSC_NULL;
   BilinearLogEventBegin(BILINEAR_Convert, B, 0, 0, 0);
   if (!B->ops->convertsametype) {
-    SETERRQ(PETSC_ERR_SUP, 0, "Not written for this bilinear operator type");
+    SETERRQ(PETSC_ERR_SUP, "Not written for this bilinear operator type");
   }
-  ierr = (*B->ops->convertsametype)(B, C, DO_NOT_COPY_VALUES);                                           CHKERRQ(ierr);
+  ierr = (*B->ops->convertsametype)(B, C, DO_NOT_COPY_VALUES);                                            CHKERRQ(ierr);
   BilinearLogEventEnd(BILINEAR_Convert, B, 0, 0, 0);
   PetscFunctionReturn(0);
 }
@@ -428,7 +423,7 @@ int BilinearSetOption(Bilinear B, BilinearOption op)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   if (B->ops->setoption) {
-    ierr = (*B->ops->setoption)(B, op);                                                                  CHKERRQ(ierr);
+    ierr = (*B->ops->setoption)(B, op);                                                                   CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -441,19 +436,19 @@ int BilinearSetOption(Bilinear B, BilinearOption op)
 
   Input Parameter:
 . comm - The MPI communicator
-. type - The type of bilienar operator desired, for example BILINEAR_SEQDENSE
+. type - The type of bilienar operator desired, for example BILINEAR_DENSE_SEQ
 . pre  - [Optional] string to prepend to the name
 
   Output Parameters:
 . set  - The flag indicating whether user set matrix type option.
 
   Basic Options Database Keys:
-  These options return BILINEAR_SEQxxx or BILIENAR_MPIxxx, depending on the communicator, comm.
+  These options return BILINEAR_xxx_SEQ or BILIENAR_xxx_MPI, depending on the communicator, comm.
 $    -bilinear_dense    : dense type
 
    More Options Database Keys:
-$    -bilinear_seqdense : BILINEAR_SEQDENSE
-$    -bilinear_mpidense : BILINEAR_MPIDENSE
+$    -bilinear_seqdense : BILINEAR_DENSE_SEQ
+$    -bilinear_mpidense : BILINEAR_DENSE_MPI
 
   Note:
   This routine is automatically called within BilinearCreate().
@@ -473,13 +468,13 @@ int BilinearGetTypeFromOptions(MPI_Comm comm, char *pre, BilinearType *type, Pet
   PetscValidIntPointer(type);
   PetscValidIntPointer(set);
 
-  ierr = PetscStrcpy(p, "-");                                                                            CHKERRQ(ierr);
+  ierr = PetscStrcpy(p, "-");                                                                             CHKERRQ(ierr);
   if (pre) {
-    ierr = PetscStrcat(p, pre);                                                                          CHKERRQ(ierr);
+    ierr = PetscStrcat(p, pre);                                                                           CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_size(comm, &numProcs);                                                                 CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL, "-help", &opt);                                                      CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &numProcs);                                                                  CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL, "-help", &opt);                                                       CHKERRQ(ierr);
   if ((opt == PETSC_TRUE) && (!helpPrinted)) {
     (*PetscHelpPrintf)(comm,"Bilinear operator format options:\n");
     (*PetscHelpPrintf)(comm,"  %sbilinear_dense, %sbilinear_seqdense, %sbilinear_mpidense\n", p, p, p);
@@ -487,14 +482,14 @@ int BilinearGetTypeFromOptions(MPI_Comm comm, char *pre, BilinearType *type, Pet
   }
   /* Default settings */
   *set = PETSC_FALSE;
-  if (numProcs == 1) *type = BILINEAR_SEQDENSE;
-  else               *type = BILINEAR_MPIDENSE;
+  if (numProcs == 1) *type = BILINEAR_DENSE_SEQ;
+  else               *type = BILINEAR_DENSE_MPI;
   /* Check options */
-  ierr = OptionsHasName(pre, "-bilinear_seqdense", &opt);                                                CHKERRQ(ierr);
+  ierr = OptionsHasName(pre, "-bilinear_seqdense", &opt);                                                 CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {*type = BILINEAR_SEQDENSE; *set = PETSC_TRUE;}
-  ierr = OptionsHasName(pre, "-bilinear_mpidense", &opt);                                                CHKERRQ(ierr);
+  ierr = OptionsHasName(pre, "-bilinear_mpidense", &opt);                                                 CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {*type = BILINEAR_MPIDENSE; *set = PETSC_TRUE;}
-  ierr = OptionsHasName(pre, "-bilinear_dense",    &opt);                                                CHKERRQ(ierr);
+  ierr = OptionsHasName(pre, "-bilinear_dense",    &opt);                                                 CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
     if (numProcs == 1) *type = BILINEAR_SEQDENSE;
     else               *type = BILINEAR_MPIDENSE;
@@ -516,7 +511,7 @@ int BilinearGetTypeFromOptions(MPI_Comm comm, char *pre, BilinearType *type, Pet
 . mode   - The insertion mode, either INSERT_VALUES or ADD_VALUES
 
   Synopsis:
-  void BilinearSetValue(Bilinear B, int row, int col, int subcol, Scalar value, InsertMode mode);
+  void BilinearSetValue(Bilinear B, int row, int col, int subcol, PetscScalar value, InsertMode mode);
 
   Notes: For efficiency one should use BilinearSetValues() and set several or many values simultaneously.
 
@@ -554,13 +549,12 @@ $     INSERT_VALUES - replaces existing entries with new values
 .keywords: bilinear operator, insert, add, set, values
 .seealso: BilinearSetOption(), BilinearAssemblyBegin(), BilinearAssemblyEnd()
 @*/
-int BilinearSetValues(Bilinear B, int i, int *idxi, int j, int *idxj, int k, int *idxk, Scalar *v, InsertMode addv)
+int BilinearSetValues(Bilinear B, int i, int *idxi, int j, int *idxj, int k, int *idxk, PetscScalar *v, InsertMode addv)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (!i || !j || !k)
-    PetscFunctionReturn(0);
+  if (!i || !j || !k) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidIntPointer(idxi);
   PetscValidIntPointer(idxj);
@@ -568,21 +562,17 @@ int BilinearSetValues(Bilinear B, int i, int *idxi, int j, int *idxj, int k, int
   PetscValidScalarPointer(v);
   if (B->insertmode == NOT_SET_VALUES) {
     B->insertmode = addv;
+  } else if (B->insertmode != addv) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Cannot mix add values and insert values");
   }
-#if defined(PETSC_USE_BOPT_g)
-  else if (B->insertmode != addv) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Cannot mix add values and insert values");
-  }
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator"); 
-#endif
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator"); 
 
   if (B->assembled) {
     B->was_assembled = PETSC_TRUE; 
     B->assembled     = PETSC_FALSE;
   }
   BilinearLogEventBegin(BILINEAR_SetValues, B, 0, 0, 0);
-  ierr = (*B->ops->setvalues)(B, i, idxi, j, idxj, k, idxk, v, addv);                                    CHKERRQ(ierr);
+  ierr = (*B->ops->setvalues)(B, i, idxi, j, idxj, k, idxk, v, addv);                                     CHKERRQ(ierr);
   BilinearLogEventEnd(BILINEAR_SetValues, B, 0, 0, 0);
   PetscFunctionReturn(0);
 }
@@ -604,16 +594,15 @@ int BilinearSetValues(Bilinear B, int i, int *idxi, int j, int *idxj, int k, int
 .keywords: bilinear operator, array, elements, values
 .seealso: BilinearRestoreArray()
 @*/
-int BilinearGetArray(Bilinear B, Scalar **v)
+int BilinearGetArray(Bilinear B, PetscScalar **v)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidPointer(v);
-  if (!B->ops->getarray)
-    SETERRQ(PETSC_ERR_SUP, 0, "");
-  ierr = (*B->ops->getarray)(B, v);                                                                      CHKERRQ(ierr);
+  if (!B->ops->getarray) SETERRQ(PETSC_ERR_SUP, "");
+  ierr = (*B->ops->getarray)(B, v);                                                                       CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -629,16 +618,15 @@ int BilinearGetArray(Bilinear B, Scalar **v)
 .keywords: bilinear operator, array, elements, values, restore
 .seealso: BilinearGetArray()
 @*/
-int BilinearRestoreArray(Bilinear B, Scalar **v)
+int BilinearRestoreArray(Bilinear B, PetscScalar **v)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidPointer(v);
-  if (!B->ops->restorearray)
-    SETERRQ(PETSC_ERR_SUP, 0, "");
-  ierr = (*B->ops->restorearray)(B, v);                                                                  CHKERRQ(ierr);
+  if (!B->ops->restorearray) SETERRQ(PETSC_ERR_SUP, "");
+  ierr = (*B->ops->restorearray)(B, v);                                                                   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -672,8 +660,7 @@ int BilinearAssemblyBegin(Bilinear B, MatAssemblyType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator"); 
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator"); 
   if (B->assembled) {
     B->was_assembled = PETSC_TRUE; 
     B->assembled     = PETSC_FALSE;
@@ -681,12 +668,12 @@ int BilinearAssemblyBegin(Bilinear B, MatAssemblyType type)
   if (!BilinearAssemblyEnd_InUse) {
     BilinearLogEventBegin(BILINEAR_AssemblyBegin, B, 0, 0, 0);
     if (B->ops->assemblybegin){
-      ierr = (*B->ops->assemblybegin)(B, type);                                                          CHKERRQ(ierr);
+      ierr = (*B->ops->assemblybegin)(B, type);                                                           CHKERRQ(ierr);
     }
     BilinearLogEventEnd(BILINEAR_AssemblyBegin, B, 0, 0, 0);
   } else {
     if (B->ops->assemblybegin) {
-      ierr = (*B->ops->assemblybegin)(B, type);                                                          CHKERRQ(ierr);
+      ierr = (*B->ops->assemblybegin)(B, type);                                                           CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -735,7 +722,7 @@ int BilinearAssemblyEnd(Bilinear B, MatAssemblyType type)
   BilinearAssemblyEnd_InUse++;
   BilinearLogEventBegin(BILINEAR_AssemblyEnd, B, 0, 0, 0);
   if (B->ops->assemblyend) {
-    ierr = (*B->ops->assemblyend)(B, type);                                                              CHKERRQ(ierr);
+    ierr = (*B->ops->assemblyend)(B, type);                                                               CHKERRQ(ierr);
   }
 
   /* Flush assembly is not a true assembly */
@@ -748,7 +735,7 @@ int BilinearAssemblyEnd(Bilinear B, MatAssemblyType type)
   BilinearAssemblyEnd_InUse--;
 
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
-    ierr = BilinearView_Private(B);                                                                      CHKERRQ(ierr);
+    ierr = BilinearView_Private(B);                                                                       CHKERRQ(ierr);
   }
   inassm--;
   PetscFunctionReturn(0);
@@ -773,13 +760,11 @@ int BilinearZeroEntries(Bilinear B)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator"); 
-  if (!B->ops->zeroentries)
-    SETERRQ(PETSC_ERR_SUP, 0, "");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator"); 
+  if (!B->ops->zeroentries) SETERRQ(PETSC_ERR_SUP, "");
 
   BilinearLogEventBegin(BILINEAR_ZeroEntries, B, 0, 0, 0);
-  ierr = (*B->ops->zeroentries)(B);                                                                      CHKERRQ(ierr);
+  ierr = (*B->ops->zeroentries)(B);                                                                       CHKERRQ(ierr);
   BilinearLogEventEnd(BILINEAR_ZeroEntries, B, 0, 0, 0);
   PetscFunctionReturn(0);
 }
@@ -808,23 +793,17 @@ int BilinearMult(Bilinear B, Vec x, Mat M)
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidHeaderSpecific(x, VEC_COOKIE);
   PetscValidHeaderSpecific(M, MAT_COOKIE);
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator");
-  if (B->N_k != x->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec x: global dim");
-  if (B->N_i != M->M)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Mat M: global dim");
-  if (B->N_j != M->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Mat M: global dim");
-  if (B->n_i != M->m)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Mat M: local dim");
-  if (B->n_j != M->n)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Mat M: local dim");
+  if (!B->assembled)  SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (B->factor)      SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator");
+  if (B->N_k != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec x: global dim: %d vs %d", B->N_k, x->N);
+  if (B->N_i != M->M) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Mat M: global dim: %d vs %d", B->N_i, M->M);
+  if (B->N_j != M->N) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Mat M: global dim: %d vs %d", B->N_j, M->N);
+  if (B->n_k != x->n) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec x: global dim: %d vs %d", B->n_k, x->n);
+  if (B->n_i != M->m) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Mat M: local dim: %d vs %d", B->n_i, M->m);
+  if (B->n_j != M->n) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Mat M: local dim: %d vs %d", B->n_j, M->n);
 
   BilinearLogEventBegin(BILINEAR_Mult, B, x, M, 0);
-  ierr = (*B->ops->mult)(B, x, M);                                                                       CHKERRQ(ierr);
+  ierr = (*B->ops->mult)(B, x, M);                                                                        CHKERRQ(ierr);
   BilinearLogEventEnd(BILINEAR_Mult, B, x, M, 0);
 
   PetscFunctionReturn(0);
@@ -854,21 +833,17 @@ int BilinearFullMult(Bilinear B, Vec x, Vec y, Vec z)
   PetscValidHeaderSpecific(x, VEC_COOKIE);
   PetscValidHeaderSpecific(y, VEC_COOKIE);
   PetscValidHeaderSpecific(z, VEC_COOKIE);
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator");
-  if (B->N_j != x->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec x: global dim");
-  if (B->N_k != y->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec y: global dim");
-  if (B->N_i != z->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec z: global dim");
-  if (B->n_i != z->n)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec z: local dim");
+  if (!B->assembled)  SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (B->factor)      SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator");
+  if (B->N_j != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec x: global dim: %d vs %d", B->N_j, x->N);
+  if (B->N_k != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec y: global dim: %d vs %d", B->N_k, y->N);
+  if (B->N_i != z->N) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec z: global dim: %d vs %d", B->N_i, z->N);
+  if (B->n_j != x->n) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec x: local dim: %d vs %d", B->n_j, x->n);
+  if (B->n_k != y->n) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec y: local dim: %d vs %d", B->n_k, y->n);
+  if (B->n_i != z->n) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec z: local dim: %d vs %d", B->n_i, z->n);
 
   BilinearLogEventBegin(BILINEAR_FullMult, B, x, y, z);
-  ierr = (*B->ops->fullmult)(B, x, y, z);                                                                CHKERRQ(ierr);
+  ierr = (*B->ops->fullmult)(B, x, y, z);                                                                 CHKERRQ(ierr);
   BilinearLogEventEnd(BILINEAR_FullMult, B, x, y, z);
 
   PetscFunctionReturn(0);
@@ -897,64 +872,23 @@ int BilinearDiamond(Bilinear B, Vec x, Vec y)
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidHeaderSpecific(x, VEC_COOKIE);
   PetscValidHeaderSpecific(y, VEC_COOKIE);
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator");
-  if (B->N_j != x->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec x: global dim");
-  if (B->N_k != x->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec x: global dim");
-  if (B->N_i != y->N)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec y: global dim");
-  if (B->n_i != y->n)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear B, Vec y: local dim");
+  if (!B->assembled)  SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (B->factor)      SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator");
+  if (B->N_j != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec x: global dim: %d vs %d", B->N_j, x->N);
+  if (B->N_k != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec x: global dim: %d vs %d", B->N_k, x->N);
+  if (B->N_i != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec y: global dim: %d vs %d", B->N_i, y->N);
+  if (B->n_j != x->n) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec x: local dim: %d vs %d", B->n_j, x->n);
+  if (B->n_k != x->n) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec x: local dim: %d vs %d", B->n_k, x->n);
+  if (B->n_i != y->n) SETERRQ2(PETSC_ERR_ARG_SIZ, "Bilinear B, Vec y: local dim: %d vs %d", B->n_i, y->n);
 
   BilinearLogEventBegin(BILINEAR_Diamond, B, x, y, 0);
-  ierr = (*B->ops->diamond)(B, x, y);                                                                    CHKERRQ(ierr);
+  ierr = (*B->ops->diamond)(B, x, y);                                                                     CHKERRQ(ierr);
   BilinearLogEventEnd(BILINEAR_Diamond, B, x, y, 0);
 
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------- Interrogation Functions -----------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "BilinearGetType"
-/*@C
-  BilinearGetType - Gets the bilinear operator type and name (as a string) from the bilinear operator.
-
-  Input Parameter:
-. B    - The bilinear operator
-
-  Output Parameters:
-. type - The bilinear operator type (or use PETSC_NULL)
-. name - The name of the bilinear operator type (or use PETSC_NULL)
-
-.keywords: bilinear operator, get, type, name
-@*/
-int BilinearGetType(Bilinear B, BilinearType *type, char **name)
-{
-  char *bilinearName[BILINEAR_NEW];
-  int   itype = B->type;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
-
-  if (type != PETSC_NULL)
-    *type = (BilinearType) B->type;
-  if (name) {
-    /* Note:  Be sure that this list corresponds to the enum in bilinear.h */
-    bilinearName[0] = "Sequential Dense Bilinear";
-    bilinearName[1] = "Parallel Dense Bilinear";
-    
-    if (itype < 0 || itype > BILINEAR_NEW)
-      *name = "Unknown bilinear operator type";
-    else
-      *name = bilinearName[itype];
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNC__  
 #define __FUNC__ "BilinearGetInfo"
 /*@C
@@ -1000,9 +934,8 @@ int BilinearGetInfo(Bilinear B, InfoType type, BilinearInfo *info)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidPointer(info);
-  if (!B->ops->getinfo)
-    SETERRQ(PETSC_ERR_SUP, 0, "");
-  ierr = (*B->ops->getinfo)(B, type, info);                                                              CHKERRQ(ierr);
+  if (!B->ops->getinfo) SETERRQ(PETSC_ERR_SUP, "");
+  ierr = (*B->ops->getinfo)(B, type, info);                                                               CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
        
@@ -1062,7 +995,7 @@ int BilinearGetSize(Bilinear B, int *N_i, int *N_j, int *N_k)
   PetscValidIntPointer(N_i);
   PetscValidIntPointer(N_j);
   PetscValidIntPointer(N_k);
-  ierr = (*B->ops->getsize)(B, N_i, N_j, N_k);                                                           CHKERRQ(ierr);
+  ierr = (*B->ops->getsize)(B, N_i, N_j, N_k);                                                            CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1093,7 +1026,7 @@ int BilinearGetLocalSize(Bilinear B, int *n_i, int *n_j, int *n_k)
   PetscValidIntPointer(n_i);
   PetscValidIntPointer(n_j);
   PetscValidIntPointer(n_k);
-  ierr = (*B->ops->getlocalsize)(B, n_i, n_j, n_k);                                                      CHKERRQ(ierr);
+  ierr = (*B->ops->getlocalsize)(B, n_i, n_j, n_k);                                                       CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1122,9 +1055,8 @@ int BilinearGetOwnershipRange(Bilinear B, int *rowStart, int *rowEnd)
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidIntPointer(rowStart);
   PetscValidIntPointer(rowEnd);
-  if (!B->ops->getownershiprange)
-    SETERRQ(PETSC_ERR_SUP, 0, "");
-  ierr = (*B->ops->getownershiprange)(B, rowStart, rowEnd);                                              CHKERRQ(ierr);
+  if (!B->ops->getownershiprange) SETERRQ(PETSC_ERR_SUP, "");
+  ierr = (*B->ops->getownershiprange)(B, rowStart, rowEnd);                                               CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1150,15 +1082,13 @@ int BilinearEqual(Bilinear A, Bilinear B, PetscTruth *eq)
   PetscValidHeaderSpecific(A, BILINEAR_COOKIE);
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidIntPointer(eq);
-  if (!A->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (A->N_i != B->N_i || A->N_j != B->N_j || A->N_k != B->N_k)
-    SETERRQ(PETSC_ERR_ARG_SIZ, 0, "Bilinear A, Bilinear B: global dim");
-  if (!A->ops->equal)
-    SETERRQ(PETSC_ERR_SUP, 0, "");
-  ierr = (*A->ops->equal)(A, B, eq);                                                                     CHKERRQ(ierr);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (A->N_i != B->N_i || A->N_j != B->N_j || A->N_k != B->N_k) {
+    SETERRQ6(PETSC_ERR_ARG_SIZ, "Bilinear global dim: (%d,%d,%d) vs (%d,%d,%d)", A->N_i, A->N_j, A->N_k, B->N_i, B->N_j, B->N_k);
+  }
+  if (!A->ops->equal) SETERRQ(PETSC_ERR_SUP, "");
+  ierr = (*A->ops->equal)(A, B, eq);                                                                      CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1184,13 +1114,10 @@ int BilinearNorm(Bilinear B, NormType type, double *norm)
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
   PetscValidScalarPointer(norm);
 
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator"); 
-  if (!B->ops->norm)
-    SETERRQ(PETSC_ERR_SUP, 0, "Not for this bilinear operator type");
-  ierr = (*B->ops->norm)(B, type, norm);                                                                 CHKERRQ(ierr);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (B->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator"); 
+  if (!B->ops->norm) SETERRQ(PETSC_ERR_SUP, "Not for this bilinear operator type");
+  ierr = (*B->ops->norm)(B, type, norm);                                                                  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1216,17 +1143,13 @@ int BilinearLUFactor(Bilinear B, IS row, IS col, IS subcol, double f)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
-  if ((B->N_i != B->N_j) || (B->N_j != B->N_k))
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"bilinear operator must be square");
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator"); 
-  if (!B->ops->lufactor)
-    SETERRQ(PETSC_ERR_SUP, 0, "");
+  if ((B->N_i != B->N_j) || (B->N_j != B->N_k)) SETERRQ(PETSC_ERR_ARG_WRONG, "Bilinear operator must be square");
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator"); 
+  if (!B->ops->lufactor) SETERRQ(PETSC_ERR_SUP, "");
 
   BilinearLogEventBegin(BILINEAR_LUFactor, B, row, col, subcol);
-  ierr = (*B->ops->lufactor)(B, row, col, subcol, f);                                                    CHKERRQ(ierr);
+  ierr = (*B->ops->lufactor)(B, row, col, subcol, f);                                                     CHKERRQ(ierr);
   BilinearLogEventEnd(BILINEAR_LUFactor, B, row, col, subcol);
   PetscFunctionReturn(0);
 }
@@ -1253,17 +1176,13 @@ int BilinearCholeskyFactor(Bilinear B, IS perm, double f)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
-  if ((B->N_i != B->N_j) || (B->N_j != B->N_k))
-    SETERRQ(PETSC_ERR_ARG_WRONG,0,"bilinear operator must be square");
-  if (!B->assembled)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for unassembled bilinear operator");
-  if (B->factor)
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, 0, "Not for factored bilinear operator"); 
-  if (!B->ops->choleskyfactor)
-    SETERRQ(PETSC_ERR_SUP, 0, "");
+  if ((B->N_i != B->N_j) || (B->N_j != B->N_k)) SETERRQ(PETSC_ERR_ARG_WRONG, "Bilinear operator must be square");
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled bilinear operator");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored bilinear operator"); 
+  if (!B->ops->choleskyfactor) SETERRQ(PETSC_ERR_SUP, "");
 
   BilinearLogEventBegin(BILINEAR_CholeskyFactor, B, perm, 0, 0);
-  ierr = (*B->ops->choleskyfactor)(B, perm, f);                                                          CHKERRQ(ierr);
+  ierr = (*B->ops->choleskyfactor)(B, perm, f);                                                           CHKERRQ(ierr);
   BilinearLogEventEnd(BILINEAR_CholeskyFactor, B, perm, 0, 0);
   PetscFunctionReturn(0);
 }
@@ -1274,7 +1193,7 @@ int BilinearCholeskyFactor(Bilinear B, IS perm, double f)
   Synopsis:
 
   BilinearSerializeRegister(char *serialize_name, char *path, char *serialize_func_name,
-                            int (*serialize_func)(MPI_Comm, Bilinear *, Viewer, PetscTruth))
+                            int (*serialize_func)(MPI_Comm, Bilinear *, PetscViewer, PetscTruth))
 
   Not Collective
 
@@ -1309,15 +1228,15 @@ $     -bilinear_serialize_type my_store
 M*/
 #undef __FUNC__  
 #define __FUNC__ "BilinearSerializeRegister_Private"
-int BilinearSerializeRegister_Private(const char *sname,const char *path,const char *name,int (*function)(MPI_Comm, Bilinear *, Viewer, PetscTruth))
+int BilinearSerializeRegister_Private(const char *sname,const char *path,const char *name,int (*function)(MPI_Comm, Bilinear *, PetscViewer, PetscTruth))
 {
   char fullname[256];
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);                                                                    CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");                                                                     CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);                                                                    CHKERRQ(ierr);
-  ierr = FListAdd_Private(&BilinearSerializeList, sname, fullname, (int (*)(void*)) function);           CHKERRQ(ierr);
+  ierr = PetscStrcpy(fullname, path);                                                                     CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, ":");                                                                      CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, name);                                                                     CHKERRQ(ierr);
+  ierr = FListAdd_Private(&BilinearSerializeList, sname, fullname, (int (*)(void*)) function);            CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

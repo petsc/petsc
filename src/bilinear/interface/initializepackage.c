@@ -27,6 +27,9 @@ EXTERN_C_END
 @*/
 int BilinearInitializePackage(char *path) {
   static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char             *className;
+  PetscTruth        opt;
   int               ierr;
 
   PetscFunctionBegin;
@@ -37,17 +40,17 @@ int BilinearInitializePackage(char *path) {
   /* Register Constructors and Serializers */
   ierr = BilinearSerializeRegisterAll(path);                                                              CHKERRQ(ierr);
   /* Register Events */
-  ierr = PLogEventRegister(&BILINEAR_Copy,           "BilinearCopy",     PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_Convert,        "BilinearConvert",  PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_SetValues,      "BilinSetValues",   PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_AssemblyBegin,  "BilinAssemBegin",  PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_AssemblyEnd,    "BilinAssemEnd",    PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_ZeroEntries,    "BilinZeroEntries", PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_Mult,           "BilinearMult",     PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_FullMult,       "BilinearFullMult", PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_Diamond,        "BilinearDiamond",  PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_LUFactor,       "BilinearLUFactor", PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
-  ierr = PLogEventRegister(&BILINEAR_CholeskyFactor, "BilinearCholFact", PETSC_NULL, BILINEAR_COOKIE);    CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_Copy,           "BilinearCopy",     PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_Convert,        "BilinearConvert",  PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_SetValues,      "BilinSetValues",   PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_AssemblyBegin,  "BilinAssemBegin",  PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_AssemblyEnd,    "BilinAssemEnd",    PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_ZeroEntries,    "BilinZeroEntries", PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_Mult,           "BilinearMult",     PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_FullMult,       "BilinearFullMult", PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_Diamond,        "BilinearDiamond",  PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_LUFactor,       "BilinearLUFactor", PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&BILINEAR_CholeskyFactor, "BilinearCholFact", PETSC_NULL, BILINEAR_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {

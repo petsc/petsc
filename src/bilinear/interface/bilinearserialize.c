@@ -25,44 +25,53 @@ static char vcid[] = "$Id: bilinearserialize.c,v 1.4 2000/01/10 03:12:48 knepley
 .keywords: serialize, Bilinear
 .seealso: GridSerialize()
 @*/
-int BilinearSerialize(MPI_Comm comm, Bilinear *B, Viewer viewer, PetscTruth store)
+int BilinearSerialize(MPI_Comm comm, Bilinear *B, PetscViewer viewer, PetscTruth store)
 {
-  int      (*serialize)(MPI_Comm, Bilinear *, Viewer, PetscTruth);
-  int        fd, cookie, len;
+  int      (*serialize)(MPI_Comm, Bilinear *, PetscViewer, PetscTruth);
+  int        fd, len;
   char      *name;
   PetscTruth match;
   int        ierr;
 
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidPointer(B);
 
-  ierr = PetscTypeCompare((PetscObject) viewer, BINARY_VIEWER, &match);                                  CHKERRQ(ierr);
-  if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, 0, "Must be binary viewer");
-  ierr = ViewerBinaryGetDescriptor(viewer, &fd);                                                         CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_BINARY, &match);                             CHKERRQ(ierr);
+  if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, "Must be binary viewer");
+  ierr = PetscViewerBinaryGetDescriptor(viewer, &fd);                                                     CHKERRQ(ierr);
 
   if (store) {
     PetscValidHeaderSpecific(*B, BILINEAR_COOKIE);
-    ierr = PetscBinaryWrite(fd, &(*B)->cookie,         1,   PETSC_INT,  0);                              CHKERRQ(ierr);
-    ierr = PetscStrlen((*B)->serialize_name, &len);                                                      CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &len,                  1,   PETSC_INT,  0);                              CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  (*B)->serialize_name, len, PETSC_CHAR, 0);                              CHKERRQ(ierr);
-    ierr = (*(*B)->ops->serialize)(comm, B, viewer, store);                                              CHKERRQ(ierr);
+    ierr = PetscStrlen((*B)->class_name, &len);                                                           CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd, &len,                  1,   PETSC_INT,  0);                               CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,  (*B)->class_name,     len, PETSC_CHAR, 0);                               CHKERRQ(ierr);
+    ierr = PetscStrlen((*B)->serialize_name, &len);                                                       CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd, &len,                  1,   PETSC_INT,  0);                               CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,  (*B)->serialize_name, len, PETSC_CHAR, 0);                               CHKERRQ(ierr);
+    ierr = PetscFListFind(comm, BilinearSerializeList, (*B)->serialize_name, (void (**)(void)) &serialize);CHKERRQ(ierr);
+    if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
+    ierr = (*serialize)(comm, B, viewer, store);                                                          CHKERRQ(ierr);
   } else {
-    ierr = PetscBinaryRead(fd, &cookie, 1, PETSC_INT);                                                   CHKERRQ(ierr);
-    if (cookie != MAT_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG, 0, "Non-bilinear object");
+    ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
+    name[len] = 0;
+    ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                 CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, "Bilinear", &match);                                                         CHKERRQ(ierr);
+    ierr = PetscFree(name);                                                                               CHKERRQ(ierr);
+    if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-bilinear object");
     /* Dispatch to the correct routine */
     if (!BilinearSerializeRegisterAllCalled) {
-      ierr = BilinearSerializeRegisterAll(PETSC_NULL);                                                   CHKERRQ(ierr);
+      ierr = BilinearSerializeRegisterAll(PETSC_NULL);                                                    CHKERRQ(ierr);
     }
-    if (!BilinearSerializeList) SETERRQ(PETSC_ERR_ARG_CORRUPT, 0, "Could not find table of methods");
-    ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                 CHKERRQ(ierr);
-    name = (char *) PetscMalloc((len+1) * sizeof(char)); CHKPTRQ(name);
+    if (!BilinearSerializeList) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Could not find table of methods");
+    ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
     name[len] = 0;
-    ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                CHKERRQ(ierr);
-    ierr = FListFind(comm, BilinearSerializeList, name, (int (**)(void *)) &serialize);                  CHKERRQ(ierr);
-    if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, 0, "Type cannot be serialized");
-    ierr = (*serialize)(comm, B, viewer, store);                                                         CHKERRQ(ierr);
-    ierr = PetscStrfree((*B)->serialize_name);                                                           CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                 CHKERRQ(ierr);
+    ierr = PetscFListFind(comm, BilinearSerializeList, name, (void (**)(void)) &serialize);               CHKERRQ(ierr);
+    if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
+    ierr = (*serialize)(comm, B, viewer, store);                                                          CHKERRQ(ierr);
+    ierr = PetscStrfree((*B)->serialize_name);                                                            CHKERRQ(ierr);
     (*B)->serialize_name = name;
   }
 

@@ -4,7 +4,7 @@ static char vcid[] = "$Id: bilinearreg.c,v 1.3 2000/01/10 03:12:47 knepley Exp $
 
 #include "src/bilinear/bilinearimpl.h"    /*I "bilinear.h"  I*/
 
-FList BilinearSerializeList              = 0;
+PetscFList BilinearSerializeList              = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "BilinearSetSerializeType"
@@ -43,24 +43,22 @@ FList BilinearSerializeList              = 0;
 @*/
 int BilinearSetSerializeType(Bilinear B, BilinearSerializeType method)
 {
-  int      (*r)(MPI_Comm, Bilinear *, Viewer, PetscTruth);
+  int      (*r)(MPI_Comm, Bilinear *, PetscViewer, PetscTruth);
   PetscTruth match;
   int        ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, BILINEAR_COOKIE);
-  ierr = PetscSerializeCompare((PetscObject) B, method, &match);                                         CHKERRQ(ierr);
+  ierr = PetscSerializeCompare((PetscObject) B, method, &match);                                          CHKERRQ(ierr);
   if (match == PETSC_TRUE) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested but do not call */
   if (!BilinearSerializeRegisterAllCalled) {
-    ierr = BilinearSerializeRegisterAll(PETSC_NULL);                                                     CHKERRQ(ierr);
+    ierr = BilinearSerializeRegisterAll(PETSC_NULL);                                                      CHKERRQ(ierr);
   }
-  ierr = FListFind(B->comm, BilinearSerializeList, method, (int (**)(void *)) &r);                       CHKERRQ(ierr);
-  if (!r) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, 0, "Unknown method: %s", method);
-  }
+  ierr = PetscFListFind(B->comm, BilinearSerializeList, method, (void (**)(void)) &r);                    CHKERRQ(ierr);
+  if (!r) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown serialization method: %s", method);
 
-  ierr = PetscObjectChangeSerializeName((PetscObject) B, method);                                        CHKERRQ(ierr);
+  ierr = PetscObjectChangeSerializeName((PetscObject) B, method);                                         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
