@@ -161,7 +161,9 @@ int PetscSetDebuggerFromString(char *string)
 int PetscAttachDebugger(void)
 {
   int   child=0,sleeptime=0,ierr=0;
+#if !defined(PETSC_CANNOT_START_DEBUGGER) 
   char  program[PETSC_MAX_PATH_LEN],display[256],hostname[64];
+#endif
 
   PetscFunctionBegin;
 
@@ -172,7 +174,7 @@ int PetscAttachDebugger(void)
     PetscFunctionReturn(1);
   }
 
-#if defined(PETSC_CANNOT_START_DEBUGGER) 
+#if defined(PETSC_CANNOT_START_DEBUGGER )
   (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
   (*PetscErrorPrintf)("PETSC ERROR: On Cray run program in Totalview debugger\n");
   (*PetscErrorPrintf)("PETSC ERROR: On Windows use Developer Studio(MSDEV)\n");
@@ -489,9 +491,12 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 @*/
 int PetscStopForDebugger(void)
 {
-  int        sleeptime=0,ierr,ppid,rank;
+  int        ierr;
+#if !defined(PETSC_CANNOT_START_DEBUGGER) 
+  int        sleeptime=0,ppid,rank;
   char       program[256],hostname[256];
   PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb;
+#endif
 
   PetscFunctionBegin;
 

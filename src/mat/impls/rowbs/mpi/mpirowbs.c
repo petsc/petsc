@@ -66,7 +66,7 @@ int MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
 /* ----------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPIRowbs_local"
-static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
+static int MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)A->data;
   int          ierr,i,len,nzalloc = 0,m = A->m;
@@ -1542,7 +1542,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIRowbsSetPreallocation_MPIRowbs"
-int MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,int *nnz)
+int MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,const int nnz[])
 {
   PetscTruth ismpirowbs;
   int        ierr;
