@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.107 1997/04/02 22:36:57 bsmith Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.108 1997/04/03 20:04:08 balay Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -573,9 +573,9 @@ int VecDestroy(Vec v)
    requires one to pass in V a Vec (integer) array of size at least m.
    See the Fortran chapter of the users manual and petsc/src/vec/examples for details.
 
-.keywords: vector, get 
+.keywords: vector, duplicate
 
-.seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate()
+.seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate(), VecDuplicateVecsF90()
 @*/
 int VecDuplicateVecs(Vec v,int m,Vec **V)  
 {
@@ -598,9 +598,9 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
    See the Fortran chapter of the users manual and 
    petsc/src/vec/examples for details.
 
-.keywords: vector, free
+.keywords: vector, destroy
 
-.seealso: VecDuplicateVecs()
+.seealso: VecDuplicateVecs(), VecDestroyVecsF90()
 @*/
 int VecDestroyVecs(Vec *vv,int m)
 {
@@ -962,7 +962,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 
 .keywords: vector, get, array
 
-.seealso: VecRestoreArray(), VecGetArrays()
+.seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90()
 @*/
 int VecGetArray(Vec x,Scalar **a)
 {
@@ -1054,7 +1054,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 
 .keywords: vector, restore, array
 
-.seealso: VecGetArray(), VecRestoreArays()
+.seealso: VecGetArray(), VecRestoreArays(), VecRestoreArrayF90()
 @*/
 int VecRestoreArray(Vec x,Scalar **a)
 {
@@ -1232,28 +1232,30 @@ int VecDestroyVecs_Default( Vec *v, int m )
 }
 
 /*MC
-    VecGetArrayF90 - Access a vector array from Fortran 90.
+    VecGetArrayF90 - Accesses a vector array from Fortran90. For default PETSc
+    vectors, VecGetArrayF90() returns a pointer to the local data array. Otherwise,
+    this routine is implementation dependent. You MUST call VecRestoreArrayF90() 
+    when you no longer need access to the array.
 
-   Input Parameter:
-.    x - vector
+    Input Parameter:
+.   x - vector
 
-   Output Parameter:
-.  xx_v - the Fortran90 pointer to the array
-.  ierr - error code
+    Output Parameters:
+.   xx_v - the Fortran90 pointer to the array
+.   ierr - error code
 
-   Synopsis:
-   VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    Synopsis:
+    VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-   Usage: 
-    Scalar, pointer xx_v(:)
-    ....
-    VecGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
-    VecRestoreArrayF90(x,xx_v,ierr)
-   
+    Example of Usage: 
+$    Scalar, pointer :: xx_v(:)
+$    ....
+$    VecGetArrayF90(x,xx_v,ierr)
+$    a = xx_v(3)
+$    VecRestoreArrayF90(x,xx_v,ierr)
 
-   Notes:
-     Currently only supported using the NAG F90 compiler.
+    Notes:
+    Currently only supported using the NAG F90 compiler.
 
 .seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray()
 
@@ -1261,31 +1263,86 @@ int VecDestroyVecs_Default( Vec *v, int m )
 M*/
 
 /*MC
-    VecRestoreArrayF90 - Return a vector array from Fortran 90,
-        accessed with VecGetArrayF90().
+    VecRestoreArrayF90 - Restores a vector to a usable state after a call to
+    VecGetArrayF90().
 
-   Input Parameter:
-.    x - vector
+    Input Parameters:
+.   x - vector
+.   xx_v - the Fortran90 pointer to the array
 
-   Output Parameter:
-.  xx_v - the Fortran90 pointer to the array
-.  ierr - error code
+    Output Parameter:
+.   ierr - error code
 
-   Synopsis:
-   VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    Synopsis:
+    VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-   Usage: 
-    Scalar, pointer xx_v(:)
-    ....
-    VecGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
-    VecRestoreArrayF90(x,xx_v,ierr)
+    Example of Usage: 
+$    Scalar, pointer :: xx_v(:)
+$    ....
+$    VecGetArrayF90(x,xx_v,ierr)
+$    a = xx_v(3)
+$    VecRestoreArrayF90(x,xx_v,ierr)
    
-
-   Notes:
-     Currently only supported using the NAG F90 compiler.
+    Notes:
+    Currently only supported using the NAG F90 compiler.
 
 .seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray()
 
 .keywords:  vector, array, f90
+M*/
+
+/*MC
+    VecDuplicateVecsF90 - Creates several vectors of the same type as an existing vector
+    and makes them accessible via a Fortran90 pointer.
+
+    Input Parameters:
+.   x - a vector to mimic
+.   n - the number of vectors to obtain
+
+    Output Parameters:
+.   y - Fortran90 pointer to the array of vectors
+.   ierr - error code
+
+    Synopsis:
+    VecGetArrayF90(Vec x,int n,{Scalar, pointer :: y(:)},integer ierr)
+
+    Example of Usage: 
+$    Vec x
+$    Vec, pointer :: y(:)
+$    ....
+$    call VecDuplicateVecsF90(x,2,y,ierr)
+$    call VecSet(alpha,y(2),ierr)
+$    call VecSet(alpha,y(2),ierr)
+$    ....
+$    call VecDestroyVecsF90(y,2,ierr)
+
+    Notes:
+    Currently only supported using the NAG F90 compiler.
+
+    Use VecDestroyVecsF90() to free the space.
+
+.seealso:  VecDestroyVecsF90(), VecDuplicateVecs()
+
+.keywords:  vector, duplicate, f90
+M*/
+
+/*MC
+    VecDestroyVecsF90 - Frees a block of vectors obtained with VecDuplicateVecsF90().
+
+    Input Parameters:
+.   x - pointer to array of vector pointers
+.   n - the number of vectors previously obtained
+
+    Output Parameter:
+.   ierr - error code
+
+    Synopsis:
+    VecDestroyVecsF90({Scalar, pointer :: x(:)},integer n,integer ierr)
+
+    Notes:
+    Currently only supported using the NAG F90 compiler.
+
+.seealso:  VecDestroyVecs(), VecDuplicateVecsF90()
+
+.keywords:  vector, destroy, f90
 M*/
