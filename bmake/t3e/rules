@@ -1,4 +1,4 @@
-# $Id: base,v 1.17 1998/04/25 23:44:41 balay Exp balay $ 
+# $Id: base,v 1.18 1998/04/26 01:00:56 balay Exp balay $ 
 
 #
 #   The PARCH flag below is the same for the Cray T3D and T3E, so DO NOT change
@@ -12,7 +12,7 @@ CC       = cc
 #
 CCV      = ${CC} -V
 #
-FC       = f90 -dp
+FC       = f90 -dp -F
 AR       = ar
 RM       = rm -f
 RANLIB   = true
@@ -35,28 +35,13 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	@-true
 
 #########
-#
-# C - debug directives start as '#line LINE_NO' where as fortran directives
-# are '# LINE_NUMBER'. sed is used to convert from c-directives to fortran
-#
-# 'f90 __x.f -o x.o' does not work on T3E. Hence x.f is used instead of __x.f.
-# To avoid the clash between x.F and x.f, x.f is placed in /tmp
-#
 
-.F.f:
-	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
 .F.o:
-	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} /tmp/$*.f
-	-${RM} /tmp/$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 
-.F.a:
-	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} /tmp/$*.f
+.F.a: 
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} /tmp/$*.f
+	-${RM} $*.o
 
 shared:

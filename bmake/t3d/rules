@@ -1,4 +1,4 @@
-# $Id: base,v 1.36 1998/04/25 23:44:06 balay Exp balay $ 
+# $Id: base,v 1.37 1998/04/26 00:59:43 balay Exp balay $ 
 
 PARCH    = t3d
 CC       = cc -h jump
@@ -8,7 +8,7 @@ CC       = cc -h jump
 #
 CCV      = ${CC} -V
 #
-FC       = cf77 -dp
+FC       = cf77 -dp -F
 AR       = ar
 RM       = rm -f
 RANLIB   = true
@@ -31,20 +31,14 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	@-true
 
 #########
-.F.f:
-	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-.F.o:
-	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} /tmp/$*.f
-	-${RM} /tmp/$*.f
 
-.F.a:
-	-${RM} /tmp/$*.f
-	-${CC} -E ${CPPFLAGS} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} /tmp/$*.f
+.F.o:
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
+
+.F.a: 
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} /tmp/$*.f
+	-${RM} $*.o
+
 
 shared:
