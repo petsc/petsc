@@ -1,11 +1,10 @@
 C
-C  $Id: pc.h,v 1.16 1996/04/16 04:56:29 bsmith Exp bsmith $;
+C  $Id: pc.h,v 1.17 1996/07/08 22:24:44 bsmith Exp curfman $;
 C
 C  Include file for Fortran use of the PC (preconditioner) package in PETSc
 C
 #define PC           integer
 #define PCType       integer
-#define MatStructure integer
 #define PCNullSpace  integer
 #define PCSide       integer
 #define PCBGSType    integer
