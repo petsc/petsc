@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.29 1998/03/30 22:03:08 balay Exp balay $";
+! "$Id: ex4f.F,v 1.30 1998/04/15 18:01:13 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -601,7 +601,7 @@
       integer  ierr
 
 !  Local variables:
-      integer      ierr, i, j, row, col(5)
+      integer      i, j, row, col(5)
       Scalar       two, one,  hx, hy, hxdhy, hydhx, sc, v(5)
 
 !  Set parameters
