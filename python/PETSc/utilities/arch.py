@@ -42,7 +42,12 @@ class Configure(config.base.Configure):
         (self.dir, error, status) = self.executeShellCommand('cygpath -au '+self.dir)
       except RuntimeError:
         pass
-    if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
+    if os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
+      try:
+        (version_info,error,status) = self.executeShellCommand('grep "define PETSC_VERSION" '+ os.path.join(self.dir, 'include', 'petscversion.h'))
+      except RuntimeError,e:
+        raise RuntimeError('Error running grep on petscversion.h: '+str(e))
+    else:
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
 
     self.addMakeMacro('DIR', self.dir)
