@@ -28,6 +28,7 @@
 #define SIZEOF_VOID_P 8
 #define SIZEOF_INT 4
 #define SIZEOF_DOUBLE 8
+#define BITS_PER_BYTE 8
 
 #define WORDS_BIGENDIAN 1
 
