@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.55 1996/02/15 02:05:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.56 1996/03/04 05:17:03 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -786,8 +786,12 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
     "SNESComputeHessian:For SNES_UNCONSTRAINED_MINIMIZATION only");
   if (!snes->computejacobian) return 0;
   PLogEventBegin(SNES_HessianEval,snes,x,*A,*B);
+  *flag = DIFFERENT_NONZERO_PATTERN;
   ierr = (*snes->computejacobian)(snes,x,A,B,flag,snes->jacP); CHKERRQ(ierr);
   PLogEventEnd(SNES_HessianEval,snes,x,*A,*B);
+  /* make sure user returned a correct Jacobian and preconditioner */
+  PETSCVALIDHEADERSPECIFIC(*A,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(*B,MAT_COOKIE);  
   return 0;
 }
 
