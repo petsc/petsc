@@ -5,14 +5,14 @@ NOADIC    = true
 manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex routines.red part2.tex
 # First build the manual
 	latex manual_tex
-	bibtex manual_tex
+	-bibtex manual_tex
 	latex manual_tex
 	/nfs/local-sun4/tex3.14/bin/makeindex manual_tex
-	echo  \\begin{theindex} > findex.tex
+	echo  \\begin\{theindex\} > findex.tex
 	echo \\indexspace >> findex.tex
 	grep FUNCTION manual_tex.ind | sed "s/FUNCTION/ /g"  | \
              sed 's/_/\\_/g' >> findex.tex
-	echo \\end{theindex} >> findex.tex
+	echo \\end\{theindex\} >> findex.tex
 	grep -v FUNCTION manual_tex.ind | sed 's/_/\\_/g' > sindex.tex
 	latex manual_tex
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
@@ -34,10 +34,10 @@ manual.ps:
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit
 	cat ../../manualpages/manualpages.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
-	tohtml -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../manualpages/manualpages.cit -nobottomnav
-	tohtml -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../manualpages/manualpages.cit -nobottomnav
+	tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
+	       -mapref ../../manualpages/manualpages.cit
+	tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
+	       -mapref ../../manualpages/manualpages.cit
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
 	cat manual_html.html \
@@ -63,7 +63,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             > manual.html
 	-mv manual.html ../..
 	-@chmod ug+w ../../manual.html www.cit ../../*.gif
-	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html manual_html.html
+	rm -f  latex.err findex.tex sindex.tex tmp.html manual_html.html
 
 #
 # This is the split version; some users prefer this
@@ -71,15 +71,15 @@ manual/manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit latex.err
 	cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../manualpages/manualpages.cit -nobottomnav
+	       -mapref ../../manualpages/manualpages.cit 
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../manualpages/manualpages.cit -nobottomnav
+	       -mapref ../../manualpages/manualpages.cit 
 	-@chmod g+w manual.hux latex.err 
 	-@chmod -R ug+w manual
 	-@/bin/rm -r ../../manual
 	-mv manual ../..
 	-@chmod ug+w ../../manual www.cit 
-	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html
+	rm -f  latex.err findex.tex sindex.tex tmp.html
 
 clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
