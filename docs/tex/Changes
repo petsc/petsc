@@ -28,6 +28,9 @@ add to it).
 
 added -pc_ilu_damping and -pc_lu_damping PCLUSetDamping(), ILU for handling singular
 or matrices that generate a zero pivot.  
+
+  MGSetLevels() now takes an additional optional final argument that is an array
+of communicators to use on the SLES on each level
  
   AO
 
