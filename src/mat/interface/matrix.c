@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.227 1997/02/22 02:24:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.228 1997/03/09 17:58:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1881,6 +1881,7 @@ $    MAT_STRUCTURALLY_SYMMETRIC,
 $    MAT_NO_NEW_DIAGONALS,
 $    MAT_YES_NEW_DIAGONALS,
 $    MAT_IGNORE_OFF_PROCESSOR_ENTRIES
+$    MAT_NEW_NONZERO_LOCATION_ERROR
 $    and possibly others.  
 
    Notes:
@@ -1898,6 +1899,10 @@ $    and possibly others.
    data, then the insertion is ignored. For dense matrices, in which
    the entire array is allocated, no entries are ever ignored. 
  
+   MAT_NEW_NONZERO_LOCATION_ERROR indicates any add or insertion 
+   that will generate a new entry in the nonzero structure generates 
+   an error. Supported for AIJ and BAIJ formats.
+
    MAT_IGNORE_OFF_PROCESSOR_ENTRIES indicates entries destined for 
    other processors are dropped, rather than stashed.
    

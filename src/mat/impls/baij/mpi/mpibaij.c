@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.56 1997/03/12 22:35:43 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.57 1997/03/13 16:30:14 curfman Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -222,7 +222,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Scalar      *value,*tmp;
-  int         ierr,i,j,ii,jj,row,col;
+  int         ierr,i,j,ii,jj,row,col,k,l;
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
   int         rend=baij->rend,cstart=baij->cstart,stepval;
   int         cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
@@ -234,7 +234,6 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   } else {
     stepval = (m-1)*bs;
   }
-  value = (Scalar *)PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(value);
   for ( i=0; i<m; i++ ) {
 #if defined(PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,0,"Negative row");
@@ -243,20 +242,18 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for ( j=0; j<n; j++ ) {
+        if (roworiented) { 
+          value = v + i*(stepval+bs)*bs + j*bs;
+        } else {
+          value = v + j*(stepval+bs)*bs + i*bs;
+        }
+        for ( ii=0; ii<bs; ii++,value+=stepval )
+          for (jj=0; jj<bs; jj++ )
+            *tmp++  = *value++; 
+        tmp -=bs2;
+        
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
-          if (roworiented) { 
-            value = v + i*(stepval+bs)*bs + j*bs;
-            for ( ii=0; ii<bs; ii++,value+=stepval )
-              for (jj=ii; jj<bs2; jj+=bs )
-                tmp[jj] = *value++; 
-          } else {
-            value = v + j*(stepval+bs)*bs + i*bs;
-            for ( ii=0; ii<bs; ii++,value+=stepval )
-              for (jj=0; jj<bs; jj++ )
-                *tmp++  = *value++; 
-            tmp -=bs2;
-          }
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,tmp,addv);CHKERRQ(ierr);
         }
 #if defined(PETSC_BOPT_g)
@@ -275,37 +272,34 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
             }
           }
           else col = in[j];
-          if (roworiented) { 
-            value = v + i*(stepval+bs)*bs + j*bs;
-            for ( ii=0; ii<bs; ii++,value+=stepval )
-              for (jj=ii; jj<bs2; jj+=bs )
-                tmp[jj] = *value++; 
-          } else {
-            value = v + j*(stepval+bs)*bs + i*bs;
-            for ( ii=0; ii<bs; ii++,value+=stepval )
-              for (jj=0; jj<bs; jj++ )
-                *tmp++  = *value++; 
-            tmp -=bs2;
-          }
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->B,1,&row,1,&col,tmp,addv);CHKERRQ(ierr);
         }
       }
     } 
     else {
       if (!baij->donotstash) {
-        row = im[i]*bs;
         if (roworiented ) {
-          for ( ii=0; ii<bs; i++,row++ ) {
-            for ( jj=0; jj<bs; jj++ ) {
-              ierr = StashValues_Private(&baij->stash,im[i],n,in,v+i*n,addv);CHKERRQ(ierr);
+          row   = im[i]*bs;
+          value = v + i*(stepval+bs)*bs;
+          for ( j=0; j<bs; j++,row++ ) {
+            for ( k=0; k<n; k++ ) {
+              for ( col=in[k]*bs,l=0; l<bs; l++,col++) {
+                ierr = StashValues_Private(&baij->stash,row,1,&col,value++,addv);CHKERRQ(ierr);
+              }
             }
           }
         }
         else {
-          row = im[i];
-	  for ( j=0; j<n; j++ ) {
-	    ierr = StashValues_Private(&baij->stash,row,1,in+j,v+i+j*m,addv);CHKERRQ(ierr);
+          for ( j=0; j<n; j++ ) {
+            value = v + j*(stepval+bs)*bs + i*bs;
+            col   = in[j]*bs;
+            for ( k=0; k<bs; k++,col++,value+=stepval) {
+              for ( row = im[i]*bs,l=0; l<bs; l++,row++) {
+                ierr = StashValues_Private(&baij->stash,row,1,&col,value++,addv);CHKERRQ(ierr);
+              }
+            }
           }
+   
         }
       }
     }
