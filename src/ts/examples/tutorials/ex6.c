@@ -363,14 +363,14 @@ int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
    ts     - the timestep context
    step   - the count of the current step (with 0 meaning the
              initial condition)
-   time   - the current time
+   ctime  - the current time
    u      - the solution at this timestep
    ctx    - the user-provided context for this monitoring routine.
             In this case we use the application context which contains 
             information about the problem size, workspace and the exact 
             solution.
 */
-int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
+int Monitor(TS ts,int step,PetscReal ctime,Vec u,void *ctx)
 {
   AppCtx     *appctx = (AppCtx*) ctx;   /* user-defined application context */
   int         ierr;
@@ -386,7 +386,7 @@ int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
   /* 
      Compute the exact solution
   */
-  ierr = ExactSolution(time,appctx->solution,appctx);CHKERRQ(ierr);
+  ierr = ExactSolution(ctime,appctx->solution,appctx);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
@@ -408,7 +408,7 @@ int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
 
   ierr = TSGetTimeStep(ts,&dt); CHKERRQ(ierr);
   printf("Timestep %d: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",
-         step,dt,time,norm_2,norm_max);
+         step,dt,ctime,norm_2,norm_max);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
