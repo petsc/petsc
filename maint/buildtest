@@ -30,7 +30,7 @@ endif
 #
 set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
 rsync $RSYNCSSH -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
-if ("${PETSC_ARCH}" != "t3e") then
+if ("${ARCH}" != "t3e") then
   $RSH $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
 endif
 $RSH $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
