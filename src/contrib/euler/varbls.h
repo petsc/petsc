@@ -1,6 +1,6 @@
 c
-c  Parallel array sizes, including ghost points, for the
-c  current iterate, corresponding to the X vector in PETSc code.
+c  Local arrays, including ghost points, for the current
+c  iterate, corresponding to the X vector in PETSc code.
 c  Space is allocated in UserCreateEuler().
 c
 c  Note: The original code stored each component variable in

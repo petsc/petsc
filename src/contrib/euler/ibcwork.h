@@ -1,3 +1,9 @@
+c
+c  Local arrays for function components due to boundary conditions.
+c  We could eventually upgrade the routine residbc() to place
+c  the function components in the residual vector and thus alleviate
+c  the need for these arrays.  
+c
       Double fbcrj1(xsf2:xef01,zsf2:zef01)
       Double fbcruj1(xsf2:xef01,zsf2:zef01)
       Double fbcrvj1(xsf2:xef01,zsf2:zef01)
