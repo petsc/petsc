@@ -532,6 +532,7 @@ PetscErrorCode PetscFinalize(void)
     PetscFunctionReturn(0);
   }
 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_info",&flg2);CHKERRQ(ierr);
   if (!flg2) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-memory_info",&flg2);CHKERRQ(ierr);
