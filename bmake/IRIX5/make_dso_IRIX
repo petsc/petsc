@@ -1,9 +1,9 @@
-#! /bin/csh -f
+#! /bin/csh 
 #
 # This Utility converts the static ".a" library files to dynamic ".so" files
-# invoked as maj\ke_dso_IRIX $(LIBRARY_PATH)
+# invoked as make_dso_IRIX $(LIBRARY_PATH)
 #
-echo "$argv[0]: making dynamic libraries in $argv[1]"
+echo  making dynamic libraries in $argv[1]
 cd $argv[1]
 foreach LIBNAME (mpiuni petsccontrib petscdraw petscksp petscmat \
   petscsles petscsnes petscsys petscts petscvec petscfortran)
