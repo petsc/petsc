@@ -8,23 +8,22 @@ Overture. Information on these packages may be found at
 http://www.mcs.anl.gov/petsc, http://www.llnl.gov/CASC/SAMRAI and
 http://www.llnl.gov/CASC/Overture. The applicant will work closely
 with the PETSc team, as well as the SAMRAI and Overture groups, to
-help develop a complete infrastructure for the parallel solution of
+develop a complete infrastructure for the parallel solution of
 PDEs using implicit and semi-implicit numerical methods. These
 packages are already used at hundreds of sites for a wide variety of
-applications including CFD, structural mechanics and multiphase flow.
-
+applications, including CFD, structural mechanics, and multiphase flow.
 
 We seek candidates with expertise in one or more of the following
-areas: parallel numerical computing, software engineering, object
-oriented programming, and the solution of large-scale applications on
-distributed-memory computers. Previous experience with MPI, PETSc,
-Overture or SAMRAI is highly desirable. C or C++ programming
+areas: parallel numerical computing, software engineering, 
+object-oriented programming, and the solution of large-scale applications 
+on distributed-memory computers. Previous experience with MPI, PETSc,
+Overture, or SAMRAI is highly desirable. C or C++ programming
 experience is required. Candidates must have a degree in computer
 science, applied mathematics, or an engineering discipline. The
 appointment is available immediately.
 
 The successful candidate will have access to state-of-the-art computing
-and visualization facilities including an 80-node IBM SP supercomputer and a
+and visualization facilities, including an 80-node IBM SP supercomputer and a
 128-processor SGI Origin with 12 reality engine pipes running a CAVE
 immersive visualization environment and several ImmersaDesks.
 
@@ -33,7 +32,7 @@ three years prior to the beginning of the appointment. Initial
 appointments are for one year and may be extended to a maximum of two
 years.
 
-Postdoctoral candidates must have received their Ph.D. degree not more
+Postdoctoral candidates must have received a Ph.D. degree not more
 than three years prior to the beginning of the appointment. Initial
 appointments are for one year and may be extended for two additional
 years.
