@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.48 1998/06/29 21:07:14 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.49 1998/09/28 15:10:28 balay Exp bsmith $";
 #endif
 
 /*
@@ -66,9 +66,7 @@ extern int          PetscBeganMPI;
 #define mpi_init_             mpi_init__
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 extern void mpi_init_(int*);
 
 /*
@@ -92,9 +90,8 @@ extern void getarg_(int*,char*,int);
 extern void PXFGETARG(int *,_fcd,int*,int*);
 #endif
 #endif
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
+
 
 extern int OptionsCheckInitial_Alice(void);
 
@@ -154,9 +151,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;   
 }
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 #undef __FUNC__  
 #define __FUNC__ "aliceinitialize"
@@ -288,18 +283,14 @@ void alicefinalize_(int *__ierr)
   *__ierr = AliceFinalize();
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------------------*/
 
 extern int OptionsCheckInitial_Components(void);
 extern int PetscInitialize_DynamicLibraries(void);
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 #undef __FUNC__  
 #define __FUNC__ "petscinitialize"
@@ -337,6 +328,4 @@ void petscsetcommworld_(MPI_Comm *comm,int *__ierr)
   *__ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *comm )  );
 }
 
-#if defined(__cplusplus)
-}
-#endif
+EXTERN_C_END
