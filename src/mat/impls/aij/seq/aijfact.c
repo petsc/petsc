@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.81 1997/05/23 15:59:48 balay Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.82 1997/05/23 18:38:20 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -112,7 +112,6 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     double af = ((double)ainew[n])/((double)ai[n]);
     PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
              realloc,f,af);
-    af += .01;
     PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %g or use \n",af);
     PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:PCLUSetFill(pc,%g);\n",af);
     PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:for best performance.\n");
@@ -590,7 +589,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
       flev    = ajfill + ainew[row] + shift + nz + 1;
       nnz     = ainew[row+1] - ainew[row] - nz - 1;
       if (*xi++ + shift != row) {
-        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"zero pivot");
+        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot: try running with -pc_ilu_nonzeros_along_diagonal");
       }
       fm      = row;
       while (nnz-- > 0) {
@@ -657,7 +656,6 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
     double af = ((double)ainew[n])/((double)ai[n]);
     PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
              realloc,f,af);
-    af += .01;
     PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
     PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
     PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
