@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.122 1997/03/20 19:04:57 curfman Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.123 1997/04/12 19:13:42 balay Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -725,9 +725,9 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 .  prefix - the prefix string to prepend to all PC option requests
 
    Notes:
-   The first character of all runtime options is automatically the
-   hyphen (-);  thus, the hyphen must NOT be given at the beginning
-   of the prefix name.
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the
+   hyphen.
 
 .keywords: PC, set, options, prefix, database
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.82 1997/03/20 19:05:35 curfman Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.83 1997/04/12 19:14:09 balay Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -82,9 +82,9 @@ int SLESPrintHelp(SLES sles)
 .  prefix - the prefix to prepend to all option names
 
    Notes:
-   The first character of all runtime options is automatically the
-   hyphen (-);  thus, the hyphen must NOT be given at the beginning
-   of the prefix name.
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the
+   hyphen.
 
    This prefix is particularly useful for nested use of SLES.  For
    example, the block Jacobi and block diagonal preconditioners use
