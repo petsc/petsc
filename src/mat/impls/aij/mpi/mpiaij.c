@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.50 1995/06/14 17:24:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.51 1995/06/20 01:47:51 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -11,7 +11,7 @@ number to the local number in the off-diagonal part of the local
 storage of the matrix.  This is done in a non scable way since the 
 length of colmap equals the global matrix length. 
 */
-static int CreateColmap(Mat mat)
+static int CreateColmap_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_AIJ    *B = (Mat_AIJ*) aij->B->data;
@@ -47,9 +47,9 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
         }
         else {
           if (aij->assembled) {
-            if (!aij->colmap) {ierr = CreateColmap(mat); CHKERRQ(ierr);}
+            if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
             col = aij->colmap[idxn[j]] - 1;
-            if (col < 0) {
+            if (col < 0 && !((Mat_AIJ*)(aij->A->data))->nonew) {
               SETERRQ(1,"Cannot insert new off diagonal block nonzero in\
                      already\
                      assembled matrix. Contact petsc-maint@mcs.anl.gov\
@@ -205,9 +205,9 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
       } 
       else {
         if (aij->assembled) {
-          if (!aij->colmap) {ierr = CreateColmap(mat); CHKERRQ(ierr);}
+          if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
           col = aij->colmap[col] - 1;
-          if (col < 0) {
+          if (col < 0  && !((Mat_AIJ*)(aij->A->data))->nonew) {
             SETERRQ(1,"Cannot insert new off diagonal block nonzero in\
                      already\
                      assembled matrix. Contact petsc-maint@mcs.anl.gov\
@@ -544,21 +544,21 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
       Aloc = (Mat_AIJ*) aij->A->data;
       m = Aloc->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
       row = aij->rstart;
-      for ( i=0; i<ai[m]; i++ ) {aj[i] += aij->cstart - 1;}
+      for ( i=0; i<ai[m]-1; i++ ) {aj[i] += aij->cstart - 1;}
       for ( i=0; i<m; i++ ) {
         ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],aj,a,INSERTVALUES);
         CHKERRQ(ierr);
         row++; a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
       } 
       aj = Aloc->j;
-      for ( i=0; i<ai[m]; i++ ) {aj[i] -= aij->cstart - 1;}
+      for ( i=0; i<ai[m]-1; i++ ) {aj[i] -= aij->cstart - 1;}
 
       /* copy over the B part */
       Aloc = (Mat_AIJ*) aij->B->data;
       m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
       row = aij->rstart;
       ct = cols = (int *) PETSCMALLOC( (ai[m]+1)*sizeof(int) ); CHKPTRQ(cols);
-      for ( i=0; i<ai[m]; i++ ) {cols[i] = aij->garray[aj[i]-1];}
+      for ( i=0; i<ai[m]-1; i++ ) {cols[i] = aij->garray[aj[i]-1];}
       for ( i=0; i<m; i++ ) {
         ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],cols,a,INSERTVALUES);
         CHKERRQ(ierr);
@@ -950,7 +950,7 @@ static int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 static int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
-  *m = mat->m; *n = mat->n;
+  *m = mat->m; *n = mat->N;
   return 0;
 }
 
@@ -1025,6 +1025,49 @@ static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+static int MatTranspose_MPIAIJ(Mat A,Mat *Bin)
+{ 
+  Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
+  int        ierr;
+  Mat        B;
+  Mat_AIJ    *Aloc;
+  int        M = a->M, N = a->N,m,*ai,*aj,row,*cols,i,*ct;
+  Scalar     *array;
+
+  ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,0,0,0,&B);
+  CHKERRQ(ierr);
+
+  /* copy over the A part */
+  Aloc = (Mat_AIJ*) a->A->data;
+  m = Aloc->m; ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
+  row = a->rstart;
+  for ( i=0; i<ai[m]-1; i++ ) {aj[i] += a->cstart - 1;}
+  for ( i=0; i<m; i++ ) {
+      ierr = MatSetValues(B,ai[i+1]-ai[i],aj,1,&row,array,INSERTVALUES);
+      CHKERRQ(ierr);
+      row++; array += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
+  } 
+  aj = Aloc->j;
+  for ( i=0; i<ai[m]-1; i++ ) {aj[i] -= a->cstart - 1;}
+
+  /* copy over the B part */
+  Aloc = (Mat_AIJ*) a->B->data;
+  m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
+  row = a->rstart;
+  ct = cols = (int *) PETSCMALLOC( (ai[m]+1)*sizeof(int) ); CHKPTRQ(cols);
+  for ( i=0; i<ai[m]-1; i++ ) {cols[i] = a->garray[aj[i]-1];}
+  for ( i=0; i<m; i++ ) {
+    ierr = MatSetValues(B,ai[i+1]-ai[i],cols,1,&row,array,INSERTVALUES);
+    CHKERRQ(ierr);
+    row++; array += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
+  } 
+  PETSCFREE(ct);
+  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  *Bin = B;
+  return 0;
+}
+
 extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
 static int MatCopyPrivate_MPIAIJ(Mat,Mat *);
 
@@ -1036,7 +1079,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        0,0,0,0,
        0,0,
        MatRelax_MPIAIJ,
-       0,
+       MatTranspose_MPIAIJ,
        MatGetInfo_MPIAIJ,0,
        MatGetDiagonal_MPIAIJ,0,0,
        MatAssemblyBegin_MPIAIJ,MatAssemblyEnd_MPIAIJ,
