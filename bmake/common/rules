@@ -235,7 +235,7 @@ fortranstubs:
 	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/src/fortran/auto \
 	  -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix MPIR_\
 	  -ptr64 HAVE_64BITS $(SOURCEC)
-	chmod g+w /home/bsmith/petsc/src/fortran/auto
+	chmod g+w /home/bsmith/petsc/src/fortran/auto/*.c
 
 
 # Builds man pages (xman version)
