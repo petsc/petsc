@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.106 1996/04/09 23:15:10 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.107 1996/04/10 04:31:08 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -8,18 +8,6 @@
 #define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.13, Released ???, 1996."
 
 #include <stdio.h>
-
-/*
-    This is to deal with missing entries in the Gnu gcc include files 
-  the Sun4 machines. It's ugly but then so is the Gnu compiler!
-*/
-#if defined(PARCH_sun4) && !defined(__cplusplus) && defined(_Gnu_)
-extern int fprintf(FILE*,const char*,...);
-extern int printf(const char*,...);
-extern int fflush(FILE *);
-extern int fclose(FILE *);
-extern void fscanf(FILE *,char *,...);
-#endif
 
 /* MPI interface */
 #include "mpi.h"

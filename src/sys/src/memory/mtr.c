@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.52 1996/04/02 18:43:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.53 1996/04/10 04:28:47 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -395,7 +395,7 @@ static int PetscTrIntCompare( TRINFO *a, TRINFO * b )
 static int  PetscTrPrintSum(TRINFO ** a, VISIT order, int level )
 { 
   if (order == postorder || order == leaf) 
-    fprintf( TRFP, "[%d]%s[%d] has %d\n",(*a)->id,(*a)->fname,(*a)->lineno,(*a)->size);
+    fprintf(TRFP,"[%d]%s[%d] has %d\n",(*a)->id,(*a)->fname,(*a)->lineno,(*a)->size);
   return 0;
 }
 
