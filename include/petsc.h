@@ -586,6 +586,14 @@ EXTERN int PetscScalarView(int,PetscScalar[],PetscViewer);
 #define PETSC_USE_FORTRAN_KERNEL_XTIMESY
 #endif
 
+#if !defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
+#define PETSC_USE_FORTRAN_KERNEL_AYPX
+#endif
+
+#if !defined(PETSC_USE_FORTRAN_KERNEL_WAXPY
+#define PETSC_USE_FORTRAN_KERNEL_WAXPY
+#endif
+
 #endif
 
 /*

@@ -15,6 +15,24 @@
 
 #include "petscblaslapack.h"
 
+#if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define fortranaypx_ FORTRANAYPX
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define fortranaypx_ fortranaypx
+#endif
+extern void fortranaypx_(int*,const PetscScalar*,PetscScalar*,PetscScalar*); 
+#endif
+
+#if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define fortranwaxpy_ FORTRANWAXPY
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define fortranwaxpy_ fortranwaxpy
+#endif
+extern void fortranwaxpy_(int*,const PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*); 
+#endif
+
 #if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

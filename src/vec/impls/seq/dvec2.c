@@ -665,9 +665,13 @@ int VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 
   PetscFunctionBegin;
   ierr = VecGetArrayFast(yin,&yy);CHKERRQ(ierr);
+#if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
+  fortranaypx_(&n,alpha,xx,yy);
+#else
   for (i=0; i<n; i++) {
     yy[i] = xx[i] + oalpha*yy[i];
   }
+#endif
   ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
   PetscLogFlops(2*n);
   PetscFunctionReturn(0);
@@ -700,7 +704,11 @@ int VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
   } else if (oalpha == 0.0) {
     ierr = PetscMemcpy(ww,yy,n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
+#if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
+    fortranwaxpy_(&n,alpha,xx,yy,ww);
+#else
     for (i=0; i<n; i++) ww[i] = yy[i] + oalpha * xx[i];
+#endif
     PetscLogFlops(2*n);
   }
   ierr = VecRestoreArrayFast(yin,&yy);CHKERRQ(ierr);
