@@ -13,7 +13,9 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
-  - Provide etags rule in makefile for public releases (no inclusion of
+  - ILUDT(); ordering with flow direction.
+
+  X Provide etags rule in makefile for public releases (no inclusion of
     *.tex files, etc.)
 
   - Better way of dealing with MatAssembly - when elements are not inserted
@@ -92,7 +94,7 @@ f77 -c  -O somefort.f
  (Bill)   - Make configure fully functional in PETSc 2.0
 
   - Chapter in users manual on how PETSc would be used with 
-    different types of grid problems.
+    different types of grid problems. Or different document.
 
   - Make sure all Fortran examples run for complex on all machines, note
     this means the bmake files must insure that -DPETSC_COMPLEX is 

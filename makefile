@@ -127,6 +127,7 @@ alletags:
 	-make etags
 	-make etags_noexamples
 	-make etags_makefiles
+	-make etags_complete
 
 # Builds the basic etags file.	This should be employed by most users.
 etags:
@@ -155,12 +156,41 @@ etags:
 	etags -a -f TAGS bmake/common bmake/*/base*
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c src/benchmarks/*.c
 	etags -a -f TAGS src/*/examples/*.F src/*/examples/*.f src/fortran/custom/*.F 
-	etags -a -f TAGS docs/tex/manual/routin.tex docs/tex/manual/manual.tex
-	etags -a -f TAGS docs/tex/manual/manual_tex.tex
-	etags -a -f TAGS docs/tex/manual/intro.tex docs/tex/manual/part1.tex
-	etags -a -f TAGS docs/tex/manual/part2.tex
-	etags -a -f TAGS docs/tex/manual/intro.tex docs/makefile
 	chmod g+w TAGS
+
+# Builds complete etags list; only for PETSc developers.
+etags_complete:
+	$(RM) TAGS_COMPLETE
+	etags -f TAGS_COMPLETE	 src/*/impls/*/*.h src/*/impls/*/*/*.h 
+	etags -a -f TAGS_COMPLETE src/*/examples/*.c src/*/examples/*/*.c
+	etags -a -f TAGS_COMPLETE src/*/*.h src/*/*/*.h src/*/interface/*.c 
+	etags -a -f TAGS_COMPLETE src/*/src/*.c src/*/impls/*/*.c 
+	etags -a -f TAGS_COMPLETE src/*/impls/*/*/*.c  src/benchmarks/*.c
+	etags -a -f TAGS_COMPLETE src/contrib/*/*.c src/contrib/*/src/*.c 
+	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*.c
+	etags -a -f TAGS_COMPLETE src/contrib/*/src/*.h src/contrib/*/examples/*.F
+	etags -a -f TAGS_COMPLETE include/*.h include/pinclude/*.h bmake/common
+	etags -a -f TAGS_COMPLETE include/FINCLUDE/*.h 
+	etags -a -f TAGS_COMPLETE src/*/impls/*.c src/*/utils/*.c
+	etags -a -f TAGS_COMPLETE makefile src/*/src/makefile
+	etags -a -f TAGS_COMPLETE src/*/interface/makefile src/makefile 
+	etags -a -f TAGS_COMPLETE src/*/impls/makefile src/*/impls/*/makefile
+	etags -a -f TAGS_COMPLETE src/*/utils/makefile src/*/examples/makefile
+	etags -a -f TAGS_COMPLETE src/*/examples/*/makefile
+	etags -a -f TAGS_COMPLETE src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS_COMPLETE src/contrib/*/makefile src/contrib/*/src/makefile 
+	etags -a -f TAGS_COMPLETE src/fortran/makefile src/fortran/auto/makefile 
+	etags -a -f TAGS_COMPLETE src/fortran/custom/makefile
+	etags -a -f TAGS_COMPLETE include/makefile include/*/makefile 
+	etags -a -f TAGS_COMPLETE bmake/common bmake/*/base*
+	etags -a -f TAGS_COMPLETE src/fortran/custom/*.c src/fortran/auto/*.c src/benchmarks/*.c
+	etags -a -f TAGS_COMPLETE src/*/examples/*.F src/*/examples/*.f src/fortran/custom/*.F 
+	etags -a -f TAGS_COMPLETE docs/tex/manual/routin.tex docs/tex/manual/manual.tex
+	etags -a -f TAGS_COMPLETE docs/tex/manual/manual_tex.tex
+	etags -a -f TAGS_COMPLETE docs/tex/manual/intro.tex docs/tex/manual/part1.tex
+	etags -a -f TAGS_COMPLETE docs/tex/manual/part2.tex
+	etags -a -f TAGS_COMPLETE docs/tex/manual/intro.tex docs/makefile
+	chmod g+w TAGS_COMPLETE
 
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
