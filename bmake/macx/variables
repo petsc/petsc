@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.6 2001/04/02 15:58:49 balay Exp balay $ 
+# $Id: base_variables,v 1.7 2001/04/02 20:07:51 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -72,6 +72,6 @@ OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
 #
 ##################################################################################
 
-PARCH		   = linux
+PARCH		   = macx
 
 include ${PETSC_DIR}/bmake/common_variables
