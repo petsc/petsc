@@ -326,7 +326,7 @@ typedef char* MPI_Errhandler;
 #define MPI_Op_create(function, commute, op) MPI_SUCCESS
 #define MPI_Op_free( op) MPI_SUCCESS
 #define MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
-                PetscMemcpy( recvbuf, sendbuf, (count)*(datatype) )
+                PetscMemcpy( recvbuf, sendbuf, (count)*(datatype), MPI_SUCCESS)
 #define MPI_Reduce_scatter( sendbuf,  recvbuf, recvcounts, \
 		        datatype, op, comm) \
                         MPI_Abort(MPI_COMM_WORLD,0)
@@ -418,7 +418,7 @@ typedef char* MPI_Errhandler;
                      _v_ = (void *) (function), \
                      _v_ = (void *) (errhandler), \
                      MPI_SUCCESS;}
-#define MPI_Errhandler_set(comm, errhandler)
+#define MPI_Errhandler_set(comm, errhandler) \
                   {void *_v_; \
                      _v_ = (void *) (comm), \
                      _v_ = (void *) (errhandler), \
