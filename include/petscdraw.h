@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.36 1996/11/11 21:41:59 curfman Exp gropp $ */
+/* $Id: draw.h,v 1.37 1996/11/22 14:43:26 curfman Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -43,7 +43,7 @@ extern int DrawCreatePopUp(Draw,Draw*);
 extern int DrawCheckResizedWindow(Draw);
 
 extern int ViewerDrawGetDraw(Viewer, Draw*);
-
+extern int DrawScalePopup(Draw,double min,double max); 
 
 extern int DrawLine(Draw,double,double,double,double,int);
 extern int DrawLineSetWidth(Draw,double);
