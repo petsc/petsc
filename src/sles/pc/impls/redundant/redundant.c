@@ -9,7 +9,7 @@
 typedef struct {
   PC         pc;                    /* actual preconditioner used on each processor */
   Vec        x,b;                   /* sequential vectors to hold parallel vectors */
-  Mat        *pmats;          /* matrix and optional preconditioner matrix */
+  Mat        *pmats;                /* matrix and optional preconditioner matrix */
   VecScatter scatterin,scatterout;  /* scatter used to move all values to each processor */
   PetscTruth useparallelmat;
 } PC_Redundant;

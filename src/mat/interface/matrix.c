@@ -1717,18 +1717,8 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
   ierr = (*(*fact)->ops->lufactornumeric)(mat,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_draw",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
-    }
-    ierr = MatView(*fact,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-    }
-  }
+
+  ierr = MatView_Private(*fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -73,7 +73,7 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
 
    Input Parameters:
 +  pc       - the multigrid context
-.  l        - the level to supply
+.  l        - the level (0 is coarsest) to supply
 .  residual - function used to form residual (usually MGDefaultResidual)
 -  mat      - matrix associated with residual
 
@@ -106,7 +106,7 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
    Input Parameters:
 +  pc  - the multigrid context
 .  mat - the interpolation operator
--  l   - the level to supply
+-  l   - the level (0 is coarsest) to supply
 
    Level: advanced
 
@@ -142,7 +142,7 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
    Input Parameters:
 +  pc - the multigrid context 
 .  mat - the restriction matrix
--  l - the level to supply
+-  l - the level (0 is coarsest) to supply
 
    Level: advanced
 
@@ -179,7 +179,7 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 
    Input Parameters:
 +  pc - the multigrid context 
--  l - the level to supply
+-  l - the level (0 is coarsest) to supply
 
    Ouput Parameters:
 .  sles - the smoother
@@ -209,7 +209,7 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 
    Input Parameters:
 +  pc - the multigrid context 
--  l  - the level to supply
+-  l  - the level (0 is coarsest) to supply
 
    Ouput Parameters:
 .  sles - the smoother
@@ -259,7 +259,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 
    Input Parameters:
 +  pc - the multigrid context 
--  l  - the level to supply
+-  l  - the level (0 is coarsest) to supply
 
    Ouput Parameters:
 .  sles - the smoother
@@ -288,7 +288,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 
    Input Parameters:
 +  pc - the multigrid context 
-.  l  - the level this is to be used for
+.  l  - the level (0 is coarsest) this is to be used for
 -  n  - the number of cycles
 
    Level: advanced
@@ -318,7 +318,7 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 
    Input Parameters:
 +  pc - the multigrid context 
-.  l  - the level this is to be used for
+.  l  - the level (0 is coarsest) this is to be used for
 -  c  - the space
 
    Level: advanced
@@ -348,7 +348,7 @@ int MGSetRhs(PC pc,int l,Vec c)
 
    Input Parameters:
 +  pc - the multigrid context 
-.  l - the level this is to be used for
+.  l - the level (0 is coarsest) this is to be used for
 -  c - the space
 
    Level: advanced
@@ -378,7 +378,7 @@ int MGSetX(PC pc,int l,Vec c)
 
    Input Parameters:
 +  pc - the multigrid context 
-.  l - the level this is to be used for
+.  l - the level (0 is coarsest) this is to be used for
 -  c - the space
 
    Level: advanced
