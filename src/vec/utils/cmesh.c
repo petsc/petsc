@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.20 1995/11/09 22:26:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: cmesh.c,v 1.21 1996/02/25 18:14:52 curfman Exp curfman $";
 #endif
 
 #include "drawimpl.h"   /*I "draw.h" I*/
 #include "vec.h"        /*I "vec.h" I*/
 
 /*@
-   DrawTensorContour - Draws a coutour plot for a two-dimensional array
+   DrawTensorContour - Draws a contour plot for a two-dimensional array
    that is stored as a PETSc vector.
 
    Input Parameters:
