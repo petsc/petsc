@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.221 1999/11/10 03:19:40 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.222 1999/11/22 03:04:17 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -10,15 +10,17 @@ LOCDIR		 = src/mat/examples/tests/
 
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
-		   runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm\
-		   ex11.PETSc runex11 runex11_2 runex11_3 ex11.rm ex14.PETSc runex14 ex14.rm \
+		   runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm \
+		   ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
+		   runex14 ex14.rm \
 		   ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
 		   ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
                    ex16.PETSc runex16 ex16.rm ex59.PETSc runex59 runex59_2 runex59_3 \
                    ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm \
                    ex65.PETSc ex65.rm ex66.PETSc ex66.rm clean
 TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc \
-		   runex7 ex7.rm ex12.PETSc runex12 runex12_2 runex12_3 ex12.rm  ex13.PETSc runex13 \
+		   runex7 ex7.rm ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm \
+		   ex13.PETSc runex13 \
 		   ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
 		   ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
 		   ex30.PETSc ex30.rm ex31.PETSc ex31.rm \
@@ -469,6 +471,12 @@ runex11_3:
 	   if (diff output/ex11_3.out ex11_3.tmp) then true; \
 	   else echo "Possible problem with ex11_3, diffs above"; fi; \
 	   ${RM} -f ex11_3.tmp
+runex11_4:
+	-@${MPIRUN} -np 1  ex11 -keep_zeroed_rows -mat_seqbaij -mat_block_size 5 > ex11_4.tmp 2>&1;   \
+	   if (diff output/ex11_4.out ex11_4.tmp) then true; \
+	   else echo "Possible problem with ex11_4, diffs above"; fi; \
+	   ${RM} -f ex11_4.tmp
+
 runex12:
 	-@${MPIRUN}  -np 2 ex12 > ex12_1.tmp 2>&1;   \
 	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
@@ -484,6 +492,11 @@ runex12_3:
 	   if (diff output/ex12_3.out ex12_3.tmp) then true; \
 	   else echo "Possible problem with ex12_3, diffs above"; fi; \
 	   ${RM} -f ex12_3.tmp
+runex12_4:
+	-@${MPIRUN} -np 3 ex12 -keep_zeroed_rows -mat_mpibaij -mat_block_size 3 > ex12_4.tmp 2>&1; \
+	   if (diff output/ex12_4.out ex12_4.tmp) then true; \
+	   else echo "Possible problem with ex12_4, diffs above"; fi; \
+	   ${RM} -f ex12_4.tmp
 runex13:
 	-@${MPIRUN} -np 1  ex13 > ex13_1.tmp 2>&1;   \
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
