@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.345 1999/09/28 21:28:34 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.346 1999/09/29 00:52:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2804,7 +2804,7 @@ int MatZeroEntries(Mat mat)
 
 .keywords: matrix, zero, rows, boundary conditions 
 
-.seealso: MatZeroEntries(), 
+.seealso: MatZeroEntries(), MatZeroRowsLocal()
 @*/
 int MatZeroRows(Mat mat,IS is, Scalar *diag)
 {
@@ -2845,14 +2845,14 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
 
    The user can set a value in the diagonal entry (or for the AIJ and
    row formats can optionally remove the main diagonal entry from the
-   nonzero structure as well, by passing a null pointer as the final
-   argument).
+   nonzero structure as well, by passing a null pointer (PETSC_NULL
+   in C or PETSC_NULL_SCALAR in Fortran) as the final argument).
 
    Level: intermediate
 
 .keywords: matrix, zero, rows, boundary conditions 
 
-.seealso: MatZeroEntries(), 
+.seealso: MatZeroEntries(), MatZeroRows()
 @*/
 int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
 {
