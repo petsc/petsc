@@ -1,4 +1,4 @@
-/* $Id: petscblaslapack.h,v 1.40 2001/03/26 19:23:43 balay Exp balay $ */
+/* $Id: petscblaslapack.h,v 1.41 2001/03/26 19:28:22 balay Exp balay $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -15,11 +15,17 @@ Cray T3D/T3E.
 #include "petsc.h"
 
 
-#if defined(PETSC_HAVE_MKL)
+#if defined(PETSC_BLASLAPACK_MKL_ONLY)
 #define PETSC_MISSING_LAPACK_GESVD
 #define PETSC_MISSING_LAPACK_GEEV
-#else defined(PETSC_HAVE_CRAYBLAS)
+#elif defined(PETSC_BLASLAPACK_CRAY_ONLY)
 #define PETSC_MISSING_LAPACK_GESVD
+#elif defined(PETSC_BLASLAPACK_ESSL_ONLY)
+#define PETSC_MISSING_LAPACK_GESVD
+#define PETSC_MISSING_LAPACK_GETRF
+#define PETSC_MISSING_LAPACK_GETRS
+#define PETSC_MISSING_LAPACK_POTRF
+#define PETSC_MISSING_LAPACK_POTRS
 #endif
 
 /*
@@ -63,7 +69,7 @@ Cray T3D/T3E.
 #define DTRSL    STRSL
 #endif
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_HAVE_CBLASLAPACK)
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
 #define LAgeqrf_ dgeqrf_
 #define LAgetrf_ dgetrf_
 #define LAgetf2_ dgetf2_
@@ -131,7 +137,7 @@ Cray T3D/T3E.
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #define LAgetrf_ DGETRF
-#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_HAVE_CBLASLAPACK)
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
 #define LAormqr_ dormqr_
 #define LAtrtrs_ dtrtrs_
 #define LApotrf_ dpotrf_
@@ -194,7 +200,7 @@ Cray T3D/T3E.
 #define ZGEEV   CGEEV
 #endif
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_HAVE_CBLASLAPACK)
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
 #define LAgeqrf_ zgeqrf_
 #define LAgetrf_ zgetrf_
 #define LAgetf2_ zgetf2_
@@ -249,7 +255,7 @@ Cray T3D/T3E.
                                         (f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
-#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_HAVE_CBLASLAPACK)
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
 #define LAtrtrs_ ztrtrs_
 #define LApotrf_ zpotrf_
 #define LApotrs_ zpotrs_
@@ -370,6 +376,4 @@ EXTERN void   LAgesvd_(char *,char *,int *,int*,Scalar *,int*,double*,Scalar*,
 EXTERN_C_END
 
 #endif
-
-
 

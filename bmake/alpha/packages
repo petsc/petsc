@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.54 2000/09/28 21:06:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.55 2000/11/28 17:26:31 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,10 +14,8 @@
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
 SOFT_HOME = /u/u13/acti/bsmith/software
-#BLAS_LIB        = -ldxml 
-#LAPACK_LIB      = 
-BLAS_LIB       = ${SOFT_HOME}/blaslapack/alpha/blas.a
-LAPACK_LIB     = ${SOFT_HOME}/blaslapack/alpha/lapack.a
+#BLASLAPACK_LIB   = -ldxml 
+BLASLAPACK_LIB   = -L${SOFT_HOME}/blaslapack/alpha -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #

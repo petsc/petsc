@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.38 2000/02/02 20:07:23 bsmith Exp balay $ 
+# $Id: base.site,v 1.39 2000/09/13 15:18:30 balay Exp balay $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -14,12 +14,11 @@
 # for information on retrieving them.
 #
 # BLAS usually comes with SGI and can be accessed with -lblas listed 
-# below for BLAS_LIB. However, the complex BLAS routine izamax() has
+# below for BLASLAPACK_LIB. However, the complex BLAS routine izamax() has
 # a bug in it, so if you are using complex numbers we recommend using
 # the SGI BLAS with extreme care.
 #
-BLAS_LIB       = /home/petsc/software/blaslapack/blas_IRIX5.a
-LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX5.a
+BLASLAPACK_LIB  = -L/home/petsc/software/blaslapack/IRIX5 -lflapack -lfblas
 
 # Location of MPI (Message Passing Interface) software  
 #

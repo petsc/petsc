@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2000/07/12 22:52:01 balay Exp balay $ 
+# $Id: base.site,v 1.2 2000/09/13 15:18:01 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,8 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
 # for information on retrieving them.
 #
-BLAS_LIB       = /usr/lib/pa20_64/libveclib.a
-LAPACK_LIB     =  /usr/lib/pa20_64/liblapack.a
+BLASLAPACK_LIB  = -L/usr/lib/pa20_64 -llapack -lveclib
+#
 # Location of MPI (Message Passing Interface) software
 # If using HP's MPI, then add the flag -DPETSC_HAVE_MPI_COMM_F2C
 # to MPI_INCLUDE variable

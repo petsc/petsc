@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.22 2000/03/14 21:33:38 balay Exp balay $ 
+# $Id: base.site,v 1.23 2000/09/13 15:18:08 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,15 +13,8 @@
 # your machine. The library name is dxml as indicated below, it contains
 # both BLAS and Lapack.
 #
-BLAS_LIB        = -ldxml
-LAPACK_LIB      = 
+BLASLAPACK_LIB        = -ldxml
 #
-#BLAS_LIB       = /home/petsc/software/blaslapack/blas_alpha.a
-#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_alpha.a 
-#BLAS_LIB        = -lpetscblas
-#LAPACK_LIB      = 
-
-
 # Location of MPI (Message Passing Interface) software
 #
 #MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a 

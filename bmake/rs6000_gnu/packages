@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.33 2000/11/28 17:26:31 bsmith Exp balay $ 
+# $Id: base.site,v 1.34 2000/12/14 23:51:04 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -12,9 +12,7 @@
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-BLAS_LIB       = -lblas
-#LAPACK_LIB     = /usr/local/lapack/lib/lapack.a
-LAPACK_LIB     = -lessl /home/petsc/software/blaslapack/lapack_rs6000_gnu.a
+BLASLAPACK_LIB = -lessl -L/home/petsc/software/blaslapack/rs6000_gnu -flapack -lblas
 #
 # Location of MPI (Message Passing Interface) software
 #
@@ -32,6 +30,11 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/h
 #X11_INCLUDE    = 
 #X11_LIB        = 
 #PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# ESSL: IBM math library - 
+# The library location should be given in BLASLAPACK_LIB above
+#
+PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
 #
 # Location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition

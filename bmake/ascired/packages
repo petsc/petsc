@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.7 2000/09/28 21:06:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.8 2000/11/28 17:26:31 bsmith Exp balay $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,7 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html 
 # for information on retrieving them.
 #
-BLAS_LIB       = /usr/local/intel/tflop/current/tflops/lib/libkmath.a
-LAPACK_LIB     =  /usr/home/dswider/FUN3D/blaslapack/lapack.a
+BLASLAPACK_LIB = /usr/home/dswider/FUN3D/blaslapack/lapack.a /usr/local/intel/tflop/current/tflops/lib/libkmath.a
 
 #
 # Location of MPI (Message Passing Interface) software  

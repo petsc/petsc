@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.36 2000/09/28 21:06:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.37 2000/11/28 17:26:31 bsmith Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -15,15 +15,14 @@
 # for information on retrieving them.
 #
 # BLAS usually comes with SGI and can be accessed with -lblas listed 
-# below for BLAS_LIB. However, the complex BLAS routine izamax() has
-# a bug in it, so if you are using complex numbers we recommend using
-# the SGI BLAS with extreme care.
+# below for BLASLAPACK_LIB. However, the complex BLAS routine izamax()
+# has a bug in it, so if you are using complex numbers we recommend
+# using the SGI BLAS with extreme care.
 #
 # BLAS usually comes with SGI. Do NOT use the parallel (library names with 
 # mp in them) version of the SGI BLAS.
 #
-BLAS_LIB       = -lblas
-LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a
+BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/IRIX -lflapack -lblas
 
 # Location of MPI (Message Passing Interface) software  
 MPI_HOME       = /home/petsc/software/mpich-1.2.0/IRIX

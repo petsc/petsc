@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2001/03/22 18:59:11 balay Exp balay $ 
+# $Id: base.site,v 1.2 2001/03/23 23:18:37 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -8,10 +8,10 @@
 #
 # Location of BLAS and LAPACK
 #
-#BLAS_LIB       = -Lc:/cblas -lblas
-#LAPACK_LIB     = -Lc:/cblas -llapack
-MKL_HOME       = C:/Progra~1/Intel/plsuite
-LAPACK_LIB     = -L'"$(MKL_HOME)/lib32/dll"' mkl_c.lib
+BLASLAPACK_LIB = -LC:/Progra~1/Intel/plsuite/lib32/dll mkl_c.lib
+PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
+#BLASLAPACK_LIB         = -Lc:/software/f2cblaslapack -lf2clapack -lf2cblas
+#PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
 
 #
 # Location of MPI (Message Passing Interface) software  

@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.28 2001/03/23 22:01:51 bsmith Exp bsmith $ 
+# $Id: common_variables,v 1.29 2001/03/26 19:38:28 bsmith Exp balay $ 
 #
 # PDIR (defined from $PETSC_DIR) determines where the PETSc libraries are built.
 # LDIR defines location of libraries similar to PDIR. It can be reset by external packages like TAO.
@@ -25,7 +25,7 @@ LIBNAME	       = ${LDIR}/${LIBBASE}.${LIB_SUFFIX}
 SOURCE	       = ${SOURCEC} ${SOURCEF}
 OBJS	       = ${OBJSC} ${OBJSF}
 PETSC_INCLUDE  = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include ${MPI_INCLUDE} \
-                  ${MPE_INCLUDE} ${AMS_INCLUDE}
+                  ${MPE_INCLUDE} ${AMS_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
 CCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${FPPFLAGS}
 C_SH_LIB_PATH  = ${CLINKER_SLFLAG}${PDIR} ${C_DYLIBPATH}
@@ -36,7 +36,7 @@ F_SH_LIB_PATH  = ${FLINKER_SLFLAG}${PDIR} ${F_DYLIBPATH}
 # The order of listing these libraries is important!
 #
 
-PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} ${MPI_LIB} ${SYS_LIB}
+PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${BLASLAPACK_LIB} ${MPI_LIB} ${SYS_LIB}
 PETSC_SYS_LIB_BASIC      = -lpetsc 
 PETSC_VEC_LIB_BASIC      = -lpetscvec ${PETSC_SYS_LIB_BASIC}
 PETSC_MAT_LIB_BASIC      = -lpetscmat ${PETSC_VEC_LIB_BASIC}
@@ -71,8 +71,8 @@ PETSC_CONTRIB     = -L${PDIR} ${PETSC_CONTRIB_BASIC}
 #
 PCONF         = ${PETSC_HAVE_MPE}  ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} ${PETSC_HAVE_PARMETIS} \
                 ${PETSC_HAVE_AMS}  ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB_ENGINE} \
-                ${PETSC_HAVE_ADIC} ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL} ${PETSC_HAVE_RAMG} \
-                ${PETSC_HAVE_DSCPACK}    ${PETSC_HAVE_MATLAB}
+                ${PETSC_HAVE_ADIC} ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL} ${PETSC_HAVE_DSCPACK} \
+                ${PETSC_HAVE_RAMG} ${PETSC_HAVE_MATLAB}     ${PETSC_HAVE_ESSL} 
 EXTERNAL_LIB  = ${MPE_LIB}         ${BLOCKSOLVE_LIB}      ${PVODE_LIB}        ${PARMETIS_LIB} \
                 ${AMS_LIB}         ${SPAI_LIB}            ${X11_LIB}          ${MATLAB_LIB}   \
                 ${ADIC_LIB}        ${LUSOL_LIB}           ${RAMG_LIB}                         \

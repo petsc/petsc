@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.196 2001/03/23 22:04:44 bsmith Exp balay $*/
+/*$Id: dense.c,v 1.197 2001/03/23 23:21:48 balay Exp balay $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -79,7 +79,11 @@ int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatLUInfo *minfo)
   }
   A->factor = FACTOR_LU;
   if (!A->m || !A->n) PetscFunctionReturn(0);
+#if defined(PETSC_MISSING_LAPACK_GETRF) 
+  SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavilable.");
+#else
   LAgetrf_(&A->m,&A->n,mat->v,&A->m,mat->pivots,&info);
+#endif
   if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
   PetscLogFlops((2*A->n*A->n*A->n)/3);
@@ -167,7 +171,11 @@ int MatCholeskyFactor_SeqDense(Mat A,IS perm,PetscReal f)
     mat->pivots = 0;
   }
   if (!A->m || !A->n) PetscFunctionReturn(0);
+#if defined(PETSC_MISSING_LAPACK_POTRF) 
+  SETERRQ(PETSC_ERR_SUP,"POTRF - Lapack routine is unavilable.");
+#else
   LApotrf_("L",&A->n,mat->v,&A->m,&info);
+#endif
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
   A->factor = FACTOR_CHOLESKY;
   PetscLogFlops((A->n*A->n*A->n)/3);
@@ -188,9 +196,17 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,A->m*sizeof(Scalar));CHKERRQ(ierr);
   if (A->factor == FACTOR_LU) {
+#if defined(PETSC_MISSING_LAPACK_GETRS) 
+  SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+#else
     LAgetrs_("N",&A->m,&one,mat->v,&A->m,mat->pivots,y,&A->m,&info);
+#endif
   } else if (A->factor == FACTOR_CHOLESKY){
+#if defined(PETSC_MISSING_LAPACK_POTRS) 
+  SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+#else
     LApotrs_("L",&A->m,&one,mat->v,&A->m,y,&A->m,&info);
+#endif
   }
   else SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
   if (info) SETERRQ(PETSC_ERR_LIB,"MBad solve");
@@ -215,9 +231,17 @@ int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = PetscMemcpy(y,x,A->m*sizeof(Scalar));CHKERRQ(ierr);
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
+#if defined(PETSC_MISSING_LAPACK_GETRS) 
+  SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+#else
     LAgetrs_("T",&A->m,&one,mat->v,&A->m,mat->pivots,y,&A->m,&info);
+#endif
   } else {
+#if defined(PETSC_MISSING_LAPACK_POTRS) 
+  SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+#else
     LApotrs_("L",&A->m,&one,mat->v,&A->m,y,&A->m,&info);
+#endif
   }
   if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
@@ -247,9 +271,17 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   ierr = PetscMemcpy(y,x,A->m*sizeof(Scalar));CHKERRQ(ierr);
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
+#if defined(PETSC_MISSING_LAPACK_GETRS) 
+  SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+#else
     LAgetrs_("N",&A->m,&one,mat->v,&A->m,mat->pivots,y,&A->m,&info);
+#endif
   } else {
+#if defined(PETSC_MISSING_LAPACK_POTRS) 
+  SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+#else
     LApotrs_("L",&A->m,&one,mat->v,&A->m,y,&A->m,&info);
+#endif
   }
   if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
   if (tmp) {ierr = VecAXPY(&sone,tmp,yy);CHKERRQ(ierr); ierr = VecDestroy(tmp);CHKERRQ(ierr);}
@@ -281,9 +313,17 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   ierr = PetscMemcpy(y,x,A->m*sizeof(Scalar));CHKERRQ(ierr);
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
+#if defined(PETSC_MISSING_LAPACK_GETRS) 
+  SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+#else
     LAgetrs_("T",&A->m,&one,mat->v,&A->m,mat->pivots,y,&A->m,&info);
+#endif
   } else {
+#if defined(PETSC_MISSING_LAPACK_POTRS) 
+  SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+#else
     LApotrs_("L",&A->m,&one,mat->v,&A->m,y,&A->m,&info);
+#endif
   }
   if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
   if (tmp) {

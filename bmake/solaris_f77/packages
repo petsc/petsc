@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.20 2000/09/28 21:06:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.21 2000/11/28 17:26:31 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,11 +14,8 @@
 # can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
 # installing BLAS and LAPACK yourself.
 #
-BLAS_LIB       =  /home/petsc/software/blaslapack/blas_solaris.a
-LAPACK_LIB     =  /home/petsc/software/blaslapack/lapack_solaris.a
-#BLAS_LIB       =  -lsunperf -lSUNWPro_lic
-
-
+BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/solaris -flapack -fblas
+#BLASLAPACK_LIB =  -lsunperf -lSUNWPro_lic
 #
 # Location of MPI (Message Passing Interface) software
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.25 2001/03/26 19:11:27 balay Exp balay $ 
+# $Id: base.site,v 1.26 2001/03/26 19:28:05 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -8,12 +8,12 @@
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
 # Location of BLAS and LAPACK.  These are in the Cray library "sci"
-# you may have to have "-lsci" or "/mpp/lib/libsci.a" on the BLAS_LIB line
+# you may have to have "-lsci" or "/mpp/lib/libsci.a" on the 
+# BLASLAPACK_LIB line
 #
-BLAS_LIB       = 
-LAPACK_LIB     = 
-PETSC_HAVE_BLAS = -DPETSC_HAVE_CRAYBLAS
-
+BLASLAPACK_LIB         = 
+PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_CRAY_ONLY
+#
 # Location of MPI (Message Passing Interface) software
 #
 #  If you are using the MPICH implementation of MPI with version number

@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.45 2001/01/15 21:45:34 bsmith Exp balay $*/
+/*$Id: essl.c,v 1.46 2001/03/23 23:21:51 balay Exp balay $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -53,7 +53,7 @@ int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
   ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
   ierr = VecCopy(b,x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  dgss(&zero,&a->n,essl->a,essl->ia,essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
+  dgss(&zero,&A->n,essl->a,essl->ia,essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -70,10 +70,10 @@ int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
   PetscFunctionBegin;
   /* copy matrix data into silly ESSL data structure */
   if (!a->indexshift) {
-    for (i=0; i<aa->m+1; i++) essl->ia[i] = aa->i[i] + 1;
+    for (i=0; i<A->m+1; i++) essl->ia[i] = aa->i[i] + 1;
     for (i=0; i<aa->nz; i++) essl->ja[i]  = aa->j[i] + 1;
   } else {
-    ierr = PetscMemcpy(essl->ia,aa->i,(aa->m+1)*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMemcpy(essl->ia,aa->i,(A->m+1)*sizeof(int));CHKERRQ(ierr);
     ierr = PetscMemcpy(essl->ja,aa->j,(aa->nz)*sizeof(int));CHKERRQ(ierr);
   }
   ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(Scalar));CHKERRQ(ierr);
@@ -86,7 +86,7 @@ int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
   essl->rparm[0] = 1.e-12;
   essl->rparm[1] = A->lupivotthreshold;
 
-  dgsf(&one,&aa->m,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
+  dgsf(&one,&A->m,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
                essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
   PetscFunctionReturn(0);
@@ -104,7 +104,7 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr           = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr           = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
   B                       = *F;
   B->ops->solve           = MatSolve_SeqAIJ_Essl;
   B->ops->destroy         = MatDestroy_SeqAIJ_Essl;
@@ -118,7 +118,7 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   if (info) f = info->fill;
   essl->nz   = a->nz;
   essl->lna  = (int)a->nz*f;
-  essl->naux = 100 + 10*a->m;
+  essl->naux = 100 + 10*A->m;
 
   /* since malloc is slow on IBM we try a single malloc */
   len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + essl->naux*sizeof(Scalar);

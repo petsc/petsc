@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.52 2000/02/02 20:07:23 bsmith Exp $ 
+# $Id: base.site,v 1.1 2000/04/04 21:54:02 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,9 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLAS_LIB       = -lpetscblas
-LAPACK_LIB     = 
+BLASLAPACK_LIB         = -L/home/petsc/software/f2cblaslapack/beos -lf2clapack -lf2cblas
+PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
+
 #
 
 # Location of MPI (Message Passing Interface) software

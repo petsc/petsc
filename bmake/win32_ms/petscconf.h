@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.4 2001/03/22 18:46:45 balay Exp balay $"
+"$Id: petscconf.h,v 1.5 2001/03/23 23:18:37 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,7 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_win32 
-#define PETSC_ARCH_NAME "win32"
+#define PETSC_ARCH_NAME "win32_ms"
 #define PETSC_HAVE_WIN32
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_STDLIB_H 
@@ -19,8 +19,6 @@
 
 #define PETSC_USE_FORTRAN_STDCALL
 #define PETSC_USE_FORTRAN_MIXED_STR_ARG
-#define PETSC_MISSING_LAPACK_GESVD
-#define PETSC_MISSING_LAPACK_GEEV
 
 #define PETSC_HAVE_FORTRAN_CAPS 
 

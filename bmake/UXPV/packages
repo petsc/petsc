@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.41 1999/03/31 17:17:13 bsmith Exp $ 
+# $Id: base.site,v 1.1 2000/12/15 15:57:44 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,8 +13,7 @@
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
-BLAS_LIB        = -L/usr/lang/lib64 -lblasvp
-LAPACK_LIB      = -L/usr/lang/lib64 -llapackvp
+BLASLAPACK_LIB        = -L/usr/lang/lib64 -llapackvp -lblasvp
 #
 # Location of X-windows software: on most DEC alpha's these are installed in
 # the default location and thus one need not edit the below. If they are not

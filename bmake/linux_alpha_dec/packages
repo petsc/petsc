@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 2000/09/28 21:06:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.6 2000/11/28 17:26:31 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,8 +13,7 @@
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
-BLAS_LIB       = /home/petsc/software/blaslapack/blas_linux_alpha_dec.a
-LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_linux_alpha_dec.a
+BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux_alpha_dec -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.66 2000/09/13 15:18:28 balay Exp bsmith $ 
+# $Id: base.site,v 1.67 2001/03/22 20:27:58 bsmith Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -12,11 +12,8 @@
 # BLAS usually comes with SGI. Do NOT use the parallel (library names with 
 # mp in them) version of the SGI BLAS.
 #
-BLAS_LIB       = -lblas
-LAPACK_LIB     = -lcomplib.sgimath
-#BLAS_LIB     = /home/petsc/software/blaslapack/blas_IRIX64.a
-#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX64.a
-
+BLASLAPACK_LIB =  -lcomplib.sgimath -lblas
+#
 # Location of MPI (Message Passing Interface) software  
 #
 # We recommend using SGI's MPI implementation over MPICH on the Origin and 

@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.82 2001/03/07 18:31:15 balay Exp balay $ */
+/* $Id: mpi.h,v 1.83 2001/03/27 21:00:57 balay Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -112,7 +112,7 @@ extern int MPIUNI_Memcpy(void*,void*,int);
 #define MPI_SHORT           sizeof(short)
 #define MPI_UNSIGNED_CHAR   sizeof(unsigned char)
 #define MPI_UNSIGNED_LONG   sizeof(unsigned long)
-#define MPIU_PetscLogDOUBLE sizeof(PetscLogDouble
+#define MPIU_PetscLogDOUBLE sizeof(PetscLogDouble)
 #define MPI_REQUEST_NULL    ((MPI_Request)0)
 
 typedef int MPI_Op;
