@@ -2,6 +2,7 @@ petsc/mis
 petsc/bmake/sun4_umpi
 petsc/bmake/rs6000_impi
 petsc/bmake/rs6000_mpif
+petsc/bmake/rs6000_p4
 petsc/bin/configure
 petsc/bin/config.status
 petsc/src/snes/impls/trdl
