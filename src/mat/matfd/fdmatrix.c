@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.14 1997/08/24 23:27:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.15 1997/09/19 19:26:53 bsmith Exp curfman $";
 #endif
 
 /*
@@ -69,47 +69,62 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   return 0;
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringView"
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
-   Input  Parameter:
-.   color - the coloring context
+   Input  Parameters:
+.  c - the coloring context
+.  viewer - visualization context
+
+   Notes:
+   The available visualization contexts include
+$     VIEWER_STDOUT_SELF - standard output (default)
+$     VIEWER_STDOUT_WORLD - synchronized standard
+$       output where only the first processor opens
+$       the file.  All other processors send their 
+$       data to the first processor to print. 
+$     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
 
 .seealso: MatFDColoringCreate()
 
+.keywords: Mat, finite differences, coloring, view
 @*/
-int MatFDColoringView(MatFDColoring color,Viewer viewer)
+int MatFDColoringView(MatFDColoring c,Viewer viewer)
 {
-  ViewerType  vtype;
-  int         i,j,format,ierr;
+  ViewerType vtype;
+  int        i,j,format,ierr;
+  FILE       *fd;
 
-  if (!viewer) viewer = VIEWER_STDOUT_WORLD;
+  PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
+  if (viewer) {PetscValidHeader(viewer);} 
+  else {viewer = VIEWER_STDOUT_SELF;}
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == DRAW_VIEWER) { 
-    ierr = MatFDColoringView_Draw(color,viewer); CHKERRQ(ierr);
+    ierr = MatFDColoringView_Draw(c,viewer); CHKERRQ(ierr);
     return 0;
   }
+  else if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    PetscFPrintf(c->comm,fd,"MatFDColoring Object:\n");
+    PetscFPrintf(c->comm,fd,"  Error tolerance=%g\n",c->error_rel);
+    PetscFPrintf(c->comm,fd,"  Umin=%g\n",c->umin);
+    PetscFPrintf(c->comm,fd,"  Number of colors=%d\n",c->ncolors);
 
-  printf("MatFDColoring Object:\n");
-  printf("  Error tolerance %g\n",color->error_rel);
-  printf("  Umin %g\n",color->umin);
-  printf("  Number of colors %d\n",color->ncolors);
-
-  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
-  if (format != VIEWER_FORMAT_ASCII_INFO) {
-    for ( i=0; i<color->ncolors; i++ ) {
-      printf("Information for color %d\n",i);
-      printf("Number of columns %d\n",color->ncolumns[i]);
-      for ( j=0; j<color->ncolumns[i]; j++ ) {
-        printf("  %d\n",color->columns[i][j]);
-      }
-      printf("Number of rows %d\n",color->nrows[i]);
-      for ( j=0; j<color->nrows[i]; j++ ) {
-        printf("  %d %d \n",color->rows[i][j],color->columnsforrow[i][j]);
+    ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+    if (format != VIEWER_FORMAT_ASCII_INFO) {
+      for ( i=0; i<c->ncolors; i++ ) {
+        PetscFPrintf(c->comm,fd,"  Information for color %d\n",i);
+        PetscFPrintf(c->comm,fd,"    Number of columns %d\n",c->ncolumns[i]);
+        for ( j=0; j<c->ncolumns[i]; j++ ) {
+          PetscFPrintf(c->comm,fd,"      %d\n",c->columns[i][j]);
+        }
+        PetscFPrintf(c->comm,fd,"    Number of rows %d\n",c->nrows[i]);
+        for ( j=0; j<c->nrows[i]; j++ ) {
+          PetscFPrintf(c->comm,fd,"      %d %d \n",c->rows[i][j],c->columnsforrow[i][j]);
+        }
       }
     }
   }
@@ -119,8 +134,8 @@ int MatFDColoringView(MatFDColoring color,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringSetParameters"
 /*@
-   MatFDColoringSetParameters - Sets the parameters for the approximation of
-   Jacobian using finite differences.
+   MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
+   a Jacobian matrix using finite differences.
 
 $       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
 $        h = error_rel*u[i]                    if  u[i] > umin
@@ -129,11 +144,13 @@ $
 $   dx_{i} = (0, ... 1, .... 0)
 
    Input Parameters:
-.  coloring - the jacobian coloring context
+.  coloring - the coloring context
 .  error_rel - relative error
 .  umin - minimum allowable u-value
 
-.keywords: SNES, Jacobian, finite differences, parameters
+.keywords: Mat, finite differences, coloring, set, parameters
+
+.seealso: MatFDColoringCreate()
 @*/
 int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
 {
@@ -147,14 +164,14 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringSetFrequency"
 /*@
-   MatFDColoringSetFrequency - Sets the frequency at which new Jacobians
-     are computed.
+   MatFDColoringSetFrequency - Sets the frequency at which new Jacobian
+   matrices are computed.
 
    Input Parameters:
-.  coloring - the jacobian coloring context
+.  coloring - the coloring context
 .  freq - frequency
 
-.keywords: SNES, Jacobian, finite differences, parameters
+.keywords: Mat, finite differences, coloring, set, frequency
 @*/
 int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 {
@@ -170,12 +187,11 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
    Input Parameters:
-.  coloring - the jacobian coloring context
+.  coloring - the coloring context
 .  f - the function
 .  fctx - the function context
 
-
-.keywords: SNES, Jacobian, finite differences, parameters, function
+.keywords: Mat, Jacobian, finite differences, set, function
 @*/
 int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void *,Vec,Vec,void *),void *fctx)
 {
@@ -190,9 +206,10 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void *,Vec,Vec,void *)
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringSetFromOptions"
 /*@
-   MatFDColoringSetFromOptions - Set coloring finite difference parameters from 
-         the options database.
+   MatFDColoringSetFromOptions - Sets coloring finite difference parameters from 
+   the options database.
 
+   The Jacobian is estimated with the differencing approximation
 $       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
 $        h = error_rel*u[i]                    if  u[i] > umin
 $          = error_rel*umin                      else
@@ -200,14 +217,16 @@ $
 $   dx_{i} = (0, ... 1, .... 0)
 
    Input Parameters:
-.  coloring - the jacobian coloring context
+.  coloring - the coloring context
 
-   Options Database:
-.  -mat_fd_coloring_error square root of relative error in function
-.  -mat_fd_coloring_umin  see above
-.  -mat_fd_coloring_freq frequency at which Jacobian is computed
+   Options Database Keys:
+$  -mat_fd_coloring_error <err>, where <err> is the square root
+$           of relative error in the function
+$  -mat_fd_coloring_freq <freq> where <freq> is the frequency at
+$           which Jacobian is computed
+$  -mat_fd_coloring_umin  <umin>, where umin is described above
 
-.keywords: SNES, Jacobian, finite differences, parameters
+.keywords: Mat, finite differences, parameters
 @*/
 int MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
@@ -231,9 +250,9 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 #define __FUNC__ "MatFDColoringPrintHelp"
 /*@
     MatFDColoringPrintHelp - Prints help message for matrix finite difference calculations 
-         using coloring.
+    using coloring.
 
-   Input Parameter:
+    Input Parameter:
 .   fdcoloring - the MatFDColoring context
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringSetFromOptions()
@@ -283,20 +302,19 @@ int MatFDColoringView_Private(MatFDColoring fd)
 #define __FUNC__ "MatFDColoringCreate" 
 /*@C
    MatFDColoringCreate - Creates a matrix coloring context for finite difference 
-        computation of Jacobians.
+   computation of Jacobians.
 
    Input Parameters:
-.    mat - the matrix containing the nonzero structure of the Jacobian
-.    iscoloring - the coloring of the matrix
+.  mat - the matrix containing the nonzero structure of the Jacobian
+.  iscoloring - the coloring of the matrix
 
-   Output Parameter:
+    Output Parameter:
 .   color - the new coloring context
    
-   Options Database:
-.  -mat_fd_coloring_error square root of relative error in function
-.  -mat_fd_coloring_umin  see above
-.  -mat_fd_coloring_view 
-.  -mat_fd_coloring_view_draw
+    Options Database Keys:
+$    -mat_fd_coloring_view 
+$    -mat_fd_coloring_view_draw
+$    -mat_fd_coloring_view_info
 
 .seealso: MatFDColoringDestroy()
 @*/
@@ -336,7 +354,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
     via MatFDColoringCreate().
 
-    Input Paramter:
+    Input Parameter:
 .   c - coloring context
 
 .seealso: MatFDColoringCreate()

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.42 1997/03/26 01:37:42 bsmith Exp balay $";
+static char vcid[] = "$Id: snesj.c,v 1.43 1997/07/09 20:59:37 balay Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -14,9 +14,9 @@ static char vcid[] = "$Id: snesj.c,v 1.42 1997/03/26 01:37:42 bsmith Exp balay $
 .  ctx - application's function context, as set with SNESSetFunction()
 
    Output Parameters:
-.  J - Jacobian
-.  B - preconditioner, same as Jacobian
-.  flag - matrix flag
+.  J - Jacobian matrix (not altered in this routine)
+.  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
+.  flag - flag indicating whether the matrix sparsity structure has changed
 
    Options Database Key:
 $  -snes_fd
@@ -28,9 +28,12 @@ $  -snes_fd
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Jacobian.
 
+   An alternative routine that uses coloring to explot matrix sparsity is
+   SNESDefaultComputeJacobianWithColoring().
+
 .keywords: SNES, finite differences, Jacobian
 
-.seealso: SNESSetJacobian()
+.seealso: SNESSetJacobian(), SNESDefaultComputeJacobianWithColoring()
 @*/
 int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
@@ -49,7 +52,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   else SETERRQ(1,0,"Invalid method class");
 
   PetscObjectGetComm((PetscObject)x1,&comm);
-  MatZeroEntries(*J);
+  MatZeroEntries(*B);
   if (!snes->nvwork) {
     ierr = VecDuplicateVecs(x1,3,&snes->vwork); CHKERRQ(ierr);
     snes->nvwork = 3;
@@ -97,13 +100,13 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     VecNorm(j2,NORM_INFINITY,&amax); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
       if (PetscAbsScalar(y[j-start]) > amax) {
-        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
       }
     }
     VecRestoreArray(j2,&y);
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
   return 0;
 }
@@ -118,9 +121,9 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 .  ctx - application's gradient context, as set with SNESSetGradient()
 
    Output Parameters:
-.  J - Hessian
-.  B - preconditioner, same as Hessian
-.  flag - matrix flag
+.  J - Hessian matrix (not altered in this routine)
+.  B - newly computed Hessian matrix to use with preconditioner (generally the same as J)
+.  flag - flag indicating whether the matrix sparsity structure has changed
 
    Options Database Key:
 $  -snes_fd
