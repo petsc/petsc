@@ -1,4 +1,4 @@
-/*$Id: gmpre.c,v 1.21 1999/10/24 14:03:14 bsmith Exp bsmith $*/
+/*$Id: gmpre.c,v 1.22 1999/12/15 17:23:31 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
@@ -25,7 +25,7 @@
 @*/
 int KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
-  int ierr, (*f)(KSP);
+  int ierr,(*f)(KSP);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",(void **)&f);CHKERRQ(ierr);

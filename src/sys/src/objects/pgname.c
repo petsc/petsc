@@ -1,4 +1,4 @@
-/*$Id: pgname.c,v 1.17 1999/03/17 23:21:46 bsmith Exp bsmith $*/
+/*$Id: pgname.c,v 1.18 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -12,7 +12,7 @@
    Input Parameters:
 +  obj - the Petsc variable
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectGetName((PetscObject) mat,&name);
+         PetscObjectGetName((PetscObject)mat,&name);
 -  name - the name associated with obj
 
    Level: intermediate

@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.40 1999/10/13 20:36:57 bsmith Exp bsmith $*/
+/*$Id: block.c,v 1.42 1999/10/24 14:01:45 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -17,7 +17,7 @@ typedef struct {
 #define __FUNC__ "ISDestroy_Block" 
 int ISDestroy_Block(IS is)
 {
-  IS_Block *is_block = (IS_Block *) is->data;
+  IS_Block *is_block = (IS_Block*)is->data;
   int ierr;
 
   PetscFunctionBegin;
@@ -31,19 +31,19 @@ int ISDestroy_Block(IS is)
 #define __FUNC__ "ISGetIndices_Block" 
 int ISGetIndices_Block(IS in,int **idx)
 {
-  IS_Block *sub = (IS_Block *) in->data;
+  IS_Block *sub = (IS_Block*)in->data;
   int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj;
 
   PetscFunctionBegin;
   if (sub->bs == 1) {
     *idx = sub->idx; 
   } else {
-    jj   = (int *) PetscMalloc(sub->bs*(1+sub->n)*sizeof(int));CHKPTRQ(jj)
+    jj   = (int*)PetscMalloc(sub->bs*(1+sub->n)*sizeof(int));CHKPTRQ(jj)
     *idx = jj;
     k    = 0;
     ii   = sub->idx;
-    for ( i=0; i<n; i++ ) {
-      for ( j=0; j<bs; j++ ) {
+    for (i=0; i<n; i++) {
+      for (j=0; j<bs; j++) {
         jj[k++] = ii[i] + j;
       }
     }
@@ -55,7 +55,7 @@ int ISGetIndices_Block(IS in,int **idx)
 #define __FUNC__ "ISRestoreIndices_Block" 
 int ISRestoreIndices_Block(IS in,int **idx)
 {
-  IS_Block *sub = (IS_Block *) in->data;
+  IS_Block *sub = (IS_Block*)in->data;
   int      ierr;
 
   PetscFunctionBegin;
@@ -83,14 +83,14 @@ int ISGetSize_Block(IS is,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "ISInvertPermutation_Block" 
-int ISInvertPermutation_Block(IS is, IS *isout)
+int ISInvertPermutation_Block(IS is,IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
-  int      i,ierr, *ii,n = sub->n,*idx = sub->idx;
+  int      i,ierr,*ii,n = sub->n,*idx = sub->idx;
 
   PetscFunctionBegin;
-  ii = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ii);
-  for ( i=0; i<n; i++ ) {
+  ii = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ii);
+  for (i=0; i<n; i++) {
     ii[idx[i]] = i;
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,sub->bs,n,ii,isout);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ int ISView_Block(IS is, Viewer viewer)
     ierr = ViewerASCIISynchronizedPrintf(viewer,"Block size %d\n",sub->bs);CHKERRQ(ierr);
     ierr = ViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %d\n",n);CHKERRQ(ierr);
     ierr = ViewerASCIISynchronizedPrintf(viewer,"The first indices of each block are\n");CHKERRQ(ierr);
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
@@ -135,14 +135,14 @@ int ISSort_Block(IS is)
 
   PetscFunctionBegin;
   if (sub->sorted) PetscFunctionReturn(0);
-  ierr = PetscSortInt(sub->n, sub->idx);CHKERRQ(ierr);
+  ierr = PetscSortInt(sub->n,sub->idx);CHKERRQ(ierr);
   sub->sorted = 1;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ISSorted_Block" 
-int ISSorted_Block(IS is, PetscTruth *flg)
+int ISSorted_Block(IS is,PetscTruth *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
 
@@ -153,13 +153,13 @@ int ISSorted_Block(IS is, PetscTruth *flg)
 
 #undef __FUNC__  
 #define __FUNC__ "ISDuplicate_Block" 
-int ISDuplicate_Block(IS is, IS *newIS)
+int ISDuplicate_Block(IS is,IS *newIS)
 {
   int      ierr;
   IS_Block *sub = (IS_Block *)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateBlock(is->comm, sub->bs, sub->n, sub->idx, newIS);CHKERRQ(ierr);
+  ierr = ISCreateBlock(is->comm,sub->bs,sub->n,sub->idx,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -167,8 +167,8 @@ int ISDuplicate_Block(IS is, IS *newIS)
 #define __FUNC__ "ISIdentity_Block" 
 int ISIdentity_Block(IS is,PetscTruth *ident)
 {
-  IS_Block *is_block = (IS_Block *) is->data;
-  int      i, n = is_block->n,*idx = is_block->idx, bs = is_block->bs;
+  IS_Block *is_block = (IS_Block*)is->data;
+  int      i,n = is_block->n,*idx = is_block->idx,bs = is_block->bs;
 
   PetscFunctionBegin;
   is->isidentity = 1;
@@ -228,23 +228,23 @@ static struct _ISOps myops = { ISGetSize_Block,
 @*/
 int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 {
-  int      i, sorted = 1, min, max, ierr;
+  int      i,sorted = 1,min,max,ierr;
   IS       Nindex;
   IS_Block *sub;
 
   PetscFunctionBegin;
   *is = 0;
-  PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 
+  PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
   sub            = PetscNew(IS_Block);CHKPTRQ(sub);
   PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _p_IS));
-  sub->idx       = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
+  sub->idx       = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     if (idx[i] < idx[i-1]) {sorted = 0; break;}
   }
   if (n) {min = max = idx[0];} else {min = max = 0;}
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];
   }
@@ -253,7 +253,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
   sub->bs         = bs;
   Nindex->min     = min;
   Nindex->max     = max;
-  Nindex->data    = (void *) sub;
+  Nindex->data    = (void*)sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm  = 0;
   *is = Nindex; PetscFunctionReturn(0);
@@ -275,7 +275,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 
    Level: intermediate
 
-.keywords: IS, index set, block, get, indices
+.keywords: IS,index set, block, get, indices
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
@@ -288,7 +288,7 @@ int ISBlockGetIndices(IS in,int *idx[])
   PetscValidPointer(idx);
   if (in->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
 
-  sub = (IS_Block *) in->data;
+  sub = (IS_Block*)in->data;
   *idx = sub->idx; 
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.37 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: daview.c,v 1.38 1999/11/24 21:55:34 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -63,7 +63,7 @@
 .seealso: ViewerASCIIOpen(), ViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
           DAGetGhostCorners()
 @*/
-int DAView(DA da, Viewer viewer)
+int DAView(DA da,Viewer viewer)
 {
   int ierr;
 
@@ -145,12 +145,12 @@ int DAView_Binary(DA da,Viewer viewer)
       char           fieldname[256];
 
       fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
-      for ( i=0; i<dof; i++ ) {
+      for (i=0; i<dof; i++) {
         if (da->fieldname[i]) {
           ierr = PetscStrncpy(fieldname,da->fieldname[i],256);CHKERRQ(ierr);
           ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
           len  = PetscMin(256,len);CHKERRQ(ierr);
-          for ( j=0; j<len; j++ ) {
+          for (j=0; j<len; j++) {
             if (fieldname[j] == ' ') fieldname[j] = '_';
           }
           fprintf(file,"-daload_fieldname_%d %s\n",i,fieldname);

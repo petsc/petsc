@@ -1,5 +1,5 @@
 !
-!     $Id: mpif.h,v 1.9 1998/05/14 22:08:03 balay Exp bsmith $
+!     $Id: mpif.h,v 1.10 1999/10/24 14:01:37 bsmith Exp bsmith $
 !
 
 !     Trying to provide as little support for fortran code in petsc as needed
@@ -10,27 +10,27 @@
        integer MPI_COMM_SELF
        parameter (MPI_COMM_SELF = 2)
        integer  MPI_COMM_NULL
-       parameter ( MPI_COMM_NULL = 0 )
+       parameter (MPI_COMM_NULL = 0)
        integer MPI_SUCCESS 
-       parameter (MPI_SUCCESS = 0 )
+       parameter (MPI_SUCCESS = 0)
        integerMPI_IDENT 
-       parameter (MPI_IDENT = 0  )
+       parameter (MPI_IDENT = 0)
        integer MPI_UNEQUAL 
-       parameter (MPI_UNEQUAL = 3  )
+       parameter (MPI_UNEQUAL = 3)
        integer MPI_KEYVAL_INVALID
-       parameter (MPI_KEYVAL_INVALID = 0 )
+       parameter (MPI_KEYVAL_INVALID = 0)
        integer MPI_ERR_UNKNOWN
-       parameter (MPI_ERR_UNKNOWN = 18 )
+       parameter (MPI_ERR_UNKNOWN = 18)
        integer MPI_ERR_INTERN 
-       parameter (MPI_ERR_INTERN = 21 )
+       parameter (MPI_ERR_INTERN = 21)
        
-       INTEGER MPI_SOURCE, MPI_TAG, MPI_ERROR
-       PARAMETER(MPI_SOURCE=2, MPI_TAG=3, MPI_ERROR=4)
+       INTEGER MPI_SOURCE,MPI_TAG,MPI_ERROR
+       PARAMETER(MPI_SOURCE=2,MPI_TAG=3,MPI_ERROR=4)
 
      
 !     Data Types. Same Values used in mpi.c
-       integer MPI_INTEGER, MPI_REAL, MPI_DOUBLE_PRECISION
-       integer MPI_COMPLEX,  MPI_CHARACTER
+       integer MPI_INTEGER,MPI_REAL,MPI_DOUBLE_PRECISION
+       integer MPI_COMPLEX, MPI_CHARACTER
 
        parameter (MPI_INTEGER=0)
        parameter (MPI_REAL=1)

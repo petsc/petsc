@@ -1,4 +1,4 @@
-/*$Id: dagtol.c,v 1.20 1999/05/04 20:37:25 balay Exp bsmith $*/
+/*$Id: dagtol.c,v 1.21 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -35,7 +35,7 @@
 
 .seealso: DAGlobalToLocalEnd(), DALocalToGlobal(), DACreate2d()
 @*/
-int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
+int DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   int ierr;
 
@@ -76,7 +76,7 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 
 .seealso: DAGlobalToLocalBegin(), DALocalToGlobal(), DACreate2d()
 @*/
-int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
+int DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   int ierr;
 
@@ -161,7 +161,7 @@ int DAGlobalToNatural_Create(DA da)
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-int DAGlobalToNaturalBegin(DA da,Vec g, InsertMode mode,Vec l)
+int DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   int ierr;
 
@@ -206,7 +206,7 @@ int DAGlobalToNaturalBegin(DA da,Vec g, InsertMode mode,Vec l)
 .seealso: DAGlobalToNaturalBegin(), DALocalToGlobal(), DACreate2d(),
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-int DAGlobalToNaturalEnd(DA da,Vec g, InsertMode mode,Vec l)
+int DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   int ierr;
 
@@ -248,7 +248,7 @@ int DAGlobalToNaturalEnd(DA da,Vec g, InsertMode mode,Vec l)
 .seealso: DAGlobalToNaturalEnd(), DAGlobalToNaturalBegin(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-int DANaturalToGlobalBegin(DA da,Vec g, InsertMode mode,Vec l)
+int DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   int ierr;
 
@@ -293,7 +293,7 @@ int DANaturalToGlobalBegin(DA da,Vec g, InsertMode mode,Vec l)
 .seealso: DAGlobalToNaturalBegin(), DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(),
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-int DANaturalToGlobalEnd(DA da,Vec g, InsertMode mode,Vec l)
+int DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   int ierr;
 

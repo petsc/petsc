@@ -1,4 +1,4 @@
-/*$Id: ex37.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex37.c,v 1.13 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 
@@ -9,7 +9,7 @@ static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n";
 int main(int argc,char **args)
 {
   Mat         C,A; 
-  int         i,  n = 10, midx[3], ierr;
+  int         i, n = 10,midx[3],ierr;
   Scalar      v[3];
   PetscTruth  flg;
 
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRA(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
-  for ( i=1; i<n-1; i++ ){
+  for (i=1; i<n-1; i++){
     midx[2] = i-1; midx[1] = i; midx[0] = i+1;
     ierr = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRA(ierr);
   }

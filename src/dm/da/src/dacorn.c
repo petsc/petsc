@@ -1,4 +1,4 @@
-/*$Id: dacorn.c,v 1.28 1999/10/01 21:23:00 bsmith Exp bsmith $*/
+/*$Id: dacorn.c,v 1.29 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -166,7 +166,7 @@ int DAGetFieldName(DA da,int nf,char **name)
 
 .seealso: DAGetGhostCorners()
 @*/
-int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
+int DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
 {
   int w;
 

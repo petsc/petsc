@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.32 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zpc.c,v 1.33 1999/11/24 21:55:52 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
@@ -52,20 +52,20 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL pcnullspacecreate_(MPI_Comm comm,int *has_cnst,int *n,Vec *vecs,PCNullSpace *SP,int *ierr)
 {
-  *ierr = PCNullSpaceCreate((MPI_Comm)PetscToPointerComm(*(int*)(comm)),*has_cnst, *n, vecs,SP);
+  *ierr = PCNullSpaceCreate((MPI_Comm)PetscToPointerComm(*(int*)(comm)),*has_cnst,*n,vecs,SP);
 }
 
-void PETSC_STDCALL pcnullspaceattach_(PC *pc,PCNullSpace *nullsp,int *__ierr)
+void PETSC_STDCALL pcnullspaceattach_(PC *pc,PCNullSpace *nullsp,int *ierr)
 {
-  *__ierr = PCNullSpaceAttach(*pc,*nullsp);
+  *ierr = PCNullSpaceAttach(*pc,*nullsp);
 }
 
-void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len), int *__ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *t;
 
   FIXCHAR(type,len,t);
-  *__ierr = PCSetType(*pc,t);
+  *ierr = PCSetType(*pc,t);
   FREECHAR(type,t);
 }
 
@@ -79,10 +79,10 @@ static int ourshellapply(void *ctx,Vec x,Vec y)
 }
 
 void PETSC_STDCALL pcshellsetapply_(PC *pc,void (*apply)(void*,Vec *,Vec *,int*),void *ptr,
-                      int *__ierr )
+                      int *ierr)
 {
   f1 = apply;
-  *__ierr = PCShellSetApply(*pc,ourshellapply,ptr);
+  *ierr = PCShellSetApply(*pc,ourshellapply,ptr);
 }
 
 static void (*f9)(void *,int*);
@@ -94,10 +94,10 @@ static int ourshellsetup(void *ctx)
   return 0;
 }
 
-void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (*setup)(void*,int*), int *__ierr )
+void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (*setup)(void*,int*),int *ierr)
 {
   f9 = setup;
-  *__ierr = PCShellSetSetUp(*pc,ourshellsetup);
+  *ierr = PCShellSetSetUp(*pc,ourshellsetup);
 }
 
 /* -----------------------------------------------------------------*/
@@ -112,132 +112,133 @@ static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)
 
 void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
          void (*apply)(void*,Vec *,Vec *,Vec *,int*,int*),
-         void *ptr, int *__ierr )
+         void *ptr,int *ierr)
 {
   f2 = apply;
-  *__ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson,ptr);
+  *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson,ptr);
 }
 
-void PETSC_STDCALL mggetcoarsesolve_(PC *pc,SLES *sles, int *__ierr )
+void PETSC_STDCALL mggetcoarsesolve_(PC *pc,SLES *sles,int *ierr)
 {
-  *__ierr = MGGetCoarseSolve(*pc,sles);
+  *ierr = MGGetCoarseSolve(*pc,sles);
 }
 
-void PETSC_STDCALL mggetsmoother_(PC *pc,int *l,SLES *sles, int *__ierr )
+void PETSC_STDCALL mggetsmoother_(PC *pc,int *l,SLES *sles,int *ierr)
 {
-  *__ierr = MGGetSmoother(*pc,*l,sles);
+  *ierr = MGGetSmoother(*pc,*l,sles);
 }
 
-void PETSC_STDCALL mggetsmootherup_(PC *pc,int *l,SLES *sles, int *__ierr )
+void PETSC_STDCALL mggetsmootherup_(PC *pc,int *l,SLES *sles,int *ierr)
 {
-  *__ierr = MGGetSmootherUp(*pc,*l,sles);
+  *ierr = MGGetSmootherUp(*pc,*l,sles);
 }
 
-void PETSC_STDCALL mggetsmootherdown_(PC *pc,int *l,SLES *sles, int *__ierr )
+void PETSC_STDCALL mggetsmootherdown_(PC *pc,int *l,SLES *sles,int *ierr)
 {
-  *__ierr = MGGetSmootherDown(*pc,*l,sles);
+  *ierr = MGGetSmootherDown(*pc,*l,sles);
 }
 
-void PETSC_STDCALL pcbjacobigetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *__ierr )
-{
-  SLES *tsles;
-  int  i;
-  if (FORTRANNULLINTEGER(n_local)) n_local = PETSC_NULL;
-  if (FORTRANNULLINTEGER(first_local)) first_local = PETSC_NULL;
-  *__ierr = PCBJacobiGetSubSLES(*pc,n_local,first_local,&tsles);
-  for ( i=0; i<*n_local; i++ ){
-    sles[i] = tsles[i];
-  }
-}
-
-void PETSC_STDCALL pcasmgetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *__ierr )
+void PETSC_STDCALL pcbjacobigetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *ierr)
 {
   SLES *tsles;
   int  i;
   if (FORTRANNULLINTEGER(n_local)) n_local = PETSC_NULL;
   if (FORTRANNULLINTEGER(first_local)) first_local = PETSC_NULL;
-  *__ierr = PCASMGetSubSLES(*pc,n_local,first_local,&tsles);
-  for ( i=0; i<*n_local; i++ ){
+  *ierr = PCBJacobiGetSubSLES(*pc,n_local,first_local,&tsles);
+  for (i=0; i<*n_local; i++){
     sles[i] = tsles[i];
   }
 }
 
-void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag, int *__ierr)
+void PETSC_STDCALL pcasmgetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *ierr)
+{
+  SLES *tsles;
+  int  i,nloc;
+  if (FORTRANNULLINTEGER(n_local)) n_local = PETSC_NULL;
+  if (FORTRANNULLINTEGER(first_local)) first_local = PETSC_NULL;
+  *ierr = PCASMGetSubSLES(*pc,&nloc,first_local,&tsles);
+  if (n_local) *n_local = nloc;
+  for (i=0; i<nloc; i++){
+    sles[i] = tsles[i];
+  }
+}
+
+void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,int *ierr)
 {
   if (FORTRANNULLINTEGER(flag)) flag = PETSC_NULL;
   if (FORTRANNULLOBJECT(mat))   mat = PETSC_NULL;
   if (FORTRANNULLOBJECT(pmat))  pmat = PETSC_NULL;
-  *__ierr = PCGetOperators(*pc,mat,pmat,flag);
+  *ierr = PCGetOperators(*pc,mat,pmat,flag);
 }
 
-void PETSC_STDCALL pcgetfactoredmatrix_(PC *pc,Mat *mat, int *__ierr )
+void PETSC_STDCALL pcgetfactoredmatrix_(PC *pc,Mat *mat,int *ierr)
 {
-  *__ierr = PCGetFactoredMatrix(*pc,mat);
+  *ierr = PCGetFactoredMatrix(*pc,mat);
 }
  
 void PETSC_STDCALL pcsetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
-                                       int *__ierr PETSC_END_LEN(len) )
+                                       int *ierr PETSC_END_LEN(len))
 {
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = PCSetOptionsPrefix(*pc,t);
+  *ierr = PCSetOptionsPrefix(*pc,t);
   FREECHAR(prefix,t);
 }
 
 void PETSC_STDCALL pcappendoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
-                                          int *__ierr PETSC_END_LEN(len) )
+                                          int *ierr PETSC_END_LEN(len))
 {
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = PCAppendOptionsPrefix(*pc,t);
+  *ierr = PCAppendOptionsPrefix(*pc,t);
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL pcdestroy_(PC *pc, int *__ierr )
+void PETSC_STDCALL pcdestroy_(PC *pc,int *ierr)
 {
-  *__ierr = PCDestroy(*pc);
+  *ierr = PCDestroy(*pc);
 }
 
-void PETSC_STDCALL pccreate_(MPI_Comm comm,PC *newpc, int *__ierr )
+void PETSC_STDCALL pccreate_(MPI_Comm comm,PC *newpc,int *ierr)
 {
-  *__ierr = PCCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),newpc);
+  *ierr = PCCreate((MPI_Comm)PetscToPointerComm(*(int*)(comm)),newpc);
 }
 
-void PETSC_STDCALL pcregisterdestroy_(int *__ierr)
+void PETSC_STDCALL pcregisterdestroy_(int *ierr)
 {
-  *__ierr = PCRegisterDestroy();
+  *ierr = PCRegisterDestroy();
 }
 
-void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
-  *__ierr = PCGetType(*pc,&tname);
+  *ierr = PCGetType(*pc,&tname);
 #if defined(PETSC_USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  *__ierr = PetscStrncpy(t,tname,len1); if (*__ierr) return;
+  *ierr = PetscStrncpy(t,tname,len1); if (*ierr) return;
   }
 #else
-  *__ierr = PetscStrncpy(name,tname,len);if (*__ierr) return;
+  *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
 #endif
 }
 
-void PETSC_STDCALL pcgetoptionsprefix_(PC *pc, CHAR prefix PETSC_MIXED_LEN(len),
-                                       int *__ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
+                                       int *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
-  *__ierr = PCGetOptionsPrefix(*pc,&tname);
+  *ierr = PCGetOptionsPrefix(*pc,&tname);
 #if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    *__ierr = PetscStrncpy(t,tname,len1);if (*__ierr) return;
+    *ierr = PetscStrncpy(t,tname,len1);if (*ierr) return;
   }
 #else
-  *__ierr = PetscStrncpy(prefix,tname,len);if (*__ierr) return;
+  *ierr = PetscStrncpy(prefix,tname,len);if (*ierr) return;
 #endif
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.7 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.8 1999/11/05 14:46:54 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -33,13 +33,13 @@ int main(int argc,char **args)
 {
   SLES       sles;             /* linear solver context */
   Mat        A,B;                /* matrix */
-  Vec        x, b, u;          /* approx solution, RHS, exact solution */
+  Vec        x,b,u;          /* approx solution, RHS, exact solution */
   Viewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
-  int        ierr, its;
+  int        ierr,its;
   PetscTruth flg;
   double     norm;
-  Scalar     zero = 0.0, none = -1.0;
+  Scalar     zero = 0.0,none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -80,7 +80,7 @@ int main(int argc,char **args)
       ierr = VecGetOwnershipRange(b,&start,&end);CHKERRA(ierr);
       ierr = VecGetLocalSize(b,&mvec);CHKERRA(ierr);
       ierr = VecGetArray(b,&bold);CHKERRA(ierr);
-      for (j=0; j<mvec; j++ ) {
+      for (j=0; j<mvec; j++) {
         index = start+j;
         ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRA(ierr);
       }

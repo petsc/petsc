@@ -1,15 +1,15 @@
-# $Id: makefile,v 1.36 1999/01/31 16:08:49 bsmith Exp balay $ 
+# $Id: makefile,v 1.37 1999/02/02 21:29:21 balay Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = gmres.c borthog.c borthog2.c borthog3.c gmres2.c gmreig.c \
-           gmpre.c gmcnv.c
+           gmpre.c
 SOURCEH  = gmresp.h
 SOURCEF  = 
 OBJSC    = gmres.o borthog.o borthog2.o borthog3.o gmres2.o gmreig.o \
-           gmpre.o gmcnv.o
+           gmpre.o
 OBJSF    = 
 LIBBASE  = libpetscsles
 MANSEC   = KSP

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.56 1999/11/05 14:47:19 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.57 1999/11/24 21:55:16 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -22,12 +22,12 @@ problems from the MINPACK-2 test suite.  The command line options are:\n\
       int     ndim;       /* problem dimension */
       int     number;     /* test problem number */
       Scalar  *work;      /* work space */
-      Vec     s, y, xvec; /* work space for computing Hessian */
-      Scalar  hx, hy;
+      Vec     s,y,xvec; /* work space for computing Hessian */
+      Scalar  hx,hy;
    } AppCtx;
 
 /* Flag to indicate evaluation of function and/or gradient */
-typedef enum {FunctionEval=1, GradientEval=2} FctGradFlag;
+typedef enum {FunctionEval=1,GradientEval=2} FctGradFlag;
 
 /* General routines */
 extern int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -54,14 +54,14 @@ int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
   SNESType   type = SNESUMTR;  /* nonlinear solution method */
-  Vec        x, g;                 /* solution, gradient vectors */
+  Vec        x,g;                 /* solution, gradient vectors */
   Mat        H;                    /* Hessian matrix */
   SLES       sles;                 /* linear solver */
   PC         pc;                   /* preconditioner */
   AppCtx     user;                 /* application context */
   int        mx=10;   /* discretization of problem in x-direction */
   int        my=10;   /* discretization of problem in y-direction */
-  int        ierr, its, nfails, ldim;
+  int        ierr,its,nfails,ldim;
   double     one = 1.0;
   PetscTruth flg;
 
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   } else if (user.problem == 2) {
     ierr = FormInitialGuess2(&user,x);CHKERRA(ierr);
   }
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
@@ -160,7 +160,7 @@ int main(int argc,char **argv)
 */
 int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx*)ptr;
   int ierr;
 
   if (user->problem == 1) {
@@ -178,7 +178,7 @@ int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
 */
 int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx*)ptr;
   int ierr;
 
   if (user->problem == 1) {
@@ -196,9 +196,9 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 */
 int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
 {
-  AppCtx     *user = (AppCtx *) ptr;
-  int        i, j, ierr, ndim;
-  Scalar     *y, zero = 0.0, one = 1.0;
+  AppCtx     *user = (AppCtx*)ptr;
+  int        i,j,ierr,ndim;
+  Scalar     *y,zero = 0.0,one = 1.0;
 
   ndim = user->ndim;
   ierr = VecSet(&zero,user->s);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
  */
 int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
 {
-  AppCtx     *user = (AppCtx *) ptr;
+  AppCtx     *user = (AppCtx*)ptr;
 
   /* Sets location of vector for use in computing matrix-vector products
      of the form H(X)*y  */
@@ -260,8 +260,8 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void 
 #define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int    ierr, i, j, k, nx = user->mx, ny = user->my;
-  Scalar hx = user->hx, hy = user->hy, temp;
+  int    ierr,i,j,k,nx = user->mx,ny = user->my;
+  Scalar hx = user->hx,hy = user->hy,temp;
   Scalar *x;
 
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #if !defined(PETSC_USE_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
 #else
-      x[k] = PetscMin(PetscReal(((double)PetscMin(i+1,nx-i))*hx),PetscReal(temp));
+      x[k] = PetscMin(PetscRealPart(((double)PetscMin(i+1,nx-i))*hx),PetscRealPart(temp));
 #endif
     }
   }
@@ -283,13 +283,12 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 
 #undef __FUNC__
 #define __FUNC__ "EvalFunctionGradient1"
-int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
-                         AppCtx *user)
+int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
-  int    ierr, nx = user->mx, ny = user->my, ind, i, j, k;
-  Scalar hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5, cdiv3;
-  Scalar zero = 0.0, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
-  Scalar val, v, *x;
+  int    ierr,nx = user->mx,ny = user->my,ind,i,j,k;
+  Scalar hx = user->hx,hy = user->hy,area,three = 3.0,p5 = 0.5,cdiv3;
+  Scalar zero = 0.0,vb,vl,vr,vt,dvdx,dvdy,flin = 0.0,fquad = 0.0;
+  Scalar val,v,*x;
 
   cdiv3 = user->param/three;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
@@ -368,7 +367,7 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #if !defined(PETSC_USE_COMPLEX)
     *f = area*(p5*fquad+flin);
 #else
-    *f = PetscReal(area*(p5*fquad+flin));
+    *f = PetscRealPart(area*(p5*fquad+flin));
 #endif
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
@@ -397,10 +396,10 @@ int HessianProductMat1(Mat mat,Vec svec,Vec y)
 int HessianProduct1(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *)ptr;
-  int    nx, ny, i, j, k, ierr, ind;
-  Scalar p5 = 0.5, one = 1.0, hx, hy;
-  Scalar v, vb, vl, vr, vt, hxhx, hyhy, zero = 0.0;
-  Scalar val, area, *x, *s, szero = 0.0;
+  int    nx,ny,i,j,k,ierr,ind;
+  Scalar p5 = 0.5,one = 1.0,hx,hy;
+  Scalar v,vb,vl,vr,vt,hxhx,hyhy,zero = 0.0;
+  Scalar val,area,*x,*s,szero = 0.0;
 
   nx = user->mx;
   ny = user->my;
@@ -484,10 +483,10 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
 #define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess2(AppCtx *user,Vec X)
 {
-  int    ierr, i, j, k, nx = user->mx, ny = user->my;
-  Scalar one = 1.0, p5 = 0.5, alphaj, betai;
-  Scalar hx = user->hx, hy = user->hy, *x;
-  Scalar *bottom, *top, *left, *right, xline, yline;
+  int    ierr,i,j,k,nx = user->mx,ny = user->my;
+  Scalar one = 1.0,p5 = 0.5,alphaj,betai;
+  Scalar hx = user->hx,hy = user->hy,*x;
+  Scalar *bottom,*top,*left,*right,xline,yline;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -518,11 +517,11 @@ int FormInitialGuess2(AppCtx *user,Vec X)
 int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
-  int    ierr, nx = user->mx, ny = user->my, ind, i, j, k;
-  Scalar one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy, fl, fu, area;
-  Scalar *bottom, *top, *left, *right;
-  Scalar v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, dvdx, dvdy;
-  Scalar zero = 0.0, val, *x;
+  int    ierr,nx = user->mx,ny = user->my,ind,i,j,k;
+  Scalar one = 1.0,p5 = 0.5,hx = user->hx,hy = user->hy,fl,fu,area;
+  Scalar *bottom,*top,*left,*right;
+  Scalar v=0.0,vb=0.0,vl=0.0,vr=0.0,vt=0.0,dvdx,dvdy;
+  Scalar zero = 0.0,val,*x;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -566,7 +565,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #if !defined(PETSC_USE_COMPLEX)
         *f += fl;
 #else
-        *f += PetscReal(fl);
+        *f += PetscRealPart(fl);
 #endif
       }
       if (fg & GradientEval) {
@@ -615,7 +614,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #if !defined(PETSC_USE_COMPLEX)
         *f += fu;
 #else
-        *f += PetscReal(fu);
+        *f += PetscRealPart(fu);
 #endif
       } if (fg & GradientEval) {
         if (i<nx && j>0) {
@@ -639,7 +638,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #if !defined(PETSC_USE_COMPLEX)
     *f *= area;
 #else
-    *f *= PetscReal(area);
+    *f *= PetscRealPart(area);
 #endif
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
@@ -666,14 +665,14 @@ int HessianProductMat2(Mat mat,Vec svec,Vec y)
  */
 int HessianProduct2(void *ptr,Vec svec,Vec y)
 {
-  AppCtx *user = (AppCtx *) ptr;
-  int    nx, ny, i, j, k, ierr, ind;
-  Scalar one = 1.0, p5 = 0.5, hx, hy;
-  Scalar dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, z, zb, zl, zr, zt;
-  Scalar *bottom, *top, *left, *right;
-  Scalar dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
-  Scalar v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, zerod = 0.0;
-  Scalar val, area, zero = 0.0, *s, *x;
+  AppCtx *user = (AppCtx*)ptr;
+  int    nx,ny,i,j,k,ierr,ind;
+  Scalar one = 1.0,p5 = 0.5,hx,hy;
+  Scalar dzdy,dzdyhy,fl,fl3,fu,fu3,tl,tu,z,zb,zl,zr,zt;
+  Scalar *bottom,*top,*left,*right;
+  Scalar dvdx,dvdxhx,dvdy,dvdyhy,dzdx,dzdxhx;
+  Scalar v=0.0,vb=0.0,vl=0.0,vr=0.0,vt=0.0,zerod = 0.0;
+  Scalar val,area,zero = 0.0,*s,*x;
 
   nx = user->mx;
   ny = user->my;
@@ -824,12 +823,12 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
  */
 int BoundaryValues(AppCtx *user)
 {
-  int    maxit=5, i, j, k, limit=0, nx = user->mx, ny = user->my;
-  double three=3.0, tol=1.0e-10;
-  Scalar one=1.0, two=2.0;
-  Scalar b=-.50, t=.50, l=-.50, r=.50, det, fnorm, xt=0.0, yt=0.0;
-  Scalar nf[2], njac[2][2], u[2], hx = user->hx, hy = user->hy;
-  Scalar *bottom, *top, *left, *right;
+  int    maxit=5,i,j,k,limit=0,nx = user->mx,ny = user->my;
+  double three=3.0,tol=1.0e-10;
+  Scalar one=1.0,two=2.0;
+  Scalar b=-.50,t=.50,l=-.50,r=.50,det,fnorm,xt=0.0,yt=0.0;
+  Scalar nf[2],njac[2][2],u[2],hx = user->hx,hy = user->hy;
+  Scalar *bottom,*top,*left,*right;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -862,7 +861,7 @@ int BoundaryValues(AppCtx *user)
 #if !defined(PETSC_USE_COMPLEX)
         if (fnorm <= tol) break;
 #else
-        if (PetscReal(fnorm) <= tol) break;
+        if (PetscRealPart(fnorm) <= tol) break;
 #endif
         njac[0][0] = one + u[1]*u[1] - u[0]*u[0];
         njac[0][1] = two*u[0]*u[1];

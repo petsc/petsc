@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.57 1999/10/24 14:03:41 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.58 1999/11/05 14:47:19 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -21,13 +21,13 @@ The command line options are:\n\
       int     ndim;           /* problem dimension */
       int     number;         /* test problem number */
       Vec     s,y,xvec;       /* work space for computing Hessian */
-      Scalar  hx, hy;    
-      Vec     localX, localS; /* ghosted local vector */
+      Scalar  hx,hy;    
+      Vec     localX,localS; /* ghosted local vector */
       DA      da;             /* distributed array data structure */
    } AppCtx;
 
 /* Flag to indicate evaluation of function and/or gradient */
-typedef enum {FunctionEval=1, GradientEval=2} FctGradFlag;
+typedef enum {FunctionEval=1,GradientEval=2} FctGradFlag;
 
 extern int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -44,14 +44,14 @@ int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
   SNESType   type = SNESUMTR;  /* nonlinear solution method */
-  Vec        x, g;                 /* solution, gradient vectors */
+  Vec        x,g;                 /* solution, gradient vectors */
   Mat        H;                    /* Hessian matrix */
   AppCtx     user;                 /* application context */
   int        mx=10;                /* discretization in x-direction */
   int        my=10;                /* discretization in y-direction */
   int        Nx=PETSC_DECIDE;      /* processors in x-direction */
   int        Ny=PETSC_DECIDE;      /* processors in y-direction */
-  int        ierr, its, ldim, nfails, size;
+  int        ierr,its,ldim,nfails,size;
   PetscTruth flg;
   double     one = 1.0;
   SLES       sles;
@@ -116,7 +116,7 @@ int main(int argc,char **argv)
   /* Set options; then solve minimization problem */
   ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
 */
 int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx*)ptr;
   return EvalFunctionGradient(snes,x,f,NULL,FunctionEval,user); 
 }
 /* -------------------------------------------------------------------- */
@@ -155,7 +155,7 @@ int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
 */
 int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx*)ptr;
   return EvalFunctionGradient(snes,x,NULL,g,GradientEval,user); 
 }
 /* -------------------------------------------------------------------- */
@@ -167,9 +167,9 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
                 void *ptr)
 {
-  AppCtx   *user = (AppCtx *) ptr;
-  int      i, j, ierr, ndim, xs, ys,  xm, ym, rstart, rend, ldim, iglob;
-  Scalar   *y, zero = 0.0, one = 1.0;
+  AppCtx   *user = (AppCtx*)ptr;
+  int      i,j,ierr,ndim,xs,ys, xm,ym,rstart,rend,ldim,iglob;
+  Scalar   *y,zero = 0.0,one = 1.0;
 
   ierr = MatZeroEntries(*H);CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -215,7 +215,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
                       void *ptr)
 {
-  AppCtx     *user = (AppCtx *) ptr;
+  AppCtx     *user = (AppCtx*)ptr;
 
   /* Sets location of vector for use in computing matrix-vector products
      of the form H(X)*y  */
@@ -233,9 +233,9 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 #define __FUNC__ "FormInitialGuess"
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int    ierr, i, j, k, nx = user->mx, ny = user->my;
-  Scalar hx = user->hx, hy = user->hy, temp, *x;
-  int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye;
+  int    ierr,i,j,k,nx = user->mx,ny = user->my;
+  Scalar hx = user->hx,hy = user->hy,temp,*x;
+  int    xs,ys,xm,ym,Xm,Ym,Xs,Ys,xe,ye;
 
   /* Get local vector (including ghost points) */
   ierr = VecGetArray(user->localX,&x);CHKERRQ(ierr);
@@ -251,7 +251,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 #if !defined(PETSC_USE_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
 #else
-      x[k] = PetscMin(PetscReal((double)(PetscMin(i+1,nx-i))*hx),PetscReal(temp));
+      x[k] = PetscMin(PetscRealPart((double)(PetscMin(i+1,nx-i))*hx),PetscRealPart(temp));
 #endif
     }
   }
@@ -267,12 +267,12 @@ int FormInitialGuess(AppCtx *user,Vec X)
 #define __FUNC__ "EvalFunctionGradient"
 int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
-  Scalar hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5, cdiv3;
-  Scalar zero = 0.0, v, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
-  Scalar val, *x, szero = 0.0, floc;
+  Scalar hx = user->hx,hy = user->hy,area,three = 3.0,p5 = 0.5,cdiv3;
+  Scalar zero = 0.0,v,vb,vl,vr,vt,dvdx,dvdy,flin = 0.0,fquad = 0.0;
+  Scalar val,*x,szero = 0.0,floc;
   Vec    localX = user->localX;
-  int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep;
-  int    ierr, nx = user->mx, ny = user->my, ind, i, j, k, *ltog, nloc; 
+  int    xs,ys,xm,ym,Xm,Ym,Xs,Ys,xe,ye,xsm,ysm,xep,yep;
+  int    ierr,nx = user->mx,ny = user->my,ind,i,j,k,*ltog,nloc; 
 
   cdiv3 = user->param/three;
 
@@ -368,7 +368,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCt
 #if !defined(PETSC_USE_COMPLEX)
     floc = area*(p5*fquad+flin);
 #else
-    floc = PetscReal(area*(p5*fquad+flin));
+    floc = PetscRealPart(area*(p5*fquad+flin));
 #endif
     ierr = MPI_Allreduce((void*)&floc,(void*)f,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   } if (fg & GradientEval) { /* Scale the gradient */
@@ -395,12 +395,12 @@ int HessianProductMat(Mat mat,Vec svec,Vec y)
  */
 int HessianProduct(void *ptr,Vec svec,Vec y)
 {
-  AppCtx *user = (AppCtx *) ptr;
-  Scalar p5 = 0.5, one = 1.0, zero = 0.0, hx, hy;
-  Scalar val, area, *x, *s, szero = 0.0, v, vb, vl, vr, vt, hxhx, hyhy;
-  Vec    localX, localS;
-  int    xs, ys, xm, ym, Xm, Ym, Xs, Ys, xe, ye, xsm, ysm, xep, yep;
-  int    nx, ny, i, j, k, ierr, ind, nloc, *ltog;
+  AppCtx *user = (AppCtx*)ptr;
+  Scalar p5 = 0.5,one = 1.0,zero = 0.0,hx,hy;
+  Scalar val,area,*x,*s,szero = 0.0,v,vb,vl,vr,vt,hxhx,hyhy;
+  Vec    localX,localS;
+  int    xs,ys,xm,ym,Xm,Ym,Xs,Ys,xe,ye,xsm,ysm,xep,yep;
+  int    nx,ny,i,j,k,ierr,ind,nloc,*ltog;
 
   hx = user->hx;
   hy = user->hy;

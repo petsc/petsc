@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.39 1999/10/23 00:02:04 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.40 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -86,8 +86,8 @@
 #define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,0,(char*)0);
 #define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,0,(char*)0);
 
-#define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__); CHKERRQ(__ierr);}
-#define CHKMEMA {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__); CHKERRA(__ierr);}
+#define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);CHKERRQ(__ierr);}
+#define CHKMEMA {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);CHKERRA(__ierr);}
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 extern  int __gierr;
@@ -122,7 +122,7 @@ extern  int __gierr;
 
 extern int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 extern int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-extern int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void* );
+extern int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 
 extern int PetscError(int,char*,char*,char*,int,int,char*,...);
 extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
@@ -131,9 +131,9 @@ extern int PetscPopErrorHandler(void);
 extern int PetscDefaultSignalHandler(int,void*);
 extern int PetscPushSignalHandler(int (*)(int,void *),void*);
 extern int PetscPopSignalHandler(void);
-#define PETSC_FP_TRAP_OFF    0
-#define PETSC_FP_TRAP_ON     1
-extern int PetscSetFPTrap(int);
+
+typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;
+extern int PetscSetFPTrap(PetscFPTrap);
 
 /*
       Allows the code to build a stack frame as it runs
@@ -261,24 +261,7 @@ extern int PetscStackDestroy(void);
 extern int PetscStackPublish(void);
 extern int PetscStackDepublish(void);
 
-/*
-          For locking, unlocking and destroying AMS memories associated with 
-    PETSc objects
-*/
-
-#if defined(PETSC_HAVE_AMS)
-#define PetscObjectTakeAccess(obj)   \
-    ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
-#define PetscObjectGrantAccess(obj)  \
-    ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
-#define PetscObjectDepublish(obj)  \
-    ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem)); \
-    ((PetscObject)(obj))->amem = -1;
-#else
-#define PetscObjectTakeAccess(obj)   0
-#define PetscObjectGrantAccess(obj)  0
-#define PetscObjectDepublish(obj)      0
-#endif
 
 #endif
+
 

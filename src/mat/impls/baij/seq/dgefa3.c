@@ -1,4 +1,4 @@
-/*$Id: dgefa3.c,v 1.13 1998/12/24 04:08:41 bsmith Exp bsmith $*/
+/*$Id: dgefa3.c,v 1.14 1999/10/24 14:02:28 bsmith Exp bsmith $*/
 /*
      Inverts 3 by 3 matrix using partial pivoting.
 
@@ -17,10 +17,10 @@
 #define __FUNC__ "Kernel_A_gets_inverse_A_3"
 int Kernel_A_gets_inverse_A_3(MatScalar *a)
 {
-    int        i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[3],*ipvt = ipvt_l-1,kb,k3;
+    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[3],*ipvt = ipvt_l-1,kb,k3;
     int        k4,j3;
     MatScalar  *aa,*ax,*ay,work_l[9],*work = work_l-1,stmp;
-    MatFloat   tmp,max;
+    MatReal    tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 
@@ -38,7 +38,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
         aa = &a[k4];
         max = PetscAbsScalar(aa[0]);
         l = 1;
-        for ( ll=1; ll<i__2; ll++ ) {
+        for (ll=1; ll<i__2; ll++) {
           tmp = PetscAbsScalar(aa[ll]);
           if (tmp > max) { max = tmp; l = ll+1;}
         }
@@ -62,7 +62,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
 	stmp = -1. / a[k4];
 	i__2 = 3 - k;
         aa = &a[1 + k4]; 
-        for ( ll=0; ll<i__2; ll++ ) {
+        for (ll=0; ll<i__2; ll++) {
           aa[ll] *= stmp;
         }
 
@@ -79,7 +79,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
 
 	    i__3 = 3 - k;
             ay = &a[1+k+j3];
-            for ( ll=0; ll<i__3; ll++ ) {
+            for (ll=0; ll<i__3; ll++) {
               ay[ll] += stmp*ax[ll];
             }
 	}
@@ -102,7 +102,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
 	stmp  = -a[k4];
 	i__2  = k - 1;
         aa    = &a[k3 + 1]; 
-        for ( ll=0; ll<i__2; ll++ ) aa[ll] *= stmp;
+        for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 	kp1 = k + 1;
 	if (3 < kp1) continue;
         ax = aa;
@@ -111,7 +111,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
 	    stmp      = a[k + j3];
 	    a[k + j3] = 0.0;
             ay        = &a[j3 + 1];
-            for ( ll=0; ll<k; ll++ ) {
+            for (ll=0; ll<k; ll++) {
               ay[ll] += stmp*ax[ll];
             }
 	}

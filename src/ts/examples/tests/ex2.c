@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.22 1999/10/24 14:03:54 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.23 1999/11/05 14:47:37 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -21,8 +21,8 @@ static char help[] = "Solves a nonlinear ODE \n\n";
 
 extern int RHSFunction(TS,double,Vec,Vec,void*);
 extern int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
-extern int Monitor(TS, int, double, Vec, void *);
-extern int Initial(Vec, void *);
+extern int Monitor(TS,int,double,Vec,void *);
+extern int Initial(Vec,void *);
 
 extern double solx(double);
 extern double soly(double);
@@ -32,17 +32,17 @@ extern double solz(double);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,  time_steps = 100, steps, size;
+  int           ierr,time_steps = 100,steps,size;
   Vec           global;
   double        dt,ftime;
   TS            ts;
   Viewer	viewer;
   MatStructure  A_structure;
   Mat           A = 0;
-  char          pcinfo[120], tsinfo[120];
+  char          pcinfo[120],tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
  
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
     
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
  
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRA(ierr);
-  ierr = TSSetMonitor(ts,Monitor,NULL);CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRA(ierr);
 
   dt = 0.1;
 
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
 #undef __FUNC__
 #define __FUNC__ "Initial"
 /* this test problem has initial values (1,1,1).                      */
-int Initial(Vec global, void *ctx)
+int Initial(Vec global,void *ctx)
 {
   Scalar *localptr;
   int    i,mybase,myend,ierr,locsize;
@@ -118,20 +118,20 @@ int Initial(Vec global, void *ctx)
 
 #undef __FUNC__
 #define __FUNC__ "Monitor"
-int Monitor(TS ts, int step, double time,Vec global, void *ctx)
+int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 {
   VecScatter scatter;
-  IS from, to;
-  int i, n, *idx;
+  IS from,to;
+  int i,n,*idx;
   Vec tmp_vec;
   int      ierr;
   Scalar   *tmp;
 
   /* Get the size of the vector */
-  ierr = VecGetSize(global, &n);CHKERRQ(ierr);
+  ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  idx=(int *) PetscMalloc(n*sizeof(int));
+  idx=(int*)PetscMalloc(n*sizeof(int));
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -146,9 +146,9 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 
   ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
-                     time,PetscReal(tmp[0]),PetscReal(tmp[1]),PetscReal(tmp[2]));CHKERRA(ierr);
+                     time,PetscRealPart(tmp[0]),PetscRealPart(tmp[1]),PetscRealPart(tmp[2]));CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
-                     time,PetscReal(tmp[0]-solx(time)),PetscReal(tmp[1]-soly(time)),PetscReal(tmp[2]-solz(time)));CHKERRA(ierr);
+                     time,PetscRealPart(tmp[0]-solx(time)),PetscRealPart(tmp[1]-soly(time)),PetscRealPart(tmp[2]-solz(time)));CHKERRA(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRA(ierr);
   ierr = PetscFree(idx);CHKERRA(ierr);
   return 0;
@@ -156,26 +156,26 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 
 #undef __FUNC__
 #define __FUNC__ "RHSFunction"
-int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
+int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 {
-  Scalar *inptr, *outptr;
-  int    i, n, ierr;
+  Scalar *inptr,*outptr;
+  int    i,n,ierr;
 
-  IS from, to;
+  IS from,to;
   int *idx;
   VecScatter scatter;
-  Vec tmp_in, tmp_out;
+  Vec tmp_in,tmp_out;
 
   /* Get the length of parallel vector */
-  ierr = VecGetSize(globalin, &n);CHKERRQ(ierr);
+  ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  idx=(int *) PetscMalloc(n*sizeof(int));
+  idx=(int*)PetscMalloc(n*sizeof(int));
   for(i=0; i<n; i++) idx[i]=i;
   
   /* Create local sequential vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&tmp_in);CHKERRQ(ierr);
-  ierr = VecDuplicate(tmp_in, &tmp_out);CHKERRQ(ierr);
+  ierr = VecDuplicate(tmp_in,&tmp_out);CHKERRQ(ierr);
 
   /* Create scatter context */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from);CHKERRQ(ierr);
@@ -215,11 +215,11 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 
 #undef __FUNC__
 #define __FUNC__ "RHSJacobian"
-int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
+int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat A = *AA;
-  Scalar v[3], *tmp;
-  int idx[3], i, ierr;
+  Scalar v[3],*tmp;
+  int idx[3],i,ierr;
  
   *str = SAME_NONZERO_PATTERN;
 

@@ -1,4 +1,4 @@
-/*$Id: dmouse.c,v 1.26 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dmouse.c,v 1.27 1999/11/24 21:52:47 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -27,7 +27,7 @@
 
 .seealso: DrawSynchronizedGetMouseButton()
 @*/
-int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,double *x_phys,double *y_phys)
+int DrawGetMouseButton(Draw draw,DrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   int        ierr;
   PetscTruth isnull;
@@ -62,10 +62,10 @@ int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_use
 
 .seealso: DrawGetMouseButton()
 @*/
-int DrawSynchronizedGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,double *x_phys,double *y_phys)
+int DrawSynchronizedGetMouseButton(Draw draw,DrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
-  double bcast[4];
-  int    ierr,rank;
+  PetscReal bcast[4];
+  int       ierr,rank;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);

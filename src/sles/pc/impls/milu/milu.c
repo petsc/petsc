@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.17 1999/10/24 14:04:16 bsmith Exp bsmith $*/
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -79,7 +79,7 @@ static int PCSetup_mILU(PC pc)
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(omat,&first,&last);CHKERRQ(ierr);
   lsize = last-first;
-  mprop = (double *) PetscMalloc((lsize+1)*sizeof(double));CHKPTRQ(mprop);
+  mprop = (double*)PetscMalloc((lsize+1)*sizeof(double));CHKPTRQ(mprop);
   {
     int irow;
     for (irow=first; irow<last; irow++) {
@@ -114,7 +114,7 @@ static int PCSetup_mILU(PC pc)
       ierr = PCGetFactoredMatrix(base_pc,&lu);CHKERRQ(ierr);
       ierr = MatGetDiagonal(lu,piv);CHKERRA(ierr);
       ierr = VecGetArray(piv,&elt);CHKERRA(ierr);
-      bd = 0; for (t=0; t<lsize; t++) if (PetscReal(elt[t]) < 0.0) bd++;
+      bd = 0; for (t=0; t<lsize; t++) if (PetscRealPart(elt[t]) < 0.0) bd++;
       ierr = VecRestoreArray(piv,&elt);CHKERRA(ierr);
       if (bd>0) {
 	/*printf("negative pivots %d\n",bd);*/
@@ -206,7 +206,7 @@ int PCCreate_mILU(PC pc)
 
   ierr = PCCreate(pc->comm,&base_pc);CHKERRQ(ierr);
   ierr = PCSetType(base_pc,PCILU);CHKERRQ(ierr);
-  pc->data = (void *) base_pc;
+  pc->data = (void*)base_pc;
 
   PetscFunctionReturn(0);
 }

@@ -1,6 +1,6 @@
-/*$Id: pmetis.c,v 1.27 1999/10/24 14:02:37 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.28 1999/11/05 14:46:06 bsmith Exp bsmith $*/
  
-#include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
+#include "src/mat/impls/csr/mpi/mpicsr.h"    /*I "mat.h" I*/
 
 /* 
    Currently using ParMetis-2.0. The following include file has
@@ -26,16 +26,16 @@ typedef struct {
 */
 #undef __FUNC__  
 #define __FUNC__ "MatPartitioningApply_Parmetis" 
-static int MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
+static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
-  int                   ierr,*locals,size,rank;
-  int                   *vtxdist, *xadj,*adjncy,itmp = 0;
-  Mat                   mat = part->adj;
-  Mat_MPIAdj            *adj = (Mat_MPIAdj *)mat->data;
+  int                      ierr,*locals,size,rank;
+  int                      *vtxdist,*xadj,*adjncy,itmp = 0;
+  Mat                      mat = part->adj;
+  Mat_MPICSR               *adj = (Mat_MPICSR *)mat->data;
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
 
   PetscFunctionBegin;
-  if (mat->type != MATMPIADJ) SETERRQ(PETSC_ERR_SUP,1,"Only MPIAdj matrix type supported");
+  if (mat->type != MATMPICSR) SETERRQ(PETSC_ERR_SUP,1,"Only MPICSR matrix type supported");
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
     SETERRQ(PETSC_ERR_SUP,1,"Supports exactly one domain per processor");
@@ -48,7 +48,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
   if (vtxdist[rank+1] - vtxdist[rank] == 0) {
     SETERRQ(1,1,"Does not support any processor with no entries");
   }
-  locals = (int *) PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);
+  locals = (int*)PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);
 
   if (PLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   PARKMETIS(vtxdist,xadj,0,adjncy,0,locals,(int*)parmetis,part->comm);
@@ -173,7 +173,7 @@ int MatPartitioningCreate_Parmetis(MatPartitioning part)
   part->destroy        = MatPartitioningDestroy_Parmetis;
   part->printhelp      = MatPartitioningPrintHelp_Parmetis;
   part->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
-  part->data           = (void *) parmetis;
+  part->data           = (void*)parmetis;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

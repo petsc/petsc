@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.62 1999/10/24 14:02:57 bsmith Exp bsmith $*/
+/*$Id: jacobi.c,v 1.63 1999/11/24 21:54:32 bsmith Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -81,8 +81,8 @@ typedef struct {
 #define __FUNC__ "PCSetUp_Jacobi"
 static int PCSetUp_Jacobi(PC pc)
 {
-  PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
-  Vec        diag, diagsqrt;
+  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
+  Vec        diag,diagsqrt;
   int        ierr,n,i,zeroflag=0;
   Scalar     *x;
 
@@ -117,7 +117,7 @@ static int PCSetUp_Jacobi(PC pc)
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
     ierr = VecGetLocalSize(diag,&n);CHKERRQ(ierr);
     ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       if (x[i] == 0.0) {
         x[i]     = 1.0;
         zeroflag = 1;
@@ -129,7 +129,7 @@ static int PCSetUp_Jacobi(PC pc)
     ierr = MatGetDiagonal(pc->pmat,diagsqrt);CHKERRQ(ierr);
     ierr = VecGetLocalSize(diagsqrt,&n);CHKERRQ(ierr);
     ierr = VecGetArray(diagsqrt,&x);CHKERRQ(ierr);
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
       else {
         x[i]     = 1.0;
@@ -158,7 +158,7 @@ static int PCSetUp_Jacobi(PC pc)
 static int PCSetUp_Jacobi_Symmetric(PC pc)
 {
   int        ierr;
-  PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
+  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
 
@@ -181,7 +181,7 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
 static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
   int        ierr;
-  PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
+  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
 
@@ -207,7 +207,7 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 #define __FUNC__ "PCApply_Jacobi"
 static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
-  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
+  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
   int       ierr;
 
   PetscFunctionBegin;
@@ -236,7 +236,7 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   int       ierr;
-  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
+  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
 
   PetscFunctionBegin;
   if (!jac->diagsqrt) {
@@ -259,7 +259,7 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCDestroy_Jacobi"
 static int PCDestroy_Jacobi(PC pc)
 {
-  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
+  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
   int       ierr;
 
   PetscFunctionBegin;
@@ -297,7 +297,7 @@ int PCCreate_Jacobi(PC pc)
      attach it to the PC object.
   */
   jac       = PetscNew(PC_Jacobi);CHKPTRQ(jac);
-  pc->data  = (void *) jac;
+  pc->data  = (void*)jac;
 
   /*
      Logs the memory usage; this is not needed but allows PETSc to 

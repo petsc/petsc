@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.19 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.20 1999/11/05 14:47:57 bsmith Exp bsmith $*/
 
 static char help[] = "Tests DALocalToLocal().\n\n";
 
@@ -27,10 +27,10 @@ int main(int argc,char **argv)
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,PETSC_NULL); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,PETSC_NULL);CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,PETSC_NULL);CHKERRA(ierr); 
 
   ierr = OptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRA(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   ierr = VecSet(&value,local_copy);CHKERRA(ierr);
 
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRA(ierr);
-  for ( i=start; i<end; i++ ) {
+  for (i=start; i<end; i++) {
     value = i + 1;
     ierr = VecSetValues(global,1,&i,&value,INSERT_VALUES);CHKERRA(ierr); 
   }
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(&mone,local,local_copy);CHKERRA(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRA(ierr);
-  ierr = MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD );CHKERRA(ierr);
+  ierr = MPI_Allreduce(&work,&norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRA(ierr);
    
   ierr = VecDestroy(local_copy);CHKERRA(ierr);

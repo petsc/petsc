@@ -1,20 +1,17 @@
-# $Id: makefile,v 1.1 1999/11/08 22:21:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1999/11/10 03:20:57 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fgmres.c fborthog.c fborthog2.c fborthog3.c fgmres2.c fgmreig.c \
-           fgmpre.c fgmcnv.c pcfamily.c modpcf.c
+SOURCEC  = fgmres.c modpcf.c
 SOURCEH  = fgmresp.h
 SOURCEF  = 
-OBJSC    = fgmres.o fborthog.o fborthog2.o fborthog3.o fgmres2.o fgmreig.o fgmpre.o fgmcnv.o pcfamily.o modpcf.o
-#OBJSC    =  pcfamily.o
+OBJSC    = fgmres.o modpcf.o
 OBJSF    = 
 LIBBASE  = libpetscsles
 MANSEC   = KSP
 LOCDIR   = src/sles/ksp/impls/fgmres/
-
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

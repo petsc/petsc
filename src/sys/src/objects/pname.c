@@ -1,4 +1,4 @@
-/*$Id: pname.c,v 1.31 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: pname.c,v 1.32 1999/11/24 21:53:05 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -12,7 +12,7 @@
    Input Parameters:
 +  obj - the Petsc variable
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectSetName((PetscObject) mat,name);
+         PetscObjectSetName((PetscObject)mat,name);
 -  name - the name to give obj
 
    Level: advanced
@@ -23,14 +23,12 @@
 @*/
 int PetscObjectSetName(PetscObject obj,const char name[])
 {
-  int len,ierr;
+  int ierr;
 
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null object");
-  ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  obj->name = (char *)PetscMalloc(sizeof(char)*(len+1));CHKPTRQ(obj->name);
-  ierr = PetscStrcpy(obj->name,name);CHKERRQ(ierr);
-
+  ierr = PetscStrfree(obj->name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -44,7 +42,7 @@ int PetscObjectSetName(PetscObject obj,const char name[])
    Input Parameters:
 .  obj - the Petsc variable
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectSetName((PetscObject) mat,name);
+         PetscObjectSetName((PetscObject)mat,name);
 
    Level: advanced
 
@@ -65,69 +63,6 @@ int PetscObjectPublish(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-/*
-    Publishes the common header part of any PETSc object. 
- */
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectPublishBaseBegin"
-int PetscObjectPublishBaseBegin(PetscObject obj)
-{
-#if defined(PETSC_HAVE_AMS)
-  AMS_Memory amem;
-  AMS_Comm   acomm;
-  int        ierr;
-  static int counter = 0;
-  char       name[16];
-#endif
-
-  PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  if (obj->name) {
-    ierr = PetscStrncpy(name,obj->name,16);CHKERRQ(ierr);
-  } else {
-    sprintf(name,"n_%d",counter++);
-  }
-
-  ierr      = ViewerAMSGetAMSComm(VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr);
-  ierr      = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
-  obj->amem = (int) amem;
-
-  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
-  ierr = AMS_Memory_add_field(amem,"Class",&obj->class_name,1,AMS_STRING,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Type",&obj->type_name,1,AMS_STRING,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Id",&obj->id,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"ParentId",&obj->parentid,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectPublishBaseEnd"
-int PetscObjectPublishBaseEnd(PetscObject obj)
-{
-#if defined(PETSC_HAVE_AMS)
-  AMS_Memory amem = (AMS_Memory) obj->amem;
-  int        ierr;
-#endif
-
-  PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  if (amem < 0) SETERRQ(1,1,"Called without a call to PetscObjectPublishBaseBegin()");
-  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-
-
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectChangeTypeName"
 int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
@@ -141,5 +76,7 @@ int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
   ierr = PetscObjectGrantAccess(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
 
 

@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.14 1999/05/06 14:44:04 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.15 1999/05/12 03:25:57 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -10,12 +10,12 @@
 
 #include "pinclude/blaslapack.h"
 /*
-      These are C kernels, they are contained in 
+      These are C kernels,they are contained in 
    src/mat/impls/baij/seq
 */
 
-extern int  LINPACKdgefa(MatScalar *,int, int *);
-extern int  LINPACKdgedi(MatScalar *,int, int *,MatScalar*);
+extern int  LINPACKdgefa(MatScalar *,int,int *);
+extern int  LINPACKdgedi(MatScalar *,int,int *,MatScalar*);
 extern int  Kernel_A_gets_inverse_A_2(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_3(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_4(MatScalar *);
@@ -25,7 +25,7 @@ extern int  Kernel_A_gets_inverse_A_7(MatScalar *);
 
 /*
      These are Fortran kernels: They replace certain BLAS routines but
-   have some arguments that may be single precision, rather than double
+   have some arguments that may be single precision,rather than double
    These routines are provided in src/fortran/kernels/sgemv.F 
    They are pretty pitiful but get the job done. The intention is 
    that for important block sizes (currently 3,4,5) custom inlined 
@@ -83,7 +83,7 @@ EXTERN_C_END
 */
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
-  Scalar _one = 1.0, _zero = 0.0; \
+  Scalar _one = 1.0,_zero = 0.0; \
   int    _ierr; \
   _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
   BLgemm_("N","N",&(bs),&(bs),&(bs),&_one,(W),&(bs),(B),&(bs),&_zero,(A),&(bs));\
@@ -110,7 +110,7 @@ EXTERN_C_END
 */
 #define  Kernel_v_gets_v_minus_A_times_w(bs,v,A,w) \
 {  \
-  Scalar _mone = -1.0, _one = 1.0; \
+  Scalar _mone = -1.0,_one = 1.0; \
   int    _ione = 1; \
   LAgemv_("N",&(bs),&(bs),&_mone,A,&(bs),w,&_ione,&_one,v,&_ione); \
 }
@@ -152,7 +152,7 @@ EXTERN_C_END
 */
 #define Kernel_w_gets_A_times_v(bs,v,A,w) \
 {  \
-  Scalar _zero = 0.0, _one = 1.0; \
+  Scalar _zero = 0.0,_one = 1.0; \
   int    _ione = 1; \
   LAgemv_("N",&(bs),&(bs),&_one,A,&(bs),v,&_ione,&_zero,w,&_ione); \
 }
@@ -162,7 +162,7 @@ EXTERN_C_END
 */
 #define Kernel_w_gets_Ar_times_v(bs,ncols,x,A,z) \
 { \
-  Scalar _one = 1.0, _zero = 0.0; \
+  Scalar _one = 1.0,_zero = 0.0; \
   int    _ione = 1; \
   LAgemv_("N",&bs,&ncols,&_one,A,&bs,x,&_ione,&_zero,z,&_ione); \
 }

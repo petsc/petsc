@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.86 1999/11/24 21:54:54 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -22,14 +22,14 @@ int KSPSetUp_Richardson(KSP ksp)
 #define __FUNC__ "KSPSolve_Richardson"
 int  KSPSolve_Richardson(KSP ksp,int *its)
 {
-  int                i,maxit,pres, brokeout = 0, cerr = 0, ierr;
+  int                i,maxit,ierr;
   MatStructure       pflag;
-  double             rnorm = 0.0;
-  Scalar             scale, mone = -1.0;
+  PetscReal          rnorm = 0.0;
+  Scalar             scale,mone = -1.0;
   Vec                x,b,r,z;
-  Mat                Amat, Pmat;
-  KSP_Richardson     *richardsonP = (KSP_Richardson *) ksp->data;
-  PetscTruth         exists;
+  Mat                Amat,Pmat;
+  KSP_Richardson     *richardsonP = (KSP_Richardson*)ksp->data;
+  PetscTruth         exists,pres;
 
   PetscFunctionBegin;
 
@@ -46,6 +46,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
     *its = maxit;
     ierr = PCApplyRichardson(ksp->B,b,x,r,maxit);CHKERRQ(ierr);
+    ksp->reason = KSP_DIVERGED_ITS; /* what should we really put here? */
     PetscFunctionReturn(0);
   }
 
@@ -60,7 +61,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
 
-  for ( i=0; i<maxit; i++ ) {
+  for (i=0; i<maxit; i++) {
      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
      ksp->its++;
      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
@@ -79,15 +80,16 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
        ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
        KSPLogResidualHistory(ksp,rnorm);
        KSPMonitor(ksp,i,rnorm);
-       cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
-       if (cerr) {brokeout = 1; break;}
+       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+       if (ksp->reason) break;
      }
    
      ierr = VecAXPY(&scale,z,x);CHKERRQ(ierr);    /*   x  <- x + scale z */
      ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
      ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   }
-  if (ksp->calc_res && !brokeout) {
+  if (ksp->calc_res && !ksp->reason) {
+    ksp->reason = KSP_DIVERGED_ITS;
     if (!ksp->avoidnorms) {
       if (!pres) {
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
@@ -101,10 +103,13 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i,rnorm);
+    i--;
+  } else if (!ksp->reason) {
+    ksp->reason = KSP_DIVERGED_ITS;
+    i--;
   }
 
-  if (cerr <= 0) *its = -(i+1);
-  else          *its = i+1;
+  *its = i+1;
   PetscFunctionReturn(0);
 }
 
@@ -112,7 +117,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 #define __FUNC__ "KSPView_Richardson" 
 extern int KSPView_Richardson(KSP ksp,Viewer viewer)
 {
-  KSP_Richardson *richardsonP = (KSP_Richardson *) ksp->data;
+  KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
   int            ierr;
   PetscTruth     isascii;
 
@@ -143,7 +148,7 @@ static int KSPPrintHelp_Richardson(KSP ksp,char *p)
 int KSPSetFromOptions_Richardson(KSP ksp)
 {
   int        ierr;
-  double     tmp;
+  PetscReal  tmp;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -157,12 +162,12 @@ int KSPSetFromOptions_Richardson(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPRichardsonSetScale_Richardson"
-int KSPRichardsonSetScale_Richardson(KSP ksp,double scale)
+int KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
-  richardsonP = (KSP_Richardson *) ksp->data;
+  richardsonP = (KSP_Richardson*)ksp->data;
   richardsonP->scale = scale;
   PetscFunctionReturn(0);
 }
@@ -178,10 +183,9 @@ int KSPCreate_Richardson(KSP ksp)
 
   PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Richardson));
-  ksp->data                        = (void *) richardsonP;
+  ksp->data                        = (void*)richardsonP;
   richardsonP->scale               = 1.0;
-  ksp->calc_res                    = 1;
-  ksp->guess_zero                  = 1; 
+  ksp->calc_res                    = PETSC_TRUE;
   ksp->ops->setup                  = KSPSetUp_Richardson;
   ksp->ops->solve                  = KSPSolve_Richardson;
   ksp->ops->destroy                = KSPDefaultDestroy;

@@ -1,4 +1,4 @@
-/*$Id: xmon.c,v 1.42 1999/10/24 14:03:08 bsmith Exp bsmith $*/
+/*$Id: xmon.c,v 1.43 1999/11/10 03:20:38 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"              /*I  "ksp.h"   I*/
 
@@ -32,7 +32,7 @@
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
 @*/
-int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n, DrawLG *draw)
+int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,DrawLG *draw)
 {
   Draw win;
   int  ierr;
@@ -47,11 +47,11 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n, DrawLG *d
 
 #undef __FUNC__  
 #define __FUNC__ "KSPLGMonitor"
-int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
+int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
   DrawLG    lg = (DrawLG) monctx;
   int       ierr;
-  double    x, y;
+  PetscReal x,y;
 
   PetscFunctionBegin;
   if (!monctx) {
@@ -64,7 +64,7 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
   }
 
   if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
-  x = (double) n;
+  x = (PetscReal) n;
   if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
   ierr = DrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || (n % 5)) {
@@ -134,7 +134,7 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,int n, DrawLG *draw)
+int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,int n,DrawLG *draw)
 {
   Draw win;
   int  ierr,rank;
@@ -152,10 +152,10 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
 
 #undef __FUNC__  
 #define __FUNC__ "KSPLGTrueMonitor"
-int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
+int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
   DrawLG    lg = (DrawLG) monctx;
-  double    x[2], y[2],scnorm;
+  PetscReal x[2],y[2],scnorm;
   int       ierr,rank;
   Vec       resid,work;
 
@@ -172,7 +172,7 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
   if (!rank) { 
     if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
-    x[0] = x[1] = (double) n;
+    x[0] = x[1] = (PetscReal) n;
     if (rnorm > 0.0) y[0] = log10(rnorm); else y[0] = -15.0;
   }
 

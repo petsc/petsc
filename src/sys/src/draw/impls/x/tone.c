@@ -1,4 +1,4 @@
-/*$Id: tone.c,v 1.28 1999/11/05 14:43:58 bsmith Exp bsmith $*/
+/*$Id: tone.c,v 1.29 1999/11/24 21:52:53 bsmith Exp bsmith $*/
 
 /*
     Code for drawing color interpolated triangles using X-windows.
@@ -9,13 +9,12 @@
 
 #undef __FUNC__  
 #define __FUNC__ "DrawInterpolatedTriangle_X"
-int DrawInterpolatedTriangle_X(Draw_X* win, int x1, int y_1, int t1, 
-                                int x2,int y2,int t2,int x3,int y3,int t3)
+int DrawInterpolatedTriangle_X(Draw_X* win,int x1,int y_1,int t1,int x2,int y2,int t2,int x3,int y3,int t3)
 {
-  double rfrac, lfrac;
-  int    lc, rc = 0, lx, rx = 0, xx, y, c;
-  int    rc_lc, rx_lx, t2_t1, x2_x1, t3_t1, x3_x1, t3_t2, x3_x2;
-  double R_y2_y_1, R_y3_y_1, R_y3_y2;
+  PetscReal rfrac,lfrac;
+  PetscReal R_y2_y_1,R_y3_y_1,R_y3_y2;
+  int       lc,rc = 0,lx,rx = 0,xx,y,c;
+  int       rc_lc,rx_lx,t2_t1,x2_x1,t3_t1,x3_x1,t3_t2,x3_x2;
 
   PetscFunctionBegin;
   /*
@@ -66,23 +65,23 @@ int DrawInterpolatedTriangle_X(Draw_X* win, int x1, int y_1, int t1,
     if (rx > lx) {
       for (xx=lx; xx<=rx; xx++) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetColor( win, c );
+        XiSetColor(win,c);
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
     } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetColor( win, c );
+        XiSetColor(win,c);
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
     } else {
       c = lc >> SHIFT_VAL;
-      XiSetColor( win, c );
+      XiSetColor(win,c);
       XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);
     }
   }
 
-  /* For simplicity, "move" t1 to the intersection of t1-t3 with the line y=y2.
+  /* For simplicity,"move" t1 to the intersection of t1-t3 with the line y=y2.
      We take advantage of the previous iteration. */
   if (y2 >= y3) PetscFunctionReturn(0);
   if (y_1 < y2) {
@@ -113,18 +112,18 @@ int DrawInterpolatedTriangle_X(Draw_X* win, int x1, int y_1, int t1,
     if (rx > lx) {
       for (xx=lx; xx<=rx; xx++) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetColor( win, c );
+        XiSetColor(win,c);
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
     } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (((xx-lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
-        XiSetColor( win, c );
+        XiSetColor(win,c);
         XDrawPoint(win->disp,XiDrawable(win),win->gc.set,xx,y);
       }
     } else {
       c = lc >> SHIFT_VAL;
-      XiSetColor( win, c );
+      XiSetColor(win,c);
       XDrawPoint(win->disp,XiDrawable(win),win->gc.set,lx,y);
     }
   }

@@ -1,4 +1,4 @@
-/*$Id: richscale.c,v 1.14 1999/05/04 20:35:00 balay Exp bsmith $*/
+/*$Id: richscale.c,v 1.15 1999/10/24 14:03:16 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"         /*I "ksp.h" I*/
 #include "src/sles/ksp/impls/rich/richctx.h"
@@ -20,9 +20,9 @@
 
 .keywords: KSP, Richardson, set, scale
 @*/
-int KSPRichardsonSetScale(KSP ksp,double scale)
+int KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 {
-  int ierr, (*f)(KSP,double);
+  int ierr,(*f)(KSP,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

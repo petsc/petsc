@@ -1,4 +1,4 @@
-/*$Id: lg.c,v 1.65 1999/10/13 20:36:39 bsmith Exp bsmith $*/
+/*$Id: lg.c,v 1.67 1999/10/24 14:01:20 bsmith Exp bsmith $*/
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 
@@ -15,8 +15,8 @@ struct _p_DrawLG {
   int         len,loc;
   Draw        win;
   DrawAxis    axis;
-  double      xmin, xmax, ymin, ymax, *x, *y;
-  int         nopts, dim;
+  PetscReal   xmin,xmax,ymin,ymax,*x,*y;
+  int         nopts,dim;
   int         use_dots;
 };
 
@@ -46,7 +46,7 @@ int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
 {
   int         ierr;
   PetscTruth  isnull;
-  PetscObject obj = (PetscObject) draw;
+  PetscObject obj = (PetscObject)draw;
   DrawLG      lg;
 
   PetscFunctionBegin;
@@ -55,7 +55,7 @@ int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
   ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     ierr = DrawOpenNull(obj->comm,(Draw*)outctx);CHKERRQ(ierr);
-    (*outctx)->win = draw;
+    PetscFunctionReturn(0);
   }
   PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_COOKIE,0,"DrawLG",obj->comm,DrawLGDestroy,0);
   lg->view    = 0;
@@ -67,8 +67,8 @@ int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
   lg->ymin    = 1.e20;
   lg->xmax    = -1.e20;
   lg->ymax    = -1.e20;
-  lg->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(lg->x);
-  PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(double));
+  lg->x       = (PetscReal *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKPTRQ(lg->x);
+  PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
@@ -105,8 +105,8 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 
   ierr = PetscFree(lg->x);CHKERRQ(ierr);
   lg->dim = dim;
-  lg->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(lg->x);
-  PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(double));
+  lg->x       = (PetscReal *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKPTRQ(lg->x);
+  PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
@@ -167,7 +167,7 @@ int DrawLGDestroy(DrawLG lg)
 
   if (--lg->refct > 0) PetscFunctionReturn(0);
   if (lg && lg->cookie == DRAW_COOKIE) {
-    ierr = PetscObjectDestroy((PetscObject) lg);CHKERRQ(ierr);
+    ierr = PetscObjectDestroy((PetscObject)lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = DrawAxisDestroy(lg->axis);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ int DrawLGDestroy(DrawLG lg)
 
 .seealso: DrawLGAddPoints()
 @*/
-int DrawLGAddPoint(DrawLG lg,double *x,double *y)
+int DrawLGAddPoint(DrawLG lg,PetscReal *x,PetscReal *y)
 {
   int i,ierr;
 
@@ -205,12 +205,12 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
-    double *tmpx,*tmpy;
-    tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(double));CHKPTRQ(tmpx);
-    PLogObjectMemory(lg,2*lg->dim*CHUNCKSIZE*sizeof(double));
+    PetscReal *tmpx,*tmpy;
+    tmpx = (PetscReal*)PetscMalloc((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(PetscReal));CHKPTRQ(tmpx);
+    PLogObjectMemory(lg,2*lg->dim*CHUNCKSIZE*sizeof(PetscReal));
     tmpy = tmpx + lg->len + lg->dim*CHUNCKSIZE;
-    ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(lg->x);CHKERRQ(ierr);
     lg->x = tmpx; lg->y = tmpy;
     lg->len += lg->dim*CHUNCKSIZE;
@@ -271,24 +271,24 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 
 .seealso: DrawLGAddPoint()
 @*/
-int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
+int DrawLGAddPoints(DrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 {
-  int    i, j, k,ierr;
-  double *x,*y;
+  int    i,j,k,ierr;
+  PetscReal *x,*y;
 
   PetscFunctionBegin;
   if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
-    double *tmpx,*tmpy;
+    PetscReal *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
 
     if (n > chunk) chunk = n;
-    tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*chunk)*sizeof(double));CHKPTRQ(tmpx);
-    PLogObjectMemory(lg,2*lg->dim*chunk*sizeof(double));
+    tmpx = (PetscReal*)PetscMalloc((2*lg->len+2*lg->dim*chunk)*sizeof(PetscReal));CHKPTRQ(tmpx);
+    PLogObjectMemory(lg,2*lg->dim*chunk*sizeof(PetscReal));
     tmpy = tmpx + lg->len + lg->dim*chunk;
-    ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpx,lg->x,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpy,lg->y,lg->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(lg->x);CHKERRQ(ierr);
     lg->x    = tmpx; lg->y = tmpy;
     lg->len += lg->dim*chunk;
@@ -296,7 +296,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
   for (j=0; j<lg->dim; j++) {
     x = xx[j]; y = yy[j];
     k = lg->loc + j;
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       if (x[i] > lg->xmax) lg->xmax = x[i]; 
       if (x[i] < lg->xmin) lg->xmin = x[i];
       if (y[i] > lg->ymax) lg->ymax = y[i]; 
@@ -317,7 +317,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 /*@
    DrawLGDraw - Redraws a line graph.
 
-   Not Collective, but ignored by all processors except processor 0 in DrawLG
+   Not Collective,but ignored by all processors except processor 0 in DrawLG
 
    Input Parameter:
 .  lg - the line graph context
@@ -328,9 +328,9 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 @*/
 int DrawLGDraw(DrawLG lg)
 {
-  double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
-  int      i, j, dim = lg->dim,nopts = lg->nopts,rank,ierr;
-  Draw     draw = lg->win;
+  PetscReal xmin=lg->xmin,xmax=lg->xmax,ymin=lg->ymin,ymax=lg->ymax;
+  int       i,j,dim = lg->dim,nopts = lg->nopts,rank,ierr;
+  Draw      draw = lg->win;
 
   PetscFunctionBegin;
   if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
@@ -339,14 +339,14 @@ int DrawLGDraw(DrawLG lg)
   if (nopts < 2) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
   ierr = DrawClear(draw);CHKERRQ(ierr);
-  ierr = DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+  ierr = DrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = DrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(lg->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
-  for ( i=0; i<dim; i++ ) {
-    for ( j=1; j<nopts; j++ ) {
+  for (i=0; i<dim; i++) {
+    for (j=1; j<nopts; j++) {
       ierr = DrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
                    lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK+i);CHKERRQ(ierr);
       if (lg->use_dots) {
@@ -376,8 +376,7 @@ int DrawLGDraw(DrawLG lg)
 
 .keywords:  draw, line, graph, set limits
 @*/
-int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
-                                  double y_max) 
+int DrawLGSetLimits(DrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
   PetscFunctionBegin;
   if (lg && lg->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
@@ -442,7 +441,12 @@ int DrawLGGetDraw(DrawLG lg,Draw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(lg);
-  *draw = lg->win;
+  if (lg->cookie == DRAW_COOKIE) {
+    *draw = (Draw)lg;
+  } else {
+    PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
+    *draw = lg->win;
+  }
   PetscFunctionReturn(0);
 }
 

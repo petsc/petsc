@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.8 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.9 1999/11/05 14:47:57 bsmith Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -9,10 +9,10 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int    M = 5, N = 4,ierr, dof=1, s=1, wrap=0, i, n, j, k, m, cnt;
+  int    M = 5,N = 4,ierr,dof=1,s=1,wrap=0,i,n,j,k,m,cnt;
   DA     da;
   Viewer viewer;
-  Vec    local, locala, global,coors;
+  Vec    local,locala,global,coors;
   Scalar *xy,*alocal;
   Draw   draw;
   char   fname[16];
@@ -27,15 +27,15 @@ int main(int argc,char **argv)
   /* Read options */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRA(ierr); 
 
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,DA_STENCIL_BOX,M,N,PETSC_DECIDE,
                     PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da);CHKERRA(ierr);
   ierr = DACreateUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRA(ierr);
-  for ( i=0; i<dof; i++ ) {
+  for (i=0; i<dof; i++) {
     sprintf(fname,"Field %d",i);
     ierr = DASetFieldName(da,i,fname);CHKERRA(ierr);
   }
@@ -53,10 +53,10 @@ ierr = VecView(coors,VIEWER_STDOUT_SELF);
   ierr = VecGetArray(local,&alocal);CHKERRA(ierr);
   ierr = DAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRA(ierr);
   n    = n/dof;
-  for ( k=0; k<dof; k++ ) {
+  for (k=0; k<dof; k++) {
     cnt = 0;
-    for ( j=0; j<n; j++ ) {
-      for ( i=0; i<m; i++ ) {
+    for (j=0; j<n; j++) {
+      for (i=0; i<m; i++) {
         alocal[k+dof*cnt] = PetscSinScalar(2.0*PETSC_PI*(k+1)*xy[2*cnt]);
         cnt++;
       }

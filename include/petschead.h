@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.75 1999/09/27 21:33:07 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.76 1999/10/23 00:02:04 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -29,7 +29,7 @@ extern int PetscRegisterCookie(int *);
       reference()       - Increases the reference count for a PETSc object; when
                           a reference count reaches zero it is destroyed.
       destroy()         - Is the routine for destroying the entire PETSc object; 
-                          for example, MatDestroy() is the general matrix 
+                          for example,MatDestroy() is the general matrix 
                           destruction routine.
       compose()         - Associates a PETSc object with another PETSc object.
       query()           - Returns a different PETSc object that has been associated
@@ -48,7 +48,7 @@ typedef struct {
    int (*compose)(PetscObject,const char[],PetscObject);
    int (*query)(PetscObject,const char[],PetscObject *);
    int (*composefunction)(PetscObject,const char[],const char[],void *);
-   int (*queryfunction)(PetscObject,const char[], void **);
+   int (*queryfunction)(PetscObject,const char[],void **);
    int (*composelanguage)(PetscObject,PetscLanguage,void *);
    int (*querylanguage)(PetscObject,PetscLanguage,void **);
    int (*publish)(PetscObject);
@@ -115,7 +115,7 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 
 #define PetscHeaderDestroy(h)                                             \
   { int _ierr;                                                            \
-    _ierr = PetscHeaderDestroy_Private((PetscObject) (h));CHKERRQ(_ierr);\
+    _ierr = PetscHeaderDestroy_Private((PetscObject)(h));CHKERRQ(_ierr);\
   }                 
 
 /* ---------------------------------------------------------------------------------------*/

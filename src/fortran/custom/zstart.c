@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.67 1999/12/01 16:12:43 balay Exp balay $*/
+/*$Id: zstart.c,v 1.68 1999/12/01 16:15:18 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -7,7 +7,7 @@
 /*
     This is to prevent the Cray T3D version of MPI (University of Edinburgh)
   from stupidly redefining MPI_INIT(). They put this in to detect errors
-  in C code, but here I do want to be calling the Fortran version from a
+  in C code,but here I do want to be calling the Fortran version from a
   C subroutine. 
 */
 #define T3DMPI_FORTRAN
@@ -89,13 +89,13 @@ EXTERN_C_END
 extern MPI_Op PetscSum_Op;
 
 EXTERN_C_BEGIN
-extern void PetscSum_Local(void *, void *,int *,MPI_Datatype *);
+extern void PetscSum_Local(void *,void *,int *,MPI_Datatype *);
 EXTERN_C_END
 #endif
 extern MPI_Op PetscMaxSum_Op;
 
 EXTERN_C_BEGIN
-extern void PetscMaxSum_Local(void *, void *,int *,MPI_Datatype *);
+extern void PetscMaxSum_Local(void *,void *,int *,MPI_Datatype *);
 EXTERN_C_END
 
 extern int OptionsCheckInitial(void);
@@ -123,23 +123,23 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   }
   ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD); if (ierr) return ierr;
 
-  *argv = (char **) PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)));CHKPTRQ(*argv);
-  (*argv)[0] = (char*) (*argv + *argc + 1);
+  *argv = (char**)PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)));CHKPTRQ(*argv);
+  (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (!rank) {
     ierr = PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));CHKERRQ(ierr);
-    for ( i=0; i<*argc; i++ ) {
+    for (i=0; i<*argc; i++) {
       (*argv)[i+1] = (*argv)[i] + warg;
 #if defined(PETSC_HAVE_PXFGETARG)
       {char *tmp = (*argv)[i]; 
        int  ierr,ilen;
-       PXFGETARG(&i, _cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
+       PXFGETARG(&i,_cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
        tmp[ilen] = 0;
       } 
 #elif defined (PARCH_win32)
-      getarg_( &i, (*argv)[i],warg,&flg );
+      getarg_(&i,(*argv)[i],warg,&flg);
 #else
-      getarg_( &i, (*argv)[i], warg );
+      getarg_(&i,(*argv)[i],warg);
 #endif
       /* zero out garbage at end of each argument */
       p = (*argv)[i] + warg-1;
@@ -151,7 +151,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   }
   ierr = MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD); if (ierr) return ierr; 
   if (rank) {
-    for ( i=0; i<*argc; i++ ) {
+    for (i=0; i<*argc; i++) {
       (*argv)[i+1] = (*argv)[i] + warg;
     }
   } 
@@ -169,7 +169,7 @@ EXTERN_C_BEGIN
       Since this is called from Fortran it does not return error codes
       
 */
-void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
 #if defined (PARCH_win32)
   short  flg,i;
@@ -177,7 +177,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   int i;
 #endif
   int  j,flag,argc = 0,dummy_tag;
-  char **args = 0,*t1, name[256];
+  char **args = 0,*t1,name[256];
 
   *ierr = 1;
   *ierr = PetscMemzero(name,256); if (*ierr) return;
@@ -188,16 +188,16 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   i = 0;
 #if defined(PETSC_HAVE_PXFGETARG)
   { int ilen;
-    PXFGETARG(&i, _cptofcd(name,256),&ilen,*ierr); 
+    PXFGETARG(&i,_cptofcd(name,256),&ilen,*ierr); 
     if (*ierr) return;
     name[ilen] = 0;
   }
 #elif defined (PARCH_win32)
-  getarg_( &i, name, 256, &flg);
+  getarg_(&i,name,256,&flg);
 #else
-  getarg_( &i, name, 256);
+  getarg_(&i,name,256);
   /* Eliminate spaces at the end of the string */
-  for ( j=254; j>=0; j-- ) {
+  for (j=254; j>=0; j--) {
     if (name[j] != ' ') {
       name[j+1] = 0;
       break;
@@ -299,6 +299,6 @@ void PETSC_STDCALL petscfinalize_(int *ierr)
 
 void PETSC_STDCALL petscsetcommworld_(MPI_Comm *comm,int *ierr)
 {
-  *ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *comm )  );
+  *ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm(*comm));
 }
 EXTERN_C_END

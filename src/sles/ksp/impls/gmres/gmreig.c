@@ -1,16 +1,16 @@
-/*$Id: gmreig.c,v 1.15 1999/10/24 14:03:14 bsmith Exp bsmith $*/
+/*$Id: gmreig.c,v 1.16 1999/11/10 03:20:46 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
 #include "pinclude/blaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeExtremeSingularValues_GMRES"
-int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
+int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
-  KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
-  int       n = gmres->it + 1, N = gmres->max_k + 2, ierr, lwork = 5*N, idummy = N, i;
-  Scalar    *R = gmres->Rsvd, *work = R + N*N, sdummy;
-  double    *realpart = gmres->Dsvd;
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  int       n = gmres->it + 1,N = gmres->max_k + 2,ierr,lwork = 5*N,idummy = N,i;
+  Scalar    *R = gmres->Rsvd,*work = R + N*N,sdummy;
+  PetscReal *realpart = gmres->Dsvd;
 
   PetscFunctionBegin;
   if (!n) {
@@ -21,7 +21,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
   ierr = PetscMemcpy(R,gmres->hh_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
 
   /* zero below diagonal garbage */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     R[i*N+i+1] = 0.0;
   }
   
@@ -50,14 +50,14 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 #if defined(PETSC_HAVE_ESSL)
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
+int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
-  KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
-  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
-  int       idummy = N, i,*perm, clen, zero;
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N;
+  int       idummy = N,i,*perm,clen,zero;
   Scalar    *R = gmres->Rsvd;
-  Scalar    *cwork = R + N*N, sdummy;
-  double    *work, *realpart = gmres->Dsvd, *imagpart = realpart + N ;
+  Scalar    *cwork = R + N*N,sdummy;
+  PetscReal *work,*realpart = gmres->Dsvd,*imagpart = realpart + N ;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
@@ -74,34 +74,34 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
   /* for ESSL version need really cwork of length N (complex), 2N
      (real); already at least 5N of space has been allocated */
 
-  work     = (double *) PetscMalloc( lwork*sizeof(double) );CHKPTRQ(work);
+  work     = (PetscReal*)PetscMalloc(lwork*sizeof(PetscReal));CHKPTRQ(work);
   zero     = 0;
   LAgeev_(&zero,R,&N,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
   ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* For now we stick with the convention of storing the real and imaginary
      components of evalues separately.  But is this what we really want? */
-  perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
+  perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
 
 #if !defined(PETSC_USE_COMPLEX)
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     realpart[i] = cwork[2*i];
     perm[i]     = i;
   }
   ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     r[i] = cwork[2*perm[i]];
     c[i] = cwork[2*perm[i]+1];
   }
 #else
-  for ( i=0; i<n; i++ ) {
-    realpart[i] = PetscReal(cwork[i]);
+  for (i=0; i<n; i++) {
+    realpart[i] = PetscRealPart(cwork[i]);
     perm[i]     = i;
   }
   ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
-    r[i] = PetscReal(cwork[perm[i]]);
-    c[i] = PetscImaginary(cwork[perm[i]]);
+  for (i=0; i<n; i++) {
+    r[i] = PetscRealPart(cwork[perm[i]]);
+    c[i] = PetscImaginaryPart(cwork[perm[i]]);
   }
 #endif
   ierr = PetscFree(perm);CHKERRQ(ierr);
@@ -110,12 +110,12 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 #elif !defined(PETSC_USE_COMPLEX)
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
+int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
-  KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
-  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N, idummy = N, i,*perm;
-  Scalar    *R = gmres->Rsvd, *work = R + N*N;
-  Scalar    *realpart = gmres->Dsvd, *imagpart = realpart + N, sdummy;
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N,idummy = N,i,*perm;
+  Scalar    *R = gmres->Rsvd,*work = R + N*N;
+  Scalar    *realpart = gmres->Dsvd,*imagpart = realpart + N,sdummy;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
@@ -131,10 +131,10 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
   if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
-  perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
-  for ( i=0; i<n; i++ ) { perm[i] = i;}
+  perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
+  for (i=0; i<n; i++) { perm[i] = i;}
   ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     r[i] = realpart[perm[i]];
     c[i] = imagpart[perm[i]];
   }
@@ -144,11 +144,11 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
 #else
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
-int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
+int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
-  KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
-  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N, idummy = N, i,*perm;
-  Scalar    *R = gmres->Rsvd, *work = R + N*N, *eigs = work + 5*N,sdummy;
+  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  int       n = gmres->it + 1,N = gmres->max_k + 1,ierr,lwork = 5*N,idummy = N,i,*perm;
+  Scalar    *R = gmres->Rsvd,*work = R + N*N,*eigs = work + 5*N,sdummy;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
@@ -163,13 +163,13 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
   /* compute eigenvalues */
   LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
   if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
-  perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
-  for ( i=0; i<n; i++ ) { perm[i] = i;}
-  for ( i=0; i<n; i++ ) { r[i]    = PetscReal(eigs[i]);}
+  perm = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(perm);
+  for (i=0; i<n; i++) { perm[i] = i;}
+  for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
   ierr = PetscSortDoubleWithPermutation(n,r,perm);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
-    r[i] = PetscReal(eigs[perm[i]]);
-    c[i] = PetscImaginary(eigs[perm[i]]);
+  for (i=0; i<n; i++) {
+    r[i] = PetscRealPart(eigs[perm[i]]);
+    c[i] = PetscImaginaryPart(eigs[perm[i]]);
   }
   ierr = PetscFree(perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

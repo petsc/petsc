@@ -1,9 +1,9 @@
-/*$Id: ex20.c,v 1.5 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex20.c,v 1.6 1999/11/05 14:46:54 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
-matrix assembly, the matrix is intentionally laid out across processors\n\
+matrix assembly,the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
@@ -25,12 +25,12 @@ int FormElementStiffness(double H,Scalar *Ke)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, m = 5, rank, size, N, start, end, M, its;
-  int         ierr, idx[4];
+  int         i,m = 5,rank,size,N,start,end,M,its;
+  int         ierr,idx[4];
   PetscTruth  flg;
   Scalar      zero = 0.0,Ke[16];
   double      h;
-  Vec         u, b;
+  Vec         u,b;
   SLES        sles;
   KSP         ksp;
   PCNullSpace nullsp;
@@ -52,10 +52,10 @@ int main(int argc,char **args)
 
   /* Assemble matrix */
   ierr = FormElementStiffness(h*h,Ke);   /* element stiffness for Laplacian */
-  for ( i=start; i<end; i++ ) {
+  for (i=start; i<end; i++) {
      /* location of lower left corner of element */
      /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + ( i % m);
+     idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRA(ierr);
   }

@@ -1,4 +1,4 @@
-/*$Id: dgedi.c,v 1.12 1999/01/04 21:50:55 bsmith Exp bsmith $*/
+/*$Id: dgedi.c,v 1.13 1999/10/24 14:02:28 bsmith Exp bsmith $*/
 
 /*  
               This file creating by running f2c 
@@ -21,7 +21,7 @@
 #define __FUNC__ "LINPACKdgedi"
 int LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
 {
-    int        i__2,kb, kp1, nm1,i, j, k, l, ll,kn,knp1,jn1;
+    int        i__2,kb,kp1,nm1,i,j,k,l,ll,kn,knp1,jn1;
     MatScalar  *aa,*ax,*ay,tmp;
     MatScalar  t;
 
@@ -39,7 +39,7 @@ int LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
 	t            = -a[knp1];
 	i__2         = k - 1;
         aa           = &a[1 + kn]; 
-        for ( ll=0; ll<i__2; ll++ ) aa[ll] *= t;
+        for (ll=0; ll<i__2; ll++) aa[ll] *= t;
 	kp1 = k + 1;
 	if (n < kp1) continue;
         ax = aa;
@@ -48,7 +48,7 @@ int LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
 	    t = a[k + jn1];
 	    a[k + jn1] = 0.;
             ay = &a[1 + jn1];
-            for ( ll=0; ll<k; ll++ ) {
+            for (ll=0; ll<k; ll++) {
               ay[ll] += t*ax[ll];
             }
 	}
@@ -73,7 +73,7 @@ int LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
 	    t = work[j];
             ax = &a[j * n + 1];
             ay = &a[kn + 1];
-            for ( ll=0; ll<n; ll++ ) {
+            for (ll=0; ll<n; ll++) {
               ay[ll] += t*ax[ll];
             }
 	}
@@ -81,7 +81,7 @@ int LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
 	if (l != k) {
             ax = &a[kn + 1]; 
             ay = &a[l * n + 1];
-            for ( ll=0; ll<n; ll++ ) {
+            for (ll=0; ll<n; ll++) {
               tmp    = ax[ll];
               ax[ll] = ay[ll];
               ay[ll] = tmp;

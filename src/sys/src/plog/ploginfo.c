@@ -1,4 +1,4 @@
-/*$Id: ploginfo.c,v 1.13 1999/10/01 21:20:44 bsmith Exp bsmith $*/
+/*$Id: ploginfo.c,v 1.14 1999/10/24 14:01:36 bsmith Exp bsmith $*/
 /*
       PLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
@@ -13,7 +13,7 @@
 #if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 extern int  PLogPrintInfo,PLogPrintInfoNull;
 extern int  PLogInfoFlags[];
@@ -61,7 +61,7 @@ int PLogInfo(void *vobj,const char message[],...)
 {
   va_list     Argp;
   int         rank,urank,len,ierr;
-  PetscObject obj = (PetscObject) vobj;
+  PetscObject obj = (PetscObject)vobj;
   char        string[256];
 
   PetscFunctionBegin;
@@ -74,7 +74,7 @@ int PLogInfo(void *vobj,const char message[],...)
   if (rank) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&urank);CHKERRQ(ierr);
-  va_start( Argp, message );
+  va_start(Argp,message);
   sprintf(string,"[%d]",urank); 
   ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
@@ -91,7 +91,7 @@ int PLogInfo(void *vobj,const char message[],...)
     vfprintf(petsc_history,message,Argp);
 #endif
   }
-  va_end( Argp );
+  va_end(Argp);
   PetscFunctionReturn(0);
 }
 

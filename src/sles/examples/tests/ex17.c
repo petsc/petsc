@@ -1,22 +1,22 @@
-/*$Id: ex17.c,v 1.31 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.32 1999/11/05 14:46:54 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
 
 #include "sles.h"
 
-typedef enum {TEST_1, TEST_2, TEST_3, HELMHOLTZ_1, HELMHOLTZ_2} TestType;
+typedef enum {TEST_1,TEST_2,TEST_3,HELMHOLTZ_1,HELMHOLTZ_2} TestType;
 extern int FormTestMatrix(Mat,int,TestType);
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec         x, b, u;      /* approx solution, RHS, exact solution */
+  Vec         x,b,u;      /* approx solution, RHS, exact solution */
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* SLES context */
-  int         ierr, n = 10, its,  dim, p = 1, use_random;
-  Scalar      none = -1.0, pfive = 0.5;
+  int         ierr,n = 10,its, dim,p = 1,use_random;
+  Scalar      none = -1.0,pfive = 0.5;
   double      norm;
   PetscRandom rctx;
   TestType    type;
@@ -72,7 +72,7 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A,Iterations %d\n",norm,its);CHKERRA(ierr);
 
   /* Free work space */
   ierr = VecDestroy(x);CHKERRA(ierr); ierr = VecDestroy(u);CHKERRA(ierr);
@@ -91,13 +91,13 @@ int FormTestMatrix(Mat A,int n,TestType type)
   SETERRQ(1,0,"FormTestMatrix: These problems require complex numbers.");
 #else
 
-  Scalar val[5], h;
-  int    i, j, I, J, ierr, col[5], Istart, Iend;
+  Scalar val[5],h;
+  int    i,j,I,J,ierr,col[5],Istart,Iend;
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
   if (type == TEST_1) {
     val[0] = 1.0; val[1] = 4.0; val[2] = -2.0;
-    for (i=1; i<n-1; i++ ) {
+    for (i=1; i<n-1; i++) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
       ierr = MatSetValues(A,1,&i,3,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -108,7 +108,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
   } 
   else if (type == TEST_2) {
     val[0] = 1.0; val[1] = 0.0; val[2] = 2.0; val[3] = 1.0;
-    for (i=2; i<n-1; i++ ) {
+    for (i=2; i<n-1; i++) {
       col[0] = i-2; col[1] = i-1; col[2] = i; col[3] = i+1;
       ierr = MatSetValues(A,1,&i,4,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -122,7 +122,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
   else if (type == TEST_3) {
     val[0] = PETSC_i * 2.0;
     val[1] = 4.0; val[2] = 0.0; val[3] = 1.0; val[4] = 0.7;
-    for (i=1; i<n-3; i++ ) {
+    for (i=1; i<n-3; i++) {
       col[0] = i-1; col[1] = i; col[2] = i+1; col[3] = i+2; col[4] = i+3;
       ierr = MatSetValues(A,1,&i,5,col,val,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -143,20 +143,20 @@ int FormTestMatrix(Mat A,int n,TestType type)
        Dirichlet b.c.'s on all sides
      */
     PetscRandom rctx;
-    double      h2, sigma1 = 5.0;
+    double      h2,sigma1 = 5.0;
     Scalar      sigma2;
     ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
-    for ( I=Istart; I<Iend; I++ ) { 
+    for (I=Istart; I<Iend; I++) { 
       *val = -1.0; i = I/n; j = I - i*n;  
-      if ( i>0 ) {
+      if (i>0) {
         J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
-      if ( i<n-1 ) {
+      if (i<n-1) {
         J = I+n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
-      if ( j>0 ) {
+      if (j>0) {
         J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
-      if ( j<n-1 ) {
+      if (j<n-1) {
         J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRQ(ierr);
       *val = 4.0 - sigma1*h2 + sigma2*h2;
@@ -172,20 +172,20 @@ int FormTestMatrix(Mat A,int n,TestType type)
        Dirichlet b.c.'s on 3 sides
        du/dn = i*alpha*u on (1,y), 0<y<1
      */
-    double  h2, sigma1 = 200.0;
+    double  h2,sigma1 = 200.0;
     Scalar alpha_h;
     ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRA(ierr);
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (double)(n+1);  /* alpha_h = alpha * h */
-    for ( I=Istart; I<Iend; I++ ) { 
+    for (I=Istart; I<Iend; I++) { 
       *val = -1.0; i = I/n; j = I - i*n;  
-      if ( i>0 ) {
+      if (i>0) {
         J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
-      if ( i<n-1 ) {
+      if (i<n-1) {
         J = I+n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
-      if ( j>0 ) {
+      if (j>0) {
         J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
-      if ( j<n-1 ) {
+      if (j<n-1) {
         J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       *val = 4.0 - sigma1*h2;
       if (!((I+1)%n)) *val += alpha_h;

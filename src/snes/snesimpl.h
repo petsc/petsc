@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.49 1999/09/27 21:31:37 bsmith Exp balay $ */
+/* $Id: snesimpl.h,v 1.50 1999/12/01 16:15:33 balay Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -16,11 +16,11 @@ struct _p_SNES {
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		                        /* user-defined context */
 
-  Vec   vec_sol, vec_sol_always;                /* pointer to solution */
+  Vec   vec_sol,vec_sol_always;                /* pointer to solution */
   Vec   vec_sol_update_always;                  /* pointer to solution update */
 
   int   (*computefunction)(SNES,Vec,Vec,void*); /* function routine */
-  Vec   vec_func, vec_func_always;              /* pointer to function (or gradient) */
+  Vec   vec_func,vec_func_always;              /* pointer to function (or gradient) */
   void  *funP;                                  /* user-defined function context */
 
   int   (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -133,7 +133,7 @@ typedef struct {
 
 #define SNESMonitor(snes,it,rnorm) \
         { int _ierr,_i,_im = snes->numbermonitors; \
-          for ( _i=0; _i<_im; _i++ ) {\
+          for (_i=0; _i<_im; _i++) {\
             _ierr = (*snes->monitor[_i])(snes,it,rnorm,snes->monitorcontext[_i]);CHKERRQ(_ierr); \
 	  } \
 	}

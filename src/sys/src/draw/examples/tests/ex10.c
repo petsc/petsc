@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.8 1999/09/02 14:52:51 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.9 1999/10/24 14:01:18 bsmith Exp bsmith $*/
 static char help[] = "Tests repeatedly setting a window type\n";
 
 #include "petsc.h"
@@ -8,7 +8,7 @@ static char help[] = "Tests repeatedly setting a window type\n";
 int main(int argc,char **argv)
 {
   Draw draw;
-  int  ierr, x = 0, y = 0, width = 300, height = 300;
+  int  ierr,x = 0,y = 0,width = 300,height = 300;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 

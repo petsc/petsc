@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.331 1999/11/17 16:19:41 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.332 1999/11/20 18:40:17 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1666,7 +1666,7 @@ and then associate it with the matrix, {\tt mat}, by using the
 command \findex{MatShellSetOperation()}
 \begin{verbatim}
    ierr = MatShellSetOperation(Mat mat,MatOperation MATOP_MULT,
-                               (void *) int (*UserMult)(Mat,Vec,Vec));
+                               (void*)int (*UserMult)(Mat,Vec,Vec));
 \end{verbatim}
 Here {\tt MATOP\_MULT} is the name of the operation for matrix-vector
 multiplication. Within each user-defined routine (such as
@@ -1832,7 +1832,7 @@ One first creates a parallel matrix that contains the connectivity information a
 grid (or other graph-type object) that is to be partitioned. This is done with the 
 command
 \begin{verbatim}
-  ierr = MatCreateMPIAdj(MPI_Comm comm,int mlocal,int n,int *ia,int *ja, Mat *Adj);
+  ierr = MatCreateMPICSR(MPI_Comm comm,int mlocal,int n,int *ia,int *ja, MatScalar *weights,Mat *Adj);
 \end{verbatim}
 The argument {\tt mlocal} indicates the number of rows of the graph being provided
 by the given processor, {\tt n} is the total number of columns; equal to the 
@@ -2173,7 +2173,7 @@ in (\ref{eq:prec}), right preconditioning results, and the
 residual of (\ref{eq:Ax=b}),
   \[ r \equiv b - Ax = b - A M_R^{-1} \, M_R x, \]
 is preserved.  In contrast, the residual is altered for left 
-($ M_R = I $ ) and symmetric preconditioning, as given by
+($ M_R = I $) and symmetric preconditioning, as given by
   \[ r_L \equiv M_L^{-1} b - M_L^{-1} A x = M_L^{-1} r. \]
 By default, all KSP implementations use left preconditioning.  
 % Not really, KSPQCG uses symmetric preconditioning.
@@ -2244,7 +2244,7 @@ based on the $l_2$-norm of the residual. Convergence
 the relative decrease of the residual norm, {\tt rtol}, the absolute 
 size of the residual norm, {\tt atol}, and the relative increase in the 
 residual, {\tt dtol}.  Convergence is detected at iteration $ k $ if
-\[  \| r_k \|_2 < {\rm max} ( rtol * \| r_0 \|_2, atol ), \]
+\[  \| r_k \|_2 < {\rm max} ( rtol * \| r_0 \|_2, atol), \]
 where $r_k = b - A x_k$.  Divergence is detected if
 \[  \| r_k \|_2 > dtol * \| r_0 \|_2. \]
 These parameters, as well as the maximum number of allowable iterations, 
@@ -2588,9 +2588,9 @@ parallel computation.  Thus, when solving a linear system, $ Ax=b $,
 using ILU/ICC preconditioning and the matrix format {\tt MATMPIROWBS}
 for {\em both} the linear system matrix and the preconditioning
 matrix, one actually solves the scaled and permuted system $ \hat{A}
-\hat{x} = \hat{b} $ , where $ \hat{x} = P D^{1/2} x $ and $\hat{b} = P
+\hat{x} = \hat{b} $, where $ \hat{x} = P D^{1/2} x $ and $\hat{b} = P
 D^{-1/2} b$ .  PETSc handles the internal scaling and permutation of
-$ x $ and $ b $ , so the user does {\em not} deal with these conversions, 
+$ x $ and $ b $, so the user does {\em not} deal with these conversions, 
 but instead always works with the original linear system.  In
 this case, by default the scaled residual norm is monitored; one must use the
 option {\tt -ksp\_truemonitor} \findex{-ksp_truemonitor} to print both the
@@ -2718,7 +2718,7 @@ The block Jacobi and overlapping additive Schwarz methods in PETSc are
 supported in parallel; however, only the uniprocessor
 version of the block Gauss-Seidel method is currently in place.
 By default, the PETSc implentations of these methods
-employ ILU(0) factorization on each individual block ( that is , the default solver on each 
+employ ILU(0) factorization on each individual block ( that is, the default solver on each 
 subblock is {\tt PCType=PCILU,
 KSPType=KSPPREONLY}); the user can set alternative linear solvers via the options 
 \findex{-sub_ksp_type} \findex{-sub_pc_type}
@@ -2735,7 +2735,7 @@ extract the \findex{PCBJacobiGetSubSLES()} SLES context for each local
 block.  The argument {\tt n\_local} is the number of blocks on the 
 calling processor, and {\tt first\_local} indicates the global number 
 of the first block on the processor. The blocks are numbered 
-successively by processors from zero through $ gb-1$ , 
+successively by processors from zero through $ gb-1$, 
 where $ gb $ is the number of global blocks.  
 The array of SLES contexts for the local blocks is given by {\tt subsles}. 
 This mechanism enables the user to set different solvers for the 
@@ -3667,7 +3667,7 @@ product approximation with the command
 \end{verbatim}
 \findex{MatSNESMFSetFunctionError()}
 The parameter {\tt rerror} should be set to the square root of the 
-relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , 
+relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $, 
 which assumes that the functions are evaluated to full double precision accuracy. 
 This parameter can also be set from the options database with 
 \begin{verbatim}
@@ -3683,7 +3683,7 @@ see the manual page for MatSNESMFSetType() and MatSNESMFRegisterDynamic). \finde
 \end{verbatim}
 For the default approach there is one ``tuning'' parameter, set with 
 \begin{verbatim}
-   ierr = MatSNESMFDefaultSetUmin(Mat mat,double );
+   ierr = MatSNESMFDefaultSetUmin(Mat mat,double);
 \end{verbatim}
 \findex{MatSNESMFDefaultSetUmin()}
 This parameter, {\tt umin} (or $u_{min}$), is a bit involved; its default is 
@@ -3712,8 +3712,8 @@ $ ||a|| = 1 $ and (b) for the entire {\bf linear} iterative process $ u $ does n
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the 
 options
 \begin{verbatim}
-   ierr = MatSNESMFWPSetComputeNormA(Mat mat,PetscTruth );
-   ierr = MatSNESMFWPSetComputeNormU(Mat mat,PetscTruth );
+   ierr = MatSNESMFWPSetComputeNormA(Mat mat,PetscTruth);
+   ierr = MatSNESMFWPSetComputeNormU(Mat mat,PetscTruth);
 \end{verbatim}
 or 
 \begin{verbatim}
@@ -3882,7 +3882,7 @@ finite difference Jacobian approximation.  These are set with the command
 \end{verbatim}
 \findex{MatFDColoringSetParameters()}
 The parameter {\tt rerror} is the square root of 
-the relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , which assumes
+the relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $, which assumes
 that the functions are evaluated to full double-precision accuracy. The 
 second parameter, {\tt umin}, is a bit more involved; its default is 
 $ 10e^{-8} $ .  Column $i$ of the Jacobian matrix (denoted by $F\_{:i}$) is 
@@ -4575,7 +4575,7 @@ error codes in writing their own tracebacks.  For example, one could
 use code such as the following:
 \begin{verbatim}
    call SLESSolve(sles,x,y,ierr)
-   if ( ierr .ne. 0 ) then
+   if ( ierr .ne. 0) then
        print*, 'Error in routine ...'
        return
    endif
@@ -6072,7 +6072,7 @@ possibly user-defined routines as well) with
 \end{verbatim}
 Likewise, all memory allocations should be checked with 
 \begin{verbatim}
-   ptr = (double *) PetscMalloc(n*sizeof(double));CHKPTRQ(void *ptr);
+   ptr = (double*)PetscMalloc(n*sizeof(double));CHKPTRQ(void *ptr);
 \end{verbatim}
 If this procedure is followed throughout all of the user's libraries 
 and codes, any error will by default generate a clean traceback of 

@@ -1,4 +1,4 @@
-/*$Id: draw.c,v 1.63 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: draw.c,v 1.64 1999/11/24 21:52:47 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -143,7 +143,7 @@ int DrawAppendTitle(Draw draw,char *title)
     ierr = PetscStrlen(title,&len1);CHKERRQ(ierr);
     ierr = PetscStrlen(draw->title,&len2);CHKERRQ(ierr);
     len  = len1 + len2;
-    newtitle = (char *) PetscMalloc( (len + 1)*sizeof(char*) );CHKPTRQ(newtitle);
+    newtitle = (char*)PetscMalloc((len + 1)*sizeof(char*));CHKPTRQ(newtitle);
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     ierr = PetscFree(draw->title);CHKERRQ(ierr);

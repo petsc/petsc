@@ -1,4 +1,4 @@
-/*$Id: dpoints.c,v 1.25 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dpoints.c,v 1.27 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -26,7 +26,7 @@
 
 .seealso: DrawPoint()
 @*/
-int DrawPointSetSize(Draw draw,double width)
+int DrawPointSetSize(Draw draw,PetscReal width)
 {
   int        ierr;
   PetscTruth isnull;

@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.17 1998/07/27 03:53:32 curfman Exp curfman $ */
+  /* $Id: tsimpl.h,v 1.18 1999/12/13 01:10:06 bsmith Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -21,10 +21,11 @@ struct _p_TS {
 
   TSProblemType problem_type;
 
-  Vec           vec_sol, vec_sol_always;
+  Vec           vec_sol,vec_sol_always;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   int  (*monitor[MAXTSMONITORS])(TS,int,double,Vec,void*); /* returns control to user after */
+  int  (*mdestroy[MAXTSMONITORS])(void*);                
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   int  numbermonitors;                       /* to, for instance, print residual norm, etc. */
 

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.34 1999/11/05 14:46:58 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.35 1999/11/24 21:55:05 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -41,29 +41,34 @@ int main(int argc,char **args)
   SLES       sles;             /* linear solver context */
   MatType    mtype;            /* matrix format */
   Mat        A;                /* matrix */
-  Vec        x, b, u;          /* approx solution, RHS, exact solution */
+  Vec        x,b,u;          /* approx solution, RHS, exact solution */
   Viewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
   char       stagename[6][16]; /* names of profiling stages */
   PetscTruth table,set,flg,trans;
-  int        ierr, its, i,loops  = 2;
+  int        ierr,its,i,loops  = 2;
   double     norm;
   PLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
-  Scalar     zero = 0.0, none = -1.0;
+  Scalar     zero = 0.0,none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   ierr = OptionsHasName(PETSC_NULL,"-table",&table);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-trans",&trans);;CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRA(ierr);
 
   /* 
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
-  ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
-  if (!flg) {loops = 1;} /* don't bother with second system */
+  ierr = OptionsGetString(PETSC_NULL,"-f",file[0],127,&flg);CHKERRA(ierr);
+  if (flg) {
+    ierr = PetscStrcpy(file[1],file[0]);CHKERRA(ierr);
+  } else {
+    ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
+    if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 or -f option");
+    ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
+    if (!flg) {loops = 1;} /* don't bother with second system */
+  }
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -77,7 +82,7 @@ int main(int argc,char **args)
         -log_summary) can be done with the larger one (that actually
         is the system of interest). 
   */
-  for ( i=0; i<loops; i++ ) {
+  for (i=0; i<loops; i++) {
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Load system i
@@ -124,7 +129,7 @@ int main(int argc,char **args)
       ierr = VecGetOwnershipRange(b,&start,&end);CHKERRA(ierr);
       ierr = VecGetLocalSize(b,&mvec);CHKERRA(ierr);
       ierr = VecGetArray(b,&bold);CHKERRA(ierr);
-      for (j=0; j<mvec; j++ ) {
+      for (j=0; j<mvec; j++) {
         index = start+j;
         ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRA(ierr);
       }
@@ -231,7 +236,7 @@ int main(int argc,char **args)
         - SLESView() prints information about the linear solver.
     */
     if (table) {
-      char   *matrixname, slesinfo[120];
+      char   *matrixname,slesinfo[120];
       Viewer viewer;
 
       /*

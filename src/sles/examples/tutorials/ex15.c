@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.13 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.14 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
 illustrates setting a user-defined shell preconditioner and using the\n\
@@ -52,15 +52,15 @@ extern int SampleShellPCDestroy(SampleShellPC*);
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec           x, b, u;   /* approx solution, RHS, exact solution */
+  Vec           x,b,u;   /* approx solution, RHS, exact solution */
   Mat           A;         /* linear system matrix */
   SLES          sles;      /* linear solver context */
   PC            pc;        /* preconditioner context */
   KSP           ksp;       /* Krylov subspace method context */
   double        norm;      /* norm of solution error */
   SampleShellPC *shell;    /* user-defined preconditioner context */
-  Scalar        v, one = 1.0, none = -1.0;
-  int           i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its;
+  Scalar        v,one = 1.0,none = -1.0;
+  int           i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
   PetscTruth    user_defined_pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -93,12 +93,12 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly). 
       - Always specify global rows and columns of matrix entries.
    */
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
     v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
   }
 
@@ -300,7 +300,7 @@ int SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
 */
 int SampleShellPCApply(void *ctx,Vec x,Vec y)
 {
-  SampleShellPC *shell = (SampleShellPC *) ctx;
+  SampleShellPC *shell = (SampleShellPC*)ctx;
   int           ierr;
 
   ierr = VecPointwiseMult(x,shell->diag,y);CHKERRQ(ierr);

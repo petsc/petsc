@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.10 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
 
@@ -9,10 +9,10 @@ static char help[] = "Tests relaxation for dense matrices.\n\n";
 int main(int argc,char **args)
 {
   Mat         C; 
-  Vec         u, x, b, e;
-  int         i,  n = 10, midx[3], ierr;
-  Scalar      v[3], one = 1.0, zero = 0.0, mone = -1.0;
-  double      omega = 1.0, norm;
+  Vec         u,x,b,e;
+  int         i,n = 10,midx[3],ierr;
+  Scalar      v[3],one = 1.0,zero = 0.0,mone = -1.0;
+  double      omega = 1.0,norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetDouble(PETSC_NULL,"-omega",&omega,PETSC_NULL);CHKERRA(ierr);
@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x);CHKERRA(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
-  for ( i=1; i<n-1; i++ ){
+  for (i=1; i<n-1; i++){
     midx[0] = i-1; midx[1] = i; midx[2] = i+1;
     ierr = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRA(ierr);
   }
@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   ierr = MatMult(C,u,b);CHKERRA(ierr);
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ierr = MatRelax(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,x);CHKERRA(ierr);
     ierr = VecWAXPY(&mone,x,u,e);CHKERRA(ierr);
     ierr = VecNorm(e,NORM_2,&norm);CHKERRA(ierr);

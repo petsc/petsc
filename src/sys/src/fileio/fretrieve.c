@@ -1,9 +1,10 @@
-/*$Id: fretrieve.c,v 1.22 1999/11/24 21:53:01 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.23 1999/12/10 03:44:45 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
 #include "petsc.h"
 #include "sys.h"
+#include "petscfix.h"
 #include "pinclude/ptime.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
@@ -33,7 +34,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 EXTERN_C_BEGIN
 extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
@@ -129,8 +130,8 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
     char       filename[256];
 
     /* This communicator does not yet have a shared tmp attribute */
-    tagvalp    = (int *) PetscMalloc( sizeof(int) );CHKPTRQ(tagvalp);
-    ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval, tagvalp);CHKERRQ(ierr);
+    tagvalp    = (int*)PetscMalloc(sizeof(int));CHKPTRQ(tagvalp);
+    ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
 
     ierr = OptionsGetString(PETSC_NULL,"-petsc_tmp",filename,238,&iflg);CHKERRQ(ierr);
     if (!iflg) {
@@ -145,7 +146,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
     /* each processor creates a /tmp file and all the later ones check */
     /* this makes sure no subset of processors is shared */
     *shared = PETSC_FALSE;
-    for ( i=0; i<size-1; i++ ) {
+    for (i=0; i<size-1; i++) {
       if (rank == i) {
         fd = fopen(filename,"w");
         if (!fd) {
@@ -175,11 +176,11 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
         SETERRQ(1,1,"Subset of processes share /tmp cannot load remote or compressed file");
       }
     }
-    *tagvalp = (int) *shared;
+    *tagvalp = (int)*shared;
   } else {
     *shared = (PetscTruth) *tagvalp;
   }
-  PLogInfo(0,"PetscSharedTmp:1 indicates detected shared /tmp, 0 not shared %d\n",(int) *shared);
+  PLogInfo(0,"PetscSharedTmp:1 indicates detected shared /tmp, 0 not shared %d\n",(int)*shared);
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +233,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
   if (!rank || !sharedtmp) {
   
     /* Construct the Python script to get URL file */
-    par = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par);
+    par = (char*)PetscMalloc(1024*sizeof(char));CHKPTRQ(par);
     ierr = PetscStrcpy(par,"python1.5 ");CHKERRQ(ierr);
     ierr = PetscStrcat(par,PETSC_DIR);CHKERRQ(ierr);
     ierr = PetscStrcat(par,"/bin/urlget.py ");CHKERRQ(ierr);
@@ -251,20 +252,21 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     ierr = PetscStrcat(par,libname);CHKERRQ(ierr);
     ierr = PetscStrcat(par," 2>&1 ");CHKERRQ(ierr);
 
-    ierr = PetscPOpen(PETSC_COMM_SELF,par,"r",&fp);CHKERRQ(ierr);
+    ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
     if (!fgets(buf,1024,fp)) {
       SETERRQ1(1,1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
     }
 
     /* Check for \n and make it 0 */
-    for ( i=0; i<1024; i++ ) {
-      if ( buf[i] == '\n') {
+    for (i=0; i<1024; i++) {
+      if (buf[i] == '\n') {
         buf[i] = 0;
         break;
       }
     }
     ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
     ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);
+    ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
     if (flg1 || flg2) {
       PLogInfo(0,"PetscFileRetrieve:Did not find file %s",libname);
     } else {

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.36 1999/05/04 20:34:27 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.37 1999/10/24 14:03:06 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
 the MatRelax() routines.\n\n";
@@ -12,8 +12,8 @@ int main(int argc,char **args)
   Mat       mat;
   Vec       b,u;
   PC        pc;
-  int       ierr, n = 5, i, col[3];
-  Scalar    value[3], zero = 0.0;
+  int       ierr,n = 5,i,col[3];
+  Scalar    value[3],zero = 0.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   /* Create and assemble matrix */
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,n,n,PETSC_NULL,&mat);CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
-  for (i=1; i<n-1; i++ ) {
+  for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
     ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
   }
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = PCSetUp(pc);CHKERRA(ierr);
 
   value[0] = 1.0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ierr = VecSet(&zero,u);CHKERRA(ierr);
     ierr = VecSetValues(u,1,&i,value,INSERT_VALUES);CHKERRA(ierr);
     ierr = PCApply(pc,u,b);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.51 1999/11/24 21:55:08 bsmith Exp balay $*/
+/*$Id: snesut.c,v 1.52 1999/12/01 16:15:35 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
@@ -22,7 +22,7 @@
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
+int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
   int    ierr;
   Vec    x;
@@ -60,7 +60,7 @@ int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-int SNESVecViewUpdateMonitor(SNES snes,int its,double fgnorm,void *dummy)
+int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
   int    ierr;
   Vec    x;
@@ -104,7 +104,7 @@ int SNESVecViewUpdateMonitor(SNES snes,int its,double fgnorm,void *dummy)
 
 .seealso: SNESSetMonitor(), SNESVecViewMonitor()
 @*/
-int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
+int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
   int    ierr;
   Viewer viewer = (Viewer) dummy;
@@ -113,7 +113,7 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
   if (!viewer) viewer = VIEWER_STDOUT_(snes->comm);
 
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    ierr = ViewerASCIIPrintf(viewer, "iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
@@ -130,18 +130,18 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
+int SNESDefaultSMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
   int ierr;
 
   PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     if (fgnorm > 1.e-9) {
-      ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
     } else if (fgnorm > 1.e-11){
-      ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
     }
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     if (fgnorm > 1.e-9) {
@@ -172,12 +172,12 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 
    Output Parameter:
 .   reason  - one of
-$  SNES_CONVERGED_FNORM_ABS       - ( fnorm < atol ),
-$  SNES_CONVERGED_PNORM_RELATIVE  - ( pnorm < xtol*xnorm ),
-$  SNES_CONVERGED_FNORM_RELATIVE  - ( fnorm < rtol*fnorm0 ),
-$  SNES_DIVERGED_FUNCTION_COUNT   - ( nfct > maxf ),
-$  SNES_DIVERGED_FNORM_NAN        - ( fnorm == NaN ),
-$  SNES_CONVERGED_ITERATING       - ( otherwise ),
+$  SNES_CONVERGED_FNORM_ABS       - (fnorm < atol),
+$  SNES_CONVERGED_PNORM_RELATIVE  - (pnorm < xtol*xnorm),
+$  SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
+$  SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
+$  SNES_DIVERGED_FNORM_NAN        - (fnorm == NaN),
+$  SNES_CONVERGED_ITERATING       - (otherwise),
 
    where
 +    maxf - maximum number of function evaluations,
@@ -193,7 +193,7 @@ $  SNES_CONVERGED_ITERATING       - ( otherwise ),
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,SNESConvergedReason *reason,void *dummy)
+int SNESConverged_EQ_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
@@ -213,7 +213,7 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,SNESCon
     PLogInfo(snes,"SNESConverged_EQ_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm);
     *reason = SNES_CONVERGED_PNORM_RELATIVE;
   } else if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,"SNESConverged_EQ_LS:Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs, snes->max_funcs);
+    PLogInfo(snes,"SNESConverged_EQ_LS:Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs,snes->max_funcs);
     *reason = SNES_DIVERGED_FUNCTION_COUNT ;
   } else {
     *reason = SNES_CONVERGED_ITERATING;
@@ -288,9 +288,9 @@ int SNES_KSP_SetConvergenceTestEW(SNES snes)
 
 .seealso: SNES_KSP_SetConvergenceTestEW()
 @*/
-int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
-                             double rtol_max,double gamma2,double alpha,
-                             double alpha2,double threshold)
+int SNES_KSP_SetParametersEW(SNES snes,int version,PetscReal rtol_0,
+                             PetscReal rtol_max,PetscReal gamma2,PetscReal alpha,
+                             PetscReal alpha2,PetscReal threshold)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
 
@@ -329,7 +329,7 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
-  double              rtol = 0.0, stol;
+  PetscReal           rtol = 0.0,stol;
   int                 ierr;
 
   PetscFunctionBegin;
@@ -358,7 +358,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ "SNES_KSP_EW_Converged_Private"
-int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,KSPConvergedReason *reason, void *ctx)
+int SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES)ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;

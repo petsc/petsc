@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.21 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.22 1999/11/05 14:45:05 bsmith Exp bsmith $*/
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
@@ -9,10 +9,10 @@ a file, then forms a vector.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int     i, ierr, m = 10, fd, size,sz;
-  Scalar  *avec, *array;
+  int     i,ierr,m = 10,fd,size,sz;
+  Scalar  *avec,*array;
   Vec     vec;
-  Viewer  view_out, view_in;
+  Viewer  view_out,view_in;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&sz);CHKERRA(ierr);
@@ -25,7 +25,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Allocate array and set values */
-  array = (Scalar *) PetscMalloc( m*sizeof(Scalar) );CHKPTRA(array);
+  array = (Scalar*)PetscMalloc(m*sizeof(Scalar));CHKPTRA(array);
   for (i=0; i<m; i++) {
     array[i] = i*10.0;
   }
@@ -47,7 +47,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Open input binary viewer */
-  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); CHKERRA(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in);CHKERRA(ierr);
   ierr = ViewerBinaryGetDescriptor(view_in,&fd);CHKERRA(ierr);
 
   /* Create vector and get pointer to data space */

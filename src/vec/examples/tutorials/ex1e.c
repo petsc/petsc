@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.57 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex1e.c,v 1.1 1999/11/01 22:52:27 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -14,6 +14,12 @@ static char help[] = "Demonstrates various vector routines.\n\n";
 T*/
 
 /* 
+
+   This uses the PETSc _ error checking routines. Put _ before the PETSc function call
+  and __ after the call (or ___ in a subroutine, not the main program). This is equivalent
+  to using the ierr = ... CHKERRA(ierr); macros
+
+
   Include "vec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petsc.h  - base PETSc routines   is.h     - index sets
@@ -29,12 +35,12 @@ int main(int argc,char **argv)
   Vec        x, y, w;               /* vectors */
   Vec        *z;                    /* array of vectors */
   double     norm, v, v1, v2;
-  int        n = 20, ierr;
+  int        n = 20;
   PetscTruth flg;
   Scalar     one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+_ OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);___
 
   /* 
      Create a vector, specifying only its global dimension.
@@ -54,15 +60,15 @@ int main(int argc,char **argv)
      particular type of vector to be formed.
 
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
-  ierr = VecSetFromOptions(x);CHKERRA(ierr);
+_ VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);___
+_ VecSetFromOptions(x);___
 
   /*
      Duplicate some work vectors (of the same format and
      partitioning as the initial vector).
   */
-  ierr = VecDuplicate(x,&y);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&w);CHKERRA(ierr);
+_ VecDuplicate(x,&y);___
+_ VecDuplicate(x,&w);___
 
   /*
      Duplicate more work vectors (of the same format and
@@ -70,22 +76,22 @@ int main(int argc,char **argv)
      an array of vectors, which is often more convenient than
      duplicating individual ones.
   */
-  ierr = VecDuplicateVecs(x,3,&z);CHKERRA(ierr); 
+_ VecDuplicateVecs(x,3,&z);___ 
 
   /*
      Set the vectors to entries to a constant value.
   */
-  ierr = VecSet(&one,x);CHKERRA(ierr);
-  ierr = VecSet(&two,y);CHKERRA(ierr);
-  ierr = VecSet(&one,z[0]);CHKERRA(ierr);
-  ierr = VecSet(&two,z[1]);CHKERRA(ierr);
-  ierr = VecSet(&three,z[2]);CHKERRA(ierr);
+_ VecSet(&one,x);___
+_ VecSet(&two,y);___
+_ VecSet(&one,z[0]);___
+_ VecSet(&two,z[1]);___
+_ VecSet(&three,z[2]);___
 
   /*
      Demonstrate various basic vector routines.
   */
-  ierr = VecDot(x,x,&dot);CHKERRA(ierr);
-  ierr = VecMDot(3,x,z,dots);CHKERRA(ierr);
+_ VecDot(x,x,&dot);___
+_ VecMDot(3,x,z,dots);___
 
   /* 
      Note: If using a complex numbers version of PETSc, then
@@ -93,88 +99,88 @@ int main(int argc,char **argv)
      (when using real numbers) it is undefined.
   */
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (PetscReal(dot)));CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)PetscReal(dots[0]),
-                             (int)PetscReal(dots[1]),(int)PetscReal(dots[2]));CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (PetscRealPart(dot)));___
+_ PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)PetscRealPart(dots[0]),
+                             (int)PetscRealPart(dots[1]),(int)PetscRealPart(dots[2]));___
 #else
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n",(int) dot);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)dots[0],
-                             (int)dots[1],(int)dots[2]);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n",(int) dot);___
+_ PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)dots[0],
+                             (int)dots[1],(int)dots[2]);___
 #endif
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");___
 
-  ierr = VecScale(&two,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
+_ VecScale(&two,x);___
+_ VecNorm(x,NORM_2,&norm);___
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",v);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",v);___
 
-  ierr = VecCopy(x,w);CHKERRA(ierr);
-  ierr = VecNorm(w,NORM_2,&norm);CHKERRA(ierr);
+_ VecCopy(x,w);___
+_ VecNorm(w,NORM_2,&norm);___
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);___
 
-  ierr = VecAXPY(&three,x,y);CHKERRA(ierr);
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
+_ VecAXPY(&three,x,y);___
+_ VecNorm(y,NORM_2,&norm);___
   v = norm-8.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);___
 
-  ierr = VecAYPX(&two,x,y);CHKERRA(ierr);
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
+_ VecAYPX(&two,x,y);___
+_ VecNorm(y,NORM_2,&norm);___
   v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);___
 
-  ierr = VecSwap(x,y);CHKERRA(ierr);
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
+_ VecSwap(x,y);___
+_ VecNorm(y,NORM_2,&norm);___
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);___
+_ VecNorm(x,NORM_2,&norm);___
   v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);___
 
-  ierr = VecWAXPY(&two,x,y,w);CHKERRA(ierr);
-  ierr = VecNorm(w,NORM_2,&norm);CHKERRA(ierr);
+_ VecWAXPY(&two,x,y,w);___
+_ VecNorm(w,NORM_2,&norm);___
   v = norm-38.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",v);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",v);___
 
-  ierr = VecPointwiseMult(y,x,w);CHKERRA(ierr);
-  ierr = VecNorm(w,NORM_2,&norm);CHKERRA(ierr); 
+_ VecPointwiseMult(y,x,w);___
+_ VecNorm(w,NORM_2,&norm);___ 
   v = norm-36.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",v);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",v);___
 
-  ierr = VecPointwiseDivide(x,y,w);CHKERRA(ierr);
-  ierr = VecNorm(w,NORM_2,&norm);CHKERRA(ierr);
+_ VecPointwiseDivide(x,y,w);___
+_ VecNorm(w,NORM_2,&norm);___
   v = norm-9.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);___
 
   dots[0] = one;
   dots[1] = three;
   dots[2] = two;
-  ierr = VecSet(&one,x);CHKERRA(ierr);
-  ierr = VecMAXPY(3,dots,x,z);CHKERRA(ierr);
-  ierr = VecNorm(z[0],NORM_2,&norm);CHKERRA(ierr);
+_ VecSet(&one,x);___
+_ VecMAXPY(3,dots,x,z);___
+_ VecNorm(z[0],NORM_2,&norm);___
   v = norm-sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  ierr = VecNorm(z[1],NORM_2,&norm);CHKERRA(ierr);
+_ VecNorm(z[1],NORM_2,&norm);___
   v1 = norm-2.0*sqrt((double) n); if (v1 > -1.e-10 && v1 < 1.e-10) v1 = 0.0; 
-  ierr = VecNorm(z[2],NORM_2,&norm);CHKERRA(ierr);
+_ VecNorm(z[2],NORM_2,&norm);___
   v2 = norm-3.0*sqrt((double) n); if (v2 > -1.e-10 && v2 < 1.e-10) v2 = 0.0; 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",v,v1,v2);CHKERRA(ierr);
+_ PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",v,v1,v2);___
 
   /* 
      Test whether vector has been corrupted (just to demonstrate this
      routine) not needed in most application codes.
   */
-  ierr = VecValid(x,&flg);CHKERRA(ierr);
+_ VecValid(x,&flg);___
   if (!flg) SETERRA(1,0,"Corrupted vector.");
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
-  ierr = VecDestroy(w);CHKERRA(ierr);
-  ierr = VecDestroyVecs(z,3);CHKERRA(ierr);
+_ VecDestroy(x);___
+_ VecDestroy(y);___
+_ VecDestroy(w);___
+_ VecDestroyVecs(z,3);___
   PetscFinalize();
   return 0;
 }

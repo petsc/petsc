@@ -1,4 +1,4 @@
-/*$Id: random.c,v 1.48 1999/06/08 22:54:45 balay Exp bsmith $*/
+/*$Id: random.c,v 1.49 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -8,7 +8,7 @@
 
     Multiple random number generators may be used
 
-    We're still not sure what interface we want here.  There should be
+    We are still not sure what interface we want here.  There should be
     one to reinitialize and set the seed.
  */
 
@@ -20,7 +20,7 @@
 struct _p_PetscRandom {
   PETSCHEADER(int)
   unsigned long seed;
-  Scalar        low, width;       /* lower bound and width of the interval over
+  Scalar        low,width;       /* lower bound and width of the interval over
                                      which the random numbers are distributed */
   PetscTruth    iset;             /* if true, indicates that the user has set the interval */
   /* array for shuffling ??? */
@@ -85,8 +85,8 @@ int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
 #if defined(PETSC_USE_COMPLEX)
-  if (PetscReal(low) >= PetscReal(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
-  if (PetscImaginary(low) >= PetscImaginary(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
+  if (PetscRealPart(low) >= PetscRealPart(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
+  if (PetscImaginaryPart(low) >= PetscImaginaryPart(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
 #else
   if (low >= high) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high: Instead %g %g",low,high);
 #endif
@@ -97,7 +97,7 @@ int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
 }
 
 /*
-   For now we've set up using the DRAND48() generater. We need to deal 
+   For now we have set up using the DRAND48() generater. We need to deal 
    with other variants of random number generators. We should also add
    a routine to enable restarts [seed48()] 
 */
@@ -211,15 +211,15 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE) {
-         *val = PetscReal(r->width)*drand48() + PetscReal(r->low) +
-                (PetscImaginary(r->width)*drand48() + PetscImaginary(r->low)) * PETSC_i;
+         *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low) +
+                (PetscImaginaryPart(r->width)*drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
     }
     else *val = drand48() + drand48()*PETSC_i;
   } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset == PETSC_TRUE) *val = PetscReal(r->width)*drand48() + PetscReal(r->low);
+    if (r->iset == PETSC_TRUE) *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low);
     else                       *val = drand48();
   } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset == PETSC_TRUE) *val = (PetscImaginary(r->width)*drand48()+PetscImaginary(r->low))*PETSC_i;
+    if (r->iset == PETSC_TRUE) *val = (PetscImaginaryPart(r->width)*drand48()+PetscImaginaryPart(r->low))*PETSC_i;
     else                       *val = drand48()*PETSC_i;
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid random number type");
@@ -267,14 +267,14 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE)
-         *val = PetscReal(r->width)*rand()/(double)RAND_MAX + PetscReal(r->low) +
-                (PetscImaginary(r->width)*rand()/(double)RAND_MAX + PetscImaginary(r->low)) * PETSC_i;
+         *val = PetscRealPart(r->width)*rand()/(double)RAND_MAX + PetscRealPart(r->low) +
+                (PetscImaginaryPart(r->width)*rand()/(double)RAND_MAX + PetscImaginaryPart(r->low)) * PETSC_i;
     else *val = rand()/(double)RAND_MAX + rand()/(double)RAND_MAX*PETSC_i;
   } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset == PETSC_TRUE) *val = PetscReal(r->width)*rand()/(double)RAND_MAX + PetscReal(r->low);
+    if (r->iset == PETSC_TRUE) *val = PetscRealPart(r->width)*rand()/(double)RAND_MAX + PetscRealPart(r->low);
     else                       *val = rand()/(double)RAND_MAX;
   } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset == PETSC_TRUE) *val = (PetscImaginary(r->width)*rand()/(double)RAND_MAX+PetscImaginary(r->low))*PETSC_i;
+    if (r->iset == PETSC_TRUE) *val = (PetscImaginaryPart(r->width)*rand()/(double)RAND_MAX+PetscImaginaryPart(r->low))*PETSC_i;
     else                       *val = rand()/(double)RAND_MAX*PETSC_i;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid random number type");
 #else

@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.17 1999/10/24 14:02:16 bsmith Exp bsmith $ */
+/* $Id: mpiaij.h,v 1.18 1999/11/24 21:53:50 bsmith Exp bsmith $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
@@ -7,12 +7,12 @@
 #include "src/sys/ctable.h"
 
 typedef struct {
-  int           *rowners, *cowners;     /* ranges owned by each processor */
-  int           m, n;                   /* local rows and columns */
-  int           M, N;                   /* global rows and columns */
-  int           rstart, rend;           /* starting and ending owned rows */
-  int           cstart, cend;           /* starting and ending owned columns */
-  Mat           A, B;                   /* local submatrices: A (diag part),
+  int           *rowners,*cowners;     /* ranges owned by each processor */
+  int           m,n;                   /* local rows and columns */
+  int           M,N;                   /* global rows and columns */
+  int           rstart,rend;           /* starting and ending owned rows */
+  int           cstart,cend;           /* starting and ending owned columns */
+  Mat           A,B;                   /* local submatrices: A (diag part),
                                            B (off-diag part) */
   int           size;                   /* size of communicator */
   int           rank;                   /* rank of proc in communicator */ 
@@ -22,8 +22,8 @@ typedef struct {
   PetscTruth    donotstash;             /* PETSC_TRUE if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
-  int           nsends, nrecvs;         /* numbers of sends and receives */
-  Scalar        *svalues, *rvalues;     /* sending and receiving data */
+  int           nsends,nrecvs;         /* numbers of sends and receives */
+  Scalar        *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
 #if defined (PETSC_USE_CTABLE)
   PetscTable    colmap;

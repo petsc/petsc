@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.40 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.41 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does case when we are merely selecting the local part of the\n\
@@ -11,7 +11,7 @@ parallel vector.\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, size,rank,i;
+  int           n = 5,ierr,size,rank,i;
   Scalar        value;
   Vec           x,y;
   IS            is1,is2;
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     value = (Scalar) (i + 10*rank);
     ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }

@@ -1,7 +1,6 @@
-/*$Id: amsopen.c,v 1.7 1999/05/12 03:26:20 bsmith Exp bsmith $*/
+/*$Id: amsopen.c,v 1.8 1999/10/24 14:01:06 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  */
-#if defined(PETSC_HAVE_AMS)
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerAMSOpen"
@@ -21,7 +20,9 @@
 +   -ams_port <port number>
 .   -ams_publish_objects - publish all PETSc objects to be visible to the AMS memory snooper,
                            use PetscObjectPublish() to publish individual objects
--   -ams_publish_stack - publish the PETSc stack frames to the snooper
+.   -ams_publish_stack - publish the PETSc stack frames to the snooper
+.   -ams_matlab - open Matlab Petscview AMS client
+-   -ams_java - open JAVA AMS client
 
     Level: advanced
 
@@ -52,12 +53,3 @@ int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
   ierr = ViewerAMSSetCommName(*lab,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#else
-
-int dummy6(void)
-{ 
-  return 0;
-}
-
-#endif

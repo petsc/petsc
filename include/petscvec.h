@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.100 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.101 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -71,7 +71,7 @@ extern int VecDuplicateVecs(Vec,int,Vec*[]);
 extern int VecDestroyVecs(const Vec[],int); 
 extern int VecGetMap(Vec,Map*);
 
-typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
+typedef enum {NOT_SET_VALUES,INSERT_VALUES,ADD_VALUES,MAX_VALUES} InsertMode;
 
 extern int VecStrideNorm(Vec,int,NormType,double*);
 extern int VecStrideGather(Vec,int,Vec,InsertMode);
@@ -84,7 +84,7 @@ extern int VecStrideScatterAll(Vec*,Vec,InsertMode);
 extern int VecSetValues(Vec,int,const int[],const Scalar[],InsertMode);
 extern int VecAssemblyBegin(Vec);
 extern int VecAssemblyEnd(Vec);
-extern int VecSetStashInitialSize(Vec,int, int);
+extern int VecSetStashInitialSize(Vec,int,int);
 extern int VecStashView(Vec,Viewer);
 
 #define VecSetValue(v,i,va,mode) \
@@ -116,8 +116,8 @@ extern int VecScatterView(VecScatter,Viewer);
 extern int VecScatterRemap(VecScatter,int *,int*);
 
 typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineDirection;
-typedef enum {PIPELINE_NONE=1, PIPELINE_SEQUENTIAL=2,
-	      PIPELINE_REDBLACK=3, PIPELINE_MULTICOLOR=4} PipelineType;
+typedef enum {PIPELINE_NONE=1,PIPELINE_SEQUENTIAL=2,
+	      PIPELINE_REDBLACK=3,PIPELINE_MULTICOLOR=4} PipelineType;
 
 typedef struct _p_VecPipeline*  VecPipeline;
 
@@ -147,9 +147,9 @@ extern int VecGetType(Vec,VecType*);
 extern int VecGetLocalSize(Vec,int*);
 extern int VecGetOwnershipRange(Vec,int*,int*);
 
-extern int VecSetLocalToGlobalMapping(Vec, ISLocalToGlobalMapping);
+extern int VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
 extern int VecSetValuesLocal(Vec,int,const int[],const Scalar[],InsertMode);
-extern int VecSetLocalToGlobalMappingBlocked(Vec, ISLocalToGlobalMapping);
+extern int VecSetLocalToGlobalMappingBlocked(Vec,ISLocalToGlobalMapping);
 extern int VecSetValuesBlockedLocal(Vec,int,const int[],const Scalar[],InsertMode);
 
 extern int VecDotBegin(Vec,Vec,Scalar *);

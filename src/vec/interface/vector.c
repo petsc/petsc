@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.189 1999/11/24 21:53:28 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.190 1999/12/21 21:15:15 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -127,7 +127,7 @@ $     val = (x,y) = y^T x,
 
 .seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd()
 @*/
-int VecDot(Vec x, Vec y, Scalar *val)
+int VecDot(Vec x,Vec y,Scalar *val)
 {
   int ierr;
 
@@ -176,7 +176,7 @@ int VecDot(Vec x, Vec y, Scalar *val)
 
    Notes:
 $     NORM_1 denotes sum_i |x_i|
-$     NORM_2 denotes sqrt( sum_i (x_i)^2 )
+$     NORM_2 denotes sqrt(sum_i (x_i)^2)
 $     NORM_INFINITY denotes max_i |x_i|
 
    Level: intermediate
@@ -192,7 +192,7 @@ $     NORM_INFINITY denotes max_i |x_i|
           VecNormBegin(), VecNormEnd()
 
 @*/
-int VecNorm(Vec x,NormType type,double *val)  
+int VecNorm(Vec x,NormType type,PetscReal *val)  
 {
   int ierr;
 
@@ -238,7 +238,7 @@ int VecNorm(Vec x,NormType type,double *val)
 
 .seealso: VecNorm(), VecMin()
 @*/
-int VecMax(Vec x,int *p,double *val)
+int VecMax(Vec x,int *p,PetscReal *val)
 {
   int ierr;
 
@@ -275,7 +275,7 @@ int VecMax(Vec x,int *p,double *val)
 
 .seealso: VecMax()
 @*/
-int VecMin(Vec x,int *p,double *val)
+int VecMin(Vec x,int *p,PetscReal *val)
 {
   int ierr;
 
@@ -898,7 +898,7 @@ int VecDuplicateVecs(Vec v,int m,Vec *V[])
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   PetscValidPointer(V);
   PetscValidType(v);
-  ierr = (*v->ops->duplicatevecs)( v, m,V );CHKERRQ(ierr);
+  ierr = (*v->ops->duplicatevecs)(v, m,V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -932,7 +932,7 @@ int VecDestroyVecs(const Vec vv[],int m)
   if (!vv) SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null vectors");
   PetscValidHeaderSpecific(*vv,VEC_COOKIE);
   PetscValidType(*vv);
-  ierr = (*(*vv)->ops->destroyvecs)( vv, m );CHKERRQ(ierr);
+  ierr = (*(*vv)->ops->destroyvecs)(vv,m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -986,7 +986,7 @@ int VecSetValues(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora)
   PetscValidScalarPointer(y);
   PetscValidType(x);
   PLogEventBegin(VEC_SetValues,x,0,0,0);
-  ierr = (*x->ops->setvalues)( x, ni,ix, y,iora );CHKERRQ(ierr);
+  ierr = (*x->ops->setvalues)(x,ni,ix,y,iora);CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   PetscFunctionReturn(0);
 }
@@ -1042,7 +1042,7 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode 
   PetscValidScalarPointer(y);
   PetscValidType(x);
   PLogEventBegin(VEC_SetValues,x,0,0,0);
-  ierr = (*x->ops->setvaluesblocked)( x, ni,ix, y,iora );CHKERRQ(ierr);
+  ierr = (*x->ops->setvaluesblocked)(x,ni,ix,y,iora);CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   PetscFunctionReturn(0);
 }
@@ -1096,7 +1096,7 @@ M*/
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMappingBlocked(), VecSetValuesBlockedLocal()
 @*/
-int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
+int VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 {
   int ierr;
   PetscFunctionBegin;
@@ -1135,7 +1135,7 @@ int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
 @*/
-int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
+int VecSetLocalToGlobalMappingBlocked(Vec x,ISLocalToGlobalMapping mapping)
 {
   int ierr;
   PetscFunctionBegin;
@@ -1199,12 +1199,12 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMapping()");
   }
   if (ni > 128) {
-    lix = (int *) PetscMalloc( ni*sizeof(int) );CHKPTRQ(lix);
+    lix = (int*)PetscMalloc(ni*sizeof(int));CHKPTRQ(lix);
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ierr = ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix);CHKERRQ(ierr);
-  ierr = (*x->ops->setvalues)( x,ni,lix, y,iora );CHKERRQ(ierr);
+  ierr = (*x->ops->setvalues)(x,ni,lix,y,iora);CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {
     ierr = PetscFree(lix);CHKERRQ(ierr);
@@ -1263,12 +1263,12 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMappingBlocked()");
   }
   if (ni > 128) {
-    lix = (int *) PetscMalloc( ni*sizeof(int) );CHKPTRQ(lix);
+    lix = (int*)PetscMalloc(ni*sizeof(int));CHKPTRQ(lix);
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ierr = ISLocalToGlobalMappingApply(x->bmapping,ni,ix,lix);CHKERRQ(ierr);
-  ierr = (*x->ops->setvaluesblocked)( x,ni,lix, y,iora );CHKERRQ(ierr);
+  ierr = (*x->ops->setvaluesblocked)(x,ni,lix,y,iora);CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {
     ierr = PetscFree(lix);CHKERRQ(ierr);
@@ -1624,7 +1624,7 @@ int VecGetArrays(const Vec x[],int n,Scalar **a[])
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidPointer(a);
   if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must get at least one array n = %d",n);
-  q = (Scalar **) PetscMalloc(n*sizeof(Scalar*));CHKPTRQ(q);
+  q = (Scalar**)PetscMalloc(n*sizeof(Scalar*));CHKPTRQ(q);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]);CHKERRQ(ierr);
   }
@@ -1967,7 +1967,7 @@ int VecSetOption(Vec x,VecOption op)
 #define __FUNC__ "VecDuplicateVecs_Default"
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
-int VecDuplicateVecs_Default(Vec w,int m,Vec *V[] )
+int VecDuplicateVecs_Default(Vec w,int m,Vec *V[])
 {
   int  i,ierr;
 
@@ -1975,14 +1975,14 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec *V[] )
   PetscValidHeaderSpecific(w,VEC_COOKIE);
   PetscValidPointer(V);
   if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0: m = %d",m);
-  *V = (Vec *) PetscMalloc( m * sizeof(Vec *));CHKPTRQ(*V);
+  *V = (Vec*)PetscMalloc(m * sizeof(Vec *));CHKPTRQ(*V);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "VecDestroyVecs_Default"
-int VecDestroyVecs_Default(const Vec v[], int m )
+int VecDestroyVecs_Default(const Vec v[], int m)
 {
   int i,ierr;
 
@@ -1990,7 +1990,7 @@ int VecDestroyVecs_Default(const Vec v[], int m )
   PetscValidPointer(v);
   if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0: m = %d",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]);CHKERRQ(ierr);}
-  ierr = PetscFree( (Vec*)v );CHKERRQ(ierr);
+  ierr = PetscFree((Vec*)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2349,7 +2349,7 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
 
 @*/
-int VecSetStashInitialSize(Vec vec,int size, int bsize)
+int VecSetStashInitialSize(Vec vec,int size,int bsize)
 {
   int ierr;
 
@@ -2378,9 +2378,9 @@ int VecStashView(Vec v,Viewer viewer)
 
   /* print block stash */
   ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %d block size %d\n",rank,s->n,s->bs);CHKERRQ(ierr);
-  for ( i=0; i<s->n; i++ ) {
+  for (i=0; i<s->n; i++) {
     ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d ",rank,s->idx[i]);CHKERRQ(ierr);
-    for ( j=0; j<s->bs; j++ ) {
+    for (j=0; j<s->bs; j++) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%g ",s->array[i*s->bs+j]);CHKERRQ(ierr);
     }
     ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -2392,7 +2392,7 @@ int VecStashView(Vec v,Viewer viewer)
 
   /* print basic stash */
   ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %d\n",rank,s->n);CHKERRQ(ierr);
-  for ( i=0; i<s->n; i++ ) {
+  for (i=0; i<s->n; i++) {
     ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %g\n",rank,s->idx[i],s->array[i]);CHKERRQ(ierr);
   }
   ierr = ViewerFlush(viewer);CHKERRQ(ierr);

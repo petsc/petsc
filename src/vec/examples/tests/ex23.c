@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.8 1999/10/13 20:37:10 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.9 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector\n\
   using a blocked send and a strided receive.\n\n";
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = ISCreateBlock(PETSC_COMM_SELF,4,2,blocks,&is1);CHKERRA(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,8,0,1,&is2);CHKERRA(ierr);
 
-  for ( i=0; i<12; i++ ) {
+  for (i=0; i<12; i++) {
     value = i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }

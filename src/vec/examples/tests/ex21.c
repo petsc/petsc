@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.2 1999/09/27 21:29:19 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.3 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecMax() with index\
   -n <length> : vector length\n\n";
@@ -10,7 +10,7 @@ static char help[] = "Tests VecMax() with index\
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx;
+  int           n = 5,ierr,idx;
   Scalar        value;
   Vec           x;
   PetscRandom   rand;

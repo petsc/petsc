@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.12 1999/10/24 14:03:48 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.13 1999/11/05 14:47:27 bsmith Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -9,7 +9,7 @@
 static char help[] = "An Unstructured Grid Example\n\
 This example demonstrates how to solve a nonlinear system in parallel\n\
 with SNES for an unstructured mesh. The mesh and partitioning information\n\
-is read in an application defined ordering, which is later transformed\n\
+is read in an application defined ordering,which is later transformed\n\
 into another convenient ordering (called the local ordering). The local\n\
 ordering, apart from being efficient on cpu cycles and memory, allows\n\
 the use of the SPMD model of parallel programming. After partitioning\n\
@@ -68,14 +68,14 @@ T*/
   Application-defined context for problem specific data 
 */
 typedef struct {
-      int         Nvglobal, Nvlocal;            /* global and local number of vertices */
-      int         Neglobal, Nelocal;            /* global and local number of vertices */
+      int         Nvglobal,Nvlocal;            /* global and local number of vertices */
+      int         Neglobal,Nelocal;            /* global and local number of vertices */
       int 	  AdjM[MAX_VERT][50];           /* adjacency list of a vertex */
       int 	  itot[MAX_VERT];               /* total number of neighbors for a vertex */
       int 	  icv[MAX_ELEM][MAX_VERT_ELEM]; /* vertices belonging to an element */
       int	  v2p[MAX_VERT];                /* processor number for a vertex */
-      int         *locInd, *gloInd;             /* local and global orderings for a node */
-      Vec 	  localX, localF;               /* local solution (u) and f(u) vectors */ 
+      int         *locInd,*gloInd;             /* local and global orderings for a node */
+      Vec 	  localX,localF;               /* local solution (u) and f(u) vectors */ 
       double	  non_lin_param;                /* nonlinear parameter for the PDE */
       double	  lin_param;                    /* linear parameter for the PDE */
       VecScatter  scatter;                      /* scatter context for the local and 
@@ -89,16 +89,16 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
      FormInitialGuess(AppCtx*,Vec);
 
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES     snes;                 /* SNES context */
   SNESType type = SNESEQLS;      /* default nonlinear solution method */
-  Vec      x, r;                 /* solution, residual vectors */
+  Vec      x,r;                 /* solution, residual vectors */
   Mat      Jac;                  /* Jacobian matrix */
   AppCtx   user;                 /* user-defined application context */
   AO       ao;                   /* Application Ordering object */
   IS       isglobal,islocal;     /* global and local index sets */
-  int	   rank, size;           /* rank of a process, number of processors */
+  int	   rank,size;           /* rank of a process, number of processors */
   int      rstart;               /* starting index of PETSc ordering for a processor */
   int      nfails;               /* number of unsuccessful Newton steps */
   int      bs = 1;               /* block size for multicomponent systems */
@@ -106,25 +106,25 @@ int main( int argc, char **argv )
   int 	   *pordering;           /* PETSc ordering */
   int      *vertices;            /* list of all vertices (incl. ghost ones) 
                                     on a processor */ 
-  int      *verticesmask, *svertices;
+  int      *verticesmask,*svertices;
   int      *tmp;
-  int      i, j, jstart, inode, nb, nbrs, Nvneighborstotal = 0;
-  int      ierr, its, N;
+  int      i,j,jstart,inode,nb,nbrs,Nvneighborstotal = 0;
+  int      ierr,its,N;
   Scalar   *xx;
-  char     str[256], form[256], part_name[256];
-  FILE     *fptr, *fptr1;
+  char     str[256],form[256],part_name[256];
+  FILE     *fptr,*fptr1;
   ISLocalToGlobalMapping isl2g;
 #if defined (UNUSED_VARIABLES)
   Draw    draw;                 /* drawing context */
-  Scalar  *ff, *gg;
-  double  tiny = 1.0e-10, zero = 0.0, one = 1.0, big = 1.0e+10;
-  int     *tmp1, *tmp2;
+  Scalar  *ff,*gg;
+  double  tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
+  int     *tmp1,*tmp2;
 #endif
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscInitialize( &argc, &argv,"options.inf",help );
+  PetscInitialize(&argc,&argv,"options.inf",help);
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRA(ierr);
 
@@ -164,7 +164,7 @@ int main( int argc, char **argv )
      dynamically by calling partitioning routines (at present, we have 
      a  ready interface to ParMeTiS). 
    */
-  fptr = fopen("adj.in", "r");
+  fptr = fopen("adj.in","r");
   
   /*
      Each processor writes to the file output.<rank> where rank is the
@@ -172,13 +172,13 @@ int main( int argc, char **argv )
   */
   sprintf(part_name,"output.%d",rank);
   fptr1 = fopen(part_name,"w");
-  user.gloInd = (int *) PetscMalloc(user.Nvglobal*sizeof(int));
+  user.gloInd = (int*)PetscMalloc(user.Nvglobal*sizeof(int));
   fprintf(fptr1,"Rank is %d\n",rank);
   for (inode = 0; inode < user.Nvglobal; inode++) {
     fgets(str,256,fptr);
     sscanf(str,"%d",&user.v2p[inode]);
     if (user.v2p[inode] == rank) {
-       fprintf(fptr1,"Node %d belongs to processor %d\n", inode, user.v2p[inode]);
+       fprintf(fptr1,"Node %d belongs to processor %d\n",inode,user.v2p[inode]);
        user.gloInd[user.Nvlocal] = inode;
        sscanf(str,"%*d %d",&nbrs);
        fprintf(fptr1,"Number of neighbors for the vertex %d is %d\n",inode,nbrs);
@@ -187,9 +187,9 @@ int main( int argc, char **argv )
        for (i = 0; i < user.itot[user.Nvlocal]; i++){
          form[0]='\0';
          for (j=0; j < i+2; j++){
-           ierr = PetscStrcat(form, "%*d ");CHKERRQ(ierr);
+           ierr = PetscStrcat(form,"%*d ");CHKERRQ(ierr);
 	 }
-           ierr = PetscStrcat(form, "%d");CHKERRQ(ierr);
+           ierr = PetscStrcat(form,"%d");CHKERRQ(ierr);
            sscanf(str,form,&user.AdjM[user.Nvlocal][i]);
            fprintf(fptr1,"%d ",user.AdjM[user.Nvlocal][i]);
         }
@@ -197,7 +197,7 @@ int main( int argc, char **argv )
 	user.Nvlocal++;
      }
    }
-  fprintf(fptr1,"Total # of Local Vertices is %d \n", user.Nvlocal);
+  fprintf(fptr1,"Total # of Local Vertices is %d \n",user.Nvlocal);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create different orderings
@@ -211,9 +211,9 @@ int main( int argc, char **argv )
   */
   ierr = MPI_Scan(&user.Nvlocal,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRA(ierr);
   rstart -= user.Nvlocal;
-  pordering = (int *) PetscMalloc(user.Nvlocal*sizeof(int));CHKPTRA(pordering);
+  pordering = (int*)PetscMalloc(user.Nvlocal*sizeof(int));CHKPTRA(pordering);
 
-  for ( i=0; i < user.Nvlocal; i++ ) {
+  for (i=0; i < user.Nvlocal; i++) {
     pordering[i] = rstart + i;
   }
 
@@ -226,8 +226,8 @@ int main( int argc, char **argv )
   /* 
     Keep the global indices for later use 
   */
-  user.locInd = (int *) PetscMalloc(user.Nvlocal*sizeof(int));
-  tmp = (int *) PetscMalloc(Nvneighborstotal*sizeof(int));
+  user.locInd = (int*)PetscMalloc(user.Nvlocal*sizeof(int));
+  tmp = (int*)PetscMalloc(Nvneighborstotal*sizeof(int));
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Demonstrate the use of AO functionality 
@@ -235,13 +235,13 @@ int main( int argc, char **argv )
 
   fprintf(fptr1,"Before AOApplicationToPetsc, local indices are : \n");
   for (i=0; i < user.Nvlocal; i++) {
-   fprintf(fptr1, " %d ", user.gloInd[i]);
+   fprintf(fptr1," %d ",user.gloInd[i]);
    user.locInd[i] = user.gloInd[i];
   }
   fprintf(fptr1,"\n");
   jstart = 0;
   for (i=0; i < user.Nvlocal; i++) {
-   fprintf(fptr1, "Neghbors of local vertex %d are : ", user.gloInd[i]);
+   fprintf(fptr1,"Neghbors of local vertex %d are : ",user.gloInd[i]);
    for (j=0; j < user.itot[i]; j++) {
     fprintf(fptr1,"%d ",user.AdjM[i][j]);
     tmp[j + jstart] = user.AdjM[i][j];
@@ -258,13 +258,13 @@ int main( int argc, char **argv )
  
   fprintf(fptr1,"After AOApplicationToPetsc, local indices are : \n");
   for (i=0; i < user.Nvlocal; i++) {
-   fprintf(fptr1, " %d ", user.locInd[i]);
+   fprintf(fptr1," %d ",user.locInd[i]);
   }
   fprintf(fptr1,"\n");
 
   jstart = 0;
   for (i=0; i < user.Nvlocal; i++) {
-   fprintf(fptr1, "Neghbors of local vertex %d are : ", user.locInd[i]);
+   fprintf(fptr1,"Neghbors of local vertex %d are : ",user.locInd[i]);
    for (j=0; j < user.itot[i]; j++) {
     user.AdjM[i][j] = tmp[j+jstart];
     fprintf(fptr1,"%d ",user.AdjM[i][j]);
@@ -292,15 +292,15 @@ int main( int argc, char **argv )
     number of processors. Importantly, it allows us to use NO SEARCHING
     in setting up the data structures.
   */
-  vertices     = (int *) PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(vertices);
-  verticesmask = (int *) PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(verticesmask);
+  vertices     = (int*)PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(vertices);
+  verticesmask = (int*)PetscMalloc(user.Nvglobal*sizeof(int));CHKPTRA(verticesmask);
   ierr         = PetscMemzero(verticesmask,user.Nvglobal*sizeof(int));CHKERRA(ierr);
   nvertices    = 0;
  
   /* 
     First load "owned vertices" into list 
   */
-  for ( i=0; i < user.Nvlocal; i++ ) {
+  for (i=0; i < user.Nvlocal; i++) {
     vertices[nvertices++]   = user.locInd[i];
     verticesmask[user.locInd[i]] = nvertices;
   }
@@ -308,8 +308,8 @@ int main( int argc, char **argv )
   /* 
     Now load ghost vertices into list 
   */
-  for ( i=0; i < user.Nvlocal; i++ ) {
-    for ( j=0; j < user.itot[i]; j++ ) {
+  for (i=0; i < user.Nvlocal; i++) {
+    for (j=0; j < user.itot[i]; j++) {
       nb = user.AdjM[i][j];
       if (!verticesmask[nb]) {
         vertices[nvertices++] = nb;
@@ -320,8 +320,8 @@ int main( int argc, char **argv )
 
   fprintf(fptr1,"\n");
   fprintf(fptr1,"The array vertices is :\n");
-  for ( i=0; i < nvertices; i++ ) {
-   fprintf(fptr1,"%d ", vertices[i]);
+  for (i=0; i < nvertices; i++) {
+   fprintf(fptr1,"%d ",vertices[i]);
    }
   fprintf(fptr1,"\n");
  
@@ -331,9 +331,9 @@ int main( int argc, char **argv )
   */
   fprintf(fptr1,"\n");
   fprintf(fptr1,"After mapping neighbors in the local contiguous ordering\n");
-  for ( i=0; i<user.Nvlocal; i++ ) {
-    fprintf(fptr1, "Neghbors of local vertex %d are :\n",i);
-    for ( j = 0; j < user.itot[i]; j++ ) {
+  for (i=0; i<user.Nvlocal; i++) {
+    fprintf(fptr1,"Neghbors of local vertex %d are :\n",i);
+    for (j = 0; j < user.itot[i]; j++) {
       nb = user.AdjM[i][j];
       user.AdjM[i][j] = verticesmask[nb] - 1;
       fprintf(fptr1,"%d ",user.AdjM[i][j]);
@@ -360,8 +360,8 @@ int main( int argc, char **argv )
     local representation
   */
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRA(ierr);
-  svertices = (int *) PetscMalloc(nvertices*sizeof(int));CHKPTRA(svertices);
-  for ( i=0; i<nvertices; i++ ) svertices[i] = bs*vertices[i];
+  svertices = (int*)PetscMalloc(nvertices*sizeof(int));CHKPTRA(svertices);
+  for (i=0; i<nvertices; i++) svertices[i] = bs*vertices[i];
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRA(ierr);
   ierr = PetscFree(svertices);CHKERRA(ierr);
   ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRA(ierr);
@@ -417,15 +417,15 @@ int main( int argc, char **argv )
    */
    ierr = VecGetArray(x,&xx);CHKERRA(ierr);
    for (inode = 0; inode < user.Nvlocal; inode++)
-    fprintf(fptr1, "Initial Solution at node %d is %f \n",inode,xx[inode]);
+    fprintf(fptr1,"Initial Solution at node %d is %f \n",inode,xx[inode]);
    ierr = VecRestoreArray(x,&xx);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Now solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Print the output : solution vector and other information
@@ -435,7 +435,7 @@ int main( int argc, char **argv )
 
   ierr = VecGetArray(x,&xx);CHKERRA(ierr);
   for (inode = 0; inode < user.Nvlocal; inode++)
-   fprintf(fptr1, "Solution at node %d is %f \n",inode,xx[inode]);
+   fprintf(fptr1,"Solution at node %d is %f \n",inode,xx[inode]);
   ierr = VecRestoreArray(x,&xx);CHKERRA(ierr);
   fclose(fptr1);
   ierr = PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
@@ -471,13 +471,13 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, Nvlocal, ierr;
+  int     i,Nvlocal,ierr;
   int     *gloInd;
   Scalar  *x;
 #if defined (UNUSED_VARIABLES)
-  double  temp1, temp, hx, hy, hxdhy, hydhx,sc;
-  int     Neglobal, Nvglobal, j, row;
-  double  alpha, lambda;
+  double  temp1,temp,hx,hy,hxdhy,hydhx,sc;
+  int     Neglobal,Nvglobal,j,row;
+  double  alpha,lambda;
 
   Nvglobal = user->Nvglobal; 
   Neglobal = user->Neglobal;
@@ -501,7 +501,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
      Compute initial guess over the locally owned part of the grid
   */
   for (i=0; i < Nvlocal; i++) {
-    x[i] = (double) gloInd[i];
+    x[i] = (double)gloInd[i];
   }
 
   /*
@@ -524,16 +524,16 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx     *user = (AppCtx *) ptr;
-  int        ierr, i, j, Nvlocal;
-  double     alpha, lambda;
+  AppCtx     *user = (AppCtx*)ptr;
+  int        ierr,i,j,Nvlocal;
+  double     alpha,lambda;
   Scalar      *x,*f;
   VecScatter scatter;
   Vec        localX = user->localX;
 #if defined (UNUSED_VARIABLES)
-  Scalar     ut, ub, ul, ur, u, *g, sc, uyy, uxx;
-  double     hx, hy, hxdhy, hydhx;
-  double     two = 2.0, one = 1.0;
+  Scalar     ut,ub,ul,ur,u,*g,sc,uyy,uxx;
+  double     hx,hy,hxdhy,hydhx;
+  double     two = 2.0,one = 1.0;
   int        Nvglobal,Neglobal,row;
   int        *gloInd;
 
@@ -552,7 +552,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      described in the beginning of this code 
                                                                                    
      First scatter the distributed vector X into local vector localX (that includes
-     values for ghost nodes. If we wish, we can put some other work between 
+     values for ghost nodes. If we wish,we can put some other work between 
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
  */
@@ -605,16 +605,16 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx*)ptr;
   Mat     jac = *B;
-  int     i, j,Nvlocal, col[50], ierr;
-  Scalar  alpha, lambda, value[50];
+  int     i,j,Nvlocal,col[50],ierr;
+  Scalar  alpha,lambda,value[50];
   Vec     localX = user->localX;
   VecScatter scatter;
   Scalar  *x;
 #if defined (UNUSED_VARIABLES)
-  Scalar  two = 2.0, one = 1.0;
-  int     row, Nvglobal, Neglobal;
+  Scalar  two = 2.0,one = 1.0;
+  int     row,Nvglobal,Neglobal;
   int     *gloInd;
 
   Nvglobal = user->Nvglobal; 

@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.185 1999/11/05 14:46:16 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.186 1999/11/24 21:54:31 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -89,7 +89,7 @@ static int PCPublish_Petsc(PetscObject obj)
 
 #if defined(PETSC_HAVE_AMS)
   /* if it is already published then return */
-  if (v->amem >=0 ) PetscFunctionReturn(0);
+  if (v->amem >=0) PetscFunctionReturn(0);
 
   ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
@@ -158,11 +158,6 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 }
 
 /* -------------------------------------------------------------------------------*/
-/*
-       This variable is used to insure that profiling is never turned on for
-    more then one PCApplyXXX() routine at a time.
-*/
-static int apply_double_count = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "PCApply"
@@ -198,7 +193,7 @@ int PCApply(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
+  PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
 
   /* Remove null space from preconditioned vector y */
@@ -206,7 +201,7 @@ int PCApply(PC pc,Vec x,Vec y)
     ierr = PCNullSpaceRemove(pc->nullsp,y);CHKERRQ(ierr);
   }
 
-  if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
+  PLogEventEnd(PC_Apply,pc,x,y,0);
   PetscFunctionReturn(0);
 }
 
@@ -246,9 +241,9 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  if (!apply_double_count) {PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);}apply_double_count++;
+  PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
-  if (apply_double_count == 1) {PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);}apply_double_count--;
+  PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);
   PetscFunctionReturn(0);
 }
 
@@ -288,9 +283,9 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  if (!apply_double_count) {PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);}apply_double_count++;
+  PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
-  if (apply_double_count == 1){PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);}apply_double_count--;
+  PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);
   PetscFunctionReturn(0);
 }
 
@@ -329,9 +324,9 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
+  PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
-  if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
+  PLogEventEnd(PC_Apply,pc,x,y,0);
   PetscFunctionReturn(0);
 }
 
@@ -357,7 +352,7 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorABTranspose()
 @*/
-int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
+int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
 
@@ -478,7 +473,7 @@ int PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
 .seealso: PCApplyRichardson()
 @*/
-int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
+int PCApplyRichardsonExists(PC pc,PetscTruth *exists)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -981,7 +976,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)pc, prefix);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)pc,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1014,7 +1009,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)pc, prefix);CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)pc,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1047,7 +1042,7 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)pc, prefix);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)pc,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1197,7 +1192,7 @@ int PCPostSolve(PC pc,KSP ksp)
 int PCView(PC pc,Viewer viewer)
 {
   PCType      cstr;
-  int         fmt, ierr;
+  int         fmt,ierr;
   PetscTruth  mat_exists,isascii,isstring;
 
   PetscFunctionBegin;
@@ -1291,7 +1286,7 @@ $     -pc_type my_solver
 
 .keywords: PC, register
 
-.seealso: PCRegisterAll(), PCRegisterDestroy()
+.seealso: PCRegisterAll(), PCRegisterDestroy(), PCRegister()
 M*/
 
 #undef __FUNC__  
@@ -1303,7 +1298,7 @@ int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
 
   PetscFunctionBegin;
 
-  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

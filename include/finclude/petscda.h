@@ -1,5 +1,5 @@
 !
-!  $Id: da.h,v 1.13 1999/03/24 18:05:21 balay Exp balay $;
+!  $Id: da.h,v 1.14 1999/09/14 15:58:14 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the DA (distributed array) package in PETSc
 !
@@ -18,24 +18,24 @@
 !
 !  Types of stencils
 !
-      integer DA_STENCIL_STAR, DA_STENCIL_BOX
+      integer DA_STENCIL_STAR,DA_STENCIL_BOX
 
-      parameter (DA_STENCIL_STAR = 0, DA_STENCIL_BOX = 1)
+      parameter (DA_STENCIL_STAR = 0,DA_STENCIL_BOX = 1)
 !
 !  Types of periodicity
 !
-      integer DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC
-      integer DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
+      integer DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC
+      integer DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC
 
-      parameter (DA_NONPERIODIC = 0, DA_XPERIODIC = 1, DA_YPERIODIC = 2)
-      parameter (DA_XYPERIODIC = 3, DA_XYZPERIODIC = 4)
-      parameter (DA_XZPERIODIC = 5, DA_YZPERIODIC = 6, DA_ZPERIODIC = 7)
+      parameter (DA_NONPERIODIC = 0,DA_XPERIODIC = 1,DA_YPERIODIC = 2)
+      parameter (DA_XYPERIODIC = 3,DA_XYZPERIODIC = 4)
+      parameter (DA_XZPERIODIC = 5,DA_YZPERIODIC = 6,DA_ZPERIODIC = 7)
 !
 ! DA Directions
 !
-      integer DA_X, DA_Y, DA_Z
+      integer DA_X,DA_Y,DA_Z
 
-      parameter (DA_X = 0, DA_Y = 1, DA_Z = 2)
+      parameter (DA_X = 0,DA_Y = 1,DA_Z = 2)
 !
 !  End of Fortran include file for the DA package in PETSc
 

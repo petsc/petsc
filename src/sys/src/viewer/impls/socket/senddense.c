@@ -1,4 +1,4 @@
-/* $Id: senddense.c,v 1.36 1999/09/27 21:27:50 bsmith Exp bsmith $ */
+/* $Id: senddense.c,v 1.37 1999/10/24 14:01:01 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
@@ -27,7 +27,7 @@
 */
 int ViewerSocketPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 {
-  Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
@@ -45,9 +45,9 @@ int ViewerSocketPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSocketPutDouble_Private"
+#define __FUNC__ "ViewerSocketPutReal_Private"
 /*
-   ViewerSocketPutDouble_Private - Passes a double precision array to 
+   ViewerSocketPutReal_Private - Passes a double (or single) precision array to 
    a Matlab viewer.
 
   Input Parameters:
@@ -68,9 +68,9 @@ int ViewerSocketPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 
 .seealso: ViewerSocketOpen(), MatView(), VecView()
 */
-int ViewerSocketPutDouble_Private(Viewer viewer,int m,int n,double *array)
+int ViewerSocketPutReal_Private(Viewer viewer,int m,int n,PetscReal *array)
 {
-  Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
@@ -79,7 +79,7 @@ int ViewerSocketPutDouble_Private(Viewer viewer,int m,int n,double *array)
   ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,0);CHKERRQ(ierr); 
   value = 0;
   ierr = PetscBinaryWrite(t,&value,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(t,array,m*n,PETSC_DOUBLE,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,array,m*n,PETSC_REAL,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -108,7 +108,7 @@ int ViewerSocketPutDouble_Private(Viewer viewer,int m,int n,double *array)
 */
 int ViewerSocketPutInt_Private(Viewer viewer,int m,int *array)
 {
-  Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEINT;
 
   PetscFunctionBegin;

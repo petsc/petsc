@@ -1,4 +1,4 @@
-/*$Id: aosetlocal.c,v 1.4 1999/10/24 14:04:03 bsmith Exp bsmith $*/
+/*$Id: aosetlocal.c,v 1.5 1999/11/24 21:55:33 bsmith Exp bsmith $*/
 
 #include "ao.h"       /*I  "ao.h"  I*/
 
@@ -30,7 +30,7 @@
 
 .seealso: AODataKeyParition(), AODataSegmentPartition()
 @*/
-int AODataPartitionAndSetupLocal(AOData ao, char *keyname,  char *segmentname, IS *iskey, IS *issegment, ISLocalToGlobalMapping *ltog)
+int AODataPartitionAndSetupLocal(AOData ao,char *keyname,char *segmentname,IS *iskey,IS *issegment,ISLocalToGlobalMapping *ltog)
 {
   ISLocalToGlobalMapping ltogkey;
   int                    ierr,rstart,rend;
@@ -38,10 +38,10 @@ int AODataPartitionAndSetupLocal(AOData ao, char *keyname,  char *segmentname, I
   PetscFunctionBegin;  
 
   /*      Partition the keys (cells)   */
-  ierr = AODataKeyPartition(ao,keyname); CHKERRA(ierr);  
+  ierr = AODataKeyPartition(ao,keyname);CHKERRA(ierr);  
 
   /*      Partition the segment (vertices) subservient to the keys (cells)  */ 
-  ierr = AODataSegmentPartition(ao,keyname,segmentname); CHKERRA(ierr);  
+  ierr = AODataSegmentPartition(ao,keyname,segmentname);CHKERRA(ierr);  
 
  /*     Generate the list of key entries (cells) on this processor   */
   ierr = AODataKeyGetOwnershipRange(ao,"cell",&rstart,&rend);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: zf90da.c,v 1.3 1999/05/12 03:34:46 bsmith Exp bsmith $*/
+/*$Id: zf90da.c,v 1.4 1999/10/24 14:04:23 bsmith Exp bsmith $*/
 
 #include "src/fortran/f90/zf90.h"
 #include "da.h"
@@ -12,7 +12,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void dagetglobalindicesf90_(DA da,int *n, array1d *indices, int *__ierr )
+void dagetglobalindicesf90_(DA da,int *n,array1d *indices,int *__ierr)
 {
   int *idx;
   *__ierr = DAGetGlobalIndices((DA)PetscToPointer(da),n,&idx);

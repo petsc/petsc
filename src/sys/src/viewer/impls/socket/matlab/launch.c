@@ -1,4 +1,4 @@
-/*$Id: launch.c,v 1.8 1999/07/06 17:14:25 bsmith Exp bsmith $*/
+/*$Id: launch.c,v 1.9 1999/10/24 14:01:02 bsmith Exp bsmith $*/
 /* 
   Usage: A = launch(programname,number processors); 
  
@@ -16,23 +16,23 @@ extern int system(const char *);
 /*-----------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "mexFunction"
-void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
+void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
-  int  np, child;
+  int  np,child;
   char program[1024],executable[1024];
 
   if (nlhs == 1) {
-    plhs[0]  = mxCreateFull(1, 1, 0);
+    plhs[0]  = mxCreateFull(1,1,0);
     *mxGetPr(plhs[0]) = 1;
   }
 
   /* check output parameters */
   if (nlhs > 1) ERROR("Open requires at most one output argument.");
-  if (nrhs == 0) ERROR("Open requires at least one input argument.");
+  if (!nrhs) ERROR("Open requires at least one input argument.");
   if (!mxIsString(prhs[0])) ERROR("First arg must be string.");
 
   if (nrhs == 1) np = 1;  
-  else           np = (int) *mxGetPr(prhs[1]);
+  else           np = (int)*mxGetPr(prhs[1]);
 
   /* attempt a fork */
   child = fork();

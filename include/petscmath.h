@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.16 1999/05/27 19:41:20 balay Exp bsmith $ */
+/* $Id: petscmath.h,v 1.17 1999/09/27 21:33:07 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -34,8 +34,8 @@
 extern  MPI_Datatype        MPIU_COMPLEX;
 #define MPIU_SCALAR         MPIU_COMPLEX
 #if defined (PETSC_HAVE_STD_COMPLEX)
-#define PetscReal(a)        (a).real()
-#define PetscImaginary(a)   (a).imag()
+#define PetscRealPart(a)        (a).real()
+#define PetscImaginaryPart(a)   (a).imag()
 #define PetscAbsScalar(a)   std::abs(a)
 #define PetscConj(a)        std::conj(a)
 #define PetscSqrtScalar(a)  std::sqrt(a)
@@ -44,8 +44,8 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 #define PetscSinScalar(a)   std::sin(a)
 #define PetscCosScalar(a)   std::cos(a)
 #else
-#define PetscReal(a)        real(a)
-#define PetscImaginary(a)   imag(a)
+#define PetscRealPart(a)        real(a)
+#define PetscImaginaryPart(a)   imag(a)
 #define PetscAbsScalar(a)   abs(a)
 #define PetscConj(a)        conj(a)
 #define PetscSqrtScalar(a)  sqrt(a)
@@ -68,17 +68,17 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 
 /* Compiling for real numbers only */
 #else
-#define MPIU_SCALAR         MPI_DOUBLE
-#define PetscReal(a)        (a)
-#define PetscImaginary(a)   (a)
-#define PetscAbsScalar(a)   ( ((a)<0.0)   ? -(a) : (a) )
-#define Scalar              double
-#define PetscConj(a)        (a)
-#define PetscSqrtScalar(a)  sqrt(a)
-#define PetscPowScalar(a,b) pow(a,b)
-#define PetscExpScalar(a)   exp(a)
-#define PetscSinScalar(a)   sin(a)
-#define PetscCosScalar(a)   cos(a)
+#define MPIU_SCALAR           MPI_DOUBLE
+#define PetscRealPart(a)      (a)
+#define PetscImaginaryPart(a) (a)
+#define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
+#define Scalar                double
+#define PetscConj(a)          (a)
+#define PetscSqrtScalar(a)    sqrt(a)
+#define PetscPowScalar(a,b)   pow(a,b)
+#define PetscExpScalar(a)     exp(a)
+#define PetscSinScalar(a)     sin(a)
+#define PetscCosScalar(a)     cos(a)
 #endif
 
 /*
@@ -92,20 +92,25 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 #if defined(PETSC_USE_COMPLEX)
 
 #define MatScalar Scalar 
-#define MatFloat  double
+#define MatReal   double
 
 #elif defined(PETSC_USE_MAT_SINGLE)
 
 #define MatScalar float
-#define MatFloat  float
+#define MatReal   float
 
 #else
 
 #define MatScalar Scalar
-#define MatFloat  double
+#define MatReal   double
 
 #endif
 
+#if defined(PETSC_USE_SINGLE)
+#define PetscReal float
+#else 
+#define PetscReal double
+#endif
 
 /* --------------------------------------------------------------------------*/
 
@@ -113,15 +118,15 @@ extern  MPI_Datatype        MPIU_COMPLEX;
    Certain objects may be created using either single
   or double precision.
 */
-typedef enum { SCALAR_DOUBLE, SCALAR_SINGLE } ScalarPrecision;
+typedef enum { SCALAR_DOUBLE,SCALAR_SINGLE } ScalarPrecision;
 
 /* PETSC_i is the imaginary number, i */
 extern  Scalar            PETSC_i;
 
-#define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
-#define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
-#define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
-#define PetscAbsDouble(a)  ( ((a)<0)   ? -(a) : (a) )
+#define PetscMin(a,b)      (((a)<(b)) ? (a) : (b))
+#define PetscMax(a,b)      (((a)<(b)) ? (b) : (a))
+#define PetscAbsInt(a)     (((a)<0)   ? -(a) : (a))
+#define PetscAbsDouble(a)  (((a)<0)   ? -(a) : (a))
 
 /* ----------------------------------------------------------------------------*/
 /*

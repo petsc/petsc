@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: fn1wd.c,v 1.17 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* fn1wd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -39,14 +39,14 @@ int SPARSEPACKfn1wd(int *root, int *xadj, int *adjncy,
     int i__1, i__2;
 
     /* Local variables */
-    static int node, i, j, k;
-    static double width, fnlvl;
-    static int kstop, kstrt, lp1beg, lp1end;
-    static double deltp1;
-    static int lvlbeg, lvlend;
+    int node, i, j, k;
+    PetscReal width, fnlvl;
+    int kstop, kstrt, lp1beg, lp1end;
+    PetscReal deltp1;
+    int lvlbeg, lvlend;
     extern int SPARSEPACKfnroot(int *, int *, int *, 
 	    int *, int *, int *, int *);
-    static int nbr, lvl;
+    int nbr, lvl;
 
     PetscFunctionBegin;
     /* Parameter adjustments */
@@ -58,9 +58,9 @@ int SPARSEPACKfn1wd(int *root, int *xadj, int *adjncy,
     --xadj;
 
     SPARSEPACKfnroot(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
-    fnlvl = (double) (*nlvl);
+    fnlvl = (PetscReal) (*nlvl);
     *nsep = xls[*nlvl + 1] - 1;
-    width = (double) (*nsep) / fnlvl;
+    width = (PetscReal) (*nsep) / fnlvl;
     deltp1 = sqrt((width * 3.f + 13.f) / 2.f) + 1.f;
     if (*nsep >= 50 && deltp1 <= fnlvl * .5f) {
 	goto L300;
@@ -80,7 +80,7 @@ L300:
     i = 0;
 L400:
     ++i;
-    lvl = (int) ((double) i * deltp1 + .5f);
+    lvl = (int)((PetscReal) i * deltp1 + .5f);
     if (lvl >= *nlvl) {
 	PetscFunctionReturn(0);
     }
@@ -100,7 +100,7 @@ L400:
     for (j = lvlbeg; j <= i__1; ++j) {
 	node = ls[j];
 	kstrt = xadj[node];
-	kstop = (i__2 = xadj[node + 1], (int) PetscAbsInt(i__2)) - 1;
+	kstop = (i__2 = xadj[node + 1], (int)PetscAbsInt(i__2)) - 1;
 	i__2 = kstop;
 	for (k = kstrt; k <= i__2; ++k) {
 	    nbr = adjncy[k];

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.10 1999/06/30 23:52:15 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
 MatGetSubMatrices and MatZeroEntries.\n\n";
@@ -9,9 +9,9 @@ MatGetSubMatrices and MatZeroEntries.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Mat       mat, submat,*submatrices;
-  int       m = 10, n = 10, i = 4, tmp, ierr;
-  IS        irkeep, ickeep;
+  Mat       mat,submat,*submatrices;
+  int       m = 10,n = 10,i = 4,tmp,ierr;
+  IS        irkeep,ickeep;
   Scalar    value = 1.0;
   Viewer    sviewer;
 
@@ -20,8 +20,8 @@ int main(int argc,char **argv)
   ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRA(ierr);
-  for (i=0; i<m; i++ ) {
-    value = (double) i+1; tmp = i % 5; 
+  for (i=0; i<m; i++) {
+    value = (double)i+1; tmp = i % 5; 
     ierr = MatSetValues(mat,1,&tmp,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);

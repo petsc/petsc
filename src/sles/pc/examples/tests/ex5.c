@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.61 1999/11/05 14:46:31 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.62 1999/11/24 21:54:45 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -28,15 +28,15 @@ int  amult(Mat,Vec,Vec);
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main(int Argc, char **Args)
+int main(int Argc,char **Args)
 {
-  int         x_mesh = 15,levels = 3,cycles = 1, use_jacobi = 0;
-  int         i, smooths = 1, *N;
+  int         x_mesh = 15,levels = 3,cycles = 1,use_jacobi = 0;
+  int         i,smooths = 1,*N;
   int         ierr,its;
   MGType      am = MGMULTIPLICATIVE;
   Mat         cmat,mat[20],fmat;
   SLES        csles,sles[20],slesmg;
-  double      e[3]; /* l_2 error, max error, residual */
+  double      e[3]; /* l_2 error,max error, residual */
   char        *shellname;
   Vec         x,solution,X[20],R[20],B[20];
   Scalar      zero = 0.0;
@@ -57,9 +57,9 @@ int main(int Argc, char **Args)
   ierr = OptionsHasName(PETSC_NULL,"-j",&flg);CHKERRA(ierr);
   if (flg) {use_jacobi = 1;}
          
-  N = (int *) PetscMalloc(levels*sizeof(int));CHKPTRA(N);
+  N = (int*)PetscMalloc(levels*sizeof(int));CHKPTRA(N);
   N[0] = x_mesh;
-  for ( i=1; i<levels; i++ ) {
+  for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
     if (N[i] < 1) {SETERRA(1,0,"Too many levels");}
   }
@@ -83,7 +83,7 @@ int main(int Argc, char **Args)
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRA(ierr);
 
   /* zero is finest level */
-  for ( i=0; i<levels-1; i++ ) {
+  for (i=0; i<levels-1; i++) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRA(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRA(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void*)restrct);CHKERRA(ierr);
@@ -160,12 +160,12 @@ int main(int Argc, char **Args)
 
   /* note we have to keep a list of all vectors allocated, this is 
      not ideal, but putting it in MGDestroy is not so good either*/
-  for ( i=0; i<levels; i++ ) {
+  for (i=0; i<levels; i++) {
     ierr = VecDestroy(X[i]);CHKERRA(ierr);
     ierr = VecDestroy(B[i]);CHKERRA(ierr);
     ierr = VecDestroy(R[i]);CHKERRA(ierr);
   }
-  for ( i=0; i<levels-1; i++ ) {
+  for (i=0; i<levels-1; i++) {
     ierr = MatDestroy(mat[i]);CHKERRA(ierr);
   }
   ierr = MatDestroy(cmat);CHKERRA(ierr);
@@ -180,7 +180,7 @@ int main(int Argc, char **Args)
 #define __FUNC__ "residual"
 int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
-  int    i, n1, ierr;
+  int    i,n1,ierr;
   Scalar *b,*x,*r;
 
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
   n1--;
   r[0] = b[0] + x[1] - 2.0*x[0];
   r[n1] = b[n1] + x[n1-1] - 2.0*x[n1];
-  for ( i=1; i<n1; i++ ) {
+  for (i=1; i<n1; i++) {
     r[i] = b[i] + x[i+1] + x[i-1] - 2.0*x[i];
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
@@ -202,7 +202,7 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 #define __FUNC__ "amult"
 int amult(Mat mat,Vec xx,Vec yy)
 {
-  int    i, n1, ierr;
+  int    i,n1,ierr;
   Scalar *y,*x;
 
   ierr = VecGetSize(xx,&n1);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ int amult(Mat mat,Vec xx,Vec yy)
   n1--;
   y[0] =  -x[1] + 2.0*x[0];
   y[n1] = -x[n1-1] + 2.0*x[n1];
-  for ( i=1; i<n1; i++ ) {
+  for (i=1; i<n1; i++) {
     y[i] = -x[i+1] - x[i-1] + 2.0*x[i];
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
@@ -223,19 +223,19 @@ int amult(Mat mat,Vec xx,Vec yy)
 #define __FUNC__ "gauss_seidel"
 int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
-  int    i, n1, ierr;
-  Scalar *x, *b;
+  int    i,n1,ierr;
+  Scalar *x,*b;
 
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   while (m--) {
     x[0] =  .5*(x[1] + b[0]);
-    for ( i=1; i<n1; i++ ) {
+    for (i=1; i<n1; i++) {
       x[i] = .5*(x[i+1] + x[i-1] + b[i]);
     }
     x[n1] = .5*(x[n1-1] + b[n1]);
-    for ( i=n1-1; i>0; i-- ) {
+    for (i=n1-1; i>0; i--) {
       x[i] = .5*(x[i+1] + x[i-1] + b[i]);
     }
     x[0] =  .5*(x[1] + b[0]);
@@ -249,7 +249,7 @@ int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
 #define __FUNC__ "jacobi"
 int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
-  int      i, n, n1, ierr;
+  int      i,n,n1,ierr;
   Scalar   *r,*b,*x;
 
   ierr = VecGetSize(bb,&n);CHKERRQ(ierr); n1 = n - 1;
@@ -259,11 +259,11 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 
   while (m--) {
     r[0] = .5*(x[1] + b[0]);
-    for ( i=1; i<n1; i++ ) {
+    for (i=1; i<n1; i++) {
        r[i] = .5*(x[i+1] + x[i-1] + b[i]);
     }
     r[n1] = .5*(x[n1-1] + b[n1]);
-    for ( i=0; i<n; i++ ) x[i] = (2.0*r[i] + x[i])/3.0;
+    for (i=0; i<n; i++) x[i] = (2.0*r[i] + x[i])/3.0;
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
@@ -278,14 +278,14 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 #define __FUNC__ "interpolate"
 int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
-  int    i, n, N, i2, ierr;
+  int    i,n,N,i2,ierr;
   Scalar *x,*y;
 
   ierr = VecGetSize(yy,&N);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   n = N/2;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     i2 = 2*i;
     y[i2] +=  .5*x[i];
     y[i2+1] +=  x[i];
@@ -300,7 +300,7 @@ int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 #define __FUNC__ "restrct"
 int restrct(Mat mat,Vec rr,Vec bb)
 {
-  int    i, n, N, i2, ierr;
+  int    i,n,N,i2,ierr;
   Scalar *r,*b;
 
   ierr = VecGetSize(rr,&N);CHKERRQ(ierr);
@@ -308,9 +308,9 @@ int restrct(Mat mat,Vec rr,Vec bb)
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   n = N/2;
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     i2 = 2*i;
-    b[i] = ( r[i2] + 2.0*r[i2+1] + r[i2+2] );
+    b[i] = (r[i2] + 2.0*r[i2+1] + r[i2+2]);
   }
   ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
@@ -321,14 +321,14 @@ int restrct(Mat mat,Vec rr,Vec bb)
 #define __FUNC__ "Create2dLaplacian"
 int Create1dLaplacian(int n,Mat *mat)
 {
-  Scalar mone = -1.0, two = 2.0;
+  Scalar mone = -1.0,two = 2.0;
   int    ierr,i,idx;
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,mat);CHKERRQ(ierr);
   
   idx= n-1;
   ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES);CHKERRQ(ierr);
-  for ( i=0; i<n-1; i++ ) {
+  for (i=0; i<n-1; i++) {
     ierr = MatSetValues(*mat,1,&i,1,&i,&two,INSERT_VALUES);CHKERRQ(ierr);
     idx = i+1;
     ierr = MatSetValues(*mat,1,&idx,1,&i,&mone,INSERT_VALUES);CHKERRQ(ierr);
@@ -343,12 +343,12 @@ int Create1dLaplacian(int n,Mat *mat)
 #define __FUNC__ "CalculateRhs"
 int CalculateRhs(Vec u)
 {
-  int    i,n, ierr;
+  int    i,n,ierr;
   double h,x = 0.0;
   Scalar uu;
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
-  h = 1.0/((double) (n+1));
-  for ( i=0; i<n; i++ ) {
+  h = 1.0/((double)(n+1));
+  for (i=0; i<n; i++) {
     x += h; uu = 2.0*h*h; 
     ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -360,12 +360,12 @@ int CalculateRhs(Vec u)
 #define __FUNC__ "CalculateSolution"
 int CalculateSolution(int n,Vec *solution)
 {
-  int    i, ierr;
+  int    i,ierr;
   double h,x = 0.0;
   Scalar uu;
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,solution);CHKERRQ(ierr);
-  h = 1.0/((double) (n+1));
-  for ( i=0; i<n; i++ ) {
+  h = 1.0/((double)(n+1));
+  for (i=0; i<n; i++) {
     x += h; uu = x*(1.-x); 
     ierr = VecSetValues(*solution,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }

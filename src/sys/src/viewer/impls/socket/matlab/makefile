@@ -1,5 +1,8 @@
-# $Id: makefile,v 1.2 1999/06/30 22:48:50 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 1999/09/03 20:48:56 bsmith Exp bsmith $ 
 
+#
+#requirespackage  '-DPETSC_HAVE_MATLAB'
+#requiresscalar real 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
 # in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If cmex fails 
@@ -7,15 +10,15 @@
 # removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 #
 ALL: lib
-matlabcodes: receive openport closeport launch
+matlabcodes: receive openport closeport launch readinvecs
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC   = 
 SOURCEF   =
-SOURCEH   = closeport.c openport.c receivedense.c launch.c receive.c  \
-            receivesparse.c closeport.m launch.m openport.m receive.m
+SOURCEH   = closeport.c openport.c receivedense.c launch.c receive.c  bread.c \
+            receivesparse.c closeport.m launch.m openport.m receive.m readinvecs.c
 OBJSC     = 
 OBJSF     =
 MANSEC    = Viewer
@@ -29,8 +32,8 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 # CMEX and MCC are defined in bmake/${PETSC_ARCH}/base.site
 #
 receive:  
-	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} receive.c receivesparse.c  receivedense.c 
-	${RM} -f receive.o receivesparse.o  receivedense.o 
+	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} receive.c receivesparse.c  receivedense.c bread.c
+	${RM} -f receive.o receivesparse.o  receivedense.o bread.o
 	if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f receive.mexsg64 receive.mexsg ; fi 
 
 openport: 
@@ -48,4 +51,8 @@ launch:
 	${RM} -f  launch.o 
 	if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f launch.mexsg64 launch.mexsg ; fi 
 
+readinvecs:  
+	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} readinvecs.c bread.c
+	${RM} -f readinvecs.o bread.o
+	if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f readinvecs.mexsg64 readinvecs.mexsg ; fi 
 

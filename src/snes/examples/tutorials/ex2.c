@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.70 1999/10/24 14:03:42 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.71 1999/11/05 14:47:20 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -42,17 +42,17 @@ typedef struct {
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES       snes;                   /* SNES context */
-  Vec        x, r, F, U;             /* vectors */
+  Vec        x,r,F,U;             /* vectors */
   Mat        J;                      /* Jacobian matrix */
   MonitorCtx monP;                   /* monitoring context */
-  int        ierr, its, n = 5, i, maxit, maxf, size;
-  Scalar     h, xp, v, none = -1.0;
-  double     atol, rtol, stol, norm;
+  int        ierr,its,n = 5,i,maxit,maxf,size;
+  Scalar     h,xp,v,none = -1.0;
+  double     atol,rtol,stol,norm;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
@@ -79,7 +79,7 @@ int main( int argc, char **argv )
   /* 
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRA(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -137,7 +137,7 @@ int main( int argc, char **argv )
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   xp = 0.0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     v = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
     v= xp*xp*xp;
@@ -156,7 +156,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d\n\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -222,8 +222,8 @@ int FormInitialGuess(Vec x)
 int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
    Vec    g = (Vec)ctx;
-   Scalar *xx, *ff,*gg,d;
-   int    i, ierr, n;
+   Scalar *xx,*ff,*gg,d;
+   int    i,ierr,n;
 
   /*
      Get pointers to vector data.
@@ -240,9 +240,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
      Compute function
   */
    ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-   d = (double) (n - 1); d = d*d;
+   d = (double)(n - 1); d = d*d;
    ff[0]   = xx[0];
-   for ( i=1; i<n-1; i++ ) {
+   for (i=1; i<n-1; i++) {
      ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - gg[i];
    }
    ff[n-1] = xx[n-1] - 1.0;
@@ -274,8 +274,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
-  Scalar *xx, A[3], d;
-  int    i, n, j[3], ierr;
+  Scalar *xx,A[3],d;
+  int    i,n,j[3],ierr;
 
   /*
      Get pointer to vector data
@@ -293,7 +293,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   /*
      Interior grid points
   */
-  for ( i=1; i<n-1; i++ ) {
+  for (i=1; i<n-1; i++) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1; 
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
     ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);

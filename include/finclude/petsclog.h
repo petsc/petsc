@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.13 1999/09/14 15:58:38 balay Exp bsmith $;
+!  $Id: petsclog.h,v 1.14 1999/11/24 21:56:02 bsmith Exp bsmith $;
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
@@ -54,7 +54,7 @@
        integer    MAT_SolveAdd
        parameter (MAT_SolveAdd = 22)
        integer    MAT_SolveTranspose   
-       parameter (MAT_SolveTranspose = 23 )
+       parameter (MAT_SolveTranspose = 23)
        integer    MAT_SolveTransposeAdd  
        parameter (MAT_SolveTransposeAdd = 24)
        integer    MAT_SetValues

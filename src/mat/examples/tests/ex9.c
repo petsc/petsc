@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.13 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -11,11 +11,11 @@ int main(int argc,char **args)
   Mat        C; 
   MatType    type;
   MatInfo    info;
-  int        i, j, m = 3, n = 2, rank, size, low, high, iglobal;
-  int        I, J, ierr, ldim;
-  PetscTruth set, flg;
-  Scalar     v,  one = 1.0;
-  Vec        u, b;
+  int        i,j,m = 3,n = 2,rank,size,low,high,iglobal;
+  int        I,J,ierr,ldim;
+  PetscTruth set,flg;
+  Scalar     v,one = 1.0;
+  Vec        u,b;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set);CHKERRA(ierr);
   if (type == MATMPIBDIAG || type == MATSEQBDIAG) {
-    int bs, ndiag, diag[7];  bs = 1, ndiag = 5;
+    int bs,ndiag,diag[7];  bs = 1,ndiag = 5;
     diag[0] = n;
     diag[1] = 1;
     diag[2] = 0;
@@ -42,13 +42,13 @@ int main(int argc,char **args)
   } else SETERRA(1,0,"Invalid matrix type for this example.");
 
   /* Create the matrix for the five point stencil, YET AGAIN */
-  for ( i=0; i<m; i++ ) { 
-    for ( j=2*rank; j<2*rank+2; j++ ) {
+  for (i=0; i<m; i++) { 
+    for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }

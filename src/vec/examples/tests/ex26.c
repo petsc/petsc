@@ -1,3 +1,4 @@
+/*$Id: ex25.c,v 1.7 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 /*
 
 Test program follows. Writing it I realised that 
@@ -7,7 +8,7 @@ Test program follows. Writing it I realised that
   pipe is a critical section.
 4/ Hence I really should have used an MPI-to-Seq scatter.
 5/ This shouldn't be too hard to fix in the implementation you
-  guys are making, right?  :-)  <-- smiley just in case.
+  guys are making,right?  :-)  <-- smiley just in case.
 
 If this is not clear, I'll try to elaborate.
 
@@ -72,7 +73,7 @@ int main(int Argc,char **Args)
   ierr = VecAssemblyEnd(loc_v);CHKERRA(ierr);
   ierr = VecPipelineEnd(src_v,tar_v,INSERT_VALUES,SCATTER_FORWARD,PIPELINE_UP,pipe);CHKERRA(ierr);
 
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] value=%d\n",rank,(int)PetscReal(my_value));CHKERRA(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] value=%d\n",rank,(int)PetscRealPart(my_value));CHKERRA(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
 
   /* Clean up */

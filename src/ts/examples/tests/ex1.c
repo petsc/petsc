@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.34 1999/10/24 14:03:54 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.35 1999/11/05 14:47:37 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -25,11 +25,11 @@ typedef struct {
   int    nox;                   /* indicates problem is to be run without graphics */ 
 } AppCtx;
 
-extern int Monitor(TS, int, double , Vec, void *);
+extern int Monitor(TS,int,double,Vec,void *);
 extern int RHSFunctionHeat(TS,double,Vec,Vec,void*);
 extern int RHSMatrixFree(Mat,Vec,Vec);
-extern int Initial(Vec, void*);
-extern int RHSMatrixHeat(TS,double,Mat *,Mat *, MatStructure *,void *);
+extern int Initial(Vec,void*);
+extern int RHSMatrixHeat(TS,double,Mat *,Mat *,MatStructure *,void *);
 extern int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 
 #define linear_no_matrix       0
@@ -42,7 +42,7 @@ extern int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,  time_steps = 100, steps, size, m;
+  int           ierr,time_steps = 100,steps,size,m;
   int           problem = linear_no_matrix;
   PetscTruth    flg;
   AppCtx        appctx;
@@ -126,7 +126,7 @@ int main(int argc,char **argv)
     
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts);CHKERRA(ierr);
-  ierr = TSSetMonitor(ts,Monitor,&appctx);CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRA(ierr);
 
   dt = appctx.h*appctx.h/2.01;
 
@@ -142,14 +142,14 @@ int main(int argc,char **argv)
          The user provides the RHS as a matrix
     */
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.M,appctx.M,&A);CHKERRA(ierr);
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx); CHKERRA(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRA(ierr);
   } else if (problem == linear) {
     /*
          The user provides the RHS as a time dependent matrix
     */
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.M,appctx.M,&A);CHKERRA(ierr);
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx); CHKERRA(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx);CHKERRA(ierr);
   } else if (problem == nonlinear_no_jacobian) {
     /*
@@ -165,7 +165,7 @@ int main(int argc,char **argv)
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx);CHKERRA(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.M,appctx.M,&A);CHKERRA(ierr);
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx); CHKERRA(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRA(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,&appctx);CHKERRA(ierr);  
   }
 
@@ -217,7 +217,7 @@ int main(int argc,char **argv)
 /* -------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "Initial" 
-int Initial(Vec global, void *ctx)
+int Initial(Vec global,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   Scalar *localptr,h = appctx->h;
@@ -240,7 +240,7 @@ int Initial(Vec global, void *ctx)
 /*
        Exact solution 
 */
-int Solution(double t,Vec solution, void *ctx)
+int Solution(double t,Vec solution,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   Scalar *localptr,h = appctx->h,ex1,ex2,sc1,sc2;
@@ -262,7 +262,7 @@ int Solution(double t,Vec solution, void *ctx)
 
 #undef __FUNC__
 #define __FUNC__ "Monitor"
-int Monitor(TS ts, int step, double time,Vec global, void *ctx)
+int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 {
   AppCtx   *appctx = (AppCtx*) ctx;
   int      ierr;
@@ -274,7 +274,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 
   ierr = VecView(global,appctx->viewer2);CHKERRQ(ierr);
 
-  ierr = Solution(time,appctx->solution, ctx);CHKERRQ(ierr);
+  ierr = Solution(time,appctx->solution,ctx);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,global,appctx->solution);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = sqrt(appctx->h)*norm_2;
@@ -307,13 +307,13 @@ int RHSMatrixFree(Mat mat,Vec x,Vec y)
 
 #undef __FUNC__
 #define __FUNC__ "RHSFunctionHeat"
-int RHSFunctionHeat(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
+int RHSFunctionHeat(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   DA     da = appctx->da;
-  Vec    local = appctx->local, localwork = appctx->localwork;
+  Vec    local = appctx->local,localwork = appctx->localwork;
   int    ierr,i,localsize; 
-  Scalar *copyptr, *localptr,sc;
+  Scalar *copyptr,*localptr,sc;
 
   /*Extract local array */ 
   ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
@@ -344,12 +344,12 @@ int RHSFunctionHeat(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 /* ---------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "RHSMatrixHeat"
-int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
+int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;
   AppCtx *appctx = (AppCtx*) ctx;
-  int    ierr,i,mstart,mend,rank,size, idx[3];
-  Scalar v[3],stwo = -2./(appctx->h*appctx->h), sone = -.5*stwo;
+  int    ierr,i,mstart,mend,rank,size,idx[3];
+  Scalar v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
 
   *str = SAME_NONZERO_PATTERN;
 
@@ -372,7 +372,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
      Construct matrice one row at a time
   */
   v[0] = sone; v[1] = stwo; v[2] = sone;  
-  for ( i=mstart; i<mend; i++ ) {
+  for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
     ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -384,7 +384,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 
 #undef __FUNC__
 #define __FUNC__ "RHSJacobianHeat"
-int RHSJacobianHeat(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
+int RHSJacobianHeat(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   return RHSMatrixHeat(ts,t,AA,BB,str,ctx);
 }

@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.45 1999/10/24 14:01:27 bsmith Exp bsmith $*/
+/*$Id: mal.c,v 1.46 1999/11/05 14:44:12 bsmith Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -9,7 +9,7 @@
 #if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 
 /*
@@ -34,13 +34,13 @@ void *PetscMallocAlign(int mem,int line,char *func,char *file,char *dir)
     /*
       malloc space for two extra Scalar and shift ptr 1 + enough to get it Scalar aligned
     */
-    ptr = (int *) malloc(mem + 2*sizeof(Scalar));
+    ptr = (int*)malloc(mem + 2*sizeof(Scalar));
     if (!ptr) return 0;
     shift = (int)(((unsigned long) ptr) % sizeof(Scalar));
     shift = (2*sizeof(Scalar) - shift)/sizeof(int);
     ptr     += shift;
     ptr[-1]  = shift + SHIFT_COOKIE ;
-    return (void *) ptr;
+    return (void*)ptr;
   }
 #endif
 }
@@ -57,7 +57,7 @@ int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
   */
   shift = ((int *)ptr)[-1] - SHIFT_COOKIE;   
   if (shift > 15) PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
-  ptr   = (void *) (((int *) ptr) - shift);
+  ptr   = (void*)(((int*)ptr) - shift);
 #endif
 
 #if defined(PETSC_HAVE_FREE_RETURN_INT)

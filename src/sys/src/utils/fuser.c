@@ -1,4 +1,4 @@
-/*$Id: fuser.c,v 1.23 1999/05/12 03:27:21 bsmith Exp bsmith $*/
+/*$Id: fuser.c,v 1.24 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -30,13 +30,13 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 
 #if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNC__  
 #define __FUNC__ "PetscGetUserName"
-int PetscGetUserName( char name[], int nlen )
+int PetscGetUserName(char name[],int nlen)
 {
   PetscFunctionBegin;
   GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
@@ -63,15 +63,15 @@ int PetscGetUserName( char name[], int nlen )
 
 .seealso: PetscGetHostName()
 @*/
-int PetscGetUserName( char name[], int nlen )
+int PetscGetUserName(char name[],int nlen)
 {
   struct passwd *pw;
   int           ierr;
 
   PetscFunctionBegin;
-  pw = getpwuid( getuid() );
-  if (!pw) {ierr = PetscStrncpy( name, "Unknown",nlen );CHKERRQ(ierr);}
-  else     {ierr = PetscStrncpy( name, pw->pw_name,nlen );CHKERRQ(ierr);}
+  pw = getpwuid(getuid());
+  if (!pw) {ierr = PetscStrncpy(name,"Unknown",nlen);CHKERRQ(ierr);}
+  else     {ierr = PetscStrncpy(name,pw->pw_name,nlen);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -79,12 +79,12 @@ int PetscGetUserName( char name[], int nlen )
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetUserName"
-int PetscGetUserName( char *name, int nlen )
+int PetscGetUserName(char *name,int nlen)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy( name, "Unknown", nlen );CHKERRQ(ierr);
+  ierr = PetscStrncpy(name,"Unknown",nlen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif /* !PETSC_HAVE_PWD_H */

@@ -1,4 +1,4 @@
-/*$Id: zf90vec.c,v 1.3 1999/05/12 03:34:46 bsmith Exp bsmith $*/
+/*$Id: zf90vec.c,v 1.4 1999/10/24 14:04:23 bsmith Exp bsmith $*/
 
 #include "src/fortran/f90/zf90.h"
 #include "is.h"
@@ -87,14 +87,14 @@ void isblockrestoreindicesf90_(IS x,array1d *ptr,int *__ierr)
 
 /* ---------------------------------------------------------------*/
 
-void vecduplicatevecsf90_(Vec v,int *m,array1d *ptr, int *__ierr )
+void vecduplicatevecsf90_(Vec v,int *m,array1d *ptr,int *__ierr)
 {
   Vec *lV;
   PetscFortranAddr *newvint;
   int i;
   *__ierr = VecDuplicateVecs((Vec)PetscToPointer(v),*m,&lV);
   if (*__ierr) return;
-  newvint = (PetscFortranAddr *) PetscMalloc((*m)*sizeof(PetscFortranAddr)); 
+  newvint = (PetscFortranAddr*)PetscMalloc((*m)*sizeof(PetscFortranAddr)); 
   if (!newvint) {*__ierr = PETSC_ERR_MEM; return;}
   for (i=0; i<*m; i++) {
     newvint[i] = PetscFromPointer(lV[i]);
@@ -103,7 +103,7 @@ void vecduplicatevecsf90_(Vec v,int *m,array1d *ptr, int *__ierr )
   *__ierr = PetscF90Create1dArrayPetscFortranAddr(newvint,*m,ptr);
 }
 
-void vecdestroyvecsf90_(array1d *ptr,int *m,int *__ierr )
+void vecdestroyvecsf90_(array1d *ptr,int *m,int *__ierr)
 {
   PetscFortranAddr *vecs;
   int       i;

@@ -1,4 +1,4 @@
-/*$Id: ex59.c,v 1.9 1999/10/13 20:37:41 bsmith Exp bsmith $*/
+/*$Id: ex59.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
 
@@ -8,8 +8,8 @@ static char help[] = "Tests MatGetSubmatrix() in parallel";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat         C, A;
-  int         i,j, m = 3, n = 2, rank,size, ierr, rstart, rend;
+  Mat         C,A;
+  int         i,j,m = 3,n = 2,rank,size,ierr,rstart,rend;
   Scalar      v;
   IS          isrow,iscol;
   PetscTruth  set;
@@ -24,11 +24,11 @@ int main(int argc,char **args)
   switch (type) {
   case MATMPIDENSE:
     ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-           m*n,m*n,PETSC_NULL,&C); CHKERRA(ierr);
+           m*n,m*n,PETSC_NULL,&C);CHKERRA(ierr);
     break;
   default:
     ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-           m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);
+           m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
     break;
   }
 
@@ -36,15 +36,15 @@ int main(int argc,char **args)
         This is JUST to generate a nice test matrix, all processors fill up
     the entire matrix. This is not something one would ever do in practice.
   */
-  for ( i=0; i<m*n; i++ ) { 
-    for ( j=0; j<m*n; j++ ) {
+  for (i=0; i<m*n; i++) { 
+    for (j=0; j<m*n; j++) {
       v = i + j + 1; 
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* 

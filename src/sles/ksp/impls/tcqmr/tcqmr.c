@@ -1,4 +1,4 @@
-/*$Id: tcqmr.c,v 1.49 1999/11/05 14:46:49 bsmith Exp bsmith $*/
+/*$Id: tcqmr.c,v 1.50 1999/11/24 21:54:56 bsmith Exp bsmith $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
@@ -12,13 +12,13 @@
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSolve_TCQMR"
-static int KSPSolve_TCQMR(KSP ksp,int *its )
+static int KSPSolve_TCQMR(KSP ksp,int *its)
 {
-  double      rnorm0, rnorm,dp1,Gamma;
-  Scalar      theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f; 
-  Scalar      deltmp, rho, beta, eptmp, ta, s, c, tau_n, delta;
-  Scalar      dp11,dp2, rhom1, alpha,tmp, zero = 0.0;
-  int         it, cerr, ierr;
+  PetscReal   rnorm0,rnorm,dp1,Gamma;
+  Scalar      theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
+  Scalar      deltmp,rho,beta,eptmp,ta,s,c,tau_n,delta;
+  Scalar      dp11,dp2,rhom1,alpha,tmp,zero = 0.0;
+  int         it,ierr;
 
   PetscFunctionBegin;
   ksp->its = 0;
@@ -27,8 +27,8 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
   ierr  = KSPResidual(ksp,x,u,v,r,v0,b);CHKERRQ(ierr);
   ierr  = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
 
-  cerr = (*ksp->converged)(ksp,0,rnorm0,ksp->cnvP);
-  if (cerr) {*its =  0; PetscFunctionReturn(0);}
+  ierr = (*ksp->converged)(ksp,0,rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
 
   ierr  = VecSet(&zero,um1);CHKERRQ(ierr);
   ierr  = VecCopy(r,u);CHKERRQ(ierr);
@@ -55,10 +55,11 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
   /*
    CALCULATE SQUARED LANCZOS  vectors
    */
-  while (!(cerr=(*ksp->converged)(ksp,it,rnorm,ksp->cnvP))) {     
+  ierr = (*ksp->converged)(ksp,it,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  while (!ksp->reason){
     ksp->its++;
 
-    KSPMonitor( ksp, it, rnorm);
+    KSPMonitor(ksp,it,rnorm);
     ierr   = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(v0,y,&dp11);CHKERRQ(ierr);
     ierr   = VecDot(v0,u,&dp2);CHKERRQ(ierr);
@@ -132,18 +133,15 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
 #if defined(PETSC_USE_COMPLEX)
-    rnorm = rnorm0 * sqrt((double)it+2.0) * PetscReal(sprod);     
+    rnorm = rnorm0 * sqrt((double)it+2.0) * PetscRealPart(sprod);     
 #else
     rnorm = rnorm0 * sqrt((double)it+2.0) * sprod;     
 #endif
-    it++; if (it > ksp->max_it) {break;}
+    it++; if (it > ksp->max_it) {ksp->reason = KSP_DIVERGED_ITS; break;}
   }
-
-  /* Need to undo preconditioning here  */
   ierr = KSPUnwindPreconditioner(ksp,x,vtmp);CHKERRQ(ierr);
 
-  if (cerr <= 0) *its = -it;
-  else           *its = it;
+  *its = it;
   PetscFunctionReturn(0);
 }
 
@@ -167,15 +165,15 @@ EXTERN_C_BEGIN
 int KSPCreate_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;
-  ksp->data               = (void *) 0;
-  ksp->pc_side            = PC_LEFT;
-  ksp->ops->buildsolution = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual = KSPDefaultBuildResidual;
-  ksp->ops->setup         = KSPSetUp_TCQMR;
-  ksp->ops->solve         = KSPSolve_TCQMR;
-  ksp->ops->destroy       = KSPDefaultDestroy;
-  ksp->ops->view          = 0;
-  ksp->guess_zero         = 1; 
+  ksp->data                = (void*)0;
+  ksp->pc_side             = PC_LEFT;
+  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->setup          = KSPSetUp_TCQMR;
+  ksp->ops->solve          = KSPSolve_TCQMR;
+  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->setfromoptions = 0;
+  ksp->ops->view           = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

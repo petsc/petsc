@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.18 1999/09/27 21:33:07 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.19 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 
 /* 
   An application ordering is mapping between an application-centric
@@ -10,7 +10,7 @@
 #include "is.h"
 #include "mat.h"
 
-typedef enum {AO_BASIC=0, AO_ADVANCED=1} AOType;
+typedef enum {AO_BASIC=0,AO_ADVANCED=1} AOType;
 
 #define AO_COOKIE PETSC_COOKIE+20
 
@@ -29,7 +29,7 @@ extern int AOView(AO,Viewer);
 
 /* ----------------------------------------------------*/
 
-typedef enum {AODATA_BASIC=0, AODATA_ADVANCED=1} AODataType;
+typedef enum {AODATA_BASIC=0,AODATA_ADVANCED=1} AODataType;
 
 #define AODATA_COOKIE PETSC_COOKIE+24
 
@@ -63,9 +63,9 @@ extern int AODataKeyGetActiveLocalIS(AOData,char*,char*,IS,int,IS*);
 
 extern int AODataKeyPartition(AOData,char *);
 
-extern int AODataSegmentAdd(AOData,char*,char *,int, int, int *,void *,PetscDataType);
+extern int AODataSegmentAdd(AOData,char*,char *,int,int,int *,void *,PetscDataType);
 extern int AODataSegmentRemove(AOData,char *,char *);
-extern int AODataSegmentAddIS(AOData,char*,char *,int, IS,void *,PetscDataType);
+extern int AODataSegmentAddIS(AOData,char*,char *,int,IS,void *,PetscDataType);
 
 extern int AODataSegmentExists(AOData,char*,char*,PetscTruth*);
 extern int AODataSegmentGetInfo(AOData,char *,char *,int *,PetscDataType*);
@@ -86,7 +86,7 @@ extern int AODataSegmentGetExtrema(AOData,char*,char*,void *,void *);
 
 extern int AODataSegmentPartition(AOData,char *,char *);
 
-extern int AODataPartitionAndSetupLocal(AOData,char*,char*, IS*, IS*, ISLocalToGlobalMapping*);
+extern int AODataPartitionAndSetupLocal(AOData,char*,char*,IS*,IS*,ISLocalToGlobalMapping*);
 extern int AODataAliasAdd(AOData,char *,char *);
 #endif
 

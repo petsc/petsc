@@ -1,4 +1,4 @@
-/*$Id: itcl.c,v 1.113 1999/04/05 18:23:52 balay Exp bsmith $*/
+/*$Id: itcl.c,v 1.114 1999/10/24 14:03:08 bsmith Exp bsmith $*/
 /*
     Code for setting KSP options from the options database.
 */
@@ -30,7 +30,7 @@ int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
 .seealso: KSPSetFromOptions()
 @*/
-int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
+int KSPAddOptionsChecker(int (*kspcheck)(KSP))
 {
   PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
@@ -82,7 +82,7 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)ksp, prefix);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
  
@@ -113,7 +113,7 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)ksp, prefix);CHKERRQ(ierr);
+  ierr = PetscObjectAppendOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +145,7 @@ int KSPGetOptionsPrefix(KSP ksp,char **prefix)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp, prefix);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

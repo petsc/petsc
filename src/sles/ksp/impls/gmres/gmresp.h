@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.11 1999/01/31 16:08:49 bsmith Exp bsmith $ */
+/* $Id: gmresp.h,v 1.12 1999/04/19 22:14:47 bsmith Exp bsmith $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -11,20 +11,20 @@ typedef struct {
     /* Hessenberg matrix and orthogonalization information.  Hes holds
        the original (unmodified) hessenberg matrix which may be used
        to estimate the Singular Values of the matrix */
-    Scalar *hh_origin, *hes_origin, *cc_origin, *ss_origin, *rs_origin;
+    Scalar *hh_origin,*hes_origin,*cc_origin,*ss_origin,*rs_origin;
     /* Work space for computing eigenvalues/singular values */
     double *Dsvd;
     Scalar *Rsvd;
       
     /* parameters */
-    double haptol, epsabs;        
+    double haptol,epsabs;        
     int    max_k;
 
     int   (*orthog)(KSP,int); /* Functions to use (special to gmres) */
     
     Vec   *vecs;  /* holds the work vectors */
     /* vv_allocated is the number of allocated gmres direction vectors */
-    int    q_preallocate, delta_allocate;
+    int    q_preallocate,delta_allocate;
     int    vv_allocated;
     /* vecs_allocated is the total number of vecs available (used to 
        simplify the dynamic allocation of vectors */
@@ -46,16 +46,6 @@ typedef struct {
                                solution */
     Vec    sol_temp;        /* used to hold temporary solution */
 
-    /*
-       Supported for David Keye's request for prestarted GMRES. The Krylov space
-       is augmented by additional vectors that are either
-         1) provided initially by the user via KSPGMRESGetPrestartVectors() or
-         2) computed during the first iteration
-    */
-
-    int    nprestart_requested; /* number of prestart directions that are to be computed in
-                                   the first solver */
-    int    nprestart;           /* number of prestart directions */     
 } KSP_GMRES;
 
 #define HH(a,b)  (gmres->hh_origin + (b)*(gmres->max_k+2)+(a))

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.95 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.96 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -41,7 +41,7 @@ typedef struct _p_PC* PC;
 typedef struct _p_PCNullSpace* PCNullSpace;
 #define PCNULLSPACE_COOKIE    PETSC_COOKIE+17
 
-typedef enum { PC_LEFT, PC_RIGHT, PC_SYMMETRIC } PCSide;
+typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
 
 extern int PCCreate(MPI_Comm,PC*);
 extern int PCSetType(PC,PCType);
@@ -94,24 +94,25 @@ extern int PCNullSpaceRemove(PCNullSpace,Vec);
 extern int PCNullSpaceAttach(PC,PCNullSpace);
 
 /* ------------- options specific to particular preconditioners --------- */
-extern int PCSORSetSymmetric(PC, MatSORType);
-extern int PCSORSetOmega(PC, double);
-extern int PCSORSetIterations(PC, int);
 
-extern int PCEisenstatSetOmega(PC, double);
+extern int PCSORSetSymmetric(PC,MatSORType);
+extern int PCSORSetOmega(PC,double);
+extern int PCSORSetIterations(PC,int);
+
+extern int PCEisenstatSetOmega(PC,double);
 extern int PCEisenstatNoDiagonalScaling(PC);
 
 #define USE_PRECONDITIONER_MATRIX 0
 #define USE_TRUE_MATRIX           1
 extern int PCBJacobiSetUseTrueLocal(PC);
-extern int PCBJacobiSetTotalBlocks(PC, int, int*);
-extern int PCBJacobiSetLocalBlocks(PC, int, int*);
+extern int PCBJacobiSetTotalBlocks(PC,int,int*);
+extern int PCBJacobiSetLocalBlocks(PC,int,int*);
 
 extern int PCSLESSetUseTrue(PC);
 extern int PCCompositeSetUseTrue(PC);
 
-extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
-extern int PCShellSetSetUp(PC, int (*)(void*));
+extern int PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*);
+extern int PCShellSetSetUp(PC,int (*)(void*));
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 extern int PCShellSetName(PC,char*);
 extern int PCShellGetName(PC,char**);
@@ -127,19 +128,19 @@ extern int PCILUSetUseInPlace(PC);
 extern int PCILUSetFill(PC,double);
 extern int PCILUSetLevels(PC,int);
 extern int PCILUSetReuseOrdering(PC,PetscTruth);
-extern int PCILUSetUseDropTolerance(PC,double,int);
+extern int PCILUSetUseDropTolerance(PC,double,double,int);
 extern int PCILUSetReuseFill(PC,PetscTruth);
 extern int PCILUSetAllowDiagonalFill(PC);
 
-extern int PCASMSetLocalSubdomains(PC, int, IS *);
-extern int PCASMSetTotalSubdomains(PC, int, IS *);
-extern int PCASMSetOverlap(PC, int);
+extern int PCASMSetLocalSubdomains(PC,int,IS *);
+extern int PCASMSetTotalSubdomains(PC,int,IS *);
+extern int PCASMSetOverlap(PC,int);
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
 extern int PCASMSetType(PC,PCASMType);
 extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 extern int PCASMSetUseInPlace(PC);
 
-typedef enum {PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE} PCCompositeType;
+typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE} PCCompositeType;
 extern int PCCompositeSetType(PC,PCCompositeType);
 extern int PCCompositeAddPC(PC,PCType);
 extern int PCCompositeGetPC(PC pc,int n,PC *);

@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.26 1999/04/16 16:10:57 bsmith Exp bsmith $";
+! "$Id: ex2f.F,v 1.27 1999/10/23 00:01:22 bsmith Exp bsmith $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -77,17 +77,17 @@
 !  See the Fortran section of the PETSc users manual for details.
 
       TS               ts
-      Vec              u_local, u
+      Vec              u_local,u
       Mat              A
-      integer          flg, ierr
-      integer          time_steps_max, steps
-      double precision dt, ftime, time_total_max
+      integer          flg,ierr
+      integer          time_steps_max,steps
+      double precision dt,ftime,time_total_max
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
 
-      external Monitor, RHSFunction
-      external InitialConditions, RHSJacobian
+      external Monitor,RHSFunction
+      external InitialConditions,RHSJacobian
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                 Beginning of program
@@ -238,8 +238,8 @@
       Vec     u
 
 !  Local variables:
-      double  precision localptr(1), x
-      integer           i, mybase, myend, ierr
+      double  precision localptr(1),x
+      integer           i,mybase,myend,ierr
       PetscOffset       idx
 
 !  Determine starting and ending point of each processor's range of
@@ -300,12 +300,12 @@
 #include "ex2f.h"
 
 !  Input/output parameters:
-      double precision  t, x
+      double precision  t,x
       integer           ierr
 
 !  Local variables:
       double precision  localptr(1)
-      integer           i, mybase, myend
+      integer           i,mybase,myend
       PetscOffset       idx
 
 !  Determine starting and ending point of each processors range of
@@ -355,13 +355,13 @@
 
 !  Input/output parameters:
       TS               ts
-      integer          step, dummy
+      integer          step,dummy
       double precision time
       Vec              u
 
 !  Local variables:
       integer          ierr
-      double precision en2, en2s, enmax
+      double precision en2,en2s,enmax
       double precision mone
       Draw             draw
 
@@ -402,7 +402,7 @@
 
 !  Print only from processor 0
       if (rank .eq. 0) write(6,100) step,time,en2s,enmax
- 100  format('Timestep = ',i5,', time = ',f8.3,                         &
+ 100  format('Timestep = ',i5,',time = ',f8.3,                          &
      &       ' sec, error [2-norm] = ',e9.3,                            &
      &       ', error [max-norm] = ',e9.3)
 
@@ -439,14 +439,14 @@
 !  Input/output parameters:
       TS               ts
       double precision t
-      Vec              global_in, global_out
+      Vec              global_in,global_out
       integer          dummy
 
 !  Local variables:
       Vec              u_local
-      double precision localptr(1), copyptr(1), sc
-      integer          i, il, ierr, localsize
-      PetscOffset      idx_c, idx_l
+      double precision localptr(1),copyptr(1),sc
+      integer          i,il,ierr,localsize
+      PetscOffset      idx_c,idx_l
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Get ready for local function computations
@@ -492,7 +492,7 @@
 !  Handle the interior nodes where the PDE is replace by finite 
 !  difference operators.
 
-      do 10, i=2, localsize-1
+      do 10, i=2,localsize-1
          il = i + idx_l
          copyptr(i+idx_c) =  localptr(il) * sc *                        &
      &     (localptr(il+1) + localptr(il-1) - two_d0*localptr(il))
@@ -553,15 +553,15 @@
       TS               ts
       double precision t
       Vec              global_in
-      Mat              A, B
+      Mat              A,B
       MatStructure     str
       integer          dummy
 
 !  Local variables:
       Vec              u_local
-      double precision localptr(1), sc, v(3)
-      integer          i, ierr,  col(3), is
-      integer          mstart, mend, mstarts, mends
+      double precision localptr(1),sc,v(3)
+      integer          i,ierr,col(3),is
+      integer          mstart,mend,mstarts,mends
       PetscOffset      idx
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -615,7 +615,7 @@
 !  We construct the matrix one row at a time.
 
       sc = one_d0/(h*h*two_d0*(one_d0+t)*(one_d0+t))
-      do 10, i=mstart, mend-1
+      do 10, i=mstart,mend-1
          col(1) = i-1
          col(2) = i
          col(3) = i+1

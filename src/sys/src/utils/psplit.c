@@ -1,4 +1,4 @@
-/*$Id: psplit.c,v 1.6 1999/05/12 03:27:21 bsmith Exp bsmith $*/
+/*$Id: psplit.c,v 1.7 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I    "petsc.h" I*/
 
@@ -32,7 +32,7 @@ int PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
   if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(1,1,"Both n and N cannot be PETSC_DECIDE");
 
   if (*N == PETSC_DECIDE) { 
-    ierr = MPI_Allreduce( n, N,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
+    ierr = MPI_Allreduce(n,N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (*n == PETSC_DECIDE) { 
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
@@ -41,7 +41,7 @@ int PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
 #if defined(PETSC_USE_BOPT_g)
   else {
     int tmp;
-    ierr = MPI_Allreduce( n, &tmp,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
+    ierr = MPI_Allreduce(n,&tmp,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     if (tmp != *N) {
       SETERRQ2(1,1,"Global length %d not equal sum of local lengths %d",*N,tmp);
     }

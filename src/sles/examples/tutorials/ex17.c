@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.8 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.9 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -32,13 +32,13 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec         x, b, u;  /* approx solution, RHS, exact solution */
+  Vec         x,b,u;  /* approx solution, RHS, exact solution */
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
   PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
-  int         i, I, Istart, Iend, ierr, m = 5, n = 5, its,  *cols;
-  Scalar      neg_one = -1.0, *ua;
+  int         i,I,Istart,Iend,ierr,m = 5,n = 5,its,*cols;
+  Scalar      neg_one = -1.0,*ua;
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -100,10 +100,10 @@ int main(int argc,char **args)
    */
   ierr = VecGetArray(u,&ua);CHKERRA(ierr);
   cols = (int *)PetscMalloc(n*sizeof(int));CHKPTRA(cols);
-  for ( i=0; i<n; i++ ) { 
+  for (i=0; i<n; i++) { 
     cols[i] = i;
   }
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     ierr = VecSetRandom(rctx,u);CHKERRA(ierr);
     ierr = MatSetValues(A,1,&I,n,cols,ua,INSERT_VALUES);CHKERRA(ierr);
   }

@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.14 1999/11/05 14:46:30 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.15 1999/11/24 21:54:44 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -18,7 +18,7 @@ typedef struct {
 #define __FUNC__ "PCView_Redundant"
 static int PCView_Redundant(PC pc,Viewer viewer)
 {
-  PC_Redundant *red = (PC_Redundant *) pc->data;
+  PC_Redundant *red = (PC_Redundant*)pc->data;
   int          ierr,rank;
   PetscTruth   isascii,isstring;
   Viewer       sviewer;
@@ -51,7 +51,7 @@ static int PCView_Redundant(PC pc,Viewer viewer)
 #define __FUNC__ "PCSetUp_Redundant"
 static int PCSetUp_Redundant(PC pc)
 {
-  PC_Redundant   *red  = (PC_Redundant *) pc->data;
+  PC_Redundant   *red  = (PC_Redundant*)pc->data;
   int            ierr,mstart,mlocal,m,size;
   IS             isl;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
@@ -60,7 +60,7 @@ static int PCSetUp_Redundant(PC pc)
 
   PetscFunctionBegin;
   ierr = VecGetSize(pc->vec,&m);CHKERRQ(ierr);
-  if (pc->setupcalled == 0) {
+  if (!pc->setupcalled) {
     ierr = VecGetLocalSize(pc->vec,&mlocal);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,m,&red->x);CHKERRQ(ierr);
     ierr = VecDuplicate(red->x,&red->b);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ static int PCSetUp_Redundant(PC pc)
 #define __FUNC__ "PCApply_Redundant"
 static int PCApply_Redundant(PC pc,Vec x,Vec y)
 {
-  PC_Redundant      *red = (PC_Redundant *) pc->data;
+  PC_Redundant      *red = (PC_Redundant*)pc->data;
   int               ierr;
 
   PetscFunctionBegin;
@@ -148,7 +148,7 @@ static int PCApply_Redundant(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCDestroy_Redundant"
 static int PCDestroy_Redundant(PC pc)
 {
-  PC_Redundant *red = (PC_Redundant *) pc->data;
+  PC_Redundant *red = (PC_Redundant*)pc->data;
   int          ierr;
 
   PetscFunctionBegin;
@@ -186,7 +186,7 @@ static int PCPrintHelp_Redundant(PC pc,char *p)
 static int PCSetFromOptions_Redundant(PC pc)
 {
   int          ierr;
-  PC_Redundant *red = (PC_Redundant *) pc->data;
+  PC_Redundant *red = (PC_Redundant*)pc->data;
 
   PetscFunctionBegin;
   ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCRedundantSetScatter_Redundant"
 int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
-  PC_Redundant *red = (PC_Redundant *) pc->data;
+  PC_Redundant *red = (PC_Redundant*)pc->data;
   int          ierr;
 
   PetscFunctionBegin;
@@ -230,7 +230,7 @@ EXTERN_C_END
 @*/
 int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 {
-  int ierr, (*f)(PC,VecScatter,VecScatter);
+  int ierr,(*f)(PC,VecScatter,VecScatter);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -273,7 +273,7 @@ int PCCreate_Redundant(PC pc)
   pc->ops->view              = PCView_Redundant;
   pc->ops->applyrichardson   = 0;
 
-  pc->data              = (void *) red;
+  pc->data              = (void*)red;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
                     (void*)PCRedundantSetScatter_Redundant);CHKERRQ(ierr);

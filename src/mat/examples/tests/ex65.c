@@ -1,4 +1,4 @@
-/*$Id: ex65.c,v 1.5 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex65.c,v 1.6 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
 int main(int argc,char **args)
 {
   Mat    A;
-  int    m = 100, n = 11, ierr, js[11],i,j,cnt;
+  int    m = 100,n = 11,ierr,js[11],i,j,cnt;
   Scalar values[11];
   Viewer view;
 
@@ -17,12 +17,12 @@ int main(int argc,char **args)
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRA(ierr);
 
-  for ( i=0; i<n; i++ ) values[i] = (double) i;
+  for (i=0; i<n; i++) values[i] = (double)i;
 
-  for ( i=0; i<m; i++ ) {
+  for (i=0; i<m; i++) {
     cnt = 0;
-    if ( i % 2 ) {
-      for ( j=0; j<n; j += 2) {
+    if (i % 2) {
+      for (j=0; j<n; j += 2) {
         js[cnt++] = j;
       }
     } else {

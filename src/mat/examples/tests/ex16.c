@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex16.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatGetArray().\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests MatGetArray().\n\n";
 int main(int argc,char **args)
 {
   Mat         A; 
-  int         i, j, m = 3, n = 2, ierr,rstart,rend;
+  int         i,j,m = 3,n = 2,ierr,rstart,rend;
   Scalar      v,*array;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -23,8 +23,8 @@ int main(int argc,char **args)
   /*
      Set values into the matrix 
   */
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = 1.0/(i+j+1); ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
@@ -42,9 +42,9 @@ int main(int argc,char **args)
   */
   ierr = MatGetArray(A,&array);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) {
-    for ( j=0; j<n; j++ ) {
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%6.4e ",PetscReal(array[j*(rend-rstart)+i-rstart]));
+  for (i=rstart; i<rend; i++) {
+    for (j=0; j<n; j++) {
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%6.4e ",PetscRealPart(array[j*(rend-rstart)+i-rstart]));
     }
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n");
   }

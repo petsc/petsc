@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.68 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.69 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -131,7 +131,7 @@ extern int DrawEOP(Draw);
 extern int DrawGetSingleton(Draw,Draw*);
 extern int DrawRestoreSingleton(Draw,Draw*);
 
-typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton;
+typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT } DrawButton;
 extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
 extern int DrawSynchronizedGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
 
@@ -195,38 +195,38 @@ extern int DrawSPSetLimits(DrawSP,double,double,double,double);
 /*
     Routines to draw histograms
 */
-typedef struct _p_DrawHist*   DrawHist;
-#define DRAWHIST_COOKIE PETSC_COOKIE+15
-extern int DrawHistCreate(Draw, int, DrawHist *);
-extern int DrawHistDestroy(DrawHist);
-extern int DrawHistAddValue(DrawHist, double);
-extern int DrawHistDraw(DrawHist);
-extern int DrawHistReset(DrawHist);
-extern int DrawHistGetAxis(DrawHist, DrawAxis *);
-extern int DrawHistGetDraw(DrawHist, Draw *);
-extern int DrawHistSetLimits(DrawHist, double, double, int, int);
-extern int DrawHistSetNumberBins(DrawHist, int);
-extern int DrawHistSetColor(DrawHist,int);
+typedef struct _p_DrawHG*   DrawHG;
+#define DRAWHG_COOKIE PETSC_COOKIE+15
+extern int DrawHGCreate(Draw,int,DrawHG *);
+extern int DrawHGDestroy(DrawHG);
+extern int DrawHGAddValue(DrawHG,double);
+extern int DrawHGDraw(DrawHG);
+extern int DrawHGReset(DrawHG);
+extern int DrawHGGetAxis(DrawHG,DrawAxis *);
+extern int DrawHGGetDraw(DrawHG,Draw *);
+extern int DrawHGSetLimits(DrawHG,double,double,int,int);
+extern int DrawHGSetNumberBins(DrawHG,int);
+extern int DrawHGSetColor(DrawHG,int);
 
 /*
     Viewer routines that allow you to access underlying Draw objects
 */
-extern int ViewerDrawGetDraw(Viewer,int, Draw*);
-extern int ViewerDrawGetDrawLG(Viewer,int, DrawLG*);
-extern int ViewerDrawGetDrawAxis(Viewer,int, DrawAxis*);
+extern int ViewerDrawGetDraw(Viewer,int,Draw*);
+extern int ViewerDrawGetDrawLG(Viewer,int,DrawLG*);
+extern int ViewerDrawGetDrawAxis(Viewer,int,DrawAxis*);
 
 extern int DrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
 extern int DrawUtilitySetGamma(double);
 
 /* Mesh management routines */
 typedef struct _p_DrawMesh* DrawMesh;
-int DrawMeshCreate( DrawMesh *, 
-		    double *, double *, double *,
-		    int, int, int, int, int, int, int, int, int,
-		    int, int, int, int, double *, int );
-int DrawMeshCreateSimple( DrawMesh *, double *, double *, double *,
-			  int, int, int, int, double *, int );
-int DrawMeshDestroy( DrawMesh * );
+int DrawMeshCreate(DrawMesh *,
+		    double *,double *,double *,
+		    int,int,int,int,int,int,int,int,int,
+		    int,int,int,int,double *,int);
+int DrawMeshCreateSimple(DrawMesh *,double *,double *,double *,
+			  int,int,int,int,double *,int);
+int DrawMeshDestroy(DrawMesh *);
 
 
 

@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.8 1999/12/13 03:15:38 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.9 1999/12/13 03:21:04 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -16,9 +16,9 @@
 #include "src/sles/ksp/impls/fgmres/fgmresp.h"       /*I  "ksp.h"  I*/
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
-static int    FGMRESGetNewVectors( KSP ,int );
-static int    FGMRESUpdateHessenberg( KSP , int, int, double * );
-static int    BuildFgmresSoln(Scalar* , Vec, Vec, KSP, int);
+static int    FGMRESGetNewVectors(KSP,int);
+static int    FGMRESUpdateHessenberg(KSP,int,int,PetscReal *);
+static int    BuildFgmresSoln(Scalar*,Vec,Vec,KSP,int);
 
 /*
 
@@ -30,10 +30,10 @@ static int    BuildFgmresSoln(Scalar* , Vec, Vec, KSP, int);
 */
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_FGMRES"
-int    KSPSetUp_FGMRES(KSP ksp )
+int    KSPSetUp_FGMRES(KSP ksp)
 {
-  unsigned  int size, hh, hes, rs, cc;
-  int           ierr,  max_k, k;
+  unsigned  int size,hh,hes,rs,cc;
+  int           ierr,max_k,k;
   KSP_FGMRES    *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -48,7 +48,7 @@ int    KSPSetUp_FGMRES(KSP ksp )
   size          = (hh + hes + rs + 2*cc) * sizeof(Scalar);
 
   /* Allocate space and set pointers to beginning */
-  fgmres->hh_origin  = (Scalar *) PetscMalloc(size);CHKPTRQ(fgmres->hh_origin);
+  fgmres->hh_origin  = (Scalar*)PetscMalloc(size);CHKPTRQ(fgmres->hh_origin);
   PLogObjectMemory(ksp,size);                      /* HH - modified (by plane 
                                                       rotations) hessenburg */
   fgmres->hes_origin = fgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
@@ -60,24 +60,24 @@ int    KSPSetUp_FGMRES(KSP ksp )
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
     size = (max_k + 3)*(max_k + 9)*sizeof(Scalar);
-    fgmres->Rsvd = (Scalar *) PetscMalloc( size ); CHKPTRQ(fgmres->Rsvd);
-    fgmres->Dsvd = (double *) PetscMalloc( 5*(max_k+2)*sizeof(double) );CHKPTRQ(fgmres->Dsvd);
-    PLogObjectMemory( ksp, size+5*(max_k+2)*sizeof(double) );
+    fgmres->Rsvd = (Scalar*)PetscMalloc(size);CHKPTRQ(fgmres->Rsvd);
+    fgmres->Dsvd = (PetscReal*)PetscMalloc(5*(max_k+2)*sizeof(PetscReal));CHKPTRQ(fgmres->Dsvd);
+    PLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  fgmres->vecs = (Vec *) PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->vecs);
+  fgmres->vecs = (Vec*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->vecs);
   fgmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  fgmres->user_work   = (Vec **)PetscMalloc( (VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->user_work);
-  fgmres->mwork_alloc = (int *) PetscMalloc( (VEC_OFFSET+2+max_k)*sizeof(int));CHKPTRQ(fgmres->mwork_alloc);
-  PLogObjectMemory( ksp, (VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)) );
+  fgmres->user_work   = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->user_work);
+  fgmres->mwork_alloc = (int*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int));CHKPTRQ(fgmres->mwork_alloc);
+  PLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
 
   /* New for FGMRES - Allocate array to hold pointers to preconditioned 
      vectors - same sizes as user vectors above */
-  fgmres->prevecs = (Vec *) PetscMalloc( (VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->prevecs);
-  fgmres->prevecs_user_work  = (Vec **)PetscMalloc( (VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->prevecs_user_work);
-  PLogObjectMemory( ksp, (VEC_OFFSET+2+max_k)*(2*sizeof(void *)) );
+  fgmres->prevecs = (Vec*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->prevecs);
+  fgmres->prevecs_user_work  = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(fgmres->prevecs_user_work);
+  PLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)));
 
 
   /* if q_preallocate = 0 then only allocate one "chunck" of space (for 
@@ -90,15 +90,15 @@ int    KSPSetUp_FGMRES(KSP ksp )
   }
 
   /* space for work vectors */
-  ierr = VecDuplicateVecs(VEC_RHS,fgmres->vv_allocated, &fgmres->user_work[0]);CHKERRQ(ierr);
-  PLogObjectParents( ksp, fgmres->vv_allocated, fgmres->user_work[0] );
+  ierr = VecDuplicateVecs(VEC_RHS,fgmres->vv_allocated,&fgmres->user_work[0]);CHKERRQ(ierr);
+  PLogObjectParents(ksp,fgmres->vv_allocated,fgmres->user_work[0]);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->vecs[k] = fgmres->user_work[0][k];
   } 
 
   /* space for preconditioned vectors */
   ierr = VecDuplicateVecs(VEC_RHS,fgmres->vv_allocated,&fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
-  PLogObjectParents( ksp, fgmres->vv_allocated, fgmres->prevecs_user_work[0] );
+  PLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
   } 
@@ -120,21 +120,21 @@ int    KSPSetUp_FGMRES(KSP ksp )
 */
 #undef __FUNC__  
 #define __FUNC__ "FGMRESResidual"
-static int FGMRESResidual( KSP ksp )
+static int FGMRESResidual(KSP ksp)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
   Scalar       mone = -1.0;
-  Mat          Amat, Pmat;
+  Mat          Amat,Pmat;
   MatStructure pflag;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators( ksp->B, &Amat, &Pmat, &pflag ); CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   /* put A*x into VEC_TEMP */
-  ierr = MatMult( Amat, VEC_SOLN, VEC_TEMP ); CHKERRQ(ierr);
+  ierr = MatMult(Amat,VEC_SOLN,VEC_TEMP);CHKERRQ(ierr);
   /* now put residual (-a*x + f) into vec_vv(0) */
-  ierr = VecWAXPY( &mone, VEC_TEMP, VEC_RHS, VEC_VV(0) ); CHKERRQ(ierr);
+  ierr = VecWAXPY(&mone,VEC_TEMP,VEC_RHS,VEC_VV(0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -159,12 +159,12 @@ static int FGMRESResidual( KSP ksp )
  */
 #undef __FUNC__  
 #define __FUNC__ "FGMREScycle"
-int FGMREScycle(int *  itcount, KSP ksp)
+int FGMREScycle(int *itcount,KSP ksp)
 {
 
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
-  double       res_norm;             
-  double       hapbnd, tt;
+  PetscReal    res_norm;             
+  PetscReal    hapbnd,tt;
   Scalar       zero=0.0;
   Scalar       tmp;
   int          hapend=0;              /* indicates happy breakdown ending */
@@ -172,7 +172,7 @@ int FGMREScycle(int *  itcount, KSP ksp)
   int          loc_it;                /* local count of # of dir. in Krylov space */ 
   int          max_k = fgmres->max_k; /* max # of directions Krylov space */
   int          max_it = ksp->max_it;  /* max # of overall iterations for the method */ 
-  Mat          Amat, Pmat;
+  Mat          Amat,Pmat;
   MatStructure pflag;
 
   PetscFunctionBegin;
@@ -182,26 +182,26 @@ int FGMREScycle(int *  itcount, KSP ksp)
   loc_it = 0;
 
   /* initial residual is in VEC_VV(0)  - compute its norm*/ 
-  ierr   = VecNorm( VEC_VV(0), NORM_2, &res_norm ); CHKERRQ(ierr);
+  ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
 
   /* first entry in right-hand-side of hessenberg system is just 
      the initial residual norm */
   *RS(0) = res_norm;
 
   /* check for the convergence - maybe the current guess is good enough */
-  ierr = (*ksp->converged)( ksp, ksp->its, res_norm, &ksp->reason,ksp->cnvP ); CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {
     if (itcount) *itcount = 0;
     PetscFunctionReturn(0);
   }
 
   /* scale VEC_VV (the initial residual) */
-  tmp = 1.0/res_norm; ierr = VecScale( &tmp, VEC_VV(0) ); CHKERRQ(ierr);
+  tmp = 1.0/res_norm; ierr = VecScale(&tmp,VEC_VV(0));CHKERRQ(ierr);
 
   /* FYI: AMS calls are for memory snooper */
-  ierr = PetscObjectTakeAccess( ksp );CHKERRQ(ierr);
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res_norm;
-  ierr = PetscObjectGrantAccess( ksp );CHKERRQ(ierr);
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
 
   /* note: (fgmres->it) is always set one less than (loc_it) It is used in 
@@ -213,15 +213,15 @@ int FGMREScycle(int *  itcount, KSP ksp)
   /* MAIN ITERATION LOOP BEGINNING*/
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */ 
-  ierr = (*ksp->converged)( ksp, ksp->its, res_norm, &ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason && loc_it < max_k && ksp->its < max_it) {
-    KSPLogResidualHistory( ksp, res_norm );
+    KSPLogResidualHistory(ksp,res_norm);
     fgmres->it = (loc_it - 1);
-    KSPMonitor( ksp, ksp->its, res_norm); 
+    KSPMonitor(ksp,ksp->its,res_norm); 
 
     /* see if more space is needed for work vectors */
     if (fgmres->vv_allocated <= loc_it + VEC_OFFSET + 1) {
-      ierr = FGMRESGetNewVectors( ksp, loc_it+1 ); CHKERRQ(ierr);
+      ierr = FGMRESGetNewVectors(ksp,loc_it+1);CHKERRQ(ierr);
       /* (loc_it+1) is passed in as number of the first vector that should
          be allocated */
     }
@@ -229,40 +229,40 @@ int FGMREScycle(int *  itcount, KSP ksp)
     /* CHANGE THE PRECONDITIONER? */ 
     /* ModifyPC is the callback function that can be used to
        change the PC or its attributes before its applied */
-    (*fgmres->modifypc)( ksp, ksp->its, loc_it, res_norm,fgmres->modifyctx);
+    (*fgmres->modifypc)(ksp,ksp->its,loc_it,res_norm,fgmres->modifyctx);
    
   
     /* apply PRECONDITIONER to direction vector and store with 
        preconditioned vectors in prevec */
-    ierr = PCApply( ksp->B, VEC_VV(loc_it), PREVEC(loc_it) ); CHKERRQ(ierr);
+    ierr = PCApply(ksp->B,VEC_VV(loc_it),PREVEC(loc_it));CHKERRQ(ierr);
      
-    ierr = PCGetOperators( ksp->B, &Amat, &Pmat, &pflag ); CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */
-    ierr = MatMult( Amat, PREVEC(loc_it), VEC_VV(1+loc_it) ); CHKERRQ(ierr);
+    ierr = MatMult(Amat,PREVEC(loc_it),VEC_VV(1+loc_it));CHKERRQ(ierr);
 
  
     /* update hessenberg matrix and do Gram-Schmidt - new direction is in
        VEC_VV(1+loc_it)*/
-    ierr = (*fgmres->orthog)( ksp, loc_it ); CHKERRQ(ierr);
+    ierr = (*fgmres->orthog)(ksp,loc_it);CHKERRQ(ierr);
 
     /* new entry in hessenburg is the 2-norm of our new direction */
-    ierr = VecNorm( VEC_VV(loc_it+1), NORM_2, &tt ); CHKERRQ(ierr);
-    *HH(loc_it+1, loc_it)   = tt;
-    *HES(loc_it+1, loc_it)  = tt;
+    ierr = VecNorm(VEC_VV(loc_it+1),NORM_2,&tt);CHKERRQ(ierr);
+    *HH(loc_it+1,loc_it)   = tt;
+    *HES(loc_it+1,loc_it)  = tt;
 
     /* Happy Breakdown Check */
-    hapbnd  = fgmres->epsabs * PetscAbsScalar( *HH(loc_it, loc_it) / *RS(loc_it) );
+    hapbnd  = fgmres->epsabs * PetscAbsScalar(*HH(loc_it,loc_it) / *RS(loc_it));
     /* RS(loc_it) contains the res_norm from the last iteration  */
-    hapbnd = PetscMin(fgmres->haptol, hapbnd);
+    hapbnd = PetscMin(fgmres->haptol,hapbnd);
     /*if (hapbnd > fgmres->haptol) hapbnd = fgmres->haptol;*/
     if (tt > hapbnd) {
         tmp = 1.0/tt; 
         /* scale new direction by its norm */
-        ierr = VecScale( &tmp, VEC_VV(loc_it+1) ); CHKERRQ(ierr);
+        ierr = VecScale(&tmp,VEC_VV(loc_it+1));CHKERRQ(ierr);
     } else {
         /* This happens when the solution is exactly reached. */
         /* So there is no new direction... */
-          ierr = VecSet( &zero, VEC_TEMP ); CHKERRQ(ierr); /* set VEC_TEMP to 0 */
+          ierr = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr); /* set VEC_TEMP to 0 */
           hapend = 1;
     }
     /* note that for FGMRES we could get HES(loc_it+1, loc_it)  = 0 and the
@@ -275,33 +275,33 @@ int FGMREScycle(int *  itcount, KSP ksp)
  
     /* Now apply rotations to new col of hessenberg (and right side of system), 
        calculate new rotation, and get new residual norm at the same time*/
-    ierr = FGMRESUpdateHessenberg( ksp, loc_it, hapend, &res_norm); CHKERRQ(ierr);
+    ierr = FGMRESUpdateHessenberg(ksp,loc_it,hapend,&res_norm);CHKERRQ(ierr);
     loc_it++;
     fgmres->it  = (loc_it-1);  /* Add this here in case it has converged */
  
-    ierr = PetscObjectTakeAccess( ksp );CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res_norm;
-    ierr = PetscObjectGrantAccess( ksp );CHKERRQ(ierr);
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
-      ierr = (*ksp->converged)( ksp, ksp->its, res_norm, &ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (!ksp->reason) {
-        SETERRQ(0,0,"You reached the happy break down, but convergence was not indicated.");
+        SETERRQ(0,0,"You reached the happy break down,but convergence was not indicated.");
       }
       break;
     }
-    ierr = (*ksp->converged)( ksp, ksp->its, res_norm, &ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
   /* END OF ITERATION LOOP */
 
-  KSPLogResidualHistory( ksp, res_norm );
+  KSPLogResidualHistory(ksp,res_norm);
 
   /*
      Monitor if we know that we will not return for a restart */
   if (ksp->reason || ksp->its >= max_it) {
-    KSPMonitor( ksp,  ksp->its, res_norm );
+    KSPMonitor(ksp,ksp->its,res_norm);
   }
 
   if (itcount) *itcount    = loc_it;
@@ -316,7 +316,7 @@ int FGMREScycle(int *  itcount, KSP ksp)
   /* Note: must pass in (loc_it-1) for iteration count so that BuildFgmresSoln
      properly navigates */
 
-  ierr = BuildFgmresSoln( RS(0), VEC_SOLN, VEC_SOLN, ksp, loc_it-1 ); CHKERRQ(ierr);
+  ierr = BuildFgmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,loc_it-1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -335,7 +335,7 @@ int FGMREScycle(int *  itcount, KSP ksp)
 #undef __FUNC__  
 #define __FUNC__ "KSPSolve_FGMRES"
 
-int KSPSolve_FGMRES(KSP ksp,int *outits )
+int KSPSolve_FGMRES(KSP ksp,int *outits)
 {
   int        ierr;
   int        cycle_its; /* iterations done in a call to FGMREScycle */
@@ -353,21 +353,21 @@ int KSPSolve_FGMRES(KSP ksp,int *outits )
 
   /* Compute the initial (NOT preconditioned) residual */
   if (!ksp->guess_zero) {
-    ierr = FGMRESResidual( ksp ); CHKERRQ(ierr);
+    ierr = FGMRESResidual(ksp);CHKERRQ(ierr);
   } else { /* guess is 0 so residual is F (which is in VEC_RHS) */
-    ierr = VecCopy( VEC_RHS, VEC_VV(0) ); CHKERRQ(ierr);
+    ierr = VecCopy(VEC_RHS,VEC_VV(0));CHKERRQ(ierr);
   }
   /* now the residual is in VEC_VV(0) - which is what 
      FGMREScycle expects... */
   
-  ierr    = FGMREScycle( &cycle_its,ksp); CHKERRQ(ierr);
+  ierr    = FGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
   itcount += cycle_its;
   while (!ksp->reason) {
-    ierr     = FGMRESResidual(  ksp ); CHKERRQ(ierr);
+    ierr     = FGMRESResidual(ksp);CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
     /* need another check to make sure that fgmres breaks out 
        at precisely the number of iterations chosen */
-    ierr     = FGMREScycle( &cycle_its, ksp);CHKERRQ(ierr);
+    ierr     = FGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
     itcount += cycle_its;  
   }
   /* mark lack of convergence with negative the number of iterations */
@@ -386,37 +386,37 @@ int KSPSolve_FGMRES(KSP ksp,int *outits )
 #define __FUNC__ "KSPDestroy_FGMRES" 
 int KSPDestroy_FGMRES(KSP ksp)
 {
-  KSP_FGMRES *fgmres = (KSP_FGMRES *) ksp->data;
+  KSP_FGMRES *fgmres = (KSP_FGMRES*)ksp->data;
   int       i,ierr;
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
-  if (fgmres->hh_origin) {ierr = PetscFree( fgmres->hh_origin );CHKERRQ(ierr);}
+  if (fgmres->hh_origin) {ierr = PetscFree(fgmres->hh_origin);CHKERRQ(ierr);}
 
   /* Free pointers to user variables */
-  if (fgmres->vecs) {ierr = PetscFree( fgmres->vecs );CHKERRQ(ierr);}
-  if (fgmres->prevecs) {ierr = PetscFree ( fgmres->prevecs);CHKERRQ(ierr);}
+  if (fgmres->vecs) {ierr = PetscFree(fgmres->vecs);CHKERRQ(ierr);}
+  if (fgmres->prevecs) {ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);}
 
   /* free work vectors */
   for (i=0; i < fgmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs( fgmres->user_work[i], fgmres->mwork_alloc[i] ); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(fgmres->user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
-  if (fgmres->user_work)  {ierr = PetscFree( fgmres->user_work );CHKERRQ(ierr);}
+  if (fgmres->user_work)  {ierr = PetscFree(fgmres->user_work);CHKERRQ(ierr);}
 
   for (i=0; i < fgmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(fgmres->prevecs_user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
   if (fgmres->prevecs_user_work) {ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);}
 
-  if (fgmres->mwork_alloc) {ierr = PetscFree( fgmres->mwork_alloc );CHKERRQ(ierr);}
-  if (fgmres->nrs) {ierr = PetscFree( fgmres->nrs );CHKERRQ(ierr);}
-  if (fgmres->sol_temp) {ierr = VecDestroy( fgmres->sol_temp ); CHKERRQ(ierr);}
-  if (fgmres->Rsvd) {ierr = PetscFree( fgmres->Rsvd );CHKERRQ(ierr);}
-  if (fgmres->Dsvd) {ierr = PetscFree( fgmres->Dsvd );CHKERRQ(ierr);}
+  if (fgmres->mwork_alloc) {ierr = PetscFree(fgmres->mwork_alloc);CHKERRQ(ierr);}
+  if (fgmres->nrs) {ierr = PetscFree(fgmres->nrs);CHKERRQ(ierr);}
+  if (fgmres->sol_temp) {ierr = VecDestroy(fgmres->sol_temp);CHKERRQ(ierr);}
+  if (fgmres->Rsvd) {ierr = PetscFree(fgmres->Rsvd);CHKERRQ(ierr);}
+  if (fgmres->Dsvd) {ierr = PetscFree(fgmres->Dsvd);CHKERRQ(ierr);}
   if (fgmres->modifydestroy) {
     ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
   }
-  ierr = PetscFree( fgmres ); CHKERRQ(ierr);
+  ierr = PetscFree(fgmres);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -435,10 +435,10 @@ int KSPDestroy_FGMRES(KSP ksp)
  */
 #undef __FUNC__  
 #define __FUNC__ "BuildFgmresSoln"
-static int BuildFgmresSoln( Scalar* nrs, Vec vguess, Vec vdest, KSP ksp, int it )
+static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 {
-  Scalar     tt, zero = 0.0, one = 1.0;
-  int        ierr, ii, k, j;
+  Scalar     tt,zero = 0.0,one = 1.0;
+  int        ierr,ii,k,j;
   KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
 
   PetscFunctionBegin;
@@ -447,7 +447,7 @@ static int BuildFgmresSoln( Scalar* nrs, Vec vguess, Vec vdest, KSP ksp, int it 
   /* If it is < 0, no fgmres steps have been performed */
   if (it < 0) {
     if (vdest != vguess) {
-      ierr = VecCopy( vguess, vdest ); CHKERRQ(ierr);
+      ierr = VecCopy(vguess,vdest);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
@@ -466,15 +466,15 @@ static int BuildFgmresSoln( Scalar* nrs, Vec vguess, Vec vdest, KSP ksp, int it 
 
   /* Accumulate the correction to the soln of the preconditioned prob. in 
      VEC_TEMP - note that we use the preconditioned vectors  */
-  ierr = VecSet( &zero, VEC_TEMP ); CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
-  ierr = VecMAXPY( it+1, nrs, VEC_TEMP, &PREVEC(0) ); CHKERRQ(ierr); 
+  ierr = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
+  ierr = VecMAXPY(it+1,nrs,VEC_TEMP,&PREVEC(0));CHKERRQ(ierr); 
 
   /* put updated solution into vdest.*/
   if (vdest != vguess) {
-    ierr = VecCopy( VEC_TEMP, vdest ); CHKERRQ(ierr);
-    ierr = VecAXPY( &one, vguess, vdest ); CHKERRQ(ierr);
+    ierr = VecCopy(VEC_TEMP,vdest);CHKERRQ(ierr);
+    ierr = VecAXPY(&one,vguess,vdest);CHKERRQ(ierr);
   } else  {/* replace guess with solution */
-    ierr = VecAXPY( &one, VEC_TEMP, vdest ); CHKERRQ(ierr);
+    ierr = VecAXPY(&one,VEC_TEMP,vdest);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -488,7 +488,7 @@ static int BuildFgmresSoln( Scalar* nrs, Vec vguess, Vec vdest, KSP ksp, int it 
 
 .        ksp -    Krylov space object
 .	 it  -    plane rotations are applied to the (it+1)th column of the 
-                  modified hessenberg (i.e. HH(:,it) )
+                  modified hessenberg (i.e. HH(:,it))
 .        hapend - 0=not happy breakdown ending.
 
     output parameters:
@@ -497,9 +497,9 @@ static int BuildFgmresSoln( Scalar* nrs, Vec vguess, Vec vdest, KSP ksp, int it 
  */
 #undef __FUNC__  
 #define __FUNC__ "FGMRESUpdateHessenberg"
-static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
+static int FGMRESUpdateHessenberg(KSP ksp,int it,int hapend,PetscReal *res)
 {
-  Scalar     *hh, *cc, *ss, tt;
+  Scalar     *hh,*cc,*ss,tt;
   int        j;
   KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
 
@@ -522,7 +522,7 @@ static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
     *hh = *cc * tt + *ss * *(hh+1);
 #endif
     hh++;
-    *hh = *cc++ * *hh - ( *ss++ * tt );
+    *hh = *cc++ * *hh - (*ss++ * tt);
     /* hh, cc, and ss have all been incremented one by end of loop */
   }
 
@@ -532,7 +532,7 @@ static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
         note: it affects RS(it) and RS(it+1)
      2) the new column of the Hessenberg matrix
         note: it affects HH(it,it) which is currently pointed to 
-        by hh and HH(it+1, it) ( *(hh+1))  
+        by hh and HH(it+1, it) (*(hh+1))  
     thus obtaining the updated value of the residual...
   */
 
@@ -540,16 +540,16 @@ static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
 
   if (!hapend) {
 #if defined(PETSC_USE_COMPLEX)
-    tt        = PetscSqrtScalar( PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1) );
+    tt        = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
 #else
-    tt        = PetscSqrtScalar( *hh * *hh + *(hh+1) * *(hh+1) );
+    tt        = PetscSqrtScalar(*hh * *hh + *(hh+1) * *(hh+1));
 #endif
     if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Your matrix or preconditioner is the null operator");}
     *cc       = *hh / tt;   /* new cosine value */
     *ss       = *(hh+1) / tt;  /* new sine value */
 
     /* apply to 1) and 2) */
-    *RS(it+1) = - ( *ss * *RS(it) );
+    *RS(it+1) = - (*ss * *RS(it));
 #if defined(PETSC_USE_COMPLEX)
     *RS(it)   = PetscConj(*cc) * *RS(it);
     *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
@@ -559,16 +559,16 @@ static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
 #endif
 
     /* residual is the last element (it+1) of right-hand side! */
-    *res      = PetscAbsScalar( *RS(it+1) );
+    *res      = PetscAbsScalar(*RS(it+1));
 
-  } else { /* happy breakdown: HH(it+1, it) = 0 , therfore we don't need to apply 
+  } else { /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply 
             another rotation matrix (so RH doesn't change).  The new residual is 
             always the new sine term times the residual from last time (RS(it)), 
             but now the new sine rotation would be zero...so the residual should
             be zero...so we will multiply "zero" by the last residual.  This might
             not be exactly what we want to do here -could just return "zero". */
  
-    *res = PetscAbsScalar( fgmres->epsabs * *RS(it) );
+    *res = PetscAbsScalar(fgmres->epsabs * *RS(it));
   }
   PetscFunctionReturn(0);
 }
@@ -582,12 +582,12 @@ static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
 */
 #undef __FUNC__  
 #define __FUNC__ "FGMRESGetNewVectors" 
-static int FGMRESGetNewVectors( KSP ksp, int it )
+static int FGMRESGetNewVectors(KSP ksp,int it)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
-  int       nwork = fgmres->nwork_alloc; /* number of work vector chunks allocated */
-  int       nalloc;                      /* number to allocate */
-  int       k, ierr;
+  int        nwork = fgmres->nwork_alloc; /* number of work vector chunks allocated */
+  int        nalloc;                      /* number to allocate */
+  int        k,ierr;
  
   PetscFunctionBegin;
   nalloc = fgmres->delta_allocate; /* number of vectors to allocate 
@@ -603,8 +603,8 @@ static int FGMRESGetNewVectors( KSP ksp, int it )
   fgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
   /* work vectors */
-  ierr = VecDuplicateVecs( VEC_RHS, nalloc,&fgmres->user_work[nwork] ); CHKERRQ(ierr);
-  PLogObjectParents( ksp, nalloc, fgmres->user_work[nwork] ); 
+  ierr = VecDuplicateVecs(VEC_RHS,nalloc,&fgmres->user_work[nwork]);CHKERRQ(ierr);
+  PLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]); 
   for (k=0; k < nalloc; k++) {
     fgmres->vecs[it+VEC_OFFSET+k] = fgmres->user_work[nwork][k];
   }
@@ -640,7 +640,7 @@ static int FGMRESGetNewVectors( KSP ksp, int it )
 */
 #undef __FUNC__  
 #define __FUNC__ "KSPBuildSolution_FGMRES"
-int KSPBuildSolution_FGMRES( KSP ksp, Vec ptr,Vec *result )
+int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data; 
   int        ierr;
@@ -648,8 +648,8 @@ int KSPBuildSolution_FGMRES( KSP ksp, Vec ptr,Vec *result )
   PetscFunctionBegin;
   if (!ptr) {
     if (!fgmres->sol_temp) {
-      ierr = VecDuplicate( ksp->vec_sol, &fgmres->sol_temp ); CHKERRQ(ierr);
-      PLogObjectParent( ksp, fgmres->sol_temp );
+      ierr = VecDuplicate(ksp->vec_sol,&fgmres->sol_temp);CHKERRQ(ierr);
+      PLogObjectParent(ksp,fgmres->sol_temp);
     }
     ptr = fgmres->sol_temp;
   }
@@ -659,7 +659,7 @@ int KSPBuildSolution_FGMRES( KSP ksp, Vec ptr,Vec *result )
     PLogObjectMemory(ksp,fgmres->max_k*sizeof(Scalar));
   }
  
-  ierr = BuildFgmresSoln(fgmres->nrs,VEC_SOLN,ptr,ksp,fgmres->it); CHKERRQ(ierr);
+  ierr = BuildFgmresSoln(fgmres->nrs,VEC_SOLN,ptr,ksp,fgmres->it);CHKERRQ(ierr);
   *result = ptr; 
   
   PetscFunctionReturn(0);
@@ -681,7 +681,7 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
   PetscTruth   isascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject) viewer, ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (fgmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
       cstr = "Unmodified Gram-Schmidt Orthogonalization";
@@ -727,39 +727,39 @@ static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
 #define __FUNC__ "KSPSetFromOptions_FGMRES"
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
-  int        ierr, restart;
+  int        ierr,restart;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetInt( ksp->prefix, "-ksp_gmres_restart", &restart, &flg ); CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESSetRestart( ksp, restart );CHKERRQ(ierr); }
-  ierr = OptionsHasName( ksp->prefix, "-ksp_gmres_preallocate",  &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp); CHKERRQ(ierr);}
-  ierr = OptionsHasName( ksp->prefix, "-ksp_gmres_unmodifiedgramschmidt", &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization( ksp, KSPGMRESUnmodifiedGramSchmidtOrthogonalization ); CHKERRQ(ierr);}
-  ierr = OptionsHasName( ksp->prefix, "-ksp_gmres_modifiedgramschmidt", &flg); CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization( ksp, KSPGMRESModifiedGramSchmidtOrthogonalization ); CHKERRQ(ierr);}
-  ierr = OptionsHasName( ksp->prefix, "-ksp_gmres_irorthog", &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPGMRESSetOrthogonalization( ksp, KSPGMRESIROrthogonalization ); CHKERRQ(ierr);}
+  ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_preallocate",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_modifiedgramschmidt",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
   
-  ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcnochange", &flg ); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_fgmres_modifypcnochange",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
-  ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcsles", &flg ); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_fgmres_modifypcsles",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCSLES,0,0);CHKERRQ(ierr);} 
 
   PetscFunctionReturn(0);
 }
 
-extern int KSPComputeExtremeSingularValues_GMRES( KSP, double *, double * );
-extern int KSPComputeEigenvalues_GMRES( KSP, int, double *, double *, int * );
+extern int KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
+extern int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPFGMRESSetModifyPC_FGMRES" 
-int KSPFGMRESSetModifyPC_FGMRES(KSP ksp, int (*fcn)(KSP, int, int, double,void*),void *ctx,int (*d)(void*))
+int KSPFGMRESSetModifyPC_FGMRES(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void *ctx,int (*d)(void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific( ksp, KSP_COOKIE );
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ((KSP_FGMRES *)ksp->data)->modifypc      = fcn;
   ((KSP_FGMRES *)ksp->data)->modifydestroy = d;
   ((KSP_FGMRES *)ksp->data)->modifyctx     = ctx;
@@ -782,10 +782,10 @@ int KSPCreate_FGMRES(KSP ksp)
   int        ierr;
 
   PetscFunctionBegin;
-  fgmres = (KSP_FGMRES*) PetscMalloc(sizeof(KSP_FGMRES)); CHKPTRQ(fgmres);
-  PetscMemzero( fgmres, sizeof(KSP_FGMRES) );
-  PLogObjectMemory( ksp, sizeof(KSP_FGMRES) );
-  ksp->data                              = (void *) fgmres;
+  fgmres = (KSP_FGMRES*)PetscMalloc(sizeof(KSP_FGMRES));CHKPTRQ(fgmres);
+  PetscMemzero(fgmres,sizeof(KSP_FGMRES));
+  PLogObjectMemory(ksp,sizeof(KSP_FGMRES));
+  ksp->data                              = (void*)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;
 
   ksp->ops->setup                        = KSPSetUp_FGMRES;
@@ -799,16 +799,16 @@ int KSPCreate_FGMRES(KSP ksp)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",
-                                     (void*)KSPGMRESSetPreAllocateVectors_GMRES); CHKERRQ(ierr);
+                                     (void*)KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
                                     "KSPGMRESSetOrthogonalization_GMRES",
-                                     (void*)KSPGMRESSetOrthogonalization_GMRES); CHKERRQ(ierr);
+                                     (void*)KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                      "KSPGMRESSetRestart_GMRES",
-                                    (void*)KSPGMRESSetRestart_GMRES); CHKERRQ(ierr);
+                                    (void*)KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",
                                     "KSPFGMRESSetModifyPC_FGMRES",
-                                   (void*)KSPFGMRESSetModifyPC_FGMRES); CHKERRQ(ierr);
+                                   (void*)KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
 
 
   fgmres->haptol              = 1.0e-8;

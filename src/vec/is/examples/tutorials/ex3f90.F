@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f90.F,v 1.8 1998/06/22 15:58:43 balay Exp balay $"; */
+!      "$Id: ex3f90.F,v 1.9 1998/09/30 15:42:42 balay Exp bsmith $"; */
 !
 !
 !/*T
@@ -26,7 +26,7 @@
 #include "finclude/is.h"
 #include "finclude/is.h90"
 
-      integer n, ierr,bs,issize,inputindices(4)
+      integer n,ierr,bs,issize,inputindices(4)
       integer, pointer :: indices(:)
       IS       set
       PetscTruth isablock;

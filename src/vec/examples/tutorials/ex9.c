@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.18 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.19 1999/11/05 14:45:05 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   */
   ierr = OptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRA(ierr);
   if (flg) {
-    tarray = (Scalar *) PetscMalloc( (nlocal+nghost)*sizeof(Scalar));CHKPTRA(tarray);
+    tarray = (Scalar*)PetscMalloc((nlocal+nghost)*sizeof(Scalar));CHKPTRA(tarray);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRA(ierr);
   } else {
     ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRA(ierr);
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
      Set the values from 0 to 12 into the "global" vector 
   */
   ierr = VecGetOwnershipRange(gx,&rstart,&rend);CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) {
+  for (i=rstart; i<rend; i++) {
     value = (Scalar) i;
     ierr  = VecSetValues(gx,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }
@@ -109,8 +109,8 @@ int main(int argc,char **argv)
      Print out each vector, including the ghost padding region. 
   */
   ierr = VecGetArray(lx,&array);CHKERRA(ierr);
-  for ( i=0; i<nlocal+nghost; i++ ) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",i,PetscReal(array[i]));
+  for (i=0; i<nlocal+nghost; i++) {
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",i,PetscRealPart(array[i]));
   }
   ierr = VecRestoreArray(lx,&array);CHKERRA(ierr);
   PetscSynchronizedFlush(PETSC_COMM_WORLD);

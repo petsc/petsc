@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.101 1999/11/10 03:20:25 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.102 1999/11/24 21:54:37 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -17,18 +17,18 @@
 #define __FUNC__ "MGMCycle_Private"
 int MGMCycle_Private(MG *mglevels)
 {
-  MG     mg = *mglevels, mgc = *(mglevels - 1);
-  int    cycles = mg->cycles, ierr,its;
+  MG     mg = *mglevels,mgc = *(mglevels - 1);
+  int    cycles = mg->cycles,ierr,its;
   Scalar zero = 0.0;
 
   PetscFunctionBegin;
-  if (mg->level == 0) {
+  if (!mg->level) {
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
   } else {
     while (cycles--) {
       ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
-      ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r );CHKERRQ(ierr);
-      ierr = MatRestrict(mg->restrct,  mg->r, mgc->b );CHKERRQ(ierr);
+      ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
+      ierr = MatRestrict(mg->restrct,mg->r,mgc->b);CHKERRQ(ierr);
       ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
       ierr = MGMCycle_Private(mglevels-1);CHKERRQ(ierr); 
       ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
@@ -53,20 +53,20 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
   char *prefix;
 
   PetscFunctionBegin;
-  mg = (MG *) PetscMalloc( levels*sizeof(MG) );CHKPTRQ(mg);
+  mg = (MG*)PetscMalloc(levels*sizeof(MG));CHKPTRQ(mg);
   PLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
-  for ( i=0; i<levels; i++ ) {
-    mg[i]         = (MG) PetscMalloc( sizeof(struct _MG) );CHKPTRQ(mg[i]);
+  for (i=0; i<levels; i++) {
+    mg[i]         = (MG) PetscMalloc(sizeof(struct _MG));CHKPTRQ(mg[i]);
     ierr = PetscMemzero(mg[i],sizeof(struct _MG));CHKERRQ(ierr);
     mg[i]->level  = i;
     mg[i]->levels = levels;
     mg[i]->cycles = 1;
     ierr = SLESCreate(comm,&mg[i]->smoothd);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(mg[i]->smoothd,prefix);CHKERRQ(ierr);
-    if (i == 0 && levels > 1) {
+    if (!i && levels > 1) {
       ierr = SLESAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
     } else {
       ierr = SLESAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_");CHKERRQ(ierr);
@@ -84,11 +84,11 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 #define __FUNC__ "PCDestroy_MG"
 static int PCDestroy_MG(PC pc)
 {
-  MG  *mg = (MG *) pc->data;
-  int i, n = mg[0]->levels,ierr;
+  MG  *mg = (MG*)pc->data;
+  int i,n = mg[0]->levels,ierr;
 
   PetscFunctionBegin;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (mg[i]->smoothd != mg[i]->smoothu) {
       ierr = SLESDestroy(mg[i]->smoothd);CHKERRQ(ierr);
     }
@@ -116,7 +116,7 @@ extern int MGKCycle_Private(MG*);
 #define __FUNC__ "MGCycle"
 static int MGCycle(PC pc,Vec b,Vec x)
 {
-  MG     *mg = (MG*) pc->data;
+  MG     *mg = (MG*)pc->data;
   Scalar zero = 0.0;
   int    levels = mg[0]->levels,ierr;
 
@@ -143,7 +143,7 @@ static int MGCycle(PC pc,Vec b,Vec x)
 #define __FUNC__ "MGCycleRichardson"
 static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
 {
-  MG  *mg = (MG*) pc->data;
+  MG  *mg = (MG*)pc->data;
   int ierr,levels = mg[0]->levels;
 
   PetscFunctionBegin;
@@ -159,7 +159,7 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
 #define __FUNC__ "PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
-  int        ierr, m,levels = 1;
+  int        ierr,m,levels = 1;
   PetscTruth flg;
   char       buff[16];
 
@@ -222,10 +222,10 @@ static int PCPrintHelp_MG(PC pc,char *p)
 #define __FUNC__ "PCView_MG"
 static int PCView_MG(PC pc,Viewer viewer)
 {
-  MG         *mg = (MG *) pc->data;
-  KSP        kspu, kspd;
-  int        itu, itd,ierr,levels = mg[0]->levels,i;
-  double     dtol, atol, rtol;
+  MG         *mg = (MG*)pc->data;
+  KSP        kspu,kspd;
+  int        itu,itd,ierr,levels = mg[0]->levels,i;
+  PetscReal  dtol,atol,rtol;
   char       *cstring;
   PetscTruth isascii;
 
@@ -243,7 +243,7 @@ static int PCView_MG(PC pc,Viewer viewer)
     else cstring = "unknown";
     ierr = ViewerASCIIPrintf(viewer,"  MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
                       cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd);CHKERRQ(ierr);
-    for ( i=0; i<levels; i++ ) {
+    for (i=0; i<levels; i++) {
       ierr = ViewerASCIIPrintf(viewer,"Down solver on level %d -------------------------------\n",i);CHKERRQ(ierr);
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = SLESView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
@@ -269,7 +269,7 @@ static int PCView_MG(PC pc,Viewer viewer)
 #define __FUNC__ "PCSetUp_MG"
 static int PCSetUp_MG(PC pc)
 {
-  MG         *mg = (MG *) pc->data;
+  MG         *mg = (MG*)pc->data;
   int        ierr,i,n = mg[0]->levels;
   KSP        ksp;
 
@@ -281,7 +281,7 @@ static int PCSetUp_MG(PC pc)
   mg[n-1]->x = pc->vec;
   mg[n-1]->b = pc->vec;
 
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     if (mg[i]->smoothd) {
       ierr = SLESSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
@@ -289,7 +289,7 @@ static int PCSetUp_MG(PC pc)
       ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
     }
   }
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
       ierr = SLESSetFromOptions(mg[i]->smoothu);CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
@@ -340,7 +340,7 @@ int MGSetLevels(PC pc,int levels)
   }
   ierr                     = MGCreate_Private(pc->comm,levels,pc,&mg);CHKERRQ(ierr);
   mg[0]->am                = MGMULTIPLICATIVE;
-  pc->data                 = (void *) mg;
+  pc->data                 = (void*)mg;
   pc->ops->applyrichardson = MGCycleRichardson;
   PetscFunctionReturn(0);
 }
@@ -371,7 +371,7 @@ int MGGetLevels(PC pc,int *levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
-  mg      = (MG*) pc->data;
+  mg      = (MG*)pc->data;
   *levels = mg[0]->levels;
   PetscFunctionReturn(0);
 }
@@ -405,7 +405,7 @@ int MGSetType(PC pc,MGType form)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  mg = (MG *) pc->data;
+  mg = (MG*)pc->data;
 
   mg[0]->am = form;
   if (form == MGMULTIPLICATIVE) pc->ops->applyrichardson = MGCycleRichardson;
@@ -442,10 +442,10 @@ int MGSetCycles(PC pc,int n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  mg     = (MG *) pc->data;
+  mg     = (MG*)pc->data;
   levels = mg[0]->levels;
 
-  for ( i=0; i<levels; i++ ) {  
+  for (i=0; i<levels; i++) {  
     mg[i]->cycles  = n; 
   }
   PetscFunctionReturn(0);
@@ -469,11 +469,11 @@ int MGSetCycles(PC pc,int n)
 int MGCheck(PC pc)
 {
   MG  *mg;
-  int i, n, count = 0;
+  int i,n,count = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  mg = (MG *) pc->data;
+  mg = (MG*)pc->data;
 
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must set MG levels before calling");
 
@@ -534,15 +534,15 @@ int MGCheck(PC pc)
 int MGSetNumberSmoothDown(PC pc,int n)
 { 
   MG  *mg;
-  int i, levels,ierr;
+  int i,levels,ierr;
   KSP ksp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  mg     = (MG *) pc->data;
+  mg     = (MG*)pc->data;
   levels = mg[0]->levels;
 
-  for ( i=0; i<levels; i++ ) {  
+  for (i=0; i<levels; i++) {  
     ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg[i]->default_smoothd = n;
@@ -580,10 +580,10 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  mg     = (MG *) pc->data;
+  mg     = (MG*)pc->data;
   levels = mg[0]->levels;
 
-  for ( i=0; i<levels; i++ ) {  
+  for (i=0; i<levels; i++) {  
     ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
     mg[i]->default_smoothu = n;
@@ -606,7 +606,7 @@ int PCCreate_MG(PC pc)
   pc->ops->printhelp      = PCPrintHelp_MG;
   pc->ops->view           = PCView_MG;
 
-  pc->data                = (void *) 0;
+  pc->data                = (void*)0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

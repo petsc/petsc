@@ -1,33 +1,33 @@
 !
-!  "$Id: fmaxpy.F,v 1.7 1999/03/10 22:35:43 bsmith Exp balay $";
+!  "$Id: fmaxpy.F,v 1.8 1999/03/24 18:12:49 balay Exp bsmith $";
 !
 !    Fortran kernel for the MAXPY() vector routine
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine FortranMAXPY4(x, a1, a2, a3, a4, y1, y2, y3, y4, n)
+      subroutine FortranMAXPY4(x,a1,a2,a3,a4,y1,y2,y3,y4,n)
       implicit none
-      Scalar  a1, a2, a3, a4
-      Scalar  x(*), y1(*), y2(*), y3(*), y4(*)
+      Scalar  a1,a2,a3,a4
+      Scalar  x(*),y1(*),y2(*),y3(*),y4(*)
       integer n
 
       integer i
 
-      do 10, i=1,n
+      do 10,i=1,n
         x(i) = x(i) + a1*y1(i) + a2*y2(i) + a3*y3(i) + a4*y4(i)
  10   continue
 
       return 
       end
 
-      subroutine FortranMAXPY3(x, a1, a2, a3, y1, y2, y3, n)
+      subroutine FortranMAXPY3(x,a1,a2,a3,y1,y2,y3,n)
       implicit none
-      Scalar  a1, a2, a3, x(*), y1(*), y2(*), y3(*)
+      Scalar  a1,a2,a3,x(*),y1(*),y2(*),y3(*)
       integer n
 
       integer i
 
-      do 10, i=1,n
+      do 10,i=1,n
         x(i) = x(i) + a1*y1(i) + a2*y2(i) + a3*y3(i)
  10   continue
 
@@ -36,14 +36,14 @@
 
 
 
-      subroutine FortranMAXPY2(x, a1, a2, y1, y2, n)
+      subroutine FortranMAXPY2(x,a1,a2,y1,y2,n)
       implicit none
-      Scalar  a1, a2, x(*), y1(*), y2(*)
+      Scalar  a1,a2,x(*),y1(*),y2(*)
       integer n
 
       integer i
 
-      do 10, i=1,n
+      do 10,i=1,n
         x(i) = x(i) + a1*y1(i) + a2*y2(i)
  10   continue
 
@@ -53,14 +53,14 @@
 !    Fortran kernel for the z = x * y
 !
 !
-      subroutine Fortranxtimesy(x, y, z, n)
+      subroutine Fortranxtimesy(x,y,z,n)
       implicit none
-      Scalar  x(*), y(*), z(*)
+      Scalar  x(*),y(*),z(*)
       integer n
 
       integer i
 
-      do 10, i=1,n
+      do 10,i=1,n
         z(i) = x(i) * y(i)
  10   continue
 

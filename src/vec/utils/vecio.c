@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.59 1999/10/24 14:01:50 bsmith Exp bsmith $*/
+/*$Id: vecio.c,v 1.60 1999/11/05 14:44:46 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -60,7 +60,7 @@ and PetscWriteBinary() to see how this may be done.
 @*/  
 int VecLoad(Viewer viewer,Vec *newvec)
 {
-  int         i, rows, ierr, type, fd,rank,size,n,*range,tag,bs;
+  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
   Vec         vec;
   Scalar      *avec;
   MPI_Comm    comm;
@@ -102,12 +102,12 @@ int VecLoad(Viewer viewer,Vec *newvec)
       ierr = VecGetMap(vec,&map);CHKERRQ(ierr);
       ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
       n = 1;
-      for ( i=1; i<size; i++ ) {
+      for (i=1; i<size; i++) {
         n = PetscMax(n,range[i] - range[i-1]);
       }
-      avec     = (Scalar *) PetscMalloc( n*sizeof(Scalar) );CHKPTRQ(avec);
+      avec     = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(avec);
       ierr     = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
-      for ( i=1; i<size; i++ ) {
+      for (i=1; i<size; i++) {
         n    = range[i+1] - range[i];
         ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
         ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
 #define __FUNC__ "VecLoadIntoVector_Default"
 int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
 {
-  int         i, rows, ierr, type, fd,rank,size,n,*range,tag,bs,(*f)(Viewer,Vec);
+  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,(*f)(Viewer,Vec);
   Scalar      *avec;
   MPI_Comm    comm;
   MPI_Request request;
@@ -150,9 +150,9 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,vec,0,0);
   /*
-     Check if load in routine has been overridden by, say the DA
+     Check if load in routine has been overridden by,say the DA
   */
-  ierr = PetscObjectQueryFunction((PetscObject)vec,"VecLoadIntoVector_C",(void **) &f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)vec,"VecLoadIntoVector_C",(void**)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,vec);CHKERRQ(ierr);
   } else {
@@ -186,12 +186,12 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
         ierr = VecGetMap(vec,&map);CHKERRQ(ierr);
         ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
         n = 1;
-        for ( i=1; i<size; i++ ) {
+        for (i=1; i<size; i++) {
           n = PetscMax(n,range[i] - range[i-1]);
         }
-        avec     = (Scalar *) PetscMalloc( n*sizeof(Scalar) );CHKPTRQ(avec);
+        avec     = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(avec);
         ierr     = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
-        for ( i=1; i<size; i++ ) {
+        for (i=1; i<size; i++) {
           n    = range[i+1] - range[i];
           ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
           ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ilut.c,v 1.3 1999/12/17 19:23:08 bsmith Exp bsmith $*/
+/*$Id: ilut.c,v 1.4 1999/12/19 04:22:00 bsmith Exp bsmith $*/
 /* ilut.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
         This code is protected by the GNU copyright. See the file 
@@ -6,17 +6,17 @@
 */
 #include "petsc.h"
 
-static int SPARSEKIT2qsplit(Scalar *a, int *ind, int *n, int *ncut)
+static int SPARSEKIT2qsplit(Scalar *a,int *ind,int *n,int *ncut)
 {
     /* System generated locals */
     int i__1;
     Scalar d__1;
 
     /* Local variables */
-    static int last, itmp, j, first;
-    double abskey;
-    static int mid;
-    static Scalar tmp;
+    int last,itmp,j,first;
+    PetscReal abskey;
+    int mid;
+    Scalar tmp;
 
 /* -----------------------------------------------------------------------
  */
@@ -47,10 +47,10 @@ static int SPARSEKIT2qsplit(Scalar *a, int *ind, int *n, int *ncut)
 
 L1:
     mid = first;
-    abskey = (d__1 = a[mid], PetscAbsScalar(d__1));
+    abskey = (d__1 = a[mid],PetscAbsScalar(d__1));
     i__1 = last;
     for (j = first + 1; j <= i__1; ++j) {
-	if ((d__1 = a[j], PetscAbsScalar(d__1)) > abskey) {
+	if ((d__1 = a[j],PetscAbsScalar(d__1)) > abskey) {
 	    ++mid;
 /*     interchange */
 	    tmp = a[mid];
@@ -92,26 +92,26 @@ L1:
 
 
 /* ---------------------------------------------------------------------- */
-int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,double *permtol,int *mbloc,Scalar *alu, 
-	int *jlu, int *ju, int *iwk, Scalar *w, int *jw,   int *iperm, int *ierr)
+int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,PetscReal *droptol,PetscReal *permtol,int *mbloc,Scalar *alu,
+	int *jlu,int *ju,int *iwk,Scalar *w,int *jw,  int *iperm,int *ierr)
 {
     /* System generated locals */
-    int i__1, i__2;
+    int i__1,i__2;
     Scalar d__1;
 
     /* Local variables */
-    static Scalar fact;
-    static int lenl, imax, lenu, icut, jpos;
-    double xmax;
-    static int jrow;
-    double xmax0;
-    static int i, j, k;
-    Scalar s, t;
-    static int j_1, j2;
-    double tnorm,t1;
-    static int ii, jj;
-    static int ju0, len;
-    static Scalar tmp;
+    Scalar fact;
+    int lenl,imax,lenu,icut,jpos;
+    PetscReal xmax;
+    int jrow;
+    PetscReal xmax0;
+    int i,j,k;
+    Scalar s,t;
+    int j_1,j2;
+    PetscReal tnorm,t1;
+    int ii,jj;
+    int ju0,len;
+    Scalar tmp;
 
 /* -----------------------------------------------------------------------
  */
@@ -180,7 +180,7 @@ int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,
 /* alu,jlu = matrix stored in Modified Sparse Row (MSR) format containing 
 */
 /*           the L and U factors together. The diagonal (stored in */
-/*           alu(1:n) ) is inverted. Each i-th row of the alu,jlu matrix 
+/*           alu(1:n)) is inverted. Each i-th row of the alu,jlu matrix 
 */
 /*           contains the i-th row of L (excluding the diagonal entry=1) 
 */
@@ -250,7 +250,7 @@ int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,double *droptol,
     ju0 = *n + 2;
     jlu[1] = ju0;
 
-/*  integer double pointer array. */
+/*  integer PetscReal pointer array. */
 
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {

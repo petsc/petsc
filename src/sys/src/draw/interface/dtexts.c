@@ -1,4 +1,4 @@
-/*$Id: dtexts.c,v 1.25 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dtexts.c,v 1.26 1999/11/24 21:52:47 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -26,7 +26,7 @@
 .seealso: DrawString(), DrawStringVertical(), DrawStringGetSize()
 
 @*/
-int DrawStringSetSize(Draw draw,double width,double height)
+int DrawStringSetSize(Draw draw,PetscReal width,PetscReal height)
 {
   int        ierr;
   PetscTruth isnull;

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.17 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.18 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -25,12 +25,12 @@ int FormElementStiffness(double H,Scalar *Ke)
 int main(int argc,char **args)
 {
   Mat        C; 
-  Vec        u, b;
-  int        i, m = 5, rank, size, N, start, end, M, ierr, idx[4];
-  int        j, nrsub, ncsub, *rsub, *csub, mystart, myend;
+  Vec        u,b;
+  int        i,m = 5,rank,size,N,start,end,M,ierr,idx[4];
+  int        j,nrsub,ncsub,*rsub,*csub,mystart,myend;
   PetscTruth flg;
-  Scalar     one = 1.0, Ke[16], *vals;
-  double     h, norm;
+  Scalar     one = 1.0,Ke[16],*vals;
+  double     h,norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
@@ -49,10 +49,10 @@ int main(int argc,char **args)
 
   /* Form the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);
-  for ( i=start; i<end; i++ ) {
+  for (i=start; i<end; i++) {
      /* location of lower left corner of element */
      /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + ( i % m);
+     idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRA(ierr);
   }
@@ -62,10 +62,10 @@ int main(int argc,char **args)
   /* Assemble the matrix again */
   ierr = MatZeroEntries(C);CHKERRA(ierr);
 
-  for ( i=start; i<end; i++ ) {
+  for (i=start; i<end; i++) {
      /* location of lower left corner of element */
      /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + ( i % m);
+     idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRA(ierr);
   }
@@ -90,9 +90,9 @@ int main(int argc,char **args)
   if (flg) {
     ierr = MatGetOwnershipRange(C,&mystart,&myend);CHKERRA(ierr);
     nrsub = myend - mystart; ncsub = 4;
-    vals = (Scalar *) PetscMalloc(nrsub*ncsub*sizeof(Scalar));CHKPTRA(vals);
-    rsub = (int *) PetscMalloc(nrsub*sizeof(int));CHKPTRA(rsub);
-    csub = (int *) PetscMalloc(ncsub*sizeof(int));CHKPTRA(csub);
+    vals = (Scalar*)PetscMalloc(nrsub*ncsub*sizeof(Scalar));CHKPTRA(vals);
+    rsub = (int*)PetscMalloc(nrsub*sizeof(int));CHKPTRA(rsub);
+    csub = (int*)PetscMalloc(ncsub*sizeof(int));CHKPTRA(csub);
     for (i=myend-1; i>=mystart; i--) rsub[myend-i-1] = i;
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRA(ierr);
@@ -103,11 +103,11 @@ int main(int argc,char **args)
     for (i=0; i<nrsub; i++) {
       for (j=0; j<ncsub; j++) {
 #if defined(PETSC_USE_COMPLEX)
-         if (PetscImaginary(vals[i*ncsub+j]) != 0.0)
-           printf("  C[%d, %d] = %g + %g i\n",rsub[i],csub[j],PetscReal(vals[i*ncsub+j]),
-                                       PetscImaginary(vals[i*ncsub+j]));
+         if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0)
+           printf("  C[%d, %d] = %g + %g i\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]),
+                                       PetscImaginaryPart(vals[i*ncsub+j]));
          else
-           printf("  C[%d, %d] = %g\n",rsub[i],csub[j],PetscReal(vals[i*ncsub+j]));
+           printf("  C[%d, %d] = %g\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]));
 #else
          printf("  C[%d, %d] = %g\n",rsub[i],csub[j],vals[i*ncsub+j]);
 #endif

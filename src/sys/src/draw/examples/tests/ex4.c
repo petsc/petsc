@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.4 1999/10/24 14:01:18 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.5 1999/11/24 21:52:55 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of DrawZoom()\n";
 
@@ -8,10 +8,10 @@ static char help[] = "Demonstrates use of DrawZoom()\n";
 #define __FUNC__ "zoomfunction"
 int zoomfunction(Draw draw,void *dummy)
 {
-  int  ierr, i; 
+  int  ierr,i; 
 
-  for ( i=0; i<256; i++) {
-    ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i); CHKERRQ(ierr);
+  for (i=0; i<256; i++) {
+    ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -21,7 +21,7 @@ int zoomfunction(Draw draw,void *dummy)
 int main(int argc,char **argv)
 {
   Draw draw;
-  int  ierr, x = 0, y = 0, width = 256, height = 256; 
+  int  ierr,x = 0,y = 0,width = 256,height = 256; 
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 

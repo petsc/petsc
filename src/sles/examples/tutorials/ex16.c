@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.13 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.14 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 
@@ -33,14 +33,14 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec         x, b, u;  /* approx solution, RHS, exact solution */
+  Vec         x,b,u;  /* approx solution, RHS, exact solution */
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
   double      norm;     /* norm of solution error */
-  int         ntimes, i, j, k, I, J, Istart, Iend, ierr;
-  int         m = 8, n = 7, its;
+  int         ntimes,i,j,k,I,J,Istart,Iend,ierr;
+  int         m = 8,n = 7,its;
   PetscTruth  flg;
-  Scalar      v, one = 1.0, neg_one = -1.0, rhs;
+  Scalar      v,one = 1.0,neg_one = -1.0,rhs;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
@@ -72,12 +72,12 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly). 
       - Always specify global rows and columns of matrix entries.
    */
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
     v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
   }
 

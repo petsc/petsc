@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.98 1999/11/05 14:46:40 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.99 1999/11/24 21:54:50 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -44,8 +44,8 @@
     data used during the optional Lanczo process used to compute eigenvalues
 */
 #include "src/sles/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
-extern int KSPComputeExtremeSingularValues_CG(KSP,double *,double *);
-extern int KSPComputeEigenvalues_CG(KSP,int,double *,double *,int *);
+extern int KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
+extern int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
 
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method. 
@@ -57,7 +57,7 @@ extern int KSPComputeEigenvalues_CG(KSP,int,double *,double *,int *);
 #define __FUNC__ "KSPSetUp_CG"
 int KSPSetUp_CG(KSP ksp)
 {
-  KSP_CG *cgP = (KSP_CG *) ksp->data;
+  KSP_CG *cgP = (KSP_CG*)ksp->data;
   int    maxit = ksp->max_it,ierr;
 
   PetscFunctionBegin;
@@ -72,7 +72,7 @@ int KSPSetUp_CG(KSP ksp)
   }
 
   /* get work vectors needed by CG */
-  ierr = KSPDefaultGetWork( ksp, 3 );CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
 
   /*
      If user requested computations of eigenvalues then allocate work
@@ -80,10 +80,10 @@ int KSPSetUp_CG(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    cgP->e = (Scalar *) PetscMalloc(2*(maxit+1)*sizeof(Scalar));CHKPTRQ(cgP->e);
+    cgP->e = (Scalar*)PetscMalloc(2*(maxit+1)*sizeof(Scalar));CHKPTRQ(cgP->e);
     PLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->d                         = cgP->e + maxit + 1; 
-    cgP->ee = (double *)PetscMalloc(2*(maxit+1)*sizeof(double));CHKPTRQ(cgP->ee);
+    cgP->ee = (PetscReal *)PetscMalloc(2*(maxit+1)*sizeof(PetscReal));CHKPTRQ(cgP->ee);
     PLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->dd                        = cgP->ee + maxit + 1;
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
@@ -108,16 +108,16 @@ int KSPSetUp_CG(KSP ksp)
 #define __FUNC__ "KSPSolve_CG"
 int  KSPSolve_CG(KSP ksp,int *its)
 {
-  int          ierr, i,maxit,eigs,pres, cerr;
-  Scalar       dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
-  double       dp = 0.0;
+  int          ierr,i,maxit,eigs,pres;
+  Scalar       dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma; 
+  PetscReal    dp = 0.0;
   Vec          X,B,Z,R,P;
   KSP_CG       *cg;
-  Mat          Amat, Pmat;
+  Mat          Amat,Pmat;
   MatStructure pflag;
 
   PetscFunctionBegin;
-  cg = (KSP_CG *) ksp->data;
+  cg = (KSP_CG*)ksp->data;
   eigs    = ksp->calc_sings;
   pres    = ksp->use_pres;
   maxit   = ksp->max_it;
@@ -151,22 +151,22 @@ int  KSPSolve_CG(KSP ksp,int *its)
         ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
     }
   }
-  cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);      /* test for convergence */
-  if (cerr) {*its =  0; PetscFunctionReturn(0);}
+  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
+  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
   ksp->rnorm              = dp;
 
-  for ( i=0; i<maxit; i++) {
+  for (i=0; i<maxit; i++) {
      ksp->its = i+1;
      ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
-     if (i == 0) {
+     if (!i) {
        if (beta == 0.0) break;
        ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
      } else {
          b = beta/betaold;
 #if !defined(PETSC_USE_COMPLEX)
-         if (b < 0.0) SETERRQ( PETSC_ERR_KSP_BRKDWN,0,"Nonsymmetric/bad preconditioner");
+         if (b < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Nonsymmetric/bad preconditioner");
 #endif
          if (eigs) {
            e[i] = sqrt(PetscAbsScalar(b))/a;  
@@ -194,13 +194,15 @@ int  KSPSolve_CG(KSP ksp,int *its)
      ksp->rnorm = dp;
      KSPLogResidualHistory(ksp,dp);
      KSPMonitor(ksp,i+1,dp);
-     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
-     if (cerr) break;
+     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+     if (ksp->reason) break;
      if (!pres) {ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr);} /* z <- Br  */
   }
-  if (i == maxit) {i--; ksp->its--;}
-  if (cerr <= 0) *its = -(i+1);
-  else           *its = i+1;
+  if (i == maxit) {
+    ksp->its--;
+    ksp->reason = KSP_DIVERGED_ITS;
+  }
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 /*
@@ -211,17 +213,17 @@ int  KSPSolve_CG(KSP ksp,int *its)
 #define __FUNC__ "KSPDestroy_CG" 
 int KSPDestroy_CG(KSP ksp)
 {
-  KSP_CG *cg = (KSP_CG *) ksp->data;
+  KSP_CG *cg = (KSP_CG*)ksp->data;
   int    ierr;
 
   PetscFunctionBegin;
   /* free space used for singular value calculations */
-  if ( ksp->calc_sings ) {
+  if (ksp->calc_sings) {
     ierr = PetscFree(cg->e);CHKERRQ(ierr);
     ierr = PetscFree(cg->ee);CHKERRQ(ierr);
   }
 
-  ierr = KSPDefaultFreeWork( ksp );CHKERRQ(ierr);
+  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
   
   /* free the context variable */
   ierr = PetscFree(cg);CHKERRQ(ierr);
@@ -338,7 +340,7 @@ EXTERN_C_BEGIN
 int KSPCreate_CG(KSP ksp)
 {
   int    ierr;
-  KSP_CG *cg = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));CHKPTRQ(cg);
+  KSP_CG *cg = (KSP_CG*)PetscMalloc(sizeof(KSP_CG));CHKPTRQ(cg);
 
   PetscFunctionBegin;
   ierr = PetscMemzero(cg,sizeof(KSP_CG));CHKERRQ(ierr);
@@ -348,10 +350,9 @@ int KSPCreate_CG(KSP ksp)
 #else
   cg->type                       = KSP_CG_HERMITIAN;
 #endif
-  ksp->data                      = (void *) cg;
+  ksp->data                      = (void*)cg;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = 1;
-  ksp->guess_zero                = 1; 
+  ksp->calc_res                  = PETSC_TRUE;
 
   /*
        Sets the functions that are associated with this data structure 

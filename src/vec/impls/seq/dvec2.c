@@ -1,4 +1,4 @@
-/*$Id: dvec2.c,v 1.76 1999/11/05 14:44:53 bsmith Exp bsmith $*/
+/*$Id: dvec2.c,v 1.77 1999/12/10 15:57:40 bsmith Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -12,11 +12,10 @@
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"
-int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
+int VecMDot_Seq(int nv,Vec xin,const Vec yin[],Scalar *z)
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
-  register int i,nv_rem;
-  int      n = xin->n;
+  int i,nv_rem,n = xin->n;
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
 
@@ -27,7 +26,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 
   i      = nv;
   nv_rem = nv&0x3;
-  yy     = (Vec *) yin;
+  yy     = (Vec*)yin;
   x      = xv->array;
 
   switch (nv_rem) {
@@ -84,22 +83,13 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 #else
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"
-int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar * restrict z )
+int VecMDot_Seq(int nv,Vec xin,const Vec yin[],Scalar * restrict z)
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
-  register int n = xin->n,i,j,nv_rem,j_rem;
+  int      n = xin->n,i,j,nv_rem,j_rem;
   Scalar   sum0,sum1,sum2,sum3,x0,x1,x2,x3,* restrict x;
-  Scalar   * restrict yy0, * restrict yy1, * restrict yy2, *restrict yy3; 
+  Scalar   * restrict yy0,* restrict yy1,* restrict yy2,*restrict yy3; 
   Vec      *yy;
-  
-/*
-  for (i=0; i<nv; i++) {
-    sum = 0.0;
-    yy = ((Vec_Seq *)(y[i]->data))->array;
-    DOT(sum,xx,yy,n);
-    z[i] = sum;
-  }
-*/
 
   PetscFunctionBegin;
   sum0 = 0;
@@ -283,24 +273,14 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar * restrict z )
 /* ----------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "VecMTDot_Seq"
-int VecMTDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
+int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],Scalar *z)
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
-  register int n = xin->n,i,j,nv_rem,j_rem;
+  int      n = xin->n,i,j,nv_rem,j_rem;
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
   
   PetscFunctionBegin;
-/*
-  for (i=0; i<nv_rem; i++) {
-    sum = 0.0;
-    y = ((Vec_Seq *)(yin[i]->data))->array;
-    DOT(sum,x,y,n);
-    *z++ = sum;
-  } 
-  i  = nv - nv_rem;
-  yy = yin + nv_rem;
-*/
 
   sum0 = 0;
   sum1 = 0;
@@ -480,12 +460,12 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecMax_Seq"
-int VecMax_Seq(Vec xin,int* idx,double * z )
+int VecMax_Seq(Vec xin,int* idx,PetscReal * z)
 { 
-  Vec_Seq         *x = (Vec_Seq *) xin->data;
-  register int    i, j=0, n = xin->n;
-  register double max, tmp;
-  Scalar          *xx = x->array;
+  Vec_Seq   *x = (Vec_Seq*)xin->data;
+  int       i,j=0,n = xin->n;
+  PetscReal max,tmp;
+  Scalar    *xx = x->array;
 
   PetscFunctionBegin;
   if (!n) {
@@ -493,13 +473,13 @@ int VecMax_Seq(Vec xin,int* idx,double * z )
     j   = -1;
   } else {
 #if defined(PETSC_USE_COMPLEX)
-      max = PetscReal(*xx++); j = 0;
+      max = PetscRealPart(*xx++); j = 0;
 #else
       max = *xx++; j = 0;
 #endif
     for (i=1; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
-      if ((tmp = PetscReal(*xx++)) > max) { j = i; max = tmp;}
+      if ((tmp = PetscRealPart(*xx++)) > max) { j = i; max = tmp;}
 #else
       if ((tmp = *xx++) > max) { j = i; max = tmp; } 
 #endif
@@ -512,12 +492,12 @@ int VecMax_Seq(Vec xin,int* idx,double * z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecMin_Seq"
-int VecMin_Seq(Vec xin,int* idx,double * z )
+int VecMin_Seq(Vec xin,int* idx,PetscReal * z)
 {
-  Vec_Seq         *x = (Vec_Seq *) xin->data;
-  register int    i, j=0, n = xin->n;
-  register double min, tmp;
-  Scalar          *xx = x->array;
+  Vec_Seq   *x = (Vec_Seq*)xin->data;
+  int       i,j=0,n = xin->n;
+  PetscReal min,tmp;
+  Scalar    *xx = x->array;
 
   PetscFunctionBegin;
   if (!n) {
@@ -525,13 +505,13 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
     j   = -1;
   } else {
 #if defined(PETSC_USE_COMPLEX)
-    min = PetscReal(*xx++); j = 0;
+    min = PetscRealPart(*xx++); j = 0;
 #else
     min = *xx++; j = 0;
 #endif
-    for ( i=1; i<n; i++ ) {
+    for (i=1; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
-      if ((tmp = PetscReal(*xx++)) < min) { j = i; min = tmp;}
+      if ((tmp = PetscRealPart(*xx++)) < min) { j = i; min = tmp;}
 #else
       if ((tmp = *xx++) < min) { j = i; min = tmp; } 
 #endif
@@ -546,10 +526,9 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
 #define __FUNC__ "VecSet_Seq"
 int VecSet_Seq(const Scalar* alpha,Vec xin)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
-  register int n = xin->n;
-  Scalar       *xx = x->array, oalpha = *alpha;
-  int          ierr;
+  Vec_Seq *x = (Vec_Seq *)xin->data;
+  int     n = xin->n,ierr;
+  Scalar  *xx = x->array,oalpha = *alpha;
 
   PetscFunctionBegin;
   if (oalpha == 0.0) {
@@ -565,10 +544,9 @@ int VecSet_Seq(const Scalar* alpha,Vec xin)
 #define __FUNC__ "VecSetRandom_Seq"
 int VecSetRandom_Seq(PetscRandom r,Vec xin)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
-  register int n = xin->n;
-  int          i, ierr;
-  Scalar       *xx = x->array;
+  Vec_Seq *x = (Vec_Seq *)xin->data;
+  int     n = xin->n,i,ierr;
+  Scalar  *xx = x->array;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]);CHKERRQ(ierr);}
@@ -577,9 +555,9 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
 
 #undef __FUNC__  
 #define __FUNC__ "VecMAXPY_Seq"
-int VecMAXPY_Seq(int nv,const Scalar *alpha, Vec xin, Vec *y)
+int VecMAXPY_Seq(int nv,const Scalar *alpha,Vec xin,Vec *y)
 {
-  Vec_Seq      *xdata = (Vec_Seq *) xin->data;
+  Vec_Seq      *xdata = (Vec_Seq*)xin->data;
   int          n = xin->n;
   int          j,j_rem;
   Scalar       *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
@@ -618,7 +596,7 @@ int VecMAXPY_Seq(int nv,const Scalar *alpha, Vec xin, Vec *y)
     alpha0 = *alpha++; APXY(xx,alpha0,yy0,n);
     break;
   }
-  for (j=j_rem; j<nv; j+=4 ) {
+  for (j=j_rem; j<nv; j+=4) {
     yy0     = ((Vec_Seq *)(y[0]->data))->array;
     yy1     = ((Vec_Seq *)(y[1]->data))->array;
     yy2     = ((Vec_Seq *)(y[2]->data))->array;
@@ -637,15 +615,15 @@ int VecMAXPY_Seq(int nv,const Scalar *alpha, Vec xin, Vec *y)
 
 #undef __FUNC__  
 #define __FUNC__ "VecAYPX_Seq"
-int VecAYPX_Seq(const Scalar *alpha, Vec xin, Vec yin )
+int VecAYPX_Seq(const Scalar *alpha,Vec xin,Vec yin)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
-  register int i,n = xin->n;
-  Scalar       *xx = x->array, *yy = y->array, oalpha = *alpha;
+  Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
+  int     i,n = xin->n;
+  Scalar  *xx = x->array,*yy = y->array,oalpha = *alpha;
 
   PetscFunctionBegin;
   PLogFlops(2*n);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     yy[i] = xx[i] + oalpha*yy[i];
   }
   PetscFunctionReturn(0);
@@ -653,19 +631,18 @@ int VecAYPX_Seq(const Scalar *alpha, Vec xin, Vec yin )
 
 /*
    IBM ESSL contains a routine dzaxpy() that is our WAXPY() but it appears
-  to be slower than a regular C loop.  Hence, we do not include it.
+  to be slower than a regular C loop.  Hence,we do not include it.
   void ?zaxpy(int*,Scalar*,Scalar*,int*,Scalar*,int*,Scalar*,int*);
 */
 
 #undef __FUNC__  
 #define __FUNC__ "VecWAXPY_Seq"
-int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
+int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win)
 {
-  Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
-  Vec_Seq      *y = (Vec_Seq *)yin->data;
-  register int i, n = xin->n;
-  Scalar       *xx = x->array, *yy = y->array, *ww = w->array, oalpha = *alpha;
-  int          ierr;
+  Vec_Seq *w = (Vec_Seq *)win->data,*x = (Vec_Seq *)xin->data;
+  Vec_Seq *y = (Vec_Seq *)yin->data;
+  int     i,n = xin->n,ierr;
+  Scalar  *xx = x->array,*yy = y->array,*ww = w->array,oalpha = *alpha;
 
   PetscFunctionBegin;
   if (oalpha == 1.0) {
@@ -686,12 +663,12 @@ int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
 
 #undef __FUNC__  
 #define __FUNC__ "VecPointwiseMult_Seq"
-int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
+int VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
 {
-  Vec_Seq         *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
-  Vec_Seq         *y = (Vec_Seq *)yin->data;
-  int             n = xin->n, i;
-  register Scalar *xx = x->array, *yy = y->array, *ww = w->array;
+  Vec_Seq *w = (Vec_Seq *)win->data,*x = (Vec_Seq *)xin->data;
+  Vec_Seq *y = (Vec_Seq *)yin->data;
+  int     n = xin->n,i;
+  Scalar  *xx = x->array,*yy = y->array,*ww = w->array;
 
   PetscFunctionBegin;
   if (ww == xx) {
@@ -700,9 +677,9 @@ int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
     for (i=0; i<n; i++) ww[i] *= xx[i];
   } else {
     /*  This was suppose to help on SGI but didn't really seem to
-          double * __restrict www = ww;
-          double * __restrict yyy = yy;
-          double * __restrict xxx = xx;
+          PetscReal * __restrict www = ww;
+          PetscReal * __restrict yyy = yy;
+          PetscReal * __restrict xxx = xx;
           for (i=0; i<n; i++) www[i] = xxx[i] * yyy[i];
     */
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
@@ -717,12 +694,12 @@ int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
 
 #undef __FUNC__  
 #define __FUNC__ "VecPointwiseDivide_Seq"
-int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
+int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
 {
-  Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
-  Vec_Seq      *y = (Vec_Seq *)yin->data;
-  register int n = xin->n, i;
-  Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
+  Vec_Seq *w = (Vec_Seq *)win->data,*x = (Vec_Seq *)xin->data;
+  Vec_Seq *y = (Vec_Seq *)yin->data;
+  int     n = xin->n,i;
+  Scalar  *xx = x->array,*yy = y->array,*ww = w->array;
 
   PetscFunctionBegin;
   PLogFlops(n);
@@ -739,7 +716,7 @@ int VecGetArray_Seq(Vec vin,Scalar *a[])
 
   PetscFunctionBegin;
   if (vin->array_gotten) {
-    SETERRQ(1,1,"Array has already been gotten for this vector, you may\n\
+    SETERRQ(1,1,"Array has already been gotten for this vector,you may\n\
     have forgotten a call to VecRestoreArray()");
   }
   vin->array_gotten = PETSC_TRUE;

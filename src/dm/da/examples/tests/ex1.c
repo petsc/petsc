@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.38 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.39 1999/11/05 14:47:57 bsmith Exp bsmith $*/
 
 static char help[] = "Tests various DA routines.\n\n";
 
@@ -9,10 +9,10 @@ static char help[] = "Tests various DA routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
+  int      rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
   DA       da;
   Viewer   viewer;
-  Vec      local, global;
+  Vec      local,global;
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,help);

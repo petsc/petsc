@@ -1,4 +1,4 @@
-/*$Id: ex64.c,v 1.5 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex64.c,v 1.7 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Saves 4by4 block matrix.\n\n";
 int main(int argc,char **args)
 {
   Mat     A;
-  int     i, j, ierr,size;
+  int     i,j,ierr,size;
   Viewer  fd;
   Scalar  values[16],one = 1.0;
   Vec     x;
@@ -26,22 +26,22 @@ int main(int argc,char **args)
 
   ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,4,12,12,0,0,&A);CHKERRA(ierr);
 
-  for ( i=0; i<16; i++ ) values[i] = i; for (i=0; i<4; i++) values[4*i+i] += 5;
+  for (i=0; i<16; i++) values[i] = i; for (i=0; i<4; i++) values[4*i+i] += 5;
   i = 0; j = 0;
   ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
-  for ( i=0; i<16; i++ ) values[i] = i;
+  for (i=0; i<16; i++) values[i] = i;
   i = 0; j = 2;
   ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
-  for ( i=0; i<16; i++ ) values[i] = i;
+  for (i=0; i<16; i++) values[i] = i;
   i = 1; j = 0;
   ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
-  for ( i=0; i<16; i++ ) values[i] = i;for (i=0; i<4; i++) values[4*i+i] += 6;
+  for (i=0; i<16; i++) values[i] = i;for (i=0; i<4; i++) values[4*i+i] += 6;
   i = 1; j = 1;
   ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
-  for ( i=0; i<16; i++ ) values[i] = i;
+  for (i=0; i<16; i++) values[i] = i;
   i = 2; j = 0;
   ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
-  for ( i=0; i<16; i++ ) values[i] = i;for (i=0; i<4; i++) values[4*i+i] += 7;
+  for (i=0; i<16; i++) values[i] = i;for (i=0; i<4; i++) values[4*i+i] += 7;
   i = 2; j = 2;
   ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
 

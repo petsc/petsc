@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.11 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex28.c,v 1.13 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
 
@@ -6,13 +6,13 @@ static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main(int argc, char **args)
+int main(int argc,char **args)
 {
   Mat    A,LU;
   Vec    x,y;
   int    nnz[4]={2,1,1,1},col[4],i,ierr;
   Scalar values[4];
-  IS     rowperm, colperm;
+  IS     rowperm,colperm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

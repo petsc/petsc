@@ -1,4 +1,4 @@
-/*$Id: zao.c,v 1.12 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zao.c,v 1.13 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ao.h"
@@ -13,14 +13,14 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL aocreatebasic_(MPI_Comm *comm,int *napp,int *myapp,int *mypetsc,AO *aoout, int *__ierr )
+void PETSC_STDCALL aocreatebasic_(MPI_Comm *comm,int *napp,int *myapp,int *mypetsc,AO *aoout,int *ierr)
 {
-  *__ierr = AOCreateBasic((MPI_Comm)PetscToPointerComm( *comm ),*napp,myapp,mypetsc,aoout);
+  *ierr = AOCreateBasic((MPI_Comm)PetscToPointerComm(*comm),*napp,myapp,mypetsc,aoout);
 }
 
-void PETSC_STDCALL aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout, int *__ierr )
+void PETSC_STDCALL aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout,int *ierr)
 {
-  *__ierr = AOCreateBasicIS(*isapp,*ispetsc,aoout);
+  *ierr = AOCreateBasicIS(*isapp,*ispetsc,aoout);
 }
 
 EXTERN_C_END

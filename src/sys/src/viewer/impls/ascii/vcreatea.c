@@ -1,8 +1,8 @@
-/*$Id: vcreatea.c,v 1.11 1999/10/24 02:35:10 bsmith Exp bsmith $*/
+/*$Id: vcreatea.c,v 1.12 1999/11/05 14:43:41 bsmith Exp bsmith $*/
 
 #include "petsc.h"  /*I     "petsc.h"   I*/
 
-Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDERR_WORLD;
+Viewer VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF,VIEWER_STDOUT_WORLD,VIEWER_STDERR_WORLD;
 
 /*
       This is called by PETScInitialize() to create the 
@@ -83,12 +83,12 @@ Viewer VIEWER_STDOUT_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Stdout_keyval, (void **)&viewer,(int*)&flg);
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stdout_keyval,(void **)&viewer,(int*)&flg);
   if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flg) { /* viewer not yet created */
     ierr = ViewerASCIIOpen(comm,"stdout",&viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-    ierr = MPI_Attr_put( comm, Petsc_Viewer_Stdout_keyval, (void *) viewer );
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_Stdout_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
@@ -161,7 +161,7 @@ Viewer VIEWER_STDERR_(MPI_Comm comm)
   if (!flg) { /* viewer not yet created */
     ierr = ViewerASCIIOpen(comm,"stderr",&viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-    ierr = MPI_Attr_put( comm, Petsc_Viewer_Stderr_keyval, (void *) viewer );
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_Stderr_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_STDERR_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);

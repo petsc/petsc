@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.14 1999/11/05 14:48:35 bsmith Exp bsmith $;
+!  $Id: petscdef.h,v 1.15 1999/12/10 16:01:30 bsmith Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -66,16 +66,16 @@
 ! F90 uses real(), conjg() when KIND parameter is used.
 !
 #if defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_IRIXF90) || defined (PARCH_freebsd)
-#define PetscReal(a) real(a)
+#define PetscRealPart(a) real(a)
 #define PetscConj(a) conjg(a)
 #else
-#define PetscReal(a) dreal(a)
+#define PetscRealPart(a) dreal(a)
 #define PetscConj(a) dconjg(a)
 #endif
 #define MPIU_SCALAR  MPI_DOUBLE_COMPLEX
 #else
 #define Scalar       PetscFortranDouble
-#define PetscReal(a) a
+#define PetscRealPart(a) a
 #define PetscConj(a) a
 #define MPIU_SCALAR  MPI_DOUBLE_PRECISION
 #endif

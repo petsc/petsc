@@ -1,4 +1,4 @@
-/*$Id: ex58.c,v 1.7 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex58.c,v 1.8 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
 
@@ -10,7 +10,7 @@ static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n
 int main(int argc,char **argv)
 {
   Mat        A,B;
-  int        m = 7, n, i, ierr, rstart, rend, cols[3];
+  int        m = 7,n,i,ierr,rstart,rend,cols[3];
   Scalar     v[3];
   PetscTruth equal;
   char       *eq[2];
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
     ierr = MatSetValues(A,1,&rend,2,cols,v,INSERT_VALUES);CHKERRA(ierr);
   }
   v[0] = -1.0; v[1] = 2.0; v[2] = -1.0;
-  for ( i=rstart; i<rend; i++ ) { 
+  for (i=rstart; i<rend; i++) { 
     cols[0] = i-1;
     cols[1] = i;
     cols[2] = i+1;

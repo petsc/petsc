@@ -1,4 +1,4 @@
-/*$Id: mpi.c,v 1.54 1999/10/04 23:43:46 balay Exp bsmith $*/
+/*$Id: mpi.c,v 1.55 1999/10/24 14:01:37 bsmith Exp bsmith $*/
 
 /*
       This provides a few of the MPI-uni functions that cannot be implemented
@@ -54,7 +54,7 @@ int MPIUNI_Memcpy(void *a,void* b,int n) {
   char *aa= (char*)a;
   char *bb= (char*)b;
 
-  for ( i=0; i<n; i++ ) aa[i] = bb[i];
+  for (i=0; i<n; i++) aa[i] = bb[i];
   return 0;
 }
 
@@ -88,14 +88,14 @@ int Petsc_MPI_Keyval_free(int *keyval)
   return MPI_SUCCESS;
 }
 
-int Petsc_MPI_Attr_put(MPI_Comm comm, int keyval, void *attribute_val)
+int Petsc_MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
 {
   attr[keyval].active        = 1;
   attr[keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
 }
   
-int Petsc_MPI_Attr_delete(MPI_Comm comm, int keyval)
+int Petsc_MPI_Attr_delete(MPI_Comm comm,int keyval)
 {
   if (attr[keyval].active && attr[keyval].del) {
     (*(attr[keyval].del))(comm,keyval,attr[keyval].attribute_val,attr[keyval].extra_state);
@@ -105,9 +105,9 @@ int Petsc_MPI_Attr_delete(MPI_Comm comm, int keyval)
   return MPI_SUCCESS;
 }
 
-int Petsc_MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
+int Petsc_MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 {
-  if (keyval == 0) Keyval_setup();
+  if (!keyval) Keyval_setup();
   *flag                  = attr[keyval].active;
   *(int **)attribute_val = (int *)attr[keyval].attribute_val;
   return MPI_SUCCESS;
@@ -126,7 +126,7 @@ int Petsc_MPI_Comm_free(MPI_Comm *comm)
   int i;
 
   if (--dups) return MPI_SUCCESS;
-  for ( i=0; i<num_attr; i++ ) {
+  for (i=0; i<num_attr; i++) {
     if (attr[i].active && attr[i].del) {
       (*attr[i].del)(*comm,i,attr[i].attribute_val,attr[i].extra_state);
     }
@@ -287,25 +287,25 @@ void MPIUNI_STDCALL MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr)
 void MPIUNI_STDCALL mpi_allreduce(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
-  MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 void MPIUNI_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
-  MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 void MPIUNI_STDCALL mpi_allreduce__(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
-  MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 void MPIUNI_STDCALL MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
-  MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 

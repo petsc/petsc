@@ -1,4 +1,4 @@
-/*$Id: borthog3.c,v 1.15 1999/06/30 23:53:36 balay Exp bsmith $*/
+/*$Id: borthog3.c,v 1.16 1999/10/24 14:03:14 bsmith Exp bsmith $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -18,11 +18,11 @@
  */
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESIROrthogonalization"
-int KSPGMRESIROrthogonalization(KSP  ksp,int it )
+int KSPGMRESIROrthogonalization(KSP  ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   int       j,ncnt,ierr;
-  Scalar    *hh, *hes,shh[100], *lhh;
+  Scalar    *hh,*hes,shh[100],*lhh;
 
   PetscFunctionBegin;
   PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
@@ -48,21 +48,21 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 	 This is really a matrix-vector product, with the matrix stored
 	 as pointer to rows 
     */
-    VecMDot( it+1, VEC_VV(it+1), &(VEC_VV(0)), lhh ); /* <v,vnew> */
+    VecMDot(it+1,VEC_VV(it+1),&(VEC_VV(0)),lhh); /* <v,vnew> */
 
     /*
 	 This is really a matrix vector product: 
 	 [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it+1].
     */
     for (j=0; j<=it; j++) lhh[j] = - lhh[j];
-    VecMAXPY(it+1, lhh, VEC_VV(it+1),&VEC_VV(0) );
+    VecMAXPY(it+1,lhh,VEC_VV(it+1),&VEC_VV(0));
     for (j=0; j<=it; j++) {
       hh[j]  -= lhh[j];     /* hh += <v,vnew> */
       hes[j] += lhh[j];     /* hes += - <v,vnew> */
     }
   } while (ncnt++ < 2);
 
-  if (it >= 100) {ierr = PetscFree( lhh );CHKERRQ(ierr);}
+  if (it >= 100) {ierr = PetscFree(lhh);CHKERRQ(ierr);}
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
   PetscFunctionReturn(0);
 }

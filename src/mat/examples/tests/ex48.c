@@ -1,4 +1,4 @@
-/*$Id: ex48.c,v 1.12 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex48.c,v 1.13 1999/11/24 21:54:09 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests the vatious routines in MatBAIJ format.\n";
@@ -25,7 +25,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,PETSC_NULL);CHKERRA(ierr);
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL, &B);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL,&B);CHKERRA(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,M,&xx);CHKERRA(ierr);
   ierr = VecDuplicate(xx,&s1);CHKERRA(ierr);
@@ -33,28 +33,28 @@ int main(int argc,char **args)
   ierr = VecDuplicate(xx,&yy);CHKERRA(ierr);
   
   /* For each row add atleast 15 elements */
-  for (row=0; row<M; row++ ) {
-    for ( i=0; i<25*bs; i++) {
+  for (row=0; row<M; row++) {
+    for (i=0; i<25*bs; i++) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-      col  = (int)(PetscReal(rval)*M);
+      col  = (int)(PetscRealPart(rval)*M);
       ierr = MatSetValues(A,1,&row,1,&col,&rval,ADD_VALUES);CHKERRA(ierr);
       ierr = MatSetValues(B,1,&row,1,&col,&rval,ADD_VALUES);CHKERRA(ierr);
     }
   }
   
   /* Now set blocks of values */
-  for ( i=0; i<20*bs; i++ ) {
+  for (i=0; i<20*bs; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    cols[0] = (int)(PetscReal(rval)*M);
+    cols[0] = (int)(PetscRealPart(rval)*M);
     vals1[0] = rval;
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    cols[1] = (int)(PetscReal(rval)*M);
+    cols[1] = (int)(PetscRealPart(rval)*M);
     vals1[1] = rval;
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    rows[0] = (int)(PetscReal(rval)*M);
+    rows[0] = (int)(PetscRealPart(rval)*M);
     vals1[2] = rval;
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    rows[1] = (int)(PetscReal(rval)*M);
+    rows[1] = (int)(PetscRealPart(rval)*M);
     vals1[3] = rval;
     ierr = MatSetValues(A,2,rows,2,cols,vals1,ADD_VALUES);CHKERRA(ierr);
     ierr = MatSetValues(B,2,rows,2,cols,vals1,ADD_VALUES);CHKERRA(ierr);
@@ -83,15 +83,15 @@ int main(int argc,char **args)
   
   
   /* Now do MatGetValues()  */
-  for ( i=0; i<30; i++ ) {
+  for (i=0; i<30; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    cols[0] = (int)(PetscReal(rval)*M);
+    cols[0] = (int)(PetscRealPart(rval)*M);
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    cols[1] = (int)(PetscReal(rval)*M);
+    cols[1] = (int)(PetscRealPart(rval)*M);
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    rows[0] = (int)(PetscReal(rval)*M);
+    rows[0] = (int)(PetscRealPart(rval)*M);
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    rows[1] = (int)(PetscReal(rval)*M);
+    rows[1] = (int)(PetscRealPart(rval)*M);
     ierr = MatGetValues(A,2,rows,2,cols,vals1);CHKERRA(ierr);
     ierr = MatGetValues(B,2,rows,2,cols,vals2);CHKERRA(ierr);
     ierr = PetscMemcmp(vals1,vals2,4*sizeof(Scalar),&flg);CHKERRA(ierr);
@@ -101,7 +101,7 @@ int main(int argc,char **args)
   }
   
   /* Test MatMult(), MatMultAdd() */
-  for ( i=0; i<40; i++) {
+  for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = VecSet(&zero,s2);CHKERRA(ierr);
     ierr = MatMult(A,xx,s1);CHKERRA(ierr);
@@ -115,7 +115,7 @@ int main(int argc,char **args)
   }
 
   /* Test MatMult() */
-  for ( i=0; i<40; i++) {
+  for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = MatMult(A,xx,s1);CHKERRA(ierr);
     ierr = MatMult(B,xx,s2);CHKERRA(ierr);
@@ -128,7 +128,7 @@ int main(int argc,char **args)
   } 
   
   /* Test MatMultAdd() */
-  for ( i=0; i<40; i++) {
+  for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = VecSetRandom(rand,yy);CHKERRA(ierr);
     ierr = MatMultAdd(A,xx,yy,s1);CHKERRA(ierr);
@@ -142,7 +142,7 @@ int main(int argc,char **args)
   }
   
   /* Test MatMultTranspose() */
-  for ( i=0; i<40; i++) {
+  for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = MatMultTranspose(A,xx,s1);CHKERRA(ierr);
     ierr = MatMultTranspose(B,xx,s2);CHKERRA(ierr);
@@ -154,7 +154,7 @@ int main(int argc,char **args)
     } 
   }
   /* Test MatMultTransposeAdd() */
-  for ( i=0; i<40; i++) {
+  for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = VecSetRandom(rand,yy);CHKERRA(ierr);
     ierr = MatMultTransposeAdd(A,xx,yy,s1);CHKERRA(ierr);
@@ -170,7 +170,7 @@ int main(int argc,char **args)
   
   /* Do LUFactor() on both the matrices */
   idx  = (int *)PetscMalloc(M*sizeof(int));CHKPTRA(idx);
-  for ( i=0; i<M; i++ ) idx[i] = i;
+  for (i=0; i<M; i++) idx[i] = i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is1);CHKERRA(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is2);CHKERRA(ierr);
   ierr = PetscFree(idx);CHKERRA(ierr);
@@ -181,7 +181,7 @@ int main(int argc,char **args)
   
   
   /* Test MatSolveAdd() */
-  for ( i=0; i<40; i++) {
+  for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = VecSetRandom(rand,yy);CHKERRA(ierr);
     ierr = MatSolveAdd(B,xx,yy,s2);CHKERRA(ierr);
@@ -195,7 +195,7 @@ int main(int argc,char **args)
   }
   
   /* Test MatSolveAdd() when x = A'b +x */
-  for ( i=0; i<40; i++) {
+  for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = VecSetRandom(rand,s1);CHKERRA(ierr);
     ierr = VecCopy(s2,s1);CHKERRA(ierr);
@@ -210,7 +210,7 @@ int main(int argc,char **args)
   }
   
   /* Test MatSolve() */
-  for ( i=0; i<40; i++) {
+  for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = MatSolve(B,xx,s2);CHKERRA(ierr);
     ierr = MatSolve(A,xx,s1);CHKERRA(ierr);
@@ -224,7 +224,7 @@ int main(int argc,char **args)
   
   /* Test MatSolveTranspose() */
   if (bs < 8) {
-    for ( i=0; i<40; i++) {
+    for (i=0; i<40; i++) {
       ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
       ierr = MatSolveTranspose(B,xx,s2);CHKERRA(ierr);
       ierr = MatSolveTranspose(A,xx,s1);CHKERRA(ierr);
@@ -243,7 +243,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(s1);CHKERRA(ierr);
   ierr = VecDestroy(s2);CHKERRA(ierr);
   ierr = VecDestroy(yy);CHKERRA(ierr);
-  ierr = ISDestroy(is1); CHKERRA(ierr);
+  ierr = ISDestroy(is1);CHKERRA(ierr);
   ierr = ISDestroy(is2);CHKERRA(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
   PetscFinalize();

@@ -1,4 +1,4 @@
-/*$Id: f90_nag.c,v 1.10 1999/05/12 03:34:46 bsmith Exp bsmith $*/
+/*$Id: f90_nag.c,v 1.11 1999/10/24 14:04:23 bsmith Exp bsmith $*/
 
 #include "src/fortran/f90/zf90.h"
 #if defined(PETSC_HAVE_NAGF90)
@@ -16,7 +16,7 @@
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create1dArrayScalar(Scalar *array,int len, array1d *ptr)
+int PetscF90Create1dArrayScalar(Scalar *array,int len,array1d *ptr)
 {
   ptr->addr          = (Pointer)array;
   ptr->offset        = -sizeof(Scalar);
@@ -39,7 +39,7 @@ int PetscF90Create1dArrayScalar(Scalar *array,int len, array1d *ptr)
 */ 
 int PetscF90Get1dArrayScalar(array1d *ptr,Scalar **array)
 {
-  *array = (Scalar *) ptr->addr;
+  *array = (Scalar*)ptr->addr;
   return 0;
 }
 
@@ -68,7 +68,7 @@ int PetscF90Destroy1dArrayScalar(array1d *ptr)
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
+int PetscF90Create2dArrayScalar(Scalar *array,int m,int n,array2d *ptr)
 {
   ptr->addr          = (Pointer)array;
   ptr->offset        = -sizeof(Scalar)-m*sizeof(Scalar);
@@ -94,7 +94,7 @@ int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
 */ 
 int PetscF90Get2dArrayScalar(array2d *ptr,Scalar **array)
 {
-  *array = (Scalar *) ptr->addr;
+  *array = (Scalar*)ptr->addr;
   return 0;
 }
 
@@ -123,7 +123,7 @@ int PetscF90Destroy2dArrayScalar(array2d *ptr)
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create1dArrayInt(int *array,int len, array1d *ptr)
+int PetscF90Create1dArrayInt(int *array,int len,array1d *ptr)
 {
   ptr->addr          = (Pointer)array;
   ptr->offset        = -sizeof(int);
@@ -146,7 +146,7 @@ int PetscF90Create1dArrayInt(int *array,int len, array1d *ptr)
 */ 
 int PetscF90Get1dArrayInt(array1d *ptr,int **array)
 {
-  *array = (int *) ptr->addr;
+  *array = (int*)ptr->addr;
   return 0;
 }
 
@@ -175,7 +175,7 @@ int PetscF90Destroy1dArrayInt(array1d *ptr)
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len, array1d *ptr)
+int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len,array1d *ptr)
 {
   ptr->addr          = (Pointer)array;
   ptr->offset        = -sizeof(PetscFortranAddr);
@@ -198,7 +198,7 @@ int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len, array
 */ 
 int PetscF90Get1dArrayPetscFortranAddr(array1d *ptr,PetscFortranAddr **array)
 {
-  *array = (PetscFortranAddr *) ptr->addr;
+  *array = (PetscFortranAddr*)ptr->addr;
   return 0;
 }
 

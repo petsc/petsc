@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.19 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.20 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -36,7 +36,7 @@ T*/
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
   
     with boundary conditions
    
@@ -72,8 +72,8 @@ T*/
 */
 typedef struct {
    double      param;          /* test problem parameter */
-   int         mx,my;          /* discretization in x, y directions */
-   Vec         localX, localF; /* ghosted local vector */
+   int         mx,my;          /* discretization in x,y directions */
+   Vec         localX,localF; /* ghosted local vector */
    DA          da;             /* distributed array data structure */
    int         rank;           /* processor rank */
 } AppCtx;
@@ -81,29 +81,29 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern int ComputeFunction(AppCtx*,Vec,Vec), FormInitialGuess(AppCtx*,Vec);
+extern int ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
 extern int ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   /* -------------- Data to define application problem ---------------- */
   MPI_Comm comm;                /* communicator */
   SLES     sles;                /* linear solver */
-  Vec      X, Y, F;             /* solution, update, residual vectors */
+  Vec      X,Y,F;             /* solution, update, residual vectors */
   Mat      J;                   /* Jacobian matrix */
   AppCtx   user;                /* user-defined work context */
-  int      Nx, Ny;              /* number of preocessors in x- and y- directions */
+  int      Nx,Ny;              /* number of preocessors in x- and y- directions */
   int      size;                /* number of processors */
-  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  int      m, N, ierr;
+  double   bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  int      m,N,ierr;
 
   /* --------------- Data to define nonlinear solver -------------- */
   double       rtol = 1.e-8;        /* relative convergence tolerance */
   double       xtol = 1.e-8;        /* step convergence tolerance */
   double       ttol;                /* convergence tolerance */
-  double       fnorm, ynorm, xnorm; /* various vector norms */
+  double       fnorm,ynorm,xnorm; /* various vector norms */
   int          max_nonlin_its = 10; /* maximum number of iterations for nonlinear solver */
   int          max_functions = 50;  /* maximum number of function evaluations */
   int          lin_its;             /* number of linear solver iterations for each step */
@@ -112,7 +112,7 @@ int main( int argc, char **argv )
   PetscTruth   no_output;           /* flag indicating whether to surpress output */
   Scalar       mone = -1.0;       
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&user.rank);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-no_output",&no_output);CHKERRA(ierr);
@@ -189,7 +189,7 @@ int main( int argc, char **argv )
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-     Set runtime options (e.g., -ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
+     Set runtime options (e.g.,-ksp_monitor -ksp_rtol <rtol> -ksp_type <type>)
   */
   ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
@@ -219,7 +219,7 @@ int main( int argc, char **argv )
       offers many advantages over coding nonlinear solvers independently.
    */
 
-  for ( i=0; i<max_nonlin_its; i++ ) {
+  for (i=0; i<max_nonlin_its; i++) {
 
     /* 
         Compute the Jacobian matrix.  See the comments in this routine for
@@ -274,7 +274,7 @@ int main( int argc, char **argv )
     }
     if (i > max_functions) {
       if (!no_output) {
-        ierr = PetscPrintf(comm,"Exceeded maximum number of function evaluations: %d > %d\n",i, max_functions);CHKERRA(ierr);
+        ierr = PetscPrintf(comm,"Exceeded maximum number of function evaluations: %d > %d\n",i,max_functions);CHKERRA(ierr);
       }
       break;
     }  
@@ -309,8 +309,8 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, gxm, gym, gxs, gys;
-  double  one = 1.0, lambda, temp1, temp, hx, hy;
+  int     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  double  one = 1.0,lambda,temp1,temp,hx,hy;
   Scalar  *x;
   Vec     localX = user->localX;
 
@@ -344,11 +344,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
       row = i - gxs + (j - gys)*gxm; 
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
 
@@ -378,10 +378,10 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int ComputeFunction(AppCtx *user,Vec X,Vec F)
 {
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, gxs, gys, gxm, gym;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
-  Scalar  u, uxx, uyy, *x,*f;
-  Vec     localX = user->localX, localF = user->localF; 
+  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
+  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  Scalar  u,uxx,uyy,*x,*f;
+  Vec     localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -415,7 +415,7 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
     row = (j - gys)*gxm + xs - gxs - 1; 
     for (i=xs; i<xs+xm; i++) {
       row++;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       }
@@ -464,9 +464,9 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
 {
   Vec     localX = user->localX;   /* local vector */
   int     *ltog;                   /* local-to-global mapping */
-  int     ierr, i, j, row, mx, my, col[5];
-  int     nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
+  int     ierr,i,j,row,mx,my,col[5];
+  int     nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
+  Scalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -515,7 +515,7 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
       row++;
       grow = ltog[row];
       /* boundary points */
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }

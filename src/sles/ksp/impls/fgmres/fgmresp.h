@@ -1,4 +1,4 @@
-/*$Id: fgmresp.h,v 1.2 1999/11/24 21:54:59 bsmith Exp bsmith $*/
+/*$Id: fgmresp.h,v 1.3 1999/12/12 04:10:54 bsmith Exp bsmith $*/
 /*
    Private data structure used by the FGMRES method.
 */
@@ -7,7 +7,6 @@
 #define __FGMRES
 
 #include "src/sles/ksp/kspimpl.h"
-#include "/home/baker/working/allisonksp.h" 
 
   typedef struct {
     /* Hessenberg matrix and orthogonalization information. */ 
@@ -73,9 +72,9 @@
 
     /* we need a function for interacting with the pcfamily */
    
-    int    (*modifypc)(KSP, int, int, int, int, double);  /* function to modify the preconditioner - 
-                                                   to be used in conjunction with pcfamily. */
-
+    int    (*modifypc)(KSP,int,int,double,void*);  /* function to modify the preconditioner*/
+    int    (*modifydestroy)(void*);
+    void   *modifyctx;
 } KSP_FGMRES;
 
 

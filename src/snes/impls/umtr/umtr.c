@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.90 1999/10/24 14:03:37 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.91 1999/11/05 14:47:13 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -32,17 +32,19 @@
 #define __FUNC__ "SNESSolve_UM_TR"
 static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
-  SNES_UM_TR          *neP = (SNES_UM_TR *) snes->data;
-  int                 maxits, i, nlconv, ierr, qits, newton;
-  double              xnorm, max_val, ftrial, delta;
-  double              zero = 0.0, two = 2.0, four = 4.0;
+  SNES_UM_TR          *neP = (SNES_UM_TR*)snes->data;
+  int                 maxits,i,nlconv,ierr,qits;
+  PetscTruth          newton;
+  double              xnorm,max_val,ftrial,delta;
+  double              zero = 0.0,two = 2.0,four = 4.0;
   Scalar              one = 1.0;
-  Vec                 X, G,  S, Xtrial;
+  Vec                 X,G,S,Xtrial;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   SLES                sles;
   KSP                 ksp;
   KSP_QCG             *qcgP;
   SNESConvergedReason reason;
+  KSPConvergedReason  kreason;
 
   PetscFunctionBegin;
 
@@ -72,19 +74,19 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPQCG);CHKERRQ(ierr);
   PLogInfo(snes,"SNESSolve_UM_TR: setting KSPType = KSPQCG\n");
-  qcgP = (KSP_QCG *) ksp->data;
+  qcgP = (KSP_QCG*)ksp->data;
 
-  for ( i=0; i<maxits && !nlconv; i++ ) {
+  for (i=0; i<maxits && !nlconv; i++) {
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-    snes->iter = i+1;
+    snes->iter      = i+1;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    newton = 0;
-    neP->success = 0;
+    newton          = PETSC_FALSE;
+    neP->success    = 0;
     snes->nfailures = 0;
     ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
-    if (i == 0) {			/* Initialize delta */
+    if (!i) {			/* Initialize delta */
       if (delta <= 0) {
         if (xnorm > zero) delta = neP->factor1*xnorm;
         else delta = neP->delta0;
@@ -103,11 +105,14 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       /* Minimize the quadratic to compute the step s */
       qcgP->delta = delta;
       ierr = SLESSolve(snes->sles,G,S,&qits);CHKERRQ(ierr);
-      snes->linear_its += PetscAbsInt(qits);
-      if (qits < 0) SETERRQ(PETSC_ERR_PLIB,0,"Failure in SLESSolve");
-      if (qcgP->info == 3) newton = 1;	            /* truncated Newton step */
+      snes->linear_its += qits;
+      ierr = KSPGetConvergedReason(ksp,&kreason);CHKERRQ(ierr);
+      if ((int)kreason < 0) SETERRQ(PETSC_ERR_PLIB,0,"Failure in SLESSolve");
+      if (kreason != KSP_CONVERGED_QCG_NEGATIVE_CURVE && kreason != KSP_CONVERGED_QCG_CONSTRAINED) {
+        newton = PETSC_TRUE;
+      }
       PLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
-               i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
+               i,qcgP->ltsnrm,delta,qcgP->quadratic,qits);
 
       ierr = VecWAXPY(&one,X,S,Xtrial);CHKERRQ(ierr); /* Xtrial <- X + S */
       ierr = VecNorm(Xtrial,NORM_2,&xnorm);CHKERRQ(ierr);
@@ -119,7 +124,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       neP->prered = -qcgP->quadratic;
 
       /* Adjust delta for the first Newton step */
-      if ((i == 0) && (newton)) delta = PetscMin(delta,qcgP->ltsnrm);
+      if (!i && (newton)) delta = PetscMin(delta,qcgP->ltsnrm);
 
       if (neP->actred < neP->eta1 * neP->prered) {  /* Unsuccessful step */
 
@@ -128,8 +133,8 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 
          /* If iterate is Newton step, reduce delta to current step length */
          if (newton) {
-           delta = qcgP->ltsnrm;
-           newton = 0;
+           delta  = qcgP->ltsnrm;
+           newton = PETSC_FALSE;
          }
          delta /= four; 
 
@@ -204,7 +209,7 @@ static int SNESSetUp_UM_TR(SNES snes)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_UM_TR"
-static int SNESDestroy_UM_TR(SNES snes )
+static int SNESDestroy_UM_TR(SNES snes)
 {
   int  ierr;
 
@@ -233,13 +238,13 @@ static int SNESDestroy_UM_TR(SNES snes )
 
    Output Parameter:
 .  reason - one of 
-$   SNES_CONVERGED_FNORM_ABS         ( f < fmin ),
-$   SNES_CONVERGED_TR_REDUCTION      ( abs(ared) <= rtol*abs(f) && pred <= rtol*abs(f) ),
-$   SNES_CONVERGED_TR_DELTA          ( delta <= deltatol*xnorm ),
-$   SNES_DIVERGED_TR_REDUCTION       ( abs(ared) <= epsmch && pred <= epsmch ),
-$   SNES_DIVERGED_FUNCTION_COUNT     ( nfunc > max_func ),
-$   SNES_DIVERGED_FNORM_NAN          ( f = NaN ),
-$   SNES_CONVERGED_ITERATING         ( otherwise ).
+$   SNES_CONVERGED_FNORM_ABS         (f < fmin),
+$   SNES_CONVERGED_TR_REDUCTION      (abs(ared) <= rtol*abs(f) && pred <= rtol*abs(f)),
+$   SNES_CONVERGED_TR_DELTA          (delta <= deltatol*xnorm),
+$   SNES_DIVERGED_TR_REDUCTION       (abs(ared) <= epsmch && pred <= epsmch),
+$   SNES_DIVERGED_FUNCTION_COUNT     (nfunc > max_func),
+$   SNES_DIVERGED_FNORM_NAN          (f = NaN),
+$   SNES_CONVERGED_ITERATING         (otherwise).
 
    where
 +    ared     - actual reduction
@@ -261,8 +266,8 @@ $   SNES_CONVERGED_ITERATING         ( otherwise ).
 @*/
 int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
 {
-  SNES_UM_TR *neP = (SNES_UM_TR *) snes->data;
-  double     rtol = snes->rtol, delta = neP->delta,ared = neP->actred, pred = neP->prered;
+  SNES_UM_TR *neP = (SNES_UM_TR*)snes->data;
+  double     rtol = snes->rtol,delta = neP->delta,ared = neP->actred,pred = neP->prered;
   double     epsmch = 1.0e-14;   /* This must be fixed */
 
   PetscFunctionBegin;
@@ -283,13 +288,13 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConverg
   } else if (f < snes->fmin) {
     PLogInfo(snes,"SNESConverged_UM_TR:Function value (%g)<f_{minimum} (%g)\n",f,snes->fmin);
     *reason = SNES_CONVERGED_FNORM_ABS ;
-  } else if ( (PetscAbsDouble(ared) <= epsmch) && pred <= epsmch ) {
+  } else if ((PetscAbsDouble(ared) <= epsmch) && pred <= epsmch) {
     PLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
              PetscAbsDouble(ared),pred,epsmch);
     *reason = SNES_DIVERGED_TR_REDUCTION;
   } else if (snes->nfuncs > snes->max_funcs) {
     PLogInfo(snes,"SNESConverged_UM_TR:Exceeded maximum number of function evaluations:%d>%d\n",
-             snes->nfuncs, snes->max_funcs ); 
+             snes->nfuncs,snes->max_funcs); 
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   } else {
     *reason = SNES_CONVERGED_ITERATING;
@@ -390,7 +395,7 @@ int SNESCreate_UM_TR(SNES snes)
 
   neP			= PetscNew(SNES_UM_TR);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UM_TR));
-  snes->data	        = (void *) neP;
+  snes->data	        = (void*)neP;
   neP->delta0		= 1.0e-6;
   neP->delta 		= 0.0;
   neP->eta1		= 1.0e-4;

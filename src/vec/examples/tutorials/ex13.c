@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.5 1999/05/04 20:31:12 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.7 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
 
@@ -21,12 +21,12 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int     i, n, ierr, rank;
+  int     i,n,ierr,rank;
   Scalar  one = 1.0,*array;
   Vec     x,xlocal;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /*
      Create a parallel vector.
@@ -52,13 +52,13 @@ int main(int argc,char **argv)
     */
     PetscBarrier((PetscObject)x);
     ierr = VecGetArray(x,&array);CHKERRA(ierr);
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       array[i]++;
     }
     ierr = VecRestoreArray(x,&array);CHKERRA(ierr);
 
     ierr = VecGetArray(xlocal,&array);CHKERRA(ierr);
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       array[i]++;
     }
     ierr = VecRestoreArray(xlocal,&array);CHKERRA(ierr);

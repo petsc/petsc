@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.106 1999/10/24 14:01:21 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.107 1999/11/05 14:44:06 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -11,7 +11,7 @@
 typedef struct _EH *EH;
 struct _EH {
   int    cookie;
-  int    (*handler)(int, char*,char*,char *,int,int,char*,void *);
+  int    (*handler)(int,char*,char*,char *,int,int,char*,void *);
   void   *ctx;
   EH     previous;
 };
@@ -54,7 +54,7 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
-int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx )
+int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx)
 {
   EH neweh = (EH) PetscMalloc(sizeof(struct _EH));CHKPTRQ(neweh);
 
@@ -138,9 +138,9 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
   PetscFunctionBegin;
   /* Compose the message evaluating the print format */
   if (mess) {
-    va_start( Argp, mess);
+    va_start(Argp,mess);
     vsprintf(buf,mess,Argp);
-    va_end( Argp );
+    va_end(Argp);
     lbuf = buf;
   }
 
@@ -169,7 +169,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 @*/
 int PetscIntView(int N,int idx[],Viewer viewer)
 {
-  int        j,i,n = N/20, p = N % 20,ierr;
+  int        j,i,n = N/20,p = N % 20,ierr;
   PetscTruth isascii,issocket;
   MPI_Comm   comm;
 
@@ -177,21 +177,21 @@ int PetscIntView(int N,int idx[],Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidIntPointer(idx);
-  ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket); CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   if (isascii) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%d:",20*i);CHKERRQ(ierr);
-      for ( j=0; j<20; j++ ) {
+      for (j=0; j<20; j++) {
         ierr = ViewerASCIISynchronizedPrintf(viewer," %d",idx[i*20+j]);CHKERRQ(ierr);
       }
       ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%d:",20*n);CHKERRQ(ierr);
-      for ( i=0; i<p; i++ ) { ierr = ViewerASCIISynchronizedPrintf(viewer," %d",idx[20*n+i]);CHKERRQ(ierr);}
+      for (i=0; i<p; i++) { ierr = ViewerASCIISynchronizedPrintf(viewer," %d",idx[20*n+i]);CHKERRQ(ierr);}
       ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
@@ -206,16 +206,16 @@ int PetscIntView(int N,int idx[],Viewer viewer)
         ierr = MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Gatherv(idx,N,MPI_INT,0,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
       } else {
-        sizes = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        sizes = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
         ierr  = MPI_Gather(&N,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal    = sizes[0]; 
-        displs    = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        displs    = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
         displs[0] = 0;
         for (i=1; i<size; i++) {
           Ntotal    += sizes[i];
           displs[i] =  displs[i-1] + sizes[i-1];
         }
-        array  = (int *) PetscMalloc(Ntotal*sizeof(int));CHKPTRQ(array);
+        array  = (int*)PetscMalloc(Ntotal*sizeof(int));CHKPTRQ(array);
         ierr   = MPI_Gatherv(idx,N,MPI_INT,array,sizes,displs,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr   = ViewerSocketPutInt_Private(viewer,Ntotal,array);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
@@ -247,9 +247,9 @@ int PetscIntView(int N,int idx[],Viewer viewer)
 
 .seealso: PetscIntView() 
 @*/
-int PetscDoubleView(int N,double idx[],Viewer viewer)
+int PetscDoubleView(int N,PetscReal idx[],Viewer viewer)
 {
-  int        j,i,n = N/5, p = N % 5,ierr;
+  int        j,i,n = N/5,p = N % 5,ierr;
   PetscTruth isascii,issocket;
   MPI_Comm   comm;
 
@@ -257,27 +257,27 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidScalarPointer(idx);
-  ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   if (isascii) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",5*i);CHKERRQ(ierr);
-      for ( j=0; j<5; j++ ) {
+      for (j=0; j<5; j++) {
          ierr = ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[i*5+j]);CHKERRQ(ierr);
       }
       ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",5*n);CHKERRQ(ierr);
-      for ( i=0; i<p; i++ ) { ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[5*n+i]);CHKERRQ(ierr);}
+      for (i=0; i<p; i++) { ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[5*n+i]);CHKERRQ(ierr);}
       ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
     int    *sizes,rank,size,Ntotal,*displs;
-    double *array;
+    PetscReal *array;
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -287,24 +287,24 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
         ierr = MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Gatherv(idx,N,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
       } else {
-        sizes     = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        sizes     = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
         ierr      = MPI_Gather(&N,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal    = sizes[0]; 
-        displs    = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        displs    = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
         displs[0] = 0;
         for (i=1; i<size; i++) {
           Ntotal    += sizes[i];
           displs[i] =  displs[i-1] + sizes[i-1];
         }
-        array  = (double *) PetscMalloc(Ntotal*sizeof(double));CHKPTRQ(array);
+        array  = (PetscReal*)PetscMalloc(Ntotal*sizeof(PetscReal));CHKPTRQ(array);
         ierr = MPI_Gatherv(idx,N,MPI_DOUBLE,array,sizes,displs,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
-        ierr = ViewerSocketPutDouble_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
+        ierr = ViewerSocketPutReal_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = ViewerSocketPutDouble_Private(viewer,N,1,idx);CHKERRQ(ierr);
+      ierr = ViewerSocketPutReal_Private(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Cannot handle that viewer");
@@ -330,7 +330,7 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
 @*/
 int PetscScalarView(int N,Scalar idx[],Viewer viewer)
 {
-  int        j,i,n = N/3, p = N % 3,ierr;
+  int        j,i,n = N/3,p = N % 3,ierr;
   PetscTruth isascii,issocket;
   MPI_Comm   comm;
 
@@ -338,17 +338,17 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeader(viewer);
   PetscValidScalarPointer(idx);
-  ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   if (isascii) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
-      for ( j=0; j<3; j++ ) {
+      for (j=0; j<3; j++) {
 #if defined (PETSC_USE_COMPLEX)
         ierr = ViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)",
-                                 PetscReal(idx[i*3+j]),PetscImaginary(idx[i*3+j]));CHKERRQ(ierr);
+                                 PetscRealPart(idx[i*3+j]),PetscImaginaryPart(idx[i*3+j]));CHKERRQ(ierr);
 #else       
         ierr = ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[i*3+j]);CHKERRQ(ierr);
 #endif
@@ -357,10 +357,10 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
     }
     if (p) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",3*n);CHKERRQ(ierr);
-      for ( i=0; i<p; i++ ) { 
+      for (i=0; i<p; i++) { 
 #if defined (PETSC_USE_COMPLEX)
         ierr = ViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)",
-                                 PetscReal(idx[i*3+j]),PetscImaginary(idx[i*3+j]));CHKERRQ(ierr);
+                                 PetscRealPart(idx[i*3+j]),PetscImaginaryPart(idx[i*3+j]));CHKERRQ(ierr);
 #else
         ierr = ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[3*n+i]);CHKERRQ(ierr);
 #endif
@@ -380,16 +380,16 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
         ierr = MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Gatherv(idx,N,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
       } else {
-        sizes     = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        sizes     = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
         ierr      = MPI_Gather(&N,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
         Ntotal    = sizes[0]; 
-        displs    = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        displs    = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
         displs[0] = 0;
         for (i=1; i<size; i++) {
           Ntotal    += sizes[i];
           displs[i] =  displs[i-1] + sizes[i-1];
         }
-        array = (Scalar *) PetscMalloc(Ntotal*sizeof(Scalar));CHKPTRQ(array);
+        array = (Scalar*)PetscMalloc(Ntotal*sizeof(Scalar));CHKPTRQ(array);
         ierr  = MPI_Gatherv(idx,N,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
         ierr  = ViewerSocketPutScalar_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
         ierr  = PetscFree(sizes);CHKERRQ(ierr);

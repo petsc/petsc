@@ -1,4 +1,4 @@
-/*$Id: ex47.c,v 1.13 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex47.c,v 1.14 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests the various routines in MatBAIJ format.\n\
@@ -82,17 +82,17 @@ int main(int argc,char **args)
   }
 
   /* Test MatGetRow()/ MatRestoreRow() */
-  for ( ct=0; ct<100; ct++ ) {
+  for (ct=0; ct<100; ct++) {
     ierr = PetscRandomGetValue(r,&rval);
     row  = (int)(rval*m);
     ierr = MatGetRow(A,row,&ncols1,&cols1,&vals1);CHKERRA(ierr);
     ierr = MatGetRow(B,row,&ncols2,&cols2,&vals2);CHKERRA(ierr);
     
-    for ( i=0,j=0; i<ncols1 && j<ncols2; i++ ) {
+    for (i=0,j=0; i<ncols1 && j<ncols2; i++) {
       while (cols2[j] != cols1[i]) j++;
-      if (vals1[i] != vals2[j]) SETERRA(1,0, "MatGetRow() failed - vals incorrect.");
+      if (vals1[i] != vals2[j]) SETERRA(1,0,"MatGetRow() failed - vals incorrect.");
     }
-    if (i<ncols1) SETERRA(1,0, "MatGetRow() failed - cols incorrect");
+    if (i<ncols1) SETERRA(1,0,"MatGetRow() failed - cols incorrect");
     
     ierr = MatRestoreRow(A,row,&ncols1,&cols1,&vals1);CHKERRA(ierr);
     ierr = MatRestoreRow(B,row,&ncols2,&cols2,&vals2);CHKERRA(ierr);

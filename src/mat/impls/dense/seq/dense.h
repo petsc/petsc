@@ -1,4 +1,4 @@
-/* $Id: dense.h,v 1.5 1998/12/03 03:59:50 bsmith Exp bsmith $ */
+/* $Id: dense.h,v 1.6 1999/11/24 21:53:44 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -12,7 +12,7 @@
 typedef struct {
   Scalar *v;                /* matrix elements */
   int    roworiented;       /* if true, row oriented input (default) */
-  int    m, n;              /* rows, columns */
+  int    m,n;              /* rows, columns */
   int    pad;               /* padding */        
   int    *pivots;           /* pivots in LU factorization */
   int    user_alloc;        /* true if the user provided the dense data */

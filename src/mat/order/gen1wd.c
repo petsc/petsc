@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: gen1wd.c,v 1.10 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* gen1wd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -37,13 +37,13 @@ int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy,
     int i__1, i__2, i__3;
 
     /* Local variables */
-    static int node, nsep, lnum, nlvl, root;
+    int node, nsep, lnum, nlvl, root;
     extern int SPARSEPACKfn1wd(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
-    static int i, j, k, ccsize;
+    int i, j, k, ccsize;
     extern int SPARSEPACKrevrse(int *, int *), SPARSEPACKrootls(
 	    int *, int *, int *, int *, int *, int *, int *);
-    static int num;
+    int num;
 
     PetscFunctionBegin;
     /* Parameter adjustments */

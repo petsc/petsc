@@ -1,4 +1,4 @@
-/*$Id: rpath.c,v 1.22 1999/05/12 03:27:04 bsmith Exp bsmith $*/
+/*$Id: rpath.c,v 1.23 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -28,7 +28,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetRelativePath"
@@ -49,14 +49,14 @@
 
 .seealso: PetscGetFullPath()
 @*/
-int PetscGetRelativePath(const char fullpath[],char path[],int flen )
+int PetscGetRelativePath(const char fullpath[],char path[],int flen)
 {
   char  *p;
   int   ierr;
 
   PetscFunctionBegin;
-  /* Find string after last '/' or entire string if no '/' */
-  ierr = PetscStrrchr( fullpath, '/',&p );CHKERRQ(ierr);
-  ierr = PetscStrncpy( path, p, flen );CHKERRQ(ierr);
+  /* Find string after last / or entire string if no / */
+  ierr = PetscStrrchr(fullpath,'/',&p);CHKERRQ(ierr);
+  ierr = PetscStrncpy(path,p,flen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

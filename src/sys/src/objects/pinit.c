@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.23 1999/11/05 14:44:14 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.24 1999/11/10 03:18:02 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -46,13 +46,13 @@ int OptionsCheckInitial_Components(void)
   if (flg1) {
     PetscAMSPublishAll = PETSC_TRUE;
   }
-  ierr = OptionsHasName(PETSC_NULL, "-ams_publish_stack", &flg1);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-ams_publish_stack",&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscStackPublish();CHKERRQ(ierr);
   }
 #endif
 
-  ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscStrstr(mname,"vec",&f);CHKERRQ(ierr);
     if (f) {
@@ -71,7 +71,7 @@ int OptionsCheckInitial_Components(void)
       ierr = PLogInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
-  ierr = OptionsGetString(PETSC_NULL,"-log_summary_exclude",mname,256, &flg1);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-log_summary_exclude",mname,256,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscStrstr(mname,"vec",&f);CHKERRQ(ierr);
     if (f) {
@@ -104,7 +104,7 @@ int OptionsCheckInitial_Components(void)
     ierr = PLogEventActivate(VEC_ReduceCommOnly);CHKERRQ(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-help", &flg1);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {
 #if defined (PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
@@ -150,9 +150,9 @@ MPI_Op PetscMaxSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "PetscMaxSum_Local"
-void PetscMaxSum_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
+void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
-  int *xin = (int *)in, *xout = (int *) out, i, count = *cnt;
+  int *xin = (int *)in,*xout = (int*)out,i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPI_INT) {
@@ -165,10 +165,10 @@ void PetscMaxSum_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
   }
 
   count = count/2; 
-  for ( i=0; i<count; i++ ) {
+  for (i=0; i<count; i++) {
     xout[i] = PetscMax(xout[i],xin[i]); 
   }
-  for ( i=count; i<2*count; i++ ) {
+  for (i=count; i<2*count; i++) {
     xout[i] += xin[i]; 
   }
 
@@ -183,10 +183,10 @@ MPI_Op PetscSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "PetscSum_Local"
-void PetscSum_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
+void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
-  Scalar *xin = (Scalar *)in, *xout = (Scalar *) out;
-  int    i, count = *cnt;
+  Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
+  int    i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_SCALAR) {
@@ -194,7 +194,7 @@ void PetscSum_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
     MPI_Abort(MPI_COMM_WORLD,1);
   }
 
-  for ( i=0; i<count; i++ ) {
+  for (i=0; i<count; i++) {
     xout[i] += xin[i]; 
   }
 
@@ -239,7 +239,7 @@ EXTERN_C_END
 -  -get_resident_set_size - Print memory usage at end of run
 
    Options Database Keys for Profiling:
-   See the 'Profiling' chapter of the users manual for details.
+   See the Profiling chapter of the users manual for details.
 +  -log_trace [filename] - Print traces of all PETSc calls
         to the screen (useful to determine where a program
         hangs without running in the debugger).  See PLogTraceBegin().
@@ -295,7 +295,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   if (argc && *argc) {
     ierr = PetscSetProgramName(**args);CHKERRQ(ierr);
   } else {
-    ierr = PetscSetProgramName("Unknown Name"); CHKERRQ(ierr);
+    ierr = PetscSetProgramName("Unknown Name");CHKERRQ(ierr);
   }
 
   /* Also initialize the initial datestamp */
@@ -401,7 +401,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 -  -trmalloc_log - Prints summary of memory usage
 
    Options Database Keys for Profiling:
-   See the 'Profiling' chapter of the users manual for details.
+   See the Profiling chapter of the users manual for details.
 +  -log_summary [filename] - Prints summary of flop and timing
         information to screen. If the filename is specified the
         summary is written to the file. (for code compiled with 
@@ -474,15 +474,15 @@ int PetscFinalize(void)
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_mpe",mname,64,&flg1);CHKERRQ(ierr);
     if (flg1){
-      if (mname[0]) {ierr = PLogMPEDump(mname); CHKERRQ(ierr);}
+      if (mname[0]) {ierr = PLogMPEDump(mname);CHKERRQ(ierr);}
       else          {ierr = PLogMPEDump(0);CHKERRQ(ierr);}
     }
 #endif
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_summary",mname,64,&flg1);CHKERRQ(ierr);
     if (flg1) { 
-      if (mname[0])  {ierr = PLogPrintSummary(PETSC_COMM_WORLD,mname); CHKERRQ(ierr);}
-      else           {ierr = PLogPrintSummary(PETSC_COMM_WORLD,0); CHKERRQ(ierr);}
+      if (mname[0])  {ierr = PLogPrintSummary(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
+      else           {ierr = PLogPrintSummary(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
     }
 
     mname[0] = 0;
@@ -496,7 +496,7 @@ int PetscFinalize(void)
   }
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1);CHKERRQ(ierr);
-  if (!flg1) { ierr = PetscPopSignalHandler(); CHKERRQ(ierr);}
+  if (!flg1) { ierr = PetscPopSignalHandler();CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-mpidump",&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscMPIDump(stdout);CHKERRQ(ierr);
@@ -514,7 +514,7 @@ int PetscFinalize(void)
     ierr = OptionsPrint(stdout);CHKERRQ(ierr);
   }
   if (flg1) {
-    if (nopt == 0) { 
+    if (!nopt) { 
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
     } else if (nopt == 1) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.11 1999/10/24 14:01:32 bsmith Exp bsmith $*/
+/*$Id: pdisplay.c,v 1.12 1999/11/05 14:44:20 bsmith Exp bsmith $*/
 
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
@@ -6,7 +6,7 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsGetenv"
@@ -105,7 +105,7 @@ int PetscSetDisplay(void)
 .   n - length of string display
 
   Output Parameters:
-.   display - the display string, may (and should) be freed.
+.   display - the display string
 
 */
 int PetscGetDisplay(char display[],int n)

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.13 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -8,11 +8,11 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY()
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Mat        mat, tmat = 0;
-  int        m = 7, n, i, j, ierr, size, rank, rstart, rend, rect = 0;
+  Mat        mat,tmat = 0;
+  int        m = 7,n,i,j,ierr,size,rank,rstart,rend,rect = 0;
   PetscTruth flg;
   Scalar     v;
-  double     normf, normi, norm1;
+  double     normf,normi,norm1;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
@@ -29,8 +29,8 @@ int main(int argc,char **argv)
 
   ierr = MatCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,n,&mat);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) { 
-    for ( j=0; j<n; j++ ) { 
+  for (i=rstart; i<rend; i++) { 
+    for (j=0; j<n; j++) { 
       v=10*i+j; 
       ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRA(ierr);
   ierr = MatNorm(mat,NORM_1,&norm1);CHKERRA(ierr);
   ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
                      normf,norm1,normi);CHKERRA(ierr);
   ierr = MatView(mat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.45 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.46 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\
@@ -38,7 +38,7 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec        x, b, u;      /* approx solution, RHS, exact solution */
+  Vec        x,b,u;      /* approx solution, RHS, exact solution */
   Mat        A;            /* linear system matrix */
   SLES       sles;         /* SLES context */
   SLES       *subsles;     /* array of local SLES contexts on this processor */
@@ -46,10 +46,10 @@ int main(int argc,char **args)
   PC         subpc;        /* PC context for subdomain */
   KSP        subksp;       /* KSP context for subdomain */
   double     norm;         /* norm of solution error */
-  int        i, j, I, J, ierr, *blks, m = 8, n;
-  int        rank, size, its, nlocal, first, Istart, Iend;
-  Scalar     v, one = 1.0, none = -1.0;
-  PetscTruth isbjacobi, flg;
+  int        i,j,I,J,ierr,*blks,m = 8,n;
+  int        rank,size,its,nlocal,first,Istart,Iend;
+  Scalar     v,one = 1.0,none = -1.0;
+  PetscTruth isbjacobi,flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
@@ -67,12 +67,12 @@ int main(int argc,char **args)
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -126,8 +126,8 @@ int main(int argc,char **args)
 
       Note: The default decomposition is 1 block per processor.
   */
-  blks = (int *) PetscMalloc( m*sizeof(int) );CHKPTRA(blks);
-  for ( i=0; i<m; i++ ) blks[i] = n;
+  blks = (int*)PetscMalloc(m*sizeof(int));CHKPTRA(blks);
+  for (i=0; i<m; i++) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);
   ierr = PetscFree(blks);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.102 1999/03/19 01:00:53 balay Exp bsmith $ */
+/* $Id: matimpl.h,v 1.103 1999/11/24 21:53:41 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -66,7 +66,7 @@ struct _MatOps {
             (*scale)(Scalar *,Mat),
             (*shift)(Scalar *,Mat),
 /*50*/      (*diagonalshift)(Vec,Mat),
-            (*iludtfactor)(Mat,double,int,IS,IS,Mat *),
+            (*iludtfactor)(Mat,MatILUInfo*,IS,IS,Mat *),
             (*getblocksize)(Mat,int *),
             (*getrowij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
             (*restorerowij)(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *),
@@ -109,8 +109,8 @@ typedef struct {
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   MPI_Status    *send_status;           /* array of send status */
-  int           nsends, nrecvs;         /* numbers of sends and receives */
-  Scalar        *svalues, *rvalues;     /* sending and receiving data */
+  int           nsends,nrecvs;         /* numbers of sends and receives */
+  Scalar        *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
   int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
   int           nprocessed;             /* number of messages already processed */
@@ -129,8 +129,8 @@ struct _p_Mat {
   PetscTruth             was_assembled;    /* new values inserted into assembled mat */
   int                    num_ass;          /* number of times matrix has been assembled */
   PetscTruth             same_nonzero;     /* matrix has same nonzero pattern as previous */
-  int                    M, N;             /* global numbers of rows, columns */
-  int                    m, n;             /* local numbers of rows, columns */
+  int                    M,N;             /* global numbers of rows, columns */
+  int                    m,n;             /* local numbers of rows, columns */
   MatInfo                info;             /* matrix information */
   ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
@@ -193,7 +193,7 @@ struct _p_MatPartitioning {
 
 struct  _p_MatFDColoring{
   PETSCHEADER(int)
-  int    M, N, m;          /* total rows, columns; local rows */
+  int    M,N,m;          /* total rows, columns; local rows */
   int    rstart;           /* first row owned by local processor */
   int    ncolors;          /* number of colors */
   int    *ncolumns;        /* number of local columns for a color */ 
@@ -201,11 +201,11 @@ struct  _p_MatFDColoring{
   int    *nrows;           /* number of local rows for each color */
   int    **rows;           /* lists the local rows for each color (using the local row numbering) */
   int    **columnsforrow;  /* lists the corresponding columns for those rows (using the global column numbering) */ 
-  Scalar *scale, *wscale;  /* workspace used to hold FD scalings */
+  Scalar *scale,*wscale;  /* workspace used to hold FD scalings */
   double error_rel;        /* square root of relative error in computing function */
   double umin;             /* minimum allowable u'dx value */
   int    freq;             /* frequency at which new Jacobian is computed */
-  Vec    w1, w2, w3;       /* work vectors used in computing Jacobian */
+  Vec    w1,w2,w3;       /* work vectors used in computing Jacobian */
   int    (*f)(void);       /* function that defines Jacobian */
   void   *fctx;            /* optional user-defined context for use by the function f */
 };

@@ -1,9 +1,9 @@
-!    "$Id: ex5.F,v 1.10 1998/03/24 16:42:29 balay Exp balay $";
+!    "$Id: ex5.F,v 1.11 1998/04/15 18:00:59 balay Exp bsmith $";
 !
 !  Simple PETSc Program written in Fortran 77.
 !
 #include "include/finclude/petsc.h"
-       integer        ierr, rank
+       integer        ierr,rank
        character*(80) arch
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

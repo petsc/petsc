@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.38 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.39 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
@@ -45,19 +45,19 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec        x, b, u;                 /* approx solution, RHS, exact solution */
+  Vec        x,b,u;                 /* approx solution, RHS, exact solution */
   Mat        A;                       /* linear system matrix */
   SLES       sles;                    /* linear solver context */
   PC         pc;                      /* PC context */
   IS         *is;                     /* array of index sets that define the subdomains */
   int        overlap = 1;             /* width of subdomain overlap */
   int        Nsub;                    /* number of subdomains */
-  int        m = 15, n = 17;          /* mesh dimensions in x- and y- directions */
-  int        M = 2, N = 1;            /* number of subdomains in x- and y- directions */
-  int        i, j, its, I, J, ierr, Istart, Iend, size;
+  int        m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
+  int        M = 2,N = 1;            /* number of subdomains in x- and y- directions */
+  int        i,j,its,I,J,ierr,Istart,Iend,size;
   PetscTruth flg;
   PetscTruth user_subdomains;         /* flag - 1 indicates user-defined subdomains */
-  Scalar     v,  one = 1.0;
+  Scalar     v, one = 1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -78,12 +78,12 @@ int main(int argc,char **args)
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
     v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -187,7 +187,7 @@ int main(int argc,char **args)
   ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg);CHKERRA(ierr);
   if (flg) {
     SLES       *subsles;       /* array of SLES contexts for local subblocks */
-    int        nlocal, first;  /* number of local subblocks, first local subblock */
+    int        nlocal,first;  /* number of local subblocks, first local subblock */
     KSP        subksp;         /* KSP context for subblock */
     PC         subpc;          /* PC context for subblock */
     PetscTruth isasm;
@@ -249,7 +249,7 @@ int main(int argc,char **args)
   */
 
   if (user_subdomains) {
-    for ( i=0; i<Nsub; i++ ) {
+    for (i=0; i<Nsub; i++) {
       ierr = ISDestroy(is[i]);CHKERRA(ierr);
     }
     ierr = PetscFree(is);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: spops.h,v 1.3 1997/09/15 16:23:05 bsmith Exp bsmith $ */
+/* $Id: spops.h,v 1.4 1999/05/12 03:25:57 bsmith Exp bsmith $ */
 
 #ifndef SPARSEDENSESMAXPY
 
@@ -25,7 +25,7 @@ while (nnz-->0) r[*xi++] -= alpha * *xv++;}
 
 #elif defined(PETSC_USE_FOR_KERNELS)
 #define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {\
-register int __i,__j1,__j2;register double __s1, __s2;\
+ int __i,__j1,__j2; double __s1,__s2;\
 for(__i=0;__i<nnz-1;__i+=2){__j1=xi[__i];__j2=xi[__i+1];__s1=alpha*xv[__i];\
 __s2=alpha*xv[__i+1];__s1=r[__j1]-__s1;__s2=r[__j2]-__s2;\
 r[__j1]=__s1;r[__j2]=__s2;}\
@@ -97,7 +97,7 @@ if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
 
 #else
 #define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
-register int __i;\
+ int __i;\
 for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
 #endif
 
@@ -143,7 +143,7 @@ xi  += 4;xv  += 4;nz -= 4;}}}
 #define GATHER(xv,xi,r,nz) while (nz--) *xv++ = r[*xi++];
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define GATHER(xv,xi,r,nz) {int __i;register double __s1, __s2;\
+#define GATHER(xv,xi,r,nz) {int __i; double __s1,__s2;\
 for(__i=0;__i<nz-1;__i+=2){__s1=r[xi[__i]];__s2=r[xi[__i+1]];\
 xv[__i]=__s1;xv[__i+1]=__s2;}if ((nz)&0x1) xv[__i]=r[xi[__i]];}
 
@@ -168,7 +168,7 @@ xi  += 4;xv  += 4;nz -= 4;}}
 #define SCATTER(xv,xi,r,nz) while (nz--) r[*xi++]=*xv++;
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define SCATTER(xv,xi,r,nz) {int __i;register double __s1, __s2;\
+#define SCATTER(xv,xi,r,nz) {int __i; double __s1,__s2;\
 for(__i=0;__i<nz-1;__i+=2){__s1=xv[__i];__s2=xv[__i+1];\
 r[xi[__i]]=__s1;r[xi[__i+1]]=__s2;}if ((nz)&0x1)r[xi[__i]]=xv[__i];}
 
@@ -276,8 +276,8 @@ xi  += 4;xv  += 4;nz -= 4;}}}
 while (nz--) r[*xi++]+= *xv++;}
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define SCATTERADD(xv,xi,r,nz) {register double __s1, __s2;\
-register int __i,__i1, __i2;\
+#define SCATTERADD(xv,xi,r,nz) { double __s1,__s2;\
+ int __i,__i1,__i2;\
 for(__i=0;__i<nz-1;__i+=2){__i1 = xi[__i]; __i2 = xi[__i+1];\
 __s1 = r[__i1]; __s2 = r[__i2]; __s1 += xv[__i]; __s2 += xv[__i+1];\
 r[__i1]=__s1;r[__i2]=__s2;}if ((nz)&0x1)r[xi[__i]]+=xv[__i];}

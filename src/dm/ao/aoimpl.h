@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.17 1999/10/01 21:22:52 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.18 1999/11/05 14:47:42 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -20,7 +20,7 @@ struct _AOOps {
 struct _p_AO {
   PETSCHEADER(struct _AOOps)
   void          *data;                   /* implementation-specific data */
-  int           N, n;                    /* global, local vector size */
+  int           N,n;                    /* global, local vector size */
 };
 
 /*
@@ -109,8 +109,8 @@ struct _p_AOData {
   AODataAlias       *aliases;
 };
 
-extern int AODataKeyFind_Private(AOData, char *,PetscTruth *,AODataKey **);
-extern int AODataSegmentFind_Private(AOData,char *, char *, PetscTruth *,AODataKey **,AODataSegment **);
+extern int AODataKeyFind_Private(AOData,char *,PetscTruth *,AODataKey **);
+extern int AODataSegmentFind_Private(AOData,char *,char *,PetscTruth *,AODataKey **,AODataSegment **);
 
 
 #endif

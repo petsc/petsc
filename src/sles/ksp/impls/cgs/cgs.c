@@ -1,4 +1,4 @@
-/*$Id: cgs.c,v 1.55 1999/11/05 14:46:42 bsmith Exp bsmith $*/
+/*$Id: cgs.c,v 1.56 1999/11/24 21:54:51 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the CGS (Conjugate Gradient Squared) method. 
@@ -18,7 +18,7 @@ static int KSPSetUp_CGS(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,0,"no symmetric preconditioning for KSPCGS");
-  ierr = KSPDefaultGetWork( ksp, 8 );CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp,8);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -26,10 +26,10 @@ static int KSPSetUp_CGS(KSP ksp)
 #define __FUNC__ "KSPSolve_CGS"
 static int  KSPSolve_CGS(KSP ksp,int *its)
 {
-  int       i, maxit,  cerr = 0, ierr;
-  Scalar    rho, rhoold, a, s, b, tmp, one = 1.0; 
-  Vec       X,B,V,P,R,RP,T,Q,U, BINVF, AUQ;
-  double    dp = 0.0;
+  int       i,maxit,ierr;
+  Scalar    rho,rhoold,a,s,b,tmp,one = 1.0; 
+  Vec       X,B,V,P,R,RP,T,Q,U,BINVF,AUQ;
+  PetscReal dp = 0.0;
 
   PetscFunctionBegin;
 
@@ -47,7 +47,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   AUQ     = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(ksp,X,V,T, R, BINVF, B );CHKERRQ(ierr);
+  ierr = KSPResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   if (!ksp->avoidnorms) {
@@ -59,7 +59,8 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
+  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP);CHKERRQ(ierr);
@@ -90,8 +91,8 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
     KSPMonitor(ksp,i+1,dp);
-    cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
-    if (cerr) break;
+    ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) break;
 
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
     b    = rho / rhoold;                             /* b <- rho / rhoold    */
@@ -101,11 +102,13 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,Q);CHKERRQ(ierr);      /* v <- K p    */
     rhoold = rho;
   }
-  if (i == maxit) i--;
+  if (i == maxit) {
+    i--;
+    ksp->reason = KSP_DIVERGED_ITS;
+  }
+  *its = i+1;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
-  if (cerr <= 0) *its = -(i+1); 
-  else           *its = i+1;
   PetscFunctionReturn(0);
 }
 
@@ -115,16 +118,16 @@ EXTERN_C_BEGIN
 int KSPCreate_CGS(KSP ksp)
 {
   PetscFunctionBegin;
-  ksp->data                      = (void *) 0;
+  ksp->data                      = (void*)0;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = 1;
+  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_CGS;
   ksp->ops->solve                = KSPSolve_CGS;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions       = 0;
   ksp->ops->view                 = 0;
-  ksp->guess_zero                = 1; 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

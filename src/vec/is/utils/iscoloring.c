@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.50 1999/10/24 14:01:49 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.51 1999/11/05 14:44:45 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
@@ -24,7 +24,7 @@ int ISColoringDestroy(ISColoring iscoloring)
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
 
-  for ( i=0; i<iscoloring->n; i++ ) {
+  for (i=0; i<iscoloring->n; i++) {
     ierr = ISDestroy(iscoloring->is[i]);CHKERRQ(ierr);
   }
   PetscCommDestroy_Private(&iscoloring->comm);
@@ -71,7 +71,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
     SETERRQ1(1,1,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
   }
 
-  for ( i=0; i<iscoloring->n; i++ ) {
+  for (i=0; i<iscoloring->n; i++) {
     ierr = ISView(iscoloring->is[i],viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -160,30 +160,30 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
 
   /* compute the total number of colors */
   ncwork = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;
   ierr = MPI_Allreduce(&ncwork,&nc,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
 
   /* generate the lists of nodes for each color */
-  mcolors = (int *) PetscMalloc( (nc+1)*sizeof(int) );CHKPTRQ(colors);
+  mcolors = (int*)PetscMalloc((nc+1)*sizeof(int));CHKPTRQ(colors);
   ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     mcolors[colors[i]]++;
   }
 
-  ii    = (int **) PetscMalloc( (nc+1)*sizeof(int*) );CHKPTRQ(ii);
-  ii[0] = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ii[0]);
-  for ( i=1; i<nc; i++ ) {
+  ii    = (int**)PetscMalloc((nc+1)*sizeof(int*));CHKPTRQ(ii);
+  ii[0] = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ii[0]);
+  for (i=1; i<nc; i++) {
     ii[i] = ii[i-1] + mcolors[i-1];
   }
   ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ii[colors[i]][mcolors[colors[i]]++] = i + base;
   }
-  is  = (IS *) PetscMalloc( (nc+1)*sizeof(IS) );CHKPTRQ(is);
-  for ( i=0; i<nc; i++ ) {
+  is  = (IS*)PetscMalloc((nc+1)*sizeof(IS));CHKPTRQ(is);
+  for (i=0; i<nc; i++) {
     ierr = ISCreateGeneral(comm,mcolors[i],ii[i],is+i);CHKERRQ(ierr);
   }
 
@@ -228,10 +228,10 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
 int ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm comm;
-  int      i,ierr,rank,size, *indices,np,n,*starts,*sums,*lsizes,*newi;
+  int      i,ierr,rank,size,*indices,np,n,*starts,*sums,*lsizes,*newi;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) part,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -239,7 +239,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
   ierr = ISGetSize(part,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(part,&indices);CHKERRQ(ierr);
   np = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     np = PetscMax(np,indices[i]);
   }  
   if (np >= size) {
@@ -251,19 +251,19 @@ int ISPartitioningToNumbering(IS part,IS *is)
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  lsizes = (int *) PetscMalloc( 3*size*sizeof(int) );CHKPTRQ(lsizes);
+  lsizes = (int*)PetscMalloc(3*size*sizeof(int));CHKPTRQ(lsizes);
   starts = lsizes + size;
   sums   = starts + size;
   ierr = PetscMemzero(lsizes,size*sizeof(int));CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     lsizes[indices[i]]++;
   }  
   ierr = MPI_Allreduce(lsizes,sums,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   ierr = MPI_Scan(lsizes,starts,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  for ( i=0; i<size; i++ ) {
+  for (i=0; i<size; i++) {
     starts[i] -= lsizes[i];
   }
-  for ( i=1; i<size; i++ ) {
+  for (i=1; i<size; i++) {
     sums[i]   += sums[i-1];
     starts[i]  += sums[i-1];
   }
@@ -271,8 +271,8 @@ int ISPartitioningToNumbering(IS part,IS *is)
   /* 
       For each local index give it the new global number
   */
-  newi = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(newi);
-  for ( i=0; i<n; i++ ) {
+  newi = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(newi);
+  for (i=0; i<n; i++) {
     newi[i] = starts[indices[i]]++;
   }
   ierr = PetscFree(lsizes);CHKERRQ(ierr);
@@ -307,17 +307,17 @@ int ISPartitioningToNumbering(IS part,IS *is)
 int ISPartitioningCount(IS part,int count[])
 {
   MPI_Comm comm;
-  int      i,ierr,size, *indices,np,n,*lsizes;
+  int      i,ierr,size,*indices,np,n,*lsizes;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) part,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  /* count the number of partitions, make sure <= size */
+  /* count the number of partitions,make sure <= size */
   ierr = ISGetSize(part,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(part,&indices);CHKERRQ(ierr);
   np = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     np = PetscMax(np,indices[i]);
   }  
   if (np >= size) {
@@ -329,9 +329,9 @@ int ISPartitioningCount(IS part,int count[])
         sums - total number of "previous" nodes for any particular partition
         starts - global number of first element in each partition on this processor
   */
-  lsizes = (int *) PetscMalloc( size*sizeof(int) );CHKPTRQ(lsizes);
+  lsizes = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(lsizes);
   ierr   = PetscMemzero(lsizes,size*sizeof(int));CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     lsizes[indices[i]]++;
   }  
   ierr = ISRestoreIndices(part,&indices);CHKERRQ(ierr);
@@ -346,7 +346,7 @@ int ISPartitioningCount(IS part,int count[])
 /*@C
     ISAllGather - Given an index set (IS) on each processor, generates a large 
     index set (same on each processor) by concatenating together each
-    processor's index set.
+    processors index set.
 
     Collective on IS
 
@@ -381,16 +381,16 @@ int ISAllGather(IS is,IS *isout)
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  sizes   = (int *) PetscMalloc(2*size*sizeof(int));CHKPTRQ(sizes);
+  sizes   = (int*)PetscMalloc(2*size*sizeof(int));CHKPTRQ(sizes);
   offsets = sizes + size;
   
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
   ierr = MPI_Allgather(&n,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
-  for ( i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+  for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
 
-  indices = (int *) PetscMalloc((N+1)*sizeof(int));CHKERRQ(ierr);
+  indices = (int*)PetscMalloc((N+1)*sizeof(int));CHKERRQ(ierr);
   ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(lindices,n,MPI_INT,indices,sizes,offsets,MPI_INT,comm);CHKERRQ(ierr); 
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.26 1999/01/12 23:16:17 bsmith Exp bsmith $";
+!    "$Id: ex6f.F,v 1.27 1999/04/16 16:09:25 bsmith Exp bsmith $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -41,11 +41,11 @@
 !  ksp     - KSP context
 !  x, b, u - approx solution, RHS, exact solution vectors
 !
-      Vec     x, u, b
+      Vec     x,u,b
       Mat     A
       SLES    sles
-      integer i, j, II, JJ, ierr, m, n
-      integer Istart, Iend, flg, nsteps
+      integer i,j,II,JJ,ierr,m,n
+      integer Istart,Iend,flg,nsteps
       Scalar  v
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -79,19 +79,19 @@
         v = -1.0
         i = II/n
         j = II - i*n  
-        if ( i.gt.0 ) then
+        if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( i.lt.m-1 ) then
+        if (i.lt.m-1) then
           JJ = II + n
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( j.gt.0 ) then
+        if (j.gt.0) then
           JJ = II - 1
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( j.lt.n-1 ) then
+        if (j.lt.n-1) then
           JJ = II + 1
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
@@ -162,17 +162,17 @@
 !      A - linear system matrix
 !      A2 - preconditioning matrix
 !
-      Scalar  v, val
-      integer II, ierr, Istart, Iend, count, nsteps, its
+      Scalar  v,val
+      integer II,ierr,Istart,Iend,count,nsteps,its
       Mat     A
       SLES    sles
       KSP     ksp
-      Vec     x, b, u
+      Vec     x,b,u
 
 ! Use common block to retain matrix between successive subroutine calls
       Mat              A2
-      integer          rank, pflag
-      common /my_data/ A2, pflag, rank
+      integer          rank,pflag
+      common /my_data/ A2,pflag,rank
 
 ! First time thorough: Create new matrix to define the linear system
       if (count .eq. 1) then

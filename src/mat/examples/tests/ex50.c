@@ -1,4 +1,4 @@
-/*$Id: ex50.c,v 1.16 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex50.c,v 1.17 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRA(ierr);
   ierr = VecSetFromOptions(b);CHKERRA(ierr);
 
-  for ( row=0; row<n; row++ ) {
+  for (row=0; row<n; row++) {
     fscanf(file,"row %d:",&rowin);
     if (rowin != row) SETERRA(1,0,"Bad file");
     while (fscanf(file," %d %le",&col,&val)) {
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = VecGetArray(b,&array);CHKERRA(ierr);
-  for ( row=0; row<n; row++ ) {
+  for (row=0; row<n; row++) {
     fscanf(file," ii= %d %le",&col,array+row);
   }
   ierr = VecRestoreArray(b,&array);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.68 1999/10/24 14:01:50 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.69 1999/11/05 14:44:46 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "petsc.h"
@@ -59,7 +59,7 @@ int VecRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (VecList) {
-    ierr = FListDestroy( VecList );CHKERRQ(ierr);
+    ierr = FListDestroy(VecList);CHKERRQ(ierr);
     VecList = 0;
   }
   VecRegisterAllCalled = 0;
@@ -120,7 +120,7 @@ int VecRegister(const char sname[],const char path[],const char name[],int (*fun
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -167,7 +167,7 @@ int VecSetType(Vec vec,VecType type_name)
   /* Get the function pointers for the vector requested */
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr =  FListFind(vec->comm, VecList, type_name,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(vec->comm,VecList,type_name,(int (**)(void *)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,1,"Unknown vector type given: %s",type_name);
 

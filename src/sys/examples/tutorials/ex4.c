@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.9 1999/11/05 14:44:32 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.10 1999/11/10 03:18:22 bsmith Exp bsmith $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
@@ -45,7 +45,7 @@ int main(int argc,char **argv)
 #else
   /* just forces string and handle to be used so there are no compiler warnings */
   string = "No dynamic libraries used";
-  handle = (void *) string;
+  handle = (void*)string;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",string);CHKERRA(ierr);
   ierr = PetscStrcmp(string,"Never will happen",&flg);CHKERRA(ierr);
   if (flg) {

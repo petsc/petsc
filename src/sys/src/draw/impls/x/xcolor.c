@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.56 1999/11/17 19:12:28 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.57 1999/11/24 21:52:53 bsmith Exp bsmith $*/
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -11,21 +11,21 @@
 #include "src/sys/src/draw/impls/x/ximpl.h"
 #include <X11/Xatom.h>
 
-static char *(colornames[DRAW_BASIC_COLORS]) = { "white", 
-                                                 "black", 
-                                                 "red", 
-                                                 "green", 
+static char *(colornames[DRAW_BASIC_COLORS]) = { "white",
+                                                 "black",
+                                                 "red",
+                                                 "green",
                                                  "cyan",
                                                  "blue",
-                                                 "magenta", 
+                                                 "magenta",
                                                  "aquamarine",
-                                                 "forestgreen", 
-                                                 "orange", 
+                                                 "forestgreen",
+                                                 "orange",
                                                  "violet",
                                                  "brown",
-                                                 "pink", 
+                                                 "pink",
                                                  "coral",
-                                                 "gray", 
+                                                 "gray",
                                                  "yellow",
                                                  "gold",
                                                  "lightpink",
@@ -44,16 +44,16 @@ static char *(colornames[DRAW_BASIC_COLORS]) = { "white",
                                                  "limegreen",
                                                  "lavenderblush" };
 
-extern int XiInitCmap( Draw_X* );
-extern int XiGetVisualClass( Draw_X * );
+extern int XiInitCmap(Draw_X*);
+extern int XiGetVisualClass(Draw_X *);
 
 /*
    Sets up a color map for a display. This is shared by all the windows
   opened on that display; this is to save time when windows are open so 
   each one does not have to create its own color map which can take 15 to 20 seconds
 
-     This is new code written 2/26/1999 Barry Smith, I hope it can replace
-  some older, rather confusing code.
+     This is new code written 2/26/1999 Barry Smith,I hope it can replace
+  some older,rather confusing code.
 
      The calls to XAllocNamedColor() and XAllocColor() are very slow 
      because we have to request from the X server for each
@@ -74,7 +74,7 @@ static PixVal    gCmapping[256];
 int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   XColor        colordef,ecolordef;
-  unsigned char *red, *green, *blue;
+  unsigned char *red,*green,*blue;
   int           i,ierr,ncolors;
   PetscTruth    fast;
 
@@ -87,7 +87,7 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
 
   /* set the basic colors into the color map */
   for (i=0; i<DRAW_BASIC_COLORS; i++) {
-    XAllocNamedColor(display,gColormap, colornames[i], &colordef,&ecolordef); 
+    XAllocNamedColor(display,gColormap,colornames[i],&colordef,&ecolordef); 
     gCmapping[i] = colordef.pixel;
   }
 
@@ -96,7 +96,7 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
   red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
   green = red   + ncolors;
   blue  = green + ncolors;
-  ierr = DrawUtilitySetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
+  ierr = DrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
@@ -104,11 +104,11 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
       colordef.green  = ((int)green[i-DRAW_BASIC_COLORS] * 65535) / 255;
       colordef.blue   = ((int)blue[i-DRAW_BASIC_COLORS]  * 65535) / 255;
       colordef.flags  = DoRed | DoGreen | DoBlue;
-      XAllocColor( display, gColormap, &colordef ); 
+      XAllocColor(display,gColormap,&colordef); 
       gCmapping[i]   = colordef.pixel;
     }
   }
-  ierr = PetscFree( red );CHKERRQ(ierr);
+  ierr = PetscFree(red);CHKERRQ(ierr);
   PLogInfo(0,"DrawSetUpColormap_Shared:Successfully allocated colors\n");
 
   PetscFunctionReturn(0);
@@ -126,10 +126,10 @@ static int      cmap_base = 0;
 #define __FUNC__ "DrawSetUpColormap_Private"
 int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  Colormap      defaultmap = DefaultColormap( display, screen ); 
+  Colormap      defaultmap = DefaultColormap(display,screen); 
   int           ierr,found,i,ncolors;
   XColor        colordef;
-  unsigned char *red, *green, *blue;
+  unsigned char *red,*green,*blue;
   PetscTruth    fast;
 
   PetscFunctionBegin;
@@ -145,9 +145,9 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
 
   /* set the basic colors into the color map */
   for (i=0; i<DRAW_BASIC_COLORS; i++) {
-    XParseColor( display, gColormap, colornames[i], &colordef );
+    XParseColor(display,gColormap,colornames[i],&colordef);
       /* try to allocate the color in the default-map */
-    found = XAllocColor( display, defaultmap, &colordef ); 
+    found = XAllocColor(display,defaultmap,&colordef); 
     /* use it, if it it exists and is not already used in the new colormap */
     if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
       cmap_pixvalues_used[colordef.pixel] = 1; 
@@ -157,7 +157,7 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
       colordef.pixel                   = cmap_base;
       cmap_pixvalues_used[cmap_base++] = 1;
     }
-    XStoreColor( display, gColormap, &colordef ); 
+    XStoreColor(display,gColormap,&colordef); 
     gCmapping[i] = colordef.pixel;
   }
 
@@ -166,7 +166,7 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
   red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
   green = red   + ncolors;
   blue  = green + ncolors;
-  ierr = DrawUtilitySetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
+  ierr = DrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
@@ -175,7 +175,7 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
       colordef.blue   = ((int)blue[i-DRAW_BASIC_COLORS]  * 65535) / 255;
       colordef.flags  = DoRed | DoGreen | DoBlue;
       /* try to allocate the color in the default-map */
-      found = XAllocColor( display, defaultmap, &colordef ); 
+      found = XAllocColor(display,defaultmap,&colordef); 
       /* use it, if it it exists and is not already used in the new colormap */
       if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
         cmap_pixvalues_used[colordef.pixel] = 1; 
@@ -185,11 +185,11 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
         colordef.pixel                   = cmap_base;
         cmap_pixvalues_used[cmap_base++] = 1;
       }
-      XStoreColor( display, gColormap, &colordef ); 
+      XStoreColor(display,gColormap,&colordef); 
       gCmapping[i]   = colordef.pixel;
     }
   }
-  ierr = PetscFree( red );CHKERRQ(ierr);
+  ierr = PetscFree(red);CHKERRQ(ierr);
   PLogInfo(0,"DrawSetUpColormap_Private:Successfully allocated colors\n");
   PetscFunctionReturn(0);
 }
@@ -207,17 +207,17 @@ int DrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colo
   /* 
      This is wrong; it needs to take the value from the visual 
   */
-  gNumcolors = 1 << DefaultDepth( display, screen);
+  gNumcolors = 1 << DefaultDepth(display,screen);
 
   ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&sharedcolormap);CHKERRQ(ierr);
   /*
         Need to determine if window supports allocating a private colormap,
     if not, set flag to 1
   */
-  if (XMatchVisualInfo(display, screen, 24, StaticColor, &vinfo) ||
-      XMatchVisualInfo(display, screen, 24, TrueColor, &vinfo) ||
-      XMatchVisualInfo(display, screen, 16, StaticColor, &vinfo) ||
-      XMatchVisualInfo(display, screen, 16, TrueColor, &vinfo)) {
+  if (XMatchVisualInfo(display,screen,24,StaticColor,&vinfo) ||
+      XMatchVisualInfo(display,screen,24,TrueColor,&vinfo) ||
+      XMatchVisualInfo(display,screen,16,StaticColor,&vinfo) ||
+      XMatchVisualInfo(display,screen,16,TrueColor,&vinfo)) {
     sharedcolormap = PETSC_TRUE;
   }
 
@@ -246,9 +246,9 @@ int DrawSetColormap_X(Draw_X* XiWin,char *host,Colormap colormap)
     int      screen;
     Visual*  vis;
 
-    display = XOpenDisplay( host );
-    screen  = DefaultScreen( display );
-    vis     = DefaultVisual( display, screen );
+    display = XOpenDisplay(host);
+    screen  = DefaultScreen(display);
+    vis     = DefaultVisual(display,screen);
 
     ierr = DrawSetUpColormap_X(display,screen,vis,colormap);CHKERRQ(ierr);
   }
@@ -260,7 +260,7 @@ int DrawSetColormap_X(Draw_X* XiWin,char *host,Colormap colormap)
 }
 
 /*
-    Color in X is many-layered.  The first layer is the "visual", a
+    Color in X is many-layered.  The first layer is the "visual",a
     immutable attribute of a window set when the window is
     created.
 
@@ -280,31 +280,31 @@ int DrawSetColormap_X(Draw_X* XiWin,char *host,Colormap colormap)
  */
 #undef __FUNC__  
 #define __FUNC__ "XiSetVisualClass" 
-int XiSetVisualClass(Draw_X* XiWin )
+int XiSetVisualClass(Draw_X* XiWin)
 {
   XVisualInfo vinfo;
 
   PetscFunctionBegin;
-  if (XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, DirectColor, &vinfo)) {
+  if (XMatchVisualInfo(XiWin->disp,XiWin->screen,24,DirectColor,&vinfo)) {
     XiWin->vis    = vinfo.visual;
     PetscFunctionReturn(0);
   }
-  if (XMatchVisualInfo( XiWin->disp, XiWin->screen, 8, PseudoColor, &vinfo)) {
+  if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)) {
     XiWin->vis    = vinfo.visual;
     PetscFunctionReturn(0);
   }
-  if (XMatchVisualInfo( XiWin->disp, XiWin->screen,
-    DefaultDepth(XiWin->disp,XiWin->screen), PseudoColor, &vinfo)) {
+  if (XMatchVisualInfo(XiWin->disp,XiWin->screen,
+    DefaultDepth(XiWin->disp,XiWin->screen),PseudoColor,&vinfo)) {
     XiWin->vis    = vinfo.visual;
     PetscFunctionReturn(0);
   }
-  XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
+  XiWin->vis    = DefaultVisual(XiWin->disp,XiWin->screen);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "XiGetVisualClass"
-int XiGetVisualClass(Draw_X* XiWin )
+int XiGetVisualClass(Draw_X* XiWin)
 {
   PetscFunctionBegin;
 #if defined(__cplusplus)
@@ -317,16 +317,16 @@ int XiGetVisualClass(Draw_X* XiWin )
 
 #undef __FUNC__  
 #define __FUNC__ "XiSetColormap" 
-int XiSetColormap(Draw_X* XiWin )
+int XiSetColormap(Draw_X* XiWin)
 {
   PetscFunctionBegin;
-  XSetWindowColormap( XiWin->disp, XiWin->win, XiWin->cmap );
+  XSetWindowColormap(XiWin->disp,XiWin->win,XiWin->cmap);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "XiGetBaseColor" 
-int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix )
+int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix)
 {
   PetscFunctionBegin;
   *white_pix  = XiWin->cmapping[DRAW_WHITE];
@@ -338,19 +338,19 @@ int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix )
 
 /*
     This routine returns the pixel value for the specified color
-    Returns 0 on failure, <>0 otherwise.
+    Returns 0 on failure,<>0 otherwise.
  */
 #undef __FUNC__  
 #define __FUNC__ "XiFindColor" 
-int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
+int XiFindColor(Draw_X *XiWin,char *name,PixVal *pixval)
 {
   XColor   colordef;
   int      st;
 
   PetscFunctionBegin;
-  st = XParseColor( XiWin->disp, XiWin->cmap, name, &colordef );
+  st = XParseColor(XiWin->disp,XiWin->cmap,name,&colordef);
   if (st) {
-    st  = XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
+    st  = XAllocColor(XiWin->disp,XiWin->cmap,&colordef);
     if (st)  *pixval = colordef.pixel;
   }
   PetscFunctionReturn(st);
@@ -358,20 +358,20 @@ int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
 
 /*
     Another real need is to assign "colors" that make sense for
-    a monochrome display, without unduely penalizing color displays.
-    This routine takes a color name, a window, and a flag that
+    a monochrome display,without unduely penalizing color displays.
+    This routine takes a color name,a window, and a flag that
     indicates whether this is "background" or "foreground".
     In the monchrome case (or if the color is otherwise unavailable),
     the "background" or "foreground" colors will be chosen
  */
 #undef __FUNC__  
 #define __FUNC__ "XiGetColor" 
-PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
+PixVal XiGetColor(Draw_X* XiWin,char *name,int is_fore)
 {
   PixVal pixval;
 
   PetscFunctionBegin;
-  if (XiWin->numcolors == 2 || !XiFindColor( XiWin, name, &pixval )) {
+  if (XiWin->numcolors == 2 || !XiFindColor(XiWin,name,&pixval)) {
     pixval  = is_fore ? XiWin->cmapping[DRAW_WHITE] : XiWin->cmapping[DRAW_BLACK];
   }
   PetscFunctionReturn(pixval);
@@ -383,15 +383,15 @@ PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
  */
 #undef __FUNC__  
 #define __FUNC__ "XiSimColor" 
-PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
+PixVal XiSimColor(Draw_X *XiWin,PixVal pixel,int intensity,int is_fore)
 {
-  XColor   colordef, colorsdef;
+  XColor   colordef,colorsdef;
   char     RGBcolor[20];
-  PixVal   red, green, blue;
+  PixVal   red,green,blue;
 
   PetscFunctionBegin;
   colordef.pixel = pixel;
-  XQueryColor( XiWin->disp, XiWin->cmap, &colordef );
+  XQueryColor(XiWin->disp,XiWin->cmap,&colordef);
   /* Adjust the color value up or down.  Get the RGB values for the color */
   red   = colordef.red;
   green = colordef.green;
@@ -408,10 +408,9 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
     green = (green < WHITE_AMOUNT) ? 0 : green - WHITE_AMOUNT;
     blue  = (blue  < WHITE_AMOUNT) ? 0 : blue - WHITE_AMOUNT;
   }
-  sprintf( RGBcolor, "rgb:%4.4x/%4.4x/%4.4x", (unsigned int)red, 
-                     (unsigned int)green, (unsigned int)blue );
-  XLookupColor( XiWin->disp, XiWin->cmap, RGBcolor, &colordef, 
-                     &colorsdef );
+  sprintf(RGBcolor,"rgb:%4.4x/%4.4x/%4.4x",(unsigned int)red,
+                     (unsigned int)green,(unsigned int)blue);
+  XLookupColor(XiWin->disp,XiWin->cmap,RGBcolor,&colordef,&colorsdef);
   PetscFunctionReturn(colorsdef.pixel);
 }
 
@@ -422,7 +421,7 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
 */
 #undef __FUNC__  
 #define __FUNC__ "XiSetCmapLight" 
-int XiSetCmapLight(unsigned char *red, unsigned char *green,unsigned char *blue, int mapsize )
+int XiSetCmapLight(unsigned char *red,unsigned char *green,unsigned char *blue,int mapsize)
 {
   int     i ;
 

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f90.F,v 1.8 1998/04/15 18:02:46 balay Exp balay $";
+!  "$Id: ex1f90.F,v 1.9 1998/06/22 15:46:21 balay Exp bsmith $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
@@ -23,7 +23,7 @@
 #include "finclude/is.h"
 #include "finclude/is.h90"
 
-      integer ierr, indices(5),rank,n
+      integer ierr,indices(5),rank,n
       integer, pointer :: idx(:)
       IS      is
 

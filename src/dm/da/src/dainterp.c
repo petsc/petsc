@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.4 1999/11/24 20:49:27 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.5 1999/11/26 03:59:06 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -9,7 +9,7 @@
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetInterpolation"
-int DAGetInterpolationScale(DA dac, DA daf, Mat mat,Vec *scale)
+int DAGetInterpolationScale(DA dac,DA daf,Mat mat,Vec *scale)
 {
   int    ierr;
   Vec    fine;
@@ -27,11 +27,11 @@ int DAGetInterpolationScale(DA dac, DA daf, Mat mat,Vec *scale)
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetInterpolation_1D_dof"
-int DAGetInterpolation_1D_dof(DA dac, DA daf, Mat *A)
+int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 {
   int      ierr,i,i_start,m_f,Mx,*idx;
   int      m_ghost,*idx_c,m_ghost_c,k,ll;
-  int      row,col,i_start_ghost,mx, m_c, nc,ratio;
+  int      row,col,i_start_ghost,mx,m_c,nc,ratio;
   int      i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   Scalar   v[2],x;
   Mat      mat;
@@ -44,18 +44,18 @@ int DAGetInterpolation_1D_dof(DA dac, DA daf, Mat *A)
 
   ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx);CHKERRQ(ierr);
 
   ierr = DAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = MatCreateMPIAIJ(dac->comm,dof*m_f,dof*m_c,dof*mx,dof*Mx,2*dof,0,0,0,&mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
-  for ( i=i_start; i<i_start+m_f; i++ ) {
+  for (i=i_start; i<i_start+m_f; i++) {
     /* convert to local "natural" numbering and 
        then to PETSc global numbering */
     row    = idx[dof*(i-i_start_ghost)];
@@ -79,32 +79,32 @@ int DAGetInterpolation_1D_dof(DA dac, DA daf, Mat *A)
       cols[nc] = idx_c[col+dof];
       v[nc++]  = x;
     }
-    ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
-    for ( k=1; k<dof; k++ ) {
-      for ( ll=0; ll<nc; ll++ ) {
+    ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+    for (k=1; k<dof; k++) {
+      for (ll=0; ll<nc; ll++) {
         cols[ll]++;
       }
       row++;
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
+      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
     }
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   PLogFlops(5*m_f);
   *A = mat;
-  PetscFunctionReturn(0);;
+  PetscFunctionReturn(0);
 }
 
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNC__  
 #define __FUNC__ "DAGetInterpolation_2D_dof"
-int DAGetInterpolation_2D_dof(DA dac, DA daf, Mat *A)
+int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 {
   int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx,dof,k;
   int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,l,*dnz,*onz;
-  int      row,col,i_start_ghost,j_start_ghost,cols[4],mx, m_c,my, nc,ratio;
+  int      row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratio;
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   Scalar   v[4],x,y;
   Mat      mat;
@@ -118,15 +118,15 @@ int DAGetInterpolation_2D_dof(DA dac, DA daf, Mat *A)
 
   ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx);CHKERRQ(ierr);
 
   ierr = DAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   MatPreallocateInitialize(dac->comm,dof*m_f*n_f,dof*m_c*n_c,dnz,onz);
-  for ( j=j_start; j<j_start+n_f; j++ ) {
-    for ( i=i_start; i<i_start+m_f; i++ ) {
+  for (j=j_start; j<j_start+n_f; j++) {
+    for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
       row    = idx[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
 
@@ -155,7 +155,7 @@ int DAGetInterpolation_2D_dof(DA dac, DA daf, Mat *A)
         cols[nc++] = idx_c[col+(m_ghost_c+1)*dof];
       }
       MatPreallocateSet(row,nc,cols,dnz,onz);
-      for ( k=1; k<dof; k++ ) {
+      for (k=1; k<dof; k++) {
         row++;
         MatPreallocateSet(row,nc,cols,dnz,onz);
       }
@@ -166,8 +166,8 @@ int DAGetInterpolation_2D_dof(DA dac, DA daf, Mat *A)
   ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
-  for ( j=j_start; j<j_start+n_f; j++ ) {
-    for ( i=i_start; i<i_start+m_f; i++ ) {
+  for (j=j_start; j<j_start+n_f; j++) {
+    for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
       row    = idx[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
 
@@ -202,33 +202,33 @@ int DAGetInterpolation_2D_dof(DA dac, DA daf, Mat *A)
         cols[nc] = idx_c[col+(m_ghost_c+1)*dof];
         v[nc++]  = x*y;
       }
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
-      for ( k=1; k<dof; k++ ) {
-        for ( l=0; l<nc; l++ ) {
+      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+      for (k=1; k<dof; k++) {
+        for (l=0; l<nc; l++) {
           cols[l]++;
         }
         row++;
-        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
+        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
       }
     }
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   *A = mat;
   PLogFlops(13*m_f*n_f);
-  PetscFunctionReturn(0);;
+  PetscFunctionReturn(0);
 }
 
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNC__  
 #define __FUNC__ "DAGetInterpolation_3D_dof"
-int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
+int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 {
   int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx,dof,k,l;
   int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
-  int      row,col,i_start_ghost,j_start_ghost,cols[8],mx, m_c,my, nc,ratio;
+  int      row,col,i_start_ghost,j_start_ghost,cols[8],mx,m_c,my,nc,ratio;
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   int      l_start,p_f,l_start_ghost,p_ghost,l_start_c,p_c;
   int      l_start_ghost_c,p_ghost_c,ll,l_c,*dnz,*onz;
@@ -245,18 +245,18 @@ int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
 
   ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx);CHKERRQ(ierr);
 
   ierr = DAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix, determining exact preallocation */
   MatPreallocateInitialize(dac->comm,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dnz,onz);
   /* loop over local fine grid nodes counting interpolating points */
-  for ( l=l_start; l<l_start+p_f; l++ ) {
-    for ( j=j_start; j<j_start+n_f; j++ ) {
-      for ( i=i_start; i<i_start+m_f; i++ ) {
+  for (l=l_start; l<l_start+p_f; l++) {
+    for (j=j_start; j<j_start+n_f; j++) {
+      for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
         row = idx[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
         i_c = (i/ratio);
@@ -293,7 +293,7 @@ int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof];
         }
         MatPreallocateSet(row,nc,cols,dnz,onz);
-        for ( k=1; k<dof; k++ ) {
+        for (k=1; k<dof; k++) {
           row++;
           MatPreallocateSet(row,nc,cols,dnz,onz);
         }
@@ -305,9 +305,9 @@ int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
   ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
-  for ( l=l_start; l<l_start+p_f; l++ ) {
-    for ( j=j_start; j<j_start+n_f; j++ ) {
-      for ( i=i_start; i<i_start+m_f; i++ ) {
+  for (l=l_start; l<l_start+p_f; l++) {
+    for (j=j_start; j<j_start+n_f; j++) {
+      for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
         row = idx[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
 
@@ -365,23 +365,23 @@ int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
           cols[nc] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof];
           v[nc++]  = .125*(1. + (2.0*x-1.))*(1. + (2.0*y-1.))*(1. + (2.0*z-1.));
         }
-        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
-        for ( k=1; k<dof; k++ ) {
-          for ( ll=0; ll<nc; ll++ ) {
+        ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+        for (k=1; k<dof; k++) {
+          for (ll=0; ll<nc; ll++) {
             cols[ll]++;
           }
           row++;
-          ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
+          ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
         }
       }
     }
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   *A = mat;
   PLogFlops(13*m_f*n_f);
-  PetscFunctionReturn(0);;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -407,7 +407,7 @@ int DAGetInterpolation_3D_dof(DA dac, DA daf, Mat *A)
 
 .seealso: DARefine()
 @*/
-int DAGetInterpolation(DA dac,DA daf, Mat *A,Vec *scale)
+int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 {
   int            ierr,dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
   DAPeriodicType wrapc,wrapf;
@@ -429,7 +429,7 @@ int DAGetInterpolation(DA dac,DA daf, Mat *A,Vec *scale)
   if (wrapc != wrapf) SETERRQ(1,1,"Periodic type different in two DAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(1,1,"Stencil type different in two DAs");CHKERRQ(ierr);
 
-  if (dimc == 1 && dofc == 1 && wrapc == DA_NONPERIODIC) {
+  if (dimc == 1 && wrapc == DA_NONPERIODIC) {
     ierr = DAGetInterpolation_1D_dof(dac,daf,A);CHKERRQ(ierr);
   } else if (dimc == 2 && wrapc == DA_NONPERIODIC) {
     ierr = DAGetInterpolation_2D_dof(dac,daf,A);CHKERRQ(ierr);

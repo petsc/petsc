@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.45 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.46 1999/11/10 03:18:02 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -14,7 +14,7 @@
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectDestroy((PetscObject) mat);
+         PetscObjectDestroy((PetscObject)mat);
 
    Level: intermediate
 
@@ -45,7 +45,7 @@ int PetscObjectDestroy(PetscObject obj)
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectView((PetscObject) mat,viewer);
+         PetscObjectView((PetscObject)mat,viewer);
 -  viewer - any PETSc viewer
 
    Level: intermediate
@@ -79,7 +79,7 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectDestroy((PetscObject) mat);
+         PetscObjectDestroy((PetscObject)mat);
 -  type_name - string containing a type name
 
    Output Parameter:

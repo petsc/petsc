@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex20.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -8,8 +8,8 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat        C, A; 
-  int        i, j, m = 5, n = 4, I, J, ierr, rank;
+  Mat        C,A; 
+  int        i,j,m = 5,n = 4,I,J,ierr,rank;
   PetscTruth set;
   Scalar     v;
   MatType    mtype;
@@ -19,13 +19,13 @@ int main(int argc,char **args)
 
  /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) { 
-    for ( j=2*rank; j<2*rank+2; j++ ) {
+  for (i=0; i<m; i++) { 
+    for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }

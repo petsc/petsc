@@ -1,4 +1,4 @@
-/*$Id: ex29.c,v 1.8 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex29.c,v 1.9 1999/11/05 14:44:58 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
 where atleast a couple of mallocs will occur in the stash code.\n\n";
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n*bs,&x);CHKERRA(ierr);
   ierr = VecSetBlockSize(x,bs);CHKERRA(ierr);
 
-  for ( i=0; i<n*bs; i++ ) {
+  for (i=0; i<n*bs; i++) {
     val  = i*1.0;
     ierr = VecSetValues(x,1,&i,&val,INSERT_VALUES);CHKERRA(ierr);
   }
@@ -34,8 +34,8 @@ int main(int argc,char **argv)
   /* Now do the blocksetvalues */
   ierr = VecSet(&zero,x);CHKERRQ(ierr);
   vals = (Scalar *)PetscMalloc(bs*sizeof(Scalar));CHKPTRA(vals);
-  for ( i=0; i<n; i++ ) {
-    for ( j=0; j<bs; j++ ) {
+  for (i=0; i<n; i++) {
+    for (j=0; j<bs; j++) {
       vals[j] = (i*bs+j)*1.0;
     }
     ierr = VecSetValuesBlocked(x,1,&i,vals,INSERT_VALUES);CHKERRA(ierr);

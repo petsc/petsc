@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.36 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.38 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 
@@ -9,8 +9,8 @@ static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 6, ierr, loc[6] = {0,1,2,3,4,5};
-  Scalar        two = 2.0, vals[6] = {10,11,12,13,14,15};
+  int           n = 6,ierr,loc[6] = {0,1,2,3,4,5};
+  Scalar        two = 2.0,vals[6] = {10,11,12,13,14,15};
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_SELF,3,1,2,&is2);CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES);CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"----\n");CHKERRA(ierr);
   ierr = VecSet(&two,y);CHKERRA(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);

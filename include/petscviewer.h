@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.71 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.72 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -39,10 +39,10 @@ extern int ViewerSetFromOptions(Viewer);
 
 
 extern int ViewerASCIIOpen(MPI_Comm,const char[],Viewer*);
-typedef enum {BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
+typedef enum {BINARY_RDONLY,BINARY_WRONLY,BINARY_CREATE} ViewerBinaryType;
 extern int ViewerBinaryOpen(MPI_Comm,const char[],ViewerBinaryType,Viewer*);
 extern int ViewerSocketOpen(MPI_Comm,const char[],int,Viewer*);
-extern int ViewerStringOpen(MPI_Comm,char[],int, Viewer*);
+extern int ViewerStringOpen(MPI_Comm,char[],int,Viewer*);
 extern int ViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,Viewer*);
 extern int ViewerAMSSetCommName(Viewer,const char[]);
 
@@ -162,7 +162,7 @@ extern int    ViewerInitializeAMSWorld_Private(void);
    by users.
 */
 extern int  ViewerSocketPutScalar_Private(Viewer,int,int,Scalar*);
-extern int  ViewerSocketPutDouble_Private(Viewer,int,int,double*);
+extern int  ViewerSocketPutReal_Private(Viewer,int,int,double*);
 extern int  ViewerSocketPutInt_Private(Viewer,int,int*);
 extern int  ViewerSocketPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
 extern int  ViewerInitializeASCII_Private(void);

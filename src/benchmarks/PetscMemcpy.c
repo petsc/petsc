@@ -1,19 +1,19 @@
-/*$Id: PetscMemcpy.c,v 1.13 1999/05/04 20:38:02 balay Exp bsmith $*/
+/*$Id: PetscMemcpy.c,v 1.14 1999/10/24 14:04:16 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv)
+int main(int argc,char **argv)
 {
-  PLogDouble x, y, z;
+  PLogDouble x,y,z;
   int        i,ierr;
-  Scalar     *A, *B;
+  Scalar     *A,*B;
 
-  PetscInitialize(&argc, &argv,0,0);
+  PetscInitialize(&argc,&argv,0,0);
 
-  A = (Scalar *) PetscMalloc(8000000*sizeof(Scalar));
-  B = (Scalar *) PetscMalloc(8000000*sizeof(Scalar));
+  A = (Scalar*)PetscMalloc(8000000*sizeof(Scalar));
+  B = (Scalar*)PetscMalloc(8000000*sizeof(Scalar));
 
   for (i=0; i<8000000; i++) {
     A[i] = i%61897;
@@ -36,8 +36,8 @@ int main( int argc, char **argv)
   PetscMemcpy(A,B,sizeof(Scalar)*8000000);
   PetscMemcpy(A,B,sizeof(Scalar)*8000000); */
   { int j;
-  for (j = 0; j<10; j++ ) {
-    for ( i=0; i<8000000; i++) {
+  for (j = 0; j<10; j++) {
+    for (i=0; i<8000000; i++) {
       B[i] = A[i];
     }
   }}

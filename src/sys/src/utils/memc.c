@@ -1,6 +1,6 @@
-/*$Id: memc.c,v 1.57 1999/12/21 21:10:02 bsmith Exp bsmith $*/
+/*$Id: memc.c,v 1.58 1999/12/21 21:16:29 bsmith Exp bsmith $*/
 /*
-    We define the memory operations here. The reason we just don't use 
+    We define the memory operations here. The reason we just do not use 
   the standard memory routines in the PETSc code is that on some machines 
   they are broken.
 
@@ -20,7 +20,7 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 #include "bitarray.h"
 
 #undef __FUNC__  
@@ -55,7 +55,7 @@
 @*/
 int PetscMemcpy(void *a,const void *b,int n)
 {
-  unsigned long al = (unsigned long) a, bl = (unsigned long) b;
+  unsigned long al = (unsigned long) a,bl = (unsigned long) b;
   unsigned long nl = (unsigned long) n;
 
   PetscFunctionBegin;
@@ -112,7 +112,7 @@ int PetscMemcpy(void *a,const void *b,int n)
 @*/
 int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtype)
 {
-  char *aa = (char *)a, *bb = (char *)b;
+  char *aa = (char *)a,*bb = (char *)b;
   int  dsize,ierr;
 
   PetscFunctionBegin;
@@ -120,9 +120,9 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
     ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
     ierr = PetscMemcpy(aa+ai*dsize,bb+bi*dsize,bs*dsize);CHKERRQ(ierr);
   } else {
-    PetscBT at = (PetscBT) a, bt = (PetscBT) b;
+    PetscBT at = (PetscBT) a,bt = (PetscBT) b;
     int i;
-    for ( i=0; i<bs; i++ ) {
+    for (i=0; i<bs; i++) {
       if (PetscBTLookup(bt,bi+i)) PetscBTSet(at,ai+i);
       else                        PetscBTClear(at,ai+i);
     }
@@ -176,7 +176,7 @@ int PetscMemzero(void *a,int n)
 +  str1 - Pointer to the first byte stream
 .  str2 - Pointer to the second byte stream
 -  len  - The length of the byte stream
-         (both str1 and str2 are assumed to be of length 'len')
+         (both str1 and str2 are assumed to be of length len)
 
    Output Parameters:
 .   e - PETSC_TRUE if equal else PETSC_FALSE.
@@ -186,12 +186,12 @@ int PetscMemzero(void *a,int n)
    Note: 
    This routine is anologous to memcmp()
 @*/
-int PetscMemcmp(const void *str1,const void *str2, int len,PetscTruth *e)
+int PetscMemcmp(const void *str1,const void *str2,int len,PetscTruth *e)
 {
   int r;
 
   PetscFunctionBegin;
-  r = memcmp((char *)str1, (char *)str2, len);
+  r = memcmp((char *)str1,(char *)str2,len);
   if (!r) *e = PETSC_TRUE;
   else    *e = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -230,17 +230,17 @@ int PetscMemmove(void *a,void *b,int n)
 #if !defined(PETSC_HAVE_MEMMOVE)
   if (a < b) {
     if (a <= b - n) {
-      memcpy(a, b, n);
+      memcpy(a,b,n);
     } else {
-      memcpy(a, b, (int) (b - a));
-      PetscMemmove(b, b + (int) (b - a), n - (int) (b - a));
+      memcpy(a,b,(int)(b - a));
+      PetscMemmove(b,b + (int)(b - a),n - (int)(b - a));
     }
   }  else {
     if (b <= a - n) {
-      memcpy(a, b, n);
+      memcpy(a,b,n);
     } else {
-      memcpy(b + n, b + (n - (int) (a - b)), (int) (a - b));
-      PetscMemmove(a, b, n - (int) (a - b));
+      memcpy(b + n,b + (n - (int)(a - b)),(int)(a - b));
+      PetscMemmove(a,b,n - (int)(a - b));
     }
   }
 #else

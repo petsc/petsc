@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.56 1999/11/05 14:46:58 bsmith Exp bsmith $";
+!    "$Id: ex2f.F,v 1.57 1999/11/24 21:55:05 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -85,11 +85,11 @@
 !  See the Fortran section of the PETSc users manual for details.
 !  
       double precision  norm
-      integer     i, j, II, JJ, ierr, m, n
-      integer     rank, size, its, Istart, Iend
+      integer     i,j,II,JJ,ierr,m,n
+      integer     rank,size,its,Istart,Iend
       PetscTruth  flg
-      Scalar      v, one, neg_one
-      Vec         x, b, u
+      Scalar      v,one,neg_one
+      Vec         x,b,u
       Mat         A 
       SLES        sles
       KSP         ksp
@@ -155,19 +155,19 @@
         v = -1.0
         i = II/n
         j = II - i*n  
-        if ( i.gt.0 ) then
+        if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
         endif
-        if ( i.lt.m-1 ) then
+        if (i.lt.m-1) then
           JJ = II + n
           call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
         endif
-        if ( j.gt.0 ) then
+        if (j.gt.0) then
           JJ = II - 1
           call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
         endif
-        if ( j.lt.n-1 ) then
+        if (j.lt.n-1) then
           JJ = II + 1
           call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
         endif
@@ -301,13 +301,13 @@
       call VecNorm(x,NORM_2,norm,ierr)
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
-           write(6,100) norm, its
+           write(6,100) norm,its
         else
            write(6,110) its
         endif
       endif
   100 format('Norm of error ',e10.4,' iterations ',i5)
-  110 format('Norm of error < 1.e-12, iterations ',i5)
+  110 format('Norm of error < 1.e-12,iterations ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
@@ -347,7 +347,7 @@
 
       KSP              ksp
       Vec              x
-      integer          ierr, n, dummy, rank
+      integer          ierr,n,dummy,rank
       double precision rnorm
 
 !  Build the solution vector
@@ -362,7 +362,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (rank .eq. 0) write(6,100) n
       call VecView(x,VIEWER_STDOUT_WORLD,ierr)
-      if (rank .eq. 0) write(6,200) n, rnorm
+      if (rank .eq. 0) write(6,200) n,rnorm
 
  100  format('iteration ',i5,' solution vector:')
  200  format('iteration ',i5,' residual norm ',e10.4)
@@ -388,7 +388,7 @@
 #include "include/finclude/ksp.h"
 
       KSP              ksp
-      integer          ierr, n, dummy, flag
+      integer          ierr,n,dummy,flag
       double precision rnorm
 
       if (rnorm .le. .05) then 

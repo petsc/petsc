@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.38 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.40 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
 
@@ -9,8 +9,8 @@ static char help[] = "Demonstrates a scatter with a stride and general index set
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 6, ierr, idx1[3] = {0,1,2}, loc[6] = {0,1,2,3,4,5};
-  Scalar        two = 2.0, vals[6] = {10,11,12,13,14,15};
+  int           n = 6,ierr,idx1[3] = {0,1,2},loc[6] = {0,1,2,3,4,5};
+  Scalar        two = 2.0,vals[6] = {10,11,12,13,14,15};
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

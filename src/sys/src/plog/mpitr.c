@@ -1,4 +1,4 @@
-/*$Id: mpitr.c,v 1.20 1999/10/13 20:36:50 bsmith Exp bsmith $*/
+/*$Id: mpitr.c,v 1.21 1999/10/24 14:01:36 bsmith Exp bsmith $*/
 
 /*
     Code for tracing mistakes in MPI usage. For example, sends that are never received,
@@ -39,14 +39,14 @@ int PetscMPIDump(FILE *fd)
   if (!fd) fd = stderr;
    
   /* Did we wait on all the non-blocking sends and receives? */
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1 );CHKERRQ(ierr);
+  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   if (irecv_ct + isend_ct != sum_of_waits_ct) {
     fprintf(fd,"[%d]You have not waited on all non-blocking sends and receives",rank);
     fprintf(fd,"[%d]Number non-blocking sends %g receives %g number of waits %g\n",rank,isend_ct,
             irecv_ct,sum_of_waits_ct);
     fflush(fd);
   }
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1 );CHKERRQ(ierr);
+  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   /* Did we receive all the messages that we sent? */
   work = irecv_ct + recv_ct;
   ierr = MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);

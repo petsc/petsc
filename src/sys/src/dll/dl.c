@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.54 1999/11/10 03:17:56 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.55 1999/11/24 21:53:00 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -6,6 +6,7 @@
 
 #include "petsc.h"
 #include "sys.h"
+#include "petscfix.h"
 #include "pinclude/ptime.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
@@ -35,7 +36,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
@@ -90,7 +91,7 @@ int DLLibraryPrintPath(void)
 @*/
 int DLLibraryGetInfo(void *handle,char *type,char **mess)
 {
-  int  ierr, (*sfunc)(const char *,const char*,char **);
+  int  ierr,(*sfunc)(const char *,const char*,char **);
 
   PetscFunctionBegin;
   sfunc   = (int (*)(const char *,const char*,char **)) dlsym(handle,"DLLibraryInfo");
@@ -122,12 +123,14 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
-   $PETSC_ARCH and $BOPT occuring in directoryname and filename 
+   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in directoryname and filename 
    will be replaced with appropriate values.
 @*/
 int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
-  char       *par2,*par3,arch[10],buff[10],*en,*gz,*tpar2;
+  char       *par2,buff[10],*en,*gz;
+  char       *r[] = {"$PETSC_ARCH","$BOPT","$PETSC_DIR","$PETSC_LDIR",0};
+  char       *s[] = {PETSC_ARCH_NAME,PETSC_BOPT,PETSC_DIR,PETSC_LDIR,0};
   int        ierr,len1,len2,len;
   PetscTruth tflg,flg;
 
@@ -138,54 +141,10 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
   ierr   = PetscStrlen(libname,&len);CHKERRQ(ierr);
-  par2   = (char *) PetscMalloc((1024)*sizeof(char));CHKPTRQ(par2);
-  tpar2  = (char *) PetscMalloc((1024)*sizeof(char));CHKPTRQ(tpar2);
-  ierr   = PetscStrcpy(par2,libname);CHKERRQ(ierr);
-  
-  ierr = PetscStrstr(par2,"$PETSC_ARCH",&par3);CHKERRQ(ierr);
-  while (par3) {
-    *par3  =  0;
-    par3  += 11;
-    ierr   = PetscGetArchType(arch,10);
-    ierr   = PetscStrcpy(tpar2,par2);CHKERRQ(ierr);
-    ierr   = PetscStrcat(tpar2,arch);CHKERRQ(ierr);
-    ierr   = PetscStrcat(tpar2,par3);CHKERRQ(ierr);
-    ierr   = PetscStrcpy(par2,tpar2);CHKERRQ(ierr);
-    ierr   = PetscStrstr(par2,"$PETSC_ARCH",&par3);CHKERRQ(ierr);
-  }
+  len    = PetscMax(4*len,1024);
+  par2   = (char*)PetscMalloc(len*sizeof(char));CHKPTRQ(par2);
 
-  ierr = PetscStrstr(par2,"$BOPT",&par3);CHKERRQ(ierr);
-  while (par3) {
-    *par3  =  0;
-    par3  += 5;
-    ierr   = PetscStrcpy(tpar2,par2);CHKERRQ(ierr);
-    ierr   = PetscStrcat(tpar2,PETSC_BOPT);CHKERRQ(ierr);
-    ierr   = PetscStrcat(tpar2,par3);CHKERRQ(ierr);
-    ierr   = PetscStrcpy(par2,tpar2);CHKERRQ(ierr);
-    ierr   = PetscStrstr(par2,"$BOPT",&par3);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrstr(par2,"$PETSC_DIR",&par3);CHKERRQ(ierr);
-  while (par3) {
-    *par3  =  0;
-    par3  += 10;
-    ierr   = PetscStrcpy(tpar2,par2);CHKERRQ(ierr);
-    ierr   = PetscStrcat(tpar2,PETSC_DIR);CHKERRQ(ierr);
-    ierr   = PetscStrcat(tpar2,par3);CHKERRQ(ierr);
-    ierr   = PetscStrcpy(par2,tpar2);CHKERRQ(ierr);
-    ierr   = PetscStrstr(par2,"$PETSC_DIR",&par3);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrstr(par2,"$PETSC_LDIR",&par3);CHKERRQ(ierr);
-  while (par3) {
-    *par3  =  0;
-    par3  += 11;
-    ierr   = PetscStrcpy(tpar2,par2);CHKERRQ(ierr);
-    ierr   = PetscStrcat(tpar2,PETSC_LDIR);CHKERRQ(ierr);
-    ierr   = PetscStrcat(tpar2,par3);CHKERRQ(ierr);
-    ierr   = PetscStrcpy(par2,tpar2);CHKERRQ(ierr);
-    ierr   = PetscStrstr(par2,"$PETSC_LDIR",&par3);CHKERRQ(ierr);
-  }
+  ierr = PetscStrreplace(libname,par2,len,r,s);CHKERRQ(ierr);
 
   /* 
      Remove any file: header
@@ -231,7 +190,6 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
 
   ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
   ierr = PetscFree(par2);CHKERRQ(ierr);
-  ierr = PetscFree(tpar2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -265,7 +223,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 
   PetscFunctionBegin;
 
-  par2 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par2);
+  par2 = (char*)PetscMalloc(1024*sizeof(char));CHKPTRQ(par2);
   ierr = DLLibraryRetrieve(comm,libname,par2,1024,&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
     SETERRQ1(1,1,"Unable to locate dynamic library:\n  %s\n",libname);
@@ -350,7 +308,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 
 @*/
 int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
-                 const char insymbol[], void **value)
+                 const char insymbol[],void **value)
 {
   char          *par1,*symbol;
   int           ierr,len;
@@ -361,7 +319,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
 
   /* make copy of symbol so we can edit it in place */
   ierr   = PetscStrlen(insymbol,&len);CHKERRQ(ierr);
-  symbol = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(symbol);
+  symbol = (char*)PetscMalloc((len+1)*sizeof(char));CHKPTRQ(symbol);
   ierr   = PetscStrcpy(symbol,insymbol);CHKERRQ(ierr);
 
   /* 

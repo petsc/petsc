@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.10 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 3, n = 3, I, J, ierr;
+  int         i,j,m = 3,n = 3,I,J,ierr;
   Scalar      v;
   MatInfo     info;
 
@@ -19,8 +19,8 @@ int main(int argc,char **args)
 
   /* create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
       if (i>0)   {J=I-n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       if (i<m-1) {J=I+n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}

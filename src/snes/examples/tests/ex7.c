@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.48 1999/10/24 14:03:39 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.49 1999/11/05 14:47:16 bsmith Exp bsmith $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -20,18 +20,18 @@ typedef struct {
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES         snes;                 /* SNES context */
   SNESType     type = SNESEQLS;      /* default nonlinear solution method */
-  Vec          x, r, F, U;           /* vectors */
-  Mat          J, B;                 /* Jacobian matrix-free, explicit preconditioner */
+  Vec          x,r,F,U;           /* vectors */
+  Mat          J,B;                 /* Jacobian matrix-free, explicit preconditioner */
   MonitorCtx   monP;                 /* monitoring context */
   AppCtx       user;                 /* user-defined work context */
-  Scalar       h, xp = 0.0, v;
-  int          ierr, its, n = 5, i;
+  Scalar       h,xp = 0.0,v;
+  int          ierr,its,n = 5,i;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
   h = 1.0/(n-1);
 
@@ -49,7 +49,7 @@ int main( int argc, char **argv )
   user.precond = B;
 
   /* Store right-hand-side of PDE and exact solution */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     v = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
     v= xp*xp*xp;
@@ -73,7 +73,7 @@ int main( int argc, char **argv )
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(x);CHKERRA(ierr);  ierr = VecDestroy(r);CHKERRA(ierr);
@@ -89,16 +89,16 @@ int main( int argc, char **argv )
 
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  Scalar *xx, *ff,*FF,d;
-  int    i, ierr, n;
+  Scalar *xx,*ff,*FF,d;
+  int    i,ierr,n;
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
   ierr = VecGetArray((Vec) dummy,&FF);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  d = (double) (n - 1); d = d*d;
+  d = (double)(n - 1); d = d*d;
   ff[0]   = xx[0];
-  for ( i=1; i<n-1; i++ ) {
+  for (i=1; i<n-1; i++) {
     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   }
   ff[n-1] = xx[n-1] - 1.0;
@@ -128,8 +128,8 @@ int FormInitialGuess(SNES snes,Vec x)
 
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
-  Scalar *xx, A[3], d;
-  int    i, n, j[3], ierr, iter;
+  Scalar *xx,A[3],d;
+  int    i,n,j[3],ierr,iter;
   AppCtx *user = (AppCtx*) dummy;
 
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     /* do nothing with Jac since it is Matrix-free */
     i = 0; A[0] = 1.0; 
     ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-    for ( i=1; i<n-1; i++ ) {
+    for (i=1; i<n-1; i++) {
       j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
       A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
       ierr = MatSetValues(*B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   MPI_Comm   comm;
 
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,stdout, "iter = %d, SNES Function norm %g \n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,stdout,"iter = %d, SNES Function norm %g \n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;

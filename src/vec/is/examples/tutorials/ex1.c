@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.13 1999/06/30 23:50:12 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.15 1999/10/24 14:01:48 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
 
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
      Create an index set with 5 entries. Each processor creates
    its own index set with its own list of integers.
   */
-  indices = (int *) PetscMalloc( 5*sizeof(int) );CHKPTRA(indices);
+  indices = (int*)PetscMalloc(5*sizeof(int));CHKPTRA(indices);
   indices[0] = rank + 1; 
   indices[1] = rank + 2; 
   indices[2] = rank + 3; 

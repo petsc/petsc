@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.59 1999/11/05 14:46:47 bsmith Exp bsmith $*/
+/*$Id: lsqr.c,v 1.60 1999/11/24 21:54:55 bsmith Exp bsmith $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -12,7 +12,7 @@
 #include "src/sles/ksp/kspimpl.h"
 
 typedef struct {
-  int  nwork_n, nwork_m; 
+  int  nwork_n,nwork_m; 
   Vec  *vwork_m;  /* work vectors of length m, where the system is size m x n */
   Vec  *vwork_n;  /* work vectors of length m */
 } KSP_LSQR;
@@ -21,8 +21,8 @@ typedef struct {
 #define __FUNC__ "KSPSetUp_LSQR"
 static int KSPSetUp_LSQR(KSP ksp)
 {
-  int ierr, nw;
-  KSP_LSQR *lsqr = (KSP_LSQR *) ksp->data;
+  int      ierr,nw;
+  KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
@@ -51,13 +51,13 @@ static int KSPSetUp_LSQR(KSP ksp)
 #define __FUNC__ "KSPSolve_LSQR"
 static int KSPSolve_LSQR(KSP ksp,int *its)
 {
-  int          i, maxit, cerr = 0, ierr;
-  Scalar       rho, rhobar, phi, phibar, theta, c, s,tmp, zero = 0.0,mone=-1.0;
-  double       beta, alpha, rnorm;
+  int          i,maxit,ierr;
+  Scalar       rho,rhobar,phi,phibar,theta,c,s,tmp,zero = 0.0,mone=-1.0;
+  PetscReal    beta,alpha,rnorm;
   Vec          X,B,V,V1,U,U1,TMP,W;
-  Mat          Amat, Pmat;
+  Mat          Amat,Pmat;
   MatStructure pflag;
-  KSP_LSQR     *lsqr = (KSP_LSQR *) ksp->data;
+  KSP_LSQR     *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
@@ -74,11 +74,6 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   V        = lsqr->vwork_n[1];
   V1       = lsqr->vwork_n[2];
 
-  /* BINVF    = lsqr->work[5];*/
-
-  /* Compute initial preconditioned residual */
-  /* ierr = KSPResidual(ksp,X,V,U, W,BINVF,B);CHKERRQ(ierr); */
-
   /* Compute initial residual, temporarily use work vector u */
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,U);CHKERRQ(ierr);       /*   u <- b - Ax     */
@@ -93,7 +88,8 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   ksp->its   = 0;
   ksp->rnorm = rnorm;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; PetscFunctionReturn(0);}
+  ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
   KSPLogResidualHistory(ksp,rnorm);
   KSPMonitor(ksp,0,rnorm);
 
@@ -135,7 +131,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     ierr = VecAYPX(&tmp,V1,W);CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
 #if defined(PETSC_USE_COMPLEX)
-    rnorm = PetscReal(phibar);
+    rnorm = PetscRealPart(phibar);
 #else
     rnorm = phibar;
 #endif
@@ -146,17 +142,19 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i+1,rnorm);
-    cerr = (*ksp->converged)(ksp,i+1,rnorm,ksp->cnvP);
-    if (cerr) break;
-    SWAP( U1, U, TMP );
-    SWAP( V1, V, TMP );
+    ierr = (*ksp->converged)(ksp,i+1,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) break;
+    SWAP(U1,U,TMP);
+    SWAP(V1,V,TMP);
   }
-  if (i == maxit) i--;
+  if (i == maxit) {
+    i--;
+    ksp->reason = KSP_DIVERGED_ITS;
+  }
 
   /* ierr = KSPUnwindPreconditioner(ksp,X,W);CHKERRQ(ierr); */
 
-  if (cerr <= 0) *its = -(i+1);
-  else          *its = i + 1;
+  *its = i + 1;
   PetscFunctionReturn(0);
 }
 
@@ -164,7 +162,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 #define __FUNC__ "KSPDestroy_LSQR" 
 int KSPDestroy_LSQR(KSP ksp)
 {
-  KSP_LSQR *lsqr = (KSP_LSQR *) ksp->data;
+  KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
   int      ierr;
 
   PetscFunctionBegin;
@@ -176,7 +174,7 @@ int KSPDestroy_LSQR(KSP ksp)
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
-  ierr = PetscFree(lsqr); CHKERRQ(ierr);
+  ierr = PetscFree(lsqr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -189,18 +187,18 @@ int KSPCreate_LSQR(KSP ksp)
   int      ierr;
 
   PetscFunctionBegin;
-  lsqr = (KSP_LSQR*) PetscMalloc(sizeof(KSP_LSQR));CHKPTRQ(lsqr);
+  lsqr = (KSP_LSQR*)PetscMalloc(sizeof(KSP_LSQR));CHKPTRQ(lsqr);
   ierr = PetscMemzero(lsqr,sizeof(KSP_LSQR));CHKERRQ(ierr);
   PLogObjectMemory(ksp,sizeof(KSP_LSQR));
-  ksp->data                      = (void *) lsqr;
+  ksp->data                      = (void*)lsqr;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = 1;
-  ksp->guess_zero                = 1; 
+  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_LSQR;
   ksp->ops->solve                = KSPSolve_LSQR;
   ksp->ops->destroy              = KSPDestroy_LSQR;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions       = 0;
   ksp->ops->view                 = 0;
   PetscFunctionReturn(0);
 }

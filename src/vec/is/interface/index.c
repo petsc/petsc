@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.67 1999/10/13 20:36:55 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.69 1999/10/24 14:01:43 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -319,7 +319,7 @@ int ISRestoreIndices(IS is,int *ptr[])
 
 .seealso: ViewerASCIIOpen()
 @*/
-int ISView(IS is, Viewer viewer)
+int ISView(IS is,Viewer viewer)
 {
   int ierr;
 
@@ -379,14 +379,14 @@ int ISSort(IS is)
 
 .seealso: ISSort()
 @*/
-int ISSorted(IS is, PetscTruth *flg)
+int ISSorted(IS is,PetscTruth *flg)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(flg);
-  ierr = (*is->ops->sorted)(is, flg);CHKERRQ(ierr);
+  ierr = (*is->ops->sorted)(is,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -409,14 +409,14 @@ int ISSorted(IS is, PetscTruth *flg)
 
 .seealso: ISCreateGeneral()
 @*/
-int ISDuplicate(IS is, IS *newIS)
+int ISDuplicate(IS is,IS *newIS)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is, IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(newIS);
-  ierr = (*is->ops->duplicate)(is, newIS);CHKERRQ(ierr);
+  ierr = (*is->ops->duplicate)(is,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

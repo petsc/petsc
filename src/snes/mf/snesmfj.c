@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.98 1999/10/24 14:03:33 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.99 1999/11/05 14:47:08 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
@@ -30,7 +30,7 @@ int   MatSNESMFRegisterAllCalled = 0;
 @*/
 int MatSNESMFSetType(Mat mat,char *ftype)
 {
-  int          ierr, (*r)(MatSNESMFCtx);
+  int          ierr,(*r)(MatSNESMFCtx);
   MatSNESMFCtx ctx;
   PetscTruth   match;
   
@@ -52,7 +52,7 @@ int MatSNESMFSetType(Mat mat,char *ftype)
   /* Get the function pointers for the requrested method */
   if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr =  FListFind(ctx->comm, MatSNESMFList, ftype,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(ctx->comm,MatSNESMFList,ftype,(int (**)(void *)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ(1,1,"Unknown MatSNESMF type given");
 
@@ -109,7 +109,7 @@ int MatSNESMFRegister(char *sname,char *path,char *name,int (*function)(MatSNESM
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&MatSNESMFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -135,7 +135,7 @@ int MatSNESMFRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatSNESMFList) {
-    ierr = FListDestroy( MatSNESMFList );CHKERRQ(ierr);
+    ierr = FListDestroy(MatSNESMFList);CHKERRQ(ierr);
     MatSNESMFList = 0;
   }
   MatSNESMFRegisterAllCalled = 0;
@@ -212,7 +212,7 @@ int MatSNESMFAssemblyEnd_Private(Mat J)
   MatSNESMFMult_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
 
-        y ~= ( F(u + ha) - F(u) )/h, 
+        y ~= (F(u + ha) - F(u))/h, 
   where F = nonlinear function, as set by SNESSetFunction()
         u = current iterate
         h = difference interval
@@ -221,9 +221,9 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 {
   MatSNESMFCtx ctx;
   SNES           snes;
-  Scalar         h, mone = -1.0;
+  Scalar         h,mone = -1.0;
   Vec            w,U,F;
-  int            ierr, (*eval_fct)(SNES,Vec,Vec)=0;
+  int            ierr,(*eval_fct)(SNES,Vec,Vec)=0;
 
   PetscFunctionBegin;
   /* We log matrix-free matrix-vector products separately, so that we can
@@ -249,7 +249,7 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
-  PLogInfo(mat,"Current differencing parameter: %g + %g i\n",PetscReal(h),PetscImaginary(h));
+  PLogInfo(mat,"Current differencing parameter: %g + %g i\n",PetscRealPart(h),PetscImaginaryPart(h));
 #else
   PLogInfo(mat,"Current differencing parameter: %g\n",h);
 #endif
@@ -342,23 +342,25 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
           MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic)
  
 @*/
-int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
+int MatCreateSNESMF(SNES snes,Vec x,Mat *J)
 {
   MPI_Comm     comm;
   MatSNESMFCtx mfctx;
-  int          n, nloc, ierr;
+  int          n,nloc,ierr;
 
   PetscFunctionBegin;
   PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",snes->comm,MatSNESMFDestroy_Private,MatSNESMFView_Private);
   PLogObjectCreate(mfctx);
-  mfctx->sp           = 0;
-  mfctx->snes         = snes;
-  mfctx->error_rel    = 1.e-8; /* assumes double precision */
-  mfctx->currenth     = 0.0;
-  mfctx->historyh     = PETSC_NULL;
-  mfctx->ncurrenth    = 0;
-  mfctx->maxcurrenth  = 0;
-  mfctx->type_name    = 0;
+  mfctx->sp              = 0;
+  mfctx->snes            = snes;
+  mfctx->error_rel       = 1.e-8; /* assumes PetscReal precision */
+  mfctx->recomputeperiod = 1;
+  mfctx->count           = 0;
+  mfctx->currenth        = 0.0;
+  mfctx->historyh        = PETSC_NULL;
+  mfctx->ncurrenth       = 0;
+  mfctx->maxcurrenth     = 0;
+  mfctx->type_name       = 0;
 
   /* 
      Create the empty data structure to contain compute-h routines.
@@ -409,6 +411,7 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
    Options Database Keys:
 +  -snes_mf_type - <default,wp>
 -  -snes_mf_err - square root of estimated relative error in function evaluation
+-  -snes_mf_period - how often h is recomputed, defaults to 1, everytime
 
    Level: advanced
 
@@ -434,6 +437,7 @@ int MatSNESMFSetFromOptions(Mat mat)
     }
 
     ierr = OptionsGetDouble(mfctx->snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsGetInt(mfctx->snes->prefix,"-snes_mf_period",&mfctx->recomputeperiod,PETSC_NULL);CHKERRQ(ierr);
     if (mfctx->ops->setfromoptions) {
       ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
     }
@@ -443,6 +447,7 @@ int MatSNESMFSetFromOptions(Mat mat)
     if (mfctx->snes->prefix) {ierr = PetscStrcat(p,mfctx->snes->prefix);CHKERRQ(ierr);}
     if (flg) {
       ierr = (*PetscHelpPrintf)(mfctx->snes->comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(mfctx->snes->comm,"   %ssnes_mf_period <p>: how often h is recomputed (default 1, everytime)\n",p);CHKERRQ(ierr);
       if (mfctx->ops->printhelp) {
         ierr = (*mfctx->ops->printhelp)(mfctx);CHKERRQ(ierr);
       }
@@ -492,7 +497,7 @@ int MatSNESMFGetH(Mat mat,Scalar *h)
    SNES matrix free routines. Prints the differencing parameter used at 
    each step.
 */
-int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
+int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
   PC             pc;
   MatSNESMFCtx   ctx;
@@ -513,7 +518,7 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
   if (n > 0 || nonzeroinitialguess) {
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
-                PetscReal(ctx->currenth),PetscImaginary(ctx->currenth));CHKERRQ(ierr);
+                PetscRealPart(ctx->currenth),PetscImaginaryPart(ctx->currenth));CHKERRQ(ierr);
 #else
     ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth);CHKERRQ(ierr); 
 #endif
@@ -567,6 +572,42 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
 
 
 #undef __FUNC__  
+#define __FUNC__ "MatSNESMFSetPeriod"
+/*@
+   MatSNESMFSetPeriod - Sets how often h is recomputed, by default it is everytime
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix free matrix created via MatCreateSNESMF()
+-  period - 1 for everytime, 2 for every second etc
+
+   Options Database Keys:
++  -snes_mf_period <period>
+
+   Level: advanced
+
+
+.keywords: SNES, matrix-free, parameters
+
+.seealso: MatCreateSNESMF(),MatSNESMFGetH(),
+          MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
+          MatSNESMFKSPMonitor()
+@*/
+int MatSNESMFSetPeriod(Mat mat,int period)
+{
+  MatSNESMFCtx ctx;
+  int          ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  if (ctx) {
+    ctx->recomputeperiod = period;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "MatSNESMFSetFunctionError"
 /*@
    MatSNESMFSetFunctionError - Sets the error_rel for the approximation of
@@ -598,7 +639,7 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor()
 @*/
-int MatSNESMFSetFunctionError(Mat mat,double error)
+int MatSNESMFSetFunctionError(Mat mat,PetscReal error)
 {
   MatSNESMFCtx ctx;
   int          ierr;

@@ -1,4 +1,4 @@
-/*$Id: daghost.c,v 1.17 1999/03/17 23:25:10 bsmith Exp bsmith $*/
+/*$Id: daghost.c,v 1.18 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -37,7 +37,7 @@
 .seealso: DAGetCorners(), DACreate1d(), DACreate2d(), DACreate3d()
 
 @*/
-int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
+int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
 {
   int w;
 

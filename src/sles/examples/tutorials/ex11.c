@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.24 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.25 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -45,14 +45,14 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec         x, b, u;      /* approx solution, RHS, exact solution */
+  Vec         x,b,u;      /* approx solution, RHS, exact solution */
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* linear solver context */
   double      norm;         /* norm of solution error */
-  int         dim, i, j, I, J, Istart, Iend, ierr, n = 6, its, use_random;
-  Scalar      v, none = -1.0, sigma2, pfive = 0.5, *xa;
+  int         dim,i,j,I,J,Istart,Iend,ierr,n = 6,its,use_random;
+  Scalar      v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom rctx;
-  double      h2, sigma1 = 100.0;
+  double      h2,sigma1 = 100.0;
   PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -100,15 +100,15 @@ int main(int argc,char **args)
     sigma2 = 10.0*PETSC_i;
   }
   h2 = 1.0/((n+1)*(n+1));
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 ) {
+    if (i>0) {
       J = I-n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( i<n-1 ) {
+    if (i<n-1) {
       J = I+n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( j>0 ) {
+    if (j>0) {
       J = I-1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {
+    if (j<n-1) {
       J = I+1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     if (use_random) {ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRA(ierr);}
     v = 4.0 - sigma1*h2 + sigma2*h2;
@@ -188,7 +188,7 @@ int main(int argc,char **args)
     ierr = VecGetArray(x,&xa);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRA(ierr);
     for (i=0; i<3; i++){
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,PetscReal(xa[i]),PetscImaginary(xa[i]));CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRA(ierr);
   }
     ierr = VecRestoreArray(x,&xa);CHKERRA(ierr);
   }

@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.54 1999/10/24 14:02:53 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.55 1999/11/05 14:46:04 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -16,7 +16,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   int         ierr,i,j,pause;
   PetscTruth  isnull;
   Draw        draw;
-  double      xr,yr,xl,yl,h,w,x,y,xc,yc,scale = 0.0;
+  PetscReal   xr,yr,xl,yl,h,w,x,y,xc,yc,scale = 0.0;
   DrawButton  button;
 
   PetscFunctionBegin;
@@ -29,8 +29,8 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
 
   /* loop over colors  */
-  for (i=0; i<fd->ncolors; i++ ) {
-    for ( j=0; j<fd->nrows[i]; j++ ) {
+  for (i=0; i<fd->ncolors; i++) {
+    for (j=0; j<fd->nrows[i]; j++) {
       y = fd->M - fd->rows[i][j] - fd->rstart;
       x = fd->columnsforrow[i][j];
       ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
@@ -52,8 +52,8 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
     w *= scale; h *= scale;
     ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
     /* loop over colors  */
-    for (i=0; i<fd->ncolors; i++ ) {
-      for ( j=0; j<fd->nrows[i]; j++ ) {
+    for (i=0; i<fd->ncolors; i++) {
+      for (j=0; j<fd->nrows[i]; j++) {
         y = fd->M - fd->rows[i][j] - fd->rstart;
         x = fd->columnsforrow[i][j];
         ierr = DrawRectangle(draw,x,y,x+1,y+1,i+1,i+1,i+1,i+1);CHKERRQ(ierr);
@@ -115,14 +115,14 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format != VIEWER_FORMAT_ASCII_INFO) {
-      for ( i=0; i<c->ncolors; i++ ) {
+      for (i=0; i<c->ncolors; i++) {
         ierr = ViewerASCIIPrintf(viewer,"  Information for color %d\n",i);CHKERRQ(ierr);
         ierr = ViewerASCIIPrintf(viewer,"    Number of columns %d\n",c->ncolumns[i]);CHKERRQ(ierr);
-        for ( j=0; j<c->ncolumns[i]; j++ ) {
+        for (j=0; j<c->ncolumns[i]; j++) {
           ierr = ViewerASCIIPrintf(viewer,"      %d\n",c->columns[i][j]);CHKERRQ(ierr);
         }
         ierr = ViewerASCIIPrintf(viewer,"    Number of rows %d\n",c->nrows[i]);CHKERRQ(ierr);
-        for ( j=0; j<c->nrows[i]; j++ ) {
+        for (j=0; j<c->nrows[i]; j++) {
           ierr = ViewerASCIIPrintf(viewer,"      %d %d \n",c->rows[i][j],c->columnsforrow[i][j]);CHKERRQ(ierr);
         }
       }
@@ -161,7 +161,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 
 .seealso: MatFDColoringCreate()
 @*/
-int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
+int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE);
@@ -312,7 +312,7 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 int MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
   int        ierr,freq = 1;
-  double     error = PETSC_DEFAULT,umin = PETSC_DEFAULT;
+  PetscReal  error = PETSC_DEFAULT,umin = PETSC_DEFAULT;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -467,7 +467,7 @@ int MatFDColoringDestroy(MatFDColoring c)
   if (--c->refct > 0) PetscFunctionReturn(0);
 
 
-  for ( i=0; i<c->ncolors; i++ ) {
+  for (i=0; i<c->ncolors; i++) {
     if (c->columns[i])       {ierr = PetscFree(c->columns[i]);CHKERRQ(ierr);}
     if (c->rows[i])          {ierr = PetscFree(c->rows[i]);CHKERRQ(ierr);}
     if (c->columnsforrow[i]) {ierr = PetscFree(c->columnsforrow[i]);CHKERRQ(ierr);}
@@ -515,11 +515,11 @@ int MatFDColoringDestroy(MatFDColoring c)
 int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   int           k,ierr,N,start,end,l,row,col,srow;
-  Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
-  double        epsilon = coloring->error_rel, umin = coloring->umin; 
+  Scalar        dx,mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
+  PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
-  int           (*f)(void *,Vec,Vec,void *) = ( int (*)(void *,Vec,Vec,void *))coloring->f;
+  int           (*f)(void *,Vec,Vec,void*)= (int (*)(void *,Vec,Vec,void *))coloring->f;
   void          *fctx = coloring->fctx;
   PetscTruth    flg;
 
@@ -570,8 +570,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
-      if (PetscAbsScalar(dx) < umin && PetscReal(dx) >= 0.0)     dx = umin;
-      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;
@@ -627,12 +627,12 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructure *flag,void *sctx)
+int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
 {
   int           k,ierr,N,start,end,l,row,col,srow;
-  int           (*f)(void *,double,Vec,Vec,void *) = ( int (*)(void *,double,Vec,Vec,void *))coloring->f;
-  Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
-  double        epsilon = coloring->error_rel, umin = coloring->umin; 
+  int           (*f)(void *,PetscReal,Vec,Vec,void*)= (int (*)(void *,PetscReal,Vec,Vec,void *))coloring->f;
+  Scalar        dx,mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
+  PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
   void          *fctx = coloring->fctx;
@@ -684,8 +684,8 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
-      if (PetscAbsScalar(dx) < umin && PetscReal(dx) >= 0.0)     dx = umin;
-      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;

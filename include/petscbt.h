@@ -1,4 +1,4 @@
-/* $Id: bitarray.h,v 1.13 1999/10/23 00:02:04 bsmith Exp bsmith $ */
+/* $Id: bitarray.h,v 1.14 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 
 /*    
 
@@ -34,7 +34,7 @@
 
 typedef char* PetscBT;
 
-extern char _BT_mask, _BT_c;
+extern char _BT_mask,_BT_c;
 extern int  _BT_idx;
 
 #define PetscBTView(m,bt,viewer) {\
@@ -42,37 +42,37 @@ extern int  _BT_idx;
   Viewer __viewer = viewer; \
   if (!__viewer) __viewer = VIEWER_STDOUT_SELF;\
   for (__i=0; __i<m; __i++) { \
-    __ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLookup(bt,__i)); CHKERRQ(__ierr);\
+    __ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(__ierr);\
   }}
 
 #define PetscBTLength(m)        ((m)/BITSPERBYTE+1)*sizeof(char)
 
 #define PetscBTCreate(m,array)  (array = (char *)PetscMalloc(((m)/BITSPERBYTE+1)*sizeof(char)),\
-                           ( !array ) ? 1 : PetscBTMemzero(m,array) )
+                           (!array) ? 1 : PetscBTMemzero(m,array))
 
 #define PetscBTMemzero(m,array) PetscMemzero(array,(m)/BITSPERBYTE+1)
 
-#define PetscBTLookupSet(array, index)    (_BT_idx           = (index)/BITSPERBYTE, \
+#define PetscBTLookupSet(array,index)    (_BT_idx           = (index)/BITSPERBYTE, \
                                         _BT_c           = array[_BT_idx], \
                                         _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
                                         array[_BT_idx]  = _BT_c | _BT_mask, \
-                                        _BT_c & _BT_mask )
+                                        _BT_c & _BT_mask)
 
-#define PetscBTSet(array, index)    (_BT_idx          = (index)/BITSPERBYTE, \
+#define PetscBTSet(array,index)    (_BT_idx          = (index)/BITSPERBYTE, \
                                  _BT_c           = array[_BT_idx], \
                                  _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
                                  array[_BT_idx]  = _BT_c | _BT_mask,0)
 
 
-#define PetscBTClear(array, index)  (_BT_idx          = (index)/BITSPERBYTE, \
+#define PetscBTClear(array,index)  (_BT_idx          = (index)/BITSPERBYTE, \
                                  _BT_c           = array[_BT_idx], \
                                  _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
                                  array[_BT_idx]  = _BT_c & (~_BT_mask),0)
 
-#define PetscBTLookup(array, index) (_BT_idx          = (index)/BITSPERBYTE, \
+#define PetscBTLookup(array,index) (_BT_idx          = (index)/BITSPERBYTE, \
                                  _BT_c           = array[_BT_idx], \
                                  _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
-                                 (_BT_c & _BT_mask) != 0 )
+                                 (_BT_c & _BT_mask) != 0)
 
 #define PetscBTDestroy(array) PetscFree(array)
 

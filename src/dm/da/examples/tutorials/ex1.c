@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.6 1999/10/24 14:04:12 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.7 1999/11/05 14:48:01 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 
@@ -9,11 +9,11 @@ static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            rank, M = 10, N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
+  int            rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
   PetscTruth     flg;
   DA             da;
   Viewer         viewer;
-  Vec            local, global;
+  Vec            local,global;
   Scalar         value;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;

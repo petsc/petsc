@@ -1,4 +1,4 @@
-/*$Id: daltog.c,v 1.15 1999/05/04 20:37:25 balay Exp bsmith $*/
+/*$Id: daltog.c,v 1.16 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -34,7 +34,7 @@
 
 .seealso: DAGlobalToLocalBegin(), DACreate2d()
 @*/
-int DALocalToGlobal(DA da,Vec l, InsertMode mode,Vec g)
+int DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g)
 {
   int ierr;
 

@@ -1,4 +1,4 @@
-/*$Id: dclear.c,v 1.23 1999/03/17 23:21:11 bsmith Exp bsmith $*/
+/*$Id: dclear.c,v 1.24 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -48,7 +48,7 @@ int DrawClear(Draw draw)
 
 .seealso: DrawEOP(), DrawClear()
 @*/
-int DrawBOP( Draw draw )
+int DrawBOP(Draw draw)
 {
   int ierr;
 
@@ -75,7 +75,7 @@ int DrawBOP( Draw draw )
 
 .seealso: DrawBOP(), DrawClear()
 @*/
-int DrawEOP( Draw draw )
+int DrawEOP(Draw draw)
 {
   int ierr;
 

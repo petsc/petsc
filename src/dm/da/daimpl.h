@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.29 1999/03/17 23:25:09 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.30 1999/03/19 21:24:06 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -23,9 +23,9 @@ struct _p_DA {
   int            *idx,Nl;               /* local to global map */
   int            base;                  /* global number of 1st local node */
   DAPeriodicType wrap;                  /* indicates type of periodic boundaries */
-  VecScatter     gtol, ltog, ltol;      /* scatters, see below for details */
-  Vec            global, local;         /* vectors that are discrete functions */
-  PetscTruth     globalused, localused; /* indicates if global and local have been 
+  VecScatter     gtol,ltog,ltol;      /* scatters, see below for details */
+  Vec            global,local;         /* vectors that are discrete functions */
+  PetscTruth     globalused,localused; /* indicates if global and local have been 
                                            passed back to user via DACreateXXXVector */
   DAStencilType  stencil_type;          /* stencil, either box or star */
   int            dim;                   /* DA dimension (1,2, or 3) */

@@ -1,4 +1,4 @@
-/*$Id: zerodiag.c,v 1.33 1999/05/04 20:33:40 balay Exp bsmith $*/
+/*$Id: zerodiag.c,v 1.34 1999/10/24 14:02:51 bsmith Exp bsmith $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal
@@ -50,11 +50,11 @@
 
 
 @*/
-int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
+int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
 {
-  int      ierr, prow, k, nz, n, repl, *j, *col, *row, m, *icol,nnz,*jj,kk;
+  int      ierr,prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
   Scalar   *v,*vv;
-  double   repla;
+  PetscReal   repla;
   IS       icis;
 
   PetscFunctionBegin;
@@ -69,7 +69,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 
   for (prow=0; prow<n; prow++) {
-    ierr = MatGetRow( mat, row[prow], &nz, &j, &v );CHKERRQ(ierr);
+    ierr = MatGetRow(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
     for (k=0; k<nz; k++) {if (icol[j[k]] == prow) break;}
     if (k >= nz || PetscAbsScalar(v[k]) <= atol) {
       /* Element too small or zero; find the best candidate */
@@ -97,17 +97,17 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
         if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
           /* See if this one will work */
           repl  = icol[j[k]];
-          ierr = MatGetRow( mat, row[repl], &nnz, &jj, &vv );CHKERRQ(ierr);
+          ierr = MatGetRow(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
           for (kk=0; kk<nnz; kk++) {
             if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
 	      repla = PetscAbsScalar(v[k]);
-              ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv );CHKERRQ(ierr);
+              ierr = MatRestoreRow(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
               SWAP(icol[col[prow]],icol[col[repl]]); 
               SWAP(col[prow],col[repl]); 
               goto found;
 	    }
           }
-          ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv );CHKERRQ(ierr);
+          ierr = MatRestoreRow(mat,row[repl],&nnz,&jj,&vv);CHKERRQ(ierr);
         }
       }
       /* 
@@ -115,7 +115,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
           Note: this will be very slow 
       */
       for (k=prow+1; k<n; k++) {
-        ierr = MatGetRow( mat, row[k], &nnz, &jj, &vv );CHKERRQ(ierr);
+        ierr = MatGetRow(mat,row[k],&nnz,&jj,&vv);CHKERRQ(ierr);
         for (kk=0; kk<nnz; kk++) {
           if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
             /* found a row */
@@ -123,12 +123,12 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
             goto found;
           }
         }
-        ierr = MatRestoreRow( mat, row[k], &nnz, &jj, &vv );CHKERRQ(ierr);
+        ierr = MatRestoreRow(mat,row[k],&nnz,&jj,&vv);CHKERRQ(ierr);
       }
 
       found:;
     }
-    ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v );CHKERRQ(ierr);
+    ierr = MatRestoreRow(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(ris,&row);CHKERRQ(ierr);
   ierr = ISRestoreIndices(cis,&col);CHKERRQ(ierr);

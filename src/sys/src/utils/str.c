@@ -1,6 +1,6 @@
-/*$Id: str.c,v 1.37 1999/11/10 03:18:08 bsmith Exp bsmith $*/
+/*$Id: str.c,v 1.38 1999/12/26 23:41:26 bsmith Exp bsmith $*/
 /*
-    We define the string operations here. The reason we just don't use 
+    We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
   they are broken or have the wrong prototypes.
 
@@ -12,7 +12,7 @@
 #if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrlen"
@@ -36,7 +36,7 @@ int PetscStrallocpy(const char s[],char **t)
   PetscFunctionBegin;
   if (s) {
     ierr  = PetscStrlen(s,&len);CHKERRQ(ierr);
-    *t    = (char *) PetscMalloc((1+len)*sizeof(char));CHKPTRQ(*t);
+    *t    = (char*)PetscMalloc((1+len)*sizeof(char));CHKPTRQ(*t);
     ierr  = PetscStrcpy(*t,s);CHKERRQ(ierr);
   } else {
     *t = 0;
@@ -215,7 +215,7 @@ int PetscStrtok(const char a[],const char b[],char **result)
   if (a) {
     ierr = PetscStrlen(a,&len);CHKERRQ(ierr);
     if (len > 1023) {
-      ptr = (char *) PetscMalloc((len+1)*sizeof(char));
+      ptr = (char*)PetscMalloc((len+1)*sizeof(char));
       if (!ptr) SETERRQ(1,1,"Malloc failed");
     } else {
       ptr = init;
@@ -228,11 +228,54 @@ int PetscStrtok(const char a[],const char b[],char **result)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrstr"
-int PetscStrstr(const char a[],const char b[], char **tmp)
+int PetscStrstr(const char a[],const char b[],char **tmp)
 {
   PetscFunctionBegin;
   *tmp = (char *)strstr(a,b);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscStrreplace"
+/*
+      Finds any of the substrings in s and replaces with corresponding 
+    one in r.
 
+      No proper error checking yet
+*/
+int PetscStrreplace(const char a[],char *b,int len,char **s,char **r)
+{
+  int  ierr,i = 0,l,l1,l2,l3;
+  char *work,*par;
+
+  PetscFunctionBegin;
+  if (len <= 0) SETERRQ(1,1,"Length of b must be greater than 0");
+  if (!a || !b) SETERRQ(1,1,"a and b strings must be nonnull");
+  if (!s || !r) SETERRQ(1,1,"s and r arrays must be nonull");
+  work = (char*)PetscMalloc(len*sizeof(char*));CHKPTRQ(work);
+  ierr = PetscStrncpy(b,a,len);CHKERRQ(ierr);  
+  while (s[i]) {
+    ierr = PetscStrlen(s[i],&l);CHKERRQ(ierr);
+    ierr = PetscStrstr(b,s[i],&par);CHKERRQ(ierr);
+    while (par) {
+      *par  =  0;
+      par  += l;
+
+      ierr = PetscStrlen(b,&l1);CHKERRQ(ierr);
+      ierr = PetscStrlen(r[i],&l2);CHKERRQ(ierr);
+      ierr = PetscStrlen(par,&l3);CHKERRQ(ierr);
+      if (l1 + l2 + l3 >= len) {
+        SETERRQ(1,1,"b len is not long enough to hold new values");
+      }
+      ierr  = PetscStrcpy(work,b);CHKERRQ(ierr);
+      ierr  = PetscStrcat(work,r[i]);CHKERRQ(ierr);
+      ierr  = PetscStrcat(work,par);CHKERRQ(ierr);
+      ierr  = PetscStrncpy(b,work,len);CHKERRQ(ierr);
+      ierr  = PetscStrstr(b,s[i],&par);CHKERRQ(ierr);
+    }
+    i++;
+  }
+  ierr = PetscFree(work);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}

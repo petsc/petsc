@@ -1,5 +1,5 @@
 !
-!  "$Id: fsolve.F,v 1.10 1998/12/23 21:18:44 bsmith Exp balay $";
+!  "$Id: fsolve.F,v 1.11 1999/03/24 18:13:07 balay Exp bsmith $";
 !
 !    Fortran kernel for sparse triangular solve in the AIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
@@ -10,7 +10,7 @@
       subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
       implicit none
       Scalar           x(0:*),aa(0:*),b(0:*)
-      integer          n, ai(0:*),aj(0:*),adiag(0:*)
+      integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend
       Scalar           sum

@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.142 1999/12/18 00:39:07 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.143 1999/12/20 19:56:46 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -10,12 +10,12 @@
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetUseDropTolerance_ILU"
-int PCILUSetUseDropTolerance_ILU(PC pc,double dt,double dtcol,int dtcount)
+int PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
 {
   PC_ILU *ilu;
 
   PetscFunctionBegin;
-  ilu = (PC_ILU *) pc->data;
+  ilu = (PC_ILU*)pc->data;
   ilu->usedt         = PETSC_TRUE;
   ilu->info.dt       = dt;
   ilu->info.dtcol    = dtcol;
@@ -28,12 +28,12 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetFill_ILU"
-int PCILUSetFill_ILU(PC pc,double fill)
+int PCILUSetFill_ILU(PC pc,PetscReal fill)
 {
   PC_ILU *dir;
 
   PetscFunctionBegin;
-  dir            = (PC_ILU *) pc->data;
+  dir            = (PC_ILU*)pc->data;
   dir->info.fill = fill;
   PetscFunctionReturn(0);
 }
@@ -42,9 +42,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetMatOrdering_ILU"
-int PCILUSetMatOrdering_ILU(PC pc, MatOrderingType ordering)
+int PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
 {
-  PC_ILU *dir = (PC_ILU *) pc->data;
+  PC_ILU *dir = (PC_ILU*)pc->data;
   int    ierr;
  
   PetscFunctionBegin;
@@ -62,8 +62,8 @@ int PCILUSetReuseOrdering_ILU(PC pc,PetscTruth flag)
   PC_ILU *ilu;
 
   PetscFunctionBegin;
-  ilu                = (PC_ILU *) pc->data;
-  ilu->reuseordering = (int) flag;
+  ilu                = (PC_ILU*)pc->data;
+  ilu->reuseordering = (int)flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -76,7 +76,7 @@ int PCILUSetReuseFill_ILU(PC pc,PetscTruth flag)
   PC_ILU *ilu;
 
   PetscFunctionBegin;
-  ilu = (PC_ILU *) pc->data;
+  ilu = (PC_ILU*)pc->data;
   ilu->reusefill = flag;
   if (flag) SETERRQ(1,1,"Not yet supported");
   PetscFunctionReturn(0);
@@ -91,7 +91,7 @@ int PCILUSetLevels_ILU(PC pc,int levels)
   PC_ILU *ilu;
 
   PetscFunctionBegin;
-  ilu = (PC_ILU *) pc->data;
+  ilu = (PC_ILU*)pc->data;
   ilu->info.levels = levels;
   PetscFunctionReturn(0);
 }
@@ -105,7 +105,7 @@ int PCILUSetUseInPlace_ILU(PC pc)
   PC_ILU *dir;
 
   PetscFunctionBegin;
-  dir          = (PC_ILU *) pc->data;
+  dir          = (PC_ILU*)pc->data;
   dir->inplace = 1;
   PetscFunctionReturn(0);
 }
@@ -119,7 +119,7 @@ int PCILUSetAllowDiagonalFill_ILU(PC pc)
   PC_ILU *dir;
 
   PetscFunctionBegin;
-  dir                 = (PC_ILU *) pc->data;
+  dir                 = (PC_ILU*)pc->data;
   dir->info.diagonal_fill = 1;
   PetscFunctionReturn(0);
 }
@@ -150,9 +150,9 @@ EXTERN_C_END
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
-int PCILUSetUseDropTolerance(PC pc,double dt,double dtcol,int dtcount)
+int PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
 {
-  int ierr, (*f)(PC,double,double,int);
+  int ierr,(*f)(PC,PetscReal,PetscReal,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -190,9 +190,9 @@ $  -pc_ilu_fill <fill>
 
 .seealso: PCLUSetFill()
 @*/
-int PCILUSetFill(PC pc,double fill)
+int PCILUSetFill(PC pc,PetscReal fill)
 {
-  int ierr, (*f)(PC,double);
+  int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -226,9 +226,9 @@ int PCILUSetFill(PC pc,double fill)
 .keywords: PC, ILU, set, matrix, reordering
 
 @*/
-int PCILUSetMatOrdering(PC pc, MatOrderingType ordering)
+int PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
 {
-  int ierr, (*f)(PC,MatOrderingType);
+  int ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -263,7 +263,7 @@ int PCILUSetMatOrdering(PC pc, MatOrderingType ordering)
 @*/
 int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 {
-  int ierr, (*f)(PC,PetscTruth);
+  int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -297,7 +297,7 @@ int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 @*/
 int PCILUSetReuseFill(PC pc,PetscTruth flag)
 {
-  int ierr, (*f)(PC,PetscTruth);
+  int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -328,7 +328,7 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 @*/
 int PCILUSetLevels(PC pc,int levels)
 {
-  int ierr, (*f)(PC,int);
+  int ierr,(*f)(PC,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -363,7 +363,7 @@ int PCILUSetLevels(PC pc,int levels)
 @*/
 int PCILUSetAllowDiagonalFill(PC pc)
 {
-  int ierr, (*f)(PC);
+  int ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -404,7 +404,7 @@ int PCILUSetAllowDiagonalFill(PC pc)
 @*/
 int PCILUSetUseInPlace(PC pc)
 {
-  int ierr, (*f)(PC);
+  int ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -423,7 +423,7 @@ static int PCSetFromOptions_ILU(PC pc)
 {
   int        levels,ierr,dtmax = 3;
   PetscTruth flg;
-  double     dt[3],fill;
+  PetscReal  dt[3],fill;
   char       tname[256];
 
   PetscFunctionBegin;
@@ -493,7 +493,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
 #define __FUNC__ "PCView_ILU"
 static int PCView_ILU(PC pc,Viewer viewer)
 {
-  PC_ILU     *ilu = (PC_ILU *) pc->data;
+  PC_ILU     *ilu = (PC_ILU*)pc->data;
   int        ierr;
   PetscTruth isstring,isascii;
 
@@ -536,7 +536,7 @@ static int PCSetUp_ILU(PC pc)
 {
   int        ierr;
   PetscTruth flg;
-  PC_ILU     *ilu = (PC_ILU *) pc->data;
+  PC_ILU     *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
   if (ilu->inplace) {
@@ -589,7 +589,7 @@ static int PCSetUp_ILU(PC pc)
       /*  Remove zeros along diagonal?     */
       ierr = OptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
-        double ntol = 1.e-10;
+        PetscReal ntol = 1.e-10;
         ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
@@ -607,7 +607,7 @@ static int PCSetUp_ILU(PC pc)
         /*  Remove zeros along diagonal?     */
         ierr = OptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
-          double ntol = 1.e-10;
+          PetscReal ntol = 1.e-10;
           ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
         }
@@ -625,7 +625,7 @@ static int PCSetUp_ILU(PC pc)
 #define __FUNC__ "PCDestroy_ILU"
 static int PCDestroy_ILU(PC pc)
 {
-  PC_ILU *ilu = (PC_ILU*) pc->data;
+  PC_ILU *ilu = (PC_ILU*)pc->data;
   int    ierr;
 
   PetscFunctionBegin;
@@ -641,7 +641,7 @@ static int PCDestroy_ILU(PC pc)
 #define __FUNC__ "PCApply_ILU"
 static int PCApply_ILU(PC pc,Vec x,Vec y)
 {
-  PC_ILU *ilu = (PC_ILU *) pc->data;
+  PC_ILU *ilu = (PC_ILU*)pc->data;
   int    ierr;
 
   PetscFunctionBegin;
@@ -653,7 +653,7 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCApplyTranspose_ILU"
 static int PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 {
-  PC_ILU *ilu = (PC_ILU *) pc->data;
+  PC_ILU *ilu = (PC_ILU*)pc->data;
   int    ierr;
 
   PetscFunctionBegin;
@@ -665,7 +665,7 @@ static int PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCGetFactoredMatrix_ILU"
 static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 {
-  PC_ILU *ilu = (PC_ILU *) pc->data;
+  PC_ILU *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
   if (!ilu->fact) SETERRQ(1,1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
@@ -698,7 +698,7 @@ int PCCreate_ILU(PC pc)
   ilu->info.dtcol         = PETSC_DEFAULT;
   ilu->reusefill          = PETSC_FALSE;
   ilu->info.diagonal_fill = 0;
-  pc->data                = (void *) ilu;
+  pc->data                = (void*)ilu;
 
   pc->ops->destroy           = PCDestroy_ILU;
   pc->ops->apply             = PCApply_ILU;

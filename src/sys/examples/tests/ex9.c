@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.7 1999/10/24 14:01:38 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.8 1999/11/24 21:53:16 bsmith Exp bsmith $*/
 
 /*
      Tests PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd()
@@ -12,8 +12,8 @@ int main(int argc,char **args){
   int ierr;
 
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,PETSC_NULL);
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD , 1);CHKERRA(ierr);
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD , 1);CHKERRA(ierr);
+  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
+  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
   ierr = PetscFinalize();
   return 0;
 }

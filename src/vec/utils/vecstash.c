@@ -1,11 +1,11 @@
-/*$Id: vecstash.c,v 1.15 1999/11/05 14:44:46 bsmith Exp bsmith $*/
+/*$Id: vecstash.c,v 1.16 1999/11/24 21:53:26 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"
 
 #define DEFAULT_STASH_SIZE   100
 
 /*
-  VecStashCreate_Private - Creates a stash ,currently used for all the parallel 
+  VecStashCreate_Private - Creates a stash,currently used for all the parallel 
   matrix implementations. The stash is where elements of a matrix destined 
   to be stored on other processors are kept until matrix assembly is done.
 
@@ -20,7 +20,7 @@
 */
 #undef __FUNC__  
 #define __FUNC__ "VecStashCreate_Private"
-int VecStashCreate_Private(MPI_Comm comm,int bs, VecStash *stash)
+int VecStashCreate_Private(MPI_Comm comm,int bs,VecStash *stash)
 {
   int        ierr,max,*opt,nopt;
   PetscTruth flg;
@@ -33,7 +33,7 @@ int VecStashCreate_Private(MPI_Comm comm,int bs, VecStash *stash)
   ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
 
   nopt = stash->size;
-  opt  = (int*) PetscMalloc(nopt*sizeof(int));CHKPTRQ(opt);
+  opt  = (int*)PetscMalloc(nopt*sizeof(int));CHKPTRQ(opt);
   ierr = OptionsGetIntArray(PETSC_NULL,"-vecstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
   if (flg) {
     if (nopt == 1)                max = opt[0];
@@ -162,7 +162,7 @@ int VecStashScatterEnd_Private(VecStash *stash)
 */
 #undef __FUNC__  
 #define __FUNC__ "VecStashGetInfo_Private"
-int VecStashGetInfo_Private(VecStash *stash,int *nstash, int *reallocs)
+int VecStashGetInfo_Private(VecStash *stash,int *nstash,int *reallocs)
 {
   PetscFunctionBegin;
 
@@ -223,7 +223,7 @@ int VecStashExpand_Private(VecStash *stash,int incr)
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
   n_array = (Scalar *)PetscMalloc((newnmax)*(sizeof(int)+bs*sizeof(Scalar)));CHKPTRQ(n_array);
-  n_idx   = (int *) (n_array + bs*newnmax);
+  n_idx   = (int*)(n_array + bs*newnmax);
   ierr = PetscMemcpy(n_array,stash->array,bs*stash->nmax*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(int));CHKERRQ(ierr);
   if (stash->array) {ierr = PetscFree(stash->array);CHKERRQ(ierr);}
@@ -262,20 +262,20 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
   PetscFunctionBegin;
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(nprocs);
+  nprocs = (int*)PetscMalloc(2*size*sizeof(int));CHKPTRQ(nprocs);
   procs  = nprocs + size;
-  ierr   = PetscMemzero(nprocs,2*size*sizeof(int)); CHKERRQ(ierr);
-  owner  = (int *) PetscMalloc( (stash->n+1)*sizeof(int) );CHKPTRQ(owner);
+  ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
+  owner  = (int*)PetscMalloc((stash->n+1)*sizeof(int));CHKPTRQ(owner);
 
-  for ( i=0; i<stash->n; i++ ) {
+  for (i=0; i<stash->n; i++) {
     idx = stash->idx[i];
-    for ( j=0; j<size; j++ ) {
+    for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[j]++; procs[j] = 1; owner[i] = j; break;
       }
     }
   }
-  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
+  nsends = 0;  for (i=0; i<size; i++) { nsends += procs[i];} 
   
   /* inform other processors of number of messages and max length*/
   work      = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(work);
@@ -289,9 +289,9 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
      this is a lot of wasted space.
   */
   rvalues    = (Scalar *)PetscMalloc((nreceives+1)*(nmax+1)*(bs*sizeof(Scalar)+sizeof(int)));CHKPTRQ(rvalues);
-  rindices   = (int *) (rvalues + bs*nreceives*nmax);
+  rindices   = (int*)(rvalues + bs*nreceives*nmax);
   recv_waits = (MPI_Request *)PetscMalloc((nreceives+1)*2*sizeof(MPI_Request));CHKPTRQ(recv_waits);
-  for ( i=0,count=0; i<nreceives; i++ ) {
+  for (i=0,count=0; i<nreceives; i++) {
     ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRQ(ierr);
     ierr = MPI_Irecv(rindices+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag2,comm,recv_waits+count++);CHKERRQ(ierr);
   }
@@ -301,15 +301,15 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
          the ith processor
   */
   svalues    = (Scalar *)PetscMalloc((stash->n+1)*(bs*sizeof(Scalar)+sizeof(int)));CHKPTRQ(svalues);
-  sindices   = (int *) (svalues + bs*stash->n);
-  send_waits = (MPI_Request *) PetscMalloc(2*(nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  start      = (int *) PetscMalloc(size*sizeof(int) );CHKPTRQ(start);
+  sindices   = (int*)(svalues + bs*stash->n);
+  send_waits = (MPI_Request*)PetscMalloc(2*(nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
+  start      = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(start);
   /* use 2 sends the first with all_v, the next with all_i */
   start[0] = 0;
-  for ( i=1; i<size; i++ ) { 
+  for (i=1; i<size; i++) { 
     start[i] = start[i-1] + nprocs[i-1];
   } 
-  for ( i=0; i<stash->n; i++ ) {
+  for (i=0; i<stash->n; i++) {
     j = owner[i];
     if (bs == 1) {
       svalues[start[j]] = stash->array[i];
@@ -320,17 +320,17 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
     start[j]++;
   }
   start[0] = 0;
-  for ( i=1; i<size; i++ ) { start[i] = start[i-1] + nprocs[i-1];} 
-  for ( i=0,count=0; i<size; i++ ) {
+  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[i-1];} 
+  for (i=0,count=0; i<size; i++) {
     if (procs[i]) {
       ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(sindices+start[i],nprocs[i],MPI_INT,i,tag2,comm, send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(sindices+start[i],nprocs[i],MPI_INT,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);
   ierr = PetscFree(start);CHKERRQ(ierr);
   /* This memory is reused in scatter end  for a different purpose*/
-  for (i=0; i<2*size; i++ ) nprocs[i] = -1;
+  for (i=0; i<2*size; i++) nprocs[i] = -1;
   stash->nprocs      = nprocs;
 
   stash->svalues    = svalues;    stash->rvalues    = rvalues;
@@ -392,7 +392,7 @@ int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,Scalar 
     i1 = flg_v[recv_status.MPI_SOURCE];
     i2 = flg_i[recv_status.MPI_SOURCE];
     if (i1 != -1 && i2 != -1) {
-      rindices    = (int *) (stash->rvalues + bs*stash->rmax*stash->nrecvs);
+      rindices    = (int*)(stash->rvalues + bs*stash->rmax*stash->nrecvs);
       *rows       = rindices + i2*stash->rmax;
       *vals       = stash->rvalues + i1*bs*stash->rmax;
       *flg        = 1;

@@ -1,4 +1,4 @@
-/*$Id: dlinew.c,v 1.21 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dlinew.c,v 1.23 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -23,7 +23,7 @@
 
 .seealso:  DrawLineGetWidth()
 @*/
-int DrawLineSetWidth(Draw draw,double width)
+int DrawLineSetWidth(Draw draw,PetscReal width)
 {
   int        ierr;
   PetscTruth isdrawnull;

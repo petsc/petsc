@@ -1,4 +1,4 @@
-/*$Id: ex62.c,v 1.10 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex62.c,v 1.11 1999/11/24 21:54:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -8,15 +8,15 @@ static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat        C, A;
-  int        i, j,m, ierr, size;
+  Mat        C,A;
+  int        i,j,m,ierr,size;
   IS         row,col;
-  Vec        x, u, b;
+  Vec        x,u,b;
   double     norm;
   Viewer     fd;
   MatType    mtype = MATSEQAIJ;
   char       file[128];
-  Scalar     one = 1.0, mone = -1.0;
+  Scalar     one = 1.0,mone = -1.0;
   PetscTruth flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);

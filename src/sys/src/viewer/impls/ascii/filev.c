@@ -1,7 +1,7 @@
-/* $Id: filev.c,v 1.100 1999/11/10 03:17:24 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.101 1999/11/24 21:52:41 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 #include <stdarg.h>
 
 typedef struct {
@@ -11,6 +11,7 @@ typedef struct {
   Viewer        bviewer;        /* if viewer is a singleton, this points to mother */
   Viewer        sviewer;        /* if viewer has a singleton, this points to singleton */
   char          *filename;
+  PetscTruth    storecompressed; 
 } Viewer_ASCII;
 
 /* ----------------------------------------------------------------------*/
@@ -26,7 +27,19 @@ int ViewerDestroy_ASCII(Viewer viewer)
     SETERRQ(1,1,"ASCII Viewer destroyed before restoring singleton viewer");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
-  if (!rank && vascii->fd != stderr && vascii->fd != stdout) fclose(vascii->fd);
+  if (!rank && vascii->fd != stderr && vascii->fd != stdout) {
+    fclose(vascii->fd);
+    if (vascii->storecompressed) {
+      char par[1024],buf[1024];
+      FILE *fp;
+      ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
+      ierr = PetscStrcat(par,vascii->filename);CHKERRQ(ierr);
+      ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
+      if (fgets(buf,1024,fp)) {
+        SETERRQ2(1,1,"Error from compression command %s %s\n%s",par,buf);
+      }
+    }
+  }
   ierr = PetscStrfree(vascii->filename);CHKERRQ(ierr);
   ierr = PetscFree(vascii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -93,7 +106,7 @@ int ViewerFlush_ASCII(Viewer viewer)
 
 .seealso: ViewerASCIIOpen()
 @*/
-int ViewerASCIIGetPointer(Viewer viewer, FILE **fd)
+int ViewerASCIIGetPointer(Viewer viewer,FILE **fd)
 {
   Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data;
 
@@ -131,7 +144,7 @@ extern FILE *petsc_history;
 @*/
 int ViewerASCIIPushTab(Viewer viewer)
 {
-  Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
+  Viewer_ASCII *ascii = (Viewer_ASCII*)viewer->data;
   PetscTruth   isascii;
   int          ierr;
 
@@ -167,7 +180,7 @@ int ViewerASCIIPushTab(Viewer viewer)
 @*/
 int ViewerASCIIPopTab(Viewer viewer)
 {
-  Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
+  Viewer_ASCII *ascii = (Viewer_ASCII*)viewer->data;
   int          ierr;
   PetscTruth   isascii;
 
@@ -204,7 +217,7 @@ int ViewerASCIIPopTab(Viewer viewer)
 @*/
 int ViewerASCIIUseTabs(Viewer viewer,PetscTruth flg)
 {
-  Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
+  Viewer_ASCII *ascii = (Viewer_ASCII*)viewer->data;
   PetscTruth   isascii;
   int          ierr;
 
@@ -260,8 +273,8 @@ extern FILE        *queuefile;
 @*/
 int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 {
-  Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
-  int          rank, tab, ierr;
+  Viewer_ASCII *ascii = (Viewer_ASCII*)viewer->data;
+  int          rank,tab,ierr;
   FILE         *fd = ascii->fd;
   PetscTruth   isascii;
 
@@ -281,7 +294,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
     tab = ascii->tab;
     while (tab--) fprintf(fd,"  ");
 
-    va_start( Argp, format );
+    va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(fd,format,(char*)Argp);
 #else
@@ -298,7 +311,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 #endif
       fflush(petsc_history);
     }
-    va_end( Argp );
+    va_end(Argp);
   } else if (ascii->bviewer) { /* this is a singleton viewer that is not on process 0 */
     int         len;
     va_list     Argp;
@@ -307,13 +320,13 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
-    va_start( Argp, format );
+    va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
     vsprintf(next->string,format,(char *)Argp);
 #else
     vsprintf(next->string,format,Argp);
 #endif
-    va_end( Argp );
+    va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
     if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 256 bytes");
   }
@@ -338,7 +351,7 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 @*/
 int ViewerSetFilename(Viewer viewer,const char name[])
 {
-  int ierr, (*f)(Viewer,const char[]);
+  int ierr,(*f)(Viewer,const char[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
@@ -370,7 +383,7 @@ int ViewerSetFilename(Viewer viewer,const char name[])
 @*/
 int ViewerGetFilename(Viewer viewer,char **name)
 {
-  int ierr, (*f)(Viewer,char **);
+  int ierr,(*f)(Viewer,char **);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
@@ -387,9 +400,10 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerGetFilename_ASCII"
 int ViewerGetFilename_ASCII(Viewer viewer,char **name)
 {
-  Viewer_ASCII *vascii = (Viewer_ASCII *) viewer->data;
+  Viewer_ASCII *vascii = (Viewer_ASCII*)viewer->data;
 
   PetscFunctionBegin;
+  
   *name = vascii->filename;
   PetscFunctionReturn(0);
 }
@@ -400,15 +414,26 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerSetFilename_ASCII"
 int ViewerSetFilename_ASCII(Viewer viewer,const char name[])
 {
-  int          ierr;
-  char         fname[256];
-  Viewer_ASCII *vascii = (Viewer_ASCII *) viewer->data;
+  int          ierr,len;
+  char         fname[256],*gz;
+  Viewer_ASCII *vascii = (Viewer_ASCII*)viewer->data;
   PetscTruth   isstderr,isstdout;
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
 
   ierr = PetscStrallocpy(name,&vascii->filename);CHKERRQ(ierr);
+
+  /* Is this file to be compressed */
+  vascii->storecompressed = PETSC_FALSE;
+  ierr = PetscStrstr(vascii->filename,".gz",&gz);CHKERRQ(ierr);
+  if (gz) {
+    ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
+    if (len == 3) {
+      *gz = 0;
+      vascii->storecompressed = PETSC_TRUE;
+    } 
+  }
   ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
   ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
   if (isstderr)      vascii->fd = stderr;
@@ -439,7 +464,7 @@ int ViewerGetSingleton_ASCII(Viewer viewer,Viewer *outviewer)
   }
   ierr         = ViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
   ierr         = ViewerSetType(*outviewer,ASCII_VIEWER);CHKERRQ(ierr);
-  ovascii      = (Viewer_ASCII*) (*outviewer)->data;
+  ovascii      = (Viewer_ASCII*)(*outviewer)->data;
   ovascii->fd  = vascii->fd;
   ovascii->tab = vascii->tab;
 
@@ -494,7 +519,7 @@ int ViewerCreate_ASCII(Viewer viewer)
 
   PetscFunctionBegin;
   vascii       = PetscNew(Viewer_ASCII);CHKPTRQ(vascii);
-  viewer->data = (void *) vascii;
+  viewer->data = (void*)vascii;
 
   viewer->ops->destroy          = ViewerDestroy_ASCII;
   viewer->ops->flush            = ViewerFlush_ASCII;
@@ -561,7 +586,7 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
   /* First processor prints immediately to fp */
   if (!rank) {
     va_list Argp;
-    va_start( Argp, format );
+    va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(fp,format,(char*)Argp);
 #else
@@ -577,7 +602,7 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
 #endif
       fflush(petsc_history);
     }
-    va_end( Argp );
+    va_end(Argp);
   } else { /* other processors add to local queue */
     int         len;
     va_list     Argp;
@@ -585,13 +610,13 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
-    va_start( Argp, format );
+    va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
     vsprintf(next->string,format,(char *)Argp);
 #else
     vsprintf(next->string,format,Argp);
 #endif
-    va_end( Argp );
+    va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
     if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 256 bytes");
   }

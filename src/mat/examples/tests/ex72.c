@@ -1,4 +1,4 @@
-/*$Id: ex72.c,v 1.8 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex72.c,v 1.9 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Mat         A;
   Vec         b;
   char        filein[128],fileout[128],buf[128];
-  int         i, m, n, nnz, ierr, size, col, row;
+  int         i,m,n,nnz,ierr,size,col,row;
   Scalar      val;
   FILE*       file;
   Viewer      view;
@@ -30,9 +30,7 @@ int main(int argc,char **args)
 
   /* Read in matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,PETSC_NULL);CHKERRA(ierr);
-  if (!(file = PetscFOpen(PETSC_COMM_SELF,filein,"r"))) {
-    SETERRA(1,0,"cannot open file\n");
-  }
+  ierr = PetscFOpen(PETSC_COMM_SELF,filein,"r",&file);CHKERRA(ierr);
 
   /* Ignore the first line */
   /* while (getc(file) != '\n') ; */

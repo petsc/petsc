@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.227 1999/12/18 00:52:41 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.228 1999/12/18 00:59:27 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -15,7 +15,7 @@
 #if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 /* 
     For simplicity, we use a static size database
@@ -77,7 +77,7 @@ int OptionsAtoi(const char name[],int *a)
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsAtod"
-int OptionsAtod(const char name[],double *a)
+int OptionsAtod(const char name[],PetscReal *a)
 {
   int        ierr,len;
   PetscTruth decide,tdefault;
@@ -189,7 +189,7 @@ int OptionsInsertFile(const char file[])
       if (string[0] == '%') continue;
       /* replace tabs with " " */
       ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
-      for ( i=0; i<len; i++ ) {
+      for (i=0; i<len; i++) {
         if (string[i] == '\t') {
           string[i] = ' ';
         }
@@ -210,7 +210,7 @@ int OptionsInsertFile(const char file[])
         if (match) {
           ierr = PetscStrtok(0," ",&third);CHKERRQ(ierr);
           if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias missing (%s)",second);
-          ierr = PetscStrlen(third,&len); CHKERRQ(ierr);
+          ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
           if (third[len-1] == '\n') third[len-1] = 0;
           ierr = OptionsSetAlias(second,third);CHKERRQ(ierr);
         }
@@ -264,16 +264,16 @@ int OptionsInsert(int *argc,char ***args,const char file[])
 
   /* insert environmental options */
   {
-    char *eoptions = 0, *second, *first;
+    char *eoptions = 0,*second,*first;
     int  len;
     if (!rank) {
-      eoptions = (char *) getenv("PETSC_OPTIONS");
+      eoptions = (char*)getenv("PETSC_OPTIONS");
       ierr     = PetscStrlen(eoptions,&len);CHKERRQ(ierr);
       ierr     = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     } else {
       ierr     = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
       if (len) {
-        eoptions = (char *) PetscMalloc((len+1)*sizeof(char *));CHKPTRQ(eoptions);
+        eoptions = (char*)PetscMalloc((len+1)*sizeof(char *));CHKPTRQ(eoptions);
       }
     }
     if (len) {
@@ -364,7 +364,7 @@ int OptionsPrint(FILE *fd)
   PetscFunctionBegin;
   if (!fd) fd = stdout;
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
-  for ( i=0; i<options->N; i++ ) {
+  for (i=0; i<options->N; i++) {
     if (options->values[i]) {
       ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
     } else {
@@ -399,7 +399,7 @@ int OptionsGetAll(char *copts[])
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
 
   /* count the length of the required string */
-  for ( i=0; i<options->N; i++ ) {
+  for (i=0; i<options->N; i++) {
     ierr = PetscStrlen(options->names[i],&lent);CHKERRQ(ierr);
     len += 1 + lent;
     if (options->values[i]) {
@@ -407,9 +407,9 @@ int OptionsGetAll(char *copts[])
       len += 1 + lent;
     } 
   }
-  coptions    = (char *) PetscMalloc(len*sizeof(char));CHKPTRQ(coptions);
+  coptions    = (char*)PetscMalloc(len*sizeof(char));CHKPTRQ(coptions);
   coptions[0] = 0;
-  for ( i=0; i<options->N; i++ ) {
+  for (i=0; i<options->N; i++) {
     ierr = PetscStrcat(coptions,"-");CHKERRQ(ierr);
     ierr = PetscStrcat(coptions,options->names[i]);CHKERRQ(ierr);
     ierr = PetscStrcat(coptions," ");CHKERRQ(ierr);
@@ -441,11 +441,11 @@ int OptionsDestroy(void)
 
   PetscFunctionBegin;
   if (!options) PetscFunctionReturn(0);
-  for ( i=0; i<options->N; i++ ) {
+  for (i=0; i<options->N; i++) {
     if (options->names[i]) free(options->names[i]);
     if (options->values[i]) free(options->values[i]);
   }
-  for ( i=0; i<options->Naliases; i++ ) {
+  for (i=0; i<options->Naliases; i++) {
     free(options->aliases1[i]);
     free(options->aliases2[i]);
   }
@@ -479,21 +479,21 @@ int OptionsDestroy(void)
 @*/
 int OptionsSetValue(const char iname[],const char value[])
 {
-  int        len, N, n, i,ierr;
-  char       **names, *name = (char*) iname;
+  int        len,N,n,i,ierr;
+  char       **names,*name = (char*)iname;
   PetscTruth gt,match;
 
   PetscFunctionBegin;
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
 
-  /* this is so that -h and -help are equivalent (p4 don't like -help)*/
+  /* this is so that -h and -help are equivalent (p4 does not like -help)*/
   ierr = PetscStrcmp(name,"-h",&match);CHKERRQ(ierr);
   if (match) name = "-help";
 
   name++;
   /* first check against aliases */
   N = options->Naliases; 
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     ierr = PetscStrcmp(options->aliases1[i],name,&match);CHKERRQ(ierr);
     if (match) {
       name = options->aliases2[i];
@@ -505,14 +505,14 @@ int OptionsSetValue(const char iname[],const char value[])
   n     = N;
   names = options->names; 
  
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     ierr = PetscStrcmp(names[i],name,&match);CHKERRQ(ierr);
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
       ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
       if (len) {
-        options->values[i] = (char *) malloc((len+1)*sizeof(char));CHKPTRQ(options->values[i]);
+        options->values[i] = (char*)malloc((len+1)*sizeof(char));CHKPTRQ(options->values[i]);
         ierr = PetscStrcpy(options->values[i],value);CHKERRQ(ierr);
       } else { options->values[i] = 0;}
       PetscFunctionReturn(0);
@@ -525,18 +525,18 @@ int OptionsSetValue(const char iname[],const char value[])
     SETERRQ1(1,1,"No more room in option table, limit %d recompile \n src/sys/src/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
   }
   /* shift remaining values down 1 */
-  for ( i=N; i>n; i-- ) {
+  for (i=N; i>n; i--) {
     names[i]           = names[i-1];
     options->values[i] = options->values[i-1];
     options->used[i]   = options->used[i-1];
   }
   /* insert new name and value */
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  names[n] = (char *) malloc( (len+1)*sizeof(char) );CHKPTRQ(names[n]);
+  names[n] = (char*)malloc((len+1)*sizeof(char));CHKPTRQ(names[n]);
   ierr = PetscStrcpy(names[n],name);CHKERRQ(ierr);
   if (value) {
     ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
-    options->values[n] = (char *) malloc( (len+1)*sizeof(char) );CHKPTRQ(options->values[n]);
+    options->values[n] = (char*)malloc((len+1)*sizeof(char));CHKPTRQ(options->values[n]);
     ierr = PetscStrcpy(options->values[n],value);CHKERRQ(ierr);
   } else {options->values[n] = 0;}
   options->used[n] = 0;
@@ -564,7 +564,7 @@ int OptionsSetValue(const char iname[],const char value[])
 @*/
 int OptionsClearValue(const char iname[])
 {
-  int        N, n, i,ierr;
+  int        N,n,i,ierr;
   char       **names,*name=(char*)iname;
   PetscTruth gt,match;
 
@@ -576,7 +576,7 @@ int OptionsClearValue(const char iname[])
   N     = options->N; n = 0;
   names = options->names; 
  
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     ierr = PetscStrcmp(names[i],name,&match);CHKERRQ(ierr);
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
@@ -588,7 +588,7 @@ int OptionsClearValue(const char iname[])
     n++;
   }
   /* shift remaining values down 1 */
-  for ( i=n; i<N-1; i++ ) {
+  for (i=n; i<N-1; i++) {
     names[i]           = names[i+1];
     options->values[i] = options->values[i+1];
     options->used[i]   = options->used[i+1];
@@ -602,7 +602,7 @@ int OptionsClearValue(const char iname[])
 int OptionsSetAlias(const char inewname[],const char ioldname[])
 {
   int  ierr,len,n = options->Naliases;
-  char *newname = (char *)inewname, *oldname = (char*)ioldname;
+  char *newname = (char *)inewname,*oldname = (char*)ioldname;
 
   PetscFunctionBegin;
   if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"aliased must have -: Instead %s",newname);
@@ -613,10 +613,10 @@ int OptionsSetAlias(const char inewname[],const char ioldname[])
 
   newname++; oldname++;
   ierr = PetscStrlen(newname,&len);CHKERRQ(ierr);
-  options->aliases1[n] = (char *) malloc( (len+1)*sizeof(char) );CHKPTRQ(options->aliases1[n]);
+  options->aliases1[n] = (char*)malloc((len+1)*sizeof(char));CHKPTRQ(options->aliases1[n]);
   ierr = PetscStrcpy(options->aliases1[n],newname);CHKERRQ(ierr);
   ierr = PetscStrlen(oldname,&len);CHKERRQ(ierr);
-  options->aliases2[n] = (char *) malloc( (len+1)*sizeof(char) );CHKPTRQ(options->aliases2[n]);
+  options->aliases2[n] = (char*)malloc((len+1)*sizeof(char));CHKPTRQ(options->aliases2[n]);
   ierr = PetscStrcpy(options->aliases2[n],oldname);CHKERRQ(ierr);
   options->Naliases++;
   PetscFunctionReturn(0);
@@ -626,7 +626,7 @@ int OptionsSetAlias(const char inewname[],const char ioldname[])
 #define __FUNC__ "OptionsFindPair_Private"
 static int OptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscTruth *flg)
 {
-  int        i, N,ierr,len;
+  int        i,N,ierr,len;
   char       **names,tmp[256];
   PetscTruth match;
 
@@ -648,7 +648,7 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 
   /* slow search */
   *flg = PETSC_FALSE;
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     ierr = PetscStrcmp(names[i],tmp,&match);CHKERRQ(ierr);
     if (match) {
        *value = options->values[i];
@@ -931,12 +931,12 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,PetscTrut
 
       ierr = PetscStrtok(value,",",&tvalue);CHKERRQ(ierr);
       if (!tvalue) { SETERRQ(1,0,"unknown string specified\n"); }
-      re      = OptionsAtod(tvalue);
+      ierr    = OptionsAtod(tvalue,&re);CHKERRQ(ierr);
       ierr    = PetscStrtok(0,",",&tvalue);CHKERRQ(ierr);
       if (!tvalue) { /* Unknown separator used. using only real value */
         *dvalue = re;
       } else {
-        im      = OptionsAtod(tvalue);
+        ierr    = OptionsAtod(tvalue,&im);CHKERRQ(ierr);
         *dvalue = re + PETSC_i*im;
       } 
 #endif
@@ -974,7 +974,7 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,PetscTrut
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray()
 @*/
-int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], int *nmax,PetscTruth *flg)
+int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[],int *nmax,PetscTruth *flg)
 {
   char       *value,*cpy;
   int        n = 0,ierr;
@@ -1090,7 +1090,7 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetString(const char pre[],const char name[],char string[],int len, PetscTruth *flg)
+int OptionsGetString(const char pre[],const char name[],char string[],int len,PetscTruth *flg)
 {
   char       *value;
   int        ierr;
@@ -1147,8 +1147,8 @@ int OptionsGetString(const char pre[],const char name[],char string[],int len, P
 @*/
 int OptionsGetStringArray(const char pre[],const char name[],char **strings,int *nmax,PetscTruth *flg)
 {
-  char       *value, *cpy;
-  int        len, n, ierr;
+  char       *value,*cpy;
+  int        len,n,ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -1162,14 +1162,14 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
   ierr  = PetscStrallocpy(value,&cpy);CHKERRQ(ierr);
   value = cpy;
 
-  ierr = PetscStrtok(value, ",",&value);CHKERRQ(ierr);
+  ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
   n = 0;
   while (n < *nmax) {
     if (!value) break;
     ierr        = PetscStrlen(value,&len);CHKERRQ(ierr);
-    strings[n] = (char *) PetscMalloc((len+1) * sizeof(char));CHKPTRQ(strings[n]);
-    ierr       = PetscStrcpy(strings[n], value);CHKERRQ(ierr);
-    ierr       = PetscStrtok(0, ",",&value);CHKERRQ(ierr);
+    strings[n] = (char*)PetscMalloc((len+1) * sizeof(char));CHKPTRQ(strings[n]);
+    ierr       = PetscStrcpy(strings[n],value);CHKERRQ(ierr);
+    ierr       = PetscStrtok(0,",",&value);CHKERRQ(ierr);
     n++;
   }
   *nmax = n;
@@ -1199,7 +1199,7 @@ int OptionsAllUsed(int *N)
   int  i,n = 0;
 
   PetscFunctionBegin;
-  for ( i=0; i<options->N; i++ ) {
+  for (i=0; i<options->N; i++) {
     if (!options->used[i]) { n++; }
   }
   *N = n;
@@ -1225,11 +1225,10 @@ int OptionsLeft(void)
   int i,ierr;
 
   PetscFunctionBegin;
-  for ( i=0; i<options->N; i++ ) {
+  for (i=0; i<options->N; i++) {
     if (!options->used[i]) {
       if (options->values[i]) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],
-                                                         options->values[i]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s no value \n",options->names[i]);CHKERRQ(ierr);
       }
@@ -1254,5 +1253,3 @@ int OptionsCreate(void)
   options->namegiven = 0;
   PetscFunctionReturn(0);
 }
-
-

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex36.F,v 1.24 1998/04/15 18:02:33 balay Exp balay $";
+!      "$Id: ex36.F,v 1.25 1998/04/21 18:30:37 balay Exp bsmith $";
 !
 !   This program demonstrates use of PETSc dense matrices.
 !
@@ -38,7 +38,7 @@
 #include "include/finclude/viewer.h"
 
       Mat         A
-      integer     n, m, err
+      integer     n,m,err
       Scalar      aa(1)
       PetscOffset ia
 
@@ -81,8 +81,8 @@
 #include "include/finclude/mat.h"
 #include "include/finclude/viewer.h"
 
-      integer   n, m, err
-      parameter (m=5, n=4)
+      integer   n,m,err
+      parameter (m=5,n=4)
       Mat       A
       Scalar    aa(m,n)
 

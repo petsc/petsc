@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.9 1999/05/04 20:29:57 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.10 1999/10/24 14:01:41 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -13,7 +13,7 @@ T*/
 #include "petsc.h"
 int main(int argc,char **argv)
 {
-  int ierr, rank, size;
+  int ierr,rank,size;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.

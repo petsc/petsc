@@ -1,64 +1,64 @@
-/*$Id: cgeig.c,v 1.45 1999/05/04 20:34:47 balay Exp bsmith $*/
+/*$Id: cgeig.c,v 1.46 1999/10/24 14:03:12 bsmith Exp bsmith $*/
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian
    matrices (not complex matrices that are symmetric).
 */
 #include "src/sles/ksp/impls/cg/cgctx.h"
-static int LINPACKcgtql1(int *, double *, double *, int *);
+static int LINPACKcgtql1(int *,PetscReal *,PetscReal *,int *);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_CG"
-int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c,int *neig)
+int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
-  KSP_CG *cgP = (KSP_CG *) ksp->data;
-  Scalar *d, *e;
-  double *ee;
-  int    j,n = ksp->its,ierr;
+  KSP_CG    *cgP = (KSP_CG*)ksp->data;
+  Scalar    *d,*e;
+  PetscReal *ee;
+  int       j,n = ksp->its,ierr;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
-  ierr = PetscMemzero(c,nmax*sizeof(double));CHKERRQ(ierr);
-  if (n == 0) {
+  ierr = PetscMemzero(c,nmax*sizeof(PetscReal));CHKERRQ(ierr);
+  if (!n) {
     *r = 0.0;
     PetscFunctionReturn(0);
   }
   d = cgP->d; e = cgP->e; ee = cgP->ee;
 
   /* copy tridiagonal matrix to work space */
-  for ( j=0; j<n ; j++) { 
-    r[j]  = PetscReal(d[j]);
-    ee[j] = PetscReal(e[j]);
+  for (j=0; j<n ; j++) { 
+    r[j]  = PetscRealPart(d[j]);
+    ee[j] = PetscRealPart(e[j]);
   }
 
   LINPACKcgtql1(&n,r,ee,&j);
   if (j != 0) SETERRQ(PETSC_ERR_LIB,0,"Error from tql1(); eispack eigenvalue routine");  
-  PetscSortDouble(n,r);
+  ierr = PetscSortDouble(n,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeExtremeSingularValues_CG"
-int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
+int KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
-  KSP_CG *cgP = (KSP_CG *) ksp->data;
-  Scalar *d, *e;
-  double *dd, *ee;
-  int    j,n = ksp->its;
+  KSP_CG    *cgP = (KSP_CG*)ksp->data;
+  Scalar    *d,*e;
+  PetscReal *dd,*ee;
+  int       j,n = ksp->its;
 
   PetscFunctionBegin;
-  if (n == 0) {
+  if (!n) {
     *emax = *emin = 1.0;
     PetscFunctionReturn(0);
   }
   d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
 
   /* copy tridiagonal matrix to work space */
-  for ( j=0; j<n ; j++) { 
-    dd[j] = PetscReal(d[j]);
-    ee[j] = PetscReal(e[j]);
+  for (j=0; j<n ; j++) { 
+    dd[j] = PetscRealPart(d[j]);
+    ee[j] = PetscRealPart(e[j]);
   }
 
   LINPACKcgtql1(&n,dd,ee,&j);
@@ -77,26 +77,26 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
   always produces a real, symmetric tridiagonal matrix.
 */
 
-static double LINPACKcgpthy(double*,double*);
+static PetscReal LINPACKcgpthy(PetscReal*,PetscReal*);
 
 #undef __FUNC__  
 #define __FUNC__ "LINPACKcgtql1"
-static int LINPACKcgtql1(int *n, double *d, double *e, int *ierr)
+static int LINPACKcgtql1(int *n,PetscReal *d,PetscReal *e,int *ierr)
 {
     /* System generated locals */
-    int    i__1, i__2;
-    double d__1, d__2,c_b10 = 1.0;
+    int    i__1,i__2;
+    PetscReal d__1,d__2,c_b10 = 1.0;
 
     /* Local variables */
-    static double c, f, g, h;
-    static int    i, j, l, m;
-    static double p, r, s, c2, c3;
-    static int    l1, l2;
-    static double s2;
-    static int    ii;
-    static double dl1, el1;
-    static int    mml;
-    static double tst1, tst2;
+     PetscReal c,f,g,h;
+     int    i,j,l,m;
+     PetscReal p,r,s,c2,c3 = 0.0;
+     int    l1,l2;
+     PetscReal s2 = 0.0;
+     int    ii;
+     PetscReal dl1,el1;
+     int    mml;
+     PetscReal tst1,tst2;
 
 /*     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE TQL1, */
 /*     NUM. MATH. 11, 293-306(1968) BY BOWDLER, MARTIN, REINSCH, AND */
@@ -139,7 +139,7 @@ static int LINPACKcgtql1(int *n, double *d, double *e, int *ierr)
 
 /*     ------------------------------------------------------------------ 
 */
-    double ds;
+    PetscReal ds;
 
     PetscFunctionBegin;
     --e;
@@ -162,18 +162,18 @@ static int LINPACKcgtql1(int *n, double *d, double *e, int *ierr)
     i__1 = *n;
     for (l = 1; l <= i__1; ++l) {
         j = 0;
-        h = (d__1 = d[l], PetscAbsDouble(d__1)) + (d__2 = e[l], PetscAbsDouble(d__2));
+        h = (d__1 = d[l],PetscAbsDouble(d__1)) + (d__2 = e[l],PetscAbsDouble(d__2));
         if (tst1 < h) {
             tst1 = h;
         }
 /*     .......... LOOK FOR SMALL SUB-DIAGONAL ELEMENT .......... */
         i__2 = *n;
         for (m = l; m <= i__2; ++m) {
-            tst2 = tst1 + (d__1 = e[m], PetscAbsDouble(d__1));
+            tst2 = tst1 + (d__1 = e[m],PetscAbsDouble(d__1));
             if (tst2 == tst1) {
                 goto L120;
             }
-/*     .......... E(N) IS ALWAYS ZERO, SO THERE IS NO EXIT */
+/*     .......... E(N) IS ALWAYS ZERO,SO THERE IS NO EXIT */
 /*                THROUGH THE BOTTOM OF THE LOOP .......... */
         }
 L120:
@@ -190,9 +190,7 @@ L130:
         l2 = l1 + 1;
         g = d[l];
         p = (d[l1] - g) / (e[l] * 2.);
-        r = LINPACKcgpthy(&p, &c_b10);
-/*      d[l] = e[l] / (p + d_sign(&r, &p));
-        d[l1] = e[l] * (p + d_sign(&r, &p)); */
+        r = LINPACKcgpthy(&p,&c_b10);
         ds = 1.0; if (p < 0.0) ds = -1.0;
         d[l] = e[l] / (p + ds*r);
         d[l1] = e[l] * (p + ds*r);
@@ -225,7 +223,7 @@ L145:
             i = m - ii;
             g = c * e[i];
             h = c * p;
-            r = LINPACKcgpthy(&p, &e[i]);
+            r = LINPACKcgpthy(&p,&e[i]);
             e[i + 1] = s * r;
             s = e[i] / r;
             c = p / r;
@@ -236,7 +234,7 @@ L145:
         p = -s * s2 * c3 * el1 * e[l] / dl1;
         e[l] = s * p;
         d[l] = c * p;
-        tst2 = tst1 + (d__1 = e[l], PetscAbsDouble(d__1));
+        tst2 = tst1 + (d__1 = e[l],PetscAbsDouble(d__1));
         if (tst2 > tst1) {
             goto L130;
         }
@@ -273,26 +271,26 @@ L1001:
 
 #undef __FUNC__  
 #define __FUNC__ "LINPACKcgpthy"
-static double LINPACKcgpthy(double *a, double *b)
+static PetscReal LINPACKcgpthy(PetscReal *a,PetscReal *b)
 {
     /* System generated locals */
-    double ret_val, d__1, d__2, d__3;
+    PetscReal ret_val,d__1,d__2,d__3;
  
     /* Local variables */
-    static double p, r, s, t, u;
+    PetscReal p,r,s,t,u;
 
     PetscFunctionBegin;
 /*     FINDS DSQRT(A**2+B**2) WITHOUT OVERFLOW OR DESTRUCTIVE UNDERFLOW */
 
 
 /* Computing MAX */
-    d__1 = PetscAbsDouble(*a), d__2 = PetscAbsDouble(*b);
+    d__1 = PetscAbsDouble(*a),d__2 = PetscAbsDouble(*b);
     p = PetscMax(d__1,d__2);
-    if (p == 0.) {
+    if (!p) {
         goto L20;
     }
 /* Computing MIN */
-    d__2 = PetscAbsDouble(*a), d__3 = PetscAbsDouble(*b);
+    d__2 = PetscAbsDouble(*a),d__3 = PetscAbsDouble(*b);
 /* Computing 2nd power */
     d__1 = PetscMin(d__2,d__3) / p;
     r = d__1 * d__1;

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.6 1999/11/05 14:44:01 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.7 1999/11/24 21:52:55 bsmith Exp bsmith $*/
 
 static char help[] = "Makes a simple histogram\n";
 
@@ -9,11 +9,11 @@ static char help[] = "Makes a simple histogram\n";
 int main(int argc,char **argv)
 {
   Draw       draw;
-  DrawHist   hist;
+  DrawHG     hist;
   DrawAxis   axis;
-  int        n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,bins = 8;
+  int        n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,bins = 8;
   int        color = DRAW_GREEN;
-  char       *xlabel, *ylabel, *toplabel;
+  char       *xlabel,*ylabel,*toplabel;
   double     xd;
   PetscTruth flg;
 
@@ -32,20 +32,20 @@ int main(int argc,char **argv)
   /* ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);*/
   ierr = DrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
   ierr = DrawSetType(draw,DRAW_X);CHKERRA(ierr);
-  ierr = DrawHistCreate(draw,bins,&hist);CHKERRA(ierr);
-  ierr = DrawHistGetAxis(hist,&axis);CHKERRA(ierr);
+  ierr = DrawHGCreate(draw,bins,&hist);CHKERRA(ierr);
+  ierr = DrawHGGetAxis(hist,&axis);CHKERRA(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);CHKERRA(ierr);
   ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRA(ierr);
 
-  for ( i=0; i<n ; i++ ) {
-    xd = (double)( i - 5 );
-    ierr = DrawHistAddValue(hist,xd*xd);CHKERRA(ierr);
+  for (i=0; i<n ; i++) {
+    xd = (double)(i - 5);
+    ierr = DrawHGAddValue(hist,xd*xd);CHKERRA(ierr);
   }
-  ierr = DrawHistSetColor(hist,color);CHKERRA(ierr);
-  ierr = DrawHistDraw(hist);CHKERRA(ierr);
+  ierr = DrawHGSetColor(hist,color);CHKERRA(ierr);
+  ierr = DrawHGDraw(hist);CHKERRA(ierr);
   ierr = DrawFlush(draw);CHKERRA(ierr);
 
-  ierr = DrawHistDestroy(hist);CHKERRA(ierr);
+  ierr = DrawHGDestroy(hist);CHKERRA(ierr);
   ierr = DrawDestroy(draw);CHKERRA(ierr);
   PetscFinalize();
   return 0;

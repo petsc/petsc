@@ -1,5 +1,5 @@
 !
-!  $Id: ts.h,v 1.16 1999/04/01 19:23:24 balay Exp balay $;
+!  $Id: ts.h,v 1.17 1999/09/14 15:58:46 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the TS (timestepping) package in PETSc
 !
@@ -24,13 +24,13 @@
 !
 !  TSProblemType
 !
-      integer TS_LINEAR, TS_NONLINEAR
-      parameter (TS_LINEAR = 0, TS_NONLINEAR = 1)
+      integer TS_LINEAR,TS_NONLINEAR
+      parameter (TS_LINEAR = 0,TS_NONLINEAR = 1)
 !
 !  TSPvodeType
 !
-      integer PVODE_ADAMS, PVODE_BDF
-      parameter (PVODE_ADAMS=0, PVODE_BDF=1)
+      integer PVODE_ADAMS,PVODE_BDF
+      parameter (PVODE_ADAMS=0,PVODE_BDF=1)
 !
 !  TSPvodeGramSchmidtType
 !

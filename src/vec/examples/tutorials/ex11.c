@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.8 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.9 1999/11/05 14:45:05 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 {
   Vec      x;               /* vectors */
   double   norm;
-  int      n = 20, ierr;
+  int      n = 20,ierr;
   Scalar   one = 1.0;
 
   PetscInitialize(&argc,&argv,(char*)0,help);

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.9 1999/05/12 03:30:15 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.11 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatGetRow() and MatRestoreRow().\n";
 
@@ -9,20 +9,20 @@ static char help[] = "Tests MatGetRow() and MatRestoreRow().\n";
 int main(int argc,char **args)
 {
   Mat    C; 
-  int    i, j, m = 5, n = 5, I, J, ierr, *idx, nz;
-  Scalar v, *values;
+  int    i,j,m = 5,n = 5,I,J,ierr,*idx,nz;
+  Scalar v,*values;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
@@ -30,12 +30,12 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-  for ( i=0; i<m*n; i++ ) {
+  for (i=0; i<m*n; i++) {
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRA(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    for ( j=0; j<nz; j++ ) {ierr = PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],PetscReal(values[j]));CHKERRA(ierr);}
+    for (j=0; j<nz; j++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],PetscRealPart(values[j]));CHKERRA(ierr);}
 #else
-    for ( j=0; j<nz; j++ ) {ierr = PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],values[j]);CHKERRA(ierr);}
+    for (j=0; j<nz; j++) {ierr = PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],values[j]);CHKERRA(ierr);}
 #endif
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRA(ierr);
     ierr = MatRestoreRow(C,i,&nz,&idx,&values);CHKERRA(ierr);

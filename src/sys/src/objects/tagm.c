@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.16 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: tagm.c,v 1.17 1999/11/05 14:44:14 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -36,13 +36,13 @@ EXTERN_C_BEGIN
           which is an extern "C" routine. The Solaris 2.7 OS compilers require that this be
           extern "C".
 */
-int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
+int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %d\n",(int) comm);
-  ierr = PetscFree( attr_val );CHKERRQ(ierr);
+  PLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %d\n",(int)comm);
+  ierr = PetscFree(attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 EXTERN_C_END
@@ -52,14 +52,14 @@ EXTERN_C_END
 /*@C
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
-    number of times.  This tag should only be used with the current object's
+    number of times.  This tag should only be used with the current objects
     communicator; do NOT use it with any other MPI communicator.
 
     Collective on PetscObject
 
     Input Parameter:
 .   obj - the PETSc object; this must be cast with a (PetscObject), for example, 
-         PetscObjectGetNewTag((PetscObject) mat,&tag);
+         PetscObjectGetNewTag((PetscObject)mat,&tag);
 
     Output Parameter:
 .   tag - the new tag
@@ -98,7 +98,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
     Input Parameter:
 .   obj - the PETSc object; this must be cast with a (PetscObject), for example, 
-          PetscObjectRestoreNewTag((PetscObject) mat,&tag);
+          PetscObjectRestoreNewTag((PetscObject)mat,&tag);
 
     Output Parameter:
 .   tag - the new tag
@@ -132,7 +132,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 /*@C
     PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All 
     processors that share the communicator MUST call this routine EXACTLY the same
-    number of times.  This tag should only be used with the current object's
+    number of times.  This tag should only be used with the current objects
     communicator; do NOT use it with any other MPI communicator.
 
     Collective on comm
@@ -172,19 +172,17 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
     processors that share the communicator MUST call this routine EXACTLY 
     the same number of times. 
 
-    Collective on comm
+    Collective on MPI_Comm
 
-    Input Parameter:
-.   comm - the PETSc communicator
-
-    Output Parameter:
-.   tag - the new tag
+    Input Parameters:
++   comm - the PETSc communicator
+-   tag - the new tag
 
     Level: developer
 
 .keywords: comm, restore, new, tag
 
-.seealso:  PetscCommRestoreNewTag(),PetscObjectGetNewTag(),PetscObjectRestoreNewTag()
+.seealso:  PetscCommGetNewTag(),PetscObjectGetNewTag(),PetscObjectRestoreNewTag()
 @*/
 int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
 {
@@ -213,7 +211,7 @@ int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
 . comm_in - Input communicator
 
   Output Parameters:
-+ comm_out - Output communicator.  May be 'comm_in'.
++ comm_out - Output communicator.  May be comm_in.
 - first_tag - First tag available
 
   Notes:
@@ -222,7 +220,7 @@ int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
 */
 int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
-  int        ierr = MPI_SUCCESS,*tagvalp, *maxval;
+  int        ierr = MPI_SUCCESS,*tagvalp,*maxval;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -241,13 +239,13 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
 
   if (!flg) {
     /* This communicator is not yet known to this system, so we duplicate it and set its value */
-    ierr       = MPI_Comm_dup( comm_in, comm_out );CHKERRQ(ierr);
-    ierr       = MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
-    tagvalp    = (int *) PetscMalloc( 2*sizeof(int) );CHKPTRQ(tagvalp);
+    ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
+    ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
+    tagvalp    = (int*)PetscMalloc(2*sizeof(int));CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
-    ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval, tagvalp);CHKERRQ(ierr);
-    PLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %d %d max tags = %d\n",(int) comm_in,(int)*comm_out,*maxval);
+    ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);
+    PLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %d %d max tags = %d\n",(int)comm_in,(int)*comm_out,*maxval);
   } else {
     *comm_out = comm_in;
   }
@@ -260,7 +258,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     int size;
     ierr = MPI_Comm_size(*comm_out,&size);CHKERRQ(ierr);
     if (size > 1) {
-      int tag1 = *first_tag, tag2;
+      int tag1 = *first_tag,tag2;
       ierr = MPI_Allreduce(&tag1,&tag2,1,MPI_INT,MPI_BOR,*comm_out);CHKERRQ(ierr);
       if (tag2 != tag1) {
         SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Communicator was used on subset\n of processors.");
@@ -288,7 +286,7 @@ int PetscCommDestroy_Private(MPI_Comm *comm)
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {
-    PLogInfo(0,"PetscCommDestroy_Private:Deleting MPI_Comm %d\n",(int) *comm);
+    PLogInfo(0,"PetscCommDestroy_Private:Deleting MPI_Comm %d\n",(int)*comm);
     ierr = MPI_Comm_free(comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: lsparams.c,v 1.3 1999/09/02 14:54:04 bsmith Exp bsmith $*/
+/*$Id: lsparams.c,v 1.5 1999/10/24 14:03:35 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -27,14 +27,14 @@
 
 .seealso: SNESGetLineSearchParams(), SNESSetLineSearch()
 @*/
-int SNESSetLineSearchParams(SNES snes, double alpha, double maxstep, double steptol)
+int SNESSetLineSearchParams(SNES snes,double alpha,double maxstep,double steptol)
 {
   SNES_EQ_LS *ls;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes, SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ls = (SNES_EQ_LS *) snes->data;
+  ls = (SNES_EQ_LS*)snes->data;
   if (alpha   >= 0.0) ls->alpha   = alpha;
   if (maxstep >= 0.0) ls->maxstep = maxstep;
   if (steptol >= 0.0) ls->steptol = steptol;
@@ -66,14 +66,14 @@ int SNESSetLineSearchParams(SNES snes, double alpha, double maxstep, double step
 
 .seealso: SNESSetLineSearchParams(), SNESSetLineSearch()
 @*/
-int SNESGetLineSearchParams(SNES snes, double *alpha, double *maxstep, double *steptol)
+int SNESGetLineSearchParams(SNES snes,double *alpha,double *maxstep,double *steptol)
 {
   SNES_EQ_LS *ls;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes, SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ls = (SNES_EQ_LS *) snes->data;
+  ls = (SNES_EQ_LS*)snes->data;
   if (alpha) {
     PetscValidDoublePointer(alpha);
     *alpha   = ls->alpha;

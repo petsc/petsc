@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.12 1999/05/04 20:36:19 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.14 1999/10/24 14:03:42 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
@@ -29,18 +29,18 @@ extern int FormFunction(SNES,Vec,Vec,void*);
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES     snes;         /* nonlinear solver context */
   SLES     sles;         /* linear solver context */
   PC       pc;           /* preconditioner context */
   KSP      ksp;          /* Krylov subspace method context */
-  Vec      x, r;         /* solution, residual vectors */
+  Vec      x,r;         /* solution, residual vectors */
   Mat      J;            /* Jacobian matrix */
-  int      ierr, its, size;
+  int      ierr,its,size;
   Scalar   pfive = .5;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
@@ -111,7 +111,7 @@ int main( int argc, char **argv )
   */
   ierr = VecSet(&pfive,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -141,7 +141,7 @@ int main( int argc, char **argv )
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
   int    ierr;
-  Scalar *xx, *ff;
+  Scalar *xx,*ff;
 
   /*
      Get pointers to vector data.
@@ -185,8 +185,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 */
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
-  Scalar *xx, A[4];
-  int    ierr, idx[2] = {0,1};
+  Scalar *xx,A[4];
+  int    ierr,idx[2] = {0,1};
 
   /*
      Get pointer to vector data

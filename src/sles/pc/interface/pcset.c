@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.96 1999/11/05 14:46:16 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.97 1999/11/24 21:54:31 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -72,27 +72,27 @@ int PCSetType(PC pc,PCType type)
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
 
   /* Determine the PCCreateXXX routine for a particular preconditioner */
-  ierr =  FListFind(pc->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(pc->comm,PCList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,1,"Unable to find requested PC type %s",type);
   if (pc->data) {ierr = PetscFree(pc->data);CHKERRQ(ierr);}
 
-  pc->ops->destroy             = ( int (*)(PC )) 0;
-  pc->ops->view                = ( int (*)(PC,Viewer) ) 0;
-  pc->ops->apply               = ( int (*)(PC,Vec,Vec) ) 0;
-  pc->ops->setup               = ( int (*)(PC) ) 0;
-  pc->ops->applyrichardson     = ( int (*)(PC,Vec,Vec,Vec,int) ) 0;
-  pc->ops->applyBA             = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  pc->ops->setfromoptions      = ( int (*)(PC) ) 0;
-  pc->ops->printhelp           = ( int (*)(PC,char*) ) 0;
-  pc->ops->applytranspose      = ( int (*)(PC,Vec,Vec) ) 0;
-  pc->ops->applyBAtranspose    = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  pc->ops->presolve            = ( int (*)(PC,KSP,Vec,Vec) ) 0;
-  pc->ops->postsolve           = ( int (*)(PC,KSP,Vec,Vec) ) 0;
-  pc->ops->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;
-  pc->ops->applysymmetricleft  = ( int (*)(PC,Vec,Vec) ) 0;
-  pc->ops->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
-  pc->ops->setuponblocks       = ( int (*)(PC) ) 0;
-  pc->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
+  pc->ops->destroy             = (int (*)(PC)) 0;
+  pc->ops->view                = (int (*)(PC,Viewer)) 0;
+  pc->ops->apply               = (int (*)(PC,Vec,Vec)) 0;
+  pc->ops->setup               = (int (*)(PC)) 0;
+  pc->ops->applyrichardson     = (int (*)(PC,Vec,Vec,Vec,int)) 0;
+  pc->ops->applyBA             = (int (*)(PC,int,Vec,Vec,Vec)) 0;
+  pc->ops->setfromoptions      = (int (*)(PC)) 0;
+  pc->ops->printhelp           = (int (*)(PC,char*)) 0;
+  pc->ops->applytranspose      = (int (*)(PC,Vec,Vec)) 0;
+  pc->ops->applyBAtranspose    = (int (*)(PC,int,Vec,Vec,Vec)) 0;
+  pc->ops->presolve            = (int (*)(PC,KSP,Vec,Vec)) 0;
+  pc->ops->postsolve           = (int (*)(PC,KSP,Vec,Vec)) 0;
+  pc->ops->getfactoredmatrix   = (int (*)(PC,Mat*)) 0;
+  pc->ops->applysymmetricleft  = (int (*)(PC,Vec,Vec)) 0;
+  pc->ops->applysymmetricright = (int (*)(PC,Vec,Vec)) 0;
+  pc->ops->setuponblocks       = (int (*)(PC)) 0;
+  pc->modifysubmatrices   = (int (*)(PC,int,IS*,IS*,Mat*,void*)) 0;
 
   /* Call the PCCreateXXX routine for this particular preconditioner */
   ierr = (*r)(pc);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ int PCRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (PCList) {
-    ierr = FListDestroy( PCList );CHKERRQ(ierr);
+    ierr = FListDestroy(PCList);CHKERRQ(ierr);
     PCList = 0;
   }
   PCRegisterAllCalled = 0;

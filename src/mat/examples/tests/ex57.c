@@ -1,4 +1,4 @@
-/*$Id: ex57.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex57.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
  binary file.\n\
@@ -38,10 +38,10 @@ int main(int argc,char **args)
   ierr = MatLoad(fdin,mtype,&A);CHKERRA(ierr);
   ierr = ViewerDestroy(fdin);CHKERRA(ierr);
   
-  ierr = MatGetSize(A,&size,&size); CHKERRA(ierr);
+  ierr = MatGetSize(A,&size,&size);CHKERRA(ierr);
   size /= 2;
   ierr = OptionsGetInt(PETSC_NULL,"-start",&start,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-size", &size,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-size",&size,PETSC_NULL);CHKERRA(ierr);
   
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow);CHKERRA(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol);CHKERRA(ierr);

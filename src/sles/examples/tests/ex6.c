@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.59 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.60 1999/11/05 14:46:54 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -13,11 +13,11 @@ Input arguments are:\n\
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int        ierr, its;
+  int        ierr,its;
   double     norm;
   PLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
-  Scalar     zero = 0.0, none = -1.0;
-  Vec        x, b, u;
+  Scalar     zero = 0.0,none = -1.0;
+  Vec        x,b,u;
   Mat        A;
   MatType    mtype;
   SLES       sles;
@@ -56,7 +56,7 @@ int main(int argc,char **args)
     ierr = VecGetOwnershipRange(b,&start,&end);CHKERRA(ierr);
     ierr = VecGetLocalSize(b,&mvec);CHKERRA(ierr);
     ierr = VecGetArray(b,&bold);CHKERRA(ierr);
-    for (j=0; j<mvec; j++ ) {
+    for (j=0; j<mvec; j++) {
       index = start+j;
       ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRA(ierr);
     }
@@ -110,7 +110,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
   /*  matrix PC   KSP   Options       its    residual setuptime solvetime  */
   if (table) {
-    char   *matrixname, slesinfo[120];
+    char   *matrixname,slesinfo[120];
     Viewer viewer;
     ierr = ViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRA(ierr);
     ierr = SLESView(sles,viewer);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.23 1999/11/10 03:22:34 bsmith Exp bsmith $*/
+/*$Id: zts.c,v 1.24 1999/12/13 01:46:54 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ts.h"
@@ -51,7 +51,7 @@ void PETSC_STDCALL tsdefaultcomputejacobiancolor_(TS *ts,double *t,Vec *xx1,Mat 
   *ierr = TSDefaultComputeJacobianColor(*ts,*t,*xx1,J,B,flag,*(MatFDColoring*)ctx);
 }
 
-void PETSC_STDCALL tssettype_(TS *ts,CHAR type, int *ierr,int len )
+void PETSC_STDCALL tssettype_(TS *ts,CHAR type,int *ierr,int len)
 {
   char *t;
 
@@ -69,7 +69,7 @@ static int ourtsfunction(TS ts,double d,Vec x,Vec f,void *ctx)
   return 0;
 }
 
-void PETSC_STDCALL tssetrhsfunction_(TS *ts,int (*f)(TS*,double*,Vec*,Vec*,void*,int*),void*fP, int *ierr )
+void PETSC_STDCALL tssetrhsfunction_(TS *ts,int (*f)(TS*,double*,Vec*,Vec*,void*,int*),void*fP,int *ierr)
 {
   f2 = f;
   *ierr = TSSetRHSFunction(*ts,ourtsfunction,fP);
@@ -86,7 +86,7 @@ static int ourtsmatrix(TS ts,double d,Mat* m,Mat* p,MatStructure* type,void*ctx)
 }
 
 void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,int (*f)(TS*,double*,Mat*,Mat*,MatStructure*,
-                                                   void*,int *),void*fP, int *ierr )
+                                                   void*,int *),void*fP,int *ierr)
 {
   if (FORTRANNULLFUNCTION(f)) {
     *ierr = TSSetRHSMatrix(*ts,*A,*B,PETSC_NULL,fP);
@@ -106,7 +106,7 @@ static int ourtsjacobian(TS ts,double d,Vec x,Mat* m,Mat* p,MatStructure* type,v
 }
 
 void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (*f)(TS*,double*,Vec*,Mat*,Mat*,MatStructure*,
-               void*,int*),void*fP, int *ierr )
+               void*,int*),void*fP,int *ierr)
 {
   if (FORTRANNULLFUNCTION(f)) {
     *ierr = TSSetRHSJacobian(*ts,*A,*B,PETSC_NULL,fP);
@@ -120,22 +120,22 @@ void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (*f)(TS*,double*,
   }
 }
 
-void PETSC_STDCALL tsgetsolution_(TS *ts,Vec *v, int *ierr )
+void PETSC_STDCALL tsgetsolution_(TS *ts,Vec *v,int *ierr)
 {
   *ierr = TSGetSolution(*ts,v);
 }
 
-void PETSC_STDCALL tscreate_(MPI_Comm *comm,TSProblemType *problemtype,TS *outts, int *ierr )
+void PETSC_STDCALL tscreate_(MPI_Comm *comm,TSProblemType *problemtype,TS *outts,int *ierr)
 {
-  *ierr = TSCreate((MPI_Comm)PetscToPointerComm( *comm ),*problemtype,outts);
+  *ierr = TSCreate((MPI_Comm)PetscToPointerComm(*comm),*problemtype,outts);
 }
 
-void PETSC_STDCALL tsgetsnes_(TS *ts,SNES *snes, int *ierr )
+void PETSC_STDCALL tsgetsnes_(TS *ts,SNES *snes,int *ierr)
 {
   *ierr = TSGetSNES(*ts,snes);
 }
 
-void PETSC_STDCALL tsgetsles_(TS *ts,SLES *sles, int *ierr )
+void PETSC_STDCALL tsgetsles_(TS *ts,SLES *sles,int *ierr)
 {
   *ierr = TSGetSLES(*ts,sles);
 }
@@ -156,7 +156,7 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name,int *ierr,int len)
 }
 
 #if defined(PETSC_HAVE_PVODE)  && !defined(__cplusplus)
-void PETSC_STDCALL tspvodegetiterations_(TS *ts,int *nonlin, int *lin, int *ierr)
+void PETSC_STDCALL tspvodegetiterations_(TS *ts,int *nonlin,int *lin,int *ierr)
 {
   if (FORTRANNULLINTEGER(nonlin)) nonlin = PETSC_NULL;
   if (FORTRANNULLINTEGER(lin))    lin    = PETSC_NULL;
@@ -164,7 +164,7 @@ void PETSC_STDCALL tspvodegetiterations_(TS *ts,int *nonlin, int *lin, int *ierr
 }
 #endif
 
-void PETSC_STDCALL tsdestroy_(TS *ts, int *ierr ){
+void PETSC_STDCALL tsdestroy_(TS *ts,int *ierr){
   *ierr = TSDestroy(*ts);
 }
 
@@ -188,9 +188,9 @@ static int ourtsdestroy(void *ctx)
   return 0;
 }
 
-void PETSC_STDCALL tssetmonitor_(TS *ts,void (*func)(TS*,int*,double*,Vec*,void*,int*),void *mctx,void (*d)(void*,int*), int *ierr )
+void PETSC_STDCALL tssetmonitor_(TS *ts,void (*func)(TS*,int*,double*,Vec*,void*,int*),void *mctx,void (*d)(void*,int*),int *ierr)
 {
-  if ((void*)func == (void*) tsdefaultmonitor_) {
+  if ((void*)func == (void*)tsdefaultmonitor_) {
     *ierr = TSSetMonitor(*ts,TSDefaultMonitor,0,0);
   } else {
     f7 = func;
@@ -203,7 +203,7 @@ void PETSC_STDCALL tssetmonitor_(TS *ts,void (*func)(TS*,int*,double*,Vec*,void*
   }
 }
 
-void PETSC_STDCALL tsgetoptionsprefix_(TS *ts, CHAR prefix,int *ierr,int len)
+void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,CHAR prefix,int *ierr,int len)
 {
   char *tname;
 

@@ -1,14 +1,14 @@
-/*$Id: MPI_Wtime.c,v 1.10 1999/09/02 14:54:26 bsmith Exp bsmith $*/
+/*$Id: MPI_Wtime.c,v 1.11 1999/10/24 14:04:16 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv)
+int main(int argc,char **argv)
 {
-  double x, y;
+  double x,y;
   
-  PetscInitialize(&argc, &argv,0,0);
+  PetscInitialize(&argc,&argv,0,0);
  /* To take care of paging effects */
   y = MPI_Wtime();
 

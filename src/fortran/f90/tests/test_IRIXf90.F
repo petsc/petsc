@@ -1,3 +1,5 @@
+/*$Id: f90_hpux.c,v 1.3 1999/10/24 14:04:23 bsmith Exp bsmith $*/
+
       program main
  
       Interface 

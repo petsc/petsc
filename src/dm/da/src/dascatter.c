@@ -1,4 +1,4 @@
-/*$Id: dascatter.c,v 1.16 1999/03/17 23:25:10 bsmith Exp bsmith $*/
+/*$Id: dascatter.c,v 1.17 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -33,7 +33,7 @@
 
 .seealso: DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToGlobal()
 @*/
-int DAGetScatter(DA da, VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
+int DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);

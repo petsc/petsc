@@ -1,4 +1,4 @@
-/*$Id: iccbs.c,v 1.37 1999/10/24 14:02:19 bsmith Exp bsmith $*/
+/*$Id: iccbs.c,v 1.38 1999/11/05 14:45:25 bsmith Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
 
@@ -27,9 +27,9 @@
 #define __FUNC__ "MatScaleSystem_MPIRowbs"
 int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
-  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs *) mat->data;
+  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
   Vec          v = bsif->xwork;
-  Scalar       *xa, *rhsa, *va;
+  Scalar       *xa,*rhsa,*va;
   int          ierr;
 
   PetscFunctionBegin;  
@@ -37,7 +37,7 @@ int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
   if (x) {
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
-    BSperm_dvec(xa,va,bsif->pA->perm); CHKERRBS(0);
+    BSperm_dvec(xa,va,bsif->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(v,bsif->diag,x);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
   if (rhs) {
     ierr = VecGetArray(rhs,&rhsa);CHKERRQ(ierr);
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
-    BSperm_dvec(rhsa,va,bsif->pA->perm); CHKERRBS(0);
+    BSperm_dvec(rhsa,va,bsif->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(rhs,&rhsa);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
     ierr = VecPointwiseMult(v,bsif->diag,rhs);CHKERRQ(ierr);
@@ -56,11 +56,11 @@ int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 
 #undef __FUNC__  
 #define __FUNC__ "MatUnScaleSystem_MPIRowbs"
-int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x, Vec rhs)
+int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
-  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs *) mat->data;
+  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
   Vec          v = bsif->xwork;
-  Scalar       *xa, *va, *rhsa;
+  Scalar       *xa,*va,*rhsa;
   int          ierr;
 
   PetscFunctionBegin;  
@@ -69,7 +69,7 @@ int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x, Vec rhs)
     ierr = VecPointwiseMult(x,bsif->diag,v);CHKERRQ(ierr);
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
-    BSiperm_dvec(va,xa,bsif->pA->perm); CHKERRBS(0);
+    BSiperm_dvec(va,xa,bsif->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
   }
@@ -77,7 +77,7 @@ int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x, Vec rhs)
     ierr = VecPointwiseDivide(rhs,bsif->diag,v);CHKERRQ(ierr);
     ierr = VecGetArray(rhs,&rhsa);CHKERRQ(ierr);
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
-    BSiperm_dvec(va,rhsa,bsif->pA->perm); CHKERRBS(0);
+    BSiperm_dvec(va,rhsa,bsif->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(rhs,&rhsa);CHKERRQ(ierr);
     ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
   }
@@ -88,7 +88,7 @@ int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x, Vec rhs)
 #define __FUNC__ "MatUseScaledForm_MPIRowbs"
 int MatUseScaledForm_MPIRowbs(Mat mat,PetscTruth scale)
 {
-  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs *) mat->data;
+  Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
 
   PetscFunctionBegin;
   bsif->vecs_permscale = scale;

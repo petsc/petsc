@@ -1,9 +1,9 @@
-/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
+/*$Id: zpetsc.h,v 1.53 1999/11/23 18:11:35 bsmith Exp bsmith $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
 #include "petsc.h"
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 extern int     PetscScalarAddressToFortran(PetscObject,Scalar*,Scalar*,int,long*);
 extern int     PetscScalarAddressFromFortran(PetscObject,Scalar*,long,int,Scalar **);
@@ -110,10 +110,10 @@ Fortran.
       b = 0; \
   } else {  \
     while((n > 0) && (b[n-1] == ' ')) n--; \
-    b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
-    if (!b) {*__ierr = PETSC_ERR_MEM; return; } \
-    *__ierr = PetscStrncpy(b,_fcdtocp(a),n); \
-    if(*__ierr) return; \
+    b = (char*)PetscMalloc((n+1)*sizeof(char)); \
+    if (!b) {*ierr = PETSC_ERR_MEM; return; } \
+    *ierr = PetscStrncpy(b,_fcdtocp(a),n); \
+    if(*ierr) return; \
     b[n] = 0; \
   } \
 }
@@ -129,10 +129,10 @@ Fortran.
   } else { \
     while((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
-      b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
-      if (!b) {*__ierr = PETSC_ERR_MEM; return; } \
-      *__ierr = PetscStrncpy(b,a,n); \
-      if(*__ierr) return; \
+      b = (char*)PetscMalloc((n+1)*sizeof(char)); \
+      if (!b) {*ierr = PETSC_ERR_MEM; return; } \
+      *ierr = PetscStrncpy(b,a,n); \
+      if(*ierr) return; \
       b[n] = 0; \
     } else b = a;\
   } \
@@ -144,11 +144,11 @@ Fortran.
 
 
 
-#define FORTRANNULLINTEGER(a)  (((void *) a) == PETSC_NULL_INTEGER_Fortran)
-#define FORTRANNULLOBJECT(a)   (((void *) a) == PETSC_NULL_INTEGER_Fortran)
-#define FORTRANNULLSCALAR(a)   (((void *) a) == PETSC_NULL_SCALAR_Fortran)
-#define FORTRANNULLDOUBLE(a)   (((void *) a) == PETSC_NULL_DOUBLE_Fortran)
-#define FORTRANNULLFUNCTION(a) (((void *) a) == PETSC_NULL_FUNCTION_Fortran)
+#define FORTRANNULLINTEGER(a)  (((void*)a) == PETSC_NULL_INTEGER_Fortran)
+#define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_INTEGER_Fortran)
+#define FORTRANNULLSCALAR(a)   (((void*)a) == PETSC_NULL_SCALAR_Fortran)
+#define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
+#define FORTRANNULLFUNCTION(a) (((void*)a) == PETSC_NULL_FUNCTION_Fortran)
 /*
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.
@@ -163,15 +163,15 @@ Fortran.
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
-    if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_0_FORTRAN) { \
+    if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_0_FORTRAN) { \
       v = VIEWER_DRAW_WORLD_0; \
-    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_1_FORTRAN) { \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_1_FORTRAN) { \
       v = VIEWER_DRAW_WORLD_1; \
-    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_2_FORTRAN) { \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_WORLD_2_FORTRAN) { \
       v = VIEWER_DRAW_WORLD_2; \
-    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAW_SELF_FORTRAN) { \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_DRAW_SELF_FORTRAN) { \
       v = VIEWER_DRAW_SELF; \
-    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_SOCKET_WORLD_FORTRAN) { \
+    } else if ((*(PetscFortranAddr*)vin) == VIEWER_SOCKET_WORLD_FORTRAN) { \
       v = VIEWER_SOCKET_WORLD; \
     } else { \
       v = *vin; \

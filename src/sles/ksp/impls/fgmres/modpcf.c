@@ -1,4 +1,4 @@
-/* $Id: modpcf.c,v 1.6 1999/12/19 04:29:01 bsmith Exp bsmith $*/
+/* $Id: modpcf.c,v 1.7 1999/12/21 17:48:07 bsmith Exp bsmith $*/
 
 #include "sles.h" 
 #undef __FUNC__  
@@ -15,7 +15,7 @@
 -  d - optional context destroy routine
 
    Calling Sequence of function:
-    ierr = int fcn(KSP ksp,int total_its,int loc_its,double res_norm,void*ctx);
+    ierr = int fcn(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void*ctx);
 
     ksp - the ksp context being used.
     total_its     - the total number of FGMRES iterations that have occurred.    
@@ -39,15 +39,15 @@
 .seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCSLES()
 
 @*/
-int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)( KSP,int,int,double,void*),void* ctx,int (*d)(void*))
+int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* ctx,int (*d)(void*))
 {
-  int ierr, (*f)(KSP, int (*)( KSP, int, int, double,void*),void*,int (*)(void*));
+  int ierr,(*f)(KSP,int (*)(KSP,int,int,PetscReal,void*),void*,int (*)(void*));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific( ksp, KSP_COOKIE );
-  ierr = PetscObjectQueryFunction( (PetscObject)ksp, "KSPFGMRESSetModifyPC_C", (void **)&f); CHKERRQ(ierr);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)( ksp, fcn,ctx,d ); CHKERRQ(ierr);
+    ierr = (*f)(ksp,fcn,ctx,d);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -79,7 +79,7 @@ You can use this as a template!
 .seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCSLES()
 
 @*/
-int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,double res_norm,void* dummy)
+int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void* dummy)
 {
   PetscFunctionBegin;
 
@@ -110,36 +110,36 @@ int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,double res_norm,
 .seealso: KSPFGMRESSetModifyPC(), KSPFGMRESModifyPCSLES()
 
 @*/
-int KSPFGMRESModifyPCSLES(KSP ksp,int total_its,int loc_its,double res_norm,void *dummy)
+int KSPFGMRESModifyPCSLES(KSP ksp,int total_its,int loc_its,PetscReal res_norm,void *dummy)
 {
   PC         pc;
   int        ierr,maxits;
   SLES       sub_sles;
   KSP        sub_ksp;
-  double     rtol, atol, dtol;
+  PetscReal  rtol,atol,dtol;
   PetscTruth issles;
 
   PetscFunctionBegin;
 
-  ierr = KSPGetPC( ksp, &pc ); CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject) pc, PCSLES,&issles );CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCSLES,&issles);CHKERRQ(ierr);
   if (issles) { 
-    ierr = PCSLESGetSLES( pc, &sub_sles ); CHKERRQ(ierr);
-    ierr = SLESGetKSP( sub_sles, &sub_ksp ); CHKERRQ(ierr);
+    ierr = PCSLESGetSLES(pc,&sub_sles);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sub_sles,&sub_ksp);CHKERRQ(ierr);
   
     /* note that at this point you could check the type of KSP with KSPGetType() */  
 
     /* Now we can use functions such as KSPGMRESSetRestart() or 
       KSPGMRESSetOrthogonalization() or KSPSetTolerances() */
 
-    ierr = KSPGetTolerances( sub_ksp, &rtol, &atol, &dtol, &maxits ); CHKERRQ(ierr);
-    if (loc_its == 0 ) {
+    ierr = KSPGetTolerances(sub_ksp,&rtol,&atol,&dtol,&maxits);CHKERRQ(ierr);
+    if (loc_its == 0) {
       rtol = .1;
     } else {
       rtol *= .9;
     }
-    ierr = KSPSetTolerances( sub_ksp, rtol, atol, dtol, maxits ); CHKERRQ(ierr);
+    ierr = KSPSetTolerances(sub_ksp,rtol,atol,dtol,maxits);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

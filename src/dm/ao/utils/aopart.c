@@ -1,4 +1,4 @@
-/*$Id: aopart.c,v 1.9 1999/10/24 14:04:03 bsmith Exp bsmith $*/
+/*$Id: aopart.c,v 1.10 1999/11/05 14:47:50 bsmith Exp bsmith $*/
 
 #include "ao.h"       /*I  "ao.h"  I*/
 
@@ -29,7 +29,7 @@ int AODataKeyPartition(AOData aodata,char *key)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = PetscObjectGetComm((PetscObject) aodata,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)aodata,&comm);CHKERRQ(ierr);
 
   ierr = AODataKeyGetAdjacency(aodata,key,&adj);CHKERRA(ierr);
   ierr = MatPartitioningCreate(comm,&part);CHKERRA(ierr);

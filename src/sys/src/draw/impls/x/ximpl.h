@@ -1,4 +1,4 @@
-/* $Id: ximpl.h,v 1.11 1999/05/12 03:26:40 bsmith Exp bsmith $ */
+/* $Id: ximpl.h,v 1.12 1999/11/05 14:43:58 bsmith Exp bsmith $ */
 
 /*
       Defines the internal data structures for the X-windows 
@@ -24,7 +24,7 @@ typedef struct {
 
 typedef struct {
   Font     fnt;
-  int      font_w, font_h;
+  int      font_w,font_h;
   int      font_descent;
   PixVal   font_pix;
 } XiFont;
@@ -37,38 +37,38 @@ typedef struct {
     XiGC     gc;
     XiFont   *font;
     int      depth;           /* Depth of visual */
-    int      numcolors,       /* Number of available colors */
+    int      numcolors,      /* Number of available colors */
              maxcolors;       /* Current number in use */
     Colormap cmap;
-    PixVal   foreground, background;
+    PixVal   foreground,background;
     PixVal   cmapping[256];
-    int      x, y, w, h;      /* Size and location of window */
+    int      x,y,w,h;      /* Size and location of window */
     Drawable drw;
 } Draw_X;
 
 #define XiDrawable(w) ((w)->drw ? (w)->drw : (w)->win)
 
-#define XiSetColor( Win,icolor )\
+#define XiSetColor(Win,icolor)\
   {if (icolor >= 256 || icolor < 0) SETERRQ(1,1,"Color value out of range");\
    if ((Win)->gc.cur_pix != (Win)->cmapping[icolor]) { \
-     XSetForeground( (Win)->disp, (Win)->gc.set, (Win)->cmapping[icolor] ); \
+     XSetForeground((Win)->disp,(Win)->gc.set,(Win)->cmapping[icolor]); \
      (Win)->gc.cur_pix   = (Win)->cmapping[icolor];\
   }}
 
-#define XiSetPixVal( Win,pix )\
+#define XiSetPixVal(Win,pix)\
   {if ((Win)->gc.cur_pix != pix) { \
-     XSetForeground( (Win)->disp, (Win)->gc.set, pix ); \
+     XSetForeground((Win)->disp,(Win)->gc.set,pix); \
      (Win)->gc.cur_pix   = pix;\
   }}
 
 typedef struct {
-  int      x, y, xh, yh, w, h;
+  int      x,y,xh,yh,w,h;
 } XiRegion;
 
 typedef struct {
   XiRegion Box;
-  int      width, HasColor, is_in;
-  PixVal   Hi, Lo;
+  int      width,HasColor,is_in;
+  PixVal   Hi,Lo;
 } XiDecoration;
 
 #endif

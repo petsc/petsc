@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.17 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.18 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -28,11 +28,11 @@ T*/
     in the linear solution process.
 */
 typedef struct {
-   Vec    x, b;      /* solution vector, right-hand-side vector */
+   Vec    x,b;      /* solution vector, right-hand-side vector */
    Mat    A;         /* sparse matrix */
    SLES   sles;      /* linear solver context */
-   int    m, n;      /* grid dimensions */
-   Scalar hx2, hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
+   int    m,n;      /* grid dimensions */
+   Scalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 } UserCtx;
 
 extern int UserInitializeLinearSolver(int,int,UserCtx *);
@@ -44,8 +44,8 @@ extern int UserDoLinearSolver(Scalar *,UserCtx *userctx,Scalar *b,Scalar *x);
 int main(int argc,char **args)
 {
   UserCtx userctx;
-  int     ierr, m = 6, n = 7, t, tmax = 2,i,I,j,N;
-  Scalar  *userx,*rho, *solution, *userb,hx,hy,x,y;
+  int     ierr,m = 6,n = 7,t,tmax = 2,i,I,j,N;
+  Scalar  *userx,*rho,*solution,*userb,hx,hy,x,y;
   double  enorm;
 
   /*
@@ -74,14 +74,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-  userx    = (Scalar *) PetscMalloc(N*sizeof(Scalar));CHKPTRA(userx);
-  userb    = (Scalar *) PetscMalloc(N*sizeof(Scalar));CHKPTRA(userb);
-  solution = (Scalar *) PetscMalloc(N*sizeof(Scalar));CHKPTRA(solution);
+  userx    = (Scalar*)PetscMalloc(N*sizeof(Scalar));CHKPTRA(userx);
+  userb    = (Scalar*)PetscMalloc(N*sizeof(Scalar));CHKPTRA(userb);
+  solution = (Scalar*)PetscMalloc(N*sizeof(Scalar));CHKPTRA(solution);
 
   /* 
       Allocate an array to hold the coefficients in the elliptic operator
   */
-  rho = (Scalar *) PetscMalloc(N*sizeof(Scalar));CHKERRA(ierr);
+  rho = (Scalar*)PetscMalloc(N*sizeof(Scalar));CHKERRA(ierr);
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the
@@ -91,9 +91,9 @@ int main(int argc,char **args)
   hy = 1.0/(n+1);
   y  = hy;
   I  = 0;
-  for ( j=0; j<n; j++ ) {
+  for (j=0; j<n; j++) {
     x = hx;
-    for ( i=0; i<m; i++ ) {
+    for (i=0; i<m; i++) {
       rho[I]      = x;
       solution[I] = PetscSinScalar(2.*PETSC_PI*x)*PetscSinScalar(2.*PETSC_PI*y);
       userb[I]    = -2*PETSC_PI*PetscCosScalar(2*PETSC_PI*x)*PetscSinScalar(2*PETSC_PI*y) +
@@ -111,7 +111,7 @@ int main(int argc,char **args)
      Note this is somewhat artificial. It is intended to demonstrate how
      one may reuse the linear solver stuff in each time-step.
   */
-  for ( t=0; t<tmax; t++ ) {
+  for (t=0; t<tmax; t++) {
     ierr =  UserDoLinearSolver(rho,&userctx,userb,userx);CHKERRA(ierr);
 
     /*
@@ -121,10 +121,10 @@ int main(int argc,char **args)
         PETSc.
     */
     enorm = 0.0;
-    for ( i=0; i<N; i++ ) {
-      enorm += PetscReal(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
+    for (i=0; i<N; i++) {
+      enorm += PetscRealPart(PetscConj(solution[i]-userx[i])*(solution[i]-userx[i]));
     }
-    enorm *= PetscReal(hx*hy);
+    enorm *= PetscRealPart(hx*hy);
     printf("m %d n %d error norm %g\n",m,n,enorm);
   }
 
@@ -145,7 +145,7 @@ int main(int argc,char **args)
 /* ------------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "UserInitializedLinearSolve"
-int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
+int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
 {
   int N,ierr;
 
@@ -186,17 +186,17 @@ int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
 #undef __FUNC__
 #define __FUNC__ "UserDoLinearSolve"
 /*
-   Solves -div ( rho grad psi) = F using finite differences.
+   Solves -div (rho grad psi) = F using finite differences.
    rho is a 2-dimensional array of size m by n, stored in Fortran
    style by columns. userb is a standard one-dimensional array.
 */ 
 /* ------------------------------------------------------------------------*/
 int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
 {
-  int    ierr,i,j,I,J, m = userctx->m, n = userctx->n,its;
+  int    ierr,i,j,I,J,m = userctx->m,n = userctx->n,its;
   Mat    A = userctx->A;
   PC     pc;
-  Scalar v, hx2 = userctx->hx2, hy2 = userctx->hy2;
+  Scalar v,hx2 = userctx->hx2,hy2 = userctx->hy2;
 
   /*
      This is not the most efficient way of generating the matrix 
@@ -212,24 +212,24 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
      things slightly.
   */
   I = 0;
-  for ( j=0; j<n; j++ ) {
-    for ( i=0; i<m; i++) {
-      if ( j>0 )   {
+  for (j=0; j<n; j++) {
+    for (i=0; i<m; i++) {
+      if (j>0)   {
         J    = I - m; 
         v    = -.5*(rho[I] + rho[J])*hy2;
         ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
-      if ( j<n-1 ) {
+      if (j<n-1) {
         J    = I + m; 
         v    = -.5*(rho[I] + rho[J])*hy2;
         ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
-      if ( i>0 )   {
+      if (i>0)   {
         J    = I - 1; 
         v    = -.5*(rho[I] + rho[J])*hx2;
         ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
-      if ( i<m-1 ) {
+      if (i<m-1) {
         J    = I + 1; 
         v    = -.5*(rho[I] + rho[J])*hx2;
         ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);

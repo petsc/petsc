@@ -1,5 +1,5 @@
 
-/* $Id: sda.h,v 1.5 1997/02/05 22:05:18 bsmith Exp bsmith $ */
+/* $Id: sda.h,v 1.6 1997/02/07 23:31:26 bsmith Exp bsmith $ */
 /*
     Defines the interface object for the simplified distributed array
     */
@@ -12,9 +12,9 @@
 typedef struct _SDA* SDA;
 
 extern int SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
-                int, int, int,int,int, int,int, int, int *,int *,int *,SDA *);
+                int,int,int,int,int,int,int,int,int *,int *,int *,SDA *);
 extern int SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,
-                int, int, int,int, int, int, int *,int *, SDA *);
+                int,int,int,int,int,int,int *,int *,SDA *);
 extern int SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,SDA *);
 extern int SDADestroy(SDA);
 extern int SDALocalToLocalBegin(SDA,Scalar*,InsertMode,Scalar*);

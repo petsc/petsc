@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.33 1999/11/24 21:53:59 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.34 1999/12/21 21:59:35 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -23,7 +23,7 @@ int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
   /* forward solve the U^T */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -36,7 +36,7 @@ int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[i]   = s1;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + diag[i] - 1;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -68,7 +68,7 @@ int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 4*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -89,7 +89,7 @@ int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idx += 2;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 4*diag[i] - 4;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -125,7 +125,7 @@ int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 9*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -148,7 +148,7 @@ int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idx += 3;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 9*diag[i] - 9;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -185,7 +185,7 @@ int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 16*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -210,7 +210,7 @@ int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idx += 4;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 16*diag[i] - 16;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -248,7 +248,7 @@ int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 25*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -275,7 +275,7 @@ int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idx += 5;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 25*diag[i] - 25;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -314,7 +314,7 @@ int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 36*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -345,7 +345,7 @@ int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idx += 6;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 36*diag[i] - 36;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -386,7 +386,7 @@ int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 49*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -419,7 +419,7 @@ int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
     idx += 7;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 49*diag[i] - 49;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -465,12 +465,12 @@ int MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
   /* copy the b into temp work space according to permutation */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     t[i] = b[c[i]];
   } 
 
   /* forward solve the U^T */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -483,7 +483,7 @@ int MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
     t[i]   = s1;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + diag[i] - 1;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -494,7 +494,7 @@ int MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   }
 
   /* copy t into x according to permutation */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     x[r[i]]   = t[i];
   } 
 
@@ -528,7 +528,7 @@ int MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 
   /* copy the b into temp work space according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ic      = 2*c[i];
     t[ii]   = b[ic];
     t[ii+1] = b[ic+1];
@@ -537,7 +537,7 @@ int MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 4*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -558,7 +558,7 @@ int MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
     idx += 2;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 4*diag[i] - 4;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -574,7 +574,7 @@ int MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 
   /* copy t into x according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ir      = 2*r[i];
     x[ir]   = t[ii];
     x[ir+1] = t[ii+1];
@@ -611,7 +611,7 @@ int MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 
   /* copy the b into temp work space according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ic      = 3*c[i];
     t[ii]   = b[ic];
     t[ii+1] = b[ic+1];
@@ -621,7 +621,7 @@ int MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 9*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -644,7 +644,7 @@ int MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
     idx += 3;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 9*diag[i] - 9;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -661,7 +661,7 @@ int MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 
   /* copy t into x according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ir      = 3*r[i];
     x[ir]   = t[ii];
     x[ir+1] = t[ii+1];
@@ -699,7 +699,7 @@ int MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 
   /* copy the b into temp work space according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ic      = 4*c[i];
     t[ii]   = b[ic];
     t[ii+1] = b[ic+1];
@@ -710,7 +710,7 @@ int MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 16*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -735,7 +735,7 @@ int MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
     idx += 4;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 16*diag[i] - 16;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -753,7 +753,7 @@ int MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 
   /* copy t into x according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ir      = 4*r[i];
     x[ir]   = t[ii];
     x[ir+1] = t[ii+1];
@@ -792,7 +792,7 @@ int MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 
   /* copy the b into temp work space according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ic      = 5*c[i];
     t[ii]   = b[ic];
     t[ii+1] = b[ic+1];
@@ -804,7 +804,7 @@ int MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 25*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -831,7 +831,7 @@ int MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
     idx += 5;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 25*diag[i] - 25;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -850,7 +850,7 @@ int MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 
   /* copy t into x according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ir      = 5*r[i];
     x[ir]   = t[ii];
     x[ir+1] = t[ii+1];
@@ -890,7 +890,7 @@ int MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 
   /* copy the b into temp work space according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ic      = 6*c[i];
     t[ii]   = b[ic];
     t[ii+1] = b[ic+1];
@@ -903,7 +903,7 @@ int MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 36*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -934,7 +934,7 @@ int MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
     idx += 6;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 36*diag[i] - 36;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -955,7 +955,7 @@ int MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 
   /* copy t into x according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ir      = 6*r[i];
     x[ir]   = t[ii];
     x[ir+1] = t[ii+1];
@@ -996,7 +996,7 @@ int MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 
   /* copy the b into temp work space according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ic      = 7*c[i];
     t[ii]   = b[ic];
     t[ii+1] = b[ic+1];
@@ -1010,7 +1010,7 @@ int MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 
   /* forward solve the U^T */
   idx = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 
     v     = aa + 49*diag[i];
     /* multiply by the inverse of the block diagonal */
@@ -1043,7 +1043,7 @@ int MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
     idx += 7;
   }
   /* backward solve the L^T */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 49*diag[i] - 49;
     vi   = aj + diag[i] - 1;
     nz   = diag[i] - ai[i];
@@ -1065,7 +1065,7 @@ int MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 
   /* copy t into x according to permutation */
   ii = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ir      = 7*r[i];
     x[ir]   = t[ii];
     x[ir+1] = t[ii+1];
@@ -1107,7 +1107,7 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 
   /* forward solve the lower triangular */
   ierr = PetscMemcpy(t,b+bs*(*r++),bs*sizeof(Scalar));CHKERRQ(ierr);
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v   = aa + bs2*ai[i];
     vi  = aj + ai[i];
     nz  = a->diag[i] - ai[i];
@@ -1120,7 +1120,7 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   }
   /* backward solve the upper triangular */
   ls = a->solve_work + a->n;
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v   = aa + bs2*(a->diag[i] + 1);
     vi  = aj + a->diag[i] + 1;
     nz  = ai[i+1] - a->diag[i] - 1;
@@ -1167,7 +1167,7 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   t[2] = b[2+idx]; t[3] = b[3+idx]; t[4] = b[4+idx];
   t[5] = b[5+idx]; t[6] = b[6+idx]; 
 
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     = aa + 49*ai[i];
     vi    = aj + ai[i];
     nz    = diag[i] - ai[i];
@@ -1194,7 +1194,7 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
     t[5+idx] = s6;t[6+idx] = s7;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 49*diag[i] + 49;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1260,7 +1260,7 @@ int MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
   x[0] = b[idx];   x[1] = b[1+idx]; x[2] = b[2+idx]; 
   x[3] = b[3+idx]; x[4] = b[4+idx]; x[5] = b[5+idx];
   x[6] = b[6+idx]; 
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     =  aa + 49*ai[i];
     vi    =  aj + ai[i];
     nz    =  diag[i] - ai[i];
@@ -1291,7 +1291,7 @@ int MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[6+idx] = s7;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 49*diag[i] + 49;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1361,7 +1361,7 @@ int MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
   t[0] = b[idx];   t[1] = b[1+idx]; 
   t[2] = b[2+idx]; t[3] = b[3+idx]; 
   t[4] = b[4+idx]; t[5] = b[5+idx];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     = aa + 36*ai[i];
     vi    = aj + ai[i];
     nz    = diag[i] - ai[i];
@@ -1386,7 +1386,7 @@ int MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
     t[4+idx] = s5;t[5+idx] = s6;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 36*diag[i] + 36;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1448,7 +1448,7 @@ int MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
   idx    = 0;
   x[0] = b[idx];   x[1] = b[1+idx]; x[2] = b[2+idx]; 
   x[3] = b[3+idx]; x[4] = b[4+idx]; x[5] = b[5+idx];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     =  aa + 36*ai[i];
     vi    =  aj + ai[i];
     nz    =  diag[i] - ai[i];
@@ -1475,7 +1475,7 @@ int MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[5+idx] = s6;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 36*diag[i] + 36;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1533,7 +1533,7 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   idx    = 5*(*r++); 
   t[0] = b[idx];   t[1] = b[1+idx]; 
   t[2] = b[2+idx]; t[3] = b[3+idx]; t[4] = b[4+idx];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     = aa + 25*ai[i];
     vi    = aj + ai[i];
     nz    = diag[i] - ai[i];
@@ -1556,7 +1556,7 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
     t[2+idx] = s3;t[3+idx] = s4; t[4+idx] = s5;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 25*diag[i] + 25;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1604,7 +1604,7 @@ int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   int             i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
   int             ierr,*diag = a->diag,jdx;
   MatScalar       *aa=a->a,*v;
-  Scalar          *x,*b,s1,s2,s3,s4,s5,x1,x2,x3,x4,x5;;
+  Scalar          *x,*b,s1,s2,s3,s4,s5,x1,x2,x3,x4,x5;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
@@ -1612,7 +1612,7 @@ int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   /* forward solve the lower triangular */
   idx    = 0;
   x[0] = b[idx]; x[1] = b[1+idx]; x[2] = b[2+idx]; x[3] = b[3+idx];x[4] = b[4+idx];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     =  aa + 25*ai[i];
     vi    =  aj + ai[i];
     nz    =  diag[i] - ai[i];
@@ -1635,7 +1635,7 @@ int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[4+idx] = s5;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 25*diag[i] + 25;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1689,7 +1689,7 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   idx    = 4*(*r++); 
   t[0] = b[idx];   t[1] = b[1+idx]; 
   t[2] = b[2+idx]; t[3] = b[3+idx];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     = aa + 16*ai[i];
     vi    = aj + ai[i];
     nz    = diag[i] - ai[i];
@@ -1709,7 +1709,7 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
     t[2+idx] = s3;t[3+idx] = s4;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 16*diag[i] + 16;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1782,7 +1782,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   /* forward solve the lower triangular */
   idx    = 0;
   x[0]   = b[0]; x[1] = b[1]; x[2] = b[2]; x[3] = b[3];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     =  aa      + 16*ai[i];
     vi    =  aj      + ai[i];
     nz    =  diag[i] - ai[i];
@@ -1804,7 +1804,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   /* backward solve the upper triangular */
   idt = 4*(n-1);
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     ai16 = 16*diag[i];
     v    = aa + ai16 + 16;
     vi   = aj + diag[i] + 1;
@@ -1825,7 +1825,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[1+idt] = v[1]*s1 + v[5]*s2 + v[9]*s3  + v[13]*s4;
     x[2+idt] = v[2]*s1 + v[6]*s2 + v[10]*s3 + v[14]*s4;
     x[3+idt] = v[3]*s1 + v[7]*s2 + v[11]*s3 + v[15]*s4;
-    idt += 4;
+    idt -= 4;
   }
   }
 #endif
@@ -1858,7 +1858,7 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   /* forward solve the lower triangular */
   idx    = 3*(*r++); 
   t[0] = b[idx]; t[1] = b[1+idx]; t[2] = b[2+idx];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     = aa + 9*ai[i];
     vi    = aj + ai[i];
     nz    = diag[i] - ai[i];
@@ -1876,7 +1876,7 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
     t[idx] = s1; t[1+idx] = s2; t[2+idx] = s3;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 9*diag[i] + 9;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1915,7 +1915,7 @@ int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
   int             n=a->mbs,*ai=a->i,*aj=a->j;
   int             ierr,*diag = a->diag;
-  MatScalar       *aa=a->a, *v;
+  MatScalar       *aa=a->a,*v;
   Scalar          *x,*b,s1,s2,s3,x1,x2,x3;
   int             jdx,idt,idx,nz,*vi,i;
 
@@ -1927,7 +1927,7 @@ int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
   /* forward solve the lower triangular */
   idx    = 0;
   x[0]   = b[0]; x[1] = b[1]; x[2] = b[2];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     =  aa      + 9*ai[i];
     vi    =  aj      + ai[i];
     nz    =  diag[i] - ai[i];
@@ -1946,7 +1946,7 @@ int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[2+idx] = s3;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 9*diag[i] + 9;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -1995,7 +1995,7 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   /* forward solve the lower triangular */
   idx    = 2*(*r++); 
   t[0] = b[idx]; t[1] = b[1+idx];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     = aa + 4*ai[i];
     vi    = aj + ai[i];
     nz    = diag[i] - ai[i];
@@ -2012,7 +2012,7 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
     t[idx] = s1; t[1+idx] = s2;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 4*diag[i] + 4;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -2060,7 +2060,7 @@ int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
   /* forward solve the lower triangular */
   idx    = 0;
   x[0]   = b[0]; x[1] = b[1];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     =  aa      + 4*ai[i];
     vi    =  aj      + ai[i];
     nz    =  diag[i] - ai[i];
@@ -2077,7 +2077,7 @@ int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[1+idx] = s2;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + 4*diag[i] + 4;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -2124,7 +2124,7 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 
   /* forward solve the lower triangular */
   t[0] = b[*r++];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     = aa + ai[i];
     vi    = aj + ai[i];
     nz    = diag[i] - ai[i];
@@ -2135,7 +2135,7 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
     t[i] = s1;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + diag[i] + 1;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -2177,7 +2177,7 @@ int MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   /* forward solve the lower triangular */
   idx    = 0;
   x[0]   = b[0];
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     v     =  aa      + ai[i];
     vi    =  aj      + ai[i];
     nz    =  diag[i] - ai[i];
@@ -2192,7 +2192,7 @@ int MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[idx]   = s1;
   }
   /* backward solve the upper triangular */
-  for ( i=n-1; i>=0; i-- ){
+  for (i=n-1; i>=0; i--){
     v    = aa + diag[i] + 1;
     vi   = aj + diag[i] + 1;
     nz   = ai[i+1] - diag[i] - 1;
@@ -2225,20 +2225,20 @@ extern int MatMissingDiagonal_SeqBAIJ(Mat);
 #define __FUNC__ "MatILUFactorSymbolic_SeqBAIJ"
 int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fact)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data, *b;
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;
   IS          isicol;
-  int         *r,*ic, ierr, prow, n = a->mbs, *ai = a->i, *aj = a->j;
-  int         *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
-  int         *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0, dcount = 0;
-  int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2, levels, diagonal_fill;
-  PetscTruth  col_identity, row_identity;
-  double      f;
+  int         *r,*ic,ierr,prow,n = a->mbs,*ai = a->i,*aj = a->j;
+  int         *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
+  int         *dloc,idx,row,m,fm,nzf,nzi,len, realloc = 0,dcount = 0;
+  int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2,levels,diagonal_fill;
+  PetscTruth  col_identity,row_identity;
+  PetscReal   f;
 
   PetscFunctionBegin;
   if (info) {
     f             = info->fill;
-    levels        = (int) info->levels;
-    diagonal_fill = (int) info->diagonal_fill;
+    levels        = (int)info->levels;
+    diagonal_fill = (int)info->diagonal_fill;
   } else {
     f             = 1.0;
     levels        = 0;
@@ -2254,7 +2254,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   if (!levels && row_identity && col_identity) {
     ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
-    b               = (Mat_SeqBAIJ *) (*fact)->data;
+    b               = (Mat_SeqBAIJ*)(*fact)->data;
     if (!b->diag) {
       ierr = MatMarkDiagonal_SeqBAIJ(*fact);CHKERRQ(ierr);
     }
@@ -2264,7 +2264,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;
-    b->solve_work = (Scalar *) PetscMalloc((b->m+1+b->bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    b->solve_work = (Scalar*)PetscMalloc((b->m+1+b->bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
    /*
         Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
         for ILU(0) factorization with natural ordering
@@ -2308,21 +2308,21 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
   /* get new row pointers */
-  ainew = (int *) PetscMalloc( (n+1)*sizeof(int) );CHKPTRQ(ainew);
+  ainew = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ainew);
   ainew[0] = 0;
   /* don't know how many column pointers are needed so estimate */
-  jmax = (int) (f*ai[n] + 1);
-  ajnew = (int *) PetscMalloc( (jmax)*sizeof(int) );CHKPTRQ(ajnew);
+  jmax = (int)(f*ai[n] + 1);
+  ajnew = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajnew);
   /* ajfill is level of fill for each fill entry */
-  ajfill = (int *) PetscMalloc( (jmax)*sizeof(int) );CHKPTRQ(ajfill);
+  ajfill = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajfill);
   /* fill is a linked list of nonzeros in active row */
-  fill = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(fill);
+  fill = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(fill);
   /* im is level for each filled value */
-  im = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(im);
+  im = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(im);
   /* dloc is location of diagonal in factor */
-  dloc = (int *) PetscMalloc( (n+1)*sizeof(int));CHKPTRQ(dloc);
+  dloc = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(dloc);
   dloc[0]  = 0;
-  for ( prow=0; prow<n; prow++ ) {
+  for (prow=0; prow<n; prow++) {
 
     /* copy prow into linked list */
     nzf        = nz  = ai[r[prow]+1] - ai[r[prow]];
@@ -2355,7 +2355,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 
     nzi = 0;
     row = fill[n];
-    while ( row < prow ) {
+    while (row < prow) {
       incrlev = im[row] + 1;
       nz      = dloc[row];
       xi      = ajnew  + ainew[row] + nz + 1;
@@ -2394,16 +2394,16 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
       /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
       /* just double the memory each time */
       int maxadd = jmax;
-      /* maxadd = (int) (((f*ai[n]+1)*(n-prow+5))/n); */
+      /* maxadd = (int)(((f*ai[n]+1)*(n-prow+5))/n); */
       if (maxadd < nzf) maxadd = (n-prow)*(nzf+1);
       jmax += maxadd;
 
       /* allocate a longer ajnew and ajfill */
-      xi = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
+      xi = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(xi);
       ierr = PetscMemcpy(xi,ajnew,ainew[prow]*sizeof(int));CHKERRQ(ierr);
       ierr = PetscFree(ajnew);CHKERRQ(ierr);
       ajnew = xi;
-      xi = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
+      xi = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(xi);
       ierr = PetscMemcpy(xi,ajfill,ainew[prow]*sizeof(int));CHKERRQ(ierr);
       ierr = PetscFree(ajfill);CHKERRQ(ierr);
       ajfill = xi;
@@ -2431,7 +2431,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   ierr = PetscFree(im);CHKERRQ(ierr);
 
   {
-    double af = ((double)ainew[n])/((double)ai[n]);
+    PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
     PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
@@ -2444,17 +2444,17 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   /* put together the new matrix */
   ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,fact);CHKERRQ(ierr);
   PLogObjectParent(*fact,isicol);
-  b = (Mat_SeqBAIJ *) (*fact)->data;
+  b = (Mat_SeqBAIJ*)(*fact)->data;
   ierr = PetscFree(b->imax);CHKERRQ(ierr);
   b->singlemalloc = PETSC_FALSE;
   len = bs2*ainew[n]*sizeof(MatScalar);
   /* the next line frees the default space generated by the Create() */
   ierr = PetscFree(b->a);CHKERRQ(ierr);
   ierr = PetscFree(b->ilen);CHKERRQ(ierr);
-  b->a          = (MatScalar *) PetscMalloc( len );CHKPTRQ(b->a);
+  b->a          = (MatScalar*)PetscMalloc(len);CHKPTRQ(b->a);
   b->j          = ajnew;
   b->i          = ainew;
-  for ( i=0; i<n; i++ ) dloc[i] += ainew[i];
+  for (i=0; i<n; i++) dloc[i] += ainew[i];
   b->diag       = dloc;
   b->ilen       = 0;
   b->imax       = 0;
@@ -2463,7 +2463,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
-  b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+  b->solve_work = (Scalar*)PetscMalloc((bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate dloc, solve_work, new a, new j */
   PLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(int))+bs2*ainew[n]*sizeof(Scalar));
@@ -2472,7 +2472,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 
   (*fact)->info.factor_mallocs    = realloc;
   (*fact)->info.fill_ratio_given  = f;
-  (*fact)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[prow]);
+  (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
 
   PetscFunctionReturn(0); 
 }

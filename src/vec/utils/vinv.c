@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.58 1999/10/24 14:01:50 bsmith Exp bsmith $*/
+/*$Id: vinv.c,v 1.59 1999/11/24 21:53:26 bsmith Exp bsmith $*/
 /*
      Some useful vector utility functions.
 */
@@ -39,12 +39,12 @@
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
+int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
 {
-  int      i,n,ierr,bs;
-  Scalar   *x;
-  double   tnorm;
-  MPI_Comm comm;
+  int       i,n,ierr,bs;
+  Scalar    *x;
+  PetscReal tnorm;
+  MPI_Comm  comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -61,20 +61,20 @@ int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
 
   if (ntype == NORM_2) {
     Scalar sum = 0.0;
-    for ( i=0; i<n; i+=bs ) {
+    for (i=0; i<n; i+=bs) {
       sum += x[i]*(PetscConj(x[i]));
     }
-    tnorm  = PetscReal(sum);
+    tnorm  = PetscRealPart(sum);
     ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     *norm = sqrt(*norm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
-    for ( i=0; i<n; i+=bs ) {
+    for (i=0; i<n; i+=bs) {
       tnorm += PetscAbsScalar(x[i]);
     }
     ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
-    double tmp;
+    PetscReal tmp;
     tnorm = 0.0;
 
     for (i=0; i<n; i+=bs) {
@@ -125,12 +125,12 @@ int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
-int VecStrideMax(Vec v,int start,int *index,double *norm)
+int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
 {
-  int      i,n,ierr,bs;
-  Scalar   *x;
-  double   max,tmp;
-  MPI_Comm comm;
+  int       i,n,ierr,bs;
+  Scalar    *x;
+  PetscReal max,tmp;
+  MPI_Comm  comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -152,13 +152,13 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
     max = PETSC_MIN;
   } else {
 #if defined(PETSC_USE_COMPLEX)
-    max = PetscReal(x[0]);
+    max = PetscRealPart(x[0]);
 #else
     max = x[0];
 #endif
-    for ( i=bs; i<n; i+=bs ) {
+    for (i=bs; i<n; i+=bs) {
 #if defined(PETSC_USE_COMPLEX)
-      if ((tmp = PetscReal(x[i])) > max) { max = tmp;}
+      if ((tmp = PetscRealPart(x[i])) > max) { max = tmp;}
 #else
       if ((tmp = x[i]) > max) { max = tmp; } 
 #endif
@@ -204,12 +204,12 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
-int VecStrideMin(Vec v,int start,int *index,double *norm)
+int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
 {
-  int      i,n,ierr,bs;
-  Scalar   *x;
-  double   min,tmp;
-  MPI_Comm comm;
+  int       i,n,ierr,bs;
+  Scalar    *x;
+  PetscReal min,tmp;
+  MPI_Comm  comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -231,13 +231,13 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
     min = PETSC_MAX;
   } else {
 #if defined(PETSC_USE_COMPLEX)
-    min = PetscReal(x[0]);
+    min = PetscRealPart(x[0]);
 #else
     min = x[0];
 #endif
-    for ( i=bs; i<n; i+=bs ) {
+    for (i=bs; i<n; i+=bs) {
 #if defined(PETSC_USE_COMPLEX)
-      if ((tmp = PetscReal(x[i])) < min) { min = tmp;}
+      if ((tmp = PetscRealPart(x[i])) < min) { min = tmp;}
 #else
       if ((tmp = x[i]) < min) { min = tmp; } 
 #endif
@@ -295,7 +295,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
-  y = (Scalar **) PetscMalloc(bs*sizeof(double*));CHKPTRQ(y);
+  y = (Scalar**)PetscMalloc(bs*sizeof(PetscReal*));CHKPTRQ(y);
   for (i=0; i<bs; i++) {
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
   }
@@ -306,21 +306,21 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   n =  n/bs;
 
   if (addv == INSERT_VALUES) {
-    for ( j=0; j<bs; j++ ) {
-      for ( i=0; i<n; i++ ) {
+    for (j=0; j<bs; j++) {
+      for (i=0; i<n; i++) {
         y[j][i] = x[bs*i+j];
       }
     }
   } else if (addv == ADD_VALUES) {
-    for ( j=0; j<bs; j++ ) {
-      for ( i=0; i<n; i++ ) {
+    for (j=0; j<bs; j++) {
+      for (i=0; i<n; i++) {
         y[j][i] += x[bs*i+j];
       }
     }
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for ( j=0; j<bs; j++ ) {
-      for ( i=0; i<n; i++ ) {
+    for (j=0; j<bs; j++) {
+      for (i=0; i<n; i++) {
         y[j][i] = PetscMax(y[j][i],x[bs*i+j]);
       }
     }
@@ -378,7 +378,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
 
-  y = (Scalar **) PetscMalloc(bs*sizeof(double*));CHKPTRQ(y);
+  y = (Scalar**)PetscMalloc(bs*sizeof(PetscReal*));CHKPTRQ(y);
   for (i=0; i<bs; i++) {
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
   }
@@ -389,21 +389,21 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   n =  n/bs;
 
   if (addv == INSERT_VALUES) {
-    for ( j=0; j<bs; j++ ) {
-      for ( i=0; i<n; i++ ) {
+    for (j=0; j<bs; j++) {
+      for (i=0; i<n; i++) {
         x[bs*i+j] = y[j][i];
       }
     }
   } else if (addv == ADD_VALUES) {
-    for ( j=0; j<bs; j++ ) {
-      for ( i=0; i<n; i++ ) {
+    for (j=0; j<bs; j++) {
+      for (i=0; i<n; i++) {
         x[bs*i+j] += y[j][i];
       }
     }
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for ( j=0; j<bs; j++ ) {
-      for ( i=0; i<n; i++ ) {
+    for (j=0; j<bs; j++) {
+      for (i=0; i<n; i++) {
         x[bs*i+j] = PetscMax(y[j][i],x[bs*i+j]);
       }
     }
@@ -478,16 +478,16 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
   n =  n/bs;
 
   if (addv == INSERT_VALUES) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       y[i] = x[bs*i];
     }
   } else if (addv == ADD_VALUES) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       y[i] += x[bs*i];
     }
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       y[i] = PetscMax(y[i],x[bs*i]);
     }
 #endif
@@ -555,16 +555,16 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 
 
   if (addv == INSERT_VALUES) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       x[bs*i] = y[i];
     }
   } else if (addv == ADD_VALUES) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       x[bs*i] += y[i];
     }
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       x[bs*i] = PetscMax(y[i],x[bs*i]);
     }
 #endif
@@ -588,7 +588,7 @@ int VecReciprocal_Default(Vec v)
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -623,7 +623,7 @@ int VecSum(Vec v,Scalar *sum)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     lsum += x[i];
   }
   ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,PetscSum_Op,v->comm);CHKERRQ(ierr);
@@ -659,7 +659,7 @@ int VecShift(const Scalar *shift,Vec v)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     x[i] += lsum;
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -689,7 +689,7 @@ int VecAbs(Vec v)
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     x[i] = PetscAbsScalar(x[i]);
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);

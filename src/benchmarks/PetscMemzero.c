@@ -1,16 +1,16 @@
-/*$Id: PetscMemzero.c,v 1.12 1999/05/04 20:38:02 balay Exp bsmith $*/
+/*$Id: PetscMemzero.c,v 1.13 1999/10/24 14:04:16 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv)
+int main(int argc,char **argv)
 {
-  PLogDouble x, y, z;
+  PLogDouble x,y,z;
   Scalar     A[10000];
   int        ierr;
 
-  PetscInitialize(&argc, &argv,0,0);
+  PetscInitialize(&argc,&argv,0,0);
   /* To take care of paging effects */
   ierr = PetscMemzero(A,sizeof(Scalar)*0);CHKERRA(ierr);
   ierr = PetscGetTime(&x);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.95 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.96 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -18,7 +18,7 @@ typedef struct _p_SNES* SNES;
 
 typedef char *SNESType;
 
-typedef enum {SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION, SNES_LEAST_SQUARES} SNESProblemType;
+typedef enum {SNES_NONLINEAR_EQUATIONS,SNES_UNCONSTRAINED_MINIMIZATION,SNES_LEAST_SQUARES} SNESProblemType;
 
 extern int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
 extern int SNESDestroy(SNES);
@@ -61,6 +61,7 @@ extern int MatSNESMFAddNullSpace(Mat,PCNullSpace);
 extern int MatSNESMFSetHHistory(Mat,Scalar *,int);
 extern int MatSNESMFResetHHistory(Mat);
 extern int MatSNESMFSetFunctionError(Mat,double);
+extern int MatSNESMFSetPeriod(Mat,int);
 extern int MatSNESMFGetH(Mat,Scalar *);
 extern int MatSNESMFKSPMonitor(KSP,int,double,void *);
 extern int MatSNESMFSetFromOptions(Mat);
@@ -138,8 +139,8 @@ extern int SNESNoLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*
 extern int SNESCubicLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESSetLineSearchCheck(SNES,int(*)(SNES,void*,Vec,PetscTruth*),void*);
-extern int SNESSetLineSearchParams(SNES, double, double, double);
-extern int SNESGetLineSearchParams(SNES, double*, double*, double*);
+extern int SNESSetLineSearchParams(SNES,double,double,double);
+extern int SNESGetLineSearchParams(SNES,double*,double*,double*);
 
 /* --------- Unconstrained minimization routines --------------------------------*/
 extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);

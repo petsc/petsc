@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.88 1999/10/24 14:01:45 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.89 1999/11/05 14:44:38 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -13,7 +13,7 @@ typedef struct {
 #define __FUNC__ "ISIdentity_Stride" 
 int ISIdentity_Stride(IS is,PetscTruth *ident)
 {
-  IS_Stride *is_stride = (IS_Stride *) is->data;
+  IS_Stride *is_stride = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
   is->isidentity = 0;
@@ -27,21 +27,21 @@ int ISIdentity_Stride(IS is,PetscTruth *ident)
 
 #undef __FUNC__  
 #define __FUNC__ "ISDuplicate_Stride" 
-int ISDuplicate_Stride(IS is, IS *newIS)
+int ISDuplicate_Stride(IS is,IS *newIS)
 {
   int       ierr;
-  IS_Stride *sub = (IS_Stride *) is->data;
+  IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateStride(is->comm, sub->n, sub->first, sub->step, newIS);CHKERRQ(ierr);
+  ierr = ISCreateStride(is->comm,sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ISInvertPermutation_Stride" 
-int ISInvertPermutation_Stride(IS is, IS *perm)
+int ISInvertPermutation_Stride(IS is,IS *perm)
 {
-  IS_Stride *isstride = (IS_Stride *) is->data;
+  IS_Stride *isstride = (IS_Stride*)is->data;
   int       ierr;
 
   PetscFunctionBegin;
@@ -51,8 +51,8 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
   } else {
     int *ii,*indices,i,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
-    ii = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ii);
-    for ( i=0; i<n; i++ ) {
+    ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
+    for (i=0; i<n; i++) {
       ii[indices[i]] = i;
     }
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ int ISStrideGetInfo(IS is,int *first,int *step)
   if (first) PetscValidIntPointer(first);
   if (step) PetscValidIntPointer(step);
 
-  sub = (IS_Stride *) is->data;
+  sub = (IS_Stride*)is->data;
   if (is->type != IS_STRIDE) PetscFunctionReturn(0);
   if (first) *first = sub->first; 
   if (step)  *step  = sub->step;
@@ -142,7 +142,7 @@ int ISDestroy_Stride(IS is)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(is->data); CHKERRQ(ierr);
+  ierr = PetscFree(is->data);CHKERRQ(ierr);
   PLogObjectDestroy(is);
   PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
@@ -155,13 +155,13 @@ int ISDestroy_Stride(IS is)
 #define __FUNC__ "ISGetIndices_Stride" 
 int ISGetIndices_Stride(IS in,int **idx)
 {
-  IS_Stride *sub = (IS_Stride *) in->data;
+  IS_Stride *sub = (IS_Stride*)in->data;
   int       i;
 
   PetscFunctionBegin;
-  *idx = (int *) PetscMalloc((sub->n+1)*sizeof(int));CHKPTRQ(idx);
+  *idx = (int*)PetscMalloc((sub->n+1)*sizeof(int));CHKPTRQ(idx);
   (*idx)[0] = sub->first;
-  for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
+  for (i=1; i<sub->n; i++) (*idx)[i] = (*idx)[i-1] + sub->step;
   PetscFunctionReturn(0);
 }
 
@@ -188,7 +188,7 @@ int ISGetSize_Stride(IS is,int *size)
 
 #undef __FUNC__  
 #define __FUNC__ "ISView_Stride" 
-int ISView_Stride(IS is, Viewer viewer)
+int ISView_Stride(IS is,Viewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr,rank,size;
@@ -204,7 +204,7 @@ int ISView_Stride(IS is, Viewer viewer)
         ierr = ViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
       }
       ierr = ViewerASCIISynchronizedPrintf(viewer,"Number of indices in (stride) set %d\n",n);CHKERRQ(ierr);
-      for ( i=0; i<n; i++ ) {
+      for (i=0; i<n; i++) {
         ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     } else {
@@ -212,7 +212,7 @@ int ISView_Stride(IS is, Viewer viewer)
         ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
       ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %d\n",rank,n);CHKERRQ(ierr);
-      for ( i=0; i<n; i++ ) {
+      for (i=0; i<n; i++) {
         ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     }
@@ -227,20 +227,20 @@ int ISView_Stride(IS is, Viewer viewer)
 #define __FUNC__ "ISSort_Stride" 
 int ISSort_Stride(IS is)
 {
-  IS_Stride *sub = (IS_Stride *) is->data;
+  IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  if (sub->step >= 0 ) PetscFunctionReturn(0);
-  sub->first += (sub->n - 1 )*sub->step;
+  if (sub->step >= 0) PetscFunctionReturn(0);
+  sub->first += (sub->n - 1)*sub->step;
   sub->step *= -1;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ISSorted_Stride" 
-int ISSorted_Stride(IS is, PetscTruth* flg)
+int ISSorted_Stride(IS is,PetscTruth* flg)
 {
-  IS_Stride *sub = (IS_Stride *) is->data;
+  IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
   if (sub->step >= 0) *flg = PETSC_TRUE;
@@ -253,7 +253,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISGetIndices_Stride,
                                ISRestoreIndices_Stride,
                                ISInvertPermutation_Stride,
-                               ISSort_Stride, 
+                               ISSort_Stride,
                                ISSorted_Stride,
                                ISDuplicate_Stride,
                                ISDestroy_Stride,
@@ -290,7 +290,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 @*/
 int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 {
-  int        min, max,ierr;
+  int        min,max,ierr;
   IS         Nindex;
   IS_Stride  *sub;
   PetscTruth flg;
@@ -299,7 +299,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   *is = 0;
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Number of indices < 0");
 
-  PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
+  PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
   PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
   sub            = PetscNew(IS_Stride);CHKPTRQ(sub);
@@ -311,7 +311,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 
   Nindex->min     = min;
   Nindex->max     = max;
-  Nindex->data    = (void *) sub;
+  Nindex->data    = (void*)sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm  = 0;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);

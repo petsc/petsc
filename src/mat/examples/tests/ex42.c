@@ -1,4 +1,4 @@
-/*$Id: ex42.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex42.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap() and MatGetSubmatrices() for the parallel case.\n\
@@ -15,12 +15,12 @@ Input arguments are:\n\
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int         ierr, nd = 2, ov=1,i ,j,size, m, n, rank, *idx;
+  int         ierr,nd = 2,ov=1,i,j,size,m,n,rank,*idx;
   PetscTruth  flg;
-  Mat         A, B, *submatA, *submatB;
+  Mat         A,B,*submatA,*submatB;
   char        file[128]; 
   Viewer      fd;
-  IS          *is1, *is2;
+  IS          *is1,*is2;
   PetscRandom r;
   Scalar      rand;
 
@@ -30,9 +30,9 @@ int main(int argc,char **args)
 #else
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  CHKERRA(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127, PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd, PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov, PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRA(ierr);
 
   /* Read matrix and RHS */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
@@ -45,24 +45,24 @@ int main(int argc,char **args)
   ierr = ViewerDestroy(fd);CHKERRA(ierr);
   
   /* Create the Random no generator */
-  ierr = MatGetSize(A,&m, &n);CHKERRA(ierr);  
+  ierr = MatGetSize(A,&m,&n);CHKERRA(ierr);  
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
 
   /* Create the IS corresponding to subdomains */
-  is1    = (IS *) PetscMalloc( nd*sizeof(IS **) );CHKPTRA(is1);
-  is2    = (IS *) PetscMalloc( nd*sizeof(IS **) );CHKPTRA(is2);
-  idx    = (int*) PetscMalloc( m *sizeof(int )  );CHKPTRA(idx);
+  is1    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is1);
+  is2    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is2);
+  idx    = (int*)PetscMalloc(m *sizeof(int));CHKPTRA(idx);
   
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {
-    /* Skip a few, so that the IS on different procs are diffeent*/
+    /* Skip a few,so that the IS on different procs are diffeent*/
     for (j=0; j<rank; j++) {
-      ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
+      ierr   = PetscRandomGetValue(r,&rand);CHKERRA(ierr);
     }
-    ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
+    ierr   = PetscRandomGetValue(r,&rand);CHKERRA(ierr);
     size   = (int)(rand*m);
     for (j=0; j<size; j++) {
-      ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
+      ierr   = PetscRandomGetValue(r,&rand);CHKERRA(ierr);
       idx[j] = (int)(rand*m);
     }
     ierr = PetscSortInt(size,idx);CHKERRA(ierr);
@@ -70,8 +70,8 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is2+i);CHKERRA(ierr);
   }
 
-  ierr = MatIncreaseOverlap(A, nd, is1, ov);CHKERRA(ierr);
-  ierr = MatIncreaseOverlap(B, nd, is2, ov);CHKERRA(ierr);
+  ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRA(ierr);
+  ierr = MatIncreaseOverlap(B,nd,is2,ov);CHKERRA(ierr);
 
   for (i=0; i<nd; ++i) { 
     ierr = ISSort(is1[i]);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
-    ierr = MatEqual(submatA[i], submatB[i],&flg);CHKERRA(ierr);
+    ierr = MatEqual(submatA[i],submatB[i],&flg);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);CHKERRQ(ierr);
   }
 

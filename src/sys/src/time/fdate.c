@@ -1,7 +1,8 @@
-/*$Id: fdate.c,v 1.31 1999/09/21 15:10:23 bsmith Exp bsmith $*/
+/*$Id: fdate.c,v 1.32 1999/10/24 14:01:31 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
+#include "petscfix.h"
 #include "pinclude/ptime.h"
 #include <ctype.h>
 #include <sys/types.h>
@@ -36,16 +37,41 @@ static char starttime[64];
    
 /*
   This function is called once during the initialize stage.
-  It stashes the timestamp, and uses it when needed.
+  It stashes the timestamp, and uses it when needed. This is so that 
+  error handlers may report the date without generating possible
+  additional system errors during the call to get the date.
+
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscGetDate"
-int PetscGetDate(char name[],int len)
+/*@C
+    PetscGetDate - Gets the current date.
+
+   Not collective
+
+  Input Parameter:
+.  len - length of string to hold date
+
+  Output Parameter:
+.  date - the date
+
+  Level: beginner
+
+  Notes:
+    This is Y2K compliant.
+
+    This function DOES make a system call and thus SHOULD NOT be called
+    from an error handler. Use PetscGetInitialDate() instead.
+
+.seealso: PetscGetInitialDate()
+
+@*/
+int PetscGetDate(char date[],int len)
 {
-  char *str=0;
+  char           *str=0;
 #if defined (PARCH_win32)
-  time_t aclock;
-  int    ierr;
+  time_t         aclock;
+  int            ierr;
 #else
   struct timeval tp;
   int            ierr;
@@ -53,14 +79,14 @@ int PetscGetDate(char name[],int len)
 
   PetscFunctionBegin;
 #if defined (PARCH_win32)
-  time( &aclock);
-  ierr = PetscStrncpy(name,asctime(localtime(&aclock)),len);CHKERRQ(ierr);
+  time(&aclock);
+  ierr = PetscStrncpy(date,asctime(localtime(&aclock)),len);CHKERRQ(ierr);
 #else
-  gettimeofday( &tp, (struct timezone *)0 );
-  ierr = PetscStrncpy(name,asctime(localtime((time_t *) &tp.tv_sec)),len);CHKERRQ(ierr);
+  gettimeofday(&tp,(struct timezone *)0);
+  ierr = PetscStrncpy(date,asctime(localtime((time_t*)&tp.tv_sec)),len);CHKERRQ(ierr);
 #endif
   /* now strip out the new-line chars at the end of the string */
-  ierr = PetscStrstr(name,"\n",&str);CHKERRQ(ierr);
+  ierr = PetscStrstr(date,"\n",&str);CHKERRQ(ierr);
   if (str) str[0] = 0;
   PetscFunctionReturn(0);
 }
@@ -75,14 +101,37 @@ int PetscSetInitialDate(void)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "PetscGetInitialDate"
-int PetscGetInitialDate(char name[],int len)
+/*@C
+    PetscGetInitialDate - Gets the date the program was started 
+      on.
+
+   Not collective
+
+  Input Parameter:
+.  len - length of string to hold date
+
+  Output Parameter:
+.  date - the date
+
+  Level: beginner
+
+  Notes:
+    This is Y2K compliant.
+
+    This function does not make a system call and thus may be called
+    from an error handler.
+
+.seealso: PetscGetDate()
+
+@*/
+int PetscGetInitialDate(char date[],int len)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy(name,starttime,len);CHKERRQ(ierr);
+  ierr = PetscStrncpy(date,starttime,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+

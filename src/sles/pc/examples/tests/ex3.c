@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.44 1999/10/24 14:03:06 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.45 1999/11/05 14:46:31 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
 also tests the MatRelax() routines.  Input parameters are:\n\
@@ -12,11 +12,11 @@ also tests the MatRelax() routines.  Input parameters are:\n\
 int main(int argc,char **args)
 {
   Mat     mat;          /* matrix */
-  Vec     b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
+  Vec     b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
   PC      pc;           /* PC context */
   KSP     ksp;          /* KSP context */
-  int     ierr, n = 10, i, its, col[3];
-  Scalar  value[3], one = 1.0, zero = 0.0;
+  int     ierr,n = 10,i,its,col[3];
+  Scalar  value[3],one = 1.0,zero = 0.0;
   KSPType kspname;
   PCType  pcname;
 
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   /* Create and assemble matrix */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
-  for (i=1; i<n-1; i++ ) {
+  for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
     ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
   }

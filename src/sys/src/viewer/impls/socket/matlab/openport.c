@@ -1,4 +1,4 @@
-/*$Id: openport.c,v 1.13 1999/10/01 21:20:10 bsmith Exp bsmith $*/
+/*$Id: openport.c,v 1.14 1999/10/24 14:01:02 bsmith Exp bsmith $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
@@ -48,7 +48,7 @@ typedef unsigned long   u_long;
 #endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 #include "mex.h"
 
 extern int SOCKConnect_Private(int);
@@ -58,27 +58,27 @@ extern int SOCKConnect_Private(int);
 /*-----------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "mexFunction"
-void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
+void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
-  int t, portnumber;
+  int t,portnumber;
 
   /* check output parameters */
   if (nlhs != 1) ERROR("Open requires one output argument.");
 
   /* figure out portnumber user wants to use; default to 5005 */
-  if (nrhs == 0) {
+  if (!nrhs) {
     char *str;
     str = getenv("PETSC_VIEWER_SOCKET_PORT");
     if (str) portnumber = atoi(str);
     else portnumber = DEFAULTPORT;  
   } else {
-    portnumber = (int) *mxGetPr(prhs[0]);
+    portnumber = (int)*mxGetPr(prhs[0]);
   }
 
   /* open connection */
   t = SOCKConnect_Private(portnumber); if (t == -1)  ERROR("opening socket");
 
-  plhs[0]  = mxCreateFull(1, 1, 0);
+  plhs[0]  = mxCreateFull(1,1,0);
  
   *mxGetPr(plhs[0]) = t;
   return;
@@ -107,15 +107,15 @@ int SOCKConnect_Private(int portnumber)
   int                t;
 
 /* open port*/
-  listenport = establish( (u_short) portnumber);
-  if ( listenport == -1 ) {
+  listenport = establish((u_short) portnumber);
+  if (listenport == -1) {
        fprintf(stderr,"RECEIVE: unable to establish port\n");
        return -1;
   }
 
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  if ( (t = accept(listenport,(struct sockaddr *)&isa,&i)) < 0 ) {
+  if ((t = accept(listenport,(struct sockaddr *)&isa,&i)) < 0) {
      fprintf(stderr,"RECEIVE: error from accept\n");
      return(-1);
   }
@@ -138,7 +138,7 @@ int establish(u_short portnum)
   uname(&utname); strncpy(myname,utname.nodename,MAXHOSTNAME);
   bzero(&sa,sizeof(struct sockaddr_in));
   hp = gethostbyname(myname);
-  if ( hp == NULL ) {
+  if (hp == NULL) {
      fprintf(stderr,"RECEIVE: error from gethostbyname\n");
      return(-1);
   }
@@ -146,17 +146,17 @@ int establish(u_short portnum)
   sa.sin_family = hp->h_addrtype; 
   sa.sin_port = htons(portnum); 
 
-  if ( (s = socket(AF_INET,SOCK_STREAM,0)) < 0 ) {
+  if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
      fprintf(stderr,"RECEIVE: error from socket\n");
      return(-1);
   }
   {
   int optval = 1; /* Turn on the option */
-  ierr = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&optval, sizeof(optval));
+  ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
   }
 
-  while ( bind(s,(struct sockaddr *) &sa,sizeof(sa) ) < 0 ) {
-     if ( errno != EADDRINUSE ) { 
+  while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
+     if (errno != EADDRINUSE) { 
         close(s);
         fprintf(stderr,"RECEIVE: error from bind\n");
         return(-1);

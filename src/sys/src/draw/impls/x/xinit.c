@@ -1,4 +1,4 @@
-/*$Id: xinit.c,v 1.62 1999/10/24 14:01:15 bsmith Exp bsmith $*/
+/*$Id: xinit.c,v 1.63 1999/11/05 14:43:58 bsmith Exp bsmith $*/
 
 /* 
    This file contains routines to open an X window display and window
@@ -15,9 +15,9 @@
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 extern int XiUniformHues(Draw_X *,int);
-extern int Xi_wait_map( Draw_X*);
+extern int Xi_wait_map(Draw_X*);
 extern int XiInitColors(Draw_X*,Colormap);
-extern int XiFontFixed(Draw_X*,int,int,XiFont** );
+extern int XiFontFixed(Draw_X*,int,int,XiFont**);
 extern int XiInitCmap(Draw_X*);
 extern int DrawSetColormap_X(Draw_X*,char *,Colormap);
 
@@ -26,16 +26,16 @@ extern int DrawSetColormap_X(Draw_X*,char *,Colormap);
 */
 #undef __FUNC__  
 #define __FUNC__ "XiOpenDisplay" 
-int XiOpenDisplay(Draw_X* XiWin,char *display_name )
+int XiOpenDisplay(Draw_X* XiWin,char *display_name)
 {
   PetscFunctionBegin;
-  XiWin->disp = XOpenDisplay( display_name );
+  XiWin->disp = XOpenDisplay(display_name);
   if (!XiWin->disp) {
     SETERRQ1(1,1,"Unable to open display on %s\n.  Make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n",display_name);
   }
-  XiWin->screen = DefaultScreen( XiWin->disp );
+  XiWin->screen = DefaultScreen(XiWin->disp);
   PetscFunctionReturn(0);
 }
 
@@ -45,7 +45,7 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
 */
 #undef __FUNC__  
 #define __FUNC__ "XiSetGC" 
-int XiSetGC(Draw_X* XiWin,PixVal fg )
+int XiSetGC(Draw_X* XiWin,PixVal fg)
 {
   XGCValues       gcvalues;       /* window graphics context values */
 
@@ -56,8 +56,8 @@ int XiSetGC(Draw_X* XiWin,PixVal fg )
   gcvalues.function   = GXcopy;
   gcvalues.foreground = fg;
   XiWin->gc.cur_pix   = fg;
-  XiWin->gc.set = XCreateGC(XiWin->disp, RootWindow(XiWin->disp,XiWin->screen),
-                              GCFunction | GCForeground, &gcvalues );
+  XiWin->gc.set = XCreateGC(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
+                              GCFunction | GCForeground,&gcvalues);
   PetscFunctionReturn(0);
 }
 
@@ -68,20 +68,20 @@ int XiSetGC(Draw_X* XiWin,PixVal fg )
 */
 #undef __FUNC__  
 #define __FUNC__ "XiDisplayWindow"
-int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
-                     int w,int h,PixVal backgnd_pixel )
+int XiDisplayWindow(Draw_X* XiWin,char *label,int x,int y,
+                     int w,int h,PixVal backgnd_pixel)
 {
-  unsigned int            wavail, havail;
+  unsigned int            wavail,havail;
   XSizeHints              size_hints;
   XWindowAttributes       in_window_attributes;
   XSetWindowAttributes    window_attributes;
-  int                     depth, border_width;
+  int                     depth,border_width;
   unsigned long           wmask;
 
   PetscFunctionBegin;
   /* get the available widths */
-  wavail              = DisplayWidth(  XiWin->disp, XiWin->screen );
-  havail              = DisplayHeight( XiWin->disp, XiWin->screen );
+  wavail              = DisplayWidth(XiWin->disp,XiWin->screen);
+  havail              = DisplayHeight(XiWin->disp,XiWin->screen);
   if (w <= 0 || h <= 0) PetscFunctionReturn(2);
   if (w > wavail) w    = wavail;
   if (h > havail)  h   = havail;
@@ -95,8 +95,7 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
 
   /* We need XCreateWindow since we may need an visual other than
    the default one */
-  XGetWindowAttributes( XiWin->disp, RootWindow(XiWin->disp,XiWin->screen),
-                        &in_window_attributes );
+  XGetWindowAttributes(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),&in_window_attributes);
   window_attributes.background_pixmap = None;
   window_attributes.background_pixel  = backgnd_pixel;
   /* No border for now */
@@ -114,19 +113,19 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
   window_attributes.do_not_propagate_mask = 0;
   window_attributes.override_redirect = 0;
   window_attributes.colormap          = XiWin->cmap;
-  /* None for cursor does NOT mean none, it means Parent's cursor */
+  /* None for cursor does NOT mean none, it means cursor of Parent */
   window_attributes.cursor            = None; 
   wmask   = CWBackPixmap | CWBackPixel | CWBorderPixmap | CWBitGravity |
             CWWinGravity | CWBackingStore |CWBackingPixel|CWOverrideRedirect |
             CWSaveUnder  | CWEventMask    | CWDontPropagate |
             CWCursor     | CWColormap ;
   depth       = XiWin->depth;
-  /* DefaultDepth( XiWin->disp, XiWin->screen ); */
-  XiWin->win  = XCreateWindow( XiWin->disp, 
+  /* DefaultDepth(XiWin->disp,XiWin->screen); */
+  XiWin->win  = XCreateWindow(XiWin->disp,
 			     RootWindow(XiWin->disp,XiWin->screen),
-                             x, y, w, h, border_width,
-                             depth, InputOutput, XiWin->vis,
-                             wmask, &window_attributes );
+                             x,y,w,h,border_width,
+                             depth,InputOutput,XiWin->vis,
+                             wmask,&window_attributes);
 
   if (!XiWin->win)  PetscFunctionReturn(2);
 
@@ -160,12 +159,12 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
                      0,0,&size_hints,&wm_hints,&class_hints);
   }
   /* make the window visible */
-  XSelectInput( XiWin->disp, XiWin->win, ExposureMask | StructureNotifyMask );
-  XMapWindow( XiWin->disp, XiWin->win );
+  XSelectInput(XiWin->disp,XiWin->win,ExposureMask | StructureNotifyMask);
+  XMapWindow(XiWin->disp,XiWin->win);
 
   /* some window systems are cruel and interfere with the placement of
      windows.  We wait here for the window to be created or to die */
-  if (Xi_wait_map( XiWin)){
+  if (Xi_wait_map(XiWin)){
     XiWin->win    = (Window)0;
     PetscFunctionReturn(1);
   }
@@ -182,20 +181,20 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = XiOpenDisplay( w, host );CHKERRQ(ierr);
+  ierr = XiOpenDisplay(w,host);CHKERRQ(ierr);
 
-  w->vis    = DefaultVisual( w->disp, w->screen );
+  w->vis    = DefaultVisual(w->disp,w->screen);
   w->depth  = DefaultDepth(w->disp,w->screen);
 
   ierr = DrawSetColormap_X(w,host,(Colormap)0);CHKERRQ(ierr);
 
-  ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 );CHKERRQ(ierr);
-  XiSetGC( w, w->cmapping[1] );
-  XiSetPixVal(w, w->background );
-  XSetWindowBackground( w->disp, w->win, w->cmapping[0] );
+  ierr = XiDisplayWindow(w,name,x,y,nx,ny,(PixVal)0);CHKERRQ(ierr);
+  XiSetGC(w,w->cmapping[1]);
+  XiSetPixVal(w,w->background);
+  XSetWindowBackground(w->disp,w->win,w->cmapping[0]);
 
 
-  ierr = XiFontFixed( w,6, 10,&w->font );CHKERRQ(ierr);
+  ierr = XiFontFixed(w,6,10,&w->font);CHKERRQ(ierr);
   XFillRectangle(w->disp,w->win,w->gc.set,0,0,nx,ny);
   PetscFunctionReturn(0);
 }
@@ -213,27 +212,27 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
   XWindowAttributes attributes;
 
   PetscFunctionBegin;
-  if (XiOpenDisplay( w, host )) {
+  if (XiOpenDisplay(w,host)) {
     SETERRQ(PETSC_ERR_LIB,0,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the [-display name] option and xhost + has been\n\
-    run on your displaying machine.\n" );
+    run on your displaying machine.\n");
   }
 
   w->win = win;
-  XGetWindowAttributes(w->disp, w->win, &attributes);
+  XGetWindowAttributes(w->disp,w->win,&attributes);
 
-  w->vis    = DefaultVisual( w->disp, w->screen );
+  w->vis    = DefaultVisual(w->disp,w->screen);
   w->depth  = DefaultDepth(w->disp,w->screen);
-  ierr      = DrawSetColormap_X(w, host,attributes.colormap);CHKERRQ(ierr);
+  ierr      = DrawSetColormap_X(w,host,attributes.colormap);CHKERRQ(ierr);
 
-  XGetGeometry( w->disp, w->win, &root, &d, &d, 
-	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );
+  XGetGeometry(w->disp,w->win,&root,&d,&d,
+	      (unsigned int *)&w->w,(unsigned int *)&w->h,&ud,&ud);
   w->x = w->y = 0;
 
-  XiSetGC( w, w->cmapping[1] );
-  XiSetPixVal(w, w->background );
-  XSetWindowBackground( w->disp, w->win, w->cmapping[0] );
-  ierr = XiFontFixed( w,6, 10,&w->font );CHKERRQ(ierr);
+  XiSetGC(w,w->cmapping[1]);
+  XiSetPixVal(w,w->background);
+  XSetWindowBackground(w->disp,w->win,w->cmapping[0]);
+  ierr = XiFontFixed(w,6,10,&w->font);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -242,7 +241,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 */
 #undef __FUNC__  
 #define __FUNC__ "XiSetWindowLabel" 
-int XiSetWindowLabel(Draw_X* Xiwin, char *label )
+int XiSetWindowLabel(Draw_X* Xiwin,char *label)
 {
   XTextProperty prop;
   int           len,ierr;
@@ -258,11 +257,11 @@ int XiSetWindowLabel(Draw_X* Xiwin, char *label )
 
 #undef __FUNC__  
 #define __FUNC__ "XiSetToBackground" 
-int XiSetToBackground(Draw_X* XiWin )
+int XiSetToBackground(Draw_X* XiWin)
 {
   PetscFunctionBegin;
   if (XiWin->gc.cur_pix != XiWin->background) { 
-    XSetForeground( XiWin->disp, XiWin->gc.set, XiWin->background ); 
+    XSetForeground(XiWin->disp,XiWin->gc.set,XiWin->background); 
     XiWin->gc.cur_pix   = XiWin->background;
   }
   PetscFunctionReturn(0);

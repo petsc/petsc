@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.24 1999/11/05 14:44:09 bsmith Exp bsmith $*/
+/*$Id: ftest.c,v 1.25 1999/11/24 21:53:01 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -28,7 +28,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #if defined (PARCH_win32)
 #undef __FUNC__  
@@ -38,13 +38,13 @@
 
   Input Parameters:
 + fname - name of file
-- mode  - mode.  One of 'r', 'w', 'x'
+- mode  - mode.  One of r, w, or x
 
   Output Parameter:
   flg - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
 
 +*/
-int PetscTestFile( const char fname[], char mode,PetscTruth *flg)
+int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 {
   int m;
   
@@ -60,10 +60,10 @@ int PetscTestFile( const char fname[], char mode,PetscTruth *flg)
 #else 
 #undef __FUNC__  
 #define __FUNC__ "PetscTestFile"
-int PetscTestFile( const char fname[], char mode,PetscTruth *flg)
+int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 {
   struct stat statbuf;
-  int         err,stmode, rbit, wbit, ebit;
+  int         err,stmode,rbit,wbit,ebit;
   uid_t       uid;
   gid_t       gid;
 
@@ -76,9 +76,9 @@ int PetscTestFile( const char fname[], char mode,PetscTruth *flg)
   gid = getegid();
 
 #if defined(PETSC_HAVE_STAT_NO_CONST)
-  err = stat( (char*)fname, &statbuf );
+  err = stat((char*)fname,&statbuf);
 #else
-  err = stat( fname, &statbuf );
+  err = stat(fname,&statbuf);
 #endif
   if (err != 0) PetscFunctionReturn(0);
 

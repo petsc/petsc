@@ -1,11 +1,10 @@
-/*$Id: ams.c,v 1.25 1999/10/24 14:01:06 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.26 1999/11/05 14:43:43 bsmith Exp bsmith $*/
 
+#include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-
-#if defined(PETSC_HAVE_AMS)
 
 #include "ams.h"
 typedef struct {
@@ -18,7 +17,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerAMSSetCommName_AMS"
 int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
 {
-  Viewer_AMS *vams = (Viewer_AMS*) v->data;
+  Viewer_AMS *vams = (Viewer_AMS*)v->data;
   int        ierr,port = -1;
   PetscTruth flg;
 
@@ -26,10 +25,39 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
   ierr = OptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
   ierr = AMS_Comm_publish((char *)name,&vams->ams_comm,MPI_TYPE,v->comm,&port);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-viewer_ams_printf",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-ams_printf",&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = AMS_Set_output_file("/dev/null");CHKERRQ(ierr);
   }
+
+  ierr = OptionsHasName(PETSC_NULL,"-ams_matlab",&flg);CHKERRQ(ierr);
+  if (flg) {
+    FILE *fp;
+    char m[16],*machine = 0;
+
+    ierr = OptionsGetString(PETSC_NULL,"-ams_matlab",m,16,&flg);CHKERRQ(ierr);
+    if (m[0]) machine = m;
+    ierr = PetscStartMatlab(v->comm,machine,"petscview",&fp);CHKERRQ(ierr);
+  }
+
+  ierr = OptionsHasName(PETSC_NULL,"-ams_java",&flg);CHKERRQ(ierr);
+  if (flg) {
+    FILE *fp;
+    char dir[256];
+    char m[16],*machine = 0;
+
+    ierr = OptionsGetString(PETSC_NULL,"-ams_java",m,16,&flg);CHKERRQ(ierr);
+    if (m[0]) machine = m;
+
+    ierr = OptionsGetenv(v->comm,"AMS_HOME",dir,256,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = PetscStrncpy(dir,AMS_DIR,256);CHKERRQ(ierr);
+    }
+    /* ierr = PetscStrcat(dir,"/java/client/jacc -display $DISPLAY");CHKERRQ(ierr); */
+    ierr = PetscStrcat(dir,"/java/client/jacc");CHKERRQ(ierr);
+    ierr = PetscPOpen(v->comm,machine,dir,"r",&fp);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -52,7 +80,7 @@ EXTERN_C_END
 #define __FUNC__ "ViewerAMSSetCommName"
 int ViewerAMSSetCommName(Viewer v,const char name[])
 {
-  int ierr, (*f)(Viewer,const char[]);
+  int ierr,(*f)(Viewer,const char[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
@@ -88,7 +116,7 @@ int ViewerAMSSetCommName(Viewer v,const char name[])
 @*/
 int ViewerAMSGetAMSComm(Viewer v,AMS_Comm *ams_comm)
 {
-  int ierr, (*f)(Viewer,AMS_Comm *);
+  int ierr,(*f)(Viewer,AMS_Comm *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
@@ -167,7 +195,7 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Ams_keyval,0);
     if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Ams_keyval, (void **)&viewer, &flag );
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Ams_keyval,(void **)&viewer,&flag);
   if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flag) { /* viewer not yet created */
     if (csize == 1) {
@@ -178,7 +206,7 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
     }
     ierr = ViewerAMSOpen(comm,name,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-    ierr = MPI_Attr_put( comm, Petsc_Viewer_Ams_keyval, (void *) viewer );
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_Ams_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
@@ -198,7 +226,7 @@ int VIEWER_AMS_Destroy(MPI_Comm comm)
   if (Petsc_Viewer_Ams_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Ams_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Ams_keyval,(void **)&viewer,&flag);CHKERRQ(ierr);
   if (flag) { 
     ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Ams_keyval);CHKERRQ(ierr);
@@ -252,7 +280,7 @@ int ViewerCreate_AMS(Viewer v)
   v->ops->destroy = ViewerDestroy_AMS;
   ierr            = PetscStrallocpy(AMS_VIEWER,&v->type_name);CHKERRQ(ierr);
   vams            = PetscNew(Viewer_AMS);CHKPTRQ(vams);
-  v->data         = (void *) vams;
+  v->data         = (void*)vams;
   vams->ams_comm  = -1;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerAMSSetCommName_C",
                                     "ViewerAMSSetCommName_AMS",
@@ -264,15 +292,4 @@ int ViewerCreate_AMS(Viewer v)
 }
 EXTERN_C_END
 
-#else
-
-#undef __FUNC__  
-#define __FUNC__ "ViewerAMS_Dummy"
-int ViewerAMS_Dummy()
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#endif
 

@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.19 1999/10/24 14:03:33 bsmith Exp bsmith $*/
+/*$Id: wp.c,v 1.20 1999/11/05 14:47:08 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -27,7 +27,7 @@
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
 
 typedef struct {
-  double     normUfact;                   /* previous sqrt(1.0 + || U ||) */
+  PetscReal  normUfact;                   /* previous sqrt(1.0 + || U ||) */
   PetscTruth computenorma,computenormU;   
 } MatSNESMFWP;
 
@@ -48,25 +48,29 @@ typedef struct {
 */
 static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 {
-  MatSNESMFWP   *hctx = (MatSNESMFWP *) ctx->hctx;
-  double        normU, norma = 1.0;
+  MatSNESMFWP   *hctx = (MatSNESMFWP*)ctx->hctx;
+  PetscReal     normU,norma = 1.0;
   int           ierr;
 
   PetscFunctionBegin;
-  if (hctx->computenorma && (hctx->computenormU || !ctx->ncurrenth)) {
-    ierr = VecNormBegin(U,NORM_2,&normU);CHKERRQ(ierr);
-    ierr = VecNormBegin(a,NORM_2,&norma);CHKERRQ(ierr);
-    ierr = VecNormEnd(U,NORM_2,&normU);CHKERRQ(ierr);
-    ierr = VecNormEnd(a,NORM_2,&norma);CHKERRQ(ierr);
-    hctx->normUfact = sqrt(1.0+normU);
-  } else if (hctx->computenormU || !ctx->ncurrenth) {
-    ierr = VecNorm(U,NORM_2,&normU);CHKERRQ(ierr);
-    hctx->normUfact = sqrt(1.0+normU);
-  } else if (hctx->computenorma) {
-    ierr = VecNorm(a,NORM_2,&norma);CHKERRQ(ierr);
-  }
 
-  *h = ctx->error_rel*hctx->normUfact/norma;
+  if (!(ctx->count % ctx->recomputeperiod)) {
+    if (hctx->computenorma && (hctx->computenormU || !ctx->ncurrenth)) {
+      ierr = VecNormBegin(U,NORM_2,&normU);CHKERRQ(ierr);
+      ierr = VecNormBegin(a,NORM_2,&norma);CHKERRQ(ierr);
+      ierr = VecNormEnd(U,NORM_2,&normU);CHKERRQ(ierr);
+      ierr = VecNormEnd(a,NORM_2,&norma);CHKERRQ(ierr);
+      hctx->normUfact = sqrt(1.0+normU);
+    } else if (hctx->computenormU || !ctx->ncurrenth) {
+      ierr = VecNorm(U,NORM_2,&normU);CHKERRQ(ierr);
+      hctx->normUfact = sqrt(1.0+normU);
+    } else if (hctx->computenorma) {
+      ierr = VecNorm(a,NORM_2,&norma);CHKERRQ(ierr);
+    }
+    *h = ctx->error_rel*hctx->normUfact/norma;
+  } else {
+    *h = ctx->currenth;
+  }
   PetscFunctionReturn(0);
 } 
 
@@ -139,7 +143,7 @@ static int MatSNESMFPrintHelp_WP(MatSNESMFCtx ctx)
 static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
 {
   int        ierr;
-  PetscTruth flag, set;
+  PetscTruth flag,set;
   char       *p;
 
   PetscFunctionBegin;
@@ -190,7 +194,7 @@ int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
   if (!ctx) {
     SETERRQ(1,1,"MatSNESMFWPSetComputeNormA() attached to non-shell matrix");
   }
-  hctx               = (MatSNESMFWP *) ctx->hctx;
+  hctx               = (MatSNESMFWP*)ctx->hctx;
   hctx->computenorma = flag;
 
  PetscFunctionReturn(0);
@@ -219,7 +223,7 @@ EXTERN_C_END
 @*/
 int MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 {
-  int ierr, (*f)(Mat,PetscTruth);
+  int ierr,(*f)(Mat,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
@@ -244,7 +248,7 @@ int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
   if (!ctx) {
     SETERRQ(1,1,"MatSNESMFWPSetComputeNormU() attached to non-shell matrix");
   }
-  hctx               = (MatSNESMFWP *) ctx->hctx;
+  hctx               = (MatSNESMFWP*)ctx->hctx;
   hctx->computenormU = flag;
 
  PetscFunctionReturn(0);
@@ -273,7 +277,7 @@ EXTERN_C_END
 @*/
 int MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
 {
-  int ierr, (*f)(Mat,PetscTruth);
+  int ierr,(*f)(Mat,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
@@ -304,7 +308,7 @@ int MatSNESMFCreate_WP(MatSNESMFCtx ctx)
 
   /* allocate my own private data structure */
   hctx                     = (MatSNESMFWP *)PetscMalloc(sizeof(MatSNESMFWP));CHKPTRQ(hctx);
-  ctx->hctx                = (void *) hctx;
+  ctx->hctx                = (void*)hctx;
   hctx->computenormU       = PETSC_FALSE;
   hctx->computenorma       = PETSC_TRUE;
 
@@ -317,10 +321,10 @@ int MatSNESMFCreate_WP(MatSNESMFCtx ctx)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormA_C",
                             "MatSNESMFWPSetComputeNormA_P",
-                            (void *) MatSNESMFWPSetComputeNormA_P);CHKERRQ(ierr);
+                            (void*)MatSNESMFWPSetComputeNormA_P);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormU_C",
                             "MatSNESMFWPSetComputeNormU_P",
-                            (void *) MatSNESMFWPSetComputeNormU_P);CHKERRQ(ierr);
+                            (void*)MatSNESMFWPSetComputeNormU_P);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

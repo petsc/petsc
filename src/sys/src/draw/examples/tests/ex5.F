@@ -1,5 +1,5 @@
 !
-!    "$Id: ex5.F,v 1.21 1998/04/15 18:03:01 balay Exp bsmith $";
+!    "$Id: ex5.F,v 1.22 1999/11/24 21:52:55 bsmith Exp bsmith $";
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
@@ -10,7 +10,7 @@
       Draw              draw
       DrawLG            lg
       DrawAxis          axis
-      integer           n,i, ierr, x, y, width, height,flg
+      integer           n,i,ierr,x,y,width,height,flg
       Scalar            xd,yd
 
       n      = 20

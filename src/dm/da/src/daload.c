@@ -1,4 +1,4 @@
-/*$Id: daload.c,v 1.14 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: daload.c,v 1.15 1999/11/05 14:47:52 bsmith Exp bsmith $*/
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
 
@@ -20,7 +20,7 @@
    Level: intermediate
 
 @*/
-int DALoad(Viewer viewer,int M,int N, int P,DA *da)
+int DALoad(Viewer viewer,int M,int N,int P,DA *da)
 {
   int        ierr,info[8],nmax = 8,fd,i;
   MPI_Comm   comm;
@@ -54,7 +54,7 @@ int DALoad(Viewer viewer,int M,int N, int P,DA *da)
   } else {
     SETERRQ1(1,1,"Dimension in info file is not 1, 2, or 3 it is %d",info[0]);
   }
-  for ( i=0; i<info[4]; i++ ) {
+  for (i=0; i<info[4]; i++) {
     sprintf(fieldnametag,"-daload_fieldname_%d",i);
     ierr = OptionsGetString(PETSC_NULL,fieldnametag,fieldname,64,&flag);CHKERRQ(ierr);
     if (flag) {

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.12 1998/04/15 18:02:57 balay Exp balay $"
+!  "$Id: ex1f.F,v 1.13 1999/05/04 20:30:16 balay Exp bsmith $"
 !
 !  Formatted test for IS general routines
 !
@@ -8,7 +8,7 @@
 #include "finclude/is.h"
 
 
-       integer     i, n, ierr,indices(1000),rank,size,ii(1)
+       integer     i,n,ierr,indices(1000),rank,size,ii(1)
        PetscOffset iis
        IS          is,newis
        PetscTruth  flag

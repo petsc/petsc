@@ -1,4 +1,4 @@
-/*$Id: mgfunc.c,v 1.32 1999/10/13 20:37:56 bsmith Exp bsmith $*/
+/*$Id: mgfunc.c,v 1.33 1999/10/24 14:03:01 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
                           /*I "mg.h"   I*/
@@ -56,7 +56,7 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 @*/ 
 int MGGetCoarseSolve(PC pc,SLES *sles)  
 { 
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   *sles =  mg[0]->smoothd;
@@ -85,7 +85,7 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
 @*/
 int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   mg[l]->residual = residual;  
@@ -121,7 +121,7 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 @*/
 int MGSetInterpolate(PC pc,int l,Mat mat)
 { 
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   mg[l]->interpolate = mat;  
@@ -156,7 +156,7 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 @*/
 int MGSetRestriction(PC pc,int l,Mat mat)  
 {
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   mg[l]->restrct  = mat;  
@@ -188,7 +188,7 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 @*/
 int MGGetSmoother(PC pc,int l,SLES *sles)
 {
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   *sles = mg[l]->smoothd;  
@@ -218,7 +218,7 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 @*/
 int MGGetSmootherUp(PC pc,int l,SLES *sles)
 {
-  MG   *mg = (MG*) pc->data;
+  MG   *mg = (MG*)pc->data;
   int  ierr;
   char *prefix;
 
@@ -232,7 +232,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 
   if (mg[l]->smoothu == mg[l]->smoothd) {
     ierr = SLESCreate(pc->comm,&mg[l]->smoothu);CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix( mg[l]->smoothu,prefix);CHKERRQ(ierr);
+    ierr = SLESSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
     ierr = SLESAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_");CHKERRQ(ierr);
     PLogObjectParent(pc,mg[l]->smoothu);
   }
@@ -263,7 +263,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 @*/
 int MGGetSmootherDown(PC pc,int l,SLES *sles)
 {
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   *sles = mg[l]->smoothd;  
@@ -290,7 +290,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 @*/
 int MGSetCyclesOnLevel(PC pc,int l,int c) 
 {
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   mg[l]->cycles  = c;
@@ -319,7 +319,7 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 @*/
 int MGSetRhs(PC pc,int l,Vec c)  
 { 
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   mg[l]->b  = c;
@@ -348,7 +348,7 @@ int MGSetRhs(PC pc,int l,Vec c)
 @*/
 int MGSetX(PC pc,int l,Vec c)  
 { 
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   mg[l]->x  = c;
@@ -375,7 +375,7 @@ int MGSetX(PC pc,int l,Vec c)
 @*/
 int MGSetR(PC pc,int l,Vec c)
 { 
-  MG *mg = (MG*) pc->data;
+  MG *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   mg[l]->r  = c;

@@ -1,5 +1,5 @@
 !
-!  $Id: draw.h,v 1.22 1999/04/01 19:26:08 balay Exp balay $;
+!  $Id: draw.h,v 1.23 1999/09/14 15:58:17 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
@@ -11,7 +11,7 @@
 #define DrawLG     PetscFortranAddr
 #define DrawAxis   PetscFortranAddr
 #define DrawSP     PetscFortranAddr
-#define DrawHist   PetscFortranAddr
+#define DrawHG     PetscFortranAddr
 #define DrawMesh   PetscFortranAddr
 #define DrawButton integer
 #define DrawType   character*(80)
@@ -44,26 +44,26 @@
       integer DRAW_LAVENDERBLUSH
 
 
-      parameter (DRAW_WHITE = 0, DRAW_BLACK = 1, DRAW_RED = 2)
-      parameter (DRAW_GREEN = 3, DRAW_CYAN = 4, DRAW_BLUE = 5)
-      parameter (DRAW_MAGENTA = 6, DRAW_AQUAMARINE = 7)
-      parameter (DRAW_FORESTGREEN = 8, DRAW_ORANGE = 9)
-      parameter (DRAW_VIOLET = 10, DRAW_BROWN = 11, DRAW_PINK = 12)
-      parameter (DRAW_CORAL = 13, DRAW_GRAY = 14, DRAW_YELLOW = 15)
-      parameter (DRAW_GOLD = 16, DRAW_LIGHTPINK = 17)
-      parameter (DRAW_MEDIUMTURQUOISE = 18, DRAW_KHAKI = 19)
-      parameter (DRAW_DIMGRAY = 20, DRAW_YELLOWGREEN = 21)
-      parameter (DRAW_SKYBLUE = 22, DRAW_DARKGREEN = 23)
-      parameter (DRAW_NAVYBLUE = 24, DRAW_SANDYBROWN = 25)
-      parameter (DRAW_CADETBLUE = 26, DRAW_POWDERBLUE = 27)
-      parameter (DRAW_DEEPPINK = 28, DRAW_THISTLE = 29)
-      parameter (DRAW_LIMEGREEN = 30, DRAW_LAVENDERBLUSH = 31)
+      parameter (DRAW_WHITE = 0,DRAW_BLACK = 1,DRAW_RED = 2)
+      parameter (DRAW_GREEN = 3,DRAW_CYAN = 4,DRAW_BLUE = 5)
+      parameter (DRAW_MAGENTA = 6,DRAW_AQUAMARINE = 7)
+      parameter (DRAW_FORESTGREEN = 8,DRAW_ORANGE = 9)
+      parameter (DRAW_VIOLET = 10,DRAW_BROWN = 11,DRAW_PINK = 12)
+      parameter (DRAW_CORAL = 13,DRAW_GRAY = 14,DRAW_YELLOW = 15)
+      parameter (DRAW_GOLD = 16,DRAW_LIGHTPINK = 17)
+      parameter (DRAW_MEDIUMTURQUOISE = 18,DRAW_KHAKI = 19)
+      parameter (DRAW_DIMGRAY = 20,DRAW_YELLOWGREEN = 21)
+      parameter (DRAW_SKYBLUE = 22,DRAW_DARKGREEN = 23)
+      parameter (DRAW_NAVYBLUE = 24,DRAW_SANDYBROWN = 25)
+      parameter (DRAW_CADETBLUE = 26,DRAW_POWDERBLUE = 27)
+      parameter (DRAW_DEEPPINK = 28,DRAW_THISTLE = 29)
+      parameter (DRAW_LIMEGREEN = 30,DRAW_LAVENDERBLUSH = 31)
 
 
       integer BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT
 
-      parameter (BUTTON_NONE = 0, BUTTON_LEFT = 1) 
-      parameter (BUTTON_CENTER = 2, BUTTON_RIGHT = 3)
+      parameter (BUTTON_NONE = 0,BUTTON_LEFT = 1) 
+      parameter (BUTTON_CENTER = 2,BUTTON_RIGHT = 3)
 
 !
 !  End of Fortran include file for the Draw package in PETSc

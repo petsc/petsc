@@ -1,4 +1,4 @@
-/*$Id: search.c,v 1.19 1999/09/20 19:06:09 bsmith Exp bsmith $*/
+/*$Id: search.c,v 1.21 1999/10/24 14:03:37 bsmith Exp bsmith $*/
 
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.
@@ -68,9 +68,9 @@ nc
 int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     double *sty,double *fy,double *dy,double *stp,double *fp,double *dp)
 {
-  SNES_UM_LS *neP = (SNES_UM_LS *) snes->data;
-  double     gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta;
-  double     two = 2.0, zero = 0.0;
+  SNES_UM_LS *neP = (SNES_UM_LS*)snes->data;
+  double     gamma1,p,q,r,s,sgnd,stpc,stpf,stpq,theta;
+  double     two = 2.0,zero = 0.0;
   int        bound;
 
   PetscFunctionBegin;

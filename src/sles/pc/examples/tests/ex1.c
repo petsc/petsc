@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.30 1999/05/04 20:34:27 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.31 1999/10/24 14:03:06 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests the creation of a PC context.\n\n";
 int main(int argc,char **args)
 {
   PC  pc;
-  int ierr, n = 5;
+  int ierr,n = 5;
   Vec u;
   Mat mat;
 

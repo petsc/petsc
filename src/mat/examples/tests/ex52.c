@@ -1,4 +1,4 @@
-/*$Id: ex52.c,v 1.7 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex52.c,v 1.8 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests the vatious routines in MatMPIBAIJ format.\n";
@@ -26,8 +26,8 @@ int main(int argc,char **args)
 
   ierr = MatGetOwnershipRange(A,&start,&end);CHKERRA(ierr);
   
-  for ( row=start; row<end; row++ ) {
-    for ( col=start; col<end; col++,data+=1 ) {
+  for (row=start; row<end; row++) {
+    for (col=start; col<end; col++,data+=1) {
       ierr = MatSetValues(A,1,&row,1,&col,&data,INSERT_VALUES);CHKERRA(ierr);
     }
   }
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   /* off proc assembly */
   data = 5.0;
   row = (M+start-1)%M;
-  for ( col=0; col<M; col++ ) {
+  for (col=0; col<M; col++) {
     ierr = MatSetValues(A,1,&row,1,&col,&data,ADD_VALUES);CHKERRA(ierr);
   } 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.21 1999/01/12 23:16:17 bsmith Exp bsmith $";
+!    "$Id: ex1f.F,v 1.22 1999/04/16 16:09:25 bsmith Exp bsmith $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -67,14 +67,14 @@
 !     its      - iterations for convergence
 !     norm     - norm of error in solution
 !
-      Vec              x, b, u
+      Vec              x,b,u
       Mat              A 
       KSP              ksp
       PC               pc
       SLES             sles
       double precision norm,tol
-      integer          ierr, i, n, col(3), its, flg, size, rank
-      Scalar           none, one, value(3)
+      integer          ierr,i,n,col(3),its,flg,size,rank
+      Scalar           none,one,value(3)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -199,12 +199,12 @@
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       if (norm .gt. 1.e-12) then
-        write(6,100) norm, its
+        write(6,100) norm,its
       else
         write(6,200) its
       endif
  100  format('Norm of error = ',e10.4,',  Iterations = ',i5)
- 200  format('Norm of error < 1.e-12, Iterations = ',i5)
+ 200  format('Norm of error < 1.e-12,Iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.63 1999/11/05 14:44:09 bsmith Exp bsmith $*/
+/*$Id: sysio.c,v 1.64 1999/11/24 21:53:01 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -26,11 +26,11 @@ int PetscByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp =0;
   int  *tptr = &tmp;                /* Need to access tmp indirectly to get */
-  char *ptr1,*ptr2 = (char *) &tmp; /* arround the bug in DEC-ALPHA g++ */
+  char *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
                                    
   PetscFunctionBegin;
-  for ( j=0; j<n; j++ ) {
-    ptr1 = (char *) (buff + j);
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff + j);
     for (i=0; i<sizeof(int); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
@@ -49,11 +49,11 @@ int PetscByteSwapShort(short *buff,int n)
   int   i,j;
   short tmp;
   short *tptr = &tmp;           /* take care pf bug in DEC-ALPHA g++ */
-  char  *ptr1,*ptr2 = (char *) &tmp;
+  char  *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
-  for ( j=0; j<n; j++ ) {
-    ptr1 = (char *) (buff + j);
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff + j);
     for (i=0; i<sizeof(short); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
@@ -71,16 +71,16 @@ int PetscByteSwapShort(short *buff,int n)
 int PetscByteSwapScalar(Scalar *buff,int n)
 {
   int    i,j;
-  double tmp,*buff1 = (double *) buff;
+  double tmp,*buff1 = (double*)buff;
   double *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
-  char   *ptr1,*ptr2 = (char *) &tmp;
+  char   *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   n *= 2;
 #endif
-  for ( j=0; j<n; j++ ) {
-    ptr1 = (char *) (buff1 + j);
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff1 + j);
     for (i=0; i<sizeof(double); i++) {
       ptr2[i] = ptr1[sizeof(double)-1-i];
     }
@@ -97,13 +97,13 @@ int PetscByteSwapScalar(Scalar *buff,int n)
 int PetscByteSwapDouble(double *buff,int n)
 {
   int    i,j;
-  double tmp,*buff1 = (double *) buff;
+  double tmp,*buff1 = (double*)buff;
   double *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
-  char   *ptr1,*ptr2 = (char *) &tmp;
+  char   *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
-  for ( j=0; j<n; j++ ) {
-    ptr1 = (char *) (buff1 + j);
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff1 + j);
     for (i=0; i<sizeof(double); i++) {
       ptr2[i] = ptr1[sizeof(double)-1-i];
     }
@@ -152,10 +152,10 @@ int PetscByteSwapDouble(double *buff,int n)
 @*/
 int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
-  int               maxblock = 65536, wsize, err, m = n, ierr;
+  int               maxblock = 65536,wsize,err,m = n,ierr;
   static PetscTruth longintset = PETSC_FALSE,longintfile = PETSC_FALSE;
   PetscTruth        flg;
-  char              *pp = (char *) p;
+  char              *pp = (char*)p;
 #if (PETSC_SIZEOF_SHORT != 8)
   void              *ptmp = p; 
 #endif
@@ -180,8 +180,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     } else {
       /* read them in as shorts, later stretch into ints */
       m   *= sizeof(short);
-      pp   = (char *) PetscMalloc(m);CHKPTRQ(pp);
-      ptmp = (void*) pp;
+      pp   = (char*)PetscMalloc(m);CHKPTRQ(pp);
+      ptmp = (void*)pp;
     }
   }
 #elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
@@ -198,8 +198,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     if (longintfile) {
        /* read in twice as many ints and later discard every other one */
        m    *= 2*sizeof(int);
-       pp   =  (char *) PetscMalloc(m);CHKPTRQ(pp);
-       ptmp =  (void*) pp;
+       pp   =  (char*)PetscMalloc(m);CHKPTRQ(pp);
+       ptmp =  (void*)pp;
     } else {
        m *= sizeof(int);
     }
@@ -214,7 +214,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
-    err = read( fd, pp, wsize );
+    err = read(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
     if (err == 0 && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,0,"Read past end of file");
     if (err < 0) SETERRQ(PETSC_ERR_FILE_READ,0,"Error reading from file");
@@ -231,10 +231,10 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 #if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
   if (type == PETSC_INT){
     if (!longintfile) {
-      int   *p_int = (int *) p,i;
+      int   *p_int = (int*)p,i;
       short *p_short = (short *)ptmp;
-      for ( i=0; i<n; i++ ) {
-        p_int[i] = (int) p_short[i];
+      for (i=0; i<n; i++) {
+        p_int[i] = (int)p_short[i];
       }
       ierr = PetscFree(ptmp);CHKERRQ(ierr);
     }
@@ -246,10 +246,10 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     /* 
        take the longs (treated as pair of ints) and convert them to ints
     */
-      int   *p_int  = (int *) p,i;
+      int   *p_int  = (int*)p,i;
       int   *p_intl = (int *)ptmp;
-      for ( i=0; i<n; i++ ) {
-        p_int[i] = (int) p_intl[2*i+1];
+      for (i=0; i<n; i++) {
+        p_int[i] = (int)p_intl[2*i+1];
       }
       ierr = PetscFree(ptmp);CHKERRQ(ierr);
     }
@@ -281,13 +281,13 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
 
-   The Buffer 'p' should be read-write buffer, and not static data.
+   The Buffer p should be read-write buffer, and not static data.
    This way, byte-swapping is done in-place, and then the buffer is
    written to the file.
    
    This routine restores the original contents of the buffer, after 
    it is written to the file. This is done by byte-swapping in-place 
-   the second time. If the flag 'istemp' is set to 1, the second
+   the second time. If the flag istemp is set to 1, the second
    byte-swapping operation is not done, thus saving some computation,
    but the buffer corrupted is corrupted.
 
@@ -297,8 +297,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 @*/
 int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 {
-  char *pp = (char *) p;
-  int  err, maxblock, wsize,m = n;
+  char *pp = (char*)p;
+  int  err,maxblock,wsize,m = n;
 #if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8)
   int  ierr;
   void *ptmp = p; 
@@ -322,14 +322,14 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
       integers on the Cray T3d/e are 64 bits so we copy the big
       integers into a short array and write those out.
     */
-    int   *p_int = (int *) p,i;
+    int   *p_int = (int*)p,i;
     short *p_short;
     m       *= sizeof(short);
-    pp      = (char *) PetscMalloc(m);CHKPTRQ(pp);
-    ptmp    = (void*) pp;
-    p_short = (short *) pp;
+    pp      = (char*)PetscMalloc(m);CHKPTRQ(pp);
+    ptmp    = (void*)pp;
+    p_short = (short*)pp;
 
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       p_short[i] = (short) p_int[i];
     }
   }
@@ -345,7 +345,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
-    err = write( fd, pp, wsize );
+    err = write(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
     if (err != wsize) SETERRQ(PETSC_ERR_FILE_WRITE,0,"Error writing to file.");
     m -= wsize;
@@ -394,7 +394,7 @@ int PetscBinaryOpen(const char name[],int type,int *fd)
   PetscFunctionBegin;
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
   if (type == BINARY_CREATE) {
-    if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
+    if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing: %s",name);
     }
   } else if (type == BINARY_RDONLY) {

@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.63 1999/11/05 14:46:00 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.64 1999/11/10 03:19:57 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -185,7 +185,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 
   ierr = (*MatLoaders[outtype])(viewer,type,newmat);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-help", &flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }
   PLogEventEnd(MAT_Load,viewer,0,0,0);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.5 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex16.c,v 1.6 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on MPI vectors\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests VecSetValuesBlocked() on MPI vectors\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int          i,n = 8, ierr, size,rank,bs = 2,indices[2];
+  int          i,n = 8,ierr,size,rank,bs = 2,indices[2];
   Scalar       values[4];
   Vec          x;
 
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   ierr = VecSetBlockSize(x,bs);CHKERRA(ierr);
 
   if (!rank) {
-    for ( i=0; i<4; i++ ) values[i] = i+1;
+    for (i=0; i<4; i++) values[i] = i+1;
     indices[0] = 0; indices[1] = 2;
     ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRA(ierr);
   }

@@ -1,6 +1,6 @@
-/*$Id: adebug.c,v 1.99 1999/11/24 21:43:03 balay Exp balay $*/
+/*$Id: adebug.c,v 1.100 1999/11/24 21:54:00 balay Exp bsmith $*/
 /*
-      Code to handle PETSc starting up in debuggers, etc.
+      Code to handle PETSc starting up in debuggers,etc.
 */
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -12,7 +12,7 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 /*
       These are the debugger and display used if the debugger is started up
@@ -46,7 +46,7 @@ static int   Xterm     = 1;
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
-int PetscSetDebugger(const char debugger[], int xterm)
+int PetscSetDebugger(const char debugger[],int xterm)
 {
   int ierr;
 
@@ -97,7 +97,7 @@ int PetscAttachDebugger(void)
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
   }
-  child = (int) fork(); 
+  child = (int)fork(); 
   if (child < 0) {
     (*PetscErrorPrintf)("PETSC ERROR: Error in fork() attaching debugger\n");
     PetscFunctionReturn(1);
@@ -108,7 +108,7 @@ int PetscAttachDebugger(void)
     in the debugger goes to the correct process.
   */
   if (child) { child = 0; }
-  else       { child = (int) getppid(); }
+  else       { child = (int)getppid(); }
 
   if (child) { /* I am the parent, will run the debugger */
     char       *args[9],pid[9];
@@ -132,7 +132,7 @@ int PetscAttachDebugger(void)
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = display; args[5] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
-      if (execvp(args[0], args)  < 0) {
+      if (execvp(args[0],args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }
@@ -140,7 +140,7 @@ int PetscAttachDebugger(void)
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
       args[0] = Debugger; args[5] = display; args[6] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
-      if (execvp(args[0], args)  < 0) {
+      if (execvp(args[0],args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }
@@ -178,7 +178,7 @@ int PetscAttachDebugger(void)
       }
 #endif
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s\n",Debugger,program,pid);
-      if (execvp(args[0], args)  < 0) {
+      if (execvp(args[0],args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }
@@ -252,7 +252,7 @@ int PetscAttachDebugger(void)
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s\n",Debugger,program,pid,display);
       }
 
-      if (execvp("xterm", args)  < 0) {
+      if (execvp("xterm",args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }
@@ -266,7 +266,7 @@ int PetscAttachDebugger(void)
         HP cannot attach process to sleeping debugger, hence count instead
     */
     { 
-      double x = 1.0;
+      PetscReal x = 1.0;
       int i=10000000;
       while (i--) x++ ; /* cannot attach to sleeper */
     }
@@ -448,7 +448,7 @@ int PetscStopForDebugger(void)
       HP cannot attach process to sleeping debugger, hence count instead
   */
   { 
-    double x = 1.0;
+    PetscReal x = 1.0;
     int i=10000000;
     while (i--) x++ ; /* cannot attach to sleeper */
   }

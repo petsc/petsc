@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.55 1999/11/05 14:47:28 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.56 1999/11/24 21:55:22 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
 
@@ -57,7 +57,7 @@ int TSSetType(TS ts,TSType type)
 
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr =  FListFind(ts->comm, TSList, type, (int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(ts->comm,TSList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type: %s",type);}
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
@@ -93,7 +93,7 @@ int TSRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (TSList) {
-    ierr = FListDestroy( TSList );CHKERRQ(ierr);
+    ierr = FListDestroy(TSList);CHKERRQ(ierr);
     TSList = 0;
   }
   TSRegisterAllCalled = 0;
@@ -117,7 +117,7 @@ int TSRegisterDestroy(void)
 
 .keywords: TS, timestepper, get, type, name
 @*/
-int TSGetType(TS ts, TSType *type)
+int TSGetType(TS ts,TSType *type)
 {
   int ierr;
 
@@ -196,7 +196,7 @@ int TSSetTypeFromOptions(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp()");
-  ierr = OptionsGetString(ts->prefix,"-ts_type",(char *) type,256,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetString(ts->prefix,"-ts_type",(char*)type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSSetType(ts,type);CHKERRQ(ierr);
   }
@@ -244,7 +244,7 @@ int TSSetFromOptions(TS ts)
   ierr = OptionsGetDouble(ts->prefix,"-ts_max_time",&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSSetMonitor(ts,TSDefaultMonitor,0);CHKERRQ(ierr);
+    ierr = TSSetMonitor(ts,TSDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   nmax = 4;
   ierr = OptionsGetIntArray(ts->prefix,"-ts_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ int TSSetFromOptions(TS ts)
     int    rank;
     ierr = MPI_Comm_rank(ts->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);

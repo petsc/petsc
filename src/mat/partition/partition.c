@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.39 1999/11/05 14:46:04 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.40 1999/11/24 21:54:18 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
 
@@ -7,7 +7,7 @@
 */
 #undef __FUNC__  
 #define __FUNC__ "MatPartitioningApply_Current" 
-static int MatPartitioningApply_Current(MatPartitioning part, IS *partitioning)
+static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
   int   ierr,m,rank,size;
 
@@ -89,7 +89,7 @@ int MatPartitioningRegister(char *sname,char *path,char *name,int (*function)(Ma
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&MatPartitioningList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -113,7 +113,7 @@ int MatPartitioningRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatPartitioningList) {
-    ierr = FListDestroy( MatPartitioningList );CHKERRQ(ierr);
+    ierr = FListDestroy(MatPartitioningList);CHKERRQ(ierr);
     MatPartitioningList = 0;
   }
   PetscFunctionReturn(0);
@@ -429,12 +429,12 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 
   /* Get the function pointers for the method requested */
   if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
-  ierr =  FListFind(part->comm, MatPartitioningList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(part->comm,MatPartitioningList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
 
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown partitioning type %s",type);}
 
-  part->destroy      = ( int (*)(MatPartitioning )) 0;
-  part->view         = ( int (*)(MatPartitioning,Viewer) ) 0;
+  part->destroy      = (int (*)(MatPartitioning)) 0;
+  part->view         = (int (*)(MatPartitioning,Viewer)) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
 
   ierr = PetscStrfree(part->type_name);CHKERRQ(ierr);

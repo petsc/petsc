@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.35 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.36 1999/11/05 14:47:57 bsmith Exp bsmith $*/
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
@@ -10,14 +10,14 @@ static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            rank, M = 3, N = 5, P=3, s=1, w=2, nloc, l, i, j, k, kk;
-  int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
-  int            Xs, Xm, Ys, Ym, Zs, Zm, iloc, *ltog, *iglobal;
-  int            *lx = PETSC_NULL, *ly = PETSC_NULL, *lz = PETSC_NULL;
+  int            rank,M = 3,N = 5,P=3,s=1,w=2,nloc,l,i,j,k,kk;
+  int            m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,ierr;
+  int            Xs,Xm,Ys,Ym,Zs,Zm,iloc,*ltog,*iglobal;
+  int            *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   PetscTruth     test_order;
   DA             da;
   Viewer         viewer;
-  Vec            local, global;
+  Vec            local,global;
   Scalar         value;
   DAPeriodicType wrap = DA_XYPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
@@ -43,16 +43,16 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRA(1,1,"Must set -m option with -distribute option");
-    lx = (int *) PetscMalloc( m*sizeof(int) );CHKPTRQ(lx);
-    for ( i=0; i<m-1; i++ ) { lx[i] = 4;}
+    lx = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(lx);
+    for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRA(1,1,"Must set -n option with -distribute option");
-    ly = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ly);
-    for ( i=0; i<n-1; i++ ) { ly[i] = 2;}
+    ly = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ly);
+    for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
     if (p == PETSC_DECIDE) SETERRA(1,1,"Must set -p option with -distribute option");
-    lz = (int *) PetscMalloc( p*sizeof(int) );CHKPTRQ(lz);
-    for ( i=0; i<p-1; i++ ) { lz[i] = 2;}
+    lz = (int*)PetscMalloc(p*sizeof(int));CHKPTRQ(lz);
+    for (i=0; i<p-1; i++) { lz[i] = 2;}
     lz[p-1] = P - 2*(p-1);
   }
 
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
     ierr = DAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao);CHKERRA(ierr);
     /* ierr = AOView(ao,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
-    iglobal = (int *) PetscMalloc( nloc*sizeof(int) );CHKPTRA(iglobal);
+    iglobal = (int*)PetscMalloc(nloc*sizeof(int));CHKPTRA(iglobal);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
        using the DA ordering of grid points */

@@ -1,4 +1,4 @@
-/*$Id: sorti.c,v 1.20 1999/05/12 03:27:21 bsmith Exp bsmith $*/
+/*$Id: sorti.c,v 1.21 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers. Values are sorted in place.
 
@@ -15,11 +15,11 @@
 #if defined(PETSC_USE_KNUTH_QUICKSORT)
 
 /* 
-   This quick-sort is from George Karypis's METIS, and he says it
-     originally comes from Donald Earvin Knuth's TeX. 
+   This quick-sort is from George Karypis METIS, and he says it
+     originally comes from Donald Earvin Knuth TeX. 
 
    Reportedly it runs faster on some machines than quicksort; with PETSc 
-   we haven't seen faster performance, hence it is not used by default.
+   we have not seen faster performance, hence it is not used by default.
 
    Contributed by: Matthew Knepley
 
@@ -29,13 +29,13 @@
 
 #undef __FUNC__
 #define __FUNC__ "TeXqsort_Private" 
-static int TeXqsort_Private(int *base, int *max)
+static int TeXqsort_Private(int *base,int *max)
 {
-  register int *i;
-  register int *j;
-  register int *jj;
-  register int *mid;
-  register int c;
+  int *i;
+  int *j;
+  int *jj;
+  int *mid;
+  int c;
   int *tmp;
   int lo;
   int hi;
@@ -65,7 +65,7 @@ static int TeXqsort_Private(int *base, int *max)
     }
 
     /* Semi-standard quicksort partitioning/swapping */
-    for (i = base, j = max - 1; ; )
+    for (i = base,j = max - 1; ;)
     {
       while(i < mid && *i <= *mid)
         i++;
@@ -103,14 +103,14 @@ static int TeXqsort_Private(int *base, int *max)
     if ((lo = j - base) <= (hi = max - i))
     {
       if (lo >= THRESH)
-        TeXqsort_Private(base, j);
+        TeXqsort_Private(base,j);
       base = i;
       lo = hi;
     }
     else
     {
       if (hi >= THRESH)
-        TeXqsort_Private(i, max);
+        TeXqsort_Private(i,max);
       max = j;
     }
   } while (lo >= THRESH);
@@ -119,14 +119,14 @@ static int TeXqsort_Private(int *base, int *max)
 
 #undef __FUNC__
 #define __FUNC__ "PetsciIqsort" 
-static int PetsciIqsort(int *base, int right)
+static int PetsciIqsort(int *base,int right)
 {
-  register int *i;
-  register int *j;
-  register int *lo;
-  register int *hi;
-  register int *min;
-  register int c;
+  int *i;
+  int *j;
+  int *lo;
+  int *hi;
+  int *min;
+  int c;
   int *max;
 
   PetscFunctionBegin;
@@ -134,7 +134,7 @@ static int PetsciIqsort(int *base, int right)
 
   if (right >= THRESH + 1)
   {
-    TeXqsort_Private(base, max);
+    TeXqsort_Private(base,max);
     hi = base + THRESH;
   }
   else
@@ -152,12 +152,12 @@ static int PetsciIqsort(int *base, int right)
     *j    = c;
   }
 
-  for(min = base; (hi = min += 1) < max; )
+  for(min = base; (hi = min += 1) < max;)
   {
     while (*(--hi) > *min);
     if ((hi += 1) != min)
     {
-      for(lo = min + 1; --lo >= min; )
+      for(lo = min + 1; --lo >= min;)
       {
         c = *lo;
         for(i = j = lo; (j -= 1) >= hi; i = j)
@@ -187,8 +187,7 @@ static int PetsciIqsort(int *base, int right)
 */
 static int PetsciIqsort(int *v,int right)
 {
-  int          tmp;
-  register int i, vl, last;
+  int i,vl,last,tmp;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -200,7 +199,7 @@ static int PetsciIqsort(int *v,int right)
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
   last = 0;
-  for ( i=1; i<=right; i++ ) {
+  for (i=1; i<=right; i++) {
     if (v[i] < vl) {last++; SWAP(v[last],v[i],tmp);}
   }
   SWAP(v[0],v[last],tmp);
@@ -228,9 +227,9 @@ static int PetsciIqsort(int *v,int right)
 
 .seealso: PetscSortDouble(), PetscSortIntWithPermutation()
 @*/
-int PetscSortInt( int n, int i[] )
+int PetscSortInt(int n,int i[])
 {
-  register int j, k, tmp, ik;
+  int j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {

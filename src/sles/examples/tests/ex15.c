@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.18 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.19 1999/11/05 14:46:54 bsmith Exp bsmith $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
@@ -8,11 +8,11 @@ static char help[] = "SLES on an operator with a null space.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x, b, u;      /* approx solution, RHS, exact solution */
+  Vec     x,b,u;      /* approx solution, RHS, exact solution */
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* SLES context */
-  int     ierr, i, n = 10, col[3], its,i1,i2;
-  Scalar  none = -1.0, value[3],avalue;
+  int     ierr,i,n = 10,col[3],its,i1,i2;
+  Scalar  none = -1.0,value[3],avalue;
   double  norm;
   PC      pc;
 
@@ -27,7 +27,7 @@ int main(int argc,char **args)
 
   /* create a solution that is orthogonal to the constants */
   ierr = VecGetOwnershipRange(u,&i1,&i2);CHKERRA(ierr);
-  for ( i=i1; i<i2; i++ ) {
+  for (i=i1; i<i2; i++) {
     avalue = i;
     VecSetValues(u,1,&i,&avalue,INSERT_VALUES);
   }
@@ -40,7 +40,7 @@ int main(int argc,char **args)
   /* Create and assemble matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
-  for (i=1; i<n-1; i++ ) {
+  for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
     ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
   }

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.18 1999/10/24 14:03:55 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.19 1999/11/05 14:47:39 bsmith Exp bsmith $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
@@ -54,18 +54,18 @@ extern int  FormJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   TS     ts;                 /* timestepping context */
-  Vec    x, r;               /* solution, residual vectors */
+  Vec    x,r;               /* solution, residual vectors */
   Mat    J;                  /* Jacobian matrix */
   AppCtx user;               /* user-defined work context */
   int    its;                /* iterations for convergence */
-  int    ierr, N; 
-  double param_max = 6.81, param_min = 0., dt;
+  int    ierr,N; 
+  double param_max = 6.81,param_min = 0.,dt;
   double ftime;
 
-  PetscInitialize( &argc, &argv, PETSC_NULL,help );
+  PetscInitialize(&argc,&argv,PETSC_NULL,help);
   user.mx        = 4;
   user.my        = 4;
   user.param     = 6.0;
@@ -163,7 +163,7 @@ int main( int argc, char **argv )
   */
   ierr = TSStep(ts,&its,&ftime);CHKERRA(ierr);
   
-  printf( "Number of pseudo timesteps = %d final time %4.2e\n", its,ftime );
+  printf("Number of pseudo timesteps = %d final time %4.2e\n",its,ftime);
 
   /* 
      Free the data structures constructed above
@@ -186,9 +186,9 @@ int main( int argc, char **argv )
 #define __FUNC__ "FormInitialGuess"
 int FormInitialGuess(Vec X,AppCtx *user)
 {
-  int     i, j, row, mx, my, ierr;
-  double  one = 1.0, lambda;
-  double  temp1, temp, hx, hy;
+  int     i,j,row,mx,my,ierr;
+  double  one = 1.0,lambda;
+  double  temp1,temp,hx,hy;
   Scalar  *x;
 
   mx	 = user->mx; 
@@ -204,11 +204,11 @@ int FormInitialGuess(Vec X,AppCtx *user)
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx;  
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -220,11 +220,11 @@ int FormInitialGuess(Vec X,AppCtx *user)
 #define __FUNC__ "FormFunction"
 int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my;
-  double  two = 2.0, one = 1.0, lambda;
-  double  hx, hy, hxdhy, hydhx;
-  Scalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
+  AppCtx *user = (AppCtx*)ptr;
+  int     ierr,i,j,row,mx,my;
+  double  two = 2.0,one = 1.0,lambda;
+  double  hx,hy,hxdhy,hydhx;
+  Scalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -241,7 +241,7 @@ int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       }
@@ -265,11 +265,11 @@ int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 #define __FUNC__ "FormJacobian"
 int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx*)ptr;
   Mat     jac = *B;
-  int     i, j, row, mx, my, col[5], ierr;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
-  double  hx, hy, hxdhy, hydhx;
+  int     i,j,row,mx,my,col[5],ierr;
+  Scalar  two = 2.0,one = 1.0,lambda,v[5],sc,*x;
+  double  hx,hy,hxdhy,hydhx;
 
 
   mx	 = user->mx; 
@@ -286,7 +286,7 @@ int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }

@@ -1,16 +1,16 @@
-/*$Id: PetscMemcmp.c,v 1.11 1999/05/04 20:38:02 balay Exp bsmith $*/
+/*$Id: PetscMemcmp.c,v 1.12 1999/10/24 14:04:16 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv)
+int main(int argc,char **argv)
 {
-  PLogDouble x, y, z;
-  Scalar     A[10000], B[10000];
+  PLogDouble x,y,z;
+  Scalar     A[10000],B[10000];
   int        i,ierr;
 
-  PetscInitialize(&argc, &argv,0,0);
+  PetscInitialize(&argc,&argv,0,0);
 
   for (i=0; i<10000; i++) {
     A[i] = i%61897;

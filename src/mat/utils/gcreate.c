@@ -1,4 +1,4 @@
-/*$Id: gcreate.c,v 1.115 1999/10/24 14:02:51 bsmith Exp bsmith $*/
+/*$Id: gcreate.c,v 1.116 1999/11/05 14:46:00 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
@@ -71,7 +71,7 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 {
   MatType    type;
   PetscTruth set;
-  int        ierr, bs = 1;
+  int        ierr,bs = 1;
 
   PetscFunctionBegin;
   ierr = MatGetTypeFromOptions(comm,0,&type,&set);CHKERRQ(ierr);

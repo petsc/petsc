@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.27 1999/10/24 14:03:55 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.28 1999/11/05 14:47:39 bsmith Exp bsmith $*/
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   Mat        A;                      /* Jacobian matrix data structure */
   Vec        u;                      /* approximate solution vector */
   int        time_steps_max = 1000;  /* default max timesteps */
-  int        ierr, steps;
+  int        ierr,steps;
   double     ftime;                  /* final time */
   double     dt;
   double     time_total_max = 100.0; /* default max total time */
@@ -142,7 +142,7 @@ int main(int argc,char **argv)
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetMonitor(ts,Monitor,&appctx);CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      For nonlinear problems, the user can provide a Jacobian evaluation
@@ -232,8 +232,8 @@ int main(int argc,char **argv)
 */ 
 int InitialConditions(Vec u,AppCtx *appctx)
 {
-  Scalar *u_localptr, h = appctx->h, x;
-  int    i, mybase, myend, ierr;
+  Scalar *u_localptr,h = appctx->h,x;
+  int    i,mybase,myend,ierr;
 
   /* 
      Determine starting point of each processor's range of
@@ -293,8 +293,8 @@ int InitialConditions(Vec u,AppCtx *appctx)
 */
 int ExactSolution(double t,Vec solution,AppCtx *appctx)
 {
-  Scalar *s_localptr, h = appctx->h, x;
-  int    i, mybase, myend, ierr;
+  Scalar *s_localptr,h = appctx->h,x;
+  int    i,mybase,myend,ierr;
 
   /* 
      Determine starting and ending points of each processor's 
@@ -345,7 +345,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 {
   AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
   int      ierr;
-  double   en2, en2s, enmax;
+  double   en2,en2s,enmax;
   Scalar   mone = -1.0;
   Draw     draw;
 
@@ -391,7 +391,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this 
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
+  ierr = PetscPrintf(appctx->comm,"Timestep %d: time = %g,2-norm error = %g, max norm error = %g\n",
               step,time,en2s,enmax);CHKERRQ(ierr);
 
   /*
@@ -428,8 +428,8 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
   DA     da = appctx->da;               /* distributed array */
   Vec    local_in = appctx->u_local;    /* local ghosted input vector */
   Vec    localwork = appctx->localwork; /* local ghosted work vector */
-  int    ierr, i, localsize, rank, size; 
-  Scalar *copyptr, *localptr, sc;
+  int    ierr,i,localsize,rank,size; 
+  Scalar *copyptr,*localptr,sc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local function computations
@@ -537,14 +537,14 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-int RHSJacobian(TS ts,double t,Vec global_in,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
+int RHSJacobian(TS ts,double t,Vec global_in,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;                      /* Jacobian matrix */
-  AppCtx *appctx = (AppCtx *) ctx;     /* user-defined application context */
+  AppCtx *appctx = (AppCtx*)ctx;     /* user-defined application context */
   Vec    local_in = appctx->u_local;   /* local ghosted input vector */
   DA     da = appctx->da;              /* distributed array */
-  Scalar v[3], *localptr, sc;
-  int    ierr, i, mstart, mend, mstarts, mends, idx[3], is;
+  Scalar v[3],*localptr,sc;
+  int    ierr,i,mstart,mend,mstarts,mends,idx[3],is;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local Jacobian computations
@@ -600,7 +600,7 @@ int RHSJacobian(TS ts,double t,Vec global_in,Mat *AA,Mat *BB, MatStructure *str,
      matrix one row at a time.
   */
   sc = 1.0/(appctx->h*appctx->h*2.0*(1.0+t)*(1.0+t));
-  for ( i=mstart; i<mend; i++ ) {
+  for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
     is     = i - mstart + 1;
     v[0]   = sc*localptr[is];

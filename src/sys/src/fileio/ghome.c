@@ -1,4 +1,4 @@
-/*$Id: ghome.c,v 1.29 1999/10/01 21:20:34 bsmith Exp bsmith $*/
+/*$Id: ghome.c,v 1.30 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -30,12 +30,12 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetHomeDirectory"
 /*@C
-   PetscGetHomeDirectory - Returns user's home directory name.
+   PetscGetHomeDirectory - Returns home directory name.
 
    Not Collective
 
@@ -64,12 +64,12 @@ int PetscGetHomeDirectory(char dir[],int maxlen)
 
   PetscFunctionBegin;
 #if defined(PARCH_win32) || defined(PARCH_win32_gnu)
-  if (d1 == NULL) d1 ="c:";
+  if (!d1) d1 ="c:";
   ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
 #else
-  pw = getpwuid( getuid() );
+  pw = getpwuid(getuid());
   if (!pw)  PetscFunctionReturn(0);
-  ierr = PetscStrncpy(dir, pw->pw_dir,maxlen);CHKERRQ(ierr);
+  ierr = PetscStrncpy(dir,pw->pw_dir,maxlen);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -101,7 +101,7 @@ int PetscFixFilename(const char filein[],char fileout[])
   if (!filein || !fileout) PetscFunctionReturn(0);
 
   ierr = PetscStrlen(filein,&n);CHKERRQ(ierr);
-  for (i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
 #if defined(PARCH_win32)
     if (filein[i] == '/') fileout[i] = '\\';
 #else

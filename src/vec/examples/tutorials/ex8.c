@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.11 1999/06/30 23:50:45 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.13 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
 a parallel vector.\n\n";
@@ -22,12 +22,12 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int     i, N, ierr, rank, ng,*gindices,rstart,rend,M;
+  int     i,N,ierr,rank,ng,*gindices,rstart,rend,M;
   Scalar  one = 1.0;
   Vec     x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /*
      Create a parallel vector.
@@ -51,9 +51,9 @@ int main(int argc,char **argv)
   ierr = VecGetSize(x,&M);CHKERRA(ierr);
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRA(ierr);
   ng   = rend - rstart + 2;
-  gindices = (int*) PetscMalloc(ng*sizeof(int));CHKPTRA(gindices);
+  gindices = (int*)PetscMalloc(ng*sizeof(int));CHKPTRA(gindices);
   gindices[0] = rstart - 1; 
-  for (i=0; i<ng-1; i++ ) {
+  for (i=0; i<ng-1; i++) {
     gindices[i+1] = gindices[i] + 1;
   }
   /* map the first and last point as periodic */
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
       - In this example, the flag ADD_VALUES indicates that all
         contributions will be added together.
   */
-  for ( i=0; i<ng; i++ ) {
+  for (i=0; i<ng; i++) {
     ierr = VecSetValuesLocal(x,1,&i,&one,ADD_VALUES);CHKERRA(ierr);  
   }
 

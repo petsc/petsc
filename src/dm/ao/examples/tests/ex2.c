@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.11 1999/10/24 14:04:01 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.12 1999/11/05 14:47:47 bsmith Exp bsmith $*/
 
 static char help[] = "Tests application ordering\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests application ordering\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int         n, ierr,rank,size,*ispetsc,*isapp,start,N,i;
+  int         n,ierr,rank,size,*ispetsc,*isapp,start,N,i;
   AO          ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -18,14 +18,14 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* create the orderings */
-  ispetsc = (int *) PetscMalloc( 2*n*sizeof(int) );CHKPTRA(ispetsc);
+  ispetsc = (int*)PetscMalloc(2*n*sizeof(int));CHKPTRA(ispetsc);
   isapp   = ispetsc + n;
 
   ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
   ierr = MPI_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
   start -= n;
 
-  for ( i=0; i<n; i++ ) {  
+  for (i=0; i<n; i++) {  
     ispetsc[i] = start + i;
     isapp[i]   = N - start - i - 1;
   }
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
 
   /* check the mapping */
   ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (ispetsc[i] != isapp[i]) {
       fprintf(stdout,"[%d] Problem with mapping %d to %d\n",rank,i,ispetsc[i]);
     }

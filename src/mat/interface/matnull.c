@@ -1,4 +1,4 @@
-/*$Id: pcnull.c,v 1.26 1999/10/24 01:42:12 bsmith Exp bsmith $*/
+/*$Id: pcnull.c,v 1.27 1999/10/24 14:02:56 bsmith Exp bsmith $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -30,7 +30,7 @@
 
 .seealso: PCNullSpaceDestroy(), PCNullSpaceRemove()
 @*/
-int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace *SP)
+int PCNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,PCNullSpace *SP)
 {
   PCNullSpace sp;
 
@@ -95,7 +95,7 @@ int PCNullSpaceDestroy(PCNullSpace sp)
 int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
 {
   Scalar sum;
-  int    j, n = sp->n, N,ierr;
+  int    j,n = sp->n,N,ierr;
 
   PetscFunctionBegin;
   if (sp->has_cnst) {
@@ -105,7 +105,7 @@ int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
     ierr = VecShift(&sum,vec);CHKERRQ(ierr);
   }
 
-  for ( j=0; j<n; j++ ) {
+  for (j=0; j<n; j++) {
     ierr = VecDot(vec,sp->vecs[j],&sum);CHKERRQ(ierr);
     sum  = -sum;
     ierr = VecAXPY(&sum,sp->vecs[j],vec);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.67 1999/10/04 18:50:03 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.68 1999/11/05 14:44:34 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -21,7 +21,7 @@ struct _MapOps {
 struct _p_Map {
   PETSCHEADER(struct _MapOps)
   int                    rstart,rend;       /* local start, local end + 1 */
-  int                    N, n;              /* global, local vector size */
+  int                    N,n;              /* global, local vector size */
   int                    *range;
 };
 
@@ -29,9 +29,9 @@ struct _p_Map {
 
 typedef struct _VecOps *VecOps;
 struct _VecOps {
-  int  (*duplicate)(Vec,Vec*),               /* get single vector */
-       (*duplicatevecs)(Vec,int,Vec**),      /* get array of vectors */
-       (*destroyvecs)(const Vec[],int),      /* free array of vectors */
+  int  (*duplicate)(Vec,Vec*),              /* get single vector */
+       (*duplicatevecs)(Vec,int,Vec**),     /* get array of vectors */
+       (*destroyvecs)(const Vec[],int),     /* free array of vectors */
        (*dot)(Vec,Vec,Scalar*),              /* z = x^H * y */
        (*mdot)(int,Vec,const Vec[],Scalar*), /* z[j] = x dot y[j] */
        (*norm)(Vec,NormType,double*),        /* z = sqrt(x^H * x) */
@@ -105,7 +105,7 @@ struct _p_Vec {
   PETSCHEADER(struct _VecOps)
   Map                    map;
   void                   *data;     /* implementation-specific data */
-  int                    N, n;      /* global, local vector size */
+  int                    N,n;      /* global, local vector size */
   int                    bs;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
@@ -122,7 +122,7 @@ struct _p_Vec {
   Scalar *array_allocated;            
 
 /* Default obtain and release vectors; can be used by any implementation */
-extern int     VecDuplicateVecs_Default(Vec, int, Vec *[]);
+extern int     VecDuplicateVecs_Default(Vec,int,Vec *[]);
 extern int     VecDestroyVecs_Default(const Vec [],int);
 
 extern int VecLoadIntoVector_Default(Viewer,Vec);
@@ -131,8 +131,8 @@ extern int VecLoadIntoVector_Default(Viewer,Vec);
 /*                                                                     */
 /* Defines the data structures used in the Vec Scatter operations      */
 
-typedef enum { VEC_SCATTER_SEQ_GENERAL, VEC_SCATTER_SEQ_STRIDE, 
-               VEC_SCATTER_MPI_GENERAL, VEC_SCATTER_MPI_TOALL,
+typedef enum { VEC_SCATTER_SEQ_GENERAL,VEC_SCATTER_SEQ_STRIDE,
+               VEC_SCATTER_MPI_GENERAL,VEC_SCATTER_MPI_TOALL,
                VEC_SCATTER_MPI_TOONE} VecScatterType;
 
 /* 
@@ -260,7 +260,7 @@ extern int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
   } \
   array = (stash)->array + stash_bs*(stash)->n; \
   (stash)->idx[(stash)->n]   = row; \
-  for ( jj=0; jj<stash_bs; jj++ ) { array[jj] = values[jj];} \
+  for (jj=0; jj<stash_bs; jj++) { array[jj] = values[jj];} \
   (stash)->n++; \
 }
 

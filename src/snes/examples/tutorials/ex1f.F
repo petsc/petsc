@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.23 1998/04/23 02:11:26 balay Exp bsmith $";
+! "$Id: ex1f.F,v 1.24 1999/04/16 16:10:23 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -59,16 +59,17 @@
       SLES     sles
       PC       pc
       KSP      ksp
-      Vec      x, r
+      Vec      x,r
       Mat      J
-      integer  ierr, its, size, rank
+      integer  ierr,its,size,rank
       Scalar   pfive
       double precision   tol
+      PetscTruth  setls
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
-      external FormFunction, FormJacobian
+      external FormFunction, FormJacobian, MyLineSearch
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Macro definitions
@@ -148,7 +149,15 @@
 !  SNESSetFromOptions() is called _after_ any other customization
 !  routines.
 
+
       call SNESSetFromOptions(snes,ierr)
+
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
+
+      if (setls .eq. PETSC_TRUE) then
+        call SNESSetLineSearch(snes,MyLineSearch,                       &
+     &                         PETSC_NULL_OBJECT,ierr)
+      endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system
@@ -198,13 +207,13 @@
 #include "include/finclude/snes.h"
 
       SNES     snes
-      Vec      x, f
-      integer  ierr, dummy(*)
+      Vec      x,f
+      integer  ierr,dummy(*)
 
 !  Declarations for use with local arrays
 
-      Scalar       lx_v(1), lf_v(1)
-      PetscOffset  lx_i, lf_i 
+      Scalar       lx_v(1),lf_v(1)
+      PetscOffset  lx_i,lf_i 
 
 !  Get pointers to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -257,10 +266,10 @@
 
       SNES         snes
       Vec          X
-      Mat          jac, B
+      Mat          jac,B
       MatStructure flag
       Scalar       A(4)
-      integer      ierr, idx(2), dummy(*)
+      integer      ierr,idx(2),dummy(*)
 
 !  Declarations for use with local arrays
 
@@ -299,3 +308,29 @@
       end
 
 
+      subroutine MyLineSearch(snes,lctx,x,f,g,y,w,fnorm,ynorm,gnorm,     &
+     &                        flag,ierr)
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/snes.h"
+
+      SNES    snes
+      integer lctx
+      Vec     x, f,g, y, w
+      double  precision fnorm,ynorm,gnorm
+      integer flag,ierr
+
+      Scalar     mone
+
+      mone = -1.0d0
+      flag = 0
+      call VecNorm(y,NORM_2,ynorm,ierr)
+      call VecAYPX(mone,x,y,ierr)
+      call SNESComputeFunction(snes,y,g,ierr)
+      call VecNorm(g,NORM_2,gnorm,ierr)
+      return 
+      end

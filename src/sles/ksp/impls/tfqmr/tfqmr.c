@@ -1,4 +1,4 @@
-/*$Id: tfqmr.c,v 1.52 1999/11/24 21:54:57 bsmith Exp bsmith $*/
+/*$Id: tfqmr.c,v 1.53 1999/11/30 01:49:51 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal
@@ -21,7 +21,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
   if (ksp->pc_side == PC_SYMMETRIC){
     SETERRQ(2,0,"no symmetric preconditioning for KSPTFQMR");
   }
-  ierr = KSPDefaultGetWork( ksp,  10 );CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp,10);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -29,10 +29,10 @@ static int KSPSetUp_TFQMR(KSP ksp)
 #define __FUNC__ "KSPSolve_TFQMR"
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
-  int       i, maxit, m, conv=0, cerr=0, ierr;
+  int       i,maxit,m, ierr;
   Scalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
-  double    dp,dpold,w,dpest,tau,psi,cm;
-  Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
+  PetscReal dp,dpold,w,dpest,tau,psi,cm;
+  Vec       X,B,V,P,R,RP,T,T1,Q,U,D,BINVF,AUQ;
 
   PetscFunctionBegin;
   maxit    = ksp->max_it;
@@ -51,7 +51,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   AUQ      = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(ksp,X,V,T, R, BINVF, B );CHKERRQ(ierr);
+  ierr = KSPResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
@@ -59,7 +59,8 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   ksp->rnorm  = dp;
   ksp->its    = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
+  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
 
   /* Make the initial Rp == R */
@@ -95,7 +96,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
         w = dp;
       }
       psi = w / tau;
-      cm  = 1.0 / sqrt( 1.0 + psi * psi );
+      cm  = 1.0 / sqrt(1.0 + psi * psi);
       tau = tau * psi * cm;
       eta = cm * cm * a;
       cf  = psiold * psiold * etaold / a;
@@ -112,12 +113,13 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dpest);
       KSPMonitor(ksp,i+1,dpest);
-      if ((conv = cerr = (*ksp->converged)(ksp,i+1,dpest,ksp->cnvP))) break;
+      ierr = (*ksp->converged)(ksp,i+1,dpest,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      if (ksp->reason) break;
 
       etaold = eta;
       psiold = psi;
     }
-    if (conv) break;
+    if (ksp->reason) break;
 
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);        /* rho <- (r,rp)       */
     b = rho / rhoold;                               /* b <- rho / rhoold   */
@@ -129,11 +131,13 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
     rhoold = rho;
     dpold  = dp;
   }
-  if (i == maxit) i--;
+  if (i == maxit) {
+    i--;
+    ksp->reason = KSP_DIVERGED_ITS;
+  }
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
-  if (cerr <= 0) *its = -(i+1);
-  else          *its = i + 1;
+  *its = i + 1;
   PetscFunctionReturn(0);
 }
 
@@ -143,15 +147,15 @@ EXTERN_C_BEGIN
 int KSPCreate_TFQMR(KSP ksp)
 {
   PetscFunctionBegin;
-  ksp->data                      = (void *) 0;
+  ksp->data                      = (void*)0;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = 1;
-  ksp->guess_zero                = 1; 
+  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_TFQMR;
   ksp->ops->solve                = KSPSolve_TFQMR;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions       = 0;
   ksp->ops->view                 = 0;
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: sortd.c,v 1.19 1999/03/17 23:21:54 bsmith Exp bsmith $*/
+/*$Id: sortd.c,v 1.20 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
@@ -18,9 +18,8 @@
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static int PetsciDqsort(double *v,int right)
 {
-  register int    i,last;
-  register double vl;
-  double          tmp;
+  int    i,last;
+  double vl,tmp;
   
   PetscFunctionBegin;
   if (right <= 1) {
@@ -32,8 +31,8 @@ static int PetsciDqsort(double *v,int right)
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
   last = 0;
-  for ( i=1; i<=right; i++ ) {
-    if (v[i] < vl ) {last++; SWAP(v[last],v[i],tmp);}
+  for (i=1; i<=right; i++) {
+    if (v[i] < vl) {last++; SWAP(v[last],v[i],tmp);}
   }
   SWAP(v[0],v[last],tmp);
   PetsciDqsort(v,last-1);
@@ -60,8 +59,8 @@ static int PetsciDqsort(double *v,int right)
 @*/
 int PetscSortDouble(int n,double v[])
 {
-  register int    j, k;
-  register double tmp, vk;
+  int    j,k;
+  double tmp,vk;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -75,7 +74,7 @@ int PetscSortDouble(int n,double v[])
       }
     }
   } else {
-    PetsciDqsort( v, n-1 );
+    PetsciDqsort(v,n-1);
   }
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/* $Id: pops.c,v 1.1 1999/11/15 19:46:46 bsmith Exp bsmith $*/
+/* $Id: pops.c,v 1.2 1999/11/24 21:52:54 bsmith Exp bsmith $*/
 
 /*
     Defines the operations for the Postscript Draw implementation.
@@ -47,7 +47,7 @@ int DrawOpenPS(MPI_Comm comm,char *filename,Draw *draw)
 /*
     Contains the RGB colors for the PETSc defined colors
 */
-static double     rgb[3][256];
+static PetscReal  rgb[3][256];
 static PetscTruth rgbfilled = PETSC_FALSE;
 
 #define PSSetColor(ps,c)   (((c) == ps->currentcolor) ? 0 : \
@@ -55,40 +55,40 @@ static PetscTruth rgbfilled = PETSC_FALSE;
 
 #undef __FUNC__  
 #define __FUNC__ "DrawPoint_PS" 
-static int DrawPoint_PS(Draw draw,double x,double  y,int c)
+static int DrawPoint_PS(Draw draw,PetscReal x,PetscReal  y,int c)
 {
-  double   xx,yy;
+  PetscReal   xx,yy;
   int      ierr;
-  Draw_PS* ps = (Draw_PS*) draw->data;
+  Draw_PS* ps = (Draw_PS*)draw->data;
 
   PetscFunctionBegin;
   xx = XTRANS(draw,x);  yy = YTRANS(draw,y);
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto stroke\n",xx, yy, xx+1,yy);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto stroke\n",xx,yy,xx+1,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "DrawLine_PS" 
-static int DrawLine_PS(Draw draw, double xl, double yl, double xr, double yr,int c)
+static int DrawLine_PS(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c)
 {
-  Draw_PS* ps = (Draw_PS*) draw->data;
-  double   x1,y_1,x2,y2;
+  Draw_PS* ps = (Draw_PS*)draw->data;
+  PetscReal   x1,y_1,x2,y2;
   int      ierr;
 
   PetscFunctionBegin;
   x1 = XTRANS(draw,xl);   x2  = XTRANS(draw,xr); 
   y_1 = YTRANS(draw,yl);   y2  = YTRANS(draw,yr); 
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
-  ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto stroke\n",x1, y_1, x2, y2);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto stroke\n",x1,y_1,x2,y2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "DrawStringSetSize_PS" 
-static int DrawStringSetSize_PS(Draw draw,double x,double  y)
+static int DrawStringSetSize_PS(Draw draw,PetscReal x,PetscReal  y)
 {
-  Draw_PS* ps = (Draw_PS*) draw->data;
+  Draw_PS* ps = (Draw_PS*)draw->data;
   int      ierr,w,h;
 
   PetscFunctionBegin;
@@ -100,9 +100,9 @@ static int DrawStringSetSize_PS(Draw draw,double x,double  y)
 
 #undef __FUNC__  
 #define __FUNC__ "DrawStringGetSize_PS" 
-static int DrawStringGetSize_PS(Draw draw,double *x,double  *y)
+static int DrawStringGetSize_PS(Draw draw,PetscReal *x,PetscReal  *y)
 {
-  double   w = 9,h = 9;
+  PetscReal   w = 9,h = 9;
 
   PetscFunctionBegin;
   *x = w*(draw->coor_xr - draw->coor_xl)/(WIDTH)*(draw->port_xr - draw->port_xl);
@@ -112,46 +112,46 @@ static int DrawStringGetSize_PS(Draw draw,double *x,double  *y)
 
 #undef __FUNC__  
 #define __FUNC__ "DrawString_PS" 
-static int DrawString_PS(Draw draw,double x,double  y,int c,char *chrs )
+static int DrawString_PS(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 {
-  Draw_PS* ps = (Draw_PS*) draw->data;
-  double   x1,y_1;
+  Draw_PS* ps = (Draw_PS*)draw->data;
+  PetscReal   x1,y_1;
   int      ierr;
 
   PetscFunctionBegin;
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
   x1 = XTRANS(draw,x);
   y_1 = YTRANS(draw,y);
-  ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto (%s) show\n",x1, y_1, chrs);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto (%s) show\n",x1,y_1,chrs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "DrawStringVertical_PS" 
-static int DrawStringVertical_PS(Draw draw,double x,double  y,int c,char *chrs )
+static int DrawStringVertical_PS(Draw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 {
-  Draw_PS* ps = (Draw_PS*) draw->data;
-  double   x1,y_1;
+  Draw_PS* ps = (Draw_PS*)draw->data;
+  PetscReal   x1,y_1;
   int      ierr;
 
   PetscFunctionBegin;
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
   x1 = XTRANS(draw,x);
   y_1 = YTRANS(draw,y);
-  ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"gsave %g %g moveto 90 rotate (%s) show grestore\n",x1, y_1, chrs);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"gsave %g %g moveto 90 rotate (%s) show grestore\n",x1,y_1,chrs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static int DrawInterpolatedTriangle_PS(Draw_PS*,double,double,int,double,double,int,double,double,int);
+static int DrawInterpolatedTriangle_PS(Draw_PS*,PetscReal,PetscReal,int,PetscReal,PetscReal,int,PetscReal,PetscReal,int);
 
 #undef __FUNC__  
 #define __FUNC__ "DrawTriangle_PS" 
-static int DrawTriangle_PS(Draw draw, double X1, double Y_1, double X2, 
-                          double Y2,double X3,double Y3, int c1, int c2,int c3)
+static int DrawTriangle_PS(Draw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
+                          PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
-  Draw_PS* ps = (Draw_PS*) draw->data;
+  Draw_PS* ps = (Draw_PS*)draw->data;
   int      ierr;
-  double   x1,y_1,x2,y2,x3,y3;
+  PetscReal   x1,y_1,x2,y2,x3,y3;
 
   PetscFunctionBegin;
   x1   = XTRANS(draw,X1);
@@ -174,43 +174,31 @@ static int DrawTriangle_PS(Draw draw, double X1, double Y_1, double X2,
 #define __FUNC__ "DrawDestroy_PS" 
 static int DrawDestroy_PS(Draw draw)
 {
-  Draw_PS    *ps = (Draw_PS *) draw->data;
-  int        ierr,rank;
+  Draw_PS    *ps = (Draw_PS*)draw->data;
+  int        ierr;
   PetscTruth show;
   char       *filename,par[1024];
  
   PetscFunctionBegin;
   ierr = ViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");
-  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
   ierr = OptionsHasName(draw->prefix,"-draw_ps_show",&show);CHKERRQ(ierr);
-
-  if (!rank && show) {
+  if (show) {
     ierr = ViewerGetFilename(ps->ps_file,&filename);CHKERRQ(ierr);    
     ierr = PetscStrcpy(par,"ghostview ");CHKERRQ(ierr);
     ierr = PetscStrcat(par,filename);CHKERRQ(ierr);
+    ierr = PetscPOpen(draw->comm,PETSC_NULL,par,"r",PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = ViewerDestroy(ps->ps_file);CHKERRQ(ierr);
-
-  if (!rank && show) {
-#if defined (PARCH_win32)
-    SETERRQ(1,1,"Cannot ghostview on NT");
-#else 
-    if (!(popen(par,"r"))) {
-      SETERRQ1(1,1,"Cannot run command %s",par);
-    }
-    /* ghostview may or may not return something so cannot tell if there is an error */
-#endif
-  }
   ierr = PetscFree(ps);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "DrawSynchronizedFlush_PS" 
-static int DrawSynchronizedFlush_PS(Draw draw )
+static int DrawSynchronizedFlush_PS(Draw draw)
 {
   int      ierr;
-  Draw_PS* ps = (Draw_PS*) draw->data;
+  Draw_PS* ps = (Draw_PS*)draw->data;
 
   PetscFunctionBegin;
   ierr = ViewerFlush(ps->ps_file);CHKERRQ(ierr);
@@ -219,10 +207,10 @@ static int DrawSynchronizedFlush_PS(Draw draw )
 
 #undef __FUNC__  
 #define __FUNC__ "DrawSynchronizedClear_PS" 
-static int DrawSynchronizedClear_PS(Draw draw )
+static int DrawSynchronizedClear_PS(Draw draw)
 {
   int      ierr;
-  Draw_PS* ps = (Draw_PS*) draw->data;
+  Draw_PS* ps = (Draw_PS*)draw->data;
 
   PetscFunctionBegin;
   ierr = ViewerFlush(ps->ps_file);CHKERRQ(ierr);
@@ -267,7 +255,7 @@ EXTERN_C_BEGIN
 int DrawCreate_PS(Draw draw)
 {
   Draw_PS       *ps;
-  int           ierr, ncolors, i;
+  int           ierr,ncolors,i;
   unsigned char *red,*green,*blue;
   static int    filecount = 0;
   char          buff[32];
@@ -400,7 +388,7 @@ int DrawCreate_PS(Draw draw)
     red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
     green = red   + ncolors;
     blue  = green + ncolors;
-    ierr = DrawUtilitySetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
+    ierr = DrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
       rgb[0][i]  = ((double)red[i-DRAW_BASIC_COLORS])/255.;
       rgb[1][i]  = ((double)green[i-DRAW_BASIC_COLORS])/255.;
@@ -409,7 +397,7 @@ int DrawCreate_PS(Draw draw)
     ierr = PetscFree(red);CHKERRQ(ierr);
   }
 
-  draw->data    = (void *) ps;
+  draw->data    = (void*)ps;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -434,14 +422,14 @@ EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "DrawInterpolatedTriangle_PS"
-static int DrawInterpolatedTriangle_PS(Draw_PS* ps, double x1, double y_1, int t1, 
-                                double x2,double y2,int t2,double x3,double y3,int t3)
+static int DrawInterpolatedTriangle_PS(Draw_PS* ps,PetscReal x1,PetscReal y_1,int t1,
+                                PetscReal x2,PetscReal y2,int t2,PetscReal x3,PetscReal y3,int t3)
 {
-  double rfrac, lfrac;
-  double lc, rc = 0.0, lx, rx = 0.0, xx, y;
-  double rc_lc, rx_lx, t2_t1, x2_x1, t3_t1, x3_x1, t3_t2, x3_x2;
-  double R_y2_y_1, R_y3_y_1, R_y3_y2;
-  int    ierr,c;
+  PetscReal rfrac,lfrac;
+  PetscReal lc,rc = 0.0,lx,rx = 0.0,xx,y;
+  PetscReal rc_lc,rx_lx,t2_t1,x2_x1,t3_t1,x3_x1,t3_t2,x3_x2;
+  PetscReal R_y2_y_1,R_y3_y_1,R_y3_y2;
+  int       ierr,c;
 
   PetscFunctionBegin;
   /*
@@ -463,7 +451,7 @@ static int DrawInterpolatedTriangle_PS(Draw_PS* ps, double x1, double y_1, int t
 
 
   /* Sort the vertices */
-#define SWAP(a,b) {double _a; _a=a; a=b; b=_a;}
+#define SWAP(a,b) {PetscReal _a; _a=a; a=b; b=_a;}
 #define ISWAP(a,b) {int _a; _a=a; a=b; b=_a;}
   if (y_1 > y2) {
     SWAP(y_1,y2);ISWAP(t1,t2); SWAP(x1,x2);
@@ -500,29 +488,29 @@ static int DrawInterpolatedTriangle_PS(Draw_PS* ps, double x1, double y_1, int t
       for (xx=lx; xx<=rx; xx++) {
         c = (int)(((xx-lx) * (rc_lc)) / (rx_lx) + lc);
         ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-        ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx, y, xx+1,y);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx,y,xx+1,y);CHKERRQ(ierr);
       }
     } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (int)(((xx-lx) * (rc_lc)) / (rx_lx) + lc);
         ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-        ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx, y, xx+1,y);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx,y,xx+1,y);CHKERRQ(ierr);
       }
     } else {
       c = (int)lc;
       ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-      ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",lx, y, lx+1,y);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",lx,y,lx+1,y);CHKERRQ(ierr);
     }
   }
 
-  /* For simplicity, "move" t1 to the intersection of t1-t3 with the line y=y2.
+  /* For simplicity,"move" t1 to the intersection of t1-t3 with the line y=y2.
      We take advantage of the previous iteration. */
   if (y2 >= y3) {
     ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"grestore\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (y_1 < y2) {
-    t1  = (int) rc;
+    t1  = (int)rc;
     y_1 = y2;
     x1  = rx;
 
@@ -550,18 +538,18 @@ static int DrawInterpolatedTriangle_PS(Draw_PS* ps, double x1, double y_1, int t
       for (xx=lx; xx<=rx; xx++) {
         c = (int)(((xx-lx) * (rc_lc)) / (rx_lx) + lc);
         ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-        ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx, y, xx+1,y);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx,y,xx+1,y);CHKERRQ(ierr);
       }
     } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (int)(((xx-lx) * (rc_lc)) / (rx_lx) + lc);
         ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-        ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx, y, xx+1,y);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx,y,xx+1,y);CHKERRQ(ierr);
       }
     } else {
       c = (int)lc;
       ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-      ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",lx, y, lx+1,y);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",lx,y,lx+1,y);CHKERRQ(ierr);
     }
   }
   ierr = ViewerASCIISynchronizedPrintf(ps->ps_file,"grestore\n");CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: isdiff.c,v 1.14 1999/10/24 14:01:49 bsmith Exp bsmith $*/
+/*$Id: isdiff.c,v 1.15 1999/11/05 14:44:45 bsmith Exp bsmith $*/
 
 #include "is.h"                    /*I "is.h"  I*/
 #include "petsc.h"
@@ -29,7 +29,7 @@
 
 .keywords: Index set, difference
 @*/
-int ISDifference(IS is1,IS is2, IS *isout)
+int ISDifference(IS is1,IS is2,IS *isout)
 {
   int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
   PetscBT  mask;
@@ -47,7 +47,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
   if (n1) {
     imin = PETSC_MAX_INT;
     imax = 0;  
-    for ( i=0; i<n1; i++ ) {
+    for (i=0; i<n1; i++) {
       if (i1[i] < 0) continue;
       imin = PetscMin(imin,i1[i]);
       imax = PetscMax(imax,i1[i]);
@@ -57,7 +57,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
   }
   ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values from is1 */
-  for ( i=0; i<n1; i++ ) {
+  for (i=0; i<n1; i++) {
     if (i1[i] < 0) continue;
     PetscBTSet(mask,i1[i] - imin);
   }
@@ -65,7 +65,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
   /* Remove the values from is2 */
   ierr = ISGetIndices(is2,&i2);CHKERRQ(ierr);
   ierr = ISGetSize(is2,&n2);CHKERRQ(ierr);
-  for ( i=0; i<n2; i++ ) {
+  for (i=0; i<n2; i++) {
     if (i2[i] < imin || i2[i] > imax) continue;
     PetscBTClear(mask,i2[i] - imin);
   }
@@ -73,14 +73,14 @@ int ISDifference(IS is1,IS is2, IS *isout)
   
   /* Count the number in the difference */
   nout = 0;
-  for ( i=0; i<imax-imin+1; i++ ) {
+  for (i=0; i<imax-imin+1; i++) {
     if (PetscBTLookup(mask,i)) nout++;
   }
 
   /* create the new IS containing the difference */
-  iout = (int *) PetscMalloc((nout+1)*sizeof(int));CHKPTRQ(iout);
+  iout = (int*)PetscMalloc((nout+1)*sizeof(int));CHKPTRQ(iout);
   nout = 0;
-  for ( i=0; i<imax-imin+1; i++ ) {
+  for (i=0; i<imax-imin+1; i++) {
     if (PetscBTLookup(mask,i)) iout[nout++] = i + imin;
   }
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
 
 .keywords: Index set, sum
 @*/
-int ISSum(IS is1,IS is2, IS *isout)
+int ISSum(IS is1,IS is2,IS *isout)
 {
   int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
   PetscBT  mask;
@@ -136,12 +136,12 @@ int ISSum(IS is1,IS is2, IS *isout)
   if (n1 || n2) {
     imin = PETSC_MAX_INT;
     imax = 0;  
-    for ( i=0; i<n1; i++ ) {
+    for (i=0; i<n1; i++) {
       if (i1[i] < 0) continue;
       imin = PetscMin(imin,i1[i]);
       imax = PetscMax(imax,i1[i]);
     }
-    for ( i=0; i<n2; i++ ) {
+    for (i=0; i<n2; i++) {
       if (i2[i] < 0) continue;
       imin = PetscMin(imin,i2[i]);
       imax = PetscMax(imax,i2[i]);
@@ -149,11 +149,11 @@ int ISSum(IS is1,IS is2, IS *isout)
   } else {
     imin = imax = 0;
   }
-  iout = (int *) PetscMalloc((n1+n2+1)*sizeof(int));CHKPTRQ(iout);
+  iout = (int*)PetscMalloc((n1+n2+1)*sizeof(int));CHKPTRQ(iout);
   nout = 0;
   ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values from is1 */
-  for ( i=0; i<n1; i++ ) {
+  for (i=0; i<n1; i++) {
     if (i1[i] < 0) continue;
     if (!PetscBTLookupSet(mask,i1[i] - imin)) {
       iout[nout++] = i1[i];
@@ -161,7 +161,7 @@ int ISSum(IS is1,IS is2, IS *isout)
   }
   ierr = ISRestoreIndices(is1,&i1);CHKERRQ(ierr);
   /* Put the values from is2 */
-  for ( i=0; i<n2; i++ ) {
+  for (i=0; i<n2; i++) {
     if (i2[i] < 0) continue;
     if (!PetscBTLookupSet(mask,i2[i] - imin)) {
       iout[nout++] = i2[i];

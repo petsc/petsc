@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.15 1999/11/05 14:46:53 bsmith Exp bsmith $*/
+/*$Id: bicg.c,v 1.16 1999/11/24 21:54:58 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -23,7 +23,7 @@ int KSPSetUp_BiCG(KSP ksp)
   }
 
   /* get work vectors from user code */
-  ierr = KSPDefaultGetWork( ksp, 6 );CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp,6);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -32,9 +32,10 @@ int KSPSetUp_BiCG(KSP ksp)
 #define __FUNC__ "KSPSolve_BiCG"
 int  KSPSolve_BiCG(KSP ksp,int *its)
 {
-  int          ierr,i,maxit,pres, cerr;
+  int          ierr,i,maxit;
+  PetscTruth   pres;
   Scalar       dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
-  double       dp;
+  PetscReal    dp;
   Vec          X,B,Zl,Zr,Rl,Rr,Pl,Pr;
   Mat          Amat,Pmat;
   MatStructure pflag;
@@ -67,8 +68,8 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   } else {
       ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
   }
-  cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
-  if (cerr) {*its =  0; PetscFunctionReturn(0);}
+  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
@@ -76,9 +77,9 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
 
-  for ( i=0; i<maxit; i++) {
+  for (i=0; i<maxit; i++) {
      VecDot(Zr,Rl,&beta);                         /*     beta <- r'z     */
-     if (i == 0) {
+     if (!i) {
        if (beta == 0.0) break;
        ierr = VecCopy(Zr,Pr);CHKERRQ(ierr);       /*     p <- z          */
        ierr = VecCopy(Zl,Pl);CHKERRQ(ierr);
@@ -108,16 +109,15 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
      KSPLogResidualHistory(ksp,dp);
      KSPMonitor(ksp,i+1,dp);
-     cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
-     if (cerr) break;
+     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+     if (ksp->reason) break;
      if (!pres) {
        ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
        ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
      }
   }
-  if (i == maxit) {i--; ksp->its--;}
-  if (cerr <= 0) *its = -(i+1);
-  else           *its = i+1;
+  if (i == maxit) {i--; ksp->its--;ksp->reason = KSP_DIVERGED_ITS;}
+  *its = i+1;
   PetscFunctionReturn(0);
 }
 
@@ -128,7 +128,7 @@ int KSPDestroy_BiCG(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultFreeWork( ksp );CHKERRQ(ierr);
+  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -138,10 +138,9 @@ EXTERN_C_BEGIN
 int KSPCreate_BiCG(KSP ksp)
 {
   PetscFunctionBegin;
-  ksp->data                      = (void *) 0;
+  ksp->data                      = (void*)0;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = 1;
-  ksp->guess_zero                = 1; 
+  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_BiCG;
   ksp->ops->solve                = KSPSolve_BiCG;
   ksp->ops->destroy              = KSPDestroy_BiCG;

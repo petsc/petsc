@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.50 1999/11/05 14:47:16 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.51 1999/11/24 21:55:15 bsmith Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -11,7 +11,7 @@ is solved.  The command line options are:\n\
    -cavity : Solve FDC (flow in a driven cavity) problem\n\
    -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
-      problem FDC:  <parameter> = Reynolds number ( par > 0 )\n\
+      problem FDC:  <parameter> = Reynolds number (par > 0)\n\
    -mx <xg>, where <xg> = number of grid points in the x-direction\n\
    -my <yg>, where <yg> = number of grid points in the y-direction\n\n";
 
@@ -19,7 +19,7 @@ is solved.  The command line options are:\n\
     1) Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
   
     with boundary conditions
    
@@ -52,7 +52,7 @@ extern int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
  
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
   SNES       snes;                 /* SNES context */
   SNESType   method = SNESEQLS;    /* default nonlinear solution method */
@@ -65,7 +65,7 @@ int main( int argc, char **argv )
   double     bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   Scalar     *xvalues;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc, &argv,(char *)0,help);
   /* ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
   ierr = DrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
   ierr = DrawSetType(draw,DRAW_X);CHKERRA(ierr);
@@ -105,8 +105,8 @@ int main( int argc, char **argv )
 
   /* Set options and solve nonlinear system */
   ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
@@ -152,11 +152,11 @@ int FormInitialGuess1(AppCtx *user,Vec X)
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx;  
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #define __FUNC__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx*)ptr;
   int     ierr, i, j, row, mx, my;
   double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
   Scalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
@@ -188,7 +188,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       }
@@ -212,7 +212,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 #define __FUNC__ "FormJacobian1"
 int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
+  AppCtx *user = (AppCtx*)ptr;
   Mat     jac = *J;
   int     i, j, row, mx, my, col[5], ierr;
   Scalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
@@ -233,7 +233,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }
@@ -280,7 +280,7 @@ int FormInitialGuess2(AppCtx *user,Vec X)
     xx = 0.0;
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0;
       } 
       else {
@@ -299,7 +299,7 @@ int FormInitialGuess2(AppCtx *user,Vec X)
 #define __FUNC__ "FormFunction2"
 int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 {
-  AppCtx *user = (AppCtx *) pptr;
+  AppCtx *user = (AppCtx*)pptr;
   int     i, j, row, mx, my, ierr;
   Scalar  two = 2.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   Scalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
@@ -320,7 +320,7 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       }
@@ -404,11 +404,11 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
       /*  Laplacians at each point in the 5 point stencil */
       pblap = (pbr - two*pb + pbl)/hx2 + (p   - two*pb + pbb)/hy2;
       pllap = (p   - two*pl + pll)/hx2 + (ptl - two*pl + pbl)/hy2;
-      plap =  (pr  - two*p  + pl )/hx2 + (pt  - two*p  + pb )/hy2;
-      prlap = (prr - two*pr + p  )/hx2 + (ptr - two*pr + pbr)/hy2;
-      ptlap = (ptr - two*pt + ptl)/hx2 + (ptt - two*pt + p  )/hy2;
+      plap =  (pr  - two*p  + pl)/hx2 + (pt  - two*p  + pb)/hy2;
+      prlap = (prr - two*pr + p)/hx2 + (ptr - two*pr + pbr)/hy2;
+      ptlap = (ptr - two*pt + ptl)/hx2 + (ptt - two*pt + p)/hy2;
 
-      f[row] = hxhy2*( (prlap - two*plap + pllap)/hx2
+      f[row] = hxhy2*((prlap - two*plap + pllap)/hx2
                         + (ptlap - two*plap + pblap)/hy2
                         - rey*(dpdy*(prlap - pllap)/(two*hx)
                         - dpdx*(ptlap - pblap)/(two*hy)));
@@ -424,7 +424,7 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 #define __FUNC__ "FormJacobian2"
 int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
 {
-  AppCtx *user = (AppCtx *) pptr;
+  AppCtx *user = (AppCtx*)pptr;
   int     i, j, row, mx, my, col, ierr;
   Scalar  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   Scalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
@@ -445,7 +445,7 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         ierr = MatSetValues(*J,1,&row,1,&row,&one,ADD_VALUES);CHKERRQ(ierr);
         continue;
       }
@@ -529,9 +529,9 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
       /*  Laplacians at each point in the 5 point stencil */
       pblap = (pbr - two*pb + pbl)/hx2 + (p   - two*pb + pbb)/hy2;
       pllap = (p   - two*pl + pll)/hx2 + (ptl - two*pl + pbl)/hy2;
-      plap =  (pr  - two*p  + pl )/hx2 + (pt  - two*p  + pb )/hy2;
-      prlap = (prr - two*pr + p  )/hx2 + (ptr - two*pr + pbr)/hy2;
-      ptlap = (ptr - two*pt + ptl)/hx2 + (ptt - two*pt + p  )/hy2;
+      plap =  (pr  - two*p  + pl)/hx2 + (pt  - two*p  + pb)/hy2;
+      prlap = (prr - two*pr + p)/hx2 + (ptr - two*pr + pbr)/hy2;
+      ptlap = (ptr - two*pt + ptl)/hx2 + (ptt - two*pt + p)/hy2;
 
       if (j > 2) {
         val = hxhy2*(one/hy2/hy2 - rey*dpdx/hy2/(two*hy));

@@ -1,4 +1,4 @@
-/*$Id: ex60.c,v 1.4 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex60.c,v 1.6 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatGetColumnVector()";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests MatGetColumnVector()";
 int main(int argc,char **args)
 {
   Mat         C;
-  int         i,j, m = 3, n = 2, rank,size,I, J, ierr,col = 0;
+  int         i,j,m = 3,n = 2,rank,size,I,J,ierr,col = 0;
   Scalar      v;
   Vec         yy;
 
@@ -23,13 +23,13 @@ int main(int argc,char **args)
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
          m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) { 
-    for ( j=2*rank; j<2*rank+2; j++ ) {
+  for (i=0; i<m; i++) { 
+    for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }

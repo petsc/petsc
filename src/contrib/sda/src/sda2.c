@@ -1,4 +1,4 @@
-/*$Id: sda2.c,v 1.16 1999/09/20 18:59:23 bsmith Exp bsmith $*/
+/*$Id: sda2.c,v 1.17 1999/10/24 14:04:15 bsmith Exp bsmith $*/
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).
@@ -102,7 +102,7 @@ $           the x and y coordinates, or PETSC_NULL
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
 int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                int M, int N, int m,int n, int w, int s, int *lx, int *ly, SDA *sda)
+                int M,int N,int m,int n,int w,int s,int *lx,int *ly,SDA *sda)
 {
   int        ierr,ntmp,*idx;
   DA         da;
@@ -263,7 +263,7 @@ int SDADestroy(SDA sda)
 
 .seealso: SDALocalToLocalEnd(), SDACreate2d()
 @*/
-int SDALocalToLocalBegin(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
+int SDALocalToLocalBegin(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
 {
   int ierr;
   DA  da = sda->da;
@@ -295,7 +295,7 @@ int SDALocalToLocalBegin(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
 
 .seealso: SDALocalToLocalBegin(), SDACreate2d()
 @*/
-int SDALocalToLocalEnd(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
+int SDALocalToLocalEnd(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
 {
   int ierr;
   DA  da = sda->da;
@@ -330,7 +330,7 @@ $    n and p are optional (used for 2D and 3D problems)
 
 .seealso: SDAGetGhostCorners()
 @*/
-int SDAGetCorners(SDA da,int *x,int *y,int *z,int *m, int *n, int *p)
+int SDAGetCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
 {
   int ierr;
 
@@ -361,7 +361,7 @@ $    n and p are optional (used for 2D and 3D problems)
 
 .seealso: SDAGetCorners()
 @*/
-int SDAGetGhostCorners(SDA da,int *x,int *y,int *z,int *m, int *n, int *p)
+int SDAGetGhostCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
 {
   int ierr;
 

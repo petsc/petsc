@@ -1,46 +1,46 @@
-/*$Id: mpiu.c,v 1.91 1999/06/30 23:49:46 balay Exp bsmith $*/
+/*$Id: mpiu.c,v 1.92 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSequentialPhaseBegin_Private" 
-int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng )
+int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
-  int        lidx, np, tag = 0,ierr;
+  int        lidx,np,tag = 0,ierr;
   MPI_Status status;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size( comm, &np );CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&np);CHKERRQ(ierr);
   if (np == 1) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank( comm, &lidx );CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&lidx);CHKERRQ(ierr);
   if (lidx != 0) {
-    ierr = MPI_Recv( 0, 0, MPI_INT, lidx-1, tag, comm, &status );CHKERRQ(ierr);
+    ierr = MPI_Recv(0,0,MPI_INT,lidx-1,tag,comm,&status);CHKERRQ(ierr);
   }
   /* Send to the next process in the group unless we are the last process */ 
   if ((lidx % ng) < ng - 1 && lidx != np - 1) {
-    ierr = MPI_Send( 0, 0, MPI_INT, lidx + 1, tag, comm );CHKERRQ(ierr);
+    ierr = MPI_Send(0,0,MPI_INT,lidx + 1,tag,comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSequentialPhaseEnd_Private" 
-int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng )
+int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
-  int        lidx, np, tag = 0,ierr;
+  int        lidx,np,tag = 0,ierr;
   MPI_Status status;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank( comm, &lidx );CHKERRQ(ierr);
-  ierr = MPI_Comm_size( comm, &np );CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&lidx);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&np);CHKERRQ(ierr);
   if (np == 1) PetscFunctionReturn(0);
 
   /* Send to the first process in the next group */
   if ((lidx % ng) == ng - 1 || lidx == np - 1) {
-    ierr = MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, tag, comm );CHKERRQ(ierr);
+    ierr = MPI_Send(0,0,MPI_INT,(lidx + 1) % np,tag,comm);CHKERRQ(ierr);
   }
-  if (lidx == 0) {
-    ierr = MPI_Recv( 0, 0, MPI_INT, np-1, tag, comm, &status );CHKERRQ(ierr);
+  if (!lidx) {
+    ierr = MPI_Recv(0,0,MPI_INT,np-1,tag,comm,&status);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -71,9 +71,9 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
    way to force a section of code to be executed by the processes in
    rank order.  Typically, this is done with
 .vb
-      PetscSequentialPhaseBegin( comm, 1 );
+      PetscSequentialPhaseBegin(comm, 1);
       <code to be executed sequentially>
-      PetscSequentialPhaseEnd( comm, 1 );
+      PetscSequentialPhaseEnd(comm, 1);
 .ve
 
    Often, the sequential code contains output statements (e.g., printf) to
@@ -87,13 +87,13 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 .keywords: sequential, phase, begin
 @*/
-int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
+int PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 {
-  int        ierr, np;
+  int        ierr,np;
   MPI_Comm   local_comm,*addr_local_comm;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size( comm, &np );CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&np);CHKERRQ(ierr);
   if (np == 1) PetscFunctionReturn(0);
 
   /* Get the private communicator for the sequential operations */
@@ -101,10 +101,10 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Seq_keyval,0);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_dup( comm, &local_comm );CHKERRQ(ierr);
-  addr_local_comm  = (MPI_Comm *) PetscMalloc(sizeof(MPI_Comm));CHKPTRQ(addr_local_comm);
+  ierr = MPI_Comm_dup(comm,&local_comm);CHKERRQ(ierr);
+  addr_local_comm  = (MPI_Comm*)PetscMalloc(sizeof(MPI_Comm));CHKPTRQ(addr_local_comm);
   *addr_local_comm = local_comm;
-  ierr = MPI_Attr_put( comm, Petsc_Seq_keyval, (void *) addr_local_comm );CHKERRQ(ierr);
+  ierr = MPI_Attr_put(comm,Petsc_Seq_keyval,(void*)addr_local_comm);CHKERRQ(ierr);
   ierr = PetscSequentialPhaseBegin_Private(local_comm,ng);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -130,17 +130,17 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 
 .keywords: sequential, phase, end
 @*/
-int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
+int PetscSequentialPhaseEnd(MPI_Comm comm,int ng)
 {
-  int        ierr, np, flag;
+  int        ierr,np,flag;
   MPI_Comm   local_comm,*addr_local_comm;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size( comm, &np );CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&np);CHKERRQ(ierr);
   if (np == 1) PetscFunctionReturn(0);
 
-  ierr = MPI_Attr_get( comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag );CHKERRQ(ierr);
-  if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
+  ierr = MPI_Attr_get(comm,Petsc_Seq_keyval,(void **)&addr_local_comm,&flag);CHKERRQ(ierr);
+  if (!flag) MPI_Abort(comm,MPI_ERR_UNKNOWN);
   local_comm = *addr_local_comm;
 
   ierr = PetscSequentialPhaseEnd_Private(local_comm,ng);CHKERRQ(ierr);

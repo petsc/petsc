@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.86 1999/09/14 15:58:35 balay Exp bsmith $;
+!  $Id: petsc.h,v 1.87 1999/11/05 14:48:35 bsmith Exp bsmith $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !
@@ -17,13 +17,13 @@
 !    
 !     Flags
 !
-      integer   PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE
+      integer   PETSC_TRUE,PETSC_FALSE,PETSC_DECIDE
       integer   PETSC_DEFAULT_INTEGER,PETSC_DETERMINE
-      integer   PETSC_FP_TRAP_OFF, PETSC_FP_TRAP_ON
+      integer   PETSC_FP_TRAP_OFF,PETSC_FP_TRAP_ON
 
-      parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1)
+      parameter (PETSC_TRUE = 1,PETSC_FALSE = 0,PETSC_DECIDE = -1)
       parameter (PETSC_DEFAULT_INTEGER = -2,PETSC_DETERMINE = -1)
-      parameter (PETSC_FP_TRAP_OFF = 0, PETSC_FP_TRAP_ON = 1) 
+      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1) 
 
 
       PetscFortranDouble PETSC_DEFAULT_DOUBLE_PRECISION
@@ -51,11 +51,11 @@
 !
 !     PETSc DataTypes
 !
-      integer PETSC_INT, PETSC_DOUBLE, PETSC_SHORT, PETSC_FLOAT
-      integer PETSC_COMPLEX, PETSC_CHAR, PETSC_LOGICAL
+      integer PETSC_INT,PETSC_DOUBLE,PETSC_SHORT,PETSC_FLOAT
+      integer PETSC_COMPLEX,PETSC_CHAR,PETSC_LOGICAL
 
-      parameter (PETSC_INT=0, PETSC_DOUBLE=1, PETSC_SHORT=2)
-      parameter (PETSC_FLOAT=3, PETSC_COMPLEX=4, PETSC_CHAR=5)
+      parameter (PETSC_INT=0,PETSC_DOUBLE=1,PETSC_SHORT=2)
+      parameter (PETSC_FLOAT=3,PETSC_COMPLEX=4,PETSC_CHAR=5)
       parameter (PETSC_LOGICAL=6)
 !
 ! ------------------------------------------------------------------------
@@ -75,7 +75,7 @@
 
       parameter (PETSC_PI = 3.14159265358979323846264d0)
       parameter (PETSC_DEGREES_TO_RADIANS = 0.01745329251994d0)
-      parameter (PETSC_MAX = 1.d300, PETSC_MIN = -1.d300)
+      parameter (PETSC_MAX = 1.d300,PETSC_MIN = -1.d300)
 !
 ! ----------------------------------------------------------------------------
 !    BEGIN COMMON-BLOCK VARIABLES
@@ -83,13 +83,13 @@
 !     Default Viewers.
 !     Other viewers are declared in the begining of this file.
 !
-      PetscFortranAddr VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF
+      PetscFortranAddr VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF
       PetscFortranAddr VIEWER_STDOUT_WORLD
 
 !
 !     PETSc world communicator
 !
-      MPI_Comm PETSC_COMM_WORLD, PETSC_COMM_SELF
+      MPI_Comm PETSC_COMM_WORLD,PETSC_COMM_SELF
 !
 !     Fortran Null
 !

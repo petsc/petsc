@@ -1,4 +1,4 @@
-/* $Id: bjacobi.h,v 1.20 1999/01/27 19:46:50 bsmith Exp bsmith $ */
+/* $Id: bjacobi.h,v 1.21 1999/01/31 16:08:12 bsmith Exp bsmith $ */
 
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
@@ -12,7 +12,7 @@
        This data is general for all implementations
 */
 typedef struct {
-  int       n, n_local;        /* number of blocks (global, local) */
+  int       n,n_local;        /* number of blocks (global, local) */
   int       first_local;       /* number of first block on processor */
   int       use_true_local;    /* use block from true matrix, not preconditioner matrix
                                   for local MatMult(). */
@@ -39,7 +39,7 @@ typedef struct {
 
 /*  This is for a single block per processor */
 typedef struct {
-  Vec  x, y;
+  Vec  x,y;
 } PC_BJacobi_Singleblock;
 
 #endif

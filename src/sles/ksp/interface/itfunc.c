@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.138 1999/12/03 22:03:30 balay Exp balay $*/
+/*$Id: itfunc.c,v 1.139 1999/12/08 22:17:29 balay Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -34,7 +34,7 @@
 
 .seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeEigenvalues()
 @*/
-int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
+int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   int ierr;
 
@@ -98,7 +98,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
 
 .seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
 @*/
-int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c,int *neig)
+int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
 {
   int ierr;
 
@@ -197,7 +197,7 @@ int KSPSetUp(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           SLESSolve(), KSPSolveTranspose(), SLESGetKSP()
 @*/
-int KSPSolve(KSP ksp, int *its) 
+int KSPSolve(KSP ksp,int *its) 
 {
   int        ierr,rank;
   PetscTruth flag1,flag2;
@@ -223,14 +223,14 @@ int KSPSolve(KSP ksp, int *its)
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
   ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
-    int    n = *its, i, neig;
-    double *r,*c;
-    r = (double *) PetscMalloc( 2*n*sizeof(double) );CHKPTRQ(r);
+    int       n = *its,i,neig;
+    PetscReal *r,*c;
+    r = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(r);
     c = r + n;
     ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
     if (flag1) {
       ierr = PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
-      for ( i=0; i<neig; i++ ) {
+      for (i=0; i<neig; i++) {
         if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);CHKERRQ(ierr);}
         else             {ierr = PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);CHKERRQ(ierr);}
       }
@@ -244,7 +244,7 @@ int KSPSolve(KSP ksp, int *its)
                              PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
       ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
       ierr = DrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
-      for ( i=0; i<neig; i++ ) {
+      for (i=0; i<neig; i++) {
         ierr = DrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
       ierr = DrawSPDraw(drawsp);CHKERRQ(ierr);
@@ -257,15 +257,15 @@ int KSPSolve(KSP ksp, int *its)
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
   ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
-    int    n, i;
-    double *r,*c;
+    int       n,i;
+    PetscReal *r,*c;
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
-    r = (double *) PetscMalloc( 2*n*sizeof(double) );CHKPTRQ(r);
+    r = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(r);
     c = r + n;
     ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr); 
     if (flag1) {
       ierr = PetscPrintf(ksp->comm,"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
-      for ( i=0; i<n; i++ ) {
+      for (i=0; i<n; i++) {
         if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);CHKERRQ(ierr);}
         else             {ierr = PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);CHKERRQ(ierr);}
       }
@@ -278,7 +278,7 @@ int KSPSolve(KSP ksp, int *its)
       ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer);CHKERRQ(ierr);
       ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
       ierr = DrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
-      for ( i=0; i<n; i++ ) {
+      for (i=0; i<n; i++) {
         ierr = DrawSPAddPoint(drawsp,r+i,c+i);CHKERRQ(ierr);
       }
       ierr = DrawSPDraw(drawsp);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ int KSPSolve(KSP ksp, int *its)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           SLESSolve(), SLESGetKSP()
 @*/
-int KSPSolveTranspose(KSP ksp, int *its) 
+int KSPSolveTranspose(KSP ksp,int *its) 
 {
   int        ierr;
   Scalar     zero = 0.0;
@@ -365,7 +365,7 @@ int KSPDestroy(KSP ksp)
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }
-  for (i=0; i<ksp->numbermonitors; i++ ) {
+  for (i=0; i<ksp->numbermonitors; i++) {
     if (ksp->monitordestroy[i]) {
       ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
     }
@@ -442,7 +442,7 @@ int KSPSetPreconditionerSide(KSP ksp,PCSide side)
 
 .seealso: KSPSetPreconditionerSide()
 @*/
-int KSPGetPreconditionerSide(KSP ksp, PCSide *side) 
+int KSPGetPreconditionerSide(KSP ksp,PCSide *side) 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -477,7 +477,7 @@ int KSPGetPreconditionerSide(KSP ksp, PCSide *side)
 
 .seealso: KSPSetTolerances()
 @*/
-int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,int *maxits)
+int KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int *maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -527,7 +527,7 @@ int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,int *maxits)
 
 .seealso: KSPGetTolerances(), KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
+int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -650,7 +650,8 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 {
   PetscFunctionBegin;
-  *flag = ksp->guess_zero;
+  if (ksp->guess_zero) *flag = PETSC_FALSE;
+  else                 *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -792,7 +793,7 @@ int KSPGetRhs(KSP ksp,Vec *r)
 
 .seealso: KSPSetRhs(), KSPGetSolution()
 @*/
-int KSPSetSolution(KSP ksp, Vec x)
+int KSPSetSolution(KSP ksp,Vec x)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -822,10 +823,11 @@ int KSPSetSolution(KSP ksp, Vec x)
 
 .seealso: KSPGetRhs(), KSPSetSolution(), KSPBuildSolution()
 @*/
-int KSPGetSolution(KSP ksp, Vec *v)
+int KSPGetSolution(KSP ksp,Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);  *v = ksp->vec_sol; 
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE); 
+  *v = ksp->vec_sol; 
   PetscFunctionReturn(0);
 }
 
@@ -881,7 +883,7 @@ int KSPSetPC(KSP ksp,PC B)
 
 .seealso: KSPSetPC()
 @*/
-int KSPGetPC(KSP ksp, PC *B)
+int KSPGetPC(KSP ksp,PC *B)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -905,7 +907,7 @@ int KSPGetPC(KSP ksp, PC *B)
 -  monitordestroy - optional pointer to function to free mctx space
 
    Calling Sequence of monitor:
-$     monitor (KSP ksp, int it, double rnorm, void *mctx)
+$     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -942,7 +944,7 @@ $     monitor (KSP ksp, int it, double rnorm, void *mctx)
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPClearMonitor()
 @*/
-int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx, int (*monitordestroy)(void*))
+int KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -1004,7 +1006,7 @@ int KSPClearMonitor(KSP ksp)
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPGetMonitorContext(KSP ksp, void **ctx)
+int KSPGetMonitorContext(KSP ksp,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -1035,7 +1037,7 @@ int KSPGetMonitorContext(KSP ksp, void **ctx)
 .seealso: KSPGetResidualHistory()
 
 @*/
-int KSPSetResidualHistory(KSP ksp, double *a, int na,PetscTruth reset)
+int KSPSetResidualHistory(KSP ksp,PetscReal *a,int na,PetscTruth reset)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -1075,7 +1077,7 @@ $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
 .seealso: KSPGetResidualHistory()
 
 @*/
-int KSPGetResidualHistory(KSP ksp, double **a, int *na)
+int KSPGetResidualHistory(KSP ksp,PetscReal **a,int *na)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -1098,7 +1100,7 @@ int KSPGetResidualHistory(KSP ksp, double **a, int *na)
 -  cctx    - context for private data for the convergence routine (may be null)
 
    Calling sequence of converge:
-$     converge (KSP ksp, int it, double rnorm, KSPConvergedReason *reason,void *mctx)
+$     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -1124,7 +1126,7 @@ $     converge (KSP ksp, int it, double rnorm, KSPConvergedReason *reason,void *
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,double,KSPConvergedReason*,void*),void *cctx)
+int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -1153,7 +1155,7 @@ int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,double,KSPConvergedRea
 
 .seealso: KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-int KSPGetConvergenceContext(KSP ksp, void **ctx)
+int KSPGetConvergenceContext(KSP ksp,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -1200,7 +1202,7 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
 
 .seealso: KSPGetSolution(), KSPBuildResidual()
 @*/
-int KSPBuildSolution(KSP ksp, Vec v, Vec *V)
+int KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 {
   int ierr;
 
@@ -1238,10 +1240,10 @@ int KSPBuildSolution(KSP ksp, Vec v, Vec *V)
 
 .seealso: KSPBuildSolution()
 @*/
-int KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
+int KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
-  int flag = 0, ierr;
-  Vec w = v, tt = t;
+  int flag = 0,ierr;
+  Vec w = v,tt = t;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

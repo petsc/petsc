@@ -1,4 +1,4 @@
-/*$Id: ex55.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex55.c,v 1.11 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -8,10 +8,10 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat     C, A, B; 
-  int     ierr, i, j,ntypes = 9,size;
-  MatType type[9] = {MATMPIAIJ,  MATMPIROWBS,  MATMPIBDIAG, MATMPIDENSE,
-                     MATMPIBAIJ, MATSEQDENSE, MATSEQAIJ,   MATSEQBDIAG, MATSEQBAIJ};
+  Mat     C,A,B; 
+  int     ierr,i,j,ntypes = 9,size;
+  MatType type[9] = {MATMPIAIJ, MATMPIROWBS, MATMPIBDIAG,MATMPIDENSE,
+                     MATMPIBAIJ,MATSEQDENSE,MATSEQAIJ,  MATSEQBDIAG,MATSEQBAIJ};
   char    file[128];
   Vec     v;
   Viewer  fd;
@@ -35,13 +35,13 @@ int main(int argc,char **args)
   ierr = ViewerDestroy(fd);CHKERRA(ierr);
 
   
-  for ( i=0; i<ntypes; i++ ) {
+  for (i=0; i<ntypes; i++) {
     ierr = MatConvert(C,type[i],&A);CHKERRA(ierr);
-    for ( j=0; j<ntypes; j++ ) {
+    for (j=0; j<ntypes; j++) {
       ierr = MatConvert(A,type[i],&B);CHKERRA(ierr);
-      ierr = MatDestroy(B); CHKERRA(ierr);
+      ierr = MatDestroy(B);CHKERRA(ierr);
     }
-    ierr = MatDestroy(A); CHKERRA(ierr);
+    ierr = MatDestroy(A);CHKERRA(ierr);
   }
 
   if (size == 1) {

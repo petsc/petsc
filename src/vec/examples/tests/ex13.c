@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.40 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.41 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.  In\n\
 this case each local vector is as long as the entire parallel vector.\n";
@@ -10,7 +10,7 @@ this case each local vector is as long as the entire parallel vector.\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr;
+  int           n = 5,ierr;
   int           size,rank,i,N;
   Scalar        value;
   Vec           x,y;
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is1);CHKERRA(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is2);CHKERRA(ierr);
 
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     value = (Scalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }

@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.14 1998/10/19 22:16:03 bsmith Exp bsmith $ */
+/* $Id: axpy.h,v 1.15 1999/05/12 03:25:57 bsmith Exp bsmith $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -6,7 +6,7 @@
    for
    U += Alpha * P
 
-   In addition, versions that process 2 and 4 vectors are provided; 
+   In addition,versions that process 2 and 4 vectors are provided; 
    these can give significantly better use of memory resources than
    successive calls to the regular daxpy.
  */
@@ -28,9 +28,9 @@
 #endif
 
 EXTERN_C_BEGIN
-extern void fortranmaxpy4_(void *, void *,void *,void *,void *,void *,void *, void *,void *,int *);
-extern void fortranmaxpy3_(void *, void *,void *,void *,void *,void *,void *,int *);
-extern void fortranmaxpy2_(void *, void *,void *,void *,void *,int *);
+extern void fortranmaxpy4_(void *,void *,void *,void *,void *,void *,void *,void *,void *,int *);
+extern void fortranmaxpy3_(void *,void *,void *,void *,void *,void *,void *,int *);
+extern void fortranmaxpy2_(void *,void *,void *,void *,void *,int *);
 EXTERN_C_END
 
 #define APXY(U,a1,p1,n)  {int one=1;\
@@ -105,7 +105,7 @@ aa[0]=a1;aa[1]=a2;\
 
 #elif defined(PETSC_USE_FOR_KERNELS)
 
-#define APXY(U,a1,p1,n)  {int __i;Scalar __s1, __s2; \
+#define APXY(U,a1,p1,n)  {int __i;Scalar __s1,__s2; \
   for(__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\
   __s1+=U[__i];__s2+=U[__i+1];U[__i]=__s1;U[__i+1]=__s2;}\
   if (n & 0x1) U[__i] += a1 * p1[__i];}
@@ -206,7 +206,7 @@ U += 4; P += 4; n -= 4;}}
 while (n--) {*U = *p1++ + a1 * *U;U++;}
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define AYPX(U,a1,p1,n)  {int __i;Scalar __s1, __s2; \
+#define AYPX(U,a1,p1,n)  {int __i;Scalar __s1,__s2; \
 for(__i=0;__i<n-1;__i+=2){__s1=p1[__i];__s2=p1[__i+1];\
 __s1+=a1*U[__i];__s2+=a1*U[__i+1];\
 U[__i]=__s1;U[__i+1]=__s2;}\

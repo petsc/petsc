@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.55 1999/11/05 14:44:14 bsmith Exp bsmith $*/
+/*$Id: inherit.c,v 1.56 1999/11/24 21:53:05 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -88,7 +88,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
 
    Input Parameter:
 .  obj - the PETSc object. This must be cast with (PetscObject), for example, 
-         PetscObjectReference((PetscObject) mat);
+         PetscObjectReference((PetscObject)mat);
 
    Level: advanced
 
@@ -112,7 +112,7 @@ int PetscObjectReference(PetscObject obj)
 
    Input Parameter:
 .  obj - the PETSc object; this must be cast with (PetscObject), for example, 
-         PetscObjectGetReference((PetscObject) mat,&cnt);
+         PetscObjectGetReference((PetscObject)mat,&cnt);
 
    Output Parameter:
 .  cnt - the reference count
@@ -140,7 +140,7 @@ int PetscObjectGetReference(PetscObject obj,int *cnt)
 
    Input Parameter:
 .  obj - the PETSc object; this must be cast with (PetscObject), for example, 
-         PetscObjectDereference((PetscObject) mat);
+         PetscObjectDereference((PetscObject)mat);
 
    Level: advanced
 
@@ -154,7 +154,7 @@ int PetscObjectDereference(PetscObject obj)
   PetscValidHeader(obj);
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
-  } else if (--obj->refct == 0) {
+  } else if (!--obj->refct) {
     SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic destroy routine");
   }
   PetscFunctionReturn(0);
@@ -222,7 +222,7 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
 {
   PetscFunctionBegin;
   if (lang == PETSC_LANGUAGE_C) {
-    *vob = (void *) obj;
+    *vob = (void*)obj;
   } else if (lang == PETSC_LANGUAGE_CPP) {
     if (obj->cpp) {
       *vob = obj->cpp;
@@ -254,7 +254,7 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = FListFind(obj->comm,obj->qlist,name,( int(**)(void *)) ptr);CHKERRQ(ierr);
+  ierr = FListFind(obj->comm,obj->qlist,name,(int(**)(void *)) ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +270,7 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
 
    Input Parameters:
 +  obj - the PETSc object; this must be cast with (PetscObject), for example, 
-         PetscObjectCompose((PetscObject) mat,...);
+         PetscObjectCompose((PetscObject)mat,...);
 .  name - name associated with the child object 
 -  ptr - the other PETSc object to associate with the PETSc object; this must also be 
          cast with (PetscObject)
@@ -278,7 +278,7 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
    Level: advanced
 
    Notes:
-   The second object's reference count is automatically increased by one when it is
+   The second objects reference count is automatically increased by one when it is
    composed.
 
    Replaces any previous object that had the same name.
@@ -314,7 +314,7 @@ int PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
    Input Parameters:
 +  obj - the PETSc object
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectCompose((PetscObject) mat,...);
+         PetscObjectCompose((PetscObject)mat,...);
 .  name - name associated with child object 
 -  ptr - the other PETSc object associated with the PETSc object, this must also be 
          cast with (PetscObject)
@@ -344,7 +344,7 @@ int PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
    Input Parameters:
 +  obj - the PETSc object
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectCompose((PetscObject) mat,...);
+         PetscObjectCompose((PetscObject)mat,...);
 -  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CPP
 
    Output Parameter:
@@ -375,7 +375,7 @@ int PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
    Input Parameters:
 +  obj - the PETSc object
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectCompose((PetscObject) mat,...);
+         PetscObjectCompose((PetscObject)mat,...);
 .  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CPP
 -  ptr - the language specific interface
 
@@ -416,7 +416,7 @@ int PetscObjectComposeFunction(PetscObject obj,const char name[],
 
    Input Parameters:
 +  obj - the PETSc object; this must be cast with (PetscObject), for example, 
-         PetscObjectQueryFunction((PetscObject) ksp,...);
+         PetscObjectQueryFunction((PetscObject)ksp,...);
 -  name - name associated with the child function
 
    Output Parameter:
@@ -625,7 +625,7 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 
    Input Parameters:
 +  obj - the PETSc object; this must be cast with a (PetscObject), for example, 
-         PetscObjectCompose((PetscObject) mat,...);
+         PetscObjectCompose((PetscObject)mat,...);
 .  name - name associated with the child function
 .  fname - name of the function
 -  ptr - function pointer (or PETSC_NULL if using dynamic libraries)

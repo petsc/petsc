@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.75 1999/12/01 16:08:57 balay Exp balay $*/
+/*$Id: zsys.c,v 1.76 1999/12/01 16:15:23 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
@@ -40,6 +40,7 @@
 #define petscobjectrestorenewtag_  PETSCOBJECTRESTORENEWTAG
 #define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
 #define petsccommrestorenewtag_    PETSCCOMMRESTORENEWTAG
+#define petscfptrap_               PETSCFPTRAP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define chkmemfortran_             chkmemfortran
 #define petscobjectgetnewtag_      petscobjectgetnewtag
@@ -77,41 +78,47 @@
 #define petscbinaryclose_          petscbinaryclose
 #define petscbinaryseek_           petscbinaryseek
 #define petscsynchronizedflush_    petscsynchronizedflush
+#define petscfptrap_               petscfptrap
 #endif
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,int *tag, int *ierr )
+void PETSC_STDCALL petscsetfptrap_(PetscFPTrap *flag,int *__ierr)
+{
+  *__ierr = PetscSetFPTrap(*flag);
+}
+
+void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,int *tag,int *ierr)
 {
   *ierr = PetscObjectGetNewTag(*obj,tag);
 }
 
-void PETSC_STDCALL petscobjectrestorenewtag_(PetscObject *obj,int *tag, int *ierr )
+void PETSC_STDCALL petscobjectrestorenewtag_(PetscObject *obj,int *tag,int *ierr)
 {
   *ierr = PetscObjectRestoreNewTag(*obj,tag);
 }
 
-void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,int *tag, int *ierr )
+void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,int *tag,int *ierr)
 {
   *ierr = PetscCommGetNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
 }
 
-void PETSC_STDCALL petsccommrestorenewtag_(MPI_Comm *comm,int *tag, int *ierr )
+void PETSC_STDCALL petsccommrestorenewtag_(MPI_Comm *comm,int *tag,int *ierr)
 {
   *ierr = PetscCommRestoreNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
 }
 
-void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,int *n,int *N, int *ierr )
+void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,int *n,int *N,int *ierr)
 {
   *ierr = PetscSplitOwnership((MPI_Comm)PetscToPointerComm(*comm),n,N);
 }
 
-void PETSC_STDCALL petscbarrier_(PetscObject *obj, int *ierr )
+void PETSC_STDCALL petscbarrier_(PetscObject *obj,int *ierr)
 {
   *ierr = PetscBarrier(*obj);
 }
 
-void PETSC_STDCALL petscstrncpy_(CHAR s1, CHAR s2, int *n,int *ierr,int len1, int len2)
+void PETSC_STDCALL petscstrncpy_(CHAR s1,CHAR s2,int *n,int *ierr,int len1,int len2)
 {
   char *t1,*t2;
   int  m;
@@ -128,7 +135,7 @@ void PETSC_STDCALL petscstrncpy_(CHAR s1, CHAR s2, int *n,int *ierr,int len1, in
   *ierr = PetscStrncpy(t1,t2,m);
 }
 
-void PETSC_STDCALL petscfixfilename_(CHAR filein ,CHAR fileout,int *ierr,int len1,int len2)
+void PETSC_STDCALL petscfixfilename_(CHAR filein,CHAR fileout,int *ierr,int len1,int len2)
 {
   int  i,n;
   char *in,*out;
@@ -251,7 +258,7 @@ static char FIXCHARSTRING[1024];
 
 #endif
 
-void PETSC_STDCALL chkmemfortran_(int *line, CHAR file,int *ierr,int len)
+void PETSC_STDCALL chkmemfortran_(int *line,CHAR file,int *ierr,int len)
 {
   char *c1;
 
@@ -264,13 +271,13 @@ void PETSC_STDCALL petsctrvalid_(int *ierr)
   *ierr = PetscTrValid(0,"Unknown Fortran",0,0);
 }
 
-void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,Scalar *val, int *ierr )
+void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,Scalar *val,int *ierr)
 {
   *ierr = PetscRandomGetValue(*r,val);
 }
 
 
-void PETSC_STDCALL petscobjectgetname_(PetscObject *obj, CHAR name, int *ierr, int len)
+void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name,int *ierr,int len)
 {
   char *tmp;
   *ierr = PetscObjectGetName(*obj,&tmp);
@@ -285,12 +292,12 @@ void PETSC_STDCALL petscobjectgetname_(PetscObject *obj, CHAR name, int *ierr, i
 #endif
 }
 
-void PETSC_STDCALL petscobjectdestroy_(PetscObject *obj, int *ierr )
+void PETSC_STDCALL petscobjectdestroy_(PetscObject *obj,int *ierr)
 {
   *ierr = PetscObjectDestroy(*obj);
 }
 
-void PETSC_STDCALL petscobjectgetcomm_(PetscObject *obj,int *comm, int *ierr )
+void PETSC_STDCALL petscobjectgetcomm_(PetscObject *obj,int *comm,int *ierr)
 {
   MPI_Comm c;
   *ierr = PetscObjectGetComm(*obj,&c);
@@ -329,12 +336,12 @@ void PETSC_STDCALL petscgetflops_(PLogDouble *d,int *ierr)
 #endif
 }
 
-void PETSC_STDCALL petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,int *ierr )
+void PETSC_STDCALL petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,int *ierr)
 {
-  *ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm( *comm ),*type,r);
+  *ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm(*comm),*type,r);
 }
 
-void PETSC_STDCALL petscrandomdestroy_(PetscRandom *r, int *ierr )
+void PETSC_STDCALL petscrandomdestroy_(PetscRandom *r,int *ierr)
 {
   *ierr = PetscRandomDestroy(*r);
 }
@@ -349,13 +356,13 @@ void PETSC_STDCALL petscintview_(int *n,int *d,int *viwer,int *ierr)
   *ierr = PetscIntView(*n,d,0);
 }
 
-void PETSC_STDCALL petscsequentialphasebegin_(MPI_Comm *comm,int *ng, int *ierr ){
+void PETSC_STDCALL petscsequentialphasebegin_(MPI_Comm *comm,int *ng,int *ierr){
 *ierr = PetscSequentialPhaseBegin(
-	(MPI_Comm)PetscToPointerComm( *comm ),*ng);
+	(MPI_Comm)PetscToPointerComm(*comm),*ng);
 }
-void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng, int *ierr ){
+void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng,int *ierr){
 *ierr = PetscSequentialPhaseEnd(
-	(MPI_Comm)PetscToPointerComm( *comm ),*ng);
+	(MPI_Comm)PetscToPointerComm(*comm),*ng);
 }
 
 void PETSC_STDCALL petscreleasepointer_(int *index,int *ierr) 
@@ -366,7 +373,7 @@ void PETSC_STDCALL petscreleasepointer_(int *index,int *ierr)
 
 void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *ierr)
 {
-  *ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm( *comm));
+  *ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm(*comm));
 }
 
 EXTERN_C_END

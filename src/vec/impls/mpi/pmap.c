@@ -1,4 +1,4 @@
-/*$Id: pmap.c,v 1.12 1999/06/30 23:50:31 balay Exp bsmith $*/
+/*$Id: pmap.c,v 1.13 1999/10/24 14:01:56 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for basic map object implementation.
@@ -106,11 +106,11 @@ int MapCreateMPI(MPI_Comm comm,int n,int N,Map *mm)
   PLogObjectCreate(m);
   PLogObjectMemory(m,sizeof(struct _p_Map));
   ierr     = PetscMemcpy(m->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  m->range = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(m->range);
+  m->range = (int*)PetscMalloc((size+1)*sizeof(int));CHKPTRQ(m->range);
   
   ierr = MPI_Allgather(&n,1,MPI_INT,m->range+1,1,MPI_INT,comm);CHKERRQ(ierr);
   m->range[0] = 0;
-  for (i=2; i<=size; i++ ) {
+  for (i=2; i<=size; i++) {
     m->range[i] += m->range[i-1];
   }
   m->rstart = m->range[rank];

@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.25 1999/03/17 23:21:54 bsmith Exp bsmith $*/
+/*$Id: sortip.c,v 1.26 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -15,8 +15,7 @@
 #define __FUNC__ "PetsciIqsortPerm"
 static int PetsciIqsortPerm(const int v[],int vdx[],int right)
 {
-  int          tmp;
-  register int i, vl, last;
+  int tmp,i,vl,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -28,8 +27,8 @@ static int PetsciIqsortPerm(const int v[],int vdx[],int right)
   SWAP(vdx[0],vdx[right/2],tmp);
   vl   = v[vdx[0]];
   last = 0;
-  for ( i=1; i<=right; i++ ) {
-    if (v[vdx[i]] < vl ) {last++; SWAP(vdx[last],vdx[i],tmp);}
+  for (i=1; i<=right; i++) {
+    if (v[vdx[i]] < vl) {last++; SWAP(vdx[last],vdx[i],tmp);}
   }
   SWAP(vdx[0],vdx[last],tmp);
   PetsciIqsortPerm(v,vdx,last-1);
@@ -59,9 +58,9 @@ static int PetsciIqsortPerm(const int v[],int vdx[],int right)
 
 .seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
  @*/
-int PetscSortIntWithPermutation(int n, const int i[], int idx[] )
+int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 {
-  register int j, k, tmp, ik;
+  int j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -86,8 +85,8 @@ int PetscSortIntWithPermutation(int n, const int i[], int idx[] )
 #define __FUNC__ "PetsciDqsortPerm"
 static int PetsciDqsortPerm(const double v[],int vdx[],int right)
 {
-  double       vl;
-  register int tmp,i, last;
+  double vl;
+  int    tmp,i,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -99,8 +98,8 @@ static int PetsciDqsortPerm(const double v[],int vdx[],int right)
   SWAP(vdx[0],vdx[right/2],tmp);
   vl   = v[vdx[0]];
   last = 0;
-  for ( i=1; i<=right; i++ ) {
-    if (v[vdx[i]] < vl ) {last++; SWAP(vdx[last],vdx[i],tmp);}
+  for (i=1; i<=right; i++) {
+    if (v[vdx[i]] < vl) {last++; SWAP(vdx[last],vdx[i],tmp);}
   }
   SWAP(vdx[0],vdx[last],tmp);
   PetsciDqsortPerm(v,vdx,last-1);
@@ -130,10 +129,10 @@ static int PetsciDqsortPerm(const double v[],int vdx[],int right)
 
 .seealso: PetscSortDouble(), PetscSortIntWithPermutation()
  @*/
-int PetscSortDoubleWithPermutation(int n, const double i[], int idx[])
+int PetscSortDoubleWithPermutation(int n,const double i[],int idx[])
 {
-  register int j, k,tmp;
-  double       ik;
+  int    j,k,tmp;
+  double ik;
 
   PetscFunctionBegin;
   if (n<8) {

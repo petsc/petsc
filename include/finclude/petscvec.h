@@ -1,5 +1,5 @@
 !
-!  $Id: vec.h,v 1.30 1999/04/08 23:13:03 balay Exp balay $;
+!  $Id: vec.h,v 1.31 1999/09/14 15:58:48 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
@@ -38,9 +38,9 @@
 !
 !  Flags for VecSetValues() and MatSetValues()
 !
-      integer NOT_SET_VALUES,INSERT_VALUES, ADD_VALUES, MAX_VALUES
+      integer NOT_SET_VALUES,INSERT_VALUES,ADD_VALUES,MAX_VALUES
 
-      parameter (NOT_SET_VALUES=0,INSERT_VALUES=1, ADD_VALUES=2)
+      parameter (NOT_SET_VALUES=0,INSERT_VALUES=1,ADD_VALUES=2)
       parameter (MAX_VALUES=3)
 !
 !  Types of vector scatters

@@ -1,4 +1,4 @@
-/*$Id: ex33.c,v 1.11 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex33.c,v 1.12 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
@@ -13,9 +13,9 @@ int main(int argc,char **args)
   Mat        A;
   Vec        b;
   char       fileout[128];
-  int        i, j, m = 6, n = 6, N = 36, ierr, I, J;
+  int        i,j,m = 6,n = 6,N = 36,ierr,I,J;
   PetscTruth flg;
-  Scalar     val, v;
+  Scalar     val,v;
   Viewer     view;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -31,13 +31,13 @@ int main(int argc,char **args)
 #endif
   }
 
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&b);CHKERRA(ierr);
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     val = i + 1;
     ierr = VecSetValues(b,1,&i,&val,INSERT_VALUES);CHKERRA(ierr);
   }

@@ -1,4 +1,4 @@
-/*$Id: gcookie.c,v 1.17 1999/03/17 23:21:46 bsmith Exp bsmith $*/
+/*$Id: gcookie.c,v 1.18 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -14,7 +14,7 @@
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectGetCookie((PetscObject) mat,&cookie);
+         PetscObjectGetCookie((PetscObject)mat,&cookie);
 
    Output Parameter:
 .  cookie - the cookie
@@ -41,7 +41,7 @@ int PetscObjectGetCookie(PetscObject obj,int *cookie)
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
          Thus must be cast with a (PetscObject), for example, 
-         PetscObjectGetCookie((PetscObject) mat,&exists);
+         PetscObjectGetCookie((PetscObject)mat,&exists);
 
    Output Parameter:
 .  exists - PETSC_FALSE if object does not exist; PETSC_TRUE if object does exist.

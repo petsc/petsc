@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.66 1999/10/24 14:03:42 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.67 1999/11/05 14:47:20 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -83,21 +83,21 @@ typedef struct {
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES           snes;                 /* SNES context */
   Mat            J;                    /* Jacobian matrix */
   ApplicationCtx ctx;                  /* user-defined context */
-  Vec            x, r, U, F;           /* vectors */
+  Vec            x,r,U,F;           /* vectors */
   MonitorCtx     monP;                 /* monitoring context */
   StepCheckCtx   checkP;               /* step-checking context */
   PetscTruth     step_check;           /* flag indicating whether we're checking
                                           candidate iterates */
-  Scalar         xp, *FF, *UU, none = -1.0;
-  int            ierr, its, N = 5, i, maxit, maxf, xs, xm;
-  double         atol, rtol, stol, norm;
+  Scalar         xp,*FF,*UU,none = -1.0;
+  int            ierr,its,N = 5,i,maxit,maxf,xs,xm;
+  double         atol,rtol,stol,norm;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&N,PETSC_NULL);CHKERRA(ierr);
@@ -219,7 +219,7 @@ int main( int argc, char **argv )
      Compute local vector entries
   */
   xp = ctx.h*xs;
-  for (i=0; i<xm; i++ ) {
+  for (i=0; i<xm; i++) {
     FF[i] = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     UU[i] = xp*xp*xp;
     xp += ctx.h;
@@ -243,7 +243,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -260,7 +260,7 @@ int main( int argc, char **argv )
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = ViewerDestroy(monP.viewer); CHKERRA(ierr);
+  ierr = ViewerDestroy(monP.viewer);CHKERRA(ierr);
   if (step_check) {ierr = VecDestroy(checkP.last_step);CHKERRA(ierr);}
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(ctx.xlocal);CHKERRA(ierr);
@@ -312,8 +312,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   DA             da = user->da;
-  Scalar         *xx, *ff, *FF, d;
-  int            i, ierr, N, xs, xm, gxs, gxm, xsi, xei, ilg, ilr;
+  Scalar         *xx,*ff,*FF,d;
+  int            i,ierr,N,xs,xm,gxs,gxm,xsi,xei,ilg,ilr;
   Vec            xlocal = user->xlocal;
 
   /*
@@ -370,7 +370,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
      Compute function over locally owned part of the grid (interior points only)
   */
   d = 1.0/(user->h*user->h);
-  for ( i=xsi; i<xei; i++ ) {
+  for (i=xsi; i<xei; i++) {
     ilg = i-gxs;
     ilr = i-xs;
     ff[ilr] = d*(xx[ilg-1] - 2.0*xx[ilg] + xx[ilg+1]) + xx[ilg]*xx[ilg] - FF[ilr];
@@ -403,8 +403,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
-  Scalar         *xx, d, A[3];
-  int            i, j[3], ierr, start, end, M, N, istart, iend;
+  Scalar         *xx,d,A[3];
+  int            i,j[3],ierr,start,end,M,N,istart,iend;
 
   /*
      Get pointer to vector data
@@ -443,7 +443,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
         row at once.
   */
   d = 1.0/(user->h*user->h);
-  for ( i=istart; i<iend; i++ ) {
+  for (i=istart; i<iend; i++) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1; 
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i-start];
     ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
@@ -489,7 +489,7 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
   MonitorCtx *monP = (MonitorCtx*) ctx;
   Vec        x;
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %d, SNES Function norm %g\n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %d,SNES Function norm %g\n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;
@@ -514,10 +514,10 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
  */
 int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
 {
-  int            ierr, i, iter, ldim;
+  int            ierr,i,iter,ldim;
   ApplicationCtx *user;
   StepCheckCtx   *check = (StepCheckCtx*) ctx;
-  Scalar         *xa, *xa_last, tmp;
+  Scalar         *xa,*xa_last,tmp;
   double         rdiff;
 
   *flg = PETSC_FALSE;

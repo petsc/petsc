@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.10 1999/03/02 16:21:14 balay Exp bsmith $";
+!    "$Id: ex15f.F,v 1.11 1999/04/16 16:09:25 bsmith Exp bsmith $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -50,15 +50,15 @@
 !     its      - iterations for convergence
 !     norm     - norm of solution error
 
-      Vec              x, b, u
+      Vec              x,b,u
       Mat              A      
       SLES             sles   
       PC               pc     
       KSP              ksp   
-      Scalar           v, one, neg_one
-      double precision norm, tol
-      integer          i, j, II, JJ, Istart, Iend, ierr, m, n
-      integer          user_defined_pc, its, flg, rank
+      Scalar           v,one,neg_one
+      double precision norm,tol
+      integer          i,j,II,JJ,Istart,Iend,ierr,m,n
+      integer          user_defined_pc,its,flg,rank
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
@@ -112,19 +112,19 @@
         v = -1.0
         i = II/n
         j = II - i*n  
-        if ( i.gt.0 ) then
+        if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( i.lt.m-1 ) then
+        if (i.lt.m-1) then
           JJ = II + n
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( j.gt.0 ) then
+        if (j.gt.0) then
           JJ = II - 1
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( j.lt.n-1 ) then
+        if (j.lt.n-1) then
           JJ = II + 1
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
@@ -229,13 +229,13 @@
       call VecNorm(x,NORM_2,norm,ierr)
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
-           write(6,100) norm, its
+           write(6,100) norm,its
         else
            write(6,110) its
         endif
       endif
   100 format('Norm of error ',1pe10.4,' iterations ',i5)
-  110 format('Norm of error < 1.e-12, iterations ',i5)
+  110 format('Norm of error < 1.e-12,iterations ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
@@ -323,8 +323,8 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
 
-      Vec     x, y
-      integer dummy, ierr
+      Vec     x,y
+      integer dummy,ierr
 
 !  Common block to store data for user-provided preconditioner 
       common /myshellpc/ diag

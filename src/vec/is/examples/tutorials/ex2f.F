@@ -1,5 +1,5 @@
 !
-!      "$Id: ex2f.F,v 1.12 1998/04/08 16:25:57 balay Exp balay $";
+!      "$Id: ex2f.F,v 1.13 1998/04/15 18:02:43 balay Exp bsmith $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a stride index set;
@@ -17,7 +17,7 @@
 #include "finclude/petsc.h"
 #include "finclude/is.h"
 
-      integer     i, n, ierr,  index(1), first, step, val
+      integer     i,n,ierr,index(1),first,step,val
       IS          set
       PetscOffset iss
 

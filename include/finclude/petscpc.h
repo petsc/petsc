@@ -1,5 +1,5 @@
 !
-!  $Id: pc.h,v 1.30 1999/04/01 20:23:16 balay Exp balay $;
+!  $Id: pc.h,v 1.31 1999/09/14 15:58:32 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
@@ -36,19 +36,19 @@
 !
 !  PCSide
 !
-      integer PC_LEFT, PC_RIGHT, PC_SYMMETRIC 
-      parameter (PC_LEFT=0, PC_RIGHT=1, PC_SYMMETRIC=2)
+      integer PC_LEFT,PC_RIGHT,PC_SYMMETRIC 
+      parameter (PC_LEFT=0,PC_RIGHT=1,PC_SYMMETRIC=2)
 
-      integer USE_PRECONDITIONER_MATRIX, USE_TRUE_MATRIX
-      parameter (USE_PRECONDITIONER_MATRIX=0, USE_TRUE_MATRIX=1)
+      integer USE_PRECONDITIONER_MATRIX,USE_TRUE_MATRIX
+      parameter (USE_PRECONDITIONER_MATRIX=0,USE_TRUE_MATRIX=1)
 
 !
 ! PCASMType
 !
-      integer PC_ASM_BASIC, PC_ASM_RESTRICT, PC_ASM_INTERPOLATE
+      integer PC_ASM_BASIC,PC_ASM_RESTRICT,PC_ASM_INTERPOLATE
       integer PC_ASM_NONE
 
-      parameter (PC_ASM_BASIC = 3, PC_ASM_RESTRICT = 1)
+      parameter (PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1)
       parameter (PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0)
 !
 ! PCCompositeType

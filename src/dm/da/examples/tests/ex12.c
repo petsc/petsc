@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.29 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.30 1999/11/05 14:47:57 bsmith Exp bsmith $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
@@ -14,13 +14,13 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int       rank, size, M = 14, ierr, time_steps = 20, w=1, s=1;
+  int       rank,size,M = 14,ierr,time_steps = 20,w=1,s=1;
   DA        da;
   Viewer    viewer;
-  Vec       local, global, copy;
-  Scalar    *localptr, *copyptr;
+  Vec       local,global,copy;
+  Scalar    *localptr,*copyptr;
   double    h,k;
-  int       localsize, j, i, mybase, myend;
+  int       localsize,j,i,mybase,myend;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy);CHKERRA(ierr);
@@ -46,13 +46,13 @@ int main(int argc,char **argv)
 
   /* Initialize the Array */
   ierr = VecGetLocalSize (local,&localsize);CHKERRA(ierr);
-  ierr = VecGetArray (local,&localptr); CHKERRA(ierr);
+  ierr = VecGetArray (local,&localptr);CHKERRA(ierr);
   localptr[0] = copyptr[0] = 0.0;
   localptr[localsize-1] = copyptr[localsize-1] = 1.0;
   for (i=1; i<localsize-1; i++) {
     j=(i-1)+mybase; 
-    localptr[i] = sin( (PETSC_PI*j*6)/((double)M) 
-                        + 1.2 * sin( (PETSC_PI*j*2)/((double)M) ) ) * 4+4;
+    localptr[i] = sin((PETSC_PI*j*6)/((double)M) 
+                        + 1.2 * sin((PETSC_PI*j*2)/((double)M))) * 4+4;
   }
 
   ierr = VecRestoreArray (copy,&copyptr);CHKERRA(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
     ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global);CHKERRA(ierr);
   
     /* View Wave */ 
-    ierr = VecView(global,viewer); CHKERRA(ierr);
+    ierr = VecView(global,viewer);CHKERRA(ierr);
 
   }
 

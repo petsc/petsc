@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.17 1999/04/05 15:12:05 bsmith Exp bsmith $";
+!    "$Id: ex14f.F,v 1.18 1999/04/08 17:38:05 bsmith Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -37,7 +37,7 @@
 !    Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !    the partial differential equation
 !  
-!            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+!            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
 !  
 !    with boundary conditions
 !   
@@ -73,10 +73,10 @@
 
       MPI_Comm comm
       SLES     sles
-      Vec      X, Y, F, localX, localF
-      Mat      J, B
+      Vec      X,Y,F,localX,localF
+      Mat      J,B
       DA       da
-      integer  Nx, Ny, flg, N, ierr,mx,my
+      integer  Nx,Ny,flg,N,ierr,mx,my
       integer  usemf,nooutput
       common   /mycommon/ B,mx,my,localX,localF,da
 !
@@ -86,8 +86,8 @@
       external mymult
 
 !     --------------- Data to define nonlinear solver -------------- 
-      double precision   rtol, xtol, ttol
-      double precision   fnorm, ynorm, xnorm
+      double precision   rtol,xtol,ttol
+      double precision   fnorm,ynorm,xnorm
       integer            max_nonlin_its
       integer            lin_its
       integer            i,m
@@ -256,7 +256,7 @@
 !  Test for convergence
 
        if (fnorm .le. ttol) then
-         if ( nooutput .eq. 0) then
+         if (nooutput .eq. 0) then
            print*,'Converged: function norm ',fnorm,' tolerance ',ttol
          endif
          goto 20
@@ -273,7 +273,7 @@
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
        call MatDestroy(B,ierr)
-       if ( usemf .ne. 0) then
+       if (usemf .ne. 0) then
          call MatDestroy(J,ierr)
        endif
        call VecDestroy(localX,ierr)
@@ -314,10 +314,10 @@
       integer          ierr
       PetscOffset      idx
       Vec              X,localX,localF
-      integer          i, j, row, mx, my,  xs, ys, xm
-      integer          ym, gxm, gym, gxs, gys
-      double precision one, lambda, temp1, temp, hx, hy
-      double precision hxdhy, hydhx,sc
+      integer          i,j,row,mx,my, xs,ys,xm
+      integer          ym,gxm,gym,gxs,gys
+      double precision one,lambda,temp1,temp,hx,hy
+      double precision hxdhy,hydhx,sc
       Scalar           xx(1)
       DA               da
       Mat              B
@@ -360,7 +360,7 @@
             xx(idx+row) = 0.d0 
             continue
           endif
-          xx(idx+row) = temp1*sqrt(min( (min(i,mx-i-1))*hx,temp))
+          xx(idx+row) = temp1*sqrt(min((min(i,mx-i-1))*hx,temp))
  40     continue
  30   continue
 
@@ -400,13 +400,13 @@
 #include "include/finclude/sles.h"
 #include "include/finclude/da.h"
 
-      Vec              X,F,localX, localF
-      integer          gys, gxm, gym
+      Vec              X,F,localX,localF
+      integer          gys,gxm,gym
       PetscOffset      idx,idf
-      integer          ierr, i, j, row, mx, my, xs,ys,xm,ym,gxs 
-      double precision two, one, lambda,hx
-      double precision hy, hxdhy, hydhx,sc
-      Scalar           u, uxx, uyy, xx(1),ff(1)
+      integer          ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs 
+      double precision two,one,lambda,hx
+      double precision hy,hxdhy,hydhx,sc
+      Scalar           u,uxx,uyy,xx(1),ff(1)
       DA               da
       Mat              B
       common   /mycommon/ B,mx,my,localX,localF,da
@@ -512,10 +512,10 @@
       DA          da
       integer     ltog(1)
       PetscOffset idltog,idx
-      integer     ierr, i, j, row, mx, my, col(5)
-      integer     nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow
-      Scalar      two, one, lambda, v(5), hx, hy, hxdhy
-      Scalar      hydhx, sc, xx(1)
+      integer     ierr,i,j,row,mx,my,col(5)
+      integer     nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow
+      Scalar      two,one,lambda,v(5),hx,hy,hxdhy
+      Scalar      hydhx,sc,xx(1)
       Mat         B
       common   /mycommon/ B,mx,my,localX,localF,da
 

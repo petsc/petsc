@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.82 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.83 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
@@ -34,14 +34,14 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec         x, b, u;  /* approx solution, RHS, exact solution */
+  Vec         x,b,u;  /* approx solution, RHS, exact solution */
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
   PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
-  int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its;
+  int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
   PetscTruth  flg;
-  Scalar      v, one = 1.0, neg_one = -1.0;
+  Scalar      v,one = 1.0,neg_one = -1.0;
   KSP         ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -90,12 +90,12 @@ int main(int argc,char **args)
      would first do all variables for y = h, then y = 2h etc.
 
    */
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);CHKERRA(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);CHKERRA(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);CHKERRA(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);CHKERRA(ierr);}
     v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
   }
 

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.20 1999/03/01 16:00:24 balay Exp bsmith $"
+!    "$Id: ex1f.F,v 1.21 1999/05/12 03:28:40 bsmith Exp bsmith $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
@@ -41,10 +41,10 @@
 !     x, y, w - vectors
 !     z       - array of vectors
 
-      Vec              x, y, w, z(5)
-      double precision norm, v, v1, v2
-      integer          n, ierr, flg, rank
-      Scalar           one, two, three, dots(3), dot
+      Vec              x,y,w,z(5)
+      double precision norm,v,v1,v2
+      integer          n,ierr,flg,rank
+      Scalar           one,two,three,dots(3),dot
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -109,9 +109,10 @@
 
       if (rank .eq. 0) then
 #if defined(PETSC_USE_COMPLEX)
-         write(6,100) int(PetscReal(dot))
-         write(6,110) int(PetscReal(dots(1))),int(PetscReal(dots(2))),             &
-     &                int(PetscReal(dots(3)))
+         write(6,100) int(PetscRealPart(dot))
+         write(6,110) int(PetscRealPart(dots(1))),                              &
+     &                int(PetscRealPart(dots(2))),                              &
+     &                int(PetscRealPart(dots(3)))
 #else
          write(6,100) int(dot)
          write(6,110) int(dots(1)),int(dots(2)),int(dots(3))

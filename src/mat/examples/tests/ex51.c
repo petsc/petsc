@@ -1,4 +1,4 @@
-/*$Id: ex51.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex51.c,v 1.11 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
@@ -9,7 +9,7 @@ static char help[] =
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat         A,B,*submatA, *submatB;
+  Mat         A,B,*submatA,*submatB;
   int         bs=1,m=43,ov=1,i,j,k,*rows,*cols,ierr,M,nd=5,*idx,size,mm,nn;
   Scalar      *vals,rval;
   IS          *is1,*is2;
@@ -28,26 +28,26 @@ int main(int argc,char **args)
   M    = m*bs;
 
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL, &B);CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL,&B);CHKERRA(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
 
-  rows  = (int *) PetscMalloc(bs*sizeof(int));CHKPTRA(rows);
-  cols  = (int *) PetscMalloc(bs*sizeof(int));CHKPTRA(cols);
-  vals  = (Scalar *) PetscMalloc(bs*bs*sizeof(Scalar));CHKPTRA(vals);
-  idx   = (int *) PetscMalloc(M*sizeof(Scalar));CHKPTRA(idx);
+  rows  = (int*)PetscMalloc(bs*sizeof(int));CHKPTRA(rows);
+  cols  = (int*)PetscMalloc(bs*sizeof(int));CHKPTRA(cols);
+  vals  = (Scalar*)PetscMalloc(bs*bs*sizeof(Scalar));CHKPTRA(vals);
+  idx   = (int*)PetscMalloc(M*sizeof(Scalar));CHKPTRA(idx);
 
   /* Now set blocks of values */
-  for ( i=0; i<20*bs; i++ ) {
+  for (i=0; i<20*bs; i++) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-      cols[0] = bs*(int)(PetscReal(rval)*m);
+      cols[0] = bs*(int)(PetscRealPart(rval)*m);
       ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-      rows[0] = bs*(int)(PetscReal(rval)*m);
-      for ( j=1; j<bs; j++ ) {
+      rows[0] = bs*(int)(PetscRealPart(rval)*m);
+      for (j=1; j<bs; j++) {
         rows[j] = rows[j-1]+1;
         cols[j] = cols[j-1]+1;
       }
 
-      for ( j=0; j<bs*bs; j++) {
+      for (j=0; j<bs*bs; j++) {
         ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
         vals[j] = rval;
       }
@@ -61,17 +61,17 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
     /* Test MatIncreaseOverlap() */
-  is1 = (IS *) PetscMalloc( nd*sizeof(IS **) );CHKPTRA(is1);
-  is2 = (IS *) PetscMalloc( nd*sizeof(IS **) );CHKPTRA(is2);
+  is1 = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is1);
+  is2 = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is2);
 
   
-  for ( i=0; i<nd; i++) {
+  for (i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-    size = (int)(PetscReal(rval)*m);
-    for (j=0; j<size; j++ ) {
+    size = (int)(PetscRealPart(rval)*m);
+    for (j=0; j<size; j++) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRA(ierr);
-      idx[j*bs] = bs*(int)(PetscReal(rval)*m);
-      for ( k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
+      idx[j*bs] = bs*(int)(PetscRealPart(rval)*m);
+      for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,is1+i);CHKERRA(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,is2+i);CHKERRA(ierr);
@@ -93,12 +93,12 @@ int main(int argc,char **args)
   ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_INITIAL_MATRIX,&submatB);CHKERRA(ierr);
 
   /* Test MatMult() */
-  for ( i=0; i<nd; i++) {
+  for (i=0; i<nd; i++) {
     ierr = MatGetSize(submatA[i],&mm,&nn);CHKERRA(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,mm,&xx);CHKERRA(ierr);
     ierr = VecDuplicate(xx,&s1);CHKERRA(ierr);
     ierr = VecDuplicate(xx,&s2);CHKERRA(ierr);
-    for ( j=0; j<3; j++ ) {
+    for (j=0; j<3; j++) {
       ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
       ierr = MatMult(submatA[i],xx,s1);CHKERRA(ierr);
       ierr = MatMult(submatB[i],xx,s2);CHKERRA(ierr);
@@ -118,12 +118,12 @@ int main(int argc,char **args)
   ierr = MatGetSubMatrices(B,nd,is2,is2,MAT_REUSE_MATRIX,&submatB);CHKERRA(ierr);
   
   /* Test MatMult() */
-  for ( i=0; i<nd; i++) {
+  for (i=0; i<nd; i++) {
     ierr = MatGetSize(submatA[i],&mm,&nn);CHKERRA(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,mm,&xx);CHKERRA(ierr);
     ierr = VecDuplicate(xx,&s1);CHKERRA(ierr);
     ierr = VecDuplicate(xx,&s2);CHKERRA(ierr);
-    for ( j=0; j<3; j++ ) {
+    for (j=0; j<3; j++) {
       ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
       ierr = MatMult(submatA[i],xx,s1);CHKERRA(ierr);
       ierr = MatMult(submatB[i],xx,s2);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.46 1999/11/05 14:44:24 bsmith Exp bsmith $*/
+/*$Id: plogmpe.c,v 1.47 1999/11/24 21:53:12 bsmith Exp bsmith $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -302,7 +302,7 @@ extern char *PLogEventName[];
    Notes:
    A related routine is PLogBegin (with the options key -log), which is 
    intended for production runs since it logs only flop rates and object
-   creation (and shouldn't significantly slow the programs).
+   creation (and should not significantly slow the programs).
 
    Level: advanced
 
@@ -313,7 +313,7 @@ extern char *PLogEventName[];
 @*/
 int PLogMPEBegin(void)
 {
-  int        i, rank,ierr;
+  int        i,rank,ierr;
   PetscTruth flg;
     
   PetscFunctionBegin;
@@ -327,7 +327,7 @@ int PLogMPEBegin(void)
        PLogInfo(0,"PLogMPEBegin: MPE already initialized. Not attempting to reinitialize.\n");
   }
 #else
-  ierr = OptionsHasName(PETSC_NULL,"-log_mpe_avoid_init", &flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-log_mpe_avoid_init",&flg);CHKERRQ(ierr);
     if (flg) {
        PLogInfo(0,"PLogMPEBegin: Not initializing MPE.\n");
     } else {
@@ -338,7 +338,7 @@ int PLogMPEBegin(void)
 #endif
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
-    for ( i=0; i < PLOG_USER_EVENT_HIGH; i++) {
+    for (i=0; i < PLOG_USER_EVENT_HIGH; i++) {
       if (PLogEventMPEFlags[i]) {
         MPE_Describe_state(MPEBEGIN+2*i,MPEBEGIN+2*i+1,PLogEventName[i],PLogEventColor[i]);
       }
@@ -449,7 +449,7 @@ int PLogMPEDump(const char sname[])
 #else
 
 /*
-     Dummy function so that compilers won't complain about 
+     Dummy function so that compilers will not complain about 
   empty files.
 */
 int PETScMPEDummy(int dummy)

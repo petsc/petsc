@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.38 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.39 1999/11/05 14:47:57 bsmith Exp bsmith $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
@@ -9,19 +9,19 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        rank, size, M = 60, ierr,  time_steps = 100;
-  int        localsize, j, i, mybase, myend, width, xbase, *localnodes = PETSC_NULL;
+  int        rank,size,M = 60,ierr, time_steps = 100;
+  int        localsize,j,i,mybase,myend,width,xbase,*localnodes = PETSC_NULL;
   DA         da;
   Viewer     viewer,viewer_private;
   Draw       draw;
-  Vec        local, global, copy;
-  Scalar     *localptr, *copyptr;
-  double     a, h, k;
+  Vec        local,global,copy;
+  Scalar     *localptr,*copyptr;
+  double     a,h,k;
   PetscTruth flg;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRA(ierr);
@@ -30,8 +30,8 @@ int main(int argc,char **argv)
   */
   ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
   if (flg) {
-    localnodes = (int *) PetscMalloc( size*sizeof(int) );CHKPTRQ(localnodes);
-    for ( i=0; i<size-1; i++ ) { localnodes[i] = 2;}
+    localnodes = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(localnodes);
+    for (i=0; i<size-1; i++) { localnodes[i] = 2;}
     localnodes[size-1] = M - 2*(size-1);
   }
     
@@ -42,8 +42,7 @@ int main(int argc,char **argv)
   ierr = DACreateLocalVector(da,&local);CHKERRA(ierr);
 
   /* Set up display to show combined wave graph */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,
-                         &viewer);CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,&viewer);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);
 
@@ -51,8 +50,8 @@ int main(int argc,char **argv)
   ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRA(ierr);
 
   /* set up display to show my portion of the wave */
-  xbase = (int) ((mybase)*((800.0 - 4.0*size)/M) + 4.0*rank);
-  width = (int) ((myend-mybase)*800./M);
+  xbase = (int)((mybase)*((800.0 - 4.0*size)/M) + 4.0*rank);
+  width = (int)((myend-mybase)*800./M);
   ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,
                          width,200,&viewer_private);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer_private,0,&draw);CHKERRQ(ierr);
@@ -67,8 +66,8 @@ int main(int argc,char **argv)
   localptr[localsize-1] = 0.0;
   for (i=1; i<localsize-1; i++) {
     j=(i-1)+mybase; 
-    localptr[i] = sin( (PETSC_PI*j*6)/((double)M) 
-                        + 1.2 * sin( (PETSC_PI*j*2)/((double)M) ) ) * 2;
+    localptr[i] = sin((PETSC_PI*j*6)/((double)M) 
+                        + 1.2 * sin((PETSC_PI*j*2)/((double)M))) * 2;
   }
 
   ierr = VecRestoreArray(local,&localptr);CHKERRA(ierr);

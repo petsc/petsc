@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.11 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.13 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
 
@@ -8,13 +8,13 @@ static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Mat        mat, fact;
+  Mat        mat,fact;
   MatType    type;
   MatInfo    info;
-  int        m = 10, n = 10, i = 4, ierr, rstart, rend;
+  int        m = 10,n = 10,i = 4,ierr,rstart,rend;
   PetscTruth set;
   Scalar     value = 1.0;
-  Vec        x, y, b;
+  Vec        x,y,b;
   double     norm;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
@@ -35,8 +35,8 @@ int main(int argc,char **argv)
   }
 
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRA(ierr);
-  for (i=rstart; i<rend; i++ ) {
-    value = (double) i+1;
+  for (i=rstart; i<rend; i++) {
+    value = (double)i+1;
     ierr = MatSetValues(mat,1,&i,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
 
   ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %d, allocated nonzeros = %d\n",
-    (int)info.nz_used,(int)info.nz_allocated); CHKERRA(ierr);
+    (int)info.nz_used,(int)info.nz_allocated);CHKERRA(ierr);
 
   if (type != MATMPIDENSE) {
     /* Cholesky factorization is not yet in place for this matrix format */

@@ -1,4 +1,4 @@
-/*$Id: ex46.c,v 1.8 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex46.c,v 1.9 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS) matrix.\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat     C,A;
   Scalar  v;
-  int     i, j, I, J, ierr, Istart, Iend, N, m = 4, n = 4, rank, size;
+  int     i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size;
 
   PetscInitialize(&argc,&args,0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -22,11 +22,11 @@ int main(int argc,char **args)
   /* Generate matrix */
   ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,0,0,0,&C);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRA(ierr);
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i >  0 )  {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j >  0 )  {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( I != 8) {v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i >  0)  {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j >  0)  {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (I != 8) {v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);}
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.16 1998/04/09 15:08:58 balay Exp balay $";
+!  "$Id: ex1f.F,v 1.17 1998/04/15 18:02:50 balay Exp bsmith $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
@@ -20,7 +20,7 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/is.h"
 
-      integer     ierr, indices(5),rank,n,index1,index5
+      integer     ierr,indices(5),rank,n,index1,index5
       PetscOffset ix
       IS          is
 

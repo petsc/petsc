@@ -1,5 +1,5 @@
 !
-!      "$Id: ex16.F,v 1.20 1998/12/03 04:02:35 bsmith Exp balay $";
+!      "$Id: ex16.F,v 1.21 1998/12/05 21:08:39 balay Exp bsmith $";
 !
        implicit none
 
@@ -23,11 +23,11 @@
 !     -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
 !                       use the file petsc/src/mat/examples/mat.ex.binary
 
-      integer          ierr, its, flg
-      Scalar           norm,none, five
-      Vec              x, b, u
+      integer          ierr,its,flg
+      Scalar           norm,none,five
+      Vec              x,b,u
       Mat              A
-      SLES             sles1, sles2
+      SLES             sles1,sles2
       character*(128)  f 
       Viewer           fd
       IS               isrow
@@ -61,8 +61,8 @@
 
 ! Solve system-1
       call SLESCreate(PETSC_COMM_WORLD,sles1,ierr)
-      call SLESSetOptionsPrefix(sles1,'a', ierr)
-      call SLESAppendOptionsPrefix(sles1,'_', ierr)
+      call SLESSetOptionsPrefix(sles1,'a',ierr)
+      call SLESAppendOptionsPrefix(sles1,'_',ierr)
       call SLESSetOperators(sles1,A,A,DIFFERENT_NONZERO_PATTERN,        &  
      &                      ierr)
       call SLESSetFromOptions(sles1,ierr)
@@ -77,17 +77,17 @@
 
 !      print*, 'Time for solve = ',time2-time1
 
-      write(6,100) norm, its
+      write(6,100) norm,its
   100 format('Residual norm ',e10.4,' iterations ',i5)
 
 ! Create system 2 by striping off some rows of the matrix
-      call ISCreateStride(PETSC_COMM_SELF,5,0,1,isrow, ierr)
+      call ISCreateStride(PETSC_COMM_SELF,5,0,1,isrow,ierr)
       call MatZeroRows(A,isrow,five,ierr)
 
 ! Solve system-2
       call SLESCreate(PETSC_COMM_WORLD,sles2,ierr)
-      call SLESSetOptionsPrefix(sles2,'b', ierr)
-      call SLESAppendOptionsPrefix(sles2,'_', ierr)
+      call SLESSetOptionsPrefix(sles2,'b',ierr)
+      call SLESAppendOptionsPrefix(sles2,'_',ierr)
       call SLESSetOperators(sles2,A,A,DIFFERENT_NONZERO_PATTERN,        &
      &                      ierr)
       call SLESSetFromOptions(sles2,ierr)
@@ -100,7 +100,7 @@
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
 !      print*, 'Time for solve = ',time2-time1
-      write(6,100) norm, its
+      write(6,100) norm,its
 
 ! Cleanup
       call SLESDestroy(sles1,ierr)

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.9 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.10 1999/11/05 14:45:05 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -26,8 +26,8 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Vec      x, y;
-  int      n = 20, ierr, i,row;
+  Vec      x,y;
+  int      n = 20,ierr,i,row;
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -60,9 +60,9 @@ int main(int argc,char **argv)
   */
   ierr = VecDuplicate(x,&y);CHKERRA(ierr);
 
-  ierr = PetscObjectPublish((PetscObject) x);CHKERRA(ierr);
+  ierr = PetscObjectPublish((PetscObject)x);CHKERRA(ierr);
 
-  for ( i=0; i<1000; i++ ) {
+  for (i=0; i<1000; i++) {
 
     /*
        Set the vectors to entries to a constant value.

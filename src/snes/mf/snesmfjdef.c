@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.10 1999/10/24 14:03:33 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.11 1999/11/05 14:47:08 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -45,7 +45,7 @@
    the void *hctx; field.
 */
 typedef struct {
-  double umin;          /* minimum allowable u'a value relative to |u|_1 */
+  PetscReal umin;          /* minimum allowable u'a value relative to |u|_1 */
 } MatSNESMFDefault;
 
 #undef __FUNC__  
@@ -65,38 +65,43 @@ typedef struct {
 */
 static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 {
-  MatSNESMFDefault *hctx = (MatSNESMFDefault *) ctx->hctx;
-  double           norm, sum, umin = hctx->umin;
+  MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
+  PetscReal        norm,sum,umin = hctx->umin;
   Scalar           dot;
   int              ierr;
 
   PetscFunctionBegin;
-  /*
+  if (!(ctx->count % ctx->recomputeperiod)) {
+    /*
      This algorithm requires 2 norms and 1 inner product. Rather than
      use directly the VecNorm() and VecDot() routines (and thus have 
      three separate collective operations, we use the VecxxxBegin/End() routines
      and manually call MPI for the collective phase.
 
-  */
-  ierr = VecDotBegin(U,a,&dot);CHKERRQ(ierr);
-  ierr = VecNormBegin(a,NORM_1,&sum);CHKERRQ(ierr);
-  ierr = VecNormBegin(a,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = VecDotEnd(U,a,&dot);CHKERRQ(ierr);
-  ierr = VecNormEnd(a,NORM_1,&sum);CHKERRQ(ierr);
-  ierr = VecNormEnd(a,NORM_2,&norm);CHKERRQ(ierr);
+    */
+    ierr = VecDotBegin(U,a,&dot);CHKERRQ(ierr);
+    ierr = VecNormBegin(a,NORM_1,&sum);CHKERRQ(ierr);
+    ierr = VecNormBegin(a,NORM_2,&norm);CHKERRQ(ierr);
+    ierr = VecDotEnd(U,a,&dot);CHKERRQ(ierr);
+    ierr = VecNormEnd(a,NORM_1,&sum);CHKERRQ(ierr);
+    ierr = VecNormEnd(a,NORM_2,&norm);CHKERRQ(ierr);
 
-  /* 
-     Safeguard for step sizes that are "too small"
-  */
-  if (sum == 0.0) {dot = 1.0; norm = 1.0;}
+    /* 
+      Safeguard for step sizes that are "too small"
+    */
+    if (sum == 0.0) {dot = 1.0; norm = 1.0;}
 #if defined(PETSC_USE_COMPLEX)
-  else if (PetscAbsScalar(dot) < umin*sum && PetscReal(dot) >= 0.0) dot = umin*sum;
-  else if (PetscAbsScalar(dot) < 0.0 && PetscReal(dot) > -umin*sum) dot = -umin*sum;
+    else if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
+    else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
 #else
-  else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
-  else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
+    else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
+    else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
 #endif
-  *h = ctx->error_rel*dot/(norm*norm);
+    *h = ctx->error_rel*dot/(norm*norm);
+  } else {
+    *h = ctx->currenth;
+  }
+  ctx->count++;
   PetscFunctionReturn(0);
 } 
 
@@ -171,7 +176,7 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
   char*      p;
   int        ierr;
   PetscTruth flag;
-  double     umin;
+  PetscReal  umin;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p);CHKERRQ(ierr);
@@ -210,7 +215,7 @@ EXTERN_C_BEGIN
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
    mechanism to allow the user to change the Umin parameter used in this method.
 */
-int MatSNESMFDefaultSetUmin_Private(Mat mat,double umin)
+int MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
 {
   MatSNESMFCtx     ctx;
   MatSNESMFDefault *hctx;
@@ -221,7 +226,7 @@ int MatSNESMFDefaultSetUmin_Private(Mat mat,double umin)
   if (!ctx) {
     SETERRQ(1,1,"MatSNESMFDefaultSetUmin() attached to non-shell matrix");
   }
-  hctx = (MatSNESMFDefault *) ctx->hctx;
+  hctx = (MatSNESMFDefault*)ctx->hctx;
   hctx->umin = umin;
 
  PetscFunctionReturn(0);
@@ -248,9 +253,9 @@ EXTERN_C_END
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-int MatSNESMFDefaultSetUmin(Mat A,double umin)
+int MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
 {
-  int ierr, (*f)(Mat,double);
+  int ierr,(*f)(Mat,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
@@ -281,7 +286,7 @@ int MatSNESMFCreate_Default(MatSNESMFCtx ctx)
 
   /* allocate my own private data structure */
   hctx                     = (MatSNESMFDefault *)PetscMalloc(sizeof(MatSNESMFDefault));CHKPTRQ(hctx);
-  ctx->hctx                = (void *) hctx;
+  ctx->hctx                = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin               = 1.e-6;
 
@@ -294,7 +299,7 @@ int MatSNESMFCreate_Default(MatSNESMFCtx ctx)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFDefaultSetUmin_C",
                             "MatSNESMFDefaultSetUmin_Private",
-                            (void *) MatSNESMFDefaultSetUmin_Private);CHKERRQ(ierr);
+                            (void*)MatSNESMFDefaultSetUmin_Private);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

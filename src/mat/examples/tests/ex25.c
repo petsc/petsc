@@ -1,4 +1,4 @@
-/*$Id: ex25.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex25.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose\n\n";
 
@@ -8,9 +8,9 @@ static char help[] = "Tests MatTranspose\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat     C, A; 
+  Mat     C,A; 
   Scalar  v;
-  int     i, j, m = 4, n = 4, rank, size, I, J, ierr, Istart, Iend;
+  int     i,j,m = 4,n = 4,rank,size,I,J,ierr,Istart,Iend;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -21,12 +21,12 @@ int main(int argc,char **args)
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRA(ierr);
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
     v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);

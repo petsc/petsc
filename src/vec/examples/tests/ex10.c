@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.8 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.9 1999/11/05 14:44:58 bsmith Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
@@ -12,12 +12,12 @@ uses block index sets\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           bs = 1, n = 5, ierr, ix0[3] = {5, 7, 9}, ix1[3] = {2,3,4};
-  int           size,rank,i, iy0[3] = {1,2,4}, iy1[3] = {0,1,3};
+  int           bs = 1,n = 5,ierr,ix0[3] = {5,7,9},ix1[3] = {2,3,4};
+  int           size,rank,i,iy0[3] = {1,2,4},iy1[3] = {0,1,3};
   Scalar        value;
   Vec           x,y;
   IS            isx,isy;
-  VecScatter    ctx = 0, newctx;
+  VecScatter    ctx = 0,newctx;
 
   PetscInitialize(&argc,&argv,(char*)0,help); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRA(ierr);
 
   /* create two index sets */
-  for (i=0; i<3; i++ ) {
+  for (i=0; i<3; i++) {
     ix0[i] *= bs; ix1[i] *= bs; 
     iy0[i] *= bs; iy1[i] *= bs; 
   }
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   }
 
   /* fill local part of parallel vector */
-  for ( i=n*rank; i<n*(rank+1); i++ ) {
+  for (i=n*rank; i<n*(rank+1); i++) {
     value = (Scalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* fill local part of parallel vector */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     value = -(Scalar) (i + 100*rank);
     ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }

@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.8 1999/10/24 14:01:21 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.9 1999/11/05 14:44:06 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -40,24 +40,24 @@ $     SETERRQ(number,p,mess)
  @*/
 int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
-  PLogDouble mem, rss;
-  int        rank, ierr;
-  PetscTruth flg1, flg2;
+  PLogDouble mem,rss;
+  int        rank,ierr;
+  PetscTruth flg1,flg2;
 
   PetscFunctionBegin;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
-  (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s\n", rank, fun, line, dir, file);
+  (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
   switch(n)
   {
   case PETSC_ERR_MEM:
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n", rank);
-    ierr = PetscTrSpace(&mem, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
+    ierr = PetscTrSpace(&mem,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
-    OptionsHasName(PETSC_NULL, "-trdump", &flg1);
-    OptionsHasName(PETSC_NULL, "-trmalloc_log", &flg2);
+    OptionsHasName(PETSC_NULL,"-trdump",&flg1);
+    OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
     if (flg2) {
       ierr = PetscTrLogDump(stderr);CHKERRQ(ierr);
     } else if (flg1) {
@@ -65,103 +65,103 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
       ierr = PetscTrDump(stderr);CHKERRQ(ierr);
     } else {
       (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
-      (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n", rank);
+      (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
     }
     n = 1;
     break;
   case PETSC_ERR_SUP:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   No support for this operation for this object type!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   No support for this operation for this object type!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_SIG:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Signal received!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Signal received!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_FP:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Floating point exception!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Floating point exception!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_COR:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Corrupted Petsc object!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Corrupted Petsc object!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_LIB:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Error in external library!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Error in external library!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_PLIB:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Petsc has generated inconsistent data!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Petsc has generated inconsistent data!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_MEMC:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory corruption!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory corruption!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_SIZ:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Nonconforming object sizes!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Nonconforming object sizes!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_IDN:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Argument aliasing not permitted!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Argument aliasing not permitted!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_WRONG:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Invalid argument!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Invalid argument!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_CORRUPT:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Null or corrupt argument!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Null or corrupt argument!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_OUTOFRANGE:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Argument out of range!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Argument out of range!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_BADPTR:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Invalid pointer!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Invalid pointer!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_NOTSAMETYPE:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Arguments must have same type!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Arguments must have same type!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_WRONGSTATE:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Object is in wrong state!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Object is in wrong state!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_ARG_INCOMP:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Arguments are incompatible!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Arguments are incompatible!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_FILE_OPEN:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Unable to open file!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Unable to open file!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_FILE_READ:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Read from file failed!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Read from file failed!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_FILE_WRITE:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Write to file failed!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Write to file failed!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_FILE_UNEXPECTED:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Unexpected data in file!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Unexpected data in file!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_KSP_BRKDWN:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Detected breakdown in Krylov method!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Detected breakdown in Krylov method!\n",rank);
     n = 1;
     break;
   case PETSC_ERR_MAT_LU_ZRPVT:
     /* Also PETSC_ERR_MAT_CH_ZRPVT */
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Detected zero pivot in factor!\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Detected zero pivot in factor!\n",rank);
     n = 1;
     break;
   default:;
   }
   if (mess) {
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s\n", rank, mess);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s\n",rank,mess);
   }
   PetscFunctionReturn(n);
 }

@@ -1,5 +1,5 @@
 !
-!  "$Id: ksp.h,v 1.22 1999/11/24 21:56:02 bsmith Exp bsmith $";
+!  "$Id: ksp.h,v 1.23 1999/11/28 17:28:11 bsmith Exp bsmith $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
@@ -37,7 +37,7 @@
 !
       integer KSP_CG_SYMMETRIC,KSP_CG_HERMITIAN
 
-      parameter (KSP_CG_SYMMETRIC=1, KSP_CG_HERMITIAN=2)
+      parameter (KSP_CG_SYMMETRIC=1,KSP_CG_HERMITIAN=2)
 
       integer KSP_CONVERGED_RTOL,KSP_CONVERGED_ATOL
       integer KSP_DIVERGED_ITS,KSP_DIVERGED_DTOL

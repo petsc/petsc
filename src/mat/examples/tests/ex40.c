@@ -1,4 +1,4 @@
-/*$Id: ex40.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex40.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -12,12 +12,12 @@ static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input ar
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int         ierr, nd = 2, ov=1, i, size, start, m, n, end, rank;
+  int         ierr,nd = 2,ov=1,i,size,start,m,n,end,rank;
   PetscTruth  flg;
-  Mat         A, B;
+  Mat         A,B;
   char        file[128]; 
   Viewer      fd;
-  IS          *is1, *is2;
+  IS          *is1,*is2;
   PetscRandom r;
   Scalar      rand;
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -41,19 +41,19 @@ int main(int argc,char **args)
   ierr = ViewerDestroy(fd);CHKERRA(ierr);
   
   /* Create the IS corresponding to subdomains */
-  is1    = (IS *) PetscMalloc( nd*sizeof(IS **) );CHKPTRA(is1);
-  is2    = (IS *) PetscMalloc( nd*sizeof(IS **) );CHKPTRA(is2);
+  is1    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is1);
+  is2    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is2);
 
   /* Create the random Index Sets */
-  ierr = MatGetSize(A,&m, &n);CHKERRA(ierr);
+  ierr = MatGetSize(A,&m,&n);CHKERRA(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
-  for ( i=0; i<nd; i++) {
+  for (i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(r,&rand);CHKERRA(ierr);
     start = (int)(rand*m);
     ierr = PetscRandomGetValue(r,&rand);CHKERRA(ierr);
     end  = (int)(rand*m);
     size =  end - start;
-    if ( start > end) { start = end; size = -size ;}
+    if (start > end) { start = end; size = -size ;}
     ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,is1+i);CHKERRA(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,is2+i);CHKERRA(ierr);
   }

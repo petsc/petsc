@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.33 1999/11/05 14:44:01 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.34 1999/11/24 21:52:55 bsmith Exp bsmith $*/
 
 static char help[] = "Plots a simple line graph\n";
 
@@ -11,10 +11,10 @@ int main(int argc,char **argv)
   Draw           draw;
   DrawLG         lg;
   DrawAxis       axis;
-  int            n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,nports = 1;
+  int            n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,nports = 1;
   PetscTruth     flg;
-  char           *xlabel, *ylabel, *toplabel;
-  double         xd, yd;
+  char           *xlabel,*ylabel,*toplabel;
+  double         xd,yd;
   DrawViewPorts  *ports;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
@@ -40,13 +40,14 @@ int main(int argc,char **argv)
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);CHKERRA(ierr);
   ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRA(ierr);
 
-  for ( i=0; i<n ; i++ ) {
-    xd = (double)( i - 5 ); yd = xd*xd;
+  for (i=0; i<n ; i++) {
+    xd = (double)(i - 5); yd = xd*xd;
     ierr = DrawLGAddPoint(lg,&xd,&yd);CHKERRA(ierr);
   }
   ierr = DrawLGIndicateDataPoints(lg);CHKERRA(ierr);
   ierr = DrawLGDraw(lg);CHKERRA(ierr);
-  ierr = DrawFlush(draw);CHKERRA(ierr); PetscSleep(2);
+  ierr = DrawFlush(draw);CHKERRA(ierr);
+  ierr = PetscSleep(2);CHKERRA(ierr);
 
   ierr = DrawViewPortsDestroy(ports);CHKERRA(ierr);
   ierr = DrawLGDestroy(lg);CHKERRA(ierr);

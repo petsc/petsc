@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.125 1999/12/16 19:09:52 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.126 1999/12/16 23:28:37 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -8,9 +8,9 @@
 
 typedef struct {
   Mat             fact;             /* factored matrix */
-  double          fill, actualfill; /* expected and actual fill in factor */
+  PetscReal       fill,actualfill; /* expected and actual fill in factor */
   int             inplace;          /* flag indicating in-place factorization */
-  IS              row, col;         /* index sets used for reordering */
+  IS              row,col;         /* index sets used for reordering */
   MatOrderingType ordering;         /* matrix ordering */
   int             reuseorering;     /* reuses previous reordering computed */
   int             reusefill;        /* reuse fill from previous LU */
@@ -25,8 +25,8 @@ int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
   PC_LU *lu;
 
   PetscFunctionBegin;
-  lu               = (PC_LU *) pc->data;
-  lu->reuseorering = (int) flag;
+  lu               = (PC_LU*)pc->data;
+  lu->reuseorering = (int)flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -39,8 +39,8 @@ int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
   PC_LU *lu;
 
   PetscFunctionBegin;
-  lu = (PC_LU *) pc->data;
-  lu->reusefill = (int) flag;
+  lu = (PC_LU*)pc->data;
+  lu->reusefill = (int)flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -51,7 +51,7 @@ static int PCSetFromOptions_LU(PC pc)
 {
   int        ierr;
   PetscTruth flg;
-  double     fill;
+  PetscReal  fill;
   char       tname[256];
 
   PetscFunctionBegin;
@@ -103,7 +103,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
 #define __FUNC__ "PCView_LU"
 static int PCView_LU(PC pc,Viewer viewer)
 {
-  PC_LU      *lu = (PC_LU *) pc->data;
+  PC_LU      *lu = (PC_LU*)pc->data;
   int        ierr;
   PetscTruth isascii,isstring;
 
@@ -134,7 +134,7 @@ static int PCView_LU(PC pc,Viewer viewer)
 #define __FUNC__ "PCGetFactoredMatrix_LU"
 static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 {
-  PC_LU *dir = (PC_LU *) pc->data;
+  PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
   if (!dir->fact) SETERRQ(1,1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
@@ -148,7 +148,7 @@ static int PCSetUp_LU(PC pc)
 {
   int        ierr;
   PetscTruth flg;
-  PC_LU      *dir = (PC_LU *) pc->data;
+  PC_LU      *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) dir->fill = dir->actualfill;
@@ -166,7 +166,7 @@ static int PCSetUp_LU(PC pc)
       ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
-        double tol = 1.e-10;
+        PetscReal tol = 1.e-10;
         ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
@@ -182,7 +182,7 @@ static int PCSetUp_LU(PC pc)
         ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
-          double tol = 1.e-10;
+          PetscReal tol = 1.e-10;
           ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
         }
@@ -203,7 +203,7 @@ static int PCSetUp_LU(PC pc)
 #define __FUNC__ "PCDestroy_LU"
 static int PCDestroy_LU(PC pc)
 {
-  PC_LU *dir = (PC_LU*) pc->data;
+  PC_LU *dir = (PC_LU*)pc->data;
   int   ierr;
 
   PetscFunctionBegin;
@@ -211,7 +211,7 @@ static int PCDestroy_LU(PC pc)
   if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
   ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-  ierr = PetscFree(dir); CHKERRQ(ierr);
+  ierr = PetscFree(dir);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -219,7 +219,7 @@ static int PCDestroy_LU(PC pc)
 #define __FUNC__ "PCApply_LU"
 static int PCApply_LU(PC pc,Vec x,Vec y)
 {
-  PC_LU *dir = (PC_LU *) pc->data;
+  PC_LU *dir = (PC_LU*)pc->data;
   int   ierr;
 
   PetscFunctionBegin;
@@ -232,7 +232,7 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCApplyTranspose_LU"
 static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
-  PC_LU *dir = (PC_LU *) pc->data;
+  PC_LU *dir = (PC_LU*)pc->data;
   int   ierr;
 
   PetscFunctionBegin;
@@ -246,12 +246,12 @@ static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetFill_LU"
-int PCLUSetFill_LU(PC pc,double fill)
+int PCLUSetFill_LU(PC pc,PetscReal fill)
 {
   PC_LU *dir;
 
   PetscFunctionBegin;
-  dir = (PC_LU *) pc->data;
+  dir = (PC_LU*)pc->data;
   dir->fill = fill;
   PetscFunctionReturn(0);
 }
@@ -265,7 +265,7 @@ int PCLUSetUseInPlace_LU(PC pc)
   PC_LU *dir;
 
   PetscFunctionBegin;
-  dir = (PC_LU *) pc->data;
+  dir = (PC_LU*)pc->data;
   dir->inplace = 1;
   PetscFunctionReturn(0);
 }
@@ -274,9 +274,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetMatOrdering_LU"
-int PCLUSetMatOrdering_LU(PC pc, MatOrderingType ordering)
+int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 {
-  PC_LU *dir = (PC_LU *) pc->data;
+  PC_LU *dir = (PC_LU*)pc->data;
   int   ierr;
 
   PetscFunctionBegin;
@@ -312,7 +312,7 @@ EXTERN_C_END
 @*/
 int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 {
-  int ierr, (*f)(PC,PetscTruth);
+  int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -346,7 +346,7 @@ int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 @*/
 int PCLUSetReuseFill(PC pc,PetscTruth flag)
 {
-  int ierr, (*f)(PC,PetscTruth);
+  int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -384,9 +384,9 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetFill()
 @*/
-int PCLUSetFill(PC pc,double fill)
+int PCLUSetFill(PC pc,PetscReal fill)
 {
-  int ierr, (*f)(PC,double);
+  int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -432,7 +432,7 @@ int PCLUSetFill(PC pc,double fill)
 @*/
 int PCLUSetUseInPlace(PC pc)
 {
-  int ierr, (*f)(PC);
+  int ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -462,9 +462,9 @@ int PCLUSetUseInPlace(PC pc)
 
 .seealso: PCILUSetMatOrdering()
 @*/
-int PCLUSetMatOrdering(PC pc, MatOrderingType ordering)
+int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
 {
-  int ierr, (*f)(PC,MatOrderingType);
+  int ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatOrdering_C",(void **)&f);CHKERRQ(ierr);
@@ -495,7 +495,7 @@ int PCCreate_LU(PC pc)
   ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
   dir->reusefill        = 0;
   dir->reuseorering     = 0;
-  pc->data              = (void *) dir;
+  pc->data              = (void*)dir;
 
   pc->ops->destroy           = PCDestroy_LU;
   pc->ops->apply             = PCApply_LU;

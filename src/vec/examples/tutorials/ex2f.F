@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.7 1998/03/24 16:41:30 balay Exp balay $"
+!    "$Id: ex2f.F,v 1.8 1998/04/15 18:00:19 balay Exp bsmith $"
 !
 !  Description: Builds a parallel vector with 1 component on the first
 !               processor, 2 on the second, etc.  Then each processor adds
@@ -37,7 +37,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       Vec     x
-      integer N, ierr, rank, i
+      integer N,ierr,rank,i
       Scalar  one
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -67,7 +67,7 @@
 !   - In this example, the flag ADD_VALUES indicates that all
 !     contributions will be added together.
 
-      do 100 i=0, N-rank-1
+      do 100 i=0,N-rank-1
          call VecSetValues(x,1,i,one,ADD_VALUES,ierr)
  100  continue
 

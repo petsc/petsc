@@ -1,4 +1,4 @@
-/*$Id: dline.c,v 1.21 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dline.c,v 1.23 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -20,7 +20,7 @@
 
 .keywords:  draw, line
 @*/
-int DrawLine(Draw draw,double xl,double yl,double xr,double yr,int cl)
+int DrawLine(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   int        ierr;
   PetscTruth isdrawnull;

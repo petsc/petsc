@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.42 1999/11/05 14:46:34 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.43 1999/11/24 21:54:46 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -17,6 +17,7 @@ struct _KSPOps {
   int  (*solve)(KSP,int*);                   /* actual solver */
   int  (*setup)(KSP);
   int  (*setfromoptions)(KSP);
+  int  (*publishoptions)(KSP);
   int  (*printhelp)(KSP,char*);
   int  (*computeextremesingularvalues)(KSP,double*,double*);
   int  (*computeeigenvalues)(KSP,int,double*,double*,int *);
@@ -35,11 +36,11 @@ struct _KSPOps {
 struct _p_KSP {
   PETSCHEADER(struct _KSPOps)
   /*------------------------- User parameters--------------------------*/
-  int max_it,                      /* maximum number of iterations */
-      guess_zero,                  /* flag for whether initial guess is 0 */
-      calc_sings,                  /* calculate extreme Singular Values */
-      calc_res,                    /* calculate residuals at each iteration*/
-      use_pres;                    /* use preconditioned residual */
+  int max_it;                     /* maximum number of iterations */
+  PetscTruth    guess_zero,                  /* flag for whether initial guess is 0 */
+                calc_sings,                  /* calculate extreme Singular Values */
+                calc_res,                    /* calculate residuals at each iteration*/
+                use_pres;                    /* use preconditioned residual */
   PCSide pc_side;                  /* flag for left, right, or symmetric 
                                       preconditioning */
   double rtol,                     /* relative tolerance */
@@ -48,8 +49,9 @@ struct _p_KSP {
          divtol;                   /* divergence tolerance */
   double rnorm0;                   /* initial residual norm (used for divergence testing) */
   double rnorm;                    /* current residual norm */
+  KSPConvergedReason reason;     
 
-  Vec vec_sol, vec_rhs;            /* pointer to where user has stashed 
+  Vec vec_sol,vec_rhs;            /* pointer to where user has stashed 
                                       the solution and rhs, these are 
                                       never touched by the code, only 
                                       passed back to the user */ 
@@ -64,7 +66,7 @@ struct _p_KSP {
   void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
   int  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
 
-  int  (*converged)(KSP,int,double,void*);
+  int  (*converged)(KSP,int,double,KSPConvergedReason*,void*);
   void       *cnvP; 
 
   PC         B;
@@ -90,7 +92,7 @@ struct _p_KSP {
 
 #define KSPMonitor(ksp,it,rnorm) \
         { int _ierr,_i,_im = ksp->numbermonitors; \
-          for ( _i=0; _i<_im; _i++ ) {\
+          for (_i=0; _i<_im; _i++) {\
             _ierr = (*ksp->monitor[_i])(ksp,it,rnorm,ksp->monitorcontext[_i]);CHKERRQ(_ierr); \
 	  } \
 	}

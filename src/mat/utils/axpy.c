@@ -1,4 +1,4 @@
-/*$Id: axpy.c,v 1.40 1999/06/30 23:52:35 balay Exp bsmith $*/
+/*$Id: axpy.c,v 1.41 1999/10/24 14:02:51 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
 
@@ -44,15 +44,15 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
     ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
     if (*a == 1.0) {
       for (i = start; i < end; i++) {
-        ierr = MatGetRow(X, i, &ncols, &row, &vals);CHKERRQ(ierr);
-        ierr = MatSetValues(Y, 1, &i, ncols, row, vals, ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(X, i, &ncols, &row, &vals);CHKERRQ(ierr);
+        ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       }
     } else {
-      vals = (Scalar *) PetscMalloc( (n1+1)*sizeof(Scalar) );CHKPTRQ(vals);
-      for ( i=start; i<end; i++ ) {
+      vals = (Scalar*)PetscMalloc((n1+1)*sizeof(Scalar));CHKPTRQ(vals);
+      for (i=start; i<end; i++) {
         ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
-        for ( j=0; j<ncols; j++ ) {
+        for (j=0; j<ncols; j++) {
           vals[j] = (*a)*val[j];
         }
         ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ int MatShift(Scalar *a,Mat Y)
     ierr = (*Y->ops->shift)(a,Y);CHKERRQ(ierr);
   } else {
     ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
-    for ( i=start; i<end; i++ ) {
+    for (i=start; i<end; i++) {
       ierr = MatSetValues(Y,1,&i,1,&i,a,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ int MatDiagonalShift(Mat Y,Vec D)
     }
 
     ierr = VecGetArray(D,&v);CHKERRQ(ierr);
-    for ( i=start; i<end; i++ ) {
+    for (i=start; i<end; i++) {
       ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
@@ -178,18 +178,18 @@ int MatDiagonalShift(Mat Y,Vec D)
 int MatAYPX(Scalar *a,Mat X,Mat Y)
 {
   Scalar one = 1.0;
-  int    mX, mY,nX, nY,ierr;
+  int    mX,mY,nX,nY,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(X, MAT_COOKIE);
-  PetscValidHeaderSpecific(Y, MAT_COOKIE);
+  PetscValidHeaderSpecific(X,MAT_COOKIE);
+  PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidScalarPointer(a);
 
-  MatGetSize(X, &mX, &nX);
-  MatGetSize(X, &mY, &nY);
+  ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
+  ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
   if (mX != mY || nX != nY) SETERRQ4(PETSC_ERR_ARG_SIZ,0,"Non conforming matrices: %d %d first %d %d second",mX,mY,nX,nY);
 
-  ierr = MatScale(a, Y);CHKERRQ(ierr);
-  ierr = MatAXPY(&one, X, Y);CHKERRQ(ierr);
+  ierr = MatScale(a,Y);CHKERRQ(ierr);
+  ierr = MatAXPY(&one,X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

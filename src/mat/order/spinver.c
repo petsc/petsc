@@ -1,4 +1,4 @@
-/*$Id: spinver.c,v 1.13 1997/10/19 03:25:56 bsmith Exp bsmith $*/
+/*$Id: spinver.c,v 1.14 1999/10/24 14:02:23 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -7,7 +7,7 @@
  */
 #undef __FUNC__  
 #define __FUNC__ "MatInvertPermutation_Private"
-void MatInvertPermutation_Private( int n, int *perm, int *iperm )
+void MatInvertPermutation_Private(int n,int *perm,int *iperm)
 {
   int i;
 

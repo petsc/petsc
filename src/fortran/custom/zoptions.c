@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.64 1999/12/13 17:46:02 balay Exp balay $*/
+/*$Id: zoptions.c,v 1.65 1999/12/13 17:47:10 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -40,7 +40,7 @@ EXTERN_C_BEGIN
 
 /* ---------------------------------------------------------------------*/
 
-void PETSC_STDCALL optionsinsertfile_( CHAR file PETSC_MIXED_LEN(len), int *ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL optionsinsertfile_(CHAR file PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -50,7 +50,7 @@ void PETSC_STDCALL optionsinsertfile_( CHAR file PETSC_MIXED_LEN(len), int *ierr
 }
 
 void PETSC_STDCALL optionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR value PETSC_MIXED_LEN(len2),
-                   int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                   int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -61,7 +61,7 @@ void PETSC_STDCALL optionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR value P
   FREECHAR(value,c2);
 }
 
-void PETSC_STDCALL optionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL optionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -71,7 +71,7 @@ void PETSC_STDCALL optionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),int *ierr P
 }
 
 void PETSC_STDCALL optionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                    PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -83,7 +83,7 @@ void PETSC_STDCALL optionshasname_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETS
 }
 
 void PETSC_STDCALL optionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    int *ivalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                    int *ivalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -95,7 +95,7 @@ void PETSC_STDCALL optionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC
 }
 
 void PETSC_STDCALL optionsgetdouble_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    double *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                    double *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -107,7 +107,7 @@ void PETSC_STDCALL optionsgetdouble_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PE
 }
 
 void PETSC_STDCALL optionsgetdoublearray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                double *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                double *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -119,7 +119,7 @@ void PETSC_STDCALL optionsgetdoublearray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
 }
 
 void PETSC_STDCALL optionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                   int *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) )
+                   int *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -132,7 +132,7 @@ void PETSC_STDCALL optionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name 
 
 void PETSC_STDCALL optionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     CHAR string PETSC_MIXED_LEN(len),PetscTruth *flg,
-                    int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len) )
+                    int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len))
 {
   char *c1,*c2,*c3;
   int  len3;
@@ -152,7 +152,7 @@ void PETSC_STDCALL optionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PE
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USES_CPTOFCD)
   char *tstr = _fcdtocp(str); 
@@ -164,7 +164,7 @@ void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *ierr PET
 }
 
 void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),
-                                        int *ierr PETSC_END_LEN(len_in) )
+                                        int *ierr PETSC_END_LEN(len_in))
 {
   char *tmp;
   int  len;
@@ -246,11 +246,11 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
     itmp2 = (long) tmp2;
-    shift = (sizeof(Scalar) - (int) ((tmp3 - tmp1) % sizeof(Scalar))) % sizeof(Scalar);
+    shift = (sizeof(Scalar) - (int)((tmp3 - tmp1) % sizeof(Scalar))) % sizeof(Scalar);
   } else {  
     tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
     itmp2 = -((long) tmp2);
-    shift = (int) ((tmp1 - tmp3) % sizeof(Scalar));
+    shift = (int)((tmp1 - tmp3) % sizeof(Scalar));
   }
 #else
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
@@ -265,17 +265,17 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
   
   if (shift) { 
     /* 
-        Fortran and C not Scalar aligned, recover by copying values into
+        Fortran and C not Scalar aligned,recover by copying values into
         memory that is aligned with the Fortran
     */
     int                  ierr;
     Scalar               *work;
     PetscObjectContainer container;
 
-    work = (Scalar *) PetscMalloc((N+1)*sizeof(Scalar));CHKPTRQ(work); 
+    work = (Scalar*)PetscMalloc((N+1)*sizeof(Scalar));CHKPTRQ(work); 
 
     /* shift work by that number of bytes */
-    work = (Scalar *) (((char *) work) + shift);
+    work = (Scalar*)(((char*)work) + shift);
     ierr = PetscMemcpy(work,addr,N*sizeof(Scalar));CHKERRQ(ierr);
 
     /* store in the first location in addr how much you shift it */
@@ -289,18 +289,18 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
     if (tmp3 > tmp1) {  /* C is bigger than Fortran */
       tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
       itmp2 = (long) tmp2;
-      shift = (sizeof(Scalar) - (int) ((tmp3 - tmp1) % sizeof(Scalar))) % sizeof(Scalar);
+      shift = (sizeof(Scalar) - (int)((tmp3 - tmp1) % sizeof(Scalar))) % sizeof(Scalar);
     } else {  
       tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
       itmp2 = -((long) tmp2);
-      shift = (int) ((tmp1 - tmp3) % sizeof(Scalar));
+      shift = (int)((tmp1 - tmp3) % sizeof(Scalar));
     }
     if (shift) {
       (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
       (*PetscErrorPrintf)("not commonly aligned.\n");
       /* double/int doesn't work with ADIC */
       (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
-                         ((double) tmp3)/(double)sizeof(Scalar),((double) tmp1)/(double)sizeof(Scalar));
+                         ((double)tmp3)/(double)sizeof(Scalar),((double)tmp1)/(double)sizeof(Scalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
     PLogInfo((void *)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
@@ -326,12 +326,12 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
 
   ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **) lx);CHKERRQ(ierr);
+    ierr  = PetscObjectContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
     tlx   = base + addr;
 
     shift = *(int *)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(Scalar));CHKERRQ(ierr);
-    tlx   = (Scalar *) (((char *)tlx) - shift);
+    tlx   = (Scalar*)(((char *)tlx) - shift);
     ierr = PetscFree(tlx);CHKERRQ(ierr);
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);

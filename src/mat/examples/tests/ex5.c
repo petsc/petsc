@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.16 1999/11/24 21:54:09 bsmith Exp bsmith $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
 MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -10,9 +10,9 @@ MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n
 int main(int argc,char **args)
 {
   Mat        C; 
-  Vec        s, u, w, x, y, z;
-  int        ierr, i, j, m = 8, n, rstart, rend, vstart, vend;
-  Scalar     one = 1.0, negone = -1.0, v, alpha=0.1;
+  Vec        s,u,w,x,y,z;
+  int        ierr,i,j,m = 8,n,rstart,rend,vstart,vend;
+  Scalar     one = 1.0,negone = -1.0,v,alpha=0.1;
   double     norm;
   PetscTruth flg;
 
@@ -40,10 +40,10 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(y,&vstart,&vend);CHKERRA(ierr);
 
   /* Assembly */
-  for ( i=rstart; i<rend; i++ ) { 
+  for (i=rstart; i<rend; i++) { 
     v = 100*(i+1);
     ierr = VecSetValues(z,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
-    for ( j=0; j<n; j++ ) { 
+    for (j=0; j<n; j++) { 
       v=10*(i+1)+j+1; 
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }
@@ -60,8 +60,8 @@ int main(int argc,char **args)
 
   /* Flush off proc Mat values and do more assembly */
   ierr = MatAssemblyBegin(C,MAT_FLUSH_ASSEMBLY);CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) { 
-    for ( j=0; j<n; j++ ) { 
+  for (i=rstart; i<rend; i++) { 
+    for (j=0; j<n; j++) { 
       v=10*(i+1)+j+1; 
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }

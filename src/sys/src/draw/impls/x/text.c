@@ -1,4 +1,4 @@
-/*$Id: text.c,v 1.32 1999/10/24 14:01:15 bsmith Exp bsmith $*/
+/*$Id: text.c,v 1.33 1999/11/05 14:43:58 bsmith Exp bsmith $*/
 
 /*
    This file contains simple code to manage access to fonts, insuring that
@@ -20,15 +20,15 @@ int XiLoadFont(Draw_X*,XiFont*);
 */
 #undef __FUNC__  
 #define __FUNC__ "XiFontFixed"
-int XiFontFixed( Draw_X *XBWin,int w, int h,XiFont **outfont )
+int XiFontFixed(Draw_X *XBWin,int w,int h,XiFont **outfont)
 {
   static XiFont *curfont = 0,*font;
 
   PetscFunctionBegin;
-  if (!curfont) { XiInitFonts( XBWin );}
-  font = (XiFont*) PetscMalloc(sizeof(XiFont));CHKPTRQ(font);
-  XiMatchFontSize( font, w, h );
-  XiLoadFont( XBWin, font );
+  if (!curfont) { XiInitFonts(XBWin);}
+  font = (XiFont*)PetscMalloc(sizeof(XiFont));CHKPTRQ(font);
+  XiMatchFontSize(font,w,h);
+  XiLoadFont(XBWin,font);
   curfont = font;
   *outfont = curfont;
   PetscFunctionReturn(0);
@@ -37,7 +37,7 @@ int XiFontFixed( Draw_X *XBWin,int w, int h,XiFont **outfont )
 /* this is set by XListFonts at startup */
 #define NFONTS 20
 static struct {
-    int w, h, descent;
+    int w,h,descent;
 } nfonts[NFONTS];
 static int act_nfonts = 0;
 
@@ -48,42 +48,42 @@ static int act_nfonts = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "XiLoadFont"
-int XiLoadFont( Draw_X *XBWin, XiFont *font )
+int XiLoadFont(Draw_X *XBWin,XiFont *font)
 {
   char        font_name[100];
   XFontStruct *FontInfo;
   XGCValues   values ;
 
   PetscFunctionBegin;
-  (void) sprintf(font_name, "%dx%d", font->font_w, font->font_h );
-  font->fnt  = XLoadFont( XBWin->disp, font_name );
+  (void) sprintf(font_name,"%dx%d",font->font_w,font->font_h);
+  font->fnt  = XLoadFont(XBWin->disp,font_name);
 
   /* The font->descent may not have been set correctly; get it now that
       the font has been loaded */
-  FontInfo   = XQueryFont( XBWin->disp, font->fnt );
+  FontInfo   = XQueryFont(XBWin->disp,font->fnt);
   font->font_descent   = FontInfo->descent;
 
   /* Storage leak; should probably just free FontInfo? */
-  /* XFreeFontInfo( FontInfo ); */
+  /* XFreeFontInfo(FontInfo); */
 
   /* Set the current font in the CG */
   values.font = font->fnt ;
-  XChangeGC( XBWin->disp, XBWin->gc.set, GCFont, &values ) ; 
+  XChangeGC(XBWin->disp,XBWin->gc.set,GCFont,&values) ; 
   PetscFunctionReturn(0);
 }
 
 /* Code to find fonts and their characteristics */
 #undef __FUNC__  
 #define __FUNC__ "XiInitFonts" 
-int XiInitFonts( Draw_X *XBWin )
+int XiInitFonts(Draw_X *XBWin)
 {
   char         **names;
-  int          cnt, i, j;
+  int          cnt,i,j;
   XFontStruct  *info;
 
   PetscFunctionBegin;
   /* This just gets the most basic fixed-width fonts */
-  names   = XListFontsWithInfo( XBWin->disp, "?x??", NFONTS, &cnt, &info );
+  names   = XListFontsWithInfo(XBWin->disp,"?x??",NFONTS,&cnt,&info);
   j       = 0;
   for (i=0; i < cnt; i++) {
     names[i][1]         = '\0';
@@ -96,12 +96,12 @@ int XiInitFonts( Draw_X *XBWin )
   }
   act_nfonts    = j;
   if (cnt > 0)  {
-    XFreeFontInfo( names, info, cnt );
+    XFreeFontInfo(names,info,cnt);
   }
-  /* If the above fails, try this: */
-  if (act_nfonts == 0) {
+  /* If the above fails,try this: */
+  if (!act_nfonts) {
     /* This just gets the most basic fixed-width fonts */
-    names   = XListFontsWithInfo( XBWin->disp, "?x", NFONTS, &cnt, &info );
+    names   = XListFontsWithInfo(XBWin->disp,"?x",NFONTS,&cnt,&info);
     j       = 0;
     for (i=0; i < cnt; i++) {
         int ierr,len;
@@ -119,14 +119,14 @@ int XiInitFonts( Draw_X *XBWin )
 	if (j >= NFONTS) break;
     }
     act_nfonts    = j;
-    XFreeFontInfo( names, info, cnt );
+    XFreeFontInfo(names,info,cnt);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "XiMatchFontSize" 
-int XiMatchFontSize( XiFont *font, int w, int h )
+int XiMatchFontSize(XiFont *font,int w,int h)
 {
   int i,max,imax,tmp;
 
@@ -140,7 +140,7 @@ int XiMatchFontSize( XiFont *font, int w, int h )
     }
   }
 
-  /* determine closest fit, per max. norm */
+  /* determine closest fit,per max. norm */
   imax = 0;
   max  = PetscMax(PetscAbsInt(nfonts[0].w - w),PetscAbsInt(nfonts[0].h - h));
   for (i=1; i<act_nfonts; i++) {

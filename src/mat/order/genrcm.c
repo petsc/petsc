@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: genrcm.c,v 1.10 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* genrcm.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -35,18 +35,16 @@
 /*****************************************************************/
 #undef __FUNC__  
 #define __FUNC__ "SPARSEPACKgenrcm" 
-int SPARSEPACKgenrcm(int *neqns, int *xadj, int *adjncy, 
-	int *perm, int *mask, int *xls)
+int SPARSEPACKgenrcm(int *neqns,int *xadj,int *adjncy,int *perm,int *mask,int *xls)
 {
     /* System generated locals */
     int i__1;
 
     /* Local variables */
-    static int nlvl, root, i, ccsize;
-    extern int SPARSEPACKfnroot(int *, int *, int *, 
-	    int *, int *, int *, int *), SPARSEPACKrcm(int *, 
-	    int *, int *, int *, int *, int *, int *);
-    static int num;
+    int nlvl,root,i,ccsize;
+    extern int SPARSEPACKfnroot(int *,int *,int *,int *,int *,int *,int *),
+               SPARSEPACKrcm(int *,int *,int *,int *,int *,int *,int *);
+    int num;
 
     PetscFunctionBegin;
     /* Parameter adjustments */
@@ -73,10 +71,8 @@ int SPARSEPACKgenrcm(int *neqns, int *xadj, int *adjncy,
 /*             FNROOT IS STORED STARTING AT PERM(NUM).*/
 /*             THEN RCM IS CALLED TO ORDER THE COMPONENT*/
 /*             USING ROOT AS THE STARTING NODE.*/
-	SPARSEPACKfnroot(&root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[
-		num]);
-	SPARSEPACKrcm(&root, &xadj[1], &adjncy[1], &mask[1], &perm[num], &ccsize, &xls[
-		1]);
+	SPARSEPACKfnroot(&root,&xadj[1],&adjncy[1],&mask[1],&nlvl,&xls[1],&perm[num]);
+	SPARSEPACKrcm(&root,&xadj[1],&adjncy[1],&mask[1],&perm[num],&ccsize,&xls[1]);
 	num += ccsize;
 	if (num > *neqns) {
 	    PetscFunctionReturn(0);

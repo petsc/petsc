@@ -1,4 +1,4 @@
-/*$Id: ffpath.c,v 1.27 1999/10/24 14:01:25 bsmith Exp bsmith $*/
+/*$Id: ffpath.c,v 1.28 1999/11/05 14:44:09 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -28,7 +28,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
@@ -49,7 +49,7 @@
 	  used.
 .  defname - default name
 .  name - file name to use with the directories from env
--  mode - file mode desired (usually 'r' for readable, 'w' for writable, or 'e' for
+-  mode - file mode desired (usually r for readable, w for writable, or e for
           executable)
 
    Output Parameter:
@@ -60,10 +60,10 @@
 .keywords: system, get, file, from, path
 
 @*/
-int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode)
+int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
 {
 #if !defined(PARCH_win32)
-  char       *p, *cdir, trial[MAXPATHLEN],*senv, *env;
+  char       *p,*cdir,trial[MAXPATHLEN],*senv,*env;
   int        ln,ierr;
   PetscTruth flg;
 
@@ -73,9 +73,9 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 
   if (path) {
     /* Check to see if the path is a valid regular FILE */
-    ierr = PetscTestFile( path, mode,&flg);CHKERRQ(ierr);
+    ierr = PetscTestFile(path,mode,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscStrcpy( fname, path );CHKERRQ(ierr);
+      ierr = PetscStrcpy(fname,path);CHKERRQ(ierr);
       PetscFunctionReturn(1);
     }
     
@@ -85,7 +85,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     while (env) {
       /* Find next directory in env */
       cdir = env;
-      ierr = PetscStrchr( env, ':',&p );CHKERRQ(ierr);
+      ierr = PetscStrchr(env,':',&p);CHKERRQ(ierr);
       if (p) {
 	*p  = 0;
 	env = p + 1;
@@ -93,16 +93,16 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 	env = 0;
 
       /* Form trial file name */
-      ierr = PetscStrcpy( trial, cdir );CHKERRQ(ierr);
-      ierr = PetscStrlen( trial,&ln);CHKERRQ(ierr);
+      ierr = PetscStrcpy(trial,cdir);CHKERRQ(ierr);
+      ierr = PetscStrlen(trial,&ln);CHKERRQ(ierr);
       if (trial[ln-1] != '/')  trial[ln++] = '/';
 	
-      ierr = PetscStrcpy( trial + ln, name );;CHKERRQ(ierr);
+      ierr = PetscStrcpy(trial + ln,name);CHKERRQ(ierr);
 
-      ierr = PetscTestFile( path, mode,&flg);CHKERRQ(ierr);
+      ierr = PetscTestFile(path,mode,&flg);CHKERRQ(ierr);
       if (flg) {
         /* need PetscGetFullPath rather then copy in case path has . in it */
-	ierr = PetscGetFullPath( trial,  fname, MAXPATHLEN );CHKERRQ(ierr);
+	ierr = PetscGetFullPath(trial,fname,MAXPATHLEN);CHKERRQ(ierr);
 	ierr = PetscFree(senv);CHKERRQ(ierr);
         PetscFunctionReturn(1);
       }
@@ -110,7 +110,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     ierr = PetscFree(senv);CHKERRQ(ierr);
   }
 
-  ierr = PetscTestFile( path, mode,&flg);CHKERRQ(ierr);
+  ierr = PetscTestFile(path,mode,&flg);CHKERRQ(ierr);
   if (flg) PetscFunctionReturn(1);
 #endif
   PetscFunctionReturn(0);

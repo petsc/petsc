@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
+/*$Id: zstartf.c,v 1.26 1999/11/24 21:55:52 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
@@ -60,9 +60,9 @@ int PetscInitializeFortran(void)
   
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscinitializefortran_(int *__ierr)
+void PETSC_STDCALL petscinitializefortran_(int *ierr)
 {
-  *__ierr = PetscInitializeFortran();
+  *ierr = PetscInitializeFortran();
 }
 
 #if defined(PETSC_USES_CPTOFCD)

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex19.F,v 1.31 1998/04/15 18:00:32 balay Exp bsmith $";
+!    "$Id: ex19.F,v 1.32 1999/01/12 23:13:42 bsmith Exp bsmith $";
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -7,8 +7,8 @@
 !  This example demonstrates basic use of the PETSc Fortran interface
 !  to vectors.
 !
-       integer          n, ierr,flg
-       Scalar           one, two, three, dot
+       integer          n,ierr,flg
+       Scalar           one,two,three,dot
        double precision norm,rdot
        Vec              x,y,w
 
@@ -30,7 +30,7 @@
        call VecSet(two,y,ierr)
 
        call VecDot(x,y,dot,ierr)
-       rdot = PetscReal(dot)
+       rdot = PetscRealPart(dot)
        write(6,100) rdot
   100  format('Result of inner product ',f10.4)
 

@@ -1,11 +1,11 @@
 !
-!  "$Id: fmdot.F,v 1.7 1998/07/13 18:14:25 balay Exp balay $";
+!  "$Id: fmdot.F,v 1.8 1999/03/24 18:12:40 balay Exp bsmith $";
 !
 !    Fortran kernel for the MDot() vector routine
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine FortranMDot4(x, y1, y2, y3, y4, n,sum1,sum2,sum3,sum4)
+      subroutine FortranMDot4(x,y1,y2,y3,y4,n,sum1,sum2,sum3,sum4)
       implicit none
       Scalar  sum1,sum2,sum3,sum4
       Scalar  x(*),y1(*),y2(*),y3(*),y4(*)
@@ -13,7 +13,7 @@
 
       integer i
 
-      do 10, i=1,n
+      do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
         sum2 = sum2 + x(i)*PetscConj(y2(i))
         sum3 = sum3 + x(i)*PetscConj(y3(i))
@@ -23,14 +23,14 @@
       return 
       end
 
-      subroutine FortranMDot3(x, y1, y2, y3, n,sum1,sum2,sum3)
+      subroutine FortranMDot3(x,y1,y2,y3,n,sum1,sum2,sum3)
       implicit none
       Scalar  sum1,sum2,sum3,x(*),y1(*),y2(*),y3(*)
       integer n
 
       integer i
 
-      do 10, i=1,n
+      do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
         sum2 = sum2 + x(i)*PetscConj(y2(i))
         sum3 = sum3 + x(i)*PetscConj(y3(i))
@@ -39,14 +39,14 @@
       return 
       end
 
-      subroutine FortranMDot2(x, y1, y2, n,sum1,sum2)
+      subroutine FortranMDot2(x,y1,y2,n,sum1,sum2)
       implicit none
       Scalar  sum1,sum2,x(*),y1(*),y2(*)
       integer n
 
       integer i
 
-      do 10, i=1,n
+      do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
         sum2 = sum2 + x(i)*PetscConj(y2(i))
  10   continue
@@ -55,14 +55,14 @@
       end
 
 
-      subroutine FortranMDot1(x, y1, n,sum1)
+      subroutine FortranMDot1(x,y1,n,sum1)
       implicit none
       Scalar  sum1,x(*),y1(*)
       integer n
 
       integer i
 
-      do 10, i=1,n
+      do 10,i=1,n
         sum1 = sum1 + x(i)*PetscConj(y1(i))
  10   continue
 

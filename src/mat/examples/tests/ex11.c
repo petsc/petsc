@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.10 1999/11/24 21:54:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\n\n";
 
@@ -9,8 +9,8 @@ static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 5, n = 5, I, J, ierr;
-  Scalar      v, five = 5.0;
+  int         i,j,m = 5,n = 5,I,J,ierr;
+  Scalar      v,five = 5.0;
   IS          isrow;
   PetscTruth  keepzeroedrows;
 
@@ -18,13 +18,13 @@ int main(int argc,char **args)
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }

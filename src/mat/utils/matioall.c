@@ -1,4 +1,4 @@
-/*$Id: matioall.c,v 1.12 1999/05/12 03:30:40 bsmith Exp bsmith $*/
+/*$Id: matioall.c,v 1.13 1999/10/24 14:02:51 bsmith Exp bsmith $*/
 
 #include "mat.h"
 
@@ -45,7 +45,6 @@ int MatLoadRegisterAll(void)
   ierr = MatLoadRegister(MATMPIDENSE,MatLoad_MPIDense);CHKERRQ(ierr);
   ierr = MatLoadRegister(MATSEQBAIJ,MatLoad_SeqBAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegister(MATMPIBAIJ,MatLoad_MPIBAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATSEQADJ,MatLoad_SeqAdj);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }  

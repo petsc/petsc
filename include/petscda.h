@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.48 1999/04/11 20:23:56 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.49 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -12,30 +12,30 @@
 #define DA_COOKIE PETSC_COOKIE+14
 
 typedef struct _p_DA* DA;
-typedef enum { DA_STENCIL_STAR, DA_STENCIL_BOX } DAStencilType;
-typedef enum { DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC,
-               DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC} 
+typedef enum { DA_STENCIL_STAR,DA_STENCIL_BOX } DAStencilType;
+typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
+               DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} 
                DAPeriodicType;
-typedef enum { DA_X, DA_Y, DA_Z } DADirection;
+typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
 extern int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
 extern int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
-extern int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType, 
+extern int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
                         int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
 extern int   DADestroy(DA);
 extern int   DAView(DA,Viewer);
 
 extern int   DAPrintHelp(DA);
 
-extern int   DAGlobalToLocalBegin(DA,Vec, InsertMode,Vec);
-extern int   DAGlobalToLocalEnd(DA,Vec, InsertMode,Vec);
-extern int   DAGlobalToNaturalBegin(DA,Vec, InsertMode,Vec);
-extern int   DAGlobalToNaturalEnd(DA,Vec, InsertMode,Vec);
-extern int   DANaturalToGlobalBegin(DA,Vec, InsertMode,Vec);
-extern int   DANaturalToGlobalEnd(DA,Vec, InsertMode,Vec);
-extern int   DALocalToLocalBegin(DA,Vec, InsertMode,Vec);
-extern int   DALocalToLocalEnd(DA,Vec, InsertMode,Vec);
-extern int   DALocalToGlobal(DA,Vec, InsertMode,Vec);
+extern int   DAGlobalToLocalBegin(DA,Vec,InsertMode,Vec);
+extern int   DAGlobalToLocalEnd(DA,Vec,InsertMode,Vec);
+extern int   DAGlobalToNaturalBegin(DA,Vec,InsertMode,Vec);
+extern int   DAGlobalToNaturalEnd(DA,Vec,InsertMode,Vec);
+extern int   DANaturalToGlobalBegin(DA,Vec,InsertMode,Vec);
+extern int   DANaturalToGlobalEnd(DA,Vec,InsertMode,Vec);
+extern int   DALocalToLocalBegin(DA,Vec,InsertMode,Vec);
+extern int   DALocalToLocalEnd(DA,Vec,InsertMode,Vec);
+extern int   DALocalToGlobal(DA,Vec,InsertMode,Vec);
 extern int   DAGetOwnershipRange(DA,int **,int **,int **);
 extern int   DACreateGlobalVector(DA,Vec *);
 extern int   DACreateNaturalVector(DA,Vec *);

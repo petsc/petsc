@@ -1,7 +1,8 @@
-/*$Id: mem.c,v 1.44 1999/11/24 21:28:56 balay Exp balay $*/
+/*$Id: mem.c,v 1.45 1999/11/24 21:46:14 balay Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "sys.h"
+#include "petscfix.h"
 #include "pinclude/ptime.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
@@ -31,7 +32,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
 #endif
@@ -91,14 +92,14 @@ int PetscGetResidentSetSize(PLogDouble *foo)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
-  sprintf(proc,"/proc/%d", (int)getpid());
+  sprintf(proc,"/proc/%d",(int)getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) {
     SETERRQ(PETSC_ERR_FILE_OPEN,1,"Unable to access system file to get memory usage data");
   }
-  if (ioctl(fd, PIOCPSINFO,&prusage) == -1) {
+  if (ioctl(fd,PIOCPSINFO,&prusage) == -1) {
     SETERRQ(PETSC_ERR_FILE_READ,1,"Unable to access system file  to get memory usage data"); 
   }
-  *foo = (double) prusage.pr_byrssize;
+  *foo = (double)prusage.pr_byrssize;
   close(fd);
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
   *foo = (PLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
@@ -107,9 +108,9 @@ int PetscGetResidentSetSize(PLogDouble *foo)
 #else
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PETSC_USE_KBYTES_FOR_SIZE)
-  *foo = 1024.0 * ((double) temp.ru_maxrss);
+  *foo = 1024.0 * ((double)temp.ru_maxrss);
 #else
-  *foo = ( (double) getpagesize())*( (double) temp.ru_maxrss );
+  *foo = ((double)getpagesize())*((double)temp.ru_maxrss);
 #endif
 #endif
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.27 1999/09/02 14:52:51 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.28 1999/10/24 14:01:18 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates opening and drawing a window\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Demonstrates opening and drawing a window\n";
 int main(int argc,char **argv)
 {
   Draw draw;
-  int  ierr, x = 0, y = 0, width = 300, height = 300;
+  int  ierr,x = 0,y = 0,width = 300,height = 300;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 

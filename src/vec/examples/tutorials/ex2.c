@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.32 1999/05/04 20:31:12 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.34 1999/10/24 14:02:04 bsmith Exp bsmith $*/
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
 processor, 2 on the second, etc.  Then each processor adds one to all\n\
@@ -23,12 +23,12 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int     i, N, ierr, rank;
+  int     i,N,ierr,rank;
   Scalar  one = 1.0;
   Vec     x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /*
      Create a parallel vector.
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
       - In this example, the flag ADD_VALUES indicates that all
         contributions will be added together.
   */
-  for ( i=0; i<N-rank; i++ ) {
+  for (i=0; i<N-rank; i++) {
     ierr = VecSetValues(x,1,&i,&one,ADD_VALUES);CHKERRA(ierr);  
   }
 

@@ -1,4 +1,4 @@
-/*$Id: ex49.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex49.c,v 1.13 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -8,12 +8,12 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY()
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Mat        mat, tmat = 0;
-  int        m = 4, n, i, j, ierr, size, rank;
-  int        rstart, rend, rect = 0, nd, bs, *diag, *bdlen;
+  Mat        mat,tmat = 0;
+  int        m = 4,n,i,j,ierr,size,rank;
+  int        rstart,rend,rect = 0,nd,bs,*diag,*bdlen;
   PetscTruth flg;
-  Scalar     v, **diagv;
-  double     normf, normi, norm1;
+  Scalar     v,**diagv;
+  double     normf,normi,norm1;
   MatType    type;
   MatInfo    info;
 
@@ -30,8 +30,8 @@ int main(int argc,char **argv)
   /* Create and assemble matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) { 
-    for ( j=0; j<n; j++ ) { 
+  for (i=rstart; i<rend; i++) { 
+    for (j=0; j<n; j++) { 
       v=10*i+j; 
       ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }

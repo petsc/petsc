@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.66 1999/10/24 14:02:23 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.67 1999/11/05 14:46:06 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -33,15 +33,15 @@ EXTERN_C_BEGIN
 #define __FUNC__ "MatOrdering_Natural"
 int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
-  int        n, size,ierr,i,*ii;
+  int        n,size,ierr,i,*ii;
   MPI_Comm   comm;
   PetscTruth done;
 
   PetscFunctionBegin;
   if (mat->type == MATMPIROWBS || mat->type == MATSEQBDIAG || mat->type == MATMPIBDIAG) {
-    int start, end;
+    int start,end;
     /*
-        BlockSolve Format doesn't really require the Ordering, but PETSc wants
+        BlockSolve Format doesn't really require the Ordering,but PETSc wants
        to provide it to everyone.
     */
     ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
@@ -68,8 +68,8 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
     ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol);CHKERRQ(ierr);
   */
-  ii = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ii);
-  for ( i=0; i<n; i++ ) ii[i] = i;
+  ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
+  for (i=0; i<n; i++) ii[i] = i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
   ierr = PetscFree(ii);CHKERRQ(ierr);
@@ -97,15 +97,15 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,0,"Cannot get rows for matrix");
 
-  lens  = (int *) PetscMalloc( 2*n*sizeof(int) );CHKPTRQ(lens);
+  lens  = (int*)PetscMalloc(2*n*sizeof(int));CHKPTRQ(lens);
   permr = lens + n;
-  for ( i=0; i<n; i++ ) { 
+  for (i=0; i<n; i++) { 
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
   }
   ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
 
-  ierr = PetscSortIntWithPermutation(n, lens, permr);CHKERRQ(ierr);
+  ierr = PetscSortIntWithPermutation(n,lens,permr);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,irow);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,permr,icol);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ EXTERN_C_END
    Input Parameters:
 +  sname - name of ordering (for example MATORDERING_ND)
 .  path - location of library where creation routine is 
-.  name - name of function that creates the ordering type, a string
+.  name - name of function that creates the ordering type,a string
 -  function - function pointer that creates the ordering
 
    Level: developer
@@ -160,7 +160,7 @@ int MatOrderingRegister(char *sname,char *path,char *name,int (*function)(Mat,Ma
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -184,7 +184,7 @@ int MatOrderingRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatOrderingList) {
-    ierr = FListDestroy( MatOrderingList );CHKERRQ(ierr);
+    ierr = FListDestroy(MatOrderingList);CHKERRQ(ierr);
     MatOrderingList = 0;
   }
   PetscFunctionReturn(0);
@@ -250,7 +250,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     *rperm = *cperm = 0; PetscFunctionReturn(0);
   }
 
-  if (mat->M == 0) {
+  if (!mat->M) {
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,cperm);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,rperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);
@@ -271,7 +271,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   }
 
   PLogEventBegin(MAT_GetOrdering,mat,0,0,0);
-  ierr =  FListFind(mat->comm, MatOrderingList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(mat->comm,MatOrderingList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type: %s",type);}
 
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 !
-! "$Id: ex13f.F,v 1.3 1998/06/22 15:26:48 balay Exp balay $";
+! "$Id: ex13f.F,v 1.4 1998/06/22 20:45:12 balay Exp bsmith $";
 !
 !
 !     Tests PetscSetCommWorld()
@@ -16,7 +16,7 @@
 !
 !       make two new communicators each half the size of original
 !
-      if ( 2*rank .lt. size) then 
+      if (2*rank .lt. size) then 
         color = 0
       else 
         color = 1

@@ -1,4 +1,4 @@
-/* $Id: mg.h,v 1.15 1999/10/23 00:02:04 bsmith Exp bsmith $ */
+/* $Id: mg.h,v 1.16 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 /*
       Structure used for Multigrid preconditioners 
 */
@@ -7,7 +7,7 @@
 #include "sles.h"
 
 /*  Possible Multigrid Variants */
-typedef enum { MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE } MGType;
+typedef enum { MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE } MGType;
 #define MGCASCADE MGKASKADE;
 
 #define MG_V_CYCLE     1

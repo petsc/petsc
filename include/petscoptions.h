@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.34 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.35 1999/12/18 01:00:03 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -36,4 +36,10 @@ extern int  OptionsGetenv(MPI_Comm,const char *,char[],int,PetscTruth *);
 extern int  OptionsAtoi(const char[],int*);
 extern int  OptionsAtod(const char[],double*);
 
+extern PetscTruth PetscPublishOptions;
+extern int        OptionsSelectBegin(MPI_Comm,char*,char*);
+extern int        OptionsSelectInt(MPI_Comm,char*,char*,int);
+extern int        OptionsSelectDouble(MPI_Comm,char*,char*,double);
+extern int        OptionsSelectName(MPI_Comm,char*,char*);
+extern int        OptionsSelectEnd(MPI_Comm);
 #endif

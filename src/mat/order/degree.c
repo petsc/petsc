@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: degree.c,v 1.16 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* degree.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -27,13 +27,13 @@
 /*****************************************************************/
 #undef __FUNC__  
 #define __FUNC__ "SPARSEPACKdegree" 
-int SPARSEPACKdegree(int *root, int *xadj, int *adjncy, int *mask, int *deg, int *ccsize, int *ls)
+int SPARSEPACKdegree(int *root, int *xadj,int *adjncy,int *mask,int *deg,int *ccsize,int *ls)
 {
     /* System generated locals */
-    int i__1, i__2;
+    int i__1,i__2;
 
     /* Local variables */
-    static int ideg, node, i, j, jstop, jstrt, lbegin, lvlend, lvsize, 
+    int ideg,node,i,j,jstop,jstrt,lbegin,lvlend,lvsize,
 	    nbr;
 /*       INITIALIZATION ...*/
 /*       THE ARRAY XADJ IS USED AS A TEMPORARY MARKER TO*/
@@ -87,7 +87,7 @@ L300:
 	deg[node] = ideg;
     }
 /*       COMPUTE THE CURRENT LEVEL WIDTH. */
-/*       IF IT IS NONZERO , GENERATE ANOTHER LEVEL.*/                       
+/*       IF IT IS NONZERO, GENERATE ANOTHER LEVEL.*/                       
     lvsize = *ccsize - lvlend;
     if (lvsize > 0) {
 	goto L100;

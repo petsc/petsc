@@ -1,17 +1,17 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: gennd.c,v 1.11 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* gennd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
 
 #undef __FUNC__  
 #define __FUNC__ "SPARSEPACKrevrse" 
-int SPARSEPACKrevrse(int *n, int *perm)
+int SPARSEPACKrevrse(int *n,int *perm)
 {
     /* System generated locals */
     int i__1;
 
     /* Local variables */
-    static int swap, i, m, in;
+    int swap,i,m,in;
 
     PetscFunctionBegin;
     /* Parameter adjustments */
@@ -56,17 +56,15 @@ int SPARSEPACKrevrse(int *n, int *perm)
 
 #undef __FUNC__  
 #define __FUNC__ "SPARSEPACKgennd" 
-int SPARSEPACKgennd(int *neqns, int *xadj, int *adjncy, 
-	int *mask, int *perm, int *xls, int *ls)
+int SPARSEPACKgennd(int *neqns,int *xadj,int *adjncy,int *mask,int *perm,int *xls,int *ls)
 {
     /* System generated locals */
     int i__1;
 
     /* Local variables */
-    static int nsep, root, i;
-    extern int SPARSEPACKfndsep(int *, int *, int *, 
-	    int *, int *, int *, int *, int *);
-    static int num;
+    int nsep,root,i;
+    extern int SPARSEPACKfndsep(int *,int *,int *,int *,int *,int *,int *,int *);
+    int num;
 
     PetscFunctionBegin;
     /* Parameter adjustments */
@@ -91,8 +89,8 @@ L200:
 	}
 	root = i;
 /*              FIND A SEPARATOR AND NUMBER THE NODES NEXT.*/
-	SPARSEPACKfndsep(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], 
-		&xls[1], &ls[1]);
+	SPARSEPACKfndsep(&root,&xadj[1],&adjncy[1],&mask[1],&nsep,&perm[num + 1],
+		&xls[1],&ls[1]);
 	num += nsep;
 	if (num >= *neqns) {
 	    goto L400;
@@ -105,6 +103,6 @@ L300:
 /*        LAST, ROUTINE REVRSE IS CALLED TO ADJUST THE*/
 /*        ORDERING VECTOR.*/
 L400:
-    SPARSEPACKrevrse(neqns, &perm[1]);
+    SPARSEPACKrevrse(neqns,&perm[1]);
     PetscFunctionReturn(0);
 }

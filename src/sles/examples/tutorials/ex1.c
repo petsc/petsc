@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.77 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.78 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -26,14 +26,14 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x, b, u;      /* approx solution, RHS, exact solution */
+  Vec     x,b,u;      /* approx solution, RHS, exact solution */
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* linear solver context */
   PC      pc;           /* preconditioner context */
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
-  int     ierr, i, n = 10, col[3], its, size;
-  Scalar  neg_one = -1.0, one = 1.0, value[3];
+  int     ierr,i,n = 10,col[3],its,size;
+  Scalar  neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -65,7 +65,7 @@ int main(int argc,char **args)
      Assemble matrix
   */
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
-  for (i=1; i<n-1; i++ ) {
+  for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
     ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
   }

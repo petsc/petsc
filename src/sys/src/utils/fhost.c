@@ -1,4 +1,4 @@
-/*$Id: fhost.c,v 1.40 1999/10/24 14:01:32 bsmith Exp bsmith $*/
+/*$Id: fhost.c,v 1.41 1999/11/10 03:18:08 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -24,7 +24,7 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetHostName"
@@ -48,7 +48,7 @@
 
 .seealso: PetscGetUserName()
 @*/
-int PetscGetHostName( char name[], int nlen )
+int PetscGetHostName(char name[],int nlen)
 {
   char           *domain;
   int            ierr;
@@ -68,9 +68,9 @@ int PetscGetHostName( char name[], int nlen )
   uname(&utname); 
   ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_GETHOSTNAME)
-  gethostname(name, nlen);
+  gethostname(name,nlen);
 #elif defined(PETSC_HAVE_SYSINFO)
-  sysinfo(SI_HOSTNAME, name, nlen);
+  sysinfo(SI_HOSTNAME,name,nlen);
 #endif
 
   /* See if this name includes the domain */
@@ -81,9 +81,9 @@ int PetscGetHostName( char name[], int nlen )
     if (l == nlen) PetscFunctionReturn(0);
     name[l++] = '.';
 #if defined(PETSC_HAVE_SYSINFO)
-    sysinfo( SI_SRPC_DOMAIN,name+l,nlen-l);
+    sysinfo(SI_SRPC_DOMAIN,name+l,nlen-l);
 #elif defined(PETSC_HAVE_GETDOMAINNAME)
-    getdomainname( name+l, nlen - l );
+    getdomainname(name+l,nlen - l);
     /* change domain name if it is an ANL crap one */
     ierr = PetscStrcmp(name+l,"qazwsxedc",&match);CHKERRQ(ierr);
     if (match) {

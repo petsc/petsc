@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.37 1999/10/24 14:03:53 bsmith Exp bsmith $*/
+/*$Id: posindep.c,v 1.38 1999/11/05 14:47:36 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -51,7 +51,7 @@ typedef struct {
 @*/
 int TSPseudoComputeTimeStep(TS ts,double *dt)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int       ierr;
 
   PetscFunctionBegin;
@@ -124,13 +124,13 @@ int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int
 @*/
 int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int       ierr;
 
   PetscFunctionBegin;
   if (!pseudo->verify) {*flag = 1; PetscFunctionReturn(0);}
 
-  ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag );CHKERRQ(ierr);
+  ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -143,14 +143,14 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,ok,lits;
-  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   double    current_time_step;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
 
   ierr = VecCopy(sol,pseudo->update);CHKERRQ(ierr);
-  for ( i=0; i<max_steps && ts->ptime < ts->max_time; i++ ) {
+  for (i=0; i<max_steps && ts->ptime < ts->max_time; i++) {
     ierr = TSPseudoComputeTimeStep(ts,&ts->time_step);CHKERRQ(ierr);
     current_time_step = ts->time_step;
     while (1) {
@@ -176,9 +176,9 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "TSDestroy_Pseudo"
-static int TSDestroy_Pseudo(TS ts )
+static int TSDestroy_Pseudo(TS ts)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int       ierr;
 
   PetscFunctionBegin;
@@ -236,7 +236,7 @@ int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
   ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);
   ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
   }
   ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
@@ -257,7 +257,7 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 {
   TS      ts = (TS) ctx;
   int     ierr;
-  Scalar  mone = -1.0, mdt = 1.0/ts->time_step;
+  Scalar  mone = -1.0,mdt = 1.0/ts->time_step;
   MatType mtype;
 
   PetscFunctionBegin;
@@ -286,8 +286,8 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 #define __FUNC__ "TSSetUp_Pseudo"
 static int TSSetUp_Pseudo(TS ts)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
-  int       ierr, M, m;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
+  int       ierr,M,m;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);  
@@ -306,9 +306,9 @@ static int TSSetUp_Pseudo(TS ts)
 
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoDefaultMonitor"
-int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
+int TSPseudoDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int       ierr;
 
   PetscFunctionBegin;
@@ -329,7 +329,7 @@ static int TSSetFromOptions_Pseudo(TS ts)
 
   ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSSetMonitor(ts,TSPseudoDefaultMonitor,0);CHKERRQ(ierr);
+    ierr = TSSetMonitor(ts,TSPseudoDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = OptionsGetDouble(ts->prefix,"-ts_pseudo_increment",&inc,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -400,7 +400,7 @@ static int TSView_Pseudo(TS ts,Viewer viewer)
 @*/
 int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
 {
-  int ierr, (*f)(TS,int (*)(TS,Vec,void*,double *,int *),void *);
+  int ierr,(*f)(TS,int (*)(TS,Vec,void*,double *,int *),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -435,7 +435,7 @@ $    -ts_pseudo_increment <increment>
 @*/
 int TSPseudoSetTimeStepIncrement(TS ts,double inc)
 {
-  int ierr, (*f)(TS,double);
+  int ierr,(*f)(TS,double);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -472,7 +472,7 @@ $    -ts_pseudo_increment_dt_from_initial_dt
 @*/
 int TSPseudoIncrementDtFromInitialDt(TS ts)
 {
-  int ierr, (*f)(TS);
+  int ierr,(*f)(TS);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -517,7 +517,7 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
 @*/
 int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 {
-  int ierr, (*f)(TS,int (*)(TS,double *,void *),void *);
+  int ierr,(*f)(TS,int (*)(TS,double *,void *),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -539,7 +539,7 @@ int TSPseudoSetVerifyTimeStep_Pseudo(TS ts,int (*dt)(TS,Vec,void*,double*,int*),
   TS_Pseudo *pseudo;
 
   PetscFunctionBegin;
-  pseudo              = (TS_Pseudo*) ts->data;
+  pseudo              = (TS_Pseudo*)ts->data;
   pseudo->verify      = dt;
   pseudo->verifyctx   = ctx;
   PetscFunctionReturn(0);
@@ -554,7 +554,7 @@ int TSPseudoSetTimeStepIncrement_Pseudo(TS ts,double inc)
   TS_Pseudo *pseudo;
 
   PetscFunctionBegin;
-  pseudo               = (TS_Pseudo*) ts->data;
+  pseudo               = (TS_Pseudo*)ts->data;
   pseudo->dt_increment = inc;
   PetscFunctionReturn(0);
 }
@@ -568,7 +568,7 @@ int TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
   TS_Pseudo *pseudo;
 
   PetscFunctionBegin;
-  pseudo                               = (TS_Pseudo*) ts->data;
+  pseudo                               = (TS_Pseudo*)ts->data;
   pseudo->increment_dt_from_initial_dt = 1;
   PetscFunctionReturn(0);
 }
@@ -582,7 +582,7 @@ int TSPseudoSetTimeStep_Pseudo(TS ts,int (*dt)(TS,double*,void*),void* ctx)
   TS_Pseudo *pseudo;
 
   PetscFunctionBegin;
-  pseudo          = (TS_Pseudo*) ts->data;
+  pseudo          = (TS_Pseudo*)ts->data;
   pseudo->dt      = dt;
   pseudo->dtctx   = ctx;
   PetscFunctionReturn(0);
@@ -594,7 +594,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_Pseudo"
-int TSCreate_Pseudo(TS ts )
+int TSCreate_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo;
   int       ierr;
@@ -626,7 +626,7 @@ int TSCreate_Pseudo(TS ts )
   PLogObjectMemory(ts,sizeof(TS_Pseudo));
 
   ierr     = PetscMemzero(pseudo,sizeof(TS_Pseudo));CHKERRQ(ierr);
-  ts->data = (void *) pseudo;
+  ts->data = (void*)pseudo;
 
   pseudo->dt_increment                 = 1.1;
   pseudo->increment_dt_from_initial_dt = 0;
@@ -670,7 +670,7 @@ EXTERN_C_END
 @*/
 int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   double    inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
   int       ierr;
 

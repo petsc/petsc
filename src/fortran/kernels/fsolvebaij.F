@@ -1,5 +1,5 @@
 !
-!  "$Id: fsolvebaij.F,v 1.6 1998/12/23 21:18:44 bsmith Exp balay $";
+!  "$Id: fsolvebaij.F,v 1.7 1999/03/24 18:13:09 balay Exp bsmith $";
 !
 !    Fortran kernel for sparse triangular solve in the BAIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
@@ -11,10 +11,10 @@
       implicit none
       MatScalar        a(0:*)
       Scalar           x(0:*),b(0:*)
-      integer          n, ai(0:*),aj(0:*),adiag(0:*)
+      integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend,idx,ax,jdx
-      Scalar           s1, s2, s3, s4
+      Scalar           s1,s2,s3,s4
       Scalar           x1,x2,x3,x4
 !     
 !     Forward Solve
@@ -93,7 +93,7 @@
       implicit none
       MatScalar        a(0:*)
       Scalar           x(0:*),b(0:*),w(0:*)
-      integer          n, ai(0:*),aj(0:*),adiag(0:*)
+      integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend,idx,ax,jdx,kdx
       Scalar           s(0:3)
@@ -190,7 +190,7 @@
       implicit none
       MatScalar        a(0:*)
       Scalar           x(0:*),b(0:*),w(0:*)
-      integer          n, ai(0:*),aj(0:*),adiag(0:*),ii,jj
+      integer          n,ai(0:*),aj(0:*),adiag(0:*),ii,jj
 
       integer          i,j,jstart,jend,idx,ax,jdx,kdx,nn
       Scalar           s(0:3)

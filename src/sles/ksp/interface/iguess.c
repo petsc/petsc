@@ -1,4 +1,4 @@
-/*$Id: iguess.c,v 1.28 1999/10/24 14:03:08 bsmith Exp bsmith $*/
+/*$Id: iguess.c,v 1.29 1999/11/05 14:46:35 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
 /* 
@@ -16,7 +16,7 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessCreate" 
-int KSPGuessCreate(KSP ksp,int  maxl,void **ITG )
+int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 {
   KSPIGUESS *itg;
   int       ierr;
@@ -24,10 +24,10 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG )
   *ITG = 0;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  itg  = (KSPIGUESS* ) PetscMalloc(sizeof(KSPIGUESS));CHKPTRQ(itg);
+  itg  = (KSPIGUESS*)PetscMalloc(sizeof(KSPIGUESS));CHKPTRQ(itg);
   itg->curl = 0;
   itg->maxl = maxl;
-  itg->alpha = (Scalar *)PetscMalloc( maxl * sizeof(Scalar) );CHKPTRQ(itg->alpha);
+  itg->alpha = (Scalar*)PetscMalloc(maxl * sizeof(Scalar));CHKPTRQ(itg->alpha);
   PLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
   ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->xtilde);CHKERRQ(ierr);
   PLogObjectParents(ksp,maxl,itg->xtilde);
@@ -39,22 +39,22 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessDestroy" 
-int KSPGuessDestroy( KSP ksp, KSPIGUESS *itg )
+int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscFree( itg->alpha );CHKERRQ(ierr);
-  ierr = VecDestroyVecs( itg->btilde, itg->maxl );CHKERRQ(ierr);
-  ierr = VecDestroyVecs( itg->xtilde, itg->maxl );CHKERRQ(ierr);
-  ierr = PetscFree( itg );CHKERRQ(ierr);
+  ierr = PetscFree(itg->alpha);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(itg->btilde,itg->maxl);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(itg->xtilde,itg->maxl);CHKERRQ(ierr);
+  ierr = PetscFree(itg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessFormB"
-int KSPGuessFormB( KSP ksp, KSPIGUESS *itg, Vec b )
+int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
   int    i,ierr;
   Scalar tmp;
@@ -71,7 +71,7 @@ int KSPGuessFormB( KSP ksp, KSPIGUESS *itg, Vec b )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessFormX"
-int KSPGuessFormX( KSP ksp, KSPIGUESS *itg, Vec x )
+int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 {
   int i,ierr;
 
@@ -86,25 +86,25 @@ int KSPGuessFormX( KSP ksp, KSPIGUESS *itg, Vec x )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessUpdate"
-int  KSPGuessUpdate( KSP ksp, Vec x, KSPIGUESS *itg )
+int  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
 {
-  double       normax, norm;
+  PetscReal    normax,norm;
   Scalar       tmp;
   MatStructure pflag;
-  int          curl = itg->curl, i,ierr;
-  Mat          Amat, Pmat;
+  int          curl = itg->curl,i,ierr;
+  Mat          Amat,Pmat;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (curl == itg->maxl) {
-    ierr = KSP_MatMult(ksp,Amat,x,itg->btilde[0] );CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,x,itg->btilde[0]);CHKERRQ(ierr);
     ierr = VecNorm(itg->btilde[0],NORM_2,&normax);CHKERRQ(ierr);
     tmp = 1.0/normax; ierr = VecScale(&tmp,itg->btilde[0]);CHKERRQ(ierr);
     /* VCOPY(ksp->vc,x,itg->xtilde[0]); */
     ierr = VecScale(&tmp,itg->xtilde[0]);CHKERRQ(ierr);
   } else {
-    ierr = KSP_MatMult(ksp,Amat, itg->xtilde[curl], itg->btilde[curl] );CHKERRQ(ierr);
+    ierr = KSP_MatMult(ksp,Amat,itg->xtilde[curl],itg->btilde[curl]);CHKERRQ(ierr);
     for (i=1; i<=curl; i++) {
       ierr = VecDot(itg->btilde[curl],itg->btilde[i-1],itg->alpha+i-1);CHKERRQ(ierr);
     }

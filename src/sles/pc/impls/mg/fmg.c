@@ -1,4 +1,4 @@
-/*$Id: fmg.c,v 1.17 1999/10/24 14:03:01 bsmith Exp bsmith $*/
+/*$Id: fmg.c,v 1.18 1999/11/24 21:54:37 bsmith Exp bsmith $*/
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
@@ -23,18 +23,18 @@ extern int MGMCycle_Private(MG *);
 #define __FUNC__ "MGFCycle_Private"
 int MGFCycle_Private(MG *mg)
 {
-  int    i, l = mg[0]->levels,ierr;
+  int    i,l = mg[0]->levels,ierr;
   Scalar zero = 0.0;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
-  for ( i=l-1; i>0; i-- ){
-    ierr = MatRestrict(mg[i]->restrct, mg[i]->b, mg[i-1]->b );CHKERRQ(ierr);
+  for (i=l-1; i>0; i--){
+    ierr = MatRestrict(mg[i]->restrct,mg[i]->b,mg[i-1]->b);CHKERRQ(ierr);
   }
   
   /* work our way up through the levels */
-  ierr = VecSet(&zero, mg[0]->x );CHKERRQ(ierr);
-  for ( i=0; i<l-1; i++ ) {
+  ierr = VecSet(&zero,mg[0]->x);CHKERRQ(ierr);
+  for (i=0; i<l-1; i++) {
     ierr = MGMCycle_Private(&mg[i]);CHKERRQ(ierr);
     ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr); 
   }
@@ -55,18 +55,18 @@ int MGFCycle_Private(MG *mg)
 #define __FUNC__ "MGKCycle_Private"
 int MGKCycle_Private(MG *mg)
 {
-  int    i, l = mg[0]->levels,its,ierr;
+  int    i,l = mg[0]->levels,its,ierr;
   Scalar zero = 0.0;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
-  for ( i=l-1; i>0; i-- ){
-    ierr = MatRestrict(mg[i]->restrct,mg[i]->b, mg[i-1]->b);CHKERRQ(ierr); 
+  for (i=l-1; i>0; i--){
+    ierr = MatRestrict(mg[i]->restrct,mg[i]->b,mg[i-1]->b);CHKERRQ(ierr); 
   }
   
   /* work our way up through the levels */
   ierr = VecSet(&zero,mg[0]->x);CHKERRQ(ierr); 
-  for ( i=0; i<l-1; i++ ) {
+  for (i=0; i<l-1; i++) {
     ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its);CHKERRQ(ierr);
     ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr);
   }

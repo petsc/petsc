@@ -1,4 +1,4 @@
-/*$Id: mmaij.c,v 1.49 1999/10/13 20:37:20 bsmith Exp bsmith $*/
+/*$Id: mmaij.c,v 1.50 1999/10/24 14:02:16 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel AIJ matrix vector multiply
@@ -10,8 +10,8 @@
 #define __FUNC__ "MatSetUpMultiply_MPIAIJ"
 int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
-  Mat_MPIAIJ         *aij = (Mat_MPIAIJ *) mat->data;
-  Mat_SeqAIJ         *B = (Mat_SeqAIJ *) (aij->B->data);  
+  Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ         *B = (Mat_SeqAIJ*)(aij->B->data);  
   int                N = aij->N,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
   int                shift = B->indexshift;
   IS                 from,to;
@@ -19,7 +19,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
-  int                gid, lid; 
+  int                gid,lid; 
 #endif
 
   PetscFunctionBegin;
@@ -27,8 +27,8 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams (this has not been tested with "shift") */
   PetscTableCreate(B->m,&gid1_lid1); 
-  for ( i=0; i<B->m; i++ ) {
-    for ( j=0; j<B->ilen[i]; j++ ) {
+  for (i=0; i<B->m; i++) {
+    for (j=0; j<B->ilen[i]; j++) {
       int data,gid1 = aj[B->i[i] + shift + j] + 1 + shift;
       ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
       if (!data) {
@@ -46,14 +46,14 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
     garray[lid] = gid; 
   }
   ierr = PetscSortInt(ec,garray);CHKERRQ(ierr); /* sort, and rebuild */
-  /* qsort( garray, ec, sizeof(int), intcomparc ); */
+  /* qsort(garray, ec, sizeof(int), intcomparc); */
   ierr = PetscTableRemoveAll(gid1_lid1);CHKERRQ(ierr);
-  for ( i=0; i<ec; i++ ) {
+  for (i=0; i<ec; i++) {
     ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
   }
   /* compact out the extra columns in B */
-  for ( i=0; i<B->m; i++ ) {
-    for ( j=0; j<B->ilen[i]; j++ ) {
+  for (i=0; i<B->m; i++) {
+    for (j=0; j<B->ilen[i]; j++) {
       int gid1 = aj[B->i[i] + shift + j] + 1 + shift;
       ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
       lid --;
@@ -66,30 +66,30 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 #else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
-  indices = (int *) PetscMalloc( (N+1)*sizeof(int) );CHKPTRQ(indices);
+  indices = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(indices);
   ierr = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
-  for ( i=0; i<B->m; i++ ) {
-    for ( j=0; j<B->ilen[i]; j++ ) {
+  for (i=0; i<B->m; i++) {
+    for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] +shift + j] + shift]) ec++; 
       indices[aj[B->i[i] + shift + j] + shift] = 1;
     }
   }
 
   /* form array of columns we need */
-  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) );CHKPTRQ(garray);
+  garray = (int*)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
   ec = 0;
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     if (indices[i]) garray[ec++] = i;
   }
 
   /* make indices now point into garray */
-  for ( i=0; i<ec; i++ ) {
+  for (i=0; i<ec; i++) {
     indices[garray[i]] = i-shift;
   }
 
   /* compact out the extra columns in B */
-  for ( i=0; i<B->m; i++ ) {
-    for ( j=0; j<B->ilen[i]; j++ ) {
+  for (i=0; i<B->m; i++) {
+    for (j=0; j<B->ilen[i]; j++) {
       aj[B->i[i] + shift + j] = indices[aj[B->i[i] + shift + j]+shift];
     }
   }
@@ -137,7 +137,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 */
 int DisAssemble_MPIAIJ(Mat A)
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) A->data;
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
   Mat        B = aij->B,Bnew;
   Mat_SeqAIJ *Baij = (Mat_SeqAIJ*)B->data;
   int        ierr,i,j,m = Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
@@ -151,7 +151,7 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr); aij->Mvctx = 0;
   if (aij->colmap) {
 #if defined (PETSC_USE_CTABLE)
-    ierr = PetscTableDelete(aij->colmap); CHKERRQ(ierr);
+    ierr = PetscTableDelete(aij->colmap);CHKERRQ(ierr);
     aij->colmap = 0;
 #else
     ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
@@ -165,14 +165,14 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  nz = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(nz);
-  for ( i=0; i<m; i++ ) {
+  nz = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(nz);
+  for (i=0; i<m; i++) {
     nz[i] = Baij->i[i+1] - Baij->i[i];
   }
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,0,nz,&Bnew);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
-  for ( i=0; i<m; i++ ) {
-    for ( j=Baij->i[i]+shift; j<Baij->i[i+1]+shift; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=Baij->i[i]+shift; j<Baij->i[i+1]+shift; j++) {
       col  = garray[Baij->j[ct]+shift];
       v    = Baij->a[ct++];
       ierr = MatSetValues(Bnew,1,&i,1,&col,&v,B->insertmode);CHKERRQ(ierr);

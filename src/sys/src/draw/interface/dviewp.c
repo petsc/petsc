@@ -1,4 +1,4 @@
-/*$Id: dviewp.c,v 1.34 1999/12/11 22:30:16 bsmith Exp bsmith $*/
+/*$Id: dviewp.c,v 1.35 1999/12/23 18:41:43 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -22,7 +22,7 @@
 
 .keywords:  draw, set, view, port
 @*/
-int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
+int DrawSetViewPort(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   int ierr;
   PetscFunctionBegin;
@@ -60,7 +60,7 @@ int DrawSplitViewPort(Draw draw)
 {
   int        rank,size,n,ierr;
   PetscTruth isnull;
-  double     xl,xr,yl,yr,h;
+  PetscReal  xl,xr,yl,yr,h;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
@@ -70,8 +70,8 @@ int DrawSplitViewPort(Draw draw)
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
 
-  n = (int) (.1 + sqrt((double) size));
-  while ( n*n < size) {n++;}
+  n = (int)(.1 + sqrt((double)size));
+  while (n*n < size) {n++;}
 
   h  = 1.0/n;
   xl = (rank % n)*h;
@@ -121,7 +121,7 @@ int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
 {
   int        i,ierr,n;
   PetscTruth isnull;
-  double     *xl,*xr,*yl,*yr,h;
+  PetscReal  *xl,*xr,*yl,*yr,h;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
@@ -137,13 +137,13 @@ int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
 
-  n = (int) (.1 + sqrt((double) nports));
-  while ( n*n < nports) {n++;}
+  n = (int)(.1 + sqrt((double)nports));
+  while (n*n < nports) {n++;}
   
-  (*ports)->xl = xl = (double *) PetscMalloc(n*n*sizeof(double));CHKPTRQ(xl);
-  (*ports)->xr = xr = (double *) PetscMalloc(n*n*sizeof(double));CHKPTRQ(xr);
-  (*ports)->yl = yl = (double *) PetscMalloc(n*n*sizeof(double));CHKPTRQ(yl);
-  (*ports)->yr = yr = (double *) PetscMalloc(n*n*sizeof(double));CHKPTRQ(yr);
+  (*ports)->xl = xl = (PetscReal*)PetscMalloc(n*n*sizeof(PetscReal));CHKPTRQ(xl);
+  (*ports)->xr = xr = (PetscReal*)PetscMalloc(n*n*sizeof(PetscReal));CHKPTRQ(xr);
+  (*ports)->yl = yl = (PetscReal*)PetscMalloc(n*n*sizeof(PetscReal));CHKPTRQ(yl);
+  (*ports)->yr = yr = (PetscReal*)PetscMalloc(n*n*sizeof(PetscReal));CHKPTRQ(yr);
 
   h  = 1.0/n;
 

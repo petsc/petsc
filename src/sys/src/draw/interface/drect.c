@@ -1,4 +1,4 @@
-/*$Id: drect.c,v 1.20 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: drect.c,v 1.22 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -20,7 +20,7 @@
 
 .keywords: draw, rectangle
 @*/
-int DrawRectangle(Draw draw,double xl,double yl,double xr,double yr,int c1, int c2,int c3,int c4)
+int DrawRectangle(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
   int        ierr;
   PetscTruth isnull;

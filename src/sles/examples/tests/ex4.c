@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.52 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.53 1999/11/05 14:46:54 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
@@ -18,7 +18,7 @@ int FormElementStiffness(double H,Scalar *Ke)
 }
 #undef __FUNC__
 #define __FUNC__ "FormElementRhs"
-int FormElementRhs(double x, double y, double H,Scalar *r)
+int FormElementRhs(double x,double y,double H,Scalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
   return 0;
@@ -29,10 +29,10 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, m = 2, N, M,its, ierr, idx[4], count, *rows;
-  Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
-  double      x, y, h, norm;
-  Vec         u, ustar, b;
+  int         i,m = 2,N,M,its,ierr,idx[4],count,*rows;
+  Scalar      val,zero = 0.0,one = 1.0,none = -1.0,Ke[16],r[4];
+  double      x,y,h,norm;
+  Vec         u,ustar,b;
   SLES        sles;
   KSP         ksp;
   IS          is;
@@ -48,11 +48,11 @@ int main(int argc,char **args)
 
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke);CHKERRA(ierr);
-  for ( i=0; i<M; i++ ) {
+  for (i=0; i<M; i++) {
      /* location of lower left corner of element */
      x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + ( i % m);
+     idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRA(ierr);
   }
@@ -67,11 +67,11 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,u);CHKERRA(ierr);
   ierr = VecSet(&zero,b);CHKERRA(ierr);
 
-  for ( i=0; i<M; i++ ) {
+  for (i=0; i<M; i++) {
      /* location of lower left corner of element */
      x = h*(i % m); y = h*(i/m); 
      /* node numbers for the four corners of element */
-     idx[0] = (m+1)*(i/m) + ( i % m);
+     idx[0] = (m+1)*(i/m) + (i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = FormElementRhs(x,y,h*h,r);CHKERRA(ierr);
      ierr = VecSetValues(b,4,idx,r,ADD_VALUES);CHKERRA(ierr);
@@ -80,21 +80,21 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b);CHKERRA(ierr);
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
-  rows = (int *) PetscMalloc( (4*m+1)*sizeof(int) );CHKPTRQ(rows);
-  for ( i=0; i<m+1; i++ ) {
+  rows = (int*)PetscMalloc((4*m+1)*sizeof(int));CHKPTRQ(rows);
+  for (i=0; i<m+1; i++) {
     rows[i] = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */
   }
   count = m+1; /* left side */
-  for ( i=m+1; i<m*(m+1); i+= m+1 ) {
+  for (i=m+1; i<m*(m+1); i+= m+1) {
     rows[count++] = i;
   }
   count = 2*m; /* left side */
-  for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
+  for (i=2*m+1; i<m*(m+1); i+= m+1) {
     rows[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,4*m,rows,&is);CHKERRA(ierr);
-  for ( i=0; i<4*m; i++ ) {
+  for (i=0; i<4*m; i++) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
      ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRA(ierr);
@@ -119,7 +119,7 @@ int main(int argc,char **args)
   ierr = SLESSolve(sles,b,u,&its);CHKERRA(ierr);
 
   /* check error */
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
      x = h*(i % (m+1)); y = h*(i/(m+1)); 
      val = y;
      ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRA(ierr);

@@ -1,10 +1,11 @@
-/*$Id: cputime.c,v 1.30 1999/11/05 14:44:18 bsmith Exp bsmith $*/
+/*$Id: cputime.c,v 1.31 1999/11/24 21:53:07 bsmith Exp bsmith $*/
 /*
   This is to allow one to measure CPU time usage of their job, 
   NOT real time usage. Do not use this for reported timings, speedup etc.
 */
 
 #include "sys.h"                       /*I "petsc.h" I*/
+#include "petscfix.h"
 #include "pinclude/ptime.h"
 #include <ctype.h>
 #include <sys/types.h>
@@ -27,7 +28,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #if defined (PETSC_HAVE_TIMES)
 
@@ -41,7 +42,7 @@ int PetscGetCPUTime(PLogDouble *t)
 
   PetscFunctionBegin;
   times(&temp);
-  *t = ((double) temp.tms_utime)/((double) CLK_TCK);
+  *t = ((double)temp.tms_utime)/((double)CLK_TCK);
   PetscFunctionReturn(0);
 }
 
@@ -84,7 +85,7 @@ int PetscGetCPUTime(PLogDouble *t)
     ierr = PetscGetCPUTime(&t1);CHKERRA(ierr);
     ... code to time ...
     ierr = PetscGetCPUTime(&t2);CHKERRA(ierr);
-    printf( "Code took %f CPU seconds\n", t2-t1);
+    printf("Code took %f CPU seconds\n", t2-t1);
 .ve
 
     Level: intermediate
@@ -98,7 +99,7 @@ int PetscGetCPUTime(PLogDouble *t)
 int PetscGetCPUTime(PLogDouble *t)
 {
   static struct rusage temp;
-  double foo, foo1;
+  PLogDouble           foo,foo1;
 
   PetscFunctionBegin;
   getrusage(RUSAGE_SELF,&temp);

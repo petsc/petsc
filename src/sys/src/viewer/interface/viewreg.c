@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.18 1999/10/24 14:01:08 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.19 1999/11/05 14:43:47 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -83,7 +83,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
   /* Get the function pointers for the graphics method requested */
   if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
 
-  ierr =  FListFind(viewer->comm, ViewerList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(viewer->comm,ViewerList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,1,"Unknown Viewer type given: %s",type);
 
@@ -116,7 +116,7 @@ int ViewerRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (ViewerList) {
-    ierr = FListDestroy( ViewerList );CHKERRQ(ierr);
+    ierr = FListDestroy(ViewerList);CHKERRQ(ierr);
     ViewerList = 0;
   }
   PetscFunctionReturn(0);
@@ -168,7 +168,7 @@ int ViewerRegister(char *sname,char *path,char *name,int (*function)(Viewer))
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = FListConcat(path,name,fullname); CHKERRQ(ierr);
+  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&ViewerList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

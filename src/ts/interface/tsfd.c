@@ -1,4 +1,4 @@
-/*$Id: tsfd.c,v 1.14 1999/06/08 22:58:02 balay Exp bsmith $*/
+/*$Id: tsfd.c,v 1.16 1999/10/24 14:03:48 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "ts.h"  I*/
@@ -30,7 +30,7 @@ $  -mat_fd_coloring_freq <freq>
 
 .keywords: TS, finite differences, Jacobian, coloring, sparse
 
-.seealso: TSSetJacobian(), , MatFDColoringCreate(), MatFDColoringSetFunction()
+.seealso: TSSetJacobian(), MatFDColoringCreate(), MatFDColoringSetFunction()
 @*/
 int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
@@ -89,9 +89,9 @@ int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *
 {
   Vec      jj1,jj2,xx2;
   int      i,ierr,N,start,end,j;
-  Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
-  double   amax, epsilon = 1.e-8; /* assumes double precision */
-  double   dx_min = 1.e-16, dx_par = 1.e-1;
+  Scalar   dx,mone = -1.0,*y,scale,*xx,wscale;
+  double   amax,epsilon = 1.e-8; /* assumes double precision */
+  double   dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -110,9 +110,9 @@ int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *
       xx1 = current iterate, jj1 = F(xx1)
       xx2 = perturbed iterate, jj2 = F(xx2)
    */
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     ierr = VecCopy(xx1,xx2);CHKERRQ(ierr);
-    if ( i>= start && i<end) {
+    if (i>= start && i<end) {
       ierr =  VecGetArray(xx1,&xx);CHKERRQ(ierr);
       dx   = xx[i-start];
       ierr =  VecRestoreArray(xx1,&xx);CHKERRQ(ierr);
@@ -120,8 +120,8 @@ int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
-      if (PetscAbsScalar(dx) < dx_min && PetscReal(dx) >= 0.0) dx = dx_par;
-      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
+      if (PetscAbsScalar(dx) < dx_min && PetscRealPart(dx) >= 0.0) dx = dx_par;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;
@@ -136,7 +136,7 @@ int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *
     ierr = VecScale(&scale,jj2);CHKERRQ(ierr);
     ierr = VecNorm(jj2,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
     ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
-    for ( j=start; j<end; j++ ) {
+    for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex4f.F,v 1.3 1999/09/27 21:28:17 bsmith Exp bsmith $";
+!    "$Id: ex4f.F,v 1.4 1999/11/24 21:52:55 bsmith Exp bsmith $";
 !
 !
 !  This example demonstrates use of DrawZoom()
@@ -24,7 +24,7 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
       Draw draw
-      integer  ierr, x, y, width, height
+      integer  ierr,x,y,width,height
       External zoomfunction
       x      = 0
       y      = 0

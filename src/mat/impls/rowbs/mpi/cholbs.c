@@ -1,4 +1,4 @@
-/*$Id: cholbs.c,v 1.55 1999/10/24 14:02:19 bsmith Exp bsmith $*/
+/*$Id: cholbs.c,v 1.56 1999/11/05 14:45:25 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
@@ -13,27 +13,27 @@
 #define __FUNC__ "MatCholeskyFactorNumeric_MPIRowbs"
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
 
 #if defined(PETSC_USE_LOG)
-  double flop1 = BSlocal_flops();
+  PetscReal flop1 = BSlocal_flops();
 #endif
 
   PetscFunctionBegin;
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mbs->factor == FACTOR_CHOLESKY) {
     /* Copy the nonzeros */
-    BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
+    BScopy_nz(mbs->pA,mbs->fpA);CHKERRBS(0);
   }
   /* Form incomplete Cholesky factor */
   mbs->ierr = 0; mbs->failures = 0; mbs->alpha = 1.0;
   while ((mbs->ierr = BSfactor(mbs->fpA,mbs->comm_fpA,mbs->procinfo))) {
     CHKERRBS(0); mbs->failures++;
     /* Copy only the nonzeros */
-    BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
+    BScopy_nz(mbs->pA,mbs->fpA);CHKERRBS(0);
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
-    BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
+    BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo);CHKERRBS(0);
     PLogInfo(mat,"MatCholeskyFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                  mbs->failures,mbs->ierr,mbs->alpha); 
   }
@@ -49,27 +49,27 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 #define __FUNC__ "MatLUFactorNumeric_MPIRowbs"
 int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
 
 #if defined(PETSC_USE_LOG)
-  double flop1 = BSlocal_flops();
+  PetscReal flop1 = BSlocal_flops();
 #endif
 
   PetscFunctionBegin;
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mbs->factor == FACTOR_LU) {
     /* Copy the nonzeros */
-    BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
+    BScopy_nz(mbs->pA,mbs->fpA);CHKERRBS(0);
   }
   /* Form incomplete Cholesky factor */
   mbs->ierr = 0; mbs->failures = 0; mbs->alpha = 1.0;
   while ((mbs->ierr = BSfactor(mbs->fpA,mbs->comm_fpA,mbs->procinfo))) {
     CHKERRBS(0); mbs->failures++;
     /* Copy only the nonzeros */
-    BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
+    BScopy_nz(mbs->pA,mbs->fpA);CHKERRBS(0);
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
-    BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
+    BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo);CHKERRBS(0);
     PLogInfo(mat,"MatLUFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                        mbs->failures,mbs->ierr,mbs->alpha); 
   }
@@ -86,12 +86,12 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) submat->data;
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
   int          ierr;
-  Scalar       *ya, *xa, *xworka;
+  Scalar       *ya,*xa,*xworka;
 
 #if defined(PETSC_USE_LOG)
-  double flop1 = BSlocal_flops();
+  PetscReal flop1 = BSlocal_flops();
 #endif
 
   PetscFunctionBegin;
@@ -99,7 +99,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   if (!mbs->vecs_permscale) {
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka);CHKERRQ(ierr);
-    BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
+    BSperm_dvec(xa,xworka,mbs->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
     ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y);CHKERRQ(ierr);
@@ -113,7 +113,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     BSfor_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
     BSback_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   } else {
-    BSfor_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo); CHKERRBS(0);
+    BSfor_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
     BSback_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   }
   ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);CHKERRQ(ierr);
     ierr = VecGetArray(y,&ya);CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka);CHKERRQ(ierr);
-    BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
+    BSiperm_dvec(xworka,ya,mbs->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
   }
@@ -139,12 +139,12 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) submat->data;
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
   int          ierr;
-  Scalar       *ya, *xa, *xworka;
+  Scalar       *ya,*xa,*xworka;
 
 #if defined(PETSC_USE_LOG)
-  double flop1 = BSlocal_flops();
+  PetscReal flop1 = BSlocal_flops();
 #endif
 
   PetscFunctionBegin;
@@ -152,7 +152,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   if (!mbs->vecs_permscale) {
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka);CHKERRQ(ierr);
-    BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
+    BSperm_dvec(xa,xworka,mbs->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
     ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y);CHKERRQ(ierr);
@@ -182,12 +182,12 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) submat->data;
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
   int          ierr;
-  Scalar       *ya, *xworka;
+  Scalar       *ya,*xworka;
 
 #if defined (PETSC_USE_LOG)
-  double flop1 = BSlocal_flops();
+  PetscReal flop1 = BSlocal_flops();
 #endif
 
   PetscFunctionBegin;  
@@ -207,7 +207,7 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);CHKERRQ(ierr);
     ierr = VecGetArray(y,&ya);CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka);CHKERRQ(ierr);
-    BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
+    BSiperm_dvec(xworka,ya,mbs->pA->perm);CHKERRBS(0);
     ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
   }

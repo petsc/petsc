@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: fndsep.c,v 1.16 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* fndsep.f -- translated by f2c (version 19931217).
 */
 
@@ -42,11 +42,11 @@ int SPARSEPACKfndsep(int *root, int *xadj, int *adjncy,
     int i__1, i__2;
 
     /* Local variables */
-    static int node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, 
+    int node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, 
 	    midend, midlvl;
     extern int SPARSEPACKfnroot(int *, int *, int *, 
 	    int *, int *, int *, int *);
-    static int nbr;
+    int nbr;
 
     PetscFunctionBegin;
     /* Parameter adjustments */

@@ -1,4 +1,4 @@
-/*$Id: daindex.c,v 1.24 1999/03/18 00:36:15 curfman Exp bsmith $*/
+/*$Id: daindex.c,v 1.25 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -52,7 +52,7 @@
           DAGlobalToLocal(), DALocalToLocal(), DAGetAO(), DAGetGlobalIndicesF90()
           DAGetISLocalToGlobalMapping()
 @*/
-int DAGetGlobalIndices(DA da, int *n,int **idx)
+int DAGetGlobalIndices(DA da,int *n,int **idx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -89,7 +89,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
           DAGlobalToLocal(), DALocalToLocal(), DAGetGlobalIndices()
 @*/
-int DAGetAO(DA da, AO *ao)
+int DAGetAO(DA da,AO *ao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);

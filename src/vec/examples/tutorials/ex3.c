@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.39 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.40 1999/11/05 14:45:05 bsmith Exp bsmith $*/
 
 static char help[] = "Displays a vector visually.\n\n";
 
@@ -22,7 +22,7 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        i, istart, iend, n = 50, ierr;
+  int        i,istart,iend,n = 50,ierr;
   Scalar     v;
   Vec        x;
   Viewer     viewer;
@@ -51,8 +51,8 @@ int main(int argc,char **argv)
       - Always specify global locations of vector entries.
       - Each processor needs to insert only elements that it owns locally.
    */
-  for ( i=istart; i<iend; i++ ) { 
-    v = (double) i;
+  for (i=istart; i<iend; i++) { 
+    v = (double)i;
     ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
   }
 
@@ -74,8 +74,7 @@ int main(int argc,char **argv)
                   (0 is default, -1 implies until user input).
 
   */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,
-                         &viewer);CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,&viewer);CHKERRA(ierr);
   ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_DRAW_LG,"Line graph Plot");CHKERRA(ierr);
   /*
      View the vector

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f90.F,v 1.15 1998/07/02 03:29:20 curfman Exp balay $";
+!    "$Id: ex13f90.F,v 1.16 1999/03/02 16:19:07 balay Exp bsmith $";
 !
 !
 !/*T
@@ -62,16 +62,16 @@
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      Scalar  hx, hy, x, y
+      Scalar  hx,hy,x,y
       PetscFortranAddr userctx(6)
-      integer ierr, m, n, t, tmax, flg, i, j, Ntot
-      integer size, rank
+      integer ierr,m,n,t,tmax,flg,i,j,Ntot
+      integer size,rank
       double precision  enorm
       Scalar,ALLOCATABLE :: userx(:,:),userb(:,:)
       Scalar,ALLOCATABLE :: solution(:,:),rho(:,:)
 
-      double precision hx2, hy2
-      common /param/ hx2, hy2
+      double precision hx2,hy2
+      common /param/ hx2,hy2
 
       tmax = 2
       m = 6
@@ -154,7 +154,7 @@
      &             (solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
  80         continue
  90      continue
-         enorm = enorm * PetscReal(hx*hy)
+         enorm = enorm * PetscRealPart(hx*hy)
          write(6,115) m,n,enorm
  115     format ('m = ',I2,' n = ',I2,' error norm = ',1PE10.4)
  100  continue
@@ -180,11 +180,11 @@
 #include "include/finclude/pc.h"
 #include "include/finclude/sles.h"
 
-      integer          m, n,ierr
+      integer          m,n,ierr
       PetscFortranAddr userctx(*)
 
-      common /param/ hx2, hy2
-      double precision hx2, hy2
+      common /param/ hx2,hy2
+      double precision hx2,hy2
 
 !  Local variable declararions
       Mat     A
@@ -231,7 +231,7 @@
       end
 ! -----------------------------------------------------------------------
 
-!   Solves -div ( rho grad psi) = F using finite differences.
+!   Solves -div (rho grad psi) = F using finite differences.
 !   rho is a 2-dimensional array of size m by n, stored in Fortran
 !   style by columns. userb is a standard one-dimensional array.
 
@@ -251,8 +251,8 @@
       Scalar rho(*),userb(*),userx(*)
 
 
-      common /param/ hx2, hy2
-      double precision hx2, hy2
+      common /param/ hx2,hy2
+      double precision hx2,hy2
 
       PC   pc
       SLES sles
@@ -287,22 +287,22 @@
       II = 0
       do 110 j=1,n 
          do 100 i=1,m
-            if ( j .gt. 1 ) then
+            if (j .gt. 1) then
                JJ = II - m
                v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
                call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
             endif
-            if ( j .lt. n ) then
+            if (j .lt. n) then
                JJ = II + m
                v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
                call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
             endif
-            if ( i .gt. 1 ) then
+            if (i .gt. 1) then
                JJ = II - 1
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
                call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
             endif
-            if ( i .lt. m ) then
+            if (i .lt. m) then
                JJ = II + 1
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
                call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)

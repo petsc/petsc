@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.81 1999/11/05 14:46:45 bsmith Exp bsmith $*/
+/*$Id: cheby.c,v 1.82 1999/11/24 21:54:53 bsmith Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -14,16 +14,16 @@ int KSPSetUp_Chebychev(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,0,"no symmetric preconditioning for KSPCHEBYCHEV");
-  ierr = KSPDefaultGetWork( ksp, 3 );CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "KSPChebychevSetEigenvalues_Chebychev"
-int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,double emax,double emin)
+int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 {
-  KSP_Chebychev *chebychevP = (KSP_Chebychev *) ksp->data;
+  KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
 
   PetscFunctionBegin;
   chebychevP->emax = emax;
@@ -48,9 +48,9 @@ EXTERN_C_END
 
 .keywords: KSP, Chebyshev, set, eigenvalues
 @*/
-int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
+int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
-  int ierr, (*f)(KSP,double,double);
+  int ierr,(*f)(KSP,PetscReal,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -65,20 +65,20 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 #define __FUNC__ "KSPSolve_Chebychev"
 int KSPSolve_Chebychev(KSP ksp,int *its)
 {
-  int              k,kp1,km1,maxit,ktmp,i,pres,cerr,ierr;
-  Scalar           alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0, tmp;
-  double           rnorm;
+  int              k,kp1,km1,maxit,ktmp,i,ierr;
+  Scalar           alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0,tmp;
+  PetscReal        rnorm;
   Vec              x,b,p[3],r;
-  KSP_Chebychev    *chebychevP = (KSP_Chebychev *) ksp->data;
-  Mat              Amat, Pmat;
+  KSP_Chebychev    *chebychevP = (KSP_Chebychev*)ksp->data;
+  Mat              Amat,Pmat;
   MatStructure     pflag;
+  PetscTruth       pres;
 
   PetscFunctionBegin;
   ksp->its = 0;
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   maxit    = ksp->max_it;
   pres     = ksp->use_pres;
-  cerr     = 1;
 
   /* These three point to the three active solutions, we
      rotate these three at each solution update */
@@ -91,7 +91,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   r      = ksp->work[2];
 
   /* use scale*B as our preconditioner */
-  scale  = 2.0/( chebychevP->emax + chebychevP->emin );
+  scale  = 2.0/(chebychevP->emax + chebychevP->emin);
 
   /*   -alpha <=  scale*lambda(B^{-1}A) <= alpha   */
   alpha  = 1.0 - scale*(chebychevP->emin); ;
@@ -112,7 +112,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   ierr = KSP_PCApply(ksp,ksp->B,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
   ierr = VecAYPX(&scale,x,p[k]);CHKERRQ(ierr);
 
-  for ( i=0; i<maxit; i++) {
+  for (i=0; i<maxit; i++) {
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
@@ -133,11 +133,11 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
       ksp->vec_sol = p[k]; 
       KSPLogResidualHistory(ksp,rnorm);
       KSPMonitor(ksp,i,rnorm);
-      cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
-      if (cerr) break;
+      ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      if (ksp->reason) break;
     }
 
-    /* y^{k+1} = omega( y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
+    /* y^{k+1} = omega(y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
     tmp  = omega*Gamma*scale;
     ierr = VecScale(&tmp,p[kp1]);CHKERRQ(ierr);
     tmp  = 1.0-omega; VecAXPY(&tmp,p[km1],p[kp1]);
@@ -148,7 +148,8 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     k    = kp1;
     kp1  = ktmp;
   }
-  if (!cerr && ksp->calc_res) {
+  if (!ksp->reason && ksp->calc_res) {
+    ksp->reason = KSP_DIVERGED_ITS;
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
     if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
@@ -166,11 +167,10 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 
   /* make sure solution is in vector x */
   ksp->vec_sol = x;
-  if (k != 0) {
+  if (k) {
     ierr = VecCopy(p[k],x);CHKERRQ(ierr);
   }
-  if (cerr <= 0) *its = -(i+1);
-  else           *its = i+1;
+  *its = i+1;
   PetscFunctionReturn(0);
 }
 
@@ -178,7 +178,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 #define __FUNC__ "KSPView_Chebychev" 
 int KSPView_Chebychev(KSP ksp,Viewer viewer)
 {
-  KSP_Chebychev *cheb = (KSP_Chebychev *) ksp->data;
+  KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
   int           ierr;
   PetscTruth    isascii;
 
@@ -203,10 +203,9 @@ int KSPCreate_Chebychev(KSP ksp)
   PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Chebychev));
 
-  ksp->data                      = (void *) chebychevP;
+  ksp->data                      = (void*)chebychevP;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = 1;
-  ksp->guess_zero                = 1; 
+  ksp->calc_res                  = PETSC_TRUE;
 
   chebychevP->emin               = 1.e-2;
   chebychevP->emax               = 1.e+2;
@@ -216,6 +215,7 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions       = 0;
   ksp->ops->view                 = KSPView_Chebychev;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",

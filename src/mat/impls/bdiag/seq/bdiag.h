@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.25 1998/12/03 04:00:32 bsmith Exp bsmith $ */
+/* $Id: bdiag.h,v 1.26 1999/11/24 21:53:54 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -14,8 +14,8 @@
 */
 
 typedef struct {
-  int    m, n;             /* rows, columns */
-  int    mblock, nblock;   /* block rows and columns */
+  int    m,n;             /* rows, columns */
+  int    mblock,nblock;   /* block rows and columns */
   int    nonew;            /* if true, no new nonzeros allowed in matrix */
   int    nonew_diag;       /* if true, no new diagonals allowed in matrix */
   int    nz,maxnz;         /* nonzeros, allocated nonzeros */

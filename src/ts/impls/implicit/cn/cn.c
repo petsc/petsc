@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.15 1999/06/30 23:54:41 balay Exp bsmith $*/
+/*$Id: cn.c,v 1.16 1999/10/24 14:03:52 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -20,10 +20,10 @@ typedef struct {
    Note: If the user did not provide a function but merely a matrix,
    this routine applies the matrix.
 */
-int TSComputeRHSFunctionEuler(TS ts,double t,Vec x, Vec y)
+int TSComputeRHSFunctionEuler(TS ts,double t,Vec x,Vec y)
 {
   int ierr;
-  Scalar neg_two = -2.0, neg_mdt = -1.0/ts->time_step;
+  Scalar neg_two = -2.0,neg_mdt = -1.0/ts->time_step;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -62,11 +62,11 @@ int TSComputeRHSFunctionEuler(TS ts,double t,Vec x, Vec y)
 #define __FUNC__ "TSStep_CN_Linear_Constant_Matrix"
 static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 {
-  TS_CN     *cn = (TS_CN*) ts->data;
+  TS_CN     *cn = (TS_CN*)ts->data;
   Vec       sol = ts->vec_sol,update = cn->update;
   Vec       rhs = cn->rhs;
   int       ierr,i,max_steps = ts->max_steps,its;
-  Scalar    dt = ts->time_step, two = 2.0;
+  Scalar    dt = ts->time_step,two = 2.0;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -75,7 +75,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   /* set initial guess to be previous solution */
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
-  for ( i=0; i<max_steps; i++ ) {
+  for (i=0; i<max_steps; i++) {
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
 
@@ -106,10 +106,10 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 #define __FUNC__ "TSStep_CN_Linear_Variable_Matrix"
 static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 {
-  TS_CN    *cn = (TS_CN*) ts->data;
-  Vec      sol = ts->vec_sol,update = cn->update, rhs = cn->rhs;
+  TS_CN    *cn = (TS_CN*)ts->data;
+  Vec      sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
   int      ierr,i,max_steps = ts->max_steps,its;
-  Scalar   dt = ts->time_step, two = 2.0, neg_dt = -1.0*ts->time_step;
+  Scalar   dt = ts->time_step,two = 2.0,neg_dt = -1.0*ts->time_step;
   MatStructure str;
 
   PetscFunctionBegin;
@@ -119,7 +119,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
   /* set initial guess to be previous solution */
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
-  for ( i=0; i<max_steps; i++ ) {
+  for (i=0; i<max_steps; i++) {
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     /*
@@ -166,13 +166,13 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,double *time)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,lits;
-  TS_CN *cn = (TS_CN*) ts->data;
+  TS_CN *cn = (TS_CN*)ts->data;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
-  for ( i=0; i<max_steps; i++ ) {
+  for (i=0; i<max_steps; i++) {
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,cn->update);CHKERRQ(ierr);
@@ -192,9 +192,9 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,double *time)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "TSDestroy_CN"
-static int TSDestroy_CN(TS ts )
+static int TSDestroy_CN(TS ts)
 {
-  TS_CN *cn = (TS_CN*) ts->data;
+  TS_CN *cn = (TS_CN*)ts->data;
   int       ierr;
 
   PetscFunctionBegin;
@@ -217,7 +217,7 @@ static int TSDestroy_CN(TS ts )
 int TSCnMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
-  Scalar two = 2.0, neg_dt;
+  Scalar two = 2.0,neg_dt;
   int    ierr;
 
   PetscFunctionBegin;
@@ -253,7 +253,7 @@ int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
   ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
   }
   ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
@@ -273,7 +273,7 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   TS      ts = (TS) ctx;
   int     ierr;
-  Scalar  mone = -1.0, mdt = 1.0/ts->time_step;
+  Scalar  mone = -1.0,mdt = 1.0/ts->time_step;
   MatType mtype;
 
   PetscFunctionBegin;
@@ -302,9 +302,9 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 #define __FUNC__ "TSSetUp_CN_Linear_Constant_Matrix"
 static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
-  TS_CN   *cn = (TS_CN*) ts->data;
-  int     ierr, M, m;
-  Scalar  two = 2.0, neg_dt = -1.0*ts->time_step;
+  TS_CN   *cn = (TS_CN*)ts->data;
+  int     ierr,M,m;
+  Scalar  two = 2.0,neg_dt = -1.0*ts->time_step;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
@@ -333,8 +333,8 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 #define __FUNC__ "TSSetUp_CN_Linear_Variable_Matrix"
 static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 {
-  TS_CN *cn = (TS_CN*) ts->data;
-  int       ierr, M, m;
+  TS_CN *cn = (TS_CN*)ts->data;
+  int       ierr,M,m;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
@@ -352,8 +352,8 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 #define __FUNC__ "TSSetUp_CN_Nonlinear"
 static int TSSetUp_CN_Nonlinear(TS ts)
 {
-  TS_CN *cn = (TS_CN*) ts->data;
-  int       ierr, M, m;
+  TS_CN *cn = (TS_CN*)ts->data;
+  int       ierr,M,m;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
@@ -414,7 +414,7 @@ static int TSView_CN(TS ts,Viewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_CN"
-int TSCreate_CN(TS ts )
+int TSCreate_CN(TS ts)
 {
   TS_CN     *cn;
   int       ierr;
@@ -461,12 +461,12 @@ int TSCreate_CN(TS ts )
     ts->step            = TSStep_CN_Nonlinear;
     ts->setfromoptions  = TSSetFromOptions_CN_Nonlinear;
     ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
-  } else SETERRQ( PETSC_ERR_ARG_OUTOFRANGE,0,"No such problem");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"No such problem");
 
   cn       = PetscNew(TS_CN);CHKPTRQ(cn);
   PLogObjectMemory(ts,sizeof(TS_CN));
   ierr     = PetscMemzero(cn,sizeof(TS_CN));CHKERRQ(ierr);
-  ts->data = (void *) cn;
+  ts->data = (void*)cn;
 
   PetscFunctionReturn(0);
 }

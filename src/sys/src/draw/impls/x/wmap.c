@@ -1,4 +1,4 @@
-/*$Id: wmap.c,v 1.23 1999/10/24 14:01:15 bsmith Exp bsmith $*/
+/*$Id: wmap.c,v 1.24 1999/11/05 14:43:58 bsmith Exp bsmith $*/
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
@@ -8,25 +8,24 @@
  */
 #undef __FUNC__  
 #define __FUNC__ "Xi_wait_map" 
-int Xi_wait_map( Draw_X *XiWin)
+int Xi_wait_map(Draw_X *XiWin)
 {
   XEvent  event;
-  int     w, h;
+  int     w,h;
 
   PetscFunctionBegin;
   /*
    This is a bug.  XSelectInput should be set BEFORE the window is mapped
   */
   /*
-  XSelectInput(XiWin->disp, XiWin->win,ExposureMask | StructureNotifyMask);
+  XSelectInput(XiWin->disp,XiWin->win,ExposureMask | StructureNotifyMask);
   */
   while (1) {
-    XMaskEvent( XiWin->disp, ExposureMask | StructureNotifyMask, &event );
+    XMaskEvent(XiWin->disp,ExposureMask | StructureNotifyMask,&event);
     if (event.xany.window != XiWin->win) {
       break;
       /* Bug for now */
-    }
-    else {
+    } else {
       switch (event.type) {
         case ConfigureNotify:
         /* window has been moved or resized */

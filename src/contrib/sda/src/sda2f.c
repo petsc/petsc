@@ -1,4 +1,4 @@
-/*$Id: sda2f.c,v 1.12 1999/05/12 03:34:25 bsmith Exp bsmith $*/
+/*$Id: sda2f.c,v 1.13 1999/10/24 14:04:15 bsmith Exp bsmith $*/
 /*
      Fortran interface for SDA routines.
 */
@@ -24,52 +24,52 @@
 
 EXTERN_C_BEGIN
 
-void sdadestroy_(SDA *sda, int *__ierr )
+void sdadestroy_(SDA *sda,int *__ierr)
 {
   *__ierr = SDADestroy((SDA)PetscToPointer(sda));
   PetscRmPointer(sda);
 }
 
 void sdalocaltolocalbegin_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l,
-                           int *__ierr )
+                           int *__ierr)
 {
   *__ierr = SDALocalToLocalBegin((SDA)PetscToPointer(sda),g,*mode,l);
 }
 
-void sdalocaltolocalend_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l, 
-                         int *__ierr ){
+void sdalocaltolocalend_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l,
+                         int *__ierr){
   *__ierr = SDALocalToLocalEnd((SDA)PetscToPointer(sda),g,*mode,l);
 }
 
 void sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                   *stencil_type,int *M,int *N,int *m,int *n,int *w,
-                  int *s,int *lx,int *ly,SDA *inra, int *__ierr )
+                  int *s,int *lx,int *ly,SDA *inra,int *__ierr)
 {
   SDA da;
   *__ierr = SDACreate2d(
-	    (MPI_Comm)PetscToPointerComm( *comm ),*wrap,
+	    (MPI_Comm)PetscToPointerComm(*comm),*wrap,
             *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
-  *(PetscFortranAddr*) inra = PetscFromPointer(da);
+  *(PetscFortranAddr*)inra = PetscFromPointer(da);
 }
 
 void sdacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
-                 int *lc,SDA *inra, int *__ierr )
+                 int *lc,SDA *inra,int *__ierr)
 {
   SDA da;
   *__ierr = SDACreate1d(
-	   (MPI_Comm)PetscToPointerComm( *comm ),*wrap,*M,*w,*s,lc,&da);
-  *(PetscFortranAddr*) inra = PetscFromPointer(da);
+	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,&da);
+  *(PetscFortranAddr*)inra = PetscFromPointer(da);
 }
 
 void sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
                  *stencil_type,int *M,int *N,int *P,int *m,int *n,int *p,
-                 int *w,int *s,int *lx,int *ly,int *lz,SDA *inra, int *__ierr )
+                 int *w,int *s,int *lx,int *ly,int *lz,SDA *inra,int *__ierr)
 {
   SDA da;
   *__ierr = SDACreate3d(
 	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
-  *(PetscFortranAddr*) inra = PetscFromPointer(da);
+  *(PetscFortranAddr*)inra = PetscFromPointer(da);
 }
 
 EXTERN_C_END

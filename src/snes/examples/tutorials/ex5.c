@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.114 1999/10/24 14:03:42 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.115 1999/11/05 14:47:20 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -30,7 +30,7 @@ T*/
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
   
     with boundary conditions
    
@@ -65,7 +65,7 @@ T*/
 typedef struct {
    double      param;          /* test problem parameter */
    int         mx,my;          /* discretization in x, y directions */
-   Vec         localX, localF; /* ghosted local vectors */
+   Vec         localX,localF; /* ghosted local vectors */
    DA          da;             /* distributed array data structure */
    int         rank;           /* processor rank */
 } AppCtx;
@@ -73,30 +73,30 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess(AppCtx*,Vec);
+extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES                   snes;                  /* nonlinear solver */
-  Vec                    x, r;                 /* solution, residual vectors */
+  Vec                    x,r;                 /* solution, residual vectors */
   Mat                    J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
   ISLocalToGlobalMapping isltog;                /* mapping from local-to-global indices */
   int                    its;                  /* iterations for convergence */
-  int                    Nx, Ny;               /* number of preocessors in x- and y- directions */
+  int                    Nx,Ny;               /* number of preocessors in x- and y- directions */
   PetscTruth             matrix_free;          /* flag - 1 indicates matrix-free version */
   int                    size;                 /* number of processors */
-  int                    m, N, ierr;
-  double                 bratu_lambda_max = 6.81, bratu_lambda_min = 0.,fnorm;
+  int                    m,N,ierr;
+  double                 bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
 
   /*
@@ -225,7 +225,7 @@ int main( int argc, char **argv )
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
   ierr = FormFunction(snes,x,r,(void *)&user);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&fnorm);CHKERRQ(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n", its,fnorm);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n",its,fnorm);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -257,8 +257,8 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, gxm, gym, gxs, gys;
-  double  one = 1.0, lambda, temp1, temp, hx, hy;
+  int     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  double  one = 1.0,lambda,temp1,temp,hx,hy;
   Scalar  *x;
   Vec     localX = user->localX;
 
@@ -292,10 +292,10 @@ int FormInitialGuess(AppCtx *user,Vec X)
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
       row = i - gxs + (j - gys)*gxm; 
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
       } else {
-        x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+        x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
       }
     }
   }
@@ -327,19 +327,19 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, gxs, gys, gxm, gym;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
-  Scalar  u, uxx, uyy, *x,*f;
-  Vec     localX = user->localX, localF = user->localF; 
+  AppCtx  *user = (AppCtx*)ptr;
+  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
+  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  Scalar  u,uxx,uyy,*x,*f;
+  Vec     localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+     Scatter ghost points to local vector,using the 2-step process
+        DAGlobalToLocalBegin(),DAGlobalToLocalEnd().
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
@@ -365,7 +365,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
     row = (j - gys)*gxm + xs - gxs - 1; 
     for (i=xs; i<xs+xm; i++) {
       row++;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       }
@@ -432,12 +432,12 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;  /* user-defined application context */
+  AppCtx  *user = (AppCtx*)ptr;  /* user-defined application context */
   Mat     jac = *B;                /* Jacobian matrix */
   Vec     localX = user->localX;   /* local vector */
-  int     ierr, i, j, row, mx, my, col[5];
-  int     xs, ys, xm, ym, gxs, gys, gxm, gym;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
+  int     ierr,i,j,row,mx,my,col[5];
+  int     xs,ys,xm,ym,gxs,gys,gxm,gym;
+  Scalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -479,7 +479,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     for (i=xs; i<xs+xm; i++) {
       row++;
       /* boundary points */
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         ierr = MatSetValuesLocal(jac,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
       } else {
       /* interior grid points */

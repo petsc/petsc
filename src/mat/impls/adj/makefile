@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.8 1998/06/15 15:56:55 balay Exp bsmith $ 
+# $Id: makefile,v 1.9 1999/02/03 04:30:20 bsmith Exp bsmith $ 
 
 ALL: lib
 
-DIRS     = seq mpi
-LOCDIR   = src/mat/impls/adj/
+DIRS     = mpi
+LOCDIR   = src/mat/impls/csr/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

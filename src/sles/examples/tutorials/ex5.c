@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.80 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.81 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -33,11 +33,11 @@ int main(int argc,char **args)
 {
   SLES       sles;             /* linear solver context */
   Mat        C;                /* matrix */
-  Vec        x, u, b;          /* approx solution, RHS, exact solution */
+  Vec        x,u,b;          /* approx solution, RHS, exact solution */
   double     norm;             /* norm of solution error */
-  Scalar     v, none = -1.0;
-  int        I, J, ldim, ierr, low, high, iglobal, Istart, Iend;
-  int        i, j, m = 3, n = 2, rank, size, its;
+  Scalar     v,none = -1.0;
+  int        I,J,ldim,ierr,low,high,iglobal,Istart,Iend;
+  int        i,j,m = 3,n = 2,rank,size,its;
   PetscTruth mat_nonsymmetric;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -87,12 +87,12 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly). 
       - Always specify global row and columns of matrix entries.
   */
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);
   }
 
@@ -100,9 +100,9 @@ int main(int argc,char **args)
      Make the matrix nonsymmetric if desired
   */
   if (mat_nonsymmetric) {
-    for ( I=Istart; I<Iend; I++ ) { 
+    for (I=Istart; I<Iend; I++) { 
       v = -1.5; i = I/n;
-      if ( i>1 )   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i>1)   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
   } else {
     ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRA(ierr);
@@ -221,20 +221,20 @@ int main(int argc,char **args)
      structure and the same nonzero pattern; we just change the values
      of the matrix entries.
   */
-  for ( i=0; i<m; i++ ) { 
-    for ( j=2*rank; j<2*rank+2; j++ ) {
+  for (i=0; i<m; i++) { 
+    for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
       v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
     }
   } 
   if (mat_nonsymmetric) {
-    for ( I=Istart; I<Iend; I++ ) { 
+    for (I=Istart; I<Iend; I++) { 
       v = -1.5; i = I/n;
-      if ( i>1 )   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i>1)   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);

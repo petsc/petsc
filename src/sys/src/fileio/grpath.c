@@ -1,4 +1,4 @@
-/*$Id: grpath.c,v 1.31 1999/10/24 14:01:25 bsmith Exp bsmith $*/
+/*$Id: grpath.c,v 1.32 1999/11/05 14:44:09 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -28,7 +28,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
@@ -55,7 +55,7 @@
 
    Systems that use the automounter often generate absolute paths
    of the form "/tmp_mnt....".  However, the automounter will fail to
-   mount this path if it isn't already mounted, so we remove this from
+   mount this path if it is not already mounted, so we remove this from
    the head of the line.  This may cause problems if, for some reason,
    /tmp_mnt is valid and not the result of the automounter.
 
@@ -63,14 +63,14 @@
 
 .seealso: PetscGetFullPath()
 @*/
-int PetscGetRealPath(char path[], char rpath[])
+int PetscGetRealPath(char path[],char rpath[])
 {
   int        ierr;
   char       tmp3[MAXPATHLEN];
   PetscTruth flg;
 #if defined(PETSC_HAVE_READLINK)
-  char       tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
-  int        n, m, N, len,len1,len2;
+  char       tmp1[MAXPATHLEN],tmp4[MAXPATHLEN],*tmp2;
+  int        n,m,N,len,len1,len2;
 #endif
 
   PetscFunctionBegin;
@@ -83,7 +83,7 @@ int PetscGetRealPath(char path[], char rpath[])
 #else
 
   /* Algorithm: we move through the path, replacing links with the real paths.   */
-  ierr = PetscStrcpy( rpath, path );CHKERRQ(ierr);
+  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
   ierr = PetscStrlen(rpath,&N);CHKERRQ(ierr);
   while (N) {
     ierr = PetscStrncpy(tmp1,rpath,N);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int PetscGetRealPath(char path[], char rpath[])
         ierr = PetscGetRealPath(tmp3,tmp1);CHKERRQ(ierr);
         ierr = PetscStrncpy(rpath,tmp1,MAXPATHLEN);CHKERRQ(ierr);
         ierr = PetscStrlen(rpath,&len);CHKERRQ(ierr);
-        ierr = PetscStrncat(rpath,path+N,MAXPATHLEN - len  );CHKERRQ(ierr);
+        ierr = PetscStrncat(rpath,path+N,MAXPATHLEN - len);CHKERRQ(ierr);
       }
       PetscFunctionReturn(0);
     }  
@@ -126,10 +126,10 @@ int PetscGetRealPath(char path[], char rpath[])
 #endif
 
   /* remove garbage some automounters put at the beginning of the path */
-  ierr = PetscStrncmp( "/tmp_mnt/", rpath, 9,&flg);CHKERRQ(ierr); 
+  ierr = PetscStrncmp("/tmp_mnt/",rpath,9,&flg);CHKERRQ(ierr); 
   if (flg) {
-    ierr = PetscStrcpy( tmp3, rpath + 8 );CHKERRQ(ierr);
-    ierr = PetscStrcpy( rpath, tmp3 );CHKERRQ(ierr);
+    ierr = PetscStrcpy(tmp3,rpath + 8);CHKERRQ(ierr);
+    ierr = PetscStrcpy(rpath,tmp3);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

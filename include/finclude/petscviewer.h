@@ -1,5 +1,5 @@
 !
-!  $Id: viewer.h,v 1.23 1999/04/01 19:28:23 balay Exp balay $;
+!  $Id: viewer.h,v 1.24 1999/09/14 15:58:12 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Viewer package in PETSc
 !
@@ -24,9 +24,9 @@
 !
 !  Flags for binary I/O
 !
-      integer  BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE
+      integer  BINARY_RDONLY,BINARY_WRONLY,BINARY_CREATE
 
-      parameter (BINARY_RDONLY = 0, BINARY_WRONLY = 1)
+      parameter (BINARY_RDONLY = 0,BINARY_WRONLY = 1)
       parameter (BINARY_CREATE = 2)
 !
 !  Viewer formats

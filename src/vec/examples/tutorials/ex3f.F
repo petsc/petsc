@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f.F,v 1.9 1998/12/05 21:02:56 balay Exp bsmith $";
+!      "$Id: ex3f.F,v 1.10 1999/01/12 23:13:48 bsmith Exp bsmith $";
 !
 !  Description: Displays a vector visually.
 !
@@ -36,7 +36,7 @@
       Vec     x
       Viewer  viewer
       Scalar  v
-      integer i, istart, iend, n, ierr, flg
+      integer i,istart,iend,n,ierr,flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       n = 50

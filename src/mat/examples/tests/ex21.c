@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.10 1999/10/04 18:51:56 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.12 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
 parallel Row format. This also tests MatGetRow() and MatRestoreRow()\n\
@@ -10,9 +10,9 @@ for the parallel case.";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat         C, A;
-  int         i,j, m = 3, n = 2, rank,size,I, J, ierr, rstart, rend, nz, *idx;
-  Scalar      v, *values;
+  Mat         C,A;
+  int         i,j,m = 3,n = 2,rank,size,I,J,ierr,rstart,rend,nz,*idx;
+  Scalar      v,*values;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -22,13 +22,13 @@ int main(int argc,char **args)
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
          m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) { 
-    for ( j=2*rank; j<2*rank+2; j++ ) {
+  for (i=0; i<m; i++) { 
+    for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
@@ -40,12 +40,12 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) {
+  for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRA(ierr);
-    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %d: ", rank, i);CHKERRA(ierr);
-    for ( j=0; j<nz; j++ ) {
+    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %d: ",rank,i);CHKERRA(ierr);
+    for (j=0; j<nz; j++) {
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%d %g  ",idx[j],PetscReal(values[j]));CHKERRA(ierr);
+      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%d %g  ",idx[j],PetscRealPart(values[j]));CHKERRA(ierr);
 #else
       ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%d %g  ",idx[j],values[j]);CHKERRA(ierr);
 #endif

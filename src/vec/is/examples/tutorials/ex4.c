@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.4 1999/03/19 21:17:34 bsmith Exp balay $"; */
+/*      "$Id: ex4.c,v 1.5 1999/05/04 20:30:20 balay Exp bsmith $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
@@ -18,7 +18,7 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int                    i, n = 4, ierr,indices[] = {0,3,9,12}, m = 2, input[] = {0,2};
+  int                    i,n = 4,ierr,indices[] = {0,3,9,12},m = 2,input[] = {0,2};
   int                    output[2],inglobals[13],outlocals[13];
   ISLocalToGlobalMapping mapping;
 
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   /*
      Map some global indices to local, retaining the ones without a local index by -1
   */
-  for ( i=0; i<13; i++ ) {
+  for (i=0; i<13; i++) {
     inglobals[i] = i;
   }
   ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,PETSC_NULL,outlocals);

@@ -1,4 +1,4 @@
-/*$Id: cgtype.c,v 1.15 1999/05/04 20:34:47 balay Exp bsmith $*/
+/*$Id: cgtype.c,v 1.16 1999/10/24 14:03:12 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
 
@@ -32,7 +32,7 @@
 @*/
 int KSPCGSetType(KSP ksp,KSPCGType type)
 {
-  int ierr, (*f)(KSP,KSPCGType);
+  int ierr,(*f)(KSP,KSPCGType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

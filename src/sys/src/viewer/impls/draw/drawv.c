@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.44 1999/10/24 14:01:07 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.45 1999/11/05 14:43:44 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "draw.h" I*/
@@ -8,7 +8,7 @@
 int ViewerDestroy_Draw(Viewer v)
 {
   int         ierr,i;
-  Viewer_Draw *vdraw = (Viewer_Draw*) v->data;
+  Viewer_Draw *vdraw = (Viewer_Draw*)v->data;
 
   PetscFunctionBegin;
   if (vdraw->singleton_made) {
@@ -28,7 +28,7 @@ int ViewerDestroy_Draw(Viewer v)
 int ViewerFlush_Draw(Viewer v)
 {
   int         ierr,i;
-  Viewer_Draw *vdraw = (Viewer_Draw*) v->data;
+  Viewer_Draw *vdraw = (Viewer_Draw*)v->data;
 
   PetscFunctionBegin;
   for (i=0; i<VIEWER_DRAW_MAX; i++) {
@@ -59,14 +59,14 @@ int ViewerFlush_Draw(Viewer v)
 
 .seealso: ViewerDrawGetLG(), ViewerDrawGetAxis(), ViewerDrawOpen()
 @*/
-int ViewerDrawGetDraw(Viewer viewer, int windownumber, Draw *draw)
+int ViewerDrawGetDraw(Viewer viewer,int windownumber,Draw *draw)
 {
   Viewer_Draw *vdraw;
   int         ierr;
   PetscTruth  isdraw;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidPointer(draw);
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
@@ -76,7 +76,7 @@ int ViewerDrawGetDraw(Viewer viewer, int windownumber, Draw *draw)
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Window number out of range");
   }
 
-  vdraw = (Viewer_Draw *) viewer->data;
+  vdraw = (Viewer_Draw*)viewer->data;
   if (!vdraw->draw[windownumber]) {
     ierr = DrawCreate(viewer->comm,vdraw->display,0,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,
                      &vdraw->draw[windownumber]);CHKERRQ(ierr);
@@ -108,14 +108,14 @@ int ViewerDrawGetDraw(Viewer viewer, int windownumber, Draw *draw)
 
 .seealso: ViewerDrawGetDraw(), ViewerDrawGetAxis(), ViewerDrawOpen()
 @*/
-int ViewerDrawGetDrawLG(Viewer viewer, int windownumber,DrawLG *drawlg)
+int ViewerDrawGetDrawLG(Viewer viewer,int windownumber,DrawLG *drawlg)
 {
   int         ierr;
   PetscTruth  isdraw;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidPointer(drawlg);
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
@@ -124,7 +124,7 @@ int ViewerDrawGetDrawLG(Viewer viewer, int windownumber,DrawLG *drawlg)
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Window number out of range");
   }
-  vdraw = (Viewer_Draw *) viewer->data;
+  vdraw = (Viewer_Draw*)viewer->data;
   if (!vdraw->draw[windownumber]) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"No window with that number");
   }
@@ -159,14 +159,14 @@ int ViewerDrawGetDrawLG(Viewer viewer, int windownumber,DrawLG *drawlg)
 
 .seealso: ViewerDrawGetDraw(), ViewerDrawGetLG(), ViewerDrawOpen()
 @*/
-int ViewerDrawGetDrawAxis(Viewer viewer, int windownumber, DrawAxis *drawaxis)
+int ViewerDrawGetDrawAxis(Viewer viewer,int windownumber,DrawAxis *drawaxis)
 {
   int         ierr;
   PetscTruth  isdraw;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidPointer(drawaxis);
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
@@ -175,7 +175,7 @@ int ViewerDrawGetDrawAxis(Viewer viewer, int windownumber, DrawAxis *drawaxis)
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Window number out of range");
   }
-  vdraw = (Viewer_Draw *) viewer->data;
+  vdraw = (Viewer_Draw*)viewer->data;
   if (!vdraw->draw[windownumber]) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"No window with that number");
   }
@@ -193,7 +193,7 @@ int ViewerDrawGetDrawAxis(Viewer viewer, int windownumber, DrawAxis *drawaxis)
 int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
   int         ierr;
-  Viewer_Draw *vdraw = (Viewer_Draw *) v->data;
+  Viewer_Draw *vdraw = (Viewer_Draw*)v->data;
 
   PetscFunctionBegin;
   vdraw->h  = h;
@@ -326,7 +326,7 @@ int ViewerCreate_Draw(Viewer viewer)
 
   PetscFunctionBegin;
   vdraw        = PetscNew(Viewer_Draw);CHKPTRQ(vdraw);
-  viewer->data = (void *) vdraw;
+  viewer->data = (void*)vdraw;
 
   viewer->ops->flush            = ViewerFlush_Draw;
   viewer->ops->destroy          = ViewerDestroy_Draw;
@@ -369,7 +369,7 @@ int ViewerDrawClear(Viewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (isdraw) {
-    vdraw = (Viewer_Draw *) viewer->data;
+    vdraw = (Viewer_Draw*)viewer->data;
     for (i=0; i<VIEWER_DRAW_MAX; i++) {
       if (vdraw->draw[i]) {ierr = DrawClear(vdraw->draw[i]);CHKERRQ(ierr);}
     }
@@ -383,8 +383,8 @@ int ViewerDrawClear(Viewer viewer)
      Default X window viewers, may be used at any time.
 */
 
-Viewer VIEWER_DRAW_SELF_PRIVATE = 0, VIEWER_DRAW_WORLD_PRIVATE_0 = 0,
-       VIEWER_DRAW_WORLD_PRIVATE_1 = 0, VIEWER_DRAW_WORLD_PRIVATE_2 = 0;
+Viewer VIEWER_DRAW_SELF_PRIVATE = 0,VIEWER_DRAW_WORLD_PRIVATE_0 = 0,
+       VIEWER_DRAW_WORLD_PRIVATE_1 = 0,VIEWER_DRAW_WORLD_PRIVATE_2 = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitializeDrawSelf_Private" 
@@ -512,12 +512,12 @@ Viewer VIEWER_DRAW_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Draw_keyval,0);
     if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Draw_keyval, (void **)&viewer, &flag );
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Draw_keyval,(void **)&viewer,&flag);
   if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flag) { /* viewer not yet created */
     ierr = ViewerDrawOpen(comm,0,0,PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-    ierr = MPI_Attr_put( comm, Petsc_Viewer_Draw_keyval, (void *) viewer );
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_Draw_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_DRAW_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
@@ -537,7 +537,7 @@ int VIEWER_DRAW_Destroy(MPI_Comm comm)
   if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Draw_keyval, (void **)&viewer, &flag );CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Draw_keyval,(void **)&viewer,&flag);CHKERRQ(ierr);
   if (flag) { 
     ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Draw_keyval);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.90 1999/11/05 14:46:35 bsmith Exp bsmith $*/
+/*$Id: iterativ.c,v 1.91 1999/11/24 21:54:47 bsmith Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -17,7 +17,7 @@
   Input Parameters:
 . ksp  - iterative context
  */
-int KSPDefaultFreeWork( KSP ksp )
+int KSPDefaultFreeWork(KSP ksp)
 {
   int ierr;
   PetscFunctionBegin;
@@ -48,7 +48,7 @@ int KSPDefaultFreeWork( KSP ksp )
 
 .seealso: KSPComputeResidual()
 @*/
-int KSPGetResidualNorm(KSP ksp,double *rnorm)
+int KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -115,9 +115,9 @@ int KSPGetIterationNumber(KSP ksp,int *its)
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/
-int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
+int KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
-  double emin,emax,c;
+  PetscReal emin,emax,c;
   int    ierr;
 
   PetscFunctionBegin;
@@ -156,7 +156,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
 @*/
-int KSPVecViewMonitor(KSP ksp,int its,double fgnorm,void *dummy)
+int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 {
   int    ierr;
   Vec    x;
@@ -194,7 +194,7 @@ int KSPVecViewMonitor(KSP ksp,int its,double fgnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
+int KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
   int    ierr;
   Viewer viewer = (Viewer) dummy;
@@ -236,13 +236,13 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
-int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
+int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
   int          ierr;
   Vec          resid,work;
-  double       scnorm;
+  PetscReal    scnorm;
   PC           pc;
-  Mat          A, B;
+  Mat          A,B;
   Viewer       viewer = (Viewer) dummy;
   
   PetscFunctionBegin;
@@ -276,7 +276,7 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
+int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 {
   int    ierr;
   Viewer viewer = (Viewer) dummy;
@@ -285,11 +285,11 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
   if (!viewer) viewer = VIEWER_STDOUT_(ksp->comm);
 
   if (fnorm > 1.e-9) {
-    ierr = ViewerASCIIPrintf(viewer, "iter = %d, KSP Residual norm %g \n",its,fnorm);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"iter = %d, KSP Residual norm %g \n",its,fnorm);CHKERRQ(ierr);
   } else if (fnorm > 1.e-11){
-    ierr = ViewerASCIIPrintf(viewer, "iter = %d, KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"iter = %d, KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
   } else {
-    ierr = ViewerASCIIPrintf(viewer, "iter = %d, KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"iter = %d, KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -322,7 +322,7 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetAvoidNorms()
 @*/
-int KSPSkipConverged(KSP ksp,int n,double rnorm,void *dummy)
+int KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -350,7 +350,7 @@ int KSPSkipConverged(KSP ksp,int n,double rnorm,void *dummy)
 
    Notes:
    KSPDefaultConverged() reaches convergence when
-$      rnorm < MAX ( rtol * rnorm_0, atol );
+$      rnorm < MAX (rtol * rnorm_0, atol);
    Divergence is detected if
 $      rnorm > dtol * rnorm_0,
 
@@ -368,16 +368,22 @@ $      rnorm > dtol * rnorm_0,
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged()
 @*/
-int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
+int KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if ( n == 0 ) {
+  *reason = KSP_CONVERGED_ITERATING;
+
+  if (!n) {
     ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->atol);
     ksp->rnorm0 = rnorm;
   }
-  if ( rnorm <= ksp->ttol )                                PetscFunctionReturn(1);
-  if ( rnorm >= ksp->divtol*ksp->rnorm0 || rnorm != rnorm) PetscFunctionReturn(-1);
+  if (rnorm <= ksp->ttol) {
+    if (rnorm < ksp->atol) *reason = KSP_CONVERGED_ATOL;
+    else                   *reason = KSP_CONVERGED_RTOL;
+  } else if (rnorm >= ksp->divtol*ksp->rnorm0 || rnorm != rnorm) {
+   *reason = KSP_DIVERGED_DTOL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -454,13 +460,13 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   MatStructure pflag;
   Vec          T;
   Scalar       mone = -1.0;
-  Mat          Amat, Pmat;
+  Mat          Amat,Pmat;
 
   PetscFunctionBegin;
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
   ierr = KSPBuildSolution(ksp,t,&T);CHKERRQ(ierr);
-  ierr = KSP_MatMult(ksp,Amat, t, v );CHKERRQ(ierr);
-  ierr = VecAYPX(&mone, ksp->vec_rhs, v );CHKERRQ(ierr);
+  ierr = KSP_MatMult(ksp,Amat,t,v);CHKERRQ(ierr);
+  ierr = VecAYPX(&mone,ksp->vec_rhs,v);CHKERRQ(ierr);
   *V = v;
   PetscFunctionReturn(0);
 }
@@ -477,12 +483,12 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   Notes:
   Call this only if no work vectors have been allocated 
  */
-int  KSPDefaultGetWork( KSP ksp, int nw )
+int  KSPDefaultGetWork(KSP ksp,int nw)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (ksp->work) {ierr = KSPDefaultFreeWork( ksp );CHKERRQ(ierr);}
+  if (ksp->work) {ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);}
   ksp->nwork = nw;
   ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work);CHKERRQ(ierr);
   PLogObjectParents(ksp,nw,ksp->work);
@@ -507,7 +513,36 @@ int KSPDefaultDestroy(KSP ksp)
   if (ksp->data) {ierr = PetscFree(ksp->data);CHKERRQ(ierr);}
 
   /* free work vectors */
-  KSPDefaultFreeWork( ksp );
+  KSPDefaultFreeWork(ksp);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "KSPGetConvergedReason"
+/*@C
+   KSPGetConvergedReason - Gets the reason the KSP iteration was stopped.
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - the KSP context
+
+   Output Parameter:
+.  reason - negative value indicates diverged, positive value converged, see ksp.h or the 
+            manual pages for the individual convergence tests for complete lists
+
+   Level: intermediate
+
+   Notes: Can only be called after the call the KSPSolve() is complete.
+
+.keywords: KSP, nonlinear, set, convergence, test
+
+.seealso: KSPSetConvergenceTest(), KSPDefaultConverged()
+@*/
+int KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  *reason = ksp->reason;
+  PetscFunctionReturn(0);
+}

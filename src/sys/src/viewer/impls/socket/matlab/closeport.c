@@ -1,4 +1,4 @@
-/*$Id: closeport.c,v 1.13 1999/06/30 22:48:50 bsmith Exp bsmith $*/
+/*$Id: closeport.c,v 1.14 1999/10/24 14:01:02 bsmith Exp bsmith $*/
 /* This was part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
@@ -29,7 +29,7 @@ typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "mexFunction"
-void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
+void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
   int    t = 0;
   Linger linger;
@@ -37,10 +37,10 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   linger.onoff = 1;
   linger.time  = 0; 
 
-  if (nrhs == 0) ERROR("Needs one argument, the port");
-  t = (int) *mxGetPr(prhs[0]);
+  if (!nrhs) ERROR("Needs one argument, the port");
+  t = (int)*mxGetPr(prhs[0]);
 
-  if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char *) &linger,sizeof(Linger))) 
+  if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) 
     ERROR("Setting linger");
   if (close(t)) ERROR("closing socket");
   return;

@@ -1,4 +1,4 @@
-/*$Id: zplog.c,v 1.19 1999/10/04 22:51:03 balay Exp bsmith $*/
+/*$Id: zplog.c,v 1.20 1999/10/24 14:04:19 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
@@ -31,44 +31,44 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL plogdump_(CHAR name PETSC_MIXED_LEN(len), int *__ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL plogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
   FIXCHAR(name,len,t1);
-  *__ierr = PLogDump(t1);
+  *ierr = PLogDump(t1);
   FREECHAR(name,t1);
 #endif
 }
 void PETSC_STDCALL plogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
-               CHAR color PETSC_MIXED_LEN(len2),int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+               CHAR color PETSC_MIXED_LEN(len2),int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
 #if defined(PETSC_USE_LOG)
   char *t1,*t2;
   FIXCHAR(string,len1,t1);
   FIXCHAR(color,len2,t2);
 
-  *__ierr = PLogEventRegister(e,t1,t2);
+  *ierr = PLogEventRegister(e,t1,t2);
   FREECHAR(string,t1);
   FREECHAR(color,t2);
 #endif
 }
 
-void PETSC_STDCALL plogallbegin_(int *__ierr){
+void PETSC_STDCALL plogallbegin_(int *ierr){
 #if defined(PETSC_USE_LOG)
-  *__ierr = PLogAllBegin();
+  *ierr = PLogAllBegin();
 #endif
 }
 
-void PETSC_STDCALL plogdestroy_(int *__ierr){
+void PETSC_STDCALL plogdestroy_(int *ierr){
 #if defined(PETSC_USE_LOG)
-  *__ierr = PLogDestroy();
+  *ierr = PLogDestroy();
 #endif
 }
 
-void PETSC_STDCALL plogbegin_(int *__ierr){
+void PETSC_STDCALL plogbegin_(int *ierr){
 #if defined(PETSC_USE_LOG)
-  *__ierr = PLogBegin();
+  *ierr = PLogBegin();
 #endif
 }
 
@@ -84,26 +84,26 @@ void PETSC_STDCALL plogflops_(int *f) {
   PLogFlops(*f);
 }
 
-void PETSC_STDCALL plogstagepop_(int *__ierr )
+void PETSC_STDCALL plogstagepop_(int *ierr)
 {
 #if defined(PETSC_USE_LOG)
-  *__ierr = PLogStagePop();
+  *ierr = PLogStagePop();
 #endif
 }
 
 void PETSC_STDCALL plogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),
-                                      int *__ierr PETSC_END_LEN(len) )
+                                      int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(sname,len,t);
-  *__ierr = PLogStageRegister(*stage,t);
+  *ierr = PLogStageRegister(*stage,t);
 #endif
 }
 
-void PETSC_STDCALL plogstagepush_(int *stage, int *__ierr ){
+void PETSC_STDCALL plogstagepush_(int *stage,int *ierr){
 #if defined(PETSC_USE_LOG)
-  *__ierr = PLogStagePush(*stage);
+  *ierr = PLogStagePush(*stage);
 #endif
 }
 

@@ -1,4 +1,4 @@
-/*$Id: zoom.c,v 1.10 1999/11/11 20:15:50 bsmith Exp bsmith $*/
+/*$Id: zoom.c,v 1.11 1999/11/24 21:52:58 bsmith Exp bsmith $*/
 
 #include "draw.h"     /*I "draw.h"  I*/
 
@@ -24,7 +24,7 @@ int DrawZoom(Draw draw,int (*func)(Draw,void *),void *ctx)
 {
   int        ierr,pause;
   DrawButton button;
-  double     xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
+  PetscReal  xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
   PetscTruth isnull;
 
   PetscFunctionBegin;
@@ -37,7 +37,7 @@ int DrawZoom(Draw draw,int (*func)(Draw,void *),void *ctx)
 
   ierr = DrawGetPause(draw,&pause);CHKERRQ(ierr);
   if (pause >= 0) { 
-    ierr = PetscSleep(pause); CHKERRQ(ierr);
+    ierr = PetscSleep(pause);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

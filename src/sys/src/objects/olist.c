@@ -1,4 +1,4 @@
-/*$Id: olist.c,v 1.14 1999/10/24 14:01:28 bsmith Exp bsmith $*/
+/*$Id: olist.c,v 1.15 1999/11/10 03:18:02 bsmith Exp bsmith $*/
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects
@@ -21,7 +21,7 @@ struct _OList {
 
 .seealso: OListDestroy()
 */
-int OListAdd(OList *fl,const char name[],PetscObject obj )
+int OListAdd(OList *fl,const char name[],PetscObject obj)
 {
   OList      olist,nlist,prev;
   int        ierr;
@@ -47,7 +47,7 @@ int OListAdd(OList *fl,const char name[],PetscObject obj )
       prev  = nlist;
       nlist = nlist->next;
     }
-    PetscFunctionReturn(0); /* didn't find it to remove */
+    PetscFunctionReturn(0); /* did not find it to remove */
   }
   /* look for it already in list */
   nlist = *fl;
@@ -90,7 +90,7 @@ int OListAdd(OList *fl,const char name[],PetscObject obj )
     Input Parameter:
 .   fl   - pointer to list
 */
-int OListDestroy(OList *fl )
+int OListDestroy(OList *fl)
 {
   OList   tmp, entry = *fl;
   int     ierr;
@@ -125,7 +125,7 @@ int OListDestroy(OList *fl )
 .seealso: OListReverseFind()
 
 */
-int OListFind(OList fl, const char name[], PetscObject *obj)
+int OListFind(OList fl,const char name[],PetscObject *obj)
 {
   int        ierr;
   PetscTruth match;
@@ -163,7 +163,7 @@ int OListFind(OList fl, const char name[], PetscObject *obj)
 .seealso: OListFind()
 
 */
-int OListReverseFind(OList fl, PetscObject obj, char **name)
+int OListReverseFind(OList fl,PetscObject obj,char **name)
 {
   PetscFunctionBegin;
 
@@ -192,7 +192,7 @@ int OListReverseFind(OList fl, PetscObject obj, char **name)
 
 
 */
-int OListDuplicate(OList fl, OList *nl)
+int OListDuplicate(OList fl,OList *nl)
 {
   int ierr;
 

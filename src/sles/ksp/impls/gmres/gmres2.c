@@ -1,4 +1,4 @@
-/*$Id: gmres2.c,v 1.22 1999/07/23 15:55:07 balay Exp bsmith $*/
+/*$Id: gmres2.c,v 1.24 1999/10/24 14:03:14 bsmith Exp bsmith $*/
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
@@ -25,9 +25,9 @@
 
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
 @*/
-int KSPGMRESSetRestart(KSP ksp,int max_k )
+int KSPGMRESSetRestart(KSP ksp,int max_k)
 {
-  int ierr, (*f)(KSP,int);
+  int ierr,(*f)(KSP,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -82,9 +82,9 @@ $    i.e. the size of Krylov space minus one
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetPreallocateVectors()
 @*/
-int KSPGMRESSetOrthogonalization( KSP ksp,int (*fcn)(KSP,int) )
+int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
 {
-  int ierr, (*f)(KSP,int (*)(KSP,int));
+  int ierr,(*f)(KSP,int (*)(KSP,int));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

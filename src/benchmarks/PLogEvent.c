@@ -1,17 +1,17 @@
-/*$Id: PLogEvent.c,v 1.15 1999/10/24 14:04:16 bsmith Exp bsmith $*/
+/*$Id: PLogEvent.c,v 1.16 1999/11/05 14:48:10 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv)
+int main(int argc,char **argv)
 {
-  PLogDouble x, y;
-  int        e1, ierr;
+  PLogDouble x,y;
+  int        e1,ierr;
   PetscTruth flg;
 
-  PetscInitialize(&argc, &argv,0,0);
-  PLogEventRegister(&e1,"*DummyEvent", "red:");
+  PetscInitialize(&argc,&argv,0,0);
+  PLogEventRegister(&e1,"*DummyEvent","red:");
   /* To take care of the paging effects */
   ierr = PetscGetTime(&x);CHKERRA(ierr);
   PLogEventBegin(e1,&x,0,0,0);
@@ -41,7 +41,7 @@ int main( int argc, char **argv)
   PLogEventEnd(e1,&x,&e1,0,0);  
 
   ierr = PetscGetTime(&y);CHKERRA(ierr);
-  fprintf(stderr,"%-15s : %e sec , with options : ","PLogEvent",(y-x)/10.0);
+  fprintf(stderr,"%-15s : %e sec, with options : ","PLogEvent",(y-x)/10.0);
 
   if(OptionsHasName(PETSC_NULL,"-log",&flg),flg) fprintf(stderr,"-log ");
   if(OptionsHasName(PETSC_NULL,"-log_all",&flg),flg) fprintf(stderr,"-log_all ");

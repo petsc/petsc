@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.22 1999/04/16 16:09:25 bsmith Exp bsmith $";
+!    "$Id: ex11f.F,v 1.23 1999/05/12 03:32:11 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -73,12 +73,12 @@
 
       SLES             sles
       Mat              A 
-      Vec              x, b, u
+      Vec              x,b,u
       PetscRandom      rctx
-      double precision norm, h2, sigma1
-      Scalar           none, sigma2, v, pfive
-      integer          dim, flg, its, ierr, n, rank
-      integer          Istart, Iend, i, j, II, JJ
+      double precision norm,h2,sigma1
+      Scalar           none,sigma2,v,pfive
+      integer          dim,flg,its,ierr,n,rank
+      integer          Istart,Iend,i,j,II,JJ
       logical          use_random
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -140,19 +140,19 @@
         v = -1.0
         i = II/n
         j = II - i*n  
-        if ( i.gt.0 ) then
+        if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( i.lt.n-1 ) then
+        if (i.lt.n-1) then
           JJ = II + n
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( j.gt.0 ) then
+        if (j.gt.0) then
           JJ = II - 1
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
-        if ( j.lt.n-1 ) then
+        if (j.lt.n-1) then
           JJ = II + 1
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
@@ -228,13 +228,13 @@
       call VecNorm(x,NORM_2,norm,ierr)
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
-           write(6,100) norm, its
+           write(6,100) norm,its
         else
            write(6,110) its
         endif
       endif
-  100 format('Norm of error ',e10.4,', iterations ',i5)
-  110 format('Norm of error < 1.e-12, iterations ',i5)
+  100 format('Norm of error ',e10.4,',iterations ',i5)
+  110 format('Norm of error < 1.e-12,iterations ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

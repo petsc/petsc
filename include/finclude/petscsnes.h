@@ -1,5 +1,5 @@
 !
-!  $Id: snes.h,v 1.26 1999/11/10 03:22:55 bsmith Exp bsmith $;
+!  $Id: snes.h,v 1.27 1999/11/24 21:56:02 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -77,6 +77,12 @@
       external SNESCONVERGED_UM_TR
       external SNESCONVERGED_EQ_LS
       external SNESCONVERGED_EQ_TR
+
+      external SNESCUBICLINESEARCH
+      external SNESQUADRATICLINESEARCH
+      external SNESNOLINESEARCH
+      external SNESNOLINESEARCHNONORMS
+
 !
 !  End of Fortran include file for the SNES package in PETSc
 

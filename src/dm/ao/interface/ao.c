@@ -1,4 +1,4 @@
-/*$Id: ao.c,v 1.28 1999/10/13 20:38:51 bsmith Exp bsmith $*/
+/*$Id: ao.c,v 1.29 1999/10/24 14:03:58 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
@@ -32,7 +32,7 @@
 
 .seealso: ViewerASCIIOpen()
 @*/
-int AOView(AO ao, Viewer viewer)
+int AOView(AO ao,Viewer viewer)
 {
   int ierr;
 

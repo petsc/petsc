@@ -1,4 +1,4 @@
-/*$Id: ex45.c,v 1.5 1999/10/13 20:37:41 bsmith Exp bsmith $*/
+/*$Id: ex45.c,v 1.6 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -21,10 +21,10 @@ int main(int argc,char **args)
   double a[100],v[10];
   int    i,j,fd = 0;
 
-  for ( i=0; i<100; i++ ) {
+  for (i=0; i<100; i++) {
     a[i] = i + 1;
   }
-  for ( j=0; j<10; j++ ) {
+  for (j=0; j<10; j++) {
     v[j] = j;
   }
 
@@ -35,11 +35,11 @@ int main(int argc,char **args)
 
 #undef __FUNC__
 #define __FUNC__ "Store2DArray"
-void Store2DArray(int m, int n, double *a, char *filename,int *fdd)
+void Store2DArray(int m,int n,double *a,char *filename,int *fdd)
 {
   int     fd = *fdd;
   int     i,j;
-  int     nz = -1, cookie = 1211216,ierr;
+  int     nz = -1,cookie = 1211216,ierr;
   double *vals;
 
   if (!fd) {
@@ -50,32 +50,32 @@ void Store2DArray(int m, int n, double *a, char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write( fd, &cookie, sizeof(int) );
-  ierr = write( fd, &m, sizeof(int) );
-  ierr = write( fd, &n, sizeof(int) );
-  ierr = write( fd, &nz, sizeof(int) );
+  ierr = write(fd,&cookie,sizeof(int));
+  ierr = write(fd,&m,sizeof(int));
+  ierr = write(fd,&n,sizeof(int));
+  ierr = write(fd,&nz,sizeof(int));
 
   /*
      transpose the matrix, since it is stored by rows on the disk
    */
-  vals = (double *) malloc(m*n*sizeof(double));
+  vals = (double*)malloc(m*n*sizeof(double));
   if (!vals) {
     fprintf(stderr,"Out of memory ");
     exit(0);
   }
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       vals[i+m*j] = a[j+i*n];
     }
   }
-  ierr = write( fd, vals, m*n*sizeof(double));
+  ierr = write(fd,vals,m*n*sizeof(double));
   free(vals);
 
 }
 
 #undef __FUNC__
 #define __FUNC__ "Store1DArray"
-void Store1DArray(int m, double *a, char *filename,int *fdd)
+void Store1DArray(int m,double *a,char *filename,int *fdd)
 {
   int  fd = *fdd;
   int  i,j,ierr;
@@ -89,9 +89,9 @@ void Store1DArray(int m, double *a, char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write( fd, &cookie, sizeof(int) );
-  ierr = write( fd, &m, sizeof(int) );
-  ierr = write( fd, a, m*sizeof(double));
+  ierr = write(fd,&cookie,sizeof(int));
+  ierr = write(fd,&m,sizeof(int));
+  ierr = write(fd,a,m*sizeof(double));
 }
 
 

@@ -1,4 +1,4 @@
-/*$Id: bdfact.c,v 1.53 1999/06/30 23:51:28 balay Exp bsmith $*/
+/*$Id: bdfact.c,v 1.54 1999/10/24 14:02:21 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format - factorization and triangular solves */
 
@@ -10,7 +10,7 @@
 #define __FUNC__ "MatILUFactorSymbolic_SeqBDiag"
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *B)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscTruth   idn;
   int          ierr;
 
@@ -38,7 +38,7 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *
 #define __FUNC__ "MatILUFactor_SeqBDiag"
 int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscTruth   idn;
   int          ierr;
 
@@ -65,11 +65,11 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info)
 int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 {
   Mat          C = *B;
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data, *a1 = (Mat_SeqBDiag *) A->data;
-  int          k, d, d2, dgk, elim_row, elim_col, bs = a->bs, knb, knb2, bs2 = bs*bs;
-  int          dnum,nd = a->nd, mblock = a->mblock, nblock = a->nblock, ierr;
-  int          *diag = a->diag,  m = a->m, mainbd = a->mainbd, *dgptr, len, i;
-  Scalar       **dv = a->diagv, *dd = dv[mainbd], *v_work;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
+  int          k,d,d2,dgk,elim_row,elim_col,bs = a->bs,knb,knb2,bs2 = bs*bs;
+  int          dnum,nd = a->nd,mblock = a->mblock,nblock = a->nblock,ierr;
+  int          *diag = a->diag, m = a->m,mainbd = a->mainbd,*dgptr,len,i;
+  Scalar       **dv = a->diagv,*dd = dv[mainbd],*v_work;
   Scalar       *multiplier;
 
   PetscFunctionBegin;
@@ -90,24 +90,24 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   }
 
   if (!a->pivot) {
-    a->pivot = (int *) PetscMalloc((m+1)*sizeof(int));CHKPTRQ(a->pivot);
+    a->pivot = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(a->pivot);
     PLogObjectMemory(C,m*sizeof(int));
   }
-  v_work     = (Scalar *) PetscMalloc((bs2+bs+1)*sizeof(Scalar));CHKPTRQ(v_work);
+  v_work     = (Scalar*)PetscMalloc((bs2+bs+1)*sizeof(Scalar));CHKPTRQ(v_work);
   multiplier = v_work + bs;
-  dgptr      = (int *) PetscMalloc((mblock+nblock+1)*sizeof(int));CHKPTRQ(dgptr);
+  dgptr      = (int*)PetscMalloc((mblock+nblock+1)*sizeof(int));CHKPTRQ(dgptr);
   ierr       = PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));CHKERRQ(ierr);
-  for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
-  for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
+  for (k=0; k<nd; k++) dgptr[diag[k]+mblock] = k+1;
+  for (k=0; k<mblock; k++) { /* k = block pivot_row */
     knb = k*bs; knb2 = knb*bs;
     /* invert the diagonal block */
     Kernel_A_gets_inverse_A(bs,dd+knb2,a->pivot+knb,v_work);
-    for ( d=mainbd-1; d>=0; d-- ) {
+    for (d=mainbd-1; d>=0; d--) {
       elim_row = k + diag[d];
       if (elim_row < mblock) { /* sweep down */
         /* dv[d][knb2]: test if entire block is zero? */
         Kernel_A_gets_A_times_B(bs,&dv[d][elim_row*bs2],dd+knb2,multiplier); 
-        for ( d2=d+1; d2<nd; d2++ ) {
+        for (d2=d+1; d2<nd; d2++) {
           elim_col = elim_row - diag[d2];
           if (elim_col >=0 && elim_col < nblock) {
             dgk = k - elim_col;
@@ -131,10 +131,10 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 {
   Mat          C = *B;
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data, *a1 = (Mat_SeqBDiag *) A->data;
-  int          k, d, d2, dgk, elim_row, elim_col, dnum, nd = a->nd, i, len,ierr;
-  int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
-  Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
+  int          k,d,d2,dgk,elim_row,elim_col,dnum,nd = a->nd,i,len,ierr;
+  int          *diag = a->diag,n = a->n,m = a->m,mainbd = a->mainbd,*dgptr;
+  Scalar       **dv = a->diagv,*dd = dv[mainbd],mult;
 
   PetscFunctionBegin;
   /* Copy input matrix to factored matrix if we've already factored the
@@ -153,18 +153,18 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
     }
   }
 
-  dgptr = (int *) PetscMalloc((m+n+1)*sizeof(int));CHKPTRQ(dgptr);
+  dgptr = (int*)PetscMalloc((m+n+1)*sizeof(int));CHKPTRQ(dgptr);
   ierr  = PetscMemzero(dgptr,(m+n)*sizeof(int));CHKERRQ(ierr);
-  for ( k=0; k<nd; k++ ) dgptr[diag[k]+m] = k+1;
-  for ( k=0; k<m; k++ ) { /* k = pivot_row */
+  for (k=0; k<nd; k++) dgptr[diag[k]+m] = k+1;
+  for (k=0; k<m; k++) { /* k = pivot_row */
     dd[k] = 1.0/dd[k];
-    for ( d=mainbd-1; d>=0; d-- ) {
+    for (d=mainbd-1; d>=0; d--) {
       elim_row = k + diag[d];
       if (elim_row < m) { /* sweep down */
         if (dv[d][elim_row] != 0.0) {
           dv[d][elim_row] *= dd[k];
           mult = dv[d][elim_row];
-          for ( d2=d+1; d2<nd; d2++ ) {
+          for (d2=d+1; d2<nd; d2++) {
             elim_col = elim_row - diag[d2];
             dgk = k - elim_col;
             if (elim_col >=0 && elim_col < n) {
@@ -188,10 +188,10 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 #define __FUNC__ "MatSolve_SeqBDiag_1"
 int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          ierr,i, d, loc, mainbd = a->mainbd;
-  int          n = a->n, m = a->m, *diag = a->diag, col;
-  Scalar       *x, *y, *dd = a->diagv[mainbd], sum, **dv = a->diagv;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          ierr,i,d,loc,mainbd = a->mainbd;
+  int          n = a->n,m = a->m,*diag = a->diag,col;
+  Scalar       *x,*y,*dd = a->diagv[mainbd],sum,**dv = a->diagv;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
     y[i] = sum;
   }
   /* backward solve the upper triangular part */
-  for ( i=m-1; i>=0; i-- ) {
+  for (i=m-1; i>=0; i--) {
     sum = y[i];
     for (d=mainbd+1; d<a->nd; d++) {
       col = i - diag[d];
@@ -224,11 +224,11 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 #define __FUNC__ "MatSolve_SeqBDiag_2"
 int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, mainbd = a->mainbd;
-  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          ierr,m = a->m, *diag = a->diag, col;
-  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,d,loc,mainbd = a->mainbd;
+  int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
+  int          ierr,m = a->m,*diag = a->diag,col;
+  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   Scalar       w0,w1,sum0,sum1;
 
   PetscFunctionBegin;
@@ -257,7 +257,7 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   }
   /* backward solve the upper triangular part */
   inb = 2*(mblock-1); inb2 = 2*inb;
-  for ( i=mblock-1; i>=0; i-- ) {
+  for (i=mblock-1; i>=0; i--) {
     sum0 = y[inb]; sum1 = y[inb+1];
     for (d=mainbd+1; d<a->nd; d++) {
       col = 2*(i - diag[d]);
@@ -283,11 +283,11 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 #define __FUNC__ "MatSolve_SeqBDiag_3"
 int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, mainbd = a->mainbd;
-  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          ierr,m = a->m, *diag = a->diag, col;
-  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,d,loc,mainbd = a->mainbd;
+  int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
+  int          ierr,m = a->m,*diag = a->diag,col;
+  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,sum0,sum1,sum2;
 
   PetscFunctionBegin;
@@ -316,7 +316,7 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   }
   /* backward solve the upper triangular part */
   inb = 3*(mblock-1); inb2 = 3*inb;
-  for ( i=mblock-1; i>=0; i-- ) {
+  for (i=mblock-1; i>=0; i--) {
     sum0 = y[inb]; sum1 = y[inb+1]; sum2 =  y[inb+2];
     for (d=mainbd+1; d<a->nd; d++) {
       col = 3*(i - diag[d]);
@@ -344,11 +344,11 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 #define __FUNC__ "MatSolve_SeqBDiag_4"
 int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, mainbd = a->mainbd;
-  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          ierr,m = a->m, *diag = a->diag, col;
-  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,d,loc,mainbd = a->mainbd;
+  int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
+  int          ierr,m = a->m,*diag = a->diag,col;
+  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,w3,sum0,sum1,sum2,sum3;
 
   PetscFunctionBegin;
@@ -378,7 +378,7 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   }
   /* backward solve the upper triangular part */
   inb = 4*(mblock-1); inb2 = 4*inb;
-  for ( i=mblock-1; i>=0; i-- ) {
+  for (i=mblock-1; i>=0; i--) {
     sum0 = y[inb]; sum1 = y[inb+1]; sum2 =  y[inb+2]; sum3 =  y[inb+3];
     for (d=mainbd+1; d<a->nd; d++) {
       col = 4*(i - diag[d]);
@@ -408,11 +408,11 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 #define __FUNC__ "MatSolve_SeqBDiag_5"
 int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, mainbd = a->mainbd;
-  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          ierr,m = a->m, *diag = a->diag, col;
-  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,d,loc,mainbd = a->mainbd;
+  int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
+  int          ierr,m = a->m,*diag = a->diag,col;
+  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   Scalar       w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
 
   PetscFunctionBegin;
@@ -444,7 +444,7 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   }
   /* backward solve the upper triangular part */
   inb = 5*(mblock-1); inb2 = 5*inb;
-  for ( i=mblock-1; i>=0; i-- ) {
+  for (i=mblock-1; i>=0; i--) {
     sum0 = y[inb];sum1 = y[inb+1];sum2 = y[inb+2];sum3 = y[inb+3];sum4 = y[inb+4];
     for (d=mainbd+1; d<a->nd; d++) {
       col = 5*(i - diag[d]);
@@ -481,11 +481,11 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 #define __FUNC__ "MatSolve_SeqBDiag_N"
 int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, d, loc, mainbd = a->mainbd;
-  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          ierr,bs = a->bs, m = a->m, *diag = a->diag, col, bs2 = bs*bs;
-  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,d,loc,mainbd = a->mainbd;
+  int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
+  int          ierr,bs = a->bs,m = a->m,*diag = a->diag,col,bs2 = bs*bs;
+  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv;
   Scalar       work[25];
 
   PetscFunctionBegin;
@@ -509,7 +509,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   }
   /* backward solve the upper triangular part */
   inb = bs*(mblock-1); inb2 = inb*bs;
-  for ( i=mblock-1; i>=0; i-- ) {
+  for (i=mblock-1; i>=0; i--) {
     for (d=mainbd+1; d<a->nd; d++) {
       col = i - diag[d];
       if (col < nblock) {

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.29 1999/09/02 14:53:03 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.30 1999/10/24 14:01:41 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
 inserting their own event logging.  Run this program with one of the\n\
@@ -27,7 +27,7 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int i, ierr, imax=10000, icount, USER_EVENT;
+  int i,ierr,imax=10000,icount,USER_EVENT;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 

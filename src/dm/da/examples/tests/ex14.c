@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.7 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.8 1999/11/05 14:47:57 bsmith Exp bsmith $*/
 
 static char help[] = "Tests saving DA vectors to files\n\n";
 
@@ -9,10 +9,10 @@ static char help[] = "Tests saving DA vectors to files\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int      rank, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE, ierr;
+  int      rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
   int      dof = 1;
   DA       da;
-  Vec      local, global, natural;
+  Vec      local,global,natural;
   Scalar   value;
   Viewer   bviewer;
 

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.80 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.81 1999/11/05 14:46:54 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -26,9 +26,9 @@ extern int paulintegrate20(double K[60][60]);
 int main(int argc,char **args)
 {
   Mat     mat;
-  int     ierr, i, its, m = 3, rdim, cdim, rstart, rend, rank, size;
-  Scalar  v, neg1 = -1.0;
-  Vec     u, x, b;
+  int     ierr,i,its,m = 3,rdim,cdim,rstart,rend,rank,size;
+  Scalar  v,neg1 = -1.0;
+  Vec     u,x,b;
   SLES    sles;
   KSP     ksp;
   double  norm;
@@ -63,8 +63,7 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,mat,mat,SAME_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(ksp,2*m);CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,
-                          PETSC_DEFAULT);CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
   ierr = KSPSetType(ksp,KSPCG);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
@@ -94,42 +93,42 @@ int main(int argc,char **args)
 int GetElasticityMatrix(int m,Mat *newmat)
 {
   int        i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
-  int        ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr;
+  int        ict,nz,base,r1,r2,N,*rowkeep,nstart,ierr;
   PetscTruth set;
   IS         iskeep;
-  double     **K, norm;
-  Mat        mat, submat = 0,*submatb;
+  double     **K,norm;
+  Mat        mat,submat = 0,*submatb;
   MatType    type;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"m = %d, N=%d\n", m, N );CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"m = %d, N=%d\n",m,N);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr); 
 
   /* Form stiffness for element */
-  K = (double **) PetscMalloc(81*sizeof(double *));CHKPTRQ(K);
-  for ( i=0; i<81; i++ ) {
-    K[i] = (double *) PetscMalloc(81*sizeof(double));CHKPTRQ(K[i]);
+  K = (double**)PetscMalloc(81*sizeof(double *));CHKPTRQ(K);
+  for (i=0; i<81; i++) {
+    K[i] = (double*)PetscMalloc(81*sizeof(double));CHKPTRQ(K[i]);
   }
   ierr = Elastic20Stiff(K);CHKERRQ(ierr);
 
   /* Loop over elements and add contribution to stiffness */
   shiftx = 3; shifty = 3*(2*m+1); shiftz = 3*(2*m+1)*(2*m+1);
-  for ( k=0; k<m; k++ ) {
-    for ( j=0; j<m; j++ ) {
-      for ( i=0; i<m; i++ ) {
+  for (k=0; k<m; k++) {
+    for (j=0; j<m; j++) {
+      for (i=0; i<m; i++) {
 	h1 = 0; 
         base = 2*k*shiftz + 2*j*shifty + 2*i*shiftx;
-	for ( k1=0; k1<3; k1++ ) {
-	  for ( j_1=0; j_1<3; j_1++ ) {
-	    for ( i1=0; i1<3; i1++ ) {
+	for (k1=0; k1<3; k1++) {
+	  for (j_1=0; j_1<3; j_1++) {
+	    for (i1=0; i1<3; i1++) {
 	      h2 = 0;
 	      r1 = base + i1*shiftx + j_1*shifty + k1*shiftz;
-	      for ( k2=0; k2<3; k2++ ) {
-	        for ( j2=0; j2<3; j2++ ) {
-	          for ( i2=0; i2<3; i2++ ) {
+	      for (k2=0; k2<3; k2++) {
+	        for (j2=0; j2<3; j2++) {
+	          for (i2=0; i2<3; i2++) {
 	            r2 = base + i2*shiftx + j2*shifty + k2*shiftz;
-		    ierr = AddElement( mat, r1, r2, K, h1, h2 );CHKERRQ(ierr);
+		    ierr = AddElement(mat,r1,r2,K,h1,h2);CHKERRQ(ierr);
 		    h2 += 3;
 	          }
                 }
@@ -142,7 +141,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
     }
   }
 
-  for ( i=0; i<81; i++ ) {
+  for (i=0; i<81; i++) {
     ierr = PetscFree(K[i]);CHKERRA(ierr);
   }
   ierr = PetscFree(K);CHKERRA(ierr);
@@ -153,7 +152,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict = 0;
-  rowkeep = (int *) PetscMalloc((N-nstart)*sizeof(int));CHKPTRQ(rowkeep);
+  rowkeep = (int*)PetscMalloc((N-nstart)*sizeof(int));CHKPTRQ(rowkeep);
   for (i=nstart; i<N; i++) {
     ierr = MatGetRow(mat,i,&nz,0,0);CHKERRQ(ierr);
     if (nz) rowkeep[ict++] = i;
@@ -187,10 +186,10 @@ int GetElasticityMatrix(int m,Mat *newmat)
 int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
 {
   Scalar val;
-  int    l1, l2, row, col, ierr;
+  int    l1,l2,row,col,ierr;
 
-  for ( l1=0; l1<3; l1++ ) {
-    for ( l2=0; l2<3; l2++ ) {
+  for (l1=0; l1<3; l1++) {
+    for (l2=0; l2<3; l2++) {
 /*
    NOTE you should never do this! Inserting values 1 at a time is 
    just too expensive!
@@ -211,18 +210,18 @@ double	part_N[3][20][64]; /* Partials of interpolation function. */
 double	rst[3][64];	   /* Location of integration pts in (r,s,t) */
 double	weight[64];	   /* Gaussian quadrature weights. */
 double	xyz[20][3];	   /* (x,y,z) coordinates of nodes  */
-double	E, nu;		   /* Physcial constants. */
-int	n_int, N_int;	   /* N_int = n_int^3, number of int. pts. */
+double	E,nu;		   /* Physcial constants. */
+int	n_int,N_int;	   /* N_int = n_int^3, number of int. pts. */
 /* Ordering of the vertices, (r,s,t) coordinates, of the canonical cell. */
-double	r2[20] = {-1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0,
-                 -1.0, 1.0, -1.0, 1.0, 
-                 -1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0};
-double	s2[20] = {-1.0, -1.0,  -1.0, 0.0, 0.0, 1.0,  1.0,  1.0,
-                 -1.0, -1.0, 1.0, 1.0,
-                 -1.0, -1.0,  -1.0, 0.0, 0.0, 1.0,  1.0,  1.0};
-double	t2[20] =  {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
-                 0.0, 0.0, 0.0, 0.0,
-                 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+double	r2[20] = {-1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0,
+                 -1.0,1.0,-1.0,1.0,
+                 -1.0,0.0,1.0,-1.0,1.0,-1.0,0.0,1.0};
+double	s2[20] = {-1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0,
+                 -1.0,-1.0,1.0,1.0,
+                 -1.0,-1.0, -1.0,0.0,0.0,1.0, 1.0, 1.0};
+double	t2[20] =  {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,
+                 0.0,0.0,0.0,0.0,
+                 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
 int     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
 /* -------------------------------------------------------------------- */
 #undef __FUNC__
@@ -261,18 +260,18 @@ int Elastic20Stiff(double **Ke)
   paulintegrate20(K);
 
   /* copy the stiffness from K into format used by Ke */
-  for ( i=0; i<81; i++ ) {
-    for ( j=0; j<81; j++ ) {
+  for (i=0; i<81; i++) {
+    for (j=0; j<81; j++) {
           Ke[i][j] = 0.0;
     }
   }
   I = 0;
   m = 0.0;
-  for ( i=0; i<20; i++ ) {
+  for (i=0; i<20; i++) {
     J = 0;
-    for ( j=0; j<20; j++ ) {
-      for ( k=0; k<3; k++ ) {
-        for ( l=0; l<3; l++ ) {
+    for (j=0; j<20; j++) {
+      for (k=0; k<3; k++) {
+        for (l=0; l<3; l++) {
           Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[I+k][J+l];
           m = PetscMax(m,PetscAbsDouble(v));
         }
@@ -283,15 +282,15 @@ int Elastic20Stiff(double **Ke)
   }
   /* zero out the extremely small values */
   m = (1.e-8)*m;
-  for ( i=0; i<81; i++ ) {
-    for ( j=0; j<81; j++ ) {
+  for (i=0; i<81; i++) {
+    for (j=0; j<81; j++) {
       if (PetscAbsDouble(Ke[i][j]) < m)  Ke[i][j] = 0.0;
     }
   }  
   /* force the matrix to be exactly symmetric */
-  for ( i=0; i<81; i++ ) {
-    for ( j=0; j<i; j++ ) {
-      Ke[i][j] = ( Ke[i][j] + Ke[j][i] )/2.0;
+  for (i=0; i<81; i++) {
+    for (j=0; j<i; j++) {
+      Ke[i][j] = (Ke[i][j] + Ke[j][i])/2.0;
     }
   } 
   return 0;
@@ -304,7 +303,7 @@ int Elastic20Stiff(double **Ke)
  */
 int paulsetup20(void)
 {
-  int     i, j, k, cnt;
+  int     i,j,k,cnt;
   double  x[4],w[4];
   double  c;
 
@@ -368,7 +367,7 @@ int paulsetup20(void)
   c = 1.0/8.0;
   for (j=0; j<N_int; j++) {
     for (i=0; i<20; i++) {
-      if ( i==0 || i==2 || i==5 || i==7 || i==12 || i==14 || i== 17 || i==19 ){ 
+      if (i==0 || i==2 || i==5 || i==7 || i==12 || i==14 || i== 17 || i==19){ 
         N[i][j] = c*(1.0 + r2[i]*rst[0][j])*
                 (1.0 + s2[i]*rst[1][j])*(1.0 + t2[i]*rst[2][j])*
                 (-2.0 + r2[i]*rst[0][j] + s2[i]*rst[1][j] + t2[i]*rst[2][j]);
@@ -382,7 +381,7 @@ int paulsetup20(void)
                  (-1.0 + r2[i]*rst[0][j] + s2[i]*rst[1][j] + 
                  2.0*t2[i]*rst[2][j]);
       }
-      else if ( i==1 || i==6 || i==13 || i==18 ) {
+      else if (i==1 || i==6 || i==13 || i==18) {
         N[i][j] = .25*(1.0 - rst[0][j]*rst[0][j])*
                 (1.0 + s2[i]*rst[1][j])*(1.0 + t2[i]*rst[2][j]);
         part_N[0][i][j] = -.5*rst[0][j]*(1 + s2[i]*rst[1][j])*
@@ -392,7 +391,7 @@ int paulsetup20(void)
         part_N[2][i][j] = .25*t2[i]*(1.0 - rst[0][j]*rst[0][j])*
                           (1 + s2[i]*rst[1][j]);
       }
-      else if ( i==3 || i==4 || i==15 || i==16 ) {
+      else if (i==3 || i==4 || i==15 || i==16) {
         N[i][j] = .25*(1.0 - rst[1][j]*rst[1][j])*
                 (1.0 + r2[i]*rst[0][j])*(1.0 + t2[i]*rst[2][j]);
         part_N[0][i][j] = .25*r2[i]*(1 + t2[i]*rst[2][j])*
@@ -402,7 +401,7 @@ int paulsetup20(void)
         part_N[2][i][j] = .25*t2[i]*(1.0 - rst[1][j]*rst[1][j])*
                           (1 + r2[i]*rst[0][j]);
       }
-      else if ( i==8 || i==9 || i==10 || i==11 ) {
+      else if (i==8 || i==9 || i==10 || i==11) {
         N[i][j] = .25*(1.0 - rst[2][j]*rst[2][j])*
                 (1.0 + r2[i]*rst[0][j])*(1.0 + s2[i]*rst[1][j]);
         part_N[0][i][j] = .25*r2[i]*(1 + s2[i]*rst[1][j])*
@@ -424,10 +423,10 @@ int paulsetup20(void)
  */
 int paulintegrate20(double K[60][60])
 {
-  double  det_jac, jac[3][3], inv_jac[3][3];
-  double  B[6][60], B_temp[6][60], C[6][6];
+  double  det_jac,jac[3][3],inv_jac[3][3];
+  double  B[6][60],B_temp[6][60],C[6][6];
   double  temp;
-  int     i, j, k, step;
+  int     i,j,k,step;
 
   /* Zero out K, since we will accumulate the result here */
   for (i=0; i<60; i++) {

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.8 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.9 1999/11/05 14:47:57 bsmith Exp bsmith $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
@@ -9,9 +9,9 @@ static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            i,M = 3, N = 5, P=3, s=1, w=2;
-  int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
-  int            *lx = PETSC_NULL, *ly = PETSC_NULL, *lz = PETSC_NULL;
+  int            i,M = 3,N = 5,P=3,s=1,w=2;
+  int            m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,ierr;
+  int            *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   DA             da;
   PetscTruth     flg,test_order;
   ISColoring     coloring;
@@ -37,16 +37,16 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRA(1,1,"Must set -m option with -distribute option");
-    lx = (int *) PetscMalloc( m*sizeof(int) );CHKPTRQ(lx);
-    for ( i=0; i<m-1; i++ ) { lx[i] = 4;}
+    lx = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(lx);
+    for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRA(1,1,"Must set -n option with -distribute option");
-    ly = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ly);
-    for ( i=0; i<n-1; i++ ) { ly[i] = 2;}
+    ly = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ly);
+    for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
     if (p == PETSC_DECIDE) SETERRA(1,1,"Must set -p option with -distribute option");
-    lz = (int *) PetscMalloc( p*sizeof(int) );CHKPTRQ(lz);
-    for ( i=0; i<p-1; i++ ) { lz[i] = 2;}
+    lz = (int*)PetscMalloc(p*sizeof(int));CHKPTRQ(lz);
+    for (i=0; i<p-1; i++) { lz[i] = 2;}
     lz[p-1] = P - 2*(p-1);
   }
 

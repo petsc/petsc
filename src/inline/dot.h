@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.16 1999/05/12 03:25:57 bsmith Exp balay $ */
+/* $Id: dot.h,v 1.17 1999/11/11 20:40:55 balay Exp bsmith $ */
 
 #ifndef DOT
 #include "petsc.h"
@@ -17,12 +17,12 @@ EXTERN_C_BEGIN
 #define fortranmdot2_      fortranmdot2
 #define fortranmdot1_      fortranmdot1
 #endif
-extern void fortranmdot4_(void *, void *,void *,void *,void *,int *,
-                           void *, void *,void *,void *);
+extern void fortranmdot4_(void *,void *,void *,void *,void *,int *,
+                           void *,void *,void *,void *);
 extern void fortranmdot3_(void *,void *,void *,void *,int *,
-                           void *, void *,void *);
+                           void *,void *,void *);
 extern void fortranmdot2_(void *,void *,void *,int *,
-                           void *, void *);
+                           void *,void *);
 extern void fortranmdot1_(void *,void *,int *,
                            void *);
 #endif

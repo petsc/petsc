@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.261 1999/11/10 03:22:47 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.262 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -38,7 +38,7 @@
 
 /*
     Variable type where we stash PETSc object pointers in Fortran.
-    Assumes that sizeof(long) == sizeof(void *) which is true on 
+    Assumes that sizeof(long) == sizeof(void*)which is true on 
     all machines that we know.
 */     
 #define PetscFortranAddr   long
@@ -52,7 +52,7 @@ extern int      PetscSetCommWorld(MPI_Comm);
     Defines the malloc employed by PETSc. Users may use these routines as well. 
 */
 #define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
-#define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
+#define PetscNew(A)          (A*)PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
 extern void *(*PetscTrMalloc)(int,int,char*,char*,char*);
 extern int  (*PetscTrFree)(void *,int,char*,char*,char*);
@@ -65,7 +65,7 @@ extern int  PetscClearMalloc(void);
    memory allocation
 */
 extern int   PetscTrDump(FILE *);
-extern int   PetscTrSpace(PLogDouble *, PLogDouble *,PLogDouble *);
+extern int   PetscTrSpace(PLogDouble *,PLogDouble *,PLogDouble *);
 extern int   PetscTrValid(int,const char[],const char[],const char[]);
 extern int   PetscTrDebugLevel(int);
 extern int   PetscTrLog(void);
@@ -76,16 +76,28 @@ extern int   PetscGetResidentSetSize(PLogDouble *);
      Constants and functions used for handling different basic data types.
      These are used, for example, in binary IO routines
 */
-typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
-              PETSC_COMPLEX = 4, PETSC_CHAR = 5, PETSC_LOGICAL = 6} PetscDataType;
+typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_SHORT = 2,PETSC_FLOAT = 3,
+              PETSC_COMPLEX = 4,PETSC_CHAR = 5,PETSC_LOGICAL = 6} PetscDataType;
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
-typedef enum {PETSC_INT_SIZE = sizeof(int), PETSC_DOUBLE_SIZE = sizeof(double),
-              PETSC_SCALAR_SIZE = sizeof(Scalar), PETSC_COMPLEX_SIZE = sizeof(double),
-              PETSC_CHAR_SIZE = sizeof(char), PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
+#if defined(PETSC_USE_SINGLE)
+#define PETSC_REAL PETSC_FLOAT
+#else
+#define PETSC_REAL PETSC_DOUBLE
+#endif
+
+typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
+              PETSC_SCALAR_SIZE = sizeof(Scalar),PETSC_COMPLEX_SIZE = sizeof(double),
+              PETSC_CHAR_SIZE = sizeof(char),PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
+#if defined(PETSC_USE_SINGLE)
+#define PETSC_REAL_SIZE PETSC_FLOAT_SIZE
+#else
+#define PETSC_REAL_SIZE PETSC_DOUBLE_SIZE
+#endif
+
 extern int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 extern int PetscDataTypeGetSize(PetscDataType,int*);
 extern int PetscDataTypeGetName(PetscDataType,char*[]);
@@ -93,7 +105,7 @@ extern int PetscDataTypeGetName(PetscDataType,char*[]);
 /*
        Basic PETSc constants
 */
-typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
+typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
 #define PETSC_YES            PETSC_TRUE
 #define PETSC_NO             PETSC_FALSE
 #define PETSC_NULL           0
@@ -111,7 +123,7 @@ extern int   PetscMemcpy(void *,const void *,int);
 extern int   PetscBitMemcpy(void*,int,const void*,int,int,PetscDataType);
 extern int   PetscMemmove(void *,void *,int);
 extern int   PetscMemzero(void *,int);
-extern int   PetscMemcmp(const void*,const void*, int,PetscTruth *);
+extern int   PetscMemcmp(const void*,const void*,int,PetscTruth *);
 extern int   PetscStrlen(const char[],int*);
 extern int   PetscStrcmp(const char[],const char[],PetscTruth *);
 extern int   PetscStrgrt(const char[],const char[],PetscTruth *);
@@ -126,7 +138,8 @@ extern int   PetscStrrchr(const char[],char,char **);
 extern int   PetscStrstr(const char[],const char[],char **);
 extern int   PetscStrtok(const char[],const char[],char **);
 extern int   PetscStrallocpy(const char[],char **);
-#define PetscStrfree(a) ( (a) ? PetscFree(a) : 0 ) 
+extern int   PetscStrreplace(const char[],char*,int,char **,char **);
+#define PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
 
 extern MPI_Op PetscMaxSum_Op;
 #if defined(PETSC_USE_COMPLEX)
@@ -169,9 +182,9 @@ extern int  PetscInitializeFortran(void);
 */
 extern int PetscObjectDestroy(PetscObject);
 extern int PetscObjectExists(PetscObject,PetscTruth*);
-extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
-extern int PetscObjectGetCookie(PetscObject,int *cookie);
-extern int PetscObjectGetType(PetscObject,int *type);
+extern int PetscObjectGetComm(PetscObject,MPI_Comm *);
+extern int PetscObjectGetCookie(PetscObject,int *);
+extern int PetscObjectGetType(PetscObject,int *);
 extern int PetscObjectSetName(PetscObject,const char[]);
 extern int PetscObjectGetName(PetscObject,char*[]);
 extern int PetscObjectReference(PetscObject);
@@ -230,7 +243,7 @@ extern int FListPrintTypes(MPI_Comm,FILE*,const char[],const char[],FList);
 #endif
 extern int FListDuplicate(FList,FList *);
 extern int FListView(FList,Viewer);
-extern int FListConcat(const char [],const char [], char []);
+extern int FListConcat(const char [],const char [],char []);
 
 /*
    Routines for handling dynamic libraries. PETSc uses dynamic libraries
@@ -266,6 +279,7 @@ extern int PetscSequentialPhaseEnd(MPI_Comm,int);
 extern int PetscBarrier(PetscObject);
 extern int PetscMPIDump(FILE*);
 
+#define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 /*
     Defines basic graphics available from PETSc.
 */
@@ -281,16 +295,32 @@ extern int PetscMPIDump(FILE*);
 */
 #include "petsclog.h"
 
+/*
+          For locking, unlocking and destroying AMS memories associated with 
+    PETSc objects
+*/
 #if defined(PETSC_HAVE_AMS)
+
 extern PetscTruth PetscAMSPublishAll;
 #define PetscPublishAll(v)\
   { if (PetscAMSPublishAll) { \
-    int __ierr;\
-    __ierr = PetscObjectPublish((PetscObject)v);CHKERRQ(__ierr);\
+    int __ierr; __ierr = PetscObjectPublish((PetscObject)v);CHKERRQ(__ierr);\
   }}
+#define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
+#define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
+#define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem)); \
+    ((PetscObject)(obj))->amem = -1;
+
 #else
+
 #define PetscPublishAll(v)
+#define PetscObjectTakeAccess(obj)   0
+#define PetscObjectGrantAccess(obj)  0
+#define PetscObjectDepublish(obj)      0
+
 #endif
+
+
 
 /*
       This code allows one to pass a MPI communicator between 
@@ -305,16 +335,19 @@ extern int  MPIFortranCommToCComm(int,MPI_Comm*);
       Simple PETSc parallel IO for ASCII printing
 */
 extern int  PetscFixFilename(const char[],char[]);
-extern FILE *PetscFOpen(MPI_Comm,const char[],const char[]);
+extern int  PetscFOpen(MPI_Comm,const char[],const char[],FILE**);
 extern int  PetscFClose(MPI_Comm,FILE*);
 extern int  PetscFPrintf(MPI_Comm,FILE*,const char[],...);
 extern int  PetscPrintf(MPI_Comm,const char[],...);
 extern int  (*PetscErrorPrintf)(const char[],...);
 extern int  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
-
+extern int  PetscPOpen(MPI_Comm,char *,char*,const char[],FILE **);
+extern int  PetscPClose(MPI_Comm,FILE*);
 extern int  PetscSynchronizedPrintf(MPI_Comm,const char[],...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
+extern int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);
+extern int  PetscStartJava(MPI_Comm,char *,char*,FILE**);
 
 /*
     Simple PETSc object that contains a pointer to any required data

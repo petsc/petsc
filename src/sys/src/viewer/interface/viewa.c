@@ -1,4 +1,4 @@
-/*$Id: viewa.c,v 1.7 1999/10/13 20:36:28 bsmith Exp bsmith $*/
+/*$Id: viewa.c,v 1.9 1999/10/24 14:01:08 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -149,7 +149,7 @@ int ViewerPopFormat(Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerASCIIGetOutputname"
-int ViewerGetOutputname(Viewer viewer, char **name)
+int ViewerGetOutputname(Viewer viewer,char **name)
 {
   PetscFunctionBegin;
   *name = viewer->outputname;

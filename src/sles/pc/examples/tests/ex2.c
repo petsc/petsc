@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.44 1999/05/04 20:34:27 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.46 1999/10/24 14:03:06 bsmith Exp bsmith $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";
@@ -13,11 +13,11 @@ users should employ the SLES interface instead of using PC directly.\n\n";
 int main(int argc,char **args)
 {
   Mat     mat;          /* matrix */
-  Vec     b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
+  Vec     b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
   PC      pc;           /* PC context */
   KSP     ksp;          /* KSP context */
-  int     ierr, n = 10, i, its, col[3];
-  Scalar  value[3], mone = -1.0, one = 1.0, zero = 0.0;
+  int     ierr,n = 10,i,its,col[3];
+  Scalar  value[3],mone = -1.0,one = 1.0,zero = 0.0;
   PCType  pcname;
   KSPType kspname;
   double  norm;
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   /* Create and assemble matrix */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
-  for (i=1; i<n-1; i++ ) {
+  for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
     ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
   }

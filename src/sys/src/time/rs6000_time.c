@@ -1,4 +1,4 @@
-/*$Id: rs6000_time.c,v 1.3 1999/05/12 03:27:19 bsmith Exp bsmith $*/
+/*$Id: rs6000_time.c,v 1.4 1999/10/24 14:01:31 bsmith Exp bsmith $*/
 
 #include <petsc.h>
 #if defined (PETSC_USE_READ_REAL_TIME)
@@ -15,14 +15,14 @@ PLogDouble rs6000_time(void)
    PetscFunctionBegin;
 
    /* read in the register values */
-   read_real_time(&t, TIMEBASE_SZ);
+   read_real_time(&t,TIMEBASE_SZ);
  
    /*
     * Call the conversion routines unconditionally, to ensure
     * that both values are in seconds and nanoseconds regardless
     * of the hardware platform. 
     */
-   time_base_to_time(&t, TIMEBASE_SZ);
+   time_base_to_time(&t,TIMEBASE_SZ);
  
    time = t.tb_high + t.tb_low*1.0e-9;
    PetscFunctionReturn(time);

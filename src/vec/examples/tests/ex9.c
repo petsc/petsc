@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.41 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.43 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\n";
 
@@ -9,9 +9,9 @@ static char help[]= "Scatters from a parallel vector to a sequential vector.\n\n
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx2[3] = {0,2,3}, idx1[3] = {0,1,2};
+  int           n = 5,ierr,idx2[3] = {0,2,3},idx1[3] = {0,1,2};
   int           size,rank,i;
-  Scalar        mone = -1.0, value;
+  Scalar        mone = -1.0,value;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,3,idx2,&is2);CHKERRA(ierr);
 
   /* fill local part of parallel vector */
-  for ( i=n*rank; i<n*(rank+1); i++ ) {
+  for (i=n*rank; i<n*(rank+1); i++) {
     value = (Scalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }

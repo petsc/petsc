@@ -1,4 +1,4 @@
-/*$Id: f90_t3e.c,v 1.3 1999/05/12 03:34:46 bsmith Exp bsmith $*/
+/*$Id: f90_t3e.c,v 1.4 1999/10/24 14:04:23 bsmith Exp bsmith $*/
 
 /*
          This file contains the code to map between Fortran 90 
@@ -20,7 +20,7 @@
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create1dArrayScalar(Scalar *array,int len, array1d *ptr)
+int PetscF90Create1dArrayScalar(Scalar *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
   ptr->id            = F90_SCALAR_ID;
@@ -47,7 +47,7 @@ int PetscF90Create1dArrayScalar(Scalar *array,int len, array1d *ptr)
 */ 
 int PetscF90Get1dArrayScalar(array1d *ptr,Scalar **array)
 {
-  *array = (Scalar *) ptr->addr;
+  *array = (Scalar*)ptr->addr;
   return 0;
 }
 
@@ -76,7 +76,7 @@ int PetscF90Destroy1dArrayScalar(array1d *ptr)
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
+int PetscF90Create2dArrayScalar(Scalar *array,int m,int n,array2d *ptr)
 {
   ptr->addr          = (void *)array;
   ptr->id            = F90_SCALAR_ID;
@@ -106,7 +106,7 @@ int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
 */ 
 int PetscF90Get2dArrayScalar(array2d *ptr,Scalar **array)
 {
-  *array = (Scalar *) ptr->addr;
+  *array = (Scalar*)ptr->addr;
   return 0;
 }
 
@@ -135,7 +135,7 @@ int PetscF90Destroy2dArrayScalar(array2d *ptr)
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create1dArrayInt(int *array,int len, array1d *ptr)
+int PetscF90Create1dArrayInt(int *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
   ptr->id            = F90_INT_ID;
@@ -162,7 +162,7 @@ int PetscF90Create1dArrayInt(int *array,int len, array1d *ptr)
 */ 
 int PetscF90Get1dArrayInt(array1d *ptr,int **array)
 {
-  *array = (int *) ptr->addr;
+  *array = (int*)ptr->addr;
   return 0;
 }
 
@@ -191,7 +191,7 @@ int PetscF90Destroy1dArrayInt(array1d *ptr)
   Output Parameters:
 .   ptr - Fortran 90 pointer
 */ 
-int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len, array1d *ptr)
+int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
   ptr->id            = F90_INT_ID;
@@ -218,7 +218,7 @@ int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len, array
 */ 
 int PetscF90Get1dArrayPetscFortranAddr(array1d *ptr,PetscFortranAddr **array)
 {
-  *array = (PetscFortranAddr *) ptr->addr;
+  *array = (PetscFortranAddr*)ptr->addr;
   return 0;
 }
 

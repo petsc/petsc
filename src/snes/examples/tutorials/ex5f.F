@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.48 1999/03/18 00:27:08 curfman Exp curfman $";
+! "$Id: ex5f.F,v 1.49 1999/03/18 00:35:23 curfman Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -30,7 +30,7 @@
 !  Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !  the partial differential equation
 !  
-!          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+!          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
 ! 
 !  with boundary conditions
 !  
@@ -69,16 +69,16 @@
 !  See additional variable declarations in the file ex5f.h
 !
       SNES                   snes
-      Vec                    x, r
+      Vec                    x,r
       Mat                    J
       ISLocalToGlobalMapping isltog
-      integer                its, Nx, Ny, matrix_free, flg, N, ierr, m
-      double precision       lambda_max, lambda_min
+      integer                its,Nx,Ny,matrix_free,flg,N,ierr,m
+      double precision       lambda_max,lambda_min
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
-      external FormFunction, FormInitialGuess, FormJacobian
+      external FormFunction,FormInitialGuess,FormJacobian
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -339,8 +339,8 @@
       integer ierr
 
 !  Local variables:
-      integer  i, j, hxdhy, hydhx
-      Scalar   temp1, temp, hx, hy, sc, one
+      integer  i,j,hxdhy,hydhx
+      Scalar   temp1,temp,hx,hy,sc,one
 
 !  Set parameters
 
@@ -397,13 +397,13 @@
 
 !  Input/output variables:
       SNES     snes
-      Vec      X, F
+      Vec      X,F
       integer  dummy
       integer  ierr
 
 !  Declarations for use with local arrays:
-      Scalar      lx_v(0:1), lf_v(0:1)
-      PetscOffset lx_i, lf_i 
+      Scalar      lx_v(0:1),lf_v(0:1)
+      PetscOffset lx_i,lf_i 
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -466,13 +466,13 @@
 #include "ex5f.h"
 
 !  Input/output variables:
-      Scalar   x(gxs:gxe,gys:gye), f(gxs:gxe,gys:gye)
+      Scalar   x(gxs:gxe,gys:gye),f(gxs:gxe,gys:gye)
       integer  ierr
 
 !  Local variables:
-      Scalar   two, one, hx, hy, hxdhy, hydhx, sc
-      Scalar   u, uxx, uyy
-      integer  i, j
+      Scalar   two,one,hx,hy,hxdhy,hydhx,sc
+      Scalar   u,uxx,uyy
+      integer  i,j
 
       one    = 1.0
       two    = 2.0
@@ -559,7 +559,7 @@
 !  Input/output variables:
       SNES         snes
       Vec          X
-      Mat          jac, jac_prec
+      Mat          jac,jac_prec
       MatStructure flag
       integer      dummy
       integer      ierr
@@ -568,7 +568,7 @@
       Scalar      lx_v(0:1)
       PetscOffset lx_i
 
-!  Scatter ghost points to local vector, using the 2-step process
+!  Scatter ghost points to local vector,using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
@@ -666,12 +666,12 @@
 
 !  Input/output variables:
       Scalar   x(gxs:gxe,gys:gye)
-      Mat      jac, jac_prec
+      Mat      jac,jac_prec
       integer  ierr
 
 !  Local variables:
-      integer  row, col(5), i, j
-      Scalar   two, one, hx, hy, hxdhy, hydhx, sc, v(5)
+      integer  row,col(5),i,j
+      Scalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 

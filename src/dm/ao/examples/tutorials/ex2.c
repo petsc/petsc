@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.23 1999/10/24 14:04:02 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.24 1999/11/05 14:47:48 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -72,13 +72,13 @@ T*/
     This is the user-defined grid data context 
 */
 typedef struct {
-  int    n_vert, n_ele;
-  int    mlocal_vert, mlocal_ele;
+  int    n_vert,n_ele;
+  int    mlocal_vert,mlocal_ele;
   int    *ele;
   double *vert;
-  int    *ia, *ja;
+  int    *ia,*ja;
   IS     isnewproc;
-  int    *localvert, nlocal; /* used to stash temporarily old global vertex number of new vertex */
+  int    *localvert,nlocal; /* used to stash temporarily old global vertex number of new vertex */
 } GridData;
 
 /*
@@ -212,8 +212,8 @@ int DataRead(GridData *gdata)
       vertices are assigned to each processor. Splitting vertices equally amoung
       all processors.
     */ 
-    mmlocal_vert = (int *) PetscMalloc(size*sizeof(int));CHKPTRA(mmlocal_vert);
-    for ( i=0; i<size; i++ ) {
+    mmlocal_vert = (int*)PetscMalloc(size*sizeof(int));CHKPTRA(mmlocal_vert);
+    for (i=0; i<size; i++) {
       mmlocal_vert[i] = n_vert/size + ((n_vert % size) > i);
       printf("Processor %d assigned %d vertices\n",i,mmlocal_vert[i]);
     }
@@ -221,9 +221,9 @@ int DataRead(GridData *gdata)
     /*
        Read in vertices assigned to first processor
     */ 
-    vert = (double *) PetscMalloc(2*mmlocal_vert[0]*sizeof(double));CHKPTRA(vert);   
+    vert = (double*)PetscMalloc(2*mmlocal_vert[0]*sizeof(double));CHKPTRA(vert);   
     printf("Vertices assigned to processor 0\n");
-    for ( i=0; i<mlocal_vert; i++ ) {
+    for (i=0; i<mlocal_vert; i++) {
       fscanf(fd,"%d %lf %lf\n",&cnt,vert+2*i,vert+2*i+1);
       printf("%d %g %g\n",cnt,vert[2*i],vert[2*i+1]);
     }
@@ -231,10 +231,10 @@ int DataRead(GridData *gdata)
     /* 
        Read in vertices for all the other processors 
     */
-    tmpvert = (double *) PetscMalloc(2*mmlocal_vert[0]*sizeof(double));CHKPTRA(tmpvert);
-    for ( j=1; j<size; j++ ) {
+    tmpvert = (double*)PetscMalloc(2*mmlocal_vert[0]*sizeof(double));CHKPTRA(tmpvert);
+    for (j=1; j<size; j++) {
       printf("Vertices assigned to processor %d\n",j);
-      for ( i=0; i<mmlocal_vert[j]; i++ ) {
+      for (i=0; i<mmlocal_vert[j]; i++) {
         fscanf(fd,"%d %lf %lf\n",&cnt,tmpvert+2*i,tmpvert+2*i+1);
         printf("%d %g %g\n",cnt,tmpvert[2*i],tmpvert[2*i+1]);
       }
@@ -256,8 +256,8 @@ int DataRead(GridData *gdata)
       Allocate enough room for the first processor to keep track of how many 
       elements are assigned to each processor.
     */ 
-    mmlocal_ele = (int *) PetscMalloc(size*sizeof(int));CHKPTRA(mmlocal_ele);
-    for ( i=0; i<size; i++ ) {
+    mmlocal_ele = (int*)PetscMalloc(size*sizeof(int));CHKPTRA(mmlocal_ele);
+    for (i=0; i<size; i++) {
       mmlocal_ele[i] = n_ele/size + ((n_ele % size) > i);
       printf("Processor %d assigned %d elements\n",i,mmlocal_ele[i]);
     }
@@ -265,9 +265,9 @@ int DataRead(GridData *gdata)
     /*
         read in element information for the first processor
     */
-    ele = (int *) PetscMalloc(3*mmlocal_ele[0]*sizeof(int));CHKPTRA(ele);   
+    ele = (int*)PetscMalloc(3*mmlocal_ele[0]*sizeof(int));CHKPTRA(ele);   
     printf("Elements assigned to processor 0\n");
-    for ( i=0; i<mlocal_ele; i++ ) {
+    for (i=0; i<mlocal_ele; i++) {
       fscanf(fd,"%d %d %d %d\n",&cnt,ele+3*i,ele+3*i+1,ele+3*i+2);
       printf("%d %d %d %d\n",cnt,ele[3*i],ele[3*i+1],ele[3*i+2]);
     }
@@ -275,10 +275,10 @@ int DataRead(GridData *gdata)
     /* 
        Read in elements for all the other processors 
     */
-    tmpele = (int *) PetscMalloc(3*mmlocal_ele[0]*sizeof(int));CHKPTRA(tmpele);
-    for ( j=1; j<size; j++ ) {
+    tmpele = (int*)PetscMalloc(3*mmlocal_ele[0]*sizeof(int));CHKPTRA(tmpele);
+    for (j=1; j<size; j++) {
       printf("Elements assigned to processor %d\n",j);
-      for ( i=0; i<mmlocal_ele[j]; i++ ) {
+      for (i=0; i<mmlocal_ele[j]; i++) {
         fscanf(fd,"%d %d %d %d\n",&cnt,tmpele+3*i,tmpele+3*i+1,tmpele+3*i+2);
         printf("%d %d %d %d\n",cnt,tmpele[3*i],tmpele[3*i+1],tmpele[3*i+2]);
       }
@@ -291,13 +291,13 @@ int DataRead(GridData *gdata)
          We don't know how many spaces in ja[] to allocate so we allocate 
        3*the number of local elements, this is the maximum it could be
     */
-    ia    = (int *) PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(ia);
-    ja    = (int *) PetscMalloc((3*mlocal_ele+1)*sizeof(int));CHKPTRA(ja);
+    ia    = (int*)PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(ia);
+    ja    = (int*)PetscMalloc((3*mlocal_ele+1)*sizeof(int));CHKPTRA(ja);
     net   = 0;
     ia[0] = 0;
     printf("Element neighbors on processor 0\n");
     fgets(msg,128,fd);
-    for ( i=0; i<mlocal_ele; i++ ) {
+    for (i=0; i<mlocal_ele; i++) {
       fscanf(fd,"%d %d %d %d\n",&cnt,&a1,&a2,&a3);
       printf("%d %d %d %d\n",cnt,a1,a2,a3);
       if (a1 >= 0) {ja[net++] = a1;}
@@ -307,12 +307,12 @@ int DataRead(GridData *gdata)
     }
 
     printf("ia values for processor 0\n");
-    for ( i=0; i<mlocal_ele+1; i++ ) {
+    for (i=0; i<mlocal_ele+1; i++) {
       printf("%d ",ia[i]);
     }
     printf("\n");
     printf("ja values for processor 0\n");
-    for ( i=0; i<ia[mlocal_ele]; i++ ) {
+    for (i=0; i<ia[mlocal_ele]; i++) {
       printf("%d ",ja[i]);
     }
     printf("\n");
@@ -320,13 +320,13 @@ int DataRead(GridData *gdata)
     /*
        Read in element neighbor information for all other processors
     */
-    iatmp    = (int *) PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(iatmp);
-    jatmp    = (int *) PetscMalloc((3*mlocal_ele+1)*sizeof(int));CHKPTRA(jatmp);
-    for ( j=1; j<size; j++ ) {
+    iatmp    = (int*)PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(iatmp);
+    jatmp    = (int*)PetscMalloc((3*mlocal_ele+1)*sizeof(int));CHKPTRA(jatmp);
+    for (j=1; j<size; j++) {
       net   = 0;
       iatmp[0] = 0;
       printf("Element neighbors on processor %d\n",j);
-      for ( i=0; i<mmlocal_ele[j]; i++ ) {
+      for (i=0; i<mmlocal_ele[j]; i++) {
         fscanf(fd,"%d %d %d %d\n",&cnt,&a1,&a2,&a3);
         printf("%d %d %d %d\n",cnt,a1,a2,a3);
         if (a1 >= 0) {jatmp[net++] = a1;}
@@ -336,12 +336,12 @@ int DataRead(GridData *gdata)
       }
 
       printf("ia values for processor %d\n",j);
-      for ( i=0; i<mmlocal_ele[j]+1; i++ ) {
+      for (i=0; i<mmlocal_ele[j]+1; i++) {
         printf("%d ",iatmp[i]);
       }
       printf("\n");
       printf("ja values for processor %d\n",j);
-      for ( i=0; i<iatmp[mmlocal_ele[j]]; i++ ) {
+      for (i=0; i<iatmp[mmlocal_ele[j]]; i++) {
         printf("%d ",jatmp[i]);
       }
       printf("\n");
@@ -366,7 +366,7 @@ int DataRead(GridData *gdata)
     mlocal_vert = n_vert/size + ((n_vert % size) > rank);
 
     /* receive vertices */
-    vert = (double *) PetscMalloc(2*(mlocal_vert+1)*sizeof(double));CHKPTRQ(vert);
+    vert = (double*)PetscMalloc(2*(mlocal_vert+1)*sizeof(double));CHKPTRQ(vert);
     ierr = MPI_Recv(vert,2*mlocal_vert,MPI_DOUBLE,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive total number of elements */
@@ -374,14 +374,14 @@ int DataRead(GridData *gdata)
     mlocal_ele = n_ele/size + ((n_ele % size) > rank);
 
     /* receive elements */
-    ele = (int *) PetscMalloc(3*(mlocal_ele+1)*sizeof(int));CHKPTRQ(ele);
+    ele = (int*)PetscMalloc(3*(mlocal_ele+1)*sizeof(int));CHKPTRQ(ele);
     ierr = MPI_Recv(ele,3*mlocal_ele,MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive element adjacency graph */
-    ia    = (int *) PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(ia);
+    ia    = (int*)PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(ia);
     ierr = MPI_Recv(ia,mlocal_ele+1,MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
-    ja    = (int *) PetscMalloc((ia[mlocal_ele]+1)*sizeof(int));CHKPTRA(ja);
+    ja    = (int*)PetscMalloc((ia[mlocal_ele]+1)*sizeof(int));CHKPTRA(ja);
     ierr = MPI_Recv(ja,ia[mlocal_ele],MPI_INT,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
@@ -424,7 +424,7 @@ int DataPartitionElements(GridData *gdata)
   /*
       Create the adjacency graph matrix
   */
-  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,&Adj);CHKERRQ(ierr);
+  ierr = MatCreateMPICSR(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,PETSC_NULL,&Adj);CHKERRQ(ierr);
 
   /*
       Create the partioning object
@@ -473,7 +473,7 @@ int DataMoveElements(GridData *gdata)
   /* 
       Determine how many elements are assigned to each processor 
   */
-  counts = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(counts);
+  counts = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(counts);
   ierr   = ISPartitioningCount(gdata->isnewproc,counts);CHKERRQ(ierr);
 
   /* 
@@ -498,7 +498,7 @@ int DataMoveElements(GridData *gdata)
     of the vectors of having a block size of 3 and there is one index in idx[] for each block)
   */
   ierr = ISGetIndices(isnum,&idx);CHKERRQ(ierr);
-  for ( i=0; i<gdata->mlocal_ele; i++ ) {
+  for (i=0; i<gdata->mlocal_ele; i++) {
     idx[i] *= 3;
   }
   ierr = ISCreateBlock(PETSC_COMM_WORLD,3,gdata->mlocal_ele,idx,&isscat);CHKERRQ(ierr);
@@ -510,7 +510,7 @@ int DataMoveElements(GridData *gdata)
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,3*gdata->mlocal_ele,&veleold);CHKERRQ(ierr);
   ierr = VecGetArray(veleold,&array);CHKERRQ(ierr);
-  for ( i=0; i<3*gdata->mlocal_ele; i++ ) {
+  for (i=0; i<3*gdata->mlocal_ele; i++) {
     array[i] = gdata->ele[i];
   }
   ierr = VecRestoreArray(veleold,&array);CHKERRQ(ierr);
@@ -531,17 +531,17 @@ int DataMoveElements(GridData *gdata)
   ierr = PetscFree(gdata->ele);CHKERRQ(ierr);
   gdata->mlocal_ele = counts[rank];
   ierr = PetscFree(counts);CHKERRQ(ierr);
-  gdata->ele = (int *) PetscMalloc(3*gdata->mlocal_ele*sizeof(int));CHKERRQ(ierr);
+  gdata->ele = (int*)PetscMalloc(3*gdata->mlocal_ele*sizeof(int));CHKERRQ(ierr);
   ierr       = VecGetArray(vele,&array);CHKERRQ(ierr);
-  for ( i=0; i<3*gdata->mlocal_ele; i++ ) {
-    gdata->ele[i] = (int) array[i];
+  for (i=0; i<3*gdata->mlocal_ele; i++) {
+    gdata->ele[i] = (int)array[i];
   }
   ierr = VecRestoreArray(vele,&array);CHKERRQ(ierr);
   ierr = VecDestroy(vele);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Old vertex numbering in new element ordering\n");CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);CHKERRQ(ierr);
-  for ( i=0; i<gdata->mlocal_ele; i++ ) {
+  for (i=0; i<gdata->mlocal_ele; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %d %d %d\n",i,gdata->ele[3*i],gdata->ele[3*i+1],
                             gdata->ele[3*i+2]);CHKERRQ(ierr);
   } 
@@ -614,7 +614,7 @@ int DataPartitionVertices(GridData *gdata)
 
   if (rank == size-1) {
     /* last processor gets all the rest */
-    for ( i=0; i<n_vert; i++ ) {
+    for (i=0; i<n_vert; i++) {
       if (!PetscBTLookup(mask,i)) {
         nlocal++;
       }
@@ -625,14 +625,14 @@ int DataPartitionVertices(GridData *gdata)
   /* 
      Now we know how many are local, allocated enough space for them and mark them 
   */
-  localvert = (int *) PetscMalloc((nmax+1)*sizeof(int));CHKPTRQ(localvert);
+  localvert = (int*)PetscMalloc((nmax+1)*sizeof(int));CHKPTRQ(localvert);
 
   /* generate local list and fill in mask */
   nlocal = 0;
   if (rank < size-1) {
     /* count my vertices */
-    for ( i=0; i<mlocal_ele; i++ ) {
-      for ( j=0; j<3; j++ ) {
+    for (i=0; i<mlocal_ele; i++) {
+      for (j=0; j<3; j++) {
         if (!PetscBTLookupSet(mask,ele[3*i+j])) {
           localvert[nlocal++] = ele[3*i+j];
           if (nlocal >= nmax) goto foundenough2;
@@ -642,7 +642,7 @@ int DataPartitionVertices(GridData *gdata)
     foundenough2:;
   } else {
     /* last processor gets all the rest */
-    for ( i=0; i<n_vert; i++ ) {
+    for (i=0; i<n_vert; i++) {
       if (!PetscBTLookup(mask,i)) {
         localvert[nlocal++] = i;
       }
@@ -697,7 +697,7 @@ int DataMoveVertices(GridData *gdata)
   ierr = AOApplicationToPetsc(ao,3*gdata->mlocal_ele,gdata->ele);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"New vertex numbering in new element ordering\n");CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);CHKERRQ(ierr);
-  for ( i=0; i<gdata->mlocal_ele; i++ ) {
+  for (i=0; i<gdata->mlocal_ele; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %d %d %d\n",i,gdata->ele[3*i],gdata->ele[3*i+1],
                             gdata->ele[3*i+2]);CHKERRQ(ierr);
   } 
@@ -723,7 +723,7 @@ int DataMoveVertices(GridData *gdata)
       There are two data items per vertex, the x and y coordinates (i.e. one can think 
     of the vectors of having a block size of 2 and there is one index in localvert[] for each block)
   */
-  for ( i=0; i<gdata->nlocal; i++ ) gdata->localvert[i] *= 2;
+  for (i=0; i<gdata->nlocal; i++) gdata->localvert[i] *= 2;
   ierr = ISCreateBlock(PETSC_COMM_WORLD,2,gdata->nlocal,gdata->localvert,&isscat);CHKERRQ(ierr);
   ierr = PetscFree(gdata->localvert);CHKERRQ(ierr);
 
@@ -742,7 +742,7 @@ int DataMoveVertices(GridData *gdata)
   /*
         Put resulting vertex information into gdata->vert array
   */
-  gdata->vert = (double *) PetscMalloc(2*gdata->nlocal*sizeof(double));
+  gdata->vert = (double*)PetscMalloc(2*gdata->nlocal*sizeof(double));
   ierr = VecGetArray(vert,&avert);CHKERRQ(ierr);
   ierr = PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(double));CHKERRQ(ierr);
   ierr = VecRestoreArray(vert,&avert);CHKERRQ(ierr);
@@ -750,7 +750,7 @@ int DataMoveVertices(GridData *gdata)
   ierr = VecDestroy(vert);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");CHKERRQ(ierr);
-  for ( i=0; i<2*gdata->mlocal_vert; i++ ) {
+  for (i=0; i<2*gdata->mlocal_vert; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%g\n",gdata->vert[i]);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);

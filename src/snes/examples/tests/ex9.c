@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.37 1999/10/24 14:03:39 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.38 1999/11/05 14:47:16 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
@@ -15,7 +15,7 @@ ignition) test problem. The command line options are:\n\
     1) Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y,z < 1 ,
+            -Laplacian u - lambda*exp(u) = 0,  0 < x,y,z < 1,
   
     with boundary conditions
    
@@ -31,16 +31,16 @@ ignition) test problem. The command line options are:\n\
 
 typedef struct {
     double    param;           /* test problem nonlinearity parameter */
-    int       mx, my, mz;      /* discretization in x,y,z-directions */
-    Vec       localX, localF;  /* ghosted local vectors */
+    int       mx,my,mz;      /* discretization in x,y,z-directions */
+    Vec       localX,localF;  /* ghosted local vectors */
     DA        da;              /* distributed array datastructure */
 } AppCtx;
 
-extern int FormFunction1(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
+extern int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES          snes;                 /* nonlinear solver */
   SLES          sles;                 /* linear solver */
@@ -49,12 +49,12 @@ int main( int argc, char **argv )
   AppCtx        user;                 /* user-defined application context */
   Vec           x,r;                  /* vectors */
   DAStencilType stencil = DA_STENCIL_BOX;
-  int           ierr, its;
+  int           ierr,its;
   PetscTruth    flg;
-  int           Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, Nz = PETSC_DECIDE; 
-  double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  int           Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,Nz = PETSC_DECIDE; 
+  double        bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = OptionsHasName(PETSC_NULL,"-star",&flg);CHKERRA(ierr);
   if (flg) stencil = DA_STENCIL_STAR;
 
@@ -62,7 +62,7 @@ int main( int argc, char **argv )
   user.my    = 4; 
   user.mz    = 4; 
   user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mz",&user.mz,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
@@ -97,8 +97,8 @@ int main( int argc, char **argv )
 
   /* Solve nonlinear system */
   ierr = FormInitialGuess1(&user,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(user.localX);CHKERRA(ierr);
@@ -114,8 +114,8 @@ int main( int argc, char **argv )
 #define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int     i,j,k, loc, mx, my, mz, ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
-  double  one = 1.0, lambda, temp1, temp, Hx, Hy;
+  int     i,j,k,loc,mx,my,mz,ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
+  double  one = 1.0,lambda,temp1,temp,Hx,Hy;
   Scalar  *x;
   Vec     localX = user->localX;
 
@@ -137,7 +137,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
           x[loc] = 0.0; 
           continue;
         }
-        x[loc] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*Hx,temp) ); 
+        x[loc] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*Hx,temp)); 
       }
     }
   }
@@ -151,12 +151,12 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #define __FUNC__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
-  int     ierr, i, j, k,loc, mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm;
-  int     base1, base2;
-  double  two = 2.0, one = 1.0, lambda,Hx, Hy, Hz, HxHzdHy, HyHzdHx,HxHydHz;
-  Scalar  u, uxx, uyy, sc,*x,*f,uzz;
-  Vec     localX = user->localX, localF = user->localF; 
+  AppCtx *user = (AppCtx*)ptr;
+  int     ierr,i,j,k,loc,mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm;
+  int     base1,base2;
+  double  two = 2.0,one = 1.0,lambda,Hx,Hy,Hz,HxHzdHy,HyHzdHx,HxHydHz;
+  Scalar  u,uxx,uyy,sc,*x,*f,uzz;
+  Vec     localX = user->localX,localF = user->localF; 
 
   mx      = user->mx; my = user->my; mz = user->mz; lambda = user->param;
   Hx      = one / (double)(mx-1);

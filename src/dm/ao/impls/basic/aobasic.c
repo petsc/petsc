@@ -1,4 +1,4 @@
-/*$Id: aobasic.c,v 1.50 1999/10/24 14:03:59 bsmith Exp bsmith $*/
+/*$Id: aobasic.c,v 1.51 1999/11/05 14:47:45 bsmith Exp bsmith $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -18,7 +18,7 @@ typedef struct {
 #define __FUNC__ "AOBasicGetIndices_Private" 
 int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 {
-  AO_Basic *basic = (AO_Basic *) ao->data;
+  AO_Basic *basic = (AO_Basic*)ao->data;
 
   PetscFunctionBegin;
   if (app)   *app   = basic->app;
@@ -30,7 +30,7 @@ int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 #define __FUNC__ "AODestroy_Basic" 
 int AODestroy_Basic(AO ao)
 {
-  AO_Basic *aodebug = (AO_Basic *) ao->data;
+  AO_Basic *aodebug = (AO_Basic*)ao->data;
   int      ierr;
 
   PetscFunctionBegin;
@@ -49,7 +49,7 @@ int AODestroy_Basic(AO ao)
 int AOView_Basic(AO ao,Viewer viewer)
 {
   int        rank,ierr,i;
-  AO_Basic   *aodebug = (AO_Basic*) ao->data;
+  AO_Basic   *aodebug = (AO_Basic*)ao->data;
   PetscTruth isascii;
 
   PetscFunctionBegin;
@@ -59,7 +59,7 @@ int AOView_Basic(AO ao,Viewer viewer)
     if (isascii) { 
       ierr = ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
       ierr = ViewerASCIIPrintf(viewer,"   App.   PETSc\n");CHKERRQ(ierr);
-      for ( i=0; i<aodebug->N; i++ ) {
+      for (i=0; i<aodebug->N; i++) {
         ierr = ViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
@@ -75,10 +75,10 @@ int AOView_Basic(AO ao,Viewer viewer)
 int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 {
   int      i;
-  AO_Basic *aodebug = (AO_Basic *) ao->data;
+  AO_Basic *aodebug = (AO_Basic*)ao->data;
 
   PetscFunctionBegin;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (ia[i] >= 0) {ia[i] = aodebug->app[ia[i]];}
   }
   PetscFunctionReturn(0);
@@ -89,10 +89,10 @@ int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
 {
   int      i;
-  AO_Basic *aodebug = (AO_Basic *) ao->data;
+  AO_Basic *aodebug = (AO_Basic*)ao->data;
 
   PetscFunctionBegin;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (ia[i] >= 0) {ia[i] = aodebug->petsc[ia[i]];}
   }
   PetscFunctionReturn(0);
@@ -137,7 +137,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 
   PetscFunctionBegin;
   *aoout = 0;
-  PetscHeaderCreate(ao, _p_AO,struct _AOOps,AO_COOKIE,AO_BASIC,"AO",comm,AODestroy,AOView); 
+  PetscHeaderCreate(ao,_p_AO,struct _AOOps,AO_COOKIE,AO_BASIC,"AO",comm,AODestroy,AOView); 
   PLogObjectCreate(ao);
   aodebug            = PetscNew(AO_Basic);
   PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Basic));
@@ -150,11 +150,11 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   /* transmit all lengths to all processors */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  lens = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(lens);
+  lens = (int*)PetscMalloc(2*size*sizeof(int));CHKPTRQ(lens);
   disp = lens + size;
   ierr = MPI_Allgather(&napp,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
   N =  0;
-  for ( i=0; i<size; i++ ) {
+  for (i=0; i<size; i++) {
     disp[i] = N;
     N += lens[i];
   }
@@ -165,8 +165,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   */
   if (!mypetsc) {
     start = disp[rank];
-    petsc = (int *) PetscMalloc((napp+1)*sizeof(int));CHKPTRQ(petsc);
-    for ( i=0; i<napp; i++ ) {
+    petsc = (int*)PetscMalloc((napp+1)*sizeof(int));CHKPTRQ(petsc);
+    for (i=0; i<napp; i++) {
       petsc[i] = start + i;
     }
   } else {
@@ -174,18 +174,18 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   }
 
   /* get all indices on all processors */
-  allpetsc = (int *) PetscMalloc( 2*N*sizeof(int) );CHKPTRQ(allpetsc);
+  allpetsc = (int*)PetscMalloc(2*N*sizeof(int));CHKPTRQ(allpetsc);
   allapp   = allpetsc + N;
   ierr = MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   ierr = MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  aodebug->app   = (int *) PetscMalloc(2*N*sizeof(int));CHKPTRQ(aodebug->app);
+  aodebug->app   = (int*)PetscMalloc(2*N*sizeof(int));CHKPTRQ(aodebug->app);
   PLogObjectMemory(ao,2*N*sizeof(int));
   aodebug->petsc = aodebug->app + N;
   ierr           = PetscMemzero(aodebug->app,2*N*sizeof(int));CHKERRQ(ierr);
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     ip = allpetsc[i]; ia = allapp[i];
     /* check there are no duplicates */
     if (aodebug->app[ip]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in PETSc ordering");
@@ -196,7 +196,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   if (!mypetsc) {ierr = PetscFree(petsc);CHKERRQ(ierr);}
   ierr = PetscFree(allpetsc);CHKERRQ(ierr);
   /* shift indices down by one */
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     aodebug->app[i]--;
     aodebug->petsc[i]--;
   }

@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.45 1999/10/24 14:03:36 bsmith Exp bsmith $*/
+/*$Id: snestest.c,v 1.46 1999/11/05 14:47:13 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -20,7 +20,7 @@ int SNESSolve_Test(SNES snes,int *its)
   MatStructure flg;
   Scalar       mone = -1.0,one = 1.0;
   double       norm,gnorm;
-  SNES_Test    *neP = (SNES_Test*) snes->data;
+  SNES_Test    *neP = (SNES_Test*)snes->data;
 
   PetscFunctionBegin;
   *its = 0;
@@ -36,13 +36,13 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = (*PetscHelpPrintf)(snes->comm,"of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
   }
 
-  for ( i=0; i<3; i++ ) {
+  for (i=0; i<3; i++) {
     if (i == 1) {ierr = VecSet(&mone,x);CHKERRQ(ierr);}
     else if (i == 2) {ierr = VecSet(&one,x);CHKERRQ(ierr);}
  
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
-    if (i == 0) {ierr = MatConvert(A,MATSAME,&B);CHKERRQ(ierr);}
+    if (!i) {ierr = MatConvert(A,MATSAME,&B);CHKERRQ(ierr);}
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
       ierr = PetscPrintf(snes->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
@@ -102,7 +102,7 @@ static int SNESSetFromOptions_Test(SNES snes)
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate_Test"
-int SNESCreate_Test(SNES  snes )
+int SNESCreate_Test(SNES  snes)
 {
   SNES_Test *neP;
 
@@ -119,7 +119,7 @@ int SNESCreate_Test(SNES  snes )
 
   neP			= PetscNew(SNES_Test);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_Test));
-  snes->data    	= (void *) neP;
+  snes->data    	= (void*)neP;
   neP->complete_print   = 0;
   PetscFunctionReturn(0);
 }

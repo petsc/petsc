@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.39 1999/10/24 14:02:04 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.40 1999/11/05 14:45:05 bsmith Exp bsmith $*/
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
 user-defined event logging.\n\n";
@@ -13,11 +13,11 @@ user-defined event logging.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int     i, m = 10, rank, size, low, high, ldim, iglobal, ierr;
+  int     i,m = 10,rank,size,low,high,ldim,iglobal,ierr;
   Scalar  v;
   Vec     u;
   Viewer  viewer;
-  int     VECTOR_GENERATE, VECTOR_READ;
+  int     VECTOR_GENERATE,VECTOR_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   /* Read new vector in binary format */
   ierr = PLogEventRegister(&VECTOR_READ,"Read Vector","Green:");CHKERRA(ierr);
   PLogEventBegin(VECTOR_READ,0,0,0,0);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
   ierr = VecLoad(viewer,&u);CHKERRA(ierr);
   ierr = ViewerDestroy(viewer);CHKERRA(ierr);

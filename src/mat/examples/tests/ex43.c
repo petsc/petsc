@@ -1,4 +1,4 @@
-/*$Id: ex43.c,v 1.9 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex43.c,v 1.10 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat     C;
   Scalar  v;
-  int     i, j, ierr, m = 4, n = 4, rank, size;
+  int     i,j,ierr,m = 4,n = 4,rank,size;
   Viewer  viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -23,8 +23,8 @@ int main(int argc,char **args)
 
   /* Generate matrix */
   ierr = MatCreateSeqDense(PETSC_COMM_WORLD,m,n,PETSC_NULL,&C);CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = i*m+j;
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }

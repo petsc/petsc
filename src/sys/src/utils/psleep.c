@@ -1,4 +1,4 @@
-/*$Id: psleep.c,v 1.21 1999/09/02 14:52:59 bsmith Exp bsmith $*/
+/*$Id: psleep.c,v 1.22 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)
@@ -7,7 +7,7 @@
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSleep"

@@ -1,4 +1,4 @@
-/*$Id: aoreduced.c,v 1.18 1999/10/24 14:03:59 bsmith Exp bsmith $*/
+/*$Id: aoreduced.c,v 1.19 1999/11/05 14:47:45 bsmith Exp bsmith $*/
 
 #include "src/dm/ao/aoimpl.h"     /*I   "ao.h"  I*/
 #include "sys.h"
@@ -11,7 +11,7 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   AODataSegment *segment; 
   AODataKey     *key;
   int           ierr,dsize,i,bs,*found,count,imin,imax,*out;
-  char          *idata, *odata;
+  char          *idata,*odata;
   PetscBT       mask;
   PetscTruth    flag;
 
@@ -28,20 +28,20 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   */
   ierr  = PetscDataTypeGetSize(segment->datatype,&dsize);CHKERRQ(ierr);
   bs    = segment->bs;
-  odata = (char *) PetscMalloc((n+1)*bs*dsize);CHKPTRQ(odata);
-  idata = (char *) segment->data;
-  for ( i=0; i<n; i++ ) {
+  odata = (char*)PetscMalloc((n+1)*bs*dsize);CHKPTRQ(odata);
+  idata = (char*)segment->data;
+  for (i=0; i<n; i++) {
     ierr = PetscMemcpy(odata + i*bs*dsize,idata + keys[i]*bs*dsize,bs*dsize);CHKERRQ(ierr);
   }
 
-  found = (int *) odata;
+  found = (int*)odata;
   n     = n*bs;
 
   /*  Determine the max and min values */
   if (n) {
     imin = PETSC_MAX_INT;
     imax = 0;  
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       if (found[i] < 0) continue;
       imin = PetscMin(imin,found[i]);
       imax = PetscMax(imax,found[i]);
@@ -52,14 +52,14 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values into the mask and count them */
   count = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (found[i] < 0) continue;
     if (!PetscBTLookupSet(mask,found[i] - imin)) count++;
   }
   ierr = PetscBTMemzero(imax-imin,mask);CHKERRQ(ierr);
-  out = (int *) PetscMalloc((count+1)*sizeof(int));CHKPTRQ(out);
+  out = (int*)PetscMalloc((count+1)*sizeof(int));CHKPTRQ(out);
   count = 0;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (found[i] < 0) continue;
     if (!PetscBTLookupSet(mask,found[i] - imin)) {out[count++] = found[i];}
   }

@@ -1,4 +1,4 @@
-/*$Id: viewers.c,v 1.5 1999/10/24 14:01:08 bsmith Exp bsmith $*/
+/*$Id: viewers.c,v 1.6 1999/11/05 14:43:47 bsmith Exp bsmith $*/
 
 #include "viewer.h"
 
@@ -29,7 +29,7 @@ int ViewersDestroy(Viewers v)
   int         i,ierr;
 
   PetscFunctionBegin;
-  for ( i=0; i<v->n; i++ ) {
+  for (i=0; i<v->n; i++) {
     if (v->viewer[i]) {ierr = ViewerDestroy(v->viewer[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree(v->viewer);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int ViewersCreate(MPI_Comm comm,Viewers *v)
   *v           = PetscNew(struct _p_Viewers);CHKPTRQ(*v);
   (*v)->n      = 64;
   (*v)->comm   = comm;
-  (*v)->viewer = (Viewer *) PetscMalloc(64*sizeof(Viewer));CHKPTRQ(v);
+  (*v)->viewer = (Viewer*)PetscMalloc(64*sizeof(Viewer));CHKPTRQ(v);
   ierr = PetscMemzero((*v)->viewer,64*sizeof(Viewer));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -101,7 +101,7 @@ int ViewersGetViewer(Viewers viewers,int n,Viewer *viewer)
     Viewer *v;
     int    newn = n + 64; /* add 64 new ones at a time */
      
-    v    = (Viewer *) PetscMalloc(newn*sizeof(Viewer));CHKPTRQ(v);
+    v    = (Viewer*)PetscMalloc(newn*sizeof(Viewer));CHKPTRQ(v);
     ierr = PetscMemzero(v,newn*sizeof(Viewer));CHKERRQ(ierr);
     ierr = PetscMemcpy(v,viewers->viewer,viewers->n*sizeof(Viewer));CHKERRQ(ierr);
     ierr = PetscFree(viewers->viewer);CHKERRQ(ierr);

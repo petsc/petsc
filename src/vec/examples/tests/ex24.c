@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.9 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.10 1999/11/05 14:44:58 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
@@ -10,7 +10,7 @@ Tests where the local part of the scatter is a copy.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, size,rank,i,*blks, bs = 1,m = 2;
+  int           n = 5,ierr,size,rank,i,*blks,bs = 1,m = 2;
   Scalar        value;
   Vec           x,y;
   IS            is1,is2;
@@ -34,9 +34,9 @@ int main(int argc,char **argv)
   } else {
     m = n;
   }
-  blks = (int *) PetscMalloc( (m)*sizeof(int) );CHKPTRA(blks);
+  blks = (int*)PetscMalloc((m)*sizeof(int));CHKPTRA(blks);
   blks[0] = n*rank*bs;
-  for ( i=1; i<m; i++ ) {
+  for (i=1; i<m; i++) {
     blks[i] = blks[i-1] + bs;   
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,&is1);CHKERRA(ierr);
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
-  for ( i=0; i<bs*n*size; i++ ) {
+  for (i=0; i<bs*n*size; i++) {
     value = (Scalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }

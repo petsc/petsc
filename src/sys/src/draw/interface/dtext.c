@@ -1,4 +1,4 @@
-/*$Id: dtext.c,v 1.21 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dtext.c,v 1.23 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -24,7 +24,7 @@
 .seealso: DrawStringVertical()
 
 @*/
-int DrawString(Draw draw,double xl,double yl,int cl,char *text)
+int DrawString(Draw draw,PetscReal xl,PetscReal yl,int cl,char *text)
 {
   int        ierr ;
   PetscTruth isnull;

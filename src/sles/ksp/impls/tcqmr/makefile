@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.33 1999/01/31 16:09:02 bsmith Exp balay $ 
+# $Id: makefile,v 1.34 1999/02/01 21:27:12 balay Exp bsmith $ 
 
 ALL: lib 
 
@@ -9,7 +9,7 @@ SOURCEF   =
 SOURCEH   = tcqmrp.h
 OBJSC     = tcqmr.o
 OBJSF     = 
-EXAMPLESC = tfreeqmr.m qmr.m
+EXAMPLESC = 
 LIBBASE   = libpetscsles
 LOCDIR    = src/sles/ksp/impls/tcqmr/
 

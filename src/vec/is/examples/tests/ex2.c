@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.11 1999/10/24 14:01:46 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.12 1999/11/05 14:44:41 bsmith Exp bsmith $*/
 
 /*
        Formatted test for ISStride routines.
@@ -12,7 +12,7 @@ static char help[] = "Tests IS stride routines\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        i, n, ierr,*ii,start,stride;
+  int        i,n,ierr,*ii,start,stride;
   IS         is;
   PetscTruth flg;
 

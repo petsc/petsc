@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.37 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.38 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -38,15 +38,15 @@ extern int MyKSPMonitor(KSP,int,double,void*);
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec        x1, b1, x2, b2; /* solution and RHS vectors for systems #1 and #2 */
+  Vec        x1,b1,x2,b2; /* solution and RHS vectors for systems #1 and #2 */
   Vec        u;              /* exact solution vector */
-  Mat        C1, C2;         /* matrices for systems #1 and #2 */
-  SLES       sles1, sles2;   /* SLES contexts for systems #1 and #2 */
+  Mat        C1,C2;         /* matrices for systems #1 and #2 */
+  SLES       sles1,sles2;   /* SLES contexts for systems #1 and #2 */
   KSP        ksp1;           /* KSP context for system #1 */
   int        ntimes = 3;     /* number of times to solve the linear systems */
   int        CHECK_ERROR;    /* event number for error checking */
-  int        ldim, ierr, low, high, iglobal, Istart, Iend, Istart2, Iend2;
-  int        I, J, i, j, m = 3, n = 2, rank, size, its, t;
+  int        ldim,ierr,low,high,iglobal,Istart,Iend,Istart2,Iend2;
+  int        I,J,i,j,m = 3,n = 2,rank,size,its,t;
   PetscTruth flg;
   Scalar     v;
 
@@ -185,17 +185,17 @@ int main(int argc,char **args)
           appropriate processor during matrix assembly). 
         - Always specify global row and columns of matrix entries.
     */
-    for ( I=Istart; I<Iend; I++ ) { 
+    for (I=Istart; I<Iend; I++) { 
       v = -1.0; i = I/n; j = I - i*n;  
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C1,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
     }
-    for ( I=Istart; I<Iend; I++ ) { /* Make matrix nonsymmetric */
+    for (I=Istart; I<Iend; I++) { /* Make matrix nonsymmetric */
       v = -1.0*(t+0.5); i = I/n;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
     PLogFlops(2*(Istart-Iend));
 
@@ -292,19 +292,19 @@ int main(int argc,char **args)
        - For best efficiency the user should strive to set as many
          entries locally as possible.
     */
-    for ( i=0; i<m; i++ ) { 
-      for ( j=2*rank; j<2*rank+2; j++ ) {
+    for (i=0; i<m; i++) { 
+      for (j=2*rank; j<2*rank+2; j++) {
         v = -1.0;  I = j + n*i;
-        if ( i>0 )   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-        if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-        if ( j>0 )   {J = I - 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
-        if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+        if (i>0)   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+        if (i<m-1) {J = I + n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+        if (j>0)   {J = I - 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+        if (j<n-1) {J = I + 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
         v = 6.0 + t*0.5; ierr = MatSetValues(C2,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
       }
     } 
-    for ( I=Istart2; I<Iend2; I++ ) { /* Make matrix nonsymmetric */
+    for (I=Istart2; I<Iend2; I++) { /* Make matrix nonsymmetric */
       v = -1.0*(t+0.5); i = I/n;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
     ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr); 

@@ -1,4 +1,4 @@
-/*$Id: smg.c,v 1.17 1999/10/24 14:03:01 bsmith Exp bsmith $*/
+/*$Id: smg.c,v 1.18 1999/11/24 21:54:37 bsmith Exp bsmith $*/
 /*
      Additive Multigrid V Cycle routine    
 */
@@ -17,20 +17,20 @@
 #define __FUNC__ "MGACycle_Private"
 int MGACycle_Private(MG *mg)
 {
-  int    i, l = mg[0]->levels,its,ierr;
+  int    i,l = mg[0]->levels,its,ierr;
   Scalar zero = 0.0;
 
   PetscFunctionBegin;
   /* compute RHS on each level */
-  for ( i=l-1; i>0; i-- ) {
-    ierr = MatRestrict(mg[i]->restrct,  mg[i]->b, mg[i-1]->b);CHKERRQ(ierr);
+  for (i=l-1; i>0; i--) {
+    ierr = MatRestrict(mg[i]->restrct,mg[i]->b,mg[i-1]->b);CHKERRQ(ierr);
   }
   /* solve seperately on each level */
-  for ( i=0; i<l; i++ ) {
+  for (i=0; i<l; i++) {
     ierr = VecSet(&zero,mg[i]->x);CHKERRQ(ierr); 
-    ierr = SLESSolve(mg[i]->smoothd, mg[i]->b, mg[i]->x,&its);CHKERRQ(ierr); 
+    ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its);CHKERRQ(ierr); 
   }
-  for ( i=1; i<l; i++ ) {  
+  for (i=1; i<l; i++) {  
     ierr = MatInterpolateAdd(mg[i]->interpolate,mg[i-1]->x,mg[i]->x,mg[i]->x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

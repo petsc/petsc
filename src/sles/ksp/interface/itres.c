@@ -1,4 +1,4 @@
-/*$Id: itres.c,v 1.41 1999/10/24 14:03:08 bsmith Exp bsmith $*/
+/*$Id: itres.c,v 1.42 1999/11/05 14:46:35 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
@@ -29,11 +29,11 @@ $     M u = f
 
 .seealso:  KSPMonitor()
 @*/
-int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
+int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
 {
   Scalar        one = -1.0;
   MatStructure  pflag;
-  Mat           Amat, Pmat;
+  Mat           Amat,Pmat;
   int           ierr;
 
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.21 1999/10/13 20:37:30 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.22 1999/11/24 21:54:03 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -9,25 +9,25 @@
 typedef struct {
   int           *rowners,*cowners;      /* ranges owned by each processor */
   int           *rowners_bs;            /* rowners*bs */
-  int           m, n;                   /* local rows and columns */
-  int           M, N;                   /* global rows and columns */
-  int           rstart, rend;           /* starting and ending owned rows */
-  int           cstart, cend;           /* starting and ending owned columns */
-  Mat           A, B;                   /* local submatrices: A (diag part),
+  int           m,n;                   /* local rows and columns */
+  int           M,N;                   /* global rows and columns */
+  int           rstart,rend;           /* starting and ending owned rows */
+  int           cstart,cend;           /* starting and ending owned columns */
+  Mat           A,B;                   /* local submatrices: A (diag part),
                                            B (off-diag part) */
   int           size;                   /* size of communicator */
   int           rank;                   /* rank of proc in communicator */ 
-  int           bs, bs2;                /* block size, bs2 = bs*bs */
-  int           Mbs, Nbs;               /* number block rows/cols in matrix; M/bs, N/bs */
-  int           mbs, nbs;               /* number block rows/cols on processor; m/bs, n/bs */
+  int           bs,bs2;                /* block size, bs2 = bs*bs */
+  int           Mbs,Nbs;               /* number block rows/cols in matrix; M/bs, N/bs */
+  int           mbs,nbs;               /* number block rows/cols on processor; m/bs, n/bs */
 
   /* The following variables are used for matrix assembly */
 
   PetscTruth    donotstash;             /* if 1, off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
-  int           nsends, nrecvs;         /* numbers of sends and receives */
-  Scalar        *svalues, *rvalues;     /* sending and receiving data */
+  int           nsends,nrecvs;         /* numbers of sends and receives */
+  Scalar        *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
 #if defined (PETSC_USE_CTABLE)
   PetscTable    colmap;
@@ -52,8 +52,8 @@ typedef struct {
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
   /* Some variables to make MatSetValues and others more efficient */
-  int           rstart_bs, rend_bs; 
-  int           cstart_bs, cend_bs;
+  int           rstart_bs,rend_bs; 
+  int           cstart_bs,cend_bs;
   int           *ht;                      /* Hash table to speed up matrix assembly */
   Scalar        **hd;                     /* Hash table data */
   int           ht_size;

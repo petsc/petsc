@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: fnroot.c,v 1.10 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* fnroot.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -38,7 +38,7 @@ int SPARSEPACKfnroot(int *root, int *xadj, int *adjncy,
     int i__1, i__2;
 
     /* Local variables */
-    static int ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, 
+    int ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, 
 	    ccsize, nunlvl;
     extern int SPARSEPACKrootls(int *, int *, int *, 
 	    int *, int *, int *, int *);

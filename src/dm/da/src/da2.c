@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.133 1999/11/10 03:22:06 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.134 1999/11/24 21:55:34 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
@@ -18,7 +18,7 @@ int DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 #define __FUNC__ "DAView_2d"
 int DAView_2d(DA da,Viewer viewer)
 {
-  int        rank, ierr;
+  int        rank,ierr;
   PetscTruth isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
@@ -34,8 +34,8 @@ int DAView_2d(DA da,Viewer viewer)
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     Draw       draw;
-    double     ymin = -1*da->s-1, ymax = da->N+da->s;
-    double     xmin = -1*da->s-1, xmax = da->M+da->s;
+    double     ymin = -1*da->s-1,ymax = da->N+da->s;
+    double     xmin = -1*da->s-1,xmax = da->M+da->s;
     double     x,y;
     int        base,*idx;
     char       node[10];
@@ -49,11 +49,11 @@ int DAView_2d(DA da,Viewer viewer)
     /* first processor draw all node lines */
     if (!rank) {
       ymin = 0.0; ymax = da->N - 1;
-      for ( xmin=0; xmin<da->M; xmin++ ) {
+      for (xmin=0; xmin<da->M; xmin++) {
         ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);CHKERRQ(ierr);
       }
       xmin = 0.0; xmax = da->M - 1;
-      for ( ymin=0; ymin<da->N; ymin++ ) {
+      for (ymin=0; ymin<da->N; ymin++) {
         ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);CHKERRQ(ierr);
       }
     }
@@ -70,8 +70,8 @@ int DAView_2d(DA da,Viewer viewer)
 
     /* put in numbers */
     base = (da->base)/da->w;
-    for ( y=ymin; y<=ymax; y++ ) {
-      for ( x=xmin; x<=xmax; x++ ) {
+    for (y=ymin; y<=ymax; y++) {
+      for (x=xmin; x<=xmax; x++) {
         sprintf(node,"%d",base++);
         ierr = DrawString(draw,x,y,DRAW_BLACK,node);CHKERRQ(ierr);
       }
@@ -84,8 +84,8 @@ int DAView_2d(DA da,Viewer viewer)
 
     base = 0; idx = da->idx;
     ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
-    for ( y=ymin; y<ymax; y++ ) {
-      for ( x=xmin; x<xmax; x++ ) {
+    for (y=ymin; y<ymax; y++) {
+      for (x=xmin; x<xmax; x++) {
         if ((base % da->w) == 0) {
           sprintf(node,"%d",idx[base]/da->w);
           ierr = DrawString(draw,x/da->w,y,DRAW_BLUE,node);CHKERRQ(ierr);
@@ -113,7 +113,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "AMSSetFieldBlock_DA"
 int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
 {
-  int        ierr,dof,dim, ends[4],shift = 0,starts[] = {0,0,0,0};
+  int        ierr,dof,dim,ends[4],shift = 0,starts[] = {0,0,0,0};
   DA         da = 0;
   PetscTruth isseq,ismpi;
 
@@ -172,7 +172,7 @@ int DAPublish_Petsc(PetscObject obj)
 
 #if defined(PETSC_HAVE_AMS)
   /* if it is already published then return */
-  if (v->amem >=0 ) PetscFunctionReturn(0);
+  if (v->amem >=0) PetscFunctionReturn(0);
 
   ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
@@ -231,11 +231,11 @@ int DAPublish_Petsc(PetscObject obj)
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M,int N,int m,int n,int dof,int s,int *lx,int *ly,DA *inra)
 {
-  int           rank, size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
+  int           rank,size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   int           s_x,s_y; /* s proportionalized to w */
-  int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,*flx = 0, *fly = 0;
+  int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,*flx = 0,*fly = 0;
   int           sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
   PetscTruth    flg1,flg2;
   DA            da;
@@ -257,8 +257,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->gtog1      = 0;
   da->localused  = PETSC_FALSE;
   da->globalused = PETSC_FALSE;
-  da->fieldname  = (char **) PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
-  ierr = PetscMemzero(da->fieldname, dof*sizeof(char*));CHKERRQ(ierr);
+  da->fieldname  = (char**)PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
+  ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
@@ -275,8 +275,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     /* try for squarish distribution */
     /* This should use MPI_Dims_create instead */
-    m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)N) ));
-    if (m == 0) m = 1;
+    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
+    if (!m) m = 1;
     while (m > 0) {
       n = size/m;
       if (m*n == size) break;
@@ -304,11 +304,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (lx) { /* user sets distribution */
     x  = lx[rank % m];
     xs = 0;
-    for ( i=0; i<(rank % m); i++ ) {
+    for (i=0; i<(rank % m); i++) {
       xs += lx[i];
     }
     left = xs;
-    for ( i=(rank % m); i<m; i++ ) {
+    for (i=(rank % m); i<m; i++) {
       left += lx[i];
     }
     if (left != M) {
@@ -330,8 +330,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
     else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
-    flx = lx = (int *) PetscMalloc( m*sizeof(int) );CHKPTRQ(lx);
-    for ( i=0; i<m; i++ ) {
+    flx = lx = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(lx);
+    for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > i);
     }
   }
@@ -343,11 +343,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (ly) { /* user sets distribution */
     y  = ly[rank/m];
     ys = 0;
-    for ( i=0; i<(rank/m); i++ ) {
+    for (i=0; i<(rank/m); i++) {
       ys += ly[i];
     }
     left = ys;
-    for ( i=(rank/m); i<n; i++ ) {
+    for (i=(rank/m); i<n; i++) {
       left += ly[i];
     }
     if (left != N) {
@@ -369,8 +369,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);
     if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
     else                    { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
-    fly = ly = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(lx);
-    for ( i=0; i<n; i++ ) {
+    fly = ly = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(lx);
+    for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > i);
     }
   }
@@ -408,14 +408,14 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* determine starting point of each processor */
   nn = x*y;
-  bases = (int *) PetscMalloc( (2*size+1)*sizeof(int) );CHKPTRQ(bases);
-  ldims = (int *) (bases+size+1);
+  bases = (int*)PetscMalloc((2*size+1)*sizeof(int));CHKPTRQ(bases);
+  ldims = (int*)(bases+size+1);
   ierr = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
-  for ( i=1; i<=size; i++ ) {
+  for (i=1; i<=size; i++) {
     bases[i] = ldims[i-1];
   }
-  for ( i=1; i<=size; i++ ) {
+  for (i=1; i<=size; i++) {
     bases[i] += bases[i-1];
   }
 
@@ -432,10 +432,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = ISCreateStride(comm,x*y,start,1,&to);CHKERRQ(ierr);
 
   left  = xs - Xs; down  = ys - Ys; up    = down + y;
-  idx = (int *) PetscMalloc( x*(up - down)*sizeof(int) );CHKPTRQ(idx);
+  idx = (int*)PetscMalloc(x*(up - down)*sizeof(int));CHKPTRQ(idx);
   count = 0;
-  for ( i=down; i<up; i++ ) {
-    for ( j=0; j<x; j++ ) {
+  for (i=down; i<up; i++) {
+    for (j=0; j<x; j++) {
       idx[count++] = left + i*(Xe-Xs) + j;
     }
   }
@@ -465,22 +465,22 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     /* bottom */
     left  = xs - Xs; down = ys - Ys; up    = down + y;
     count = down*(xe-xs) + (up-down)*(Xe-Xs) + (Ye-Ys-up)*(xe-xs);
-    idx   = (int *) PetscMalloc( count*sizeof(int) );CHKPTRQ(idx);
+    idx   = (int*)PetscMalloc(count*sizeof(int));CHKPTRQ(idx);
     count = 0;
-    for ( i=0; i<down; i++ ) {
-      for ( j=0; j<xe-xs; j++ ) {
+    for (i=0; i<down; i++) {
+      for (j=0; j<xe-xs; j++) {
         idx[count++] = left + i*(Xe-Xs) + j;
       }
     }
     /* middle */
-    for ( i=down; i<up; i++ ) {
-      for ( j=0; j<Xe-Xs; j++ ) {
+    for (i=down; i<up; i++) {
+      for (j=0; j<Xe-Xs; j++) {
         idx[count++] = i*(Xe-Xs) + j;
       }
     }
     /* top */
-    for ( i=up; i<Ye-Ys; i++ ) {
-      for ( j=0; j<xe-xs; j++ ) {
+    for (i=up; i<Ye-Ys; i++) {
+      for (j=0; j<xe-xs; j++) {
         idx[count++] = left + i*(Xe-Xs) + j;
       }
     }
@@ -568,63 +568,63 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   nn = 0;
 
   xbase = bases[rank];
-  for ( i=1; i<=s_y; i++ ) {
+  for (i=1; i<=s_y; i++) {
     if (n0 >= 0) { /* left below */
       x_t = lx[n0 % m]*dof;
       y_t = ly[(n0/m)];
       s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
     if (n1 >= 0) { /* directly below */
       x_t = x;
       y_t = ly[(n1/m)];
       s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
-      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
     }
     if (n2 >= 0) { /* right below */
       x_t = lx[n2 % m]*dof;
       y_t = ly[(n2/m)];
       s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
   }
 
-  for ( i=0; i<y; i++ ) {
+  for (i=0; i<y; i++) {
     if (n3 >= 0) { /* directly left */
       x_t = lx[n3 % m]*dof;
       y_t = y;
       s_t = bases[n3] + (i+1)*x_t - s_x;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
 
-    for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
+    for (j=0; j<x; j++) { idx[nn++] = xbase++; } /* interior */
 
     if (n5 >= 0) { /* directly right */
       x_t = lx[n5 % m]*dof;
       y_t = y;
       s_t = bases[n5] + (i)*x_t;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
   }
 
-  for ( i=1; i<=s_y; i++ ) {
+  for (i=1; i<=s_y; i++) {
     if (n6 >= 0) { /* left above */
       x_t = lx[n6 % m]*dof;
       y_t = ly[(n6/m)];
       s_t = bases[n6] + (i)*x_t - s_x;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
     if (n7 >= 0) { /* directly above */
       x_t = x;
       y_t = ly[(n7/m)];
       s_t = bases[n7] + (i-1)*x_t;
-      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
     }
     if (n8 >= 0) { /* right above */
       x_t = lx[n8 % m]*dof;
       y_t = ly[(n8/m)];
       s_t = bases[n8] + (i-1)*x_t;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
   }
 
@@ -644,63 +644,63 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     n0 = sn0; n2 = sn2; n6 = sn6; n8 = sn8;
     nn = 0;
     xbase = bases[rank];
-    for ( i=1; i<=s_y; i++ ) {
+    for (i=1; i<=s_y; i++) {
       if (n0 >= 0) { /* left below */
         x_t = lx[n0 % m]*dof;
         y_t = ly[(n0/m)];
         s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n1 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n1/m)];
         s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n2 >= 0) { /* right below */
         x_t = lx[n2 % m]*dof;
         y_t = ly[(n2/m)];
         s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=0; i<y; i++ ) {
+    for (i=0; i<y; i++) {
       if (n3 >= 0) { /* directly left */
         x_t = lx[n3 % m]*dof;
         y_t = y;
         s_t = bases[n3] + (i+1)*x_t - s_x;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
 
-      for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
+      for (j=0; j<x; j++) { idx[nn++] = xbase++; } /* interior */
 
       if (n5 >= 0) { /* directly right */
         x_t = lx[n5 % m]*dof;
         y_t = y;
         s_t = bases[n5] + (i)*x_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=1; i<=s_y; i++ ) {
+    for (i=1; i<=s_y; i++) {
       if (n6 >= 0) { /* left above */
         x_t = lx[n6 % m]*dof;
         y_t = ly[(n6/m)];
         s_t = bases[n6] + (i)*x_t - s_x;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n7/m)];
         s_t = bases[n7] + (i-1)*x_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n8 >= 0) { /* right above */
         x_t = lx[n8 % m]*dof;
         y_t = ly[(n8/m)];
         s_t = bases[n8] + (i-1)*x_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
   }
@@ -807,63 +807,63 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   nn = 0;
 
   xbase = bases[rank];
-  for ( i=1; i<=s_y; i++ ) {
+  for (i=1; i<=s_y; i++) {
     if (n0 >= 0) { /* left below */
       x_t = lx[n0 % m]*dof;
       y_t = ly[(n0/m)];
       s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
     if (n1 >= 0) { /* directly below */
       x_t = x;
       y_t = ly[(n1/m)];
       s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
-      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
     }
     if (n2 >= 0) { /* right below */
       x_t = lx[n2 % m]*dof;
       y_t = ly[(n2/m)];
       s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
   }
 
-  for ( i=0; i<y; i++ ) {
+  for (i=0; i<y; i++) {
     if (n3 >= 0) { /* directly left */
       x_t = lx[n3 % m]*dof;
       y_t = y;
       s_t = bases[n3] + (i+1)*x_t - s_x;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
 
-    for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
+    for (j=0; j<x; j++) { idx[nn++] = xbase++; } /* interior */
 
     if (n5 >= 0) { /* directly right */
       x_t = lx[n5 % m]*dof;
       y_t = y;
       s_t = bases[n5] + (i)*x_t;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
   }
 
-  for ( i=1; i<=s_y; i++ ) {
+  for (i=1; i<=s_y; i++) {
     if (n6 >= 0) { /* left above */
       x_t = lx[n6 % m]*dof;
       y_t = ly[(n6/m)];
       s_t = bases[n6] + (i)*x_t - s_x;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
     if (n7 >= 0) { /* directly above */
       x_t = x;
       y_t = ly[(n7/m)];
       s_t = bases[n7] + (i-1)*x_t;
-      for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
     }
     if (n8 >= 0) { /* right above */
       x_t = lx[n8 % m]*dof;
       y_t = ly[(n8/m)];
       s_t = bases[n8] + (i-1)*x_t;
-      for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
   }
   /* keep bases for use at end of routine */
@@ -878,10 +878,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecScatterCopy(gtol,&da->ltol);CHKERRQ(ierr);
   PLogObjectParent(da,da->ltol);
   left  = xs - Xs; down  = ys - Ys; up    = down + y;
-  idx = (int *) PetscMalloc( x*(up - down)*sizeof(int) );CHKPTRQ(idx);
+  idx = (int*)PetscMalloc(x*(up - down)*sizeof(int));CHKPTRQ(idx);
   count = 0;
-  for ( i=down; i<up; i++ ) {
-    for ( j=0; j<x; j++ ) {
+  for (i=down; i<up; i++) {
+    for (j=0; j<x; j++) {
       idx[count++] = left + i*(Xe-Xs) + j;
     }
   }
@@ -892,12 +892,12 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
      Build the natural ordering to PETSc ordering mappings.
   */
   {
-    IS  ispetsc, isnatural;
-    int *lidx,lict = 0, Nlocal = (da->xe-da->xs)*(da->ye-da->ys);
+    IS  ispetsc,isnatural;
+    int *lidx,lict = 0,Nlocal = (da->xe-da->xs)*(da->ye-da->ys);
 
     ierr = ISCreateStride(comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
 
-    lidx = (int *) PetscMalloc(Nlocal*sizeof(int));CHKPTRQ(lidx);
+    lidx = (int*)PetscMalloc(Nlocal*sizeof(int));CHKPTRQ(lidx);
     for (j=ys; j<ye; j++) {
       for (i=xs; i<xe; i++) {
         /*  global number in natural ordering */
@@ -913,11 +913,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = ISDestroy(isnatural);CHKERRQ(ierr);
   }
   if (!flx) {
-    flx  = (int *) PetscMalloc(m*sizeof(int));CHKPTRQ(flx);
+    flx  = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(flx);
     ierr = PetscMemcpy(flx,lx,m*sizeof(int));CHKERRQ(ierr);
   }
   if (!fly) {
-    fly  = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(fly);
+    fly  = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(fly);
     ierr = PetscMemcpy(fly,ly,n*sizeof(int));CHKERRQ(ierr);
   }
   da->lx = flx;
@@ -1045,9 +1045,9 @@ int DAPrintHelp(DA da)
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy()
 @*/
-int DARefine(DA da, DA *daref)
+int DARefine(DA da,DA *daref)
 {
-  int M, N, P, ierr;
+  int M,N,P,ierr;
   DA  da2;
 
   PetscFunctionBegin;

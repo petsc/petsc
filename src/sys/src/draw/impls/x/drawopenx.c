@@ -1,4 +1,4 @@
-/*$Id: drawopenx.c,v 1.11 1999/11/05 14:43:58 bsmith Exp bsmith $*/
+/*$Id: drawopenx.c,v 1.12 1999/11/10 03:17:43 bsmith Exp bsmith $*/
 /*
     Defines the operations for the X Draw implementation.
 */
@@ -14,9 +14,9 @@
 
    Input Parameters:
 +  comm - the communicator that will share X-window
-.  display - the X display on which to open, or null for the local machine
-.  title - the title to put in the title bar, or null for no title
-.  x, y - the screen coordinates of the upper left corner of window
+.  display - the X display on which to open,or null for the local machine
+.  title - the title to put in the title bar,or null for no title
+.  x,y - the screen coordinates of the upper left corner of window
           may use PETSC_DECIDE for these two arguments, then PETSc places the 
           window
 -  w, h - the screen width and height in pixels,  or DRAW_HALF_SIZE, DRAW_FULL_SIZE,

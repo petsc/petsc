@@ -1,4 +1,4 @@
-/*$Id: ij.c,v 1.32 1999/06/30 23:51:02 balay Exp bsmith $*/
+/*$Id: ij.c,v 1.33 1999/10/24 14:02:14 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 
@@ -11,7 +11,7 @@
 
     Description:
     Take the data in the row-oriented sparse storage and build the
-    IJ data for the Matrix.  Return 0 on success, row + 1 on failure
+    IJ data for the Matrix.  Return 0 on success,row + 1 on failure
     at that row. Produces the ij for a symmetric matrix by only using
     the lower triangular part of the matrix.
 
@@ -30,16 +30,15 @@
     symmetric structure.  It is required since those routines call 
     SparsePak routines that expect a symmetric  matrix.
 */
-int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
-                            int **iia, int **jja )
+int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin,int shiftout,int **iia,int **jja)
 {
-  int *work,*ia,*ja,*j,i, nz, row, col,ierr;
+  int *work,*ia,*ja,*j,i,nz,row,col,ierr;
 
   PetscFunctionBegin;
   /* allocate space for row pointers */
-  *iia = ia = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(ia);
+  *iia = ia = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(ia);
   ierr = PetscMemzero(ia,(m+1)*sizeof(int));CHKERRQ(ierr);
-  work = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(work);
+  work = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(work);
 
   /* determine the number of columns in each row */
   ia[0] = shiftout;
@@ -55,7 +54,7 @@ int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
   }
 
   /* shiftin ia[i] to point to next row */
-  for ( i=1; i<m+1; i++ ) {
+  for (i=1; i<m+1; i++) {
     row       = ia[i-1];
     ia[i]     += row;
     work[i-1] = row - shiftout;
@@ -63,7 +62,7 @@ int MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin, int shiftout,
 
   /* allocate space for column pointers */
   nz = ia[m] + (!shiftin);
-  *jja = ja = (int *) PetscMalloc( nz*sizeof(int) );CHKPTRQ(ja);
+  *jja = ja = (int*)PetscMalloc(nz*sizeof(int));CHKPTRQ(ja);
 
   /* loop over lower triangular part putting into ja */ 
   for (row = 0; row < m; row++) {

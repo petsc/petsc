@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.89 1999/10/24 14:03:37 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.90 1999/11/05 14:47:14 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
 
@@ -19,15 +19,16 @@ extern int SNESStep(SNES,double*,double*,double*,double*,
 #define __FUNC__ "SNESSolve_UM_LS"
 static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
-  SNES_UM_LS          *neP = (SNES_UM_LS *) snes->data;
-  int                 maxits, success, iters, i, global_dim, ierr, kspmaxit;
-  double              snorm, *f, *gnorm, two = 2.0,tnorm;
+  SNES_UM_LS          *neP = (SNES_UM_LS*)snes->data;
+  int                 maxits,success,iters,i,global_dim,ierr,kspmaxit;
+  double              snorm,*f,*gnorm,two = 2.0,tnorm;
   Scalar              neg_one = -1.0;
-  Vec                 G, X, RHS, S, W;
+  Vec                 G,X,RHS,S,W;
   SLES                sles;
   KSP                 ksp;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   SNESConvergedReason reason;
+  KSPConvergedReason  kreason;
 
   PetscFunctionBegin;
   snes->reason  = SNES_CONVERGED_ITERATING;
@@ -56,10 +57,10 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = VecGetSize(X,&global_dim);CHKERRQ(ierr);
-  kspmaxit = neP->max_kspiter_factor * ((int) sqrt((double) global_dim));
+  kspmaxit = neP->max_kspiter_factor * ((int)sqrt((double)global_dim));
   ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,kspmaxit);CHKERRQ(ierr);
 
-  for ( i=0; i<maxits; i++ ) {
+  for (i=0; i<maxits; i++) {
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
@@ -71,8 +72,9 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     while (!success) {
       ierr = SLESSolve(snes->sles,RHS,S,&iters);CHKERRQ(ierr);
-      snes->linear_its += PetscAbsInt(iters);
-      if ((iters < 0) || (iters >= kspmaxit)) { /* Modify diagonal of Hessian */
+      snes->linear_its += iters;
+      ierr = KSPGetConvergedReason(ksp,&kreason);CHKERRQ(ierr);
+      if ((int)kreason < 0 || (iters >= kspmaxit)) { /* Modify diagonal of Hessian */
         neP->gamma_factor *= two; 
         neP->gamma = neP->gamma_factor*(*gnorm); 
 #if !defined(PETSC_USE_COMPLEX)
@@ -80,7 +82,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
                  neP->gamma_factor,neP->gamma);
 #else
         PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
-                 neP->gamma_factor,PetscReal(neP->gamma));
+                 neP->gamma_factor,PetscRealPart(neP->gamma));
 #endif
         ierr = MatShift(&neP->gamma,snes->jacobian);CHKERRQ(ierr);
         if ((snes->jacobian_pre != snes->jacobian) && (flg != SAME_PRECONDITIONER)){
@@ -106,7 +108,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     SNESLogConvHistory(snes,*gnorm,iters);
     SNESMonitor(snes,i+1,*gnorm);
     PLogInfo(snes,"SNESSolve_UM_LS: %d:  f=%g, gnorm=%g, snorm=%g, step=%g, KSP iters=%d\n",
-             snes->iter, *f, *gnorm, snorm, neP->step, iters );
+             snes->iter,*f,*gnorm,snorm,neP->step,iters);
 
     /* Test for convergence */
     ierr = (*snes->converged)(snes,snorm,*gnorm,*f,&reason,snes->cnvP);CHKERRQ(ierr);
@@ -147,7 +149,7 @@ static int SNESSetUp_UM_LS(SNES snes)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_UM_LS"
-static int SNESDestroy_UM_LS(SNES snes )
+static int SNESDestroy_UM_LS(SNES snes)
 {
   int  ierr;
 
@@ -169,19 +171,19 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->gamma_factor = tmp;}
-  ierr = OptionsGetInt(snes->prefix,"-snes_um_ls_maxfev",&itmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_um_ls_maxfev",&itmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->maxfev = itmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_ftol",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_ftol",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->ftol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gtol",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gtol",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->gtol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_rtol",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_rtol",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->rtol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmin",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmin",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->stepmin = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmax",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmax",&tmp,&flg);CHKERRQ(ierr);
   if (flg) {ctx->stepmax = tmp;}
   PetscFunctionReturn(0);
 }
@@ -243,11 +245,11 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
 
    Output Parameter:
 .   reason - one of
-$   SNES_CONVERGED_FNORM_ABS         ( F < F_minabs ),
-$   SNES_CONVERGED_GNORM_ABS         ( grad F < grad ),
-$   SNES_DIVERGED_FUNCTION_COUNT     ( nfunc > max_func ),
-$   SNES_DIVERGED_LS_FAILURE         ( line search attempt failed )
-$   SNES_DIVERGED_FNORM_NAN          ( f = NaN ),
+$   SNES_CONVERGED_FNORM_ABS         (F < F_minabs),
+$   SNES_CONVERGED_GNORM_ABS         (grad F < grad),
+$   SNES_DIVERGED_FUNCTION_COUNT     (nfunc > max_func),
+$   SNES_DIVERGED_LS_FAILURE         (line search attempt failed)
+$   SNES_DIVERGED_FNORM_NAN          (f = NaN),
 $   SNES_CONVERGED_ITERATING         otherwise
 
    where
@@ -261,7 +263,7 @@ $   SNES_CONVERGED_ITERATING         otherwise
 @*/
 int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
 {
-  SNES_UM_LS *neP = (SNES_UM_LS *) snes->data;
+  SNES_UM_LS *neP = (SNES_UM_LS*)snes->data;
 
   PetscFunctionBegin;
 
@@ -277,7 +279,7 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConverg
     *reason = SNES_CONVERGED_GNORM_ABS;
   } else if (snes->nfuncs > snes->max_funcs) {
     PLogInfo(snes,"SNESConverged_UM_LS: Exceeded maximum number of function evaluations: %d > %d\n",
-             snes->nfuncs,snes->max_funcs );
+             snes->nfuncs,snes->max_funcs);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   } else if (neP->line != 1) {
     PLogInfo(snes,"SNESConverged_UM_LS: Line search failed for above reason\n");
@@ -343,14 +345,13 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConverg
 int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
                   double *step,double *gnorm,int *info)
 {
-  SNES_UM_LS *neP = (SNES_UM_LS *) snes->data;
-  double     zero = 0.0, two = 2.0, p5 = 0.5, p66 = 0.66, xtrapf = 4.0;
-  double     finit, width, width1, dginit,fm, fxm, fym, dgm, dgxm, dgym;
-  double     dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1;
-  int        ierr, i, stage1;
-
+  SNES_UM_LS *neP = (SNES_UM_LS*)snes->data;
+  double     zero = 0.0,two = 2.0,p5 = 0.5,p66 = 0.66,xtrapf = 4.0;
+  double     finit,width,width1,dginit,fm,fxm,fym,dgm,dgxm,dgym;
+  double     dgx,dgy,dg,fx,fy,stx,sty,dgtest,ftest1;
+  int        ierr,i,stage1;
 #if defined(PETSC_USE_COMPLEX)
-  Scalar    cdginit, cdg, cstep = 0.0;
+  Scalar    cdginit,cdg,cstep = 0.0;
 #endif
 
   PetscFunctionBegin;
@@ -389,7 +390,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
   /* Check that search direction is a descent direction */
 #if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(G,S,&cdginit);CHKERRQ(ierr); dginit = PetscReal(cdginit);
+  ierr = VecDot(G,S,&cdginit);CHKERRQ(ierr); dginit = PetscRealPart(cdginit);
 #else
   ierr = VecDot(G,S,&dginit);CHKERRQ(ierr);  /* dginit = G^T S */
 #endif
@@ -452,7 +453,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     neP->nfev++;
     ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    ierr = VecDot(G,S,&cdg);CHKERRQ(ierr); dg = PetscReal(cdg);
+    ierr = VecDot(G,S,&cdg);CHKERRQ(ierr); dg = PetscRealPart(cdg);
 #else
     ierr = VecDot(G,S,&dg);CHKERRQ(ierr);	        /* dg = G^T S */
 #endif
@@ -488,7 +489,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
     /* In the first stage, we seek a step for which the modified function
         has a nonpositive value and nonnegative derivative */
-    if ((stage1) && (*f <= ftest1) && (dg >= dginit * PetscMin(neP->ftol, neP->gtol)))
+    if ((stage1) && (*f <= ftest1) && (dg >= dginit * PetscMin(neP->ftol,neP->gtol)))
       stage1 = 0;
 
     /* A modified function is used to predict the step only if we
@@ -539,7 +540,7 @@ int SNESLineSearchGetDampingParameter_UM_LS(SNES snes,Scalar *damp)
   SNES_UM_LS *neP;
 
   PetscFunctionBegin;
-  neP = (SNES_UM_LS *) snes->data;
+  neP = (SNES_UM_LS*)snes->data;
   *damp = neP->gamma;
   PetscFunctionReturn(0);
 }
@@ -571,7 +572,7 @@ int SNESCreate_UM_LS(SNES snes)
 
   neP			  = PetscNew(SNES_UM_LS);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UM_LS));
-  snes->data	          = (void *) neP;
+  snes->data	          = (void*)neP;
   neP->LineSearch	  = SNESMoreLineSearch; 
   neP->gamma		  = 0.0;
   neP->gamma_factor	  = 0.005;
@@ -617,7 +618,7 @@ EXTERN_C_END
 @ */
 int SNESLineSearchGetDampingParameter(SNES snes,Scalar *damp)
 {
-  int ierr, (*f)(SNES,Scalar *);
+  int ierr,(*f)(SNES,Scalar *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);

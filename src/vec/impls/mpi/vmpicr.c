@@ -1,4 +1,4 @@
-/*$Id: vmpicr.c,v 1.5 1999/09/02 14:53:11 bsmith Exp bsmith $*/
+/*$Id: vmpicr.c,v 1.6 1999/10/24 14:01:56 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -33,7 +33,7 @@
           VecCreateMPIWithArray(), VecCreateGhostWithArray()
 
 @*/ 
-int VecCreateMPI(MPI_Comm comm, int n, int N, Vec *v)
+int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *v)
 {
   int ierr;
 

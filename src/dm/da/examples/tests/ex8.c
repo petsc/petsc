@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.18 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.19 1999/11/05 14:47:57 bsmith Exp bsmith $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
@@ -50,11 +50,11 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
     on each processor. Just list them in the global natural ordering.
 
   */
-  sliceindices = (int *) PetscMalloc((nslice+1)*sizeof(int));CHKPTRQ(sliceindices);
+  sliceindices = (int*)PetscMalloc((nslice+1)*sizeof(int));CHKPTRQ(sliceindices);
   count = 0;
   if (rank < P) {
-    for ( j=0; j<N; j++ ) {
-      for ( i=0; i<M; i++ ) {
+    for (j=0; j<N; j++) {
+      for (i=0; i<M; i++) {
          sliceindices[count++] = rank*M*N + j*M + i;
       }
     }
@@ -84,12 +84,12 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            rank, M = 3, N = 5, P=3, s=1;
-  int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
-  int            *lx = PETSC_NULL, *ly = PETSC_NULL, *lz = PETSC_NULL;
+  int            rank,M = 3,N = 5,P=3,s=1;
+  int            m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,ierr;
+  int            *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   PetscTruth     flg;
   DA             da;
-  Vec            local, global,vslice;
+  Vec            local,global,vslice;
   Scalar         value;
   DAPeriodicType wrap = DA_XYPERIODIC;
   DAStencilType  stencil_type = DA_STENCIL_BOX;

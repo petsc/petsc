@@ -1,10 +1,10 @@
-/* $Id: send.c,v 1.104 1999/10/24 14:01:01 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.105 1999/11/05 14:43:37 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "sys.h"
 
 #if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
-/* Some systems have inconsistent include files that use but don't
+/* Some systems have inconsistent include files that use but do not
    ensure that the following definitions are made */
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;
@@ -38,7 +38,7 @@ typedef unsigned long   u_long;
 #endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 EXTERN_C_BEGIN
 #if defined(PETSC_NEED_SETSOCKETOPT_PROTO)
@@ -63,7 +63,7 @@ EXTERN_C_END
 #define __FUNC__ "ViewerDestroy_Socket"
 static int ViewerDestroy_Socket(Viewer viewer)
 {
-  Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
   int           ierr;
 
   PetscFunctionBegin;
@@ -88,7 +88,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   PetscTruth         flg = PETSC_TRUE;
 
   PetscFunctionBegin;
-  if ( (hp=gethostbyname(hostname)) == NULL ) {
+  if ((hp=gethostbyname(hostname)) == NULL) {
     perror("SEND: error gethostbyname: ");   
     SETERRQ1(PETSC_ERR_LIB,0,"system error open connection to %s",hostname);
   }
@@ -98,23 +98,23 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   sa.sin_family = hp->h_addrtype;
   sa.sin_port = htons((u_short) portnum);
   while (flg) {
-    if ( (s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0 ) {
+    if ((s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0) {
       perror("SEND: error socket");  SETERRQ(PETSC_ERR_LIB,0,"system error");
     }
-    if ( connect(s,(struct sockaddr *)&sa,sizeof(sa)) < 0 ) {
-       if ( errno == EADDRINUSE ) {
+    if (connect(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
+       if (errno == EADDRINUSE) {
         (*PetscErrorPrintf)("SEND: address is in use\n");
       }
 #if !defined(PARCH_win32_gnu)
-       else if ( errno == EALREADY ) {
+       else if (errno == EALREADY) {
         (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
       }
-      else if ( errno == EISCONN ) {
+      else if (errno == EISCONN) {
         (*PetscErrorPrintf)("SEND: socket already connected\n"); 
         sleep((unsigned) 1);
       }
 #endif
-      else if ( errno == ECONNREFUSED ) {
+      else if (errno == ECONNREFUSED) {
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         sleep((unsigned) 1);
       } else {
@@ -155,7 +155,7 @@ $    MatView(Mat matrix,Viewer viewer)
 $
 $                or
 $
-$    ViewerSocketOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
+$    ViewerSocketOpen(MPI_Comm comm,char *machine,int port,Viewer &viewer)
 $    VecView(Vec vector,Viewer viewer)
 
    Options Database Keys:
@@ -196,7 +196,7 @@ int ViewerCreate_Socket(Viewer v)
 
   vmatlab         = PetscNew(Viewer_Socket);CHKPTRQ(vmatlab);
   vmatlab->port   = 0;
-  v->data         = (void *) vmatlab;
+  v->data         = (void*)vmatlab;
   v->ops->destroy = ViewerDestroy_Socket;
   v->ops->flush   = 0;
 
@@ -320,12 +320,12 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
     if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer, (int *)&flg );
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int *)&flg);
   if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flg) { /* viewer not yet created */
     ierr = ViewerSocketOpen(comm,0,0,&viewer); 
     if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
-    ierr = MPI_Attr_put( comm, Petsc_Viewer_Socket_keyval, (void *) viewer );
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_Socket_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"VIEWER_SOCKET_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
@@ -346,7 +346,7 @@ int VIEWER_SOCKET_Destroy(MPI_Comm comm)
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
     PetscFunctionReturn(0);
   }
-  ierr = MPI_Attr_get( comm, Petsc_Viewer_Socket_keyval, (void **)&viewer,(int*)&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int*)&flg);CHKERRQ(ierr);
   if (flg) { 
     ierr = ViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Socket_keyval);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.48 1998/07/22 20:18:43 balay Exp bsmith $ */
+/* $Id: is.h,v 1.49 1998/10/16 03:16:19 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -15,7 +15,7 @@ typedef struct _p_IS* IS;
 /*
     Default index set data structures that PETSc provides.
 */
-typedef enum {IS_GENERAL=0, IS_STRIDE=1, IS_BLOCK = 2} ISType;
+typedef enum {IS_GENERAL=0,IS_STRIDE=1,IS_BLOCK = 2} ISType;
 extern int   ISCreateGeneral(MPI_Comm,int,const int[],IS *);
 extern int   ISCreateBlock(MPI_Comm,int,int,const int[],IS *);
 extern int   ISCreateStride(MPI_Comm,int,int,int,IS *);
@@ -32,9 +32,9 @@ extern int   ISRestoreIndices(IS,int *[]);
 extern int   ISGetSize(IS,int *);
 extern int   ISInvertPermutation(IS,IS*);
 extern int   ISView(IS,Viewer);
-extern int   ISEqual(IS, IS, PetscTruth *);
+extern int   ISEqual(IS,IS,PetscTruth *);
 extern int   ISSort(IS);
-extern int   ISSorted(IS, PetscTruth *);
+extern int   ISSorted(IS,PetscTruth *);
 extern int   ISDifference(IS,IS,IS*);
 extern int   ISSum(IS,IS,IS*);
 
@@ -49,8 +49,8 @@ extern int   ISStrideGetInfo(IS,int *,int*);
 
 extern int   ISStrideToGeneral(IS);
 
-extern int   ISDuplicate(IS, IS*);
-extern int   ISAllGather(IS, IS*);
+extern int   ISDuplicate(IS,IS*);
+extern int   ISAllGather(IS,IS*);
 
 /* --------------------------------------------------------------------------*/
 

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.42 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.43 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
 linear system matrix in the SLES solvers.  Note that different storage formats\n\
@@ -27,12 +27,12 @@ T*/
 int main(int argc,char **args)
 {
   SLES        sles;      /* linear solver context */
-  Mat         A, B;      /* linear system matrix, preconditioning matrix */
+  Mat         A,B;      /* linear system matrix, preconditioning matrix */
   PetscRandom rctx;      /* random number generator context */
-  Vec         x, b, u;   /* approx solution, RHS, exact solution */
+  Vec         x,b,u;   /* approx solution, RHS, exact solution */
   Vec         tmp;       /* work vector */
-  Scalar      v,  one = 1.0, scale = 0.0;
-  int         i, j, m = 15, n = 17, its, I, J, ierr, Istart, Iend;
+  Scalar      v,one = 1.0,scale = 0.0;
+  int         i,j,m = 15,n = 17,its,I,J,ierr,Istart,Iend;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
@@ -41,7 +41,7 @@ int main(int argc,char **args)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
-         the linear system, Ax = b.  Also, create a different
+         the linear system,Ax = b.  Also, create a different
          preconditioner matrix.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -73,23 +73,23 @@ int main(int argc,char **args)
   /*
      Set entries within the two matrices
   */
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 ) {
+    if (i>0) {
       J=I-n; 
       ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
       ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
     }
-    if ( i<m-1 ) {
+    if (i<m-1) {
       J=I+n; 
       ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
       ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
     }
-    if ( j>0 ) {
+    if (j>0) {
       J=I-1; 
       ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
     }
-    if ( j<n-1 ) {
+    if (j<n-1) {
       J=I+1; 
       ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
     }
@@ -104,12 +104,12 @@ int main(int argc,char **args)
      transition by placing code between these two statements.
   */
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  for ( I=Istart; I<Iend; I++ ) { 
+  for (I=Istart; I<Iend; I++) { 
     v = -0.5; i = I/n;
-    if ( i>1 ) { 
+    if (i>1) { 
       J=I-(n+1); ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
     }
-    if ( i<m-2 ) {
+    if (i<m-2) {
       J=I+n+1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }

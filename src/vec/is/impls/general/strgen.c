@@ -1,16 +1,16 @@
-/*$Id: strgen.c,v 1.7 1999/10/24 14:01:44 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.8 1999/11/05 14:44:37 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "is.h"  I*/
 
-extern int ISDuplicate_General(IS, IS *);
+extern int ISDuplicate_General(IS,IS *);
 extern int ISDestroy_General(IS);
 extern int ISGetIndices_General(IS,int **);
 extern int ISRestoreIndices_General(IS,int **);
 extern int ISGetSize_General(IS,int *);
-extern int ISInvertPermutation_General(IS, IS *);
-extern int ISView_General(IS, Viewer);
+extern int ISInvertPermutation_General(IS,IS *);
+extern int ISView_General(IS,Viewer);
 extern int ISSort_General(IS);
-extern int ISSorted_General(IS, PetscTruth*);
+extern int ISSorted_General(IS,PetscTruth*);
 
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetSize_General,
@@ -63,7 +63,7 @@ int ISStrideToGeneral(IS inis)
   ierr = PetscFree(inis->data);CHKERRQ(ierr);
 
   inis->type         = IS_GENERAL;
-  inis->data         = (void *) sub;
+  inis->data         = (void*)sub;
   inis->isperm       = 0;
   ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);

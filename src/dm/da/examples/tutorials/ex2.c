@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.5 1999/10/24 14:04:12 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.6 1999/11/05 14:48:01 bsmith Exp bsmith $*/
 
 static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting for 2d DAs.\n\n";
 
@@ -9,11 +9,11 @@ static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting 
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            i,j,rank, M = 10, N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
+  int            i,j,rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
   PetscTruth     flg;
   DA             da;
   Viewer         viewer;
-  Vec            localall, global;
+  Vec            localall,global;
   Scalar         value,*vlocal;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
@@ -53,8 +53,8 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(global,localall,INSERT_VALUES,SCATTER_FORWARD,tolocalall);CHKERRA(ierr);
 
   ierr = VecGetArray(localall,&vlocal);CHKERRA(ierr);
-  for ( j=0; j<N; j++ ) {
-    for ( i=0; i<M; i++ ) {
+  for (j=0; j<N; j++) {
+    for (i=0; i<M; i++) {
       *vlocal++ += i + j*M;
     }
   }

@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.76 1999/11/05 14:43:42 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.77 1999/11/24 21:52:42 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -43,7 +43,7 @@ typedef struct  {
 @*/
 int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 {
-  Viewer_Binary *vbinary = (Viewer_Binary *) viewer->data;
+  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
   *fdes = vbinary->fdes;
@@ -76,7 +76,7 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 @*/
 int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 {
-  Viewer_Binary *vbinary = (Viewer_Binary *) viewer->data;
+  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
   *file = vbinary->fdes_info;
@@ -87,7 +87,7 @@ int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 #define __FUNC__ "ViewerDestroy_Binary"
 int ViewerDestroy_Binary(Viewer v)
 {
-  Viewer_Binary *vbinary = (Viewer_Binary *) v->data;
+  Viewer_Binary *vbinary = (Viewer_Binary*)v->data;
   int           ierr,rank;
 
   PetscFunctionBegin;
@@ -100,16 +100,10 @@ int ViewerDestroy_Binary(Viewer v)
       /* compress the file */
       ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
       ierr = PetscStrcat(par,vbinary->filename);CHKERRQ(ierr);
-#if defined (PARCH_win32)
-      SETERRQ(1,1,"Cannot compress files on NT");
-#else 
-      if (!(fp = popen(par,"r"))) {
-        SETERRQ1(1,1,"Cannot run command %s",par);
-      }
+      ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) {
         SETERRQ2(1,1,"Error from command %s\n%s",par,buf);
       }
-#endif
     }
   }
   if (vbinary->fdes_info) fclose(vbinary->fdes_info);
@@ -186,7 +180,7 @@ $    BINARY_WRONLY - open existing file for binary output
 @*/
 int ViewerBinarySetType(Viewer viewer,ViewerBinaryType type)
 {
-  int ierr, (*f)(Viewer,ViewerBinaryType);
+  int ierr,(*f)(Viewer,ViewerBinaryType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
@@ -203,7 +197,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerBinarySetType_Binary"
 int ViewerBinarySetType_Binary(Viewer viewer,ViewerBinaryType type)
 {
-  Viewer_Binary    *vbinary = (Viewer_Binary *) viewer->data;
+  Viewer_Binary    *vbinary = (Viewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
   vbinary->btype = type;
@@ -277,7 +271,7 @@ EXTERN_C_BEGIN
 int ViewerSetFilename_Binary(Viewer viewer,const char name[])
 {
   int              rank,ierr,len;
-  Viewer_Binary    *vbinary = (Viewer_Binary *) viewer->data;
+  Viewer_Binary    *vbinary = (Viewer_Binary*)viewer->data;
   const char       *fname;
   char             bname[1024],*gz;
   PetscTruth       found;
@@ -322,7 +316,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
 
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
     if (type == BINARY_CREATE) {
-      if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
+      if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file %s for writing",fname);
       }
     } else if (type == BINARY_RDONLY) {
@@ -405,7 +399,7 @@ int ViewerCreate_Binary(Viewer v)
 
   PetscFunctionBegin;
   vbinary            = PetscNew(Viewer_Binary);CHKPTRQ(vbinary);
-  v->data            = (void *) vbinary;
+  v->data            = (void*)vbinary;
   v->ops->destroy    = ViewerDestroy_Binary;
   v->ops->flush      = 0;
   v->iformat         = 0;

@@ -1,4 +1,4 @@
-/*$Id: errabort.c,v 1.4 1999/05/12 03:26:57 bsmith Exp bsmith $*/
+/*$Id: errabort.c,v 1.5 1999/10/24 14:01:21 bsmith Exp bsmith $*/
 /*
        The default error handlers and code that allows one to change
    error handlers.
@@ -7,7 +7,7 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscAbortErrorHandler"

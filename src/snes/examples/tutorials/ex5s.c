@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.12 1999/10/24 14:03:42 bsmith Exp bsmith $*/
+/*$Id: ex5s.c,v 1.13 1999/11/05 14:47:20 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -40,7 +40,7 @@ T*/
          setenv MPC_NUM_THREADS nt <- set number of threads processor 0 should 
                                       use to evaluate user provided function
 
-       Note: The number of MPI processes (set with the mpirun option -np ) can 
+       Note: The number of MPI processes (set with the mpirun option -np) can 
        be set completely independently from the number of threads process 0 
        uses to evaluate the function (though usually one would make them the same).
 */
@@ -50,7 +50,7 @@ T*/
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
   
     with boundary conditions
    
@@ -89,7 +89,7 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess(AppCtx*,Vec);
+extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
 extern int FormFunctionFortran(SNES,Vec,Vec,void*);
 
 #undef __FUNC__
@@ -101,22 +101,22 @@ extern int FormFunctionFortran(SNES,Vec,Vec,void*);
  Fortran on the SGI machines; thus the routine FormFunctionFortran() must
  be written in C.
 */
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES           snes;                /* nonlinear solver */
-  Vec            x, r;                /* solution, residual vectors */
+  Vec            x,r;                /* solution, residual vectors */
   AppCtx         user;                /* user-defined work context */
   int            its;                 /* iterations for convergence */
-  int            N, ierr, rstart, rend, *colors, i,ii,ri,rj;
+  int            N,ierr,rstart,rend,*colors,i,ii,ri,rj;
   int            (*fnc)(SNES,Vec,Vec,void*);
-  double         bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  double         bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   MatFDColoring  fdcoloring;           
   ISColoring     iscoloring;
   Mat            J;
   Scalar         zero = 0.0;
   PetscTruth     flg;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
 
   /*
@@ -177,8 +177,8 @@ int main( int argc, char **argv )
      9 colors.
   */
   ierr   = VecGetOwnershipRange(r,&rstart,&rend);CHKERRA(ierr);
-  colors = (int *) PetscMalloc((rend-rstart)*sizeof(int));CHKPTRA(colors);
-  for ( i=rstart; i<rend; i++ ) {
+  colors = (int*)PetscMalloc((rend-rstart)*sizeof(int));CHKPTRA(colors);
+  for (i=rstart; i<rend; i++) {
     colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
   }
   ierr   = ISColoringCreate(PETSC_COMM_WORLD,rend-rstart,colors,&iscoloring);CHKERRA(ierr);
@@ -195,7 +195,7 @@ int main( int argc, char **argv )
   */
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,rend-rstart,rend-rstart,N,
                          N,5,0,0,0,&J);CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) {
+  for (i=rstart; i<rend; i++) {
     rj = i % user.mx;         /* column in grid */
     ri = i / user.mx;         /* row in grid */
     if (ri != 0) {     /* first row does not have neighbor below */
@@ -254,7 +254,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -283,8 +283,8 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr;
-  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  int     i,j,row,mx,my,ierr;
+  double  one = 1.0,lambda,temp1,temp,hx,hy,hxdhy,hydhx,sc;
   Scalar  *x;
 
   /*
@@ -320,17 +320,17 @@ int FormInitialGuess(AppCtx *user,Vec X)
      Compute initial guess over the locally owned part of the grid
   */
 #pragma arl(4)
-#pragma distinct (*x, *f)
+#pragma distinct (*x,*f)
 #pragma no side effects (sqrt)
   for (j=0; j<my; j++) {
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx; 
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
 
@@ -358,10 +358,10 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
-  Scalar  u, uxx, uyy, *x,*f;
+  AppCtx  *user = (AppCtx*)ptr;
+  int     ierr,i,j,row,mx,my;
+  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  Scalar  u,uxx,uyy,*x,*f;
 
   /*
       Process 0 has to wait for all other processes to get here 
@@ -394,7 +394,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
     regions and thus it can use addition optimizations.
   */
 #pragma arl(4)
-#pragma distinct (*x, *f)
+#pragma distinct (*x,*f)
 #pragma no side effects (exp)
 
   /*
@@ -403,7 +403,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       } 
@@ -440,7 +440,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;
+  AppCtx  *user = (AppCtx*)ptr;
   int     ierr;
   Scalar  *x,*f;
 

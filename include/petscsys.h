@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.41 1999/03/03 04:31:26 bsmith Exp balay $ */
+/* $Id: sys.h,v 1.42 1999/03/09 21:18:21 balay Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -27,7 +27,7 @@ extern int  PetscGetDisplay(char[],int);
 
 #define PETSCRANDOM_COOKIE PETSC_COOKIE+19
 
-typedef enum { RANDOM_DEFAULT, RANDOM_DEFAULT_REAL, 
+typedef enum { RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,
                RANDOM_DEFAULT_IMAGINARY } PetscRandomType;
 
 typedef struct _p_PetscRandom*   PetscRandom;

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex2f.F,v 1.11 1998/03/24 16:46:59 balay Exp balay $"
+!  "$Id: ex2f.F,v 1.12 1998/04/15 18:02:53 balay Exp bsmith $"
 !
 !  Formatted Test for IS stride routines
 !
@@ -7,7 +7,7 @@
 #include "finclude/petsc.h"
 #include "finclude/is.h"
 
-      integer     i, n, ierr,ii(1),start,stride
+      integer     i,n,ierr,ii(1),start,stride
       IS          is
       PetscTruth  flag
       PetscOffset iis

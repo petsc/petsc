@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.65 1999/05/12 03:35:13 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.66 1999/05/14 15:23:53 bsmith Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -17,7 +17,6 @@ EXTERN_C_BEGIN
 extern int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
-#include "pinclude/petscfix.h"
 
 /*
    PetscTime - Returns the current time of day in seconds.  
@@ -145,7 +144,7 @@ EXTERN_C_END
 */
 #elif defined(PETSC_USE_GETCLOCK)
 EXTERN_C_BEGIN
-extern int getclock(int clock_type, struct timespec *tp);
+extern int getclock(int clock_type,struct timespec *tp);
 EXTERN_C_END
 
 

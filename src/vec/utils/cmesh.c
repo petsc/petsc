@@ -1,4 +1,4 @@
-/*$Id: cmesh.c,v 1.65 1999/03/17 23:22:19 bsmith Exp bsmith $*/
+/*$Id: cmesh.c,v 1.66 1999/10/24 14:01:50 bsmith Exp bsmith $*/
 
 #include "vec.h"        /*I "vec.h" I*/
 
@@ -18,14 +18,14 @@
 
    Level: intermediate
 
-.seealso: DrawTensorContour(), DrawTensorContourPatch()
+.seealso: DrawTensorContour(),DrawTensorContourPatch()
 
 @*/
-int VecContourScale(Vec v,double vmin,double vmax)
+int VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
 {
   Scalar *values;
   int    ierr,n,i;
-  double scale;
+  PetscReal scale;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -38,8 +38,8 @@ int VecContourScale(Vec v,double vmin,double vmax)
 
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&values);CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
-    values[i] = (double)DRAW_BASIC_COLORS + scale*(values[i] - vmin);
+  for (i=0; i<n; i++) {
+    values[i] = (PetscReal)DRAW_BASIC_COLORS + scale*(values[i] - vmin);
   }
   ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: dgcoor.c,v 1.19 1999/09/02 14:52:48 bsmith Exp bsmith $*/
+/*$Id: dgcoor.c,v 1.20 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -26,7 +26,7 @@
 .seealso: DrawSetCoordinates()
 
 @*/
-int DrawGetCoordinates(Draw draw,double *xl,double *yl,double *xr,double *yr)
+int DrawGetCoordinates(Draw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);

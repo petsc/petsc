@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.43 1999/05/12 03:29:19 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.44 1999/11/05 14:45:25 bsmith Exp bsmith $ */
 
 #if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
@@ -17,23 +17,23 @@ EXTERN_C_END
 
 typedef struct {
   int         *rowners;           /* range of rows owned by each proc */
-  int         m, n;               /* local rows and columns */
-  int         M, N;               /* global rows and columns */
-  int         rstart, rend;       /* starting and ending owned rows */
+  int         m,n;               /* local rows and columns */
+  int         M,N;               /* global rows and columns */
+  int         rstart,rend;       /* starting and ending owned rows */
   int         size;               /* size of communicator */
   int         rank;               /* rank of proc in communicator */ 
   int         sorted;             /* if true, rows sorted by increasing cols */
   int         roworiented;        /* if true, row-oriented storage */
   int         nonew;              /* if true, no new elements allowed */
-  int         nz, maxnz;          /* total nonzeros stored, allocated */
+  int         nz,maxnz;          /* total nonzeros stored, allocated */
   int         *imax;              /* allocated matrix space per row */
 
   /*  The following variables are used in matrix assembly */
   int         donotstash;         /* 1 if off processor entries dropped */
   MPI_Request *send_waits;        /* array of send requests */
   MPI_Request *recv_waits;        /* array of receive requests */
-  int         nsends, nrecvs;     /* numbers of sends and receives */
-  Scalar      *svalues, *rvalues; /* sending and receiving data */
+  int         nsends,nrecvs;     /* numbers of sends and receives */
+  Scalar      *svalues,*rvalues; /* sending and receiving data */
   int         rmax;               /* maximum message length */
   PetscTruth  vecs_permscale;     /* flag indicating permuted and scaled vectors */
   int         factor;
@@ -66,7 +66,7 @@ typedef struct {
 
 extern int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
 
-#define CHKERRBS(a) {if (__BSERROR_STATUS) {(*PetscErrorPrintf)( \
+#define CHKERRBS(a) {if (__BSERROR_STATUS) {(*PetscErrorPrintf)(\
         "BlockSolve95 Error Code %d\n",__BSERROR_STATUS);CHKERRQ(1);}}
 
 #if defined(PETSC_USE_LOG)  /* turn on BlockSolve logging */

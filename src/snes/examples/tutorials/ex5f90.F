@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.19 1999/01/13 21:47:26 bsmith Exp balay $"
+! "$Id: ex5f90.F,v 1.20 1999/02/15 21:56:49 balay Exp bsmith $"
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -28,7 +28,7 @@
 !  Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !  the partial differential equation
 !  
-!          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+!          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
 ! 
 !  with boundary conditions
 !  
@@ -70,18 +70,18 @@
 !  See additional variable declarations in the file ex5f.h
 !
       SNES                   snes
-      Vec                    x, r
+      Vec                    x,r
       Mat                    J
       ISLocalToGlobalMapping isltog
-      integer                its, Nx, Ny, matrix_free, flg, N, ierr, m
-      double precision       lambda_max, lambda_min
+      integer                its,Nx,Ny,matrix_free,flg,N,ierr,m
+      double precision       lambda_max,lambda_min
       integer,pointer     :: ltog_a(:)
       integer                nloc
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
-      external FormFunction, FormInitialGuess, FormJacobian
+      external FormFunction,FormInitialGuess,FormJacobian
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -347,8 +347,8 @@
       integer ierr
 
 !  Local variables:
-      integer  i, j, hxdhy, hydhx
-      Scalar   temp1, temp, hx, hy, sc, one
+      integer  i,j,hxdhy,hydhx
+      Scalar   temp1,temp,hx,hy,sc,one
 
 !  Set parameters
 
@@ -406,12 +406,12 @@
 
 !  Input/output variables:
       SNES     snes
-      Vec      X, F
+      Vec      X,F
       integer  dummy
       integer  ierr
 
 !  Declarations for use with local arrays:
-      Scalar,pointer :: lx_v(:), lf_v(:)
+      Scalar,pointer :: lx_v(:),lf_v(:)
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -474,13 +474,13 @@
 #include "ex5f.h"
 
 !  Input/output variables:
-      Scalar   x(gxs:gxe,gys:gye), f(gxs:gxe,gys:gye)
+      Scalar   x(gxs:gxe,gys:gye),f(gxs:gxe,gys:gye)
       integer  ierr
 
 !  Local variables:
-      Scalar   two, one, hx, hy, hxdhy, hydhx, sc
-      Scalar   u, uxx, uyy
-      integer  i, j
+      Scalar   two,one,hx,hy,hxdhy,hydhx,sc
+      Scalar   u,uxx,uyy
+      integer  i,j
 
       one    = 1.0
       two    = 2.0
@@ -566,7 +566,7 @@
 !  Input/output variables:
       SNES         snes
       Vec          X
-      Mat          jac, jac_prec
+      Mat          jac,jac_prec
       MatStructure flag
       integer      dummy
       integer      ierr
@@ -672,12 +672,12 @@
 
 !  Input/output variables:
       Scalar   x(gxs:gxe,gys:gye)
-      Mat      jac, jac_prec
+      Mat      jac,jac_prec
       integer  ierr
 
 !  Local variables:
-      integer  row, col(5), i, j
-      Scalar   two, one, hx, hy, hxdhy, hydhx, sc, v(5)
+      integer  row,col(5),i,j
+      Scalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 

@@ -1,4 +1,4 @@
-/*$Id: receivedense.c,v 1.7 1998/09/25 03:15:48 bsmith Exp bsmith $*/
+/*$Id: receivedense.c,v 1.8 1999/10/24 14:01:02 bsmith Exp bsmith $*/
 /* 
    This is part of the MatlabSockettool Package. It is called by 
  the receive.mex4 Matlab program. 
@@ -25,12 +25,12 @@ int ReceiveDenseMatrix(Matrix *plhs[],int t)
   if (PetscBinaryRead(t,&compx,1,PETSC_INT))   ERROR("reading if complex"); 
   
   /*allocate matrix */
-  plhs[0]  = mxCreateFull(m, n, compx);
+  plhs[0]  = mxCreateFull(m,n,compx);
   /* read in matrix */
   if (!compx) {
     if (PetscBinaryRead(t,mxGetPr(plhs[0]),n*m,PETSC_DOUBLE)) ERROR("read dense matrix");
   } else {
-    for ( i=0; i<n*m; i++ ) {
+    for (i=0; i<n*m; i++) {
       if (PetscBinaryRead(t,mxGetPr(plhs[0])+i,1,PETSC_DOUBLE))ERROR("read dense matrix");
       if (PetscBinaryRead(t,mxGetPi(plhs[0])+i,1,PETSC_DOUBLE))ERROR("read dense matrix");
     }
@@ -49,14 +49,14 @@ int ReceiveDenseIntMatrix(Matrix *plhs[],int t)
   if (PetscBinaryRead(t,&m,1,PETSC_INT))   ERROR("reading number columns"); 
   
   /*allocate matrix */
-  plhs[0]  = mxCreateFull(m, 1, 0);
+  plhs[0]  = mxCreateFull(m,1,0);
 
   /* read in matrix */
-  array = (int *) malloc(m*sizeof(int)); if (!array) ERROR("reading allocating space");
+  array = (int*)malloc(m*sizeof(int)); if (!array) ERROR("reading allocating space");
   if (PetscBinaryRead(t,array,m,PETSC_INT)) ERROR("read dense matrix");
 
   values = mxGetPr(plhs[0]);
-  for ( i =0; i<m; i++ ) {
+  for (i =0; i<m; i++) {
     values[i] = array[i];
   }
   free(array);

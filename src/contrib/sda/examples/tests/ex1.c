@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.8 1999/10/24 14:04:14 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.9 1999/11/05 14:48:04 bsmith Exp bsmith $*/
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-P",&P,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRA(ierr); 
   ierr = OptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRA(ierr); 
   ierr = OptionsGetInt(PETSC_NULL,"-periodic",(int*)&periodic,PETSC_NULL);CHKERRA(ierr); 
   ierr = OptionsGetInt(PETSC_NULL,"-stencil_type",(int*)&stencil_type,PETSC_NULL);CHKERRA(ierr); 
@@ -70,9 +70,9 @@ int main(int argc,char **argv)
   ierr = VecSet(&value,local_copy);CHKERRA(ierr);
 
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRA(ierr);
-  for ( i=start; i<end; i++ ) {
+  for (i=start; i<end; i++) {
     value = i + 1;
-    ierr = VecSetValues(global,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
+    ierr = VecSetValues(global,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(global);CHKERRA(ierr);
   ierr = VecAssemblyEnd(global);CHKERRA(ierr);
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
 
-  ierr = OptionsHasName(PETSC_NULL,"-same_array",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-same_array",&flg);CHKERRA(ierr);
   if (flg) {
     /* test the case where the input and output array is the same */
     ierr = VecCopy(local,local_copy);CHKERRA(ierr);
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(&mone,local,local_copy);CHKERRA(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRA(ierr);
-  ierr = MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = MPI_Allreduce(&work,&norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRA(ierr);
    
   ierr = DADestroy(da);CHKERRA(ierr);

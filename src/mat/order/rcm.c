@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: rcm.c,v 1.10 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* rcm.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -46,10 +46,10 @@ int SPARSEPACKrcm(int *root, int *xadj, int *adjncy,
     int i__1, i__2;
 
     /* Local variables */
-    static int node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
+    int node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
     extern int SPARSEPACKdegree(int *, int *, int *, 
 	    int *, int *, int *, int *);
-    static int lbegin, lvlend, nbr;
+    int lbegin, lvlend, nbr;
 
 /*       FIND THE DEGREES OF THE NODES IN THE                  */
 /*       COMPONENT SPECIFIED BY MASK AND ROOT.                 */

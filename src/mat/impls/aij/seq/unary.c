@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.136 1999/12/16 23:35:48 bsmith Exp bsmith $*/
+/*$Id: unary.c,v 1.2 1999/12/17 19:16:49 bsmith Exp bsmith $*/
 /* unary.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
         This code is protected by the GNU copyright. See the file 
@@ -6,14 +6,14 @@
 */
 #include "petsc.h"
 /* ----------------------------------------------------------------------- */
-static int SPARSEKIT2rperm(int *nrow, Scalar *a,int *ja,int *ia,Scalar *ao,int *jao,int *iao,int *perm,int *job)
+static int SPARSEKIT2rperm(int *nrow,Scalar *a,int *ja,int *ia,Scalar *ao,int *jao,int *iao,int *perm,int *job)
 {
     /* System generated locals */
-    int i__1, i__2;
+    int i__1,i__2;
 
     /* Local variables */
-    static int i, j, k, ii, ko;
-    static int values;
+    int i,j,k,ii,ko;
+    int values;
 
 /* -----------------------------------------------------------------------
  */
@@ -120,7 +120,7 @@ static int SPARSEKIT2cperm(int *nrow,Scalar * a,int * ja,int * ia,Scalar * ao,in
     int i__1;
 
     /* Local variables */
-    static int i, k, nnz;
+    int i,k,nnz;
 
 /* -----------------------------------------------------------------------
  */
@@ -213,7 +213,7 @@ static int SPARSEKIT2cperm(int *nrow,Scalar * a,int * ja,int * ia,Scalar * ao,in
 /* ----------------------------------------------------------------------- */
 int SPARSEKIT2dperm(int *nrow,Scalar *a,int *ja,int *ia,Scalar *ao,int *jao,int *iao,int *perm,int *qperm,int *job)
 {
-    static int locjob;
+    int locjob;
 
 /* -----------------------------------------------------------------------
  */
@@ -309,15 +309,15 @@ int SPARSEKIT2dperm(int *nrow,Scalar *a,int *ja,int *ia,Scalar *ao,int *jao,int 
 } /* dperm_ */
 
 /* ----------------------------------------------------------------------- */
-/* Subroutine */ int msrcsr_(int *n,Scalar * a,int * ja,Scalar * ao,int * jao,int * iao,Scalar * wk,int * iwk)
+int SPARSEKIT2msrcsr(int *n,Scalar * a,int * ja,Scalar * ao,int * jao,int * iao,Scalar * wk,int * iwk)
 {
     /* System generated locals */
     int i__1, i__2;
 
     /* Local variables */
-    static int iptr;
-    static int added;
-    static int i, j, k, idiag, ii;
+    int iptr;
+    int added;
+    int i, j, k, idiag, ii;
 
 /* -----------------------------------------------------------------------
  */

@@ -1,4 +1,4 @@
-/*$Id: fwd.c,v 1.24 1999/05/12 03:27:04 bsmith Exp bsmith $*/
+/*$Id: fwd.c,v 1.25 1999/10/24 14:01:25 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -30,7 +30,7 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetWorkingDirectory"
@@ -50,15 +50,15 @@
 
 .keywords, system, get, current, working, directory
 @*/
-int PetscGetWorkingDirectory( char path[],int len )
+int PetscGetWorkingDirectory(char path[],int len)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETWD)
-  getwd( path );
+  getwd(path);
 #elif defined(PARCH_win32)
-  _getcwd( path, len );
+  _getcwd(path,len);
 #else
-  getcwd( path, len );
+  getcwd(path,len);
 #endif
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: stack.c,v 1.23 1999/09/20 18:52:57 bsmith Exp bsmith $*/
+/*$Id: stack.c,v 1.24 1999/10/24 14:01:21 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "sys.h"
@@ -29,11 +29,11 @@ int PetscStackPublish(void)
   PetscFunctionBegin;
   if (!petscstack) SETERRQ(1,1,"Stack not available to publish");
   ierr = ViewerAMSGetAMSComm(VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
-  ierr = AMS_Memory_create(acomm, "stack_memory", &stack_mem);CHKERRQ(ierr);
+  ierr = AMS_Memory_create(acomm,"stack_memory",&stack_mem);CHKERRQ(ierr);
          
   /* Add a field to the memory */
-  ierr = AMS_Memory_add_field(stack_mem, "stack",petscstack->function,petscstack->currentsize,
-                              AMS_STRING, AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(stack_mem,"stack",petscstack->function,petscstack->currentsize,
+                              AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
                 
   /* Publish the memory */
   ierr = AMS_Memory_publish(stack_mem);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ int PetscStackCreate(void)
   PetscStack *petscstack_in;
   if (petscstack) return 0;
   
-  petscstack_in              = (PetscStack *) PetscMalloc(sizeof(PetscStack));CHKPTRQ(petscstack_in);
+  petscstack_in              = (PetscStack*)PetscMalloc(sizeof(PetscStack));CHKPTRQ(petscstack_in);
   ierr = PetscMemzero(petscstack_in,sizeof(PetscStack));CHKERRQ(ierr);
   petscstack_in->currentsize = 0;
   petscstack = petscstack_in;
@@ -92,7 +92,7 @@ int PetscStackView(Viewer viewer)
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");
-    for ( i=petscstack->currentsize-1; i>=0; i-- ) {
+    for (i=petscstack->currentsize-1; i>=0; i--) {
       (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,
                                                    petscstack->function[i],
                                                    petscstack->line[i],
@@ -103,7 +103,7 @@ int PetscStackView(Viewer viewer)
     fprintf(file,"Note: The EXACT line numbers in the stack are not available,\n");
     fprintf(file,"      INSTEAD the line number of the start of the function\n");
     fprintf(file,"      is given.\n");
-    for ( i=petscstack->currentsize-1; i>=0; i-- ) {
+    for (i=petscstack->currentsize-1; i>=0; i--) {
       fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,
                                             petscstack->function[i],
                                             petscstack->line[i],

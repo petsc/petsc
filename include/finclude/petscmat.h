@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.58 1999/12/14 18:01:13 bsmith Exp bsmith $;
+!  $Id: mat.h,v 1.59 1999/12/15 19:10:28 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -53,21 +53,21 @@
       integer MATSAME,MATSEQDENSE,MATSEQAIJ,MATMPIAIJ
       integer MATSHELL,MATMPIROWBS,MATSEQBDIAG
       integer MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ
-      integer MATMPIBAIJ, MATMPICSN, MATSEQCSN, MATSEQADJ
+      integer MATMPIBAIJ,MATMPICSN,MATSEQCSN,MATSEQADJ
       integer MATMPIADJ,MATLASTTYPE
 
       parameter (MATSAME=-1,MATSEQDENSE = 0,MATSEQAIJ = 1)
-      parameter (MATMPIAIJ = 2,MATSHELL = 3, MATMPIROWBS = 4)
+      parameter (MATMPIAIJ = 2,MATSHELL = 3,MATMPIROWBS = 4)
       parameter (MATSEQBDIAG = 5,MATMPIBDIAG = 6,MATMPIDENSE = 7)
-      parameter (MATSEQBAIJ = 8, MATMPIBAIJ = 9, MATMPICSN = 10)
-      parameter (MATSEQCSN = 11, MATSEQADJ = 12, MATMPIADJ = 13)
+      parameter (MATSEQBAIJ = 8,MATMPIBAIJ = 9,MATMPICSN = 10)
+      parameter (MATSEQCSN = 11,MATSEQADJ = 12,MATMPIADJ = 13)
       parameter (MATLASTTYPE = 14)
 !
 !  Flag for matrix assembly
 !
       integer MAT_FLUSH_ASSEMBLY,MAT_FINAL_ASSEMBLY
 
-      parameter( MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
+      parameter(MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
 !
 !  Matrix options; must match those in include/mat.h
 !
@@ -140,9 +140,9 @@
 !
 !  MatReuse
 !
-      integer MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX
+      integer MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX
 
-      parameter (MAT_INITIAL_MATRIX=0, MAT_REUSE_MATRIX=1)
+      parameter (MAT_INITIAL_MATRIX=0,MAT_REUSE_MATRIX=1)
 
 !
 !  MatInfoType
@@ -185,7 +185,7 @@
       integer SOR_EISENSTAT,SOR_APPLY_UPPER,SOR_APPLY_LOWER
 
       parameter (SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2)
-      parameter (SOR_SYMMETRIC_SWEEP=3, SOR_LOCAL_FORWARD_SWEEP=4)
+      parameter (SOR_SYMMETRIC_SWEEP=3,SOR_LOCAL_FORWARD_SWEEP=4)
       parameter (SOR_LOCAL_BACKWARD_SWEEP=8)
       parameter (SOR_LOCAL_SYMMETRIC_SWEEP=12)
       parameter (SOR_ZERO_INITIAL_GUESS=16,SOR_EISENSTAT=32)

@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.21 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.22 1999/11/05 14:48:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
@@ -24,59 +24,59 @@
 EXTERN_C_BEGIN
 
 void PETSC_STDCALL slessetoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
-                                         int *__ierr PETSC_END_LEN(len) )
+                                         int *ierr PETSC_END_LEN(len))
 {
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = SLESSetOptionsPrefix(*sles,t);
+  *ierr = SLESSetOptionsPrefix(*sles,t);
   FREECHAR(prefix,t);
 }
 
 void PETSC_STDCALL slesappendoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
-                                            int *__ierr PETSC_END_LEN(len) )
+                                            int *ierr PETSC_END_LEN(len))
 {
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = SLESAppendOptionsPrefix(*sles,t);
+  *ierr = SLESAppendOptionsPrefix(*sles,t);
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL slesgetksp_(SLES *sles,KSP *ksp, int *__ierr )
+void PETSC_STDCALL slesgetksp_(SLES *sles,KSP *ksp,int *ierr)
 {
-  *__ierr = SLESGetKSP(*sles,ksp);
+  *ierr = SLESGetKSP(*sles,ksp);
 }
 
-void PETSC_STDCALL slesgetpc_(SLES *sles,PC *pc, int *__ierr )
+void PETSC_STDCALL slesgetpc_(SLES *sles,PC *pc,int *ierr)
 {
-  *__ierr = SLESGetPC(*sles,pc);
+  *ierr = SLESGetPC(*sles,pc);
 }
 
-void PETSC_STDCALL slesdestroy_(SLES *sles, int *__ierr )
+void PETSC_STDCALL slesdestroy_(SLES *sles,int *ierr)
 {
-  *__ierr = SLESDestroy(*sles);
+  *ierr = SLESDestroy(*sles);
 }
 
-void PETSC_STDCALL slescreate_(MPI_Comm *comm,SLES *outsles, int *__ierr )
+void PETSC_STDCALL slescreate_(MPI_Comm *comm,SLES *outsles,int *ierr)
 {
-  *__ierr = SLESCreate((MPI_Comm)PetscToPointerComm( *comm ),outsles);
+  *ierr = SLESCreate((MPI_Comm)PetscToPointerComm(*comm),outsles);
 
 }
 
-void PETSC_STDCALL slesgetoptionsprefix_(SLES *sles, CHAR prefix PETSC_MIXED_LEN(len),
-                                         int *__ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL slesgetoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
+                                         int *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
-  *__ierr = SLESGetOptionsPrefix(*sles,&tname);
+  *ierr = SLESGetOptionsPrefix(*sles,&tname);
 #if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    *__ierr = PetscStrncpy(t,tname,len1);
+    *ierr = PetscStrncpy(t,tname,len1);
   }
 #else
-  *__ierr = PetscStrncpy(prefix,tname,len);
+  *ierr = PetscStrncpy(prefix,tname,len);
 #endif
 }
 

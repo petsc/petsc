@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.41 1999/11/24 21:55:18 bsmith Exp balay $";
+! "$Id: ex4f.F,v 1.42 1999/12/10 17:28:03 balay Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -23,7 +23,7 @@
 !  Solid Fuel Ignition (SFI) problem.  This problem is modeled by
 !  the partial differential equation
 !  
-!          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+!          -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
 ! 
 !  with boundary conditions
 !  
@@ -84,13 +84,13 @@
 !     draw        - drawing context
 !
       SNES               snes
-      Vec                x, r
+      Vec                x,r
       Draw               draw
       Mat                J
-      integer            its, matrix_free, flg, N, ierr
-      integer            mx, my, size, rank
+      integer            its,matrix_free,flg,N,ierr
+      integer            mx,my,size,rank
       integer            fd_coloring
-      double precision   lambda_max, lambda_min, lambda
+      double precision   lambda_max,lambda_min,lambda
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
       MatStructure       str
@@ -100,12 +100,12 @@
 
 !  Store parameters in common block
 
-      common /params/ lambda, mx, my
+      common /params/ lambda,mx,my
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
-      external FormFunction, FormInitialGuess, FormJacobian
+      external FormFunction,FormInitialGuess,FormJacobian
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -365,16 +365,16 @@
 
 !  Common blocks:
       double precision   lambda
-      integer  mx, my
-      common /params/ lambda, mx, my
+      integer  mx,my
+      common /params/ lambda,mx,my
 
 !  Input/output variables:
       Scalar  x(mx,my)
       integer ierr
 
 !  Local variables:
-      integer  i, j, hxdhy, hydhx
-      Scalar   temp1, temp, hx, hy, sc, one
+      integer  i,j,hxdhy,hydhx
+      Scalar   temp1,temp,hx,hy,sc,one
 
 !  Set parameters
 
@@ -433,18 +433,18 @@
 
 !  Input/output variables:
       SNES              snes
-      Vec               X, F
+      Vec               X,F
       PetscFortranAddr  dummy
       integer           ierr
 
 !  Common blocks:
       double precision   lambda
-      integer  mx, my
-      common /params/ lambda, mx, my
+      integer  mx,my
+      common /params/ lambda,mx,my
 
 !  Declarations for use with local arrays:
-      Scalar      lx_v(0:1), lf_v(0:1)
-      PetscOffset lx_i, lf_i 
+      Scalar      lx_v(0:1),lf_v(0:1)
+      PetscOffset lx_i,lf_i 
 
 !  Get pointers to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -492,17 +492,17 @@
 
 !  Common blocks:
       double precision   lambda
-      integer  mx, my
-      common /params/ lambda, mx, my
+      integer  mx,my
+      common /params/ lambda,mx,my
 
 !  Input/output variables:
-      Scalar   x(mx,my), f(mx,my)
+      Scalar   x(mx,my),f(mx,my)
       integer  ierr
 
 !  Local variables:
-      Scalar   two, one, hx, hy, hxdhy, hydhx, sc
-      Scalar   u, uxx, uyy
-      integer  i, j
+      Scalar   two,one,hx,hy,hxdhy,hydhx,sc
+      Scalar   u,uxx,uyy
+      integer  i,j
 
       ierr   = 0
       one    = 1.0
@@ -568,14 +568,14 @@
 !  Input/output variables:
       SNES         snes
       Vec          X
-      Mat          jac, jac_prec
+      Mat          jac,jac_prec
       MatStructure flag
       integer      dummy
 
 !  Common blocks:
       double precision   lambda
-      integer  mx, my
-      common /params/ lambda, mx, my
+      integer  mx,my
+      common /params/ lambda,mx,my
 
 !  Local variables:
       integer      ierr
@@ -649,17 +649,17 @@
 
 !  Common blocks:
       double precision   lambda
-      integer  mx, my
-      common /params/ lambda, mx, my
+      integer  mx,my
+      common /params/ lambda,mx,my
 
 !  Input/output variables:
       Scalar   x(mx,my)
-      Mat      jac, jac_prec
+      Mat      jac,jac_prec
       integer  ierr
 
 !  Local variables:
-      integer      i, j, row, col(5)
-      Scalar       two, one,  hx, hy, hxdhy, hydhx, sc, v(5)
+      integer      i,j,row,col(5)
+      Scalar       two,one, hx,hy,hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.5 1999/04/19 22:10:23 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.7 1999/10/24 14:01:38 bsmith Exp bsmith $*/
 
 /*
      Tests PetscSetCommWorld()
@@ -7,14 +7,14 @@
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main(int argc, char **argv) 
+int main(int argc,char **argv) 
 {
   int      ierr,rank,size;
   MPI_Comm newcomm;
 
   MPI_Init(&argc,&argv);
 
-  /* Note cannot use PETSc error handlers here, since PETSc not yet initialized */
+  /* Note cannot use PETSc error handlers here,since PETSc not yet initialized */
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (ierr) {
     printf("Error in getting rank");

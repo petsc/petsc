@@ -1,4 +1,4 @@
-/*$Id: pbarrier.c,v 1.7 1999/10/01 21:20:41 bsmith Exp bsmith $*/
+/*$Id: pbarrier.c,v 1.8 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -9,7 +9,7 @@
                    processors owning the object A.
 
    Input Parameters:
-.  A - PETSc object  ( Mat, Vec, IS, SNES etc...)
+.  A - PETSc object  (Mat, Vec, IS, SNES etc...)
         Must be caste with a (PetscObject)
 
   Level: intermediate

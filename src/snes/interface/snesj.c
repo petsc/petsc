@@ -1,4 +1,4 @@
-/*$Id: snesj.c,v 1.60 1999/10/22 21:16:38 curfman Exp bsmith $*/
+/*$Id: snesj.c,v 1.62 1999/10/24 14:03:31 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
 
@@ -39,12 +39,12 @@
 @*/
 int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec      j1a,j2a,x2;
-  int      i,ierr,N,start,end,j;
-  Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
-  double   amax, epsilon = 1.e-8; /* assumes double precision */
-  double   dx_min = 1.e-16, dx_par = 1.e-1;
-  MPI_Comm comm;
+  Vec       j1a,j2a,x2;
+  int       i,ierr,N,start,end,j;
+  Scalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscReal amax,epsilon = 1.e-8; /* assumes PetscReal precision */
+  PetscReal dx_min = 1.e-16,dx_par = 1.e-1;
+  MPI_Comm  comm;
   int      (*eval_fct)(SNES,Vec,Vec)=0;
 
   PetscFunctionBegin;
@@ -69,9 +69,9 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
       x1 = current iterate, j1a = F(x1)
       x2 = perturbed iterate, j2a = F(x2)
    */
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     ierr = VecCopy(x1,x2);CHKERRQ(ierr);
-    if ( i>= start && i<end) {
+    if (i>= start && i<end) {
       ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
       dx = xx[i-start];
       ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
@@ -79,8 +79,8 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
-      if (PetscAbsScalar(dx) < dx_min && PetscReal(dx) >= 0.0) dx = dx_par;
-      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
+      if (PetscAbsScalar(dx) < dx_min && PetscRealPart(dx) >= 0.0) dx = dx_par;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;
@@ -95,7 +95,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     ierr = VecScale(&scale,j2a);CHKERRQ(ierr);
     ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
     ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
-    for ( j=start; j<end; j++ ) {
+    for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
@@ -141,8 +141,7 @@ $  -snes_fd - Activates SNESDefaultComputeHessian()
 
 .seealso: SNESSetHessian()
 @*/
-int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,
-                              MatStructure *flag,void *ctx)
+int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   int ierr;
 
@@ -176,8 +175,7 @@ int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,
 
 .seealso: SNESSetHessian()
 @*/
-int SNESDefaultComputeHessianColor(SNES snes,Vec x1,Mat *J,Mat *B,
-                              MatStructure *flag,void *ctx)
+int SNESDefaultComputeHessianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   int ierr;
 

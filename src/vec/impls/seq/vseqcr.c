@@ -1,4 +1,4 @@
-/*$Id: vseqcr.c,v 1.8 1999/09/02 14:53:10 bsmith Exp bsmith $*/
+/*$Id: vseqcr.c,v 1.9 1999/10/24 14:01:55 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -30,7 +30,7 @@
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
-int VecCreateSeq(MPI_Comm comm, int n, Vec *v)
+int VecCreateSeq(MPI_Comm comm,int n,Vec *v)
 {
   int ierr,size;
 

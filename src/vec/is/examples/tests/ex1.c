@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.29 1999/10/24 14:01:46 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.30 1999/11/05 14:44:41 bsmith Exp bsmith $*/
 /*
        Formatted test for ISGeneral routines.
 */
@@ -11,7 +11,7 @@ static char help[] = "Tests IS general routines\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        i, n, ierr,*indices,rank,size,*ii;
+  int        i,n,ierr,*indices,rank,size,*ii;
   IS         is,newis;
   PetscTruth flg;
 
@@ -31,13 +31,13 @@ int main(int argc,char **argv)
      Create large IS and test ISGetIndices()
   */
   n = 10000 + rank;
-  indices = (int *) PetscMalloc( n*sizeof(int) );CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
+  indices = (int*)PetscMalloc(n*sizeof(int));CHKERRA(ierr);
+  for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRA(ierr);
   ierr = ISGetIndices(is,&ii);CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (ii[i] != indices[i]) SETERRA(1,0,0);
   }
   ierr = ISRestoreIndices(is,&ii);CHKERRA(ierr);
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   ierr = ISIdentity(is,&flg);CHKERRA(ierr);
   if (flg != PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISSetPermutation(is);CHKERRA(ierr);
-  ierr = ISSetIdentity(is); CHKERRA(ierr);
+  ierr = ISSetIdentity(is);CHKERRA(ierr);
   ierr = ISPermutation(is,&flg);CHKERRA(ierr);
   if (flg != PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISIdentity(is,&flg);CHKERRA(ierr);
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
   /*
      Inverting permutation
   */
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     indices[i] = n - i - 1;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,indices,&is);CHKERRA(ierr);
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   ierr = ISSetPermutation(is);CHKERRA(ierr);
   ierr = ISInvertPermutation(is,&newis);CHKERRA(ierr);
   ierr = ISGetIndices(newis,&ii);CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (ii[i] != n - i - 1) SETERRA(1,0,0);
   }
   ierr = ISRestoreIndices(newis,&ii);CHKERRA(ierr);

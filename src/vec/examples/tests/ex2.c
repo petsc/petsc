@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.45 1999/10/24 14:01:59 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.46 1999/11/05 14:44:58 bsmith Exp bsmith $*/
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
@@ -10,8 +10,8 @@ static char help[] = "Tests vector scatter-gather operations.  Input arguments a
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4};
-  Scalar        one = 1.0, two = 2.0;
+  int           n = 5,ierr,idx1[2] = {0,3},idx2[2] = {1,4};
+  Scalar        one = 1.0,two = 2.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatter    ctx = 0;

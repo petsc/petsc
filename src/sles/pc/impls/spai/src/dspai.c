@@ -1,4 +1,4 @@
-/* $Id: dspai.c,v 1.2 1999/11/05 14:48:08 bsmith Exp bsmith $*/
+/* $Id: dspai.c,v 1.3 1999/11/24 21:55:44 bsmith Exp bsmith $*/
 
 #include "mat.h"
 
@@ -20,13 +20,13 @@ int MatDumpSPAI(Mat A,FILE *file)
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,1,"Only single processor dumps");
 
-  ierr = MatGetSize(A,&n,&n); CHKERRQ(ierr);
+  ierr = MatGetSize(A,&n,&n);CHKERRQ(ierr);
 
   /* print the matrix */
   fprintf(file,"%d\n",n);
   for (i=0; i<n; i++) {
     ierr     = MatGetRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
-    for (j=0; j<nz; j++ ) {
+    for (j=0; j<nz; j++) {
       fprintf(file,"%d %d %16.14e\n",i+1,cols[j]+1,vals[j]);
     }
     ierr     = MatRestoreRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
@@ -40,11 +40,11 @@ int VecDumpSPAI(Vec b,FILE *file)
   int    n,i,ierr;
   Scalar *array;
 
-  ierr = VecGetSize(b,&n); CHKERRQ(ierr);
-  ierr = VecGetArray(b,&array); CHKERRQ(ierr);
+  ierr = VecGetSize(b,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(b,&array);CHKERRQ(ierr);
 
   fprintf(file,"%d\n",n);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     fprintf(file,"%d %16.14e\n",i+1,array[i]);
   }
 

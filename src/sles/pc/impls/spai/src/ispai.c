@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.7 1999/11/05 14:48:08 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.8 1999/11/24 21:55:44 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -30,8 +30,8 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 extern int ConvertMatToMatrix(Mat,Mat,matrix**);
-extern int ConvertMatrixToMat(matrix *, Mat *);
-extern int MM_to_PETSC(char *, char *, char *);
+extern int ConvertMatrixToMat(matrix *,Mat *);
+extern int MM_to_PETSC(char *,char *,char *);
 
 typedef struct {
 
@@ -59,23 +59,23 @@ typedef struct {
 #define __FUNC__ "PCSetUp_SPAI"
 static int PCSetUp_SPAI(PC pc)
 {
-  PC_SPAI *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   int      ierr;
   Mat      AT;
   Mat      PBT;
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc->pmat ,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)pc->pmat,&comm);CHKERRQ(ierr);
 
   init_SPAI();
 
   if (ispai->sp) {
-    ierr = ConvertMatToMatrix(pc->pmat,pc->pmat,&ispai->B); CHKERRQ(ierr);
+    ierr = ConvertMatToMatrix(pc->pmat,pc->pmat,&ispai->B);CHKERRQ(ierr);
   } else {
     /* Use the transpose to get the column nonzero structure. */
     ierr = MatTranspose(pc->pmat,&AT) ;CHKERRQ(ierr);
-    ierr = ConvertMatToMatrix(pc->pmat,AT,&ispai->B); CHKERRQ(ierr);
+    ierr = ConvertMatToMatrix(pc->pmat,AT,&ispai->B);CHKERRQ(ierr);
     ierr = MatDestroy(AT);CHKERRQ(ierr);
   }
 
@@ -96,10 +96,10 @@ static int PCSetUp_SPAI(PC pc)
   /* int    verbose    */  /* verbose == 0 specifies that SPAI is silent
                               verbose == 1 prints timing and matrix statistics */
 
-  ispai->M = bspai(ispai->B, 
-		   stderr, 
-		   ispai->epsilon, 
-		   ispai->nbsteps, 
+  ispai->M = bspai(ispai->B,
+		   stderr,
+		   ispai->epsilon,
+		   ispai->nbsteps,
 		   ispai->max,
 		   ispai->maxnew,
 		   ispai->block_size,
@@ -123,7 +123,7 @@ static int PCSetUp_SPAI(PC pc)
 #define __FUNC__ "PCApply_SPAI"
 static int PCApply_SPAI(PC pc,Vec x,Vec y)
 {
-  PC_SPAI *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   int      ierr;
 
   PetscFunctionBegin;
@@ -139,7 +139,7 @@ static int PCApply_SPAI(PC pc,Vec x,Vec y)
 static int PCDestroy_SPAI(PC pc)
 {
   int     ierr;
-  PC_SPAI *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
   ierr = MatDestroy(ispai->PM);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ static int PCDestroy_SPAI(PC pc)
 #define __FUNC__ "PCView_SPAI"
 static int PCView_SPAI(PC pc,Viewer viewer)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   int        ierr;
   PetscTruth isascii;
 
@@ -179,7 +179,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCSPAISetEpsilon_SPAI"
 int PCSPAISetEpsilon_SPAI(PC pc,double epsilon)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->epsilon = epsilon;
   PetscFunctionReturn(0);
@@ -193,7 +193,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCSPAISetNBSteps_SPAI"
 int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->nbsteps = nbsteps;
   PetscFunctionReturn(0);
@@ -208,7 +208,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCSPAISetMax_SPAI"
 int PCSPAISetMax_SPAI(PC pc,int max)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->max = max;
   PetscFunctionReturn(0);
@@ -222,7 +222,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCSPAISetMaxNew_SPAI"
 int PCSPAISetMaxNew_SPAI(PC pc,int maxnew)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->maxnew = maxnew;
   PetscFunctionReturn(0);
@@ -236,7 +236,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCSPAISetBlockSize_SPAI"
 int PCSPAISetBlockSize_SPAI(PC pc,int block_size)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->block_size = block_size;
   PetscFunctionReturn(0);
@@ -250,7 +250,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCSPAISetCacheSize_SPAI"
 int PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->cache_size = cache_size;
   PetscFunctionReturn(0);
@@ -264,7 +264,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCSPAISetVerbose_SPAI"
 int PCSPAISetVerbose_SPAI(PC pc,int verbose)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->verbose = verbose;
   PetscFunctionReturn(0);
@@ -278,7 +278,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PCSPAISetSp_SPAI"
 int PCSPAISetSp_SPAI(PC pc,int sp)
 {
-  PC_SPAI    *ispai = (PC_SPAI *) pc->data;
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->sp = sp;
   PetscFunctionReturn(0);
@@ -291,7 +291,7 @@ EXTERN_C_END
 #define __FUNC__ "PCSPAISetEpsilon"
 int PCSPAISetEpsilon(PC pc,double epsilon)
 {
-  int ierr, (*f)(PC,double);
+  int ierr,(*f)(PC,double);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetEpsilon_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
@@ -306,7 +306,7 @@ int PCSPAISetEpsilon(PC pc,double epsilon)
 #define __FUNC__ "PCSPAISetNBSteps"
 int PCSPAISetNBSteps(PC pc,int nbsteps)
 {
-  int ierr, (*f)(PC,int);
+  int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetNBSteps_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
@@ -322,7 +322,7 @@ int PCSPAISetNBSteps(PC pc,int nbsteps)
 #define __FUNC__ "PCSPAISetMax"
 int PCSPAISetMax(PC pc,int max)
 {
-  int ierr, (*f)(PC,int);
+  int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMax_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
@@ -337,7 +337,7 @@ int PCSPAISetMax(PC pc,int max)
 #define __FUNC__ "PCSPAISetMaxNew"
 int PCSPAISetMaxNew(PC pc,int maxnew)
 {
-  int ierr, (*f)(PC,int);
+  int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMaxNew_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
@@ -352,7 +352,7 @@ int PCSPAISetMaxNew(PC pc,int maxnew)
 #define __FUNC__ "PCSPAISetBlockSize"
 int PCSPAISetBlockSize(PC pc,int block_size)
 {
-  int ierr, (*f)(PC,int);
+  int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetBlockSize_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
@@ -367,7 +367,7 @@ int PCSPAISetBlockSize(PC pc,int block_size)
 #define __FUNC__ "PCSPAISetCacheSize"
 int PCSPAISetCacheSize(PC pc,int cache_size)
 {
-  int ierr, (*f)(PC,int);
+  int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetCacheSize_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
@@ -382,7 +382,7 @@ int PCSPAISetCacheSize(PC pc,int cache_size)
 #define __FUNC__ "PCSPAISetVerbose"
 int PCSPAISetVerbose(PC pc,int verbose)
 {
-  int ierr, (*f)(PC,int);
+  int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetVerbose_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
@@ -397,7 +397,7 @@ int PCSPAISetVerbose(PC pc,int verbose)
 #define __FUNC__ "PCSPAISetSp"
 int PCSPAISetSp(PC pc,int sp)
 {
-  int ierr, (*f)(PC,int);
+  int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetSp_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
@@ -419,38 +419,38 @@ static int PCSetFromOptions_SPAI(PC pc)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(pc->prefix,"-pc_spai_epsilon",&epsilon,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(pc->prefix,"-pc_spai_epsilon",&epsilon,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSPAISetEpsilon(pc,epsilon); CHKERRQ(ierr);
+    ierr = PCSPAISetEpsilon(pc,epsilon);CHKERRQ(ierr);
   }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_nbsteps",&nbsteps,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_spai_nbsteps",&nbsteps,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSPAISetNBSteps(pc,nbsteps); CHKERRQ(ierr);
+    ierr = PCSPAISetNBSteps(pc,nbsteps);CHKERRQ(ierr);
   }
   /* added 1/7/99 g.h. */
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_max",&max,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_spai_max",&max,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSPAISetMax(pc,max); CHKERRQ(ierr);
+    ierr = PCSPAISetMax(pc,max);CHKERRQ(ierr);
   }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_maxnew",&maxnew,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_spai_maxnew",&maxnew,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSPAISetMaxNew(pc,maxnew); CHKERRQ(ierr);
+    ierr = PCSPAISetMaxNew(pc,maxnew);CHKERRQ(ierr);
   } 
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_block_size",&block_size,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_spai_block_size",&block_size,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSPAISetBlockSize(pc,block_size); CHKERRQ(ierr);
+    ierr = PCSPAISetBlockSize(pc,block_size);CHKERRQ(ierr);
   }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_cache_size",&cache_size,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_spai_cache_size",&cache_size,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSPAISetCacheSize(pc,cache_size); CHKERRQ(ierr);
+    ierr = PCSPAISetCacheSize(pc,cache_size);CHKERRQ(ierr);
   }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_verbose",&verbose,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_spai_verbose",&verbose,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSPAISetVerbose(pc,verbose); CHKERRQ(ierr);
+    ierr = PCSPAISetVerbose(pc,verbose);CHKERRQ(ierr);
   }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_sp",&sp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_spai_sp",&sp,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSPAISetSp(pc,sp); CHKERRQ(ierr);
+    ierr = PCSPAISetSp(pc,sp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -490,8 +490,8 @@ int PCCreate_SPAI(PC pc)
   int     ierr;
 
   PetscFunctionBegin;
-  ispai              = PetscNew(PC_SPAI); CHKPTRQ(ispai);
-  pc->data           = (void *) ispai;
+  ispai              = PetscNew(PC_SPAI);CHKPTRQ(ispai);
+  pc->data           = (void*)ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;
   pc->ops->apply           = PCApply_SPAI;
@@ -548,7 +548,7 @@ EXTERN_C_END
 */
 #undef __FUNC__  
 #define __FUNC__ "ConvertMatToMatrix"
-int ConvertMatToMatrix(Mat A, Mat AT, matrix **B)
+int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 {
   matrix   *M;
   int      i,j,col;
@@ -568,8 +568,8 @@ int ConvertMatToMatrix(Mat A, Mat AT, matrix **B)
  
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
-  ierr = MatGetSize(A,&n,&n); CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&mnl,&nnl); CHKERRQ(ierr);
+  ierr = MatGetSize(A,&n,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&mnl,&nnl);CHKERRQ(ierr);
 
   ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
 
@@ -579,14 +579,14 @@ int ConvertMatToMatrix(Mat A, Mat AT, matrix **B)
   M->bs = 1;
   M->max_block_size = 1;
 
-  M->mnls = (int *) PetscMalloc(sizeof(int)*size);CHKPTRQ(M->mnls);
-  M->start_indices = (int *) PetscMalloc(sizeof(int)*size);CHKPTRQ(M->start_indices);
-  M->pe = (int *) PetscMalloc(sizeof(int)*n);CHKPTRQ(M->start_indices);
-  M->block_sizes = (int *) PetscMalloc(sizeof(int)*n);CHKPTRQ(M->start_indices);
+  M->mnls = (int*)PetscMalloc(sizeof(int)*size);CHKPTRQ(M->mnls);
+  M->start_indices = (int*)PetscMalloc(sizeof(int)*size);CHKPTRQ(M->start_indices);
+  M->pe = (int*)PetscMalloc(sizeof(int)*n);CHKPTRQ(M->start_indices);
+  M->block_sizes = (int*)PetscMalloc(sizeof(int)*n);CHKPTRQ(M->start_indices);
   for (i=0; i<n; i++) M->block_sizes[i] = 1;
 
   ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&mnl, 1, MPI_INT,M->mnls, 1, MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&mnl,1,MPI_INT,M->mnls,1,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   M->start_indices[0] = 0;
   for (i=1; i<size; i++) {
@@ -603,16 +603,16 @@ int ConvertMatToMatrix(Mat A, Mat AT, matrix **B)
   }
 
   if (AT) {
-    M->lines = new_compressed_lines(M->mnls[rank],1); CHKPTRQ(M->lines);
+    M->lines = new_compressed_lines(M->mnls[rank],1);CHKPTRQ(M->lines);
   }
   else {
-    M->lines = new_compressed_lines(M->mnls[rank],0); CHKPTRQ(M->lines);
+    M->lines = new_compressed_lines(M->mnls[rank],0);CHKPTRQ(M->lines);
   }
 
   rows     = M->lines;
 
   /* Determine the mapping from global indices to pointers */
-  mapping = (int *) PetscMalloc(M->n*sizeof(int));CHKPTRQ(mapping);
+  mapping = (int*)PetscMalloc(M->n*sizeof(int));CHKPTRQ(mapping);
   pe = 0;
   local_indx = 0;
   for (i=0; i<M->n; i++) {
@@ -625,14 +625,14 @@ int ConvertMatToMatrix(Mat A, Mat AT, matrix **B)
   }
 
 
-  num_ptr = (int *) PetscMalloc(mnl*sizeof(int)); CHKPTRQ(num_ptr);
+  num_ptr = (int*)PetscMalloc(mnl*sizeof(int));CHKPTRQ(num_ptr);
 
   /*********************************************************/
   /************** Set up the row structure *****************/
   /*********************************************************/
 
   /* count number of nonzeros in every row */
-  ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&num_ptr[i-rstart],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatRestoreRow(A,i,&num_ptr[i-rstart],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -644,18 +644,18 @@ int ConvertMatToMatrix(Mat A, Mat AT, matrix **B)
     if (len < num_ptr[i]) len = num_ptr[i];
   }
 
-  for ( i=rstart; i<rend; i++ ) {
+  for (i=rstart; i<rend; i++) {
     row_indx             = i-rstart;
     len                  = num_ptr[row_indx];
-    rows->ptrs[row_indx] = (int *) PetscMalloc(len*sizeof(int));CHKPTRQ(rows->ptrs[row_indx]);
-    rows->A[row_indx]    = (double *) PetscMalloc(len*sizeof(double));CHKPTRQ(rows->A[row_indx]);
+    rows->ptrs[row_indx] = (int*)PetscMalloc(len*sizeof(int));CHKPTRQ(rows->ptrs[row_indx]);
+    rows->A[row_indx]    = (double*)PetscMalloc(len*sizeof(double));CHKPTRQ(rows->A[row_indx]);
   }
 
   /* copy the matrix */
   for (i=rstart; i<rend; i++) {
     row_indx = i - rstart;
     ierr     = MatGetRow(A,i,&nz,&cols,&vals);CHKERRQ(ierr);
-    for (j=0; j<nz; j++ ) {
+    for (j=0; j<nz; j++) {
       col = cols[j];
       len = rows->len[row_indx]++;
       rows->ptrs[row_indx][len] = mapping[col];
@@ -685,17 +685,17 @@ int ConvertMatToMatrix(Mat A, Mat AT, matrix **B)
       if (len < num_ptr[i]) len = num_ptr[i];
     }
 
-    for ( i=rstart; i<rend; i++ ) {
+    for (i=rstart; i<rend; i++) {
       row_indx             = i-rstart;
       len                  = num_ptr[row_indx];
-      rows->rptrs[row_indx] = (int *) PetscMalloc(len*sizeof(int));CHKPTRQ(rows->rptrs[row_indx]);
+      rows->rptrs[row_indx] = (int*)PetscMalloc(len*sizeof(int));CHKPTRQ(rows->rptrs[row_indx]);
     }
 
     /* copy the matrix (i.e., the structure) */
     for (i=rstart; i<rend; i++) {
       row_indx = i - rstart;
       ierr     = MatGetRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
-      for (j=0; j<nz; j++ ) {
+      for (j=0; j<nz; j++) {
 	col = cols[j];
 	len = rows->rlen[row_indx]++;
 	rows->rptrs[row_indx][len] = mapping[col];
@@ -724,7 +724,7 @@ int ConvertMatToMatrix(Mat A, Mat AT, matrix **B)
 */
 #undef __FUNC__  
 #define __FUNC__ "ConvertMatrixToMat"
-int ConvertMatrixToMat(matrix *B, Mat *PB)
+int ConvertMatrixToMat(matrix *B,Mat *PB)
 {
   int size,rank;
   int ierr;
@@ -742,8 +742,8 @@ int ConvertMatrixToMat(matrix *B, Mat *PB)
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
-  d_nnz = (int *) PetscMalloc(m*sizeof(int));
-  o_nnz = (int *) PetscMalloc(m*sizeof(int));
+  d_nnz = (int*)PetscMalloc(m*sizeof(int));
+  o_nnz = (int*)PetscMalloc(m*sizeof(int));
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
   last_diag_col = first_diag_col + B->mnls[rank];
@@ -751,7 +751,7 @@ int ConvertMatrixToMat(matrix *B, Mat *PB)
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
       if ((global_col >= first_diag_col) &&
-	  (global_col <= last_diag_col)     )
+	  (global_col <= last_diag_col))
 	d_nnz[i]++;
       else
 	o_nnz[i]++;
@@ -759,14 +759,14 @@ int ConvertMatrixToMat(matrix *B, Mat *PB)
   }
 
   M = N = B->n;
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,PB); CHKERRA(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,PB);CHKERRA(ierr);
 
   for (i=0; i<B->mnls[rank]; i++) {
     global_row = B->start_indices[rank]+i;
     for (k=0; k<B->lines->len[i]; k++) {
       global_col = B->lines->ptrs[i][k];
       val = B->lines->A[i][k];
-      ierr = MatSetValues(*PB,1,&global_row,1,&global_col,&val,ADD_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(*PB,1,&global_row,1,&global_col,&val,ADD_VALUES);CHKERRA(ierr);
     }
   }
 
@@ -786,7 +786,7 @@ int ConvertMatrixToMat(matrix *B, Mat *PB)
 */
 #undef __FUNC__  
 #define __FUNC__ "ConvertVectorToVec"
-int ConvertVectorToVec(vector *v, Vec *Pv)
+int ConvertVectorToVec(vector *v,Vec *Pv)
 {
   int size,rank;
   int ierr,m,M,i;
@@ -800,27 +800,27 @@ int ConvertVectorToVec(vector *v, Vec *Pv)
   M = v->n;
   
   
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,M,Pv); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,M,Pv);CHKERRA(ierr);
 
-  mnls = (int *) PetscMalloc(size*sizeof(int));
+  mnls = (int*)PetscMalloc(size*sizeof(int));
   MPI_Barrier(PETSC_COMM_WORLD);
-  MPI_Allgather((void *) &v->mnl, 1, MPI_INT,
-		(void *) mnls, 1, MPI_INT,
+  MPI_Allgather((void*)&v->mnl,1,MPI_INT,
+		(void*)mnls,1,MPI_INT,
 		PETSC_COMM_WORLD);
   
-  start_indices = (int *) PetscMalloc(size*sizeof(int));
+  start_indices = (int*)PetscMalloc(size*sizeof(int));
   start_indices[0] = 0;
   for (i=1; i<size; i++) 
     start_indices[i] = start_indices[i-1] +mnls[i-1];
   
-  global_indices = (int *) PetscMalloc(v->mnl*sizeof(int));
+  global_indices = (int*)PetscMalloc(v->mnl*sizeof(int));
   for (i=0; i<v->mnl; i++) 
     global_indices[i] = start_indices[rank] + i;
 
   PetscFree(mnls);
   PetscFree(start_indices);
   
-  ierr = VecSetValues(*Pv,v->mnl,global_indices,v->v,INSERT_VALUES); CHKERRA(ierr);
+  ierr = VecSetValues(*Pv,v->mnl,global_indices,v->v,INSERT_VALUES);CHKERRA(ierr);
 
   PetscFree(global_indices);
 
@@ -846,7 +846,7 @@ int ConvertVectorToVec(vector *v, Vec *Pv)
 */
 #undef __FUNC__  
 #define __FUNC__ "MM_to_PETSC"
-int MM_to_PETSC(char *f0, char *f1, char *f2)
+int MM_to_PETSC(char *f0,char *f1,char *f2)
 {
   Mat        A_PETSC;          /* matrix */
   Vec        b_PETSC;          /* RHS */
@@ -863,9 +863,9 @@ int MM_to_PETSC(char *f0, char *f1, char *f2)
   ierr = ConvertMatrixToMat(A_spai,&A_PETSC);CHKERRQ(ierr);
   ierr = ConvertVectorToVec(b_spai,&b_PETSC);CHKERRQ(ierr);
 
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,f1,BINARY_CREATE,&fd); CHKERRQ(ierr);
-  ierr = MatView(A_PETSC,fd); CHKERRQ(ierr);
-  ierr = VecView(b_PETSC,fd); CHKERRQ(ierr);
+  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,f1,BINARY_CREATE,&fd);CHKERRQ(ierr);
+  ierr = MatView(A_PETSC,fd);CHKERRQ(ierr);
+  ierr = VecView(b_PETSC,fd);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

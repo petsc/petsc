@@ -1,4 +1,4 @@
-/*$Id: dscatter.c,v 1.27 1999/10/13 20:36:39 bsmith Exp bsmith $*/
+/*$Id: dscatter.c,v 1.29 1999/10/24 14:01:20 bsmith Exp bsmith $*/
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter
@@ -14,8 +14,8 @@ struct _p_DrawSP {
   int         len,loc;
   Draw        win;
   DrawAxis    axis;
-  double      xmin, xmax, ymin, ymax, *x, *y;
-  int         nopts, dim;
+  PetscReal   xmin,xmax,ymin,ymax,*x,*y;
+  int         nopts,dim;
 };
 
 #define CHUNCKSIZE 100
@@ -44,7 +44,7 @@ int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
 {
   int         ierr;
   PetscTruth  isnull;
-  PetscObject obj = (PetscObject) draw;
+  PetscObject obj = (PetscObject)draw;
   DrawSP      sp;
 
   PetscFunctionBegin;
@@ -53,7 +53,6 @@ int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
   ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     ierr = DrawOpenNull(obj->comm,(Draw*)drawsp);CHKERRQ(ierr);
-    (*drawsp)->win = draw;
     PetscFunctionReturn(0);
   }
   PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_COOKIE,0,"DrawSP",obj->comm,DrawSPDestroy,0);
@@ -66,8 +65,8 @@ int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
   sp->ymin    = 1.e20;
   sp->xmax    = -1.e20;
   sp->ymax    = -1.e20;
-  sp->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(sp->x);
-  PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(double));
+  sp->x       = (PetscReal *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKPTRQ(sp->x);
+  PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   sp->loc     = 0;
@@ -103,8 +102,8 @@ int DrawSPSetDimension(DrawSP sp,int dim)
 
   ierr = PetscFree(sp->x);CHKERRQ(ierr);
   sp->dim     = dim;
-  sp->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(sp->x);
-  PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(double));
+  sp->x       = (PetscReal *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKPTRQ(sp->x);
+  PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
@@ -191,7 +190,7 @@ int DrawSPDestroy(DrawSP sp)
 
 .seealso: DrawSPAddPoints()
 @*/
-int DrawSPAddPoint(DrawSP sp,double *x,double *y)
+int DrawSPAddPoint(DrawSP sp,PetscReal *x,PetscReal *y)
 {
   int i,ierr;
 
@@ -200,12 +199,12 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
-    double *tmpx,*tmpy;
-    tmpx = (double *) PetscMalloc((2*sp->len+2*sp->dim*CHUNCKSIZE)*sizeof(double));CHKPTRQ(tmpx);
-    PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(double));
+    PetscReal *tmpx,*tmpy;
+    tmpx = (PetscReal*)PetscMalloc((2*sp->len+2*sp->dim*CHUNCKSIZE)*sizeof(PetscReal));CHKPTRQ(tmpx);
+    PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));
     tmpy = tmpx + sp->len + sp->dim*CHUNCKSIZE;
-    ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(sp->x);CHKERRQ(ierr);
     sp->x = tmpx; sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
@@ -243,23 +242,23 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 
 .seealso: DrawSPAddPoint()
 @*/
-int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
+int DrawSPAddPoints(DrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 {
-  int    i, j, k,ierr;
-  double *x,*y;
+  int       i,j,k,ierr;
+  PetscReal *x,*y;
 
   PetscFunctionBegin;
   if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->loc+n*sp->dim >= sp->len) { /* allocate more space */
-    double *tmpx,*tmpy;
+    PetscReal *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
     if (n > chunk) chunk = n;
-    tmpx = (double *) PetscMalloc((2*sp->len+2*sp->dim*chunk)*sizeof(double));CHKPTRQ(tmpx);
-    PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(double));
+    tmpx = (PetscReal*)PetscMalloc((2*sp->len+2*sp->dim*chunk)*sizeof(PetscReal));CHKPTRQ(tmpx);
+    PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));
     tmpy = tmpx + sp->len + sp->dim*chunk;
-    ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpx,sp->x,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpy,sp->y,sp->len*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(sp->x);CHKERRQ(ierr);
     sp->x   = tmpx; sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
@@ -267,7 +266,7 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
   for (j=0; j<sp->dim; j++) {
     x = xx[j]; y = yy[j];
     k = sp->loc + j;
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       if (x[i] > sp->xmax) sp->xmax = x[i]; 
       if (x[i] < sp->xmin) sp->xmin = x[i];
       if (y[i] > sp->ymax) sp->ymax = y[i]; 
@@ -299,9 +298,9 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
 @*/
 int DrawSPDraw(DrawSP sp)
 {
-  double   xmin=sp->xmin, xmax=sp->xmax, ymin=sp->ymin, ymax=sp->ymax;
-  int      ierr, i, j, dim = sp->dim,nopts = sp->nopts,rank;
-  Draw     draw = sp->win;
+  PetscReal xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
+  int       ierr,i,j,dim = sp->dim,nopts = sp->nopts,rank;
+  Draw      draw = sp->win;
 
   PetscFunctionBegin;
   if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
@@ -310,13 +309,13 @@ int DrawSPDraw(DrawSP sp)
   if (nopts < 1) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
   ierr = DrawClear(draw);CHKERRQ(ierr);
-  ierr = DrawAxisSetLimits(sp->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+  ierr = DrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = DrawAxisDraw(sp->axis);CHKERRQ(ierr);
   
   ierr = MPI_Comm_rank(sp->comm,&rank);CHKERRQ(ierr);
   if (rank)   PetscFunctionReturn(0);
-  for ( i=0; i<dim; i++ ) {
-    for ( j=0; j<nopts; j++ ) {
+  for (i=0; i<dim; i++) {
+    for (j=0; j<nopts; j++) {
       ierr = DrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
     }
   }
@@ -342,7 +341,7 @@ int DrawSPDraw(DrawSP sp)
 
 .keywords:  draw, line, graph, set limits
 @*/
-int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,double y_max) 
+int DrawSPSetLimits(DrawSP sp,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
   PetscFunctionBegin;
   if (sp && sp->cookie == DRAW_COOKIE) PetscFunctionReturn(0);
@@ -407,6 +406,10 @@ int DrawSPGetDraw(DrawSP sp,Draw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(sp);
-  *draw = sp->win;
+  if (sp && sp->cookie == DRAW_COOKIE) {
+    *draw = (Draw)sp;
+  } else {
+    *draw = sp->win;
+  }
   PetscFunctionReturn(0);
 }

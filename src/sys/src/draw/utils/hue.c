@@ -1,4 +1,4 @@
-/*$Id: hue.c,v 1.1 1999/11/17 19:07:57 bsmith Exp bsmith $*/
+/*$Id: hue.c,v 1.2 1999/11/24 21:52:58 bsmith Exp bsmith $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -12,11 +12,11 @@
    Gamma is a monitor dependent value.  The value here is an 
    approximate that gives somewhat better results than Gamma = 1.
  */
-static double Gamma = 2.0;
+static PetscReal Gamma = 2.0;
 
 #undef __FUNC__  
 #define __FUNC__ "DrawUtilitySetGamma" 
-int DrawUtilitySetGamma( double g )
+int DrawUtilitySetGamma(PetscReal g)
 {
   PetscFunctionBegin;
   Gamma = g;
@@ -35,7 +35,7 @@ int DrawUtilitySetGamma( double g )
  */
 #undef __FUNC__  
 #define __FUNC__ "DrawUtilityHlsHelper" 
-static int DrawUtilityHlsHelper(int h,int n1,int n2 )
+static int DrawUtilityHlsHelper(int h,int n1,int n2)
 {
   PetscFunctionBegin;
   while (h > 360) h = h - 360;
@@ -50,32 +50,32 @@ static int DrawUtilityHlsHelper(int h,int n1,int n2 )
 #define __FUNC__ "DrawUtilityHlsToRgb" 
 static int DrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
 {
-  int m1, m2;         /* in 0 to 100 */
+  int m1,m2;         /* in 0 to 100 */
 
   PetscFunctionBegin;
-  if (l <= 50) m2 = l * ( 100 + s ) / 100 ;           /* not sure of "/100" */
+  if (l <= 50) m2 = l * (100 + s) / 100 ;           /* not sure of "/100" */
   else         m2 = l + s - l*s/100;
 
   m1  = 2*l - m2;
-  if (s == 0) {
+  if (!s) {
     /* ignore h */
     *r  = 255 * l / 100;
     *g  = 255 * l / 100;
     *b  = 255 * l / 100;
   } else {
-    *r  = (255 * DrawUtilityHlsHelper( h+120, m1, m2 ) ) / 100;
-    *g  = (255 * DrawUtilityHlsHelper( h, m1, m2 ) )     / 100;
-    *b  = (255 * DrawUtilityHlsHelper( h-120, m1, m2 ) ) / 100;
+    *r  = (255 * DrawUtilityHlsHelper(h+120,m1,m2)) / 100;
+    *g  = (255 * DrawUtilityHlsHelper(h,m1,m2))     / 100;
+    *b  = (255 * DrawUtilityHlsHelper(h-120,m1,m2)) / 100;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "DrawUtilitySetCmapHue" 
-int DrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize )
+int DrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
 {
-  int     i, hue, lightness, saturation;
-  double  igamma = 1.0 / Gamma;
+  int        i,hue,lightness,saturation;
+  PetscReal  igamma = 1.0 / Gamma;
 
   PetscFunctionBegin;
   red[0]      = 0;
@@ -85,10 +85,10 @@ int DrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char 
   lightness   = 50;       /* in 0:100 */
   saturation  = 100;      /* in 0:100 */
   for (i = 0; i < mapsize; i++) {
-    DrawUtilityHlsToRgb( hue, lightness, saturation, red + i, green + i, blue + i );
-    red[i]   = (int)floor( 255.999 * pow( ((double)  red[i])/255.0, igamma ) );
-    blue[i]  = (int)floor( 255.999 * pow( ((double) blue[i])/255.0, igamma ) );
-    green[i] = (int)floor( 255.999 * pow( ((double)green[i])/255.0, igamma ) );
+    DrawUtilityHlsToRgb(hue,lightness,saturation,red + i,green + i,blue + i);
+    red[i]   = (int)floor(255.999 * pow(((double) red[i])/255.0,igamma));
+    blue[i]  = (int)floor(255.999 * pow(((double)blue[i])/255.0,igamma));
+    green[i] = (int)floor(255.999 * pow(((double)green[i])/255.0,igamma));
     hue     += (359/(mapsize-2));
   }
   PetscFunctionReturn(0);

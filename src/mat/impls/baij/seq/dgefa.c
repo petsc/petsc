@@ -1,4 +1,4 @@
-/*$Id: dgefa.c,v 1.15 1999/01/04 21:50:55 bsmith Exp bsmith $*/
+/*$Id: dgefa.c,v 1.16 1999/10/24 14:02:28 bsmith Exp bsmith $*/
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 
@@ -16,11 +16,11 @@
 
 #undef __FUNC__  
 #define __FUNC__ "LINPACKdgefa"
-int LINPACKdgefa(MatScalar *a, int n, int *ipvt)
+int LINPACKdgefa(MatScalar *a,int n,int *ipvt)
 {
-    int        i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn1;
+    int        i__2,i__3,kp1,nm1,j,k,l,ll,kn,knp1,jn1;
     MatScalar  t,*ax,*ay,*aa;
-    MatFloat   tmp,max;
+    MatReal    tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 
@@ -42,7 +42,7 @@ int LINPACKdgefa(MatScalar *a, int n, int *ipvt)
         aa = &a[knp1];
         max = PetscAbsScalar(aa[0]);
         l = 1;
-        for ( ll=1; ll<i__2; ll++ ) {
+        for (ll=1; ll<i__2; ll++) {
           tmp = PetscAbsScalar(aa[ll]);
           if (tmp > max) { max = tmp; l = ll+1;}
         }
@@ -66,7 +66,7 @@ int LINPACKdgefa(MatScalar *a, int n, int *ipvt)
 	t = -1. / a[knp1];
 	i__2 = n - k;
         aa = &a[1 + knp1]; 
-        for ( ll=0; ll<i__2; ll++ ) {
+        for (ll=0; ll<i__2; ll++) {
           aa[ll] *= t;
         }
 
@@ -83,7 +83,7 @@ int LINPACKdgefa(MatScalar *a, int n, int *ipvt)
 
 	    i__3 = n - k;
             ay = &a[1+k+jn1];
-            for ( ll=0; ll<i__3; ll++ ) {
+            for (ll=0; ll<i__3; ll++) {
               ay[ll] += t*ax[ll];
             }
 	}

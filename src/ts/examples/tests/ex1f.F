@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.31 1999/04/16 16:10:54 bsmith Exp bsmith $";
+! "$Id: ex1f.F,v 1.32 1999/05/11 19:16:33 bsmith Exp bsmith $";
 !
 !       Formatted test for TS routines.
 !
@@ -28,8 +28,8 @@
       parameter (linear_no_matrix = 0,linear_no_time = 1,linear = 2)
       parameter (nonlinear_no_jacobian = 3,nonlinear = 4)
 
-      integer          ierr,  time_steps, steps, flg, size, problem
-      Vec              local, global
+      integer          ierr,time_steps,steps,flg,size,problem
+      Vec              local,global
       double precision dt,ftime,zero,tmax
       TS               ts
       Mat              A
@@ -51,8 +51,8 @@
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,  &
      &               nrm_max,nox
 
-      external Monitor, RHSFunctionHeat, RHSMatrixFree, Initial
-      external RHSMatrixHeat, RHSJacobianHeat
+      external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
+      external RHSMatrixHeat,RHSJacobianHeat
 
       zero       = 0.0
       time_steps = 100
@@ -149,7 +149,8 @@
 !   make timestep context 
 
       call TSCreate(PETSC_COMM_WORLD,tsproblem,ts,ierr) 
-      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,ierr) 
+      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,                   &
+     &                  PETSC_NULL_FUNCTION, ierr) 
 
       dt = h*h/2.01
 
@@ -234,7 +235,7 @@
           endif
         else
           if (abs(nrm_2/steps - 0.00506174) .gt. 1.e-4) then
-            print*,'Error in ',tsinfo, ': 2-norm ',nrm_2/steps,         &
+            print*,'Error in ',tsinfo,': 2-norm ',nrm_2/steps,          &
      &             ' expecting: ',0.00506174
           endif
         endif
@@ -393,7 +394,7 @@
 
       call VecView(global,viewer1,ierr) 
 
-      call Solution(time,csolution, ctx) 
+      call Solution(time,csolution,ctx) 
       mone = -1.0
       call VecAXPY(mone,global,csolution,ierr) 
       call VecNorm(csolution,NORM_2,lnrm_2,ierr) 
@@ -453,12 +454,12 @@
 #include "finclude/viewer.h"
       TS               ts
       double precision t
-      Vec              globalin, globalout
+      Vec              globalin,globalout
       integer          ctx
       Vec              local
       integer          ierr,i,localsize
       PetscOffset      ldx,cdx 
-      Scalar           copyptr(1), localptr(1),sc
+      Scalar           copyptr(1),localptr(1),sc
 !
 !    Application context data, stored in common block
 !
@@ -524,8 +525,8 @@
       integer          ctx,ierr
 
       Mat              A
-      integer          i,mstart,mend,rank,size, idx(3)
-      Scalar           v(3),stwo, sone
+      integer          i,mstart,mend,rank,size,idx(3)
+      Scalar           v(3),stwo,sone
 
 !
 !    Application context data, stored in common block

@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.14 1999/10/24 14:03:21 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.15 1999/11/05 14:46:54 bsmith Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -15,12 +15,12 @@ Input arguments are:\n\
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int        ierr, its, m,n,mvec;
+  int        ierr,its,m,n,mvec;
   PetscTruth set;
   PLogDouble time1,time2,time;
   double     norm;
-  Scalar     zero = 0.0, none = -1.0;
-  Vec        x, b, u;
+  Scalar     zero = 0.0,none = -1.0;
+  Vec        x,b,u;
   Mat        A;
   MatType    mtype;
   SLES       sles;

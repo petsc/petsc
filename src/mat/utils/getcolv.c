@@ -1,4 +1,4 @@
-/*$Id: getcolv.c,v 1.7 1999/05/04 20:33:40 balay Exp bsmith $*/
+/*$Id: getcolv.c,v 1.8 1999/10/24 14:02:51 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
 
@@ -23,7 +23,7 @@
 .seealso: MatGetRow(), MatGetDiagonal()
 
 @*/
-int MatGetColumnVector(Mat A, Vec yy, int col)
+int MatGetColumnVector(Mat A,Vec yy,int col)
 {
   Scalar *y,*v,zero = 0.0;
   int    ierr,i,j,nz,*idx,M,N,Mv,Rs,Re,rs,re;
@@ -46,13 +46,13 @@ int MatGetColumnVector(Mat A, Vec yy, int col)
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
-  for ( i=Rs; i<Re; i++ ) {
+  for (i=Rs; i<Re; i++) {
     ierr = MatGetRow(A,i,&nz,&idx,&v);CHKERRQ(ierr);
     if (nz && idx[0] <= col) {
       /*
           Should use faster search here 
       */
-      for ( j=0; j<nz; j++ ) {
+      for (j=0; j<nz; j++) {
         if (idx[j] >= col) {
           if (idx[j] == col) y[i-rs] = v[j];
           break;

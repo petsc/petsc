@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1999/01/12 23:14:21 bsmith Exp balay $ 
+# $Id: makefile,v 1.8 1999/02/02 21:23:58 balay Exp bsmith $ 
 
 ALL: lib 
 
@@ -14,7 +14,7 @@ OBJSC	  = cookie.o  gcomm.o   gtype.o   olist.o   pcomm.o  pname.o  tagm.o \
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-DIRS	  = 
+DIRS	  = ams
 LOCDIR	  = src/sys/src/objects/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

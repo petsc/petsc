@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.39 1999/06/30 23:54:40 balay Exp bsmith $*/
+/*$Id: beuler.c,v 1.40 1999/10/24 14:03:51 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -20,7 +20,7 @@ typedef struct {
 #define __FUNC__ "TSStep_BEuler_Linear_Constant_Matrix"
 static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 {
-  TS_BEuler *beuler = (TS_BEuler*) ts->data;
+  TS_BEuler *beuler = (TS_BEuler*)ts->data;
   Vec       sol = ts->vec_sol,update = beuler->update;
   Vec       rhs = beuler->rhs;
   int       ierr,i,max_steps = ts->max_steps,its;
@@ -33,7 +33,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   /* set initial guess to be previous solution */
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
-  for ( i=0; i<max_steps; i++ ) {
+  for (i=0; i<max_steps; i++) {
     ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
     ierr = VecScale(&mdt,rhs);CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
@@ -59,10 +59,10 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 #define __FUNC__ "TSStep_BEuler_Linear_Variable_Matrix"
 static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 {
-  TS_BEuler    *beuler = (TS_BEuler*) ts->data;
-  Vec          sol = ts->vec_sol,update = beuler->update, rhs = beuler->rhs;
+  TS_BEuler    *beuler = (TS_BEuler*)ts->data;
+  Vec          sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
   int          ierr,i,max_steps = ts->max_steps,its;
-  Scalar       mdt = 1.0/ts->time_step, mone = -1.0;
+  Scalar       mdt = 1.0/ts->time_step,mone = -1.0;
   MatStructure str;
 
   PetscFunctionBegin;
@@ -72,7 +72,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
   /* set initial guess to be previous solution */
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
-  for ( i=0; i<max_steps; i++ ) {
+  for (i=0; i<max_steps; i++) {
     ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
     ierr = VecScale(&mdt,rhs);CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
@@ -113,13 +113,13 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,lits;
-  TS_BEuler *beuler = (TS_BEuler*) ts->data;
+  TS_BEuler *beuler = (TS_BEuler*)ts->data;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
-  for ( i=0; i<max_steps; i++ ) {
+  for (i=0; i<max_steps; i++) {
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update);CHKERRQ(ierr);
@@ -139,9 +139,9 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "TSDestroy_BEuler"
-static int TSDestroy_BEuler(TS ts )
+static int TSDestroy_BEuler(TS ts)
 {
-  TS_BEuler *beuler = (TS_BEuler*) ts->data;
+  TS_BEuler *beuler = (TS_BEuler*)ts->data;
   int       ierr;
 
   PetscFunctionBegin;
@@ -200,7 +200,7 @@ int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
   ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
   }
   ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
@@ -220,7 +220,7 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 {
   TS      ts = (TS) ctx;
   int     ierr;
-  Scalar  mone = -1.0, mdt = 1.0/ts->time_step;
+  Scalar  mone = -1.0,mdt = 1.0/ts->time_step;
   MatType mtype;
 
   PetscFunctionBegin;
@@ -249,9 +249,9 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 #define __FUNC__ "TSSetUp_BEuler_Linear_Constant_Matrix"
 static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 {
-  TS_BEuler *beuler = (TS_BEuler*) ts->data;
-  int       ierr, M, m;
-  Scalar    mdt = 1.0/ts->time_step, mone = -1.0;
+  TS_BEuler *beuler = (TS_BEuler*)ts->data;
+  int       ierr,M,m;
+  Scalar    mdt = 1.0/ts->time_step,mone = -1.0;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
@@ -280,8 +280,8 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 #define __FUNC__ "TSSetUp_BEuler_Linear_Variable_Matrix"
 static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 {
-  TS_BEuler *beuler = (TS_BEuler*) ts->data;
-  int       ierr, M, m;
+  TS_BEuler *beuler = (TS_BEuler*)ts->data;
+  int       ierr,M,m;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
@@ -299,8 +299,8 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 #define __FUNC__ "TSSetUp_BEuler_Nonlinear"
 static int TSSetUp_BEuler_Nonlinear(TS ts)
 {
-  TS_BEuler *beuler = (TS_BEuler*) ts->data;
-  int       ierr, M, m;
+  TS_BEuler *beuler = (TS_BEuler*)ts->data;
+  int       ierr,M,m;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
@@ -361,7 +361,7 @@ static int TSView_BEuler(TS ts,Viewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_BEuler"
-int TSCreate_BEuler(TS ts )
+int TSCreate_BEuler(TS ts)
 {
   TS_BEuler *beuler;
   int       ierr;
@@ -407,12 +407,12 @@ int TSCreate_BEuler(TS ts )
     ts->step            = TSStep_BEuler_Nonlinear;
     ts->setfromoptions  = TSSetFromOptions_BEuler_Nonlinear;
     ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
-  } else SETERRQ( PETSC_ERR_ARG_OUTOFRANGE,0,"No such problem");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"No such problem");
 
   beuler   = PetscNew(TS_BEuler);CHKPTRQ(beuler);
   PLogObjectMemory(ts,sizeof(TS_BEuler));
   ierr     = PetscMemzero(beuler,sizeof(TS_BEuler));CHKERRQ(ierr);
-  ts->data = (void *) beuler;
+  ts->data = (void*)beuler;
 
   PetscFunctionReturn(0);
 }

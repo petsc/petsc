@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.14 1999/10/24 14:02:50 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.15 1999/11/05 14:45:59 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   char              file[2][128];     /* input file name */
   char              stagename[4][16]; /* names of profiling stages */
   IS                isrow,iscol;      /* row and column permutations */
-  int               ierr, i,loops  = 2;
+  int               ierr,i,loops  = 2;
   MatOrderingType   rtype = MATORDERING_RCM;
   PetscTruth        set,flg;
 
@@ -69,7 +69,7 @@ int main(int argc,char **args)
         -log_summary) can be done with the larger one (that actually
         is the system of interest). 
   */
-  for ( i=0; i<loops; i++ ) {
+  for (i=0; i<loops; i++) {
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Load system i
@@ -131,8 +131,8 @@ int main(int argc,char **args)
        are no longer needed.
     */
     ierr = MatDestroy(A);CHKERRA(ierr);
-    ierr = ISDestroy(isrow); CHKERRA(ierr);
-    ierr = ISDestroy(iscol); CHKERRA(ierr);
+    ierr = ISDestroy(isrow);CHKERRA(ierr);
+    ierr = ISDestroy(iscol);CHKERRA(ierr);
   }
   /* -----------------------------------------------------------
                       End of reordering loop

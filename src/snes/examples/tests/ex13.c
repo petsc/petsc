@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.19 1999/10/24 14:03:39 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.20 1999/11/05 14:47:16 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -18,7 +18,7 @@ options are:\n\
     1) Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
   
     with boundary conditions
    
@@ -40,26 +40,26 @@ typedef struct {
    DA          da;            /* distributed array data structure */
 } AppCtx;
 
-extern int FormFunction1(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
+extern int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
 extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES          snes;                      /* nonlinear solver */
   SNESType      type = SNESEQLS;           /* nonlinear solution method */
-  Vec           x, r;                      /* solution, residual vectors */
+  Vec           x,r;                      /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user-defined work context */
-  int           i,ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
+  int           i,ierr,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
   PetscTruth    matrix_free;
   int           size; 
-  double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  double        bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
 
-  for ( i=0; i<2; i++ ) {
+  for (i=0; i<2; i++) {
     PLogStagePush(i);
     user.mx = 4; user.my = 4; user.param = 6.0;
     
@@ -128,8 +128,8 @@ int main( int argc, char **argv )
 #define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
-  double  one = 1.0, lambda, temp1, temp, hx, hy;
+  int     i,j,row,mx,my,ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
+  double  one = 1.0,lambda,temp1,temp,hx,hy;
   Scalar  *x;
   Vec     localX = user->localX;
 
@@ -147,11 +147,11 @@ int FormInitialGuess1(AppCtx *user,Vec X)
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
       row = i - Xs + (j - Ys)*Xm; 
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
@@ -164,11 +164,11 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #define __FUNC__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
-  Scalar  u, uxx, uyy, *x,*f;
-  Vec     localX = user->localX, localF = user->localF; 
+  AppCtx  *user = (AppCtx*)ptr;
+  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
+  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  Scalar  u,uxx,uyy,*x,*f;
+  Vec     localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -187,7 +187,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
     row = (j - Ys)*Xm + xs - Xs - 1; 
     for (i=xs; i<xs+xm; i++) {
       row++;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       }
@@ -209,11 +209,11 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 #define __FUNC__ "FormJacobian1"
 int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;
+  AppCtx  *user = (AppCtx*)ptr;
   Mat     jac = *J;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
-  int     nloc, *ltog, grow;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
+  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
+  int     nloc,*ltog,grow;
+  Scalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -234,7 +234,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }

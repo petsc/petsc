@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.181 1999/11/10 03:19:22 bsmith Exp bsmith $*/
+/*$Id: bdiag.c,v 1.182 1999/11/24 21:53:54 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -27,22 +27,22 @@ extern int MatMultTranspose_SeqBDiag_1(Mat,Vec,Vec);
 extern int MatMultTranspose_SeqBDiag_N(Mat,Vec,Vec);
 extern int MatMultTransposeAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
 extern int MatMultTransposeAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-extern int MatRelax_SeqBDiag_N(Mat,Vec,double,MatSORType,double,int,Vec);
-extern int MatRelax_SeqBDiag_1(Mat,Vec,double,MatSORType,double,int,Vec);
+extern int MatRelax_SeqBDiag_N(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
+extern int MatRelax_SeqBDiag_1(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
 extern int MatView_SeqBDiag(Mat,Viewer);
 extern int MatGetInfo_SeqBDiag(Mat,MatInfoType,MatInfo*);
 extern int MatGetRow_SeqBDiag(Mat,int,int *,int **,Scalar **);
 extern int MatRestoreRow_SeqBDiag(Mat,int,int *,int **,Scalar **);
 extern int MatTranspose_SeqBDiag(Mat,Mat *);
-extern int MatNorm_SeqBDiag(Mat,NormType,double *);
+extern int MatNorm_SeqBDiag(Mat,NormType,PetscReal *);
 extern int MatGetOwnershipRange_SeqBDiag(Mat,int*,int *);
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqBDiag"
 int MatDestroy_SeqBDiag(Mat A)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, bs = a->bs,ierr;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,bs = a->bs,ierr;
 
   PetscFunctionBegin;
 
@@ -59,15 +59,14 @@ int MatDestroy_SeqBDiag(Mat A)
     ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
   }
 #if defined(PETSC_USE_LOG)
-  PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",
-                       a->m,a->n,a->nz,a->bs,a->nd);
+  PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",a->m,a->n,a->nz,a->bs,a->nd);
 #endif
   if (!a->user_alloc) { /* Free the actual diagonals */
     for (i=0; i<a->nd; i++) {
       if (a->diag[i] > 0) {
-        ierr = PetscFree( a->diagv[i] + bs*bs*a->diag[i]  );CHKERRQ(ierr);
+        ierr = PetscFree(a->diagv[i] + bs*bs*a->diag[i]);CHKERRQ(ierr);
       } else {
-        ierr = PetscFree( a->diagv[i] );CHKERRQ(ierr);
+        ierr = PetscFree(a->diagv[i]);CHKERRQ(ierr);
       }
     }
   }
@@ -86,9 +85,9 @@ int MatDestroy_SeqBDiag(Mat A)
 #define __FUNC__ "MatAssemblyEnd_SeqBDiag"
 int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, k, temp, *diag = a->diag, *bdlen = a->bdlen;
-  Scalar       *dtemp, **dv = a->diagv;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,k,temp,*diag = a->diag,*bdlen = a->bdlen;
+  Scalar       *dtemp,**dv = a->diagv;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -112,9 +111,9 @@ int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 
   /* Set location of main diagonal */
   for (i=0; i<a->nd; i++) {
-    if (a->diag[i] == 0) {a->mainbd = i; break;}
+    if (!a->diag[i]) {a->mainbd = i; break;}
   }
-  PLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %d, memory used %d, block size %d\n",a->nd,a->maxnz,a->bs);
+  PLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %d,memory used %d, block size %d\n",a->nd,a->maxnz,a->bs);
   PetscFunctionReturn(0);
 }
 
@@ -122,7 +121,7 @@ int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 #define __FUNC__ "MatSetOption_SeqBDiag"
 int MatSetOption_SeqBDiag(Mat A,MatOption op)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
 
   PetscFunctionBegin;
   if (op == MAT_NO_NEW_NONZERO_LOCATIONS)       a->nonew       = 1;
@@ -169,9 +168,9 @@ int MatPrintHelp_SeqBDiag(Mat A)
 #define __FUNC__ "MatGetDiagonal_SeqBDiag_N"
 static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          ierr,i, j, n, len, ibase, bs = a->bs, iloc;
-  Scalar       *x, *dd, zero = 0.0;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          ierr,i,j,n,len,ibase,bs = a->bs,iloc;
+  Scalar       *x,*dd,zero = 0.0;
 
   PetscFunctionBegin;
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix");  
@@ -194,9 +193,9 @@ static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
 #define __FUNC__ "MatGetDiagonal_SeqBDiag_1"
 static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          ierr,i, n, len;
-  Scalar       *x, *dd, zero = 0.0;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          ierr,i,n,len;
+  Scalar       *x,*dd,zero = 0.0;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
@@ -215,8 +214,8 @@ static int MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
 #define __FUNC__ "MatZeroEntries_SeqBDiag"
 int MatZeroEntries_SeqBDiag(Mat A)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          d, i, len, bs = a->bs;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          d,i,len,bs = a->bs;
   Scalar       *dv;
 
   PetscFunctionBegin;
@@ -235,7 +234,7 @@ int MatZeroEntries_SeqBDiag(Mat A)
 #define __FUNC__ "MatGetBlockSize_SeqBDiag"
 int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
 
   PetscFunctionBegin;
   *bs = a->bs;
@@ -246,14 +245,14 @@ int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
 #define __FUNC__ "MatZeroRows_SeqBDiag"
 int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          i, ierr, N, *rows, m = a->m - 1, nz, *col;
-  Scalar       *dd, *val;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,ierr,N,*rows,m = a->m - 1,nz,*col;
+  Scalar       *dd,*val;
 
   PetscFunctionBegin;
   ierr = ISGetSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"row out of range");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val);CHKERRQ(ierr);
     ierr = PetscMemzero(val,nz*sizeof(Scalar));CHKERRQ(ierr);
@@ -263,7 +262,7 @@ int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
   if (diag) {
     if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Main diagonal does not exist");
     dd = a->diagv[a->mainbd];
-    for ( i=0; i<N; i++ ) dd[rows[i]] = *diag;
+    for (i=0; i<N; i++) dd[rows[i]] = *diag;
   }
   ISRestoreIndices(is,&rows);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -275,7 +274,7 @@ int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
 #define __FUNC__ "MatGetSize_SeqBDiag"
 int MatGetSize_SeqBDiag(Mat A,int *m,int *n)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
 
   PetscFunctionBegin;
   if (m) *m = a->m;
@@ -287,10 +286,10 @@ int MatGetSize_SeqBDiag(Mat A,int *m,int *n)
 #define __FUNC__ "MatGetSubMatrix_SeqBDiag"
 int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          nznew, *smap, i, j, ierr, oldcols = a->n;
-  int          *irow, *icol, newr, newc, *cwork, *col,nz, bs;
-  Scalar       *vwork, *val;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          nznew,*smap,i,j,ierr,oldcols = a->n;
+  int          *irow,*icol,newr,newc,*cwork,*col,nz,bs;
+  Scalar       *vwork,*val;
   Mat          newmat;
 
   PetscFunctionBegin;
@@ -303,11 +302,11 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
   ierr = ISGetSize(isrow,&newr);CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&newc);CHKERRQ(ierr);
 
-  smap  = (int *) PetscMalloc((oldcols+1)*sizeof(int));CHKPTRQ(smap);
-  cwork = (int *) PetscMalloc((newc+1)*sizeof(int));CHKPTRQ(cwork);
-  vwork = (Scalar *) PetscMalloc((newc+1)*sizeof(Scalar));CHKPTRQ(vwork);
+  smap  = (int*)PetscMalloc((oldcols+1)*sizeof(int));CHKPTRQ(smap);
+  cwork = (int*)PetscMalloc((newc+1)*sizeof(int));CHKPTRQ(cwork);
+  vwork = (Scalar*)PetscMalloc((newc+1)*sizeof(Scalar));CHKPTRQ(vwork);
   ierr  = PetscMemzero((char*)smap,oldcols*sizeof(int));CHKERRQ(ierr);
-  for ( i=0; i<newc; i++ ) smap[icol[i]] = i+1;
+  for (i=0; i<newc; i++) smap[icol[i]] = i+1;
 
   /* Determine diagonals; then create submatrix */
   bs = a->bs; /* Default block size remains the same */
@@ -341,16 +340,16 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqBDiag"
-int MatGetSubMatrices_SeqBDiag(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat **B)
+int MatGetSubMatrices_SeqBDiag(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   int ierr,i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    *B = (Mat *) PetscMalloc( (n+1)*sizeof(Mat) );CHKPTRQ(*B);
+    *B = (Mat*)PetscMalloc((n+1)*sizeof(Mat));CHKPTRQ(*B);
   }
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ierr = MatGetSubMatrix_SeqBDiag(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -360,16 +359,16 @@ int MatGetSubMatrices_SeqBDiag(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat
 #define __FUNC__ "MatScale_SeqBDiag"
 int MatScale_SeqBDiag(Scalar *alpha,Mat inA)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) inA->data;
-  int          one = 1, i, len, bs = a->bs;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)inA->data;
+  int          one = 1,i,len,bs = a->bs;
 
   PetscFunctionBegin;
   for (i=0; i<a->nd; i++) {
     len = bs*bs*a->bdlen[i];
     if (a->diag[i] > 0) {
-      BLscal_( &len, alpha, a->diagv[i] + bs*bs*a->diag[i], &one );
+      BLscal_(&len,alpha,a->diagv[i] + bs*bs*a->diag[i],&one);
     } else {
-      BLscal_( &len, alpha, a->diagv[i], &one );
+      BLscal_(&len,alpha,a->diagv[i],&one);
     }
   }
   PLogFlops(a->nz);
@@ -380,10 +379,10 @@ int MatScale_SeqBDiag(Scalar *alpha,Mat inA)
 #define __FUNC__ "MatDiagonalScale_SeqBDiag"
 int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  Scalar       *l,*r, *dv;
-  int          d, j, len,ierr;
-  int          nd = a->nd, bs = a->bs, diag, m, n;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  Scalar       *l,*r,*dv;
+  int          d,j,len,ierr;
+  int          nd = a->nd,bs = a->bs,diag,m,n;
 
   PetscFunctionBegin;
   if (ll) {
@@ -422,7 +421,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 }
 
 static int MatDuplicate_SeqBDiag(Mat,MatDuplicateOption,Mat *);
-extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
+extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,PetscReal,Mat*);
 extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatILUInfo*,Mat*);
 extern int MatILUFactor_SeqBDiag(Mat,IS,IS,MatILUInfo*);
 extern int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
@@ -439,9 +438,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        MatGetRow_SeqBDiag,
        MatRestoreRow_SeqBDiag,
        MatMult_SeqBDiag_N,
-       MatMultAdd_SeqBDiag_N, 
+       MatMultAdd_SeqBDiag_N,
        MatMultTranspose_SeqBDiag_N,
-       MatMultTransposeAdd_SeqBDiag_N, 
+       MatMultTransposeAdd_SeqBDiag_N,
        MatSolve_SeqBDiag_N,
        0,
        0,
@@ -548,7 +547,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
 {
   Mat          B;
   Mat_SeqBDiag *b;
-  int          i, nda, sizetot, ierr,  nd2 = 128,idiag[128],size;
+  int          i,nda,sizetot,ierr, nd2 = 128,idiag[128],size;
   PetscTruth   flg1;
 
   PetscFunctionBegin;
@@ -570,7 +569,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
   else     nda = nd;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBDIAG,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
-  B->data         = (void *) (b = PetscNew(Mat_SeqBDiag));CHKPTRQ(b);
+  B->data         = (void*)(b = PetscNew(Mat_SeqBDiag));CHKPTRQ(b);
   ierr            = PetscMemzero(b,sizeof(Mat_SeqBDiag));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->ops->destroy = MatDestroy_SeqBDiag;
@@ -652,7 +651,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
   }
   sizetot   *= bs*bs;
   b->maxnz  =  sizetot;
-  b->dvalue = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(b->dvalue);
+  b->dvalue = (Scalar*)PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(b->dvalue);
   PLogObjectMemory(B,(nda*(bs+2))*sizeof(int) + bs*nda*sizeof(Scalar)
                     + nda*sizeof(Scalar*) + sizeof(Mat_SeqBDiag)
                     + sizeof(struct _p_Mat) + sizetot*sizeof(Scalar));
@@ -688,8 +687,8 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
 #define __FUNC__ "MatDuplicate_SeqBDiag"
 static int MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Mat *matout)
 { 
-  Mat_SeqBDiag *newmat, *a = (Mat_SeqBDiag *) A->data;
-  int          i, ierr, len,diag,bs = a->bs;
+  Mat_SeqBDiag *newmat,*a = (Mat_SeqBDiag*)A->data;
+  int          i,ierr,len,diag,bs = a->bs;
   Mat          mat;
 
   PetscFunctionBegin;
@@ -697,7 +696,7 @@ static int MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Mat *matout)
 
   /* Copy contents of diagonals */
   mat = *matout;
-  newmat = (Mat_SeqBDiag *) mat->data;
+  newmat = (Mat_SeqBDiag*)mat->data;
   if (cpvalues == MAT_COPY_VALUES) {
     for (i=0; i<a->nd; i++) {
       len = a->bdlen[i] * bs * bs * sizeof(Scalar);
@@ -719,10 +718,10 @@ static int MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Mat *matout)
 int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 {
   Mat        B;
-  int        *scols, i, nz, ierr, fd, header[4], size,nd = 128;
-  int        bs, *rowlengths = 0,M,N,*cols,extra_rows,*diag = 0;
+  int        *scols,i,nz,ierr,fd,header[4],size,nd = 128;
+  int        bs,*rowlengths = 0,M,N,*cols,extra_rows,*diag = 0;
   int        idiag[128];
-  Scalar     *vals, *svals;
+  Scalar     *vals,*svals;
   MPI_Comm   comm;
   PetscTruth flg;
   
@@ -752,9 +751,9 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   }
 
   /* read row lengths */
-  rowlengths = (int*) PetscMalloc((M+extra_rows)*sizeof(int));CHKPTRQ(rowlengths);
+  rowlengths = (int*)PetscMalloc((M+extra_rows)*sizeof(int));CHKPTRQ(rowlengths);
   ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
-  for ( i=0; i<extra_rows; i++ ) rowlengths[M+i] = 1;
+  for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
 
   /* load information about diagonals */
   ierr = OptionsGetIntArray(PETSC_NULL,"-matload_bdiag_diags",idiag,&nd,&flg);CHKERRQ(ierr);
@@ -768,18 +767,18 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   B = *A;
 
   /* read column indices and nonzeros */
-  cols = scols = (int *) PetscMalloc( nz*sizeof(int) );CHKPTRQ(cols);
+  cols = scols = (int*)PetscMalloc(nz*sizeof(int));CHKPTRQ(cols);
   ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-  vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) );CHKPTRQ(vals);
+  vals = svals = (Scalar*)PetscMalloc(nz*sizeof(Scalar));CHKPTRQ(vals);
   ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
   /* insert into matrix */
 
-  for ( i=0; i<M; i++ ) {
+  for (i=0; i<M; i++) {
     ierr = MatSetValues(B,1,&i,rowlengths[i],scols,svals,INSERT_VALUES);CHKERRQ(ierr);
     scols += rowlengths[i]; svals += rowlengths[i];
   }
   vals[0] = 1.0;
-  for ( i=M; i<M+extra_rows; i++ ) {
+  for (i=M; i<M+extra_rows; i++) {
     ierr = MatSetValues(B,1,&i,1,&i,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
 

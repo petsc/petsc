@@ -1,4 +1,4 @@
-/*$Id: dasub.c,v 1.24 1999/06/30 23:55:09 balay Exp bsmith $*/
+/*$Id: dasub.c,v 1.25 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -34,7 +34,7 @@
 @*/
 int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
 {
-  MPI_Group group, subgroup;
+  MPI_Group group,subgroup;
   int       ierr,i,ict,flag,size,*ranks,*owners,xs,xm,ys,ym,zs,zm;
 
   PetscFunctionBegin;

@@ -1,11 +1,11 @@
-/*$Id: shellcnv.c,v 1.9 1999/10/24 14:02:18 bsmith Exp bsmith $*/
+/*$Id: shellcnv.c,v 1.10 1999/11/05 14:45:24 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
 #include "src/vec/vecimpl.h"  
   
 #undef __FUNC__  
 #define __FUNC__ "MatConvert_Shell"
-int MatConvert_Shell(Mat oldmat,MatType newtype, Mat *mat)
+int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
 {
   Vec      in,out;
   int      ierr,i,M,m,size,*rows,start,end;
@@ -28,8 +28,8 @@ int MatConvert_Shell(Mat oldmat,MatType newtype, Mat *mat)
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  rows = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(rows);
-  for ( i=0; i<m; i++ ) {rows[i] = start + i;}
+  rows = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(rows);
+  for (i=0; i<m; i++) {rows[i] = start + i;}
 
   if (size == 1) {
     ierr = MatCreateSeqDense(comm,M,M,PETSC_NULL,mat);CHKERRQ(ierr);
@@ -38,7 +38,7 @@ int MatConvert_Shell(Mat oldmat,MatType newtype, Mat *mat)
     /* ierr = MatCreateMPIAIJ(comm,m,m,M,M,0,0,0,0,mat);CHKERRQ(ierr); */
   }
 
-  for ( i=0; i<M; i++ ) {
+  for (i=0; i<M; i++) {
     ierr = VecSet(&zero,in);CHKERRQ(ierr);
     ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(in);CHKERRQ(ierr);

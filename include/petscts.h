@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.36 1999/05/12 03:35:01 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.37 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -18,20 +18,20 @@ typedef struct _p_TS* TS;
 
 typedef char *TSType;
 
-typedef enum {TS_LINEAR, TS_NONLINEAR} TSProblemType;
+typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
 extern int TSSetType(TS,TSType);
 extern int TSGetProblemType(TS,TSProblemType*);
 extern int TSDestroy(TS);
 
-extern int TSSetMonitor(TS,int(*)(TS,int,double,Vec,void*),void *);
+extern int TSSetMonitor(TS,int(*)(TS,int,double,Vec,void*),void *,int (*)(void*));
 extern int TSClearMonitor(TS);
 extern int TSGetType(TS,TSType*);
 
-extern int TSSetOptionsPrefix(TS, char *);
-extern int TSAppendOptionsPrefix(TS, char *);
-extern int TSGetOptionsPrefix(TS, char **);
+extern int TSSetOptionsPrefix(TS,char *);
+extern int TSAppendOptionsPrefix(TS,char *);
+extern int TSGetOptionsPrefix(TS,char **);
 extern int TSSetFromOptions(TS);
 extern int TSSetTypeFromOptions(TS);
 extern int TSSetUp(TS);
@@ -63,7 +63,7 @@ extern int TSGetRHSMatrix(TS,Mat*,Mat*,void**);
 extern int TSGetRHSJacobian(TS,Mat*,Mat*,void**);
 
 extern int TSPseudoSetTimeStep(TS,int(*)(TS,double*,void*),void*);
-extern int TSPseudoDefaultTimeStep(TS,double*,void* );
+extern int TSPseudoDefaultTimeStep(TS,double*,void*);
 extern int TSPseudoComputeTimeStep(TS,double *);
 
 extern int TSPseudoSetVerifyTimeStep(TS,int(*)(TS,Vec,void*,double*,int*),void*);
@@ -95,7 +95,7 @@ extern int TSView(TS,Viewer);
 extern int TSSetApplicationContext(TS,void *);
 extern int TSGetApplicationContext(TS,void **);
 
-extern int TSLGMonitorCreate(char *,char *,int,int,int,int, DrawLG *);
+extern int TSLGMonitorCreate(char *,char *,int,int,int,int,DrawLG *);
 extern int TSLGMonitor(TS,int,double,Vec,void *);
 extern int TSLGMonitorDestroy(DrawLG);
 
@@ -103,8 +103,8 @@ extern int TSLGMonitorDestroy(DrawLG);
        PETSc interface to PVode
 */
 #define PVODE_UNMODIFIED_GS PVODE_CLASSICAL_GS
-typedef enum { PVODE_ADAMS, PVODE_BDF } TSPVodeType;
-typedef enum { PVODE_MODIFIED_GS = 0, PVODE_CLASSICAL_GS = 1 } TSPVodeGramSchmidtType;
+typedef enum { PVODE_ADAMS,PVODE_BDF } TSPVodeType;
+typedef enum { PVODE_MODIFIED_GS = 0,PVODE_CLASSICAL_GS = 1 } TSPVodeGramSchmidtType;
 extern int TSPVodeSetType(TS,TSPVodeType);
 extern int TSPVodeGetPC(TS,PC*);
 extern int TSPVodeSetTolerance(TS,double,double);
@@ -112,7 +112,7 @@ extern int TSPVodeGetIterations(TS,int *,int *);
 extern int TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
 extern int TSPVodeSetGMRESRestart(TS,int);
 extern int TSPVodeSetLinearTolerance(TS,double);
-extern int TSPVodeSetExactFinalTime(TS, PetscTruth);
+extern int TSPVodeSetExactFinalTime(TS,PetscTruth);
 
 #endif
 

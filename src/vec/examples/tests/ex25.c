@@ -1,4 +1,4 @@
-/*$Id: ex25.c,v 1.6 1999/05/04 20:30:57 balay Exp bsmith $*/
+/*$Id: ex25.c,v 1.7 1999/10/24 14:01:59 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case processor zero is as long as the entire parallel vector; rest are zero length.\n\n";
@@ -10,7 +10,7 @@ this case processor zero is as long as the entire parallel vector; rest are zero
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5, ierr;
+  int           n = 5,ierr;
   int           size,rank,N,low,high,iglobal,i;
   Scalar        value,zero = 0.0;
   Vec           x,y;
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
 
   ierr = VecSet(&zero,x);CHKERRA(ierr);
   ierr = VecGetOwnershipRange(y,&low,&high);CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     iglobal = i + low; value = (Scalar) (i + 10*rank);
     ierr = VecSetValues(y,1,&iglobal,&value,INSERT_VALUES);CHKERRA(ierr);
   }

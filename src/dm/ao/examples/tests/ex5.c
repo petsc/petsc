@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.9 1999/10/24 14:04:01 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.10 1999/11/05 14:47:47 bsmith Exp bsmith $*/
 
 static char help[] = "Tests AODataRemap \n\n";
 
@@ -8,7 +8,7 @@ static char help[] = "Tests AODataRemap \n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int         n,nglobal, bs = 1, *keys, *data,ierr,rank,size,i,start,*news;
+  int         n,nglobal,bs = 1,*keys,*data,ierr,rank,size,i,start,*news;
   AOData      aodata;
   AO          ao;
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal);CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
-  keys = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(keys);
+  keys = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(keys);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -39,15 +39,15 @@ int main(int argc,char **argv)
   ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
   start -= n;
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     keys[i]     = start + i;
   }
 
   /* 
       Allocate data for the first key and first segment 
   */
-  data = (int *) PetscMalloc( bs*n*sizeof(int) );CHKPTRA(data);
-  for ( i=0; i<n; i++ ) {
+  data = (int*)PetscMalloc(bs*n*sizeof(int));CHKPTRA(data);
+  for (i=0; i<n; i++) {
     data[i]   = start + i + 1; /* the data is the neighbor to the right */
   }
   data[n-1] = 0; /* make it periodic */
@@ -63,8 +63,8 @@ int main(int argc,char **argv)
   /*
          Remap the database so that i -> nglobal - i - 1
   */
-  news = (int *) PetscMalloc(n*sizeof(int));CHKPTRA(news);
-  for ( i=0; i<n; i++ ) {
+  news = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(news);
+  for (i=0; i<n; i++) {
     news[i] = nglobal - i - start - 1;
   }
   ierr = AOCreateBasic(PETSC_COMM_WORLD,n,news,PETSC_NULL,&ao);CHKERRA(ierr);

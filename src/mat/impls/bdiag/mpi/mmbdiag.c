@@ -1,4 +1,4 @@
-/*$Id: mmbdiag.c,v 1.32 1999/09/20 19:36:45 bsmith Exp bsmith $*/
+/*$Id: mmbdiag.c,v 1.33 1999/10/24 14:02:22 bsmith Exp bsmith $*/
 
 /*
    Support for the MPIBDIAG matrix-vector multiply
@@ -10,17 +10,17 @@
 #define __FUNC__ "MatSetUpMultiply_MPIBDiag"
 int MatSetUpMultiply_MPIBDiag(Mat mat)
 {
-  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  Mat_SeqBDiag *lmbd = (Mat_SeqBDiag *) mbd->A->data;
-  int          ierr, N = mbd->N, *indices, *garray, ec=0;
-  int          bs = lmbd->bs, d, i, j, diag;
+  Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
+  Mat_SeqBDiag *lmbd = (Mat_SeqBDiag*)mbd->A->data;
+  int          ierr,N = mbd->N,*indices,*garray,ec=0;
+  int          bs = lmbd->bs,d,i,j,diag;
   IS           tofrom;
   Vec          gvec;
 
   PetscFunctionBegin;
   /* We make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
-  indices = (int *) PetscMalloc( (N+1)*sizeof(int) );CHKPTRQ(indices);
+  indices = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(indices);
   ierr    = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
 
   if (bs == 1) {
@@ -56,9 +56,9 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) );CHKPTRQ(garray);
+  garray = (int*)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
   ec = 0;
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     if (indices[i]) garray[ec++] = i;
   }
   ierr = PetscFree(indices);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.108 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.109 1999/11/05 14:47:52 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -17,7 +17,7 @@ EXTERN_C_END
 #define __FUNC__ "DAView_3d"
 int DAView_3d(DA da,Viewer viewer)
 {
-  int        rank, ierr;
+  int        rank,ierr;
   PetscTruth isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
@@ -34,10 +34,10 @@ int DAView_3d(DA da,Viewer viewer)
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     Draw       draw;
-    double     ymin = -1.0,ymax = (double) da->N;
-    double     xmin = -1.0,xmax = (double) ((da->M+2)*da->P),x,y;
-    int        k, plane;
-    double     ycoord, xcoord;
+    double     ymin = -1.0,ymax = (double)da->N;
+    double     xmin = -1.0,xmax = (double)((da->M+2)*da->P),x,y;
+    int        k,plane;
+    double     ycoord,xcoord;
     int        base,*idx;
     char       node[10];
     PetscTruth isnull;
@@ -50,13 +50,13 @@ int DAView_3d(DA da,Viewer viewer)
     /* first processor draw all node lines */
     if (!rank) {
       for (k=0; k<da->P; k++) {
-        ymin = 0.0; ymax = (double) (da->N - 1);
-        for ( xmin=(double)(k*(da->M+1)); xmin<(double)(da->M+(k*(da->M+1))); xmin++ ) {
+        ymin = 0.0; ymax = (double)(da->N - 1);
+        for (xmin=(double)(k*(da->M+1)); xmin<(double)(da->M+(k*(da->M+1))); xmin++) {
           ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_BLACK);CHKERRQ(ierr);
         }
       
         xmin = (double)(k*(da->M+1)); xmax = xmin + (double)(da->M - 1);
-        for ( ymin=0; ymin<(double)da->N; ymin++ ) {
+        for (ymin=0; ymin<(double)da->N; ymin++) {
           ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_BLACK);CHKERRQ(ierr);
         }
       }
@@ -87,8 +87,8 @@ int DAView_3d(DA da,Viewer viewer)
         sprintf(node,"%d",rank);
         ierr = DrawString(draw,xmin+(da->M+1)*k+.2,ymin+.3,DRAW_RED,node);CHKERRQ(ierr);
 
-        for ( y=ymin; y<=ymax; y++ ) {
-          for ( x=xmin+(da->M+1)*k; x<=xmax+(da->M+1)*k; x++ ) {
+        for (y=ymin; y<=ymax; y++) {
+          for (x=xmin+(da->M+1)*k; x<=xmax+(da->M+1)*k; x++) {
             sprintf(node,"%d",base++);
             ierr = DrawString(draw,x,y,DRAW_BLACK,node);CHKERRQ(ierr);
           }
@@ -112,8 +112,8 @@ int DAView_3d(DA da,Viewer viewer)
         ymin = da->Ys; ymax = da->Ye; 
         xmin = (da->M+1)*plane*da->w; 
         xmax = (da->M+1)*plane*da->w+da->M*da->w;
-        for ( y=ymin; y<ymax; y++ ) {
-          for ( x=xmin+da->Xs; x<xmin+da->Xe; x+=da->w) {
+        for (y=ymin; y<ymax; y++) {
+          for (x=xmin+da->Xs; x<xmin+da->Xe; x+=da->w) {
             sprintf(node,"%d",idx[base]/da->w);
             ycoord = y;
             /*Keep y wrap around points on drawing */  
@@ -200,9 +200,9 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   int           n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
   int           *bases,*ldims,x_t,y_t,z_t,s_t,base,count,s_x,s_y,s_z; 
   int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim;
-  int           sn0 = 0, sn1 = 0, sn2 = 0, sn3 = 0, sn5 = 0, sn6 = 0, sn7 = 0;
-  int           sn8 = 0, sn9 = 0, sn11 = 0, sn15 = 0, sn24 = 0, sn25 = 0, sn26 = 0;
-  int           sn17 = 0,sn18 = 0, sn19 = 0, sn20 = 0, sn21 = 0, sn23 = 0;
+  int           sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
+  int           sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
+  int           sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0;
   PetscTruth    flg1,flg2;
   DA            da;
   Vec           local,global;
@@ -224,8 +224,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   da->gtog1      = 0;
   da->localused  = PETSC_FALSE;
   da->globalused = PETSC_FALSE;
-  da->fieldname  = (char **) PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
-  ierr = PetscMemzero(da->fieldname, dof*sizeof(char*));CHKERRQ(ierr);
+  da->fieldname  = (char**)PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
+  ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
@@ -252,49 +252,49 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     p = size/(m*n);
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p != PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)N*p) ));
-    if (m == 0) m = 1;
+    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)N*p)));
+    if (!m) m = 1;
     while (m > 0) {
       n = size/(m*p);
       if (m*n*p == size) break;
       m--;
     }
-    if (m == 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad p value: p = %d",p);
+    if (!m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad p value: p = %d",p);
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)P*n) ));
-    if (m == 0) m = 1;
+    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)P*n)));
+    if (!m) m = 1;
     while (m > 0) {
       p = size/(m*n);
       if (m*n*p == size) break;
       m--;
     }
-    if (m == 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad n value: n = %d",n);
+    if (!m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad n value: n = %d",n);
     if (M > P && m < p) {int _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int) ( 0.5 + sqrt( ((double)N)*((double)size)/((double)P*m) ));
-    if (n == 0) n = 1;
+    n = (int)(0.5 + sqrt(((double)N)*((double)size)/((double)P*m)));
+    if (!n) n = 1;
     while (n > 0) {
       p = size/(m*n);
       if (m*n*p == size) break;
       n--;
     }
-    if (n == 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad m value: m = %d",n);
+    if (!n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad m value: m = %d",n);
     if (N > P && n < p) {int _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int) (0.5 + pow( ((double)N*N)*((double)size)/((double)P*M), 1./3. ));
-    if (n == 0) n = 1;
+    n = (int)(0.5 + pow(((double)N*N)*((double)size)/((double)P*M),1./3.));
+    if (!n) n = 1;
     while (n > 0) {
       pm = size/n;
       if (n*pm == size) break;
       n--;
     }   
-    if (n == 0) n = 1; 
-    m = (int) (0.5 + sqrt( ((double)M)*((double)size)/((double)P*n) ));
-    if (m == 0) m = 1;
+    if (!n) n = 1; 
+    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)P*n)));
+    if (!m) m = 1;
     while (m > 0) {
       p = size/(m*n);
       if (m*n*p == size) break;
@@ -317,7 +317,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (lx) { /* user decided distribution */
     x  = lx[rank % m];
     xs = 0;
-    for ( i=0; i<(rank%m)-1; i++ ) { xs += lx[i];}
+    for (i=0; i<(rank%m)-1; i++) { xs += lx[i];}
     if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
   } else if (flg1) { /* Block Comm type Distribution */
     xs = (rank%m)*M/m;
@@ -335,8 +335,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
     else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
-    flx = lx = (int *) PetscMalloc( m*sizeof(int) );CHKPTRQ(lx);
-    for ( i=0; i<m; i++ ) {
+    flx = lx = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(lx);
+    for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > (i % m));
     }
   }
@@ -344,7 +344,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     y  = ly[(rank % m*n)/m];
     if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);      
     ys = 0;
-    for ( i=0; i<(rank % m*n)/m-1; i++ ) { ys += ly[i];}
+    for (i=0; i<(rank % m*n)/m-1; i++) { ys += ly[i];}
   } else if (flg1) { /* Block Comm type Distribution */
     ys = ((rank%(m*n))/m)*N/n;
     y  = ((rank%(m*n))/m + 1)*N/n - ys;
@@ -361,8 +361,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);
     if ((N % n) > ((rank % (m*n)) /m)) {ys = ((rank % (m*n))/m)*y;}
     else                               {ys = (N % n)*(y+1) + (((rank % (m*n))/m)-(N % n))*y;}
-    fly = ly = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(ly);
-    for ( i=0; i<n; i++ ) {
+    fly = ly = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ly);
+    for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > (i % n));
     }
   }
@@ -370,7 +370,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     z  = lz[rank/(m*n)];
     if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);      
     zs = 0;
-    for ( i=0; i<(rank/(m*n))-1; i++ ) { zs += lz[i];}
+    for (i=0; i<(rank/(m*n))-1; i++) { zs += lz[i];}
   }
   if (flg1) { /* Block Comm type Distribution */
     zs = (rank/(m*n))*P/p;
@@ -388,8 +388,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);
     if ((P % p) > (rank / (m*n))) {zs = (rank/(m*n))*z;}
     else                          {zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z;}
-    flz = lz = (int *) PetscMalloc( p*sizeof(int) );CHKPTRQ(lz);
-    for ( i=0; i<p; i++ ) {
+    flz = lz = (int*)PetscMalloc(p*sizeof(int));CHKPTRQ(lz);
+    for (i=0; i<p; i++) {
       lz[i] = P/p + ((P % p) > (i % p));
     }
   }
@@ -439,14 +439,14 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
 
   /* determine starting point of each processor */
   nn = x*y*z;
-  bases = (int *) PetscMalloc( (2*size+1)*sizeof(int) );CHKPTRQ(bases);
-  ldims = (int *) (bases+size+1);
+  bases = (int*)PetscMalloc((2*size+1)*sizeof(int));CHKPTRQ(bases);
+  ldims = (int*)(bases+size+1);
   ierr = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
-  for ( i=1; i<=size; i++ ) {
+  for (i=1; i<=size; i++) {
     bases[i] = ldims[i-1];
   }
-  for ( i=1; i<=size; i++ ) {
+  for (i=1; i<=size; i++) {
     bases[i] += bases[i-1];
   }
 
@@ -465,11 +465,11 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   bottom = ys - Ys; top = bottom + y;
   down   = zs - Zs; up  = down + z;
   count  = x*(top-bottom)*(up-down);
-  idx    = (int *) PetscMalloc( count*sizeof(int) );CHKPTRQ(idx);
+  idx    = (int*)PetscMalloc(count*sizeof(int));CHKPTRQ(idx);
   count  = 0;
-  for ( i=down; i<up; i++ ) {
-    for ( j=bottom; j<top; j++) {
-      for ( k=0; k<x; k++ ) {
+  for (i=down; i<up; i++) {
+    for (j=bottom; j<top; j++) {
+      for (k=0; k<x; k++) {
         idx[count++] = (left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys) + k;
       }
     }
@@ -495,32 +495,32 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     count  = down*(top-bottom)*x +
              (up-down)*(bottom*x  + (top-bottom)*(Xe-Xs) + (Ye-Ys-top)*x) +
              (Ze-Zs-up)*(top-bottom)*x;
-    idx    = (int *) PetscMalloc( count*sizeof(int) );CHKPTRQ(idx);
+    idx    = (int*)PetscMalloc(count*sizeof(int));CHKPTRQ(idx);
     count  = 0;
-    for ( i=0; i<down; i++ ) {
-      for ( j=bottom; j<top; j++) {
-        for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
+    for (i=0; i<down; i++) {
+      for (j=bottom; j<top; j++) {
+        for (k=0; k<x; k++) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
     }
     /* the middle piece */
-    for ( i=down; i<up; i++ ) {
+    for (i=down; i<up; i++) {
       /* front */
-      for ( j=0; j<bottom; j++) {
-        for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
+      for (j=0; j<bottom; j++) {
+        for (k=0; k<x; k++) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
       /* middle */
-      for ( j=bottom; j<top; j++) {
-        for ( k=0; k<Xe-Xs; k++ ) idx[count++] = j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
+      for (j=bottom; j<top; j++) {
+        for (k=0; k<Xe-Xs; k++) idx[count++] = j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
       /* back */
-      for ( j=top; j<Ye-Ys; j++) {
-        for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
+      for (j=top; j<Ye-Ys; j++) {
+        for (k=0; k<x; k++) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
     }
     /* the top piece */
-    for ( i=up; i<Ze-Zs; i++ ) {
-      for ( j=bottom; j<top; j++) {
-        for ( k=0; k<x; k++ ) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
+    for (i=up; i<Ze-Zs; i++) {
+      for (j=bottom; j<top; j++) {
+        for (k=0; k<x; k++) idx[count++] = left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys)+k;
       }
     }
     ierr = ISCreateGeneral(comm,count,idx,&to);CHKERRQ(ierr);
@@ -764,44 +764,44 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   }
 
 
-  idx = (int *) PetscMalloc( (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int) );CHKPTRQ(idx);
-  PLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int) );
+  idx = (int*)PetscMalloc((Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int));CHKPTRQ(idx);
+  PLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int));
 
   nn = 0;
 
   /* Bottom Level */
-  for ( k=0; k<s_z; k++) {  
-    for ( i=1; i<=s_y; i++ ) {
+  for (k=0; k<s_z; k++) {  
+    for (i=1; i<=s_y; i++) {
       if (n0 >= 0) { /* left below */
         x_t = lx[n0 % m]*dof; 
         y_t = ly[(n0 % (m*n))/m]; 
         z_t = lz[n0 / (m*n)]; 
         s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x - (s_z-k-1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n1 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n1 % (m*n))/m];
         z_t = lz[n1 / (m*n)];
         s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n2 >= 0) { /* right below */
         x_t = lx[n2 % m]*dof;
         y_t = ly[(n2 % (m*n))/m];
         z_t = lz[n2 / (m*n)];
         s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=0; i<y; i++ ) {
+    for (i=0; i<y; i++) {
       if (n3 >= 0) { /* directly left */
         x_t = lx[n3 % m]*dof;
         y_t = y;
         z_t = lz[n3 / (m*n)];
         s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
 
       if (n4 >= 0) { /* middle */
@@ -809,7 +809,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         y_t = y;
         z_t = lz[n4 / (m*n)];
         s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
 
       if (n5 >= 0) { /* directly right */
@@ -817,141 +817,141 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         y_t = y;
         z_t = lz[n5 / (m*n)];
         s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=1; i<=s_y; i++ ) {
+    for (i=1; i<=s_y; i++) {
       if (n6 >= 0) { /* left above */
         x_t = lx[n6 % m]*dof;
         y_t = ly[(n6 % (m*n))/m];
         z_t = lz[n6 / (m*n)];
         s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n7 % (m*n))/m];
         z_t = lz[n7 / (m*n)];
         s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n8 >= 0) { /* right above */
         x_t = lx[n8 % m]*dof;
         y_t = ly[(n8 % (m*n))/m];
         z_t = lz[n8 / (m*n)];
         s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
   }
 
   /* Middle Level */
-  for ( k=0; k<z; k++) {  
-    for ( i=1; i<=s_y; i++ ) {
+  for (k=0; k<z; k++) {  
+    for (i=1; i<=s_y; i++) {
       if (n9 >= 0) { /* left below */
         x_t = lx[n9 % m]*dof;
         y_t = ly[(n9 % (m*n))/m];
         z_t = z;
         s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n10 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n10 % (m*n))/m]; 
         z_t = z;
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n11 >= 0) { /* right below */
         x_t = lx[n11 % m]*dof;
         y_t = ly[(n11 % (m*n))/m];
         z_t = z;
         s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=0; i<y; i++ ) {
+    for (i=0; i<y; i++) {
       if (n12 >= 0) { /* directly left */
         x_t = lx[n12 % m]*dof;
         y_t = y;
         z_t = z;
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
 
       /* Interior */
       s_t = bases[rank] + i*x + k*x*y;
-      for ( j=0; j<x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<x; j++) { idx[nn++] = s_t++;}
 
       if (n14 >= 0) { /* directly right */
         x_t = lx[n14 % m]*dof;
         y_t = y;
         z_t = z;
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=1; i<=s_y; i++ ) {
+    for (i=1; i<=s_y; i++) {
       if (n15 >= 0) { /* left above */
         x_t = lx[n15 % m]*dof; 
         y_t = ly[(n15 % (m*n))/m];
         z_t = z;
         s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n16 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n16 % (m*n))/m];
         z_t = z;
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n17 >= 0) { /* right above */
         x_t = lx[n17 % m]*dof;
         y_t = ly[(n17 % (m*n))/m]; 
         z_t = z;
         s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     } 
   }
  
   /* Upper Level */
-  for ( k=0; k<s_z; k++) {  
-    for ( i=1; i<=s_y; i++ ) {
+  for (k=0; k<s_z; k++) {  
+    for (i=1; i<=s_y; i++) {
       if (n18 >= 0) { /* left below */
         x_t = lx[n18 % m]*dof;
         y_t = ly[(n18 % (m*n))/m]; 
         z_t = lz[n18 / (m*n)]; 
         s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n19 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n19 % (m*n))/m]; 
         z_t = lz[n19 / (m*n)]; 
         s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n20 >= 0) { /* right below */
         x_t = lx[n20 % m]*dof;
         y_t = ly[(n20 % (m*n))/m];
         z_t = lz[n20 / (m*n)];
         s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=0; i<y; i++ ) {
+    for (i=0; i<y; i++) {
       if (n21 >= 0) { /* directly left */
         x_t = lx[n21 % m]*dof;
         y_t = y;
         z_t = lz[n21 / (m*n)];
         s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
 
       if (n22 >= 0) { /* middle */
@@ -959,7 +959,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         y_t = y;
         z_t = lz[n22 / (m*n)];
         s_t = bases[n22] + i*x_t + k*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
 
       if (n23 >= 0) { /* directly right */
@@ -967,31 +967,31 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         y_t = y;
         z_t = lz[n23 / (m*n)];
         s_t = bases[n23] + i*x_t + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=1; i<=s_y; i++ ) {
+    for (i=1; i<=s_y; i++) {
       if (n24 >= 0) { /* left above */
-        x_t = lx[n24 % m]*dof;;
+        x_t = lx[n24 % m]*dof;
         y_t = ly[(n24 % (m*n))/m]; 
         z_t = lz[n24 / (m*n)]; 
         s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n25 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n25 % (m*n))/m];
         z_t = lz[n25 / (m*n)];
         s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n26 >= 0) { /* right above */
         x_t = lx[n26 % m]*dof;
         y_t = ly[(n26 % (m*n))/m]; 
         z_t = lz[n26 / (m*n)];
         s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
   }  
@@ -1025,38 +1025,38 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     nn = 0;
 
     /* Bottom Level */
-    for ( k=0; k<s_z; k++) {  
-      for ( i=1; i<=s_y; i++ ) {
+    for (k=0; k<s_z; k++) {  
+      for (i=1; i<=s_y; i++) {
         if (n0 >= 0) { /* left below */
           x_t = lx[n0 % m]*dof; 
           y_t = ly[(n0 % (m*n))/m]; 
           z_t = lz[n0 / (m*n)]; 
           s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x - (s_z-k-1)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n1 >= 0) { /* directly below */
           x_t = x;
           y_t = ly[(n1 % (m*n))/m];
           z_t = lz[n1 / (m*n)];
           s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n2 >= 0) { /* right below */
           x_t = lx[n2 % m]*dof;
           y_t = ly[(n2 % (m*n))/m];
           z_t = lz[n2 / (m*n)];
           s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       }
 
-      for ( i=0; i<y; i++ ) {
+      for (i=0; i<y; i++) {
         if (n3 >= 0) { /* directly left */
           x_t = lx[n3 % m]*dof;
           y_t = y;
           z_t = lz[n3 / (m*n)];
           s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
 
         if (n4 >= 0) { /* middle */
@@ -1064,7 +1064,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
           y_t = y;
           z_t = lz[n4 / (m*n)];
           s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
 
         if (n5 >= 0) { /* directly right */
@@ -1072,141 +1072,141 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
           y_t = y;
           z_t = lz[n5 / (m*n)];
           s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       }
 
-      for ( i=1; i<=s_y; i++ ) {
+      for (i=1; i<=s_y; i++) {
         if (n6 >= 0) { /* left above */
           x_t = lx[n6 % m]*dof;
           y_t = ly[(n6 % (m*n))/m];
           z_t = lz[n6 / (m*n)];
           s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n7 >= 0) { /* directly above */
           x_t = x;
           y_t = ly[(n7 % (m*n))/m];
           z_t = lz[n7 / (m*n)];
           s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n8 >= 0) { /* right above */
           x_t = lx[n8 % m]*dof;
           y_t = ly[(n8 % (m*n))/m];
           z_t = lz[n8 / (m*n)];
           s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       }
     }
 
     /* Middle Level */
-    for ( k=0; k<z; k++) {  
-      for ( i=1; i<=s_y; i++ ) {
+    for (k=0; k<z; k++) {  
+      for (i=1; i<=s_y; i++) {
         if (n9 >= 0) { /* left below */
           x_t = lx[n9 % m]*dof;
           y_t = ly[(n9 % (m*n))/m];
           z_t = z;
           s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n10 >= 0) { /* directly below */
           x_t = x;
           y_t = ly[(n10 % (m*n))/m]; 
           z_t = z;
           s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n11 >= 0) { /* right below */
           x_t = lx[n11 % m]*dof;
           y_t = ly[(n11 % (m*n))/m];
           z_t = z;
           s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       }
 
-      for ( i=0; i<y; i++ ) {
+      for (i=0; i<y; i++) {
         if (n12 >= 0) { /* directly left */
           x_t = lx[n12 % m]*dof;
           y_t = y;
           z_t = z;
           s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
 
         /* Interior */
         s_t = bases[rank] + i*x + k*x*y;
-        for ( j=0; j<x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x; j++) { idx[nn++] = s_t++;}
 
         if (n14 >= 0) { /* directly right */
           x_t = lx[n14 % m]*dof;
           y_t = y;
           z_t = z;
           s_t = bases[n14] + i*x_t + k*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       }
 
-      for ( i=1; i<=s_y; i++ ) {
+      for (i=1; i<=s_y; i++) {
         if (n15 >= 0) { /* left above */
           x_t = lx[n15 % m]*dof; 
           y_t = ly[(n15 % (m*n))/m];
           z_t = z;
           s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n16 >= 0) { /* directly above */
           x_t = x;
           y_t = ly[(n16 % (m*n))/m];
           z_t = z;
           s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
-          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n17 >= 0) { /* right above */
           x_t = lx[n17 % m]*dof;
           y_t = ly[(n17 % (m*n))/m]; 
           z_t = z;
           s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       } 
     }
  
     /* Upper Level */
-    for ( k=0; k<s_z; k++) {  
-      for ( i=1; i<=s_y; i++ ) {
+    for (k=0; k<s_z; k++) {  
+      for (i=1; i<=s_y; i++) {
         if (n18 >= 0) { /* left below */
           x_t = lx[n18 % m]*dof;
           y_t = ly[(n18 % (m*n))/m]; 
           z_t = lz[n18 / (m*n)]; 
           s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n19 >= 0) { /* directly below */
           x_t = x;
           y_t = ly[(n19 % (m*n))/m]; 
           z_t = lz[n19 / (m*n)]; 
           s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n20 >= 0) { /* right below */
           x_t = lx[n20 % m]*dof;
           y_t = ly[(n20 % (m*n))/m];
           z_t = lz[n20 / (m*n)];
           s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       }
 
-      for ( i=0; i<y; i++ ) {
+      for (i=0; i<y; i++) {
         if (n21 >= 0) { /* directly left */
           x_t = lx[n21 % m]*dof;
           y_t = y;
           z_t = lz[n21 / (m*n)];
           s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
 
         if (n22 >= 0) { /* middle */
@@ -1214,7 +1214,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
           y_t = y;
           z_t = lz[n22 / (m*n)];
           s_t = bases[n22] + i*x_t + k*x_t*y_t;
-          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
 
         if (n23 >= 0) { /* directly right */
@@ -1222,31 +1222,31 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
           y_t = y;
           z_t = lz[n23 / (m*n)];
           s_t = bases[n23] + i*x_t + k*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       }
 
-      for ( i=1; i<=s_y; i++ ) {
+      for (i=1; i<=s_y; i++) {
         if (n24 >= 0) { /* left above */
-          x_t = lx[n24 % m]*dof;;
+          x_t = lx[n24 % m]*dof;
           y_t = ly[(n24 % (m*n))/m]; 
           z_t = lz[n24 / (m*n)]; 
           s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n25 >= 0) { /* directly above */
           x_t = x;
           y_t = ly[(n25 % (m*n))/m];
           z_t = lz[n25 / (m*n)];
           s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
-          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n26 >= 0) { /* right above */
           x_t = lx[n26 % m]*dof;
           y_t = ly[(n26 % (m*n))/m]; 
           z_t = lz[n26 / (m*n)];
           s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
-          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+          for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
       }
     }  
@@ -1491,38 +1491,38 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   nn = 0;
 
   /* Bottom Level */
-  for ( k=0; k<s_z; k++) {  
-    for ( i=1; i<=s_y; i++ ) {
+  for (k=0; k<s_z; k++) {  
+    for (i=1; i<=s_y; i++) {
       if (n0 >= 0) { /* left below */
         x_t = lx[n0 % m]*dof;
         y_t = ly[(n0 % (m*n))/m];
         z_t = lz[n0 / (m*n)];
         s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t -s_x - (s_z-k-1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n1 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n1 % (m*n))/m];
         z_t = lz[n1 / (m*n)];
         s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n2 >= 0) { /* right below */
         x_t = lx[n2 % m]*dof;
         y_t = ly[(n2 % (m*n))/m];
         z_t = lz[n2 / (m*n)];
         s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=0; i<y; i++ ) {
+    for (i=0; i<y; i++) {
       if (n3 >= 0) { /* directly left */
         x_t = lx[n3 % m]*dof;
         y_t = y;
         z_t = lz[n3 / (m*n)];
         s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
 
       if (n4 >= 0) { /* middle */
@@ -1530,7 +1530,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         y_t = y;
         z_t = lz[n4 / (m*n)];
         s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
 
       if (n5 >= 0) { /* directly right */
@@ -1538,141 +1538,141 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         y_t = y;
         z_t = lz[n5 / (m*n)];
         s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=1; i<=s_y; i++ ) {
+    for (i=1; i<=s_y; i++) {
       if (n6 >= 0) { /* left above */
         x_t = lx[n6 % m]*dof;
         y_t = ly[(n6 % (m*n))/m]; 
         z_t = lz[n6 / (m*n)];
         s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n7 % (m*n))/m];
         z_t = lz[n7 / (m*n)];
         s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n8 >= 0) { /* right above */
         x_t = lx[n8 % m]*dof;
         y_t = ly[(n8 % (m*n))/m];
         z_t = lz[n8 / (m*n)];
         s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
   }
 
   /* Middle Level */
-  for ( k=0; k<z; k++) {  
-    for ( i=1; i<=s_y; i++ ) {
+  for (k=0; k<z; k++) {  
+    for (i=1; i<=s_y; i++) {
       if (n9 >= 0) { /* left below */
         x_t = lx[n9 % m]*dof;
         y_t = ly[(n9 % (m*n))/m];
         z_t = z;
         s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n10 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n10 % (m*n))/m];
         z_t = z;
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n11 >= 0) { /* right below */
         x_t = lx[n11 % m]*dof;
         y_t = ly[(n11 % (m*n))/m];
         z_t = z;
         s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=0; i<y; i++ ) {
+    for (i=0; i<y; i++) {
       if (n12 >= 0) { /* directly left */
         x_t = lx[n12 % m]*dof;
         y_t = y;
         z_t = z;
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
 
       /* Interior */
       s_t = bases[rank] + i*x + k*x*y;
-      for ( j=0; j<x; j++ ) { idx[nn++] = s_t++;}
+      for (j=0; j<x; j++) { idx[nn++] = s_t++;}
 
       if (n14 >= 0) { /* directly right */
         x_t = lx[n14 % m]*dof;
         y_t = y;
         z_t = z;
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=1; i<=s_y; i++ ) {
+    for (i=1; i<=s_y; i++) {
       if (n15 >= 0) { /* left above */
         x_t = lx[n15 % m]*dof;
         y_t = ly[(n15 % (m*n))/m];
         z_t = z;
         s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n16 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n16 % (m*n))/m];
         z_t = z;
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n17 >= 0) { /* right above */
         x_t = lx[n17 % m]*dof;
         y_t = ly[(n17 % (m*n))/m];
         z_t = z;
         s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     } 
   }
  
   /* Upper Level */
-  for ( k=0; k<s_z; k++) {  
-    for ( i=1; i<=s_y; i++ ) {
+  for (k=0; k<s_z; k++) {  
+    for (i=1; i<=s_y; i++) {
       if (n18 >= 0) { /* left below */
         x_t = lx[n18 % m]*dof;
         y_t = ly[(n18 % (m*n))/m];
         z_t = lz[n18 / (m*n)];
         s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n19 >= 0) { /* directly below */
         x_t = x;
         y_t = ly[(n19 % (m*n))/m];
         z_t = lz[n19 / (m*n)];
         s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n20 >= 0) { /* right belodof */
         x_t = lx[n20 % m]*dof;
         y_t = ly[(n20 % (m*n))/m];
         z_t = lz[n20 / (m*n)];
         s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=0; i<y; i++ ) {
+    for (i=0; i<y; i++) {
       if (n21 >= 0) { /* directly left */
         x_t = lx[n21 % m]*dof;
         y_t = y;
         z_t = lz[n21 / (m*n)];
         s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
 
       if (n22 >= 0) { /* middle */
@@ -1680,7 +1680,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         y_t = y;
         z_t = lz[n22 / (m*n)];
         s_t = bases[n22] + i*x_t + k*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
 
       if (n23 >= 0) { /* directly right */
@@ -1688,31 +1688,31 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
         y_t = y;
         z_t = lz[n23 / (m*n)];
         s_t = bases[n23] + i*x_t + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
 
-    for ( i=1; i<=s_y; i++ ) {
+    for (i=1; i<=s_y; i++) {
       if (n24 >= 0) { /* left above */
         x_t = lx[n24 % m]*dof;
         y_t = ly[(n24 % (m*n))/m];
         z_t = lz[n24 / (m*n)];
         s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n25 >= 0) { /* directly above */
         x_t = x;
         y_t = ly[(n25 % (m*n))/m];
         z_t = lz[n25 / (m*n)];
         s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
-        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n26 >= 0) { /* right above */
         x_t = lx[n26 % m]*dof;
         y_t = ly[(n26 % (m*n))/m];
         z_t = lz[n26 / (m*n)];
         s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
-        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
     }
   }
@@ -1729,11 +1729,11 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   bottom = ys - Ys; top = bottom + y;
   down   = zs - Zs; up  = down + z;
   count  = x*(top-bottom)*(up-down);
-  idx    = (int *) PetscMalloc( count*sizeof(int) );CHKPTRQ(idx);
+  idx    = (int*)PetscMalloc(count*sizeof(int));CHKPTRQ(idx);
   count  = 0;
-  for ( i=down; i<up; i++ ) {
-    for ( j=bottom; j<top; j++) {
-      for ( k=0; k<x; k++ ) {
+  for (i=down; i<up; i++) {
+    for (j=bottom; j<top; j++) {
+      for (k=0; k<x; k++) {
         idx[count++] = (left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys) + k;
       }
     }
@@ -1746,13 +1746,13 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
      Build the natural ordering to PETSc ordering mappings.
   */
   {
-    IS  ispetsc, isnatural;
+    IS  ispetsc,isnatural;
     int *lidx,lict = 0;
     int Nlocal = (da->xe-da->xs)*(da->ye-da->ys)*(da->ze-da->zs);
 
     ierr = ISCreateStride(comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
 
-    lidx = (int *) PetscMalloc(Nlocal*sizeof(int));CHKPTRQ(lidx);
+    lidx = (int*)PetscMalloc(Nlocal*sizeof(int));CHKPTRQ(lidx);
     for (k=zs; k<ze; k++) {
       for (j=ys; j<ye; j++) {
         for (i=xs; i<xe; i++) {
@@ -1769,15 +1769,15 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     ierr = ISDestroy(isnatural);CHKERRQ(ierr);
   }
   if (!flx) {
-    flx  = (int *) PetscMalloc(m*sizeof(int));CHKPTRQ(flx);
+    flx  = (int*)PetscMalloc(m*sizeof(int));CHKPTRQ(flx);
     ierr = PetscMemcpy(flx,lx,m*sizeof(int));CHKERRQ(ierr);
   }
   if (!fly) {
-    fly  = (int *) PetscMalloc(n*sizeof(int));CHKPTRQ(fly);
+    fly  = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(fly);
     ierr = PetscMemcpy(fly,ly,n*sizeof(int));CHKERRQ(ierr);
   }
   if (!flz) {
-    flz  = (int *) PetscMalloc(p*sizeof(int));CHKPTRQ(flz);
+    flz  = (int*)PetscMalloc(p*sizeof(int));CHKPTRQ(flz);
     ierr = PetscMemcpy(flz,lz,p*sizeof(int));CHKERRQ(ierr);
   }
   da->lx = flx;

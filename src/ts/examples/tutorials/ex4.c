@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.15 1999/10/24 14:03:55 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.16 1999/11/05 14:47:39 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -78,8 +78,8 @@ typedef struct {
   int        m;                 /* total number of grid points */
   double     h;                 /* mesh width h = 1/(m-1) */
   PetscTruth debug;             /* flag (1 indicates activation of debugging printouts) */
-  Viewer     viewer1, viewer2;  /* viewers for the solution and error */
-  double     norm_2, norm_max;  /* error norms */
+  Viewer     viewer1,viewer2;  /* viewers for the solution and error */
+  double     norm_2,norm_max;  /* error norms */
 } AppCtx;
 
 /* 
@@ -101,8 +101,8 @@ int main(int argc,char **argv)
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
   Draw          draw;                   /* drawing context */
-  int           ierr,  steps, size, m;
-  double        dt, ftime;
+  int           ierr,steps,size,m;
+  double        dt,ftime;
   PetscTruth    flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -169,7 +169,7 @@ int main(int argc,char **argv)
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetMonitor(ts,Monitor,&appctx);CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -194,7 +194,7 @@ int main(int argc,char **argv)
        routine.
     */
     MatStructure A_structure;
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx); CHKERRA(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRA(ierr);
   }
 
@@ -280,8 +280,8 @@ int main(int argc,char **argv)
 */ 
 int InitialConditions(Vec u,AppCtx *appctx)
 {
-  Scalar *u_localptr, h = appctx->h;
-  int    i, mybase, myend, ierr;
+  Scalar *u_localptr,h = appctx->h;
+  int    i,mybase,myend,ierr;
 
   /* 
      Determine starting point of each processor's range of
@@ -340,8 +340,8 @@ int InitialConditions(Vec u,AppCtx *appctx)
 */
 int ExactSolution(double t,Vec solution,AppCtx *appctx)
 {
-  Scalar *s_localptr, h = appctx->h, ex1, ex2, sc1, sc2;
-  int    i, mybase, myend, ierr;
+  Scalar *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2;
+  int    i,mybase,myend,ierr;
 
   /* 
      Determine starting and ending points of each processor's 
@@ -393,7 +393,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 {
   AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
   int      ierr;
-  double   norm_2, norm_max;
+  double   norm_2,norm_max;
   Scalar   mone = -1.0;
 
   /* 
@@ -482,9 +482,9 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;                      /* Jacobian matrix */
-  AppCtx *appctx = (AppCtx *) ctx;     /* user-defined application context */
-  int    ierr, i, mstart, mend, idx[3];
-  Scalar v[3], stwo = -2./(appctx->h*appctx->h), sone = -.5*stwo;
+  AppCtx *appctx = (AppCtx*)ctx;     /* user-defined application context */
+  int    ierr,i,mstart,mend,idx[3];
+  Scalar v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part of the matrix
@@ -513,7 +513,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
      matrix one row at a time.
   */
   v[0] = sone; v[1] = stwo; v[2] = sone;  
-  for ( i=mstart; i<mend; i++ ) {
+  for (i=mstart; i<mend; i++) {
     idx[0] = i-1; idx[1] = i; idx[2] = i+1;
     ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
   }

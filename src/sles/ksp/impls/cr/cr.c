@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.53 1999/11/05 14:46:39 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.54 1999/11/24 21:54:49 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -14,7 +14,7 @@ static int KSPSetUp_CR(KSP ksp)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,0,"no right preconditioning for KSPCR");}
   else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,0,"no symmetric preconditioning for KSPCR");}
-  ierr = KSPDefaultGetWork( ksp, 9  );CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -22,13 +22,13 @@ static int KSPSetUp_CR(KSP ksp)
 #define __FUNC__ "KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
-  int          i, maxit,pres, cerr = 0, ierr;
+  int          i,maxit,pres,ierr;
   MatStructure pflag;
-  double       dp;
-  Scalar       lambda, alpha0, alpha1; 
-  Scalar       btop, bbot, bbotold, tmp, zero = 0.0, mone = -1.0;
-  Vec          X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
-  Mat          Amat, Pmat;
+  PetscReal    dp;
+  Scalar       lambda,alpha0,alpha1; 
+  Scalar       btop,bbot,bbotold,tmp,zero = 0.0,mone = -1.0;
+  Vec          X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T,Tmp;
+  Mat          Amat,Pmat;
 
   PetscFunctionBegin;
 
@@ -69,12 +69,13 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   ksp->its   = 0;
   ksp->rnorm = dp;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
+  ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);
   ierr = KSP_MatMult(ksp,Amat,P,Q);CHKERRQ(ierr);      /*    q <- A p          */
 
-  for ( i=0; i<maxit; i++) {
+  for (i=0; i<maxit; i++) {
 
     ierr   = KSP_PCApply(ksp,ksp->B,Q,S);CHKERRQ(ierr);  /*     s <- Bq          */
     ierr   = VecDot(R,S,&btop);CHKERRQ(ierr);    /*                      */
@@ -92,8 +93,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
     KSPMonitor(ksp,i+1,dp);
-    cerr   = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
-    if (cerr) break;
+    ierr   = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->reason) break;
     ierr   = KSP_MatMult(ksp,Amat,S,T);CHKERRQ(ierr);    /*   T <-   As          */
     ierr   = VecDot(T,S,&btop);CHKERRQ(ierr);
     alpha0 = btop/bbot;
@@ -115,9 +116,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     Tmp = Qm1; Qm1 = Q; Q = Qp1; Qp1 = T = Tmp;
     bbotold = bbot; 
   }
-  if (i == maxit) i--;
-  if (cerr <= 0) *its = -(i+1);
-  else           *its = i + 1;
+  if (i == maxit) {ksp->reason = KSP_DIVERGED_ITS; i--;}
+  *its = i;
   PetscFunctionReturn(0);
 }
 
@@ -128,14 +128,14 @@ int KSPCreate_CR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = 1;
+  ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_CR;
   ksp->ops->solve                = KSPSolve_CR;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->setfromoptions       = 0;
   ksp->ops->view                 = 0;
-  ksp->guess_zero                = 1; 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.34 1999/10/24 14:01:49 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.35 1999/11/05 14:44:45 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "is.h"  I*/
@@ -34,7 +34,7 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
   ierr = MPI_Comm_rank(mapping->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    for ( i=0; i<mapping->n; i++ ) {
+    for (i=0; i<mapping->n; i++) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,mapping->indices[i]);CHKERRQ(ierr);
     }
     ierr = ViewerFlush(viewer);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
   PLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(int));
 
   (*mapping)->n       = n;
-  (*mapping)->indices = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ((*mapping)->indices);
+  (*mapping)->indices = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ((*mapping)->indices);
   ierr = PetscMemcpy((*mapping)->indices,indices,n*sizeof(int));CHKERRQ(ierr);
 
   /*
@@ -186,7 +186,7 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy(), ISGlobalToLocalMappingApply()
 @*/
-int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *newis)
+int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
 {
   int ierr,n,i,*idxin,*idxmap,*idxout;
 
@@ -199,8 +199,8 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
   ierr   = ISGetIndices(is,&idxin);CHKERRQ(ierr);
   idxmap = mapping->indices;
   
-  idxout = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(idxout);
-  for ( i=0; i<n; i++ ) {
+  idxout = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(idxout);
+  for (i=0; i<n; i++) {
     idxout[i] = idxmap[idxin[i]];
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,newis);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,const int i
   int i,*idx = mapping->indices,Nmax = mapping->n;
 
   PetscFunctionBegin;
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     if (in[i] < 0) {out[i] = in[i]; continue;}
     if (in[i] >= Nmax) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Local index %d too large %d (max)",in[i],Nmax);
     out[i] = idx[in[i]];
@@ -264,7 +264,7 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
   end   = 0;
   start = 100000000;
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (idx[i] < 0) continue;
     if (idx[i] < start) start = idx[i];
     if (idx[i] > end)   end   = idx[i];
@@ -273,11 +273,11 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
   mapping->globalstart = start;
   mapping->globalend   = end;
 
-  globals = mapping->globals = (int *) PetscMalloc((end-start+2)*sizeof(int));CHKPTRQ(mapping->globals);
-  for ( i=0; i<end-start+1; i++ ) {
+  globals = mapping->globals = (int*)PetscMalloc((end-start+2)*sizeof(int));CHKPTRQ(mapping->globals);
+  for (i=0; i<end-start+1; i++) {
     globals[i] = -1;
   }
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (idx[i] < 0) continue;
     globals[idx[i] - start] = i;
   }
@@ -322,10 +322,10 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
-int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalMappingType type,
-                                  int n, const int idx[],int *nout,int idxout[])
+int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
+                                  int n,const int idx[],int *nout,int idxout[])
 {
-  int i,ierr, *globals,nf = 0,tmp,start,end;
+  int i,ierr,*globals,nf = 0,tmp,start,end;
 
   PetscFunctionBegin;
   if (!mapping->globals) {
@@ -337,7 +337,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalM
 
   if (type == IS_GTOLM_MASK) {
     if (idxout) {
-      for ( i=0; i<n; i++ ) {
+      for (i=0; i<n; i++) {
         if (idx[i] < 0) idxout[i] = idx[i]; 
         else if (idx[i] < start) idxout[i] = -1;
         else if (idx[i] > end)   idxout[i] = -1;
@@ -347,7 +347,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalM
     if (nout) *nout = n;
   } else {
     if (idxout) {
-      for ( i=0; i<n; i++ ) {
+      for (i=0; i<n; i++) {
         if (idx[i] < 0) continue;
         if (idx[i] < start) continue;
         if (idx[i] > end) continue;
@@ -356,7 +356,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlobalToLocalM
         idxout[nf++] = tmp;
       }
     } else {
-      for ( i=0; i<n; i++ ) {
+      for (i=0; i<n; i++) {
         if (idx[i] < 0) continue;
         if (idx[i] < start) continue;
         if (idx[i] > end) continue;

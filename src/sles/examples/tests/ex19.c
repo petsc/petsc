@@ -1,4 +1,4 @@
-/* "$Id: ex19.c,v 1.1 1999/03/26 21:15:43 bsmith Exp bsmith $" */
+/* "$Id: ex19.c,v 1.2 1999/11/24 21:55:03 bsmith Exp bsmith $" */
 
 static char help[] ="\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -10,7 +10,7 @@ static char help[] ="\
     This problem is modeled by
     the partial differential equation
   
-            -Laplacian u  = g,  0 < x,y < 1 ,
+            -Laplacian u  = g,  0 < x,y < 1,
   
     with boundary conditions
    
@@ -46,29 +46,29 @@ typedef struct {
 #define COARSE_LEVEL 0
 #define FINE_LEVEL   1
 
-extern int FormJacobian_Grid(AppCtx *,GridCtx *, Mat *);
+extern int FormJacobian_Grid(AppCtx *,GridCtx *,Mat *);
 
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
 */
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   AppCtx        user;                      
-  int           ierr, its, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
-  int           size, nlocal,Nlocal;
+  int           ierr,its,N,n,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
+  int           size,nlocal,Nlocal;
   SLES          sles,sles_fine;
   PC            pc;
   Scalar        one = 1.0;
 
-  PetscInitialize( &argc, &argv,PETSC_NULL,help );
+  PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
   user.ratio = 2;
   user.coarse.mx = 5; user.coarse.my = 5; 
-  ierr = OptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRA(ierr);
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
   PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);
@@ -77,57 +77,57 @@ int main( int argc, char **argv )
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
-                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da); CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.fine.da,&user.fine.x); CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.x,&user.fine.r); CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.x,&user.fine.b); CHKERRA(ierr);
+                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.fine.da,&user.fine.x);CHKERRA(ierr);
+  ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRA(ierr);
+  ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRA(ierr);
   ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.fine.da,&user.fine.localX); CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.localX,&user.fine.localF); CHKERRA(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J); CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.fine.da,&user.fine.localX);CHKERRA(ierr);
+  ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRA(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRA(ierr);
 
   /* Set up distributed array for coarse grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.coarse.mx,
-                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da); CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.coarse.da,&user.coarse.x); CHKERRA(ierr);
-  ierr = VecDuplicate(user.coarse.x,&user.coarse.b); CHKERRA(ierr);
+                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRA(ierr);
+  ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRA(ierr);
   ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.coarse.da,&user.coarse.localX); CHKERRA(ierr);
-  ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF); CHKERRA(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J); CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRA(ierr);
+  ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRA(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRA(ierr);
 
   /* Create linear solver */
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
 
   /* set two level additive Schwarz preconditioner */
-  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetType(pc,PCMG); CHKERRA(ierr);
-  ierr = MGSetLevels(pc,2); CHKERRA(ierr);
-  ierr = MGSetType(pc,MGADDITIVE); CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
+  ierr = MGSetLevels(pc,2);CHKERRA(ierr);
+  ierr = MGSetType(pc,MGADDITIVE);CHKERRA(ierr);
 
   ierr = FormJacobian_Grid(&user,&user.coarse,&user.coarse.J);CHKERRA(ierr);
   ierr = FormJacobian_Grid(&user,&user.fine,&user.fine.J);CHKERRA(ierr);
 
   /* Create coarse level */
-  ierr = MGGetCoarseSolve(pc,&user.sles_coarse); CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_"); CHKERRA(ierr);
-  ierr = SLESSetFromOptions(user.sles_coarse); CHKERRA(ierr);
+  ierr = MGGetCoarseSolve(pc,&user.sles_coarse);CHKERRA(ierr);
+  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_");CHKERRA(ierr);
+  ierr = SLESSetFromOptions(user.sles_coarse);CHKERRA(ierr);
   ierr = SLESSetOperators(user.sles_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRA(ierr); 
   ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRA(ierr); 
 
   /* Create fine level */
-  ierr = MGGetSmoother(pc,FINE_LEVEL,&sles_fine); CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(sles_fine,"fine_"); CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles_fine); CHKERRA(ierr);
+  ierr = MGGetSmoother(pc,FINE_LEVEL,&sles_fine);CHKERRA(ierr);
+  ierr = SLESSetOptionsPrefix(sles_fine,"fine_");CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles_fine);CHKERRA(ierr);
   ierr = SLESSetOperators(sles_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRA(ierr); 
-  ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J); CHKERRA(ierr);
+  ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRA(ierr);
 
   /* Create interpolation between the levels */
   ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.I,PETSC_NULL);CHKERRA(ierr);
@@ -145,28 +145,28 @@ int main( int argc, char **argv )
   }
 
   /* Set options, then solve nonlinear system */
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
-  ierr = SLESSolve(sles,user.fine.b,user.fine.x,&its); CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n", its );
+  ierr = SLESSolve(sles,user.fine.b,user.fine.x,&its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRA(ierr);
 
   /* Free data structures */
-  ierr = MatDestroy(user.fine.J); CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.x); CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.r); CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.b); CHKERRA(ierr);
-  ierr = DADestroy(user.fine.da); CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.localX); CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.localF); CHKERRA(ierr);
+  ierr = MatDestroy(user.fine.J);CHKERRA(ierr);
+  ierr = VecDestroy(user.fine.x);CHKERRA(ierr);
+  ierr = VecDestroy(user.fine.r);CHKERRA(ierr);
+  ierr = VecDestroy(user.fine.b);CHKERRA(ierr);
+  ierr = DADestroy(user.fine.da);CHKERRA(ierr);
+  ierr = VecDestroy(user.fine.localX);CHKERRA(ierr);
+  ierr = VecDestroy(user.fine.localF);CHKERRA(ierr);
 
-  ierr = MatDestroy(user.coarse.J); CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.x); CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.b); CHKERRA(ierr);
-  ierr = DADestroy(user.coarse.da); CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.localX); CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.localF); CHKERRA(ierr);
+  ierr = MatDestroy(user.coarse.J);CHKERRA(ierr);
+  ierr = VecDestroy(user.coarse.x);CHKERRA(ierr);
+  ierr = VecDestroy(user.coarse.b);CHKERRA(ierr);
+  ierr = DADestroy(user.coarse.da);CHKERRA(ierr);
+  ierr = VecDestroy(user.coarse.localX);CHKERRA(ierr);
+  ierr = VecDestroy(user.coarse.localF);CHKERRA(ierr);
 
-  ierr = SLESDestroy(sles); CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRA(ierr);
   ierr = MatDestroy(user.I);CHKERRA(ierr); 
   PetscFinalize();
 
@@ -175,21 +175,21 @@ int main( int argc, char **argv )
 
 #undef __FUNC__
 #define __FUNC__ "FormJacobian_Grid"
-int FormJacobian_Grid(AppCtx *user,GridCtx *grid, Mat *J)
+int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 {
   Mat     jac = *J;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
-  int     nloc, *ltog, grow;
-  Scalar  two = 2.0, one = 1.0, v[5], hx, hy, hxdhy, hydhx, value;
+  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
+  int     nloc,*ltog,grow;
+  Scalar  two = 2.0,one = 1.0,v[5],hx,hy,hxdhy,hydhx,value;
 
   mx = grid->mx;            my = grid->my;            
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog); CHKERRQ(ierr);
+  ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -203,18 +203,18 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid, Mat *J)
         v[2] = two*(hydhx + hxdhy); col[2] = grow;
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
-        ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
         value = .5*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       } else {
         value = .25*two*(hydhx + hxdhy);
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   return 0;
 }

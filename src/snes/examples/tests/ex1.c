@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.72 1999/11/05 14:47:20 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.73 1999/11/24 21:55:18 bsmith Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -25,7 +25,7 @@ T*/
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
   
     with boundary conditions
    
@@ -72,20 +72,20 @@ extern int FormInitialGuess(AppCtx*,Vec);
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   SNES           snes;                 /* nonlinear solver context */
-  Vec            x, r;                 /* solution, residual vectors */
+  Vec            x,r;                 /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
   Draw           draw;                 /* drawing context */
-  int            i, ierr, its, N, size, hist_its[50]; 
-  double         bratu_lambda_max = 6.81, bratu_lambda_min = 0., history[50];
+  int            i,ierr,its,N,size,hist_its[50]; 
+  double         bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
   Scalar         *array;
-  PetscTruth     matrix_free,flg, fd_coloring;
+  PetscTruth     matrix_free,flg,fd_coloring;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
@@ -224,7 +224,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
 
   /*
      Draw contour plot of solution
@@ -282,8 +282,8 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, j, row, mx, my, ierr;
-  double  lambda, temp1, temp, hx, hy;
+  int     i,j,row,mx,my,ierr;
+  double  lambda,temp1,temp,hx,hy;
   Scalar  *x;
 
   mx	 = user->mx; 
@@ -306,11 +306,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
     temp = (double)(PetscMin(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
       row = i + j*mx;  
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+      x[row] = temp1*sqrt(PetscMin((double)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
 
@@ -336,10 +336,10 @@ int FormInitialGuess(AppCtx *user,Vec X)
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
-  Scalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
+  AppCtx *user = (AppCtx*)ptr;
+  int     ierr,i,j,row,mx,my;
+  double  two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx;
+  Scalar  ut,ub,ul,ur,u,uxx,uyy,sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -362,7 +362,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       }
@@ -402,11 +402,11 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx *user = (AppCtx *) ptr;   /* user-defined applicatin context */
+  AppCtx *user = (AppCtx*)ptr;   /* user-defined applicatin context */
   Mat     jac = *J;                /* Jacobian matrix */
-  int     i, j, row, mx, my, col[5], ierr;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
-  double  hx, hy, hxdhy, hydhx;
+  int     i,j,row,mx,my,col[5],ierr;
+  Scalar  two = 2.0,one = 1.0,lambda,v[5],sc,*x;
+  double  hx,hy,hxdhy,hydhx;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -428,7 +428,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
+      if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES);CHKERRQ(ierr);
         continue;
       }

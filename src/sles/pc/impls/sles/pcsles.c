@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.26 1999/11/05 14:46:29 bsmith Exp bsmith $*/
+/*$Id: pcsles.c,v 1.27 1999/11/24 21:54:42 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -17,7 +17,7 @@ typedef struct {
 static int PCApply_SLES(PC pc,Vec x,Vec y)
 {
   int     ierr,its;
-  PC_SLES *jac = (PC_SLES *) pc->data;
+  PC_SLES *jac = (PC_SLES*)pc->data;
 
   PetscFunctionBegin;
   ierr      = SLESSolve(jac->sles,x,y,&its);CHKERRQ(ierr);
@@ -30,7 +30,7 @@ static int PCApply_SLES(PC pc,Vec x,Vec y)
 static int PCApplyTranspose_SLES(PC pc,Vec x,Vec y)
 {
   int     ierr,its;
-  PC_SLES *jac = (PC_SLES *) pc->data;
+  PC_SLES *jac = (PC_SLES*)pc->data;
 
   PetscFunctionBegin;
   ierr      = SLESSolveTranspose(jac->sles,x,y,&its);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ static int PCApplyTranspose_SLES(PC pc,Vec x,Vec y)
 static int PCSetUp_SLES(PC pc)
 {
   int     ierr;
-  PC_SLES *jac = (PC_SLES *) pc->data;
+  PC_SLES *jac = (PC_SLES*)pc->data;
   Mat     mat;
 
   PetscFunctionBegin;
@@ -60,7 +60,7 @@ static int PCSetUp_SLES(PC pc)
 #define __FUNC__ "PCDestroy_SLES"
 static int PCDestroy_SLES(PC pc)
 {
-  PC_SLES *jac = (PC_SLES *) pc->data;
+  PC_SLES *jac = (PC_SLES*)pc->data;
   int     ierr;
 
   PetscFunctionBegin;
@@ -88,7 +88,7 @@ static int PCPrintHelp_SLES(PC pc,char *p)
 #define __FUNC__ "PCView_SLES"
 static int PCView_SLES(PC pc,Viewer viewer)
 {
-  PC_SLES    *jac = (PC_SLES *) pc->data;
+  PC_SLES    *jac = (PC_SLES*)pc->data;
   int        ierr;
   PetscTruth isascii;
 
@@ -116,7 +116,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
 #define __FUNC__ "PCSetFromOptions_SLES"
 static int PCSetFromOptions_SLES(PC pc)
 {
-  PC_SLES    *jac = (PC_SLES *) pc->data;
+  PC_SLES    *jac = (PC_SLES*)pc->data;
   int        ierr;
   PetscTruth flg;
 
@@ -139,7 +139,7 @@ int PCSLESSetUseTrue_SLES(PC pc)
   PC_SLES   *jac;
 
   PetscFunctionBegin;
-  jac                  = (PC_SLES *) pc->data;
+  jac                  = (PC_SLES*)pc->data;
   jac->use_true_matrix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -153,7 +153,7 @@ int PCSLESGetSLES_SLES(PC pc,SLES *sles)
   PC_SLES   *jac;
 
   PetscFunctionBegin;
-  jac          = (PC_SLES *) pc->data;
+  jac          = (PC_SLES*)pc->data;
   *sles        = jac->sles;
   PetscFunctionReturn(0);
 }
@@ -186,7 +186,7 @@ EXTERN_C_END
 @*/
 int PCSLESSetUseTrue(PC pc)
 {
-  int ierr, (*f)(PC);
+  int ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -219,7 +219,7 @@ int PCSLESSetUseTrue(PC pc)
 @*/
 int PCSLESGetSLES(PC pc,SLES *sles)
 {
-  int ierr, (*f)(PC,SLES*);
+  int ierr,(*f)(PC,SLES*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -253,7 +253,7 @@ int PCCreate_SLES(PC pc)
   pc->ops->view               = PCView_SLES;
   pc->ops->applyrichardson    = 0;
 
-  pc->data               = (void *) jac;
+  pc->data               = (void*)jac;
   ierr                   = SLESCreate(pc->comm,&jac->sles);CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.16 1999/10/24 14:04:01 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.17 1999/11/05 14:47:47 bsmith Exp bsmith $*/
 
 static char help[] = "Tests AOData \n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests AOData \n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int     n = 2,nglobal, bs = 2, *keys, *data,ierr,rank,size,i,start;
+  int     n = 2,nglobal,bs = 2,*keys,*data,ierr,rank,size,i,start;
   double  *gd;
   AOData  aodata;
   Viewer  binary;
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal);CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
-  keys = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(keys);
+  keys = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(keys);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -39,15 +39,15 @@ int main(int argc,char **argv)
   ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
   start -= n;
 
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     keys[i]     = start + i;
   }
 
   /* 
       Allocate data for the first key and first segment 
   */
-  data = (int *) PetscMalloc( bs*n*sizeof(int) );CHKPTRA(data);
-  for ( i=0; i<n; i++ ) {
+  data = (int*)PetscMalloc(bs*n*sizeof(int));CHKPTRA(data);
+  for (i=0; i<n; i++) {
     data[2*i]   = -(start + i);
     data[2*i+1] = -(start + i) - 10000;
   }
@@ -58,8 +58,8 @@ int main(int argc,char **argv)
       Allocate data for first key and second segment 
   */
   bs   = 3;
-  gd   = (double *) PetscMalloc( bs*n*sizeof(double) );CHKPTRA(gd);
-  for ( i=0; i<n; i++ ) {
+  gd   = (double*)PetscMalloc(bs*n*sizeof(double));CHKPTRA(gd);
+  for (i=0; i<n; i++) {
     gd[3*i]   = -(start + i);
     gd[3*i+1] = -(start + i) - 10000;
     gd[3*i+2] = -(start + i) - 100000;
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   */
   bs   = 1;
   ierr = PetscBTCreate(n,ld);CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (i % 2) PetscBTSet(ld,i);
   }
   ierr = AODataSegmentAdd(aodata,"key1","seg3",bs,n,keys,ld,PETSC_LOGICAL);CHKERRA(ierr); 

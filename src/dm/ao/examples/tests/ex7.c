@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.7 1999/10/24 14:04:01 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.8 1999/11/05 14:47:47 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
@@ -8,7 +8,7 @@ static char help[] = "Demonstrates constructing an application ordering\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int      n = 5, ierr,rank,size;
+  int      n = 5,ierr,rank,size;
   IS       ispetsc,isapp;
   AO       ao;
 

@@ -1,4 +1,4 @@
-/*$Id: util2.c,v 1.13 1999/10/19 18:31:15 balay Exp bsmith $*/
+/*$Id: util2.c,v 1.15 1999/10/24 14:03:55 bsmith Exp bsmith $*/
 
 /*
    This file contains utility routines for finite difference
@@ -24,11 +24,11 @@ int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 
 EXTERN_C_BEGIN
 
-void setcroutinefromfortran_(TS ts,Mat A,Mat B,int *__ierr )
+void setcroutinefromfortran_(TS ts,Mat A,Mat B,int *__ierr)
 {
-    *__ierr = TSSetRHSJacobian((TS)PetscToPointer( *(int*)(ts) ),
-	                       (Mat)PetscToPointer( *(int*)(A) ),
-	                       (Mat)PetscToPointer( *(int*)(B) ),RHSJacobianFD,PETSC_NULL);
+    *__ierr = TSSetRHSJacobian((TS)PetscToPointer(*(int*)(ts)),
+	                       (Mat)PetscToPointer(*(int*)(A)),
+	                       (Mat)PetscToPointer(*(int*)(B)),RHSJacobianFD,PETSC_NULL);
 }
 
 EXTERN_C_END
@@ -59,9 +59,9 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
 {
   Vec      jj1,jj2,xx2;
   int      i,ierr,N,start,end,j;
-  Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
-  double   amax, epsilon = 1.e-8; /* assumes double precision */
-  double   dx_min = 1.e-16, dx_par = 1.e-1;
+  Scalar   dx,mone = -1.0,*y,scale,*xx,wscale;
+  double   amax,epsilon = 1.e-8; /* assumes double precision */
+  double   dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm comm;
 
   ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
@@ -80,16 +80,16 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
       xx2 = perturbed iterate, jj2 = F(xx2)
    */
   ierr = VecGetArray(xx1,&xx);CHKERRQ(ierr);
-  for ( i=0; i<N; i++ ) {
+  for (i=0; i<N; i++) {
     ierr = VecCopy(xx1,xx2);CHKERRQ(ierr);
-    if ( i>= start && i<end) {
+    if (i>= start && i<end) {
       dx = xx[i-start];
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
-      if (PetscAbsScalar(dx) < dx_min && PetscReal(dx) >= 0.0) dx = dx_par;
-      else if (PetscReal(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
+      if (PetscAbsScalar(dx) < dx_min && PetscRealPart(dx) >= 0.0) dx = dx_par;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < dx_min) dx = -dx_par;
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;
@@ -103,9 +103,9 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     ierr = VecScale(&scale,jj2);CHKERRQ(ierr);
     ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
-    ierr = VecNorm(jj2,NORM_INFINITY,&amax); CHKERRQ(ierr);
+    ierr = VecNorm(jj2,NORM_INFINITY,&amax);CHKERRQ(ierr);
     amax *= 1.e-14;
-    for ( j=start; j<end; j++ ) {
+    for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }

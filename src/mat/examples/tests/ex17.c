@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.11 1999/11/05 14:45:44 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.12 1999/11/24 21:54:09 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -8,11 +8,11 @@ static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat     C, A;
-  int     i, j, m = 5, n = 5, I, J, ierr;
-  Scalar  v, five = 5.0, one = 1.0, mone = -1.0;
+  Mat     C,A;
+  int     i,j,m = 5,n = 5,I,J,ierr;
+  Scalar  v,five = 5.0,one = 1.0,mone = -1.0;
   IS      isrow,row,col;
-  Vec     x, u, b;
+  Vec     x,u,b;
   double  norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -22,13 +22,13 @@ int main(int argc,char **args)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRA(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }

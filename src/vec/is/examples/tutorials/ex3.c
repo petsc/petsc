@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.9 1999/05/04 20:30:20 balay Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.10 1999/10/22 23:58:50 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -20,7 +20,7 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        i, n = 4, ierr,  inputindices[] = {0,3,9,12}, bs = 3,issize,*indices;
+  int        i,n = 4,ierr, inputindices[] = {0,3,9,12},bs = 3,issize,*indices;
   IS         set;
   PetscTruth isblock;
 

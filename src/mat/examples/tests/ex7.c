@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
 employ the SLES interface to the linear solvers instead of using the factorization\n\
@@ -10,25 +10,25 @@ routines directly.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat         C, LU; 
+  Mat         C,LU; 
   MatInfo     info;
-  int         i, j, m = 3, n = 3, I, J, ierr;
-  Scalar      v, mone = -1.0, one = 1.0;
-  IS          perm, iperm;
-  Vec         x, u, b;
+  int         i,j,m = 3,n = 3,I,J,ierr;
+  Scalar      v,mone = -1.0,one = 1.0;
+  IS          perm,iperm;
+  Vec         x,u,b;
   double      norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }

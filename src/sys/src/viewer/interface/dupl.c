@@ -1,4 +1,4 @@
-/*$Id: dupl.c,v 1.1 1999/10/16 19:52:50 bsmith Exp bsmith $*/
+/*$Id: dupl.c,v 1.3 1999/10/24 14:01:08 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
 
@@ -35,7 +35,7 @@ int ViewerGetSingleton(Viewer viewer,Viewer *outviewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidPointer(outviewer);
-  ierr = MPI_Comm_size(viewer->comm,&size); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     *outviewer = viewer;
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ int ViewerRestoreSingleton(Viewer viewer,Viewer *outviewer)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidPointer(outviewer);
   PetscValidHeaderSpecific(*outviewer,VIEWER_COOKIE);
-  ierr = MPI_Comm_size(viewer->comm,&size); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     *outviewer = 0;

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.33 1999/10/24 14:04:09 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.34 1999/11/05 14:47:57 bsmith Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -9,10 +9,10 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        rank, M = 13, ierr, w=1, s=1, wrap=1;
+  int        rank,M = 13,ierr,w=1,s=1,wrap=1;
   DA         da;
   Viewer     viewer;
-  Vec        local, global;
+  Vec        local,global;
   Scalar     value;
   Draw       draw;
   PetscTruth flg;
@@ -26,8 +26,8 @@ int main(int argc,char **argv)
 
   /* Read options */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL); CHKERRA(ierr); 
-  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL); CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRA(ierr); 
+  ierr = OptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRA(ierr); 
 
   /* Create distributed array and get vectors */
   ierr = DACreate1d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,M,w,s,PETSC_NULL,&da);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: qmdupd.c,v 1.13 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* qmdupd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -39,12 +39,12 @@ int SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist,
     int i__1, i__2;
 
     /* Local variables */
-    static int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
+    int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
     extern int SPARSEPACKqmdrch(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *),
 	     SPARSEPACKqmdmrg(int *, int *, int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
-    static int nhdsze, rchsze, deg0, deg1;
+    int nhdsze, rchsze, deg0, deg1;
 
 /*       FIND ALL ELIMINATED SUPERNODES THAT ARE ADJACENT*/
 /*       TO SOME NODES IN THE GIVEN LIST. PUT THEM INTO.*/

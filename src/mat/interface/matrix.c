@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.355 1999/12/14 17:59:43 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.356 1999/12/22 03:17:53 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -189,7 +189,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 @*/
 int MatView(Mat mat,Viewer viewer)
 {
-  int        format, ierr, rows, cols;
+  int        format,ierr,rows,cols;
   PetscTruth isascii;
   char       *cstr;
 
@@ -749,7 +749,7 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping()
 @*/
-int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,InsertMode addv) 
+int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,InsertMode addv) 
 {
   int ierr,irowm[2048],icolm[2048];
 
@@ -1203,7 +1203,7 @@ int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
           MatGetOrdering()
 
 @*/
-int MatLUFactor(Mat mat,IS row,IS col,double f)
+int MatLUFactor(Mat mat,IS row,IS col,PetscReal f)
 {
   int ierr;
 
@@ -1300,7 +1300,7 @@ int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
 
 .seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
+int MatLUFactorSymbolic(Mat mat,IS row,IS col,PetscReal f,Mat *fact)
 {
   int ierr;
 
@@ -1410,7 +1410,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
           MatGetOrdering()
 
 @*/
-int MatCholeskyFactor(Mat mat,IS perm,double f)
+int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
 {
   int ierr;
 
@@ -1459,7 +1459,7 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
           MatGetOrdering()
 
 @*/
-int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
+int MatCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,Mat *fact)
 {
   int ierr;
 
@@ -1931,7 +1931,7 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 
 .keywords: matrix, relax, relaxation, sweep
 @*/
-int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,int its,Vec x)
+int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,Vec x)
 {
   int ierr;
 
@@ -2407,7 +2407,7 @@ int MatScale(Scalar *a,Mat mat)
 
 .keywords: matrix, norm, Frobenius
 @*/
-int MatNorm(Mat mat,NormType type,double *norm)
+int MatNorm(Mat mat,NormType type,PetscReal *norm)
 {
   int ierr;
 
@@ -2831,7 +2831,7 @@ int MatZeroEntries(Mat mat)
 
 .seealso: MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
-int MatZeroRows(Mat mat,IS is, Scalar *diag)
+int MatZeroRows(Mat mat,IS is,Scalar *diag)
 {
   int ierr;
 
@@ -2879,7 +2879,7 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
 
 .seealso: MatZeroEntries(), MatZeroRows()
 @*/
-int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
+int MatZeroRowsLocal(Mat mat,IS is,Scalar *diag)
 {
   int ierr;
   IS  newis;
@@ -3082,7 +3082,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *fact)
+int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
 {
   int ierr;
 
@@ -3290,7 +3290,7 @@ int MatDestroyMatrices(int n,Mat **mat)
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Trying to destroy negative number of matrices %d",n);
   PetscValidPointer(mat);
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     ierr = MatDestroy((*mat)[i]);CHKERRQ(ierr);
   }
   if (n) {ierr = PetscFree(*mat);CHKERRQ(ierr);}
@@ -3318,7 +3318,7 @@ int MatDestroyMatrices(int n,Mat **mat)
 
 .seealso: MatGetSubMatrices()
 @*/
-int MatIncreaseOverlap(Mat mat,int n, IS *is,int ov)
+int MatIncreaseOverlap(Mat mat,int n,IS *is,int ov)
 {
   int ierr;
 

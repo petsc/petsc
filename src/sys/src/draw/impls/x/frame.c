@@ -1,4 +1,4 @@
-/*$Id: frame.c,v 1.22 1999/10/24 14:01:15 bsmith Exp bsmith $*/
+/*$Id: frame.c,v 1.23 1999/11/05 14:43:58 bsmith Exp bsmith $*/
 
 /*
    This file contains routines to draw a 3-d like frame about a given 
@@ -10,38 +10,38 @@
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
-extern PixVal XiGetColor( Draw_X *, char *, int );
+extern PixVal XiGetColor(Draw_X *,char *,int);
 
 /* 50% grey stipple pattern */
 static Pixmap grey50 = (Pixmap)0;         
 #define cboard50_width 8
 #define cboard50_height 8
 static unsigned char cboard50_bits[] = {
-   0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
+   0x55,0xaa,0x55,0xaa,0x55,0xaa,0x55,0xaa};
 
-static PixVal HiPix=0, LoPix=0;
+static PixVal HiPix=0,LoPix=0;
 /* 
    Set the colors for the highlights by name 
  */
 #undef __FUNC__  
 #define __FUNC__ "XiFrameColors" 
-int XiFrameColors( Draw_X* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
+int XiFrameColors(Draw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
 {
   PetscFunctionBegin;
-  Rgn->Hi = XiGetColor( XiWin, Hi, 1 );
-  Rgn->Lo = XiGetColor( XiWin, Lo, 1 );
+  Rgn->Hi = XiGetColor(XiWin,Hi,1);
+  Rgn->Lo = XiGetColor(XiWin,Lo,1);
   Rgn->HasColor = Rgn->Hi != Rgn->Lo;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "XiDrawFrame" 
-int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
+int XiDrawFrame(Draw_X *XiWin,XiDecoration *Rgn)
 {
-  int    xl = Rgn->Box.x, yl = Rgn->Box.y, xh = Rgn->Box.xh, yh = Rgn->Box.yh,
+  int    xl = Rgn->Box.x,yl = Rgn->Box.y,xh = Rgn->Box.xh,yh = Rgn->Box.yh,
          o = Rgn->width;
-  XPoint high[7], low[7];
-  PixVal Hi, Lo;
+  XPoint high[7],low[7];
+  PixVal Hi,Lo;
 
   PetscFunctionBegin;
   /* High polygon */
@@ -66,38 +66,38 @@ int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
     else         Hi = HiPix;
     if (Rgn->Lo) Lo = Rgn->Lo;
     else         Lo = LoPix;
-    XiSetPixVal( XiWin, Rgn->is_in ? Hi : Lo );
-    if ( o <= 1 )
-	XDrawLines( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, 
-		   high, 7, CoordModeOrigin );
+    XiSetPixVal(XiWin,Rgn->is_in ? Hi : Lo);
+    if (o <= 1)
+	XDrawLines(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
+		   high,7,CoordModeOrigin);
     else
-	XFillPolygon( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, 
-		      high, 7, Nonconvex, CoordModeOrigin);
-    XiSetPixVal( XiWin, Rgn->is_in ? Lo : Hi );
-    if ( o <= 1 )
-	XDrawLines( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, 
-		    low, 7, CoordModeOrigin );
+	XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
+		      high,7,Nonconvex,CoordModeOrigin);
+    XiSetPixVal(XiWin,Rgn->is_in ? Lo : Hi);
+    if (o <= 1)
+	XDrawLines(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
+		    low,7,CoordModeOrigin);
     else
-	XFillPolygon( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, 
-		      low, 7, Nonconvex, CoordModeOrigin);
-    /* We could use additional highlights here, such as lines drawn
+	XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
+		      low,7,Nonconvex,CoordModeOrigin);
+    /* We could use additional highlights here,such as lines drawn
        connecting the mitred edges. */		 
   }
   else {
     if (!grey50) 
-	grey50 = XCreatePixmapFromBitmapData(XiWin->disp, XiWin->win, 
+	grey50 = XCreatePixmapFromBitmapData(XiWin->disp,XiWin->win,
 					     (char *)cboard50_bits,
-					     cboard50_width, 
-					     cboard50_height, 1, 0, 1);
-    XiSetPixVal( XiWin, Rgn->Hi );
-    XFillPolygon( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, 
-		 high, 7, Nonconvex, CoordModeOrigin);
+					     cboard50_width,
+					     cboard50_height,1,0,1);
+    XiSetPixVal(XiWin,Rgn->Hi);
+    XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
+		 high,7,Nonconvex,CoordModeOrigin);
     /* This can actually be done by using a stipple effect */
-    XSetFillStyle( XiWin->disp, XiWin->gc.set, FillStippled );
-    XSetStipple( XiWin->disp, XiWin->gc.set, grey50 );
-    XFillPolygon( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, 
-		 low, 7, Nonconvex, CoordModeOrigin);
-    XSetFillStyle( XiWin->disp, XiWin->gc.set, FillSolid );
+    XSetFillStyle(XiWin->disp,XiWin->gc.set,FillStippled);
+    XSetStipple(XiWin->disp,XiWin->gc.set,grey50);
+    XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
+		 low,7,Nonconvex,CoordModeOrigin);
+    XSetFillStyle(XiWin->disp,XiWin->gc.set,FillSolid);
   }
   PetscFunctionReturn(0);
 }
@@ -108,12 +108,12 @@ int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
  */
 #undef __FUNC__  
 #define __FUNC__ "XiFrameColorsByName" 
-int XiFrameColorsByName(Draw_X* XiWin, char *Hi, char *Lo )
+int XiFrameColorsByName(Draw_X* XiWin,char *Hi,char *Lo)
 {
   PetscFunctionBegin;
   if (XiWin->numcolors > 2) {
-    HiPix = XiGetColor( XiWin, Hi, 1 );
-    LoPix = XiGetColor( XiWin, Lo, 1 );
+    HiPix = XiGetColor(XiWin,Hi,1);
+    LoPix = XiGetColor(XiWin,Lo,1);
   }
   PetscFunctionReturn(0);
 }

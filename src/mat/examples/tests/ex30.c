@@ -1,10 +1,10 @@
-/*$Id: ex30.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex30.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\
   -lf <level> : level of fill for ILU (default is 0)\n\
   -lu : use full LU factorization\n\
-  -m <value>, -n <value> : grid dimensions\n\
+  -m <value>,-n <value> : grid dimensions\n\
 Note that most users should employ the SLES interface to the\n\
 linear solvers instead of using the factorization routines\n\
 directly.\n\n";
@@ -16,7 +16,7 @@ directly.\n\n";
 int main(int argc,char **args)
 {
   Mat         C,A; 
-  int         i, j, bs, m = 5, n = 5, I, J, ierr, lf = 0;
+  int         i,j,bs,m = 5,n = 5,I,J,ierr,lf = 0;
   PetscTruth  flg1,flg2;
   Scalar      v;
   IS          row,col;
@@ -40,8 +40,8 @@ int main(int argc,char **args)
   }
 
   /* Create the matrix. (This is five-point stencil with some extra elements) */
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
       v = -1.0;  I = j + n*i;
       J = I - n; if (J>=0)  {ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       J = I + n; if (J<m*n) {ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}

@@ -1,4 +1,4 @@
-/*$Id: dcoor.c,v 1.18 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dcoor.c,v 1.19 1999/11/24 21:52:47 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -24,7 +24,7 @@
 .seealso: DrawGetCoordinates()
 
 @*/
-int DrawSetCoordinates(Draw draw,double xl,double yl,double xr, double yr)
+int DrawSetCoordinates(Draw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   int ierr;
 

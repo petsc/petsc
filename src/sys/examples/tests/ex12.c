@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.7 1999/10/24 14:01:38 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.8 1999/11/05 14:44:28 bsmith Exp bsmith $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
@@ -18,24 +18,24 @@ int main(int argc,char **argv)
   
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
 
-  values = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(values);
-  for ( i=0; i<n; i++ ) {
+  values = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(values);
+  for (i=0; i<n; i++) {
     PetscRandomGetValue(rand,&value);
-    values[i] = (int) (n*PetscReal(value) + 2.0);
+    values[i] = (int)(n*PetscRealPart(value) + 2.0);
   }
   PetscSortInt(n,values);
 
   PLogEventRegister(&event,"Sort",PETSC_NULL);
   PLogEventBegin(event,0,0,0,0);
-  values = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(values);
-  for ( i=0; i<n; i++ ) {
+  values = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(values);
+  for (i=0; i<n; i++) {
     PetscRandomGetValue(rand,&value);
-    values[i] = (int) (n*PetscReal(value) + 2.0);
+    values[i] = (int)(n*PetscRealPart(value) + 2.0);
   }
   PetscSortInt(n,values);
   PLogEventEnd(event,0,0,0,0);
 
-  for ( i=1; i<n; i++ ) {
+  for (i=1; i<n; i++) {
     if (values[i] < values[i-1]) SETERRA(1,1,"Values not sorted");
   }
   ierr = PetscFree(values);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: gcomm.c,v 1.16 1999/03/17 23:21:46 bsmith Exp bsmith $*/
+/*$Id: gcomm.c,v 1.18 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -15,7 +15,7 @@
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
          cast with a (PetscObject), for example, 
-         PetscObjectGetComm((PetscObject) mat,&comm);
+         PetscObjectGetComm((PetscObject)mat,&comm);
 
    Output Parameter:
 .  comm - the MPI communicator

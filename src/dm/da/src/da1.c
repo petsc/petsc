@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.107 1999/11/24 21:55:34 bsmith Exp balay $*/
+/*$Id: da1.c,v 1.108 1999/12/13 17:47:14 balay Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -17,7 +17,7 @@ EXTERN_C_END
 #define __FUNC__ "DAView_1d"
 int DAView_1d(DA da,Viewer viewer)
 {
-  int        rank, ierr;
+  int        rank,ierr;
   PetscTruth isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
@@ -50,7 +50,7 @@ int DAView_1d(DA da,Viewer viewer)
       ymin = 0.0; ymax = 0.3;
       
       /* ADIC doesn't like doubles in a for loop */
-      for ( xmin_tmp =0; xmin_tmp < (int)da->M; xmin_tmp++ ) {
+      for (xmin_tmp =0; xmin_tmp < (int)da->M; xmin_tmp++) {
          ierr = DrawLine(draw,(double)xmin_tmp,ymin,(double)xmin_tmp,ymax,DRAW_BLACK);CHKERRQ(ierr);
       }
 
@@ -71,7 +71,7 @@ int DAView_1d(DA da,Viewer viewer)
 
     /* Put in index numbers */
     base = da->base / da->w;
-    for ( x=xmin; x<=xmax; x++ ) {
+    for (x=xmin; x<=xmax; x++) {
       sprintf(node,"%d",base++);
       ierr = DrawString(draw,x,ymin,DRAW_RED,node);CHKERRQ(ierr);
     }
@@ -129,7 +129,7 @@ extern int DAPublish_Petsc(PetscObject);
 @*/
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
 {
-  int        rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
+  int        rank,size,xs,xe,x,Xs,Xe,ierr,start,end,m;
   int        i,*idx,nn,j,left,gdim;
   PetscTruth flg1,flg2;
   DA         da;
@@ -151,8 +151,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   da->gtog1      = 0;
   da->localused  = PETSC_FALSE;
   da->globalused = PETSC_FALSE;
-  da->fieldname  = (char **) PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
-  ierr = PetscMemzero(da->fieldname, dof*sizeof(char*));CHKERRQ(ierr);
+  da->fieldname  = (char**)PetscMalloc(dof*sizeof(char*));CHKPTRQ(da->fieldname);
+  ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 
@@ -178,18 +178,18 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
     } else { /* The odd nodes are evenly distributed across the first k nodes */
       /* Regular PETSc Distribution */
       x = M/m + ((M % m) > rank);
-      if (rank >= (M % m)) {xs = (rank * (int) (M/m) + M % m);}
+      if (rank >= (M % m)) {xs = (rank * (int)(M/m) + M % m);}
       else                 {xs = rank * (int)(M/m) + rank;}
     }
   } else {
     x  = lc[rank];
     xs = 0;
-    for ( i=0; i<rank; i++ ) {
+    for (i=0; i<rank; i++) {
       xs += lc[i];
     }
     /* verify that data user provided is consistent */
     left = xs;
-    for ( i=rank; i<size; i++ ) {
+    for (i=rank; i<size; i++) {
       left += lc[i];
     }
     if (left != M) {
@@ -233,7 +233,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
-  idx  = (int *) PetscMalloc( (x+2*s)*sizeof(int) );CHKPTRQ(idx);  
+  idx  = (int*)PetscMalloc((x+2*s)*sizeof(int));CHKPTRQ(idx);  
   PLogObjectMemory(da,(x+2*s)*sizeof(int));
 
   nn = 0;
@@ -310,8 +310,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   ierr = VecScatterCopy(gtol,&da->ltol);CHKERRQ(ierr);
   PLogObjectParent(da,da->ltol);
   left  = xs - Xs;
-  idx   = (int *) PetscMalloc((Xe-Xs)*sizeof(int));CHKPTRQ(idx);
-  for ( j=0; j<Xe-Xs; j++ ) {
+  idx   = (int*)PetscMalloc((Xe-Xs)*sizeof(int));CHKPTRQ(idx);
+  for (j=0; j<Xe-Xs; j++) {
     idx[j] = left + j;
   }  
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 

@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.30 1999/11/05 14:46:29 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.31 1999/11/10 03:20:31 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -24,7 +24,7 @@ typedef struct {
 static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
   int              ierr;
-  PC_Composite     *jac = (PC_Composite *) pc->data;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   Scalar           one = 1.0,mone = -1.0;
   Mat              mat = pc->pmat;
@@ -54,7 +54,7 @@ static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
   int              ierr;
-  PC_Composite     *jac = (PC_Composite *) pc->data;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   Scalar           one = 1.0;
 
@@ -76,7 +76,7 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 static int PCSetUp_Composite(PC pc)
 {
   int              ierr;
-  PC_Composite     *jac = (PC_Composite *) pc->data;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
@@ -96,7 +96,7 @@ static int PCSetUp_Composite(PC pc)
 #define __FUNC__ "PCDestroy_Composite"
 static int PCDestroy_Composite(PC pc)
 {
-  PC_Composite     *jac = (PC_Composite *) pc->data;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
   int              ierr;
   PC_CompositeLink next = jac->head;
 
@@ -116,7 +116,7 @@ static int PCDestroy_Composite(PC pc)
 #define __FUNC__ "PCSetFromOptions_Composite"
 static int PCSetFromOptions_Composite(PC pc)
 {
-  PC_Composite     *jac = (PC_Composite *) pc->data;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
   int              ierr,nmax = 8,i;
   PCCompositeType  type=PC_COMPOSITE_ADDITIVE;
   PC_CompositeLink next;
@@ -143,7 +143,7 @@ static int PCSetFromOptions_Composite(PC pc)
   }
   ierr = OptionsGetStringArray(pc->prefix,"-pc_composite_pcs",pcs,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
-    for ( i=0; i<nmax; i++ ) {
+    for (i=0; i<nmax; i++) {
       ierr = PCCompositeAddPC(pc,pcs[i]);CHKERRQ(ierr);
     }
   }
@@ -161,7 +161,7 @@ static int PCSetFromOptions_Composite(PC pc)
 #define __FUNC__ "PCPrintHelp_Composite"
 static int PCPrintHelp_Composite(PC pc,char *p)
 {
-  PC_Composite     *jac = (PC_Composite *) pc->data;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   int              ierr;
 
@@ -185,7 +185,7 @@ static int PCPrintHelp_Composite(PC pc,char *p)
 #define __FUNC__ "PCView_Composite"
 static int PCView_Composite(PC pc,Viewer viewer)
 {
-  PC_Composite     *jac = (PC_Composite *) pc->data;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
   int              ierr;
   PC_CompositeLink next = jac->head;
   PetscTruth       isascii;
@@ -246,7 +246,7 @@ int PCCompositeAddPC_Composite(PC pc,PCType type)
   link->next = 0;
   ierr = PCCreate(pc->comm,&link->pc);CHKERRQ(ierr);
 
-  jac  = (PC_Composite *) pc->data;
+  jac  = (PC_Composite*)pc->data;
   next = jac->head;
   if (!next) {
     jac->head = link;
@@ -279,9 +279,9 @@ int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
   int              i;
 
   PetscFunctionBegin;
-  jac  = (PC_Composite *) pc->data;
+  jac  = (PC_Composite*)pc->data;
   next = jac->head;
-  for ( i=0; i<n; i++ ) {
+  for (i=0; i<n; i++) {
     if (!next->next) {
       SETERRQ(1,1,"Not enough PCs in composite preconditioner");
     }
@@ -300,7 +300,7 @@ int PCCompositeSetUseTrue_Composite(PC pc)
   PC_Composite   *jac;
 
   PetscFunctionBegin;
-  jac                  = (PC_Composite *) pc->data;
+  jac                  = (PC_Composite*)pc->data;
   jac->use_true_matrix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -327,7 +327,7 @@ EXTERN_C_END
 @*/
 int PCCompositeSetType(PC pc,PCCompositeType type)
 {
-  int ierr, (*f)(PC,PCCompositeType);
+  int ierr,(*f)(PC,PCCompositeType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -355,7 +355,7 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
 @*/
 int PCCompositeAddPC(PC pc,PCType type)
 {
-  int ierr, (*f)(PC,PCType);
+  int ierr,(*f)(PC,PCType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -388,7 +388,7 @@ int PCCompositeAddPC(PC pc,PCType type)
 @*/
 int PCCompositeGetPC(PC pc,int n,PC *subpc)
 {
-  int ierr, (*f)(PC,int,PC *);
+  int ierr,(*f)(PC,int,PC *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -428,7 +428,7 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
 @*/
 int PCCompositeSetUseTrue(PC pc)
 {
-  int ierr, (*f)(PC);
+  int ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -459,7 +459,7 @@ int PCCreate_Composite(PC pc)
   pc->ops->view               = PCView_Composite;
   pc->ops->applyrichardson    = 0;
 
-  pc->data               = (void *) jac;
+  pc->data               = (void*)jac;
   jac->type              = PC_COMPOSITE_ADDITIVE;
   jac->work1             = 0;
   jac->work2             = 0;

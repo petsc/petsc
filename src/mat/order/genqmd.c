@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: genqmd.c,v 1.11 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* genqmd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -51,14 +51,14 @@ int SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy,
     int i__1;
 
     /* Local variables */
-    static int ndeg, irch, node, nump1, j, inode;
+    int ndeg, irch, node, nump1, j, inode;
     extern int SPARSEPACKqmdqt(int *, int *, int *, int *, int *, int *, int *);
-    static int ip, np, mindeg, search;
+    int ip, np, mindeg, search;
     extern int SPARSEPACKqmdrch(int *, int *, int *, 
 	      int *, int *, int *, int *, int *, int *),
 	   SPARSEPACKqmdupd(int *, int *, int *, int *, int *, 
 	      int *, int *, int *, int *, int *);
-    static int nhdsze, nxnode, rchsze, thresh, num;
+    int nhdsze, nxnode, rchsze, thresh, num;
 
 /*       INITIALIZE DEGREE VECTOR AND OTHER WORKING VARIABLES.   */
 

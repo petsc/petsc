@@ -1,4 +1,4 @@
-/*$Id: dgefa2.c,v 1.2 1999/03/17 23:35:21 balay Exp bsmith $*/
+/*$Id: dgefa2.c,v 1.3 1999/10/24 14:02:28 bsmith Exp bsmith $*/
 /*
      Inverts 2 by 2 matrix using partial pivoting.
 
@@ -17,10 +17,10 @@
 #define __FUNC__ "Kernel_A_gets_inverse_A_2"
 int Kernel_A_gets_inverse_A_2(MatScalar *a)
 {
-    int        i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[2],*ipvt = ipvt_l-1,k3;
+    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[2],*ipvt = ipvt_l-1,k3;
     int        k4,j3;
     MatScalar  *aa,*ax,*ay,work_l[4],*work = work_l-1,stmp;
-    MatFloat   tmp,max;
+    MatReal    tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 
@@ -39,7 +39,7 @@ int Kernel_A_gets_inverse_A_2(MatScalar *a)
         aa = &a[k4];
         max = PetscAbsScalar(aa[0]);
         l = 1;
-        for ( ll=1; ll<i__2; ll++ ) {
+        for (ll=1; ll<i__2; ll++) {
           tmp = PetscAbsScalar(aa[ll]);
           if (tmp > max) { max = tmp; l = ll+1;}
         }
@@ -63,7 +63,7 @@ int Kernel_A_gets_inverse_A_2(MatScalar *a)
 	stmp = -1. / a[k4];
 	i__2 = 2 - k;
         aa = &a[1 + k4]; 
-        for ( ll=0; ll<i__2; ll++ ) {
+        for (ll=0; ll<i__2; ll++) {
           aa[ll] *= stmp;
         }
 
@@ -80,7 +80,7 @@ int Kernel_A_gets_inverse_A_2(MatScalar *a)
 
 	    i__3 = 2 - k;
             ay = &a[1+k+j3];
-            for ( ll=0; ll<i__3; ll++ ) {
+            for (ll=0; ll<i__3; ll++) {
               ay[ll] += stmp*ax[ll];
             }
 	}
@@ -103,7 +103,7 @@ int Kernel_A_gets_inverse_A_2(MatScalar *a)
 	stmp  = -a[k4];
 	i__2  = k - 1;
         aa    = &a[k3 + 1]; 
-        for ( ll=0; ll<i__2; ll++ ) aa[ll] *= stmp;
+        for (ll=0; ll<i__2; ll++) aa[ll] *= stmp;
 	kp1 = k + 1;
 	if (2 < kp1) continue;
         ax = aa;
@@ -112,7 +112,7 @@ int Kernel_A_gets_inverse_A_2(MatScalar *a)
 	    stmp      = a[k + j3];
 	    a[k + j3] = 0.0;
             ay        = &a[j3 + 1];
-            for ( ll=0; ll<k; ll++ ) {
+            for (ll=0; ll<k; ll++) {
               ay[ll] += stmp*ax[ll];
             }
 	}

@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
+/*$Id: qmdmrg.c,v 1.10 1999/11/24 21:54:20 bsmith Exp bsmith $*/
 /* qmdmrg.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -41,7 +41,7 @@ int SPARSEPACKqmdmrg(int *xadj, int *adjncy, int *deg,
     int i__1, i__2, i__3;
 
     /* Local variables */
-    static int head, inhd, irch, node, mark, link, root, j, lnode, nabor, 
+    int head, inhd, irch, node, mark, link, root, j, lnode, nabor, 
 	    jstop, jstrt, rchsze, mrgsze, novrlp, iov, deg1;
 
     PetscFunctionBegin;

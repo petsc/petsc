@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.8 1999/10/13 20:36:58 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.9 1999/10/24 14:01:46 bsmith Exp bsmith $*/
 /*
        Tests ISAllGather()
 */
@@ -11,7 +11,7 @@ static char help[] = "Tests ISAllGather()\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        i, n, ierr,*indices,rank,size;
+  int        i,n,ierr,*indices,rank,size;
   IS         is,newis;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -22,8 +22,8 @@ int main(int argc,char **argv)
      Create IS
   */
   n = 4 + rank;
-  indices = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(indices);
-  for ( i=0; i<n; i++ ) {
+  indices = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(indices);
+  for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,indices,&is);CHKERRA(ierr);

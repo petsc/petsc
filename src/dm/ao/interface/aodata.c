@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.41 1999/11/05 14:47:43 bsmith Exp bsmith $*/
+/*$Id: aodata.c,v 1.42 1999/11/10 03:21:56 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -35,8 +35,8 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 
   *nkeys = n = ao->nkeys;
   if (keys) {
-    *keys = (char **) PetscMalloc((n+1)*sizeof(char *));CHKPTRQ(keys);
-    for ( i=0; i<n; i++ ) {
+    *keys = (char**)PetscMalloc((n+1)*sizeof(char *));CHKPTRQ(keys);
+    for (i=0; i<n; i++) {
       if (!key) SETERRQ(PETSC_ERR_COR,1,"Less keys in database then indicated");
       (*keys)[i] = key->name;
       key        = key->next;
@@ -62,7 +62,7 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
    Level: advanced
 
 */
-int AODataKeyFind_Private(AOData aodata,char *keyname, PetscTruth *flag,AODataKey **key)
+int AODataKeyFind_Private(AOData aodata,char *keyname,PetscTruth *flag,AODataKey **key)
 {
   PetscTruth  match;
   int         ierr;
@@ -116,7 +116,7 @@ int AODataKeyFind_Private(AOData aodata,char *keyname, PetscTruth *flag,AODataKe
    Level: advanced
 
 @*/
-int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
+int AODataKeyExists(AOData aodata,char *keyname,PetscTruth *flag)
 {
   int        ierr;
   PetscTruth iflag;
@@ -153,7 +153,7 @@ int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
    Level: advanced
 
 */
-int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, PetscTruth *flag,AODataKey **key,AODataSegment **seg)
+int AODataSegmentFind_Private(AOData aodata,char *keyname,char *segname,PetscTruth *flag,AODataKey **key,AODataSegment **seg)
 {
   int           ierr;
   PetscTruth    keyflag,match;
@@ -182,7 +182,7 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, PetscT
       }
       name = 0;
       while (t) {
-        ierr = PetscStrcmp(segname,t->alias,&match); CHKERRQ(ierr);
+        ierr = PetscStrcmp(segname,t->alias,&match);CHKERRQ(ierr);
         if (match) {
           name = t->name;
           t    = t->next;
@@ -212,7 +212,7 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, PetscT
    Level: advanced
 
 @*/
-int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *flag)
+int AODataSegmentExists(AOData aodata,char *keyname,char *segname,PetscTruth *flag)
 {
   int           ierr;
   PetscTruth    iflag;
@@ -904,7 +904,7 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
   }
 
   ikey->ltog = map;
-  ierr = PetscObjectReference((PetscObject) map);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 
@@ -1026,9 +1026,9 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
   if (nlocal)    *nlocal    = key->nlocal;
   if (nsegments) *nsegments = n = key->nsegments;
   if (nsegments && segnames) {
-    *segnames = (char **) PetscMalloc((n+1)*sizeof(char *));CHKPTRQ(segnames);
+    *segnames = (char**)PetscMalloc((n+1)*sizeof(char *));CHKPTRQ(segnames);
     seg       = key->segments;
-    for ( i=0; i<n; i++ ) {
+    for (i=0; i<n; i++) {
       if (!seg) SETERRQ(PETSC_ERR_COR,1,"Less segments in database then indicated");
       (*segnames)[i] = seg->name;
       seg            = seg->next;
@@ -1060,7 +1060,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 
 .seealso:  AODataGetInfo()
 @*/
-int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, PetscDataType *dtype)
+int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs,PetscDataType *dtype)
 {
   int           ierr;
   PetscTruth    flag;
@@ -1106,7 +1106,7 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, Pets
 
 .seealso: ViewerASCIIOpen()
 @*/
-int AODataView(AOData aodata, Viewer viewer)
+int AODataView(AOData aodata,Viewer viewer)
 {
   int ierr;
 
@@ -1215,7 +1215,7 @@ int AODataDestroy(AOData aodata)
 
 .seealso: AODataKeyGetAdjacency()
 @*/
-int AODataKeyRemap(AOData aodata, char *key,AO ao)
+int AODataKeyRemap(AOData aodata,char *key,AO ao)
 {
   int ierr;
 
@@ -1246,7 +1246,7 @@ int AODataKeyRemap(AOData aodata, char *key,AO ao)
 
 .seealso: AODataKeyRemap()
 @*/
-int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
+int AODataKeyGetAdjacency(AOData aodata,char *key,Mat *adj)
 {
   int ierr;
 
@@ -1301,13 +1301,13 @@ int AODataPublish_Petsc(PetscObject obj)
 
 #if defined(PETSC_HAVE_AMS)
   /* if it is already published then return */
-  if (ao->amem >=0 ) PetscFunctionReturn(0);
+  if (ao->amem >=0) PetscFunctionReturn(0);
 
   ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,"Number_of_Keys",&ao->nkeys,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   /* Loop over keys publishing info on each */
-  for ( keys=0; keys<ao->nkeys; keys++ ) {
+  for (keys=0; keys<ao->nkeys; keys++) {
     if (!keys) key = ao->keys;
     else       key = key->next;
 
@@ -1431,7 +1431,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   if (oldkey) { oldkey->next = key;} 
   else        { aodata->keys = key;} 
   ierr           = PetscStrlen(name,&len);CHKERRQ(ierr);
-  key->name      = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(key->name);
+  key->name      = (char*)PetscMalloc((len+1)*sizeof(char));CHKPTRQ(key->name);
   ierr           = PetscStrcpy(key->name,name);CHKERRQ(ierr);
   key->N         = N;
   key->nsegments = 0;
@@ -1444,10 +1444,10 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 
   /*  Set nlocal and ownership ranges */
   ierr         = PetscSplitOwnership(comm,&nlocal,&N);CHKERRQ(ierr);
-  key->rowners = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(key->rowners);
+  key->rowners = (int*)PetscMalloc((size+1)*sizeof(int));CHKPTRQ(key->rowners);
   ierr = MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   key->rowners[0] = 0;
-  for (i=2; i<=size; i++ ) {
+  for (i=2; i<=size; i++) {
     key->rowners[i] += key->rowners[i-1];
   }
   key->rstart        = key->rowners[rank];
@@ -1458,7 +1458,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   aodata->nkeys++;
 
 #if defined(PETSC_HAVE_AMS)
-  if (aodata->amem >=0 ) {
+  if (aodata->amem >=0) {
     char namesize[1024];
     ierr = PetscStrcpy(namesize,name);CHKERRQ(ierr);
     ierr = PetscStrcat(namesize,"_N");CHKERRQ(ierr);
