@@ -70,15 +70,17 @@ if ($day == Sat) then
   set M =(snake            eagle      ryan              elvis         doc         ptera                maverick    )
   set B =(O                O          O                 Opg_complex   g_complex   g                    g_complex   )
   set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha                sun4_uni    )
-  set J1=(1                1          1                 1             1           1                    6           )
-  set J2=(0                2          2                 2             2           2                    0           )
-  set J3=(0                3          3                 3             3           3                    0           )
-  set J4=(6                6          6                 0             0           6                    6           )
+  set J1=(1                1          1                 1             1           1                    1           )
+  set J2=(0                2          2                 2             2           2                    2           )
+  set J3=(0                3          3                 3             3           3                    3           )
+  set J4=(6                6          6                 0             0           6                    0           )
   set H=(/home/petsc/petsc /tmp/petsc /home/balay/petsc /tmp/petsc    /tmp/petsc  /home/curfman/petsc  /tmp/petsc  )
 endif
 #
 #  test for each machine
 #
+/bin/rm /home/bsmith/petsc/maint/nightlylogs/*.log
+
 foreach job ($*)
   set mach    = $M[$job]
   set bopt    = $B[$job]
@@ -123,7 +125,7 @@ foreach job ($*)
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch.log"
   rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch.log"
   rsh $mach -n "cd $hme ;echo 'Finished Build `date`' >> maint/examples_$arch.log"
-  rsh $mach -n "cd $hme ;/bin/cp -f maint/examples_$arch.log /home/bsmith/petsc/maint/nightlylogs"
-  rsh $mach -n "cd $hme ;/bin/cp -f maint/build_$arch.log /home/bsmith/petsc/maint/nightlylogs"
+  rsh $mach -n "cd $hme ;/bin/cp  maint/examples_$arch.log /home/bsmith/petsc/maint/nightlylogs"
+  rsh $mach -n "cd $hme ;/bin/cp  maint/build_$arch.log /home/bsmith/petsc/maint/nightlylogs"
 end
 
