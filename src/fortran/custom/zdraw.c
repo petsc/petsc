@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.14 1997/07/09 20:55:52 balay Exp balay $";
+static char vcid[] = "$Id: zdraw.c,v 1.15 1997/07/25 23:12:03 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -21,6 +21,10 @@ static char vcid[] = "$Id: zdraw.c,v 1.14 1997/07/09 20:55:52 balay Exp balay $"
 #define viewerdrawgetdraw_   VIEWERDRAWGETDRAW
 #define viewerdrawgetdrawlg_ VIEWERDRAWGETDRAWLG
 #define drawtensorcontour_   DRAWTENSORCONTOUR
+#define drawgettitle_        DRAWGETTITLE
+#define drawsettitle_        DRAWSETTITLE
+#define drawappendtitle_     DRAWAPPENDTITLE
+#define drawcreatepopup_     DRAWCREATEPOPUP
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define drawaxisdestroy_     drawaxisdestroy
 #define drawaxiscreate_      drawaxiscreate
@@ -36,6 +40,10 @@ static char vcid[] = "$Id: zdraw.c,v 1.14 1997/07/09 20:55:52 balay Exp balay $"
 #define viewerdrawgetdraw_   viewerdrawgetdraw
 #define viewerdrawgetdrawlg_ viewerdrawgetdrawlg
 #define drawtensorcontour_   drawtensorcontour
+#define drawgettitle_        drawgettitle
+#define drawsettitle_        drawsettitle
+#define drawappendtitle_     drawappendtitle
+#define drawcreatepopup_     drawcreatepopup
 #endif
 
 #if defined(__cplusplus)
@@ -160,6 +168,45 @@ void drawaxiscreate_(Draw win,DrawAxis *ctx, int *__ierr )
   *__ierr = DrawAxisCreate((Draw)PetscToPointer( *(int*)(win) ),&tmp);
   *(int*)ctx = PetscFromPointer(tmp);
 }
+
+void drawgettitle_(Draw draw,CHAR title, int *__ierr,int len )
+{
+  char *c3,*t;
+  int  len3;
+#if defined(USES_CPTOFCD)
+    c3   = _fcdtocp(title);
+    len3 = _fcdlen(title) - 1;
+#else
+    c3   = title;
+    len3 = len - 1;
+#endif
+  *__ierr = DrawGetTitle((Draw)PetscToPointer( *(int*)(draw) ),&t);
+  PetscStrncpy(c3,t,len3);
+}
+
+void drawsettitle_(Draw draw,CHAR title, int *__ierr,int len )
+{
+  char *t1;
+  FIXCHAR(title,len,t1);
+  *__ierr = DrawSetTitle((Draw)PetscToPointer( *(int*)(draw) ),title);
+  FREECHAR(title,t1);
+}
+
+void drawappendtitle_(Draw draw,CHAR title, int *__ierr,int len )
+{
+  char *t1;
+  FIXCHAR(title,len,t1);
+  *__ierr = DrawAppendTitle((Draw)PetscToPointer( *(int*)(draw) ),t1);
+  FREECHAR(title,t1);
+}
+
+void drawcreatepopup_(Draw draw,Draw *popup, int *__ierr )
+{
+  Draw tmp;
+  *__ierr = DrawCreatePopUp((Draw)PetscToPointer( *(int*)(draw) ),&tmp);
+  *(int *) popup = PetscFromPointer(tmp);
+}
+
 
 #if defined(__cplusplus)
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.40 1997/07/09 20:57:34 balay Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.41 1997/08/06 22:13:54 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -39,7 +39,7 @@ int DrawCheckResizedWindow(Draw draw)
 
 #undef __FUNC__  
 #define __FUNC__ "DrawGetTitle" /* ADIC Ignore */
-/*@
+/*@C
    DrawGetTitle - Gets pointer to title of a Draw context.
 
    Input Parameter:
@@ -57,7 +57,7 @@ int DrawGetTitle(Draw draw,char **title)
 
 #undef __FUNC__  
 #define __FUNC__ "DrawSetTitle" /* ADIC Ignore */
-/*@
+/*@C
    DrawSetTitle - Sets the title of a Draw context.
 
    Input Parameters:
@@ -85,7 +85,7 @@ int DrawSetTitle(Draw draw,char *title)
 
 #undef __FUNC__  
 #define __FUNC__ "DrawAppendTitle" /* ADIC Ignore */
-/*@
+/*@C
    DrawAppendTitle - Appends to the title of a Draw context.
 
    Input Parameters:
@@ -138,7 +138,7 @@ int DrawDestroy(Draw draw)
 
 #undef __FUNC__  
 #define __FUNC__ "DrawCreatePopUp" /* ADIC Ignore */
-/*@
+/*@C
    DrawCreatePopUp - Creates a popup window associated with 
       a Draw window.
 
