@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 2000/01/19 23:02:25 kaushik Exp kaushik $ 
+# $Id: makefile,v 1.11 2000/01/21 21:41:52 kaushik Exp bsmith $ 
 
 #requiresscalar real
 
@@ -18,7 +18,7 @@ OBJSC	         =
 OBJSF	         = user.o userJac.o
 CLEANFILES       = flow.exe flow.o flow
 DIRS             = 
-LOCDIR           = src/contrib/fun3d
+LOCDIR           = src/contrib/fun3d/
 TESTEXAMPLES_3	 = flow.PETSc runflow1 runflow4 flow.rm
 BUILDEXAMPLES_3  = flow.PETSc flow.rm clean
 EXAMPLESC        = flow.c user.h

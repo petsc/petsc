@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.12 2000/01/22 16:36:41 bsmith Exp bsmith $
+c  $Id: user.F,v 1.13 2000/01/23 17:31:06 bsmith Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -2825,7 +2825,7 @@ c  TAPE12 -- output: writes residual and lift for plotting
 c  TAPE13 -- output: writes flowfield for contour plotting
 c
       implicit none
-      integer  irnak
+      integer  irank
       OPEN(UNIT= 7,FILE='testgrid/ginput.faces',
      +form='formatted',STATUS='OLD')
  
