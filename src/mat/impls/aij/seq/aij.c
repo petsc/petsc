@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.352 2000/07/10 03:39:32 bsmith Exp balay $*/
+/*$Id: aij.c,v 1.353 2000/08/16 15:15:11 balay Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -2606,11 +2606,11 @@ int MatCreateSeqAIJWithArrays(MPI_Comm comm,int m,int n,int* i,int*j,Scalar *a,M
 
   for (ii=0; ii<m; ii++) {
     aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
-#if defined(PETSC_BOPT_g)
-    if (i[ii+1] - i[i] < 0) SETERRQ2(1,1,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
+#if defined(PETSC_USE_BOPT_g)
+    if (i[ii+1] - i[ii] < 0) SETERRQ2(1,1,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
 #endif    
   }
-#if defined(PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   for (ii=0; ii<aij->i[m]; ii++) {
     if (j[ii] < -aij->indexshift) SETERRQ2(1,1,"Negative column index at location = %d index = %d",ii,j[ii]);
     if (j[ii] > n - 1 -aij->indexshift) SETERRQ2(1,1,"Column index to large at location = %d index = %d",ii,j[ii]);
