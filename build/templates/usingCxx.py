@@ -70,7 +70,7 @@ class UsingCxx (base.Base):
 
   def getLinker(self):
     if not hasattr(self, '_linker'):
-      return self.getLinkerObject(self.language).name
+      return self.argDB[self.getLinkerObject(self.language).name]
     return self._linker
   def setLinker(self, linker):
     self._linker = linker

@@ -172,7 +172,7 @@ class Configure(config.base.Configure):
         import os
 
         if os.path.basename(self.framework.argDB['CC']) == 'mpicc':
-          self.framework.log.write(' MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
+          self.framework.log.write(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
         del self.framework.argDB['CC']
     if 'CC' in self.framework.argDB:
@@ -306,7 +306,7 @@ class Configure(config.base.Configure):
           import os
 
           if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
-            self.framework.log.write('  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
+            self.framework.log.write('  MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
           self.popLanguage()
           del self.framework.argDB['CXX']
       if 'CXX' in self.framework.argDB:
@@ -349,7 +349,7 @@ class Configure(config.base.Configure):
         import os
 
         if os.path.basename(self.framework.argDB['CXXCPP']) in ['mpicxx', 'mpiCC']:
-          self.framework.log.write('MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI\n')
+          self.framework.log.write('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI\n')
         self.popLanguage()
         self.framework.argDB['CXXCPP'] = None
     if 'CXXCPP' in self.framework.argDB and not self.framework.argDB['CXXCPP'] is None:
@@ -438,7 +438,7 @@ class Configure(config.base.Configure):
         import os
 
         if os.path.basename(self.framework.argDB['FC']) in ['mpif90', 'mpif77']:
-         self.framework.log.write(' MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
+         self.framework.log.write(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
         del self.framework.argDB['FC']
     if 'FC' in self.framework.argDB:
