@@ -105,6 +105,8 @@ class Compile (action.Action):
   def execute(self):
     if not os.path.exists(self.library[0]):
       self.rebuildAll = 1
+      (dir, file) = os.path.split(self.library[0])
+      if not os.path.exists(dir): os.makedirs(dir)
     return action.Action.execute(self)
 
 class TagC (transform.GenericTag):

@@ -122,12 +122,28 @@ class BS (Maker):
         args[key]  = val
     return args
 
+  def parseEnvArg(self, args, var, default = None):
+    try:
+      args[var] = os.environ[var]
+    except KeyError:
+      if default:
+        args[var] = default
+      else:
+        raise RuntimeError('Please set the '+var+' environment variable')
+
+  def parseEnvArgs(self, args):
+    envVariables = [('TMPDIR', '/tmp'), ('BABEL_DIR', '/home/knepley/progs/babel-anl'), ('MPI_DIR', '/usr/local/mpich'),
+                    ('PETSC_DIR', '/usr/local/petsc'), ('PETSC_ARCH', 'linux-gnu'), ('TAO_DIR', '/usr/local/tao')]
+    for var in envVariables:
+      self.parseEnvArg(args, var[0], var[1])
+
   def processArgs(self, args):
     global debugLevel
     global debugSections
 
     if type(args) == types.ListType:
       args = self.parseArgs(args)
+    self.parseEnvArgs(args)
     # Here we could have an object BSOptions which had nothing but member
     # variables. Then we could use reflection to get all the names of the
     # variables, and look them up in args[]
