@@ -24,6 +24,7 @@
     These are the SPAI include files
 */
 EXTERN_C_BEGIN
+#include "petscspai.h"
 #include "spai.h"
 #include "matrix.h"
 EXTERN_C_END
