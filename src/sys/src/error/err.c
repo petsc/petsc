@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.90 1998/12/17 22:09:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.91 1998/12/21 00:58:12 bsmith Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -131,8 +131,8 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
   vsprintf(buf,mess,Argp);
   va_end( Argp );
 
-  if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);
-  else         ierr = (*eh->handler)(line,func,file,dir,n,p,mess,eh->ctx);
+  if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,buf,0);
+  else         ierr = (*eh->handler)(line,func,file,dir,n,p,buf,eh->ctx);
   PetscFunctionReturn(ierr);
 }
 
