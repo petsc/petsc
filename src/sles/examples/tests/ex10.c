@@ -17,8 +17,8 @@ diagonal data structure.\n\n";
    written, this program was too complex for Microsoft C Version 7 to
    handle.  It has been re-arranged to simplify the code. */
 
-#define MAX(a,b)           ((a) > (b) ? (a) : (b))
-#define ABS(a)             ((a) < 0.0 ? -(a) : (a))
+#define MAX(a,b)  ((a) > (b) ? (a) : (b))
+#define ABS(a)    ((a) < 0.0 ? -(a) : (a))
 
 int main(int argc,char **args)
 {
@@ -36,9 +36,9 @@ int main(int argc,char **args)
   /* Form matrix */
   ierr = GetElasticityMatrix(m,&mat); CHKERRA(ierr);
 
-   /* Generate vectors */
+  /* Generate vectors */
   ierr = MatGetSize(mat,&rdim,&cdim); CHKERRA(ierr);
-  ierr = VecCreateMPI(MPI_COMM_SELF,PETSC_DECIDE,rdim,&u); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_SELF,rdim,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   for (i=0; i<rdim; i++) {
