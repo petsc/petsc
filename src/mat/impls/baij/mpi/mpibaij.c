@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.72 1997/06/03 16:40:50 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.73 1997/07/09 20:55:26 balay Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -317,8 +317,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
 
   
   if(!barray) {
-    barray = (Scalar*) PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(barray);
-    baij->barray = barray;
+    baij->barray = barray = (Scalar*) PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(barray);
   }
 
   if (roworiented) { 
@@ -345,19 +344,21 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
           } else {
             value = v + j*(stepval+bs)*bs + i*bs;
           }
-          for ( ii=0; ii<bs; ii++,value+=stepval )
-            for (jj=0; jj<bs; jj++ )
+          for ( ii=0; ii<bs; ii++,value+=stepval ) {
+            for (jj=0; jj<bs; jj++ ) {
               *barray++  = *value++; 
+            }
+          }
           barray -=bs2;
         }
           
         if (in[j] >= cstart && in[j] < cend){
-          col = in[j] - cstart;
+          col  = in[j] - cstart;
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
 #if defined(PETSC_BOPT_g)
         else if (in[j] < 0) {SETERRQ(1,0,"Negative column");}
-        else if (in[j] >= baij->Nbs) {SETERRQ(1,0,"Col too large");}
+        else if (in[j] >= baij->Nbs) {SETERRQ(1,0,"Column too large");}
 #endif
         else {
           if (mat->was_assembled) {
@@ -366,7 +367,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
             }
 
 #if defined(PETSC_BOPT_g)
-            if ((baij->colmap[in[j]] - 1)%bs) {SETERRQ(1,0,"Incorrect colmap");}
+            if ((baij->colmap[in[j]] - 1) % bs) {SETERRQ(1,0,"Incorrect colmap");}
 #endif
             col = (baij->colmap[in[j]] - 1)/bs;
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
@@ -402,7 +403,6 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
               }
             }
           }
-   
         }
       }
     }
