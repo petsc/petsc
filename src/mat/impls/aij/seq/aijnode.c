@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.35 1996/03/07 23:37:09 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.36 1996/03/07 23:38:58 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -17,7 +17,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
                                           int ishift,int oshift)
 {
-  int *work,*ia,*ja,*j, nz, m ,n, row, col;
+  int *work,*ia,*ja,*j, nz, m ,n, row, col, *jmax;
   int *tns, *tvc, *ns = A->inode.size, nsz, i1, i2, *ai= A->i, *aj = A->j;
 
   m = A->inode.node_count;
@@ -40,16 +40,17 @@ static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
   /* determine the number of columns in each row */
   ia[0] = -oshift;
   for (i1=0 ; i1<m; ++i1) {
-    row = tns[i1];
-    j   = aj + ai[row] + ishift;
-    i2  = 0;
-    col = *j + ishift;
-    i2  = tvc[col];
-    while (i2 < i1) {           /* off-diagonal elemets */
+    row  = tns[i1];
+    j    = aj + ai[row] + ishift;
+    jmax = aj + ai[row+1] + ishift;
+    i2   = 0;
+    col  = *j + ishift;
+    i2   = tvc[col];
+    while (i2<i1 && j<jmax) { /* 1.[-xx-d-xx--] 2.[-xx-------], off-diagonal elemets */
       ia[i1+1]++;
       ia[i2+1]++;
       i2++;                     /* Start col of next node */
-      while((col = *j + ishift) < tns[i2]) ++j;
+      while(((col=*j+ishift)<tns[i2]) && (j<jmax)) ++j;
       i2 = tvc[col];
     }
     if(i2 == i1) ia[i2+1]++;    /* now the diagonal element */
@@ -68,16 +69,17 @@ static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
 
  /* loop over lower triangular part putting into ja */ 
   for (i1=0, row=0; i1<m; ++i1) {
-    row = tns[i1];
-    j   = aj + ai[row] + ishift;
-    i2  = 0;                     /* Col inode index */
-    col = *j + ishift;
-    i2  = tvc[col];
-    while (i2 < i1) {
+    row  = tns[i1];
+    j    = aj + ai[row] + ishift;
+    jmax = aj + ai[row+1] + ishift;
+    i2   = 0;                     /* Col inode index */
+    col  = *j + ishift;
+    i2   = tvc[col];
+    while (i2<i1 && j<jmax) {
       ja[work[i2]++] = i1 - oshift;
       ja[work[i1]++] = i2 - oshift;
       ++i2;
-      while((col = *j + ishift)< tns[i2]) ++j; /* Skip rest col indices in this node */
+      while(((col=*j+ishift)< tns[i2])&&(j<jmax)) ++j; /* Skip rest col indices in this node */
       i2 = tvc[col];
     }
     if (i2 == i1) ja[work[i1]++] = i2 - oshift;
