@@ -17,7 +17,6 @@ class Script(logging.Logger):
     self.checkPython()
     logging.Logger.__init__(self, clArgs, argDB)
     self.shell = '/bin/sh'
-    self.getRoot()
     return
 
   def setupArguments(self, argDB):
@@ -62,21 +61,6 @@ class Script(logging.Logger):
     if not hasattr(sys, 'version_info') or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
       raise RuntimeError('BuildSystem requires Python version 2.2 or higher. Get Python at http://www.python.org')
     return
-
-  def getRoot(self):
-    '''Return the directory containing this module
-       - This has the problem that when we reload a module of the same name, this gets screwed up
-         Therefore, we call it in the initializer, and stash it'''
-    if not hasattr(self, '_root_'):
-      import os
-      import sys
-
-      # Work around a bug with pdb in 2.3
-      if hasattr(sys.modules[self.__module__], '__file__') and not os.path.basename(sys.modules[self.__module__].__file__) == 'pdb.py':
-        self._root_ = os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
-      else:
-        self._root_ = os.getcwd()
-    return self._root_
 
   def getModule(root, name):
     '''Retrieve a specific module from the directory root, bypassing the usual paths'''

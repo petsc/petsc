@@ -69,3 +69,78 @@ class UrlMapping (base.Base):
     if isBackup:
       root = os.path.join('backup', root)
     return os.path.abspath(root)
+
+import logging
+
+class UrlMappingNew(logging.Logger):
+  def __init__(self, clArgs = None, argDB = None):
+    logging.Logger.__init__(self, clArgs, argDB)
+    self.urlMaps = []
+    self.setup()
+    return
+
+  def setupUrlMapping(self, urlMaps):
+    urlMaps.append(self.bootstrapUrlMap)
+    if not 'urlMappingModules' in self.argDB or not self.argDB['urlMappingModules']:
+      self.argDB['urlMappingModules'] = []
+    elif not isinstance(self.argDB['urlMappingModules'], list):
+      self.argDB['urlMappingModules'] = [self.argDB['urlMappingModules']]
+    for moduleName in self.argDB['urlMappingModules']:
+      __import__(moduleName, globals(), locals(), ['setupUrlMapping']).setupUrlMapping(self, urlMaps)
+    return
+
+  def setup(self):
+    logging.Logger.setup(self)
+    self.setupUrlMapping(self.urlMaps)
+    return
+
+  def getMappedUrl(self, url):
+    '''Return a new URL produced by a URL map function. Users can register new maps by adding to the list self.urlMaps
+       - We do not allow bk://sidl.bkbits.net/BuildSystem to be mapped'''
+    if url == 'bk://sidl.bkbits.net/BuildSystem': return url
+    for map in self.urlMaps:
+      ret, newUrl = map(url)
+      if ret: return newUrl
+    return url
+
+  def checkBootstrap():
+    '''If the compiler or runtime is not available, we will have to bootstrap and this function returns true'''
+    try:
+      import ASE.Loader
+      import ASE.Compiler.SIDL.Parser
+    except ImportError:
+      return 1
+    return 0
+  checkBootstrap = staticmethod(checkBootstrap)
+
+  def bootstrapUrlMap(self, url):
+    if UrlMappingNew.checkBootstrap():
+      (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+      if scheme == 'bk':
+        path = os.path.join('/pub', 'petsc', UrlMappingNew.getRepositoryPath(url))
+        return (1, urlparse.urlunparse(('ftp', 'ftp.mcs.anl.gov', path, parameters, query, fragment)))
+    return (0, url)
+
+  def getRepositoryName(url):
+    '''Return the repository name from a project URL. This is the base filename that should be used for tarball distributions.'''
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    return os.path.basename(path)
+  getRepositoryName = staticmethod(getRepositoryName)
+
+  def getRepositoryPath(url, noBase = 0):
+    '''Return the repository path from a project URL. This is the name that should be used for alternate retrieval.
+    - You can omit the repository name itself by giving the noBase flag'''
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    sitename = location.split('.')[0]
+    pathname = path[1:]
+    if noBase: pathname = os.path.dirname(pathname)
+    return os.path.join(sitename, pathname)
+  getRepositoryPath = staticmethod(getRepositoryPath)
+
+  def getInstallRoot(url, isBackup = 0):
+    '''Guess the install root from the project URL. Note this method does not map the URL.'''
+    root = UrlMappingNew.getRepositoryPath(url)
+    if isBackup:
+      root = os.path.join('backup', root)
+    return os.path.abspath(root)
+  getInstallRoot = staticmethod(getInstallRoot)

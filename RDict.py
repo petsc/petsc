@@ -605,6 +605,7 @@ Arg class, which wraps the usual value.'''
     '''Load the saved dictionary'''
     if not self.parentDirectory is None and os.path.samefile(os.getcwd(), self.parentDirectory):
       return
+    self.saveFilename = os.path.abspath(self.saveFilename)
     if os.path.exists(self.saveFilename):
       try:
         dbFile = file(self.saveFilename)

@@ -11,17 +11,9 @@ class LinkError(RuntimeError):
 
 class DependencyChecker(logging.Logger):
   '''This class is a template for checking dependencies between sources and targets, and among sources'''
-  sourceDB = None
-
-  def __init__(self, clArgs = None, argDB = None):
+  def __init__(self, sourceDB, clArgs = None, argDB = None):
     logging.Logger.__init__(self, clArgs, argDB)
-    if DependencyChecker.sourceDB is None:
-      import sourceDatabase
-      import os
-
-      DependencyChecker.sourceDB = sourceDatabase.SourceDB(os.getcwd())
-      DependencyChecker.sourceDB.load()
-    self.sourceDB = DependencyChecker.sourceDB
+    self.sourceDB = sourceDB
     return
 
   def __call__(self, source, target):
@@ -103,17 +95,23 @@ class TimeDependencyChecker(DependencyChecker):
     return
 
 class Builder(logging.Logger):
-  def __init__(self, framework):
+  def __init__(self, framework, sourceDB = None):
     import sourceControl
+    import sourceDatabase
 
     logging.Logger.__init__(self, argDB = framework.argDB)
     self.framework         = framework
     self.language          = []
     self.configurations    = {}
     self.configurationName = []
-    self.shouldCompile     = MD5DependencyChecker(argDB = self.argDB)
-    self.shouldLink        = TimeDependencyChecker(argDB = self.argDB)
+    if sourceDB is None:
+      self.sourceDB        = sourceDatabase.SourceDB(self.root)
+    else:
+      self.sourceDB        = sourceDB
+    self.shouldCompile     = MD5DependencyChecker(self.sourceDB, argDB = self.argDB)
+    self.shouldLink        = TimeDependencyChecker(self.sourceDB, argDB = self.argDB)
     self.versionControl    = sourceControl.BitKeeper(argDB = self.argDB)
+    self.sourceDB.load()
     self.pushConfiguration('default')
     return
 

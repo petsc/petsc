@@ -6,18 +6,33 @@ class Make(script.Script):
   '''Template for individual project makefiles. All project makes start with a local RDict.'''
   def __init__(self, builder = None):
     import RDict
-    import config.framework
     import sys
 
     script.Script.__init__(self, sys.argv[1:], RDict.RDict())
     if builder is None:
-      self.framework = config.framework.Framework(self.clArgs+['-noOutput'], self.argDB)
-      self.builder   = __import__('builder').Builder(self.framework)
+      import sourceDatabase
+      import config.framework
+
+      self.framework  = config.framework.Framework(self.clArgs+['-noOutput'], self.argDB)
+      self.builder    = __import__('builder').Builder(self.framework, sourceDatabase.SourceDB(self.root))
     else:
-      self.builder   = builder
-      self.framework = builder.framework
+      self.builder    = builder
+      self.framework  = builder.framework
     self.builder.pushLanguage('C')
     return
+
+  def getMake(self, url):
+    '''Return the Make object corresponding to the project with the given URL'''
+    # FIX THIS: For now ignore RDict project info, and just use a fixed path
+    import install.urlMapping
+
+    path   = os.path.join('/PETSc3', install.urlMapping.UrlMappingNew.getRepositoryPath(url))
+    oldDir = os.getcwd()
+    os.chdir(path)
+    make   = self.getModule(path, 'make').Make()
+    make.run()
+    os.chdir(oldDir)
+    return make
 
   def setupHelp(self, help):
     import nargs
@@ -33,7 +48,7 @@ class Make(script.Script):
   def setup(self):
     script.Script.setup(self)
     self.builder.setup()
-    self.setupDependencies(self.builder.shouldCompile.sourceDB)
+    self.setupDependencies(self.builder.sourceDB)
     return
 
   def shouldConfigure(self, builder, framework):
@@ -48,8 +63,8 @@ class Make(script.Script):
     if self.argDB['forceConfigure']:
       self.logPrint('Reconfiguring forced')
       return 1
-    if (not 'configure.py' in self.builder.shouldCompile.sourceDB or
-        not self.builder.shouldCompile.sourceDB['configure.py'][0] == self.builder.shouldCompile.sourceDB.getChecksum('configure.py')):
+    if (not 'configure.py' in self.builder.sourceDB or
+        not self.builder.sourceDB['configure.py'][0] == self.builder.sourceDB.getChecksum('configure.py')):
       self.logPrint('Reconfiguring due to changed configure.py')
       return 1
     if not 'configureCache' in self.argDB:
@@ -60,7 +75,7 @@ class Make(script.Script):
   def setupConfigure(self, framework):
     framework.header = os.path.join('include', 'config.h')
     try:
-      framework.addChild(self.getModule(self.getRoot(), 'configure').Configure(framework))
+      framework.addChild(self.getModule(self.root, 'configure').Configure(framework))
     except ImportError, e:
       self.logPrint('Configure module not present: '+str(e))
       return 0
@@ -86,7 +101,7 @@ class Make(script.Script):
     if doConfigure:
       self.logPrint('Starting new configuration')
       self.framework.configure()
-      self.builder.shouldCompile.sourceDB.updateSource('configure.py')
+      self.builder.sourceDB.updateSource('configure.py')
       cache = cPickle.dumps(self.framework)
       self.argDB['configureCache'] = cache
       self.logPrint('Wrote configure to cache: size '+str(len(cache)))
@@ -109,21 +124,24 @@ class Make(script.Script):
     self.logPrint('Starting Build', debugSection = 'build')
     self.configure(self.builder)
     self.build(self.builder)
-    self.updateDependencies(self.builder.shouldCompile.sourceDB)
+    self.updateDependencies(self.builder.sourceDB)
     self.logPrint('Ending Build', debugSection = 'build')
     return 1
+
+import sets
 
 class SIDLMake(Make):
   def __init__(self, builder = None):
     import re
 
     Make.__init__(self, builder)
-    self.implRE = re.compile(r'^(.*)_impl\.\w+$')
+    self.implRE       = re.compile(r'^(.*)_impl\.\w+$')
+    self.dependencies = {}
     return
 
   def getSidl(self):
     if not hasattr(self, '_sidl'):
-      self._sidl = [os.path.join(self.getRoot(), 'sidl', f) for f in filter(lambda s: os.path.splitext(s)[1] == '.sidl', os.listdir(os.path.join(self.getRoot(), 'sidl')))]
+      self._sidl = [os.path.join(self.root, 'sidl', f) for f in filter(lambda s: os.path.splitext(s)[1] == '.sidl', os.listdir(os.path.join(self.root, 'sidl')))]
     return self._sidl
   def setSidl(self, sidl):
     self._sidl = sidl
@@ -133,6 +151,7 @@ class SIDLMake(Make):
   def getIncludes(self):
     if not hasattr(self, '_includes'):
       self._includes = []
+      [self._includes.extend(sidlFiles) for builder, sidlFiles in self.dependencies.values()]
     return self._includes
   def setIncludes(self, includes):
     self._includes = includes
@@ -170,6 +189,12 @@ class SIDLMake(Make):
     self.ase       = framework.require('config.ase', None)
     return framework
 
+  def addDependency(self, url, sidlFile):
+    if not url in self.dependencies:
+      self.dependencies[url] = (self.getMake(url).builder, sets.Set())
+    self.dependencies[url][1].add(sidlFile)
+    return
+
   def setupSIDL(self, builder, sidlFile):
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     builder.loadConfiguration('SIDL '+baseName)
@@ -185,47 +210,59 @@ class SIDLMake(Make):
     builder.popConfiguration()
     return
 
-  def setupPythonClient(self, builder, sidlFile, language):
+  def getSIDLClientDirectory(self, builder, sidlFile, language):
     baseName  = os.path.splitext(os.path.basename(sidlFile))[0]
     builder.pushConfiguration('SIDL '+baseName)
     builder.pushLanguage('SIDL')
     clientDir = builder.getCompilerObject().clientDirs[language]
     builder.popLanguage()
     builder.popConfiguration()
+    return clientDir
+
+  def getSIDLServerDirectory(self, builder, sidlFile, language):
+    baseName  = os.path.splitext(os.path.basename(sidlFile))[0]
+    builder.pushConfiguration('SIDL '+baseName)
+    builder.pushLanguage('SIDL')
+    serverDir = builder.getCompilerObject().serverDirs[language]
+    builder.popLanguage()
+    builder.popConfiguration()
+    return serverDir
+
+  def setupPythonClient(self, builder, sidlFile, language):
+    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     builder.loadConfiguration(language+' Stub '+baseName)
     builder.pushConfiguration(language+' Stub '+baseName)
-    builder.getCompilerObject().includeDirectories.extend(self.python.include)
-    builder.getCompilerObject().includeDirectories.append(clientDir)
-    builder.getLinkerObject().libraries.extend(self.ase.lib)
-    builder.getLinkerObject().libraries.extend(self.python.lib)
+    compiler = builder.getCompilerObject()
+    linker   = builder.getLinkerObject()
+    compiler.includeDirectories.extend(self.python.include)
+    compiler.includeDirectories.append(self.getSIDLClientDirectory(builder, sidlFile, language))
+    for depBuilder, depSidlFiles in self.dependencies.values():
+      [compiler.includeDirectories.append(self.getSIDLClientDirectory(depBuilder, depSidlFile, language)) for depSidlFile in depSidlFiles]
+    linker.libraries.extend(self.ase.lib)
+    linker.libraries.extend(self.python.lib)
     builder.popConfiguration()
     return
 
   def setupPythonIOR(self, builder, sidlFile, language):
-    baseName  = os.path.splitext(os.path.basename(sidlFile))[0]
-    builder.pushConfiguration('SIDL '+baseName)
-    builder.pushLanguage('SIDL')
-    serverDir = builder.getCompilerObject().serverDirs[language]
-    builder.popLanguage()
-    builder.popConfiguration()
+    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     builder.loadConfiguration(language+' IOR '+baseName)
     builder.pushConfiguration(language+' IOR '+baseName)
-    builder.getCompilerObject().includeDirectories.append(serverDir)
+    compiler = builder.getCompilerObject()
+    compiler.includeDirectories.append(self.getSIDLServerDirectory(builder, sidlFile, language))
+    for depBuilder, depSidlFiles in self.dependencies.values():
+      [compiler.includeDirectories.append(self.getSIDLClientDirectory(depBuilder, depSidlFile, language)) for depSidlFile in depSidlFiles]
     builder.popConfiguration()
     return
 
   def setupPythonSkeleton(self, builder, sidlFile, language):
-    baseName  = os.path.splitext(os.path.basename(sidlFile))[0]
-    builder.pushConfiguration('SIDL '+baseName)
-    builder.pushLanguage('SIDL')
-    serverDir = builder.getCompilerObject().serverDirs[language]
-    builder.popLanguage()
-    builder.popConfiguration()
+    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     builder.loadConfiguration(language+' Skeleton '+baseName)
     builder.pushConfiguration(language+' Skeleton '+baseName)
-    builder.getCompilerObject().includeDirectories.extend(self.python.include)
-    builder.getCompilerObject().includeDirectories.append(serverDir)
-    builder.getLinkerObject().libraries.extend(self.python.lib)
+    compiler = builder.getCompilerObject()
+    compiler.includeDirectories.extend(self.python.include)
+    compiler.includeDirectories.append(self.getSIDLServerDirectory(builder, sidlFile, language))
+    for depBuilder, depSidlFiles in self.dependencies.values():
+      [compiler.includeDirectories.append(self.getSIDLClientDirectory(depBuilder, depSidlFile, language)) for depSidlFile in depSidlFiles]
     builder.popConfiguration()
     return
 
@@ -235,9 +272,10 @@ class SIDLMake(Make):
     self.setupPythonSkeleton(builder, sidlFile, language)
     builder.loadConfiguration(language+' Server '+baseName)
     builder.pushConfiguration(language+' Server '+baseName)
+    linker   = builder.getLinkerObject()
     if not baseName == 'ase':
-      builder.getLinkerObject().libraries.extend(self.ase.lib)
-    builder.getLinkerObject().libraries.extend(self.python.lib)
+      linker.libraries.extend(self.ase.lib)
+    linker.libraries.extend(self.python.lib)
     builder.popConfiguration()
     return
 

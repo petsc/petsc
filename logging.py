@@ -20,6 +20,7 @@ class Logger(args.ArgumentProcessor):
     self.debugLevel    = debugLevel
     self.debugSections = debugSections
     self.debugIndent   = debugIndent
+    self.getRoot()
     return
 
   def __getstate__(self):
@@ -186,6 +187,25 @@ class Logger(args.ArgumentProcessor):
         if writeAll or self.linewidth < 0:
           f.write('\n')
     return
+
+  def getRoot(self):
+    '''Return the directory containing this module
+       - This has the problem that when we reload a module of the same name, this gets screwed up
+         Therefore, we call it in the initializer, and stash it'''
+    if not hasattr(self, '_root_'):
+      import os
+      import sys
+
+      # Work around a bug with pdb in 2.3
+      if hasattr(sys.modules[self.__module__], '__file__') and not os.path.basename(sys.modules[self.__module__].__file__) == 'pdb.py':
+        self._root_ = os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
+      else:
+        self._root_ = os.getcwd()
+    return self._root_
+  def setRoot(self, root):
+    self._root_ = root
+    return
+  root = property(getRoot, setRoot, doc = 'The directory containing this module')
 
 class defaultWriter:
   def __init__(self):
