@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.15 1996/03/04 21:30:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.16 1996/03/04 21:31:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -335,12 +335,28 @@ int *PetscIntAddressFromFortran(int *base,int addr)
 
 int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
 {
-  long tmp1 = (long) base,tmp2 = tmp1/sizeof(Scalar);
+  unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(Scalar);
+  unsigned long tmp3 = (unsigned long) addr;
+  int           itmp2;
+
   if (tmp2*sizeof(Scalar) != tmp1) {
     fprintf(stderr,"PetscScalarAddressToFortran:unaligned Fortran double\n");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
-  return (int) (((long)addr) - ((long)base))/sizeof(Scalar);
+  if (tmp3 > tmp1) {
+    tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
+    itmp2 = (int) tmp2;
+  }
+  else {
+    tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
+    itmp2 = -((int) tmp2);
+  }
+  if (base + tmp2 != addr) {
+    fprintf(stderr,"PetscScalarAddressToFortran:C and Fortran arrays are\n");
+    fprintf(stderr,"too far apart to be indexed by an integer.\n");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+  return itmp2;
 }
 
 Scalar *PetscScalarAddressFromFortran(Scalar *base,int addr)
