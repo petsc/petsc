@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.90 1996/10/28 15:54:14 balay Exp bsmith $ 
+% $Id: part1.tex,v 1.91 1996/11/09 03:02:30 bsmith Exp curfman $ 
 
 % --------------------------------------------------------------------
 %
@@ -122,23 +122,23 @@ complete Fortran 77 examples.
 
 \medskip \medskip
 
-UNIX man pages for all PETSc functions can be
-accessed with the command {\tt \$(PETSC\_DIR)/bin/petscman
-[-xman, -netscape, -xmosaic]}.  The options {\tt -xman} (the default),
-{\tt -netscape}, and {\tt -xmosaic} respectively indicate viewing man pages
-via xman, Netscape, or Mosaic.  We recommend using one of the HTML
-versions, since this format provides hyperlinked indices (organized by
+Man pages for all PETSc functions can be
+accessed in HTML format with the command {\tt \$(PETSC\_DIR)/bin/petscman
+[-netscape, -xmosaic]}.  The options
+{\tt -netscape} (the default) and {\tt -xmosaic} respectively indicate viewing man pages
+via Netscape or Mosaic.  The HTML man pages
+provide hyperlinked indices (organized by
 both concepts and routine names) to the tutorial examples and enables
 easy movement among related topics.  Within the PETSc distribution, the directory
 {\tt \$(PETSC\_DIR)/docs} contains all documentation, including this
-manual and the man pages in UNIX, PostScript, and HTML
+manual and the man pages in PostScript and HTML
 formats. Note that one can also view the man pages in HTML format
 by loading the file {\tt \$(PETSC\_DIR)/docs/www/www.html}
 into a HTML browser session that has been independently initiated.
 \findex{petscman} \sindex{man pages} Emacs users may find the
 {\em etags} option to be extremely useful for exploring the PETSc
 source code.  Details of this feature are provided in
-Section~\ref{sec:emacs}. Similarly VI users may find the
+Section~\ref{sec:emacs}. Similarly, VI users may find the
 {\em ctags} option to be extremely useful. Details of this 
 feature are provided in Section~\ref{sec:vi}.
 
@@ -681,7 +681,6 @@ the root directory of PETSc contains the following directories:
                    and {\tt manual.html} contain the users manual in
                    PostScript and HTML formats, respectively. Includes
                    the subdirectories
- \subitem - {\tt man} (UNIX man pages), and
  \subitem - {\tt www} (HTML man pages).
 \item {\tt bin} - Utilities and short scripts for use with PETSc, including
  \subitem - {\tt petscman} (man page viewer),
