@@ -46,6 +46,7 @@ add to it).
     DrawCreate() creates a generic draw object whose type can be set at run time
     with DrawSetType()
 
+
   General
 
     Added OptionsGetLogical()
@@ -75,6 +76,9 @@ to do what you need.
     Added PetscTypeCompare(), see the manual page
 
   Viewer
+
+    Changed the names associated with the Matlab viewer to Socket viewer; this 
+    reflects our plan to support additional graphics engines to PETSc
 
     Changed ViewerFileOpenASCII() to ViewerASCIIOpen()
 
