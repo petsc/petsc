@@ -1,4 +1,4 @@
-Sub:  New Release of PETSc 2.0 Available
+Sub:  New Release of PETSc Available
 NewsGroups: comp.parallel,comp.parallel.mpi,sci.math.num-analysis
 
 
@@ -6,7 +6,7 @@ NewsGroups: comp.parallel,comp.parallel.mpi,sci.math.num-analysis
    ----------------------------------------------------------------- 
               http://www.mcs.anl.gov/petsc
 
-   We are pleased to announce a new release of PETSc, version 2.0.22. 
+   We are pleased to announce a new release of PETSc, version 2.1.0.
 
    PETSc provides many  tools   for the parallel   (and uniprocessor),
 numerical solution  of  PDEs that require solving  large-scale, sparse
@@ -36,5 +36,6 @@ is supported via email (petsc-maint@mcs.anl.gov); we try to respond to
 all bug reports and inquiries the same day they are received. 
 
    The PETSc Team,
-   Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith
+   Satish, Kris, Bill, Dinesh, Lois, and Barry
    Argonne National Laboratory
+   petsc-maint@mcs.anl.gov
