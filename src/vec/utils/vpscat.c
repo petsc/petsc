@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.57 1996/07/22 16:10:13 bsmith Exp balay $";
+static char vcid[] = "$Id: vpscat.c,v 1.58 1996/07/22 16:45:44 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -70,10 +71,19 @@ int VecScatterDetermineLocalIsMatching_Private(VecScatter_MPI *gen_to,VecScatter
   if (!PetscMemcmp(gen_to->local.slots,gen_from->local.slots,gen_to->local.n*sizeof(int))) {
     gen_to->local_is_matching   = 1;
     gen_from->local_is_matching = 1;
+    PLogInfo(0,"Determined a Local Scatter is unneeded\n");
   }
   else {
     gen_to->local_is_matching   = -1;
     gen_from->local_is_matching = -1;
+    PLogInfo(0,"Determined a Local Scatter is needed\n");
+    {
+      int i,rank;
+      MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+      for ( i=0; i<gen_to->local.n; i++ ) {
+        printf("[%d] %d %d %d\n",rank,i,gen_to->local.slots[i],gen_from->local.slots[i]);
+      }
+    }
   }
   return 0;
 }
@@ -316,6 +326,7 @@ static int PtoPCopy(VecScatter in,VecScatter out)
 
   /* allocate entire send scatter context */
   out_to           = (VecScatter_MPI *) PetscMalloc(sizeof(VecScatter_MPI));CHKPTRQ(out_to);
+  PetscMemzero(out_to,sizeof(VecScatter_MPI));
   PLogObjectMemory(out,sizeof(VecScatter_MPI));
   ny               = in_to->starts[in_to->n];
   len              = ny*(sizeof(int) + sizeof(Scalar)) +
@@ -349,6 +360,7 @@ static int PtoPCopy(VecScatter in,VecScatter out)
 
   /* allocate entire receive context */
   out_from           = (VecScatter_MPI *) PetscMalloc(sizeof(VecScatter_MPI));CHKPTRQ(out_from);
+  PetscMemzero(out_from,sizeof(VecScatter_MPI));
   out_from->type     = in_from->type;
   PLogObjectMemory(out,sizeof(VecScatter_MPI));
   ny                 = in_from->starts[in_from->n];
@@ -614,6 +626,7 @@ int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx
   
   /* allocate entire send scatter context */
   to = (VecScatter_MPI *) PetscMalloc( sizeof(VecScatter_MPI) ); CHKPTRQ(to);
+  PetscMemzero(to,sizeof(VecScatter_MPI));
   PLogObjectMemory(ctx,sizeof(VecScatter_MPI));
   len = slen*(sizeof(int) + sizeof(Scalar)) + (nrecvs+1)*sizeof(int) +
         nrecvs*(sizeof(int) + sizeof(MPI_Request));
@@ -653,6 +666,7 @@ int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx
  
   /* allocate entire receive scatter context */
   from = (VecScatter_MPI *) PetscMalloc( sizeof(VecScatter_MPI) ); CHKPTRQ(from);
+  PetscMemzero(from,sizeof(VecScatter_MPI));
   PLogObjectMemory(ctx,sizeof(VecScatter_MPI));
   len = ny*(sizeof(int) + sizeof(Scalar)) + (nsends+1)*sizeof(int) +
         nsends*(sizeof(int) + sizeof(MPI_Request));
@@ -807,6 +821,7 @@ int StoPScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx
 
   /* allocate entire send scatter context */
   to = (VecScatter_MPI *) PetscMalloc( sizeof(VecScatter_MPI) ); CHKPTRQ(to);
+  PetscMemzero(to,sizeof(VecScatter_MPI));
   PLogObjectMemory(ctx,sizeof(VecScatter_MPI));
   len = ny*(sizeof(int) + sizeof(Scalar)) + (nsends+1)*sizeof(int) +
         nsends*(sizeof(int) + sizeof(MPI_Request));
@@ -859,6 +874,7 @@ int StoPScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx
  
   /* allocate entire receive scatter context */
   from = (VecScatter_MPI *) PetscMalloc( sizeof(VecScatter_MPI) ); CHKPTRQ(from);
+  PetscMemzero(from,sizeof(VecScatter_MPI));
   PLogObjectMemory(ctx,sizeof(VecScatter_MPI));
   len = slen*(sizeof(int) + sizeof(Scalar)) + (nrecvs+1)*sizeof(int) +
         nrecvs*(sizeof(int) + sizeof(MPI_Request));
