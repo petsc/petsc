@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.8 1996/01/15 23:50:26 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.9 1996/01/16 17:51:26 balay Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -131,8 +131,12 @@ void plogstagepop_(int *__ierr )
   *__ierr = PLogStagePop();
 }
 double petscgettime_()
-{ return PetscGetTime();}
+{ 
+  return PetscGetTime();
+}
 
 double  petscgetflops_()
-{  return PetscGetFlops();}
+{
+  return PetscGetFlops();
+}
 
