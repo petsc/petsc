@@ -7,7 +7,9 @@
 #endif
 #include <ctype.h>
 #include <sys/types.h>
+#if defined(HAVE_SYS_STAT_H)
 #include <sys/stat.h>
+#endif
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
@@ -31,16 +33,6 @@
 #include "petscfix.h"
 
 #if defined (HAVE__ACCESS) || defined(HAVE_ACCESS)
-
-#if !defined(R_OK)
-#define R_OK 04
-#endif
-#if !defined(W_OK)
-#define W_OK 02
-#endif
-#if !defined(X_OK)
-#define X_OK 01
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"

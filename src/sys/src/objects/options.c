@@ -15,7 +15,9 @@
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
+#if defined(HAVE_SYS_PARAM_H)
 #include "sys/param.h"
+#endif
 #include "petscfix.h"
 
 /* 
