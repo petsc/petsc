@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.232 1997/09/12 16:47:51 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.233 1997/09/26 02:22:31 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1815,6 +1815,11 @@ the linear solvers.  The explicit call of this routine enables the
 separate monitoring of any computations performed during the set up
 phase, such as incomplete factorization for the ILU preconditioner.
 
+The default solver within SLES is restarted GMRES, preconditioned for
+the uniprocessor case with ILU(0), and for the multiprocessor case
+with the block Jacobi method (with one block per processor, each of
+which is solved with ILU(0)). A variety of other solvers
+and options are also available.
 To allow application programmers to set any of the preconditioner or 
 Krylov subspace options directly within the code, we provide routines
 that extract the PC and KSP contexts, \findex{SLESGetPC()}
@@ -1824,7 +1829,7 @@ that extract the PC and KSP contexts, \findex{SLESGetPC()}
 \end{verbatim}
 \findex{SLESGetKSP()}
 The application programmer can then directly call any of the PC or KSP 
-routines to modify the corresponding default options. 
+routines to modify the corresponding default options.   
 
 To solve a linear system with a direct solver (currently supported 
 only for sequential matrices) one may use the options
@@ -1923,6 +1928,7 @@ it is Hermitian symmetric). To indicate that it is symmetric, one uses the comma
 \begin{verbatim}
    ierr = KSPCGSetType(KSP ksp,KSPCGType KSP_CG_SYMMETRIC);
 \end{verbatim}
+Note that this option is not valid for all matrices.
 
 \subsection{Preconditioning within KSP} 
 \label{sec:ksppc}
@@ -5989,6 +5995,16 @@ interface library) and the application code with
 {\tt BOPT=[g\_complex,O\_complex,Opg\_complex]} for debugging, optimized,
 and profiling versions, respectively.  The file {\tt \$(PETSC\_DIR)/Installation}
 provides detailed instructions for installing PETSc.
+
+We recommend using optimized Fortran kernels for some key numerical
+routines with complex numbers (such as matrix-vector products, vector
+norms, etc.) instead of the default C++ routines.  See the ``Complex
+Numbers'' section of the file {\tt \$(PETSC\_DIR)/Installation} for
+details on building these kernels.  This implementation exploits the
+maturity of Fortran compilers while retaining the identical user
+interface.  For example, on rs6000 machines, the base single-node
+performance when using the Fortran kernels is 4-5 times faster than
+the default C++ code.
 
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
