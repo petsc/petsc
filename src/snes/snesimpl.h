@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.18 1995/07/27 03:34:33 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.19 1995/07/29 04:10:41 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -95,6 +95,7 @@ struct _SNES {
 typedef struct {
   int    version;             /* flag indicating version 1 or 2 of test */
   double rtol_0;              /* initial rtol */
+  double rtol_last;           /* last  rtol */
   double rtol_max;            /* maximum rtol */
   double gamma;               /* mult. factor for version 2 rtol computation */
   double alpha;               /* power for version 2 rtol computation */
