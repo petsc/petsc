@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.267 1998/12/03 04:00:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.268 1998/12/17 22:10:16 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -2241,7 +2241,7 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCa
       olens[i] = olen;
       dlens[i] = dlen;
     }
-    ierr = MatCreateMPIAIJ(comm,m,PETSC_DECIDE,PETSC_DECIDE,n,0,dlens,0,olens,&M);CHKERRQ(ierr);
+    ierr = MatCreateMPIAIJ(comm,m,nlocal,PETSC_DECIDE,n,0,dlens,0,olens,&M);CHKERRQ(ierr);
     PetscFree(dlens);
   } else {
     int ml,nl;
