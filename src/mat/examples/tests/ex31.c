@@ -1,0 +1,80 @@
+#ifndef lint
+static char vcid[] = "$Id: ex31.c,v 1.26 1996/08/20 21:56:49 balay Exp $";
+#endif
+
+static char help[] = 
+"Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
+
+#include <stdio.h>
+#include "mat.h"
+
+/* Note:  Most applications would not read and write the same matrix within
+  the same program.  This example is intended only to demonstrate
+  both input and output. */
+
+int main(int argc,char **args)
+{
+  Mat     C;
+  Scalar  v;
+  int     i, j, I, J, ierr, Istart, Iend, N, m = 4, n = 4, rank, size,flg;
+  Viewer  viewer;
+  int     MATRIX_GENERATE, MATRIX_READ;
+
+  PetscInitialize(&argc,&args,(char *)0,help);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  N = m*n;
+
+  /* PART 1:  Generate matrix, then write it in binary format */
+
+  PLogEventRegister(&MATRIX_GENERATE,"Generate Matrix ",PETSC_NULL);
+  PLogEventBegin(MATRIX_GENERATE,0,0,0,0);
+
+  /* Generate matrix */
+  ierr = MatCreate(MPI_COMM_WORLD,N,N,&C); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
+  for ( I=Istart; I<Iend; I++ ) { 
+    v = -1.0; i = I/n; j = I - i*n;  
+    if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+    v = 4.0; MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);
+  }
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+
+  PetscPrintf(MPI_COMM_WORLD,"writing matrix in binary to matrix.dat ...\n"); 
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer); 
+         CHKERRA(ierr);
+  ierr = MatView(C,viewer); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+  ierr = MatDestroy(C); CHKERRA(ierr);
+  PLogEventEnd(MATRIX_GENERATE,0,0,0,0);
+
+  /* PART 2:  Read in matrix in binary format */
+
+  /* All processors wait until test matrix has been dumped */
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  PLogEventRegister(&MATRIX_READ,"Read Matrix     ",PETSC_NULL);
+  PLogEventBegin(MATRIX_READ,0,0,0,0);
+  PetscPrintf(MPI_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n"); 
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer); 
+         CHKERRA(ierr);
+  MatLoad(viewer,MATMPIROWBS,&C); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+  PLogEventEnd(MATRIX_READ,0,0,0,0);
+  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+
+  /* Free data structures */
+  ierr = MatDestroy(C); CHKERRA(ierr);
+
+  PetscFinalize();
+  return 0;
+}
+
+
