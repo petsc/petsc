@@ -77,14 +77,13 @@ proc CheckFortranAutoMakefile { } {
     set makefilebuff [ read $makefileid ]
     close $makefileid
     
-    
     foreach cfile $cfiles {
-        if { [string match $cfile $makefilebuff ] == 0 } {
+        if { [string first    $cfile $makefilebuff ] < 0 } {
             puts $tmpfileid "******** could'nt find $cfile"
         }
     }
     foreach ofile $ofiles {
-        if { [string match $ofile $makefilebuff ] == 0 } {
+        if { [string first $ofile $makefilebuff ] < 0 } {
             puts $tmpfileid "******** could'nt find $ofile"
         }
     }

@@ -4,37 +4,43 @@ ALL: lib
 
 CFLAGS	 = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 
-SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c \
-	chebyf.c  cookief.c da2f.c dacornf.c daghostf.c dagtolf.c  \
-	daltogf.c daltolf.c dbufff.c dclearf.c dcoorf.c  \
-	dflushf.c dgcoorf.c dgpausef.c dlinef.c dlinegwf.c  \
-	dlinewf.c dmousef.c dpausef.c dpointf.c dpointsf.c drawf.c  \
-	drectf.c dscatterf.c dsclearf.c dsetpausef.c dsflushf.c  \
-	dtextgsf.c dtextsf.c dtrif.c dviewpf.c eisenf.c flushf.c  \
-	fpf.c gcookief.c gmres2f.c gmpref.c iluf.c indexf.c itclf.c itcreatef.c  \
-	itfuncf.c itresf.c lgf.c luf.c matrixf.c memf.c mgf.c mgfuncf.c mhasf.c  \
-	mpiuf.c mtrf.c pcnullf.c pcsetf.c plogf.c plogmpef.c posindepf.c  \
-	preconf.c psleepf.c richscalef.c shellf.c signalf.c slesf.c snesf.c  \
-	snesmfjf.c snesutf.c sorf.c sortdf.c sortif.c sortipf.c stridef.c  \
-	trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c viewf.c vinvf.c  \
-	vscatf.c zerodiagf.c
+SOURCEC	 = indexf.c stridef.c blockf.c iscoloringf.c isltogf.c \
+	vinvf.c vscatf.c vectorf.c itclf.c itfuncf.c itcreatef.c \
+	itresf.c eigef.c cgtypef.c gmres2f.c gmpref.c chebyf.c \
+	richscalef.c signalf.c fpf.c mtrf.c mpiuf.c sortif.c \
+	sortdf.c sortipf.c psleepf.c gcookief.c cookief.c memf.c \
+	cputimef.c preconf.c pcsetf.c pcnullf.c sorf.c luf.c \
+	bjacobif.c mgf.c mgfuncf.c eisenf.c iluf.c asmf.c matrixf.c \
+	mhasf.c fdmatrixf.c shellf.c axpyf.c zerodiagf.c slesf.c drawf.c \
+	dlinef.c dlinewf.c dlinegwf.c dtextsf.c dtextgsf.c dpointf.c \
+	dpointsf.c dviewpf.c dcoorf.c dpausef.c dgpausef.c dgcoorf.c \
+	dbufff.c dsetpausef.c dflushf.c dsflushf.c dclearf.c dsclearf.c \
+	drectf.c dtrif.c dmousef.c xopsf.c axisf.c lgf.c dscatterf.c \
+	tsf.c tsregf.c posindepf.c dfvecf.c viewf.c flushf.c snesf.c \
+	snesmfjf.c snesutf.c trf.c umtrf.c umlsf.c da2f.c daghostf.c \
+	dacornf.c dagtolf.c daltolf.c daltogf.c plogf.c plogmpef.c \
+	aof.c gvecf.c gridf.c griddataf.c gveckspf.c gvecsnesf.c \
+	rect1df.c rect2df.c
 
 SOURCEF	 = 
 SOURCEH	 = 
-OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgtypef.o \
-	chebyf.o cookief.o da2f.o dacornf.o daghostf.o dagtolf.o  \
-	daltogf.o daltolf.o dbufff.o dclearf.o dcoorf.o  \
-	dflushf.o dgcoorf.o dgpausef.o dlinef.o dlinegwf.o  \
-	dlinewf.o dmousef.o dpausef.o dpointf.o dpointsf.o drawf.o  \
-	drectf.o dscatterf.o dsclearf.o dsetpausef.o dsflushf.o  \
-	dtextgsf.o dtextsf.o dtrif.o dviewpf.o eisenf.o flushf.o  \
-	fpf.o gcookief.o gmres2f.o gmpref.o iluf.o indexf.o itclf.o itcreatef.o  \
-	itfuncf.o itresf.o lgf.o luf.o matrixf.o memf.o mgf.o mgfuncf.o mhasf.o  \
-	mpiuf.o mtrf.o pcnullf.o pcsetf.o plogf.o plogmpef.o posindepf.o  \
-	preconf.o psleepf.o richscalef.o shellf.o signalf.o slesf.o snesf.o  \
-	snesmfjf.o snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o  \
-	trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o viewf.o vinvf.o  \
-	vscatf.o zerodiagf.o
+OBJSC	 = indexf.o stridef.o blockf.o iscoloringf.o isltogf.o vinvf.o \
+	vscatf.o vectorf.o itclf.o itfuncf.o itcreatef.o itresf.o eigef.o \
+	cgtypef.o gmres2f.o gmpref.o chebyf.o richscalef.o signalf.o \
+	fpf.o mtrf.o mpiuf.o sortif.o sortdf.o sortipf.o psleepf.o \
+	gcookief.o cookief.o memf.o cputimef.o preconf.o pcsetf.o \
+	pcnullf.o sorf.o luf.o bjacobif.o mgf.o mgfuncf.o eisenf.o \
+	iluf.o asmf.o matrixf.o mhasf.o fdmatrixf.o shellf.o axpyf.o \
+	zerodiagf.o slesf.o drawf.o dlinef.o dlinewf.o dlinegwf.o \
+	dtextsf.o dtextgsf.o dpointf.o dpointsf.o dviewpf.o dcoorf.o \
+	dpausef.o dgpausef.o dgcoorf.o dbufff.o dsetpausef.o dflushf.o \
+	dsflushf.o dclearf.o dsclearf.o drectf.o dtrif.o dmousef.o xopsf.o \
+	axisf.o lgf.o dscatterf.o tsf.o tsregf.o posindepf.o dfvecf.o \
+	viewf.o flushf.o snesf.o snesmfjf.o snesutf.o trf.o umtrf.o \
+	umlsf.o da2f.o daghostf.o dacornf.o dagtolf.o daltolf.o daltogf.o \
+	plogf.o plogmpef.o aof.o gvecf.o gridf.o griddataf.o gveckspf.o \
+	gvecsnesf.o rect1df.o rect2df.o
+
 OBJSF	 =
 LIBBASE	 = libpetscfortran
 MANSEC	 = 1
