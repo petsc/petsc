@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.346 2001/04/05 19:52:36 bsmith Exp balay $ 
+# $Id: makefile,v 1.347 2001/04/05 20:41:57 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -152,6 +152,11 @@ ranlib:
 deletelibs: chkopts_basic
 	-${RM} -f ${PETSC_LIB_DIR}/*
 
+#
+#   Updates your PETSc version to the latest set of patches
+#
+update:
+	-@bin/petscupdate
 
 # ------------------------------------------------------------------
 #
@@ -424,7 +429,7 @@ noise: info chklib_dir
 exercises:
 	-@echo "========================================="
 	-@echo "Generating HTML tutorial exercises"
-	-@rm -f docs/pageform.txt
+	-@${RM} docs/pageform.txt
 	-@echo "title=\"PETSc Exercises\""                >  docs/pageform.txt 
 	-@echo "access_title=Exercise Sections"              >>  docs/pageform.txt 
 	-@echo "access_format=short"                        >> docs/pageform.txt
