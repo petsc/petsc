@@ -9,7 +9,7 @@ static char help[] =
   -lid_depth <35> = (km) depth of the static conductive lid.\n\
   -fault_depth <35> = (km) depth of slab-wedge mechanical coupling\n\
      ( fault dept >= lid depth ).\n\
-
+\n\
   -ni <82> = grid cells in x-direction. (nj adjusts to accommodate\n\
       the slab dip & depth). DO NOT USE -da_grid_x option!!!\n\
   -ivisc <3> = rheology option.\n\
@@ -17,11 +17,11 @@ static char help[] =
       1 --- olivine diffusion creep rheology (T&P-dependent, newtonian).\n\
       2 --- olivine dislocation creep rheology (T&P-dependent, non-newtonian).\n\
       3 --- Full mantle rheology, combination of 1 & 2.\n\
-
+\n\
   -slab_velocity <5> = (cm/year) convergence rate of slab into subduction zone.\n\
   -slab_age <50> = (million yrs) age of slab for thermal profile boundary condition.\n\
   -lid_age <50> = (million yrs) age of lid for thermal profile boundary condition.\n\
-
+\n\
   FOR OTHER PARAMETER OPTIONS AND THEIR DEFAULT VALUES, see SetParams() in ex30.c.\n\
 ---------------------------------ex30 help---------------------------------\n";
 
