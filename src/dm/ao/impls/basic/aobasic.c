@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.14 1997/03/13 16:36:53 curfman Exp curfman $";
+static char vcid[] = "$Id: aodebug.c,v 1.15 1997/04/06 21:56:42 curfman Exp curfman $";
 #endif
 
 /*
@@ -90,7 +90,7 @@ static struct _AOOps myops = {AOPetscToApplication_Debug,
 #undef __FUNC__  
 #define __FUNC__ "AOCreateDebug" /* ADIC Ignore */
 /*@C
-   AOCreateDebug - Creates a basic application ordering.
+   AOCreateDebug - Creates a basic application ordering using two integer arrays.
 
    Input Parameters:
 .  comm - MPI communicator that is to share AO
@@ -101,7 +101,7 @@ static struct _AOOps myops = {AOPetscToApplication_Debug,
    Output Parameter:
 .  aoout - the new application ordering
 
-   Options Database Keys:
+   Options Database Key:
 $   -ao_view : call AOView() at the conclusion of AOCreateDebug()
 
 .keywords: AO, create
@@ -174,7 +174,7 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 #undef __FUNC__  
 #define __FUNC__ "AOCreateDebugIS" /* ADIC Ignore */
 /*@C
-   AOCreateDebugIS - Creates a basic application ordering.
+   AOCreateDebugIS - Creates a basic application ordering using two index sets.
 
    Input Parameters:
 .  comm - MPI communicator that is to share AO
@@ -183,6 +183,9 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 
    Output Parameter:
 .  aoout - the new application ordering
+
+   Options Database Key:
+$   -ao_view : call AOView() at the conclusion of AOCreateDebugIS()
 
 .keywords: AO, create
 
