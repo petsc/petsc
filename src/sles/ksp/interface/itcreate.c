@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.141 1998/12/21 00:57:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.142 1999/01/04 21:47:56 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -22,6 +21,8 @@ int KSPRegisterAllCalled = 0;
    Input Parameters:
 +  ksp - the Krylov space context
 -  viewer - visualization context
+
+   Level: beginner
 
    Note:
    The available visualization contexts include
@@ -74,24 +75,26 @@ FList KSPList = 0;
 #define __FUNC__ "KSPSetAvoidNorms"
 /*@C
    KSPSetAvoidNorms - Sets the KSP solver to avoid computing the residual norm
-     when possible. This, for example, reduces the number of collective operations
-     when using the Krylov method as a smoother.
+   when possible.  This, for example, reduces the number of collective operations
+   when using the Krylov method as a smoother.
 
    Collective on KSP
 
    Input Parameter:
 .  ksp - Krylov solver context
 
-   Notes: 
-     One cannot use the default convergence test routines when this is set, since they
-     are based on decreases in the residual norms, thus this automatically switches
-     to use the KSPSkipConverged() test function.
+   Level: advanced
 
-     Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
+   Notes: 
+   One cannot use the default convergence test routines when this option is 
+   set, since these are based on decreases in the residual norms.  Thus, this
+   option automatically switches to activate the KSPSkipConverged() test function.
+
+   Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()
 @*/
 int KSPSetAvoidNorms(KSP ksp)
 {
@@ -143,6 +146,8 @@ static int KSPPublish_Petsc(PetscObject object)
 
    Output Parameter:
 .  ksp - location to put the KSP context
+
+   Level: beginner  
 
    Notes:
    The default KSP type is GMRES with a restart of 30, using modified Gram-Schmidt
@@ -215,13 +220,15 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 
    Collective on KSP
 
-   Input Parameter:
+   Input Parameters:
 .  ksp      - the Krylov space context
 .  itmethod - a known method
 
    Options Database Command:
 .  -ksp_type  <method> - Sets the method; use -help for a list 
     of available methods (for instance, cg or gmres)
+
+   Level: intermediate
 
    Notes:  
    See "petsc/include/ksp.h" for available methods (for instance,
@@ -281,6 +288,8 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
    Not Collective
 
+   Level: advanced
+
 .keywords: KSP, register, destroy
 
 .seealso: KSPRegister(), KSPRegisterAll()
@@ -308,8 +317,10 @@ int KSPRegisterDestroy(void)
    Input Parameter:
 .  ksp - Krylov context 
 
-   Output Parameters:
+   Output Parameter:
 .  name - name of KSP method 
+
+   Level: intermediate
 
 .keywords: KSP, get, method, name
 @*/
@@ -333,6 +344,8 @@ int KSPGetType(KSP ksp,KSPType *type)
    Options Database Keys:
 +  -help - Prints KSP options
 -  -h - Prints KSP options
+
+   Level: beginner
 
 .keywords: KSP, help
 
@@ -404,10 +417,12 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
    This routine must be called before KSPSetUp() if the user is to be 
    allowed to set the Krylov type. 
 
+   Collective on KSP
+
    Input Parameters:
 .  ksp - the Krylov space context
 
-   Collective on KSP
+   Level: beginner
 
    Notes:  To see all options, run your program with the -help option;
            or consult the users manual.
@@ -579,6 +594,8 @@ int KSPSetFromOptions(KSP ksp)
 .  path - path (either absolute or relative) the library containing this solver
 .  name_create - name of routine to create method context
 -  routine_create - routine to create method context
+
+   Level: advanced
 
    Notes:
    KSPRegister() may be called multiple times to add several user-defined solvers.

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.38 1998/10/19 22:16:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.39 1999/01/12 23:13:58 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -34,6 +34,8 @@ extern int KSPRegisterAllCalled;
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 
   Not Collective
+
+  Level: advanced
 
 .keywords: KSP, register, all
 
