@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.47 1995/11/09 22:28:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.48 1995/11/19 00:25:46 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -150,10 +150,11 @@ static int PCSetUp_ILU(PC pc)
     ilu->fact = pc->pmat;
   }
   else {
-    ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
-    ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
-    if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
     if (!pc->setupcalled) {
+      if (ilu->row) {ISDestroy(ilu->row); ISDestroy(ilu->col);}
+      ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
+      ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
+      if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
       if (setups[pc->pmat->type]) {
         ierr = (*setups[pc->pmat->type])(pc);
       }
@@ -165,6 +166,9 @@ static int PCSetUp_ILU(PC pc)
       PLogObjectParent(pc,ilu->fact);
     }
     else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
+      if (ilu->row) {ISDestroy(ilu->row); ISDestroy(ilu->col);}
+      ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
+      if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
       ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,2.0,ilu->levels,
                                   &ilu->fact); CHKERRQ(ierr);
