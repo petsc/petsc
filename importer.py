@@ -1,6 +1,7 @@
 import RDict
 
 import ihooks
+import imp
 
 class Hooks(ihooks.Hooks):
   def __init__(self):
@@ -35,7 +36,11 @@ class Loader(ihooks.FancyModuleLoader):
     modules = []
     for dir in path:
       stuff = self.find_module_in_dir(name, dir)
-      if stuff: modules.append(stuff)
+      if stuff:
+        if len(modules) > 0 and not stuff[2][2] == imp.PKG_DIRECTORY:
+          print 'Rejecting',stuff
+          continue
+        modules.append(stuff)
     if modules: return modules
     return None
 
