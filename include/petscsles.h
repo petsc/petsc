@@ -6,15 +6,14 @@
 
 typedef struct _SLES* SLES;
 
-int SLESCreate(SLES*);
-int SLESGetPC(SLES,PC*);
-int SLESGetKSP(SLES,KSP*);
-int SLESSetMat(SLES,Mat);
-int SLESSetVec(SLES,Vec);
+extern int SLESCreate(SLES*);
+extern int SLESGetPC(SLES,PC*);
+extern int SLESGetKSP(SLES,KSP*);
+extern int SLESSetMat(SLES,Mat);
+extern int SLESSetVec(SLES,Vec);
+extern int SLESSolve(SLES,Vec,Vec);
+extern int SLESSetFromOptions(SLES);
 
-#define SLES_DIRECT    1
-#define SLES_ITERATIVE 2
-
-int SLESSetSolverType(SLES,int);
+extern int SLESPrintHelp(SLES);
 
 #endif

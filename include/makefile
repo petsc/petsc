@@ -5,7 +5,7 @@ SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = comm.h draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
-           sysio.h vec.h
+           sysio.h vec.h sles.h
 OBJSC    =
 WOBJS    = 
 OBJSF    =
