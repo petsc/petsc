@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.36 1998/03/24 17:37:22 balay Exp balay $
+# $Id: makefile,v 1.37 1998/04/23 23:29:54 balay Exp balay $
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c dlregis.c
 SOURCEF  =
 SOURCEH  = 

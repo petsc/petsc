@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.241 1998/04/28 19:35:47 balay Exp bsmith $ 
+# $Id: makefile,v 1.242 1998/04/29 16:13:03 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -375,7 +375,6 @@ allco:
 #   The commands below are for generating ADIC versions of the code;
 # they are not currently used.
 #
-CFLAGS   =  ${CPPFLAGS}
 alladicignore:
 	-@${RM} ${PDIR}/adicignore
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree 

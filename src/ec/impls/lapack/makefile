@@ -1,10 +1,8 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $
+# $Id: makefile,v 1.5 1998/04/24 01:03:24 bsmith Exp balay $
 
 ALL: lib
 
 
-CFLAGS   = ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"' 
-SOURCEC  = elapack.c
 SOURCEH  = 
 SOURCEF  = 
 OBJSC    = elapack.o

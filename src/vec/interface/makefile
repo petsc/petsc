@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.31 1998/05/29 20:35:27 bsmith Exp bsmith $
+# $Id: makefile,v 1.32 1998/06/11 19:54:50 bsmith Exp balay $
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = vector.c map.c
 SOURCEF  =
 SOURCEH  = 

@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.35 1998/04/23 23:29:13 bsmith Exp balay $
+# $Id: makefile,v 1.36 1998/04/23 23:30:48 balay Exp balay $
 
 ALL: lib
 
-CFLAGS   =  ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
 SOURCEC  = convert.c stash.c axpy.c zerodiag.c matio.c matioall.c \
            conaij.c conbdiag.c getcolv.c gcreate.c
 SOURCEF  =

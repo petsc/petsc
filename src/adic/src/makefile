@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1998/04/24 01:03:40 bsmith Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"' ${ADIC_INCLUDE}
+CPPFLAGS = ${ADIC_INCLUDE}
 SOURCEC  = adpetscadic.c petscadic.c
 SOURCEF  =
 SOURCEH  = 
