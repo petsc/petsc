@@ -156,6 +156,8 @@ class ArgBool(Arg):
       elif value == 'yes':   value = 1
       elif value == 'true':  value = 1
       elif value == 'false': value = 0
+      elif value == 'True':  value = 1
+      elif value == 'False': value = 0
       else:                  value = int(value)
     except:
       raise TypeError('Invalid boolean value: '+str(value)+' for key '+str(self.key))

@@ -400,6 +400,7 @@ class SIDLMake(Make):
     compiler.includeDirectories.update(self.python.include)
     compiler.includeDirectories.add(self.getSIDLClientDirectory(builder, sidlFile, language))
     self.addDependencyIncludes(compiler, language)
+    linker.libraries.clear()
     linker.libraries.update(self.ase.lib)
     linker.libraries.update(self.python.lib)
     builder.popConfiguration()
@@ -427,6 +428,7 @@ class SIDLMake(Make):
     self.loadConfiguration(builder, language+' Server '+baseName)
     builder.pushConfiguration(language+' Server '+baseName)
     linker   = builder.getLinkerObject()
+    linker.libraries.clear()
     if not baseName == self.ase.baseName:
       linker.libraries.update(self.ase.lib)
     linker.libraries.update(self.python.lib)
@@ -441,6 +443,7 @@ class SIDLMake(Make):
     linker   = builder.getLinkerObject()
     compiler.includeDirectories.add(self.getSIDLClientDirectory(builder, sidlFile, language))
     self.addDependencyIncludes(compiler, language)
+    linker.libraries.clear()
     linker.libraries.update(self.ase.lib)
     builder.popConfiguration()
     return
@@ -467,6 +470,7 @@ class SIDLMake(Make):
     self.loadConfiguration(builder, language+' Server '+baseName)
     builder.pushConfiguration(language+' Server '+baseName)
     linker   = builder.getLinkerObject()
+    linker.libraries.clear()
     self.addDependencyLibraries(linker, language)
     if not baseName == self.ase.baseName:
       linker.libraries.update(self.ase.lib)
@@ -620,8 +624,8 @@ class SIDLMake(Make):
       self.logPrint('Checking dependency '+depSidlFile+' for a '+language+' client', debugSection = 'build')
       clientConfig = builder.pushConfiguration(language+' Stub '+os.path.splitext(os.path.basename(depSidlFile))[0])
       if 'Linked ELF' in clientConfig.outputFiles:
-        files = clientConfig.outputFiles['Linked ELF']
-        self.logPrint('Adding '+str(files)+'from dependency '+depSidlFile, debugSection = 'build')
+        files = [os.path.join(self.getRoot(), f) for f in clientConfig.outputFiles['Linked ELF']]
+        self.logPrint('Adding '+str(files)+' from dependency '+depSidlFile, debugSection = 'build')
         linker.libraries.update(files)
       builder.popConfiguration()
     builder.link(iorObjects.union(implObjects), library, shared = 1)
