@@ -28,5 +28,7 @@ General
 
   Manual Pages for Norm types, for KSPGMRESxxxxGramSchmidtOrthogonalization() ....
 
+  Make --with-mpich get the correct mpich under windows
+
 
 
