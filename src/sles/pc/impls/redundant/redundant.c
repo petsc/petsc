@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.22 2000/07/07 14:42:12 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.23 2000/07/25 21:00:32 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -168,20 +168,6 @@ static int PCDestroy_Redundant(PC pc)
   }
   ierr = PCDestroy(red->pc);CHKERRQ(ierr);
   ierr = PetscFree(red);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_Redundant"
-static int PCPrintHelp_Redundant(PC pc,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCRedundant preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %sredundant : prefix to control options for redundant PC.\
-  Add before the \n      usual PC option names (e.g., %sredundant_pc_type\
-  <type>)\n",p,p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -359,7 +345,6 @@ int PCCreate_Redundant(PC pc)
   pc->ops->applytranspose    = 0;
   pc->ops->setup             = PCSetUp_Redundant;
   pc->ops->destroy           = PCDestroy_Redundant;
-  pc->ops->printhelp         = PCPrintHelp_Redundant;
   pc->ops->setfromoptions    = PCSetFromOptions_Redundant;
   pc->ops->setuponblocks     = 0;
   pc->ops->view              = PCView_Redundant;

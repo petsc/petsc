@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.21 2000/04/12 04:26:40 bsmith Exp bsmith $*/
+/*$Id: milu.c,v 1.22 2000/05/17 02:19:49 bsmith Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -193,7 +193,6 @@ int PCCreate_mILU(PC pc)
   pc->ops->applyrichardson  = 0;
   pc->ops->destroy          = PCDestroy_mILU;
   pc->ops->setfromoptions   = 0;
-  pc->ops->printhelp        = 0;
   pc->ops->setup            = PCSetup_mILU;
   pc->ops->view             = PCView_mILU;
 

@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.9 2000/08/01 20:58:29 bsmith Exp bsmith $*/
+/*$Id: cstring.c,v 1.10 2000/08/24 22:43:49 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -91,13 +91,13 @@ int PFSetFromOptions_String(PF pf)
   int        (*f)(void *,int,Scalar*,Scalar*) = 0;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(pf->comm,pf->prefix,"String function options");CHKERRQ(ierr);
+  ierr = OptionsHead("String function options");CHKERRQ(ierr);
     ierr = OptionsString("-pf_string","Enter the function","PFStringCreateFunction","",value,256,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = PFStringCreateFunction(pf,value,(void**)&f);CHKERRQ(ierr);
       pf->ops->apply = f;
     }
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);    
 }
 

@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.35 2000/05/05 22:16:43 balay Exp bsmith $*/
+/*$Id: pmetis.c,v 1.36 2000/08/24 22:42:13 bsmith Exp bsmith $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -138,12 +138,12 @@ int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(part->comm,part->prefix,"Set ParMeTiS partitioning options");CHKERRQ(ierr);
+  ierr = OptionsHead("Set ParMeTiS partitioning options");CHKERRQ(ierr);
     ierr = OptionsName("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
     }
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

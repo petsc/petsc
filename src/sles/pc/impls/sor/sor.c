@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.95 2000/05/04 14:04:35 balay Exp balay $*/
+/*$Id: sor.c,v 1.96 2000/05/05 22:17:04 balay Exp bsmith $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
@@ -51,43 +51,25 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_SOR"
 static int PCSetFromOptions_SOR(PC pc)
 {
-  int        its,ierr;
+  PC_SOR     *jac = (PC_SOR*)pc->data;
+  int        ierr;
   PetscTruth flg;
-  PetscReal  omega;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetOmega(pc,omega);CHKERRQ(ierr);} 
-  ierr = OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetIterations(pc,its);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_backward",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);CHKERRQ(ierr);}
-  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_SOR" 
-static int PCPrintHelp_SOR(PC pc,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCSOR preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_omega <omega>: relaxation factor (0 < omega < 2)\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_symmetric: use SSOR\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_backward: use backward sweep instead of forward\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_local_symmetric: use SSOR on each processor\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_local_backward: use backward sweep locally\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_local_forward: use forward sweep locally\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_sor_its <its>: number of inner SOR iterations to use\n",p);CHKERRQ(ierr);
+  ierr = OptionsHead("(S)SOR options");CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_sor_omega","relaxation factor (0 < omega < 2)","PCSORSetOmega",jac->omega,&jac->omega,0);CHKERRQ(ierr);
+    ierr = OptionsInt("-pc_sor_its","number of inner SOR iterations","PCSORSetIterations",jac->its,&jac->its,0);CHKERRQ(ierr);
+    ierr = OptionsLogicalGroupBegin("-pc_sor_symmetric","SSOR, not SOR","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroup("-pc_sor_backward","use backward sweep instead of forward","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroup("-pc_sor_local_symmetric","use SSOR seperately on each processor","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroup("-pc_sor_local_backward","use backward sweep locally","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);CHKERRQ(ierr);}
+    ierr = OptionsLogicalGroupEnd("-pc_sor_local_forward","use forward sweep locally","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);CHKERRQ(ierr);}
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +285,6 @@ int PCCreate_SOR(PC pc)
   pc->ops->apply           = PCApply_SOR;
   pc->ops->applyrichardson = PCApplyRichardson_SOR;
   pc->ops->setfromoptions  = PCSetFromOptions_SOR;
-  pc->ops->printhelp       = PCPrintHelp_SOR;
   pc->ops->setup           = 0;
   pc->ops->view            = PCView_SOR;
   pc->ops->destroy         = PCDestroy_SOR;

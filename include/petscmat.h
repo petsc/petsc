@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.203 2000/08/03 15:16:53 balay Exp bsmith $ */
+/* $Id: petscmat.h,v 1.204 2000/08/24 22:43:56 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -248,6 +248,7 @@ EXTERN int MatOrderingRegister(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,
 EXTERN int        MatOrderingRegisterDestroy(void);
 EXTERN int        MatOrderingRegisterAll(char*);
 extern PetscTruth MatOrderingRegisterAllCalled;
+extern FList      MatOrderingList;
 
 EXTERN int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
@@ -348,7 +349,6 @@ EXTERN int MatFDColoringSetParameters(MatFDColoring,double,double);
 EXTERN int MatFDColoringSetFrequency(MatFDColoring,int);
 EXTERN int MatFDColoringGetFrequency(MatFDColoring,int*);
 EXTERN int MatFDColoringSetFromOptions(MatFDColoring);
-EXTERN int MatFDColoringPrintHelp(MatFDColoring);
 EXTERN int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void *);
 

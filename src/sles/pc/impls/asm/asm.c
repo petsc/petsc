@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.117 2000/07/07 20:38:04 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.118 2000/07/08 02:28:51 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -353,55 +353,40 @@ static int PCDestroy_ASM(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_ASM"
-static int PCPrintHelp_ASM(PC pc,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCASM preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_asm_blocks <blks>: total subdomain blocks\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_asm_overlap <ovl>: amount of overlap between subdomains, defaults to 1\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_asm_inplace: delete the sub-matrices after PCSetUpOnBlocks() is done\n",p);CHKERRQ(ierr); 
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_asm_type <basic,restrict,interpolate,none>: type of restriction/interpolation\n",p);CHKERRQ(ierr); 
-  ierr = (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
-  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
-  <type>)\n",p,p);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_ASM"
 static int PCSetFromOptions_ASM(PC pc)
 {
+  PC_ASM     *osm = (PC_ASM*)pc->data;
   int        blocks,ovl,ierr;
   PetscTruth flg;
-  char       buff[16];
+  char       buff[16],*type[] = {"basic","restrict","interpolate","none"};
 
   PetscFunctionBegin;
-  ierr = OptionsGetInt(pc->prefix,"-pc_asm_blocks",&blocks,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL);CHKERRQ(ierr); }
-  ierr = OptionsGetInt(pc->prefix,"-pc_asm_overlap",&ovl,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
-  ierr = OptionsHasName(pc->prefix,"-pc_asm_in_place",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
-  ierr = OptionsGetString(pc->prefix,"-pc_asm_type",buff,15,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PCASMType  type;
-    PetscTruth isbasic,isrestrict,isinterpolate,isnone;
+  ierr = OptionsHead("Additive Schwarz options");CHKERRQ(ierr);
+    ierr = OptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL);CHKERRQ(ierr); }
+    ierr = OptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
+    ierr = OptionsName("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
+    ierr = OptionsEList("-pc_asm_type","Type of restriction/extension","PCASMSetType",type,4,"restrict",buff,15,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PCASMType  atype;
+      PetscTruth isbasic,isrestrict,isinterpolate,isnone;
 
-    ierr = PetscStrcmp(buff,"basic",&isbasic);CHKERRQ(ierr);
-    ierr = PetscStrcmp(buff,"restrict",&isrestrict);CHKERRQ(ierr);
-    ierr = PetscStrcmp(buff,"interpolate",&isinterpolate);CHKERRQ(ierr);
-    ierr = PetscStrcmp(buff,"none",&isnone);CHKERRQ(ierr);
+      ierr = PetscStrcmp(buff,type[0],&isbasic);CHKERRQ(ierr);
+      ierr = PetscStrcmp(buff,type[1],&isrestrict);CHKERRQ(ierr);
+      ierr = PetscStrcmp(buff,type[2],&isinterpolate);CHKERRQ(ierr);
+      ierr = PetscStrcmp(buff,type[3],&isnone);CHKERRQ(ierr);
 
-    if (isbasic)            type = PC_ASM_BASIC;
-    else if (isrestrict)    type = PC_ASM_RESTRICT;
-    else if (isinterpolate) type = PC_ASM_INTERPOLATE;
-    else if (isnone)        type = PC_ASM_NONE;
-    else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
-    ierr = PCASMSetType(pc,type);CHKERRQ(ierr);
-  }
+      if (isbasic)            atype = PC_ASM_BASIC;
+      else if (isrestrict)    atype = PC_ASM_RESTRICT;
+      else if (isinterpolate) atype = PC_ASM_INTERPOLATE;
+      else if (isnone)        atype = PC_ASM_NONE;
+      else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
+      ierr = PCASMSetType(pc,atype);CHKERRQ(ierr);
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -836,7 +821,6 @@ int PCCreate_ASM(PC pc)
   pc->ops->applytranspose    = PCApplyTranspose_ASM;
   pc->ops->setup             = PCSetUp_ASM;
   pc->ops->destroy           = PCDestroy_ASM;
-  pc->ops->printhelp         = PCPrintHelp_ASM;
   pc->ops->setfromoptions    = PCSetFromOptions_ASM;
   pc->ops->setuponblocks     = PCSetUpOnBlocks_ASM;
   pc->ops->view              = PCView_ASM;

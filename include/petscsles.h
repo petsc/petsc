@@ -1,4 +1,4 @@
-/* $Id: petscsles.h,v 1.33 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscsles.h,v 1.34 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
    Defines PETSc interface to the linear solvers. The details of Krylov methods
   and preconditioners are handled in the petscksp.h and petscpc.h files
@@ -22,7 +22,6 @@ EXTERN int SLESSolve(SLES,Vec,Vec,int*);
 EXTERN int SLESSolveTranspose(SLES,Vec,Vec,int*);
 EXTERN int SLESSetFromOptions(SLES);
 EXTERN int SLESSetTypesFromOptions(SLES);
-EXTERN int SLESPrintHelp(SLES);
 EXTERN int SLESView(SLES,Viewer);
 EXTERN int SLESSetUp(SLES,Vec,Vec);
 EXTERN int SLESSetUpOnBlocks(SLES);

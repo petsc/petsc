@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.151 2000/08/17 04:52:11 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.152 2000/08/19 14:30:16 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -470,81 +470,37 @@ int PCILUSetUseInPlace(PC pc)
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
-  int        levels,ierr,dtmax = 3;
+  int        ierr,dtmax = 3;
   PetscTruth flg;
-  PetscReal  dt[3],fill,damping;
+  PetscReal  dt[3];
   char       tname[256];
+  PC_ILU     *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
-  ierr = OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUSetLevels(pc,levels);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_ilu_in_place",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUSetUseInPlace(pc);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_ilu_diagonal_fill",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUSetAllowDiagonalFill(pc);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_iludt_reuse_fill",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUDTSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_ilu_reuse_ordering",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_damping",&damping,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUSetDamping(pc,damping);CHKERRQ(ierr);
-  } else {
+  ierr = OptionsHead("ILU Options");CHKERRQ(ierr);
+    ierr = OptionsInt("-pc_ilu_levels","levels of fill","PCILUSetLevels",(int)ilu->info.levels,(int*)&ilu->info.levels,0);CHKERRQ(ierr);
+    ierr = OptionsName("-pc_ilu_in_place","do factorization in place","PCILUSetUseInPlace",&ilu->inplace);CHKERRQ(ierr);
+    ierr = OptionsName("-pc_ilu_diagonal_fill","Allow fill into empty diagonal entry","PCILUSetAllowDiagonalFill",(PetscTruth*)&ilu->info.diagonal_fill);CHKERRQ(ierr);
+    ierr = OptionsName("-pc_iludt_reuse_fill","Reuse fill from previous ILUdt","PCILUDTSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
+    ierr = OptionsName("-pc_ilu_reuse_ordering","Reuse previous reordering","PCILUSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
     ierr = OptionsHasName(pc->prefix,"-pc_ilu_damping",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCILUSetDamping(pc,0.0);CHKERRQ(ierr);
     }
-  }
-  dt[0] = PETSC_DEFAULT;
-  dt[1] = PETSC_DEFAULT;
-  dt[2] = PETSC_DEFAULT;
-  ierr = OptionsGetDoubleArray(pc->prefix,"-pc_ilu_use_drop_tolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(int)dt[2]);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_fill",&fill,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUSetFill(pc,fill);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetString(pc->prefix,"-pc_ilu_mat_ordering_type",tname,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCILUSetMatOrdering(pc,tname);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
+    ierr = OptionsDouble("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_ILU"
-static int PCPrintHelp_ILU(PC pc,char *p)
-{
-  int ierr;
+    dt[0] = ilu->info.dt;
+    dt[1] = ilu->info.dtcol;
+    dt[2] = ilu->info.dtcount;
+    ierr = OptionsDoubleArray("-pc_ilu_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCILUSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_ilu_fill","Expected fill in factorization","PCILUSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
 
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCILU preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," -pc_ilu_mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_damping <damping>: damping added to diagonal\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount>:\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," The ILUDT code is based on Yousef Saad's SPARSEKIT2 code\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_ordering:                          \n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_fill:                             \n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_nonzeros_along_diagonal: <tol> changes column ordering\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"    to reduce the chance of obtaining zero pivot during ILU.\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"    If <tol> not given, defaults to 1.e-10.\n");CHKERRQ(ierr); 
+    ierr = OptionsList("-pc_lu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",MatOrderingList,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCILUSetMatOrdering(pc,tname);CHKERRQ(ierr);
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -766,7 +722,6 @@ int PCCreate_ILU(PC pc)
   pc->ops->applytranspose    = PCApplyTranspose_ILU;
   pc->ops->setup             = PCSetUp_ILU;
   pc->ops->setfromoptions    = PCSetFromOptions_ILU;
-  pc->ops->printhelp         = PCPrintHelp_ILU;
   pc->ops->getfactoredmatrix = PCGetFactoredMatrix_ILU;
   pc->ops->view              = PCView_ILU;
   pc->ops->applyrichardson   = 0;

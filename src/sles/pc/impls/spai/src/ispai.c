@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.14 2000/05/08 15:09:34 balay Exp bsmith $*/
+/* $Id: ispai.c,v 1.15 2000/05/10 16:43:51 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -414,68 +414,52 @@ int PCSPAISetSp(PC pc,int sp)
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_SPAI"
 static int PCSetFromOptions_SPAI(PC pc)
 {
+  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   int        ierr,nbsteps,max,maxnew,block_size,cache_size,verbose,sp;
   double     epsilon;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(pc->prefix,"-pc_spai_epsilon",&epsilon,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSPAISetEpsilon(pc,epsilon);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_nbsteps",&nbsteps,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSPAISetNBSteps(pc,nbsteps);CHKERRQ(ierr);
-  }
-  /* added 1/7/99 g.h. */
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_max",&max,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSPAISetMax(pc,max);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_maxnew",&maxnew,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSPAISetMaxNew(pc,maxnew);CHKERRQ(ierr);
-  } 
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_block_size",&block_size,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSPAISetBlockSize(pc,block_size);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_cache_size",&cache_size,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSPAISetCacheSize(pc,cache_size);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_verbose",&verbose,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSPAISetVerbose(pc,verbose);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(pc->prefix,"-pc_spai_sp",&sp,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSPAISetSp(pc,sp);CHKERRQ(ierr);
-  }
+  ierr = OptionsHead("SPAI options");CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSPAISetEpsilon(pc,epsilon);CHKERRQ(ierr);
+    }
+    ierr = OptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSPAISetNBSteps(pc,nbsteps);CHKERRQ(ierr);
+    }
+    /* added 1/7/99 g.h. */
+    ierr = OptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSPAISetMax(pc,max);CHKERRQ(ierr);
+    }
+    ierr = OptionsInt("-pc_spai_maxnew","","PCSPAISetMaxNew",ispai->maxnew,&maxnew,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSPAISetMaxNew(pc,maxnew);CHKERRQ(ierr);
+    } 
+    ierr = OptionsInt("-pc_spai_block_size","","PCSPAISetBlockSize",ispai->block_size,&block_size,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSPAISetBlockSize(pc,block_size);CHKERRQ(ierr);
+    }
+    ierr = OptionsInt("-pc_spai_cache_size","","PCSPAISetCacheSize",ispai->cache_size,&cache_size,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSPAISetCacheSize(pc,cache_size);CHKERRQ(ierr);
+    }
+    ierr = OptionsInt("-pc_spai_verbose","","PCSPAISetVerbose",ispai->verbose,&verbose,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSPAISetVerbose(pc,verbose);CHKERRQ(ierr);
+    }
+    ierr = OptionsInt("-pc_spai_sp","","PCSPAISetSp",ispai->sp,&sp,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSPAISetSp(pc,sp);CHKERRQ(ierr);
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_SPAI"
-static int PCPrintHelp_SPAI(PC pc,char *p)
-{
-  PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCSPAI preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_spai_epsilon <epsilon> : (default .4)\n",p);
-  PetscPrintf(pc->comm," %spc_spai_nbsteps <nbsteps> : (default 5)\n",p);
-  /* added 1/7/99 g.h. */
-  PetscPrintf(pc->comm," %spc_spai_max <max>   : (default 5000)\n",p);
-  PetscPrintf(pc->comm," %spc_spai_maxnew <maxnew>   : (default 5)\n",p);
-  PetscPrintf(pc->comm," %spc_spai_block_size <block_size> : (default 1)\n",p);
-  PetscPrintf(pc->comm," %spc_spai_cache_size <cache_size> : (default 5)\n",p);
-  PetscPrintf(pc->comm," %spc_spai_verbose <verbose> : (default 0)\n",p);
-  PetscPrintf(pc->comm," %spc_spai_sp <symmetric pattern> : (default 1)\n",p);
-  PetscFunctionReturn(0);
-}
-
-/**********************************************************************/
 EXTERN_C_BEGIN
 /*
    PCCreate_SPAI - Creates the preconditioner context for the SPAI 
@@ -499,7 +483,6 @@ int PCCreate_SPAI(PC pc)
   pc->ops->setup           = PCSetUp_SPAI;
   pc->ops->view            = PCView_SPAI;
   pc->ops->setfromoptions  = PCSetFromOptions_SPAI;
-  pc->ops->printhelp       = PCPrintHelp_SPAI;
 
   pc->name          = 0;
   ispai->epsilon    = .4;  

@@ -1,4 +1,4 @@
-/* "$Id: snesmfj.h,v 1.11 2000/08/01 20:57:20 bsmith Exp bsmith $"; */
+/* "$Id: snesmfj.h,v 1.12 2000/08/17 04:52:42 bsmith Exp bsmith $"; */
 /*
     This file should be included in NEW routines that compute the
     differencing parameter for finite difference based matrix-free
@@ -23,7 +23,6 @@ struct _MFOps {
   int (*compute)(MatSNESMFCtx,Vec,Vec,Scalar *);
   int (*view)(MatSNESMFCtx,Viewer);
   int (*destroy)(MatSNESMFCtx);
-  int (*printhelp)(MatSNESMFCtx);
   int (*setfromoptions)(MatSNESMFCtx);
 };
 

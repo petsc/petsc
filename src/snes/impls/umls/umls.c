@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.98 2000/06/09 14:53:32 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.99 2000/08/24 22:43:09 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -170,7 +170,7 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(snes->comm,snes->prefix,"SNES trust region options for minimization");CHKERRQ(ierr);
+  ierr = OptionsHead("SNES trust region options for minimization");CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_um_ls_gamma_factor","Damping parameter","None",ctx->gamma_factor,&ctx->gamma_factor,0);CHKERRQ(ierr);
     ierr = OptionsInt("-snes_um_ls_maxfev","Max function evaluation in line search","None",ctx->maxfev,&ctx->maxfev,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_um_ls_ftol","Tolerance for sufficient decrease","None",ctx->ftol,&ctx->ftol,0);CHKERRQ(ierr);
@@ -178,7 +178,7 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
     ierr = OptionsDouble("-snes_um_ls_rtol","Relative tolerance for acceptable step","None",ctx->rtol,&ctx->rtol,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_um_ls_stepmin","Lower bound for step","None",ctx->stepmin,&ctx->stepmin,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_um_ls_stepmax","upper bound for step","None",ctx->stepmax,&ctx->stepmax,0);CHKERRQ(ierr);
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

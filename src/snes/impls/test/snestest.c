@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.50 2000/08/14 20:02:01 bsmith Exp bsmith $*/
+/*$Id: snestest.c,v 1.51 2000/08/24 22:43:08 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -79,9 +79,9 @@ static int SNESSetFromOptions_Test(SNES snes)
 
   PetscFunctionBegin;
 
-  ierr = OptionsBegin(snes->comm,snes->prefix,"Hand-coded Jacobian tester");CHKERRQ(ierr);
+  ierr = OptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
     ierr = OptionsName("-snes_test_display","Display difference between approximate and handcoded Jacobian","None",&ls->complete_print);CHKERRQ(ierr);
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

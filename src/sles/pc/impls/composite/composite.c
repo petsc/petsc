@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.37 2000/08/12 05:02:25 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.38 2000/08/17 04:52:14 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -147,66 +147,43 @@ static int PCSetFromOptions_Composite(PC pc)
   int              ierr,nmax = 8,i;
   PCCompositeType  type=PC_COMPOSITE_ADDITIVE;
   PC_CompositeLink next;
-  char             *pcs[8],stype[16];
+  char             *pcs[8],stype[16],*types[] = {"multiplicative","additive","special"};
   PetscTruth       flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetString(pc->prefix,"-pc_composite_type",stype,16,&flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscTruth ismult,isadd,isspecial;
+  ierr = OptionsHead("Composite preconditioner options");CHKERRQ(ierr);
+    ierr = OptionsEList("-pc_composite_type","Type of composition","PCCompositeSetType",types,3,"multiplicative",stype,16,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscTruth ismult,isadd,isspecial;
 
-    ierr = PetscStrcmp(stype,"multiplicative",&ismult);CHKERRQ(ierr);
-    ierr = PetscStrcmp(stype,"additive",&isadd);CHKERRQ(ierr);
-    ierr = PetscStrcmp(stype,"special",&isspecial);CHKERRQ(ierr);
+      ierr = PetscStrcmp(stype,types[0],&ismult);CHKERRQ(ierr);
+      ierr = PetscStrcmp(stype,types[1],&isadd);CHKERRQ(ierr);
+      ierr = PetscStrcmp(stype,types[2],&isspecial);CHKERRQ(ierr);
 
-    if (ismult)          type = PC_COMPOSITE_MULTIPLICATIVE;
-    else if (isadd)      type = PC_COMPOSITE_ADDITIVE;
-    else if (isspecial)  type = PC_COMPOSITE_SPECIAL;
-    else SETERRQ(1,1,"Unknown composite type given");
+      if (ismult)          type = PC_COMPOSITE_MULTIPLICATIVE;
+      else if (isadd)      type = PC_COMPOSITE_ADDITIVE;
+      else if (isspecial)  type = PC_COMPOSITE_SPECIAL;
+      else SETERRQ(1,1,"Unknown composite type given");
 
-    ierr = PCCompositeSetType(pc,type);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_composite_true",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetStringArray(pc->prefix,"-pc_composite_pcs",pcs,&nmax,&flg);CHKERRQ(ierr);
-  if (flg) {
-    for (i=0; i<nmax; i++) {
-      ierr = PCCompositeAddPC(pc,pcs[i]);CHKERRQ(ierr);
+      ierr = PCCompositeSetType(pc,type);CHKERRQ(ierr);
     }
-  }
+    ierr = OptionsName("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
+    }
+    ierr = OptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr);
+    if (flg) {
+      for (i=0; i<nmax; i++) {
+        ierr = PCCompositeAddPC(pc,pcs[i]);CHKERRQ(ierr);
+      }
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
 
   next = jac->head;
   while (next) {
     ierr = PCSetFromOptions(next->pc);CHKERRQ(ierr);
     next = next->next;
   }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_Composite"
-static int PCPrintHelp_Composite(PC pc,char *p)
-{
-  PC_Composite     *jac = (PC_Composite*)pc->data;
-  PC_CompositeLink next = jac->head;
-  int              ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCComposite preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_type [additive,multiplicative,special]\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_true\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_composite_pcs pc1,[pc2,pc3] preconditioner types to compose\n",p);CHKERRQ(ierr);
-
-  ierr = (*PetscHelpPrintf)(pc->comm," ---------------------------------\n");CHKERRQ(ierr);
-  while (next) {
-    ierr = PCPrintHelp(next->pc);CHKERRQ(ierr);
-    next = next->next;
-  }
-  ierr = (*PetscHelpPrintf)(pc->comm," ---------------------------------\n");CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +504,6 @@ int PCCreate_Composite(PC pc)
   pc->ops->setup              = PCSetUp_Composite;
   pc->ops->destroy            = PCDestroy_Composite;
   pc->ops->setfromoptions     = PCSetFromOptions_Composite;
-  pc->ops->printhelp          = PCPrintHelp_Composite;
   pc->ops->view               = PCView_Composite;
   pc->ops->applyrichardson    = 0;
 

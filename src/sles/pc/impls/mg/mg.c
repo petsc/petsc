@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.111 2000/08/01 20:03:04 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.112 2000/08/04 03:53:39 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -181,60 +181,47 @@ static int PCSetFromOptions_MG(PC pc)
 {
   int        ierr,m,levels = 1;
   PetscTruth flg;
-  char       buff[16];
+  char       buff[16],*type[] = {"additive","multiplicative","full","cascade"};
 
   PetscFunctionBegin;
-  if (!pc->data) {
-    ierr = OptionsGetInt(pc->prefix,"-pc_mg_levels",&levels,&flg);CHKERRQ(ierr);
-    ierr = MGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MGSetCycles(pc,m);CHKERRQ(ierr);
-  } 
-  ierr = OptionsGetInt(pc->prefix,"-pc_mg_smoothup",&m,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetInt(pc->prefix,"-pc_mg_smoothdown",&m,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetString(pc->prefix,"-pc_mg_type",buff,15,&flg);CHKERRQ(ierr);
-  if (flg) {
-    MGType     mg;
-    PetscTruth isadd,ismult,isfull,iskask,iscasc;
 
-    ierr = PetscStrcmp(buff,"additive",&isadd);CHKERRQ(ierr);
-    ierr = PetscStrcmp(buff,"multiplicative",&ismult);CHKERRQ(ierr);
-    ierr = PetscStrcmp(buff,"full",&isfull);CHKERRQ(ierr);
-    ierr = PetscStrcmp(buff,"kaskade",&iskask);CHKERRQ(ierr);
-    ierr = PetscStrcmp(buff,"cascade",&iscasc);CHKERRQ(ierr);
+  ierr = OptionsHead("Multigrid options");CHKERRQ(ierr);
+    if (!pc->data) {
+      ierr = OptionsInt("-pc_mg_levels","Number of Levels","MGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
+      ierr = MGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = OptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MGSetCycles(pc,m);CHKERRQ(ierr);
+    } 
+    ierr = OptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
+    }
+    ierr = OptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","MGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
+    }
+    ierr = OptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,4,"multiplicative",buff,15,&flg);CHKERRQ(ierr);
+    if (flg) {
+      MGType     mg;
+      PetscTruth isadd,ismult,isfull,iskask,iscasc;
 
-    if      (isadd)  mg = MGADDITIVE;
-    else if (ismult) mg = MGMULTIPLICATIVE;
-    else if (isfull) mg = MGFULL;
-    else if (iskask) mg = MGKASKADE;
-    else if (iscasc) mg = MGKASKADE;
-    else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type: %s",buff);
-    ierr = MGSetType(pc,mg);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
+      ierr = PetscStrcmp(buff,type[0],&isadd);CHKERRQ(ierr);
+      ierr = PetscStrcmp(buff,type[1],&ismult);CHKERRQ(ierr);
+      ierr = PetscStrcmp(buff,type[2],&isfull);CHKERRQ(ierr);
+      ierr = PetscStrcmp(buff,type[3],&iscasc);CHKERRQ(ierr);
+      ierr = PetscStrcmp(buff,"kaskade",&iskask);CHKERRQ(ierr);
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_MG"
-static int PCPrintHelp_MG(PC pc,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCMG preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_mg_type [additive,multiplicative,fullmultigrid,kaskade]\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"              type of multigrid method\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_mg_smoothdown m: number of pre-smooths\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_mg_smoothup m: number of post-smooths\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);CHKERRQ(ierr);
+      if      (isadd)  mg = MGADDITIVE;
+      else if (ismult) mg = MGMULTIPLICATIVE;
+      else if (isfull) mg = MGFULL;
+      else if (iskask) mg = MGKASKADE;
+      else if (iscasc) mg = MGKASKADE;
+      else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type: %s",buff);
+      ierr = MGSetType(pc,mg);CHKERRQ(ierr);
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -626,7 +613,6 @@ int PCCreate_MG(PC pc)
   pc->ops->setup          = PCSetUp_MG;
   pc->ops->destroy        = PCDestroy_MG;
   pc->ops->setfromoptions = PCSetFromOptions_MG;
-  pc->ops->printhelp      = PCPrintHelp_MG;
   pc->ops->view           = PCView_MG;
 
   pc->data                = (void*)0;

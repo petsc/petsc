@@ -1,4 +1,4 @@
-/*$Id: euler.c,v 1.22 2000/04/12 04:25:58 bsmith Exp balay $*/
+/*$Id: euler.c,v 1.23 2000/05/05 22:18:53 balay Exp bsmith $*/
 /*
        Code for Timestepping with explicit Euler.
 */
@@ -70,14 +70,6 @@ static int TSSetFromOptions_Euler(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPrintHelp_Euler"
-static int TSPrintHelp_Euler(TS ts,char *p)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"TSView_Euler"
 static int TSView_Euler(TS ts,Viewer viewer)
 {
@@ -97,7 +89,6 @@ int TSCreate_Euler(TS ts)
   ts->setup	      = TSSetUp_Euler;
   ts->step            = TSStep_Euler;
   ts->destroy         = TSDestroy_Euler;
-  ts->printhelp       = TSPrintHelp_Euler;
   ts->setfromoptions  = TSSetFromOptions_Euler;
   ts->view            = TSView_Euler;
 

@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.139 2000/07/10 03:40:08 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.140 2000/08/24 22:42:18 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -64,38 +64,6 @@ int SLESView(SLES sles,Viewer viewer)
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
   ierr = PCView(pc,viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"SLESPrintHelp"
-/*@
-   SLESPrintHelp - Prints SLES options.
-
-   Collective on SLES
-
-   Input Parameter:
-.  sles - the SLES context
-
-   Level: beginner
-
-.keywords: SLES, help
-
-.seealso: SLESSetFromOptions()
-@*/
-int SLESPrintHelp(SLES sles)
-{
-  char    *prefix = "-";
-  int     ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  if (sles->prefix) prefix = sles->prefix;
-  ierr = (*PetscHelpPrintf)(sles->comm,"SLES options:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(sles->comm," %ssles_view: view SLES info after each linear solve\n",prefix);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(sles->comm," %ssles_diagonal_scale: diagonally scale matrix before solving\n",prefix);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(sles->comm," %ssles_diagonal_scale_fix: fixes diagonally scale matrix after solve\n",prefix);CHKERRQ(ierr);
-  ierr = PCPrintHelp(sles->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -230,7 +198,7 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
 
 .keywords: SLES, set, options, database
 
-.seealso: SLESPrintHelp(), SLESSetTypesFromOptions(), KSPSetFromOptions(),
+.seealso: KSPSetFromOptions(),
           PCSetFromOptions(), SLESGetPC(), SLESGetKSP()
 @*/
 int SLESSetFromOptions(SLES sles)

@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.31 2000/05/04 14:04:21 balay Exp balay $*/
+/*$Id: pcsles.c,v 1.32 2000/05/05 22:17:19 balay Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -69,21 +69,6 @@ static int PCDestroy_SLES(PC pc)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_SLES"
-static int PCPrintHelp_SLES(PC pc,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCSLES preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %ssles : prefix to control options for individual blocks.\
- Add before the \n      usual KSP and PC option names (e.g., %ssles_ksp_type\
- <ksptype>)\n",p,p);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCView_SLES"
 static int PCView_SLES(PC pc,Viewer viewer)
@@ -114,17 +99,18 @@ static int PCView_SLES(PC pc,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_SLES"
-static int PCSetFromOptions_SLES(PC pc)
-{
+static int PCSetFromOptions_SLES(PC pc){
   PC_SLES    *jac = (PC_SLES*)pc->data;
   int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(pc->prefix,"-pc_sles_true",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSLESSetUseTrue(pc);CHKERRQ(ierr);
-  }
+  ierr = OptionsHead("SLES preconditioner options");CHKERRQ(ierr);
+    ierr = OptionsName("-pc_sles_true","Use true matrix to define inner linear system, not preconditioner matrix","PCSLESSetUseTrue",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSLESSetUseTrue(pc);CHKERRQ(ierr);
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
   ierr = SLESSetFromOptions(jac->sles);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -249,7 +235,6 @@ int PCCreate_SLES(PC pc)
   pc->ops->setup              = PCSetUp_SLES;
   pc->ops->destroy            = PCDestroy_SLES;
   pc->ops->setfromoptions     = PCSetFromOptions_SLES;
-  pc->ops->printhelp          = PCPrintHelp_SLES;
   pc->ops->view               = PCView_SLES;
   pc->ops->applyrichardson    = 0;
 

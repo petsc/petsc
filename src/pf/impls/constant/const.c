@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.9 2000/08/24 22:43:48 bsmith Exp balay $*/
+/*$Id: const.c,v 1.10 2000/08/25 16:45:17 balay Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNC__  
@@ -61,9 +61,9 @@ int PFSetFromOptions_Constant(PF pf)
   Scalar     *value = (Scalar *)pf->data;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(pf->comm,pf->prefix,"Constant function options");CHKERRQ(ierr);
+  ierr = OptionsHead("Constant function options");CHKERRQ(ierr);
     ierr = OptionsScalar("-pf_constant","The constant value","None",*value,value,0);CHKERRQ(ierr);
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);    
 }
 

@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.111 2000/05/05 22:13:05 balay Exp balay $ */
+/* $Id: send.c,v 1.112 2000/08/15 22:17:55 balay Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -188,6 +188,37 @@ int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="ViewerSetFromOptions_Socket"></a>*/"ViewerSetFromOptions_Socket" 
+int ViewerSetFromOptions_Socket(Viewer v)
+{
+  int           ierr,def = -1;
+  char          sdef[256];
+  PetscTruth    tflg;
+
+  PetscFunctionBegin;
+  /*
+       These options are not processed here, they are processed in ViewerSocketSetConnection(), they
+    are listed here for the GUI to display
+  */
+  ierr = OptionsHead("Socket Viewer Options");CHKERRQ(ierr);
+    ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
+    if (tflg) {
+      ierr = OptionsAtoi(sdef,&def);CHKERRQ(ierr);
+    } else {
+      def = DEFAULTPORT;
+    }
+    ierr = OptionsInt("-viewer_socket_port","Port number to use for socket","ViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
+
+    ierr = OptionsString("-viewer_socket_machine","Machine to use for socket","ViewerSocketSetConnection",sdef,0,0,0);CHKERRQ(ierr);
+    ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
+    if (!tflg) {
+      ierr = PetscGetHostName(sdef,256);CHKERRQ(ierr);
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name="ViewerCreate_Socket"></a>*/"ViewerCreate_Socket" 
@@ -196,13 +227,12 @@ int ViewerCreate_Socket(Viewer v)
   Viewer_Socket *vmatlab;
 
   PetscFunctionBegin;
-
-  vmatlab         = PetscNew(Viewer_Socket);CHKPTRQ(vmatlab);
-  vmatlab->port   = 0;
-  v->data         = (void*)vmatlab;
-  v->ops->destroy = ViewerDestroy_Socket;
-  v->ops->flush   = 0;
-
+  vmatlab                = PetscNew(Viewer_Socket);CHKPTRQ(vmatlab);
+  vmatlab->port          = 0;
+  v->data                = (void*)vmatlab;
+  v->ops->destroy        = ViewerDestroy_Socket;
+  v->ops->flush          = 0;
+  v->ops->setfromoptions = ViewerSetFromOptions_Socket;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -337,6 +367,7 @@ int ViewerCreate_Socket(Viewer v)
 }
 EXTERN_C_END
 #endif
+
 
 
 

@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.117 2000/05/05 22:18:21 balay Exp bsmith $*/
+/*$Id: tr.c,v 1.118 2000/08/24 22:43:07 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -232,7 +232,7 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(snes->comm,snes->prefix,"SNES trust region options for nonlinear equations");CHKERRQ(ierr);
+  ierr = OptionsHead("SNES trust region options for nonlinear equations");CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_eq_tr_mu","mu","None",ctx->mu,&ctx->mu,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_eq_tr_eta","eta","None",ctx->eta,&ctx->eta,0);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
     ierr = OptionsDouble("-snes_eq_tr_delta1","delta1","None",ctx->delta1,&ctx->delta1,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_eq_tr_delta2","delta2","None",ctx->delta2,&ctx->delta2,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_eq_tr_delta3","delta3","None",ctx->delta3,&ctx->delta3,0);CHKERRQ(ierr);
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

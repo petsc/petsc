@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.46 2000/05/05 22:18:55 balay Exp bsmith $*/
+/*$Id: beuler.c,v 1.47 2000/05/17 16:00:34 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -340,14 +340,6 @@ static int TSSetFromOptions_BEuler_Nonlinear(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="TSPrintHelp_BEuler"></a>*/"TSPrintHelp_BEuler"
-static int TSPrintHelp_BEuler(TS ts,char *p)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name="TSView_BEuler"></a>*/"TSView_BEuler"
 static int TSView_BEuler(TS ts,Viewer viewer)
 {
@@ -368,7 +360,6 @@ int TSCreate_BEuler(TS ts)
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_BEuler;
-  ts->printhelp       = TSPrintHelp_BEuler;
   ts->view            = TSView_BEuler;
 
   if (ts->problem_type == TS_LINEAR) {

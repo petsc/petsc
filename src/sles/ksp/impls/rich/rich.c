@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.94 2000/07/29 23:19:39 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.95 2000/08/24 22:42:49 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -145,11 +145,10 @@ int KSPSetFromOptions_Richardson(KSP ksp)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP Richardson Options");CHKERRQ(ierr);
+  ierr = OptionsHead("KSP Richardson Options");CHKERRQ(ierr);
     ierr = OptionsDouble("-ksp_richardson_scale","damping factor","KSPRichardsonSetScale",rich->scale,&tmp,&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp);CHKERRQ(ierr); }
-  ierr = OptionsEnd();CHKERRQ(ierr);
-
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.161 2000/08/14 02:40:42 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.162 2000/08/24 22:43:06 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -950,7 +950,7 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(snes->comm,snes->prefix,"SNES Line search options");CHKERRQ(ierr);
+  ierr = OptionsHead("SNES Line search options");CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_eq_ls_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_eq_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_eq_ls_steptol","Step must be greater than","None",ls->steptol,&ls->steptol,0);CHKERRQ(ierr);
@@ -975,7 +975,7 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
       }
       else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown line search");}
     }
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.25 2000/05/05 22:18:16 balay Exp bsmith $*/
+/*$Id: wp.c,v 1.26 2000/08/24 22:43:04 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -107,30 +107,6 @@ static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatSNESMFPrintHelp_WP"
-/*
-   MatSNESMFPrintHelp_WP - Prints a list of all the options 
-      this particular method supports.
-
-  Input Parameter:
-.  ctx - the matrix free context
-
-*/
-static int MatSNESMFPrintHelp_WP(MatSNESMFCtx ctx)
-{
-  char*         p;
-  int           ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p);CHKERRQ(ierr);
-  if (!p) p = "";
-  ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_compute_norma <true or false>\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_compute_normu <true or false>\n",p);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatSNESMFSetFromOptions_WP"
 /*
    MatSNESMFSetFromOptions_WP - Looks in the options database for 
@@ -146,12 +122,12 @@ static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
   MatSNESMFWP *hctx = (MatSNESMFWP*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(ctx->comm,ctx->prefix,"Walker-Pernice options");
+  ierr = OptionsHead("Walker-Pernice options");
     ierr = OptionsLogical("-snes_mf_compute_norma","Compute the norm of a","MatSNESMFWPSetComputeNormA",
                           hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
     ierr = OptionsLogical("-snes_mf_compute_normu","Compute the norm of u","MatSNESMFWPSetComputeNormU",
                           hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
-  ierr = OptionsEnd();
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

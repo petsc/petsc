@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.108 2000/08/17 04:52:42 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.109 2000/08/24 22:43:04 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -519,11 +519,11 @@ int MatSNESMFSetFromOptions(Mat mat)
           ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
         }
       }
+      if (mfctx->ops->setfromoptions) {
+        ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
+      }
     ierr = OptionsEnd();CHKERRQ(ierr);
 
-    if (mfctx->ops->setfromoptions) {
-      ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
-    }
   }
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-  /* $Id: tsimpl.h,v 1.20 2000/05/05 22:18:48 balay Exp bsmith $ */
+  /* $Id: tsimpl.h,v 1.21 2000/05/10 16:43:03 bsmith Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -51,7 +51,6 @@ struct _p_TS {
   int           setupcalled;            /* true if setup has been called */
   int           (*step)(TS,int*,double*); /* stepping routine */      
   int           (*setfromoptions)(TS);    /* sets options from database */
-  int           (*printhelp)(TS,char*);   /* prints help info */
   void          *data;                    /* implementationspecific data */
 
   void          *user;                    /* user context */

@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.106 2000/08/17 04:53:46 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.107 2000/08/24 22:43:56 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -34,6 +34,7 @@ typedef char *PCType;
 #define PCSPAI      "spai"
 #define PCMILU      "milu"
 #define PCNN        "nn"
+#define PCCHOLESKY  "cholesky"
 
 typedef struct _p_PC* PC;
 #define PC_COOKIE     PETSC_COOKIE+9
@@ -79,7 +80,6 @@ EXTERN int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 
 EXTERN int PCSetVector(PC,Vec);
 EXTERN int PCGetVector(PC,Vec*);
-EXTERN int PCPrintHelp(PC);
 EXTERN int PCView(PC,Viewer);
 
 EXTERN int PCSetOptionsPrefix(PC,char*);

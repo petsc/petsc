@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.112 2000/07/10 03:39:26 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.113 2000/08/01 20:01:51 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -171,7 +171,6 @@ typedef struct _MatPartitioningOps *MatPartitioningOps;
 struct _MatPartitioningOps {
   int         (*apply)(MatPartitioning,IS*);
   int         (*setfromoptions)(MatPartitioning);
-  int         (*printhelp)(MatPartitioning);
   int         (*destroy)(MatPartitioning);
   int         (*view)(MatPartitioning,Viewer);
 };

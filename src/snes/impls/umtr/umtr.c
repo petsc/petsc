@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.96 2000/05/05 22:18:25 balay Exp bsmith $*/
+/*$Id: umtr.c,v 1.97 2000/08/24 22:43:08 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -310,7 +310,7 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
   int        ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(snes->comm,snes->prefix,"SNES trust region options for minimization");CHKERRQ(ierr);
+  ierr = OptionsHead("SNES trust region options for minimization");CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_um_eta1","eta1","None",ctx->eta1,&ctx->eta1,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_um_eta2","step unsuccessful if reduction < eta1 * predicted reduction","None",ctx->eta2,&ctx->eta2,0);CHKERRQ(ierr);
@@ -318,7 +318,7 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
     ierr = OptionsDouble("-snes_um_eta4","eta4","None",ctx->eta4,&ctx->eta4,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_um_delta0","delta0","None",ctx->delta,&ctx->delta,0);CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_um_factor1","factor1","None",ctx->factor1,&ctx->factor1,0);CHKERRQ(ierr);
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: viewerimpl.h,v 1.1 1999/05/12 03:33:52 bsmith Exp bsmith $ */
+/* $Id: viewerimpl.h,v 1.2 1999/10/22 23:57:50 bsmith Exp bsmith $ */
 
 #ifndef _VIEWERIMPL
 #define _VIEWERIMPL
@@ -11,6 +11,7 @@ struct _ViewerOps {
    int   (*flush)(Viewer); 
    int   (*getsingleton)(Viewer,Viewer*);
    int   (*restoresingleton)(Viewer,Viewer*);
+   int   (*setfromoptions)(Viewer);
 };
 
 /*

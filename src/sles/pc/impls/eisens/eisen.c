@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.104 2000/05/04 14:04:27 balay Exp balay $*/
+/*$Id: eisen.c,v 1.105 2000/05/05 22:17:13 balay Exp bsmith $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -114,32 +114,18 @@ static int PCDestroy_Eisenstat(PC pc)
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Eisenstat"
 static int PCSetFromOptions_Eisenstat(PC pc)
 {
-  PetscReal  omega;
+  PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
   int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCEisenstatSetOmega(pc,omega);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_eisenstat_no_diagonal_scaling",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_Eisenstat"
-static int PCPrintHelp_Eisenstat(PC pc,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCEisenstat preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_no_diagonal_scaling\n",p);CHKERRQ(ierr);
+  ierr = OptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,0);CHKERRQ(ierr);
+    ierr = OptionsName("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -321,7 +307,6 @@ int PCCreate_Eisenstat(PC pc)
   pc->ops->postsolve       = PCPost_Eisenstat;
   pc->ops->applyrichardson = 0;
   pc->ops->setfromoptions  = PCSetFromOptions_Eisenstat;
-  pc->ops->printhelp       = PCPrintHelp_Eisenstat ;
   pc->ops->destroy         = PCDestroy_Eisenstat;
   pc->ops->view            = PCView_Eisenstat;
   pc->ops->setup           = PCSetUp_Eisenstat;

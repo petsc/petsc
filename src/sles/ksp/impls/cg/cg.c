@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.107 2000/08/18 20:32:08 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.108 2000/08/24 22:42:45 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -281,12 +281,12 @@ int KSPSetFromOptions_CG(KSP ksp)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP CG options");CHKERRQ(ierr);
+  ierr = OptionsHead("KSP CG options");CHKERRQ(ierr);
     ierr = OptionsLogicalGroupBegin("-ksp_cg_Hermitian","Matrix is Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
     ierr = OptionsLogicalGroupEnd("-ksp_cg_symmetric","Matrix is complex symmetric, not Hermitian","KSPCGSetType",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

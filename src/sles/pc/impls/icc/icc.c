@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.67 2000/04/12 04:24:43 bsmith Exp balay $*/
+/*$Id: icc.c,v 1.68 2000/05/05 22:17:16 balay Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -79,20 +79,6 @@ static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_ICC"
-static int PCPrintHelp_ICC(PC pc,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCICC preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"  %spc_icc_factorpointwise: Do NOT use block factorization \n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"    (Note: This only applies to the MATMPIROWBS matrix format;\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"    all others currently only support point factorization.\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCGetFactoredMatrix_ICC"
 static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 {
@@ -131,7 +117,6 @@ int PCCreate_ICC(PC pc)
   pc->ops->setup               = PCSetup_ICC;
   pc->ops->destroy	       = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;
-  pc->ops->printhelp           = PCPrintHelp_ICC;
   pc->ops->view                = 0;
   pc->ops->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;

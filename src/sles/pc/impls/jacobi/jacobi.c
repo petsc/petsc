@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.66 2000/04/12 04:24:33 bsmith Exp balay $*/
+/*$Id: jacobi.c,v 1.67 2000/05/05 22:17:02 balay Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -26,11 +26,10 @@
      PCApply() if necessary.
 
      Additional basic routines are:
-          PCPrintHelp_XXX()       - Prints preconditioner runtime options
           PCView_XXX()            - Prints details of runtime options that
                                     have actually been used.
      These are called by application codes via the interface routines
-     PCPrintHelp() and PCView().
+     PCView().
 
      The various types of solvers (preconditioners, Krylov subspace methods,
      nonlinear solvers, timesteppers) are all organized similarly, so the

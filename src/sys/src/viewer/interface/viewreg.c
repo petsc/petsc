@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.28 2000/08/25 16:58:06 balay Exp balay $*/
+/*$Id: viewreg.c,v 1.29 2000/08/28 19:02:00 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -212,6 +212,9 @@ int ViewerSetFromOptions(Viewer viewer)
     /* type has not been set? */
     if (!viewer->type_name) {
       ierr = ViewerSetType(viewer,ASCII_VIEWER);CHKERRQ(ierr);
+    }
+    if (viewer->ops->setfromoptions) {
+      ierr = (*viewer->ops->setfromoptions)(viewer);CHKERRQ(ierr);
     }
   ierr = OptionsEnd();CHKERRQ(ierr);
 

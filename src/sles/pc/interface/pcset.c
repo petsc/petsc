@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.105 2000/08/17 04:52:04 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.106 2000/08/24 22:42:28 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -84,7 +84,6 @@ int PCSetType(PC pc,PCType type)
   pc->ops->applyrichardson     = (int (*)(PC,Vec,Vec,Vec,int)) 0;
   pc->ops->applyBA             = (int (*)(PC,int,Vec,Vec,Vec)) 0;
   pc->ops->setfromoptions      = (int (*)(PC)) 0;
-  pc->ops->printhelp           = (int (*)(PC,char*)) 0;
   pc->ops->applytranspose      = (int (*)(PC,Vec,Vec)) 0;
   pc->ops->applyBAtranspose    = (int (*)(PC,int,Vec,Vec,Vec)) 0;
   pc->ops->presolve            = (int (*)(PC,KSP,Vec,Vec)) 0;
@@ -131,48 +130,6 @@ int PCRegisterDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp"
-/*@
-   PCPrintHelp - Prints all the options for the PC component.
-
-   Collective on PC
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Options Database Keys:
-+  -help - Prints PC options
--  -h - Prints PC options
-
-   Level: developer
-
-.keywords: PC, help
-
-.seealso: PCSetFromOptions()
-
-@*/
-int PCPrintHelp(PC pc)
-{
-  char p[64]; 
-  int  ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (pc->prefix) {ierr = PetscStrcat(p,pc->prefix);CHKERRQ(ierr);}
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
-  ierr = (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");CHKERRQ(ierr);
-  ierr = FListPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <type> for help on ",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"a particular method\n");CHKERRQ(ierr);
-  if (pc->ops->printhelp) {
-    ierr = (*pc->ops->printhelp)(pc,p);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC
@@ -201,48 +158,6 @@ int PCGetType(PC pc,PCType *meth)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetTypeFromOptions"
-/*@
-   PCSetTypeFromOptions - Sets PC type from the options database; if not given
-         sets default.
-
-   Collective on PC
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Level: developer
-
-.keywords: PC, set, from, options, database
-
-.seealso: PCPrintHelp(), PCSetFromOptions(), SLESSetFromOptions()
-@*/
-int PCSetTypeFromOptions(PC pc)
-{
-  char       type[256];
-  int        ierr;
-  PetscTruth flg;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = OptionsGetString(pc->prefix,"-pc_type",type,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSetType(pc,type);CHKERRQ(ierr);
-  }
-  if (!pc->type_name) {
-    int size;
-
-    ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-    if (size == 1) {
-      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
-    } else {
-      ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions"
 /*@
    PCSetFromOptions - Sets PC options from the options database.
@@ -258,23 +173,47 @@ int PCSetTypeFromOptions(PC pc)
 
 .keywords: PC, set, from, options, database
 
-.seealso: PCPrintHelp()
+.seealso: 
 
 @*/
 int PCSetFromOptions(PC pc)
 {
   int        ierr;
+  char       type[256],*def;
   PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PCSetTypeFromOptions(pc);CHKERRQ(ierr);
-  if (pc->ops->setfromoptions) {
-    ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (flg){
-    ierr = PCPrintHelp(pc);CHKERRQ(ierr);
-  }
+
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = OptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options");CHKERRQ(ierr);
+    if (!pc->type_name) {
+      int size;
+
+      ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+      if (size == 1) {
+        def = PCILU;
+      } else {
+        def = PCBJACOBI;
+      }
+    } else {
+      def = pc->type_name;
+    }
+
+    ierr = OptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCSetType(pc,type);CHKERRQ(ierr);
+    }
+    /*
+      Set the type if it was never set.
+    */
+    if (!pc->type_name) {
+      ierr = PCSetType(pc,def);CHKERRQ(ierr);
+    }
+
+    if (pc->ops->setfromoptions) {
+      ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
+    }
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

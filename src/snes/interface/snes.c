@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.217 2000/08/17 04:52:40 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.218 2000/08/24 22:43:02 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -153,7 +153,7 @@ int SNESSetFromOptions(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ierr = OptionsBegin(snes->comm,snes->prefix,"Nonlinear solver (SNES) options");CHKERRQ(ierr);
+  ierr = OptionsBegin(snes->comm,snes->prefix,"Nonlinear solver (SNES) options");CHKERRQ(ierr); 
     if (snes->type_name) {
       deft = snes->type_name;
     } else {  
@@ -163,6 +163,7 @@ int SNESSetFromOptions(SNES snes)
         deft = SNESUMTR;
       }
     }
+
     if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     ierr = OptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -213,11 +214,11 @@ int SNESSetFromOptions(SNES snes)
       PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Hessian matrix\n");
     }
 
-  ierr = OptionsEnd();CHKERRQ(ierr);
+    if (snes->setfromoptions) {
+      ierr = (*snes->setfromoptions)(snes);CHKERRQ(ierr);
+    }
 
-  if (snes->setfromoptions) {
-    ierr = (*snes->setfromoptions)(snes);CHKERRQ(ierr);
-  }
+  ierr = OptionsEnd();CHKERRQ(ierr);
 
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);

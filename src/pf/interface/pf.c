@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.13 2000/08/03 03:03:38 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.14 2000/08/24 22:43:47 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -495,11 +495,11 @@ int PFSetFromOptions(PF pf)
     if (flg) {
       ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
     }
+    if (pf->ops->setfromoptions) {
+      ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
+    }
   ierr = OptionsEnd();CHKERRQ(ierr);
 
-  if (pf->ops->setfromoptions) {
-    ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

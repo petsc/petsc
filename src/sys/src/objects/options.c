@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.235 2000/05/05 22:14:00 balay Exp bsmith $*/
+/*$Id: options.c,v 1.236 2000/08/30 03:04:11 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -1182,7 +1182,7 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
   while (n < *nmax) {
     if (!value) break;
     ierr        = PetscStrlen(value,&len);CHKERRQ(ierr);
-    strings[n] = (char*)PetscMalloc((len+1) * sizeof(char));CHKPTRQ(strings[n]);
+    strings[n] = (char*)PetscMalloc((len+1)*sizeof(char));CHKPTRQ(strings[n]);
     ierr       = PetscStrcpy(strings[n],value);CHKERRQ(ierr);
     ierr       = PetscStrtok(0,",",&value);CHKERRQ(ierr);
     n++;

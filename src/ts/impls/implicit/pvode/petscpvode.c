@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.58 2000/05/04 13:59:10 balay Exp balay $*/
+/*$Id: petscpvode.c,v 1.59 2000/05/08 15:09:13 balay Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -279,59 +279,47 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
-  int        ierr,restart;
-  char       method[128];
-  double     aabs = PETSC_DECIDE,rel = PETSC_DECIDE,ltol;
+  int        ierr;
+  char       method[128],*btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
   PetscTruth flag;
 
   PetscFunctionBegin;
+  ierr = OptionsHead("PVODE ODE solver options");CHKERRQ(ierr);
+    ierr = OptionsEList("-ts_pvode_type","Scheme","TSPVodeSetType",btype,2,"bdf",method,127,&flag);CHKERRQ(ierr);
+    if (flag) {
+      PetscTruth isbdf,isadams;
 
-  ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_type",method,127,&flag);CHKERRQ(ierr);
-  if (flag) {
-    PetscTruth isbdf,isadams;
-
-    ierr = PetscStrcmp(method,"bdf",&isbdf);CHKERRQ(ierr);
-    ierr = PetscStrcmp(method,"adams",&isadams);CHKERRQ(ierr);
-    if (isbdf) {
-      ierr = TSPVodeSetType(ts,PVODE_BDF);CHKERRQ(ierr);
-    } else if (isadams) {
-      ierr = TSPVodeSetType(ts,PVODE_ADAMS);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode type.\n");
+      ierr = PetscStrcmp(method,btype[0],&isbdf);CHKERRQ(ierr);
+      ierr = PetscStrcmp(method,btype[1],&isadams);CHKERRQ(ierr);
+      if (isbdf) {
+        ierr = TSPVodeSetType(ts,PVODE_BDF);CHKERRQ(ierr);
+      } else if (isadams) {
+        ierr = TSPVodeSetType(ts,PVODE_ADAMS);CHKERRQ(ierr);
+      } else {
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode type.\n");
+      }
     }
-  }
-  ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_gramschmidt_type",method,127,&flag);CHKERRQ(ierr);
-  if (flag) {
-    PetscTruth ismodified,isunmodified;
+    ierr = OptionsEList("-ts_pvode_gramschmidt_type","Type of orthogonalization","TSPVodeSetGramSchmidtType",otype,2,"unmodified",method,127,&flag);CHKERRQ(ierr);
+    if (flag) {
+      PetscTruth ismodified,isunmodified;
 
-    ierr = PetscStrcmp(method,"modified",&ismodified);CHKERRQ(ierr);
-    ierr = PetscStrcmp(method,"unmodified",&isunmodified);CHKERRQ(ierr);
-    if (ismodified) {
-      ierr = TSPVodeSetGramSchmidtType(ts,PVODE_MODIFIED_GS);CHKERRQ(ierr);
-    } else if (isunmodified) {
-      ierr = TSPVodeSetGramSchmidtType(ts,PVODE_UNMODIFIED_GS);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode Gram-Schmidt orthogonalization type \n");
+      ierr = PetscStrcmp(method,otype[0],&ismodified);CHKERRQ(ierr);
+      ierr = PetscStrcmp(method,otype[1],&isunmodified);CHKERRQ(ierr);
+      if (ismodified) {
+        ierr = TSPVodeSetGramSchmidtType(ts,PVODE_MODIFIED_GS);CHKERRQ(ierr);
+      } else if (isunmodified) {
+        ierr = TSPVodeSetGramSchmidtType(ts,PVODE_UNMODIFIED_GS);CHKERRQ(ierr);
+      } else {
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode Gram-Schmidt orthogonalization type \n");
+      }
     }
-  }
-  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_atol",&aabs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_rtol",&rel,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSPVodeSetTolerance(ts,aabs,rel);CHKERRQ(ierr);
+    ierr = OptionsDouble("-ts_pvode_atol","Absolute tolerance for convergence","TSPVodeSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsDouble("-ts_pvode_rtol","Relative tolerance for convergence","TSPVodeSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = OptionsDouble("-ts_pvode_linear_tolerance","Convergence tolerance for linear solve","TSPVodeSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
+    ierr = OptionsInt("-ts_pvode_gmres_restart","Number of GMRES orthogonalization directions","TSPVodeSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
+    ierr = OptionsName("-ts_pvode_not_exact_final_time","Allow PVODE to stop near the final time, not exactly on it","TSPVodeSetExactFinalTime",&cvode->exact_final_time);CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
 
-  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_linear_tolerance",&ltol,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = TSPVodeSetLinearTolerance(ts,ltol);CHKERRQ(ierr);
-  }
-
-  ierr = OptionsGetInt(PETSC_NULL,"-ts_pvode_gmres_restart",&restart,&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = TSPVodeSetGMRESRestart(ts,restart);CHKERRQ(ierr);
-  }
-
-  ierr = OptionsHasName(PETSC_NULL,"-ts_pvode_not_exact_final_time",&flag);CHKERRQ(ierr);
-  if (flag) {
-    ierr = TSPVodeSetExactFinalTime(ts,PETSC_FALSE);CHKERRQ(ierr);
-  }
   ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -357,7 +345,6 @@ int TSPrintHelp_PVode(TS ts,char *p)
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_not_exact_final_time\n");CHKERRQ(ierr); 
 
-  ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -814,7 +801,6 @@ int TSCreate_PVode(TS ts)
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_PVode;
-  ts->printhelp       = TSPrintHelp_PVode;
   ts->view            = TSView_PVode;
 
   if (ts->problem_type != TS_NONLINEAR) {

@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.49 2000/06/05 03:47:41 bsmith Exp $*/
+/*$Id: partition.c,v 1.51 2000/08/24 22:42:12 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -527,17 +527,17 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
   char       type[256],*def;
 
   PetscFunctionBegin;
-  if (!part->type_name) {
-#if defined(PETSC_HAVE_PARMETIS)
-    def = MATPARTITIONING_PARMETIS;
-#else
-    def = MATPARTITIONING_CURRENT;
-#endif
-  } else {
-    def = part->type_name;
-  }
   if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
   ierr = OptionsBegin(part->comm,part->prefix,"Partitioning options");CHKERRQ(ierr);
+    if (!part->type_name) {
+#if defined(PETSC_HAVE_PARMETIS)
+      def = MATPARTITIONING_PARMETIS;
+#else
+      def = MATPARTITIONING_CURRENT;
+#endif
+    } else {
+      def = part->type_name;
+    }
     ierr = OptionsList("-mat_partitioning_type","Type of partitioner","MatPartitioningSetType",MatPartitioningList,def,type,256,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
@@ -546,13 +546,13 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
       Set the type if it was never set.
     */
     if (!part->type_name) {
-      ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
+      ierr = MatPartitioningSetType(part,def);CHKERRQ(ierr);
+    }
+
+    if (part->ops->setfromoptions) {
+      ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);
     }
   ierr = OptionsEnd();CHKERRQ(ierr);
-
-  if (part->ops->setfromoptions) {
-    ierr = (*part->ops->setfromoptions)(part);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

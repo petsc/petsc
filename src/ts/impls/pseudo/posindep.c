@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.44 2000/05/05 22:18:57 balay Exp bsmith $*/
+/*$Id: posindep.c,v 1.45 2000/05/18 16:28:25 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -19,8 +19,8 @@ typedef struct {
   double initial_fnorm,fnorm;                  /* original and current norm of F(u) */
   double fnorm_previous;
 
-  double dt_increment;                  /* scaling that dt is incremented each time-step */
-  int    increment_dt_from_initial_dt;  
+  double     dt_increment;                  /* scaling that dt is incremented each time-step */
+  PetscTruth increment_dt_from_initial_dt;  
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
@@ -318,40 +318,25 @@ int TSPseudoDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
 #define __FUNC__ /*<a name=""></a>*/"TSSetFromOptions_Pseudo"
 static int TSSetFromOptions_Pseudo(TS ts)
 {
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int        ierr;
   PetscTruth flg;
-  double     inc;
 
   PetscFunctionBegin;
+
+  ierr = OptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
+    ierr = OptionsName("-ts_monitor","Monitor convergence","TSPseudoDefaultMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = TSSetMonitor(ts,TSPseudoDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = OptionsName("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
+    }
+    ierr = OptionsDouble("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
+
   ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
-
-  ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSSetMonitor(ts,TSPseudoDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  }
-  ierr = OptionsGetDouble(ts->prefix,"-ts_pseudo_increment",&inc,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSPseudoSetTimeStepIncrement(ts,inc);CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(ts->prefix,"-ts_pseudo_increment_dt_from_initial_dt",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPrintHelp_Pseudo"
-static int TSPrintHelp_Pseudo(TS ts,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(ts->comm," Options for TS Pseudo timestepper:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," %sts_pseudo_increment <value> : default 1.1\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," %sts_pseudo_increment_dt_from_initial_dt : use initial_dt *\n",p);CHKERRQ(ierr); 
-  ierr = (*PetscHelpPrintf)(ts->comm,"     initial fnorm/current fnorm to determine new timestep\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm,"     default is current_dt * previous fnorm/current fnorm\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -549,10 +534,9 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name=""></a>*/"TSPseudoSetTimeStepIncrement_Pseudo"
 int TSPseudoSetTimeStepIncrement_Pseudo(TS ts,double inc)
 {
-  TS_Pseudo *pseudo;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
   PetscFunctionBegin;
-  pseudo               = (TS_Pseudo*)ts->data;
   pseudo->dt_increment = inc;
   PetscFunctionReturn(0);
 }
@@ -563,11 +547,10 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name=""></a>*/"TSPseudoIncrementDtFromInitialDt_Pseudo"
 int TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 {
-  TS_Pseudo *pseudo;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
   PetscFunctionBegin;
-  pseudo                               = (TS_Pseudo*)ts->data;
-  pseudo->increment_dt_from_initial_dt = 1;
+  pseudo->increment_dt_from_initial_dt = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -577,10 +560,9 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name=""></a>*/"TSPseudoSetTimeStep_Pseudo"
 int TSPseudoSetTimeStep_Pseudo(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 {
-  TS_Pseudo *pseudo;
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
   PetscFunctionBegin;
-  pseudo          = (TS_Pseudo*)ts->data;
   pseudo->dt      = dt;
   pseudo->dtctx   = ctx;
   PetscFunctionReturn(0);
@@ -600,7 +582,6 @@ int TSCreate_Pseudo(TS ts)
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_Pseudo;
-  ts->printhelp       = TSPrintHelp_Pseudo;
   ts->view            = TSView_Pseudo;
 
   if (ts->problem_type == TS_LINEAR) {
@@ -627,7 +608,7 @@ int TSCreate_Pseudo(TS ts)
   ts->data = (void*)pseudo;
 
   pseudo->dt_increment                 = 1.1;
-  pseudo->increment_dt_from_initial_dt = 0;
+  pseudo->increment_dt_from_initial_dt = PETSC_FALSE;
   pseudo->dt                           = TSPseudoDefaultTimeStep;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",

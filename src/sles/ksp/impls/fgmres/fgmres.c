@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.18 2000/06/24 00:40:13 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.19 2000/08/24 22:42:54 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -708,7 +708,7 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   PetscTruth  flg;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP flexible GMRES Options");CHKERRQ(ierr);
+  ierr = OptionsHead("KSP flexible GMRES Options");CHKERRQ(ierr);
     ierr = OptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
     ierr = OptionsDouble("-ksp_gmres_haptol","Tolerance for declaring exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
@@ -731,8 +731,7 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
     ierr = OptionsLogicalGroupEnd("-ksp_fgmres_modifypcsles","vary the SLES based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCSLES,0,0);CHKERRQ(ierr);} 
-  ierr = OptionsEnd();CHKERRQ(ierr);
-
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

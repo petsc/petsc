@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.53 2000/05/17 18:50:28 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.54 2000/08/24 22:43:01 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -49,7 +49,6 @@ struct _p_SNES {
   int   setupcalled;                /* true if setup has been called */
   int   (*solve)(SNES,int*);        /* actual nonlinear solver */
   int   (*setfromoptions)(SNES);    /* sets options from database */
-  int   (*printhelp)(SNES,char*);   /* prints help info */
   void  *data;                      /* implementation-specific data */
 
   /* --------------------------  Parameters -------------------------------------- */

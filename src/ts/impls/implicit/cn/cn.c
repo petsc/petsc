@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.20 2000/04/12 04:26:01 bsmith Exp balay $*/
+/*$Id: cn.c,v 1.21 2000/05/05 22:18:56 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -393,14 +393,6 @@ static int TSSetFromOptions_CN_Nonlinear(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"TSPrintHelp_CN"
-static int TSPrintHelp_CN(TS ts,char *p)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"TSView_CN"
 static int TSView_CN(TS ts,Viewer viewer)
 {
@@ -421,7 +413,6 @@ int TSCreate_CN(TS ts)
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_CN;
-  ts->printhelp       = TSPrintHelp_CN;
   ts->view            = TSView_CN;
 
   if (ts->problem_type == TS_LINEAR) {

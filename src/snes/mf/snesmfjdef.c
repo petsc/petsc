@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.18 2000/08/17 04:52:42 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.19 2000/08/24 22:43:04 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -18,9 +18,6 @@
    -------------------
       MatSNESMFView_ - prints information about the parameters being used.
                        This is called when SNESView() or -snes_view is used.
-
-      MatSNESMFPrintHelp_ - prints a help message on what options are
-                          available for this implementation
 
       MatSNESMFSetFromOptions_ - checks the options database for options that 
                                apply to this method.
@@ -153,9 +150,9 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = OptionsBegin(ctx->comm,ctx->prefix,"Default matrix free parameters");CHKERRQ(ierr);
+  ierr = OptionsHead("Default matrix free parameters");CHKERRQ(ierr);
     ierr = OptionsDouble("-snes_mf_umin","umin","MatSNESMFDefaultSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
-  ierr = OptionsEnd();CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

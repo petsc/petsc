@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.144 2000/05/05 22:17:09 balay Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.145 2000/07/10 03:40:13 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -194,35 +194,21 @@ static int PCDestroy_BJacobi(PC pc)
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_BJacobi"
 static int PCSetFromOptions_BJacobi(PC pc)
 {
+  PC_BJacobi *jac = (PC_BJacobi*)pc->data;
   int        blocks,ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetInt(pc->prefix,"-pc_bjacobi_blocks",&blocks,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL);CHKERRQ(ierr); 
-  }
-  ierr = OptionsHasName(pc->prefix,"-pc_bjacobi_truelocal",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCBJacobiSetUseTrueLocal(pc);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_BJacobi"
-static int PCPrintHelp_BJacobi(PC pc,char *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(pc->comm," Options for PCBJACOBI preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_bjacobi_blocks <blks>: total blocks in preconditioner\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %spc_bjacobi_truelocal: use blocks from the local linear\
- system matrix \n      instead of the preconditioning matrix\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
- Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
- <ksptype>)\n",p,p);CHKERRQ(ierr);
+  ierr = OptionsHead("Block Jacobi options");CHKERRQ(ierr);
+    ierr = OptionsInt("-pc_bjacobi_blocks","Total number of blocks","PCBJacobiSetTotalBlocks",jac->n,&blocks,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL);CHKERRQ(ierr); 
+    }
+    ierr = OptionsName("-pc_bjacobi_truelocal","Use the true matrix, not preconditioner matrix to define matrix vector product in sub-problems","PCBJacobiSetUseTrueLocal",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCBJacobiSetUseTrueLocal(pc);CHKERRQ(ierr);
+    }
+  ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -546,7 +532,6 @@ int PCCreate_BJacobi(PC pc)
   pc->ops->setup              = PCSetUp_BJacobi;
   pc->ops->destroy            = PCDestroy_BJacobi;
   pc->ops->setfromoptions     = PCSetFromOptions_BJacobi;
-  pc->ops->printhelp          = PCPrintHelp_BJacobi;
   pc->ops->view               = PCView_BJacobi;
   pc->ops->applyrichardson    = 0;
 
