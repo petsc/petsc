@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.39 1999/03/06 05:09:05 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.40 1999/03/17 23:23:13 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -777,7 +777,7 @@ int MatMultAdd_SeqBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ii[1] - ii[0]; ii++; 
     sum1 = y[0]; sum2 = y[1]; sum3 = y[2]; sum4 = y[3]; sum5 = y[4]; sum6 = y[5];
     for ( j=0; j<n; j++ ) {
-      xb = x + 7*(*idx++);
+      xb = x + 6*(*idx++);
       x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4]; x6 = xb[5];
       sum1 += v[0]*x1 + v[6]*x2  + v[12]*x3  + v[18]*x4 + v[24]*x5 + v[30]*x6;
       sum2 += v[1]*x1 + v[7]*x2  + v[13]*x3  + v[19]*x4 + v[25]*x5 + v[31]*x6;

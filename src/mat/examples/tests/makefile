@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.213 1999/02/01 21:37:47 balay Exp balay $ 
+# $Id: makefile,v 1.214 1999/02/05 22:48:52 balay Exp balay $ 
 
 ALL: ex1
 
@@ -591,7 +591,7 @@ runex47:
 	   else echo "Possible problem with ex47_1, diffs above"; fi; \
 	   ${RM} -f ex47_1.tmp
 
-MATBLOCKSIZE   = 1 2 3 4 5 6
+MATBLOCKSIZE   = 1 2 3 4 5 6 7 8
 runex48:
 	-@touch ex48_1.tmp;\
 	for bs in ${MATBLOCKSIZE}; do \
