@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.131 2000/04/21 17:01:34 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.132 2000/04/21 17:03:23 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2354,8 +2354,8 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
 {
   int         *lens,rank,*owners = xin->map->range,size,found;
   int         *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work,*local_inidx,*local_inidy;
-  int         *owner,*starts,count,tag = xin->tag,slen,ierr;
-  int         *rvalues,*svalues,base,imdex,nmax,*values;
+  int         *owner,*starts,count,tag = xin->tag,slen,ierr,start;
+  int         *rvalues,*svalues,base,imdex,nmax,*values,last;
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits;
   MPI_Status  recv_status;
@@ -2474,6 +2474,35 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   /*
      should sort and remove duplicates from local_inidx,local_inidy 
   */
+
+  /* sort on the from index */
+  ierr = PetscSortIntWithArray(slen,local_inidx,local_inidy);CHKERRQ(ierr);
+  start = 0;
+  while (start < slen) {
+    count = start+1;
+    last  = local_inidx[start];
+    while (count < slen && last == local_inidx[count]) count++;
+    if (count > start + 1) { /* found 2 or more same local_inidx[] in a row */
+      /* sort on to index */
+      ierr = PetscSortInt(count-start,local_inidy+start);CHKERRQ(ierr);
+    }
+    /* remove duplicates; not most efficient way, but probably good enough */
+    i = start;
+    while (i < count-1) {
+      if (local_inidy[i] != local_inidy[i+1]) {
+        i++;
+      } else { /* found a duplicate */
+	for (j=i; j<slen-1; j++) {
+          local_inidx[j] = local_inidx[j+1];
+          local_inidy[j] = local_inidy[j+1];
+        }
+        slen--;
+        count--;
+        /* printf("found dup %d %d\n",local_inidx[i],local_inidy[i]);*/
+      }
+    }
+    start = count + 1;
+  }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,yin,ctx);CHKERRQ(ierr);
   ierr = PetscFree(local_inidx);CHKERRQ(ierr);
 
