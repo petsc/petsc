@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.14 1995/04/15 03:28:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.15 1995/04/25 18:03:03 bsmith Exp bsmith $";
 #endif
 
 
@@ -21,7 +21,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   if (!isrow) {SETERR(1,"Must have row permutation");}
   if (!iscol) {SETERR(1,"Must have column permutation");}
 
-  if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
+  ierr = ISInvertPermutation(iscol,&isicol); CHKERR(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
   /* get new row pointers */
@@ -112,6 +112,8 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   aijnew->row       = isrow;
   aijnew->col       = iscol;
   (*fact)->factor   = FACTOR_LU;
+  aijnew->solve_work = (Scalar *) MALLOC( n*sizeof(Scalar)); 
+  CHKPTR(aijnew->solve_work);
   /* Cannot do this here because child is destroyed before parent created
      PLogObjectParent(*fact,isicol); */
   return 0; 
@@ -126,7 +128,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
   int     *ajtmpold, *ajtmp, nz, row,*pj;
   Scalar  *rtmp,*v, *pv, *pc, multiplier; 
 
-  if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
+  ierr = ISInvertPermutation(iscol,&isicol); CHKERR(ierr);
   PLogObjectParent(*infact,isicol);
   ierr = ISGetIndices(isrow,&r); CHKERR(ierr);
   ierr = ISGetIndices(isicol,&ic); CHKERR(ierr);
@@ -153,6 +155,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
         multiplier = *pc * *pv++;
         *pc = multiplier;
         nz = ai[row+1] - ai[row] - 1 - nz;
+        PLogFlops(2*nz);
         while (nz-->0) rtmp[*pj++ - 1] -= multiplier* *pv++; 
       }      
       row = *ajtmp++ - 1;
@@ -168,8 +171,10 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
   ierr = ISRestoreIndices(isicol,&ic); CHKERR(ierr);
   ierr = ISRestoreIndices(isrow,&r); CHKERR(ierr);
   ierr = ISDestroy(isicol); CHKERR(ierr);
-  fact->factor = FACTOR_LU;
+  fact->factor      = FACTOR_LU;
   aijnew->assembled = 1;
+  aijnew->nz           = ai[aijnew->n];
+  PLogFlops(aijnew->n);
   return 0;
 }
 int MatLUFactor_AIJ(Mat matin,IS row,IS col)
@@ -207,12 +212,12 @@ int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
 
   if (mat->factor != FACTOR_LU) SETERR(1,"Cannot solve with factor");
 
-  if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
-  if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
-  tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
+  ierr = VecGetArray(bb,&b); CHKERR(ierr);
+  ierr = VecGetArray(xx,&x); CHKERR(ierr);
+  tmp = aij->solve_work;
 
-  if ((ierr = ISGetIndices(isrow,&r))) SETERR(ierr,0);
-  if ((ierr = ISGetIndices(iscol,&c))) SETERR(ierr,0); c = c + (n-1);
+  ierr = ISGetIndices(isrow,&r);CHKERR(ierr);
+  ierr = ISGetIndices(iscol,&c);CHKERR(ierr); c = c + (n-1);
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
@@ -235,7 +240,7 @@ int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
     x[*c--] = tmp[i] = sum*aa[aij->diag[i]-1];
   }
 
-  FREE(tmp);
+  PLogFlops(2*aij->nz - aij->n);
   return 0;
 }
 int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
@@ -249,12 +254,12 @@ int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
   if (mat->factor != FACTOR_LU) SETERR(1,"Cannot solve with factor");
   if (yy != xx) {ierr = VecCopy(yy,xx); CHKERR(ierr);}
 
-  if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
-  if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
-  tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
+  ierr = VecGetArray(bb,&b); CHKERR(ierr);
+  ierr = VecGetArray(xx,&x); CHKERR(ierr);
+  tmp = aij->solve_work;
 
-  if ((ierr = ISGetIndices(isrow,&r))) SETERR(ierr,0);
-  if ((ierr = ISGetIndices(iscol,&c))) SETERR(ierr,0); c = c + (n-1);
+  ierr = ISGetIndices(isrow,&r); CHKERR(ierr);
+  ierr = ISGetIndices(iscol,&c); CHKERR(ierr); c = c + (n-1);
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
@@ -278,7 +283,7 @@ int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
     x[*c--] += tmp[i];
   }
 
-  FREE(tmp);
+  PLogFlops(2*aij->nz);
   return 0;
 }
 /* -------------------------------------------------------------------*/
@@ -291,17 +296,17 @@ int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
   if (mat->factor != FACTOR_LU) SETERR(1,"Cannot solve with factor");
-  if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
-  if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
-  tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
+  ierr = VecGetArray(bb,&b); CHKERR(ierr);
+  ierr = VecGetArray(xx,&x); CHKERR(ierr);
+  tmp = aij->solve_work;
 
   /* invert the permutations */
   ierr = ISInvertPermutation(isrow,&invisrow); CHKERR(ierr);
   ierr = ISInvertPermutation(iscol,&inviscol); CHKERR(ierr);
 
 
-  if ((ierr = ISGetIndices(invisrow,&r))) SETERR(ierr,0);
-  if ((ierr = ISGetIndices(inviscol,&c))) SETERR(ierr,0);
+  ierr = ISGetIndices(invisrow,&r); CHKERR(ierr);
+  ierr = ISGetIndices(inviscol,&c); CHKERR(ierr);
 
   /* copy the b into temp work space according to permutation */
   for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
@@ -332,7 +337,7 @@ int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
 
   ISDestroy(invisrow); ISDestroy(inviscol);
 
-  FREE(tmp);
+  PLogFlops(2*aij->nz-aij->n);
   return 0;
 }
 
@@ -347,17 +352,17 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
   if (mat->factor != FACTOR_LU) SETERR(1,"Cannot solve with factor");
   if (zz != xx) VecCopy(zz,xx);
 
-  if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
-  if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
-  tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
+  ierr = VecGetArray(bb,&b); CHKERR(ierr);
+  ierr = VecGetArray(xx,&x); CHKERR(ierr);
+  tmp = aij->solve_work;
 
   /* invert the permutations */
   ierr = ISInvertPermutation(isrow,&invisrow); CHKERR(ierr);
   ierr = ISInvertPermutation(iscol,&inviscol); CHKERR(ierr);
 
 
-  if ((ierr = ISGetIndices(invisrow,&r))) SETERR(ierr,0);
-  if ((ierr = ISGetIndices(inviscol,&c))) SETERR(ierr,0);
+  ierr = ISGetIndices(invisrow,&r); CHKERR(ierr);
+  ierr = ISGetIndices(inviscol,&c); CHKERR(ierr);
 
   /* copy the b into temp work space according to permutation */
   for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
@@ -388,9 +393,8 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
 
   ISDestroy(invisrow); ISDestroy(inviscol);
 
-  FREE(tmp);
+  PLogFlops(2*aij->nz);
   return 0;
-
 }
 /* ----------------------------------------------------------------*/
 int MatILU_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
@@ -405,7 +409,7 @@ int MatILU_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
   if (!isrow) {SETERR(1,"Must have row permutation");}
   if (!iscol) {SETERR(1,"Must have column permutation");}
 
-  if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
+  ierr = ISInvertPermutation(iscol,&isicol); CHKERR(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
   /* get new row pointers */
@@ -512,6 +516,8 @@ int MatILU_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
   aijnew->imax      = 0;
   aijnew->row       = isrow;
   aijnew->col       = iscol;
+  aijnew->solve_work = (Scalar *) MALLOC( n*sizeof(Scalar)); 
+  CHKPTR(aijnew->solve_work);
   (*fact)->factor   = FACTOR_LU;
   return 0; 
 }
