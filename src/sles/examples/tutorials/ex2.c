@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.69 1998/04/16 04:14:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.70 1998/04/20 19:30:14 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */
@@ -18,6 +18,7 @@ Input parameters include:\n\
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
    Routines: KSPSetTolerances(); PCSetType();
+   Routines: PetscRandomCreate(); PetscRandomDestroy(); VecSetRandom();
    Processors: n
 T*/
 
