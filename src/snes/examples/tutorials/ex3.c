@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.30 1996/01/24 17:53:43 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.31 1996/01/29 21:46:50 curfman Exp balay $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -30,7 +30,7 @@ int main( int argc, char **argv )
   Vec            x, r, U, F;
   Scalar         xp, *FF, *UU;
   int            ierr, its, N = 5, i, start, end, n, set,flg;
-  MatType        mtype;
+  MatType        mtype=MATMPIAIJ;
 
   PetscInitialize( &argc, &argv, 0,0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&N,&flg); CHKERRA(ierr);
