@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.25 1997/07/03 18:16:32 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.26 1997/07/03 18:20:33 balay Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -16,6 +16,9 @@ static char vcid[] = "$Id: memc.c,v 1.25 1997/07/03 18:16:32 balay Exp balay $";
 #include <memory.h>
 #if defined(HAVE_STRINGS_H)
 #include <strings.h>
+#endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
 
