@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.9 1995/10/06 14:38:44 gropp Exp bsmith $ */
+/* $Id: ptime.h,v 1.10 1995/12/05 05:03:05 bsmith Exp bsmith $ */
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
@@ -20,7 +20,7 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 #include <sys/types.h>
 #include <sys/time.h>
 #endif
-#if defined(PARCH_sun4) && !defined(__cplusplus)
+#if defined(PARCH_sun4)
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 #endif
 #if defined(PARCH_solaris) && defined(__cplusplus)
@@ -46,7 +46,7 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
    Usage: 
      double v;
      PetscTime(v);
-     /* perform some calculation */
+     .... perform some calculation ...
      PetscTimeElapsed(v); 
      printf("Time for operation %g\n",v);
 
@@ -129,7 +129,7 @@ M*/
    Usage: 
      double v;
      PetscTime(v);
-     /* perform some calculation */
+     ... perform some calculation ..
      PetscTimeElapsed(v); 
      printf("Time for operation %g\n",v);
 
@@ -143,5 +143,8 @@ M*/
 
 .keywords:  Petsc, time
 M*/
-#define PetscTimeElapsed(v)  {PetscTimeSubtract(v); v = -v; }
+#define PetscTimeElapsed(v)  {PetscTimeSubtract(v); v = -(v); }
+
 #endif
+
+
