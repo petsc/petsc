@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscdraw
 EXAMPLES = ex1 ex2 ex3 ex4 ex5
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c
-SYSLIB   = -L$(LDIR) -lpetscdraw -lpetscsys \
+SYSLIB   = -L$(LDIR) -lpetscdraw -lpetscvec -lpetscsys \
            $(LAPACK_LIB) $(BLAS_LIB) \
            $(MPI_LIB) $(X11_LIB) $(SYS_LIB) $(MALLOCDEBUG) $(FC_LIB) -lm 
 LINCLUDE = $(SOURCEH)
