@@ -16,23 +16,23 @@ class Configure(config.base.Configure):
     if 'CC' in self.framework.argDB:
       self.pushLanguage('C')
       desc.append('  C Compiler:         '+self.getCompiler())
-      desc.append('  C Compiler Flags:   '+self.compilerFlags)
-      desc.append('  C Linker:           '+self.getLinker())
-      desc.append('  C Linker Flags:     '+self.linkerFlags)
+#     desc.append('  C Compiler Flags:   '+self.compilerFlags)
+      if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker())
+#     desc.append('  C Linker Flags:     '+self.linkerFlags)
       self.popLanguage()
     if 'CXX' in self.framework.argDB and self.framework.argDB['CXX']:
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler())
-      desc.append('  C++ Compiler Flags: '+self.compilerFlags)
-      desc.append('  C++ Linker:         '+self.getLinker())
-      desc.append('  C++ Linker Flags:   '+self.linkerFlags)
+#     desc.append('  C++ Compiler Flags: '+self.compilerFlags)
+      if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker())
+#     desc.append('  C++ Linker Flags:   '+self.linkerFlags)
       self.popLanguage()
     if 'FC' in self.framework.argDB:
       self.pushLanguage('F77')
       desc.append('  Fortran Compiler:       '+self.getCompiler())
-      desc.append('  Fortran Compiler Flags: '+self.compilerFlags)
-      desc.append('  Fortran Linker:         '+self.getLinker())
-      desc.append('  Fortran Linker Flags:   '+self.linkerFlags)
+#     desc.append('  Fortran Compiler Flags: '+self.compilerFlags)
+      if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:         '+self.getLinker())
+#     desc.append('  Fortran Linker Flags:   '+self.linkerFlags)
       self.popLanguage()
     return '\n'.join(desc)+'\n'
 
@@ -250,6 +250,10 @@ class Configure(config.base.Configure):
           yield 'mpiCC'
         if not Configure.isGNU('mpiCC') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpiCC'
+        if Configure.isGNU('mpic++') and self.framework.argDB['with-gnu-compilers']:
+          yield 'mpic++'
+        if not Configure.isGNU('mpic++') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpic++'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
       vendor = self.framework.argDB['with-vendor-compilers']

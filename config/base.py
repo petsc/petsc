@@ -30,8 +30,6 @@ class Configure:
     return ''
 
   def checkPython(self):
-    import sys
-
     if not hasattr(sys, 'version_info') or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
       raise RuntimeError('BuildSystem requires Python version 2.2 or higher. Get Python at http://www.python.org')
     return
@@ -40,7 +38,6 @@ class Configure:
     return str(self.framework.log.fileno())
 
   def getRoot(self):
-    import sys
     # This has the problem that when we reload a module of the same name, this gets screwed up
     #   Therefore, we call it in the initializer, and stash it
     if not hasattr(self, '_root_'):
@@ -59,6 +56,9 @@ class Configure:
 
   def printLine(self,msg):
     if not hasattr(self.framework,'linewidth'):
+      if not sys.stdout.isatty():
+        self.framework.linewidth = -1
+        return
       try:
         import curses
         try:
@@ -498,7 +498,6 @@ class Configure:
     return self.framework.filterLinkOutput(output)
 
   def outputLink(self, includes, body, cleanup = 1):
-    import sys
 
     (out, ret) = self.outputCompile(includes, body, cleanup = 0)
     out = self.filterCompileOutput(out)
