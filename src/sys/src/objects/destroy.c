@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.10 1995/08/07 21:58:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.11 1995/08/22 16:29:51 bsmith Exp curfman $";
 #endif
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
@@ -66,11 +66,12 @@ extern void sleep(int);
 #endif
 
 /*@
-     PetscSleep - Sleeps some number of seconds.
+   PetscSleep - Sleeps some number of seconds.
 
-  Input Parameters:
-.   s - number of seconds to sleep
+   Input Parameters:
+.  s - number of seconds to sleep
 
+.keywords: sleep, wait
 @*/
 void PetscSleep(int s)
 {
