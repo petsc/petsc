@@ -1,9 +1,9 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.19 2000/09/21 20:47:33 hzhang Exp bsmith $*/
+/*$Id: sbaijfact.c,v 1.20 2000/09/28 21:11:41 bsmith Exp hzhang $*/
 /*
-    Factorization code for SBAIJ format. 
+    Symbolic UT-D-U Factorization code for SBAIJ format. Modified from SSF of YSMP.
 */
 #include "sbaij.h"
 #include "src/mat/impls/baij/seq/baij.h" 
@@ -2274,7 +2274,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 }
 
 /*
-     Version for when blocks are 1 by 1.
+    Numeric UT-D-U Factorization code for SBAIJ format. Modified from SNF of YSMP.
 */
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_1"
@@ -2366,13 +2366,14 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
          j     = bj[jmin];
          jl[i] = jl[j]; jl[j] = i; /* update jl */
       }      
-      i = nexti;
-      /* printf("                  pivot row i=%d\n",i);  */        
+      i = nexti; /* printf("                  pivot row i=%d\n",i);  */        
     }
 
     /* CHECK FOR ZERO PIVOT AND SAVE DIAGONAL ELEMENT */
     if (dk == 0.0){
       SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
+    }else if (PetscRealPart(dk) < 0){
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Negative pivot: d[%d] = %g\n",k,dk);
     }                                               
 
     /* SAVE NONZERO ENTRIES IN K-TH ROW OF U ... */
@@ -2398,7 +2399,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
   }
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
-  C->factor    = FACTOR_LU;
+  C->factor    = FACTOR_CHOLESKY;
+  /* C->factor    = FACTOR_LU; */
   C->assembled = PETSC_TRUE;
   PLogFlops(b->mbs);
   PetscFunctionReturn(0);
