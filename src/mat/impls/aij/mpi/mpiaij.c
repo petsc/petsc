@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.19 1995/03/26 04:43:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.20 1995/03/27 22:58:06 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -544,6 +544,9 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   int        ierr;
   PetscObject vobj = (PetscObject) viewer;
 
+  if (!viewer) { /* so that viewers may be used from debuggers */
+    viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
+  }
   if (!aij->assembled) SETERR(1,"MatView_MPIAIJ: must assemble matrix first");
   if (vobj->cookie == VIEWER_COOKIE) {
     FILE *fd = ViewerFileGetPointer(viewer);
@@ -978,44 +981,65 @@ static int MatRange_MPIAIJ(Mat matin,int *m,int *n)
 
 static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) matin->data;
-  Scalar     *vworkA, *vworkB;
-  int        ierr, *cworkA, *cworkB, lrow, cstart = aij->cstart;
-  int        nztot, nzA, nzB, i, rstart = aij->rstart, rend = aij->rend;
+  Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
+  Scalar     *vworkA, *vworkB, **pvA, **pvB;
+  int        i, ierr, *cworkA, *cworkB, **pcA, **pcB, cstart = mat->cstart;
+  int        nztot, nzA, nzB, lrow, rstart = mat->rstart, rend = mat->rend;
 
-  if (!aij->assembled) 
+  if (!mat->assembled) 
     SETERR(1,"MatGetRow_MPIAIJ: Must assemble matrix first.");
   if (row < rstart || row >= rend) 
     SETERR(1,"MatGetRow_MPIAIJ: Currently you can get only local rows.")
   lrow = row - rstart;
-  ierr = MatGetRow(aij->A,lrow,&nzA,&cworkA,&vworkA); CHKERR(ierr);
-  for (i=0; i<nzA; i++) cworkA[i] += cstart;
-  ierr = MatGetRow(aij->B,lrow,&nzB,&cworkB,&vworkB); CHKERR(ierr);
-  for (i=0; i<nzB; i++) cworkB[i] = aij->garray[cworkB[i]];
 
-  if ((nztot = nzA + nzB)) {
-    *idx = (int *) MALLOC( (nztot)*sizeof(int) ); CHKPTR(*idx);
-    *v   = (Scalar *) MALLOC( (nztot)*sizeof(Scalar) ); CHKPTR(*v);
-    for ( i=0; i<nzA; i++ ) {
-      (*idx)[i] = cworkA[i];
-      (*v)[i] = vworkA[i];
-    }
-    for ( i=0; i<nzB; i++ ) {
-      (*idx)[i+nzA] = cworkB[i];
-      (*v)[i+nzA] = vworkB[i];
-    }
+  pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
+  if (!v)   {pvA = 0; pvB = 0;}
+  if (!idx) {pcA = 0; if (!v) pcB = 0;}
+  ierr = MatGetRow(mat->A,lrow,&nzA,pcA,pvA); CHKERR(ierr);
+  ierr = MatGetRow(mat->B,lrow,&nzB,pcB,pvB); CHKERR(ierr);
+  nztot = nzA + nzB;
+
+  if (v  || idx) {
+    if (nztot) {
+      /* Sort by increasing column numbers, assuming A and B already sorted */
+      int imark, imark2;
+      for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
+      if (v) {
+        *v = (Scalar *) MALLOC( (nztot)*sizeof(Scalar) ); CHKPTR(*v);
+        for ( i=0; i<nzB; i++ ) {
+          if (cworkB[i] < cstart)   (*v)[i] = vworkB[i];
+          else break;
+        }
+        imark = i;
+        for ( i=0; i<nzA; i++ )     (*v)[imark+i] = vworkA[i];
+        imark2 = imark+nzA;
+        for ( i=imark; i<nzB; i++ ) (*v)[imark2+i] = vworkB[i];
+      }
+      if (idx) {
+        *idx = (int *) MALLOC( (nztot)*sizeof(int) ); CHKPTR(*idx);
+        for (i=0; i<nzA; i++) cworkA[i] += cstart;
+        for ( i=0; i<nzB; i++ ) {
+          if (cworkB[i] < cstart)   (*idx)[i] = cworkB[i];
+          else break;
+        }
+        imark = i;
+        for ( i=0; i<nzA; i++ )     (*idx)[imark+i] = cworkA[i];
+        imark2 = imark+nzA;
+        for ( i=imark; i<nzB; i++ ) (*idx)[imark2+i] = cworkB[i];
+      } 
+    } 
+    else {*idx = 0; *v=0;}
   }
-  else {*idx = 0; *v=0;}
   *nz = nztot;
-  ierr = MatRestoreRow(aij->A,lrow,&nzA,&cworkA,&vworkA); CHKERR(ierr);
-  ierr = MatRestoreRow(aij->B,lrow,&nzB,&cworkB,&vworkB); CHKERR(ierr);
+  ierr = MatRestoreRow(mat->A,lrow,&nzA,pcA,pvA); CHKERR(ierr);
+  ierr = MatRestoreRow(mat->B,lrow,&nzB,pcB,pvB); CHKERR(ierr);
   return 0;
 }
 
 static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 {
-  if (*idx) FREE(*idx);
-  if (*v) FREE(*v);
+  if (idx) FREE(*idx);
+  if (v) FREE(*v);
   return 0;
 }
 
