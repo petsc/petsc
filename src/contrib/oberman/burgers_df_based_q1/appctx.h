@@ -1,9 +1,9 @@
 
 /*
-       Defines some simple data structures for writing cell (element) based PDE codes.
+    Defines some simple data structures for writing cell (element) based PDE codes.
 
     Generally one would write a code by starting with the data structures below and 
-    and to them and deleting from them unneeded information. 
+    then delete unneeded information. 
 */
 #if !defined(__APPCTX_H)
 #define __APPCTX_H
@@ -12,30 +12,29 @@
 #include "bitarray.h"
 #include "snes.h"
 /*
-        cell_n               - number of cells on this processor 
-        cell_vertex          - vertices of the cells (in local numbering)
-        cell_global          - global number of each cell on this processor
-        cell_cell            - neighbors of the cell.  (-1) indicates no neighbor.
+  cell_n               - number of cells on this processor 
+  cell_vertex          - vertices of the cells (in local numbering)
+  cell_global          - global numbering of each cell on this processor
+  cell_cell            - neighbors of the cell.  (-1) indicates no neighbor.
                                ordering cycles clockwise from left
-        vertex_n             - number of unique vertices on this processor 
-        vertex_n_ghosted     - number of vertices including ghost ones
-        vertex_global        - global number of each vertex on this processor
-        vertex_value         - x,y coordinates of vertices on this processor
-        vertex_boundary      - list of on processor vertices (including ghosts)
-                               that are on the boundary
-       vertex_global_blocked       - the list of vertices expanded by a facter of 
-                                           the number of degrees of freedom in the problem
-       vertex_boundary_blocked - the boundary vertices, blocked.		       
-        vertex_boundary_flag - bit array indicating for all on processor vertices (including ghosts) 
-                               if they are on the boundary
-        ltog                 - mapping from local numbering of vertices (including ghosts)
+  vertex_n             - number of unique vertices on this processor 
+  vertex_n_ghosted     - number of vertices on this processor, including ghost ones
+  vertex_global        - global numbering of each vertex on this processor
+  vertex_value         - x,y coordinates of vertices on this processor
+  vertex_boundary      - list of vertices (including ghosts)
+                               that are on the boundary on this processor
+  vertex_global_blocked - the list/global numbering of vertices expanded by a factor
+                                   of the number of degrees of freedom in the problem
+  vertex_boundary_blocked - the boundary vertices, blocked.		       
+  vertex_boundary_flag - bit array indicating for all on processor vertices 
+                                   (including ghosts) if they are on the boundary
+  ltog                 - mapping from local numbering of vertices (including ghosts)
                                to global
-       dltog                - the corresponding mapping for the DFs of the vertices
-       NVs                  -the number of vertices per cell (4 in the case of billinear elements)
+  dltog (is never used?) - the corresponding mapping for the DFs of the vertices
+  NVs (is never used?)  -the number of vertices per cell (4 in the case of billinear elements)
 */    
 
-
-/******* some of these are never used.... first line? *********/  
+/*-----------------------------------------------------------------------*/
 typedef struct {
   IS           cell_global, vertex_global, df_global; /* global numbering of cells, vertices, dfs */
   IS   isboundary_df; /* is for df on boundary */
@@ -56,7 +55,7 @@ typedef struct {
 
 } AppGrid;
 
-/*
+/*--------------------------------------------------------------------------------------
     gtol             - global to local vector scatter
                        (used to move data from x to w_local for example
     A                - parallel sparse stiffness matrix
@@ -80,7 +79,7 @@ typedef struct {
   Mat A,J;
 } AppAlgebra;
 
-/*
+/*-------------------------------------------------------------------------------
     drawlocal    - window where processor local portion is drawn
     drawglobal   - window where entire grid is drawn
 
@@ -94,7 +93,7 @@ typedef struct {
   PetscTruth show_griddata;
 } AppView;
 
-/* 
+/* --------------------------------------------------------------------------
 for j= 1:tsteps,
 figure(1)
 fill3(cellx,celly,cellz1(:,:,j),cellz1(:,:,j))
@@ -102,7 +101,9 @@ fill3(cellx,celly,cellz1(:,:,j),cellz1(:,:,j))
 figure(2)
 fill3(cellx,celly,cellz2(:,:,j),cellz2(:,:,j))
 end
+*/
 
+/*--------------------------------------------------------------------------
 Additional structure for the discretization.
 Values at the gauss points of the bilinear basis functions
 */
@@ -120,6 +121,7 @@ typedef struct {
 } AppElement;
 
  
+/*--------------------------------------------------------------------------*/
 
  typedef double (*DFP)(double,double); /* pointer to a function of 2 vars */
 
@@ -136,7 +138,7 @@ typedef struct {
 }AppEquations;
 
 
-/*
+/*------------------------------------------------------------------
       comm   - MPI communictor where grid etc are stored
       aodata - grid database
 */
@@ -151,6 +153,7 @@ typedef struct {
   AppEquations equations;
 } AppCtx;
 
+/*-------------------------------------------------------------*/
 
 extern int AppCtxView(Draw,void*);
 extern int AppCtxViewSolution(Draw,void*);
@@ -162,10 +165,10 @@ extern int AppCtxGraphics(AppCtx *);
 extern int AppCtxViewMatlab(AppCtx*);
 
 
- double f(double, double); 
- double g(double, double); 
- double bc1(double, double); 
- double bc2(double, double); 
+double f(double, double); 
+double g(double, double); 
+double bc1(double, double); 
+double bc2(double, double); 
 double soln(double, double);
 
 int AppCtxSetRhs(AppCtx*);
