@@ -38,7 +38,12 @@ int DACreateLocalVector(DA da,Vec* g)
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
+  if (da->local) {
+    *g = da->local;
+    da->local = 0;
+  } else {
+    ierr = VecCreateSeq(da->comm,da->nlocal,g);CHKERRQ(ierr);
+  }
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -85,8 +90,7 @@ int DAGetLocalVector(DA da,Vec* g)
       goto alldone;
     }
   }
-  ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,g);CHKERRQ(ierr);
 
   alldone:
   for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
@@ -184,8 +188,7 @@ int DAGetGlobalVector(DA da,Vec* g)
       goto alldone;
     }
   }
-  ierr = VecDuplicate(da->global,g);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,g);CHKERRQ(ierr);
 
   alldone:
   for (i=0; i<DA_MAX_WORK_VECTORS; i++) {

@@ -467,9 +467,11 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   }
 
   /* allocate the base parallel and sequential vectors */
-  ierr = VecCreateMPI(comm,x*y*z,PETSC_DECIDE,&global);CHKERRQ(ierr);
+  da->Nlocal = x*y*z;
+  ierr = VecCreateMPI(comm,da->Nlocal,PETSC_DECIDE,&global);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);CHKERRQ(ierr);
+  da->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs);
+  ierr = VecCreateSeq(MPI_COMM_SELF,da->nlocal,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */

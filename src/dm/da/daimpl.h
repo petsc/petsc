@@ -56,6 +56,8 @@ struct _p_DA {
   int                 dim;                   /* DA dimension (1,2, or 3) */
   DAInterpolationType interptype;
 
+  int                 nlocal,Nlocal;         /* local size of local vector and global vector */
+
   AO                  ao;                    /* application ordering context */
 
   ISLocalToGlobalMapping ltogmap,ltogmapb;   /* local to global mapping for associated vectors */

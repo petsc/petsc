@@ -38,7 +38,12 @@ int DACreateGlobalVector(DA da,Vec* g)
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = VecDuplicate(da->global,g);CHKERRQ(ierr);
+  if (da->global) {
+    *g = da->global;
+    da->global = 0;
+  } else {
+    ierr = VecCreateMPI(da->comm,da->Nlocal,PETSC_DETERMINE,g);
+  }
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

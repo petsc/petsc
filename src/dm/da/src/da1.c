@@ -233,9 +233,11 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   }
 
   /* allocate the base parallel and sequential vectors */
-  ierr = VecCreateMPI(comm,x,PETSC_DECIDE,&global);CHKERRQ(ierr);
+  da->Nlocal = x;
+  ierr = VecCreateMPI(comm,da->Nlocal,PETSC_DECIDE,&global);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,(Xe-Xs),&local);CHKERRQ(ierr);
+  da->nlocal = (Xe-Xs);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,da->nlocal,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
     
   /* Create Local to Global Vector Scatter Context */
