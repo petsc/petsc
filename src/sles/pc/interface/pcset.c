@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.45 1996/11/01 19:17:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.46 1996/11/07 04:21:40 curfman Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: pcset.c,v 1.45 1996/11/01 19:17:02 bsmith Exp curfman
 
 static NRList *__PCList = 0;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetType"
 /*@
    PCSetType - Builds PC for a particular preconditioner.
 
@@ -69,6 +71,8 @@ int PCSetType(PC ctx,PCType type)
   return (*r)(ctx);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCRegister"
 /*@C
    PCRegister - Adds the preconditioner to the preconditioner
    package,  given a preconditioner name (PCType) and a function pointer.
@@ -89,6 +93,8 @@ int  PCRegister(PCType name,char *sname,int (*create)(PC))
   return NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCRegisterDestroy"
 /*@C
    PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegister().
@@ -106,6 +112,8 @@ int PCRegisterDestroy()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCGetTypeFromOptions_Private"
 /* 
   PCGetTypeFromOptions_Private - Sets the selected PC type from the 
   options database.
@@ -136,6 +144,8 @@ int PCGetTypeFromOptions_Private(PC pc,PCType *method )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC
    context.
@@ -158,6 +168,8 @@ int PCGetType(PC pc,PCType *meth,char **name)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPrintTypes_Private"
 /*
    PCPrintTypes_Private - Prints the PC methods available from the options 
    database.
@@ -185,6 +197,8 @@ int PCPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetFromOptions"
 /*@
    PCSetFromOptions - Sets PC options from the options database.
    This routine must be called before PCSetUp() if the user is to be
