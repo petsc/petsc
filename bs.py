@@ -12,6 +12,7 @@ import sys
 import time
 import traceback
 import types
+import UserDict
 
 # Debugging
 debugLevel    = 1
@@ -27,12 +28,10 @@ class Maker:
 
   def setupTmpDir(self):
     try:
-      self.tmpDir = os.path.join(os.environ['TMPDIR'], 'bs')
+      if not os.path.exists(argDB['TMPDIR']): raise KeyError('TMPDIR')
+      self.tmpDir = os.path.join(argDB['TMPDIR'], 'bs')
     except KeyError:
-      if (os.path.exists('/tmp')):
-        self.tmpDir = os.path.join('/tmp', 'bs')
-      else:
-        raise RuntimeError('Please set the TMPDIR variable')
+      raise RuntimeError('Please set the TMPDIR argument')
 
   def forceRemove(self, file):
     if (os.path.exists(file)):
@@ -100,21 +99,46 @@ class Maker:
     sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
 
 class BS (Maker):
-  includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
+  includeRE   = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
+  targets     = {}
+  args        = {}
+  defaultArgs = {}
+  directories = {}
+  filesets    = {}
 
   def __init__(self, args = None):
-    self.targets = {}
-    self.args    = {}
-    if args: self.processArgs(args)
+    self.argDBFilename = os.path.join(os.getcwd(), 'bsArg.db')
+    self.setupArgDB()
+    self.defaultArgs['target'] =  'default'
+    self.defaultArgs['TMPDIR'] =  '/tmp'
+    self.processArgs(args)
     Maker.__init__(self)
+    self.debugPrint('Read source database from '+self.argDBFilename, 2, 'argDB')
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
-    for key in self.args.keys():
-      self.debugPrint('Set '+key+' to '+str(self.args[key]))
+    for key in argDB.keys():
+      self.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
+
+  def processArgs(self, args):
+    global argDB
+    global debugLevel
+    global debugSections
+
+    for key in self.defaultArgs.keys():
+      if not argDB.has_key(key): argDB[key] = self.defaultArgs[key]
+    argDB.update(os.environ)
+    argDB.update(self.parseArgs(args))
+    # Here we could have an object BSOptions which had nothing but member
+    # variables. Then we could use reflection to get all the names of the
+    # variables, and look them up in args[]
+    try:
+      debugLevel    = int(argDB['debugLevel'])
+      debugSections = argDB['debugSections']
+    except KeyError: pass
 
   def parseArgs(self, argList):
+    if not type(argList) == types.ListType: return
     args = {}
-    args['target'] = 'default'
     for arg in argList:
       if not arg[0] == '-':
         args['target'] = arg
@@ -125,36 +149,21 @@ class BS (Maker):
         args[key]  = val
     return args
 
-  def parseEnvArg(self, args, var, default = None):
-    try:
-      args[var] = os.environ[var]
-    except KeyError:
-      if default:
-        args[var] = default
-      else:
-        raise RuntimeError('Please set the '+var+' environment variable')
+  def saveArgDB(self):
+    self.debugPrint('Saving argument database in '+self.argDBFilename, 2, 'argDB')
+    dbFile = open(self.argDBFilename, 'w')
+    cPickle.dump(argDB.data, dbFile)
+    dbFile.close()
 
-  def parseEnvArgs(self, args):
-    envVariables = [('TMPDIR', '/tmp'), ('BABEL_DIR', '/home/knepley/progs/babel-anl'), ('MPI_DIR', '/usr/local/mpich'),
-                    ('PETSC_DIR', '/usr/local/petsc'), ('PETSC_ARCH', 'linux-gnu'), ('TAO_DIR', '/usr/local/tao')]
-    for var in envVariables:
-      self.parseEnvArg(args, var[0], var[1])
+  def setupArgDB(self):
+    global argDB
 
-  def processArgs(self, args):
-    global debugLevel
-    global debugSections
-
-    if type(args) == types.ListType:
-      args = self.parseArgs(args)
-    self.parseEnvArgs(args)
-    # Here we could have an object BSOptions which had nothing but member
-    # variables. Then we could use reflection to get all the names of the
-    # variables, and look them up in args[]
-    try:
-      debugLevel    = int(args['debugLevel'])
-      debugSections = args['debugSections']
-    except KeyError: pass
-    self.args = args
+    argDB = ArgDict()
+    if os.path.exists(self.argDBFilename):
+      dbFile     = open(self.argDBFilename, 'r')
+      argDB.data = cPickle.load(dbFile)
+      dbFile.close()
+    atexit.register(self.saveArgDB)
 
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
@@ -193,23 +202,47 @@ class BS (Maker):
       sourceDB[source] = (checksum, mtime, timestamp, tuple(newDep))
 
   def purge(self):
-    try:
-      self.debugPrint('Purging source database of fileset '+self.args['fileset'], 1, 'sourceDB')
-      for file in self.filesets[self.args['fileset']]:
-        if sourceDB.has_key(file):
-          self.debugPrint('Purging '+file, 3, 'sourceDB')
-          del sourceDB[file]
-    except KeyError:
-      print 'No -fileset argument given for purge'
+    if argDB.has_key('arg'):
+      argName = argDB['arg']
+      if argDB.has_key(argName):
+        self.debugPrint('Purging '+argName, 3, 'argDB')
+        del argDB[argName]
+      del argDB['arg']
+    else:
+      setName = argDB['fileset']
+      try:
+        self.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
+        for file in self.filesets[setName]:
+          if sourceDB.has_key(file):
+            self.debugPrint('Purging '+file, 3, 'sourceDB')
+            del sourceDB[file]
+      except KeyError:
+        print 'FileSet '+setName+' not found for purge'
+
+  def checkDirectory(self, dirname):
+    if not os.path.isdir(self.directories[dirname]):
+      raise RuntimeError('Directory '+dirname+' ==> '+self.directories[dirname]+' does not exist')
 
   def main(self):
-    if self.args.has_key('target'):
-      if self.targets.has_key(self.args['target']):
-        self.targets[self.args['target']].execute()
-      elif self.args['target'] == 'recalc':
+    map(self.checkDirectory, self.directories.keys())
+    if argDB.has_key('target'):
+      if self.targets.has_key(argDB['target']):
+        self.targets[argDB['target']].execute()
+      elif argDB['target'] == 'recalc':
         self.calculateDependencies()
-      elif self.args['target'] == 'purge':
+      elif argDB['target'] == 'purge':
         self.purge()
       else:
-        print 'Invalid target: '+self.args['target']
+        print 'Invalid target: '+argDB['target']
+    if argDB.has_key('target'): del argDB['target']
     self.cleanupDir(self.tmpDir)
+
+class ArgDict (UserDict.UserDict):
+  def __getitem__(self, key):
+    if not self.data.has_key(key):
+      try:
+        self[key] = raw_input('Please enter value for '+key+':')
+      except KeyboardInterrupt:
+        print
+        sys.exit('Unable to get argument \''+key+'\'')
+    return self.data[key]
