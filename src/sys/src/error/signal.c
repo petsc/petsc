@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.44 1997/09/04 23:00:36 balay Exp balay $";
+static char vcid[] = "$Id: signal.c,v 1.45 1997/09/18 16:56:09 balay Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -35,7 +35,7 @@ static char *SIGNAME[] = { "unknown", "HUP",  "INT",  "QUIT", "ILL",
     This is the signal handler called by the system. This calls 
   your signal handler.
 */
-#if defined(PARCH_IRIX)  || defined(PARCH_IRIX64) || defined(PARCH_sun4)
+#if defined(PARCH_IRIX)  || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)|| defined(PARCH_sun4)
 static void PetscSignalHandler( int sig, int code,struct sigcontext * scp,char *addr)
 #else
 static void PetscSignalHandler( int sig )

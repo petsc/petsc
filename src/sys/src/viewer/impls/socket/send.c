@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.60 1997/09/07 19:10:27 gropp Exp gropp $";
+static char vcid[] = "$Id: send.c,v 1.61 1997/09/08 15:03:01 gropp Exp balay $";
 #endif
 
 /* Include incase petscconf.h is used to pick up options/features */
@@ -92,7 +92,7 @@ extern int sleep(unsigned);
 #endif
 #endif
 
-#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64)) && defined(__cplusplus)
+#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)) && defined(__cplusplus)
 extern "C" {
 extern int sleep(unsigned);
 extern int close(int);

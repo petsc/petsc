@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.87 1997/07/28 22:15:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.88 1997/08/22 15:11:48 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -590,7 +590,7 @@ int  PetscTrDebugLevel(int level )
   return 0;
 }
 
-#if defined(PARCH_IRIX)
+#if defined(PARCH_IRIX) || defined(PARCH_IRIX5)
 static long nanval[2] = {0x7fffffff,0xffffffff };  /* Signaling nan */
 /* static long nanval[2] = {0x7ff7ffff,0xffffffff };  Quiet nan */
 #elif defined(PARCH_sun4)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.37 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.38 1997/08/22 15:11:48 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -180,7 +180,7 @@ int PetscSetFPTrap(int flag)
 }
 /* ------------------------ IRIX --------------------------------------*/
 
-#elif defined(PARCH_IRIX)
+#elif defined(PARCH_IRIX) || defined (PARCH_IRIX5)
 #include <sigfpe.h>
 struct { int code_no; char *name; } error_codes[] = {
        { _INVALID   , "IEEE operand error" } ,
