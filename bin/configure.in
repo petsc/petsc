@@ -5,8 +5,8 @@ dnl
 dnl Here is a typical configure usage
 dnl setenv PETSC_ARCH sun4config
 dnl ./bin/configure --enable-installsite --enable-opt=-O --enable-optname=O \
-dnl                --with-blas=/usr/local/lapack/lib/blas.a \
-dnl                --with-lapack=/usr/local/lapack/lib/lapack.a
+dnl                --with-blas=/home/petsc/software/blaslapack/blas.a \
+dnl                --with-lapack=/home/petsc/software/blaslapack/lapack.a
 dnl
 dnl To build a new version of configure, execute the following:
 dnl    autoheader
@@ -216,6 +216,14 @@ if test "$GCC" = "yes" ; then
     :
 fi
 dnl
+if test -z "$AR" ; then
+     AR="ar"
+fi
+AC_SUBST(AR)
+if test -z "$AR_FLAGS" ; then
+     AR_FLAGS="cr"
+fi
+AC_SUBST(AR_FLAGS)
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
@@ -545,6 +553,7 @@ if test $install_sitefiles = 1 ; then
     cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' > bmake/config/petscconf.tmp
     mv -f bmake/config/petscconf.tmp $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h    
     mv -f bmake/config/petscconf.h $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.unmodified
+    touch $PETSC_DIR/bmake/$PETSC_ARCH/petscfix.h    
     # If we move the petscconf.h into the lib directory, we need to
     # fix the make all target to NOT delete it
     # Leave a marker that configure setup this directory
