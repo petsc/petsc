@@ -10,7 +10,7 @@ OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsles
 LOCDIR          = src/sles/examples/tests/
-TESTEXAMPLES_1  = ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
+TESTEXAMPLES_1  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
 		  runex4 runex4_3 runex4_5 ex4.rm clean
 TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex15.PETSc ex15.rm clean
 TESTEXAMPLES_3  = ex12.PETSc ex12.rm clean
@@ -23,7 +23,7 @@ TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 runex6_5 \
 TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm clean
 TESTEXAMPLES_8  = ex16.PETSc runex16 ex16.rm clean
 
-BUILDEXAMPLES_1 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
+BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
 BUILDEXAMPLES_2 = ex10.PETSc ex10.rm ex15.PETSc ex15.rm clean
 BUILDEXAMPLES_3 = ex12.PETSc ex12.rm ex16.PETSc ex16.rm clean
 BUILDEXAMPLES_4 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
@@ -33,7 +33,7 @@ BUILDEXAMPLES_7 = ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_8 = ex16.PETSc ex16.rm clean
 BUILDEXAMPLES_9 = ex12.PETSc ex12.rm clean
 
-EXAMPLESC       = ex3.c ex4.c ex6.c ex9.c ex10.c \
+EXAMPLESC       = ex2.c ex3.c ex4.c ex6.c ex9.c ex10.c \
 		  ex15.c ex17.c
 EXAMPLESF       = ex12.F ex16.F
 
@@ -148,7 +148,7 @@ runex1_5:
 	   else echo "Possible problem with ex1_5, diffs above"; fi; \
 	   $(RM) -f ex1_5.tmp
 runex2:
-	-@$(MPIRUN) ex2 -pc_type jacobi -ksp_smonitor -m 5 > ex2_1.tmp 2>&1; \
+	-@$(MPIRUN) ex2 > ex2_1.tmp 2>&1; \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   $(RM) -f ex2_1.tmp
