@@ -554,14 +554,20 @@ class Configure(config.base.Configure):
       return
     oldLibs = self.framework.argDB['LIBS']
     self.pushLanguage('C')
-    if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
-      raise RuntimeError('Compiler is not functional')
-    os.rename(self.compilerObj, 'conf1.o')
     for (archiver, flags, ranlib) in self.generateArchiverGuesses():
+      if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
+        raise RuntimeError('Compiler is not functional')
+      if os.path.isfile('conf1.o'):
+        os.remove('conf1.o')
+      os.rename(self.compilerObj, 'conf1.o')
       if self.getExecutable(archiver, getFullPath = 1, resultName = 'AR'):
         if self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB'):
-          (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
-          (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
+          try:
+            (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
+            (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
+          except RuntimeError, e:
+            self.logPrint(str(e))
+            continue
           self.framework.argDB['LIBS'] = 'conf1.a'
           success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
           os.rename('conf1.a','conf1.lib')
@@ -574,7 +580,8 @@ class Configure(config.base.Configure):
             os.remove('conf1.lib')
             break
     else:
-      os.remove('conf1.o')
+      if os.path.isfile('conf1.o'):
+        os.remove('conf1.o')
       self.framework.argDB['LIBS'] = oldLibs
       self.popLanguage()
       raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
