@@ -1,0 +1,6 @@
+RM                 = rm -f
+SHELL              = /bin/sh
+SED                = /bin/sed
+OMAKE              = make
+MKDIR              = mkdir -p
+
