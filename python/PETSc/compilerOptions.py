@@ -163,7 +163,8 @@ class compilerOptions(config.base.Configure):
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
-        flags.append('-g3')
+        # g77 3.2.3 preprocesses the file into nothing if we give -g3
+        flags.append('-g')
       elif bopt == 'O':
         flags.extend(['-O'])
     # Alpha
