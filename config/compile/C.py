@@ -142,7 +142,7 @@ class StaticLinker(SharedLinker):
   def getRanlib(self):
     '''Returns the processor executable'''
     if hasattr(self, 'configCompilers'):
-      return getattr(self.configCompilers, self.RANLIB)
+      return self.configCompilers.RANLIB
     return self.argDB['RANLIB']
 
   def getCommand(self, sourceFiles, outputFile):
