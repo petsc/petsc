@@ -149,9 +149,9 @@ static int CreateColmap_MPISBAIJ_Private(Mat mat)
         rp   = aj + ai[brow]; ap = aa + bs2*ai[brow]; \
         rmax = aimax[brow] = aimax[brow] + CHUNKSIZE; \
         PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(MatScalar))); \
-        a->s_maxnz += bs2*CHUNKSIZE; \
+        a->maxnz += bs2*CHUNKSIZE; \
         a->reallocs++; \
-        a->s_nz++; \
+        a->nz++; \
       } \
       N = nrow++ - 1;  \
       /* shift up all the later entries in this row */ \

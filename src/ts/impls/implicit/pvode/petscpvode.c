@@ -342,7 +342,7 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
   int        ierr,indx;
-  char       *btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
+  const char *btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
   PetscTruth flag;
 
   PetscFunctionBegin;

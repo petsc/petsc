@@ -91,9 +91,9 @@ int PetscDLLibraryPrintPath(void)
    Level: developer
 
 @*/
-int PetscDLLibraryGetInfo(void *handle,char *type,char **mess)
+int PetscDLLibraryGetInfo(void *handle,const char type[],const char *mess[])
 {
-  int  ierr,(*sfunc)(const char *,const char*,char **);
+  int  ierr,(*sfunc)(const char *,const char*,const char *[]);
 
   PetscFunctionBegin;
   sfunc   = (int (*)(const char *,const char*,char **)) dlsym(handle,"PetscDLLibraryInfo");

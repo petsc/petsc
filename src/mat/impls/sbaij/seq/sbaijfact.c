@@ -218,7 +218,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
   PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(int)+sizeof(MatScalar)));
-  b->s_maxnz = b->s_nz = iu[mbs];
+  b->maxnz = b->nz = iu[mbs];
   
   (*B)->factor                 = FACTOR_CHOLESKY;
   (*B)->info.factor_mallocs    = realloc;
@@ -378,7 +378,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
   PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(int)+sizeof(MatScalar)));
-  b->s_maxnz = b->s_nz = iu[mbs];
+  b->maxnz = b->nz = iu[mbs];
   
   (*B)->factor                 = FACTOR_CHOLESKY;
   (*B)->info.factor_mallocs    = realloc;

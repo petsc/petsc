@@ -150,8 +150,8 @@ int PetscDLLibraryRegister(char *path)
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Vector library. \n";
-static char *authors  = PETSC_AUTHOR_INFO;
+static const char *contents = "PETSc Vector library. \n";
+static const char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"
 

@@ -83,11 +83,11 @@ int PetscDLLibraryRegister(char *path)
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc timestepping library. \n\
+static const char *contents = "PETSc timestepping library. \n\
      Euler\n\
      Backward Euler\n\
      PVODE interface\n";
-static char *authors  = PETSC_AUTHOR_INFO;
+static const char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"
 

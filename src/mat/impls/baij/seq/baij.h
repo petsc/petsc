@@ -10,39 +10,42 @@
   arrays start at 0.
 */
 
+/* This header is shared by the SeqSBAIJ matrix */
+#define SEQBAIJHEADER \
+  PetscTruth       sorted;       /* if true, rows are sorted by increasing columns */                \
+  PetscTruth       roworiented;  /* if true, row-oriented input, default */                          \
+  int              nonew;        /* 1 don't add new nonzeros, -1 generate error on new */            \
+  PetscTruth       singlemalloc; /* if true a, i, and j have been obtained with                      \
+                                        one big malloc */                                            \
+  int              bs,bs2;       /* block size, square of block size */                              \
+  int              mbs,nbs;      /* rows/bs, columns/bs */                                           \
+  int              nz,maxnz;     /* nonzeros, allocated nonzeros */                                  \
+  int              *diag;        /* pointers to diagonal elements */                                 \
+  int              *i;           /* pointer to beginning of each row */                              \
+  int              *imax;        /* maximum space allocated for each row */                          \
+  int              *ilen;        /* actual length of each row */                                     \
+  int              *j;           /* column values: j + i[k] - 1 is start of row k */                 \
+  MatScalar        *a;           /* nonzero elements */                                              \
+  IS               row,col,icol; /* index sets, used for reorderings */                              \
+  PetscScalar      *solve_work;  /* work space used in MatSolve */                                   \
+  int              reallocs;     /* number of mallocs done during MatSetValues()                     \
+                                    as more values are set then were preallocated */                 \
+  PetscScalar      *mult_work;   /* work array for matrix vector product*/                           \
+  PetscScalar      *saved_values;                                                                    \
+                                                                                                     \
+  PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */    \
+                                                                                                     \
+  int              setvalueslen;   /* only used for single precision */                              \
+  MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied   \
+                                      before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */          \
+                                                                                                     \
+  PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */           \
+                                                                                                     \
+  int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */      \
+  Mat              XtoY;             /* used by MatAXPY() */           
+
 typedef struct {
-  PetscTruth       sorted;       /* if true, rows are sorted by increasing columns */
-  PetscTruth       roworiented;  /* if true, row-oriented input, default */
-  int              nonew;        /* 1 don't add new nonzeros, -1 generate error on new */
-  PetscTruth       singlemalloc; /* if true a, i, and j have been obtained with
-                                        one big malloc */
-  int              bs,bs2;       /* block size, square of block size */
-  int              mbs,nbs;      /* rows/bs, columns/bs */
-  int              nz,maxnz;     /* nonzeros, allocated nonzeros */
-  int              *diag;        /* pointers to diagonal elements */
-  int              *i;           /* pointer to beginning of each row */
-  int              *imax;        /* maximum space allocated for each row */
-  int              *ilen;        /* actual length of each row */
-  int              *j;           /* column values: j + i[k] - 1 is start of row k */
-  MatScalar        *a;           /* nonzero elements */
-  IS               row,col,icol; /* index sets, used for reorderings */
-  PetscScalar      *solve_work;  /* work space used in MatSolve */
-  int              reallocs;     /* number of mallocs done during MatSetValues() 
-                                    as more values are set then were preallocated */
-  PetscScalar      *mult_work;   /* work array for matrix vector product*/
-  PetscScalar      *saved_values; 
-
-  PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
-
-#if defined(PETSC_USE_MAT_SINGLE)
-  int              setvalueslen;
-  MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
-                                      before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */
-#endif
-  PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */
-
-  int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */
-  Mat              XtoY;             /* used by MatAXPY() */
+  SEQBAIJHEADER
 } Mat_SeqBAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
