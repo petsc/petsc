@@ -10,7 +10,7 @@ OBJSC    = const.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/pf/impls/constant/
+LOCDIR   = src/vec/pf/impls/constant/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -1,7 +1,7 @@
 
 ALL:
 
-LOCDIR	 = src/pf/examples/
+LOCDIR	 = src/vec/pf/examples/
 DIRS	 = tutorials
 MANSEC   = Vec
 

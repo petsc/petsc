@@ -10,7 +10,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = constant string matlab
-LOCDIR   = src/pf/impls/
+LOCDIR   = src/vec/pf/impls/
 MANSEC   = Vec
 
 include ${PETSC_DIR}/bmake/common/base

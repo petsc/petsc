@@ -10,7 +10,7 @@ OBJSC    = pf.o pfall.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = PF
-LOCDIR   = src/pf/interface/
+LOCDIR   = src/vec/pf/interface/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
