@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.340 1999/07/26 01:20:59 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.341 1999/07/26 01:40:46 curfman Exp curfman $";
 #endif
 
 /*
@@ -3730,7 +3730,7 @@ M*/
 .   iscol - columns for all processors you wish to keep
 .   csize - number of columns "local" to this processor (does nothing for sequential 
             matrices). This should match the result from VecGetLocalSize(x,...) if you 
-            plan to use the matrix in a A*x or use PETSC_DECIDE
+            plan to use the matrix in a A*x; alternatively, you can use PETSC_DECIDE
 -   cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
     Output Parameter:

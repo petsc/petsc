@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.117 1999/06/30 23:50:57 balay Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.118 1999/07/26 01:16:26 curfman Exp curfman $";
 #endif
 
 /*
@@ -83,6 +83,62 @@ int MatGetArray_MPIDense(Mat A,Scalar **array)
 
   PetscFunctionBegin;
   ierr = MatGetArray(a->A,array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatGetSubMatrix_MPIDense"
+static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
+{
+  Mat_MPIDense *mat = (Mat_MPIDense *) A->data, *newmatd;
+  Mat_SeqDense *lmat = (Mat_SeqDense *) mat->A->data;
+  int          i, j, ierr, *irow, *icol, nrows, ncols, nlrows, nlcols;
+  Scalar       *av, *bv, *v = lmat->v;
+  Mat          newmat;
+
+  PetscFunctionBegin;
+  ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
+  ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
+  ierr = ISGetSize(iscol,&ncols);CHKERRQ(ierr);
+
+  /* No parallel redistribution currently supported! Should really check each index set
+     to comfirm that it is OK ... temporarily just support retaining all rows on each proc. */
+
+  ierr = MatGetLocalSize(A,&nlrows,&nlcols);CHKERRQ(ierr);
+  if (nlrows != nrows) SETERRQ(PETSC_ERR_ARG_SIZ,0,
+    "Currently supports only submatrix with ALL rows of additional matrix (same partitioning)");
+  
+  /* Check submatrix call */
+  if (scall == MAT_REUSE_MATRIX) {
+    int n_cols,n_rows;
+    ierr = MatGetSize(*B,&n_rows,&n_cols);CHKERRQ(ierr);
+    if (n_rows != nrows || n_cols != ncols) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Reused submatrix wrong size");
+    newmat = *B;
+  } else {
+    /* Create and fill new matrix */
+    ierr = MatCreateMPIDense(A->comm,nrows,ncols,PETSC_DECIDE,PETSC_DECIDE,PETSC_NULL,&newmat);CHKERRQ(ierr);
+  }
+
+  /* Now extract the data pointers and do the copy, column at a time */
+  newmatd = (Mat_MPIDense *) newmat->data;
+  bv = ((Mat_SeqDense *)newmatd->A->data)->v;
+  
+  for ( i=0; i<ncols; i++ ) {
+    av = v + nlrows*icol[i];
+    for (j=0; j<nrows; j++ ) {
+      *bv++ = av[irow[j]];
+    }
+  }
+
+  /* Assemble the matrices so that the correct flags are set */
+  ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Free work space */
+  ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
+  *B = newmat;
   PetscFunctionReturn(0);
 }
 
@@ -864,7 +920,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-       0,
+       MatGetSubMatrix_MPIDense,
        0,
        0,
        MatGetMaps_Petsc};
