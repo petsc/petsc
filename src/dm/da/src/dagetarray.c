@@ -1,4 +1,4 @@
-/*$Id: dagetarray.c,v 1.7 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: dagetarray.c,v 1.8 2001/01/15 21:48:51 bsmith Exp bsmith $*/
  
 #include "petscda.h"    /*I   "petscda.h"   I*/
 
@@ -29,8 +29,7 @@
 @*/
 int DAVecGetArray(DA da,Vec vec,void **array)
 {
-  int ierr;
-  int xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+  int ierr,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
@@ -51,23 +50,11 @@ int DAVecGetArray(DA da,Vec vec,void **array)
   }
 
   if (dim == 1) {
-    if (dof == 1) {
-      ierr = VecGetArray1d(vec,gxm,gxs,(Scalar **)array);CHKERRQ(ierr);
-    } else {
-      ierr = VecGetArray2d(vec,gxm,dof,gxs,0,(Scalar***)array);CHKERRQ(ierr);
-    }
+    ierr = VecGetArray1d(vec,gxm*dof,gxs*dof,(Scalar **)array);CHKERRQ(ierr);
   } else if (dim == 2) {
-    if (dof == 1) {
-      ierr = VecGetArray2d(vec,gym,gxm,gys,gxs,(Scalar***)array);CHKERRQ(ierr);
-    } else {
-      SETERRQ(1,"Not yet done");
-    }
+    ierr = VecGetArray2d(vec,gym,gxm*dof,gys*dof,gxs*dof,(Scalar***)array);CHKERRQ(ierr);
   } else if (dim == 3) {
-    if (dof == 1) {
-      SETERRQ(1,"Not yet done");
-    } else {
-      SETERRQ(1,"Not yet done");
-    }
+    ;
   } else {
     SETERRQ1(1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
   }
@@ -96,8 +83,7 @@ int DAVecGetArray(DA da,Vec vec,void **array)
 @*/
 int DAVecRestoreArray(DA da,Vec vec,void **array)
 {
-  int ierr;
-  int xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+  int ierr,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
@@ -116,17 +102,9 @@ int DAVecRestoreArray(DA da,Vec vec,void **array)
   }
 
   if (dim == 1) {
-    if (dof == 1) {
-      ierr = VecRestoreArray1d(vec,gxm,gxs,(Scalar **)array);CHKERRQ(ierr);
-    } else {
-      ierr = VecRestoreArray2d(vec,gxm,dof,gxs,0,(Scalar***)array);CHKERRQ(ierr);
-    }
+    ierr = VecRestoreArray1d(vec,gxm*dof,gxs*dof,(Scalar **)array);CHKERRQ(ierr);
   } else if (dim == 2) {
-    if (dof == 1) {
-      ierr = VecRestoreArray2d(vec,gym,gxm,gys,gxs,(Scalar***)array);CHKERRQ(ierr);
-    } else {
-      ;
-    }
+    ierr = VecRestoreArray2d(vec,gym,gxm*dof,gys*dof,gxs*dof,(Scalar***)array);CHKERRQ(ierr);
   } else if (dim == 3) {
     if (dof == 1) {
       ;
