@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.45 1996/07/08 22:23:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.46 1996/08/06 15:31:54 bsmith Exp curfman $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -15,6 +15,8 @@ int main( int argc, char **argv )
   SNES         snes;               /* nonlinear solver context */
   Vec          x,r;                /* solution, residual vectors */
   Mat          J;                  /* Jacobian matrix */
+  SLES         sles;               /* SLES context */
+  PC           pc;                 /* PC context */
   int          ierr, its;
   Scalar       pfive = .5;
 
@@ -22,10 +24,15 @@ int main( int argc, char **argv )
 
   ierr = VecCreateSeq(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,2,2,PETSC_NULL,&J); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+
+  /* Set default preconditioner */
+  ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
 
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction,0);CHKERRA(ierr);
@@ -33,7 +40,7 @@ int main( int argc, char **argv )
   ierr = SNESSetMonitor(snes,Monitor,0); CHKERRA(ierr);
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
-  /* set an initial guess of .5 */
+  /* Set an initial guess of .5 */
   ierr = VecSet(&pfive,x); CHKERRA(ierr);
 
   /* Solve nonlinear system */
