@@ -1272,27 +1272,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       }
     }  
   }
-  da->global    = global; 
-  da->local     = local; 
-  da->gtol      = gtol;
-  da->ltog      = ltog;
-  da->idx       = idx;
-  da->Nl        = nn;
-  da->base      = base;
-  da->ops->view = DAView_3d;
-  da->wrap      = wrap;
-  *inra = da;
-
-  /* 
-     Set the local to global ordering in the global vector, this allows use
-     of VecSetValuesLocal().
-  */
-  ierr  = ISLocalToGlobalMappingCreate(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
-  ierr  = VecSetLocalToGlobalMapping(da->global,da->ltogmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);
-  PetscLogObjectParent(da,da->ltogmap);
-
   /* redo idx to include "missing" ghost points */
   /* Solve for X,Y, and Z Periodic Case First, Then Modify Solution */
  
@@ -1732,6 +1711,28 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     }
   }
   ierr = PetscFree(bases);CHKERRQ(ierr);
+  da->global    = global; 
+  da->local     = local; 
+  da->gtol      = gtol;
+  da->ltog      = ltog;
+  da->idx       = idx;
+  da->Nl        = nn;
+  da->base      = base;
+  da->ops->view = DAView_3d;
+  da->wrap      = wrap;
+  *inra = da;
+
+  /* 
+     Set the local to global ordering in the global vector, this allows use
+     of VecSetValuesLocal().
+  */
+  ierr  = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
+  ierr  = VecSetLocalToGlobalMapping(da->global,da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);
+  PetscLogObjectParent(da,da->ltogmap);
+
+
 
   /* construct the local to local scatter context */
   /* 

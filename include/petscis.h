@@ -107,6 +107,7 @@ E*/
 typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 
 EXTERN int ISLocalToGlobalMappingCreate(MPI_Comm,int,const int[],ISLocalToGlobalMapping*);
+EXTERN int ISLocalToGlobalMappingCreateNC(MPI_Comm,int,const int[],ISLocalToGlobalMapping*);
 EXTERN int ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
 EXTERN int ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
 EXTERN int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);

@@ -314,7 +314,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(da->global,da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);

@@ -769,6 +769,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       }
     }
   }
+  ierr = PetscFree(bases);CHKERRQ(ierr); 
 
   da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n;  da->w = dof;  da->s = s;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = 0; da->ze = 1;
@@ -793,141 +794,13 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(da->global,da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);
   PetscLogObjectParent(da,da->ltogmap);
 
   *inra = da;
-
-  /* recalculate the idx including missed ghost points */
-  /* Assume the Non-Periodic Case */
-  n1 = rank - m; 
-  if (rank % m) {
-    n0 = n1 - 1; 
-  } else {
-    n0 = -1;
-  }
-  if ((rank+1) % m) {
-    n2 = n1 + 1;
-    n5 = rank + 1;
-    n8 = rank + m + 1; if (n8 >= m*n) n8 = -1;
-  } else {
-    n2 = -1; n5 = -1; n8 = -1;
-  }
-  if (rank % m) {
-    n3 = rank - 1; 
-    n6 = n3 + m; if (n6 >= m*n) n6 = -1;
-  } else {
-    n3 = -1; n6 = -1;
-  }
-  n7 = rank + m; if (n7 >= m*n) n7 = -1;
-
-
-  /* Modify for Periodic Cases */
-  if (wrap == DA_YPERIODIC) {  /* Handle Top and Bottom Sides */
-    if (n1 < 0) n1 = rank + m * (n-1);
-    if (n7 < 0) n7 = rank - m * (n-1);
-    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
-    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
-    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
-    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
-  } else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
-    if (n3 < 0) n3 = rank + (m-1);
-    if (n5 < 0) n5 = rank - (m-1);
-    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
-    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
-    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
-    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
-  } else if (wrap == DA_XYPERIODIC) {
-
-    /* Handle all four corners */
-    if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
-    if ((n8 < 0) && (n7 < 0) && (n5 < 0)) n8 = 0;
-    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = size-m;
-    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = size-1;   
-
-    /* Handle Top and Bottom Sides */
-    if (n1 < 0) n1 = rank + m * (n-1);
-    if (n7 < 0) n7 = rank - m * (n-1);
-    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
-    if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
-    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
-    if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
-
-    /* Handle Left and Right Sides */
-    if (n3 < 0) n3 = rank + (m-1);
-    if (n5 < 0) n5 = rank - (m-1);
-    if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
-    if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
-    if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
-    if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
-  }
-
-  nn = 0;
-
-  xbase = bases[rank];
-  for (i=1; i<=s_y; i++) {
-    if (n0 >= 0) { /* left below */
-      x_t = lx[n0 % m]*dof;
-      y_t = ly[(n0/m)];
-      s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
-      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
-    if (n1 >= 0) { /* directly below */
-      x_t = x;
-      y_t = ly[(n1/m)];
-      s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
-      for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
-    }
-    if (n2 >= 0) { /* right below */
-      x_t = lx[n2 % m]*dof;
-      y_t = ly[(n2/m)];
-      s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
-      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
-  }
-
-  for (i=0; i<y; i++) {
-    if (n3 >= 0) { /* directly left */
-      x_t = lx[n3 % m]*dof;
-      /* y_t = y; */
-      s_t = bases[n3] + (i+1)*x_t - s_x;
-      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
-
-    for (j=0; j<x; j++) { idx[nn++] = xbase++; } /* interior */
-
-    if (n5 >= 0) { /* directly right */
-      x_t = lx[n5 % m]*dof;
-      /* y_t = y; */
-      s_t = bases[n5] + (i)*x_t;
-      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
-  }
-
-  for (i=1; i<=s_y; i++) {
-    if (n6 >= 0) { /* left above */
-      x_t = lx[n6 % m]*dof;
-      /* y_t = ly[(n6/m)]; */
-      s_t = bases[n6] + (i)*x_t - s_x;
-      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
-    if (n7 >= 0) { /* directly above */
-      x_t = x;
-      /* y_t = ly[(n7/m)]; */
-      s_t = bases[n7] + (i-1)*x_t;
-      for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
-    }
-    if (n8 >= 0) { /* right above */
-      x_t = lx[n8 % m]*dof;
-      /* y_t = ly[(n8/m)]; */
-      s_t = bases[n8] + (i-1)*x_t;
-      for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
-    }
-  }
-  ierr = PetscFree(bases);CHKERRQ(ierr); 
 
   /* construct the local to local scatter context */
   /* 

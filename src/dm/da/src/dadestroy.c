@@ -101,7 +101,6 @@ int DADestroy(DA da)
   ierr = PetscObjectDepublish(da);CHKERRQ(ierr);
 
   PetscLogObjectDestroy(da);
-  ierr = PetscFree(da->idx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);

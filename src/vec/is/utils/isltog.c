@@ -110,6 +110,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingCreate"
 /*@C
@@ -130,9 +131,47 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 
     Concepts: mapping^local to global
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreateNC()
 @*/
 int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
+{
+  int *in,ierr;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(indices);
+  PetscValidPointer(mapping);
+  ierr = PetscMalloc((n+1)*sizeof(int),&in);CHKERRQ(ierr);
+  ierr = PetscMemcpy(in,indices,n*sizeof(int));CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateNC(cm,n,in,mapping);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingCreateNC"
+/*@C
+    ISLocalToGlobalMappingCreateNC - Creates a mapping between a local (0 to n)
+    ordering and a global parallel ordering.
+
+    Not Collective, but communicator may have more than one process
+
+    Input Parameters:
++   comm - MPI communicator
+.   n - the number of local elements
+-   indices - the global index for each local element
+
+    Output Parameter:
+.   mapping - new mapping data structure
+
+    Level: developer
+
+    Notes: Does not copy the indices, just keeps the pointer to the indices. The ISLocalToGlobalMappingDestroy()
+    will free the space so it must be obtained with PetscMalloc() and it must not be freed elsewhere.
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate()
+@*/
+int ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
 {
   int ierr;
 
@@ -150,8 +189,7 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
   PetscLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(int));
 
   (*mapping)->n       = n;
-  ierr = PetscMalloc((n+1)*sizeof(int),&(*mapping)->indices);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*mapping)->indices,indices,n*sizeof(int));CHKERRQ(ierr);
+  (*mapping)->indices = (int*)indices;
 
   /*
       Do not create the global to local mapping. This is only created if 
