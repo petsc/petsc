@@ -16,7 +16,6 @@
 #define PETSC_HAVE_IO_H
 #define PETSC_HAVE_SYS_STAT_H
 
-#define PETSC_HAVE_STD_COMPLEX
 
 #define PETSC_STDCALL __stdcall
 #define PETSC_USE_FORTRAN_MIXED_STR_ARG

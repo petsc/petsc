@@ -153,7 +153,7 @@ int FormFunction(SNES snes,Vec T,Vec F,void* ptr)
   PetscFunctionReturn(0);
 } 
 
-int FormFunctionLocal(DALocalInfo *info,double **t,double **f,void *ptr)
+int FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
 {
   int          i,j;
   PetscScalar  hx,hy;

@@ -23,11 +23,10 @@
 */
 #if defined(PETSC_USE_COMPLEX)
 
-#if defined (PETSC_HAVE_STD_COMPLEX)
+/*
+   PETSc now only supports std::complex
+*/
 #include <complex>
-#else
-#include <complex.h>
-#endif
 
 extern  MPI_Datatype        MPIU_COMPLEX;
 #define MPIU_SCALAR         MPIU_COMPLEX
@@ -37,7 +36,6 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 #define MPIU_MATSCALAR      MPIU_COMPLEX
 #endif
 
-#if defined (PETSC_HAVE_STD_COMPLEX)
 #define PetscRealPart(a)        (a).real()
 #define PetscImaginaryPart(a)   (a).imag()
 #define PetscAbsScalar(a)   std::abs(a)
@@ -47,28 +45,8 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 #define PetscExpScalar(a)   std::exp(a)
 #define PetscSinScalar(a)   std::sin(a)
 #define PetscCosScalar(a)   std::cos(a)
-#else
-#define PetscRealPart(a)        real(a)
-#define PetscImaginaryPart(a)   imag(a)
-#define PetscAbsScalar(a)   fabs(a)
-#define PetscConj(a)        conj(a)
-#define PetscSqrtScalar(a)  sqrt(a)
-#define PetscPowScalar(a,b) pow(a,b)
-#define PetscExpScalar(a)   exp(a)
-#define PetscSinScalar(a)   sin(a)
-#define PetscCosScalar(a)   cos(a)
-#endif
-/*
-  The new complex class for GNU C++ is based on templates and is not backward
-  compatible with all previous complex class libraries.
-*/
-#if defined(PETSC_HAVE_STD_COMPLEX)
-  typedef std::complex<double> PetscScalar;
-#elif defined(PETSC_HAVE_TEMPLATED_COMPLEX)
-  typedef complex<double> PetscScalar;
-#else
-  typedef complex PetscScalar;
-#endif
+
+typedef std::complex<double> PetscScalar;
 
 /* Compiling for real numbers only */
 #else
