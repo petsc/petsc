@@ -1,4 +1,4 @@
-# $Id: base,v 1.33 1998/12/04 23:41:49 balay Exp $ 
+# $Id: base,v 1.1 1999/01/25 21:48:57 balay Exp balay $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -10,12 +10,12 @@ OMAKE            = make
 SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
-C_CC             = cc
-C_FC             = f77 -w
-C_CLINKER        = cc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_FLINKER        = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-C_CCV            = unknown
-C_SYS_LIB        = -lfor -lutil -lFutil -lots
+C_CC             = gcc -fPIC
+C_FC             = g77 -fPIC
+C_CLINKER        = gcc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_FLINKER        = g77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_CCV            = ${C_CC} --version
+C_SYS_LIB        = -lg2c
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g
 G_FOPTFLAGS      = -g
@@ -24,12 +24,12 @@ O_COPTFLAGS      = -O2 -Olimit 2000
 O_FOPTFLAGS      = -O2 
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = cxx -x cxx
-CXX_FC           = f77 -w
-CXX_CLINKER      = cxx ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-CXX_CCV          = unknown
-CXX_SYS_LIB      = -lfor -lutil -lFutil -lots
+CXX_CC           = g++ -fPIC
+CXX_FC           = g77 -fPIC
+CXX_CLINKER      = g++ ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = g77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_CCV          = ${CXX_CC} --version
+CXX_SYS_LIB      = -lg2c
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g
 GCXX_FOPTFLAGS   = -g

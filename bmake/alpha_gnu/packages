@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.38 1998/12/11 20:58:17 balay Exp $ 
+# $Id: base.site,v 1.1 1999/01/25 21:48:57 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,12 +13,8 @@
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
-#BLAS_LIB        = -lpetscblas
-#LAPACK_LIB      = 
-BLAS_LIB        = -ldxml 
-LAPACK_LIB      = 
-#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_alpha.a ${FC_LIB}
-#LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_alpha.a 
+BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_alpha_gnu.a ${FC_LIB}
+LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_alpha_gnu.a 
 #
 # Location of X-windows software: on most DEC alpha's these are installed in
 # the default location and thus one need not edit the below. If they are not
@@ -36,9 +32,9 @@ X11_LIB        = -lX11
 # or if you are using MPIUNI for MPI, add -DUSES_INT_MPI_COMM 
 # to the line MPI_INCLUDE below.
 #
-MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_p4/libmpi.a 
+MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_shmem/libmpi.a 
 MPI_INCLUDE    = -I/home/petsc/mpich/include -DUSES_INT_MPI_COMM
-MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
+MPIRUN         = /home/petsc/mpich/lib/alpha/ch_shmem/mpirun
 #
 # The following lines can be used with MPIUNI
 #
@@ -58,8 +54,8 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
+#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+#BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
 #
 # Optional Matlab location
 #
@@ -91,7 +87,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_BLOCKSOLVE
+PCONF         = 
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
