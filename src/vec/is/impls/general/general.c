@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.95 2000/05/05 22:14:40 balay Exp bsmith $*/
+/*$Id: general.c,v 1.96 2000/05/25 22:45:13 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -82,7 +82,7 @@ int ISGetSize_General(IS is,int *size)
   IS_General *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
-  *size = sub->n; 
+  *size = sub->N; 
   PetscFunctionReturn(0);
 }
 
@@ -93,7 +93,7 @@ int ISGetLocalSize_General(IS is,int *size)
   IS_General *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
-  *size = sub->N; 
+  *size = sub->n; 
   PetscFunctionReturn(0);
 }
 
