@@ -12,7 +12,7 @@
 
 */
 
-#include "src/mat/impls/is/is.h"      /*I "mat.h" I*/
+#include "src/mat/impls/is/matis.h"      /*I "petscmat.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_IS" 

@@ -1223,5 +1223,6 @@ EXTERN int PetscViewerMathematicaPutCSRMatrix(PetscViewer, int, int, int *, int 
 
 EXTERN int MatSeqAIJPtAP(Mat,Mat,Mat*);
 
+EXTERN int MatUseMatlab_SeqAIJ(Mat);
 PETSC_EXTERN_CXX_END
 #endif

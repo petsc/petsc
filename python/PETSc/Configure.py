@@ -69,6 +69,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-log=<bool>',                   nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-stack=<bool>',                 nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
     help.addArgument('PETSc', '-with-dynamic=<bool>',               nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
+    help.addArgument('PETSc', '-with-shared=<bool>',                nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     help.addArgument('PETSc', '-with-etags=<bool>',                 nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',       nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-libtool=<bool>',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
@@ -134,7 +135,7 @@ class Configure(config.base.Configure):
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.useDynamic = 0
     if not (self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') or (self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
-      self.useDynamic = self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
+      self.useDynamic = self.framework.argDB['with-shared'] and self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       self.addDefine('USE_DYNAMIC_LIBRARIES', self.useDynamic)
       if self.useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
@@ -186,7 +187,10 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('LT_CC', '')
       self.framework.addSubstitution('LIBTOOL', '')
-      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
+      if self.framework.argDB['with-shared']:
+        self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
+      else:
+        self.framework.addSubstitution('SHARED_TARGET', 'shared_none')
     return
 
   def configureDebuggers(self):

@@ -20,6 +20,8 @@ shared_aix6:
 shared_darwin6: 
 shared_darwin7: 
 
+shared_none:
+
 shared_cygwin:
 
 shared_linux_intel:
