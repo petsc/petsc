@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.180 1997/01/08 19:51:48 gropp Exp gropp $ 
+% $Id: part2.tex,v 1.181 1997/01/09 19:27:37 gropp Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -749,6 +749,8 @@ command \findex{DAGetGlobalIndices()}
 The output argument {\tt n} contains the number of 
 local nodes, including ghost nodes, while {\tt idx} contains
 a list of the global indices that correspond to the local nodes.
+Note that the Fortran interface differs slightly; see Section~\ref{fortran_arrays}
+for details.
 
 Since the global ordering that PETSc uses to manage its parallel vectors 
 (and matrices) does not usually correspond to the ``natural'' ordering 
