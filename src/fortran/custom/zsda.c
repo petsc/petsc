@@ -29,14 +29,14 @@
 EXTERN PetscErrorCode SDAArrayView(SDA,PetscScalar*,PetscViewer);
 
 EXTERN_C_BEGIN
-void sdaarrayview_(SDA *da,PetscScalar *values,PetscViewer *vin,PetscErrorCode *ierr)
+void PETSC_STDCALL sdaarrayview_(SDA *da,PetscScalar *values,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = SDAArrayView(*da,values,v);
 }
 
-void sdagetghostcorners_(SDA *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p,PetscErrorCode *ierr)
+void PETSC_STDCALL sdagetghostcorners_(SDA *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(x);
   CHKFORTRANNULLINTEGER(y);
@@ -47,7 +47,7 @@ void sdagetghostcorners_(SDA *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m
   *ierr = SDAGetGhostCorners(*da,x,y,z,m,n,p);
 }
 
-void sdagetcorners_(SDA *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p,PetscErrorCode *ierr)
+void PETSC_STDCALL sdagetcorners_(SDA *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(x);
   CHKFORTRANNULLINTEGER(y);
@@ -58,24 +58,24 @@ void sdagetcorners_(SDA *da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,Pets
   *ierr = SDAGetCorners(*da,x,y,z,m,n,p);
 }
 
-void sdadestroy_(SDA *sda,PetscErrorCode *ierr)
+void PETSC_STDCALL sdadestroy_(SDA *sda,PetscErrorCode *ierr)
 {
   *ierr = SDADestroy((SDA)PetscToPointer(sda));
   PetscRmPointer(sda);
 }
 
-void sdalocaltolocalbegin_(SDA *sda,PetscScalar *g,InsertMode *mode,PetscScalar *l,
+void PETSC_STDCALL sdalocaltolocalbegin_(SDA *sda,PetscScalar *g,InsertMode *mode,PetscScalar *l,
                            PetscErrorCode *ierr)
 {
   *ierr = SDALocalToLocalBegin((SDA)PetscToPointer(sda),g,*mode,l);
 }
 
-void sdalocaltolocalend_(SDA *sda,PetscScalar *g,InsertMode *mode,PetscScalar *l,
+void PETSC_STDCALL sdalocaltolocalend_(SDA *sda,PetscScalar *g,InsertMode *mode,PetscScalar *l,
                          PetscErrorCode *ierr){
   *ierr = SDALocalToLocalEnd((SDA)PetscToPointer(sda),g,*mode,l);
 }
 
-void sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
+void PETSC_STDCALL sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                   *stencil_type,PetscInt *M,PetscInt *N,PetscInt *m,PetscInt *n,PetscInt *w,
                   PetscInt *s,PetscInt *lx,PetscInt *ly,SDA *inra,PetscErrorCode *ierr)
 {
@@ -86,7 +86,7 @@ void sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
             *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
-void sdacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,PetscInt *M,PetscInt *w,PetscInt *s,
+void PETSC_STDCALL sdacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,PetscInt *M,PetscInt *w,PetscInt *s,
                  PetscInt *lc,SDA *inra,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(lc);
@@ -94,7 +94,7 @@ void sdacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,PetscInt *M,PetscInt *w,Pe
 	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,inra);
 }
 
-void sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
+void PETSC_STDCALL sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
                  *stencil_type,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,
                  PetscInt *w,PetscInt *s,PetscInt *lx,PetscInt *ly,PetscInt *lz,SDA *inra,PetscErrorCode *ierr)
 {
