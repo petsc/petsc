@@ -20,6 +20,12 @@ Subdirectories:
    comparisons between the original code and the newly modified
    variant.
 
+ - merged.2.0.14 - Merged version of original.2.0.14 where the 
+   same source code is used for both the matrix and matrix free approaches
+
+ - merged.2.0.16 - Version that uses the matrix coloring code for 
+   computation of the Jacobians via finite differences. Also supports
+   the older computation of the Jacobians.
 
 ------------------------------------------------------------------
 Summary of changes between original code and new version:
