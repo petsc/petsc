@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.92 1998/11/30 22:08:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.93 1998/11/30 22:33:39 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1204,7 +1204,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   int        shift = a->indexshift, *r,*ic,*c, ierr, n = a->m, *bi = b->i; 
   int        *bj = b->j+shift, *nbj=b->j +(!shift), *ajtmp, *bjtmp, nz, row, prow;
   int        *ics,i,j, idx, *ai = a->i, *aj = a->j+shift, *bd = b->diag, node_max, nsz;
-  int        *ns, *nsa, *tmp_vec, *pj;
+  int        *ns, *nsa, *tmp_vec1, *tmp_vec2, *nsmap, *pj;
   Scalar     *rtmp1, *rtmp2, *rtmp3,*v1, *v2, *v3, *pc1, *pc2, *pc3, mul1, mul2, mul3;
   Scalar     tmp, *ba = b->a+shift, *aa = a->a+shift, *pv, *rtmps1, *rtmps2, *rtmps3;
 
@@ -1226,21 +1226,41 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 
   /* If max inode size > 3, split it into two inodes.*/
   /* also map the inode sizes according to the reordering */
-  tmp_vec       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
+  tmp_vec1       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec1);
   for (i=0, j=0; i<node_max; ++i, ++j){
-    if (ns[r[i]]>3) {
-      tmp_vec[j] = ns[r[i]]/2; /* Assuming ns[i] < =5  */
+    if (ns[i]>3) {
+      tmp_vec1[j] = ns[i]/2; /* Assuming ns[i] < =5  */
       ++j; 
-      tmp_vec[j] = ns[r[i]] - tmp_vec[j-1];
+      tmp_vec1[j] = ns[i] - tmp_vec1[j-1];
     } else {
-      tmp_vec[j] = ns[r[i]];
+      tmp_vec1[j] = ns[i];
     }
   }
-
-  /* Now use the new inode info created*/
-  ns       = tmp_vec;
+  /* Use the correct node_max */
   node_max = j;
 
+  /* Now reorder the inode info based on mat re-ordering info */
+  /* First create a row -> inode_size_array_index map */
+  nsmap    =  (int*)PetscMalloc(n*sizeof(int)+1); CHKPTRQ(nsmap);
+  tmp_vec2 =  (int*)PetscMalloc(node_max*sizeof(int)+1); CHKPTRQ(tmp_vec2);
+  for ( i=0,row=0; i<node_max; i++ ) {
+    nsz = tmp_vec1[i];
+    for ( j=0; j<nsz; j++,row++ ) {
+      nsmap[row] = i;
+    }
+  }
+  /* Using nsmap, create a reordered ns structure */
+  for ( i=0,j=0; i< node_max; i++ ) {
+    nsz       = tmp_vec1[nsmap[r[j]]];    /* here the reordered row_no is in r[] */
+    tmp_vec2[i] = nsz;
+    j        += nsz;
+  }
+  PetscFree(nsmap);
+  PetscFree(tmp_vec1);
+  /* Now use the correct ns */
+  ns = tmp_vec2;
+
+  /* Now loop over each block-row, and do the factorization */
   for ( i=0,row=0; i<node_max; i++ ) { 
     nsz   = ns[i];
     nz    = bi[row+1] - bi[row];
@@ -1478,7 +1498,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     row += nsz;                 /* Update the row */
   } 
   PetscFree(rtmp1);
-  PetscFree(tmp_vec);
+  PetscFree(tmp_vec2);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
