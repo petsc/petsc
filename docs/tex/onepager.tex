@@ -1,4 +1,4 @@
-% $Id: onepager.tex,v 1.14 1995/11/07 00:12:47 curfman Exp curfman $ 
+% $Id: onepager.tex,v 1.15 1995/11/08 15:27:33 curfman Exp curfman $ 
 \documentstyle[epsf,sty/handpage,/home/gropp/hyper/style/anlhtext]{article}
 \pagestyle{empty}
 \begin{document}
@@ -14,8 +14,6 @@ This work was supported by the Mathematical,
 
 \date{}
 \maketitle
-
-\newcommand{\vsp}{\vspace{-1.5mm}}
 
 \section*{Description}
 
@@ -41,21 +39,16 @@ enabling the user to employ the level of abstraction that is most
 natural for a particular problem.  Some of the components include:
 \vspace{-.4cm}
 \begin{itemize}
-\item \code{Mat} - a large suite of data structures and code
+\item \code{Mat} - a suite of data structures and code
       for the manipulation of parallel sparse matrices,
-\vsp
 \item \code{PC} - a collection of preconditioners,
-\vsp
 \item \code{KSP} - data-structure-neutral implementations of
       many popular Krylov space iterative methods,
-\vsp
 \item \code{SLES} - a higher-level interface for the solution of
       large-scale linear systems, and
-\vsp
 \item \code{SNES} - data-structure-neutral implementations of Newton-like
       methods for nonlinear systems.
 \end{itemize}
-\vspace{-.3cm}
 
 \section*{Applications}
 \code{PETSc} is intended for use in large-scale application projects, and
