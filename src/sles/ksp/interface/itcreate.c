@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.19 1995/04/12 18:39:13 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.20 1995/04/12 20:39:19 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -11,11 +11,13 @@ static char vcid[] = "$Id: itcreate.c,v 1.19 1995/04/12 18:39:13 curfman Exp cur
 #include "viewer.h"
 
 /*@ 
-    KSPView - Prints the KSP data structure.
+   KSPView - Prints the KSP data structure.
 
-  Input Parameters:
+   Input Parameters:
 .  ksp - the Krylov space context
-.  viewer - the location where to display context (usually 0)
+.  viewer - the location to display context (usually 0)
+
+   Keywords:  KSP, view
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
@@ -36,13 +38,15 @@ int _KSPView(PetscObject obj,Viewer viewer)
 }
 static NRList *__ITList = 0;
 /*@
-    KSPCreate - Creates the default KSP context.
+   KSPCreate - Creates the default KSP context.
 
-  Output Parameter:
+   Output Parameter:
 .  ksp - location to put the Krylov Space context.
 
-  Note:
-  The default KSP method is GMRES with a restart of 10.
+   Note:
+   The default KSP method is GMRES with a restart of 10.
+
+   Keywords:  KSP, create, context
 @*/
 int KSPCreate(KSP *ksp)
 {
@@ -102,13 +106,18 @@ int KSPCreate(KSP *ksp)
 }
 
 /*@
-  KSPSetMethod - Builds KSP for a particular solver. Itmethod is,
-  for instance, KSPCG or KSPGMRES.  
+   KSPSetMethod - Builds KSP for a particular solver. Itmethod is,
+   for instance, KSPCG or KSPGMRES.  
 
-  Input Parameter:
-.  ctx - the Krylov space context.
-.  itmethod   - One of the known methods.  See "ksp.h" for
-    available methods (for instance KSPCG or KSPGMRES).
+   Input Parameter:
+.  ctx      - the Krylov space context.
+.  itmethod - a known method.  
+
+   Note:  
+   See "petsc/include/ksp.h" for available methods (for instance KSPCG 
+   or KSPGMRES).
+
+   Keywords:  KSP, set, method
  @*/
 int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 {
@@ -134,9 +143,11 @@ int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
    an iterative name (KSPMETHOD) and a function pointer.
 
    Input Parameters:
-.      name - for instance KSPGMRES, ...
-.      sname -  corresponding string for name
-.      create - routine to create method context
+.  name   - for instance KSPCG, KSPGMRES, ...
+.  sname  - corresponding string for name
+.  create - routine to create method context
+
+   Keywords:  KSP, register
 @*/
 int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
 {
@@ -147,8 +158,10 @@ int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
 }
 
 /*@
-   KSPRegisterDestroy - Frees the list of iterative solvers
+   KSPRegisterDestroy - Frees the list of iterative solvers that were
    registered by KSPRegister().
+
+   Keywords: KSP, register, destroy
 @*/
 int KSPRegisterDestroy()
 {
@@ -160,20 +173,22 @@ int KSPRegisterDestroy()
 }
 
 /*@C
-  KSPGetMethodFromOptions - Sets the selected KSP method from the options
-                            database.
+   KSPGetMethodFromOptions - Sets the selected KSP method from the options
+   database.
 
-  Input Parameter:
-. ctx - the KSP context
+   Input Parameter:
+.  ctx - the KSP context
 
-  Output Parameter:
-. itmethod - iterative method
+   Output Parameter:
+.  itmethod - iterative method
 
-  Returns:
-  Returns 1 if the method is found; 0 otherwise.
+   Returns:
+   Returns 1 if the method is found; 0 otherwise.
 
-  Options Database Key:
-$ -kspmethod  itmethod
+   Options Database Key:
+$  -kspmethod  itmethod
+
+   Keywords: KSP, options, database, get, method
 @*/
 int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
 {
@@ -188,13 +203,15 @@ int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
 
 /*@C
    KSPGetMethodName - Gets the KSP method name (as a string) from 
-                      the method type.
+   the method type.
 
    Input Parameter:
 .  itmeth - KSP method
 
    Output Parameter:
 .  name - name of KSP method
+
+   Keywords: KSP, get, method, name
 @*/
 int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 {
@@ -205,8 +222,8 @@ int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 
 #include <stdio.h>
 /*@C
-   KSPPrintMethods - Prints the Krylov space methods available 
-                     from the options database.
+   KSPPrintMethods - Prints the KSP methods available from the options 
+   database.
 
    Input Parameters:
 .  prefix - prefix (usually "-")
@@ -214,6 +231,8 @@ int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 
    Note:
    This routine is called from KSPPrintHelp().
+
+   Keywords: KSP, print, methods, options, database
 @*/
 int KSPPrintMethods(char* prefix,char *name)
 {
