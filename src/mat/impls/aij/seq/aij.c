@@ -2913,7 +2913,7 @@ PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer,const MatType type,Mat *A)
   Mat_SeqAIJ     *a;
   Mat            B;
   PetscErrorCode ierr;
-  PetscInt       i,nz,header[4],*rowlengths = 0,M,N;
+  PetscInt       i,sum,nz,header[4],*rowlengths = 0,M,N;
   int            fd;
   PetscMPIInt    size;
   MPI_Comm       comm;
@@ -2934,6 +2934,10 @@ PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer,const MatType type,Mat *A)
   /* read in row lengths */
   ierr = PetscMalloc(M*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
+
+  /* check if sum of rowlengths is same as nz */
+  for (i=0,sum=0; i< M; i++) sum +=rowlengths[i];
+  if (sum != nz) SETERRQ2(PETSC_ERR_FILE_READ,"Inconsistant matrix data in file. no-nonzeros = %d, sum-row-lengths = %d\n",nz,sum);
 
   /* create our matrix */
   ierr = MatCreate(comm,PETSC_DECIDE,PETSC_DECIDE,M,N,&B);CHKERRQ(ierr);

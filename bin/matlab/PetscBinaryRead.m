@@ -20,6 +20,12 @@ for l=1:nargout
 
     nnz = fread(fd,m,'int32');  %nonzeros per row
 
+    sum_nz = sum(nnz);
+    if(sum_nz ~=nz)
+      str = sprintf('No-Nonzeros sum-rowlenths do not match %d %d',nz,sum_nz);
+      error(str);
+    end
+
     j   = fread(fd,nz,'int32') + 1;
     s   = fread(fd,nz,'double');
     i   = ones(nz,1);
