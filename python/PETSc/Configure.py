@@ -985,7 +985,7 @@ fi
     else:
       self.dir = os.getcwd()
     self.addSubstitution('DIR', self.dir)
-    self.addDefine('DIR', self.dir, 'The root directory of the Petsc installation')
+    self.addDefine('DIR', self.dir)
     return
 
   def configureArchitecture(self):
@@ -1029,8 +1029,8 @@ fi
       raise RuntimeError('PETSC_ARCH ('+self.arch+') does not have our guess ('+self.host_os+') as a prefix!')
     self.addSubstitution('ARCH', self.arch)
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
-    self.addDefine('ARCH', self.archBase, 'The primary architecture of this machine')
-    self.addDefine('ARCH_NAME', '"'+self.arch+'"', 'The full architecture name for this machine')
+    self.addDefine('ARCH', self.archBase)
+    self.addDefine('ARCH_NAME', '"'+self.arch+'"')
     return
 
   def configureLibraryOptions(self):
@@ -1139,9 +1139,9 @@ fi
     self.framework.getExecutable('dbx', getFullPath = 1, comment = 'DBX debugger')
     self.framework.getExecutable('xdb', getFullPath = 1, comment = 'XDB debugger')
     if hasattr(self, 'gdb'):
-      self.addDefine('USE_GDB_DEBUGGER', 1, comment = 'Use GDB as the default debugger')
+      self.addDefine('USE_GDB_DEBUGGER', 1)
     elif hasattr(self, 'dbx'):
-      self.addDefine('USE_DBX_DEBUGGER', 1, comment = 'Use DBX as the default debugger')
+      self.addDefine('USE_DBX_DEBUGGER', 1)
       f = file('conftest', 'w')
       f.write('quit\n')
       f.close()
@@ -1150,27 +1150,27 @@ fi
         (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -p '+os.getpid())
         for line in output:
           if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_P_FOR_DEBUGGER', 1, comment = 'Use -p to indicate a process to the debugger')
+            self.addDefine('USE_P_FOR_DEBUGGER', 1)
             foundOption = 1
             break
       if not foundOption:
         (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -a '+os.getpid())
         for line in output:
           if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_A_FOR_DEBUGGER', 1, comment = 'Use -a to indicate a process to the debugger')
+            self.addDefine('USE_A_FOR_DEBUGGER', 1)
             foundOption = 1
             break
       if not foundOption:
         (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -pid '+os.getpid())
         for line in output:
           if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_PID_FOR_DEBUGGER', 1, comment = 'Use -pid to indicate a process to the debugger')
+            self.addDefine('USE_PID_FOR_DEBUGGER', 1)
             foundOption = 1
             break
       os.remove('conftest')
     elif hasattr(self, 'xdb'):
-      self.addDefine('USE_XDB_DEBUGGER', 1, comment = 'Use XDB as the default debugger')
-      self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1, comment = 'Use -P to indicate a process to the debugger')
+      self.addDefine('USE_XDB_DEBUGGER', 1)
+      self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1)
     return
 
   def checkMkdir(self):
