@@ -57,12 +57,9 @@ int PetscGetHostName(char name[],int nlen)
 #if defined(PETSC_HAVE_UNAME)
   struct utsname utname;
 #endif
-#if defined(PETSC_HAVE_GETDOMAINNAME) && !defined(PETSC_HAVE_SYSINFO_3ARG)
-  PetscTruth     match;
-#endif
+
 
   PetscFunctionBegin;
-
 #if defined(PARCH_win32) || defined(PARCH_win32_gnu)
   GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
 #elif defined(PETSC_HAVE_UNAME)
@@ -73,11 +70,10 @@ int PetscGetHostName(char name[],int nlen)
 #elif defined(PETSC_HAVE_SYSINFO_3ARG)
   sysinfo(SI_HOSTNAME,name,nlen);
 #endif
-
   /* See if this name includes the domain */
   ierr = PetscStrchr(name,'.',&domain);CHKERRQ(ierr);
   if (!domain) {
-    int  l;
+    int  l,ll;
     ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
     if (l == nlen) {name[nlen-1] = 0; PetscFunctionReturn(0);}
     name[l++] = '.';
@@ -85,19 +81,27 @@ int PetscGetHostName(char name[],int nlen)
     sysinfo(SI_SRPC_DOMAIN,name+l,nlen-l);
 #elif defined(PETSC_HAVE_GETDOMAINNAME)
     getdomainname(name+l,nlen - l);
-    /* change domain name if it is an ANL crap one */
-    ierr = PetscStrcmp(name+l,"qazwsxedc",&match);CHKERRQ(ierr);
-    if (match) {
-      ierr = PetscStrncpy(name+l,"mcs.anl.gov",nlen-12);CHKERRQ(ierr);
-    }
 #endif
-    /* 
-       Some machines (Linx) default to (none) if not
-       configured with a particular domain name.
-    */
-    ierr = PetscStrncmp(name+l,"(none)",6,&flag);CHKERRQ(ierr);
-    if (flag) {
-      name[l-1] = 0;
+    /* check if domain name is not a dnsdomainname and nuke it */
+    ierr = PetscStrlen(name,&ll);CHKERRQ(ierr);
+    if (ll > 4) {
+      ierr = PetscStrcmp(name + ll - 4,".edu",&flag);CHKERRQ(ierr);
+      if (!flag) {
+        ierr = PetscStrcmp(name + ll - 4,".com",&flag);CHKERRQ(ierr);
+        if (!flag) {
+          ierr = PetscStrcmp(name + ll - 4,".net",&flag);CHKERRQ(ierr);
+          if (!flag) {
+            ierr = PetscStrcmp(name + ll - 4,".org",&flag);CHKERRQ(ierr);
+            if (!flag) {
+              ierr = PetscStrcmp(name + ll - 4,".mil",&flag);CHKERRQ(ierr);
+              if (!flag) {
+                PetscLogInfo(0,"Rejecting domainname, likely is NIS %s\n",name);
+                name[l-1] = 0;
+              }
+            }
+          }
+        }
+      }
     }
   }
   name[nlen-1] = 0;

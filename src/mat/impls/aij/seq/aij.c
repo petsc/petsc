@@ -616,9 +616,6 @@ int MatView_SeqAIJ(Mat A,PetscViewer viewer)
 }
 
 EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
-EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
-EXTERN int MatUseSpooles_SeqAIJ(Mat);
-EXTERN int MatUseUMFPACK_SeqAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJ"
 int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
@@ -677,17 +674,17 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SUPERLUDIST) 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(A);CHKERRQ(ierr); }
 #endif 
 
 #if defined(PETSC_HAVE_SPOOLES) 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr); }
 #endif 
 
 #if defined(PETSC_HAVE_UMFPACK) 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_umfpack",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_umfpack",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseUMFPACK_SeqAIJ(A);CHKERRQ(ierr); }
 #endif 
 
@@ -1943,7 +1940,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(coloring->prefix,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscLogInfo(coloring,"MatFDColoringApply_SeqAIJ: Not calling MatZeroEntries()\n");
   } else {
@@ -2158,12 +2155,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatSetValuesAdic_SeqAIJ,
        MatSetValuesAdifor_SeqAIJ,
        MatFDColoringApply_SeqAIJ};
-
-EXTERN int MatUseSuperLU_SeqAIJ(Mat);
-EXTERN int MatUseEssl_SeqAIJ(Mat);
-EXTERN int MatUseLUSOL_SeqAIJ(Mat);
-EXTERN int MatUseMatlab_SeqAIJ(Mat);
-EXTERN int MatUseDXML_SeqAIJ(Mat);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -2661,14 +2652,14 @@ int MatCreate_SeqAIJ(Mat B)
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-pc_ilu_preserve_row_sums",&b->ilu_preserve_row_sums);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(B->prefix,"-mat_lu_pivotthreshold",&B->lupivotthreshold,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(B->prefix,"-pc_ilu_preserve_row_sums",&b->ilu_preserve_row_sums);CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
   b->icol             = 0;
   b->indexshift       = 0;
   b->reallocs         = 0;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_oneindex",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_oneindex",&flg);CHKERRQ(ierr);
   if (flg) b->indexshift = -1;
   
   ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
@@ -2694,17 +2685,17 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SUPERLU)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_superlu",&flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseSuperLU_SeqAIJ(B);CHKERRQ(ierr); }
 #endif
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_essl",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_essl",&flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseEssl_SeqAIJ(B);CHKERRQ(ierr); }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_lusol",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_lusol",&flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseLUSOL_SeqAIJ(B);CHKERRQ(ierr); }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_matlab",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_matlab",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatUseMatlab_SeqAIJ(B);CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_dxml",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_dxml",&flg);CHKERRQ(ierr);
   if (flg) {
     if (!b->indexshift) SETERRQ(PETSC_ERR_LIB,"need -mat_aij_oneindex with -mat_aij_dxml");
     ierr = MatUseDXML_SeqAIJ(B);CHKERRQ(ierr);
