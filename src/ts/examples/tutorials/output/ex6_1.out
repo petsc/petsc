@@ -1,0 +1,12 @@
+Solving a linear TS problem on 1 processor
+Timestep 0: step size = 0.000143637, time = 0, 2-norm error = 1.03786e-15, max norm error = 3.10862e-15
+Timestep 1: step size = 0.000143637, time = 0.000143637, 2-norm error = 0.000599907, max norm error = 0.000863771
+Timestep 2: step size = 0.000143637, time = 0.000287274, 2-norm error = 0.00113969, max norm error = 0.00164231
+Timestep 3: step size = 0.000143637, time = 0.000430911, 2-norm error = 0.00162387, max norm error = 0.00234201
+Timestep 4: step size = 0.000143637, time = 0.000574548, 2-norm error = 0.00205669, max norm error = 0.00296886
+avg. error (2 norm) = 0.00135504, avg. error (max norm) = 0.00195424
+TS Object:
+  type: euler
+  maximum steps=4
+  maximum time=100
+  total number of linear solver iterations=0

@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   TS                     ts;                 /* nonlinear solver */
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    J;                    /* Jacobian matrix */
-  PetscInt               steps;                  /* iterations for convergence */
+  PetscInt               steps,maxsteps = 100;     /* iterations for convergence */
   PetscErrorCode         ierr;
   DA                     da;
   MatFDColoring          matfdcoloring;
@@ -44,6 +44,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-max_steps",&maxsteps,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DA) to manage parallel grid and vectors
@@ -87,7 +88,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetInitialTimeStep(ts,0.0,.0001);CHKERRQ(ierr);
   ierr = TSSetType(ts,TS_BEULER);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,100,1.0);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetMonitor(ts,Monitor,0,0);CHKERRQ(ierr);
 

@@ -205,14 +205,22 @@ PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
   TS             ts = (TS) ctx;
   PetscErrorCode ierr;
   PetscScalar    mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian */
-  ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
-  ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  /* this test is a undesirable hack, we assume that if it is MATMFFD then it is
+     obtained from -snes_mf_operator and there is computed directly from the 
+     FormFunction() SNES is given and therefor does not need to be shifted/scaled
+     BUT maybe it could be MATMFFD and does require shift in some other case? */
+  ierr = PetscTypeCompare((PetscObject)*AA,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  }
   if (*BB != *AA && *str != SAME_PRECONDITIONER) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);

@@ -71,10 +71,10 @@ Input parameters include:\n\
 typedef struct {
   Vec         solution;          /* global exact solution vector */
   PetscInt    m;                 /* total number of grid points */
-  double      h;                 /* mesh width h = 1/(m-1) */
-  int         debug;             /* flag (1 indicates activation of debugging printouts) */
+  PetscReal   h;                 /* mesh width h = 1/(m-1) */
+  PetscTruth  debug;             /* flag (1 indicates activation of debugging printouts) */
   PetscViewer viewer1, viewer2;  /* viewers for the solution and error */
-  double      norm_2, norm_max;  /* error norms */
+  PetscReal   norm_2, norm_max;  /* error norms */
 } AppCtx;
 
 /* 
@@ -94,16 +94,15 @@ int main(int argc,char **argv)
   TS             ts;                     /* timestepping context */
   Mat            A;                      /* matrix data structure */
   Vec            u;                      /* approximate solution vector */
-  double         time_total_max = 100.0; /* default max total time */
+  PetscReal      time_total_max = 100.0; /* default max total time */
   PetscInt       time_steps_max = 100;   /* default max timesteps */
   PetscDraw      draw;                   /* drawing context */
-  PetscTruth     flg;
   PetscErrorCode ierr;
   PetscInt       steps, m;
   PetscMPIInt    size;
-  double         dt;
+  PetscReal      dt;
   PetscReal      ftime;
-
+  PetscTruth     flg;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -113,14 +112,15 @@ int main(int argc,char **argv)
   if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
 
   m    = 60;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&flg);CHKERRQ(ierr);    
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);    
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
   appctx.norm_max = 0.0;
-  appctx.debug    = (int) flg;
-  PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n");CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time_steps_max",&time_steps_max,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -162,6 +162,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,m,&A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -289,8 +290,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
      VecSetValues() or VecSetValuesLocal().
   */
   for (i=0; i<appctx->m; i++) {
-    u_localptr[i] = 0.0;
-    /*    u_localptr[i] = sin(PETSC_PI*i*6.*h) + 3.*sin(PETSC_PI*i*2.*h); */
+    u_localptr[i] = sin(PETSC_PI*i*6.*appctx->h) + 3.*sin(PETSC_PI*i*2.*appctx->h); 
   }
 
   /* 
@@ -340,7 +340,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=0; i<appctx->m; i++) {
-    s_localptr[i] = sin(PetscRealPart(sc1)*(double)i)*ex1 + 3.*sin(PetscRealPart(sc2)*(double)i)*ex2;
+    s_localptr[i] = sin(PetscRealPart(sc1)*(PetscReal)i)*ex1 + 3.*sin(PetscRealPart(sc2)*(PetscReal)i)*ex2;
   }
 
   /* 
