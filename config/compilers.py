@@ -20,8 +20,8 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('Compilers', '-with-f90-header=<file>', nargs.Arg(None, None, 'Specify the C header for the F90 interface'))
-    help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface'))
+    help.addArgument('Compilers', '-with-f90-header=<file>', nargs.Arg(None, None, 'Specify the C header for the F90 interface, e.g. f90impl/f90_intel.h'))
+    help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface, e.g. src/sys/src/f90/f90_intel.c'))
     return
 
   def checkCRestrict(self):
@@ -430,28 +430,82 @@ class Configure(config.base.Configure):
     self.framework.argDB['LIBS'] = oldLibs
     return
 
+  def checkFortran90(self):
+    '''Determine whether the Fortran compiler handles F90'''
+    self.fortranIsF90 = 0
+    if self.framework.argDB.has_key('with-f90-header') and self.framework.argDB.has_key('with-f90-source'):
+      self.fortranIsF90 = 1
+    return
+
   def stripquotes(self,str):
     if str[0] =='"': str = str[1:]
     if str[-1] =='"': str = str[:-1]
     return str
 
+  def getFortran90SourceGuesses(self):
+    headerGuess = None
+    sourceGuess = None
+    if self.framework.argDB['with-vendor-compilers'] and not self.framework.argDB['with-vendor-compilers'] == '0':
+      if self.setCompilers.FC.startswith('win32fe'):
+        headerGuess = 'f90_win32.h'
+        sourceGuess = 'f90_win32.c'
+      if self.framework.argDB['with-vendor-compilers'] == 'absoft':
+        headerGuess = 'f90_absoft.h'
+        sourceGuess = 'f90_absoft.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'cray':
+        headerGuess = 'f90_t3e.h'
+        sourceGuess = 'f90_t3e.c'
+        #headerGuess = 'f90_cray_x1.h'
+        #sourceGuess = 'f90_cray_x1.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'dec':
+        headerGuess = 'f90_alpha.h'
+        sourceGuess = 'f90_alpha.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'hp':
+        headerGuess = 'f90_hpux.h'
+        sourceGuess = 'f90_hpux.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'ibm':
+        headerGuess = 'f90_rs6000.h'
+        sourceGuess = 'f90_rs6000.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'intel':
+        #headerGuess = 'f90_intel.h'
+        #sourceGuess = 'f90_intel.c'
+        headerGuess = 'f90_intel8.h'
+        sourceGuess = 'f90_intel8.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'lahaye':
+        headerGuess = 'f90_nag.h'
+        sourceGuess = 'f90_nag.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'portland':
+        headerGuess = 'f90_pgi.h'
+        sourceGuess = 'f90_pgi.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'sgi':
+        headerGuess = 'f90_IRIX.h'
+        sourceGuess = 'f90_IRIX.c'
+      elif self.framework.argDB['with-vendor-compilers'] == 'solaris':
+        headerGuess = 'f90_solaris.h'
+        sourceGuess = 'f90_solaris.c'
+    return (headerGuess, sourceGuess)
+
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
-    self.fortranIsF90 = 0
-    if self.framework.argDB.has_key('with-f90-header'):
-      headerPath = os.path.abspath(self.stripquotes(self.framework.argDB['with-f90-header']))
+    if not self.fortranIsF90:
+      return
+    (headerGuess, sourceGuess) = self.getFortran90SourceGuesses()
+    if 'with-f90-header' in self.framework.argDB:
+      headerGuess = self.stripquotes(self.framework.argDB['with-f90-header'])
+    if 'with-f90-source' in self.framework.argDB.has_key():
+      sourceGuess = self.stripquotes(self.framework.argDB['with-f90-source'])
+    if headerGuess:
+      headerPath = os.path.abspath(headerGuess)
       if not os.path.isfile(headerPath):
-        headerPath = os.path.abspath(self.stripquotes(os.path.join('include', self.framework.argDB['with-f90-header'])))
+        headerPath = os.path.abspath(os.path.join('include', headerGuess))
         if not os.path.isfile(headerPath):
-          raise RuntimeError('Invalid F90 header: '+str(self.stripquotes(self.framework.argDB['with-f90-header'])))
+          raise RuntimeError('Invalid F90 header: '+str(headerPath))
       self.f90HeaderPath = headerPath
-      self.fortranIsF90 = 1
-    if self.framework.argDB.has_key('with-f90-source'):
-      sourcePath = os.path.abspath(self.stripquotes(self.framework.argDB['with-f90-source']))
+    if sourceGuess:
+      sourcePath = os.path.abspath(sourceGuess)
       if not os.path.isfile(sourcePath):
         raise RuntimeError('Invalid F90 source: '+str(sourcePath))
       self.f90SourcePath = sourcePath
-      self.fortranIsF90 = 1
     return
 
   def output(self):

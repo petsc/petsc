@@ -396,7 +396,7 @@ class Configure(config.base.Configure):
         if vendor == 'ibm' or not vendor:
           yield 'xlf'
           yield 'xlf90'
-        if not vendor:
+        if not vendor or vendor in ['absoft', 'cray', 'dec', 'hp', 'sgi']:
           yield 'f90'
         if vendor == 'lahaye' or not vendor:
           yield 'lf95'
