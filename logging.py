@@ -34,8 +34,7 @@ class Logger(object):
 
   def debugFileSetStr(self, set):
     import build.fileset
-    import fileset
-    if isinstance(set, build.fileset.FileSet) or isinstance(set, fileset.FileSet):
+    if isinstance(set, build.fileset.FileSet):
       s = ''
       if set.tag:
         s += '('+set.tag+')'

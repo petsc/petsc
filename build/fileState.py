@@ -1,4 +1,4 @@
-import fileset
+import build.fileset
 import build.transform
 
 import os
@@ -10,8 +10,8 @@ class FileChanged (build.transform.Transform):
     self.sourceDB      = sourceDB
     self.inputTag      = inputTag
     if isinstance(self.inputTag, str): self.inputTag = [self.inputTag]
-    self.changed       = fileset.FileSet(tag = changedTag)
-    self.unchanged     = fileset.FileSet(tag = unchangedTag)
+    self.changed       = build.fileset.FileSet(tag = changedTag)
+    self.unchanged     = build.fileset.FileSet(tag = unchangedTag)
     self.output.children.append(self.changed)
     self.output.children.append(self.unchanged)
     return

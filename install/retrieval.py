@@ -58,7 +58,7 @@ class Retriever(install.base.Base):
     self.debugPrint('Retrieving '+url+' --> '+root+' via cp', 3, 'install')
     return self.genericRetrieve(url, root, canExist, force)
 
-  def getAuthroizedUrl(url):
+  def getAuthorizedUrl(self, url):
     '''This returns a tuple of the unauthorized and authorized URLs for the given repository, as well as a flag indicating which was input'''
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     if not location:
