@@ -74,7 +74,7 @@ int RamgShellPCCreate(RamgShellPC **shell)
 int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 {
    int                numnodes, numnonzero, nnz_count; 
-   int                j, I, J, ncols_getrow, *cols_getrow; 
+   int                j, I, J, ncols_getrow, *cols_getrow,*diag; 
    Scalar             *vals_getrow, rowentry; 
    MatInfo            info;
  
@@ -128,19 +128,32 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 
    /*..Store PETSc matrix in compressed skyline format required by RAMG..*/ 
    nnz_count = 0;
+   ierr = MatMarkDiagonal_SeqAIJ(pmat);
+   diag = aij->diag;
+
    for (I=0;I<numnodes;I++){
 
      /*....Get row I of matrix....*/
-     ierr = MatGetRow(pmat,I,&ncols_getrow,&cols_getrow,&vals_getrow);CHKERRA(ierr); 
-     ia[I] = nnz_count; 
-     for (j=0;j<ncols_getrow;j++){
+     ncols_getrow = aij->i[I+1] - aij->i[I];
+     vals_getrow  = aij->a + aij->i[I];
+     cols_getrow  = aij->j + aij->i[I];
+
+
+
+     /*     for (j=0;j<ncols_getrow;j++){
            J               = cols_getrow[j];
 	   if (J == I) {
              Asky[nnz_count] = vals_getrow[j];
              ja[nnz_count]   = J; 
              nnz_count++; 
            }
-     }
+	   } */
+
+     ia[I]           = nnz_count; 
+     ja[nnz_count]   = I;
+     Asky[nnz_count] = aij->a[diag[I]];
+     nnz_count++;
+
      for (j=0;j<ncols_getrow;j++){
            J               = cols_getrow[j];
 	   if (J != I) {
@@ -149,11 +162,8 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
              nnz_count++; 
            }
      }
-
    }
    ia[numnodes] = nnz_count; 
-
-   /* makeskyline(numnodes,Asky,ja,ia); */
 
    /*..Switch arrays ia and ja to Fortran conventions..*/ 
    for (j=0;j<=numnodes;j++)
