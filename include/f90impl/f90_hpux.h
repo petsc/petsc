@@ -1,4 +1,4 @@
-/* $Id: f90_hpux.h,v 1.1 1998/09/25 15:13:33 balay Exp balay $ */
+/* $Id: f90_hpux.h,v 1.2 1998/09/25 19:12:18 balay Exp bsmith $ */
 
 #if !defined (__F90_HPUX_H)
 #define __F90_HPUX_H
@@ -12,7 +12,7 @@ typedef struct {
 /*
   The following constants are just
   guesses. It is strange that the HP folks use such 
-  constants to represent the dimention
+  constants to represent the dimension
 */
 #define F90_1D_ID  257
 #define F90_2D_ID  513
