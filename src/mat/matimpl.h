@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.113 2000/08/01 20:01:51 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.114 2000/09/02 02:47:45 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -86,7 +86,8 @@ struct _MatOps {
             (*unscalesystem)(Mat,Vec,Vec),
             (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
             (*setvalueslocal)(Mat,int,int *,int,int *,Scalar *,InsertMode),
-            (*zerorowslocal)(Mat,IS,Scalar *);
+            (*zerorowslocal)(Mat,IS,Scalar *),
+            (*getrowmax)(Mat,Vec);
 };
 
 /*
