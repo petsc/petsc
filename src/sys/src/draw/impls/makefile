@@ -1,8 +1,9 @@
-# $Id: makefile,v 1.25 1999/02/03 04:27:32 bsmith Exp bsmith $
+# $Id: makefile,v 1.26 1999/11/24 21:52:52 bsmith Exp balay $
 
 ALL: lib
 
-DIRS     = x ps
+DIRS     = x ps win32
 LOCDIR   = src/sys/src/draw/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
