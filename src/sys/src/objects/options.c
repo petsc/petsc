@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.173 1998/03/24 20:59:14 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.174 1998/03/27 19:54:07 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -507,7 +507,7 @@ $      utility Upshot/Nupshot (in MPICH distribution)
 @*/
 int PetscFinalize(void)
 {
-  int        ierr,i,rank = 0,flg1,flg2,flg3;
+  int        ierr,i,rank = 0,flg1,flg2,flg3,nopt;
   PLogDouble rss;
 
   PetscFunctionBegin;
@@ -574,10 +574,12 @@ int PetscFinalize(void)
   if (flg1) {
     if (!rank) OptionsPrint(stdout);
   }
+  nopt = OptionsAllUsed();
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft",&flg1); CHKERRQ(ierr);
   if (flg1) {
-    int nopt = OptionsAllUsed();
     ierr = OptionsPrint(stdout);CHKERRQ(ierr);
+  }
+  if (flg1) {
     if (nopt == 0) { 
       PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");
     } else if (nopt == 1) {
@@ -585,6 +587,17 @@ int PetscFinalize(void)
     } else {
       PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);
     }
+  }
+
+#if (USE_PETSC_BOPT_g)
+  if (nopt && !flg1) {
+    PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");
+    PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");
+  }
+  if (nopt || flg1) {
+#else 
+  if (flg1) {
+#endif
     for ( i=0; i<options->N; i++ ) {
       if (!options->used[i]) {
         if (options->values[i]) {
@@ -1148,6 +1161,8 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
         eargs++; left--;
       } else if (!PetscStrcmp(eargs[0],"-options_file")) {
         ierr = OptionsInsertFile_Private(eargs[1]); CHKERRQ(ierr);
+        eargs += 2; left -= 2;
+      } else if (!PetscStrcmp(eargs[0],"-p4pg")) {
         eargs += 2; left -= 2;
       } else if ((left < 2) || ((eargs[1][0] == '-') && 
                ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
