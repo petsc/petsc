@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.20 1996/03/26 17:28:55 balay Exp balay $";
+static char vcid[] = "$Id: vinv.c,v 1.21 1996/03/26 17:30:22 balay Exp balay $";
 #endif
 /*
      Some useful vector utility functions.
@@ -151,7 +151,6 @@ int VecPlaceArray(Vec vec,Scalar *array)
 
 .keywords: vec, equal, equivalent
 @*/
-
 int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
   Scalar *v1,*v2;
