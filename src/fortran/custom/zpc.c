@@ -9,6 +9,7 @@
 #define mgsetresidual_             MGSETRESIDUAL
 #define pcasmsetlocalsubdomains_   PCASMSETLOCALSUBDOMAINS
 #define pcasmsetglobalsubdomains_  PCASMSETGLOBALSUBDOMAINS
+#define pcasmgetlocalsubmatrices_  PCASMGETLOCALSUBMATRICES
 #define pcasmgetlocalsubdomains_   PCASMGETLOCALSUBDOMAINS
 #define pcregisterdestroy_         PCREGISTERDESTROY
 #define pcdestroy_                 PCDESTROY
@@ -44,6 +45,7 @@
 #define mgsetresidual_             mgsetresidual
 #define pcasmsetlocalsubdomains_   pcasmsetlocalsubdomains
 #define pcasmsetglobalsubdomains_  pcasmsetglobalsubdomains
+#define pcasmgetlocalsubmatrices_  pcasmgetlocalsubmatrices
 #define pcasmgetlocalsubdomains_   pcasmgetlocalsubdomains
 #define matnullspacecreate_        matnullspacecreate
 #define pcnullspaceattach_         pcnullspaceattach
@@ -320,6 +322,20 @@ void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, int *ierr)
   *ierr = PCASMSetTotalSubdomains(*pc,*N,is);
 }
 
+void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,int *n,Mat *mat, int *ierr)
+{
+  int nloc,i;
+  Mat  *tmat;
+  CHKFORTRANNULLOBJECT(mat);
+  CHKFORTRANNULLINTEGER(n);
+  *ierr = PCASMGetLocalSubmatrices(*pc,&nloc,&tmat);
+  if (n) *n = nloc;
+  if (mat) {
+    for (i=0; i<nloc; i++){
+      mat[i] = tmat[i];
+    }
+  }
+}
 void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr)
 {
   int nloc,i;

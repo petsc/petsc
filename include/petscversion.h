@@ -13,7 +13,7 @@
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    1
 #define PETSC_VERSION_SUBMINOR 3
-#define PETSC_VERSION_PATCH    4
+#define PETSC_VERSION_PATCH    5
 #define PETSC_VERSION_DATE     "Jul 10, 2002"
 #define PETSC_AUTHOR_INFO      "\
        The PETSc Team\n\
