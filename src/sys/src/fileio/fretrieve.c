@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.21 1999/11/10 03:17:57 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.22 1999/11/24 21:53:01 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -251,18 +251,11 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     ierr = PetscStrcat(par,libname);CHKERRQ(ierr);
     ierr = PetscStrcat(par," 2>&1 ");CHKERRQ(ierr);
 
-    PLogInfo(0,"PetscFileRetrieve: Running python script:%s\n",par);
-#if defined (PARCH_win32)
-  SETERRQ(1,1,"Cannot use PetscFileRetrieve on NT");
-#else 
-    if (!(fp = popen(par,"r"))) {
-      SETERRQ(1,1,"Cannot Execute python1.5 on ${PETSC_DIR}/bin/urlget.py\n\
-        Check if python1.5 is in your path");
-    }
+    ierr = PetscPOpen(PETSC_COMM_SELF,par,"r",&fp);CHKERRQ(ierr);
     if (!fgets(buf,1024,fp)) {
       SETERRQ1(1,1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
     }
-#endif
+
     /* Check for \n and make it 0 */
     for ( i=0; i<1024; i++ ) {
       if ( buf[i] == '\n') {
