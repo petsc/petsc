@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.1 1995/07/20 21:09:49 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.2 1995/07/22 19:34:33 curfman Exp curfman $";
 #endif
 
 #include <stdio.h>
@@ -85,10 +85,10 @@ int KSPSolve_QCG(KSP itP,int *its)
   /* Compute:  BS = L^{-1} B */
   ierr = MatForwardSolve(Factmat,B,BS); CHKERRQ(ierr);
   VecNorm(BS,&bsnrm);
-  cerr = (*itP->converged)(itP,0,bsnrm,itP->cnvP);
-  if (cerr) {*its =  0; return 0;}
   MONITOR(itP,bsnrm,0);
   if (history) history[0] = bsnrm;
+  cerr = (*itP->converged)(itP,0,bsnrm,itP->cnvP);
+  if (cerr) {*its =  0; return 0;}
 
   /* Compute the initial scaled direction and scaled residual */
   VecCopy(BS,R);
