@@ -61,7 +61,7 @@ allfortranstubs:
 etags:
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS src/*/examples/*.c
+	etags -a -f TAGS src/*/examples/*.c src/*/examples/*/*.c
 	etags -a -f TAGS src/*/*.h src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
 	etags -a -f TAGS include/*.h pinclude/*.h bmake/common

@@ -8,9 +8,9 @@ SOURCEH       =
 OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscvec
-EXAMPLES_2    = ex2
+EXAMPLES_2    = 
 EXAMPLESC     = ex2.c
-RUNEXAMPLES_2 = runex2
+RUNEXAMPLES_2 = 
 
 runex2:
 	@echo "There are no externally runable examples in this directory"
