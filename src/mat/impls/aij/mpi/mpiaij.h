@@ -1,9 +1,10 @@
-/* $Id: mpiaij.h,v 1.12 1995/12/23 21:57:19 bsmith Exp bsmith $ */
+/* $Id: mpiaij.h,v 1.13 1997/03/26 01:35:49 bsmith Exp balay $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
 
 #include "src/mat/impls/aij/seq/aij.h"
+#include "src/sys/ctable.h"
 
 typedef struct {
   int           *rowners, *cowners;     /* ranges owned by each processor */
@@ -25,7 +26,11 @@ typedef struct {
   int           nsends, nrecvs;         /* numbers of sends and receives */
   Scalar        *svalues, *rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
+#if defined (USE_CTABLE)
+  Table         colmap
+#else
   int           *colmap;                /* local col number of off-diag col */
+#endif
   int           *garray;                /* work array */
 
   /* The following variables are used for matrix-vector products */

@@ -1,6 +1,7 @@
-/* $Id: mpibaij.h,v 1.14 1998/02/18 19:42:08 balay Exp balay $ */
+/* $Id: mpibaij.h,v 1.15 1998/02/18 20:37:34 balay Exp balay $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
+#include "src/sys/ctable.h"
 
 #if !defined(__MPIBAIJ_H)
 #define __MPIBAIJ_H
@@ -28,7 +29,11 @@ typedef struct {
   int           nsends, nrecvs;         /* numbers of sends and receives */
   Scalar        *svalues, *rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
+#if defined (USE_CTABLE)
+  Table         colmap;
+#else
   int           *colmap;                /* local col number of off-diag col */
+#endif
   int           *garray;                /* work array */
 
   /* The following variable is used by blocked matrix assembly */
