@@ -275,7 +275,10 @@ deletemanualpages: chk_loc
 	${RM} ${LOC}/docs/manualpages/manualpages.cit
 
 # Builds all the documentation - should be done every night
-alldoc: chk_loc deletemanualpages chk_concepts_dir
+alldoc: alldoc1 alldoc2
+
+# Build everything that goes into 'doc' dir except html sources
+alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	cd docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
@@ -285,9 +288,10 @@ alldoc: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=getexlist tree LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree LOC=${LOC}
 	-maint/helpindex.py ${PETSC_DIR} ${LOC}
+	-maint/update-docs.py ${LOC}
 
 # Builds .html versions of the source
-allhtml: chk_loc
+alldoc2: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 
 allcleanhtml: 
