@@ -16,6 +16,13 @@ class Configure(configure.Configure):
     self.libraries      = self.framework.require('config.libraries', self)
     return
 
+  def configureHelp(self, help):
+    help.addOption('MPI', '-with-mpi', 'Use MPI')
+    help.addOption('MPI', '-with-mpi-include=<dir>', 'The directory containing mpi.h')
+    help.addOption('MPI', '-with-mpi-lib=<lib>', 'The MPI library')
+    help.addOption('MPI', '-with-mpirun=<prog>', 'The utility used to launch MPI jobs')
+    return
+
   def checkLib(self, fullLib):
     oldLibs              = self.framework.argDB['LIBS']
     (self.dir, self.lib) = os.path.split(self.fullLib)

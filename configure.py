@@ -485,6 +485,7 @@ class Help:
     if self.options.has_key(section):
       if self.options[section].has_key(name):
         raise RuntimeError('Duplicate configure option '+name+' in section '+section)
+      self.options[section][name] = comment
     else:
       self.sections.append(section)
       self.options[section] = {name: comment}
@@ -494,9 +495,11 @@ class Help:
     print self.title
     for i in range(len(self.title)): sys.stdout.write('-')
     print
+    nameLen = 1
+    for section in self.sections:
+      nameLen = max([nameLen, max(map(len, self.options[section].keys()))+1])
     for section in self.sections:
       print section+':'
-      nameLen = max(map(len, self.options[section].keys()))+1
       format  = '  -%-'+str(nameLen)+'s: %s'
       for item in self.options[section].items():
         print format % item
@@ -703,32 +706,36 @@ class Framework(Configure):
     return
 
   def configureHelp(self, help):
-    help.addOption(self.__module__, 'configModules', 'A list of Python modules with a Configure class')
+    help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
+    return
+
+  def configureClear(self):
+    del self.argDB['CC']
+    del self.argDB['CFLAGS']
+    del self.argDB['CXX']
+    del self.argDB['CXXFLAGS']
+    del self.argDB['FC']
+    del self.argDB['FFLAGS']
+    del self.argDB['CPP']
+    del self.argDB['CXXCPP']
+    del self.argDB['CPPFLAGS']
+    del self.argDB['LDFLAGS']
+    del self.argDB['LIBS']
+    del self.argDB['configModules']
+    del self.argDB['clear']
     return
 
   def configure(self):
     '''Configure the system'''
     if self.argDB.has_key('clear') and int(self.argDB['clear']):
-      del self.argDB['CC']
-      del self.argDB['CFLAGS']
-      del self.argDB['CXX']
-      del self.argDB['CXXFLAGS']
-      del self.argDB['FC']
-      del self.argDB['FFLAGS']
-      del self.argDB['CPP']
-      del self.argDB['CXXCPP']
-      del self.argDB['CPPFLAGS']
-      del self.argDB['LDFLAGS']
-      del self.argDB['LIBS']
-      del self.argDB['configModules']
-      del self.argDB['clear']
+      self.configureClear()
       return
     if self.argDB.has_key('help') and int(self.argDB['help']):
       help = Help(self)
       help.setTitle('Python Configure Help')
       self.configureHelp(help)
       for child in self.children:
-        if hasattr(child, 'configureHelp'): child.help(configureHelp)
+        if hasattr(child, 'configureHelp'): child.configureHelp(help)
       help.output()
       del self.argDB['help']
       return
