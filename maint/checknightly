@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: checknightly,v 1.55 2000/08/03 14:30:38 balay Exp balay $ 
+# $Id: checknightly,v 1.56 2000/09/15 20:08:29 balay Exp balay $ 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
 # Checks if the remote jobs are done in the past 2days, and 
@@ -15,7 +15,7 @@ proc CheckNightlyBuilds { } {
         return 0
     }
     
-    set machines {ico08 fire denali tri34 lava gaea ranke rock }
+    set machines {ico08 fire denali tri34 lava gaea guido rock }
     foreach machine $machines {
         if { [ string first $machine $files ] < 0 } { #file dos'nt exist
             set mesg "No build on: $machine"
