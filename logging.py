@@ -139,7 +139,7 @@ class Logger(args.ArgumentProcessor):
   def setLinewidth(self, linewidth):
     self._linewidth = linewidth
     return
-  linewidth = property(getLinewidth, getLinewidth, doc = 'The maximum number of characters per log line')
+  linewidth = property(getLinewidth, setLinewidth, doc = 'The maximum number of characters per log line')
 
   def checkWrite(self, f, debugLevel, debugSection, writeAll = 0):
     '''Check whether the log line should be written
