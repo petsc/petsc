@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.54 1995/07/06 17:19:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.55 1995/07/06 17:47:13 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1129,11 +1129,17 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-   Specify the preallocated storage for the diagonal part of the local
-   submatrix with either d_nz or d_nnz (not both). Set both d_nz and 
-   d_nnz to zero for PETSc to control dynamic memory allocation.
-   Likewise, specify storage for the off-diagonal part of the local
-   submatrix with o_nz or o_nnz (not both).
+   Storage Information:
+   For a square global matrix we define each processor's diagonal portion 
+   to be its local rows and the corresponding columns (a square submatrix);  
+   each processor's off-diagonal portion encompasses the remainder of the
+   local matrix (a rectangular submatrix). 
+
+   The user can specify preallocated storage for the diagonal part of
+   the local submatrix with either d_nz or d_nnz (not both). Set both
+   d_nz and d_nnz to zero for PETSc to control dynamic memory allocation.  
+   Likewise, specify preallocated storage for the off-diagonal part of 
+   the local submatrix with o_nz or o_nnz (not both).
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
