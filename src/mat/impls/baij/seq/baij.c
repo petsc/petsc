@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.50 1996/06/24 20:57:39 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.51 1996/06/24 21:45:45 balay Exp balay $";
 #endif
 
 /*
@@ -1110,11 +1110,12 @@ static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
 
 
-  if ( yy != zz ) { ierr = VecCopy(yy,zz); CHKERRQ(ierr); }
-  else PetscMemzero(z,N*sizeof(Scalar));
 
   ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
   ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
+
+  if ( yy != zz ) { ierr = VecCopy(yy,zz); CHKERRQ(ierr); }
+  else PetscMemzero(z,N*sizeof(Scalar));
 
 
   idx   = a->j;
