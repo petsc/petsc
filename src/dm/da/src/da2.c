@@ -282,7 +282,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   int           s_x,s_y; /* s proportionalized to w */
-  int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,*flx = 0,*fly = 0;
+  int           *flx = 0,*fly = 0;
   int           sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0,refine_x = 2, refine_y = 2,tM = M,tN = N;
   PetscTruth    flg1,flg2;
   DA            da;

@@ -215,7 +215,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   int           n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
   int           *bases,*ldims,x_t,y_t,z_t,s_t,base,count,s_x,s_y,s_z; 
-  int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,tM = M,tN = N,tP = P;
+  int           tM = M,tN = N,tP = P;
   int           sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
   int           sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
   int           sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0,refine_x = 2, refine_y = 2, refine_z = 2;
