@@ -1,4 +1,4 @@
-/* $Id: petscblaslapack.h,v 1.43 2001/04/18 20:48:12 balay Exp balay $ */
+/* $Id: petscblaslapack.h,v 1.44 2001/05/09 19:29:37 balay Exp balay $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -22,7 +22,7 @@ Cray T3D/T3E.
 #define PETSC_MISSING_LAPACK_POTRF
 #define PETSC_MISSING_LAPACK_GETRS
 #define PETSC_MISSING_LAPACK_POTRS
-#if defined(PETSC_BLASLAPACK_MKL_ONLY)
+#elif defined(PETSC_BLASLAPACK_MKL_ONLY)
 #define PETSC_MISSING_LAPACK_GESVD
 #define PETSC_MISSING_LAPACK_GEEV
 #elif defined(PETSC_BLASLAPACK_CRAY_ONLY)
