@@ -33,6 +33,9 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc Compiler Flags', 'FFLAGS_g_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=g'))
     help.addArgument('PETSc Compiler Flags', 'FFLAGS_O_complex',            nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=O'))
 
+    # not sure where to put this, currently gcov is handled in ../compilerOptions.py
+    help.addArgument('PETSc', '-with-gcov=<bool>',             nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
+
     self.framework.argDB['PETSCFLAGS'] = ''
     self.framework.argDB['COPTFLAGS']  = ''
     self.framework.argDB['FOPTFLAGS']  = ''

@@ -19,16 +19,17 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlopen','dlsym','erf']
     libraries1 = [(['socket', 'nsl'], 'socket')]
-    self.setCompilers = self.framework.require('config.setCompilers',   self)
+    self.setCompilers = self.framework.require('config.setCompilers',      self)
     self.framework.require('PETSc.utilities.arch', self.setCompilers)
-    self.compilers    = self.framework.require('config.compilers',      self)
+    self.compilers    = self.framework.require('config.compilers',         self)
     self.framework.require('PETSc.utilities.compilerFlags', self.compilers)
-    self.types        = self.framework.require('config.types',          self)
-    self.headers      = self.framework.require('config.headers',        self)
-    self.functions    = self.framework.require('config.functions',      self)
-    self.libraries    = self.framework.require('config.libraries',      self)
-    self.arch         = self.framework.require('PETSc.utilities.arch',  self)
-    self.x11          = self.framework.require('PETSc.packages.X11',    self)
+    self.types        = self.framework.require('config.types',             self)
+    self.headers      = self.framework.require('config.headers',           self)
+    self.functions    = self.framework.require('config.functions',         self)
+    self.libraries    = self.framework.require('config.libraries',         self)
+    self.arch         = self.framework.require('PETSc.utilities.arch',     self)
+    self.bmake        = self.framework.require('PETSc.utilities.bmakeDir', self)    
+    self.x11          = self.framework.require('PETSc.packages.X11',       self)
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
     self.headers.headerPrefix   = self.headerPrefix
@@ -65,17 +66,10 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('PETSc', '-with-debug=<bool>',            nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
-    help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
-    help.addArgument('PETSc', '-with-stack=<bool>',            nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
-    help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
+
     help.addArgument('PETSc', '-with-dynamic=<bool>',          nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
     help.addArgument('PETSc', '-with-shared=<bool>',           nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
-    help.addArgument('PETSc', '-with-etags=<bool>',            nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
-    help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-prefix=<path>',                nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
-    help.addArgument('PETSc', '-with-gcov=<bool>',             nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
-    help.addArgument('PETSc', '-with-64-bit-ints=<bool>',      nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
     help.addArgument('PETSc', '-with-external-packages=<bool>',nargs.ArgBool(None, 1, 'Allow external packages like Spooles, ParMetis, etc'))        
     return
 
@@ -83,35 +77,6 @@ class Configure(config.base.Configure):
     self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     return
 
-  def configureLibraryOptions(self):
-    '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
-    self.useDebug = self.framework.argDB['with-debug']
-    self.addDefine('USE_DEBUG', self.useDebug)
-    self.useLog   = self.framework.argDB['with-log']
-    self.addDefine('USE_LOG',   self.useLog)
-    self.useStack = self.framework.argDB['with-stack']
-    self.addDefine('USE_STACK', self.useStack)
-    self.useCtable = self.framework.argDB['with-ctable']
-    self.addDefine('USE_CTABLE', self.useCtable)
-    self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
-    self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
-    return
-
-  def configureFortranCPP(self):
-    '''Handle case where Fortran cannot preprocess properly'''
-    if 'FC' in self.framework.argDB:
-      # IBM xlF chokes on this
-      if not self.compilers.fortranPreprocess:
-        if self.compilers.isGCC:
-          traditional = 'TRADITIONAL_CPP = -traditional-cpp\n'
-        else:
-          traditional = 'TRADITIONAL_CPP = \n'
-        self.framework.addSubstitution('F_to_o_TARGET', traditional+'include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp')
-      else:
-        self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.cpp')
-    else:
-      self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.none')
-    return
 
   def configureFortranCommandline(self):
     '''Check for the mechanism to retrieve command line arguments in Fortran'''
@@ -494,108 +459,19 @@ class Configure(config.base.Configure):
     return
     
 
-  def configureMissingPrototypes(self):
-    '''Checks for missing prototypes, which it adds to petscfix.h'''
-    if not 'HAVE_MPI_FINT' in self.mpi.defines:
-      self.addPrototype('typedef int MPI_Fint;')
-    if not 'HAVE_MPI_COMM_F2C' in self.mpi.defines:
-      self.addPrototype('#define MPI_Comm_f2c(a) (a)')
-    if not 'HAVE_MPI_COMM_C2F' in self.mpi.defines:
-      self.addPrototype('#define MPI_Comm_c2f(a) (a)')
-    return
 
   def configureMachineInfo(self):
     '''Define a string incorporating all configuration data needed for a bug report'''
     #self.addDefine('MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
     return
 
-  def configureETags(self):
-    '''Determine if etags files exist and try to create otherwise'''
-    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'TAGS')):
-      self.framework.log.write('WARNING: ETags files have not been created\n')
-      self.framework.getExecutable('etags', getFullPath = 1)
-      if hasattr(self.framework, 'etags'):
-        pd = self.framework.argDB['PETSC_DIR']
-        if pd[-1]=='/': pd = pd[:-1] # etags chokes if there's a trailing /
-        self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
-        try:
-          (output, error, status) = config.base.Configure.executeShellCommand('make PETSC_ARCH=solaris BOPT=g PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
-          # filter out the normal messages
-          cnt = 0
-          for i in output.split('\n'):
-            if not (i.startswith('etags_') or i.find('TAGS') >= 0 or i.find('Entering') >= 0 or i.find('Leaving') >= 0 or i==''):
-              if not cnt:
-                self.framework.log.write('*******Error generating etags files****\n')
-              cnt = cnt + 1
-              self.framework.log.write(i+'\n')
-          if not cnt:
-            self.framework.log.write('           Completed generating etags files\n')
-            self.framework.actions.addArgument('PETSc', 'File creation', 'Generated etags files in '+pd)
-          else:
-            self.framework.log.write('*******End of error messages from generating etags files*******\n')
-        except RuntimeError, e:
-          self.framework.log.write('*******Error generating etags files: '+str(e)+'*******\n')
-      else:
-        self.framework.log.write('           The etags command is not in your path, cannot build etags files\n')
-    else:
-      self.framework.log.write('Found etags file \n')
-    return
 
-  def configureRegression(self):
-    '''Output a file listing the jobs that should be run by the PETSc buildtest'''
-    jobs  = []    # Jobs can be run on with all BOPTs
-    rjobs = []    # Jobs can only be run with real numbers; i.e. NOT BOPT=g_complex or BOPT=O_complex
-    ejobs = []    # Jobs that require an external package install (also cannot work with complex)
-    if self.mpi.usingMPIUni:
-      jobs.append('4')
-      if 'FC' in self.framework.argDB:
-        jobs.append('9')
-    else:
-      jobs.append('1')
-      if self.x11.foundX11:
-        jobs.append('2')
-      if 'FC' in self.framework.argDB:
-        jobs.append('3')
-        rjobs.append('8')
-      if self.datafilespath.datafilespath:
-        rjobs.append('6')
-      # add jobs for each external package (except X11, already done)
-      for i in self.framework.packages:
-        ejobs.append(i.name.upper())
-    if os.path.isfile(os.path.join(self.bmakeDir, 'jobs')):
-      try:
-        os.unlink(os.path.join(self.bmakeDir, 'jobs'))
-      except:
-        raise RuntimeError('Unable to remove file '+os.path.join(self.bmakeDir, 'jobs')+'. Did a different user create it?')
-    jobsFile  = file(os.path.abspath(os.path.join(self.bmakeDir, 'jobs')), 'w')
-    jobsFile.write(' '.join(jobs)+'\n')
-    jobsFile.close()
-    self.framework.actions.addArgument('PETSc', 'File creation', 'Generated list of jobs for testing in '+os.path.join(self.bmakeDir,'jobs'))
-    if os.path.isfile(os.path.join(self.bmakeDir, 'ejobs')):
-      try:
-        os.unlink(os.path.join(self.bmakeDir, 'ejobs'))
-      except:
-        raise RuntimeError('Unable to remove file '+os.path.join(self.bmakeDir, 'ejobs')+'. Did a different user create it?')
-    ejobsFile = file(os.path.abspath(os.path.join(self.bmakeDir, 'ejobs')), 'w')
-    ejobsFile.write(' '.join(ejobs)+'\n')
-    ejobsFile.close()
-    self.framework.actions.addArgument('PETSc', 'File creation', 'Generated list of jobs for testing in '+os.path.join(self.bmakeDir,'ejobs'))
-    if os.path.isfile(os.path.join(self.bmakeDir, 'rjobs')):
-      try:
-        os.unlink(os.path.join(self.bmakeDir, 'rjobs'))
-      except:
-        raise RuntimeError('Unable to remove file '+os.path.join(self.bmakeDir, 'rjobs')+'. Did a different user create it?')
-    rjobsFile = file(os.path.abspath(os.path.join(self.bmakeDir, 'rjobs')), 'w')
-    rjobsFile.write(' '.join(rjobs)+'\n')
-    rjobsFile.close()
-    self.framework.actions.addArgument('PETSc', 'File creation', 'Generated list of jobs for testing in '+os.path.join(self.bmakeDir,'rjobs'))
-    return
 
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
     import nargs
 
-    scriptName = os.path.join(self.bmakeDir, 'configure.py')
+    scriptName = os.path.join(self.bmake.bmakeDir, 'configure.py')
     args = filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs)
     if not nargs.Arg.findArgument('PETSC_ARCH', args):
       args.append('-PETSC_ARCH='+self.framework.argDB['PETSC_ARCH'])
@@ -625,13 +501,6 @@ class Configure(config.base.Configure):
     self.framework.cHeader         = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
     self.framework.makeMacroHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf'
     self.framework.makeRuleHeader  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscrules'        
-    if self.framework.argDB['with-64-bit-ints']:
-      self.addDefine('USE_64BIT_INT', 1)
-      self.framework.argDB['with-external-packages'] = 0
-    else:
-      self.addDefine('USE_32BIT_INT', 1)
-    self.executeTest(self.configureLibraryOptions)
-    self.executeTest(self.configureFortranCPP)
     self.executeTest(self.configureFortranCommandline)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configurePIC)
@@ -646,15 +515,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
-    self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
-    if self.framework.argDB['with-etags']:                                    
-      self.executeTest(self.configureETags)
-    self.bmakeDir = os.path.join('bmake', self.framework.argDB['PETSC_ARCH'])
-    if not os.path.exists(self.bmakeDir):
-      os.makedirs(self.bmakeDir)
-      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')
-    self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureBmake)    

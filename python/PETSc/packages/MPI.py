@@ -512,13 +512,23 @@ class Configure(config.base.Configure):
     self.usingMPIUni = 1
     return
 
+  def configureMissingPrototypes(self):
+    '''Checks for missing prototypes, which it adds to petscfix.h'''
+    if not 'HAVE_MPI_FINT' in self.defines:
+      self.addPrototype('typedef int MPI_Fint;')
+    if not 'HAVE_MPI_COMM_F2C' in self.defines:
+      self.addPrototype('#define MPI_Comm_f2c(a) (a)')
+    if not 'HAVE_MPI_COMM_C2F' in self.defines:
+      self.addPrototype('#define MPI_Comm_c2f(a) (a)')
+    return
+
   def configure(self):
     if not self.framework.argDB['with-mpi']:
       self.configureMPIUNI()
     else:
       self.executeTest(self.configureLibrary)
-      if self.foundMPI:
-        self.executeTest(self.configureConversion)
-        self.executeTest(self.configureTypes)
-        self.executeTest(self.configureMPIRUN)
+      self.executeTest(self.configureConversion)
+      self.executeTest(self.configureTypes)
+      self.executeTest(self.configureMPIRUN)
+      self.executeTest(self.configureMissingPrototypes)      
     return
