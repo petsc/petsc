@@ -1,5 +1,5 @@
 #! /bin/csh -f
-# $Id: petscarch,v 1.16 2000/07/18 15:01:32 balay Exp balay $ 
+# $Id: petscarch,v 1.17 2000/07/18 17:15:30 balay Exp balay $ 
 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
@@ -66,6 +66,8 @@ else if ("$LARCH" == "Linux") then
     else
         set LARCH = "linux"
     endif
+else if ("$LARCH" == "Hurd") then
+        set LARCH = "hurd"
 endif
 
 echo $LARCH
