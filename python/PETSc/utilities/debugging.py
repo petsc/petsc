@@ -16,13 +16,11 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-debugging=<yes or no>', nargs.ArgBool(None, 1, 'Specify debugging'))
-    help.addArgument('PETSc', '-with-optimization=<yes or no>', nargs.ArgBool(None, 0, 'Specify optimized code'))
     return
 
   def configureDebugging(self):
     # should do error checking
     self.debugging = self.framework.argDB['with-debugging']
-    self.optimization = self.framework.argDB['with-optimization']
     
   def configure(self):
     self.executeTest(self.configureDebugging)
