@@ -1,6 +1,6 @@
-/*$Id: ex76.c,v 1.3 2000/09/26 19:09:27 balay Exp bsmith $*/
+/*$Id: ex76.c,v 1.4 2000/09/28 21:11:49 bsmith Exp hzhang $*/
 
-static char help[] = "Tests vatious sequential routines in MatSBAIJ format. Same as ex74.c except introducing a matrix permutation for factorization and solve.\n";
+static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
 #include "petscmat.h"
 
@@ -8,22 +8,19 @@ static char help[] = "Tests vatious sequential routines in MatSBAIJ format. Same
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x,y,b,s1,s2;      
+  Vec     x,y,b,s1;      
   Mat     A;           /* linear system matrix */ 
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
   int     n,mbs=16,bs=1,nz=3,prob=1;
-  Scalar  neg_one = -1.0,four=4.0,value[3],alpha=1;
+  Scalar  neg_one = -1.0,four=4.0,value[3];
   int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   IS      perm, iscol;
   PetscRandom rand;
 
-  PetscTruth       reorder=PETSC_TRUE,getrow=PETSC_FALSE,diagscale=PETSC_FALSE;
-  MatInfo          minfo1,minfo2;
+  PetscTruth       reorder=PETSC_TRUE;
   
   int      lf; /* level of fill for icc */
-  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
-  int      *cols1,*cols2;
   double   norm1,norm2,tol=1.e-10,fill;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -137,146 +134,11 @@ int main(int argc,char **args)
   MatView(sA, VIEWER_DRAW_WORLD); 
   MatView(sA, VIEWER_STDOUT_WORLD); 
   */
-
-  /* Test MatNorm() */
-  ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRA(ierr); 
-  ierr = MatNorm(sA,NORM_FROBENIUS,&norm2);CHKERRA(ierr);
-  norm1 -= norm2;
-  if (norm1<-tol || norm1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);
-  }
-  ierr = MatNorm(A,NORM_INFINITY,&norm1);CHKERRA(ierr);
-  ierr = MatNorm(sA,NORM_INFINITY,&norm2);CHKERRA(ierr);
-  norm1 -= norm2;
-  if (norm1<-tol || norm1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);
-  }
-
-  /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
-  ierr = MatGetInfo(A,MAT_LOCAL,&minfo1);CHKERRA(ierr);
-  ierr = MatGetInfo(sA,MAT_LOCAL,&minfo2);CHKERRA(ierr);
-  /*
-  printf("matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated); 
-  printf("matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated); 
-  */
-  i = (int) (minfo1.nz_used - minfo2.nz_used); 
-  j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
-  if (i<0 || j<0) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetInfo()\n");
-  }
-
-  ierr = MatGetSize(A,&I,&J);CHKERRA(ierr);
-  ierr = MatGetSize(sA,&i,&j);CHKERRA(ierr); 
-  if (i-I || j-J) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");
-  }
- 
-  ierr = MatGetBlockSize(A, &I);CHKERRA(ierr);
-  ierr = MatGetBlockSize(sA, &i);CHKERRA(ierr);
-  if (i-I){
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");
-  }
-
-  /* Test MatGetRow() */
-  if (getrow){
-    row = n/2; 
-    vr1 =  (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(vr1); 
-    vr1_wk = vr1;  
-    vr2 =  (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(vr2); 
-    vr2_wk = vr2;
-    ierr = MatGetRow(A,row,&J,&cols1,&vr1);CHKERRA(ierr); 
-    vr1_wk += J-1;
-    ierr = MatGetRow(sA,row,&j,&cols2,&vr2);CHKERRA(ierr); 
-    vr2_wk += j-1;
-    ierr = VecCreateSeq(PETSC_COMM_SELF,j,&x);CHKERRA(ierr);
- 
-    for (i=j-1; i>-1; i--){
-      VecSetValue(x,i,*vr2_wk - *vr1_wk, INSERT_VALUES);
-      vr2_wk--; vr1_wk--;
-    }  
-    ierr = VecNorm(x,NORM_1,&norm2);CHKERRA(ierr);
-    if (norm2<-tol || norm2>tol) {
-      PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRow()\n");
-    } 
-    ierr = VecDestroy(x);CHKERRA(ierr);  
-    ierr = MatRestoreRow(A,row,&J,&cols1,&vr1);CHKERRA(ierr);
-    ierr = MatRestoreRow(sA,row,&j,&cols2,&vr2);CHKERRA(ierr);
-    ierr = PetscFree(vr1);CHKERRA(ierr); 
-    ierr = PetscFree(vr2);CHKERRA(ierr);
-
-    /* Test GetSubMatrix() */
-    /* get a submatrix consisting of every next block row and column of the original matrix */
-    /* for symm. matrix, iscol=perm. */
-    perm  =   (IS)PetscMalloc(n*sizeof(IS));CHKPTRA(perm);
-    ip_ptr = (int*)PetscMalloc(n*sizeof(int));CHKERRA(ierr);
-    j = 0;
-    for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
-      for (i=0; i<bs; i++) ip_ptr[j++] = n1*bs + i;  
-    }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, j, ip_ptr, &perm);CHKERRA(ierr);
-    /* ISView(perm, VIEWER_STDOUT_SELF);CHKERRA(ierr); */
-    
-    ierr = MatGetSubMatrix(sA,perm,perm,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);
-    CHKERRA(ierr);
-    ierr = ISDestroy(perm);CHKERRA(ierr);
-    ierr = PetscFree(ip_ptr);CHKERRA(ierr);
-    printf("sA =\n");
-    ierr = MatView(sA,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-    printf("submatrix of sA =\n");
-    ierr = MatView(sC,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-    ierr = MatDestroy(sC);CHKERRA(ierr);
-  }  
-
-  /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
+  /* Vectors */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);     
-  ierr = VecDuplicate(x,&s1);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&s2);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&b);CHKERRA(ierr);
-  
-  if (diagscale){
-    ierr = VecSetRandom(rand,x);CHKERRA(ierr);
-    ierr = MatDiagonalScale(A,x,x);CHKERRA(ierr);
-    ierr = MatDiagonalScale(sA,x,x);CHKERRA(ierr);
-  }
-  ierr = MatGetDiagonal(A,s1);CHKERRA(ierr);  
-  ierr = MatGetDiagonal(sA,s2);CHKERRA(ierr);
-  ierr = VecNorm(s1,NORM_1,&norm1);CHKERRA(ierr);
-  ierr = VecNorm(s2,NORM_1,&norm2);CHKERRA(ierr);
-  norm1 -= norm2;
-  if (norm1<-tol || norm1>tol) { 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal() \n");CHKERRA(ierr);
-  } 
-
-  ierr = MatScale(&alpha,A);CHKERRA(ierr);
-  ierr = MatScale(&alpha,sA);CHKERRA(ierr);
-
-  /* Test MatMult(), MatMultAdd() */
-  for (i=0; i<40; i++) { 
-    ierr = VecSetRandom(rand,x);CHKERRA(ierr);
-    ierr = MatMult(A,x,s1);CHKERRA(ierr);
-    ierr = MatMult(sA,x,s2);CHKERRA(ierr);
-    ierr = VecNorm(s1,NORM_1,&norm1);CHKERRA(ierr);
-    ierr = VecNorm(s2,NORM_1,&norm2);CHKERRA(ierr);
-    norm1 -= norm2;
-    if (norm1<-tol || norm1>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult(), MatDiagonalScale() or MatScale()\n");CHKERRA(ierr);
-    }
-  }  
-
-  for (i=0; i<40; i++) {
-    ierr = VecSetRandom(rand,x);CHKERRA(ierr);
-    ierr = VecSetRandom(rand,y);CHKERRA(ierr);
-    ierr = MatMultAdd(A,x,y,s1);CHKERRA(ierr);
-    ierr = MatMultAdd(sA,x,y,s2);CHKERRA(ierr);
-    ierr = VecNorm(s1,NORM_1,&norm1);CHKERRA(ierr);
-    ierr = VecNorm(s2,NORM_1,&norm2);CHKERRA(ierr);
-    norm1 -= norm2;
-    if (norm1<-tol || norm1>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(), MatDiagonalScale() or MatScale() \n");CHKERRA(ierr);
-    } 
-  }
+  ierr = VecDuplicate(x,&y);CHKERRA(ierr);
 
   /* Test MatReordering() */
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRA(ierr); 
@@ -289,8 +151,7 @@ int main(int argc,char **args)
     i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i;
     /* i = ip_ptr[2]; ip_ptr[2] = ip_ptr[mbs-3]; ip_ptr[mbs-3] = i; */    
     ierr= ISRestoreIndices(perm,&ip_ptr);CHKERRA(ierr);    
-  }  
-  
+  }    
 
   /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
   if (bs == 1) {
@@ -304,7 +165,7 @@ int main(int argc,char **args)
         ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRA(ierr);
       }
       ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRA(ierr);
-      /* MatView(sC, VIEWER_DRAW_WORLD); */
+      /* MatView(sC, VIEWER_DRAW_WORLD); */  /* view factored matrix */
       
       ierr = MatMult(sA,x,b);CHKERRA(ierr);
       ierr = MatSolve(sC,b,y);CHKERRA(ierr);
@@ -325,9 +186,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
-  ierr = VecDestroy(s1);CHKERRA(ierr);
-  ierr = VecDestroy(s2);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);  
   ierr = VecDestroy(b);CHKERRA(ierr);
   ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
 
