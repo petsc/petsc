@@ -16,7 +16,7 @@ if __name__ == '__main__':
         '--with-spooles-dir=/home/petsc/soft/linux-rh73/spooles-2.2',
         #superlu, superlu_dist
         '--with-superlu-dir=/home/petsc/soft/linux-rh73/SuperLU_3.0',
-        '--with-superlu_dist-dir=/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0',
+        '--with-superlu_dist-lib=/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0-Jul_21_2004/superlu_linux.a',
         #umfpack
         '--with-umfpack-dir=/home/petsc/soft/linux-rh73/UMFPACKv4.3/UMFPACK'
         ]
