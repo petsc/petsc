@@ -179,7 +179,7 @@ class Configure(config.base.Configure):
       u.l = 1;
       exit(u.c[sizeof(long) - 1] == 1);
       '''
-      if self.checkRun('', body):
+      if self.checkRun('', body, defaultArg = 'isLittleEndian'):
         endian = 'little'
       else:
         endian = 'big'
@@ -196,7 +196,7 @@ class Configure(config.base.Configure):
     if otherInclude:
       includes += '#include <'+otherInclude+'>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%d\\n", sizeof('+typeName+'));\n'
-    if self.checkRun(includes, body) and os.path.exists(filename):
+    if self.checkRun(includes, body, defaultArg = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p')) and os.path.exists(filename):
       f    = file(filename)
       size = int(f.read())
       f.close()
@@ -216,13 +216,13 @@ class Configure(config.base.Configure):
     while((char) val) {val <<= 1; i++;}
     fprintf(f, "%d\\n", i);\n
     '''
-    if self.checkRun(includes, body) and os.path.exists(filename):
+    if self.checkRun(includes, body, defaultArg = 'bits_per_byte') and os.path.exists(filename):
       f    = file(filename)
       size = int(f.read())
       f.close()
       os.remove(filename)
       self.addDefine('BITS_PER_BYTE', bits)
-    return bits
+    return
 
   def configure(self):
     map(lambda type: self.executeTest(self.check, type), ['size_t', 'pid_t', 'off_t', 'mode_t'])
