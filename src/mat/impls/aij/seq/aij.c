@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.224 1997/06/19 00:02:06 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.225 1997/06/19 14:15:42 curfman Exp curfman $";
 #endif
 
 /*
@@ -1937,7 +1937,7 @@ int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
   }
   
   /* if the a->i are the same */
-  if (PetscMemcmp(a->i,b->i, (a->n+1)*sizeof(int))) { 
+  if (PetscMemcmp(a->i,b->i,(a->m+1)*sizeof(int))) { 
     *flg = PETSC_FALSE; return 0;
   }
   
