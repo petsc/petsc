@@ -65,7 +65,7 @@ Input parameters include:\n\
      sles.h   - linear solvers        snes.h - nonlinear solvers
 */
 
-#include "ts.h"
+#include "petscts.h"
 
 /* 
    User-defined application context - contains data needed by the 
@@ -76,7 +76,7 @@ typedef struct {
   int      m;                 /* total number of grid points */
   double   h;                 /* mesh width h = 1/(m-1) */
   int      debug;             /* flag (1 indicates activation of debugging printouts) */
-  Viewer   viewer1, viewer2;  /* viewers for the solution and error */
+  PetscViewer   viewer1, viewer2;  /* viewers for the solution and error */
   double   norm_2, norm_max;  /* error norms */
 } AppCtx;
 
@@ -99,8 +99,9 @@ int main(int argc,char **argv)
   Vec           u;                      /* approximate solution vector */
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
-  Draw          draw;                   /* drawing context */
-  int           ierr,  steps, flg, size, m;
+  PetscDraw          draw;                   /* drawing context */
+  PetscTruth    flg;
+  int           ierr,  steps, size, m;
   double        dt, ftime;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -112,12 +113,13 @@ int main(int argc,char **argv)
   if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
 
   m    = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRA(ierr);    
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&flg);CHKERRQ(ierr);    
   appctx.m        = m;
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
   appctx.norm_max = 0.0;
+  appctx.debug    = (int) flg;
   PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,47 +129,48 @@ int main(int argc,char **argv)
   /* 
      Create vector data structures for approximate and exact solutions
   */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&appctx.solution);CHKERRA(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&appctx.solution);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up displays to show graphs of the solution and error 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);   
-  ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2);CHKERRA(ierr);
-  ierr = ViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRA(ierr);
-  ierr = DrawSetDoubleBuffer(draw);CHKERRA(ierr);   
+  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"",80,0,400,160,&appctx.viewer2);CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSCreate(PETSC_COMM_SELF,TS_LINEAR,&ts);CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_SELF,&ts);CHKERRQ(ierr);
+  ierr = TSSetProblemType(ts,TS_LINEAR);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetMonitor(ts,Monitor,&appctx);CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      Create matrix data structure; set matrix evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,m,&A);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,m,&A);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg);CHKERRQ(ierr);
   if (flg) {
     /*
        For linear problems with a time-dependent f(u,t) in the equation 
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx);CHKERRA(ierr);
+    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation 
@@ -176,14 +179,14 @@ int main(int argc,char **argv)
        routine.
     */
     MatStructure A_structure;
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx); CHKERRA(ierr);
-    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRA(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx); CHKERRQ(ierr);
+    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
   }
 
   /* Treat the problem as having time-dependent boundary conditions */
-  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_bc",&flg);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-time_dependent_bc",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TSSetRHSBoundaryConditions(ts,MyBCRoutine,&appctx);CHKERRA(ierr);
+    ierr = TSSetRHSBoundaryConditions(ts,MyBCRoutine,&appctx);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,8 +194,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   dt = appctx.h*appctx.h/2.0;
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRA(ierr);
-  ierr = TSSetSolution(ts,u);CHKERRA(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:  
@@ -204,8 +207,8 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetDuration().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRA(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRA(ierr);
+  ierr = TSSetDuration(ts,time_steps_max,time_total_max);CHKERRQ(ierr);
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the problem
@@ -214,12 +217,12 @@ int main(int argc,char **argv)
   /*
      Evaluate initial conditions
   */
-  ierr = InitialConditions(u,&appctx);CHKERRA(ierr);
+  ierr = InitialConditions(u,&appctx);CHKERRQ(ierr);
 
   /*
      Run the timestepping solver
   */
-  ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
+  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info
@@ -227,19 +230,19 @@ int main(int argc,char **argv)
 
   PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
               appctx.norm_2/steps,appctx.norm_max/steps);
-  ierr = TSView(ts,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSDestroy(ts);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
-  ierr = VecDestroy(u);CHKERRA(ierr);
-  ierr = ViewerDestroy(appctx.viewer1);CHKERRA(ierr);
-  ierr = ViewerDestroy(appctx.viewer2);CHKERRA(ierr);
-  ierr = VecDestroy(appctx.solution);CHKERRA(ierr);
+  ierr = TSDestroy(ts);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(appctx.viewer1);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(appctx.viewer2);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -265,7 +268,8 @@ int main(int argc,char **argv)
 */ 
 int InitialConditions(Vec u,AppCtx *appctx)
 {
-  Scalar *u_localptr, h = appctx->h;
+  PetscScalar *u_localptr;
+  /*PetscScalar h = appctx->h;*/
   int    i, ierr;
 
   /* 
@@ -299,7 +303,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
   */
   if (appctx->debug) {
      printf("initial guess vector\n");
-     ierr = VecView(u,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+     ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;
@@ -320,7 +324,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
 */
 int ExactSolution(double t,Vec solution,AppCtx *appctx)
 {
-  Scalar *s_localptr, h = appctx->h, ex1, ex2, sc1, sc2;
+  PetscScalar *s_localptr, h = appctx->h, ex1, ex2, sc1, sc2;
   int    i, ierr;
 
   /*
@@ -367,10 +371,11 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
 */
 int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 {
-  AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  int      ierr, flg;
-  double   norm_2, norm_max, dt, dttol;
-  Scalar   mone = -1.0;
+  AppCtx     *appctx = (AppCtx*) ctx;   /* user-defined application context */
+  int         ierr;
+  double      norm_2, norm_max, dt, dttol;
+  PetscTruth  flg;
+  PetscScalar mone = -1.0;
 
   /* 
      View a graph of the current iterate
@@ -387,9 +392,9 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   */
   if (appctx->debug) {
      printf("Computed solution vector\n");
-     ierr = VecView(u,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+     ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
      printf("Exact solution vector\n");
-     ierr = VecView(appctx->solution,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   /*
@@ -402,12 +407,12 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 
   ierr = TSGetTimeStep(ts,&dt); CHKERRQ(ierr);
   printf("Timestep %d: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",
-         step,dt,norm_2,norm_max);
+         step,dt,time,norm_2,norm_max);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
   dttol = .0001;
-  ierr = OptionsGetDouble(PETSC_NULL,"-dttol",&dttol,&flg);CHKERRA(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-dttol",&dttol,&flg);CHKERRQ(ierr);
   if (dt < dttol) {
     dt *= .999;
     ierr = TSSetTimeStep(ts,dt); CHKERRQ(ierr);
@@ -423,7 +428,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   */
   if (appctx->debug) {
      printf("Error vector\n");
-     ierr = VecView(appctx->solution,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   return 0;
@@ -457,7 +462,7 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
   int    mstart = 0;
   int    mend = appctx->m;
   int    ierr, i, idx[3];
-  Scalar v[3], stwo = -2./(appctx->h*appctx->h), sone = -.5*stwo;
+  PetscScalar v[3], stwo = -2./(appctx->h*appctx->h), sone = -.5*stwo;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part of the matrix
@@ -538,7 +543,7 @@ int MyBCRoutine(TS ts,double t,Vec f,void *ctx)
 {
   AppCtx *appctx = (AppCtx *) ctx;     /* user-defined application context */
   int    ierr, m = appctx->m;
-  Scalar *fa;
+  PetscScalar *fa;
 
   ierr = VecGetArray(f,&fa);CHKERRQ(ierr);
   fa[0] = 0.0;

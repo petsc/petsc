@@ -36,9 +36,9 @@ options are:\n\
 
 */
 
-#include "snes.h"
-#include "da.h"
-#include "mg.h"
+#include "petscsnes.h"
+#include "petscda.h"
+#include "petscmg.h"
 
 /* User-defined application contexts */
 
@@ -86,7 +86,6 @@ int main( int argc, char **argv )
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   SLES          sles;
   PC            pc;
-  char          ctype[80];
 
   /*
       Initialize PETSc, note that default options in ex11options can be 
@@ -96,136 +95,136 @@ int main( int argc, char **argv )
 
   user.ratio = 2;
   user.coarse.mx = 5; user.coarse.my = 5; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
-  ierr = OptionsHasName(PETSC_NULL,"-redundant_build",&user.redundant_build);CHKERRA(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-redundant_build",&user.redundant_build);CHKERRQ(ierr);
   if (user.redundant_build) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Building coarse Jacobian redundantly\n");CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Building coarse Jacobian redundantly\n");CHKERRQ(ierr);
   }
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);CHKERRQ(ierr);
 
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param < bratu_lambda_min) {
     SETERRQ(1,"Lambda is out of range");
   }
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
-                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.fine.da,&user.fine.x);CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRA(ierr);
-  ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.fine.da,&user.fine.localX);CHKERRA(ierr);
-  ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRA(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRA(ierr);
+                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(user.fine.da,&user.fine.x);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.fine.x,&user.fine.r);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.fine.x,&user.fine.b);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(user.fine.x,&nlocal);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(user.fine.da,&user.fine.localX);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.fine.localX,&user.fine.localF);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.fine.J);CHKERRQ(ierr);
 
   /* Set up distributed array for coarse grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.coarse.mx,
-                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRA(ierr);
-  ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRA(ierr);
+                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(user.coarse.da,&user.coarse.x);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.coarse.x,&user.coarse.b);CHKERRQ(ierr);
   if (user.redundant_build) {
     /* Create scatter from parallel global numbering to redundant with natural ordering */
-    ierr = DAGlobalToNaturalAllCreate(user.coarse.da,&user.tolocalall);CHKERRA(ierr);
-    ierr = DANaturalAllToGlobalCreate(user.coarse.da,&user.fromlocalall);CHKERRA(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,N,&user.localall);CHKERRA(ierr);
+    ierr = DAGlobalToNaturalAllCreate(user.coarse.da,&user.tolocalall);CHKERRQ(ierr);
+    ierr = DANaturalAllToGlobalCreate(user.coarse.da,&user.fromlocalall);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N,&user.localall);CHKERRQ(ierr);
     /* Create sequential matrix to hold entire coarse grid Jacobian on each processor */
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,&user.coarse.J);CHKERRA(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
   } else {
-    ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRA(ierr);
-    ierr = DACreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRA(ierr);
-    ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRA(ierr);
+    ierr = VecGetLocalSize(user.coarse.x,&Nlocal);CHKERRQ(ierr);
+    ierr = DACreateLocalVector(user.coarse.da,&user.coarse.localX);CHKERRQ(ierr);
+    ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF);CHKERRQ(ierr);
     /* We will compute the coarse Jacobian in parallel */
-    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRA(ierr);
+    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J);CHKERRQ(ierr);
   }
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /* provide user function and Jacobian */
-  ierr = SNESSetFunction(snes,user.fine.b,FormFunction,&user);CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,user.fine.J,user.fine.J,FormJacobian,&user);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,user.fine.b,FormFunction,&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,user.fine.J,user.fine.J,FormJacobian,&user);CHKERRQ(ierr);
 
   /* set two level additive Schwarz preconditioner */
-  ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pc,2);CHKERRA(ierr);
-  ierr = MGSetType(pc,MGADDITIVE);CHKERRA(ierr);
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
+  ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MGSetType(pc,MGADDITIVE);CHKERRQ(ierr);
 
   /* always solve the coarse problem redundantly with direct LU solver */
-  ierr = OptionsSetValue("-coarse_pc_type","redundant");CHKERRA(ierr);
-  ierr = OptionsSetValue("-coarse_redundant_pc_type","lu");CHKERRA(ierr);
+  ierr = PetscOptionsSetValue("-coarse_pc_type","redundant");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-coarse_redundant_pc_type","lu");CHKERRQ(ierr);
 
   /* Create coarse level */
-  ierr = MGGetCoarseSolve(pc,&user.sles_coarse);CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_");CHKERRA(ierr);
-  ierr = SLESSetFromOptions(user.sles_coarse);CHKERRA(ierr);
-  ierr = SLESSetOperators(user.sles_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRA(ierr); 
-  ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRA(ierr); 
+  ierr = MGGetCoarseSolve(pc,&user.sles_coarse);CHKERRQ(ierr);
+  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_");CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(user.sles_coarse);CHKERRQ(ierr);
+  ierr = SLESSetOperators(user.sles_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
+  ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
   if (user.redundant_build) {
     PC rpc;
-    ierr = SLESGetPC(user.sles_coarse,&rpc);CHKERRA(ierr);
-    ierr = PCRedundantSetScatter(rpc,user.tolocalall,user.fromlocalall);CHKERRA(ierr);
+    ierr = SLESGetPC(user.sles_coarse,&rpc);CHKERRQ(ierr);
+    ierr = PCRedundantSetScatter(rpc,user.tolocalall,user.fromlocalall);CHKERRQ(ierr);
   }
 
   /* Create fine level */
-  ierr = MGGetSmoother(pc,FINE_LEVEL,&user.sles_fine);CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_fine,"fine_");CHKERRA(ierr);
-  ierr = SLESSetFromOptions(user.sles_fine);CHKERRA(ierr);
-  ierr = SLESSetOperators(user.sles_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRA(ierr); 
-  ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRA(ierr);
+  ierr = MGGetSmoother(pc,FINE_LEVEL,&user.sles_fine);CHKERRQ(ierr);
+  ierr = SLESSetOptionsPrefix(user.sles_fine,"fine_");CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(user.sles_fine);CHKERRQ(ierr);
+  ierr = SLESSetOperators(user.sles_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
+  ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
-  ierr = FormInterpolation(&user);CHKERRA(ierr);
-  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.R);CHKERRA(ierr);
-  ierr = MGSetRestriction(pc,FINE_LEVEL,user.R);CHKERRA(ierr);
+  ierr = FormInterpolation(&user);CHKERRQ(ierr);
+  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
+  ierr = MGSetRestriction(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
 
   /* Set options, then solve nonlinear system */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
-  ierr = FormInitialGuess1(&user,user.fine.x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,user.fine.x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  ierr = FormInitialGuess1(&user,user.fine.x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,user.fine.x,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRQ(ierr);
 
   /* Free data structures */
   if (user.redundant_build) {
-    ierr = VecScatterDestroy(user.tolocalall);CHKERRA(ierr);
-    ierr = VecScatterDestroy(user.fromlocalall);CHKERRA(ierr);
-    ierr = VecDestroy(user.localall);CHKERRA(ierr);
+    ierr = VecScatterDestroy(user.tolocalall);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(user.fromlocalall);CHKERRQ(ierr);
+    ierr = VecDestroy(user.localall);CHKERRQ(ierr);
   } else {
-    ierr = VecDestroy(user.coarse.localX);CHKERRA(ierr);
-    ierr = VecDestroy(user.coarse.localF);CHKERRA(ierr);
+    ierr = VecDestroy(user.coarse.localX);CHKERRQ(ierr);
+    ierr = VecDestroy(user.coarse.localF);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(user.fine.J);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.x);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.r);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.b);CHKERRA(ierr);
-  ierr = DADestroy(user.fine.da);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.localX);CHKERRA(ierr);
-  ierr = VecDestroy(user.fine.localF);CHKERRA(ierr);
+  ierr = MatDestroy(user.fine.J);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.x);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.r);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.b);CHKERRQ(ierr);
+  ierr = DADestroy(user.fine.da);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(user.fine.localF);CHKERRQ(ierr);
 
-  ierr = MatDestroy(user.coarse.J);CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.x);CHKERRA(ierr);
-  ierr = VecDestroy(user.coarse.b);CHKERRA(ierr);
-  ierr = DADestroy(user.coarse.da);CHKERRA(ierr);
+  ierr = MatDestroy(user.coarse.J);CHKERRQ(ierr);
+  ierr = VecDestroy(user.coarse.x);CHKERRQ(ierr);
+  ierr = VecDestroy(user.coarse.b);CHKERRQ(ierr);
+  ierr = DADestroy(user.coarse.da);CHKERRQ(ierr);
 
-  ierr = SNESDestroy(snes);CHKERRA(ierr);
-  ierr = MatDestroy(user.R);CHKERRA(ierr); 
-  ierr = VecDestroy(user.Rscale);CHKERRA(ierr); 
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = MatDestroy(user.R);CHKERRQ(ierr); 
+  ierr = VecDestroy(user.Rscale);CHKERRQ(ierr); 
   PetscFinalize();
 
   return 0;
@@ -236,7 +235,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
   double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
-  Scalar  *x;
+  PetscScalar  *x;
   Vec     localX = user->fine.localX;
 
   mx = user->fine.mx;       my = user->fine.my;            lambda = user->param;
@@ -277,7 +276,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx  *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
   double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
-  Scalar  u, uxx, uyy, *x,*f;
+  PetscScalar  u, uxx, uyy, *x,*f;
   Vec     localX = user->fine.localX, localF = user->fine.localF; 
 
   mx = user->fine.mx;       my = user->fine.my;       lambda = user->param;
@@ -314,7 +313,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   /* Insert values into global vector */
   ierr = DALocalToGlobal(user->fine.da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  PLogFlops(11*ym*xm);
+  PetscLogFlops(11*ym*xm);
   return 0; 
 } 
 
@@ -328,7 +327,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   Mat     jac = *J;
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   int     nloc, *ltog, grow;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
+  PetscScalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
   Vec     localX = grid->localX;
 
   mx = grid->mx;            my = grid->my;            lambda = user->param;
@@ -387,7 +386,7 @@ int FormJacobian_Coarse(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
 {
   Mat     jac = *J;
   int     ierr, i, j, row, mx, my, col[5];
-  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
+  PetscScalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
 
   mx = grid->mx;            my = grid->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
@@ -441,10 +440,10 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
   
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRA(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
-    ierr = SLESSetOperators(user->sles_fine,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(user->sles_fine,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     /* restrict X to coarse grid */
     ierr = MatMult(user->R,X,user->coarse.x);CHKERRQ(ierr);
@@ -461,7 +460,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       /* coarse grid Jacobian computed in parallel */
       ierr = FormJacobian_Grid(user,&user->coarse,user->coarse.x,&user->coarse.J,&user->coarse.J);CHKERRQ(ierr);
     }
-    ierr = SLESSetOperators(user->sles_coarse,user->coarse.J,user->coarse.J,SAME_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(user->sles_coarse,user->coarse.J,user->coarse.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }
 
   return 0;
@@ -481,7 +480,7 @@ int FormInterpolation(AppCtx *user)
   int      row,i_start_ghost,j_start_ghost,cols[4],mx = user->fine.mx, m_c,my = user->fine.my;
   int      c0,c1,c2,c3,nc,ratio = user->ratio,i_end,i_end_ghost,m_c_local,m_fine_local;
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col;
-  Scalar   v[4],x,y, one = 1.0;
+  PetscScalar   v[4],x,y, one = 1.0;
   Mat      mat;
   Vec      Rscale;
   
@@ -521,10 +520,10 @@ int FormInterpolation(AppCtx *user)
       nc = 0;
       /* one left and below; or we are right on it */
       if (j_c < j_start_ghost_c || j_c > j_start_ghost_c+n_ghost_c) {
-        SETERRQ3(1,1,"Sorry j %d %d %d",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
+        SETERRQ3(1,"Sorry j %d %d %d",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
       }
       if (i_c < i_start_ghost_c || i_c > i_start_ghost_c+m_ghost_c) {
-        SETERRQ3(1,1,"Sorry i %d %d %d",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
+        SETERRQ3(1,"Sorry i %d %d %d",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
       }
       col      = m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c);
       cols[nc] = idx_c[col];
@@ -552,19 +551,19 @@ int FormInterpolation(AppCtx *user)
 
   ierr = VecDuplicate(user->coarse.x,&Rscale);CHKERRQ(ierr);
   ierr = VecSet(&one,user->fine.x);CHKERRQ(ierr);
-  ierr = MatMultTrans(mat,user->fine.x,Rscale);CHKERRQ(ierr);
+  ierr = MatMultTranspose(mat,user->fine.x,Rscale);CHKERRQ(ierr);
   ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
   user->Rscale = Rscale;
 
   /*
      this is merely so we provide a restriction "matrix" to the multigrid code
-     so we flip the roles of MatMult() and MatMultTrans() on the "interpolation/restriction"
+     so we flip the roles of MatMult() and MatMultTranspose() on the "interpolation/restriction"
      matrix
   */
   ierr = MatCreateShell(PETSC_COMM_WORLD,m_c_local,m_fine_local,m_coarse,m_fine,
                         mat,&user->R);CHKERRQ(ierr);
   ierr = MatShellSetOperation(user->R,MATOP_MULT,(void*)MatMult_Ours);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(user->R,MATOP_MULT_TRANS_ADD,(void*)MatMultTransAdd_Ours);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(user->R,MATOP_MULT_TRANSPOSE_ADD,(void*)MatMultTransAdd_Ours);CHKERRQ(ierr);
   ierr = MatShellSetOperation(user->R,MATOP_DESTROY,(void*)MatDestroy_Ours);CHKERRQ(ierr);
   return 0;
 }
