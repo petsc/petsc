@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.43 1995/12/23 04:41:21 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.44 1995/12/23 04:43:06 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -41,7 +41,7 @@ struct _MatOps {
             (*convert)(Mat,MatType,Mat *),
             (*getsubmatrix)(Mat,IS,IS,MatGetSubMatrixCall,Mat*),
             (*getsubmatrixinplace)(Mat,IS,IS),
-            (*convert_sametype)(Mat,Mat *,int),
+            (*convertsametype)(Mat,Mat *,int),
             (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec),
             (*ilufactor)(Mat,IS,IS,double,int),
             (*incompletecholeskyfactor)(Mat,IS,double),
