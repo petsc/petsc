@@ -54,11 +54,11 @@ C             h         - mesh width h = 1/(M-1)
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C  Common block data:
-      DA       da
-      Vec      localwork, solution
-      integer  M, rank, size, debug
-      Double   h, zero_d0, one_d0, two_d0, four_d0
-      MPI_Comm comm
+      DA               da
+      Vec              localwork, solution
+      integer          M, rank, size, debug
+      double precision h, zero_d0, one_d0, two_d0, four_d0
+      MPI_Comm         comm
 
       common /params/ h, zero_d0, one_d0, two_d0, four_d0
       common /appctx/ M, debug, da, localwork, solution

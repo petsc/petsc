@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.11 1997/08/07 14:41:33 bsmith Exp balay $";
+C "$Id: ex2f.F,v 1.12 1997/09/22 15:18:31 balay Exp curfman $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -69,9 +69,6 @@ C     global     - global vector
 C     ftime      - final time
 C     duration   - total duration
 C     time_steps - number of timesteps
-C
-C  Note:  "Double" -> "double precision" except for machines such
-C          as the Cray T3d, where "Double" -> "real"
 C
 C  Note that vectors are declared as PETSc "Vec" objects.  These vectors
 C  are mathematical objects that contain more than just an array of
