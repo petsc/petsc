@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.11 1996/07/25 04:42:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex22.c,v 1.1 1996/07/25 05:12:17 curfman Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -12,8 +12,8 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
   -N_eta <N_eta>, -N_xi <N_xi> : number of processors in eta and xi directions\n\
   -m_eta <m_eta>, -m_xi <m_xi> : number of grid points in eta and xi directions\n\
   -xi_max <xi_max> ; maximum xi value\n\
-  -amp <amp> : amp\n\
-  -mach <mach> : Mach number\n\
+  -amp <amp> : amplitude of scattered acoustic field\n\
+  -mach <mach> : free-stream Mach number\n\
   -k1 <k1> : parameter k1\n\n";
 
 #include "sles.h"
@@ -23,9 +23,9 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
 #include <stdio.h>
 
 /* 
-   NOTES:
-
-   - Compiling the code:
+   ---------------------
+    Compiling the code:
+   ---------------------
      This code uses the complex numbers version of PETSc, so one of the
      following values of BOPT must be used for compiling the PETSc libraries
      and this example:
@@ -33,7 +33,9 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
         BOPT=O_complex   - optimized version
         BOPT=Opg_complex - profiling version
 
-   - Code organization and extension:
+   ----------------------------------
+    Code organization and extension:
+   ----------------------------------
      This code is designed for the parallel solution of linear systems
      discretized on a 2D logically rectangular grid.  We currently specify a
      single model problem (discussed below); additional linear problems for 2D
@@ -43,26 +45,47 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
      problems with different stencils or multiple degrees of freedom per node,
      the call to DACreate2d() should be modified accordingly.
 
-   - Model Problem 1:
+   ------------------
+    Model Problem 1:
+   ------------------
        Reference: "Numerical Solution of Periodic Vortical Flows about
        a Thin Airfoil", J. Scott and H. Atassi, AIAA paper 89-1691,
        AIAA 24th Thermophysics Conference, June 12-14, 1989.
 
-       We use the eta/xi coordinate system: Full grid (including boundary on
-       all sides) is:
+       Relative to this reference, we set k_3 to zero (two-dimensional 
+       problem).  Amplitude "amp" is a_2 of the paper.  Unlike the paper, 
+       our computational grid is uniform in this initial cut.  (Since this
+       results in stretched farfield cells that lose their high frequency
+       resolving ability, this will be fixed shortly.)
+  
+       As noted below, the downstream symmetry boundary has a nonlocal
+       condition, which is presently implemented with a dense subcolumn
+       of the system matrix.  A subdiagonal, lying within the standard
+       stencil pattern, could be used instead, and probably should be used
+       for better properties with a level-based fill preconditioner. (This
+       is a subject for investigation.)
 
-           m_xi - 1  --------------
+       We use the eta/xi coordinate system, as described in the above
+       reference.  The full grid (including boundary on all sides) is
+       given below, so that the global system size is m_xi * m_eta.
+
+
+           m_xi - 1  |------------|
                      |            |
                      |            |
                      |            |
                    0 --------------
                      0         m_eta - 1
 
-       so that the global system size is m_xi * m_eta
+
+       The bottom boundary maps to the airfoil slit surface in the physical
+       plane, and is a closed segment.  The top boundary maps to the farfield
+       boundary, and is an open segment.  The lateral boundaries map to the
+       upstream and downstream portions of the symmetry boundary in the physical
+       plane, and include the "corner" points of the farfield boundary.
 
        Current formulation:
         - uniform grid
-        - mapped problem domain, as described in the reference above
         - standard 2nd-order finite difference discretization in the domain's
           interior, and 1st-order discretization of boundary conditions
         - Improvements are forthcoming, so stay tuned!
@@ -91,7 +114,7 @@ typedef struct {
 int UserMatrixCreate(Atassi*,Mat*);
 int FormSystem1(Atassi*,Mat,Vec);
 int UserDetermineMatrixNonzeros(Atassi*,MatType,int**,int**);
-#define sqr(x) (x)*(x)
+#define sqr(x) ((x)*(x))
 
 int main(int argc,char **args)
 {
@@ -131,8 +154,8 @@ int main(int argc,char **args)
   user.m_dim      = user.m_eta * user.m_xi;
   user.h_eta      = 1.0/(user.m_eta - 1);
   user.h_xi       = user.xi_max/(user.m_xi - 1);
-  user.rh_eta_sq  = 1.0/(user.h_eta * user.h_eta);
-  user.rh_xi_sq   = 1.0/(user.h_xi * user.h_xi);
+  user.rh_eta_sq  = 1.0/sqr(user.h_eta);
+  user.rh_xi_sq   = 1.0/sqr(user.h_xi);
   beta_sq         = 1 - sqr(user.mach);
   user.k1Dbeta_sq = k1/beta_sq;
   user.ampDbeta   = user.amp/sqrt(beta_sq);
@@ -400,16 +423,25 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
   }
 /* -------------------------------------------------------------------------------- */
 /*
-   FormSystem1 - Evaluates matrix and vector for Helmholtz problem.
+   FormSystem1 - Evaluates matrix and vector for Helmholtz model problem #1,
+   described above.
+
+   Input Parameters:
+.  user - user-defined application context
+.  A - matrix data structure
+.  b - right-hand-side vector data structure
+
+   Output Parameters:
+.  A - fully assembled matrix
+.  b - fully assembled right-hand-side vector
 
    Current formulation:
     - uniform grid
-    - mapped problem domain, as described in the reference above
+    - mapped problem domain
     - standard 2nd-order finite difference discretization in the domain's
-      interior, and 1st-order discretization of boundary conditions.  
-
-   Future improvements in the problem formulation are forthcoming;
-   stay tuned!
+      interior, and 1st-order discretization of boundary conditions
+    - Future improvements in the problem formulation are forthcoming;
+      stay tuned!
 
    Notes:
    Due to grid point reordering with DAs, we must always work
@@ -420,7 +452,6 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
 
    See manpage for MatAssemblyEnd() for runtime options, such as
    -mat_view_draw to draw nonzero structure of matrix.
-
  */
 int FormSystem1(Atassi *user,Mat A,Vec b)
 {
