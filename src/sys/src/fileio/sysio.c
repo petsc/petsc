@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.57 1999/06/21 21:11:40 balay Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.58 1999/06/30 23:49:32 balay Exp bsmith $";
 #endif
 
 /* 
@@ -216,7 +216,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     wsize = (m < maxblock) ? m : maxblock;
     err = read( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
-    if (err == 0 && wsize > 0) PetscFunctionReturn(1);
+    if (err == 0 && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,0,"Read past end of file");
     if (err < 0) SETERRQ(PETSC_ERR_FILE_READ,0,"Error reading from file");
     m  -= err;
     pp += err;
