@@ -1,4 +1,11 @@
+C
+C  "$Id: somefort.F,v 1.13 1997/05/02 19:34:46 bsmith Exp $";
+C
+C  Noise estimation routine, written by Jorge More'.  Details are below.
+C
+
       subroutine dnest(nf,fval,h,fnoise,fder2,hopt,info,eps)
+      implicit none
 
 #include "../../../include/FINCLUDE/petsc.h"
 
@@ -13,8 +20,6 @@ c     Modified the code so that it can run on machines using single precision
 c     (e.g., the Cray t3e).  Introduced the include file petsc.h, and
 c        - changed "double precision" -> "Double"
 c        - changed constants of the form 0.0d0 -> PetscDoubleExp(0.0,0)
-c     These are simply the usual double precision representations on machines
-c     other than Crays.
 c    
 c     **********
 c
