@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.91 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscksp.h,v 1.92 2000/08/01 20:58:40 bsmith Exp balay $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -25,6 +25,7 @@ typedef struct _p_KSP*     KSP;
 #define KSPBICG       "bicg"
 #define KSPFGMRES     "fgmres" 
 #define KSPMINRES     "minres"
+#define KSPSYMMLQ     "symmlq"
 typedef char * KSPType;
 
 EXTERN int KSPCreate(MPI_Comm,KSP *);

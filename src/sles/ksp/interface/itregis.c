@@ -1,4 +1,4 @@
-/*$Id: itregis.c,v 1.51 2000/05/05 22:17:27 balay Exp bsmith $*/
+/*$Id: itregis.c,v 1.52 2000/05/10 16:42:00 bsmith Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 
@@ -18,6 +18,7 @@ EXTERN int KSPCreate_QCG(KSP);
 EXTERN int KSPCreate_BiCG(KSP);
 EXTERN int KSPCreate_FGMRES(KSP);
 EXTERN int KSPCreate_MINRES(KSP);
+EXTERN int KSPCreate_SYMMLQ(KSP);
 EXTERN_C_END
   
 /*
@@ -62,5 +63,6 @@ int KSPRegisterAll(char *path)
   ierr = KSPRegisterDynamic(KSPBICG,       path,"KSPCreate_BiCG",      KSPCreate_BiCG);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPFGMRES,     path,"KSPCreate_FGMRES",    KSPCreate_FGMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPMINRES,     path,"KSPCreate_MINRES",    KSPCreate_MINRES);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPSYMMLQ,     path,"KSPCreate_SYMMLQ",    KSPCreate_SYMMLQ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
