@@ -5,7 +5,7 @@ static char help[] =
 Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_rowmax\n\
 See ~petsc/matrices/indefinite/readme \n\n";
 
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -17,7 +17,6 @@ int main(int argc,char **args)
   double      err_norm,res_norm;
   Vec         x,b,u,u_tmp;
   PetscRandom r;
-  SLES        sles;
   PC          pc;          
   KSP         ksp;
   PetscViewer      view;
@@ -52,26 +51,23 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   for (k=0; k<3; k++){
     if (k == 0){                              /* CG  */
-      ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n");CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr); 
+      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n");CHKERRQ(ierr);
     } else if (k == 1){                       /* MINRES */
-      ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MINRES: \n");CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPMINRES);CHKERRQ(ierr); 
+      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MINRES: \n");CHKERRQ(ierr);
     } else {                                 /* SYMMLQ */
-      ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n SYMMLQ: \n");CHKERRQ(ierr);
+      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPSYMMLQ);CHKERRQ(ierr); 
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n SYMMLQ: \n");CHKERRQ(ierr);
     }
 
-    ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);  
     /* ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr); */
     ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
@@ -81,12 +77,15 @@ int main(int argc,char **args)
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
                          -pc_type jacobi -pc_jacobi_rowmax
     These options will override those specified above as long as
-    SLESSetFromOptions() is called _after_ any other customization routines.
+    KSPSetFromOptions() is called _after_ any other customization routines.
     */
-    ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);   
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);   
 
     /* Solve linear system; */ 
-    ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ksp, b);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp, x);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
    
   /* Check error */
     ierr = VecCopy(u,u_tmp);CHKERRQ(ierr); 
@@ -100,7 +99,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %A;",res_norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %A.\n",err_norm);CHKERRQ(ierr);
 
-    ierr = SLESDestroy(sles);CHKERRQ(ierr);
+    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   }
    
   /* 

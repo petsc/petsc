@@ -4,7 +4,7 @@ static char help[] = "MRC 2D.\n\n";
 
 #include "petscda.h"
 #include "petscmg.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 
 #define EQ
@@ -415,7 +415,7 @@ int PoiCreate(MRC mrc, Poi *in_poi)
 	int ierr, i,m,n;
 	Poi poi;
 	DA da;
-	SLES sles, subsles;
+	KSP ksp, subksp;
 	PC pc, subpc;
 	PetscTruth flg;
 
@@ -438,17 +438,17 @@ int PoiCreate(MRC mrc, Poi *in_poi)
         ierr = DACreateGlobalVector(da,&mrc->allvariables);CHKERRQ(ierr);
         ierr = DADestroy(da);CHKERRQ(ierr);
 
-	ierr = DMMGSetSLES(poi->dmmg, ComputeRHS, ComputeJacobian); CE;
+	ierr = DMMGSetKSP(poi->dmmg, ComputeRHS, ComputeJacobian); CE;
 
-	sles = DMMGGetSLES(poi->dmmg); CE;
+	ksp  = DMMGGetKSP(poi->dmmg); CE;
 
-	ierr = SLESGetPC(sles, &pc); CE;
+	ierr = KSPGetPC(ksp, &pc); CE;
 	ierr = AttachNullSpace(pc, DMMGGetx(poi->dmmg)); CE;
 	ierr = PetscTypeCompare((PetscObject)pc, PCMG, &flg); CE;
 	if (flg) {
 		for (i = 0; i < DMMGGetLevels(poi->dmmg); i++) {
-			ierr = MGGetSmoother(pc, i, &subsles); CE;
-			ierr = SLESGetPC(subsles, &subpc); CE;
+			ierr = MGGetSmoother(pc, i, &subksp); CE;
+			ierr = KSPGetPC(subksp, &subpc); CE;
 			ierr = AttachNullSpace(subpc, poi->dmmg[i]->x); CE;
 			ierr = PetscTypeCompare((PetscObject)subpc, PCLU, &flg); CE;
 			if (flg) {

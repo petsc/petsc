@@ -1,7 +1,7 @@
 #include "global.h"
 #include "samgfunc.h"
 #include "petscfunc.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 /**************************************************************************/
 /*                                                                        */

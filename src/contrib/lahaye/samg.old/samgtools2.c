@@ -1,4 +1,4 @@
-#include "petscsles.h"
+#include "petscksp.h"
 #include "samgfunc.h"
 
 /* ------------------------------------------------------------------- */
