@@ -16,5 +16,5 @@ typedef struct {
 #endif
   GraphicsType graphicsType; /* The system to use for display */
   PlotType     plotType;     /* The type of plot to make */
-  char        *objName;      /* The name for the next object passed to Mathematica */
+  const char  *objName;      /* The name for the next object passed to Mathematica */
 } PetscViewer_Mathematica;

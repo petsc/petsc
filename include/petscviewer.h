@@ -140,20 +140,20 @@ EXTERN int PetscViewerBinarySkipInfo(PetscViewer);
 EXTERN int PetscViewerSetFilename(PetscViewer,const char[]);
 EXTERN int PetscViewerGetFilename(PetscViewer,char**);
 
-EXTERN int ViewerMathematicaGetName(PetscViewer, char **);
-EXTERN int ViewerMathematicaSetName(PetscViewer, const char []);
-EXTERN int ViewerMathematicaClearName(PetscViewer);
-EXTERN int ViewerMathematicaSkipPackets(PetscViewer, int);
+EXTERN int PetscViewerMathematicaGetName(PetscViewer, char **);
+EXTERN int PetscViewerMathematicaSetName(PetscViewer, const char []);
+EXTERN int PetscViewerMathematicaClearName(PetscViewer);
+EXTERN int PetscViewerMathematicaSkipPackets(PetscViewer, int);
 #ifdef PETSC_HAVE_MATHEMATICA
-EXTERN int ViewerMathematicaGetLink(PetscViewer, MLINK *);
+EXTERN int PetscViewerMathematicaGetLink(PetscViewer, MLINK *);
 #endif
 
-EXTERN int ViewerSiloGetName(PetscViewer, char **);
-EXTERN int ViewerSiloSetName(PetscViewer, const char []);
-EXTERN int ViewerSiloClearName(PetscViewer);
-EXTERN int ViewerSiloGetMeshName(PetscViewer, char **);
-EXTERN int ViewerSiloSetMeshName(PetscViewer, const char []);
-EXTERN int ViewerSiloClearMeshName(PetscViewer);
+EXTERN int PetscViewerSiloGetName(PetscViewer, char **);
+EXTERN int PetscViewerSiloSetName(PetscViewer, const char []);
+EXTERN int PetscViewerSiloClearName(PetscViewer);
+EXTERN int PetscViewerSiloGetMeshName(PetscViewer, char **);
+EXTERN int PetscViewerSiloSetMeshName(PetscViewer, const char []);
+EXTERN int PetscViewerSiloClearMeshName(PetscViewer);
 
 /*
      These are all the default viewers that do not have 
@@ -164,7 +164,7 @@ EXTERN PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm);
-EXTERN PetscViewer VIEWER_MATHEMATICA_WORLD_PRIVATE;
+EXTERN PetscViewer PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE;
 
 #define PETSC_VIEWER_STDOUT_SELF  PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)
 #define PETSC_VIEWER_STDOUT_WORLD PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)
@@ -176,7 +176,7 @@ EXTERN PetscViewer VIEWER_MATHEMATICA_WORLD_PRIVATE;
 #define PETSC_VIEWER_SOCKET_SELF  PETSC_VIEWER_SOCKET_(PETSC_COMM_SELF)
 #define PETSC_VIEWER_BINARY_WORLD PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD)
 #define PETSC_VIEWER_BINARY_SELF  PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
-#define VIEWER_MATHEMATICA_WORLD (ViewerInitializeMathematicaWorld_Private(),VIEWER_MATHEMATICA_WORLD_PRIVATE) 
+#define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) 
 
 /*
     PetscViewer based on the ALICE Memory Snooper

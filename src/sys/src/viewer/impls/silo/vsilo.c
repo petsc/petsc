@@ -328,7 +328,7 @@ int PetscViewerSiloGetName(PetscViewer viewer, char **name)
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int PetscViewerSiloSetName(PetscViewer viewer, char *name)
+int PetscViewerSiloSetName(PetscViewer viewer, const char name[])
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
@@ -343,7 +343,7 @@ int PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
+int PetscViewerSiloSetMeshName(PetscViewer viewer, const char name[])
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }

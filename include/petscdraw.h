@@ -216,6 +216,7 @@ EXTERN int PetscDrawLGDestroy(PetscDrawLG);
 EXTERN int PetscDrawLGAddPoint(PetscDrawLG,PetscReal*,PetscReal*);
 EXTERN int PetscDrawLGAddPoints(PetscDrawLG,int,PetscReal**,PetscReal**);
 EXTERN int PetscDrawLGDraw(PetscDrawLG);
+EXTERN int PetscDrawLGPrint(PetscDrawLG);
 EXTERN int PetscDrawLGReset(PetscDrawLG);
 EXTERN int PetscDrawLGSetDimension(PetscDrawLG,int);
 EXTERN int PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);

@@ -465,7 +465,7 @@ int PetscViewerMathematicaGetName(PetscViewer viewer, char **name)
 .keywords PetscViewer, Mathematica, name
 .seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaClearName()
 @*/
-int PetscViewerMathematicaSetName(PetscViewer viewer, char *name)
+int PetscViewerMathematicaSetName(PetscViewer viewer, const char name[])
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 

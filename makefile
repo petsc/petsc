@@ -172,7 +172,8 @@ build:
 build_lt:
 	-@echo "BEGINNING TO COMPILE LIBTOOL LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=lib tree 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=lib tree \
+          | egrep "(^lib|^*\.c:|Error)"
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
