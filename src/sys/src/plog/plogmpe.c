@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.47 1999/11/24 21:53:12 bsmith Exp bsmith $*/
+/*$Id: plogmpe.c,v 1.48 2000/01/11 20:59:43 bsmith Exp balay $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -321,20 +321,20 @@ int PLogMPEBegin(void)
 #if defined (PETSC_HAVE_MPE_INITIALIZED_LOGGING)
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
     PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
-    MPE_Init_log();
+    ierr = MPE_Init_log();CHKERRQ(ierr);
     PetscBeganMPE = 1;
   } else {
-       PLogInfo(0,"PLogMPEBegin: MPE already initialized. Not attempting to reinitialize.\n");
+    PLogInfo(0,"PLogMPEBegin: MPE already initialized. Not attempting to reinitialize.\n");
   }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-log_mpe_avoid_init",&flg);CHKERRQ(ierr);
-    if (flg) {
-       PLogInfo(0,"PLogMPEBegin: Not initializing MPE.\n");
-    } else {
-       PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
-      MPE_Init_log();
-      PetscBeganMPE = 1;
-    }
+  if (flg) {
+    PLogInfo(0,"PLogMPEBegin: Not initializing MPE.\n");
+  } else {
+    PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
+    ierr = MPE_Init_log();CHKERRQ(ierr);
+    PetscBeganMPE = 1;
+  }
 #endif
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -438,8 +438,8 @@ int PLogMPEDump(const char sname[])
   if (PetscBeganMPE == 1) {
     PLogInfo(0,"PLogMPEDump: Finalizing MPE.\n");
     if (sname) { ierr = PetscStrcpy(name,sname);CHKERRQ(ierr);}
-    else PetscGetProgramName(name,256);
-    MPE_Finish_log(name); 
+    else { ierr = PetscGetProgramName(name,256);CHKERRQ(ierr);}
+    ierr = MPE_Finish_log(name);CHKERRQ(ierr);
   } else {
     PLogInfo(0,"PLogMPEDump: Not finalizing MPE.\n");
   }
