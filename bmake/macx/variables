@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.5 2001/03/29 16:33:52 balay Exp balay $ 
+# $Id: base_variables,v 1.6 2001/04/02 15:58:49 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -7,7 +7,7 @@ AR_FLAGS	   = cr
 RM		   = rm -f
 OMAKE		   = make  --no-print-directory
 RANLIB		   = ranlib -s
-SHELL		   = /bin/sh
+SHELL		   = /usr/local/bin/bash
 SED		   = sed
 SH_LD		   = cc
 MKDIR              = mkdir -p
