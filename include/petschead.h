@@ -1,7 +1,7 @@
-/* $Id: phead.h,v 1.36 1996/10/02 19:57:19 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.37 1996/10/02 20:28:05 bsmith Exp bsmith $ */
 
 /*
-    Defines the basic header of all data types. 
+    Defines the basic header of all PETSc objects.
 */
 
 #if !defined(_PHEAD_H)
@@ -18,8 +18,6 @@ extern int PetscRegisterCookie(int *);
    is defined below by PETSCHEADER. 
 
    PetscHeaderCreate() should be used whenever you create a PETSc structure.
-
-   PetscCheckSameType() checks if your PETSc structures are of same type.
 */
 
 #define PETSCHEADER                         \
@@ -35,7 +33,7 @@ extern int PetscRegisterCookie(int *);
   PetscObject parent;                       \
   char*       name;                         \
   char        *prefix;                      \
-  void *      child;                        \
+  void*       child;                        \
   int         (*childcopy)(void *,void**);  \
   int         (*childdestroy)(void *);     
   /*  ... */                               
@@ -57,8 +55,8 @@ extern int PetscRegisterCookie(int *);
         PetscFree(h);          }
 
 /* 
-  PetscLow and PetscHigh are a poor person's way of checking if 
-  an address if out of range. They are set in src/sys/src/tr.c
+  PetscLow and PetscHigh are a way of checking if an address is 
+  out of range. They are set in src/sys/src/tr.c
 */
 extern void *PetscLow,*PetscHigh;
 
@@ -85,7 +83,7 @@ extern void *PetscLow,*PetscHigh;
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");             \
   }                                                                 \
   else if (PetscLow > (void *) h || PetscHigh < (void *)h){         \
-    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Objectout of range"); \
+    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object:out of range");\
   }                                                                 \
   else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {        \
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                 \
@@ -150,6 +148,10 @@ extern void *PetscLow,*PetscHigh;
   }}
 #endif
 
+/*
+    For example, in the dot product between two vectors,
+  both vectors must be either Seq or MPI, not one of each 
+*/
 #define PetscCheckSameType(a,b) \
   if ((a)->type != (b)->type) SETERRQ(3,"Objects not of same type");
 
@@ -163,9 +165,9 @@ struct _PetscObject {
   PETSCHEADER
 };
 
-extern int PetscObjectSetPrefix(PetscObject,char*);
-extern int PetscObjectAppendPrefix(PetscObject,char*);
-extern int PetscObjectGetPrefix(PetscObject,char**);
+extern int PetscObjectSetOptionsPrefix(PetscObject,char*);
+extern int PetscObjectAppendOptionsPrefix(PetscObject,char*);
+extern int PetscObjectGetOptionsPrefix(PetscObject,char**);
 
 #endif
 
