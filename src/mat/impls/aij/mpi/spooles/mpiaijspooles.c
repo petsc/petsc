@@ -30,7 +30,6 @@ int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   int           ierr;
 
   PetscFunctionBegin;	
-  A->ops->lufactornumeric = MatFactorNumeric_MPIAIJ_Spooles; 
 
   /* Create the factorization matrix F */  
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);

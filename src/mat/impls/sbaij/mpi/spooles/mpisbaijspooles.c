@@ -46,7 +46,6 @@ int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Ma
   int           ierr;
   
   PetscFunctionBegin;	
-  A->ops->lufactornumeric  = MatFactorNumeric_MPIAIJ_Spooles;  
 
   /* Create the factorization matrix */  
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);
