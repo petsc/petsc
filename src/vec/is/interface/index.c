@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.42 1997/02/15 04:55:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.43 1997/02/22 02:21:56 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -169,11 +169,11 @@ int ISGetSize(IS is,int *size)
    Fortran Note:
    The Fortran interface is slightly different from that given below.
    See the Fortran chapter of the users manual and 
-   petsc/src/is/examples for details.
+   petsc/src/is/examples for details.  
 
 .keywords: IS, index set, get, indices
 
-.seealso: ISRestoreIndices()
+.seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
 int ISGetIndices(IS is,int **ptr)
 {
@@ -198,7 +198,7 @@ int ISGetIndices(IS is,int **ptr)
 
 .keywords: IS, index set, restore, indices
 
-.seealso: ISGetIndices()
+.seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
 int ISRestoreIndices(IS is,int **ptr)
 {
@@ -270,3 +270,62 @@ int ISSorted(IS is, PetscTruth *flg)
   PetscValidIntPointer(flg);
   return (*is->ops.sorted)(is, flg);
 }
+
+/*MC
+    ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.
+    The users should call ISRestoreIndicesF90() after having looked at the
+    indices.  The user should NOT change the indices.
+
+    Input Parameter:
+.   x - vector
+
+    Output Parameters:
+.   xx_v - the Fortran90 pointer to the array
+.   ierr - error code
+
+    Synopsis:
+    ISGetIndicesF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Usage: 
+    Scalar, pointer xx_v(:)
+    ....
+    ISGetIndicesF90(x,xx_v,ierr)
+    a = xx_v(3)
+    ISRestoreIndicesF90(x,xx_v,ierr)
+
+    Notes:
+    Currently only supported using the NAG F90 compiler.
+
+.seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
+
+.keywords:  vector, array, f90
+M*/
+
+/*MC
+    ISRestoreIndicesF90 - Restores an index set to a usable state after
+    a call to ISGetIndicesF90().
+
+    Input Parameters:
+.   x - vector
+.   xx_v - the Fortran90 pointer to the array
+
+    Output Parameter:
+.   ierr - error code
+
+    Synopsis:
+    ISRestoreIndicesF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Usage: 
+    Scalar, pointer xx_v(:)
+    ....
+    ISGetIndicesF90(x,xx_v,ierr)
+    a = xx_v(3)
+    ISRestoreIndicesF90(x,xx_v,ierr)
+   
+    Notes:
+    Currently only supported using the NAG F90 compiler.
+
+.seealso:  ISGetIndicesF90(), ISGetIndices(), ISRestoreIndices()
+
+.keywords:  vector, array, f90
+M*/
