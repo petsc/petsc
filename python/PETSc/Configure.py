@@ -78,7 +78,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', 'AR',                          nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('PETSc', '--prefix',                    nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('PETSc', '-prefix',                     nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     return
 
   def defineAutoconfMacros(self):
