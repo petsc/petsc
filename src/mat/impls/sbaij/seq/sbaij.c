@@ -1614,7 +1614,7 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   Mat_SeqSBAIJ *a;
   Mat          B;
   int          i,nz,ierr,fd,header[4],size,*rowlengths=0,M,N,bs=1;
-  int          *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,*s_browlengths,maskcount;
+  int          *mask,mbs,*jj,j,rowcount,nzcount,k,*s_browlengths,maskcount;
   int          kmax,jcount,block,idx,point,nzcountb,extra_rows;
   int          *masked,nmask,tmp,bs2,ishift;
   PetscScalar  *aa;
