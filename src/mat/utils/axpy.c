@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.36 1998/10/09 19:23:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.37 1999/01/04 21:51:52 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -12,13 +12,20 @@ static char vcid[] = "$Id: axpy.c,v 1.36 1998/10/09 19:23:42 bsmith Exp bsmith $
    Collective on Mat
 
    Input Parameters:
-+  X,Y - the matrices
++  X, Y - the matrices
 -  a - the scalar multiplier
 
    Contributed by: Matthew Knepley
 
+   Notes:
+   Since the current implementation of MatAXPY() uses MatGetRow() to access
+   matrix data, efficiency is somewhat limited.
+
+   Level: intermediate
+
 .keywords: matrix, add
 
+.seealso: MatAYPX()
  @*/
 int MatAXPY(Scalar *a,Mat X,Mat Y)
 {
@@ -64,14 +71,15 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 #undef __FUNC__  
 #define __FUNC__ "MatShift"
 /*@
-   MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity
-   matrix.
+   MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity matrix.
 
    Collective on Mat
 
    Input Parameters:
 +  Y - the matrices
 -  a - the scalar 
+
+   Level: intermediate
 
 .keywords: matrix, add, shift
 
@@ -111,6 +119,8 @@ int MatShift(Scalar *a,Mat Y)
 .  Y - the shifted ouput matrix
 
    Collective on Mat and Vec
+
+   Level: intermediate
 
 .keywords: matrix, add, shift, diagonal
 
@@ -158,8 +168,14 @@ int MatDiagonalShift(Mat Y,Vec D)
 
    Contributed by: Matthew Knepley
 
+   Notes:
+   This routine currently uses the MatAXPY() implementation.
+
+   Level: intermediate
+
 .keywords: matrix, add
 
+.seealso: MatAXPY()
  @*/
 int MatAYPX(Scalar *a,Mat X,Mat Y)
 {
