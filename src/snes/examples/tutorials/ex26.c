@@ -140,13 +140,14 @@ int main(int argc,char **argv)
     won't converge.
   */
   if (!fd_jacobian) {
-    ierr      = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,grids,grids,
-				5,PETSC_NULL,3,PETSC_NULL,&user.J); CHKERRQ(ierr);
+    ierr      = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,grids,grids,&user.J);CHKERRQ(ierr);
+    ierr      = MatSetType(user.J,MATAIJ);CHKERRQ(ierr);
     ierr      = MatSetFromOptions(user.J); CHKERRQ(ierr);
+    ierr      = MatSeqAIJSetPreallocation(user.J,5,PETSC_NULL);CHKERRQ(ierr);
+    ierr      = MatMPIAIJSetPreallocation(user.J,5,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
     user.A    = user.J;
-  }
-  else {
-    ierr      = DAGetMatrix(user.da,MATMPIAIJ,&user.J);CHKERRQ(ierr);
+  } else {
+    ierr      = DAGetMatrix(user.da,MATAIJ,&user.J);CHKERRQ(ierr);
     user.A    = user.J;
   }
 
