@@ -2667,10 +2667,10 @@ PetscErrorCode MatConvertRegister(const char sname[],const char path[],const cha
 @*/
 PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
 {
-  PetscErrorCode ierr;
-  PetscTruth     sametype,issame,flg;
-  char           convname[256],mtype[256];
-  Mat            B; 
+  PetscErrorCode         ierr;
+  PetscTruth             sametype,issame,flg;
+  char                   convname[256],mtype[256];
+  Mat                    B; 
   ISLocalToGlobalMapping ltog=0,ltogb;
 
   PetscFunctionBegin;

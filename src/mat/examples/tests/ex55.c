@@ -90,8 +90,9 @@ int main(int argc,char **args)
     ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ1(PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
     for (j=i+1; j<ntypes; j++) { 
-      if (msglvl>0 && !rank)
-        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] test conversion between %s and %s\n",rank,type[i],type[j]);
+      if (msglvl>0) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD," [%d] test conversion between %s and %s\n",rank,type[i],type[j]);CHKERRQ(ierr);
+      }
 
       ierr = MatConvert(A,type[j],&B);CHKERRQ(ierr);
       ierr = MatConvert(B,type[i],&D);CHKERRQ(ierr); 
