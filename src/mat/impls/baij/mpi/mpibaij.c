@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.155 1999/02/26 17:08:24 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.156 1999/03/08 21:25:42 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1663,7 +1663,7 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   
   PetscFunctionBegin;
   if (matout == PETSC_NULL && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Square matrix only for in-place");
-  ierr = MatCreateMPIBAIJ(A->comm,baij->bs,PETSC_DECIDE,PETSC_DECIDE,N,M,0,PETSC_NULL,0,PETSC_NULL,&B); 
+  ierr = MatCreateMPIBAIJ(A->comm,baij->bs,baij->n,baij->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B); 
   CHKERRQ(ierr);
   
   /* copy over the A part */
