@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.10 1995/06/08 03:09:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.11 1995/08/01 19:24:44 curfman Exp bsmith $";
 #endif
 
 /*
@@ -16,6 +16,7 @@ typedef struct {
   int  m,n;
   int  (*mult)(void *,Vec,Vec);
   int  (*multtransadd)(void*,Vec,Vec,Vec);
+  int  (*destroy)(void *);
   void *ctx;
 } MatShell;      
 
@@ -33,9 +34,11 @@ static int MatShellMultTransAdd(Mat mat,Vec x,Vec y,Vec z)
 }
 static int MatShellDestroy(PetscObject obj)
 {
+  int      ierr;
   Mat      mat = (Mat) obj;
   MatShell *shell;
   shell = (MatShell *) mat->data;
+  if (shell->destroy) {ierr = (*shell->destroy)(shell->ctx);CHKERRQ(ierr);}
   PETSCFREE(shell); 
   PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
@@ -152,6 +155,31 @@ int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
   VALIDHEADER(mat,MAT_COOKIE);
   shell               = (MatShell *) mat->data;
   shell->multtransadd = mult;
+  return 0;
+}
+/*@
+   MatShellSetDestroy - Set the routine to use to destroy the 
+        private contents of your MatShell.
+
+   Input Parameters:
+.  mat - the matrix associated with this operation, created 
+         with MatShellCreate()
+.  destroy - the user-defined routine
+
+   Calling sequence of mult:
+   int destroy (void *ptr)
+.  ptr - the application context for matrix data
+
+.keywords: matrix, destroy, shell, set
+
+.seealso: MatShellCreate()
+@*/
+int MatShellSetDestroy(Mat mat,int (*destroy)(void*))
+{
+  MatShell *shell;
+  VALIDHEADER(mat,MAT_COOKIE);
+  shell = (MatShell *) mat->data;
+  shell->destroy = destroy;
   return 0;
 }
 

@@ -5,10 +5,8 @@ ALL: lib
 CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
-WSOURCE = 
 SOURCEH  = daimpl.h
 OBJSC    =
-WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = src  examples

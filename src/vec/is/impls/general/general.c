@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.22 1995/07/07 17:14:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.23 1995/07/17 03:53:18 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -145,6 +145,9 @@ int ISAddStrideSequential(IS *is,int n,int first,int step)
   IS_General *sub;
   if (*is) VALIDHEADER(*is,IS_COOKIE);
 
+  PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
+  PLogObjectCreate(Newis);
+
   if (*is) {
     ISGetSize(*is,&N);
     ISGetIndices(*is,&old);
@@ -154,15 +157,15 @@ int ISAddStrideSequential(IS *is,int n,int first,int step)
   }
 
 
-  PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
-  PLogObjectCreate(Newis);
   size = sizeof(IS_General) + n*sizeof(int) + N*sizeof(int);
   sub            = (IS_General *) PETSCMALLOC(size); CHKPTRQ(sub);
   sub->idx = idx = (int *) (sub+1);
   sub->sorted    = 1;
 
   PETSCMEMCPY(sub->idx,old,N*sizeof(int));
-  if (*is) {ISRestoreIndices(*is,&old); ISDestroy(*is);}
+  if (*is) {
+    PLogObjectParent(Newis,*is);ISRestoreIndices(*is,&old); ISDestroy(*is);
+  }
   for ( i=0; i<n; i++ ) {idx[N+i] = first + i*step;}
 
   sub->n         = n + N;

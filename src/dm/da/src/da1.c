@@ -29,8 +29,8 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
     FILE *fd = ViewerFileGetPointer_Private(ptr);
     if (vobj->type == FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
-      fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",mytid,da->M,
-                 1,da->m,1,da->w,da->s);
+      fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",mytid,da->M,
+                 da->m,da->w,da->s);
       fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,1,1);
       fflush(fd);
       MPIU_Seq_end(da->comm,1);
@@ -116,6 +116,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   IS            to,from;
   *inra = 0;
 
+  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
+  PLogObjectCreate(da);
+
   MPI_Comm_size(comm,&numtid); 
   MPI_Comm_rank(comm,&mytid); 
 
@@ -158,6 +161,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,x,start,1,&to);CHKERRQ(ierr);
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,x,xs-Xs,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
+  PLogObjectParent(da,to);
+  PLogObjectParent(da,from);
+  PLogObjectParent(da,ltog);
   ISDestroy(from); ISDestroy(to);
 
   /* Create Global to Local Vector Scatter Context */
@@ -196,13 +202,18 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   ierr = ISCreateSequential(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
+  PLogObjectParent(da,to);
+  PLogObjectParent(da,from);
+  PLogObjectParent(da,gtol);
   ISDestroy(to); ISDestroy(from);
 
-  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
-  PLogObjectCreate(da);
   da->M      = M; da->N = 0;  da->m  = m; da->n = 0; da->w = w; da->s = s/w;
   da->xs     = xs; da->xe = xe; da->ys = 0; da->ye = 0;
   da->Xs     = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 0;
+
+  PLogObjectParent(da,global);
+  PLogObjectParent(da,local);
+
   da->global = global; 
   da->local  = local;
   da->gtol   = gtol;
@@ -212,6 +223,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   da->base   = xs;
   da->view   = DAView_1d;
   da->wrap   = wrap;
+  da->stencil_type = DA_STENCIL_STAR;
   *inra = da;
   return 0;
 }

@@ -7,9 +7,7 @@ FFLAGS   =
 SOURCEC  = cg.c cgeig.c
 SOURCEF  =
 SOURCEH  = cgctx.h 
-WSOURCE = cgeigf.c
 OBJSC    = cg.o cgeig.o 
-WOBJS    = cgeigf.o 
 OBJSF    =
 LIBBASE  = libpetscksp
 

@@ -4,10 +4,8 @@ ALL: ex1
 CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) -I$(IPETSCDIR)/include
 SOURCEC       = 
 SOURCEF       =
-WSOURCE       = 
 SOURCEH       =
 OBJSC         =
-WOBJS         = 
 OBJSF         =
 LIBBASE       = libpetscvec
 EXAMPLES_2    = ex2

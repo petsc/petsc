@@ -9,8 +9,6 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = snestest.o
 OBJSF    =
-WSOURCE = 
-WOBJS    = 
 LIBBASE  = libpetscsnes
 MANSEC   = n
 

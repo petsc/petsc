@@ -7,9 +7,7 @@ CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
 FFLAGS   =
 SOURCEC  = cr.c 
 SOURCEF  = 
-WSOURCE = 
 OBJSC    = cr.o 
-WOBJS    =  
 OBJSF    =
 LIBBASE  = libpetscksp
 

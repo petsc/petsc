@@ -9,8 +9,6 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = precon.o pcset.o pcregis.o
 OBJSF    =
-WSOURCE = preconf.c pcsetf.c pcregisf.c
-WOBJS    = preconf.o pcsetf.o pcregisf.o
 LIBBASE  = libpetscsles
 MANSEC   = 4
 

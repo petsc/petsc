@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   DrawCtx        win;
   Vec            local,global;
   Scalar         value;
+  DAStencilType  st = DA_STENCIL_BOX;
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
@@ -32,8 +33,9 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,"-xwrap")) wrap = DA_XPERIODIC;
   if (OptionsHasName(0,"-ywrap")) wrap = DA_YPERIODIC;
   if (OptionsHasName(0,"-xywrap")) wrap = DA_XYPERIODIC;
+  if (OptionsHasName(0,"-star")) st = DA_STENCIL_STAR;
 
-  ierr = DACreate2d(MPI_COMM_WORLD,wrap,DA_STENCIL_BOX,M,N,m,n,w,s,&da); 
+  ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); 
   CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);

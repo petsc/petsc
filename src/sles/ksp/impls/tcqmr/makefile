@@ -5,11 +5,9 @@ CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
            -I$(IPETSCDIR)/pinclude  -I../../ -D__DIR__='"ksp/impls/tcqmr/"'
 SOURCEC  = tcqmr.c
 SOURCEF  =
-WSOURCE = 
 SOURCEH  = tcqmrp.h
 OBJSC    = tcqmr.o
 OBJSF    = 
-WOBJS    = 
 LIBBASE  = libpetscksp
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

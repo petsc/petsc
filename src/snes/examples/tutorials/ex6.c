@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.13 1995/07/23 18:20:40 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -29,7 +29,8 @@ int main( int argc, char **argv )
   Vec          x,r,F;              /* solution, residual, work vector */
   Mat          J, JPrec;           /* Jacobian, preconditioner matrices */
   int          ierr, its, n = 5,i;
-  double       h,xp = 0.0,v;
+  double       h,xp = 0.0;
+  Scalar       v;
 
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);

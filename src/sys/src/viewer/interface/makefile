@@ -9,8 +9,6 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = view.o 
 OBJSF    =
-WSOURCE = 
-WOBJS    = 
 LIBBASE  = libpetscsys
 MANSEC   = 1
 

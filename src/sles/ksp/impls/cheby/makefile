@@ -6,10 +6,8 @@ CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS)  \
 SOURCEC  = cheby.c 
 SOURCEF  =
 SOURCEH  = chebctx.h
-WSOURCE = chebyf.c
 OBJSC    = cheby.o 
 OBJSF    =
-WOBJS    = chebyf.o
 LIBBASE  = libpetscksp
 MANSEC   = 5
 

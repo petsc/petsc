@@ -4,10 +4,8 @@ ALL: ex1
 CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) $(COPT)
 SOURCEC       = 
 SOURCEF       =
-WSOURCE       = 
 SOURCEH       =
 OBJSC         =
-WOBJS         = 
 OBJSF         =
 LIBBASE       = libpetscmat
 EXAMPLES_1    = ex1  ex3  ex5 ex6  ex8 ex9 ex10 ex11  ex14\

@@ -9,8 +9,6 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = draw.o 
 OBJSF    =
-WSOURCE = drawf.c
-WOBJS    = drawf.o
 LIBBASE  = libpetscdraw
 MANSEC   = x
 

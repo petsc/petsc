@@ -4,10 +4,8 @@ IPETSCDIR = ../../../..
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
            -I$(IPETSCDIR)/pinclude -I../.. -D__DIR__='"ksp/impls/preonly/"'
 SOURCEC  = preonly.c
-WSOURCE = 
 SOURCEF  =
 OBJSC    = preonly.o
-WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscksp
 

@@ -9,8 +9,6 @@ SOURCEF  =
 SOURCEH  = ls.h
 OBJSC    = ls.o
 OBJSF    =
-WSOURCE = 
-WOBJS    = 
 LIBBASE  = libpetscsnes
 MANSEC   = n
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.15 1995/07/23 18:20:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.16 1995/07/28 04:25:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -140,23 +140,21 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     i, j, row, mx, my, ierr;
-  double  one = 1.0, lambda;
-  double  temp1, temp, hx, hy, hxdhy, hydhx;
-  double  sc;
+  double  lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
   Scalar  *x;
 
   mx	 = user->mx; 
   my	 = user->my;
   lambda = user->param;
 
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
+  hx    = 1.0 / (double)(mx-1);
+  hy    = 1.0 / (double)(my-1);
   sc    = hx*hy;
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  temp1 = lambda/(lambda + one);
+  temp1 = lambda/(lambda + 1.0);
   for (j=0; j<my; j++) {
     temp = (double)(PETSCMIN(j,my-j-1))*hy;
     for (i=0; i<mx; i++) {
@@ -221,7 +219,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   AppCtx *user = (AppCtx *) ptr;
   Mat     jac = *J;
   int     i, j, row, mx, my, col[5], ierr;
-  double  two = 2.0, one = 1.0, lambda, v[5];
+  Scalar  two = 2.0, one = 1.0, lambda, v[5];
   double  hx, hy, hxdhy, hydhx;
   Scalar  sc, *x;
 
@@ -229,8 +227,8 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   my	 = user->my;
   lambda = user->param;
 
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
+  hx    = 1.0 / (double)(mx-1);
+  hy    = 1.0 / (double)(my-1);
   sc    = hx*hy;
   hxdhy = hx/hy;
   hydhx = hy/hx;
@@ -267,7 +265,7 @@ int FormInitialGuess2(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my;
-  double  one = 1.0, xx,yy,*x;
+  Scalar  xx,yy,*x;
   double  hx, hy;
 
   mx	 = user->mx; 
@@ -276,8 +274,8 @@ int FormInitialGuess2(SNES snes,Vec X,void *ptr)
   /* Test for invalid input parameters */
   if ((mx <= 0) || (my <= 0)) SETERRQ(1,0);
 
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
+  hx    = 1.0 / (double)(mx-1);
+  hy    = 1.0 / (double)(my-1);
 
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   yy = 0.0;
@@ -304,15 +302,15 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 {
   AppCtx *user = (AppCtx *) pptr;
   int     i, j, row, mx, my, ierr;
-  double  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
-  double  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
+  Scalar  two = 2.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
+  Scalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   double  hx, hy;
   Scalar  *x,*f, hx2, hy2, hxhy2;
 
   mx	 = user->mx; 
   my	 = user->my;
-  hx     = one / (double)(mx-1);
-  hy     = one / (double)(my-1);
+  hx     = 1.0 / (double)(mx-1);
+  hy     = 1.0 / (double)(my-1);
   hx2    = hx*hx;
   hy2    = hy*hy;
   hxhy2  = hx2*hy2;
@@ -427,15 +425,17 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
 {
   AppCtx *user = (AppCtx *) pptr;
   int     i, j, row, mx, my, col, ierr;
-  double  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
-  double  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
-  double  hx, hy,val,four = 4.0, three = 3.0;
-  double  *x, hx2, hy2, hxhy2;
+  Scalar  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
+  Scalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
+  double  hx, hy;
+  Scalar  val,four = 4.0, three = 3.0;
+  Scalar  *x;
+  double  hx2, hy2, hxhy2;
 
   mx	 = user->mx; 
   my	 = user->my;
-  hx     = one / (double)(mx-1);
-  hy     = one / (double)(my-1);
+  hx     = 1.0 / (double)(mx-1);
+  hy     = 1.0 / (double)(my-1);
   hx2    = hx*hx;
   hy2    = hy*hy;
   hxhy2  = hx2*hy2;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.16 1995/07/28 04:25:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.17 1995/08/01 19:10:03 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -53,6 +53,7 @@ int main( int argc, char **argv )
   int          ierr, its, N; 
   AppCtx       user;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  Mat          J;
 
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
@@ -84,8 +85,8 @@ int main( int argc, char **argv )
            CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,0); 
            CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,0,0,SNESDefaultMatrixFreeComputeJacobian,
-                         (void *)&user); CHKERRA(ierr);
+  ierr =  SNESDefaultMatrixFreeMatCreate(snes,x,&J);CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
 
   /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
@@ -101,8 +102,11 @@ int main( int argc, char **argv )
   MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */
+  ierr = MatDestroy(J); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = VecDestroy(user.localX); CHKERRA(ierr);
+  ierr = VecDestroy(user.localF); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
   ierr = DADestroy(user.da); CHKERRQ(ierr);
   PetscFinalize();

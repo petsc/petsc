@@ -5,10 +5,8 @@ CFLAGS   = $(OPT)  $(CONF) $(INCLUDEDIRS) $(BS_INCLUDE)
 
 SOURCEC       = 
 SOURCEF       =
-WSOURCE       = 
 SOURCEH       =
 OBJSC         =
-WOBJS         = 
 OBJSF         =
 LIBBASE       = libpetscvec
 EXAMPLES_1    = ex1 ex2 ex3 ex4

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.17 1995/07/28 04:19:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: err.c,v 1.18 1995/08/01 17:32:18 curfman Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -94,9 +94,27 @@ $    PetscAbortErrorHandler()
 int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
                              int number,void *ctx)
 {
-  fprintf(stderr,"PETSC ERROR: ");
-  if (!dir) fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
-  else      fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
+  static int out_of_memory = 0;
+  if (number == PETSC_ERROR_NO_MEM && !out_of_memory) {
+    if (!dir) fprintf(stderr,"PETSC ERROR: %s %d %s %d\n",file,line);
+    else      fprintf(stderr,"PETSC ERROR: %s%s %d %s %d\n",dir,file,line);
+    fprintf(stderr,"PETSC ERROR: Out of memory. This could be due to \n");
+    fprintf(stderr,"PETSC ERROR: allocating too large an object or \n");
+    fprintf(stderr,"PETSC ERROR: bleeding by not properly destroying \n");
+    fprintf(stderr,"PETSC ERROR: unneeded objects.\n");
+    if (OptionsHasName(0,"-trdump")) {
+      Trdump(stderr);
+    }
+    else {
+      fprintf(stderr,"PETSC ERROR: Try running with -trdump. \n");
+    }
+    out_of_memory++;
+  }
+  else {
+    fprintf(stderr,"PETSC ERROR: ");
+    if (!dir) fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
+    else      fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
+  }
   return number;
 }
 

@@ -9,8 +9,6 @@ SOURCEF  =
 SOURCEH  = mgimpl.h
 OBJSC    = mg.o fmg.o smg.o mgfunc.o
 OBJSF    =
-WSOURCE = 
-WOBJS    = 
 LIBBASE  = libpetscsles
 MANSEC   = 4
 

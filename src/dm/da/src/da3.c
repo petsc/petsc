@@ -3,38 +3,14 @@
 
 /*  Code for manipulating distributed regular 3d arrays in parallel  */
 
-#include "daimpl.h"
+#include "daimpl.h"     /*I   "da.h"    I*/
 #include "pviewer.h"
 #include <math.h>
 #include "draw.h"
-/*@
-   DAView - Visualizes a distributed array object.
 
-   Input Parameters:
-.  da - the distributed array
-.  ptr - an optional visualization context
-
-   Notes:
-   The available visualization contexts include
-$     STDOUT_VIEWER - standard output (the default)
-$     SYNC_STDOUT_VIEWER - synchronized standard
-$        output, where only the first processor opens
-$        the file.  All other processors send their 
-$        data to the first processor to print. 
-
-   The user can open alternative vistualization contexts with
-$    ViewerFileOpen() - output to a specified file
-$    ViewerFileOpenSync() - synchronized output to a 
-$         specified file
-$    DrawOpenX() - output nonzero matrix structure to 
-$         an X window display
-
-.keywords: distributed array, view, visualize
-
-.seealso: ViewerFileOpen(), ViewerFileOpenSync(), DrawOpenX(), 
-@*/
-int DAView(DA da,Viewer ptr)
+int DAView_3d(PetscObject dain,Viewer ptr)
 {
+  DA da = (DA) dain;
   PetscObject vobj = (PetscObject)ptr;
   int         mytid;
   VALIDHEADER(da,DA_COOKIE);
@@ -51,8 +27,8 @@ int DAView(DA da,Viewer ptr)
     FILE *fd = ViewerFileGetPointer_Private(ptr);
     if (vobj->type == FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
-      fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",mytid,da->M,
-                 da->N,da->m,da->n,da->w,da->s);
+      fprintf(fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
+                 mytid,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);
       fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,da->ys,da->ye);
       fflush(fd);
       MPIU_Seq_end(da->comm,1);
@@ -67,11 +43,11 @@ int DAView(DA da,Viewer ptr)
   }
   else if (vobj->cookie == DRAW_COOKIE) {
     DrawCtx win = (DrawCtx) ptr;
-    double  ymin = (-1),ymax = da->N;
-    double  xmin = (-1),xmax = (da->M+2)*da->P;
-    double  x,y;
-    int     k, plane, ycoord, xcoord;
-    int     base,*idx,max;
+    double  ymin = -1.0,ymax = (double) da->N;
+    double  xmin = -1.0,xmax = (double) ((da->M+2)*da->P),x,y;
+    int     k, plane;
+    double  ycoord, xcoord;
+    int     base,*idx;
     char    node[10];
 
     DrawSetCoordinates(win,xmin,ymin,xmax,ymax);
@@ -79,13 +55,13 @@ int DAView(DA da,Viewer ptr)
     /* first processor draw all node lines */
     if (!mytid) {
       for (k=0; k<da->P; k++) {
-        ymin = 0.0; ymax = da->N - 1;
-        for ( xmin=(k*(da->M+1)); xmin<da->M+(k*(da->M+1)); xmin++ ) {
+        ymin = 0.0; ymax = (double) (da->N - 1);
+        for ( xmin=(double)(k*(da->M+1)); xmin<(double)(da->M+(k*(da->M+1))); xmin++ ) {
           DrawLine(win,xmin,ymin,xmin,ymax,DRAW_BLACK);
         }
       
-        xmin = (k*(da->M+1)); xmax = xmin + da->M - 1;
-        for ( ymin=0; ymin<da->N; ymin++ ) {
+        xmin = (double)(k*(da->M+1)); xmax = xmin + (double)(da->M - 1);
+        for ( ymin=0; ymin<(double)da->N; ymin++ ) {
           DrawLine(win,xmin,ymin,xmax,ymin,DRAW_BLACK);
         }
       }
@@ -131,13 +107,15 @@ int DAView(DA da,Viewer ptr)
     MPI_Barrier(da->comm);
 
   if (da->stencil_type == DA_STENCIL_BOX) {
-    for (k=0-da->s; k<da->P+da->s; k++) {  /*Go through and draw for each plane*/
+    for (k=0-da->s; k<da->P+da->s; k++) {  
+      /*Go through and draw for each plane*/
       if ((k >= da->Zs) && (k < da->Ze)) {
   
         /* overlay ghost numbers, useful for error checking */
         base = (da->Xe-da->Xs)*(da->Ye-da->Ys)*(k-da->Zs); idx = da->idx;
         plane=k;  
-        if (k<0)    { plane=da->P+k; }  /*Keep z wrap around points on the drawing*/
+        /*Keep z wrap around points on the drawing*/
+        if (k<0)    { plane=da->P+k; }  
         if (k>=da->P) { plane=k-da->P; }
         ymin = da->Ys; ymax = da->Ye; 
         xmin = (da->M+1)*plane*da->w; 
@@ -146,7 +124,9 @@ int DAView(DA da,Viewer ptr)
           for ( x=xmin+da->Xs; x<xmin+da->Xe; x+=da->w) {
             sprintf(node,"%d",idx[base]/da->w);
             ycoord = y;
-            if (y<0)      { ycoord = da->N+y; } /*Keep y wrap around points on drawing */  
+            /*Keep y wrap around points on drawing */  
+            if (y<0)      { ycoord = da->N+y; } 
+
             if (y>=da->N) { ycoord = y-da->N; }
             xcoord = x;   /*Keep x wrap points on drawing */          
 
@@ -162,7 +142,8 @@ int DAView(DA da,Viewer ptr)
   else
   /* Print Ghost Points for Star Stencil */
   {
-    for (k=0-da->s; k<da->P+da->s; k++) {  /*Go through and draw for each plane*/
+    /*Go through and draw for each plane*/
+    for (k=0-da->s; k<da->P+da->s; k++) {  
   
         /* overlay ghost numbers, useful for error checking */
 
@@ -171,7 +152,8 @@ int DAView(DA da,Viewer ptr)
           base = (da->ye-da->ys)*(da->xe-da->xs)*(k-da->Zs);
           idx = da->idx;
           plane=k;  
-          if (k<0)    { plane=da->P+k; }  /*Keep z wrap around points on the drawing*/
+          /*Keep z wrap around points on the drawing*/
+          if (k<0)    { plane=da->P+k; }  
           if (k>=da->P) { plane=k-da->P; }
           ymin = da->ys; ymax = da->ye; 
           xmin = (da->M+1)*plane*da->w; 
@@ -180,7 +162,8 @@ int DAView(DA da,Viewer ptr)
             for ( x=xmin+da->xs; x<xmin+da->xe; x+=da->w) {
               sprintf(node,"%d",idx[base]/da->w);  
               ycoord = y;
-              if (y<0)      { ycoord = da->N+y; } /*Keep y wrap around points on drawing */  
+              /*Keep y wrap around points on drawing */
+              if (y<0)      { ycoord = da->N+y; }   
               if (y>=da->N) { ycoord = y-da->N; }
               xcoord = x;   /*Keep x wrap points on drawing */          
 
@@ -200,7 +183,8 @@ int DAView(DA da,Viewer ptr)
                    (da->Xe-da->Xs)*(da->ye-da->ys) ) * (k-da->zs);
           idx=da->idx;
           plane=k;  
-          if (k<0)    { plane=da->P+k; }  /*Keep z wrap around points on the drawing*/
+          /*Keep z wrap around points on the drawing*/
+          if (k<0)    { plane=da->P+k; }  
           if (k>=da->P) { plane=k-da->P; }
 
           /* below middle */
@@ -211,7 +195,8 @@ int DAView(DA da,Viewer ptr)
             for ( x=xmin+da->xs; x<xmin+da->xe; x+=da->w) {
               sprintf(node,"%d",idx[base]/da->w);
               ycoord = y;
-              if (y<0)      { ycoord = da->N+y; } /*Keep y wrap around points on drawing */  
+              /*Keep y wrap around points on drawing */
+              if (y<0)      { ycoord = da->N+y; }   
               if (y>=da->N) { ycoord = y-da->N; }
               xcoord = x;   /*Keep x wrap points on drawing */          
 
@@ -230,7 +215,8 @@ int DAView(DA da,Viewer ptr)
             for ( x=xmin+da->Xs; x<xmin+da->Xe; x+=da->w) {
               sprintf(node,"%d",idx[base]/da->w);
               ycoord = y;
-              if (y<0)      { ycoord = da->N+y; } /*Keep y wrap around points on drawing */  
+              /*Keep y wrap around points on drawing */
+              if (y<0)      { ycoord = da->N+y; }   
               if (y>=da->N) { ycoord = y-da->N; }
               xcoord = x;   /*Keep x wrap points on drawing */          
 
@@ -249,7 +235,8 @@ int DAView(DA da,Viewer ptr)
             for ( x=xmin+da->xs; x<xmin+da->xe; x+=da->w) {
               sprintf(node,"%d",idx[base]/da->w);
               ycoord = y;
-              if (y<0)      { ycoord = da->N+y; } /*Keep y wrap around points on drawing */  
+              /*Keep y wrap around points on drawing */
+              if (y<0)      { ycoord = da->N+y; }   
               if (y>=da->N) { ycoord = y-da->N; }
               xcoord = x;   /*Keep x wrap points on drawing */          
 
@@ -271,7 +258,8 @@ int DAView(DA da,Viewer ptr)
                    (da->ye-da->ys)*(da->xe-da->xs)*(k-da->ze); 
           idx=da->idx;
           plane=k;  
-          if (k<0)    { plane=da->P+k; }  /*Keep z wrap around points on the drawing*/
+          /*Keep z wrap around points on the drawing*/
+          if (k<0)    { plane=da->P+k; }  
           if (k>=da->P) { plane=k-da->P; }
           ymin = da->ys; ymax = da->ye; 
           xmin = (da->M+1)*plane*da->w; 
@@ -280,7 +268,8 @@ int DAView(DA da,Viewer ptr)
             for ( x=xmin+da->xs; x<xmin+da->xe; x+=da->w) {
               sprintf(node,"%d",idx[base]/da->w); 
               ycoord = y;
-              if (y<0)      { ycoord = da->N+y; } /*Keep y wrap around points on drawing */  
+              /*Keep y wrap around points on drawing */
+              if (y<0)      { ycoord = da->N+y; }   
               if (y>=da->N) { ycoord = y-da->N; }
               xcoord = x;   /*Keep x wrap points on drawing */          
 
@@ -319,11 +308,11 @@ $      DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC
    Output Parameter:
 .  inra - the resulting array object
 
-.keywords: distributed array, create, two-dimensional
+.keywords: distributed array, create, three-dimensional
 .seealso: DADestroy(), DAView()
 @*/
 int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type, 
-               int M, int N, int P, int m, int n, int p, int w, int s, DA *inra)
+             int M, int N, int P, int m, int n, int p, int w, int s, DA *inra)
 {
   int           mytid, numtid,ierr,start,end;
   int           xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze;
@@ -340,6 +329,8 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   IS            to,from;
   *inra = 0;
 
+  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
+  PLogObjectCreate(da);
 
   MPI_Comm_size(comm,&numtid); 
   MPI_Comm_rank(comm,&mytid); 
@@ -408,7 +399,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   }
   else if (m*n*p != numtid) SETERRQ(1,"DACreate3d: Given Bad partition"); 
 
-  if (m*n*p != numtid) SETERRQ(1, "DACreate3d: Could not find good partition");  
+  if (m*n*p != numtid) SETERRQ(1,"DACreate3d: Could not find good partition");  
   if (M < m) SETERRQ(1,"DACreate3d: Partition in x direction is too fine!");
   if (N < n) SETERRQ(1,"DACreate3d: Partition in y direction is too fine!");
   if (P < p) SETERRQ(1,"DACreate3d: Partition in z direction is too fine!");
@@ -470,9 +461,9 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   xe  *= w;
   Xs  *= w;
   Xe  *= w;
-  s_x = s*w;
-  s_y = s;
-  s_z = s;
+  s_x  = s*w;
+  s_y  = s;
+  s_z  = s;
 
   /* determine starting point of each processor */
   nn = x*y*z;
@@ -534,6 +525,9 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   }
 
   ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
+  PLogObjectParent(da,to);
+  PLogObjectParent(da,from);
+  PLogObjectParent(da,ltog);
   ISDestroy(from); ISDestroy(to);
 
   /* global to local must include ghost points */
@@ -1014,15 +1008,20 @@ for ( k=0; k<s_z; k++) {
   PETSCFREE(bases);
   ierr = ISCreateSequential(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
+  PLogObjectParent(da,gtol);
+  PLogObjectParent(da,to);
+  PLogObjectParent(da,from);
   ISDestroy(to); ISDestroy(from);
-  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
-  PLogObjectCreate(da);
   da->stencil_type = stencil_type;
   da->M  = M;  da->N  = N; da->P = P; 
   da->m  = m;  da->n  = n; da->p = p;
   da->w = w; da->s = s;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = zs; da->ze = ze;
   da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye; da->Zs = Zs; da->Ze = Ze;
+
+  PLogObjectParent(da,global);
+  PLogObjectParent(da,local);
+
   da->global = global; 
   da->local  = local; 
   da->gtol   = gtol;
@@ -1030,241 +1029,8 @@ for ( k=0; k<s_z; k++) {
   da->idx    = idx;
   da->Nl     = nn;
   da->base   = base;
+  da->view   = DAView_3d;
   *inra = da;
   return 0;
 }
 
-/*@
-   DAGetCorners - Returns the global (x,y,z) indices of the lower left
-   corner of the local region, excluding ghost points.
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameters:
-.  x,y,z - the corner indices. y and z are optional.
-.  m,n,p - widths in the corresponding directions. n and p are optional.
-
-.keywords: distributed array, get, corners, nodes, local indices
-
-.seealso: DAGetGhostCorners()
-@*/
-int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
-{
-  VALIDHEADER(da,DA_COOKIE);
-  *x = da->xs; *m = da->xe - da->xs;
-  if (y) *y = da->ys; if (n) *n = da->ye - da->ys;
-  if (z) *z = da->zs; if (p) *p = da->ze - da->zs; 
-  return 0;
-} 
-
-/*@
-    DAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
-    corner of the local region, including ghost points.
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameters:
-.  x,y,z - the corner indices. y and z are optional.
-.  m,n,p - widths in the corresponding directions. n and p are optional.
-
-.keywords: distributed array, get, ghost, corners, nodes, local indices
-
-.seealso: DAGetCorners()
-@*/
-int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
-{
-  VALIDHEADER(da,DA_COOKIE);
-  *x = da->Xs; *m = da->Xe - da->Xs;
-  if (y) *y = da->Ys; if (n) *n = da->Ye - da->Ys;
-  if (z) *z = da->Zs; if (p) *p = da->Ze - da->Zs; 
-  return 0;
-}
-
-/*@
-   DADestroy - Destroy a distributed array.
-
-   Input Parameter:
-.  da - the distributed array to destroy 
-
-.keywords: distributed array, destroy
-
-.seealso: DACreate2d()
-@*/
-int DADestroy(DA da)
-{
-  VALIDHEADER(da,DA_COOKIE);
-  PLogObjectDestroy(da);
-  PETSCHEADERDESTROY(da);
-  return 0;
-}
-
-/*@
-   DALocalToGlobal - Maps values from the local patch back to the 
-   global vector. The ghost points are discarded.
-
-   Input Parameters:
-.  da - the distributed array context
-.  l  - the local values
-.  mode - one of INSERTVALUES or ADDVALUES
-
-   Output Parameter:
-.  g - the global vector
-
-.keywords: distributed array, local to global
-
-.seealso: DAGlobalToLocalBegin(), DACreate2d()
-@*/
-int DALocalToGlobal(DA da,Vec l, InsertMode mode,Vec g)
-{
-  int ierr;
-  VALIDHEADER(da,DA_COOKIE);
-  ierr = VecScatterBegin(l,g,mode,SCATTERALL,da->ltog); CHKERRQ(ierr);
-  ierr = VecScatterEnd(l,g,mode,SCATTERALL,da->ltog); CHKERRQ(ierr);
-  return 0;
-}
-
-/*@
-   DAGlobalToLocalBegin - Maps values from the global vector to the local
-   patch, the ghost points are included. Must be followed by 
-   DAGlobalToLocalEnd() to complete the exchange.
-
-   Input Parameters:
-.  da - the distributed array context
-.  g - the global vector
-.  mode - one of INSERTVALUES or ADDVALUES
-
-   Output Parameter:
-.  l  - the local values
-
-.keywords: distributed array, global to local, begin
-
-.seealso: DAGlobalToLocalEnd(), DALocalToGlobal(), DACreate2d()
-@*/
-int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
-{
-  int ierr;
-  VALIDHEADER(da,DA_COOKIE);
-  ierr = VecScatterBegin(g,l,mode,SCATTERALL,da->gtol); CHKERRQ(ierr);
-  return 0;
-}
-
-/*@
-   DAGlobalToLocalEnd - Maps values from the global vector to the local
-   patch, the ghost points are included. Must be preceeded by 
-   DAGlobalToLocalBegin().
-
-   Input Parameters:
-.  da - the distributed array context
-.  g - the global vector
-.  mode - one of INSERTVALUES or ADDVALUES
-
-   Output Parameter:
-.  l  - the local values
-
-.keywords: distributed array, global to local, end
-
-.seealso: DAGlobalToLocalBegin(), DALocalToGlobal(), DACreate2d()
-@*/
-int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
-{
-  int ierr;
-  VALIDHEADER(da,DA_COOKIE);
-  ierr = VecScatterEnd(g,l,mode,SCATTERALL,da->gtol); CHKERRQ(ierr);
-  return 0;
-}
-
-/*@
-   DAGetDistributedVector - Gets a distributed vector for a 
-   distributed array.  Additional vectors of the same type can be 
-   created with VecDuplicate().
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameter:
-.  g - the distributed vector
-
-.keywords: distributed array, get, global, distributed, vector
-
-.seealso: DAGetLocalVector()
-@*/
-int   DAGetDistributedVector(DA da,Vec* g)
-{
-  VALIDHEADER(da,DA_COOKIE);
-  *g = da->global;
-  return 0;
-}
-
-/*@
-   DAGetLocalVector - Gets a local vector (including ghost points) for a 
-   distributed array.  Additional vectors of the same type can be created 
-   with VecDuplicate().
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameter:
-.  l - the distributed vector
-
-.keywords: distributed array, get, local, vector
-
-.seealso: DAGetDistributedVector()
-@*/
-int   DAGetLocalVector(DA da,Vec* l)
-{
-  VALIDHEADER(da,DA_COOKIE);
-  *l = da->local;
-  return 0;
-}
-
-
-
-/*@
-   DAGetGlobalIndices - Returns the global node number of all local nodes,
-   including ghost nodes.
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameters:
-.  n - the number of local elements, including ghost nodes
-.  idx - the global indices
-
-.keywords: distributed array, get, global, indices, local to global
-
-.seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocal()
-@*/
-int DAGetGlobalIndices(DA da, int *n,int **idx)
-{
-  VALIDHEADER(da,DA_COOKIE);
-  *n   = da->Nl;
-  *idx = da->idx;
-  return 0;
-}
-
-/*@
-   DAGetScatterCtx - Gets the local to global and local to global 
-   vector scatter contexts for a distributed array.
-
-   Input Parameter:
-.  da - the distributed array
-
-   Output Parameters:
-.  ltog - local to global scatter context
-.  gtol - global to local scatter context
-
-.keywords: distributed array, get, scatter, context, global to local,
-           local to global
-
-.seealso: DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToGlobal()
-@*/
-int DAGetScatterCtx(DA da, VecScatterCtx *ltog,VecScatterCtx *gtol)
-{
-  VALIDHEADER(da,DA_COOKIE);
-  *ltog = da->ltog;
-  *gtol = da->gtol;
-  return 0;
-}

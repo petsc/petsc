@@ -4,12 +4,10 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
            -I../..   $(CONF) -D__DIR__='"pc/impls/shell/"'
-SOURCEC  = shell.c 
+SOURCEC  = shellpc.c 
 SOURCEF  =
-WSOURCE = shellf.c
 SOURCEH  = 
-OBJSC    = shell.o 
-WOBJS    = shellf.o
+OBJSC    = shellpc.o 
 OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = 4

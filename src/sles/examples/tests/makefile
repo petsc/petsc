@@ -4,10 +4,8 @@ ALL: ex1
 CFLAGS        = $(OPT) $(CONF) $(INCLUDEDIRS) $(BS_INCLUDE)
 SOURCEC       = 
 SOURCEF       =
-WSOURCE       = 
 SOURCEH       = pargrid.h
 OBJSC         =
-WOBJS         = 
 OBJSF         =
 LIBBASE       = libpetscsles
 EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex8

@@ -6,10 +6,8 @@ CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
            -I../.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =  
 SOURCEF  =
-WSOURCE = 
 SOURCEH  = 
 OBJSC    =  
-WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = matlab file

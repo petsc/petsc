@@ -4,10 +4,8 @@ ALL: ex1
 CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) 
 SOURCEC       = 
 SOURCEF       =
-WSOURCE       = 
 SOURCEH       =
 OBJSC         =
-WOBJS         = 
 OBJSF         =
 LIBBASE       = libpetscvec
 RUNEXAMPLES_1 = runex2

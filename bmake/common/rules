@@ -40,7 +40,7 @@ SLES_LIB    =   -L$(LDIR) -lpetscsles -lpetscksp \
 #
 #  Link if you are programming in Fortran 
 #
-PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscfort
+PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscf77
 #
 # These include files set customized site, optimization, and version options.
 # Do NOT remove any of these include files.  You should have to edit only
@@ -133,21 +133,6 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 	  $(RM) -f $(OBJS); \
         fi
 
-# Builds Fortran-77 wrappers library - not yet available
-C2f77lib: chkpetsc_dir
-	@-if [ -n "$(WOBJS)" ] ; then \
-	echo "Compiling wrappers: " $(WSOURCE); \
-	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(IPETSCDIR) $(WSOURCE); \
-	$(AR) cr $(LDIR)/libpetscfort.a $(WOBJS) ; \
-	$(RANLIB) $(LDIR)/libpetscfort.a ;\
-	$(RM) -f $(WOBJS); \
-	fi
-
-# Deletes Fortran-77 wrapper code; use only if never coding PETSc calls
-# from Fortran.
-C2f77delete: 
-	@-if [ -n "$(WOBJS)" ] ; then $(RM) -f $(WSOURCE) $(WOBJS) ; fi
-
 # Removes garbage files
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) $(TESTS) \
@@ -198,9 +183,8 @@ lint:
 
 # Builds Fortran-77 wrappers - not yet available
 C2f77:
-	@-if [ -n "$(WOBJS)" ] ; then \
-  	/home/gropp/tools.n/c2fort/bfort -mnative -ansi -nomsgs -anyname -mapptr -mpi \
-                         $(SOURCEC); fi
+	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/c2f77 \
+          -mnative -ansi -nomsgs -anyname -mapptr -mpi $(SOURCEC)
 
 
 # Builds man pages (xman version)

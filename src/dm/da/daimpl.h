@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.4 1995/06/07 16:36:33 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.5 1995/07/20 04:00:46 bsmith Exp bsmith $ */
 
 /*
 
@@ -22,6 +22,7 @@ struct _DA {
   int           wrap;              /* indicates if periodic boundaries */
   VecScatterCtx gtol,ltog;      
   Vec           global,local;
+  DAStencilType stencil_type;
 };
 
 #endif

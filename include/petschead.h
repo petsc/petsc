@@ -1,4 +1,4 @@
-/* $Id: ptscimpl.h,v 1.12 1995/06/14 17:25:19 bsmith Exp curfman $ */
+/* $Id: ptscimpl.h,v 1.13 1995/08/01 18:30:44 curfman Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -22,7 +22,7 @@
 */
 
 #define PETSCHEADER                        \
-  double      flops,time;                  \
+  double      flops,time,mem;              \
   int         cookie;                      \
   int         type;                        \
   int         id;                          \

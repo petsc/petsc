@@ -9,8 +9,6 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o
 OBJSF    =
-WSOURCE  = snesf.c snesjf.c snesmfjf.c snesregif.c snesutf.c
-WOBJS    = snesf.o snesjf.o snesmfjf.o snesregif.o snesutf.o
 LIBBASE  = libpetscsnes
 MANSEC   = n
 

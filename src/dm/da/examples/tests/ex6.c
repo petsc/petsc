@@ -12,19 +12,16 @@ static char help[] = "This example tests various 3d DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int      mytid,M = 3, N = 5, P=3; 
-  int      m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
-  int      s=1, w=2;
-  DA       da;
-  DrawCtx  win;
-  Vec      local,global;
-  Scalar   value;
+  int            mytid,M = 3, N = 5, P=3; 
+  int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
+  int            s=1, w=2;
+  DA             da;
+  DrawCtx        win;
+  Vec            local,global;
+  Scalar         value;
+  DAPeriodicType wrap = DA_XYPERIODIC;
+  DAStencilType  stencil_type = DA_STENCIL_STAR;
 
-  int wrap = 5, stencil_type = 0; 
-  /*
-  DA_PeriodicType wrap = DA_XYPERIODIC;
-  DA_StencilType  stencil_type = DA_STENCIL_STAR;
-  */ 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,300,&win); CHKERRA(ierr);

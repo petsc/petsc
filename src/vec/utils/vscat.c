@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.26 1995/07/17 03:53:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.27 1995/07/28 17:40:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -149,6 +149,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 
   /* generate the Scatter context */
   PETSCHEADERCREATE(ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,comm);
+  PLogObjectCreate(ctx);
 
   if (xin->type == VECSEQ && yin->type == VECSEQ) {
 
@@ -432,6 +433,7 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
   if (!sctx->copy) SETERRQ(1,"VecScatterCtxCopy: cannot copy this type");
   /* generate the Scatter context */
   PETSCHEADERCREATE(*ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,sctx->comm);
+  PLogObjectCreate(*ctx);
   return (*sctx->copy)(sctx,*ctx);
 }
 

@@ -10,8 +10,6 @@ SOURCEF  =
 SOURCEH  = umtr.h
 OBJSC    = umtr.o
 OBJSF    =
-WSOURCE  = 
-WOBJS    = 
 LIBBASE  = libpetscsnes
 MANSEC   = n
 

@@ -10,10 +10,6 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
            xmon.o
-WSOURCE = itfuncf.c itcreatef.c iterativf.c itresf.c itclf.c itregisf.c \
-           xmonf.c
-WOBJS    = itfuncf.o itcreatef.o iterativf.o itresf.o itclf.o itregisf.o \
-           xmonf.o
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = 5

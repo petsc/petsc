@@ -9,8 +9,6 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = vector.o 
 OBJSF    =
-WSOURCE = vectorf.c
-WOBJS    = vectorf.o
 LIBBASE  = libpetscvec
 MANSEC   = 1
 

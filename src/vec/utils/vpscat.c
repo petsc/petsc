@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.23 1995/07/05 17:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.24 1995/07/17 03:53:26 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -517,6 +517,7 @@ static int PtoPScatterDestroy(PetscObject obj)
   PETSCFREE(gen_from->values); PETSCFREE(gen_from);
   if (gen_to->local.slots) PETSCFREE(gen_to->local.slots);
   if (gen_from->local.slots) PETSCFREE(gen_from->local.slots);
+  PLogObjectDestroy(ctx);
   PETSCHEADERDESTROY(ctx);
   return 0;
 }

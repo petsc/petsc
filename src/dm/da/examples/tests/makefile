@@ -4,15 +4,13 @@ ALL: ex1
 CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) 
 SOURCEC       = 
 SOURCEF       =
-WSOURCE       = 
 SOURCEH       =
 OBJSC         =
-WOBJS         = 
 OBJSF         =
 LIBBASE       = libpetscvec
 RUNEXAMPLES_2 = runex1
-EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c
+EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5 ex6
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
@@ -33,6 +31,10 @@ ex4: ex4.o
 ex5: ex5.o 
 	-$(CLINKER) -o ex5 ex5.o  $(PETSC_LIB)
 	$(RM) -f ex5.o
+
+ex6: ex6.o 
+	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
+	$(RM) -f ex6.o
 
 runex1:
 	-@$(MPIRUN) -np 2 ex1 > ex1_1.tmp 2>&1;   \
@@ -57,5 +59,8 @@ runex4:
 
 runex5:
 	-@$(MPIRUN) -np 3 ex5 -time 50
+
+runex6:
+	-@$(MPIRUN) -np 6 ex6 
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

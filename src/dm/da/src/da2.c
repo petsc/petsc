@@ -1,14 +1,14 @@
-
-/* Peter Mell created this file on 7/10/95 */
-
+ 
+/* Peter Mell changed this file on 7/10/95 */
+ 
 /*
 
     Code for manipulating distributed regular arrays in parallel.
 
 */
-#include "daimpl.h"  /*I  "da.h"  I*/
+#include "daimpl.h"    /*I   "da.h"   I*/
 #include "pviewer.h"
-#include "draw.h"    /*I  "draw.h"  I*/
+#include "draw.h"
 #include <math.h>
 
 static int DAView_2d(PetscObject dain,Viewer ptr)
@@ -69,7 +69,8 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     MPI_Barrier(da->comm);
 
     /* draw my box */
-    ymin = da->ys; ymax = da->ye - 1; xmin = da->xs/da->w; xmax =(da->xe-1)/da->w;
+    ymin = da->ys; ymax = da->ye - 1; xmin = da->xs/da->w; 
+    xmax =(da->xe-1)/da->w;
     DrawLine(win,xmin,ymin,xmax,ymin,DRAW_RED);
     DrawLine(win,xmin,ymin,xmin,ymax,DRAW_RED);
     DrawLine(win,xmin,ymax,xmax,ymax,DRAW_RED);
@@ -87,20 +88,67 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     DrawSyncFlush(win);
     MPI_Barrier(da->comm);
 
-    /* overlay ghost numbers, useful for error checking */
-    /* put in numbers */
+    if (da->stencil_type == DA_STENCIL_BOX) {
 
-    base = 0; idx = da->idx;
-    ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
-    for ( y=ymin; y<ymax; y++ ) {
-      for ( x=xmin; x<xmax; x++ ) {
-        if ((base % da->w) == 0) {
-          sprintf(node,"%d",idx[base]/da->w);
-          DrawText(win,x/da->w,y,DRAW_BLUE,node);
+      /* overlay ghost numbers, useful for error checking */
+      /* put in numbers */
+
+      base = 0; idx = da->idx;
+      ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
+      for ( y=ymin; y<ymax; y++ ) {
+        for ( x=xmin; x<xmax; x++ ) {
+          if ((base % da->w) == 0) {
+            sprintf(node,"%d",idx[base]/da->w);
+            DrawText(win,x/da->w,y,DRAW_BLUE,node);
+          }
+          base++;
         }
-        base++;
-      }
-    }        
+      }        
+    }
+    else  /* Print ghost points with star stencil */
+    {
+      /* overlay ghost numbers, useful for error checking */
+      /* put in numbers */
+
+      /* Bottom part */
+      base = 0; idx = da->idx;
+      ymin = da->Ys; ymax = da->ys; xmin = da->xs; xmax = da->xe;
+      for ( y=ymin; y<ymax; y++ ) {
+        for ( x=xmin; x<xmax; x++ ) {
+          if ((base % da->w) == 0) {
+            sprintf(node,"%d",idx[base]/da->w);
+            DrawText(win,x/da->w,y,DRAW_BLUE,node);
+          }
+          base++;
+        }
+      }      
+  
+      /* Middle part */
+      ymin = da->ys; ymax = da->ye; xmin = da->Xs; xmax = da->Xe;
+      for ( y=ymin; y<ymax; y++ ) {
+        for ( x=xmin; x<xmax; x++ ) {
+          if ((base % da->w) == 0) {
+            sprintf(node,"%d",idx[base]/da->w);
+            DrawText(win,x/da->w,y,DRAW_BLUE,node);
+          }
+          base++;
+        }
+      }      
+  
+      /* Top part */
+      ymin = da->ye; ymax = da->Ye; xmin = da->xs; xmax = da->xe;
+      for ( y=ymin; y<ymax; y++ ) {
+        for ( x=xmin; x<xmax; x++ ) {
+          if ((base % da->w) == 0) {
+            sprintf(node,"%d",idx[base]/da->w);
+            DrawText(win,x/da->w,y,DRAW_BLUE,node);
+          }
+          base++;
+        }
+      }      
+
+    }      
+
 
     DrawSyncFlush(win);
   }
@@ -112,7 +160,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
     distributed across some processors.
 
    Input Parameters:
-.  st - stencil type either DA_STENCIL_BOX or DA_STENCIL_STAR
+.  stencil_type - stencil type either DA_STENCIL_BOX or DA_STENCIL_STAR
 .  M,N - global dimension in each direction of the array
 .  m,n - corresponding local dimensions (or PETSC_DECIDE to have calculated)
 .  w - number of degress of freedom per node
@@ -126,7 +174,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC
 .keywords: distributed array, create, two-dimensional
 .seealso: DADestroy(), DAView()
 @*/
-int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,
+int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M, int N, int m,int n, int w, int s, DA *inra)
 {
   int           mytid, numtid,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
@@ -138,6 +186,9 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,
   VecScatterCtx ltog,gtol;
   IS            to,from;
   *inra = 0;
+
+  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
+  PLogObjectCreate(da);
 
   MPI_Comm_size(comm,&numtid); 
   MPI_Comm_rank(comm,&mytid); 
@@ -152,7 +203,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,
       m--;
     }
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
-    if (m*n != numtid) SETERRQ(1,"DaCreate2d: Internally Created Bad Partition");
+    if (m*n != numtid)SETERRQ(1,"DaCreate2d:Internally Created Bad Partition");
   }
   else if (m*n != numtid) SETERRQ(1,"DACreate2d: Given Bad partition"); 
 
@@ -211,24 +262,47 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);
+  if (stencil_type == DA_STENCIL_BOX)
+    { ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);}
+  else
+    { ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs)*y+(Ye-ye)*x+(ys-Ys)*x,
+                                 &local);}
   CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,x*y,start,1,&to); CHKERRQ(ierr);
-  left = xs - Xs; 
-  down = ys - Ys; up    = down + y;
-  from = 0;
-  for ( i=down; i<up; i++ ) {
-    ierr = ISAddStrideSequential(&from,x,left + i*(Xe-Xs),1); CHKERRQ(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
+
+  if (stencil_type == DA_STENCIL_BOX) {
+    left = xs - Xs; 
+    down = ys - Ys; up    = down + y;
+    from = 0;
+    for ( i=down; i<up; i++ ) {
+      ierr = ISAddStrideSequential(&from,x,left + i*(Xe-Xs),1); CHKERRQ(ierr);
+    }
   }
+  else { 
+    left = xs - Xs; 
+    from = 0;
+    for ( i=0; i<y; i++ ) {
+      ierr = ISAddStrideSequential(&from,x,(ys-Ys)*x+left + i*(Xe-Xs),1); 
+      CHKERRQ(ierr);
+    }
+  }
+
   ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
+  PLogObjectParent(da,to);
+  PLogObjectParent(da,from);
+  PLogObjectParent(da,ltog);
   ISDestroy(from); ISDestroy(to);
 
   /* global to local must include ghost points */
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to); 
+  if (stencil_type == DA_STENCIL_BOX)
+    { ierr = ISCreateStrideSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);}
+  else
+    { ierr = ISCreateStrideSequential(MPI_COMM_SELF,
+                                  (Xe-Xs)*y + (Ye-ye)*x + (ys-Ys)*x,0,1,&to);}
   CHKERRQ(ierr); 
 
   /* determine who lies on each side of use stored in    n6 n7 n8
@@ -306,6 +380,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,
     if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
   }
 
+  if (stencil_type == DA_STENCIL_STAR) {n0 = n2 = n6 = n8 = -1;}
+
   idx = (int *)PETSCMALLOC((x+2*s_x)*(y+2*s_y)*sizeof(int));CHKPTRQ(idx);
   nn = 0;
 
@@ -374,22 +450,28 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,
   PETSCFREE(bases);
   ierr = ISCreateSequential(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
+  PLogObjectParent(da,to);
+  PLogObjectParent(da,from);
+  PLogObjectParent(da,gtol);
   ISDestroy(to); ISDestroy(from);
 
-  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
-  PLogObjectCreate(da);
   da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n; da->w = w; da->s = s;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye;
   da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye;
-  da->global = global; 
-  da->local  = local; 
-  da->gtol   = gtol;
-  da->ltog   = ltog;
-  da->idx    = idx;
-  da->Nl     = nn;
-  da->base   = base;
-  da->wrap   = wrap;
-  da->view   = DAView_2d;
+
+  PLogObjectParent(da,global);
+  PLogObjectParent(da,local);
+
+  da->global       = global; 
+  da->local        = local; 
+  da->gtol         = gtol;
+  da->ltog         = ltog;
+  da->idx          = idx;
+  da->Nl           = nn;
+  da->base         = base;
+  da->wrap         = wrap;
+  da->view         = DAView_2d;
+  da->stencil_type = stencil_type;
   *inra = da;
   return 0;
 }
@@ -456,6 +538,9 @@ int DADestroy(DA da)
 {
   VALIDHEADER(da,DA_COOKIE);
   PLogObjectDestroy(da);
+  PETSCFREE(da->idx);
+  VecScatterCtxDestroy(da->ltog);
+  VecScatterCtxDestroy(da->gtol);
   PETSCHEADERDESTROY(da);
   return 0;
 }
@@ -612,7 +697,7 @@ int DAView(DA da, Viewer v)
   return (*da->view)((PetscObject)da,v);
 }  
 
-/*@C
+/*@
    DAGetGlobalIndices - Returns the global node number of all local nodes,
    including ghost nodes.
 
