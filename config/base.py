@@ -2,6 +2,7 @@ import commands
 import os
 import re
 import select
+import sys
 
 class Configure:
   def __init__(self, framework):
@@ -49,8 +50,14 @@ class Configure:
         self._root_ = os.getcwd()
     return self._root_
 
+  def startLine(self):
+    '''Erases last print line and puts cursor at first point in line'''
+    if self.framework.linewidth < 0: return
+    self.printLine('')
+    for i in range(0,self.framework.linewidth):
+      sys.stdout.write('\b')
+
   def printLine(self,msg):
-    import sys
     if not hasattr(self.framework,'linewidth'):
       try:
         import curses
