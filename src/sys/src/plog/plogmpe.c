@@ -1,14 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.24 1997/10/19 03:30:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.25 1997/11/03 04:50:35 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
 */
+#if defined(USE_PETSC_LOG) && defined (HAVE_MPE)
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "sys.h"
-
-#if defined(USE_PETSC_LOG)
-#if defined(HAVE_MPE)
 #include "mpe.h"
 
 /* 
@@ -408,12 +406,6 @@ int PLogMPEDump(char* sname)
   MPE_Finish_log(sname); 
   PetscFunctionReturn(0);
 }
-#else
-void dummy()
-{
-  int i;
-  i = 10;
-}
-#endif
+
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.67 1998/03/06 00:11:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.68 1998/03/12 23:16:12 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -186,7 +186,6 @@ int KSPView_CG(PetscObject obj,Viewer viewer)
   KSP         ksp = (KSP)obj;
   KSP_CG      *cg = (KSP_CG *)ksp->data; 
   FILE        *fd;
-  char        *cstr;
   int         ierr;
   ViewerType  vtype;
 
