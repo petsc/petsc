@@ -4,9 +4,18 @@
 #include "isimpl.h"
 
 typedef struct {
-  int n,sorted; 
-  int *idx;
-} IndexiGeneral;
+  int n,first,step;
+} IndexiStride;
+
+/*
+   Returns info on stride index set. This is a pseudo-public function.
+*/
+int ISStrideGetInfo(IS is,int *first,int *step)
+{
+  IndexiStride *sub = (IndexiStride *) is->data;
+  *first = sub->first; *step = sub->step;
+  return 0;
+}
 
 static int ISidestroy(PetscObject obj)
 {
@@ -16,84 +25,85 @@ static int ISidestroy(PetscObject obj)
 
 static int ISiIndices(IS in,int **idx)
 {
-  IndexiGeneral *sub = (IndexiGeneral *) in->data;
-  *idx = sub->idx; return 0;
+  IndexiStride *sub = (IndexiStride *) in->data;
+  int          i;
+  *idx = (int *) MALLOC(sub->n*sizeof(int)); CHKPTR(idx);
+  (*idx)[0] = sub->first;
+  for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
+  return 0;
+}
+
+static int ISiRestoreIndices(IS in,int **idx)
+{
+  IndexiStride *sub = (IndexiStride *) in->data;
+  FREE(*idx);
+  return 0;
 }
 
 static int ISiSize(IS is,int *size)
 {
-  IndexiGeneral *sub = (IndexiGeneral *)is->data;
+  IndexiStride *sub = (IndexiStride *)is->data;
   *size = sub->n; return 0;
 }
 
 
-static int ISiInverse(IS is, IS *isout)
-{
-  IndexiGeneral *sub = (IndexiGeneral *)is->data;
-  int           i,ierr, *ii,n = sub->n,*idx = sub->idx;
-  ii = (int *) MALLOC( n*sizeof(int) ); CHKPTR(ii);
-  for ( i=0; i<n; i++ ) {
-    ii[idx[i]] = i;
-  }
-  if (ierr = ISCreateSequential(n,ii,isout)) SETERR(ierr,0);
-  ISSetPermutation(*isout);
-  FREE(ii);
-  return 0;
-}
 
 static int ISgview(PetscObject obj, Viewer viewer)
 {
   IS            is = (IS) obj;
-  IndexiGeneral *sub = (IndexiGeneral *)is->data;
-  int           i,n = sub->n,*idx = sub->idx;
+  IndexiStride *sub = (IndexiStride *)is->data;
+  int           i,n = sub->n;
   if (is->isperm) {
     printf("Index set is permutation\n");
   }
   printf("Number of indices in set %d\n",n);
   for ( i=0; i<n; i++ ) {
-    printf("%d %d\n",i,idx[i]);
+    printf("%d %d\n",i,sub->first + i*sub->step);
   }
   return 0;
 }
   
 static struct _ISOps myops = { ISiSize,ISiSize,
-                               ISiIndices,0,ISiInverse};
+                               ISiIndices,ISiRestoreIndices,0};
 /*@
-    ISCreateSequential - creates data structure for 
-     a index set containing a list of integers.
+    ISCreateStrideSequential - Creates data structure for 
+     a index set containing a list of evenly spaced integers.
 
   Input Parameters:
 .   n - the length of the index set
-.   idx - the list of integers.
+.   first - the first element in the index set
+.   step - the change to the next index
 
+  Output Parameters:
+.   is - the location to stash the index set
+
+  Keywords: index set,stride
 @*/
-int ISCreateSequential(int n,int *idx,IS *is)
+int ISCreateStrideSequential(int n,int first,int step,IS *is)
 {
-  int     i, sorted = 1, size = sizeof(IndexiGeneral) + n*sizeof(int);
-  int     min, max;
-  IS      Nindex;
-  IndexiGeneral *sub;
+  int          i, size = sizeof(IndexiStride);
+  int          min, max;
+  IS           Nindex;
+  IndexiStride *sub;
 
   *is = 0;
+ 
+  if (n <= 0) SETERR(1,"Number of indices must be positive");
+  if (step == 0) SETERR(1,"Step must be nonzero");
+
   CREATEHEADER(Nindex, _IS); 
-  sub            = (IndexiGeneral *) MALLOC(size); CHKPTR(sub);
-  sub->idx       = (int *) (sub+1);
+  sub            = (IndexiStride *) MALLOC(size); CHKPTR(sub);
   sub->n         = n;
-  for ( i=1; i<n; i++ ) {
-    if (idx[i] < idx[i-1]) {sorted = 0; break;}
-  }
-  min = max = idx[0];
-  for ( i=1; i<n; i++ ) {
-    if (idx[i] < min) min = idx[i];
-    if (idx[i] > max) max = idx[i];
-  }
-  MEMCPY(sub->idx,idx,n*sizeof(int));
-  sub->sorted     = sorted;
+  sub->first     = first;
+  sub->step      = step;
+  if (step > 0) {min = first; max = first + step*(n-1);}
+  else          {max = first; min = first + step*(n-1);}
+
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
   Nindex->cookie  = IS_COOKIE;
-  Nindex->type    = ISGENERALSEQUENTIAL;
+  Nindex->type    = ISSTRIDESEQUENTIAL;
   Nindex->ops     = &myops;
   Nindex->destroy = ISidestroy;
   Nindex->view    = ISgview;

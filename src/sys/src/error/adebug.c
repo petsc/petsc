@@ -8,7 +8,7 @@
 static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;
 /*@
-     PetscSetDebugger - sets options associated with the debugger.
+     PetscSetDebugger - Sets options associated with the debugger.
 
   Input Parameters:
 .   debugger - name of debugger, it should be in your path,
@@ -97,7 +97,7 @@ int PetscAttachDebugger()
 }
 
 /*@
-    PetscAttachDebuggerErrorHandler - error handler that attaches a
+    PetscAttachDebuggerErrorHandler - Error handler that attaches a
       a debugger to the running process when an error is detected.
       Useful for exaimining variables etc.
 

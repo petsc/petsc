@@ -14,7 +14,7 @@ EXAMPLES = ex1 ex2 ex3
 EXAMPLESC= ex1.c ex2.c ex3.c
 SYSLIB   = $(LDIR)/libpetscpc.a $(LDIR)/libpetscksp.a $(LDIR)/libpetscmat.a \
            $(LDIR)/libpetscvec.a \
-           $(LDIR)/libpetscsys.a $(LAPACK) $(BLAS) $(SLIB) -lm 
+           $(LDIR)/libpetscsys.a $(LAPACK) $(BLAS) $(CLIB) $(SLIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 ex1: ex1.o 

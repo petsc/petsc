@@ -59,7 +59,7 @@ static int ISgview(PetscObject obj, Viewer viewer)
 static struct _ISOps myops = { ISiSize,ISiSize,
                                ISiIndices,0,ISiInverse};
 /*@
-    ISCreateSequential - creates data structure for 
+    ISCreateSequential - Creates data structure for 
      a index set containing a list of integers.
 
   Input Parameters:

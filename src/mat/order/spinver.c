@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spinver.c,v 1.1 1994/11/09 21:41:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spinver.c,v 1.2 1994/11/25 23:04:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: spinver.c,v 1.1 1994/11/09 21:41:23 bsmith Exp bsmith
 #endif
 
 
-/*@
+/*
   SpInverse - Compute the inverse ordering of a permutation
 
   Input Parameters:
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: spinver.c,v 1.1 1994/11/09 21:41:23 bsmith Exp bsmith
 
   Output Parameters:
 . iperm - inverse of perm
- @*/
+ */
 void SpInverse( int n, int *perm, int *iperm )
 {
   int i;

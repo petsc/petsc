@@ -205,48 +205,46 @@ static int MatiSDrestorerow(Mat matin,int row,int *ncols,int **cols,
   return 0;
 }
 /* ----------------------------------------------------------------*/
-static int MatiSDinsert(Mat matin,Scalar *v,int m,int *indexm,int n,
-                        int *indexn)
+static int MatiSDinsert(Mat matin,int m,int *indexm,int n,
+                        int *indexn,Scalar *v,InsertMode addv)
 { 
   MatiSD *mat = (MatiSD *) matin->data;
   int i,j;
   if (!mat->roworiented) {
-    for ( j=0; j<n; j++ ) {
-      for ( i=0; i<m; i++ ) {
-        mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
+    if (addv == InsertValues) {
+      for ( j=0; j<n; j++ ) {
+        for ( i=0; i<m; i++ ) {
+          mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
+        }
+      }
+    }
+    else {
+      for ( j=0; j<n; j++ ) {
+        for ( i=0; i<m; i++ ) {
+          mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
+        }
       }
     }
   }
   else {
-    for ( i=0; i<m; i++ ) {
-      for ( j=0; j<n; j++ ) {
-        mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
+    if (addv == InsertValues) {
+      for ( i=0; i<m; i++ ) {
+        for ( j=0; j<n; j++ ) {
+          mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
+        }
+      }
+    }
+    else {
+      for ( i=0; i<m; i++ ) {
+        for ( j=0; j<n; j++ ) {
+          mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
+        }
       }
     }
   }
   return 0;
 }
-static int MatiSDinsertadd(Mat matin,Scalar *v,int m,int *indexm,
-                           int n,int *indexn)
-{ 
-  MatiSD *mat = (MatiSD *) matin->data;
-  int i,j;
-  if (!mat->roworiented) {
-    for ( j=0; j<n; j++ ) {
-      for ( i=0; i<m; i++ ) {
-        mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
-      }
-    }
-  }
-  else {
-    for ( i=0; i<m; i++ ) {
-      for ( j=0; j<n; j++ ) {
-        mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
-      }
-    }
-  }
-  return 0;
-}
+
 /* -----------------------------------------------------------------*/
 static int MatiSDcopy(Mat matin,Mat *newmat)
 {
@@ -405,7 +403,7 @@ static int MatiDenseinsopt(Mat aijin,int op)
 }
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatiSDinsert,MatiSDinsert,
+static struct _MatOps MatOps = {MatiSDinsert,
        MatiSDgetrow, MatiSDrestorerow,
        MatiSDmult, MatiSDmultadd, MatiSDmulttrans, MatiSDmulttransadd, 
        MatiSDsolve,0,MatiSDsolvetrans,0,

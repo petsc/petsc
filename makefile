@@ -24,10 +24,10 @@ deletelibs:
 	-$(RM) $(LDIR)/*.o $(LDIR)/*.a $(LDIR)/complex/*
 
 deletemanpages:
-	$(RM) -f $(PETSCLIB)/man/man*/*
+	$(RM) -f $(PETSCLIB)/docs/man/man*/*
 
 deletewwwpages:
-	$(RM) -f $(PETSCLIB)/www/man*/*
+	$(RM) -f $(PETSCLIB)/docs/www/man*/*
 
 deletelatexpages:
 	$(RM) -f $(PETSCLIB)/docs/rsum/*sum*.tex

@@ -19,7 +19,7 @@ int KSPiChebychevSetUp(KSP itP)
   return KSPiDefaultGetWork( itP, 3 );
 }
 /*@
-     KSPChebychevSetEigenvalues - sets estimates for the extreme eigenvalues
+     KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
               of the preconditioned problem.
 
   Input Parameters:

@@ -30,12 +30,12 @@ int main(int argc,char **args)
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatInsertValues(mat,value,1,&i,3,col); CHKERR(ierr);
+    ierr = MatSetValues(mat,1,&i,3,col,value,InsertValues); CHKERR(ierr);
   }
   i = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatInsertValues(mat,value,1,&i,2,col); CHKERR(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERR(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatInsertValues(mat,value,1,&i,2,col); CHKERR(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERR(ierr);
   ierr = MatBeginAssembly(mat); CHKERR(ierr);
   ierr = MatEndAssembly(mat); CHKERR(ierr);
 
@@ -54,8 +54,8 @@ int main(int argc,char **args)
   KSPSetFromOptions(ksp);
   ierr = KSPSetSolution(ksp,u); CHKERR(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERR(ierr);
-  ierr = KSPSetAmult(ksp,MatMult,(void *)mat); CHKERR(ierr);
-  ierr = KSPSetBinv(ksp,PCApply,(void *)pc); CHKERR(ierr);
+  ierr = KSPSetAmult(ksp,mat); CHKERR(ierr);
+  ierr = KSPSetBinv(ksp,pc); CHKERR(ierr);
   ierr = KSPSetUp(ksp); CHKERR(ierr);
 
   KSPGetMethodFromContext(ksp,&kspmethod);
@@ -75,6 +75,8 @@ int main(int argc,char **args)
   ierr = VecDestroy(b); CHKERR(ierr);
   ierr = MatDestroy(mat); CHKERR(ierr);
   ierr = PCDestroy(pc); CHKERR(ierr);
+
+  PetscFinalize();
   return 0;
 }
     

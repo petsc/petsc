@@ -6,7 +6,7 @@
 #include "sys.h"
 #include "options.h"
 /*@ 
-    KSPView - prints KSP datastructure.
+    KSPView - Prints KSP datastructure.
 
   Input Parameters:
 .  ksp - the Krylov space context
@@ -25,7 +25,7 @@ int _KSPView(PetscObject obj,Viewer viewer)
 }
 static NRList *__ITList = 0;
 /*@
-    KSPCreate - Creates default KSP
+    KSPCreate - Creates default KSP context.
 
   Output Parameter:
 .  ksp - location to put the Krylov Space context.
@@ -192,11 +192,11 @@ int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 
 #include <stdio.h>
 /*@C
-    KSPPrintMethods - prints the Krylov space methods available 
-              from the command line.
+    KSPPrintMethods - Prints the Krylov space methods available 
+              from the options database.
 
   Input Parameters:
-.   name - the command line option (usually -kspmethod) 
+.   name - the  options name (usually -kspmethod) 
 @*/
 int KSPPrintMethods(char *name)
 {

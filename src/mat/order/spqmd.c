@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.1 1994/11/09 21:41:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.2 1994/11/25 23:04:56 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -9,6 +9,12 @@ static char vcid[] = "$Id: spqmd.c,v 1.1 1994/11/09 21:41:24 bsmith Exp bsmith $
 #elif !defined(FORTRANUNDERSCORE)
 #define genqmd_ genqmd
 #endif
+
+#if defined(__cplusplus)
+extern "C" {
+  void genqmd_(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+};
+#endif 
 
 /*
     SpOrderQMD - Find the Quotient Minimum Degree ordering of a given matrix.

@@ -5,7 +5,7 @@
 #include "pcimpl.h"      /*I "pc.h" I*/
 
 /*@
-    PCPrintHelp - Prints help message for PC
+    PCPrintHelp - Prints help message for PC.
 
   Input Parameter:
 .  pc - a preconditioner context
@@ -37,7 +37,7 @@ int PCDestroy(PC pc)
 }
 
 /*@
-    PCCreate - create a preconditioner context
+    PCCreate - Create a preconditioner context.
 
   Output Parameters:
 .  pc - the preconditioner context.
@@ -66,7 +66,7 @@ int PCCreate(PC *newpc)
 }
 
 /*@
-     PCApply - Applies preconditioner to a vector 
+     PCApply - Applies preconditioner to a vector.
 @*/
 int PCApply(PC pc,Vec x,Vec y)
 {
@@ -74,7 +74,7 @@ int PCApply(PC pc,Vec x,Vec y)
   return (*pc->apply)(pc,x,y);
 }
 /*@
-     PCApplyTrans - Applies transpose of preconditioner to a vector 
+     PCApplyTrans - Applies transpose of preconditioner to a vector.
 @*/
 int PCApplyTrans(PC pc,Vec x,Vec y)
 {
@@ -84,7 +84,7 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 }
 
 /*@
-     PCApplyBAorAB - Applies preconditioner and operator to a vector 
+     PCApplyBAorAB - Applies preconditioner and operator to a vector. 
 @*/
 int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
 {
@@ -99,7 +99,8 @@ int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
   return PCApply(pc,work,y);
 }
 /*@
-     PCApplyBAorABTrans - Applies preconditioner and operator to a vector 
+     PCApplyBAorABTrans - Applies transpose of preconditioner and operator
+                          to a vector.
 @*/
 int PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work)
 {
@@ -126,7 +127,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 }
 
 /*@
-    PCSetUp - prepares for the use of a preconditioner.
+    PCSetUp - Prepares for the use of a preconditioner.
 
   Input parameters:
 .   pc - the preconditioner context
@@ -142,7 +143,7 @@ int PCSetUp(PC pc)
 }
 
 /*@
-    PCSetMatrix - set the matrix associated with the preconditioner.
+    PCSetMatrix - Set the matrix associated with the preconditioner.
 
   Input Parameters:
 .  pc - the preconditioner context
@@ -171,7 +172,7 @@ int PCGetMatrix(PC pc,Mat *mat)
 }
 
 /*@
-    PCSetVector - set a vector associated with the preconditioner.
+    PCSetVector - Set a vector associated with the preconditioner.
 
   Input Parameters:
 .  pc - the preconditioner context
@@ -185,7 +186,7 @@ int PCSetVector(PC pc,Vec vec)
 }
 
 /*@
-     PCGetMethodFromContext - gets the preconditioner method from an 
+     PCGetMethodFromContext - Gets the preconditioner method from an 
             active preconditioner context.
 
   Input Parameters:

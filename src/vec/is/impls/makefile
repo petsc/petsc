@@ -12,6 +12,6 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = general
+DIRS     = general stride
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

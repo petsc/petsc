@@ -36,7 +36,7 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
 }
 
 /*@
-    DrawSetCoordinates - sets the application coordinates of the 
+    DrawSetCoordinates - Sets the application coordinates of the 
           corners of the window (or page).
 
   Input Paramters:

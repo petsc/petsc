@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.1 1994/11/21 06:45:33 bsmith Exp $";
+static char vcid[] = "$Id: pcset.c,v 1.1 1994/11/21 06:47:24 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -69,8 +69,7 @@ int PCRegisterDestroy()
 }
 
 /*@C
-  PCGetMethodFromOptions - Sets the selected method,
-                            given the argument list.
+  PCGetMethodFromOptions - Sets the selected method from the options database.
 
   Input parameters:
 . flag - 1 if argument should be removed from list if found 
@@ -131,6 +130,7 @@ int PCPrintMethods(char *name)
                             This must be called before PCPSetUp()
                             if the user is to be allowed to set the 
                             preconditioner method. 
+
   Input Parameters:
 .  pc - the preconditioner context
    
@@ -143,6 +143,9 @@ int PCSetFromOptions(PC pc)
 
   if (PCGetMethodFromOptions(0,pc->namemethod,&method)) {
     PCSetMethod(pc,method);
+  }
+  if (OptionsHasName(0,"-help")){
+    PCPrintHelp(pc);
   }
   if (pc->setfrom) return (*pc->setfrom)(pc);
   return 0;

@@ -14,5 +14,6 @@ OBJSF    =
 LIBBASE  = libpetscpc
 LINCLUDE = $(SOURCEH)
 DIRS     = 
+MANSEC   = 4
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

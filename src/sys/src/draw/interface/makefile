@@ -13,6 +13,6 @@ WSOURCEC = drawf.c
 WOBJS    = drawf.o
 LIBBASE  = libpetscdraw
 LINCLUDE = $(SOURCEH)
-MANSEC   = 1
+MANSEC   = x
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

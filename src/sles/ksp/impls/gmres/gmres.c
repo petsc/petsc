@@ -514,7 +514,7 @@ static int GMRESBuildSolution(KSP itP,Vec  ptr,Vec *result )
 
 
 /*@
-  KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by GMRES
+  KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by GMRES.
 
   Input Parameters:
 .   itP   - iterative context obtained from KSPCreate

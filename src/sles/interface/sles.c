@@ -10,6 +10,7 @@
 @*/
 int SLESPrintHelp(SLES sles)
 {
+  VALIDHEADER(sles,SLES_COOKIE);
   fprintf(stderr,"SLES options:\n");
   KSPPrintHelp(sles->ksp);
   PCPrintHelp(sles->pc);
@@ -26,12 +27,13 @@ int SLESPrintHelp(SLES sles)
 @*/
 int SLESSetFromOptions(SLES sles)
 {
+  VALIDHEADER(sles,SLES_COOKIE);
   KSPSetFromOptions(sles->ksp);
   PCSetFromOptions(sles->pc);
   return 0;
 }
 /*@
-    SLESCreate - Creates a linear equation solver context
+    SLESCreate - Creates a linear equation solver context.
 
   Output Parameter:
 .   sles - the create context
@@ -51,6 +53,23 @@ int SLESCreate(SLES *outsles)
   return 0;
 }
 
+/*@
+   SLESDestroy - Destroys the SLES context.
+
+  Input Parameters:
+.   sles - the SLES context
+
+  Keywords: sles, destroy
+@*/
+int SLESDestroy(SLES sles)
+{
+  int ierr;
+  VALIDHEADER(sles,SLES_COOKIE);
+  ierr = KSPDestroy(sles->ksp); CHKERR(ierr);
+  ierr = PCDestroy(sles->pc); CHKERR(ierr);
+  FREE(sles);
+  return 0;
+}
 
 /*@
    SLESSolve - Solves a linear system.
@@ -80,7 +99,7 @@ printf("number of its %d\n",its);
 }
 
 /*@
-    SLESGetKSP - returns the Krylov Space context for a sles solver.
+    SLESGetKSP - Returns the Krylov Space context for a sles solver.
 
   Input Parameter:
 .   sles - the solver context
@@ -95,7 +114,7 @@ int SLESGetKSP(SLES sles,KSP *ksp)
   return 0;
 }
 /*@
-    SLESGetPC - returns the preconditioner context for a sles solver.
+    SLESGetPC - Returns the preconditioner context for a sles solver.
 
   Input Parameter:
 .   sles - the solver context
@@ -112,7 +131,7 @@ int SLESGetPC(SLES sles,PC *pc)
 
 #include "mat/matimpl.h"
 /*@
-    SLESSetMat - sets the matrix to use for the sles solver.
+    SLESSetMat - Sets the matrix to use for the sles solver.
 
   Input Parameters:
 .   sles - the sles context

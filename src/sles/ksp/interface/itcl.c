@@ -7,10 +7,11 @@
 #include "sys.h"
 #include "options.h"
 /*@
-    KSPSetFromOptions - sets KSP options from the options database.
+    KSPSetFromOptions - Sets KSP options from the options database.
                             This must be called before KSPSetUp()
                             if the user is to be allowed to set the 
                             Krylov method. 
+
   Input Parameters:
 .  ctx - the Krylov space context
    
@@ -22,6 +23,9 @@ int KSPSetFromOptions(KSP ctx)
   KSPMETHOD method;
   VALIDHEADER(ctx,KSP_COOKIE);
 
+  if (OptionsHasName(0,"-help")) {
+    KSPPrintHelp(ctx);
+  }
   if (KSPGetMethodFromOptions(0,ctx->namemethod,&method)) {
     KSPSetMethod(ctx,method);
   }
@@ -36,8 +40,7 @@ int KSPSetFromOptions(KSP ctx)
 }
   
 /*@ 
-    KSPPrintHelp - prints all the command line options
-                              for the KSP component.
+    KSPPrintHelp - Prints all the  options for the KSP component.
 
   Input Parameters:
 .  ctx - the KSP context

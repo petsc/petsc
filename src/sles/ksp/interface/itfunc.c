@@ -45,7 +45,7 @@ int KSPSolve(KSP itP, int *its)
 }
 
 /*@
-   KSPDestroy - Destroys KSPCntx created with KSPCreate().
+   KSPDestroy - Destroys KSP context created with KSPCreate().
 
    Input Parameter:
 .  itP   - iterative context obtained from KSPCreate
@@ -211,7 +211,8 @@ int KSPSetDoNotCalculateResidual(KSP itP)
 
 /*@
    KSPSetUsePreconditionedResidual - Sets a flag so that the two norm of the 
-   preconditioned residual is used rather then the true residual.
+   preconditioned residual is used rather then the true residual, in the 
+   default convergence tests.
 
    Input Parameter:
 .  itP  - iterative context obtained from KSPCreate()
@@ -340,7 +341,7 @@ int KSPSetAmult(KSP itP, Mat A)
 }
 
 /*@
-   KSPGetAmult - returns the matrix object used for matrix-vector ops.
+   KSPGetAmult - Returns the matrix object used for matrix-vector ops.
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
@@ -515,7 +516,7 @@ int KSPGetConvergenceContext(KSP itP, void **ctx)
 }
 
 /*@
-  KSPBuildSolution - builds the solution in a vector provided
+  KSPBuildSolution - Builds the solution in a vector provided.
 
   Input Parameter:
 . ctx - iterative context obtained from KSPCreate()

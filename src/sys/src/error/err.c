@@ -13,7 +13,7 @@ static struct EH* eh = 0;
 
 
 /*@
-    PetscAbortErrorHandler - an error handler routine that calls 
+    PetscAbortErrorHandler - Error handler routine that calls 
         abort on error. This is very useful when running in the 
         debugger, because you can look directly at the stack frames
         and the variables.
@@ -29,7 +29,7 @@ int PetscAbortErrorHandler(int line,char *file,char *message,int number,
   abort(); return 0;
 }
 /*@
-    PetscDefaultErrorHandler - an error handler routine that generates
+    PetscDefaultErrorHandler - Error handler routine that generates
         a traceback on error detection.
 
   Use:
@@ -75,7 +75,8 @@ int PetscPopErrorHandler()
   return 0;
 }
 /*@
-    PetscError - Handles error.
+    PetscError - Called when error is detected, usually called through
+                 the macro SETERR().
 
   Input Parameters:
 .  line,file - the linenumber and file the error was detected in

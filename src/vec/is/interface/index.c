@@ -4,8 +4,8 @@
 #include "isimpl.h"      /*I "is.h" I*/
 
 /*@
-    ISIsPermutation - returns 1 if the index set is a permutation;
-                      -1 on error.
+    ISIsPermutation - Returns 1 if the index set is a permutation;
+                      0 if not, -1 on error.
 
   InputParmeters:
 .   is - the index set
@@ -60,7 +60,7 @@ int ISInvertPermutation(IS is,IS *isout)
 }
 
 /*@
-    ISGetSize - returns length of an index set. In a parallel 
+    ISGetSize - Returns length of an index set. In a parallel 
      environment this returns the entire size. Use ISGetLocalSize()
      for length of local piece.
 
@@ -76,7 +76,7 @@ int ISGetSize(IS is,int *size)
   return (*is->ops->size)(is,size);
 }
 /*@
-    ISGetLocalSize - returns length of an index set. In a parallel 
+    ISGetLocalSize - Returns length of an index set. In a parallel 
      environment this returns the size in local memory. Use
      ISGetLocal() for length of total.
 
@@ -95,7 +95,7 @@ int ISGetLocalSize(IS is,int *size)
 
 /*@ 
 
-    ISGetIndices - returns a pointer to the indices.
+    ISGetIndices - Returns a pointer to the indices.
                    You should call ISRestoreIndices()
                    after you have looked at the indices. 
                    You should not change the indices.
@@ -118,8 +118,8 @@ int ISGetIndices(IS is,int **ptr)
 
 /*@ 
 
-    ISRestoreIndices - See ISGetIndices. Restores and index to usable
-                       state.
+    ISRestoreIndices - See ISGetIndices. Restores index to usable
+                       state after call to ISGetIndices().
 
   Input Parameters:
 ,  is - the index set
@@ -134,7 +134,7 @@ int ISRestoreIndices(IS is,int **ptr)
 }
 
 /*@
-   ISView - Displays an index set
+   ISView - Displays an index set.
 
   InputParameters:
 .  is - the index set

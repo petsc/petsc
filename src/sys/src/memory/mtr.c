@@ -28,7 +28,7 @@ extern char *malloc(int );
 
 
 /*D
-    trspace - Routines for tracing space usage
+    trspace - Routines for tracing space usage.
 
     Description:
     trmalloc replaces malloc and trfree replaces free.  These routines
@@ -88,7 +88,7 @@ static long    TRMaxMem = 0;
 static long    TRMaxMemId = 0;
 
 /*@C
-   trvalid - test the allocated blocks for validity.  This can be used to
+   trvalid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
 
    Input Parameter:
@@ -146,7 +146,7 @@ return errs;
 }
 
 /*@C
-    trmalloc - Malloc with tracing
+    trmalloc - Malloc with tracing.
 
     Input Parameters:
 .   a   - number of bytes to allocate
@@ -207,7 +207,7 @@ return (void *)inew;
 }
 
 /*@C
-   trfree - Free with tracing
+   trfree - Free with tracing.
 
    Input Parameters:
 .  a    - pointer to a block allocated with trmalloc
@@ -295,7 +295,7 @@ return 0;
 
 
 /*@C
-   trspace - Return space statistics
+   trspace - Return space statistics.
    
    Output parameters:
 .   space - number of bytes currently allocated
@@ -309,7 +309,7 @@ return 0;
 }
 
 /*@C
-  trdump - Dump the allocated memory blocks to a file
+  trdump - Dump the allocated memory blocks to a file.
 
   Input Parameter:
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
@@ -379,7 +379,7 @@ if (order == postorder || order == leaf)
 }
 
 /*@C
-  trSummary - Summarize the allocate memory blocks by id
+  trSummary - Summarize the allocate memory blocks by id.
 
   Input Parameter:
 .  fp  - file pointer
@@ -434,7 +434,7 @@ return 0;
 #endif
 
 /*@C
-  trlevel - Set the level of output to be used by the tracing routines
+  trlevel - Set the level of output to be used by the tracing routines.
  
   Input Parameters:
 . level = 0 - notracing
@@ -451,7 +451,7 @@ return 0;
 }
 
 /*@C
-   trpush - Push an "id" value for the tracing space routines
+   trpush - Push an "id" value for the tracing space routines.
 
    Input Parameters:
 .  a      - value to push
@@ -465,7 +465,7 @@ return 0;
 }
 
 /*@C
-  trpop - Pop an "id" value for the tracing space routines
+  trpop - Pop an "id" value for the tracing space routines.
 @*/
 int  trpop()
 {
@@ -479,7 +479,7 @@ else
 }
 
 /*@C
-    trDebugLevel - set the level of debugging for the space management routines
+    trDebugLevel - Set the level of debugging for the space management routines.
 
     Input Parameter:
 .   level - level of debugging.  Currently, either 0 (no checking) or 1
@@ -492,7 +492,7 @@ return 0;
 }
 
 /*@C
-    trcalloc - Calloc with tracing
+    trcalloc - Calloc with tracing.
 
     Input Parameters:
 .   nelem  - number of elements to allocate
@@ -516,7 +516,7 @@ return p;
 }
 
 /*@C
-    trrealloc - Realloc with tracing
+    trrealloc - Realloc with tracing.
 
     Input Parameters:
 .   p      - pointer to old storage
