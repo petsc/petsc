@@ -75,6 +75,7 @@ class Compile (action.Action):
     return flags
 
   def compile(self, source):
+    self.debugPrint('Compiling '+source+' into '+self.library[0], 3, 'compile')
     # Compile file
     command  = self.compiler
     flags    = self.compilerFlags+self.getIncludeFlags()

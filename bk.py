@@ -77,7 +77,7 @@ class BKClose (action.Action):
     action.Action.__init__(self, self.close, None, 1)
 
   def addFiles(self, set):
-    self.debugPrint('Putting new files under version control', 2)
+    self.debugPrint('Putting new files under version control', 2, 'bk')
     if not len(set): return ''
     command = 'bk add '
     for file in set.getFiles(): command += ' '+file
@@ -88,7 +88,7 @@ class BKClose (action.Action):
     return output
 
   def revertFiles(self, set):
-    self.debugPrint('Reverting unchanged files', 2)
+    self.debugPrint('Reverting unchanged files', 2, 'bk')
     if not len(set): return ''
     command = 'bk unedit '
     for file in set.getFiles(): command += ' '+file
