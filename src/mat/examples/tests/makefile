@@ -1,40 +1,43 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	  $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
-FFLAGS	      = 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscmat
-LOCDIR        = src/mat/examples/
-EXAMPLES_1    = ex1 ex3 ex5 ex6 ex8 ex9 ex10 ex11 ex14\
-		ex15 ex19 ex20 ex21 ex22
-RUNEXAMPLES_1 = runex1 runex3 runex5 runex5_2 runex6 runex8 runex9 \
-		runex10 runex11 runex14 runex15 runex20 runex21 runex22
-EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
-		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex43 \
-		ex46 ex48 ex49 ex50 ex51
-RUNEXAMPLES_2 = runex2 runex4 runex7 runex12 runex13 runex19 \
-		runex35 runex40 runex42 runex46 runex48
+CFLAGS 	       =	  $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
+FFLAGS	       = 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscmat
+LOCDIR         = src/mat/examples/
+TESTEXAMPLES_1 = ex1.PETSc runex1 clean ex3.PETSc runex3 clean ex5.PETSc \
+		runex5 runex5_2 clean ex6.PETSc runex6 clean ex8.PETSc \
+		runex8 clean ex9.PETSc runex9 clean ex10.PETSc runex10 clean\
+		ex11.PETSc runex11 clean ex14.PETSc runex14 clean \
+		ex15.PETSc runex15 clean ex19.PETSc ex20.PETSc runex20 clean\
+		ex21.PETSc runex21 clean ex22.PETSc runex22 clean
+TESTEXAMPLES_2 = ex2.PETSc runex2 clean ex4.PETSc runex4 clean ex7.PETSc \
+		runex7 clean ex12.PETSc runex12 clean  ex13.PETSc runex13 \
+		clean ex17.PETSc ex19.PETSc runex19 clean ex24.PETSc \
+		ex25.PETSc ex27.PETSc ex28.PETSc ex29.PETSc clean \
+		ex30.PETSc ex31.PETSc ex32.PETSc ex33.PETSc ex34.PETSc \
+		clean ex35.PETSc runex35 clean ex37.PETSc ex38.PETSc \
+		ex40.PETSc runex40 clean ex41.PETSc ex42 runex42.PETSc clean\
+		ex43.PETSc ex46.PETSc runex46 clean ex48.PETSc runex48 clean\
+		ex49.PETScf ex50.PETSc ex51.PETSc clean
+TESTEXAMPLES_3 = ex36.PETSc runex36 clean
+TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex4.PETSc\
+		runex4 clean ex5 runex5.PETSc clean ex6.PETSc runex6 clean\
+		ex10.PETSc runex10 clean ex14.PETSc runex14 clean ex15.PETSc\
+		runex15 clean ex20.PETSc runex20 clean ex21.PETSc runex21 \
+		clean ex35.PETSc runex35 clean ex47.PETSc clean
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c \
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
 		ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
-		ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
+		ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
 		ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c
 EXAMPLESF     = ex36.F
-EXAMPLES_3    = ex36
-RUNEXAMPLES_3 = runex36
-EXAMPLES_4    = ex1 ex2 ex4 ex5 ex6 ex10 ex14\
-		ex15 ex20 ex21 ex35 ex47 
-RUNEXAMPLES_4 = runex1 runex2 runex4 runex5 runex6 \
-		runex10 runex14 runex15 runex20 runex21 runex35
-
-TESTEXAMPLES_1 = ex1.PETSc runex1 clean ex3.PETSc runex3  \
-		clean ex36 runex36 clean
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB) 

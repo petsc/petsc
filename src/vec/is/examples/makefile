@@ -10,13 +10,12 @@ OBJSC	       =
 OBJSF	       =
 LIBBASE	       = libpetscvec
 LOCDIR         = src/is/examples
-TESTEXAMPLES_1 = ex2 runex2 clean
-TESTEXAMPLES_2 = ex1 runex1 clean
-TESTEXAMPLES_3 = ex3 runex3 clean
-TESTEXAMPLES_4 = ex1 runex1 clean ex2 runex2 clean
+TESTEXAMPLES_1 = ex2.PETSc runex2 clean
+TESTEXAMPLES_2 = ex1.PETSc runex1 clean
+TESTEXAMPLES_3 = ex3.PETSc runex3 clean
+TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean
 EXAMPLESC      = ex1.c ex2.c
 EXAMPLESF      = ex3.F
-EXAMPLES       = ex1 ex2 ex3
 
 ex1: ex1.o chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(SLES_LIB)
