@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.307 1999/03/09 05:05:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.308 1999/03/09 18:35:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -983,7 +983,7 @@ int MatMissingDiag_SeqAIJ(Mat A)
 int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int its,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb;
+  Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb,*idiag;
   int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
 int shit;
 
@@ -1015,6 +1015,19 @@ int shit;
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
+
+  /* setup workspace for Eisenstat */
+  if (flag & SOR_EISENSTAT) {
+    if (!a->idiag) {
+      a->idiag = (Scalar *) PetscMalloc(2*m*sizeof(Scalar));CHKPTRQ(a->idiag);
+      a->ssor  = a->idiag + m;
+      v        = a->a;
+      for ( i=0; i<m; i++ ) { a->idiag[i] = 1.0/v[diag[i]];}
+    }
+    t     = a->ssor;
+    idiag = a->idiag;
+  }
+
   ierr = OptionsHasName(0,"-shit",&shit);
   if (flag == SOR_APPLY_LOWER) {
     SETERRQ(PETSC_ERR_SUP,0,"SOR_APPLY_LOWER is not done");
@@ -1027,20 +1040,7 @@ int shit;
     to a vector efficiently using Eisenstat's trick. This is for
     the case of SSOR preconditioner, so E is D/omega where omega
     is the relaxation factor; but in this special case omega == 1
-
-      Note: this code computes the inverse of the diagonal once and 
-     reuses it. This causes different results than the code further down below
-
     */
-    Scalar *idiag;
-    if (!a->idiag) {
-      a->idiag = (Scalar *) PetscMalloc(2*m*sizeof(Scalar));CHKPTRQ(a->idiag);
-      a->ssor  = a->idiag + m;
-      v        = a->a;
-      for ( i=0; i<m; i++ ) { a->idiag[i] = 1.0/v[diag[i]];}
-    }
-    t     = a->ssor;
-    idiag = a->idiag;
 
     /*  x = (E + U)^{-1} b */
     for ( i=m-1; i>=0; i-- ) {
@@ -1084,14 +1084,12 @@ int shit;
     the case of SSOR preconditioner, so E is D/omega where omega
     is the relaxation factor.
     */
-    t = (Scalar *) PetscMalloc( m*sizeof(Scalar) ); CHKPTRQ(t);
     scale = (2.0/omega) - 1.0;
 
     /*  x = (E + U)^{-1} b */
     for ( i=m-1; i>=0; i-- ) {
       d    = fshift + a->a[diag[i] + shift];
       n    = a->i[i+1] - diag[i] - 1;
-      PLogFlops(2*n-1);
       idx  = a->j + diag[i] + (!shift);
       v    = a->a + diag[i] + (!shift);
       sum  = b[i];
@@ -1102,8 +1100,6 @@ int shit;
     /*  t = b - (2*E - D)x */
     v = a->a;
     for ( i=0; i<m; i++ ) { t[i] = b[i] - scale*(v[*diag++ + shift])*x[i]; }
-    PLogFlops(3*m);
-
 
     /*  t = (E + L)^{-1}t */
     ts = t + shift; /* shifted by one for index start of a or a->j*/
@@ -1111,7 +1107,6 @@ int shit;
     for ( i=0; i<m; i++ ) {
       d    = fshift + a->a[diag[i]+shift];
       n    = diag[i] - a->i[i];
-      PLogFlops(2*n-1);
       idx  = a->j + a->i[i] + shift;
       v    = a->a + a->i[i] + shift;
       sum  = t[i];
@@ -1121,8 +1116,7 @@ int shit;
 
     /*  x = x + t */
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
-    PLogFlops(m-1);
-    PetscFree(t);
+    PLogFlops(6*m-1 + 2*a->nz);
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
