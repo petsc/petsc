@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.1 2000/09/10 21:58:08 curfman Exp curfman $*/
+/*$Id: ex23.c,v 1.2 2000/09/10 21:58:48 curfman Exp bsmith $*/
 
 /* Program usage:  mpirun ex23 [-help] [all PETSc options] */
 
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   PC      pc;           /* preconditioner context */
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
-  int     ierr,i,n = 10,col[3],its,rstart,rend;
+  int     ierr,i,n = 10,col[3],its,rstart,rend,nlocal;
   Scalar  neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -47,12 +47,21 @@ int main(int argc,char **args)
 
   /* 
      Create vectors.  Note that we form 1 vector from scratch and
-     then duplicate as needed.
+     then duplicate as needed. For this simple case let PETSc decide how
+     many elements of the vector are stored on each processor. The second
+     argument to VecCreate() below causes PETSc to decide.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
   ierr = VecSetFromOptions(x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&b);CHKERRA(ierr);
   ierr = VecDuplicate(x,&u);CHKERRA(ierr);
+
+  /* Identify the starting and ending mesh points on each
+     processor for the interior part of the mesh. We let PETSc decide
+     above. */
+
+  ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRA(ierr);
+  ierr = VecGetLocalSize(x,&nlocal);CHKERRA(ierr);
 
   /* 
      Create matrix.  When using MatCreate(), the matrix format can
@@ -67,8 +76,11 @@ int main(int argc,char **args)
          MatCreateMPIAIJ() - sequential AIJ (compressed sparse row)
          MatCreateMPIBAIJ() - block AIJ
      See the matrix chapter of the users manual for details.
+
+     We pass in nlocal as the "local" size of the matrix to force it
+     to have the same parallel layout as the vector created above.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,nlocal,nlocal,n,n,&A);CHKERRA(ierr);
 
   /* 
      Assemble matrix.  
@@ -80,11 +92,6 @@ int main(int argc,char **args)
      the part that it owns locally.
   */
 
-  /* Identify the starting and ending mesh points on each
-     processor for the interior part of the mesh.  Set the
-     boundary values for the problem domain. */
-
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRA(ierr);
 
   if (!rstart) {
     rstart = 1;
