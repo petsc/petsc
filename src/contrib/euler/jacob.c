@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.16 1998/06/08 21:21:09 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.17 1998/08/05 03:23:54 curfman Exp bsmith $";
 #endif
 
 #include "user.h"
@@ -117,6 +117,8 @@ int UserSetJacobian(SNES snes,Euler *app)
     ierr = nzmat_(&app->mmtype_int,&mtype,&ndof_euler,&ndof_block,&istart,&iend,
                   app->is1,app->ltog,&app->nloc,&wkdim,nnz_d,nnz_o,
                   &app->ao,&app->no_wake); CHKERRQ(ierr);
+
+
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                     Form Jacobian matrix data structure

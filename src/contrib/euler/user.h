@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.40 1998/06/08 21:21:04 curfman Exp curfman $ */
+/* $Id: user.h,v 1.41 1998/08/05 03:24:11 curfman Exp bsmith $ */
 
 /* Include file for 3D Euler application code */
 
@@ -363,12 +363,12 @@ extern int julianne_(Scalar*,int*,long*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*);
-extern int jformdt2_(Scalar*,Scalar*,int*,int*,long*,int*,Scalar*,
+extern int jformdt2_(Scalar*,Scalar*,int*,int*,Mat*,int*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,long*);
+                      Scalar*,Scalar*,AO*);
 extern int jformdt_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -392,7 +392,7 @@ extern int buildmat_(long*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
 extern int nzmat_(MMTypeInt*,MatType*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,PetscFortranAddr *,int*);
+                      int*,int*,AO*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
                       Scalar*,Scalar*,int*,int*);
