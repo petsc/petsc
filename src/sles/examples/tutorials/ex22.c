@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.8 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.9 2000/09/28 14:46:50 bsmith Exp balay $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -33,10 +33,9 @@ extern int ComputeRHS(DAMG,Vec);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int       ierr,i,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
+  int       ierr,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
   DAMG      *damg;
-  SLES      sles;
-  Scalar    one = 1.0, mone = -1.0;
+  Scalar    mone = -1.0;
   PetscReal norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
