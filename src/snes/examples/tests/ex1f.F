@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.34 1999/03/02 22:31:09 bsmith Exp balay $";
+! "$Id: ex4f.F,v 1.35 1999/03/03 16:02:14 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -108,8 +108,9 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+
       if (size .ne. 1) then
-         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
