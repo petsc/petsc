@@ -100,30 +100,39 @@ class CursesInstall:
     stdscr.addstr(4,1,mess[0:l])
     c = stdscr.getkey()
                  
-
-
+  def GetBuildSystem(self,stdscr):
+    stdscr.clear()
+    CenterAddStr(stdscr,1,'Downloading BuildSystem')
+    stdscr.refresh()
+    (self.status,output) = commands.getstatusoutput('cd '+self.installpath+';'+self.bkpath+'/bk clone bk://sidl@sidl.bkbits.net/BuildSystem')
+    
 if __name__ ==  '__main__':
   
   installer = CursesInstall()
   curses.wrapper(installer.Welcome)
 
-  curses.wrapper(installer.IndicateBKMissing)
-  if not installer.bkpath: sys.exit()
-  print 'BK directory '+installer.bkpath+':'
+  # need to have a more complete search for bk, but cannot use configure stuff
+  (status,output) = commands.getstatusoutput('which bk')
+  if status == 0:  # found it :-)
+    installer.bkpath = os.path.dirname(output)
+  else:
+    curses.wrapper(installer.IndicateBKMissing)
+    if not installer.bkpath: sys.exit()
+  #print 'BK directory '+installer.bkpath+':'
   
   curses.wrapper(installer.InstallDirectory)
-  print 'Install directory '+installer.installpath
+  #print 'Install directory '+installer.installpath
 
   if os.path.isdir(os.path.join(installer.installpath,'BuildSystem')):
     curses.wrapper(installer.AlreadyInstalled)
     sys.exit()
   else:
-    (status,output) = commands.getstatusoutput('cd '+installer.installpath+';'+installer.bkpath+'/bk clone bk://sidl@sidl.bkbits.net/BuildSystem')
-    if status:
+    curses.wrapper(installer.GetBuildSystem)
+    if installer.status:
       curses.wrapper(installer.CannotClone,output)
       sys.exit()
 
-  sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem'))
-  import install.installer
-  install.installer.runinstaller()
+  sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
+  import installer
+  installer.runinstaller()
       
