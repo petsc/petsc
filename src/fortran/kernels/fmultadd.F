@@ -1,5 +1,5 @@
 C
-C  "$Id: fmultadd.F,v 1.3 1997/10/20 02:27:53 curfman Exp curfman $";
+C  "$Id: fmultadd.F,v 1.4 1997/10/20 14:38:57 curfman Exp curfman $";
 C
 C    Fortran kernel for sparse matrix-vector product in the AIJ format
 C
@@ -8,7 +8,7 @@ C
       implicit none
 #include "include/FINCLUDE/petsc.h"
 
-      Scalar           x(0:*),a(0:*),y(0:*),z(*)
+      Scalar           x(0:*),a(0:*),y(*),z(*)
       integer          n, ii(*), jj(0:*)
 
       integer i,j,jstart,jend,cnt
