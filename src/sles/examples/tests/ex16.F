@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.9 1996/01/12 22:08:38 bsmith Exp $";
+C      "$Id: ex16.F,v 1.1 1996/01/16 19:30:06 balay Exp balay $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -69,7 +69,7 @@ C Show result
       call VecNorm(u,NORM_2,norm,ierr)
       print*, 'Number of iterations = ',its
       print*, 'Residual norm = ',norm
-      print*, 'Time for solve = ',time
+C      print*, 'Time for solve = ',time
 
 C Create system 2 by striping off some rows of the matrix
 /*      call ISCreateStrideSeq(MPI_COMM_SELF,5,0,1,isrow, ierr)
@@ -92,7 +92,7 @@ C Show result
       call VecNorm(u,NORM_2,norm,ierr)
       print*, 'Number of iterations = ',its
       print*, 'Residual norm = ',norm
-      print*, 'Time for solve = ',time
+C      print*, 'Time for solve = ',time
 
 
 
