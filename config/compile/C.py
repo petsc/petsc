@@ -2,6 +2,9 @@ import args
 import config.compile.processor
 import config.framework
 import config.libraries
+import os
+import sys
+
 
 try:
   import sets
@@ -121,9 +124,6 @@ class SharedLinker(config.compile.processor.Processor):
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
 
   def getTarget(self, source, shared):
-    import os
-    import sys
-
     base, ext = os.path.splitext(source)
     name = base
     if hasattr(self, 'configCompilers'):
@@ -149,3 +149,13 @@ class StaticLinker(SharedLinker):
     archiveCmd = SharedLinker.getCommand(self, sourceFiles, outputFile)
     ranlibCmd = ' '.join([';', self.getRanlib(), outputFile])
     return archiveCmd+ranlibCmd
+
+  def getTarget(self, source, shared):
+    base = os.path.splitext(source)[0]
+    arext = 'a'
+    if hasattr(self,'configCompilers'):
+      arext = self.configCompilers.AR_LIB_SUFFIX
+    else:
+      arext = self.argDB['AR_LIB_SUFFIX']
+    return 'lib'+base+'.'+arext
+    

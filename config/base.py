@@ -426,8 +426,6 @@ class Configure(script.Script):
     else:
       cmd = self.getLinkerCmd()
     (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
-    if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
-      self.linkerObj = os.path.splitext(self.linkerObj)[0]+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (out+err, ret)
