@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.11 1996/01/16 23:16:02 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.12 1996/01/30 00:40:19 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
-#include "petsc.h"
+#include "sys.h"
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
@@ -21,7 +21,8 @@ static char vcid[] = "$Id: zsys.c,v 1.11 1996/01/16 23:16:02 balay Exp bsmith $"
 #define petscgettime_         PETSCGETTIME
 #define petscgetflops_        PETSCGETFLOPS
 #define petscerror_           PETSCERROR
-
+#define syrandomcreate_       SYRANDOMCREATE
+#define syrandomdestroy_      SYRANDOMDESTROY
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscattachdebugger_  petscattachdebugger
 #define plogallbegin_         plogallbegin
@@ -37,52 +38,53 @@ static char vcid[] = "$Id: zsys.c,v 1.11 1996/01/16 23:16:02 balay Exp bsmith $"
 #define petscgettime_         petscgettime  
 #define petscgetflops_        petscgetflops 
 #define petscerror_           petscerror
+#define syrandomcreate_       syrandomcreate
+#define syrandomdestroy_      syrandomdestroy
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-void plogdump_(char* name, int *__ierr,int len ){
+void plogdump_(CHAR name, int *__ierr,int len ){
   char *t1;
-  if (name[len] != 0) {
-    t1 = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    if (!t1) { *__ierr = 1; return;}
-    PetscStrncpy(t1,name,len);
-    t1[len] = 0;
-  }
-  else t1 = name;
+
+  FIXCHAR(name,len,t1);
   *__ierr = PLogDump(t1);
-  if (t1 != name) PetscFree(t1);
+  FREECHAR(name,t1);
 }
-void plogeventregister_(int *e,char *string, int *__ierr,int len ){
-  char *t1;
-  if (string[len] != 0) {
-    t1 = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    if (!t1) { *__ierr = 1; return;}
-    PetscStrncpy(t1,string,len);
-    t1[len] = 0;
-  }
-  else t1 = string;
-  *__ierr = PLogEventRegister(*e,t1);
+void plogeventregister_(int *e,CHAR string,CHAR color,int *__ierr,int len1,
+                        int len2){
+  char *t1,*t2;
+  FIXCHAR(string,len1,t1);
+  FIXCHAR(color,len2,t2);
+  *__ierr = PLogEventRegister(e,t1,t2);
 }
 
-void petscobjectgetname(PetscObject obj, char *name, int *__ierr, int len)
+void petscobjectgetname(PetscObject obj, CHAR name, int *__ierr, int len)
 {
   char *tmp;
   *__ierr = PetscObjectGetName((PetscObject)MPIR_ToPointer(*(int*)(obj)),
                                &tmp);
+#if defined(PARCH_t3d)
+  {
+  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+  PetscStrncpy(t,tmp,len1);
+  }
+#else
   PetscStrncpy(name,tmp,len);
+#endif
 }
 
 void petscobjectdestroy_(PetscObject obj, int *__ierr ){
   *__ierr = PetscObjectDestroy((PetscObject)MPIR_ToPointer(*(int*)(obj)));
   MPIR_RmPointer(*(int*)(obj));
 }
+
 void petscobjectgetcomm_(PetscObject obj,MPI_Comm *comm, int *__ierr ){
   MPI_Comm c;
   *__ierr = PetscObjectGetComm((PetscObject)MPIR_ToPointer(*(int*)(obj)),&c);
-  *(int*)comm = MPIR_FromPointer(c);
+  *(int*)comm = MPIR_FromPointer_Comm(c);
 }
 
 void petscattachdebugger_(int *__ierr){
@@ -104,29 +106,18 @@ void plogbegin_(int *__ierr){
 /*
       This bleeds memory, but no easy way to get around it
 */
-void petscobjectsetname_(PetscObject obj,char *name,int *__ierr,int len)
+void petscobjectsetname_(PetscObject obj,CHAR name,int *__ierr,int len)
 {
   char *t1;
-  if (name[len] != 0) {
-    t1 = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    if (!t1) { *__ierr = 1; return;}
-    PetscStrncpy(t1,name,len);
-    t1[len] = 0;
-  }
-  else t1 = name;
+
+  FIXCHAR(name,len,t1);
   *__ierr = PetscObjectSetName((PetscObject)MPIR_ToPointer(*(int*)(obj)),t1);
 }
 
-void petscerror_(int *number,char *message,int *__ierr,int len)
+void petscerror_(int *number,CHAR message,int *__ierr,int len)
 {
   char *t1;
-  if (message[len] != 0) {
-    t1 = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    if (!t1) { *__ierr = 1; return;}
-    PetscStrncpy(t1,message,len);
-    t1[len] = 0;
-  }
-  else t1 = message;
+  FIXCHAR(message,len,t1);
   *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",*number,t1);
 }
 
@@ -144,6 +135,140 @@ double  petscgetflops_()
   return PetscGetFlops();
 }
 
+void syrandomcreate_(MPI_Comm comm,SYRandomType *type,SYRandom *r,
+                     int *__ierr )
+{
+  SYRandom rr;
+  *__ierr = SYRandomCreate(
+	(MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*type,&rr);
+  *(int*)r = MPIR_FromPointer(rr);
+}
+
+void syrandomdestroy_(SYRandom *r, int *__ierr ){
+  *__ierr = SYRandomDestroy((SYRandom )MPIR_ToPointer( *(int*)(r) ));
+   MPIR_RmPointer(*(int*)(r)); 
+}
+
 #if defined(__cplusplus)
+}
+#endif
+
+/*
+    This is for when one is compiling with the Edenburgh version of
+   of MPI which uses integers for the MPI objects, hence the PETSc 
+   objects require routines provided here to do the conversion between
+   C pointers and Fortran integers.
+*/
+#if defined(_T3DMPI_RELEASE_ID)
+/* ----------------------------------------------------------------*/
+/*    This code was taken from the MPICH implementation of MPI.    */
+/*
+ *  $Id: ptrcvt.c,v 1.10 1995/12/21 22:02:29 gropp Exp $
+ *
+ *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
+ *      See COPYRIGHT in top-level directory.
+ */
+
+/* 
+   This file contains routines to convert to and from pointers
+*/
+
+typedef struct _PtrToIdx {
+    int idx;
+    void *ptr;
+    struct _PtrToIdx *next;
+} PtrToIdx;
+#define MAX_PTRS 10000
+
+static PtrToIdx PtrArray[MAX_PTRS];
+static PtrToIdx *avail=0;
+static int      DoInit = 1;
+
+static void MPIR_InitPointer()
+{
+  int  i;
+
+  for (i=0; i<MAX_PTRS-1; i++) {
+    PtrArray[i].next = PtrArray + i + 1;
+    PtrArray[i].idx  = i;
+  }
+  PtrArray[MAX_PTRS-1].next = 0;
+/* Don't start with the first one, whose index is 0. That could
+   break some code. */
+  avail   = PtrArray + 1;
+}
+
+void *MPIR_ToPointer(int idx )
+{
+  if (DoInit) {
+    DoInit = 0;
+    MPIR_InitPointer();
+  }
+  if (idx < 0 || idx >= MAX_PTRS) {
+    fprintf( stderr, "Could not convert index %d into a pointer\n", idx );
+    fprintf( stderr, "The index may be an incorrect argument.\n\
+Possible sources of this problem are a missing \"include 'mpif.h'\",\n\
+a misspelled MPI object (e.g., MPI_COM_WORLD instead of MPI_COMM_WORLD)\n\
+or a misspelled user variable for an MPI object (e.g., \n\
+com instead of comm).\n" );
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+  if (idx == 0) return (void *)0;
+  return PtrArray[idx].ptr;
+}
+
+int MPIR_FromPointer(void *ptr )
+{
+  int      idx;
+  PtrToIdx *new;
+  if (DoInit) {
+    DoInit = 0;
+    MPIR_InitPointer();
+  }
+  if (!ptr) return 0;
+  if (avail) {
+    new		      = avail;
+    avail	      = avail->next;
+    new->next	      = 0;
+    idx		      = new->idx;
+    PtrArray[idx].ptr = ptr;
+    return idx;
+  }
+  /* This isn't the right thing to do, but it isn't too bad */
+  fprintf( stderr, "Pointer conversions exhausted\n" );
+  fprintf(stderr, "Too many MPI objects may have been passed to/from Fortran\n\
+  without being freed\n" );
+  MPI_Abort(MPI_COMM_WORLD,1);
+}
+
+void MPIR_RmPointer(int idx )
+{
+  int myrank;
+  if (DoInit) {
+    DoInit = 0;
+    MPIR_InitPointer();
+  }
+  if (idx < 0 || idx >= MAX_PTRS) {
+    fprintf( stderr, "Could not convert index %d into a pointer\n", idx );
+    fprintf( stderr, "The index may be an incorrect argument.\n\
+Possible sources of this problem are a missing \"include 'mpif.h'\",\n\
+a misspelled MPI object (e.g., MPI_COM_WORLD instead of MPI_COMM_WORLD)\n\
+or a misspelled user variable for an MPI object (e.g., \n\
+com instead of comm).\n" );
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+  if (idx == 0) return;
+  if (PtrArray[idx].next) {
+    /* In-use pointers NEVER have next set */
+    MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
+    fprintf( stderr, 
+	    "[%d] Error in recovering Fortran pointer; already freed\n", 
+	    myrank );
+    MPI_Abort(MPI_COMM_WORLD,1);
+    return;
+  }
+  PtrArray[idx].next = avail;
+  PtrArray[idx].ptr  = 0;
+  avail              = PtrArray + idx;
 }
 #endif
