@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.2 2001/01/03 20:44:57 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.3 2001/01/03 21:09:17 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -35,15 +35,20 @@ static char help[] = "Solves PDE optimization problem of ex22.c with finite diff
 */
 
 extern int FormFunction(SNES,Vec,Vec,void*);
+extern int PDEFormFunction(Scalar*,Vec,Vec,DA);
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr,N = 5;
-  DA      da;
-  DMMG    *dmmg;
-  VecPack packer;
+  int        ierr,N = 5,nlevels,i;
+  DA         da;
+  DMMG       *dmmg;
+  VecPack    packer;
+  ISColoring coloring;
+  Mat        J;
+  MatFDColoring fd;
+
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
@@ -69,17 +74,36 @@ int main(int argc,char **argv)
   ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetUseMatrixFree(dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
+  ierr = VecPackDestroy(packer);CHKERRQ(ierr);
+
+  /* Create Jacobian of PDE function for each level */
+  nlevels = DMMGGetLevels(dmmg);
+  for (i=0; i<nlevels; i++) {
+    packer = (VecPack)dmmg[i]->dm;
+    ierr   = VecPackGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
+    ierr   = DAGetColoring(da,&coloring,&J);CHKERRQ(ierr);
+    ierr   = MatFDColoringCreate(J,coloring,&fd);CHKERRQ(ierr);
+    ierr   = MatFDColoringSetFunction(fd,(int (*)(void))PDEFormFunction,da);CHKERRQ(ierr);
+    ierr   = ISColoringDestroy(coloring);CHKERRQ(ierr);
+    ierr   = PetscObjectCompose((PetscObject)J,"FDColoring",(PetscObject)fd);CHKERRQ(ierr);
+    ierr   = MatFDColoringDestroy(fd);CHKERRQ(ierr);
+    dmmg[i]->user = (void*)J;
+  }
+
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+
+  for (i=0; i<nlevels; i++) {
+    ierr = MatDestroy((Mat)dmmg[i]->user);CHKERRQ(ierr);
+  }
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
-  ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = VecPackDestroy(packer);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
@@ -143,12 +167,20 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   Vec     vu,vlambda,vfu,vflambda;
   DA      da,dadummy;
   VecPack packer = (VecPack)dmmg->dm;
+  MatFDColoring fd;
 
   PetscFunctionBegin;
   ierr = VecPackGetEntries(packer,&nredundant,&da,&dadummy);CHKERRQ(ierr);
   ierr = VecPackGetLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   ierr = VecPackScatter(packer,U,w,vu,vlambda);CHKERRQ(ierr);
   ierr = VecPackAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
+
+  /* Evaluate the Jacobian of PDEFormFunction() */
+  ierr = PetscObjectQuery((PetscObject)dmmg->user,"FDColoring",(PetscObject*)&fd);CHKERRQ(ierr);
+  ierr = MatFDColoringApply((Mat)dmmg->user,fd,vu,PETSC_NULL,w);CHKERRQ(ierr);
+
+  /* derivative of L() w.r.t. lambda */
+  ierr = PDEFormFunction(w,vu,vfu,da);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -164,6 +196,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     fw[0] = -2.*d*lambda[0];
   }
 
+
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   flambda[0]   = (2.*h*u[0]   + 2.*d*lambda[0]   + d*lambda[1]);
@@ -178,8 +211,6 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DAVecRestoreArray(da,vlambda,(void**)&lambda);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vflambda,(void**)&flambda);CHKERRQ(ierr);
 
-  /* derivative of L() w.r.t. lambda */
-  ierr = PDEFormFunction(w,vu,vfu,da);CHKERRQ(ierr);
 
   ierr = VecPackRestoreLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   PLogFlops(13*N);
