@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.89 1996/09/08 22:14:25 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.90 1996/09/28 15:58:13 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -62,6 +62,14 @@ int VecDot(Vec x, Vec y, Scalar *val)
   PLogEventBegin(VEC_Dot,x,y,0,0);
   ierr = (*x->ops.dot)(x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Dot,x,y,0,0);
+  /*
+     The next block is for incremental debugging
+  */
+  if (PetscCompare) {
+    int flag;
+    MPI_Comm_compare(PETSC_COMM_WORLD,x->comm,&flag);
+    if (flag != MPI_UNEQUAL) return PetscCompareScalar(*val);
+  }
   return 0;
 }
 
@@ -87,6 +95,14 @@ int VecNorm(Vec x,NormType type,double *val)
   PLogEventBegin(VEC_Norm,x,0,0,0);
   ierr = (*x->ops.norm)(x,type,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Norm,x,0,0,0);
+  /*
+     The next block is for incremental debugging
+  */
+  if (PetscCompare) {
+    int flag;
+    MPI_Comm_compare(PETSC_COMM_WORLD,x->comm,&flag);
+    if (flag != MPI_UNEQUAL) return PetscCompareDouble(*val);
+  }
   return 0;
 }
 
@@ -624,7 +640,7 @@ int VecAssemblyEnd(Vec vec)
   if (flg) {
     Viewer viewer;
     ierr = ViewerFileOpenASCII(vec->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(viewer,ASCII_FORMAT_MATLAB,"V");CHKERRQ(ierr);
+    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"V");CHKERRQ(ierr);
     ierr = VecView(vec,viewer); CHKERRQ(ierr);
     ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
   }

@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.11 1996/03/05 00:06:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.12 1996/03/23 16:56:55 bsmith Exp bsmith $";
 #endif
 
-#include "zpetsc.h"
+#include "src/fortran/custom/zpetsc.h"
 #include "vec.h"
 #ifdef HAVE_FORTRAN_CAPS
 #define veccreateseq_         VECCREATESEQ
@@ -36,18 +36,20 @@ static char vcid[] = "$Id: zvec.c,v 1.11 1996/03/05 00:06:47 curfman Exp bsmith 
 extern "C" {
 #endif
 
-void vecgettype_(Vec vv,VecType *type,char *name,int *__ierr,int len)
+
+
+void vecgettype_(Vec vv,VecType *type,CHAR name,int *__ierr,int len)
 {
   char *tname;
   if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = VecGetType((Vec)MPIR_ToPointer(*(int*)vv),type,&tname);
-#if defined(PARCH_t3d)
+  *__ierr = VecGetType((Vec)PetscToPointer(*(int*)vv),type,&tname);
+#if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
+  if (t != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(t,tname,len1);
   }
 #else
-  if (name != PETSC_NULL_CHAR_Fortran) PetscStrncpy(name,tname,len);
+  if (name != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(name,tname,len);
 #endif
 
 }
@@ -55,14 +57,14 @@ void vecgettype_(Vec vv,VecType *type,char *name,int *__ierr,int len)
 void vecload_(Viewer viewer,Vec *newvec, int *__ierr )
 { 
   Vec vv;
-  *__ierr = VecLoad((Viewer)MPIR_ToPointer( *(int*)(viewer) ),&vv);
-  *(int *) newvec = MPIR_FromPointer(vv);
+  *__ierr = VecLoad((Viewer)PetscToPointer( *(int*)(viewer) ),&vv);
+  *(int *) newvec = PetscFromPointer(vv);
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
 void vecrestorearray_(Vec x,Scalar *fa,int *ia,int *__ierr)
 {
-  Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
+  Vec    xin = (Vec)PetscToPointer( *(int*)(x) );
   Scalar *lx = PetscScalarAddressFromFortran(fa,*ia);
 
   *__ierr = VecRestoreArray(xin,&lx);
@@ -70,7 +72,7 @@ void vecrestorearray_(Vec x,Scalar *fa,int *ia,int *__ierr)
 
 void vecgetarray_(Vec x,Scalar *fa,int *ia,int *__ierr)
 {
-  Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
+  Vec    xin = (Vec)PetscToPointer( *(int*)(x) );
   Scalar *lx;
 
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
@@ -79,59 +81,59 @@ void vecgetarray_(Vec x,Scalar *fa,int *ia,int *__ierr)
 
 void vecscatterdestroy_(VecScatter ctx, int *__ierr )
 {
-  *__ierr = VecScatterDestroy((VecScatter)MPIR_ToPointer( *(int*)(ctx) ));
-   MPIR_RmPointer(*(int*)(ctx)); 
+  *__ierr = VecScatterDestroy((VecScatter)PetscToPointer( *(int*)(ctx) ));
+   PetscRmPointer(*(int*)(ctx)); 
 }
 
 void vecdestroy_(Vec v, int *__ierr )
 {
-  *__ierr = VecDestroy((Vec)MPIR_ToPointer( *(int*)(v) ));
-   MPIR_RmPointer(*(int*)(v)); 
+  *__ierr = VecDestroy((Vec)PetscToPointer( *(int*)(v) ));
+   PetscRmPointer(*(int*)(v)); 
 }
 
 void vecscattercreate_(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx, int *__ierr )
 {
   VecScatter lV;
   *__ierr = VecScatterCreate(
-	(Vec)MPIR_ToPointer( *(int*)(xin) ),
-	(IS)MPIR_ToPointer( *(int*)(ix) ),
-	(Vec)MPIR_ToPointer( *(int*)(yin) ),
-	(IS)MPIR_ToPointer( *(int*)(iy) ),&lV);
-  *(int*) newctx = MPIR_FromPointer(lV);
+	(Vec)PetscToPointer( *(int*)(xin) ),
+	(IS)PetscToPointer( *(int*)(ix) ),
+	(Vec)PetscToPointer( *(int*)(yin) ),
+	(IS)PetscToPointer( *(int*)(iy) ),&lV);
+  *(int*) newctx = PetscFromPointer(lV);
 }
 void vecscattercopy_(VecScatter sctx,VecScatter *ctx, int *__ierr )
 {
   VecScatter lV;
-  *__ierr = VecScatterCopy((VecScatter)MPIR_ToPointer( *(int*)(sctx) ),&lV);
-   *(int*) ctx = MPIR_FromPointer(lV); 
+  *__ierr = VecScatterCopy((VecScatter)PetscToPointer( *(int*)(sctx) ),&lV);
+   *(int*) ctx = PetscFromPointer(lV); 
 }
 
 
 void veccreatempi_(MPI_Comm comm,int *n,int *N,Vec *vv, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecCreateMPI((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*n,*N,&lV);
-  *(int*)vv = MPIR_FromPointer(lV);
+  *__ierr = VecCreateMPI((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,*N,&lV);
+  *(int*)vv = PetscFromPointer(lV);
 }
 
 void veccreateseq_(MPI_Comm comm,int *n,Vec *V, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecCreateSeq((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm)),*n,&lV);
-  *(int*)V = MPIR_FromPointer(lV);
+  *__ierr = VecCreateSeq((MPI_Comm)PetscToPointerComm( *(int*)(comm)),*n,&lV);
+  *(int*)V = PetscFromPointer(lV);
 }
 
 void veccreate_(MPI_Comm comm,int *n,Vec *V, int *__ierr ){
   Vec lV;
-  *__ierr = VecCreate((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*n,&lV);
-  *(int*)V = MPIR_FromPointer(lV);
+  *__ierr = VecCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,&lV);
+  *(int*)V = PetscFromPointer(lV);
 }
 
 void vecduplicate_(Vec v,Vec *newv, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecDuplicate((Vec)MPIR_ToPointer( *(int*)(v) ),&lV);
-  *(int*)newv = MPIR_FromPointer(lV);
+  *__ierr = VecDuplicate((Vec)PetscToPointer( *(int*)(v) ),&lV);
+  *(int*)newv = PetscFromPointer(lV);
 }
 
 #if defined(__cplusplus)
