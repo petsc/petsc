@@ -12,7 +12,11 @@ class Builder(install.base.Base):
 
   def build(self, root, target = 'default'):
     self.debugPrint('Building in '+root, 1, 'install')
-    maker = self.getMakeModule(root).PetscMake(sys.argv[1:])
+    try:
+      maker = self.getMakeModule(root).PetscMake(sys.argv[1:])
+    except ImportError:
+      self.debugPrint('  No make module present in '+root, 2, 'install')
+      return
     root  = maker.getRoot()
     for url in maker.executeTarget('getDependencies'):
       self.debugPrint('  Building dependency '+url, 2, 'install')
