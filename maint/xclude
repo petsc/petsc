@@ -1,4 +1,5 @@
 petsc/src/contrib/RamgPetsc.c
+petsc/src/contrib/pc
 petsc/src/contrib/mixedrealcomplex
 petsc/src/contrib/psparse
 petsc/src/mat/impls/aij/seq/mi25bfac.f
