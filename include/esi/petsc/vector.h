@@ -55,7 +55,7 @@ template<class Scalar,class Ordinal>
     virtual esi::ErrorCode aypx(Scalar scalar, esi::Vector<Scalar,Ordinal>& x) ;
 
     virtual esi::ErrorCode minAbsCoef(Scalar &)  {return 1;}
-    virtual esi::ErrorCode axpby(Scalar, esi::Vector<Scalar,Ordinal> &, Scalar,esi::Vector<Scalar,Ordinal> &);
+    virtual esi::ErrorCode axpby(Scalar,esi::Vector<Scalar,Ordinal>&,Scalar,esi::Vector<Scalar,Ordinal>&);
     virtual esi::ErrorCode getCoefPtrReadLock(Scalar *&) ;
     virtual esi::ErrorCode getCoefPtrReadWriteLock(Scalar *&);
     virtual esi::ErrorCode releaseCoefPtrLock(Scalar *&) ;
@@ -64,16 +64,26 @@ template<class Scalar,class Ordinal>
    
     virtual esi::ErrorCode setArrayPointer(Scalar* array, Ordinal length);
 
-    // Obtain access to ACTUAL PETSc vector
-    // Should be private somehow
-
-    virtual esi::ErrorCode getPETScVec(Vec *);
-
   private:
     Vec                        vec;
     esi::MapPartition<Ordinal> *map;
 
 };
+
+template<class Scalar,class Ordinal> class VectorFactory 
+{
+  public:
+
+    // constructor
+    VectorFactory();
+  
+    // Destructor.
+    virtual ~VectorFactory();
+
+    // Construct a Vector
+    virtual esi::ErrorCode getVector(esi::MapPartition<int>&,esi::Vector<Scalar,Ordinal>*&v); 
+};
+
 
 }}
 

@@ -1,5 +1,4 @@
-
-/*$Id: ebvec1.c,v 1.5 2001/09/11 16:32:10 bsmith Exp bsmith $*/
+/*$Id: ebvec1.c,v 1.6 2001/09/12 03:25:43 bsmith Exp bsmith $*/
 
 
 #include "src/vec/vecimpl.h" 
@@ -467,6 +466,27 @@ static struct _VecOps EvOps = {VecDuplicate_ESI,
                                0,
                                VecReciprocal_Default};
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecESISetFromOptions"
+int VecESISetFromOptions(Vec V)
+{
+  Vec_ESI      *s;
+  int          ierr;
+  char         string[1024];
+  PetscTruth   flg;
+ 
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)V,VEC_ESI,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscOptionsGetString(V->prefix,"-vec_esi_type",string,1024,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecESISetType(V,string);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_ESI"
@@ -474,14 +494,42 @@ int VecCreate_ESI(Vec V)
 {
   Vec_ESI      *s;
   int          ierr;
-
+ 
   PetscFunctionBegin;
   ierr    = PetscNew(Vec_ESI,&s);CHKERRQ(ierr);
   ierr    = PetscMemzero(s,sizeof(Vec_ESI));CHKERRQ(ierr);
 
-  s->evec = 0;
-  V->data = (void*)s;
-  ierr    = PetscMemcpy(V->ops,&EvOps,sizeof(EvOps));CHKERRQ(ierr);
+  s->evec        = 0;
+  V->data        = (void*)s;
+  V->petscnative = PETSC_FALSE;
+  V->esivec      = 0;
+  ierr           = PetscMemcpy(V->ops,&EvOps,sizeof(EvOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+extern PetscFList CCAList;
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecESISetType"
+int VecESISetType(Vec V,char *name)
+{
+  int                                   ierr;
+  esi::Vector<double,int>               *ve;
+  esi::petsc::VectorFactory<double,int> *f;
+  void                                  *(*r)(void);
+  esi::MapPartition<int>                *map;
+
+  PetscFunctionBegin;
+  ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(1,"Unable to load esi::VectorFactory constructor %s",name);
+  f    = (esi::petsc::VectorFactory<double,int> *)(*r)();
+  map  = static_cast<esi::MapPartition<int>* >(new esi::petsc::Map<int>(V->comm,V->n,V->N));
+  ierr = f->getVector(*map,ve);CHKERRQ(ierr);
+  ierr = map->deleteReference();CHKERRQ(ierr);
+  delete f;
+  ierr = VecESISetVector(V,ve);CHKERRQ(ierr);
+  ierr = ve->deleteReference();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.72 2001/08/10 18:41:06 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.73 2001/09/07 20:09:05 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -60,6 +60,8 @@ int main(int argc,char **argv)
   */
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
+  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
+
 
   /*
      Duplicate more work vectors (of the same format and
@@ -106,8 +108,9 @@ int main(int argc,char **argv)
   v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",v);CHKERRQ(ierr);
 
+
   ierr = VecCopy(x,w);CHKERRQ(ierr);
-  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);CHKERRQ(ierr);
 

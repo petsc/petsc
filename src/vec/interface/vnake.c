@@ -1,5 +1,5 @@
 
-/*$Id: vnake.c,v 1.24 2001/03/23 23:21:22 balay Exp bsmith $*/
+/*$Id: vnake.c,v 1.25 2001/09/07 20:08:58 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
@@ -107,7 +107,9 @@ int VecSetFromOptions(Vec vec)
         ierr = VecSetType(vec,VEC_SEQ);CHKERRQ(ierr);
       }
     }
-
+#if defined(PETSC_HAVE_ESI) && defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
+    ierr = VecESISetFromOptions(vec);CHKERRQ(ierr);
+#endif
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

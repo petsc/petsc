@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.21 2001/07/18 18:07:14 bsmith Exp bsmith $ 
+# $Id: packages,v 1.22 2001/08/06 21:12:31 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,7 +14,7 @@ BLASLAPACK_LIB = -L${PGI}/linux86/lib -llapack -lblas
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /soft/apps/packages/mpich-gnucc-pgf-1.2.1
+MPI_HOME       = /soft/apps/packages/mpich-gnucc-pgf-1.2.0
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         = mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
@@ -54,9 +54,9 @@ PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 # Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
-MPE_INCLUDE    = -I${MPI_HOME}/mpe -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
-MPE_LIB        = -L${MPI_BUILD_HOME}/lib -lmpe
-PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
+#MPE_INCLUDE    = -I${MPI_HOME}/mpe -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+#MPE_LIB        = -L${MPI_BUILD_HOME}/lib -lmpe
+#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)
 #

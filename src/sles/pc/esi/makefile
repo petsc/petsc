@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2001/09/07 20:10:43 bsmith Exp $
+# $Id: makefile,v 1.1 2001/09/14 03:18:02 bsmith Exp bsmith $
 
 #requirespackage  'PETSC_HAVE_ESI'
 #requireslanguage  CPP
@@ -9,12 +9,12 @@ ALL: lib
 
 CFLAGS   = ${ESI_INCLUDE}
 FFLAGS   =
-SOURCEC  = ematrix.c
-OBJSC    = ematrix.o
-SOURCEH  = ${PETSC_DIR}/include/esi/petsc/matrix.h
-LIBBASE  = libpetscmat
+SOURCEC  = epreconditioner.c
+OBJSC    = epreconditioner.o
+SOURCEH  = ${PETSC_DIR}/include/esi/petsc/preconditioner.h
+LIBBASE  = libpetscsles
 MANSEC   = 
-LOCDIR   = src/mat/esi/
+LOCDIR   = src/sles/pc/esi/
 
 
 include ${PETSC_DIR}/bmake/common/base

@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.87 2001/08/07 03:02:14 balay Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.88 2001/09/07 20:08:46 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -118,7 +118,8 @@ struct _p_Vec {
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
   PetscTruth             array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
-  PetscTruth             petscnative; /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
+  void                   *esivec;      /* ESI wrapper of vector */
 };
 
 #define VecGetArrayFast(x,a)     ((x)->petscnative ? (*(a) = *((PetscScalar **)(x)->data),0) : VecGetArray((x),(a)))

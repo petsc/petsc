@@ -63,29 +63,15 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv 
 }
 
 
-/*
-  Currently only works if both vectors are PETSc 
-*/
-esi::ErrorCode esi::petsc::Matrix<double,int>::matvec( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
+esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
   int ierr;
   Vec py,px;
 
-  esi::petsc::Vector<double,int> *y;  ierr = yy.getInterface("esi::petsc::Vector",static_cast<void *>(y));CHKERRQ(ierr);
-  if (!y) return 1;
-  ierr = y->getPETScVec(&py);
-
-  esi::petsc::Vector<double,int> *x;  ierr = xx.getInterface("esi::petsc::Vector",static_cast<void *>(x));CHKERRQ(ierr);
-  if (!x) return 1;
-  ierr = x->getPETScVec(&py);
+  ierr = yy.getInterface("Vec",static_cast<void*>(py));
+  ierr = xx.getInterface("Vec",static_cast<void*>(px));
 
   return MatMult(this->mat,px,py);
-}
-
-esi::ErrorCode esi::petsc::Matrix<double,int>::apply( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
-{
-
-  return this->matvec(xx,yy);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::setup()
@@ -128,9 +114,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::Vector<double,in
   int ierr;
   Vec py;
 
-  esi::petsc::Vector<double,int> *vec; ierr = diagVector.getInterface("esi::petsc::Vector<double,int>",static_cast<void *>(vec));CHKERRQ(ierr);
-  if (!vec) return 1;
-  ierr = vec->getPETScVec(&py);
+  ierr = diagVector.getInterface("Vec",static_cast<void*>(py));
   return MatGetDiagonal(this->mat,py);
 }
 
@@ -228,9 +212,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>
   PetscScalar *values,sum;
   Vec         py;
 
-  esi::petsc::Vector<double,int> *vec; ierr = rowSumVector.getInterface("esi::petsc::Vector",static_cast<void *>(vec));CHKERRQ(ierr);
-  if (!vec) return 1;
-  ierr = vec->getPETScVec(&py);
+  ierr = rowSumVector.getInterface("Vec",static_cast<void*>(py));
 
   ierr = MatGetOwnershipRange(this->mat,&rstart,&rend);CHKERRQ(ierr);
   for ( i=rstart; i<rend; i++) {

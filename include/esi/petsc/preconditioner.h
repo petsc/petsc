@@ -1,34 +1,29 @@
-#ifndef __PETSc_Matrix_h__
-#define __PETSc_Matrix_h__
+#ifndef __PETSc_Preconditioner_h__
+#define __PETSc_Preconditioner_h__
 
-// this contains the PETSc definition of Matrix
-#include "petscmat.h"
+// this contains the PETSc definition of Preconditioner
+#include "petscpc.h"
 
 #include "esi/petsc/vector.h"
 
-// The PETSc_Vector supports the 
+// The PETSc preconditioner supports the 
 #include "esi/Operator.h"
-#include "esi/MatrixData.h"
-#include "esi/MatrixRowReadAccess.h"
-#include "esi/MatrixRowWriteAccess.h"
+#include "esi/Preconditioner.h"
 
 namespace esi{namespace petsc{
 
 /**=========================================================================**/
 template<class Scalar,class Ordinal>
-class Matrix : public virtual esi::Operator<Scalar,Ordinal>, 
-               public virtual esi::MatrixData<Ordinal>,
-               public virtual esi::MatrixRowReadAccess<Scalar,Ordinal>,
-               public virtual esi::MatrixRowWriteAccess<Scalar,Ordinal>, 
-               public virtual esi::petsc::Object
+class Preconditioner : public virtual Operator<Scalar, Ordinal>,
+                       public virtual esi::petsc::Object
 {
   public:
 
     // Default destructor.
-    ~Matrix();
+    ~Preconditioner();
 
-    // Construct a matrix from two Maps.
-    Matrix(esi::MapPartition<Ordinal> *rsource,esi::MapPartition<Ordinal> *csource);
+    // Construct a preconditioner from a PETSc PC
+    Preconditioner(PC pc);
 
     //  Interface for esi::Object  ---------------
 
@@ -41,42 +36,31 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode setup();
     virtual esi::ErrorCode apply( esi::Vector<Scalar,Ordinal>& x, esi::Vector<Scalar,Ordinal>& y);
 
-    //  Interface for esi::MatrixData  ---------------
-    virtual esi_int getGlobalSizes(Ordinal& rows, Ordinal& columns);
-    virtual esi_int getLocalSizes(Ordinal& rows, Ordinal& columns);
+    //  Interface for esi::Preconditioner  ---------------
+    /** Input control parameters. */
+    virtual esi::ErrorCode parameters( int numParams, char** paramStrings ){;};
 
-    //  Interface for esi::MatrixRowAccess  --------
+    /** z = M1^(-1) y */
+    virtual esi::ErrorCode solveM1( esi::Vector<Scalar, Ordinal> & y,esi::Vector<Scalar, Ordinal> & z );
+    /** z = M2^(-1) y */
+    virtual esi::ErrorCode solveM2( esi::Vector<Scalar, Ordinal> & y, esi::Vector<Scalar, Ordinal> & z );
 
-    virtual esi::ErrorCode getMaps(esi::Map<Ordinal>*& rowMap, esi::Map<Ordinal>*& colMap);
-    virtual esi::ErrorCode isLoaded(bool &state);
-    virtual esi::ErrorCode isAllocated(bool &state);
-    virtual esi::ErrorCode loadComplete();
-    virtual esi::ErrorCode allocate(int rowLengths[]);
-    virtual esi::ErrorCode getDiagonal(esi::Vector<Scalar,Ordinal>& diagVector) ;
-    virtual esi::ErrorCode getRowSum(esi::Vector<Scalar,Ordinal>& rowSumVector) ;
-    virtual esi::ErrorCode getRowNonzeros(Ordinal row, Ordinal& length);
-    virtual esi::ErrorCode setRowLength(Ordinal row,Ordinal length);
-    virtual esi::ErrorCode getRow(Ordinal row, Ordinal& length, Scalar*& coefs, Ordinal*& colIndices) ;
-    virtual esi::ErrorCode getRowCoefs(Ordinal row, Ordinal& length, Scalar*& coefs) ;
-    virtual esi::ErrorCode getRowIndices(Ordinal row, Ordinal& length, Ordinal*& colIndices) ;
-    virtual esi::ErrorCode restoreRow(Ordinal row, Ordinal& length, Scalar*& coefs, Ordinal*& colIndices) ;
-    virtual esi::ErrorCode restoreRowCoefs(Ordinal row, Ordinal& length, Scalar*& coefs) ;
-    virtual esi::ErrorCode restoreRowIndices(Ordinal row, Ordinal& length, Ordinal*& colIndices) ;
-    virtual esi::ErrorCode copyInRow(Ordinal row,  Scalar* coefs, Ordinal* colIndices, Ordinal length);
-    virtual esi::ErrorCode sumIntoRow(Ordinal row,  Scalar* coefs, Ordinal* colIndices, Ordinal length);
-    virtual esi::ErrorCode rowMax(Ordinal row, Scalar& result) ;
-    virtual esi::ErrorCode rowMin(Ordinal row, Scalar& result) ;
+    /** z = M^(-1) y */
+    virtual esi::ErrorCode solveM( esi::Vector<Scalar, Ordinal> & y, esi::Vector<Scalar, Ordinal> & z );
+  
+    /** z = B y */
+    virtual esi::ErrorCode applyB( esi::Vector<Scalar,Ordinal>& y, esi::Vector<Scalar,Ordinal>& z );
 
-    virtual esi::ErrorCode getRowAllocatedLength(Ordinal row, int& result) {;};
-    virtual esi::ErrorCode setAllValues(Scalar) {;};
-    virtual esi::ErrorCode allocateRowsSameLength(Ordinal) {;};
-    virtual esi::ErrorCode copyOutRow(Ordinal, Scalar *,int *,int,int&) {;};
-    virtual esi::ErrorCode copyOutRowIndices(Ordinal, int *,int,int&) {;};
-    virtual esi::ErrorCode copyOutRowCoefficients(Ordinal, Scalar *,int,int&) {;};
+    /** Get the preconditioning side. */
+    virtual esi::ErrorCode getPreconSide( int & side );
+
+    /** Set the preconditioning side. */
+    virtual esi::ErrorCode setPreconSide( int side );
 
   private:
-    Mat                        mat;
+    PC                         pc;
     esi::MapPartition<Ordinal> *rmap,*cmap;
+    int                        side;
 };
 }}
 
