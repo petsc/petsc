@@ -287,6 +287,26 @@ class Configure(config.base.Configure):
     stubDir = os.path.join(self.framework.argDB['PETSC_DIR'], 'src', 'fortran', 'auto')
     if not os.path.exists(os.path.join(stubDir, 'makefile.src')):
       print '  WARNING: Fortran stubs have not been generated in '+stubDir
+      self.framework.getExecutable('bfort', getFullPath = 1)
+      if hasattr(self.framework, 'bfort'):
+        print '           Running '+self.framework.bfort+' to generate Fortran stubs'
+        (status,output) = commands.getstatusoutput('make allfortranstubs')
+        # filter out the normal messages, user has to cope with error messages
+        cnt = 0
+        for i in output.split('\n'):
+          if not (i.startswith('fortranstubs in:') or i.startswith('Fixing pointers') or i.find('ACTION=') >= 0):
+            if not cnt:
+              print '*******Error generating Fortran stubs****'
+            cnt = cnt + 1
+            print i+'\n'
+        if not cnt:
+          print '           Completed generating Fortran stubs'
+        else:
+          print '*******End of error messages from generating Fortran stubs****'
+      else:
+        print '           See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how'
+        print '           to obtain bfort to generate the Fortran stubs or make sure'
+        print '           bfort is in your path'
     return
 
   def configureDynamicLibraries(self):
