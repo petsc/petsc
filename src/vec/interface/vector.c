@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.141 1998/05/30 01:49:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.142 1998/06/11 19:54:50 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -130,6 +130,11 @@ int VecDot(Vec x, Vec y, Scalar *val)
 
    Output Parameter:
 .  val - the norm 
+
+   Notes:
+$     NORM_1 denotes sum_i |x_i|
+$     NORM_2 denotes sqrt( sum_i (x_i)^2 )
+$     NORM_INFINITY denotes max_i |x_i|
 
 .keywords: vector, norm
 
@@ -1130,8 +1135,15 @@ int VecAssemblyEnd(Vec vec)
     ierr = VecView(vec,VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
     ierr = ViewerFlush(VIEWER_DRAWX_(vec->comm)); CHKERRQ(ierr);
   }
+#if defined(HAVE_AMS)
+  ierr = OptionsHasName(PETSC_NULL,"-vec_view_alice",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecView(vec,VIEWER_AMS_(vec->comm)); CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNC__  
 #define __FUNC__ "VecMTDot"
