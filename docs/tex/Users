@@ -1,2 +1,19 @@
-eijkhout@math.ucla.edu Victor Eijkhout, developing preconditioners
-stodghil@CS.Cornell.EDU Paul Stodghill needs high performance parallel cg
+
+                         PETSc 2.0 Users
+
+
+Remote Users:
+
+eijkhout@math.ucla.edu - Victor Eijkhout, developing preconditioners
+stodghil@CS.Cornell.EDU - Paul Stodghill, needs high performance parallel cg
+keyes@cs.odu.edu - David Keyes, needs parallel nonlinear solvers for CFD
+balay@cs.odu.edu - Satish Balay, needs matrix-free nonlinear solvers
+zhang_k@cs.odu.edu - Jie Zhang, needs parallel nonlinear solvers
+ozturan@cs.rpi.edu - Can Ozturan, needs parallel linear solvers
+
+Local Users:
+
+canfield@mcs.anl.gov - Tom Canfield, needs parallel, symmetric linear solvers
+maa@mcs.anl.gov (maayj@eden.eecs.nwu.edu) - Yann Maa, needs nonlinear solvers
+
+
