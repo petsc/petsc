@@ -97,7 +97,10 @@ do
 #   
 #      Check if libraries are out of date
 #
-
+    flag=`ls -tl lib/lib$opt/$arch/libpetsc.a include/petscversion.h | head -1 | grep include`
+    if [ "$flag" = "" ]; then
+      break;
+    fi
 #
 #      Rebuild libraries
 #
@@ -105,20 +108,23 @@ do
     read update
     if [ "$update" = "" ]; then
       echo "Updating $arch $opt library"
-      p=`expr $PATCH_LEVEL + 1`
-      while [ $p -le $PATCH ];
+      for dir in $dirs
       do
-        for dir in $dirs
-        do
-          pushd $dir > /dev/null 2>&1; make BOPT=$opt PETSC_ARCH=$arch ACTION=libfast tree
-          popd > /dev/null 2>&1
-        done
-	p=`expr $p + 1`
+        pushd $dir > /dev/null 2>&1; make BOPT=$opt PETSC_ARCH=$arch ACTION=libfast tree
+        popd > /dev/null 2>&1
       done
       make BOPT=$opt PETSC_ARCH=$arch shared > /dev/null 2>&1
     fi
   done
 done
-
-
-
+#
+#  Remind the user to run petscupdate on any other arches that have libraries built
+#
+archs=`ls lib/lib*/*/libpetsc.a | sed -e "s?lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetsc.a?\1?g"  | sort | uniq`
+for arch in $archs
+do
+  flag=`ls -tl lib/lib*/$arch/libpetsc.a include/petscversion.h | tail -1 | grep include`
+  if [ "$flag" = "" ]; then
+    echo "You may want to run petscupdate on the PETSC_ARCH $arch to update the libraries"
+  fi
+done
