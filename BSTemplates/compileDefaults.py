@@ -442,7 +442,7 @@ class UsingF90 (UsingCompiler):
     return 0
 
   def setupExtraLibraries(self):
-    if selfisActive():
+    if self.isActive():
       extraLibraries = self.argDB['F90_LIB']
       if not isinstance(extraLibraries, list):
         extraLibraries = [extraLibraries]

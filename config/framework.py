@@ -77,7 +77,7 @@ class Framework(config.base.Configure):
   def setupLogging(self):
     self.logName   = 'configure.log'
     self.logExists = os.path.exists(self.logName)
-    self.log       = file(self.logName, 'a')
+    self.log       = file(self.logName, 'w')
     return self.log
 
   def setupChildren(self):
@@ -282,8 +282,8 @@ class Framework(config.base.Configure):
     for child in self.children:
       if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
 
-    self.argDB.insertArgs(clArgs)
     self.argDB.insertArgs(os.environ)
+    self.argDB.insertArgs(clArgs)
     return
 
   def configureHelp(self, help):
