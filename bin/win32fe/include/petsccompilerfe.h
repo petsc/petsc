@@ -29,8 +29,10 @@ namespace PETScFE {
     virtual void FixOutput(void);
     virtual void AddSystemFiles(void);
     virtual void FindInstallation(void);
+    virtual void AddPaths(void) {}
     virtual void AddSystemInclude(void);
     virtual void AddSystemLib(void);
+
     string InstallDir;
     string OptionTags;
     list<string> compilearg;

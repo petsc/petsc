@@ -13,6 +13,10 @@ namespace PETScFE {
     virtual void Parse(void);
   protected:
     virtual void Help(void);
+
+    virtual void FindInstallation(void);
+    virtual void AddSystemInclude(void);
+    virtual void AddSystemLib(void);
   };
 
   class ifl : public icl {

@@ -14,7 +14,12 @@ namespace PETScFE {
   protected:
     virtual void Help(void);
     virtual void FoundL(LI &);
+
+    virtual void FindInstallation(void);
     virtual void AddPaths(void);
+
+    string VisualStudioDir;
+    string VSVersion;
   };
 
   class df : public cl {

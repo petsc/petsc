@@ -49,6 +49,7 @@ void compiler::Parse(void) {
 
 void compiler::AddSystemFiles(void) {
   FindInstallation();
+  AddPaths();
   AddSystemInclude();
   AddSystemLib();
 }

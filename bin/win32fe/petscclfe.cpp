@@ -18,24 +18,28 @@ void cl::Parse(void) {
   if (!verbose) {
     compilearg.push_back("-nologo");
   }
-  AddPaths();
+}
+
+void cl::FindInstallation(void) {
+  compiler::FindInstallation();
+  string::size_type n = InstallDir.length()-1;
+  VisualStudioDir = InstallDir.substr(0,n);
+  n = VisualStudioDir.find_last_of("\\");
+  VisualStudioDir = VisualStudioDir.substr(0,n+1);
+  VSVersion = InstallDir.substr(0,InstallDir.length()-1);
+  VSVersion = VSVersion.substr(VisualStudioDir.length());
 }
 
 void cl::AddPaths(void) {
   /* Find required .dll's */
-  string::size_type len_m_1 = InstallDir.length()-1;
-  string addpath,CLVersion;
-  addpath = CLVersion = InstallDir.substr(0,len_m_1);
-  CLVersion = CLVersion.substr(CLVersion.find_last_of("\\")+1,len_m_1);
-  addpath = addpath.substr(0,addpath.find_last_of("\\")+1);
-
+  string addpath;
   /* This is ugly and perhaps each version should have their own class */
   bool KnownVersion=FALSE;
-  if (CLVersion=="VC98") {
-    addpath += "Common\\MSDev98\\Bin";
+  if (VSVersion=="VC98") {
+    addpath = VisualStudioDir + "Common\\MSDev98\\Bin";
     KnownVersion=TRUE;
-  } else if (CLVersion=="VC7") {
-    addpath += "Common7\\IDE";
+  } else if (VSVersion=="VC7") {
+    addpath = VisualStudioDir + "Common7\\IDE";
     KnownVersion=TRUE;
   } else {
     cerr << "Warning: win32fe cl version not recognized." << endl;
