@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.26 1999/10/12 21:34:18 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.27 1999/10/29 19:12:39 balay Exp bsmith $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -154,7 +154,7 @@ def printsingleindex(outfilename,alphabet_dict):
 # Read in the filename contents, and search for the formatted
 # String 'Level:' and return the level info.
 # Also adds the BOLD HTML format to Level field
-def modifylevel(filename):
+def modifylevel(filename,secname):
       import re
       try:
             fd = open(filename,'r')
@@ -175,12 +175,15 @@ def modifylevel(filename):
       # and also add the bold format.
       tmpbuf = re_level.sub('',buf)
       re_loc = re.compile('(<B><FONT COLOR="#CC3333">Location:</FONT></B>)')
-      outbuf = re_loc.sub('<P><B><FONT COLOR="#CC3333">Level:</FONT></B>' + level + r'\n<BR>\1',tmpbuf)
-      
+      tmpbuf = re_loc.sub('<P><B><FONT COLOR="#CC3333">Level:</FONT></B>' + level + r'\n<BR>\1',tmpbuf)
+
+      re_loc = re.compile('</BODY></HTML>')
+      outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
+
       # write the modified manpage
       try:
             #fd = open(filename[:-1],'w')
-            fd = open(filename,'w')
+            fd = open(filename + 'extra','w')
       except:
             print 'Error! Cannot write to file:',filename
             exit()            
@@ -190,7 +193,7 @@ def modifylevel(filename):
       
 # Go through each manpage file, present in dirname,
 # and create and return a table for it, wrt levels specified.
-def createtable(dirname,levels):
+def createtable(dirname,levels,secname):
       fd = os.popen('ls '+ dirname + '/*.html')
       buf = fd.read()
       if buf == '':
@@ -201,7 +204,7 @@ def createtable(dirname,levels):
       for level in levels: table.append([])
       
       for filename in split(strip(buf),'\n'):
-            level = modifylevel(filename)
+            level = modifylevel(filename,secname)
             #if not level: continue
             if lower(level) in levels:
                   table[levels.index(lower(level))].append(filename)
@@ -284,12 +287,12 @@ def main():
 
       singlelist = []
       for dirname in mandirs:
-            table        = createtable(dirname,levels)
+            outfilename  = dirname + '/index.html'
+            dname,secname  = posixpath.split(dirname)
+            headfilename = dname + '/sec/bop.' + secname
+            table        = createtable(dirname,levels,secname)
             singlelist   = addtolist(dirname,singlelist)
             if not table: continue
-            outfilename  = dirname + '/index.html'
-            dname,fname  = posixpath.split(dirname)
-            headfilename = dname + '/sec/bop.' + fname
             printindex(outfilename,headfilename,levels,titles,table)
 
       alphabet_dict = createdict(singlelist)
