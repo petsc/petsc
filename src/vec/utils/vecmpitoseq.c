@@ -18,15 +18,15 @@
   Level: intermediate
 
    Usage:
-        VecScatterCreateToAll(vin,&ctx,&vout);
-
-        // scatter as many times as you need 
-        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
-        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
-
-        // destroy scatter context and local vector when no longer needed
-        VecScatterDestroy(ctx);
-        VecDestroy(vout);
+$        VecScatterCreateToAll(vin,&ctx,&vout);
+$
+$        // scatter as many times as you need 
+$        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+$        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+$
+$        // destroy scatter context and local vector when no longer needed
+$        VecScatterDestroy(ctx);
+$        VecDestroy(vout);
 
 .seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
@@ -74,15 +74,15 @@ PetscErrorCode VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   Level: intermediate
 
    Usage:
-        VecScatterCreateToZero(vin,&ctx,&vout);
-
-        // scatter as many times as you need 
-        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
-        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
-
-        // destroy scatter context and local vector when no longer needed
-        VecScatterDestroy(ctx);
-        VecDestroy(vout);
+$        VecScatterCreateToZero(vin,&ctx,&vout);
+$
+$        // scatter as many times as you need 
+$        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+$        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+$
+$        // destroy scatter context and local vector when no longer needed
+$        VecScatterDestroy(ctx);
+$        VecDestroy(vout);
 
    Note: If you want to treat the vector on processor zero as a sequential vector call
          VecGetArray() on it and create a sequential vector with VecCreateSeqWithArray().
