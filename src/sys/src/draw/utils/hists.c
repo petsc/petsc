@@ -348,10 +348,10 @@ int PetscDrawHGDraw(PetscDrawHG hist)
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
     if ((hist->integerBins == PETSC_TRUE) && (((int) xmax - xmin) + 1.0e-05 > xmax - xmin)) {
-      initSize = ((int) xmax - xmin)/numBins;
+      initSize = (int) ((int) xmax - xmin)/numBins;
       while (initSize*numBins != (int) xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
-        numBins  = ((int) xmax - xmin)/initSize;
+        numBins  = (int) ((int) xmax - xmin)/initSize;
         ierr     = PetscDrawHGSetNumberBins(hist, numBins);                                               CHKERRQ(ierr);
       }
     }
@@ -454,10 +454,10 @@ int PetscDrawHGPrint(PetscDrawHG hist)
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
     if ((hist->integerBins == PETSC_TRUE) && (((int) xmax - xmin) + 1.0e-05 > xmax - xmin)) {
-      initSize = ((int) xmax - xmin)/numBins;
+      initSize = (int) ((int) xmax - xmin)/numBins;
       while (initSize*numBins != (int) xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
-        numBins  = ((int) xmax - xmin)/initSize;
+        numBins  = (int) ((int) xmax - xmin)/initSize;
         ierr     = PetscDrawHGSetNumberBins(hist, numBins);                                               CHKERRQ(ierr);
       }
     }

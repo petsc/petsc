@@ -61,7 +61,11 @@ configure_petsc: start_configure configure Makefile.in
 	@./configure $(CONFIGURE_OPTIONS) >> $(CONFIGURE_LOG_FILE)
 
 $(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE)
-	@$(MAKE) configure_petsc
+	if test -f "${PETSC_DIR}/configure.in"; then \
+          $(MAKE) configure_petsc; \
+        else \
+          touch $(CONFIGURE_LOG_FILE); \
+        fi
 
 configure_clean:
 	-@$(RM) aclocal.m4
