@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdmatrix.c,v 1.2 1996/11/07 15:09:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.3 1996/11/27 22:52:45 bsmith Exp balay $";
 #endif
 
 /*
@@ -13,6 +13,8 @@ static char vcid[] = "$Id: fdmatrix.c,v 1.2 1996/11/07 15:09:08 bsmith Exp bsmit
 #include "src/vec/vecimpl.h"  
 #include "pinclude/pviewer.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatFDColoringView"
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
@@ -54,6 +56,8 @@ int MatFDColoringView(MatFDColoring color,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatFDColoringSetParameters"
 /*@
    MatFDColoringSetParameters - Sets the parameters for the approximation of
    Jacobian using finite differences.
@@ -80,6 +84,8 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatFDColoringSetFromOptions"
 /*@
    MatFDColoringSetFromOptions - Set coloring finite difference parameters from 
          the options database.
@@ -115,6 +121,8 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatFDColoringPrintHelp"
 /*@
     MatFDColoringPrintHelp - Prints help message for matrix finite difference calculations 
          using coloring.
@@ -133,6 +141,8 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatFDColoringCreate"
 /*@C
    MatFDColoringCreate - Creates a matrix coloring context for finite difference 
         computation of Jacobians.
@@ -174,6 +184,8 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatFDColoringDestroy"
 /*@C
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
          via MatFDColoringCreate().
@@ -220,6 +232,8 @@ int MatFDColoringDestroy(MatFDColoring c)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatFDColoringApply"
 /*@
      MatFDColoringApply - Given a matrix for which a MatFDColoring has been created,
          computes the Jacobian for a function via finite differences.

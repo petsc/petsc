@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.89 1996/11/07 15:08:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.90 1996/11/07 18:55:24 curfman Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -12,6 +12,8 @@ static char vcid[] = "$Id: itcreate.c,v 1.89 1996/11/07 15:08:01 bsmith Exp curf
 #include "viewer.h"       /*I "viewer.h" I*/
 #include "pinclude/pviewer.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPView"
 /*@ 
    KSPView - Prints the KSP data structure.
 
@@ -69,6 +71,8 @@ int KSPView(KSP ksp,Viewer viewer)
 }
 
 static NRList *__KSPList = 0;
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPCreate"
 /*@C
    KSPCreate - Creates the default KSP context.
 
@@ -133,6 +137,8 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   return KSPSetType(*ksp,KSPGMRES);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSetType"
 /*@
    KSPSetType - Builds KSP for a particular solver. 
 
@@ -185,6 +191,8 @@ int KSPSetType(KSP ksp,KSPType itmethod)
   return (*r)(ksp);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPRegister"
 /*@C
    KSPRegister - Adds the iterative method to the KSP package,  given
    an iterative name (KSPType) and a function pointer.
@@ -206,6 +214,8 @@ int  KSPRegister(KSPType name, char *sname, int  (*create)(KSP))
   return NRRegister( __KSPList, (int) name, sname, dummy );
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPRegisterDestroy"
 /*@C
    KSPRegisterDestroy - Frees the list of KSP methods that were
    registered by KSPRegister().
@@ -223,6 +233,8 @@ int KSPRegisterDestroy()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGetTypeFromOptions_Private"
 /*
    KSPGetTypeFromOptions_Private - Sets the selected KSP type from 
    the options database.
@@ -250,6 +262,8 @@ int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGetType"
 /*@C
    KSPGetType - Gets the KSP type and method name (as a string) from 
    the method type.
@@ -273,6 +287,8 @@ int KSPGetType(KSP ksp,KSPType *type,char **name)
 }
 
 #include <stdio.h>
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPPrintTypes_Private"
 /*
    KSPPrintTypes_Private - Prints the KSP methods available from the options 
    database.

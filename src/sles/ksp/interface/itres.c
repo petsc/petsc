@@ -1,8 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.22 1996/09/12 16:25:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.23 1996/10/02 18:05:06 bsmith Exp balay $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPResidual"
 /*@
    KSPResidual - Computes the residual.
 
@@ -64,6 +67,8 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPUnwindPreconditioner"
 /*@
    KSPUnwindPreconditioner - Unwinds the preconditioning in the solution.
 
@@ -99,6 +104,8 @@ int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPComputeExplicitOperator"
 /*@
        KSPComputeExplicitOperator - Computes as a dense matrix the explicit 
           preconditioned operator. This is done by applying the operators to 
@@ -168,6 +175,8 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 
 #include "pinclude/plapack.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPComputeEigenvaluesExplicitly"
 /*@
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
           preconditioned operator using LAPACK. This is very slow but will generally

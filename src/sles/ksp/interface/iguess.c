@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.15 1996/03/19 21:23:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.16 1996/08/08 14:40:48 bsmith Exp balay $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -16,6 +16,8 @@ typedef struct {
              *btilde;  /* Saved b vectors */
 } KSPIGUESS;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGuessCreate"
 int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 {
   KSPIGUESS *itg;
@@ -35,6 +37,8 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGuessDestroy"
 int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);
@@ -45,6 +49,8 @@ int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGuessFormB"
 int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 {
   int    i;
@@ -59,6 +65,8 @@ int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGuessFormX"
 int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
 {
   int i;
@@ -70,6 +78,8 @@ int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGuessUpdate"
 int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
 {
   double       normax, norm;

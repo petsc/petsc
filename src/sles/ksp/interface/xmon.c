@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.19 1996/08/08 14:40:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.20 1996/09/14 03:05:33 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: xmon.c,v 1.19 1996/08/08 14:40:48 bsmith Exp bsmith $
 #include <math.h>
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPLGMonitorCreate"
 /*@C
    KSPLGMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of preconditioned residual norms.
@@ -43,6 +45,8 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPLGMonitor"
 int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
 {
   DrawLG lg = (DrawLG) monctx;
@@ -58,6 +62,8 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
   return 0;
 } 
  
+#undef __FUNCTION__  
+#define __FUNCTION__ ""
 /*@C
    KSPLGMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGMonitorCreate().
@@ -78,6 +84,8 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPLGTrueMonitorCreate"
 /*@C
    KSPLGTrueMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of true residual norms (as opposed to
@@ -119,6 +127,8 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPLGTrueMonitor"
 int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
 {
   DrawLG    lg = (DrawLG) monctx;
@@ -148,6 +158,8 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
   return 0;
 } 
  
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPLGTrueMonitorDestroy"
 /*@C
    KSPLGTrueMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGTrueMonitorCreate().

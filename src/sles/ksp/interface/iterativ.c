@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.52 1996/09/12 16:25:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.53 1996/09/28 16:25:06 curfman Exp balay $";
 #endif
 
 /*
@@ -11,6 +11,8 @@ static char vcid[] = "$Id: iterativ.c,v 1.52 1996/09/12 16:25:09 bsmith Exp curf
  */
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultFreeWork"
 /*
   KSPDefaultFreeWork - Free work vectors
 
@@ -24,6 +26,8 @@ int KSPDefaultFreeWork( KSP ksp )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSingularValueMonitor"
 /*@C
     KSPSingularValueMonitor - Prints the two norm of the true residual and
     estimation of the extreme eigenvalues of the preconditioned problem
@@ -63,6 +67,8 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultMonitor"
 /*ARGSUSED*/
 /*@C
    KSPDefaultMonitor - Print the residual norm at each iteration of an
@@ -83,6 +89,8 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
   PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPTrueMonitor"
 /*@C
    KSPTrueMonitor - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
@@ -124,7 +132,8 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   return 0;
 }
 
-
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultSMonitor"
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
   if (fnorm > 1.e-9) {
@@ -139,6 +148,8 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultConverged"
 /*ARGSUSED*/
 /*@C
    KSPDefaultConverged - Determines convergence of
@@ -184,6 +195,8 @@ int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
   return(0);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultBuildSolution"
 /*
    KSPDefaultBuildSolution - Default code to create/move the solution.
 
@@ -228,6 +241,8 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultBuildResidual"
 /*
    KSPDefaultBuildResidual - Default code to compute the residual.
 
@@ -258,6 +273,8 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   *V = v; return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultGetWork"
 /*
   KSPDefaultGetWork - Gets a number of work vectors.
 
@@ -278,6 +295,8 @@ int  KSPDefaultGetWork( KSP ksp, int nw )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultAdjustWork"
 /*
   KSPDefaultAdjustWork - Adjusts work vectors.
 
@@ -292,6 +311,8 @@ int KSPDefaultAdjustWork( KSP ksp )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultDestroy"
 /*
   KSPDefaultDestroy - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().
