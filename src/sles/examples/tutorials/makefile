@@ -16,7 +16,7 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_3 runex1_5\
                   ex8.PETSc runex8 runex8_2 ex8.rm\
 		  ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_2  = ex11.PETSc ex11.rm ex14.PETSc ex14.rm clean
-TESTEXAMPLES_3  = ex1f.PETSc  ex1f.rm ex3f.PETSc runex3f ex3f.rm ex20.PETSc clean
+TESTEXAMPLES_3  = ex1f.PETSc  ex1f.rm ex2f.PETSc runex2f ex2f.rm ex20.PETSc clean
 TESTEXAMPLES_9  = ex1f.PETSc  ex1f.rm ex20.PETSc runex20 ex20.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 runex1_3 runex1_5 ex1.rm ex2.PETSc runex2\
 		  runex2_3 runex2_5 ex2.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex11.PETSc \
@@ -29,7 +29,7 @@ TESTEXAMPLES_8  =
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex5.PETSc ex5.rm \
 		  ex8.PETSc ex8.rm ex19.PETSc ex19.rm clean
 BUILDEXAMPLES_2 = ex11.PETSc ex11.rm ex14.PETSc ex14.rm clean
-BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex3f.PETSc ex3f.rm ex20.PETSc ex20.rm clean
+BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex20.PETSc ex20.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex5.PETSc ex5.rm \
 		  ex8.PETSc ex8.rm ex11.PETSc \
 		  ex11.rm ex19.PETSc ex19.rm clean
@@ -54,9 +54,13 @@ ex2: ex2.o  chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
 	$(RM) ex2.o
 
-ex3f: ex3f.o  chkopts
-	-$(FLINKER) -o ex3f ex3f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-	$(RM) ex3f.o
+ex2f: ex2f.o  chkopts
+	-$(FLINKER) -o ex2f ex2f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex2f.o
+
+ex3: ex3.o  chkopts
+	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
+	$(RM) ex3.o
 
 ex4: ex4.o  chkopts
 	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
@@ -155,12 +159,12 @@ runex1f:
 	   $(RM) -f ex1f_1.tmp
 
 runex2:
-	-@$(MPIRUN) ex2 -pc_type jacobi -ksp_smonitor -m 5 > ex2_1.tmp 2>&1; \
+	-@$(MPIRUN) ex2 -ksp_smonitor -m 5 -n 5 > ex2_1.tmp 2>&1; \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   $(RM) -f ex2_1.tmp
 runex2_2:
-	-@$(MPIRUN) -np 2 ex2 -pc_type jacobi -ksp_smonitor -m 5 > ex2_2.tmp 2>&1; \
+	-@$(MPIRUN) -np 2 ex2 -ksp_smonitor -m 5 -n 5 > ex2_2.tmp 2>&1; \
 	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   $(RM) -f ex2_2.tmp
@@ -176,11 +180,11 @@ runex2_5:
 	   if (diff output/ex2_5.out ex2_5.tmp) then true; \
 	   else echo "Possible problem with ex2_5, diffs above"; fi; \
 	   $(RM) -f ex2_5.tmp
-runex3f:
-	-@$(MPIRUN) -np 2 ex3f -pc_type jacobi -ksp_smonitor > ex3f_1.tmp 2>&1; \
-	   if (diff output/ex3f_1.out ex3f_1.tmp) then true; \
-	   else echo "Possible problem with ex3f_1, diffs above"; fi; \
-	   $(RM) -f ex3f_1.tmp
+runex2f:
+	-@$(MPIRUN) -np 2 ex2f -pc_type jacobi -ksp_smonitor > ex2f_1.tmp 2>&1; \
+	   if (diff output/ex2f_1.out ex2f_1.tmp) then true; \
+	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
+	   $(RM) -f ex2f_1.tmp
 runex4:
 	-@$(MPIRUN) ex4 -ksp_smonitor -m 5 -pc_type jacobi > ex4_1.tmp 2>&1;\
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \

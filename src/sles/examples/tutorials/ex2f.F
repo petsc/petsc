@@ -1,5 +1,5 @@
 
-C    "$Id: ex3f.F,v 1.28 1996/08/27 22:24:14 curfman Exp curfman $";
+C    "$Id: ex2f.F,v 1.29 1996/08/28 15:06:50 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -7,8 +7,9 @@ C
 C  Concepts: SLES (solving linear systems)
 C  Concepts: Setting a user-defined monitoring routine
 C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C  Routines: SLESSolve(); SLESView(); SLESGetKSP(), KSPSetMonitor();
-C  Routines: KSPBuildSolution();
+C  Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
+C  Routines: KSPSetTolerances(); PCSetType();
+C  Routines: KSPBuildSolution(); KSPSetMonitor();
 C  Processors: n
 C
 C -----------------------------------------------------------------------
@@ -46,6 +47,7 @@ C
 C  Variables:
 C     sles     - linear solver context
 C     ksp      - Krylov subspace method context
+C     pc       - preconditioner context
 C     x, b, u  - approx solution, right-hand-side, exact solution vectors
 C     A        - matrix that defines linear system
 C     its      - iterations for convergence
@@ -61,6 +63,7 @@ C          as the Cray T3d, where "Double" -> "real"
       Vec      x, b, u
       Mat      A 
       KSP      ksp
+      PC       pc
       SLES     sles
 
 C  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
@@ -92,7 +95,7 @@ C  When using MatCreate(), the matrix format can be specified at
 C  runtime. Also, the parallel partioning of the matrix is
 C  determined by PETSc at runtime.
 
-     call MatCreate(MPI_COMM_WORLD,m*n,m*n,A,ierr)
+      call MatCreate(MPI_COMM_WORLD,m*n,m*n,A,ierr)
 
 C  Currently, all PETSc parallel matrix formats are partitioned by
 C  contiguous chunks of rows across the processors.  Determine which

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.49 1996/08/27 22:32:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.50 1996/08/28 15:06:42 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -38,11 +38,10 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
-  /* -------------------------------------------------------------------
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
-     ------------------------------------------------------------------- */
-
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* 
      Create parallel matrix, specifying only its global dimensions.
      When using MatCreate(), the matrix format can be specified at
@@ -99,9 +98,10 @@ int main(int argc,char **args)
   ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
-  /* -------------------------------------------------------------------
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
-     ------------------------------------------------------------------- */
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /* 
 
   /* 
      Create linear solver context
@@ -137,18 +137,15 @@ int main(int argc,char **args)
   */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
-  /* -------------------------------------------------------------------
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
-     ------------------------------------------------------------------- */
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
-     Solve linear system
-  */
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
-  /* -------------------------------------------------------------------
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
-     ------------------------------------------------------------------- */
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* 
      Check the error

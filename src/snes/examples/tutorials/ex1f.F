@@ -1,5 +1,5 @@
 
-C "$Id: ex1f.F,v 1.1 1996/08/27 16:31:18 curfman Exp curfman $";
+C "$Id: ex1f.F,v 1.2 1996/08/27 20:34:01 curfman Exp curfman $";
 C
 C  Description: Uses Newton's method to solve a two-variable system.
 C
@@ -83,7 +83,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
          call MPI_Comm_size(MPI_COMM_WORLD,rank,ierr)

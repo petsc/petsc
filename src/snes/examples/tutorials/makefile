@@ -85,10 +85,10 @@ runex1:
 	   $(RM) -f ex1_1.tmp
 
 runex1f:
-	-@$(MPIRUN) ex1f -snes_smonitor > ex1_1f.tmp 2>&1;   \
-	   if (diff output/ex1_1f.out ex1_1f.tmp) then true; \
-	   else echo "Possible problem with ex1_1f, diffs above"; fi; \
-	   $(RM) -f ex1_1f.tmp
+	-@$(MPIRUN) ex1f -snes_smonitor > ex1f_1.tmp 2>&1;   \
+	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
+	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
+	   $(RM) -f ex1f_1.tmp
 
 runex2:
 	-@$(MPIRUN) ex2 -nox -snes_smonitor -snes_view \
