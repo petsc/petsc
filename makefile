@@ -7,89 +7,15 @@
 ALL: all
 LOCDIR = . 
 DIRS   = src include docs 
-#
-# Configuration Variables
-#
-# Read configure options from a file if CONFIGURE_OPTIONSis not defined
-AUTOMAKE               = ${PETSC_DIR}/bin/automake
-CONFIGURE_ARCH_PROG    = ${PETSC_DIR}/config/configarch
-CONFIGURE_ARCH         = $(shell ${CONFIGURE_ARCH_PROG})
-CONFIGURE_OPTIONS_FILE = ./config/configure_options.${PETSC_ARCH}
-CONFIGURE_OPTIONS      = $(shell echo $(shell cat ${CONFIGURE_OPTIONS_FILE} | sed -e 's/\#.*$$//' -e "s/'/\\\\'/g"))
-CONFIGURE_LOG_FILE     = configure_petsc.log
-AUTOMAKE_ADD_FILES     = config/config.guess config/config.sub config/install-sh config/missing config/mkinstalldirs \
-                         config/ltmain.sh
-BMAKE_TEMPLATE_FILES   = bmake/config/packages.in bmake/config/rules.in bmake/config/variables.in
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
 
 #
-# Configuration Targets
-#
-aclocal.m4: configure.in
-	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
-	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@aclocal >> $(CONFIGURE_LOG_FILE)
-
-bmake/config/petscconf.h.in: config/acconfig.h config/acsite.m4 configure.in
-	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
-	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@if test -f $@; then ${RM} $@ >> $(CONFIGURE_LOG_FILE); fi
-	@autoheader -l config >> $(CONFIGURE_LOG_FILE)
-
-$(AUTOMAKE_ADD_FILES):
-	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
-	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@${AUTOMAKE} --foreign --add-missing --copy Makefile >> $(CONFIGURE_LOG_FILE)
-
-Makefile.am: $(AUTOMAKE_ADD_FILES)
-
-Makefile.in: Makefile.am
-	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
-	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@${AUTOMAKE} --foreign --add-missing --copy Makefile >> $(CONFIGURE_LOG_FILE)
-
-configure: configure.in config/acsite.m4 aclocal.m4 bmake/config/petscconf.h.in $(AUTOMAKE_ADD_FILES)
-	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
-	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@autoconf -l config >> $(CONFIGURE_LOG_FILE)
-	@cat configure | sed -e 's/\[A-Za-z_\]\[A-Za-z0-9_\]/\[A-Za-z_\]\[A-Za-z0-9_(),\]/' -e 's/\[a-zA-Z_\]\[a-zA-Z_0-9\]/\[a-zA-Z_\]\[a-zA-Z_0-9(),\]/' > configure.alter
-	@mv configure.alter configure
-	@chmod 755 configure
-
-start_configure:
-	-@$(RM) $(CONFIGURE_LOG_FILE)
-
-configure_petsc: start_configure configure Makefile.in
-	@echo "Configuring Petsc with options:" >> $(CONFIGURE_LOG_FILE)
-	@echo "$(CONFIGURE_OPTIONS)" >> $(CONFIGURE_LOG_FILE)
-	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@./configure $(CONFIGURE_OPTIONS) >> $(CONFIGURE_LOG_FILE)
-
-$(CONFIGURE_OPTIONS_FILE):
-	@touch $(CONFIGURE_OPTIONS_FILE) 
-
-# We allow substring matching so that new configure architectures can be created
-$(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE) $(BMAKE_TEMPLATE_FILES)
-	@carch=`${CONFIGURE_ARCH_PROG}`; \
-	if test `echo ${PETSC_ARCH} | sed -e 's/^\($$carch\).*/\1/'` = "$$carch"; then \
-	    ${MAKE} configure_petsc; \
-	else \
-	    echo "Petsc is preconfigured for architecture ${PETSC_ARCH}" > ${CONFIGURE_LOG_FILE}; \
-	fi
-
-configure_clean:
-	-@$(RM) aclocal.m4
-	-@$(RM) bmake/config/petscconf.h.in
-	-@$(RM) $(AUTOMAKE_ADD_FILES) Makefile.in
-	-@$(RM) configure
-#
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
-all: $(CONFIGURE_LOG_FILE)
+all:
 	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
-# This is necessary if configure jsut created files to have them reread
 all_build: chk_petsc_dir info info_h chklib_dir deletelibs build shared
 #
 # Prints information about the system and version of PETSc being compiled
@@ -520,7 +446,7 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-.PHONY: info info_h build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
+.PHONY: info info_h all all_build build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         start_configure configure_petsc configure_clean
