@@ -14,8 +14,8 @@ if ($day == Sun) then
   set BOPT=O_complex
   set JOBS=(1 2 3 5 10 12 13 )        
 else if ($day == Mon) then
-  set BOPT=O_matsingle    
-  set JOBS=(1 2 8 12 13   17)        
+  set BOPT=O
+  set JOBS=(1 2 3 6 8 12 14  17)        
 else if ($day == Tue) then
   set BOPT=g        
   set JOBS=(1 2 3 6 12 13 14  17)        
