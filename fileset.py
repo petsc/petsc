@@ -67,7 +67,7 @@ class TreeFileSet (FileSet):
   def __init__(self, roots = None, fileTest = lambda file: 1):
     FileSet.__init__(self, func = self.walkTree)
     if roots:
-      if roots.type == types.StringType:
+      if type(roots) == types.StringType:
         self.roots  = FileSet(roots)
       else:
         self.roots  = roots
