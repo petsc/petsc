@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.68 1999/04/19 22:18:08 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.69 1999/05/12 03:35:01 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -50,6 +50,8 @@ extern int ViewerGetOutputname(Viewer,char**);
 extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerSetType(Viewer,ViewerType);
 extern int ViewerDestroy(Viewer);
+extern int ViewerGetSingleton(Viewer,Viewer*);
+extern int ViewerRestoreSingleton(Viewer,Viewer*);
 
 #define VIEWER_FORMAT_ASCII_DEFAULT       0
 #define VIEWER_FORMAT_ASCII_MATLAB        1
@@ -81,8 +83,10 @@ extern int    ViewerFlush(Viewer);
 */
 extern int ViewerASCIIGetPointer(Viewer,FILE**);
 extern int ViewerASCIIPrintf(Viewer,const char[],...);
+extern int ViewerASCIISynchronizedPrintf(Viewer,const char[],...);
 extern int ViewerASCIIPushTab(Viewer);
 extern int ViewerASCIIPopTab(Viewer);
+extern int ViewerASCIIUseTabs(Viewer,PetscTruth);
 extern int ViewerBinaryGetDescriptor(Viewer,int*);
 extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 extern int ViewerBinarySetType(Viewer,ViewerBinaryType);
