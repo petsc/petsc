@@ -53,7 +53,7 @@ class Configure(config.base.Configure):
     '''Protect C bindings from C++ mangling'''
     if self.language == 'C':
       if self.framework.argDB['with-extern-c']:
-        self.addDefine('USE_EXTERN_CXX')
+        self.addDefine('USE_EXTERN_CXX','')
     return
 
   def configure(self):
