@@ -5,11 +5,11 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = convert.c matstash.c axpy.c zerodiag.c matio.c matioall.c \
-           getcolv.c gcreate.c dlregis.c
+           getcolv.c gcreate.c
 SOURCEF  =
 SOURCEH  =
 OBJSC    = convert.o matstash.o axpy.o zerodiag.o matio.o matioall.o \
-           getcolv.o gcreate.o dlregis.o
+           getcolv.o gcreate.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
