@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.23 1996/01/22 03:05:49 curfman Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.24 1996/01/26 04:32:14 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -22,6 +22,7 @@ struct _VeOps {
        (*set)(Scalar*,Vec),              /* y = alpha  */
        (*swap)(Vec,Vec),                 /* exchange x and y */
        (*axpy)(Scalar*,Vec,Vec),         /* y = y + alpha * x */
+       (*axby)(Scalar*,Scalar*,Vec,Vec), /* y = y + alpha * x + beta * y*/
        (*maxpy)(int,Scalar*,Vec,Vec*),   /* y = y + alpha[j] x[j] */
        (*aypx)(Scalar*,Vec,Vec),         /* y = x + alpha * y */
        (*waxpy)(Scalar*,Vec,Vec,Vec),    /* w = y + alpha * x */
