@@ -12,8 +12,9 @@ class Configure(config.base.Configure):
     self.argDB        = framework.argDB
     self.found        = 0
     # Assume that these libraries are Fortran if we have a Fortran compiler
-    self.compilers    = self.framework.require('config.compilers',     self)
-    self.libraries    = self.framework.require('config.libraries',     self)
+    self.compilers    = self.framework.require('config.compilers',            self)
+    self.libraries    = self.framework.require('config.libraries',            self)
+    self.libraries    = self.framework.require('PETSc.packages.fortranstubs', self)
     return
 
   def __str__(self):

@@ -51,7 +51,6 @@ class Configure(config.base.Configure):
     # Put in dependencies
     self.framework.require('PETSc.packages.update', self.setCompilers)
     self.framework.require('PETSc.packages.compilerFlags', self.compilers)
-    self.framework.require('PETSc.packages.fortranstubs',  self.blaslapack)
     return
 
   def __str__(self):
