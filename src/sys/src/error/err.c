@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.119 2000/10/03 20:20:31 bsmith Exp balay $*/
+/*$Id: err.c,v 1.120 2000/10/04 14:58:13 balay Exp balay $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -174,8 +174,9 @@ char PetscErrorBaseMessage[1024];
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
 .  n - the generic error number
--  p - 1 indicates the error was initially detected, 0 indicates this is a traceback from a 
+.  p - 1 indicates the error was initially detected, 0 indicates this is a traceback from a 
    previously detected error
+-  mess - formatted message string - aka printf
 
   Level: intermediate
 
