@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.240 1997/04/03 18:13:35 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.241 1997/04/04 01:39:42 curfman Exp curfman $";
 #endif
 
 /*
@@ -2699,28 +2699,27 @@ int MatGetType(Mat mat,MatType *type,char **name)
 }
 
 /*MC
-    MatGetArrayF90 - Access a matrix array from Fortran 90.
+    MatGetArrayF90 - Accesses a matrix array from Fortran90.
 
-   Input Parameter:
-.    x - matrix
+    Input Parameter:
+.   x - matrix
 
-   Output Parameter:
-.  xx_v - the Fortran90 pointer to the array
-.  ierr - error code
+    Output Parameter:
+.   xx_v - the Fortran90 pointer to the array
+.   ierr - error code
 
-   Synopsis:
-   MatGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    Synopsis:
+    MatGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-   Usage: 
-    Scalar, pointer xx_v(:)
-    ....
-    MatGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
-    MatRestoreArrayF90(x,xx_v,ierr)
-   
+    Usage: 
+$     Scalar, pointer xx_v(:)
+$     ....
+$     call MatGetArrayF90(x,xx_v,ierr)
+$     a = xx_v(3)
+$     call MatRestoreArrayF90(x,xx_v,ierr)
 
-   Notes:
-     Currently only supported using the NAG F90 compiler.
+    Notes:
+    Currently only supported using the NAG F90 compiler.
 
 .seealso:  MatRestoreArrayF90(), MatGetArray(), MatRestoreArray()
 
@@ -2728,29 +2727,28 @@ int MatGetType(Mat mat,MatType *type,char **name)
 M*/
 
 /*MC
-    MatRestoreArrayF90 - Return a matrix array from Fortran 90,
-        accessed with MatGetArrayF90().
+    MatRestoreArrayF90 - Restores a matrix array that has been
+    accessed with MatGetArrayF90().
 
-   Input Parameter:
-.    x - matrix
+    Input Parameters:
+.   x - matrix
+.   xx_v - the Fortran90 pointer to the array
 
-   Output Parameter:
-.  xx_v - the Fortran90 pointer to the array
-.  ierr - error code
+    Output Parameter:
+.   ierr - error code
 
-   Synopsis:
-   MatRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    Synopsis:
+    MatRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-   Usage: 
-    Scalar, pointer xx_v(:)
-    ....
-    MatGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
-    MatRestoreArrayF90(x,xx_v,ierr)
+    Example of Usage: 
+$      Scalar, pointer xx_v(:)
+$      ....
+$      call MatGetArrayF90(x,xx_v,ierr)
+$      a = xx_v(3)
+$      call MatRestoreArrayF90(x,xx_v,ierr)
    
-
-   Notes:
-     Currently only supported using the NAG F90 compiler.
+    Notes:
+    Currently only supported using the NAG F90 compiler.
 
 .seealso:  MatGetArrayF90(), MatGetArray(), MatRestoreArray()
 

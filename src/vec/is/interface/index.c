@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.43 1997/02/22 02:21:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.44 1997/04/04 19:10:53 curfman Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -277,28 +277,28 @@ int ISSorted(IS is, PetscTruth *flg)
     indices.  The user should NOT change the indices.
 
     Input Parameter:
-.   x - vector
+.   x - index set
 
     Output Parameters:
 .   xx_v - the Fortran90 pointer to the array
 .   ierr - error code
 
     Synopsis:
-    ISGetIndicesF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    ISGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Usage: 
-    Scalar, pointer xx_v(:)
-    ....
-    ISGetIndicesF90(x,xx_v,ierr)
-    a = xx_v(3)
-    ISRestoreIndicesF90(x,xx_v,ierr)
+    Example of Usage: 
+$     Scalar, pointer xx_v(:)
+$     ....
+$     call ISGetIndicesF90(x,xx_v,ierr)
+$     a = xx_v(3)
+$     call ISRestoreIndicesF90(x,xx_v,ierr)
 
     Notes:
     Currently only supported using the NAG F90 compiler.
 
 .seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
-.keywords:  vector, array, f90
+.keywords:  IS, index set, get, indices, f90
 M*/
 
 /*MC
@@ -306,26 +306,26 @@ M*/
     a call to ISGetIndicesF90().
 
     Input Parameters:
-.   x - vector
+.   x - index set
 .   xx_v - the Fortran90 pointer to the array
 
     Output Parameter:
 .   ierr - error code
 
     Synopsis:
-    ISRestoreIndicesF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    ISRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Usage: 
-    Scalar, pointer xx_v(:)
-    ....
-    ISGetIndicesF90(x,xx_v,ierr)
-    a = xx_v(3)
-    ISRestoreIndicesF90(x,xx_v,ierr)
+    Example of Usage: 
+$     Scalar, pointer xx_v(:)
+$     ....
+$     call ISGetIndicesF90(x,xx_v,ierr)
+$     a = xx_v(3)
+$     call ISRestoreIndicesF90(x,xx_v,ierr)
    
     Notes:
     Currently only supported using the NAG F90 compiler.
 
 .seealso:  ISGetIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
-.keywords:  vector, array, f90
+.keywords:  IS, index set, restore, indices, f90
 M*/
