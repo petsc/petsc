@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.20 1998/11/20 15:26:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.21 1999/02/27 04:47:01 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -210,6 +210,13 @@ void snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsnes, int *__ierr
 }
 
 /* ---------------------------------------------------------*/
+/*
+     snesdefaultcomputejacobian() and snesdefaultcomputejacobianwithcoloring()
+  are special and get mapped directly to their C equivalent.
+*/
+extern void snesdefaultcomputejacobian_(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
+extern void snesdefaultcomputejacobianwithcoloring_(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
+
 static int (*f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
 static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,
                           void*ctx)
@@ -222,8 +229,14 @@ static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,
 void snessetjacobian_(SNES *snes,Mat *A,Mat *B,int (*func)(SNES*,Vec*,Mat*,Mat*,
             MatStructure*,void*,int*),void *ctx, int *__ierr )
 {
-  f3 = func;
-  *__ierr = SNESSetJacobian(*snes,*A,*B,oursnesjacobian,ctx);
+  if (func == snesdefaultcomputejacobian_) {
+    ;
+  } else if (func == snesdefaultcomputejacobian_) {
+    ;
+  } else {
+    f3 = func;
+    *__ierr = SNESSetJacobian(*snes,*A,*B,oursnesjacobian,ctx);
+  }
 }
 
 /* -------------------------------------------------------------*/
