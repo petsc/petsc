@@ -90,9 +90,8 @@ L100:
 /*       MERGE INDISTINGUISHABLE NODES IN THE LIST BY*/
 /*       CALLING THE SUBROUTINE QMDMRG.*/
     if (nhdsze > 0) {
-	qmdmrg(&xadj[1], &adjncy[1], &deg[1], &qsize[1], &qlink[1], &marker[
-		1], &deg0, &nhdsze, &nbrhd[1], &rchset[1], &nbrhd[nhdsze + 1])
-		;
+	SPARSEPACKqmdmrg(&xadj[1], &adjncy[1], &deg[1], &qsize[1], &qlink[1], &marker[
+		1], &deg0, &nhdsze, &nbrhd[1], &rchset[1], &nbrhd[nhdsze + 1]);
     }
 /*       FIND THE NEW DEGREES OF THE NODES THAT HAVE NOT BEEN*/
 /*       MERGED.*/
