@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.7 1995/08/15 20:29:32 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.8 1995/08/16 16:01:06 bsmith Exp gropp $ */
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
@@ -15,7 +15,7 @@ struct timezone {
 };
 extern "C" {
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
-};
+}
 #else
 #include <sys/types.h>
 #include <sys/time.h>
@@ -26,7 +26,7 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 #if defined(PARCH_solaris) && defined(__cplusplus)
 extern "C" {
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
-};
+}
 #endif
 
 /*
