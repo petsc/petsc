@@ -1,5 +1,5 @@
 
-C    "$Id: ex3.F,v 1.27 1996/08/27 22:22:33 curfman Exp curfman $";
+C    "$Id: ex3f.F,v 1.28 1996/08/27 22:24:14 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -87,18 +87,16 @@ C      Compute the matrix and right-hand-side vector that define
 C      the linear system, Ax = b.
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-C  Create parallel matrix.  Here we use the MATMPIAIJ matrix format.
-C   - We specify only the global matrix dimensions, and PETSc
-C     determines the parallel partioning of the matrix at runtime.
-C     We could also specify the local matrix dimensions if desired.
-C   - Alternative: MatCreate(), enables the matrix format to be
-C     specified at runtime.
+C  Create parallel matrix, specifying only its global dimensions.
+C  When using MatCreate(), the matrix format can be specified at
+C  runtime. Also, the parallel partioning of the matrix is
+C  determined by PETSc at runtime.
 
-      call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-     *                      m*n,m*n,0,PETSC_NULL,0,PETSC_NULL,A,ierr)
+     call MatCreate(MPI_COMM_WORLD,m*n,m*n,A,ierr)
 
-C  The matrix is partitioned by contiguous chunks of rows across the
-C  processors.  Determine which rows of the matrix are locally owned. 
+C  Currently, all PETSc parallel matrix formats are partitioned by
+C  contiguous chunks of rows across the processors.  Determine which
+C  rows of the matrix are locally owned. 
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
@@ -169,6 +167,20 @@ C  also serves as the preconditioning matrix.
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      *                      ierr)
 
+C  Set linear solver defaults for this problem (optional).
+C   - By extracting the KSP and PC contexts from the SLES context,
+C     we can then directly directly call any KSP and PC routines
+C     to set various options.
+C   - The following four statements are optional; all of these
+C     parameters could alternatively be specified at runtime via
+C     SLESSetFromOptions();
+
+      call SLESGetKSP(sles,ksp,ierr)
+      call SLESGetPC(sles,pc,ierr)
+      call PCSetType(pc,PCJACOBI,ierr)
+      call KSPSetTolerances(ksp,1.d-7,PETSC_DEFAULT_DOUBLE_PRECISION,
+     &         PETSC_DEFAULT_DOUBLE_PRECISION,m*n,ierr)
+
 C  Set user-defined monitoring routine if desired
 
       flg = 0
@@ -179,7 +191,11 @@ C  Set user-defined monitoring routine if desired
         call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL,ierr)
       endif
 
-C  Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
+C  Set runtime options, e.g.,
+C      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
+C  These options will override those specified above as long as
+C  SLESSetFromOptions() is called _after_ any other customization
+C  routines.
 
       call SLESSetFromOptions(sles,ierr)
 

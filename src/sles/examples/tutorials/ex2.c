@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.48 1996/08/27 18:13:12 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.49 1996/08/27 22:32:44 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -31,11 +31,12 @@ int main(int argc,char **args)
   PC      pc;           /* preconditioner context */
   KSP     ksp;          /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
-  int     i, j, I, J, Istart, Iend, ierr, m = 8, its, flg;
+  int     i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
   Scalar  v, one = 1.0, none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -48,7 +49,7 @@ int main(int argc,char **args)
      runtime. Also, the parallel partioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*m,m*m,&A); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
@@ -65,11 +66,11 @@ int main(int argc,char **args)
       - Always specify global row and columns of matrix entries.
    */
   for ( I=Istart; I<Iend; I++ ) { 
-    v = -1.0; i = I/m; j = I - i*m;  
-    if ( i>0 )   {J = I - m; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( i<m-1 ) {J = I + m; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+    v = -1.0; i = I/n; j = I - i*n;  
+    if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+    if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
     if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( j<m-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+    if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
     v = 4.0; MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);
   }
 
@@ -88,7 +89,7 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,m*m,&u); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 
@@ -125,7 +126,7 @@ int main(int argc,char **args)
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,m*m); CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,m*n); CHKERRA(ierr);
 
   /* 
     Set runtime options, e.g.,
