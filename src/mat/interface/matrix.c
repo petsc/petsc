@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.271 1997/12/01 01:54:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.272 1998/01/13 15:57:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2594,7 +2594,8 @@ int MatRestoreArray(Mat mat,Scalar **v)
 #define __FUNC__ "MatGetSubMatrices"
 /*@C
    MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
-   points to an array of valid matrices, it may be reused.
+     points to an array of valid matrices, they may be reused to store the new
+     submatrices.
 
    Input Parameters:
 .  mat - the matrix
@@ -2621,8 +2622,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
 .seealso: MatDestroyMatrices(), MatGetSubMatrix()
 @*/
-int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
-                      Mat **submat)
+int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,Mat **submat)
 {
   int ierr;
 
@@ -3097,15 +3097,17 @@ M*/
 .   mat - the original matrix
 .   isrow - rows this processor should obtain
 .   iscol - columns for all processors you wish kept
-.    cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+.   csize - number of columns "local" to this processor (does nothing for sequential 
+            matrices). This should match the result from VecGetLocalSize() if you 
+            plan to use the matrix in a A*x
+.  cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameters:
 .   newmat - the new submatrix, of the same type as the old
 
 .seealso: MatGetSubMatrices()
 
-@*/
-int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall cll,Mat *newmat)
+@*/int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall cll,Mat *newmat)
 {
   int     ierr, size;
   Mat     *local;
@@ -3125,7 +3127,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall cll,Mat *newma
   }
 
   if (!mat->ops.getsubmatrix) SETERRQ(PETSC_ERR_SUP,0,"Not currently implemented");
-  ierr = (*mat->ops.getsubmatrix)(mat,isrow,iscol,cll,newmat);CHKERRQ(ierr);
+  ierr = (*mat->ops.getsubmatrix)(mat,isrow,iscol,csize,cll,newmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.77 1997/10/10 04:02:15 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.78 1997/12/06 19:50:59 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -20,7 +20,7 @@ TESTEXAMPLES_1  = ex2.PETSc runex2 ex2.rm \
 		  ex11.PETSc runex11 ex11.rm ex12.PETSc runex12\
 		  ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm\
 		  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
-                  ex17.PETSc runex17 ex17.rm clean
+                  ex17.PETSc runex17 ex17.rm ex25.PETSc runex25 ex25.rm clean
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_3  = ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm 
@@ -39,7 +39,7 @@ BUILDEXAMPLES_4 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex6.PETSc \
 BUILDEXAMPLES_9  = ex19.PETSc ex19.rm clean
 
 EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
-		  ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c ex18.c 
+		  ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c ex18.c ex25.c
 EXAMPLESF       = ex17f.F ex19.F ex20.F
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
@@ -143,6 +143,10 @@ ex23: ex23.o  chkopts
 ex24: ex24.o chkopts
 	-$(CLINKER) -o ex24 ex24.o $(PETSC_FORTRAN_LIB) $(SLES_LIB) 
 	$(RM) -f ex24.o 
+
+ex25: ex25.o chkopts
+	-$(CLINKER) -o ex25 ex25.o  $(SLES_LIB) 
+	$(RM) -f ex25.o 
 
 runex1:
 	-@$(MPIRUN) -np 1  ex1 > ex1_1.tmp 2>&1;   \
@@ -265,5 +269,11 @@ runex24:
 	   if (diff output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1, diffs above"; fi;\
 	   $(RM) -f ex24_1.tmp input.dat
+
+runex25:
+	-@$(MPIRUN) -np 3 ex25 > ex25_1.tmp 2>&1;\
+	   if (diff output/ex25_1.out ex25_1.tmp) then true; \
+	   else echo "Possible problem with ex25_1, diffs above"; fi;\
+	   $(RM) -f ex25_1.tmp
 
 

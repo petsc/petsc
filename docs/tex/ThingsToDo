@@ -7,8 +7,6 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  - Add additional optimization to VecScatter() for case when MPI vector is gathered
-    all onto one processor and all other processors get nothing.
 
   - MatZeroRows() Add flag KEEP_ZEROS_AS_NONZERO ( petsc-maint 1565)
 
@@ -941,3 +939,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
     generate warning messages.
 
   X seperate KSPSetFromOptions and KSPPrintHelp()
+
+  X Add additional optimization to VecScatter() for case when MPI vector is gathered
+    all onto one processor and all other processors get nothing.
