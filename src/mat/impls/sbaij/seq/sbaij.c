@@ -290,71 +290,6 @@ int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatView_SeqSBAIJ_Binary"
-static int MatView_SeqSBAIJ_Binary(Mat A,PetscViewer viewer)
-{
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int          i,fd,*col_lens,ierr,bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
-  PetscScalar  *aa;
-  FILE         *file;
-
-  PetscFunctionBegin;
-  ierr        = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-  ierr        = PetscMalloc((4+A->m)*sizeof(int),&col_lens);CHKERRQ(ierr);
-  col_lens[0] = MAT_FILE_COOKIE;
-
-  col_lens[1] = A->m;
-  col_lens[2] = A->m;
-  col_lens[3] = a->nz*bs2;
-
-  /* store lengths of each row and write (including header) to file */
-  count = 0;
-  for (i=0; i<a->mbs; i++) {
-    for (j=0; j<bs; j++) {
-      col_lens[4+count++] = bs*(a->i[i+1] - a->i[i]);
-    }
-  }
-  ierr = PetscBinaryWrite(fd,col_lens,4+A->m,PETSC_INT,1);CHKERRQ(ierr);
-  ierr = PetscFree(col_lens);CHKERRQ(ierr);
-
-  /* store column indices (zero start index) */
-  ierr  = PetscMalloc((a->nz+1)*bs2*sizeof(int),&jj);CHKERRQ(ierr);
-  count = 0;
-  for (i=0; i<a->mbs; i++) {
-    for (j=0; j<bs; j++) {
-      for (k=a->i[i]; k<a->i[i+1]; k++) {
-        for (l=0; l<bs; l++) {
-          jj[count++] = bs*a->j[k] + l;
-        }
-      }
-    }
-  }
-  ierr = PetscBinaryWrite(fd,jj,bs2*a->nz,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscFree(jj);CHKERRQ(ierr);
-
-  /* store nonzero values */
-  ierr  = PetscMalloc((a->nz+1)*bs2*sizeof(PetscScalar),&aa);CHKERRQ(ierr);
-  count = 0;
-  for (i=0; i<a->mbs; i++) {
-    for (j=0; j<bs; j++) {
-      for (k=a->i[i]; k<a->i[i+1]; k++) {
-        for (l=0; l<bs; l++) {
-          aa[count++] = a->a[bs2*k + l*bs + j];
-        }
-      }
-    }
-  }
-  ierr = PetscBinaryWrite(fd,aa,bs2*a->nz,PETSC_SCALAR,0);CHKERRQ(ierr);
-  ierr = PetscFree(aa);CHKERRQ(ierr);
-
-  ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-  if (file) {
-    fprintf(file,"-matload_block_size %d\n",a->bs);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqSBAIJ_ASCII"
 static int MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
 {
@@ -531,23 +466,20 @@ static int MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
 int MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth issocket,isascii,isbinary,isdraw;
+  PetscTruth isascii,isdraw;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  if (issocket) {
-    SETERRQ(PETSC_ERR_SUP,"Socket viewer not supported");
-  } else if (isascii){
+  if (isascii){
     ierr = MatView_SeqSBAIJ_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (isbinary) {
-    ierr = MatView_SeqSBAIJ_Binary(A,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     ierr = MatView_SeqSBAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by SeqSBAIJ matrices",((PetscObject)viewer)->type_name);
+    Mat B;
+    ierr = MatConvert(A,MATSEQAIJ,&B);CHKERRQ(ierr);
+    ierr = MatView(B,viewer);CHKERRQ(ierr);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

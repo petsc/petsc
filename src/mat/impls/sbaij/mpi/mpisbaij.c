@@ -1471,6 +1471,25 @@ int MatSetUpPreallocation_MPISBAIJ(Mat A)
   ierr = MatMPISBAIJSetPreallocation(A,1,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrices_MPISBAIJ"
+int MatGetSubMatrices_MPISBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
+{
+  int        i,ierr;
+  PetscTruth flg;
+
+  for (i=0; i<n; i++) {
+    ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
+    if (!flg) {
+      SETERRQ(1,"Can only get symmetric submatrix for MPISBAIJ matrices");
+    }
+  }
+  ierr = MatGetSubMatrices_MPIBAIJ(A,n,irow,icol,scall,B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+  
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
        MatSetValues_MPISBAIJ,
@@ -1514,7 +1533,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
 /*40*/ 0,
-       0,
+       MatGetSubMatrices_MPISBAIJ,
        0,
        MatGetValues_MPISBAIJ,
        0,
