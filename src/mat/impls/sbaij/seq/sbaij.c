@@ -1143,6 +1143,23 @@ int MatSetUpPreallocation_SeqSBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#include "petscblaslapack.h"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY_SeqSBAIJ"
+int MatAXPY_SeqSBAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+{
+  int          ierr,one=1;
+  Mat_SeqSBAIJ *x  = (Mat_SeqSBAIJ *)X->data,*y = (Mat_SeqSBAIJ *)Y->data;
+
+  PetscFunctionBegin;
+  if (str == SAME_NONZERO_PATTERN) {
+    BLaxpy_(&x->s_nz,a,x->a,&one,y->a,&one);
+  } else {
+    ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetRow_SeqSBAIJ,
@@ -1184,7 +1201,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-       0,
+       MatAXPY_SeqSBAIJ,
        MatGetSubMatrices_SeqSBAIJ,
        MatIncreaseOverlap_SeqSBAIJ,
        MatGetValues_SeqSBAIJ,
