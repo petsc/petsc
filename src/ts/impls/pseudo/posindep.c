@@ -152,8 +152,9 @@ static int TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
   ierr = VecCopy(sol,pseudo->update);CHKERRQ(ierr);
   for (i=0; i<max_steps && ts->ptime < ts->max_time; i++) {
     ierr = TSPseudoComputeTimeStep(ts,&ts->time_step);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
     current_time_step = ts->time_step;
-    while (1) {
+    while (PETSC_TRUE) {
       ts->ptime  += current_time_step;
       ierr = SNESSolve(ts->snes,pseudo->update,&its);CHKERRQ(ierr);
       ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
@@ -165,8 +166,10 @@ static int TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
     }
     ierr = VecCopy(pseudo->update,sol);CHKERRQ(ierr);
     ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
   }
+  ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
+  ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr); 
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   *steps += ts->steps;
   *ptime  = ts->ptime;
@@ -260,7 +263,7 @@ static int TSSetUp_Pseudo(TS ts)
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
+  /* ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr); */
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);

@@ -17,7 +17,7 @@ BLASLAPACK_LIB = -L${PGI}/linux86/lib -llapack -lblas
 MPI_HOME       = /soft/apps/packages/mpich-gnucc-pgf-1.2.0
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         = mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPIRUN         = mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 #MPIRUN         = /home/bsmith/petsc/bin/mpirun.chiba -showtimesoff -shared
 
 

@@ -12,8 +12,8 @@ esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSp
   ierr = inrmap->getRunTimeModel("MPI",static_cast<void *>(comm));
   ierr = inrmap->getLocalSize(rn);
   ierr = inrmap->getGlobalSize(rN);
-  ierr = inrmap->getLocalSize(cn);
-  ierr = inrmap->getGlobalSize(cN);
+  ierr = incmap->getLocalSize(cn);
+  ierr = incmap->getGlobalSize(cN);
   ierr = MatCreate(*comm,rn,cn,rN,cN,&this->mat);if (ierr) return;
   ierr = PetscObjectSetOptionsPrefix((PetscObject)this->mat,"esi");
   ierr = MatSetFromOptions(this->mat);
