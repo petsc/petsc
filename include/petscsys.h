@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.40 1998/12/17 22:13:20 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.41 1999/03/03 04:31:26 bsmith Exp balay $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -13,8 +13,9 @@ extern int  PetscGetHostName(char[],int);
 extern int  PetscGetUserName(char[],int);
 extern int  PetscGetProgramName(char[],int);
 extern int  PetscSetProgramName(const char[]);
-
-extern char *PetscGetDate(void);
+extern int  PetscGetDate(char[],int);
+extern int  PetscSetInitialDate(void);
+extern int  PetscGetInitialDate(char[],int);
 
 extern int  PetscSortInt(int,int[]);
 extern int  PetscSortIntWithPermutation(int,const int[],int[]);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.21 1999/03/09 17:19:13 balay Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.22 1999/03/09 21:17:26 balay Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -410,7 +410,7 @@ int PetscErrorPrintfDefault(const char format[],...)
 
   if (!PetscErrorPrintfCalled) {
     int  rank;
-    char arch[10],hostname[64],username[16],pname[256],date[256];
+    char arch[10],hostname[64],username[16],pname[256],date[64];
 
     /*
         On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
@@ -425,7 +425,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscGetHostName(hostname,64);
     PetscGetUserName(username,16);
     PetscGetProgramName(pname,256);
-    PetscGetInitialDate(date,256);
+    PetscGetInitialDate(date,64);
     fprintf(stderr,"--------------------------------------------\
 ------------------------------\n");
     fprintf(stderr,"%s\n",PETSC_VERSION_NUMBER);
