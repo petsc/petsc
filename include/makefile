@@ -10,6 +10,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = pinclude FINCLUDE 
+LOCDIR   = include/
 MANSEC   = 7
 
 runexamples:
