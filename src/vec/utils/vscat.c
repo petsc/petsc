@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.77 1996/12/09 15:58:03 balay Exp balay $";
+static char vcid[] = "$Id: vscat.c,v 1.78 1996/12/16 22:54:08 balay Exp balay $";
 #endif
 
 /*
@@ -431,7 +431,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       len               = sizeof(VecScatter_Seq_General) + nx*sizeof(int);
       to                = (VecScatter_Seq_General *) PetscMalloc(len); CHKPTRQ(to)
       PLogObjectMemory(ctx,len);
@@ -460,7 +460,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       to                = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(to);
       to->n             = nx; 
       to->first         = to_first; 
@@ -489,7 +489,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetSize(iy,&ny); ISStrideGetInfo(iy,&first,&step);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       to              = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(to);
       to->n           = nx; 
       to->first       = first; 
@@ -519,7 +519,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISGetIndices(iy,&idx);
       ISGetSize(iy,&ny); ISStrideGetInfo(ix,&first,&step);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       from            = PetscNew(VecScatter_Seq_Stride);CHKPTRQ(from);
       from->n         = nx; 
       from->first     = first; 
@@ -544,7 +544,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       return 0;
     }
     else {
-      SETERRQ(1,"VecScatterCreate:Cannot generate such a scatter context yet");
+      SETERRQ(1,"Cannot generate such a scatter context yet");
     }
   }
   /* ---------------------------------------------------------------------------*/
@@ -559,7 +559,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);
       if (cando) {
@@ -597,7 +597,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       if (nx != x->N) {
         totalv = 0;
       } else if (from_first == 0        && from_step == 1 && 
@@ -642,7 +642,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (bsx == bsy && bsx == 5) {
         ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
         ISBlockGetSize(iy,&ny); ISBlockGetIndices(iy,&idy);
-        if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+        if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
         ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,5,ctx); CHKERRQ(ierr);
         ISBlockRestoreIndices(ix,&idx);
         ISBlockRestoreIndices(iy,&idy);
@@ -655,7 +655,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       int nx,ny,*idx,*idy;
       ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,1,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx);
       ISRestoreIndices(iy,&idy);
@@ -675,7 +675,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
       if (cando) {
@@ -709,7 +709,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       int nx,ny,*idx,*idy;
       ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
       ierr = VecScatterCreate_StoP(nx,idx,ny,idy,yin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
@@ -722,7 +722,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     int nx,ny,*idx,*idy;
     ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
     ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
-    if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+    if (nx != ny) SETERRQ(1,"Local scatter sizes don't match");
     ierr    = VecScatterCreate_PtoP(nx,idx,ny,idy,xin,yin,ctx); CHKERRQ(ierr);
     ISRestoreIndices(ix,&idx); 
     ISRestoreIndices(iy,&idy);
@@ -821,8 +821,8 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
 #endif
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
-  if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"VecScatterBegin:y cannot be x");
+  if (inctx->inuse) SETERRQ(1," Scatter ctx already in use");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"y cannot be x");
 #if defined(PETSC_BOPT_g)
   /*
      Error checking to make sure these vectors match the vectors used
@@ -834,11 +834,11 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
     VecGetLocalSize_Fast(x,to_n);
     VecGetLocalSize_Fast(y,from_n);
     if (mode == SCATTER_REVERSE) {
-      if (to_n != inctx->from_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
-      if (from_n != inctx->to_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
+      if (to_n != inctx->from_n) SETERRQ(1,"Vector wrong size for scatter");
+      if (from_n != inctx->to_n) SETERRQ(1,"Vector wrong size for scatter");
     } else {
-      if (to_n != inctx->to_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
-      if (from_n != inctx->from_n) SETERRQ(1,"VecScatterBegin:Vector wrong size for scatter");
+      if (to_n != inctx->to_n) SETERRQ(1,"Vector wrong size for scatter");
+      if (from_n != inctx->from_n) SETERRQ(1,"Vector wrong size for scatter");
     }
   }
 #endif
@@ -883,7 +883,7 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
   int ierr;
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"VecScatterEnd:y cannot be x");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"y cannot be x");
   ctx->inuse = 0;
   if (!ctx->end) return 0;
   PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
@@ -930,7 +930,7 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 {
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_COOKIE);
   PetscValidPointer(ctx);
-  if (!sctx->copy) SETERRQ(1,"VecScatterCopy: cannot copy this type");
+  if (!sctx->copy) SETERRQ(1,"cannot copy this type");
   PetscHeaderCreate(*ctx,_VecScatter,VEC_SCATTER_COOKIE,0,sctx->comm);
   PLogObjectCreate(*ctx);
   PLogObjectMemory(*ctx,sizeof(struct _VecScatter));
@@ -987,7 +987,7 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
   to   = (VecScatter_Seq_General *)scat->todata;
   mto  = (VecScatter_MPI_General *)scat->todata;
 
-  if (to->type == VEC_SCATTER_MPI_TOALL) SETERRQ(1,"VecScatterRemap:not for all copy scatters");
+  if (to->type == VEC_SCATTER_MPI_TOALL) SETERRQ(1,"not for all copy scatters");
 
   if (rto) {
     if (to->type == VEC_SCATTER_SEQ_GENERAL) {
@@ -1004,10 +1004,10 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
       for ( i=0; i<to->n; i++ ) {
         to->slots[i] = rto[to->slots[i]];
       }
-    } else SETERRQ(1,"VecScatterRemap:Unable to remap such scatters");
+    } else SETERRQ(1,"Unable to remap such scatters");
   }
   if (rfrom) {
-    SETERRQ(1,"VecScatterRemap:Unable to remap the FROM in scatters yet");
+    SETERRQ(1,"Unable to remap the FROM in scatters yet");
   }
 
   /*

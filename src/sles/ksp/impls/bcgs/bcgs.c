@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.38 1996/12/08 20:05:43 bsmith Exp balay $";
+static char vcid[] = "$Id: bcgs.c,v 1.39 1996/12/17 16:22:38 balay Exp balay $";
 #endif
 
 /*                       
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: bcgs.c,v 1.38 1996/12/08 20:05:43 bsmith Exp balay $"
 static int KSPSetUp_BCGS(KSP ksp)
 {
   if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(PETSC_ERR_SUP,"KSPSetUp_BCGS:no symmetric preconditioning for KSPBCGS");
+    SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPBCGS");
   }
   return KSPDefaultGetWork( ksp, 7 );
 }
@@ -67,7 +67,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
 
   for (i=0; i<maxit; i++) {
     ierr = VecDot(R,RP,&rho); CHKERRQ(ierr);       /*   rho <- (r,rp)      */
-    if (rho == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"KSPSolve_BCGS:Breakdown");}
+    if (rho == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"Breakdown");}
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P); CHKERRQ(ierr);      /*   p <- r + p beta    */
@@ -83,7 +83,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1); CHKERRQ(ierr);
-      if (d1 != 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"KSPSolve_BCGS:Breakdown");}
+      if (d1 != 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,"Breakdown");}
       ierr = VecAXPY(&alpha,P,X); CHKERRQ(ierr);   /*   x <- x + a p       */
       if (history && hist_len > i+1) history[i+1] = 0.0;
       KSPMonitor(ksp,i+1,0.0);

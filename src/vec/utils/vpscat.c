@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.67 1996/12/07 01:19:12 bsmith Exp balay $";
+ static char vcid[] = "$Id: vpscat.c,v 1.68 1996/12/16 22:46:11 balay Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -254,7 +254,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
     another set of MPI_Request buffers required for the MPI_Startall_irecv() 
     and MPI_Startall_isend().
   */
-  if (mode == SCATTER_REVERSE ) SETERRQ(1,"VecScatterPostRecvs_PtoP_5:No reverse currently");
+  if (mode == SCATTER_REVERSE ) SETERRQ(1,"No reverse currently");
 
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
 
@@ -278,7 +278,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
     another set of MPI_Request buffers required for the MPI_Startall_irecv() 
     and MPI_Startall_isend().
   */
-  if (mode == SCATTER_REVERSE ) SETERRQ(1,"VecScatterBegin_PtoP_5:No reverse currently");
+  if (mode == SCATTER_REVERSE ) SETERRQ(1,"No reverse currently");
 
   gen_to   = (VecScatter_MPI_General *) ctx->todata;
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
@@ -609,7 +609,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"VecScatterCreate_PtoS:Index out of range");
+    if (!found) SETERRQ(1,"Index out of range");
   }
   nprocslocal  = nprocs[rank]; 
   nprocs[rank] = procs[rank] = 0; 
@@ -865,7 +865,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"VecScatterCreate_StoP:Index out of range");
+    if (!found) SETERRQ(1,"Index out of range");
   }
   nprocslocal  = nprocs[rank];
   nprocs[rank] = procs[rank] = 0; 
@@ -1071,7 +1071,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"VecScatterCreate_PtoP:Index out of range");
+    if (!found) SETERRQ(1,"Index out of range");
   }
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 

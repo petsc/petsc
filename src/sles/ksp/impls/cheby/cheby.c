@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.42 1996/08/08 14:41:07 bsmith Exp balay $";
+static char vcid[] = "$Id: cheby.c,v 1.43 1996/12/17 16:26:03 balay Exp balay $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: cheby.c,v 1.42 1996/08/08 14:41:07 bsmith Exp balay $
 int KSPSetUp_Chebychev(KSP ksp)
 {
   if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,"KSPSetUp_Chebychev:no symmetric preconditioning for KSPCHEBYCHEV");}
+    {SETERRQ(2,"no symmetric preconditioning for KSPCHEBYCHEV");}
   return KSPDefaultGetWork( ksp, 3 );
 }
 
