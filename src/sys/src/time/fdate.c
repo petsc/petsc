@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.25 1999/03/09 21:17:20 balay Exp balay $";
+static char vcid[] = "$Id: fdate.c,v 1.26 1999/03/23 16:16:51 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -31,7 +31,9 @@ static char vcid[] = "$Id: fdate.c,v 1.25 1999/03/09 21:17:20 balay Exp balay $"
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"
-
+#if defined (PARCH_ascired)
+#include "sys/time.h"
+#endif
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
 #endif
