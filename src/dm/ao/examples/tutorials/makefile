@@ -1,0 +1,73 @@
+#PETSC_DIR = ../../../..
+ALL: ex1
+
+CFLAGS	        = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
+FFLAGS	        =	 
+SOURCEC	        = 
+SOURCEF	        =
+SOURCEH	        =
+OBJSC	        =
+OBJSF	        =
+LIBBASE	        = libpetscvec
+LOCDIR          = src/ao/examples/tutorials/
+TESTEXAMPLES_1  =
+TESTEXAMPLES_2  =
+TESTEXAMPLES_3  =
+TESTEXAMPLES_4  =
+BUILDEXAMPLES_1 =
+BUILDEXAMPLES_2 = 
+BUILDEXAMPLES_3 = 
+BUILDEXAMPLES_4 = 
+
+EXAMPLESC       =
+EXAMPLESF       = 
+
+ex1: ex1.o  chkopts 
+	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
+	$(RM) -f ex1.o
+
+ex2: ex2.o  chkopts
+	-$(CLINKER) -o ex2 ex2.o $(SLES_LIB)
+	$(RM) -f ex2.o
+
+ex3: ex3.o  chkopts
+	-$(CLINKER) -o ex3 ex3.o  $(SLES_LIB)
+	$(RM) -f ex3.o
+
+ex4: ex4.o  chkopts
+	-$(CLINKER) -o ex4 ex4.o  $(SLES_LIB)
+	$(RM) -f ex4.o
+
+runex1:
+	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
+	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   $(RM) -f ex1_1.tmp
+runex1_2:
+	-@$(MPIRUN)  -np 2 ex1 | sort > ex1_2.tmp 2>&1;\
+	   if (diff output/ex1_2.out ex1_2.tmp) then true ;  \
+	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
+	   $(RM) -f ex1_2.tmp
+runex1_3:
+	-@$(MPIRUN)  -np 3 ex1 | sort  > ex1_3.tmp 2>&1;\
+	   if (diff output/ex1_3.out ex1_3.tmp) then true ;  \
+	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
+	   $(RM) -f ex1_3.tmp
+runex2:
+	-@$(MPIRUN)  ex2 > ex2_1.tmp 2>&1;\
+	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
+	   else echo "Possible problem with ex2_1, diffs above"; fi;\
+	   $(RM) -f ex2_1.tmp
+runex2_2:
+	-@$(MPIRUN)  -np 2 ex2 > ex2_2.tmp 2>&1;\
+	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
+	   else echo "Possible problem with ex2_2, diffs above"; fi;\
+	   $(RM) -f ex2_2.tmp
+runex2_3:
+	-@$(MPIRUN) -np 3 ex2 > ex2_3.tmp 2>&1;\
+	   if (diff output/ex2_3.out ex2_3.tmp) then true; \
+	   else echo "Possible problem with ex2_3, diffs above"; fi;\
+	   $(RM) -f ex2_3.tmp
+
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
