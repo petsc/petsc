@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.385 2000/11/28 17:28:46 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.386 2000/12/19 21:51:35 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3453,6 +3453,9 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the 
    original matrix has not changed from that last call to MatGetSubMatrices().
+
+   This routine creates the matrices submat; you should NOT create them before
+   calling it.
 
    Fortran Note:
    The Fortran interface is slightly different from that given below; it 
