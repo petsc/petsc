@@ -2,10 +2,6 @@
    This file contains a complete list of the configure variables that 
 are used in the installation of PETSc. 
 
-The biggest one is to use SIZEOF_VOIDP and SIZEOF_LONG as the number of
-bytes in a void * or long respectively (SIZEOF_<anytypeincaps> is ok).
-
-
 HAVE_BROKEN_RECURSIVE_MACRO
 CPP processes recursive use of macros incorrectly
 
