@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.20 1995/04/26 18:21:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.21 1995/04/27 20:15:08 bsmith Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -10,6 +10,8 @@ static char vcid[] = "$Id: itcl.c,v 1.20 1995/04/26 18:21:58 bsmith Exp bsmith $
 #include "kspimpl.h"
 #include "sys.h"
 #include "options.h"
+
+extern int KSPGetMethodFromOptions(KSP,KSPMethod *);
 
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
@@ -25,7 +27,7 @@ static char vcid[] = "$Id: itcl.c,v 1.20 1995/04/26 18:21:58 bsmith Exp bsmith $
 @*/
 int KSPSetFromOptions(KSP ctx)
 {
-  KSPMETHOD method;
+  KSPMethod method;
   int       restart;
   VALIDHEADER(ctx,KSP_COOKIE);
 

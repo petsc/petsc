@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.19 1995/04/19 02:59:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.20 1995/04/27 18:25:08 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -153,10 +153,10 @@ int KSPGetPreconditionerSide(KSP itP, int *side)
 
 .seealso: KSPGetMethodName()
 @*/
-int KSPGetMethodFromContext( KSP itP, KSPMETHOD *method )
+int KSPGetMethodFromContext( KSP itP, KSPMethod *method )
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  *method = (KSPMETHOD) itP->type;
+  *method = (KSPMethod) itP->type;
   return 0;
 }
 
@@ -239,41 +239,22 @@ int KSPSetAbsoluteTolerance(KSP itP, double tol)
 }
 
 /*@
-   KSPSetCalculateResidual - Sets a flag so that the two norm of the 
-   residual is calculated at each iteration.
+   KSPSetCalculateResidual - Sets a flag to indicate whether the two norm 
+   of the residual is calculated at each iteration.
 
-   Input Parameter:
+   Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
-
-.keywords: KSP, set, residual, norm, calculate, flag
-
-.seealso: KSPSetDoNotCalculateResidual()
-@*/
-int KSPSetCalculateResidual(KSP itP)
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->calc_res   = 1;
-  return 0;
-}
-
-/*@
-   KSPSetDoNotCalculateResidual - Sets a flag so that the two norm of the 
-   residual is not calculated at each iteration.
-
-   Input Parameter:
-.  itP - iterative context obtained from KSPCreate()
+.  flag - PETSC_TRUE or PETSC_FALSE
 
    Notes:
-   Most Krylov methods do not yet take advantage of this flag.
+   Most Krylov methods do not yet take advantage of flag = PETSC_FALSE.
 
 .keywords: KSP, set, residual, norm, calculate, flag
-
-.seealso: KSPSetCalculateResidual()
 @*/
-int KSPSetDoNotCalculateResidual(KSP itP)
-{      
+int KSPSetCalculateResidual(KSP itP,PetscTruth flag)
+{
   VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->calc_res   = 0;
+  (itP)->calc_res   = flag;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.28 1995/04/28 06:43:07 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.29 1995/05/02 16:55:21 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -9,6 +9,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.28 1995/04/28 06:43:07 curfman Exp cur
 #include "sys.h"
 #include "options.h"
 #include "viewer.h"
+#include "pviewer.h"
 
 /*@ 
    KSPView - Prints the KSP data structure.
@@ -61,7 +62,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->view          = _KSPView;
   ctx->prefix        = 0;
 
-  ctx->type          = (KSPMETHOD) -1;
+  ctx->type          = (KSPMethod) -1;
   ctx->max_it        = 10000;
   ctx->right_pre     = 0;
   ctx->use_pres      = 0;
@@ -121,7 +122,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 
 .keywords: KSP, set, method
 @*/
-int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
+int KSPSetMethod(KSP ctx,KSPMethod itmethod)
 {
   int (*r)(KSP);
   VALIDHEADER(ctx,KSP_COOKIE);
@@ -142,7 +143,7 @@ int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 
 /*@C
    KSPRegister - Adds the iterative method to the KSP package,  given
-   an iterative name (KSPMETHOD) and a function pointer.
+   an iterative name (KSPMethod) and a function pointer.
 
    Input Parameters:
 .  name   - for instance KSPCG, KSPGMRES, ...
@@ -153,7 +154,7 @@ int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
 @*/
-int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
+int  KSPRegister(KSPMethod name, char *sname, int  (*create)(KSP))
 {
   int ierr;
   int (*dummy)(void *) = (int (*)(void *)) create;
@@ -195,12 +196,12 @@ int KSPRegisterDestroy()
    Options Database Key:
 $  -ksp_method  itmethod
 */
-int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
+int KSPGetMethodFromOptions(KSP ctx,KSPMethod *itmethod)
 {
   char sbuf[50];
   if (OptionsGetString(0,ctx->prefix,"-ksp_method", sbuf, 50 )) {
     if (!__ITList) KSPRegisterAll();
-    *itmethod = (KSPMETHOD)NRFindID( __ITList, sbuf );
+    *itmethod = (KSPMethod)NRFindID( __ITList, sbuf );
     return 1;
   }
   return 0;
@@ -218,7 +219,7 @@ int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
 
 .keywords: KSP, get, method, name
 @*/
-int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
+int KSPGetMethodName(KSPMethod  itmeth,char **name )
 {
   if (!__ITList) KSPRegisterAll();
   *name = NRFindName( __ITList, (int) itmeth );

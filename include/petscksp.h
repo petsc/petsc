@@ -13,34 +13,29 @@ typedef struct _KSP*     KSP;
 /*  Possible Krylov Space Methods */
 typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
                KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
-               KSPPREONLY } KSPMETHOD;
+               KSPPREONLY } KSPMethod;
 
 extern int KSPPrintMethods(char *,char *);
 
 extern int KSPCreate(MPI_Comm,KSP *);
-extern int KSPSetMethod(KSP,KSPMETHOD);
+extern int KSPSetMethod(KSP,KSPMethod);
 extern int KSPSetUp(KSP);
 extern int KSPSolve(KSP,int *);
 extern int KSPDestroy(KSP);
 
 extern int KSPRegisterAll();
 extern int KSPRegisterDestroy();
-extern int KSPRegister(KSPMETHOD,char *,int (*)(KSP));
+extern int KSPRegister(KSPMethod,char *,int (*)(KSP));
 
-extern int KSPGetMethodName(KSPMETHOD,char **);
-extern int KSPGetWorkCounts(KSP,int*,int*,int*,int*,int*);
-extern int KSPClearWorkCounts(KSP);
-
+extern int KSPGetMethodName(KSPMethod,char **);
 extern int KSPSetMaxIterations(KSP,int);
 extern int KSPSetRightPreconditioner(KSP);
 extern int KSPGetPreconditionerSide(KSP,int *);
-extern int KSPGetMethodFromContext(KSP,KSPMETHOD *);
-extern int KSPGetMethodFromOptions(KSP,KSPMETHOD *);
+extern int KSPGetMethodFromContext(KSP,KSPMethod *);
 extern int KSPSetRelativeTolerance(KSP,double);
 extern int KSPSetAbsoluteTolerance(KSP,double);
 extern int KSPSetDivergenceTolerance(KSP,double);
-extern int KSPSetCalculateResidual(KSP);
-extern int KSPSetDoNotCalculateResidual(KSP);
+extern int KSPSetCalculateResidual(KSP,PetscTruth);
 extern int KSPSetUsePreconditionedResidual(KSP);
 extern int KSPSetInitialGuessNonzero(KSP);
 extern int KSPSetCalculateEigenvalues(KSP);
