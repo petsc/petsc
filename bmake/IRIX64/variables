@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.8 1999/06/11 16:53:48 balay Exp balay $ 
+# $Id: base_variables,v 1.9 1999/06/11 20:46:53 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -17,7 +17,7 @@ C_CLINKER        = cc  -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
 C_FLINKER        = f90 -cpp ${FOPTFLAGS} -64 -Wl,-woff,84,-woff,85,-woff,134 \
 		   -rpath ${LDIR}:${DYLIBPATH}
 C_CCV            = unknown
-C_SYS_LIB        = -lpthread -lfortran -lftn -lfastm -lmalloc 
+C_SYS_LIB        = -lfpe -lpthread -lfortran -lftn -lfastm -lmalloc 
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g -trapuv 
 G_FOPTFLAGS      = -g -trapuv
@@ -33,7 +33,7 @@ CXX_CLINKER      = CC -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
 CXX_FLINKER      = CC -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
 		   -rpath ${LDIR}:${DYLIBPATH}
 CXX_CCV          = unknown
-CXX_SYS_LIB      = -lcomplex -lpthread -lfortran -lftn -lfastm -lmalloc 
+CXX_SYS_LIB      = -lfpe -lcomplex -lpthread -lfortran -lftn -lfastm -lmalloc 
 
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g

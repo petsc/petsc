@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.55 1999/04/02 19:13:02 balay Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.56 1999/05/12 03:26:57 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -171,11 +171,9 @@ int PetscSetFPTrap(int flag)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------ IRIX64 --------------------------------------*/
-/*
-   64 bit machine does not have fp handling!!!!
-*/
-#elif defined(PARCH_IRIX64) || defined (PARCH_IRIX)
+/* ------------------------ IRIX64(old machines)-----------------------------*/
+
+#elif defined(HAVE_BROKEN_FP_SIG_HANDLER
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
@@ -185,7 +183,7 @@ int PetscSetFPTrap(int flag)
 }
 /* ------------------------ IRIX --------------------------------------*/
 
-#elif defined (PARCH_IRIX5)
+#elif defined (PARCH_IRIX5) || defined(PARCH_IRIX64) || defined (PARCH_IRIX)
 #include <sigfpe.h>
 struct { int code_no; char *name; } error_codes[] = {
        { _INVALID   , "IEEE operand error" } ,
@@ -198,7 +196,7 @@ struct { int code_no; char *name; } error_codes[] = {
 #define __FUNC__ "PetscDefaultFPTrap" 
 void PetscDefaultFPTrap( unsigned exception[],int val[] )
 {
-  int err_ind, j, code,ierr;
+  int err_ind, j, code;
 
   PetscFunctionBegin;
   code = exception[0];
@@ -211,7 +209,7 @@ void PetscDefaultFPTrap( unsigned exception[],int val[] )
   } else{
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);  
   }
-  ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
+  PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -221,11 +219,6 @@ int PetscSetFPTrap(int flag)
 {
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
-#if !defined(__cplusplus)
-    sigfpe_[_EN_OVERFL].abort = 1;
-    sigfpe_[_EN_DIVZERO].abort = 1;
-    sigfpe_[_EN_INVALID].abort = 1;
-#endif
     handle_sigfpes(_ON,_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,PetscDefaultFPTrap,_ABORT_ON_ERROR,0);
   } else {
     handle_sigfpes(_OFF,_EN_OVERFL|_EN_DIVZERO|_EN_INVALID,0,_ABORT_ON_ERROR,0);
