@@ -766,6 +766,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
       ierr = MatFactorInfo_Spooles(mat,viewer);CHKERRQ(ierr);
 #endif
+
       PetscFunctionReturn(0);
     }
   } else if (isdraw) {
