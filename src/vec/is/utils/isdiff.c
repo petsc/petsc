@@ -95,7 +95,8 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
 #undef __FUNCT__  
 #define __FUNCT__ "ISSum"
 /*@
-   ISSum - Computes the sum (union) of two index sets in place.
+   ISSum - Computes the sum (union) of two index sets in place. Note that
+           is1 is an existing IS, not merely a pointer.
 
    Only sequential version (at the moment)
 
