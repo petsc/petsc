@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import action
+import bs
 import fileset
 import transform
 
@@ -19,6 +20,7 @@ class Process (action.Action):
 
   def shellSetAction(self, set):
     if set.tag == self.tag:
+      self.debugPrint(self.program+' processing '+self.debugFileSetStr(set), 3, 'compile')
       action.Action.shellSetAction(self, set)
       if not self.noUpdate:
         for file in set:
@@ -88,10 +90,14 @@ class Compile (action.Action):
       self.products.append(set)
 
   def execute(self):
-    if not os.path.exists(self.library[0]):
+    library = self.library[0]
+    if not os.path.exists(library):
       self.rebuildAll = 1
-      (dir, file) = os.path.split(self.library[0])
+      if bs.sourceDB.has_key(library): del bs.sourceDB[library]
+      (dir, file) = os.path.split(library)
       if not os.path.exists(dir): os.makedirs(dir)
+    elif not bs.sourceDB.has_key(library):
+      self.rebuildAll = 1
     return action.Action.execute(self)
 
 class TagC (transform.GenericTag):
