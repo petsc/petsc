@@ -30,3 +30,6 @@ add to it).
 
   changed VEC_IGNORE_OFF_PROCESSOR_VALUES to 
      VEC_IGNORE_OFF_PROC_ENTRIES
+
+  changed the memory allocation techniques in MatILUFactorSymbolic() and MatLUFactorSymbolic()
+  to improve performance using a technique suggested by David Hysom
