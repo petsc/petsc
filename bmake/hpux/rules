@@ -17,7 +17,8 @@ RANLIB   = true
 # OK, in that case you must remove --no-print-directory from below. It
 # is only for Gnu make.
 #
-OMAKE    = make --no-print-directory
+#OMAKE    = make --no-print-directory
+OMAKE    = /bin/make
 SHELL    = /bin/sh
 CLINKER  = cc $(BASEOPT)
 #
