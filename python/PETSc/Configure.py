@@ -631,6 +631,13 @@ acfindx:
       #self.framework.addSubstitution('PARCH_win32',1)
       self.addDefine('CANNOT_START_DEBUGGER',1)
       self.addDefine('USE_NT_TIME',1)
+      self.missingPrototypes.append('typedef int uid_t;')
+      self.missingPrototypes.append('typedef int gid_t;')
+      self.missingPrototypes.append('#define R_OK 04')
+      self.missingPrototypes.append('#define W_OK 02')
+      self.missingPrototypes.append('#define X_OK 01')
+      self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
+      self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
     return
     
   def configureMPIUNI(self):
