@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.121 1996/07/08 22:24:30 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.122 1996/07/11 18:38:47 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -64,6 +64,7 @@ extern char* PetscStrrtok(char*,char*);
 #define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
 #define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
+#define PetscAbsDouble(a)  ( ((a)<0)   ? -(a) : (a) )
 
 typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_NULL            0
@@ -159,6 +160,8 @@ extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
     MPI_Barrier(((PetscObject)A)->comm); \
     PLogEventEnd(Petsc_Barrier,A,0,0,0); \
   }
+
+extern int PetscMPIDump(FILE *);
 
 /*
       This code allows one to pass a PETSc object in C
