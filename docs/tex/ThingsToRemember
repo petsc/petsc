@@ -85,6 +85,7 @@ UT account:
   login ID: bsmith
    password: petsc-password
  
+brahma.ticam.utexas.edu id bsmith passwd:petsc-password 
 ---------
 
 SGI Power Challenge (IRIX64): 
@@ -121,6 +122,7 @@ Multimedia lab SP2:
     - wide nodes are:  [eyas5,eyas11,eyas13,eyas15].mcs.anl.gov
  to run:  poe -hostfile hostfilename ex1
    where hostfile lists hosts
+   there is a sample hostfile in /home/curfman/mmsp2.host.list
 
  Info on POE:
     http://www.tc.cornell.edu/Edu/Tutor/POE
