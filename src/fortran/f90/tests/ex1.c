@@ -25,7 +25,7 @@ void c_routine_(abc *x)
   double     *data;
 
   F90Array1dAccess(&(x->ptr),(void **)&data);
-  printf("From C: %D %5.2e %D\n",x->a,data[0],x->c);
+  printf("From C: %d %5.2e %d\n",x->a,data[0],x->c);
   fflush(stdout);
   x->a = 2;
 
