@@ -29,7 +29,7 @@ else if ($day == Thu) then
 else if ($day == Fri) then
   set ARCH=linux64
   set BOPT=O_complex    
-  set JOBS=(1 2 3 5 10 12 13)
+  set JOBS=(1 2 3 5 10 13)
 else if ($day == Sat) then
   set BOPT=g    
   set JOBS=(1 2 3 6 8 13)        
