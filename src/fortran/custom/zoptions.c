@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.22 1996/04/01 01:08:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.23 1996/04/18 14:25:22 bsmith Exp balay $";
 #endif
 
 /*
@@ -166,7 +166,25 @@ char   *PETSC_NULL_CHAR_Fortran;
 
 int PetscIntAddressToFortran(int *base,int *addr)
 {
-  return (int) (((long)addr) - ((long)base))/sizeof(int);
+  unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(int);
+  unsigned long tmp3 = (unsigned long) addr;
+  int           itmp2;
+
+  if (tmp3 > tmp1) {
+    tmp2  = (tmp3 - tmp1)/sizeof(int);
+    itmp2 = (int) tmp2;
+  }
+  else {
+    tmp2  = (tmp1 - tmp3)/sizeof(int);
+    itmp2 = -((int) tmp2);
+  }
+  if (base + itmp2 != addr) {
+    fprintf(stderr,"PetscIntAddressToFortran:C and Fortran arrays are\n");
+    fprintf(stderr,"not commonly aligned or are too far apart to be indexed \n");
+    fprintf(stderr,"by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+  return itmp2;
 }
 
 int *PetscIntAddressFromFortran(int *base,int addr)
