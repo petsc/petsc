@@ -629,7 +629,7 @@ acfindx:
     import os
     if os.path.splitext(os.path.basename(wfe))[0] == 'win32fe':
       self.framework.addDefine('PARCH_win32',1)
-      self.framework.argDB['LIBS'] += ' kernel32.lib'
+      self.framework.argDB['LIBS'] += ' kernel32.lib user32.lib  gdi32.lib advapi32.lib'
       self.addDefine('CANNOT_START_DEBUGGER',1)
       self.addDefine('USE_NT_TIME',1)
       self.missingPrototypes.append('typedef int uid_t;')
