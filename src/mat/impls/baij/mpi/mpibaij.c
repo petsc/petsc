@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.140 1999/01/08 16:55:04 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.141 1999/01/08 18:15:39 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1596,7 +1596,11 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
     PetscFree(baij->rowners); 
     ierr = MatDestroy(baij->A); CHKERRQ(ierr);
     ierr = MatDestroy(baij->B); CHKERRQ(ierr);
+#if defined (USE_CTABLE)
+    if (baij->colmap) TableDelete(baij->colmap);
+#else
     if (baij->colmap) PetscFree(baij->colmap);
+#endif
     if (baij->garray) PetscFree(baij->garray);
     if (baij->lvec) VecDestroy(baij->lvec);
     if (baij->Mvctx) VecScatterDestroy(baij->Mvctx);

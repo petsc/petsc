@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.269 1998/12/23 19:31:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.270 1999/01/08 21:16:23 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -20,10 +20,17 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
   int        n = B->n,i;
 
   PetscFunctionBegin;
+#if defined (USE_CTABLE)
+  ierr = TableCreate( &aij->colmap, aij->n/5 ); CHKERRQ(ierr); 
+  for ( i=0; i<n; i++ ){
+    ierr = TableAdd( aij->colmap, aij->garray[i] + 1, i+1 );CHKERRQ(ierr);
+  }
+#else
   aij->colmap = (int *) PetscMalloc((aij->N+1)*sizeof(int));CHKPTRQ(aij->colmap);
   PLogObjectMemory(mat,aij->N*sizeof(int));
   PetscMemzero(aij->colmap,aij->N*sizeof(int));
   for ( i=0; i<n; i++ ) aij->colmap[aij->garray[i]] = i+1;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -222,7 +229,11 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
             if (!aij->colmap) {
               ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
             }
+#if defined (USE_CTABLE)
+	    col = TableFind( aij->colmap, in[j] + 1 ) - 1;
+#else
             col = aij->colmap[in[j]] - 1;
+#endif
             if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
               ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
               col =  in[j];
@@ -280,7 +291,11 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
           if (!aij->colmap) {
             ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
           }
+#if defined (USE_CTABLE)
+	  col = TableFind( aij->colmap, idxn[j] + 1 ) - 1;
+#else
           col = aij->colmap[idxn[j]] - 1;
+#endif
           if ((col < 0) || (aij->garray[col] != idxn[j])) *(v+i*n+j) = 0.0;
           else {
             ierr = MatGetValues(aij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
@@ -434,7 +449,11 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
           if (!aij->colmap) {
             ierr = CreateColmap_MPIAIJ_Private(mat); CHKERRQ(ierr);
           }
+#if defined (USE_CTABLE)
+          col = TableFind( aij->colmap, col + 1 ) - 1;
+#else
           col = aij->colmap[col] - 1;
+#endif
           if (col < 0  && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
             ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
             col = (int) PetscReal(values[3*i+1]);
@@ -790,7 +809,11 @@ int MatDestroy_MPIAIJ(Mat mat)
   PetscFree(aij->rowners); 
   ierr = MatDestroy(aij->A); CHKERRQ(ierr);
   ierr = MatDestroy(aij->B); CHKERRQ(ierr);
+#if defined (USE_CTABLE)
+  if (aij->colmap) TableDelete(aij->colmap);
+#else
   if (aij->colmap) PetscFree(aij->colmap);
+#endif
   if (aij->garray) PetscFree(aij->garray);
   if (aij->lvec)   VecDestroy(aij->lvec);
   if (aij->Mvctx)  VecScatterDestroy(aij->Mvctx);
@@ -1412,7 +1435,11 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     PetscFree(a->rowners); 
     ierr = MatDestroy(a->A); CHKERRQ(ierr);
     ierr = MatDestroy(a->B); CHKERRQ(ierr);
+#if defined (USE_CTABLE)
+    if (a->colmap) TableDelete(a->colmap);
+#else
     if (a->colmap) PetscFree(a->colmap);
+#endif
     if (a->garray) PetscFree(a->garray);
     if (a->lvec) VecDestroy(a->lvec);
     if (a->Mvctx) VecScatterDestroy(a->Mvctx);
@@ -1966,9 +1993,13 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
   ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
+#if defined (USE_CTABLE)
+    ierr = TableCreateCopy( &a->colmap, oldmat->colmap ); CHKERRQ(ierr);
+#else
     a->colmap = (int *) PetscMalloc((a->N)*sizeof(int));CHKPTRQ(a->colmap);
     PLogObjectMemory(mat,(a->N)*sizeof(int));
     PetscMemcpy(a->colmap,oldmat->colmap,(a->N)*sizeof(int));
+#endif
   } else a->colmap = 0;
   if (oldmat->garray) {
     len = ((Mat_SeqAIJ *) (oldmat->B->data))->n;
