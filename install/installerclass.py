@@ -57,9 +57,7 @@ class Installer(install.urlMapping.UrlMapping):
   def bootstrapInstall(self, url, argDB):
     self.debugPrint('Installing '+url+' from bootstrap', 3, 'install')
     root = self.retriever.retrieve(url, force = self.force);
-    # This is for purging the sidl after the build
-    self.argDB['fileset'] = 'sidl'
-    self.builder.build(root, target = ['activate', 'default', 'purge'])
+    self.builder.build(root)
     return
 
   def backup(self, url):

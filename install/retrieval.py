@@ -130,13 +130,14 @@ class Retriever(install.urlMapping.UrlMapping):
     - If force is True, a full dowmload is mandated.
     Providing the root is an easy way to make a copy, for instance when making tarballs.
     '''
-    url     = self.getMappedUrl(url)
+    origUrl = url
+    url     = self.getMappedUrl(origUrl)
     project = self.getInstalledProject(url)
     if not project is None and root is None:
       root     = project.getRoot()
       canExist = 1
     if root is None:
-      root = self.getInstallRoot(url)
+      root = self.getInstallRoot(origUrl)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     try:
       if self.argDB['retrievalCanExist']:
