@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.8 1995/05/13 00:52:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.9 1995/05/29 16:08:07 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -30,7 +30,7 @@ static char   *XiADefLabel(double,double);
 static double XiAGetNice(double,double,int );
 static int    XiAGetBase(double,double,int,double*,int*);
 
-#if defined(PARCH_cray) || defined(PARCH_hpux)
+#if defined(PARCH_cray)
 static double rint( x )
 double x;
 {
