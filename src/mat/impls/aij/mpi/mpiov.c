@@ -1,8 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.8 1996/01/30 23:57:32 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.9 1996/01/31 20:22:46 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
+#include "inline/bitarray.h"
+
 int MatIncreaseOverlap_MPIAIJ_private(Mat, int, IS *);
 
 int MatIncreaseOverlap_MPIAIJ(Mat C, int is_max, IS *is, int ov)
@@ -15,21 +17,20 @@ int MatIncreaseOverlap_MPIAIJ(Mat C, int is_max, IS *is, int ov)
   return 0;
 }
 
-
-
 int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
 {
   Mat_MPIAIJ  *c = (Mat_MPIAIJ *) C->data;
   Mat          A = c->A, B = c->B;
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
-  int         **idx, *n, *w1, *w2, *w3, *w4, *rtable,**table,**data;
+  int         **idx, *n, *w1, *w2, *w3, *w4, *rtable,**data;
   int         size, rank, m,i,j,k, ierr, **rbuf, row, proc, mct, msz, **outdat, **ptr;
-  int         *ctr, sum, *pa, tag, *tmp,bsz, nmsg , *isz, *isz1, **xdata, *xtable,rstart;
+  int         *ctr, sum, *pa, tag, *tmp,bsz, nmsg , *isz, *isz1, **xdata,rstart;
   int         cstart, *ai, *aj, *bi, *bj, *garray, bsz1, **rbuf2, ashift, bshift;
+  char        **table, *xtable;
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits,*send_waits2,*recv_waits2 ;
   MPI_Status  *send_status ,*recv_status;
-  int         space, fr, maxs;
+  double         space, fr, maxs;
                               /* assume overlap = 1 */
   comm   = C->comm;
   tag    = C->tag;
@@ -48,7 +49,7 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
 
 
   TrSpace( &space, &fr, &maxs );
-  MPIU_printf(MPI_COMM_SELF,"[%d] acclcated space = %d fragments = %d max ever allocated = %d\n", rank, space, fr, maxs);
+  /*  MPIU_printf(MPI_COMM_SELF,"[%d] acclcated space = %f fragments = %f max ever allocated = %f\n", rank, space, fr, maxs); */
   
   idx    = (int **)PetscMalloc((is_max+1)*sizeof(int *)); CHKPTRQ(idx);
   n      = (int *)PetscMalloc((is_max+1)*sizeof(int )); CHKPTRQ(n);
@@ -133,17 +134,17 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   }
  
   /* Memory for doing local proc's work*/
-  table = (int **)PetscMalloc((is_max+1)*sizeof(int *));  CHKPTRQ(table);
+  table = (char **)PetscMalloc((is_max+1)*sizeof(int *));  CHKPTRQ(table);
   data  = (int **)PetscMalloc((is_max+1)*sizeof(int *)); CHKPTRQ(data);
-  table[0] = (int *)PetscMalloc((m+1)*(is_max)*sizeof(int)); CHKPTRQ(table[0]);
+  table[0] = (char *)PetscMalloc((m/8 +1)*(is_max)); CHKPTRQ(table[0]);
   data [0] = (int *)PetscMalloc((m+1)*(is_max)*sizeof(int)); CHKPTRQ(data[0]);
   
   for(i = 1; i<is_max ; i++) {
-    table[i] = table[0] + (m+1)*i;
+    table[i] = table[0] + (m/8+1)*i;
     data[i]  = data[0] + (m+1)*i;
   }
   
-  PetscMemzero((void*)*table,(m+1)*(is_max)*sizeof(int)); 
+  PetscMemzero((void*)*table,(m/8+1)*(is_max)); 
   isz = (int *)PetscMalloc((is_max+1) *sizeof(int)); CHKPTRQ(isz);
   PetscMemzero((void *)isz,(is_max+1) *sizeof(int));
   
@@ -159,7 +160,8 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
         ptr[proc]++;
       }
       else { /* Update the table */
-        if(!table[i][row]++) { data[i][isz[i]++] = row;}
+        if ( !BT_LOOKUP(table[i],row)) { data[i][isz[i]++] = row;}
+        /* if(!table[i][row]++) { data[i][isz[i]++] = row;}*/
       }
     }
     /* Update the headers for the current IS */
@@ -230,13 +232,15 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
         end   = ai[row+1];
         for ( k=start; k < end; k++) { /* Amat */
           val = aj[k] + ashift + cstart;
-          if(!table[i][val]++) { data[i][isz[i]++] = val;}  
+          if(!BT_LOOKUP(table[i],val)) { data[i][isz[i]++] = val;}  
+          /* if(!table[i][val]++) { data[i][isz[i]++] = val;}  */
         }
         start = bi[row];
         end   = bi[row+1];
         for ( k=start; k < end; k++) { /* Bmat */
           val = garray[bj[k]+bshift] ; 
-          if(!table[i][val]++) { data[i][isz[i]++] = val;}  
+          if(! BT_LOOKUP(table[i],val)) { data[i][isz[i]++] = val;}  
+          /* if(!table[i][val]++) { data[i][isz[i]++] = val;}  */
         } 
       }
     }
@@ -259,15 +263,20 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   
   /* Do work on recieved messages*/
   {
-    int ct, ct1, ct2;
+    int  total_sz,ct, ct1, ct2, mem_estimate;
     int oct2, l, start, end, val, max1, max2;
   
     
-    for (i =0, ct =0; i< nmsg; ++i) ct+= rbuf[i][0];
-    
+    for (i =0, ct =0, total_sz =0; i< nmsg; ++i){
+      ct+= rbuf[i][0];
+      for ( j = 1; j <= rbuf[i][0] ; j++ ) { total_sz += rbuf[i][2*j]; }
+    }
+    max1 = ct*(a->nz +b->nz)/c->m;
+    mem_estimate =  3* (total_sz > max1?total_sz:max1)
+;
     xdata    = (int **)PetscMalloc((nmsg+1)*sizeof(int *)); CHKPTRQ(xdata);
-    xdata[0] = (int *)PetscMalloc((ct+nmsg+(m+1)*ct)*sizeof(int)); CHKPTRQ(xdata[0]);
-    xtable   = (int *)PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(xtable);
+    xdata[0] = (int *)PetscMalloc(mem_estimate *sizeof(int)); CHKPTRQ(xdata[0]);
+    xtable   = (char *)PetscMalloc((m/8+1)); CHKPTRQ(xtable);
     isz1     = (int *)PetscMalloc((nmsg+1) *sizeof(int)); CHKPTRQ(isz1);
     PetscMemzero((void *)isz1,(nmsg+1) *sizeof(int));
     
@@ -276,11 +285,12 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
       ct1 = 2*rbuf[i][0]+1;
       ct2 = 2*rbuf[i][0]+1;
       for (j = 1, max1= rbuf[i][0]; j<=max1; j++) { /* for each IS from proc i*/
-        PetscMemzero((void *)xtable,(m+1)*sizeof(int));
+        PetscMemzero((void *)xtable,(m/8+1));
         oct2 = ct2;
         for (k =0; k < rbuf[i][2*j]; k++, ct1++) { 
           row = rbuf[i][ct1];
-          if(!xtable[row]++) { xdata[i][ct2++] = row;}  
+          if(!BT_LOOKUP(xtable,row)) { xdata[i][ct2++] = row;}  
+          /* if(!xtable[row]++) { xdata[i][ct2++] = row;}  */
         }
         for ( k=oct2, max2 =ct2 ; k< max2; k++) {
           row   = xdata[i][k] - rstart;
@@ -288,13 +298,15 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
           end   = ai[row+1];
           for ( l=start; l < end; l++) {
             val = aj[l] +ashift + cstart;
-            if(!xtable[val]++) { xdata[i][ct2++] = val;}  
+            if(!BT_LOOKUP(xtable,val)) { xdata[i][ct2++] = val;}  
+            /* if(!xtable[val]++) { xdata[i][ct2++] = val;}  */
           }
           start = bi[row];
           end   = bi[row+1];
           for ( l=start; l < end; l++) {
             val = garray[bj[l]+bshift] ;
-            if(!xtable[val]++) { xdata[i][ct2++] = val;}  
+            if(!BT_LOOKUP(xtable,val)) { xdata[i][ct2++] = val;}  
+            /* if(!xtable[val]++) { xdata[i][ct2++] = val;}  */
           } 
         }
         /* Update the header*/
@@ -367,7 +379,8 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
         is_no = rbuf2[index][2*j-1];
         for (k=0; k < max ; k++, ct1++) {
           row = rbuf2[index][ct1];
-          if(!table[is_no][row]++) { data[is_no][isz[is_no]++] = row;}   
+          if(!BT_LOOKUP(table[is_no],row)) { data[is_no][isz[is_no]++] = row;}   
+          /* if(!table[is_no][row]++) { data[is_no][isz[is_no]++] = row;}   */
         }
       }
     }
@@ -390,10 +403,10 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   }
   
   TrSpace( &space, &fr, &maxs );
-  MPIU_printf(MPI_COMM_SELF,"[%d] acclcated space = %d fragments = %d max ever allocated = %d\n", rank, space, fr, maxs);
+  /*   MPIU_printf(MPI_COMM_SELF,"[%d] acclcated space = %f fragments = %f max ever allocated = %f\n", rank, space, fr, maxs);*/
   
   /* whew! already done? check again :) */
-  /* PetscFree(idx);
+  PetscFree(idx);
   PetscFree(n);
   PetscFree(rtable);
   PetscFree(w1);
@@ -418,8 +431,8 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   PetscFree(isz);
   PetscFree(isz1);
   PetscFree(xtable);
-  PetscFree(xdata[0]);
-  PetscFree(xdata); */
+  PetscFree(xdata[0]); 
+  PetscFree(xdata);
   
   /* Dont forget to ISRestoreIndices */
   return 0;
