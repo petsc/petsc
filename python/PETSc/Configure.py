@@ -8,7 +8,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.framework.usingMPIUni  = 0
+    self.usingMPIUni              = 0
     self.missingPrototypes        = []
     self.missingPrototypesC       = []
     self.missingPrototypesCxx     = []
@@ -126,14 +126,14 @@ class Configure(config.base.Configure):
       - Find dlfcn.h and libdl
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    if not (self.framework.archBase.startswith('aix') or (self.framework.archBase.startswith('darwin') and not (self.framework.usingMPIUni and not self.framework.argDB.has_key('FC')))):
+    if not (self.framework.archBase.startswith('aix') or (self.framework.archBase.startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
       useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
       if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
 
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
-    if self.framework.archBase.startswith('darwin') and self.framework.usingMPIUni and not self.framework.argDB.has_key('FC'):
+    if self.framework.archBase.startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
       if self.framework.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
       else:                               bls = ''
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
@@ -385,7 +385,7 @@ class Configure(config.base.Configure):
     self.mpi.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.mpi.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.mpi.addDefine('HAVE_MPI_FINT', 1)
-    self.framework.usingMPIUni = 1
+    self.usingMPIUni = 1
     return
 
   def configureMissingPrototypes(self):
@@ -498,6 +498,27 @@ class Configure(config.base.Configure):
       self.framework.log.write('Document files found\n')
     return
 
+  def configureRegression(self):
+    '''Output a file listing the jobs that should be run by the PETSc buildtest'''
+    jobs = []
+    if self.usingMPIUni:
+      jobs.append('4')
+      if 'FC' in self.framework.argDB:
+        jobs.append('9')
+    else:
+      jobs.append('1')
+      if self.x11.foundX11:
+        jobs.append('2')
+      if 'FC' in self.framework.argDB:
+        jobs.append('3')
+    jobsFile  = file(os.path.abspath(os.path.join('bmake', self.framework.argDB['PETSC_ARCH'], 'jobs')), 'w')
+    jobsFile.write(' '.join(jobs)+'\n')
+    jobsFile.close()
+    ejobsFile = file(os.path.abspath(os.path.join('bmake', self.framework.argDB['PETSC_ARCH'], 'ejobs')), 'w')
+    ejobsFile.write(' ')
+    ejobsFile.close()
+    return
+
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
     scriptName = os.path.join('bmake', self.framework.arch, 'configure.py')
@@ -551,6 +572,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['enable-etags']:                                    
       self.executeTest(self.configureETags)
     self.executeTest(self.configureDocs)
+    self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
     self.startLine()
     return
