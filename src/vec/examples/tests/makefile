@@ -10,10 +10,10 @@ OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscvec
 EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
-		ex16 ex17 ex20
+		ex16 ex17 ex20 ex23
 RUNEXAMPLES_1 = runex1 runex1_2 runex2 runex3 runex4 runex5 runex6 runex7 \
 		runex8 runex9 runex10 runex11 runex12 runex13 runex14 runex16\
-		runex17 runex20 runex20_2
+		runex17 runex20 runex20_2 runex23
 EXAMPLES_2    = ex15 ex22
 RUNEXAMPLES_2 = runex15
 EXAMPLES_3    = ex19 ex21
@@ -231,6 +231,11 @@ runex21:
 	   if (diff output/ex21_1.out ex21_1.tmp) then true; \
 	   else echo "Possible problem with ex21_1, diffs above"; fi;\
 	   $(RM) -f ex21_1.tmp
+runex23:
+	-@$(MPIRUN) ex23 > ex23_1.tmp 2>&1;\
+	   if (diff output/ex23_1.out ex23_1.tmp) then true; \
+	   else echo "Possible problem with ex23_1, diffs above"; fi;\
+	   $(RM) -f ex23_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
