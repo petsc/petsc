@@ -57,7 +57,7 @@ class Configure(config.base.Configure):
     for dir in self.dir:
       self.framework.argDB['LIBS'] += ' -L'+dir
     for lib in self.lib:
-      self.framework.argDB['LIBS'] += ' -l'+lib
+      self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument(lib)
     self.framework.argDB['LIBS'] += ' '+self.compilers.flibs
     if self.checkLink(includes, body):
       success = 1
@@ -174,7 +174,7 @@ class Configure(config.base.Configure):
       for dir in self.dir:
         libFlag = '-L'+dir+' '
       for lib in self.lib:
-        libFlag += ' -l'+lib
+        libFlag += ' '+self.libraries.getLibArgument(lib)
       self.addSubstitution('MPI_LIB', libFlag)
     return
 
