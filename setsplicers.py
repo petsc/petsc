@@ -111,12 +111,11 @@ def setSplicers(directory):
   
   regset    = re.compile('\.set\(([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*)\)[ ]*;')
   regcreate = re.compile('\.create\(([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*),([->< a-zA-Z_0-9/.\(\)\[\]&+*]*)\)[ ]*;')
-  reginst   = re.compile('\.isInstanceOf\("([-a-zA-Z_0-9.]*)"\)')
   replaces =  {'SIDL/Args':'SIDLASE/Args',    'SIDL/ProjectState':'SIDLASE/ProjectState',
                'SIDL::Args':'SIDLASE::Args',  'SIDL::ProjectState':'SIDLASE::ProjectState',
                '.dim(':'.dimen(',             '.destroy(':'.deleteRef(',
                '.setMessage(':'.setNote(',    '.getMessage(':'getNote(',
-               '.isInstanceOf(':'.queryInt(', ' IDENT':' MPIB::IDENT',
+               '.isInstanceOf(':'.isType(', ' IDENT':' MPIB::IDENT',
                ' SIMILAR':' MPIB::SIMILAR',    ' CONGRUENT':' MPIB::CONGRUENT',
                '__enum':''}
   for i in splicedimpls:
@@ -125,8 +124,6 @@ def setSplicers(directory):
         splicedimpls[i][j] = regset.sub('.set(\\2,\\1);',splicedimpls[i][j])
       if regcreate.search(splicedimpls[i][j]):
         splicedimpls[i][j] = regcreate.sub('.createRow(\\1,\\2,\\3);',splicedimpls[i][j])
-      if reginst.search(splicedimpls[i][j]):
-        splicedimpls[i][j] = reginst.sub('.queryInt("\\1") != 0',splicedimpls[i][j])
       for k in replaces:    
         splicedimpls[i][j] = splicedimpls[i][j].replace(k,replaces[k])
   
