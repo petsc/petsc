@@ -1,6 +1,7 @@
-/* $Id: dot.h,v 1.15 1999/03/12 00:21:48 balay Exp bsmith $ */
+/* $Id: dot.h,v 1.16 1999/05/12 03:25:57 bsmith Exp balay $ */
 
 #ifndef DOT
+#include "petsc.h"
 
 EXTERN_C_BEGIN
 
