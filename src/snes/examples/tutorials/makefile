@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.89 2001/01/15 21:48:06 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.90 2001/02/15 15:45:35 bsmith Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -12,7 +12,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5c.c ex6.c ex7.c ex8.c ex5s.c ex9.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex8and9.h 
 EXAMPLESFH       = ex5f.h
-DOCS		 = readme ex5m.m
+DOCS		 = ex5m.m
 DIRS		 = ex10d
 TUTORIALS        = ex5.c ex5f.F ex5f90.F ex12.c ex18.c ex19.c
 
@@ -118,6 +118,9 @@ ex23: ex23.o chkopts
 ex24: ex24.o chkopts
 	-${CLINKER} -o ex24 ex24.o ${PETSC_SNES_LIB}
 	${RM} ex24.o
+ex30: ex30.o chkopts
+	-${CLINKER} -o ex30 ex30.o ${PETSC_SNES_LIB}
+	${RM} ex30.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog -snes_smonitor > ex1_1.tmp 2>&1;   \

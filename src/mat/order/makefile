@@ -1,9 +1,12 @@
-# $Id: makefile,v 1.37 2000/08/17 19:36:51 balay Exp balay $ 
+# $Id: makefile,v 1.38 2000/12/15 19:26:49 balay Exp bsmith $ 
 #
-#  All the Sparspak routines have been converted to C with the F2C 
+#  All the Sparspack routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
 # code in the interest of saving disk space. 
 #
+#  All Sparsepack routines are prepended with SPARSEPACK to reduce
+# name space pollution.
+
 ALL: lib
 
 CFLAGS   =
@@ -17,7 +20,6 @@ OBJSC    = sp1wd.o spinver.o spnd.o spqmd.o sprcm.o sorder.o sregis.o\
            genrcm.o qmdrch.o rootls.o fndsep.o gennd.o qmdmrg.o qmdupd.o
 LIBBASE  = libpetscmat
 DIRS     = dsc
-DOCS     = readme
 LOCDIR   = src/mat/order/
 MANSEC   = MatOrderings
 
