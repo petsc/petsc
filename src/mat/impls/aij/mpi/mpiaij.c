@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.10 1995/03/17 04:56:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.11 1995/03/21 23:19:19 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -918,6 +918,7 @@ static int MatiAIJrange(Mat matin,int *m,int *n)
 }
 
 static int MatiCopy(Mat,Mat *);
+extern int MatiAIJMPIConvert(Mat,MATTYPE,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatiAIJInsertValues,
@@ -934,8 +935,9 @@ static struct _MatOps MatOps = {MatiAIJInsertValues,
        0,
        MatiAIJinsopt,MatiZero,MatiZerorows,0,
        0,0,0,0,
-       MatiAIJsize,MatiAIJlocalsize,MatiAIJrange };
-
+       MatiAIJsize,MatiAIJlocalsize,MatiAIJrange,
+       0,0,
+       0,MatiAIJMPIConvert };
 
 
 /*@
