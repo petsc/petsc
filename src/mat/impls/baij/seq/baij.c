@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.233 2001/07/11 19:38:40 buschelm Exp $*/
+/*$Id: baij.c,v 1.235 2001/07/12 01:48:59 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -212,28 +212,20 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
     break;
   case MAT_USE_SINGLE_PRECISION_SOLVES:
-#if defined(PETSC_USE_MAT_SINGLE)
     if (a->bs==4) {
       PetscTruth sse_enabled,single_prec,flg;
       int        ierr;
+
       ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
-      if (sse_enabled) {
-        a->single_precision_solves = PETSC_TRUE;
-        ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
-        if (flg) {
-          if (!single_prec) {
-            a->single_precision_solves = PETSC_FALSE;
-          }
-        }
-      } else {
-        PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
+      ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
+      if (sse_enabled && flg && single_prec) {
+          a->single_precision_solves = PETSC_TRUE;
+          A->ops->solve              = MatSolve_SeqBAIJ_Update;
+          A->ops->solvetranspose     = MatSolveTranspose_SeqBAIJ_Update;
+          break;
       }
-    } else {
       PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
     }
-#else
-    PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
-#endif
     break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
@@ -1121,62 +1113,6 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
   PetscFunctionReturn(0);
 } 
 
-EXTERN int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
-EXTERN int MatLUFactor_SeqBAIJ(Mat,IS,IS,MatLUInfo*);
-EXTERN int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
-EXTERN int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
-EXTERN int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
-EXTERN int MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
-EXTERN int MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
-EXTERN int MatScale_SeqBAIJ(Scalar*,Mat);
-EXTERN int MatNorm_SeqBAIJ(Mat,NormType,PetscReal *);
-EXTERN int MatEqual_SeqBAIJ(Mat,Mat,PetscTruth*);
-EXTERN int MatGetDiagonal_SeqBAIJ(Mat,Vec);
-EXTERN int MatDiagonalScale_SeqBAIJ(Mat,Vec,Vec);
-EXTERN int MatGetInfo_SeqBAIJ(Mat,MatInfoType,MatInfo *);
-EXTERN int MatZeroEntries_SeqBAIJ(Mat);
-
-EXTERN int MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBAIJ_2(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBAIJ_3(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBAIJ_6(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_7(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_6(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_5(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_4(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_3(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_2(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_1(Mat,Vec,Vec);
-
-EXTERN int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_6(Mat,Mat*);
-
-EXTERN int MatMult_SeqBAIJ_1(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBAIJ_2(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBAIJ_3(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBAIJ_4(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBAIJ_5(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBAIJ_6(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBAIJ_7(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBAIJ_N(Mat,Vec,Vec);
-
-EXTERN int MatMultAdd_SeqBAIJ_1(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBAIJ_2(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBAIJ_3(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBAIJ_4(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactor_SeqBAIJ"
@@ -1206,7 +1142,7 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
       for ILU(0) factorization with natural ordering
   */
   if (a->bs < 8) {
-    ierr = MatSeqBAIJ_UpdateFactorizerSolver_NaturalOrdering(inA);CHKERRQ(ierr);
+    ierr = MatSeqBAIJ_UpdateFactor_NaturalOrdering(inA);CHKERRQ(ierr);
   } else {
     a->row        = row;
     a->col        = col;
@@ -1905,59 +1841,48 @@ int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
 
   b       = (Mat_SeqBAIJ*)B->data;
   ierr    = PetscOptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg);CHKERRQ(ierr);
+  B->ops->solve               = MatSolve_SeqBAIJ_Update;
+  B->ops->solvetranspose      = MatSolveTranspose_SeqBAIJ_Update;
   if (!flg) {
     switch (bs) {
     case 1:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
-      B->ops->solve           = MatSolve_SeqBAIJ_1;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1;
       B->ops->mult            = MatMult_SeqBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
       break;
     case 2:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
-      B->ops->solve           = MatSolve_SeqBAIJ_2;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2;
       B->ops->mult            = MatMult_SeqBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
       break;
     case 3:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
-      B->ops->solve           = MatSolve_SeqBAIJ_3;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3;
       B->ops->mult            = MatMult_SeqBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
       break;
     case 4:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
-      B->ops->solve           = MatSolve_SeqBAIJ_4;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4;
       B->ops->mult            = MatMult_SeqBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
       break;
     case 5:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
-      B->ops->solve           = MatSolve_SeqBAIJ_5; 
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5;
       B->ops->mult            = MatMult_SeqBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
       break;
     case 6:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;  
-      B->ops->solve           = MatSolve_SeqBAIJ_6; 
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6;
       B->ops->mult            = MatMult_SeqBAIJ_6;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
       break;
     case 7:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7;  
       B->ops->mult            = MatMult_SeqBAIJ_7; 
-      B->ops->solve           = MatSolve_SeqBAIJ_7;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
       break;
     default:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;  
       B->ops->mult            = MatMult_SeqBAIJ_N; 
-      B->ops->solve           = MatSolve_SeqBAIJ_N;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_N;
       break;
     }

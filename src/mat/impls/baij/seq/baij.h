@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.30 2001/06/22 00:12:08 buschelm Exp $ */
+/* $Id: baij.h,v 1.31 2001/07/12 00:37:47 buschelm Exp buschelm $ */
 
 #include "src/mat/matimpl.h"
 
@@ -47,31 +47,100 @@ EXTERN int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
 EXTERN int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatMarkDiagonal_SeqBAIJ(Mat);
 
-EXTERN int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
+EXTERN int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
+EXTERN int MatLUFactor_SeqBAIJ(Mat,IS,IS,MatLUInfo*);
+EXTERN int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
+EXTERN int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
+EXTERN int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
+EXTERN int MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
+EXTERN int MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
+EXTERN int MatScale_SeqBAIJ(Scalar*,Mat);
+EXTERN int MatNorm_SeqBAIJ(Mat,NormType,PetscReal *);
+EXTERN int MatEqual_SeqBAIJ(Mat,Mat,PetscTruth*);
+EXTERN int MatGetDiagonal_SeqBAIJ(Mat,Vec);
+EXTERN int MatDiagonalScale_SeqBAIJ(Mat,Vec,Vec);
+EXTERN int MatGetInfo_SeqBAIJ(Mat,MatInfoType,MatInfo *);
+EXTERN int MatZeroEntries_SeqBAIJ(Mat);
+
+EXTERN int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat);
+EXTERN int MatSeqBAIJ_UpdateSolvers(Mat);
+
+EXTERN int MatSolve_SeqBAIJ_Update(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat*);
+EXTERN int MatSolve_SeqBAIJ_2(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat,Mat*);
+EXTERN int MatSolve_SeqBAIJ_3(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
+EXTERN int MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
-#ifdef PETSC_HAVE_SSE
-EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat,Mat*);
+#if defined(PETSC_HAVE_SSE)
+EXTERN int MatSolve_SeqBAIJ_4_SSE_Demotion(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat,Vec,Vec);
+#else
+#define MatSolve_SeqBAIJ_4_SSE_Demotion(a,b,c) MatSolve_SeqBAIJ_4(a,b,c)
+#define MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(a,b,c)  MatSolve_SeqBAIJ_4_NaturalOrdering(a,b,c)
 #endif
-EXTERN int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat,Mat*);
+EXTERN int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat,Mat*);
+EXTERN int MatSolve_SeqBAIJ_6(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat*);
+EXTERN int MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
+
+EXTERN int MatSolveTranspose_SeqBAIJ_Update(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_1(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_2(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_3(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_4(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_5(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_6(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
+EXTERN int MatSolveTranspose_SeqBAIJ_7(Mat,Vec,Vec);
 EXTERN int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
-EXTERN int MatSeqBAIJ_UpdateFactorizerSolver_NaturalOrdering(Mat);
+
+EXTERN int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
+#if defined(PETSC_HAVE_SSE)
+EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat,Mat*);
+#else
+#define MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(a,b) MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(a,b)
+#endif
+EXTERN int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_6(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_7(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
+
+EXTERN int MatMult_SeqBAIJ_1(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_2(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_3(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_4(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_5(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_6(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_7(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBAIJ_N(Mat,Vec,Vec);
+
+EXTERN int MatMultAdd_SeqBAIJ_1(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_2(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_3(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_4(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
 
 #endif
