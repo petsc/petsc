@@ -219,13 +219,14 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   int         ierr;
-  PetscTruth  isdraw,isascii,issocket,isbinary;
+  PetscTruth  isdraw,isascii,issocket,isbinary,ismathematica;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
   if (isdraw){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (isascii){
@@ -234,6 +235,8 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = PetscViewerSocketPutScalar(viewer,xin->n,1,x->array);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
+  } else if (ismathematica) {
+    ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
   }
