@@ -7,40 +7,40 @@
 # OBJS - object files
 # PETSC_INCLUDE - locations of include files
 #
-LDIR          = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
-PDIR          = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
-LIBNAME       = $(PDIR)/$(LIBBASE).a
-SOURCE        = $(SOURCEC) $(SOURCEF)
-OBJS          = $(OBJSC) $(OBJSF)
+LDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
+PDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
+LIBNAME	      = $(PDIR)/$(LIBBASE).a
+SOURCE	      = $(SOURCEC) $(SOURCEF)
+OBJS	      = $(OBJSC) $(OBJSF)
 PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE) \
-               -I$(PETSC_DIR)/src
+	       -I$(PETSC_DIR)/src
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # stencils, grids, and all lower level PETSc components (such as vectors 
 # and matrices).  The order of listing these libraries is important!
 #
-ALL_PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
-                -lpetscsnes  -lpetscsles -lpetscksp \
-                -lpetscmat  -lpetscvec -lpetscdraw \
-                -lpetscsys \
-                $(SUPERLU_LIB) $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
-                $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
+ALL_PETSC_LIB	= -L$(LDIR) -lpetscstencil -lpetscgrid \
+		-lpetscsnes  -lpetscsles -lpetscksp \
+		-lpetscmat  -lpetscvec -lpetscdraw \
+		-lpetscsys \
+		$(SUPERLU_LIB) $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
+		$(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #
 PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
-                -lpetscmat  -lpetscvec -lpetscdraw \
-                -lpetscsys \
-                $(SUPERLU_LIB) $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
-                $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm 
+		-lpetscmat  -lpetscvec -lpetscdraw \
+		-lpetscsys \
+		$(SUPERLU_LIB) $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
+		$(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm 
 #
 # Defines all libraries needed for using linear solvers and all lower
 # level PETSc components (such as vectors and matrices).  The order
 # of listing these libraries is important!
 #
-SLES_LIB    =   -L$(LDIR) -lpetscsles -lpetscksp \
-                -lpetscmat  -lpetscvec -lpetscdraw \
-                -lpetscsys \
-                $(SUPERLU_LIB) $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
-                $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
+SLES_LIB    =	-L$(LDIR) -lpetscsles -lpetscksp \
+		-lpetscmat  -lpetscvec -lpetscdraw \
+		-lpetscsys \
+		$(SUPERLU_LIB) $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
+		$(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 
 #
 #  Link if you are programming in Fortran 
@@ -60,73 +60,92 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
 # if it does not exist
 chkpetsc_dir: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
-          echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
+	  echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
 	-@if [ ! -d $(PDIR) ]; then \
-          echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
+	  echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
 
 # checks that user has set BOPT variable
 chkopts: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
-          echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
+	  echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
 	@if [ ! -d $(LDIR) ]; then \
-          echo Libraries not built for this BOPT: $(BOPT); false ; fi
+	  echo Libraries not built for this BOPT: $(BOPT); false ; fi
 
 # Compiles examples_1: primary group for installation testing
 examples_1: chkopts
 	@-if [ "$(EXAMPLES_1)" != "" ] ; then \
-          (for ex in $(EXAMPLES_1) foo ; do \
-          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trashz 2>&1; \
-          grep -v clog trashz | grep -v "information sections" | \
-          egrep -i '(Error|warning|Can)' >> /dev/null;\
-          if [ "$$?" != 1 ]; then \
-          cat trashz ; fi; $(RM) trashz;\
-          done;) fi
+	  (for ex in $(EXAMPLES_1) foo ; do \
+	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
+	  > trashz 2>&1; \
+	  grep -v clog trashz | grep -v "information sections" | \
+	  egrep -i '(Error|warning|Can)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz;\
+	  done;) fi
 
 # Runs examples that have already been compiled
 runexamples_1:
 	@-if [ "$(RUNEXAMPLES_1)" != "" ] ; then \
-          (for ex in $(RUNEXAMPLES_1) foo ; do \
-          $(OMAKE) -f makefile $$ex; \
-          done;) fi
+	  (for ex in $(RUNEXAMPLES_1) foo ; do \
+	  $(OMAKE) -f makefile $$ex; \
+	  done;) fi
 
 # Compiles examples_2: secondary examples, many have x-displays
 examples_2: chkopts
 	@-if [ "$(EXAMPLES_2)" != "" ] ; then \
-          (for ex in $(EXAMPLES_2) foo ; do \
-          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trashz 2>&1; \
-          grep -v clog trashz | grep -v "information sections" | \
-          egrep -i '(Error|warning|Can)'  >> /dev/null ; \
-          if [ "$$?" != 1 ]; then \
-          cat trashz ; fi; $(RM) trashz;\
-          done;) fi
+	  (for ex in $(EXAMPLES_2) foo ; do \
+	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
+	  > trashz 2>&1; \
+	  grep -v clog trashz | grep -v "information sections" | \
+	  egrep -i '(Error|warning|Can)'  >> /dev/null ; \
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz;\
+	  done;) fi
 
 # Runs examples that have already been compiled
 runexamples_2:
 	@-if [ "$(RUNEXAMPLES_2)" != "" ] ; then \
-          (for ex in $(RUNEXAMPLES_2) foo ; do \
-          $(OMAKE) -f makefile $$ex; \
-          done;) fi
+	  (for ex in $(RUNEXAMPLES_2) foo ; do \
+	  $(OMAKE) -f makefile $$ex; \
+	  done;) fi
 
 # Compiles examples_3: Fortran examples
 examples_3: chkopts
 	@-if [ "$(EXAMPLES_3)" != "" ] ; then \
-          (for ex in $(EXAMPLES_3) foo ; do \
-          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trashz 2>&1; \
-          grep -v EXTERNAL trashz | \
-          egrep -i '(Error|warning|Can)'  >> /dev/null ; \
-          if [ "$$?" != 1 ]; then \
-          cat trashz ; fi; $(RM) trashz;\
-          done;) fi
+	  (for ex in $(EXAMPLES_3) foo ; do \
+	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
+	  > trashz 2>&1; \
+	  grep -v EXTERNAL trashz | \
+	  egrep -i '(Error|warning|Can)'  >> /dev/null ; \
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz;\
+	  done;) fi
 
 # Runs examples that have already been compiled
 runexamples_3:
 	@-if [ "$(RUNEXAMPLES_3)" != "" ] ; then \
-          (for ex in $(RUNEXAMPLES_3) foo ; do \
-          $(OMAKE) -f makefile $$ex; \
-          done;) fi
+	  (for ex in $(RUNEXAMPLES_3) foo ; do \
+	  $(OMAKE) -f makefile $$ex; \
+	  done;) fi
+
+# Compiles examples_3: mpiuni examples
+examples_4: chkopts
+	@-if [ "$(EXAMPLES_3)" != "" ] ; then \
+	  (for ex in $(EXAMPLES_3) foo ; do \
+	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
+	  > trashz 2>&1; \
+	  grep -v EXTERNAL trashz | \
+	  egrep -i '(Error|warning|Can)'  >> /dev/null ; \
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz;\
+	  done;) fi
+
+# Runs examples that have already been compiled
+runexamples_4:
+	@-if [ "$(RUNEXAMPLES_3)" != "" ] ; then \
+	  (for ex in $(RUNEXAMPLES_3) foo ; do \
+	  $(OMAKE) -f makefile $$ex; \
+	  done;) fi
 
 # Does nothing, obviously, need for some rules that require actions.
 foo:
@@ -134,14 +153,14 @@ foo:
 # Builds library
 lib: chkpetsc_dir $(SOURCE)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
-           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
-                                libc; fi
+	   $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
+				libc; fi
 	@-if [ "$(SOURCEF)" != "" ] ; then \
-                $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) libf; fi
+		$(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) libf; fi
 	@-if [ "$(OBJS)" != " " ] ; then \
-        	$(RANLIB)  $(LIBNAME); \
-	        $(RM) -f $(OBJS); \
-        fi
+		$(RANLIB)  $(LIBNAME); \
+		$(RM) -f $(OBJS); \
+	fi
 #
 #  Does not work for some machines with .F fortran files.
 #
@@ -154,17 +173,17 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 	     $(FC) -c $(FFLAGS) $(BASEOPTF) $(SOURCEF) ;\
 	fi
 	@-if [ "$(OBJS)" != " " ] ; then \
-          $(AR) cr $(LIBNAME) $(OBJS); \
+	  $(AR) cr $(LIBNAME) $(OBJS); \
 	  $(RM) -f $(OBJS); \
-        fi
+	fi
 
 # Removes garbage files
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) \
-               $(EXAMPLES_3) $(TESTS) \
-               PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
-               trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
-               output/*~ .mpirtmp mon.out
+	       $(EXAMPLES_3) $(TESTS) \
+	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
+	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
+	       output/*~ .mpirtmp mon.out
 
 # Builds and runs examples; then cleans directory.
 examples: examples_1 examples_2
@@ -180,11 +199,11 @@ buildexamples_4: examples_4 clean
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
 	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo $(ACTION) in: `pwd`; \
-        $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
-        PETSC_ARCH=$(PETSC_ARCH)  ) ;fi; \
-        done ; fi
+	for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
+	(cd $$dir ; echo $(ACTION) in: `pwd`; \
+	$(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
+	PETSC_ARCH=$(PETSC_ARCH)  ) ;fi; \
+	done ; fi
 
 # --------------------------------------------------------------------
 #
@@ -195,51 +214,51 @@ tree: $(ACTION)
 # RCS file check-in
 ci: 
 	@-ci -u -q -mAutoCheckin $(SOURCEH) $(SOURCE) makefile \
-          $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) 
+	  $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) 
 
 # RCS file check-out
 co:
 	@-co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
-          $(EXAMPLESF) $(TESTSC) $(TESTSF)
+	  $(EXAMPLESF) $(TESTSC) $(TESTSF)
 
 # Uses lint; true is to prevent make error message from empty grep
 lint:
 	@-if [ "$(SOURCEC)" != "" ] ; then \
-           lint -cvhu -DLINT -DPETSC_ARCH_$(PETSC_ARCH) $(CFLAGS) $(SOURCEC)\
-                | grep -v "never defined"\
-                | grep -v "pointer alignment problem" | grep -v\
-                "function prototype not in scope"; true ;\
-           $(RM) -f *.ln ; fi
+	   lint -cvhu -DLINT -DPETSC_ARCH_$(PETSC_ARCH) $(CFLAGS) $(SOURCEC)\
+		| grep -v "never defined"\
+		| grep -v "pointer alignment problem" | grep -v\
+		"function prototype not in scope"; true ;\
+	   $(RM) -f *.ln ; fi
 
 # Builds Fortran-77 wrappers
 fortranstubs:
 	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/src/fortran/auto \
-          -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix MPIR_\
-          -ptr64 HAVE_64BITS $(SOURCEC)
+	  -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix MPIR_\
+	  -ptr64 HAVE_64BITS $(SOURCEC)
 
 
 # Builds man pages (xman version)
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doctext -mpath $(PETSC_DIR)/docs/man/man$(MANSEC) -ext $(MANSEC) -locdir $(LOCDIR) \
-                readme $(SOURCEC) $(SOURCEH);   \
-                chmod g+w $(PETSC_DIR)/docs/man/man$(MANSEC)/*; fi 
+		readme $(SOURCEC) $(SOURCEH);	\
+		chmod g+w $(PETSC_DIR)/docs/man/man$(MANSEC)/*; fi 
 
 # Builds man pages (LaTeX version)
 latexpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	doc2lt  \
-          $(SOURCEC) $(SOURCEH) >> \
-                    $(PETSC_DIR)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
+	doc2lt	\
+	  $(SOURCEC) $(SOURCEH) >> \
+		    $(PETSC_DIR)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
 
 # Builds man pages (HTML version)
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doctext -html -index $(PETSC_DIR)/docs/www/www.cit \
-                -mpath $(PETSC_DIR)/docs/www/man$(MANSEC) -ext $(MANSEC)\
-                -indexdir www/man$(MANSEC) -locdir $(LOCDIR) \
-                 $(SOURCEC) $(SOURCEH); \
-                chmod g+w $(PETSC_DIR)/docs/www/man$(MANSEC)/*; fi 
+		-mpath $(PETSC_DIR)/docs/www/man$(MANSEC) -ext $(MANSEC)\
+		-indexdir www/man$(MANSEC) -locdir $(LOCDIR) \
+		 $(SOURCEC) $(SOURCEH); \
+		chmod g+w $(PETSC_DIR)/docs/www/man$(MANSEC)/*; fi 
 
 
 
