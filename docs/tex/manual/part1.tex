@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.101 1997/04/05 15:07:37 curfman Exp curfman $ 
+% $Id: part1.tex,v 1.102 1997/04/05 16:04:27 curfman Exp curfman $ 
 
 % --------------------------------------------------------------------
 %
@@ -101,7 +101,9 @@ such as vectors, matrices, index sets, linear and nonlinear
 solvers, and graphics.  Part III describes a variety of useful
 information, including profiling, the options database, viewers, error
 handling, makefiles, and some details of
-PETSc design.  
+PETSc design.
+
+\nocite{efficient}
 
 The {\em PETSc 2.0 Users Manual} documents {\em all} of PETSc 2.0; thus,
 it can be rather intimidating for new users. We recommend that one initially
@@ -560,7 +562,6 @@ operation (flop) rates in this example are due to the fact that the
 code was run on a tiny matrix.  We include this example merely to
 demonstrate the ease of extracting performance information from PETSc.
 
-\newpage
 \begin{figure}[H]
 {\footnotesize
 \begin{verbatim}
@@ -665,11 +666,13 @@ the root directory of PETSc contains the following directories:
                    the subdirectories
  \subitem - {\tt www} (HTML man pages).
 \item {\tt bin} - Utilities and short scripts for use with PETSc, including
- \subitem - {\tt petscman} (man page viewer),
- \subitem - {\tt petsarch} (utility for setting {\tt PETSC\_ARCH} environmental variable),
- \subitem - {\tt petscview} (GUI utility for high-level visualization of program activity),
- \subitem - {\tt petscopts} (GUI utility for setting runtime options), and
- \subitem - {\tt petscdemo} (GUI utility the provides a brief PETSc demo).
+ \begin{itemize}
+ \item {\tt petscman} (man page viewer),
+ \item {\tt petsarch} (utility for setting {\tt PETSC\_ARCH} environmental variable),
+ \item {\tt petscview} (GUI utility for high-level visualization of program activity),
+ \item {\tt petscopts} (GUI utility for setting runtime options), and
+ \item {\tt petscdemo} (GUI utility the provides a brief PETSc demo).
+ \end{itemize}
 
 Note that {\tt petscview}, {\tt petscopts}, and {\tt petscdemo} use Tcl/Tk.
 \item {\tt bmake} - Base PETSc makefile directory.  Includes subdirectories
@@ -682,25 +685,27 @@ Note that {\tt petscview}, {\tt petscopts}, and {\tt petscdemo} use Tcl/Tk.
 \item {\tt include/pinclude} - Private PETSc include files that should {\em not} be used by application programmers.
 \item {\tt src} - The source code for all PETSc components, which
                   currently includes
- \subitem {\tt is} - index sets,
- \subitem {\tt vec} - vectors,
- \subitem {\tt da} - distributed arrays,
- \subitem {\tt mat} - matrices,
- \subitem {\tt ksp} - Krylov space accelerators,
- \subitem {\tt pc} - preconditioners,
- \subitem {\tt sles} - complete linear equations solvers,
- \subitem {\tt snes} - nonlinear solvers and unconstrained minimization,
- \subitem {\tt ts} - ODE solvers and timestepping,
- \subitem {\tt sys} - general system-related routines,
- \subitem {\tt plog} - PETSc logging and profiling routines,
- \subitem {\tt draw} - simple graphics,
- \subitem {\tt ao} - application orderings,
- \subitem {\tt fortran} - Fortran interface stubs,
- \subitem {\tt mpiuni} - experimental, stripped-down uniprocessor MPI version, and
- \subitem {\tt contrib} - contributed modules that use PETSc but are not
+ \begin{itemize}
+ \item {\tt is} - index sets,
+ \item {\tt vec} - vectors,
+ \item {\tt da} - distributed arrays,
+ \item {\tt mat} - matrices,
+ \item {\tt ksp} - Krylov space accelerators,
+ \item {\tt pc} - preconditioners,
+ \item {\tt sles} - complete linear equations solvers,
+ \item {\tt snes} - nonlinear solvers and unconstrained minimization,
+ \item {\tt ts} - ODE solvers and timestepping,
+ \item {\tt sys} - general system-related routines,
+ \item {\tt plog} - PETSc logging and profiling routines,
+ \item {\tt draw} - simple graphics,
+ \item {\tt ao} - application orderings,
+ \item {\tt fortran} - Fortran interface stubs,
+ \item {\tt mpiuni} - experimental, stripped-down uniprocessor MPI version, and
+ \item {\tt contrib} - contributed modules that use PETSc but are not
     part of the official PETSc package.  We encourage users who have
     developed such code that they wish to share with others to let us
     know by writing to petsc-maint@mcs.anl.gov.
+ \end{itemize}
 \end{itemize}
 
 Each PETSc source code component directory has the following subdirectories:
