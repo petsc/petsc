@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.5 1998/04/26 03:29:13 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.6 1998/05/05 03:08:12 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -29,5 +29,6 @@
 #define USE_XDB_DEBUGGER
 
 #define HAVE_BROKEN_RECURSIVE_MACRO
+#define HAVE_SYS_RESOURCE_H
 
 #endif

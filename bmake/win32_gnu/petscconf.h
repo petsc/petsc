@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.11 1998/04/28 21:29:57 balay Exp balay $"
+"$Id: petscconf.h,v 1.12 1998/04/30 01:31:27 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -32,5 +32,6 @@
 #define HAVE_DOUBLE_ALIGN_MALLOC
 
 #define CANNOT_START_DEBUGGER
+#define HAVE_SYS_RESOURCE_H
 
 #endif

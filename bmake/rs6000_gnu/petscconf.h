@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.4 1998/04/25 23:24:11 balay Exp $"
+"$Id: petscconf.h,v 1.6 1998/04/25 23:28:11 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -34,5 +34,6 @@
 
 #define HAVE_READLINK
 #define HAVE_MEMMOVE
+#define HAVE_SYS_RESOURCE_H
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.48 1998/03/31 23:42:18 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.49 1998/04/01 00:20:21 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -76,7 +76,7 @@ void petscstrncpy_(CHAR s1, CHAR s2, int *n,int len1, int len2)
   char *t1,*t2;
   int  m;
 
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
   t1 = _fcdtocp(s1); 
   t2 = _fcdtocp(s2); 
   m = *n; if (_fcdlen(s1) < m) m = _fcdlen(s1); if (_fcdlen(s2) < m) m = _fcdlen(s2);
@@ -93,7 +93,7 @@ void petscfixfilename_(CHAR file, int *__ierr,int len )
   int  i,n;
   char *b;
 
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
   b = _fcdtocp(file); 
   n = _fcdlen (file); 
 #else
