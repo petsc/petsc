@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.86 2000/10/24 20:26:55 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.87 2000/11/28 17:30:55 bsmith Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -334,6 +334,9 @@ runex10_13:
 	   if (diff output/ex10_13.out ex10_13.tmp) then true; \
 	   else echo "Possible problem with ex10_13, diffs above"; fi; \
 	   ${RM} -f ex10_13.tmp
+runex10_14:
+	-@${MPIRUN} -np 3 ex10 -options_left_off -pc_type spai -f0 /home/petsc/matrices/medium; \
+	echo "ex10_14: This program tested the SPAI preconditioner."
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
@@ -451,5 +454,6 @@ TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_14  = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
+TESTEXAMPLES_18  = ex10.PETSc runex10_14 ex10.rm
 
 include ${PETSC_DIR}/bmake/common_test
