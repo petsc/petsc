@@ -97,7 +97,6 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CC_LINKER',self.setCompilers.getLinker())
     self.addMakeMacro('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
-    # Must have a valid linker flag due to makefile setup
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
     self.addMakeMacro('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.libraries.toString(self.compilers.flibs))
