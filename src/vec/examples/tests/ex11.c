@@ -1,6 +1,6 @@
 
-
-static char help[] = "Scatters from a parallel vector to a sequential vector.\n";
+static char help[] = 
+"This example scatters from a parallel vector to a sequential vector.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,PETSC_DECIDE,&x); CHKERRA(ierr);
-  ierr = VecGetSize(x,&N);CHKERRA(ierr);
+  ierr = VecGetSize(x,&N); CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,N-mytid,&y); CHKERRA(ierr);
 
   /* create two index sets */
@@ -44,19 +44,22 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
   ierr = VecSet(&mone,y); CHKERRA(ierr);
 
-  VecView(x,SYNC_STDOUT_VIEWER); 
+  ierr = VecView(x,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
   ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
-  VecScatterCtxDestroy(ctx);
-  
+  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
 
+  if (!mytid) {
+    printf("scattered vector for processor 0\n"); 
+    ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);
+  }
   ierr = ISDestroy(is1); CHKERRA(ierr);
   ierr = ISDestroy(is2); CHKERRA(ierr);
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(y); CHKERRA(ierr);
 
   PetscFinalize(); 
   return 0;
