@@ -366,8 +366,8 @@ int UserMatrixFreeMatCreate(SNES snes,Euler *user,Vec x,Mat *J)
   mfctx->need_err  = 0;
   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&mfctx->error_rel,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-matrix_free_jorge",&mfctx->jorge); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-compute_err",&mfctx->need_err); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-snes_mf_jorge",&mfctx->jorge); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-snes_mf_compute_err",&mfctx->need_err); CHKERRQ(ierr);
   if (mfctx->jorge || mfctx->need_err) {
     ierr = DiffParameterCreate_More(snes,x,&mfctx->data); CHKERRQ(ierr);
   } else mfctx->data = 0;

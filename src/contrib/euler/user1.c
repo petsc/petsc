@@ -102,7 +102,7 @@ int main(int argc,char **argv)
   int      logging;               /* flag indicating use of logging */
   int      solve_with_julianne;   /* flag indicating use of original Julianne solver */
   int      init1, init2, init3;   /* event numbers for application initialization */
-  int      len, its, ierr, flg, stage, pprint;
+  int      len, its, ierr, flg, stage, pprint, wing;
   char     filename[64], outstring[64];
 
   /* Set Defaults */
@@ -198,7 +198,8 @@ int main(int argc,char **argv)
 
     PLogEventBegin(init3,0,0,0,0);
     time1 = PetscGetTime();
-    ierr = julianne_(&time1,&solve_with_julianne,0,&app->cfl,
+    *(int*) (&fort_app) = PetscFromPointer(app);
+    ierr = julianne_(&time1,&solve_with_julianne,&fort_app,&app->cfl,
            &rtol,&app->eps_jac,app->b1,app->b2,
            app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
            app->xx,app->p,app->dxx,
@@ -234,7 +235,7 @@ int main(int argc,char **argv)
          app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
          &app->angle,&app->jfreq); CHKERRA(ierr);
-  ierr = GetWingCommunicator(app,&app->fort_xcomm); CHKERRQ(ierr);
+  ierr = GetWingCommunicator(app,&app->fort_wing_comm,&wing); CHKERRQ(ierr);
   PLogEventEnd(init2,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -346,15 +347,15 @@ int main(int argc,char **argv)
       ierr = OptionsGetInt(PETSC_NULL,"-pc_asm_overlap",&overlap,&flg); CHKERRQ(ierr);
       if (app->problem == 1) {
         sprintf(filename,"f_m6%s_asm%d_p%d.m","c",overlap,app->size);
-        sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","c",overlap,app->size);
+        sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","c",app->cfl_snes_it,overlap,app->size);
       }
       else if (app->problem == 2) {
         sprintf(filename,"f_m6%s_asm%d_p%d.m","f",overlap,app->size);
-        sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","f",overlap,app->size);
+        sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","f",app->cfl_snes_it,overlap,app->size);
       }
       else if (app->problem == 3) {
         sprintf(filename,"f_m6%s_asm%d_p%d.m","n",overlap,app->size);
-        sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","n",overlap,app->size);
+        sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","n",app->cfl_snes_it,overlap,app->size);
       }
       app->fp = fopen(filename,"w"); 
       fprintf(app->fp,"%% iter, fnorm2, log(fnorm2), CFL#, time, ksp_its, ksp_rtol, c_lift, c_drag, nsup\n");
@@ -383,7 +384,7 @@ int main(int argc,char **argv)
     ierr = pvar_(app->xx,app->p,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint,
-           &c_lift,&c_drag,&app->fort_xcomm); CHKERRA(ierr);
+           &c_lift,&c_drag,&app->fort_wing_comm,&app->wing); CHKERRA(ierr);
 
     /* Dump all fields for general viewing */
     ierr = MonitorDumpGeneral(snes,app->X,app); CHKERRA(ierr);
@@ -391,7 +392,6 @@ int main(int argc,char **argv)
     /* Dump for VRML viewing */
     ierr = MonitorDumpVRML(snes,app->X,app->F,app); CHKERRA(ierr);
   }
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free data structures 
@@ -1172,7 +1172,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.42e-5;
       app->cfl_snes_it    = 1;
-      app->ksp_max_it     = 40;
+      app->ksp_max_it     = 30;
       app->f_reduction    = 0.3; 
       break;
     case 4:
@@ -1200,7 +1200,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->ts_type               = LOCAL_TS; /* type of timestepping */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
   app->fstagnate_ratio       = .01;      /* stagnation detection parameter */
-  app->ksp_rtol_max          = 1.0e-6;   /* maximum KSP relative convergence tolerance */
+  app->ksp_rtol_max          = 1.0e-4;   /* maximum KSP relative convergence tolerance */
   app->mat_assemble_direct   = 1;        /* by default, we assemble Jacobian directly */
   app->use_vecsetvalues      = 0;        /* flag - by default assemble local vector data directly */
   app->no_output             = 0;        /* flag - by default print some output as program runs */
