@@ -9,6 +9,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+  - Add Victor EIJKhout's matrix codes
+
    get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
 
   - compile with PETSC_DEBUG turned off and fix all places in code that 
