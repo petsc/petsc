@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.45 1998/03/12 23:21:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.46 1998/03/20 22:51:05 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: xinit.c,v 1.45 1998/03/12 23:21:00 bsmith Exp bsmith 
 
 extern int XiUniformHues(Draw_X *,int);
 extern int Xi_wait_map( Draw_X*);
-extern int XiInitColors(Draw_X*,Colormap,int);
+extern int XiInitColors(Draw_X*,Colormap);
 extern int XiFontFixed(Draw_X*,int,int,XiFont** );
 
 /*
@@ -48,21 +48,19 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
 */
 #undef __FUNC__  
 #define __FUNC__ "XiSetVisual" 
-int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
+int XiSetVisual(Draw_X* XiWin,int usedefaultcolormap,Colormap cmap)
 {
   PetscFunctionBegin;
 
   /*
        As a test due to problems on SGI reported in petsc-maint 1534 change
     to always use default visual
-    
-    q_default_visual is now a flag for default colormap
   */
   XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
   XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
-  if (cmap)                  XiWin->cmap  = cmap;
-  else if (q_default_visual) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
-  else                       XiWin->cmap = 0;
+  if (cmap)                    XiWin->cmap  = cmap;
+  else if (usedefaultcolormap) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
+  else                         XiWin->cmap = 0;
 
   if (XiWin->depth < 8) {
     SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
@@ -70,7 +68,7 @@ int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
   PLogInfo(0,"XiSetVisual:Always opening default visual X window\n");
 
   /* reset the number of colors from info on the display, the colormap */
-  XiInitColors( XiWin, cmap, nc );
+  XiInitColors( XiWin, cmap);
   PetscFunctionReturn(0);
 }
 
@@ -209,8 +207,7 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
 
 #undef __FUNC__  
 #define __FUNC__ "XiQuickWindow" 
-int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
-                   int nx,int ny,int nc )
+int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
 {
   int         ierr,flag = 0;
   XVisualInfo vinfo;
@@ -235,18 +232,20 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
     if not, set flag to 1
   */
   if (XMatchVisualInfo( w->disp, w->screen, 24, StaticColor, &vinfo) ||
-      XMatchVisualInfo( w->disp, w->screen, 24, TrueColor, &vinfo)) {
+      XMatchVisualInfo( w->disp, w->screen, 24, TrueColor, &vinfo) ||
+      XMatchVisualInfo( w->disp, w->screen, 16, StaticColor, &vinfo) ||
+      XMatchVisualInfo( w->disp, w->screen, 16, TrueColor, &vinfo)) {
     flag = 1;
   }
 
-  ierr = XiSetVisual( w, flag, (Colormap)0, nc ); CHKERRQ(ierr);
+  ierr = XiSetVisual( w, flag, (Colormap)0); CHKERRQ(ierr);
 
   ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 ); CHKERRQ(ierr);
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
 
   /* this is very slow */
-  ierr = XiUniformHues(w,nc-DRAW_BASIC_COLORS); CHKERRQ(ierr); 
+  ierr = XiUniformHues(w,256-DRAW_BASIC_COLORS); CHKERRQ(ierr); 
 
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   XFillRectangle(w->disp,w->win,w->gc.set,0,0,nx,ny);
@@ -258,7 +257,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
 */
 #undef __FUNC__  
 #define __FUNC__ "XiQuickWindowFromWindow" 
-int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
+int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 {
   Window            root;
   int               d,ierr;
@@ -275,7 +274,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
   w->win = win;
   XGetWindowAttributes(w->disp, w->win, &attributes);
 
-  ierr = XiSetVisual( w, 1, attributes.colormap, 0 ); CHKERRQ(ierr);
+  ierr = XiSetVisual( w, 1, attributes.colormap); CHKERRQ(ierr);
 
   XGetGeometry( w->disp, w->win, &root, &d, &d, 
 	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );
@@ -285,7 +284,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
 
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
-  ierr = XiUniformHues(w,nc-DRAW_BASIC_COLORS); CHKERRQ(ierr);
+  ierr = XiUniformHues(w,256-DRAW_BASIC_COLORS); CHKERRQ(ierr);
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

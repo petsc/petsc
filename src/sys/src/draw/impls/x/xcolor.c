@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.38 1998/03/12 23:21:00 bsmith Exp balay $";
+static char vcid[] = "$Id: xcolor.c,v 1.39 1998/03/24 21:00:04 balay Exp bsmith $";
 #endif
 
 
@@ -56,7 +56,7 @@ extern int      XiUniformHues( Draw_X *, int);
 
 #undef __FUNC__  
 #define __FUNC__ "XiInitColors" 
-int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
+int XiInitColors(Draw_X* XiWin,Colormap cmap)
 {
   PetscFunctionBegin;
   /* 
@@ -64,8 +64,7 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
   
      This is wrong; it needs to take the value from the visual 
   */
-  if (nc > 0)   XiWin->numcolors = nc;
-  else          XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
+  XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
 
   if (!XiWin->cmap) {
     XiWin->cmap = XCreateColormap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
@@ -80,7 +79,7 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 
 /*
     Keep a record of which pixel numbers in the cmap have been 
-  used so far; this is to allow use to try to reuse as much of the current
+  used so far; this is to allow us to try to reuse as much of the current
   colormap as possible.
 */
 static long int cmap_pixvalues_used[256];
@@ -103,11 +102,11 @@ int XiInitCmap(Draw_X* XiWin )
 
   /* 
       Allocate black and white first, in the same order that
-      there "pixel" values are, in case the pixel values assigned
+      their "pixel" values are, in case the pixel values assigned
       start from 0 
   */
   /*
-     Look up the colors so that they can be use server standards
+     Look up the colors so that they can use server standards
      (and be corrected for the monitor) 
   */
   for (i=0; i<DRAW_BASIC_COLORS; i++) {
@@ -154,6 +153,11 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 
   XiWin->maxcolors = XiWin->numcolors;
 
+  /*
+     This is very slow because we have to request from the X server for each
+     color. Could not figure out a way to request a large number at the
+     same time.
+  */
   for (i=DRAW_BASIC_COLORS; i<mapsize+DRAW_BASIC_COLORS; i++) {
     colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
     colordef.green  = ((int)green[i-DRAW_BASIC_COLORS] * 65535) / 255;

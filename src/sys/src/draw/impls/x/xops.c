@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.117 1998/10/14 18:43:11 curfman Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.118 1998/10/14 20:02:40 curfman Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -493,8 +493,8 @@ int DrawDestroy_X(Draw ctx)
   PetscFunctionReturn(0);
 }
 
-extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int,int);
-extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
+extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int);
+extern int XiQuickWindowFromWindow(Draw_X*,char*,Window);
 
 #undef __FUNC__  
 #define __FUNC__ "DrawXGetDisplaySize_Private" 
@@ -677,12 +677,12 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
   if (rank == 0) {
     if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
-    ierr = XiQuickWindow(Xwin,(char *)display,(char *)title,x,y,w,h,256); CHKERRQ(ierr);
+    ierr = XiQuickWindow(Xwin,(char *)display,(char *)title,x,y,w,h); CHKERRQ(ierr);
     ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
   } else {
     unsigned long win;
     ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
-    ierr = XiQuickWindowFromWindow( Xwin,(char *)display, win,256); CHKERRQ(ierr);
+    ierr = XiQuickWindowFromWindow( Xwin,(char *)display, win); CHKERRQ(ierr);
   }
 
   Xwin->x      = x;
