@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.3 1995/07/23 18:20:31 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.4 1995/08/26 20:07:57 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -48,10 +48,9 @@ int main( int argc, char **argv )
   /* create explict matrix preconditioner */
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&B); CHKERRA(ierr);
 
-
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {
-    v = 6.0*xp + pow(xp,6.0);
+    v = 6.0*xp + pow(xp+1.e-12,6.0);
     ierr = VecSetValues(F,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
     v= xp*xp*xp;
     ierr = VecSetValues(U,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
@@ -59,12 +58,11 @@ int main( int argc, char **argv )
   }
 
   /* Create nonlinear solver */  
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); 
-  CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* create matrix free matrix for Jacobian */
-  ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J);
+  ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
@@ -118,7 +116,7 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
    return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
-/*  Evaluates a matrix that is used to precondition the matrix free
+/*  Evaluates a matrix that is used to precondition the matrix-free
     jacobian. In this case, the explict preconditioner matrix is 
     also EXACTLY the Jacobian. In general, it would be some lower
     order, simplified apprioximation */
