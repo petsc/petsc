@@ -1,7 +1,7 @@
 CLINKER    = g++ $(BASEOPT)
 CC         = g++  -DPARCH_sun4 
 PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g
-COPTFLAGS  = -g -Wall
+COPTFLAGS  = -g 
 FOPTFLAGS  = -g -dalign
 SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
 
