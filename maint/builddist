@@ -128,9 +128,9 @@ for i in bmake/*/packages ; do
     sed "s/^SUPERLU_LIB/#SUPERLU_LIB/g" | \
     sed "s/^SUPERLU_INCLUDE/#SUPERLU_INCLUDE/g" | \
     sed "s/^PETSC_HAVE_SUPERLU/#PETSC_HAVE_SUPERLU/g" | \
-    sed "s/^SUPERLUDIST_INCLUDE/#SUPERLUDIST_INCLUDE/g" | \
-    sed "s/^SUPERLUDIST_LIB/#SUPERLUDIST_LIB/g" | \
-    sed "s/^PETSC_HAVE_SUPERLUDIST/#PETSC_HAVE_SUPERLUDIST/g" | \
+    sed "s/^SUPERLU_DIST_INCLUDE/#SUPERLU_DIST_INCLUDE/g" | \
+    sed "s/^SUPERLU_DIST_LIB/#SUPERLU_DIST_LIB/g" | \
+    sed "s/^PETSC_HAVE_SUPERLU_DIST/#PETSC_HAVE_SUPERLU_DIST/g" | \
     sed "s/^DSCPACK_INCLUDE/#DSCPACK_INCLUDE/g" | \
     sed "s/^DSCPACK_LIB/#DSCPACK_LIB/g" | \
     sed "s/^JAVA/#JAVA/g" | sed "s/^JAVAC/#JAVAC/g" | sed "s/^PETSC_HAVE_JAVA/#PETSC_HAVE_JAVA/g" | \

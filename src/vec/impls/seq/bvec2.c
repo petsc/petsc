@@ -269,7 +269,6 @@ int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 #else
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
-  PetscFunctionReturn(0);
 #endif
 }
 #undef __FUNCT__  

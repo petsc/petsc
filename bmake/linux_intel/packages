@@ -43,7 +43,7 @@ PETSC_HAVE_MUMPS = -DPETSC_HAVE_MUMPS
 #
 # SuperLU_DIST
 #
-SUPERLUDIST_INCLUDE    = -I/home/petsc/soft/linux-rh73-intel/SuperLU_DIST_2.0/SRC
-SUPERLUDIST_LIB        = /home/petsc/soft/linux-rh73-intel/SuperLU_DIST_2.0/superlu_linux-intel.a
-PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+SUPERLU_DIST_INCLUDE    = -I/home/petsc/soft/linux-rh73-intel/SuperLU_DIST_2.0/SRC
+SUPERLU_DIST_LIB        = /home/petsc/soft/linux-rh73-intel/SuperLU_DIST_2.0/superlu_linux-intel.a
+PETSC_HAVE_SUPERLU_DIST = -DPETSC_HAVE_SUPERLU_DIST
 #

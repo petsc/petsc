@@ -46,7 +46,7 @@ typedef struct {
   int (*MatDestroy)(Mat);
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
-  PetscTruth CleanUpSuperLUDist;
+  PetscTruth CleanUpSuperLU_Dist;
 } Mat_MPIAIJ_SuperLU_DIST;
 
 EXTERN_C_BEGIN
@@ -86,7 +86,7 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr; 
     
   PetscFunctionBegin;
-  if (lu->CleanUpSuperLUDist) {
+  if (lu->CleanUpSuperLU_Dist) {
     /* Deallocate SuperLU_DIST storage */
     if (lu->MatInputMode == GLOBAL) { 
       Destroy_CompCol_Matrix_dist(&lu->A_sup);
@@ -519,7 +519,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
 
   lu->options            = options;
   lu->flg                = DIFFERENT_NONZERO_PATTERN;
-  lu->CleanUpSuperLUDist = PETSC_TRUE;
+  lu->CleanUpSuperLU_Dist = PETSC_TRUE;
   *F = B;
   PetscFunctionReturn(0); 
 }
@@ -619,7 +619,7 @@ int MatConvert_Base_SuperLU_DIST(Mat A,MatType type,Mat *newmat) {
   lu->MatAssemblyEnd       = A->ops->assemblyend;
   lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
   lu->MatDestroy           = A->ops->destroy;
-  lu->CleanUpSuperLUDist   = PETSC_FALSE;
+  lu->CleanUpSuperLU_Dist  = PETSC_FALSE;
 
   B->spptr                 = (void*)lu;
   B->ops->view             = MatView_MPIAIJ_SuperLU_DIST;
