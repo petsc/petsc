@@ -1,4 +1,4 @@
-# $Id: base,v 1.33 1997/09/15 20:38:16 bsmith Exp balay $ 
+# $Id: base,v 1.34 1998/01/22 16:34:52 balay Exp bsmith $ 
 
 PARCH    = freebsd
 #CC       = /usr/local/gcc-2.7.2/bin/gcc  -DPARCH_freebsd
@@ -14,7 +14,7 @@ CCV      = $(CC) --version
 # large Fortran files, you can increase the 1000 if need be.
 # 
 #FC       = f77 -Nn1000
-FC       = /home/alice/egcs/freebsd/bin/g77 
+FC       = /home/alice/egcs/freebsd/bin/g77 -ff90
 AR       = ar
 RM       = rm -f *.c.*
 #
