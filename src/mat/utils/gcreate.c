@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.51 1995/10/22 22:44:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.52 1995/10/23 20:30:15 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -33,8 +33,8 @@ int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
     MPIU_printf(comm,"   -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
     MPIU_printf(comm,"   -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
     MPIU_printf(comm,"   -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"         Use -pause <sec> to set seconds of display pause.\n");
-    MPIU_printf(comm,"         Use -display <name> to set alternate display\n");
+    MPIU_printf(comm,"       -pause <sec> : set seconds of display pause\n");
+    MPIU_printf(comm,"       -display <name> : set alternate display\n");
   }
   if (OptionsHasName(0,"-mat_seqdense")) {
     *type = MATSEQDENSE;
