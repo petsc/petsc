@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.18 1995/03/23 22:57:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.19 1995/03/25 01:11:56 bsmith Exp curfman $";
 #endif
 
 /*
@@ -19,18 +19,14 @@ typedef struct {
 } Mat_Dense;
 
 
-static int MatNz_Dense(Mat matin,int *nz)
+static int MatGetInfo_Dense(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    i,N = mat->m*mat->n,count = 0;
   Scalar *v = mat->v;
   for ( i=0; i<N; i++ ) {if (*v != 0.0) count++; v++;}
-  *nz = count; return 0;
-}
-static int MatMemory_Dense(Mat matin,int *mem)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  *mem = mat->m*mat->n*sizeof(Scalar); return 0;
+  *nz = count; *nzalloc = N; *mem = N*sizeof(Scalar);
+  return 0;
 }
   
 /* ---------------------------------------------------------------*/
@@ -543,7 +539,7 @@ static int MatZeroRows_Dense(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-static int MatSize_Dense(Mat matin,int *m,int *n)
+static int MatGetSize_Dense(Mat matin,int *m,int *n)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   *m = mat->m; *n = mat->n;
@@ -566,14 +562,14 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatLUFactor_Dense,MatChFactor_Dense,
        MatRelax_Dense,
        MatTrans_Dense,
-       MatNz_Dense,MatMemory_Dense,MatEqual_Dense,
+       MatGetInfo_Dense,MatEqual_Dense,
        MatCopy_Dense,
        MatGetDiag_Dense,MatScale_Dense,MatNorm_Dense,
        0,0,
        0, MatInsOpt_Dense,MatZero_Dense,MatZeroRows_Dense,0,
        MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
        MatChFactorSymbolic_Dense,MatChFactorNumeric_Dense,
-       MatSize_Dense,MatSize_Dense,0,
+       MatGetSize_Dense,MatGetSize_Dense,0,
        0,0,MatGetArray_Dense
 };
 /*@
