@@ -22,10 +22,11 @@ def runinstaller(opts = []):
         # Must build and install BuildSystem
         booter.builder.build(os.path.dirname(booter.builder.getRoot()))
         # Install Compiler and Runtime
-        booter.bootstrapInstall('bk://sidl.bkbits.net/Compiler', installer.argDB)
+        booter.bootstrapInstall(compilerUrl, installer.argDB)
       if installer.checkBootstrap():
         raise RuntimeError('Should not still be bootstraping')
-      installer.install(url)
+      if not url == compilerUrl:
+        installer.install(url)
   
 if __name__ == '__main__':
   runinstaller()
