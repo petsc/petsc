@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.2 2000/06/22 15:25:58 balay Exp hzhang $*/
+/*$Id: sro.c,v 1.3 2000/06/27 17:09:41 balay Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -15,8 +15,8 @@ The permutation needs to be symmetric, i.e., P = P^T = inv(P).
            are stored in the upper triangle of P*A*P^T
 */
 #undef __FUNC__  
-#define __FUNC__ "MatReordering_SeqSBAIJ"
-int MatReordering_SeqSBAIJ(Mat A,IS isp)
+#define __FUNC__ "MatReorderingSeqSBAIJ"
+int MatReorderingSeqSBAIJ(Mat A,IS isp)
 {
   Mat_SeqSBAIJ     *a=(Mat_SeqSBAIJ *)A->data;
   int             *r,ierr,i,mbs=a->mbs,*ai=a->i,*aj=a->j,*rip,*riip;

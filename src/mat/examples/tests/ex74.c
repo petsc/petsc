@@ -1,9 +1,8 @@
-/*$Id: ex74.c,v 1.1 2000/06/21 15:55:06 balay Exp hzhang $*/
+/*$Id: ex74.c,v 1.2 2000/07/05 19:52:05 hzhang Exp balay $*/
 
 static char help[] = "Tests the vatious routines in MatSBAIJ format.\n";
 
 #include "petscsles.h"
-#include "/sandbox/hzhang/petsc/src/mat/impls/sbaij/seq/sbaij.h" 
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -19,8 +18,7 @@ int main(int argc,char **args)
   IS      ip, isrow, iscol;
   PetscRandom rand;
 
-  PetscTruth       flg,reorder=0,getrow=1;
-  Mat_SeqSBAIJ     *c; 
+  PetscTruth       flg,reorder=PETSC_FALSE,getrow=PETSC_TRUE;
   MatInfo          minfo1,minfo2;
   MatILUInfo       info;
   
@@ -289,7 +287,7 @@ int main(int argc,char **args)
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[n-2]; ip_ptr[n-2] = i; 
     i = ip_ptr[0]; ip_ptr[0] = ip_ptr[n-1]; ip_ptr[n-1] = i; 
     ISRestoreIndices(ip,&ip_ptr);
-    ierr = MatReordering_SeqSBAIJ(sA, ip); CHKERRA(ierr);  
+    ierr = MatReorderingSeqSBAIJ(sA, ip); CHKERRA(ierr);  
     /* ierr = ISView(ip, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
        ierr = MatView(sA,VIEWER_DRAW_SELF); CHKERRA(ierr); */
   }
@@ -306,11 +304,11 @@ int main(int argc,char **args)
       /* ierr = OptionsHasName(PETSC_NULL,"-lf",&flg);CHKERRA(ierr);*/
       ierr = MatILUFactorSymbolic(sA,ip,ip,&info,&sC);CHKERRA(ierr);
     }
-    ierr = MatLUFactorNumeric_SeqSBAIJ_1(sA,&sC);CHKERRA(ierr);
+    ierr = MatLUFactorNumeric(sA,&sC);CHKERRA(ierr);
     /* MatView(sC, VIEWER_DRAW_WORLD); */
 
     ierr = MatMult(sA,x,b);CHKERRA(ierr);
-    ierr = MatSolve_SeqSBAIJ_1(sC,b,y);CHKERRA(ierr);
+    ierr = MatSolve(sC,b,y);CHKERRA(ierr);
   
     /* Check the error */
     ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
