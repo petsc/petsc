@@ -29,6 +29,7 @@ class Configure(config.base.Configure):
     self.libraries   = self.framework.require('config.libraries', self)
     self.blaslapack  = self.framework.require('PETSc.packages.BlasLapack',  self)
     self.mpi         = self.framework.require('PETSc.packages.MPI',         self)
+    self.mpe         = self.framework.require('PETSc.packages.MPE',         self)
     self.adic        = self.framework.require('PETSc.packages.ADIC',        self)
     self.matlab      = self.framework.require('PETSc.packages.Matlab',      self)
     self.mathematica = self.framework.require('PETSc.packages.Mathematica', self)
@@ -48,6 +49,7 @@ class Configure(config.base.Configure):
     self.libraries.headerPrefix   = self.headerPrefix
     self.blaslapack.headerPrefix  = self.headerPrefix
     self.mpi.headerPrefix         = self.headerPrefix
+    self.mpe.headerPrefix         = self.headerPrefix
     self.adic.headerPrefix        = self.headerPrefix
     self.matlab.headerPrefix      = self.headerPrefix
     self.mathematica.headerPrefix = self.headerPrefix
@@ -612,7 +614,7 @@ acfindx:
 
   def configureMPIUNI(self):
     '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
-    if self.mpi.foundInclude and self.mpi.foundLib: return
+    if self.mpi.foundMPI: return
     print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
     print '**********     Use --with-mpi options to specify a full MPI    **********'
     self.framework.addDefine('HAVE_MPI', 1)
