@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.24 1995/05/22 03:27:01 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.25 1995/05/25 02:30:24 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -702,7 +702,7 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",mrow->M,mrow->N);
 #endif
-  PETSCFREE(mrow->rowners); 
+  PFREE(mrow->rowners); 
 
     /* already freed elsewhere
     if (mrow->bsmap) {
@@ -736,10 +736,10 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
     if (mrow->fpA)      {BSfree_copy_par_mat(mrow->fpA); CHKERRBS(0);}
     if (mrow->comm_pA)  {BSfree_comm(mrow->comm_pA); CHKERRBS(0);}
     if (mrow->comm_fpA) {BSfree_comm(mrow->comm_fpA); CHKERRBS(0);}
-    if (mrow->imax)     PETSCFREE(mrow->imax);    
-    if (mrow->inv_diag) PETSCFREE(mrow->inv_diag);
+    if (mrow->imax)     PFREE(mrow->imax);    
+    if (mrow->inv_diag) PFREE(mrow->inv_diag);
 
-  PETSCFREE(mrow);  
+  PFREE(mrow);  
   PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
   return 0;
@@ -891,10 +891,10 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->M    = M;
   mrow->m    = m;
   mrow->n    = mrow->N; /* each row stores all columns */
-  mrow->imax = (int *) PETSCMALLOC( (mrow->m)*sizeof(int) ); CHKPTR(mrow->imax);
+  mrow->imax = (int *) PMALLOC( (mrow->m)*sizeof(int) ); CHKPTR(mrow->imax);
 
   /* build local table of row ownerships */
-  mrow->rowners = (int *) PETSCMALLOC((mrow->numtids+2)*sizeof(int)); 
+  mrow->rowners = (int *) PMALLOC((mrow->numtids+2)*sizeof(int)); 
   CHKPTR(mrow->rowners);
   MPI_Allgather(&m,1,MPI_INT,mrow->rowners+1,1,MPI_INT,comm);
   mrow->rowners[0] = 0;
@@ -920,7 +920,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                             &(mrow->diag)); CHKERR(ierr);}
   if (!mrow->xwork) {ierr = VecDuplicate(mrow->diag,&(mrow->xwork)); 
                             CHKERR(ierr);}
-  mrow->inv_diag = (Scalar *) PETSCMALLOC( (mrow->m)*sizeof(Scalar) );
+  mrow->inv_diag = (Scalar *) PMALLOC( (mrow->m)*sizeof(Scalar) );
   CHKPTR(mrow->inv_diag);
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
   mrow->procinfo = bspinfo;
