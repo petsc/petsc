@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.58 2000/08/20 03:23:35 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.59 2000/09/15 20:06:58 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -9,6 +9,9 @@ and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 #include "user.h"
 #if defined(_OPENMP)
 #include "omp.h"
+#if !defined(HAVE_REDUNDANT_WORK)
+#include "metis.h"
+#endif
 #endif
 
 #define ICALLOC(size,y) *(y) = (int*)PetscMalloc((PetscMax(size,1))*sizeof(int));CHKPTRQ(*(y))
@@ -39,7 +42,10 @@ extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
             ComputeTimeStep(SNES,int,void*),
             GetLocalOrdering(GRID *),
             SetPetscDS(GRID *,TstepCtx *);
-
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+/*extern void METIS_PartGraphRecursive(int *, idxtype *, idxtype*,idxtype *, idxtype*,
+                            int*,int*,int*,int*,int*,idxtype*);*/
+#endif
 /* Global Variables */ 
 
                                                /*============================*/
@@ -1005,6 +1011,17 @@ int GetLocalOrdering(GRID *grid)
   }
   ierr = PetscPrintf(comm,"Number of cross edges %d\n", cross_edges);CHKERRQ(ierr);
   ierr = PetscFree(tmp);CHKERRQ(ierr);
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+  /* Now make the local 'ia' and 'ja' arrays */
+  ICALLOC(nvertices+1,&grid->ia);
+  /* Use tmp for a work array */
+  ICALLOC(nvertices,&tmp);
+  f77GETIA(&nvertices,&nedgeLoc,grid->eptr,grid->ia,tmp,&rank);
+  nnz = grid->ia[nvertices] - 1;
+  ICALLOC(nnz,&grid->ja);
+  f77GETJA(&nvertices,&nedgeLoc,grid->eptr,grid->ia,grid->ja,tmp,&rank);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
+#else
   /* Now make the local 'ia' and 'ja' arrays */
   ICALLOC(nnodesLoc+1,&grid->ia);
   /* Use tmp for a work array */
@@ -1014,23 +1031,23 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nnz,&grid->ja);
   f77GETJA(&nnodesLoc,&nedgeLoc,grid->eptr,grid->ia,grid->ja,tmp,&rank);
   ierr = PetscFree(tmp);CHKERRQ(ierr);
+#endif
 #if defined(_OPENMP) 
 #if defined(HAVE_REDUNDANT_WORK)
    FCALLOC(4*nnodesLoc,   &grid->resd);
 #else
-
   {
     /* Get the local adjacency structure of the graph for partitioning the local
        graph into max_threads pieces */
    int *ia,*ja, options[5];
    int numflag = 0, wgtflag = 0, edgecut;
    int thr1,thr2,nedgeAllThreads,ned1,ned2;
-   ICALLOC((nnodesLoc+1),&ia);
+   ICALLOC((nvertices+1),&ia);
    ICALLOC((2*nedgeLoc),&ja);
    ia[0] = 0;
-   for (i = 1; i <= nnodesLoc; i++) 
+   for (i = 1; i <= nvertices; i++) 
      ia[i] = grid->ia[i]-2;
-   for (i = 0; i <= nnodesLoc; i++) {
+   for (i = 0; i <= nvertices; i++) {
      int jstart,jend;
      jstart = ia[i];
      jend = ia[i+1]-1;
@@ -1041,10 +1058,10 @@ int GetLocalOrdering(GRID *grid)
        ja[k++] = inode;
      }
    }
-   ICALLOC(nnodesLoc,&grid->part_thr);
+   ICALLOC(nvertices,&grid->part_thr);
    options[0] = 0;
    /* Call the pmetis library routine */
-   METIS_PartGraphRecursive(&nnodesLoc,ia,ja,0,0,
+   METIS_PartGraphRecursive(&nvertices,ia,ja,0,0,
                             &wgtflag,&numflag,&max_threads,options,&edgecut,grid->part_thr);
    PetscPrintf(MPI_COMM_WORLD,"The number of cut edges is %d\n", edgecut);
    k = 0;

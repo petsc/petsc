@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.27 2000/09/15 20:08:31 kaushik Exp bsmith $
+!  $Id: user.F,v 1.28 2000/09/17 18:41:41 bsmith Exp kaushik $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -911,6 +911,8 @@
 !=============================================================================
 #undef __FUNC__
 #define __FUNC__ "FLUX"
+#if defined(_OPENMP)
+#if defined(HAVE_REDUNDANT_WORK)     
       subroutine FLUX(nnodes, ncell, nedge,                                     &
      &                nsface, nvface, nfface, isface, ivface, ifface,           &
      &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
@@ -919,15 +921,33 @@
      &                nffacet,f2ntf,nfbound,                                    &
      &                grad,evec,qvec,xyz,resvec,xyzn,                           &
      &                sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
-#if defined(_OPENMP) 
      &                max_threads,                                              &
-#if defined(HAVE_REDUNDANT_WORK)     
      &                resd,                                                     &
-#else
-     &                nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,         &
-#endif
-#endif  
      &                irank,nvertices)
+#else
+      subroutine FLUX(nnodes, ncell, nedge,                                     &
+     &                nsface, nvface, nfface, isface, ivface, ifface,           &
+     &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
+     &                nnfacet,f2ntn,nnbound,                                    &
+     &                nvfacet,f2ntv,nvbound,                                    &
+     &                nffacet,f2ntf,nfbound,                                    &
+     &                grad,evec,qvec,xyz,resvec,xyzn,                           &
+     &                sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
+     &                max_threads,                                              &
+     &                nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,         &
+     &                irank,nvertices)
+#endif
+#else
+      subroutine FLUX(nnodes, ncell, nedge,                                     &
+     &                nsface, nvface, nfface, isface, ivface, ifface,           &
+     &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
+     &                nnfacet,f2ntn,nnbound,                                    &
+     &                nvfacet,f2ntv,nvbound,                                    &
+     &                nffacet,f2ntf,nfbound,                                    &
+     &                grad,evec,qvec,xyz,resvec,xyzn,                           &
+     &                sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
+     &                irank,nvertices)
+#endif  
       implicit none      
 #include "include/finclude/petscdef.h"
       Scalar  title(20),beta,alpha,Re,dt,tot,res0,resc
@@ -1075,15 +1095,15 @@
 !$omp9 firstprivate(resd)
 #endif
 !$omp2 reduction(+:flops)
-!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
-!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
-!$omp3 ihane,ntturb,gamma,gm1,gp1,gm1g,gp1g,ggm1,p0,rho0,c0,u0,v0,w0,
-!$omp4 et0,h0,pt0,rms,clw,cdw,cmw,xres,cfl1,cfl2,nsmoth,iflim,
-!$omp5 itran,nbtran,jupdate,nstage,ncyct,iramp,nitfo)
-!$      my_thread_id = omp_get_thread_num()
-!$omp   critical
-!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
-!$omp   end critical
+!!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
+!!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
+!!$omp3 ihane,ntturb,gamma,gm1,gp1,gm1g,gp1g,ggm1,p0,rho0,c0,u0,v0,w0,
+!!$omp4 et0,h0,pt0,rms,clw,cdw,cmw,xres,cfl1,cfl2,nsmoth,iflim,
+!!$omp5 itran,nbtran,jupdate,nstage,ncyct,iramp,nitfo)
+!!$      my_thread_id = omp_get_thread_num()
+!!$omp   critical
+!!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
+!!$omp   end critical
        first_edge = 1
        last_edge = nedge
 #if defined(_OPENMP)
@@ -2260,6 +2280,8 @@
 !=====================================================================72
 #undef __FUNC__
 #define __FUNC__ "GETRES"
+#if defined(_OPENMP)
+#if defined(HAVE_REDUNDANT_WORK)     
       subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,     &
      &                  nsnode,nvnode,nfnode,isface,ivface,ifface,          &
      &                  ileast,isnode,ivnode,ifnode,                        &
@@ -2269,16 +2291,36 @@
      &                  evec,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,           &
      &                  xyzn,qvec,cdt,xyz,area,grad,resvec,turbre,          &
      &                  slen,c2n,c2e,us,vs,as,phi,amut,ires,                &
-#if defined(_OPENMP) 
      &                  max_threads,                                        &
-#if defined(HAVE_REDUNDANT_WORK)     
      &                  resd,                                               &
+     &                  LocalTS,irank, nvertices)
 #else
+      subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,     &
+     &                  nsnode,nvnode,nfnode,isface,ivface,ifface,          &
+     &                  ileast,isnode,ivnode,ifnode,                        &
+     &                  nnfacet,f2ntn,nnbound,                              &
+     &                  nvfacet,f2ntv,nvbound,                              &
+     &                  nffacet,f2ntf,nfbound,                              &
+     &                  evec,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,           &
+     &                  xyzn,qvec,cdt,xyz,area,grad,resvec,turbre,          &
+     &                  slen,c2n,c2e,us,vs,as,phi,amut,ires,                &
+     &                  max_threads,                                        &
      &                  nedgeAllThr,part_thr,nedge_thr,                     &
      &                  edge_thr,xyzn_thr,                                  &
-#endif
-#endif  
      &                  LocalTS,irank, nvertices)
+#endif
+#else
+      subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,     &
+     &                  nsnode,nvnode,nfnode,isface,ivface,ifface,          &
+     &                  ileast,isnode,ivnode,ifnode,                        &
+     &                  nnfacet,f2ntn,nnbound,                              &
+     &                  nvfacet,f2ntv,nvbound,                              &
+     &                  nffacet,f2ntf,nfbound,                              &
+     &                  evec,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,           &
+     &                  xyzn,qvec,cdt,xyz,area,grad,resvec,turbre,          &
+     &                  slen,c2n,c2e,us,vs,as,phi,amut,ires,                &
+     &                  LocalTS,irank, nvertices)
+#endif
 !
       implicit none      
 #include "include/finclude/petscdef.h"
@@ -2427,23 +2469,43 @@
 !
 !       call PLogEventBegin(flux_event,0,0,0,0,ierr)
 
-         call FLUX(nnodes,ncell,nedge,                                         &
-     &            nsface,nvface,nfface,isface,ivface,ifface,                   &
-     &            nsnode,nvnode,nfnode,isnode,ivnode,ifnode,                   &
-     &            nnfacet,f2ntn,nnbound,                                       &
-     &            nvfacet,f2ntv,nvbound,                                       &
-     &            nffacet,f2ntf,nfbound,                                       &
-     &            grad,evec,qvec,xyz,resvec,xyzn,                              &
-     &            sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                     &
-#if defined(_OPENMP) 
-     &            max_threads,                                                 &
+#if defined(_OPENMP)
 #if defined(HAVE_REDUNDANT_WORK)     
-     &            resd,                                                        &
+      call FLUX(nnodes, ncell, nedge,                                     &
+     &          nsface, nvface, nfface, isface, ivface, ifface,           &
+     &          nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
+     &          nnfacet,f2ntn,nnbound,                                    &
+     &          nvfacet,f2ntv,nvbound,                                    &
+     &          nffacet,f2ntf,nfbound,                                    &
+     &          grad,evec,qvec,xyz,resvec,xyzn,                           &
+     &          sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
+     &          max_threads,                                              &
+     &          resd,                                                     &
+     &          irank,nvertices)
 #else
-     &            nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,            &
+      call FLUX(nnodes, ncell, nedge,                                     &
+     &          nsface, nvface, nfface, isface, ivface, ifface,           &
+     &          nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
+     &          nnfacet,f2ntn,nnbound,                                    &
+     &          nvfacet,f2ntv,nvbound,                                    &
+     &          nffacet,f2ntf,nfbound,                                    &
+     &          grad,evec,qvec,xyz,resvec,xyzn,                           &
+     &          sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
+     &          max_threads,                                              &
+     &          nedgeAllThr,part_thr,nedge_thr,edge_thr,xyzn_thr,         &
+     &          irank,nvertices)
 #endif
+#else
+      call FLUX(nnodes, ncell, nedge,                                     &
+     &          nsface, nvface, nfface, isface, ivface, ifface,           &
+     &          nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
+     &          nnfacet,f2ntn,nnbound,                                    &
+     &          nvfacet,f2ntv,nvbound,                                    &
+     &          nffacet,f2ntf,nfbound,                                    &
+     &          grad,evec,qvec,xyz,resvec,xyzn,                           &
+     &          sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
+     &          irank,nvertices)
 #endif  
-     &            irank,nvertices)
 !/*        call PLogEventEnd(flux_event,0,0,0,0,ierr)
 !
 ! calculate viscous fluxes
@@ -2549,8 +2611,13 @@
       do 1010 i = 1,nedge
         node1 = eptr(i,1)
         node2 = eptr(i,2)
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+        ideg(node1) = ideg(node1) + 1
+        ideg(node2) = ideg(node2) + 1
+#else
         if (node1 .le. nnodes) ideg(node1) = ideg(node1) + 1
         if (node2 .le. nnodes) ideg(node2) = ideg(node2) + 1
+#endif
  1010 continue
 !
 ! Now we can fill the ia array fairly easily
@@ -2600,6 +2667,14 @@
         node1 = eptr(i,1)
         node2 = eptr(i,2)
 !
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+        index1 = ia(node1) + iwork(node1) 
+        iwork(node1) = iwork(node1) + 1
+        ja(index1) = node2
+        index2 = ia(node2) + iwork(node2)
+        iwork(node2) = iwork(node2) + 1
+        ja(index2) = node1
+#else
         if (node1 .le. nnodes) then
           index1 = ia(node1) + iwork(node1) 
           iwork(node1) = iwork(node1) + 1
@@ -2610,6 +2685,7 @@
           iwork(node2) = iwork(node2) + 1
           ja(index2) = node1
         endif
+#endif
  1030 continue
 !
 ! Now lets sort all our "bins" and get the correct one on the diagonal
