@@ -354,6 +354,8 @@ int AOCreateMapping(MPI_Comm comm, int napp, int *myapp, int *mypetsc, AO *aoout
     N += lens[i];
   }
   aomap->N = N;
+  ao->N    = N;
+  ao->n    = N;
 
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
