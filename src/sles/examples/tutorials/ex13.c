@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex13.c,v 1.2 1996/11/13 15:39:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.3 1997/01/04 18:08:59 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -9,9 +9,10 @@ static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
    Concepts: SLES^Laplacian, 2d
    Concepts: Laplacian, 2d
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ()
+   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ();
    Routines: KSPSetTolerances(); PCSetType();
-   Processors: n
+   Routines: VecGetArray(); VecPlaceArray();
+   Processors: 1
 T*/
 
 /* 
@@ -27,8 +28,8 @@ T*/
 #define PETSC_PI 3.14159265
 
 /*
-    User defined context that contains all the data structures used
-   in the linear solution process.
+    User-defined context that contains all the data structures used
+    in the linear solution process.
 */
 typedef struct {
    Vec    x,b;      /* solution vector, right hand side vector and work vector */
@@ -50,43 +51,43 @@ int main(int argc,char **args)
   double  enorm;
 
   /*
-      Initialize the PETSc libraries
+     Initialize the PETSc libraries
   */
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /*
-       The next two lines are for testing only, to allow use to run 
-    with different sized grids and decide at run time.
+     The next two lines are for testing only; these allow the user to
+     decide the grid size at runtime.
   */
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /*
-      Create the empty sparse matrix and linear solver data structures
+     Create the empty sparse matrix and linear solver data structures
   */
   ierr = UserInitializeLinearSolver(m,n,&userctx); CHKERRA(ierr);
   N    = m*n;
 
   /*
-      Allocate arrayd to hold the solution to the linear system.
-    This is not normally done in PETSc programs, but in this case, 
-    since we are calling these routines from a non-PETSc program we 
-    would like to reuse the data structures from another code. So in 
-    the context of a larger application these would be provided by
-    other (non-PETSc) parts of the application code.
+     Allocate arrays to hold the solution to the linear system.
+     This is not normally done in PETSc programs, but in this case, 
+     since we are calling these routines from a non-PETSc program, we 
+     would like to reuse the data structures from another code. So in 
+     the context of a larger application these would be provided by
+     other (non-PETSc) parts of the application code.
   */
   userx    = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(userx);
   userb    = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(userb);
   solution = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(solution);
 
   /* 
-      Allocate an array to hold the coefficients in the elliptic operator.
+      Allocate an array to hold the coefficients in the elliptic operator
   */
   rho = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKERRA(ierr);
 
   /*
-      Fill up rho with the function rho(x,y) = x and  b and solution 
-    with a known problem for testing.
+     Fill up the array rho[] with the function rho(x,y) = x; fill the
+     right-hand-side b[] and the solution with a known problem for testing.
   */
   hx = 1.0/(m+1); 
   hy = 1.0/(n+1);
@@ -106,11 +107,11 @@ int main(int argc,char **args)
   }
 
   /*
-      Loop over a bunch of time-steps setting up and solver the linear
+     Loop over a bunch of timesteps, setting up and solver the linear
      system for each time-step.
 
-      Note this is somewhat artificial. It is intended to demonstrate how
-    one may reuse the linear solver stuff in each time-step.
+     Note this is somewhat artificial. It is intended to demonstrate how
+     one may reuse the linear solver stuff in each time-step.
   */
   for ( t=0; t<tmax; t++ ) {
     ierr =  UserDoLinearSolver(rho,&userctx,userb,userx); CHKERRA(ierr);
@@ -130,8 +131,8 @@ int main(int argc,char **args)
   }
 
   /*
-      We are all finished solving linear systems so cleanup the
-    data structures.
+     We are all finished solving linear systems, so we clean up the
+     data structures.
   */
   PetscFree(rho);
   PetscFree(solution);
@@ -149,9 +150,10 @@ int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
   int N,ierr;
 
   /*
-      Here we assume a m by n grid with all points on the interior of the domain,
-    i.e. we do not include the points corresponding to homogeneous Dirichlet 
-    boundary conditions. Assume the domain is [0,1]x[0,1]
+     Here we assume use of a grid of size m x n, with all points on the
+     interior of the domain, i.e., we do not include the points corresponding 
+     to homogeneous Dirichlet boundary conditions.  We assume that the domain
+     is [0,1]x[0,1].
   */
   userctx->m   = m;
   userctx->n   = n;
@@ -180,9 +182,9 @@ int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
 }
 
 /*
-    Solves -div ( rho grad psi) = F using finite differences.
-  rho is a 2 dimensional array m,n stored Fortran style by columns.
-  userb is a standard one dimensional array.
+   Solves -div ( rho grad psi) = F using finite differences.
+   rho is a 2-dimensional array of size m by n, stored in Fortran
+   style by columns. userb is a standard one-dimensional array.
 */ 
 /* ------------------------------------------------------------------------*/
 int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
@@ -193,15 +195,17 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
   Scalar v,*tmpx,*tmpb, hx2 = userctx->hx2, hy2 = userctx->hy2;
 
   /*
-        This is not the most efficient way of generating the matrix 
-     but let's not worry about it. We should have seperate code for
+     This is not the most efficient way of generating the matrix 
+     but let's not worry about it. We should have separate code for
      the four corners, each edge and then the interior. Then we won't
      have the slow if-tests inside the loop.
 
-        Computes the operator -div rho grad on an m by n grid with 
-     zero Dirichlet boundary conditions. The rho is assumed to be 
-     given on the same grid as the finite difference stencil is applied.
-     For a staggered grid one would have to chance things slightly.
+     Computes the operator 
+             -div rho grad 
+     on an m by n grid with zero Dirichlet boundary conditions. The rho
+     is assumed to be given on the same grid as the finite difference 
+     stencil is applied.  For a staggered grid, one would have to change
+     things slightly.
   */
   I = 0;
   for ( j=0; j<n; j++ ) {
@@ -233,7 +237,7 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
   }
 
   /* 
-     Assemble matrix,
+     Assemble matrix
   */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -254,25 +258,25 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
   ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
 
   /* 
-    Set runtime options, e.g.,
+     Set runtime options, e.g.,
         -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-    These options will override those specified above as long as
-    SLESSetFromOptions() is called _after_ any other customization
-    routines.
+     These options will override those specified above as long as
+     SLESSetFromOptions() is called _after_ any other customization
+     routines.
  
-    Run the program with the option -help to see all the possible
-    linears.
+     Run the program with the option -help to see all the possible
+     linear solver options.
   */
   ierr = SLESSetFromOptions(userctx->sles); CHKERRQ(ierr);
 
   /*
      This allows the PETSc linear solvers to compute the solution 
-    directly in the users array rather then in the PETSc vector.
+     directly in the user's array rather than in the PETSc vector.
  
      This is essentially a hack and not highly recommend unless you 
-    are quite comfortable with using PETSc. In general, one would
-    write their entire application using PETSc vectors rather then 
-    arrays.
+     are quite comfortable with using PETSc. In general, users should
+     write their entire application using PETSc vectors rather than 
+     arrays.
   */
   ierr = VecGetArray(userctx->x,&tmpx);
   ierr = VecGetArray(userctx->b,&tmpb);
@@ -300,8 +304,8 @@ int UserFinalizeLinearSolver(UserCtx *userctx)
   int ierr;
   /* 
      We are all done and don't need to solve any more linear systems, so
-     Free work space.  All PETSc objects should be destroyed when they
-     are no longer needed.
+     we free the work space.  All PETSc objects should be destroyed when
+     they are no longer needed.
   */
   ierr = SLESDestroy(userctx->sles); CHKERRQ(ierr);
   ierr = VecDestroy(userctx->x); CHKERRQ(ierr);
