@@ -89,7 +89,7 @@ int ComputeRHS(DMMG dmmg,Vec b)
 int ComputeJacobian(DMMG dmmg,Mat jac)
 {
   DA           da = (DA)dmmg->dm;
-  int          ierr,i,j,k,mx,xm,xs;
+  int          ierr,i,mx,xm,xs;
   PetscScalar  v[3],h,xlow,xhigh;
   MatStencil   row,col[3];
   AppCtx       *user = (AppCtx*)dmmg->user;
