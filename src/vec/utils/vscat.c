@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.103 1997/11/09 03:54:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.104 1997/12/01 01:52:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -192,16 +192,14 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
     xv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[i];}
     }
   } else {
     yv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {yv[i] += xv[fslots[i]];}
     }
   }
@@ -226,15 +224,13 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   if (mode & SCATTER_REVERSE ){
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
     }
   } else {
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
     }
   }
@@ -260,16 +256,14 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
     yv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {yv[i] += xv[fslots[i]];}
     }
   } else {
     xv += first;
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[i];}
     }
   }
@@ -334,21 +328,18 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   if (addv == INSERT_VALUES) {
     if (to_step == 1 && from_step == 1) {
       PetscMemcpy(yv+to_first,xv+from_first,n*sizeof(Scalar));
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {
         yv[to_first + i*to_step] = xv[from_first+i*from_step];
       }
     }
-  }
-  else {
+  } else {
     if (to_step == 1 && from_step == 1) {
       yv += to_first; xv += from_first;
       for ( i=0; i<n; i++ ) {
         yv[i] += xv[i];
       }
-    }
-    else {
+    } else {
       for ( i=0; i<n; i++ ) {
         yv[to_first + i*to_step] += xv[from_first+i*from_step];
       }
