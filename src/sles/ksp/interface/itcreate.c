@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.124 1998/04/29 18:45:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.125 1998/05/06 18:55:44 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -73,6 +73,36 @@ int KSPView(KSP ksp,Viewer viewer)
 DLList KSPList = 0;
 
 #undef __FUNC__  
+#define __FUNC__ "KSPSetAvoidNorms"
+/*@C
+   KSPSetAvoidNorms - Sets the KSP solver to avoid computing the residual norm
+     when possible. This, for example, reduces the number of collective operations
+     when using CG as a smoother.
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - Krylov solver context
+
+   Notes: 
+     One cannot use the default convergence test routines when this is set, since they
+     are based on decreases in the residual norms.
+
+     Currently only works with the CG method.
+
+.keywords: KSP, create, context, norms
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy()
+@*/
+int KSPSetAvoidNorms(KSP ksp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ksp->avoidnorms = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPCreate"
 /*@C
    KSPCreate - Creates the default KSP context.
@@ -111,6 +141,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->rtol          = 1.e-5;
   ctx->atol          = 1.e-50;
   ctx->divtol        = 1.e4;
+  ctx->avoidnorms    = PETSC_FALSE;
 
   ctx->rnorm               = 0.0;
   ctx->its                 = 0;

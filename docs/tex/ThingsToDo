@@ -42,8 +42,10 @@ rcheng@oasys.dt.navy.mil
 
 
 
-  - Add support for all KSP methods not to compute the residual norms,
+  - Add support for some KSP methods not to compute the residual norms,
     or do convergence test.
+    KSP now has ksp->avoidnorms need to use it in CG and maybe others.
+    add to Changes file KSPSetAvoidNorms().
 
   - Add man pages for SETERRA/SETERRQ, CHKERRA, CHKERRQ
 
