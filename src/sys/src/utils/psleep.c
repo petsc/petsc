@@ -36,10 +36,12 @@ int PetscSleep(int s)
 {
   PetscFunctionBegin;
   if (s < 0) getc(stdin);
-#if defined (HAVE__SLEEP)
+#if defined (HAVE_SLEEP)
+  else       sleep(s);
+#elif defined (HAVE__SLEEP)
   else       _sleep(s*1000);
 #else
-  else       sleep(s);
+  #error No sleep function located!
 #endif
   PetscFunctionReturn(0);
 }

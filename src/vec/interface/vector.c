@@ -684,7 +684,7 @@ int VecSet(const PetscScalar *alpha,Vec x)
 int VecSetRandom(PetscRandom rctx,Vec x) 
 {
   int         ierr;
-  PetscRandom rand = 0;
+  PetscRandom randObj = PETSC_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
@@ -694,16 +694,16 @@ int VecSetRandom(PetscRandom rctx,Vec x)
   if (!rctx) {
     MPI_Comm    comm;
     ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(comm,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
-    rctx = rand;
+    ierr = PetscRandomCreate(comm,RANDOM_DEFAULT,&randObj);CHKERRQ(ierr);
+    rctx = randObj;
   }
 
   ierr = PetscLogEventBegin(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setrandom)(rctx,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
   
-  if (rand) {
-    ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  if (randObj) {
+    ierr = PetscRandomDestroy(randObj);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 

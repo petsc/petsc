@@ -57,7 +57,7 @@ int PetscGetHostName(char name[],int nlen)
 #if defined(HAVE_UNAME)
   struct utsname utname;
 #endif
-#if defined(HAVE_GETDOMAINNAME)
+#if defined(HAVE_GETDOMAINNAME) && !defined(HAVE_SYSINFO_3ARG)
   PetscTruth     match;
 #endif
 

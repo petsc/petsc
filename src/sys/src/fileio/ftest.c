@@ -52,16 +52,16 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
   else if (mode == 'w') m = W_OK;
   else if (mode == 'x') m = X_OK;
   else SETERRQ(PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
-#if defined(HAVE__ACCESS)
+#if defined(HAVE_ACCESS)
+  if(!access(fname, m))  *flg = PETSC_TRUE;
+#else
   if (m == X_OK) SETERRQ1(PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
   if(!_access(fname, m)) *flg = PETSC_TRUE;
-#else
-  if(!access(fname, m))  *flg = PETSC_TRUE;
 #endif
   PetscFunctionReturn(0);
 }
 
-#else  /* HAVE_ACCESS */
+#else  /* HAVE_ACCESS or HAVE__ACCESS */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
