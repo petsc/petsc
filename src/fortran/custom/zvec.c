@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.35 1998/04/21 18:23:47 balay Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.36 1998/05/24 20:20:50 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -68,27 +68,27 @@ extern "C" {
 
 void mapgetlocalsize_(Map *m,int *n, int *__ierr )
 {
-  *__ierr = MapGetLocalSize((Map)PetscObject(m),n);
+  *__ierr = MapGetLocalSize((Map)PetscToPointer(m),n);
 }
 
 void mapgetglobalsize_(Map *m,int *N, int *__ierr )
 {
-  *__ierr = MapGetGlobalSize((Map)PetscObject(m),N);
+  *__ierr = MapGetGlobalSize((Map)PetscToPointer(m),N);
 }
 
 void mapgetlocalrange_(Map *m,int *rstart,int *rend, int *__ierr )
 {
-  *__ierr = MapGetLocalRange((Map)PetscObject(m),rstart,rend);
+  *__ierr = MapGetLocalRange((Map)PetscToPointer(m),rstart,rend);
 }
 
 void mapgetglobalrange_(Map *m,int **range, int *__ierr )
 {
-  *__ierr = MapGetGlobalRange((Map)PetscObject(m),range);
+  *__ierr = MapGetGlobalRange((Map)PetscToPointer(m),range);
 }
 
 void mapdestroy_(Map *m, int *__ierr )
 {
-  *__ierr = MapDestroy((Map)PetscObject(m));
+  *__ierr = MapDestroy((Map)PetscToPointer(m));
 }
 
 void vecsetvalue_(Vec v,int *i,Scalar *va,InsertMode *mode)
