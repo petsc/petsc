@@ -1,4 +1,4 @@
-# $Id: base.O_complex,v 1.16 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base.O_complex,v 1.17 1998/04/23 21:21:36 balay Exp balay $ 
 
 CLINKER    = g++ ${COPTFLAGS} 
 FLINKER    = g++ ${COPTFLAGS} 
@@ -16,5 +16,5 @@ PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O -DUSE_PETSC_C
 KERNEL_LIB = -lpetsckernels
 #
 COPTFLAGS  = -O
-FOPTFLAGS  = -O -dalign -DPARCH_sun4
+FOPTFLAGS  = -O -dalign
 

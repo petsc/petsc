@@ -1,7 +1,7 @@
-# $Id: base.g_c++,v 1.8 1997/10/28 14:19:37 bsmith Exp balay $ 
+# $Id: base.g_c++,v 1.9 1998/03/19 02:01:29 balay Exp balay $ 
 
 CLINKER    = g++ ${COPTFLAGS}
-CC         = g++  -DPARCH_sun4  -fPIC
+CC         = g++ -fPIC
 PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g -DUSE_PETSC_STACK
 COPTFLAGS  = -g 
 FOPTFLAGS  = -g -dalign
