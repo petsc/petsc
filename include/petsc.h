@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.130 1996/08/28 16:25:44 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.131 1996/09/12 16:28:47 bsmith Exp curfman $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -37,9 +37,12 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define Scalar            double
 #endif
 
-/* PETSC_i is the imaginary number i */
-extern  Scalar            PETSC_i;
+/* PETSc world communicator */
+extern MPI_Comm PETSC_COMM_WORLD;
+extern int      PetscInitializedCalled;
 
+/* PETSC_i is the imaginary number, i */
+extern  Scalar            PETSC_i;
 
 #define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
@@ -103,7 +106,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #if defined(PETSC_DEBUG)
 #define SETERRQ(n,s)   {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
 #define SETERRA(n,s)   {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
-                          MPI_Abort(MPI_COMM_WORLD,_ierr);}
+                          MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)     {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)     {if (n) SETERRA(n,(char *)0);}
 #define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
@@ -111,7 +114,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #else
 #define SETERRQ(n,s)   {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
 #define SETERRA(n,s)   {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
-                          MPI_Abort(MPI_COMM_WORLD,_ierr);}
+                          MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)     {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)     {if (n) SETERRA(n,(char *)0);}
 #define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
@@ -153,6 +156,7 @@ extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),int (*
 extern int PetscObjectReference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
+extern int PetscSetCommWorld(MPI_Comm);
 
 extern int PetscTraceBackErrorHandler(int,char*,char*,int,char*,void*);
 extern int PetscStopErrorHandler(int,char*,char*,int,char*,void*);

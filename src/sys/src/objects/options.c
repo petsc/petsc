@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.96 1996/09/12 16:25:36 bsmith Exp gropp $";
+static char vcid[] = "$Id: options.c,v 1.97 1996/09/12 20:37:08 gropp Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -64,11 +64,11 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
   int  ierr,rank,size;
   char pfile[256];
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
   if (!rank) {
     char arch[10];
     PetscGetArchType(arch,10);
-    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    MPI_Comm_size(PETSC_COMM_WORLD,&size);
     if (!filename) {
       ierr = PetscGetHomeDirectory(240,pfile); CHKERRQ(ierr);
       PetscStrcat(pfile,"/.petschistory");
@@ -90,7 +90,7 @@ static int PLogCloseHistoryFile(FILE **fd)
 {
   int  rank;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
   if (rank) return 0;
   fprintf(*fd,"---------------------------------------------------------\n");
   fprintf(*fd,"Finished at %s",PetscGetDate());
@@ -100,9 +100,9 @@ static int PLogCloseHistoryFile(FILE **fd)
   return 0; 
 }
 
-int PetscInitializedCalled = 0;
-
-int PetscGlobalRank = -1, PetscGlobalSize = -1;
+int      PetscInitializedCalled = 0;
+int      PetscGlobalRank = -1, PetscGlobalSize = -1;
+MPI_Comm PETSC_COMM_WORLD = 0;
 
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
@@ -163,8 +163,10 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
     ierr = MPI_Init(argc,args); CHKERRQ(ierr);
     PetscBeganMPI = 1;
   }
-  MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
-  MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
+  if (PETSC_COMM_WORLD == 0) PETSC_COMM_WORLD = MPI_COMM_WORLD;
+
+  MPI_Comm_rank(PETSC_COMM_WORLD,&PetscGlobalRank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&PetscGlobalSize);
 #if defined(PETSC_COMPLEX)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
@@ -174,12 +176,12 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
     int size;
-    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    MPI_Comm_size(PETSC_COMM_WORLD,&size);
     PLogInfo(0,"PETSc successfully started: number of processors = %d\n",size);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (help && flg) {
-    PetscPrintf(MPI_COMM_WORLD,help);
+    PetscPrintf(PETSC_COMM_WORLD,help);
   }
   return 0;
 }
@@ -228,7 +230,7 @@ int PetscFinalize()
     }
 #endif
     ierr = OptionsHasName(PETSC_NULL,"-log_summary",&flg1); CHKERRQ(ierr);
-    if (flg1) { PLogPrintSummary(MPI_COMM_WORLD,stdout); }
+    if (flg1) { PLogPrintSummary(PETSC_COMM_WORLD,stdout); }
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1); CHKERRQ(ierr);
     ierr = OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2); CHKERRQ(ierr);
@@ -246,7 +248,7 @@ int PetscFinalize()
     ierr = PetscMPIDump(stdout); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   ierr = OptionsHasName(PETSC_NULL,"-optionstable",&flg1); CHKERRQ(ierr);
   if (flg1) {
     if (!rank) OptionsPrint(stdout);
@@ -281,26 +283,26 @@ int PetscFinalize()
   if (flg1) {
     OptionsDestroy_Private();
     NRDestroyAll();
-    PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
       ierr = PetscTrDump(stderr); CHKERRQ(ierr);
-    PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
   }
   else if (flg2) {
     double maxm;
     OptionsDestroy_Private();
     NRDestroyAll();
     ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
-    PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
       fprintf(stdout,"[%d] Maximum memory used %g\n",rank,maxm);
       fflush(stdout);
-    PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
   }
   else {
     OptionsDestroy_Private();
     NRDestroyAll(); 
   }
   if (PetscBeganMPI) {
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     PLogInfo(0,"PETSc successfully ended!\n");
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
@@ -337,7 +339,7 @@ extern int PetscSetUseTrMalloc_Private();
 int OptionsCheckInitial_Private()
 {
   char     string[64];
-  MPI_Comm comm = MPI_COMM_WORLD;
+  MPI_Comm comm = PETSC_COMM_WORLD;
   int      flg1,flg2,flg3, ierr,*nodes,flag,i,rank;
 
 #if defined(PETSC_BOPT_g)
@@ -410,16 +412,16 @@ int OptionsCheckInitial_Private()
        debugger has stated it is likely to receive a SIGUSR1
        and kill the program. 
     */
-    MPI_Comm_size(MPI_COMM_WORLD,&size);
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    MPI_Comm_size(PETSC_COMM_WORLD,&size);
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (size > 2) {
       int        dummy;
       MPI_Status status;
       for ( i=0; i<size; i++) {
-        MPI_Send(&dummy,1,MPI_INT,i,109,MPI_COMM_WORLD);
+        MPI_Send(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD);
       }
       for ( i=0; i<size; i++) {
-        MPI_Recv(&dummy,1,MPI_INT,i,109,MPI_COMM_WORLD,&status);
+        MPI_Recv(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD,&status);
       }
     }
     /* check if this processor node should be in debugger */
@@ -557,7 +559,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
   int  ierr,rank;
   char pfile[128];
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (!options) {
     options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
     PetscMemzero(options->used,MAXOPTIONS*sizeof(int));
@@ -617,15 +619,15 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
     if (!rank) {
       eoptions = (char *) getenv("PETSC_OPTIONS");
       len      = PetscStrlen(eoptions);
-      MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
+      MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);
     } else {
-      MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
+      MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);
       if (len) {
         eoptions = (char *) PetscMalloc((len+1)*sizeof(char *));CHKPTRQ(eoptions);
       }
     }
     if (len) {
-      MPI_Bcast(eoptions,len,MPI_CHAR,0,MPI_COMM_WORLD); 
+      MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD); 
       eoptions[len] = 0;
       first    = PetscStrtok(eoptions," ");
       while (first) {

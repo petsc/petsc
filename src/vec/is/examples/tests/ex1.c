@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.14 1996/08/15 12:45:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.15 1996/08/17 14:35:28 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests IS general routines\n\n";
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
     indices[i] = n - i - 1;
   }
   ierr = ISCreateGeneral(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
-  ierr = PetscFree(indices); CHKERRA(ierr);
+  PetscFree(indices);
   ierr = ISSetPermutation(is); CHKERRA(ierr);
   ierr = ISInvertPermutation(is,&newis); CHKERRA(ierr);
   ierr = ISGetIndices(newis,&ii); CHKERRA(ierr);

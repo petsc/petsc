@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.43 1996/08/04 23:11:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.44 1996/09/12 16:25:36 bsmith Exp curfman $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -222,7 +222,7 @@ int PetscStopErrorHandler(int line,char *dir,char *file,int number,
       else fprintf(stderr,"%s%s line # %d %s\n",dir,file,line,message);
     }
   }
-  MPI_Abort(MPI_COMM_WORLD,number);
+  MPI_Abort(PETSC_COMM_WORLD,number);
   return 0;
 }
 

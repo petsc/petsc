@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.25 1996/06/12 14:03:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.26 1996/09/14 01:35:37 curfman Exp curfman $";
 #endif
 
 /*
@@ -182,7 +182,7 @@ int PetscIntAddressToFortran(int *base,int *addr)
     fprintf(stderr,"PetscIntAddressToFortran:C and Fortran arrays are\n");
     fprintf(stderr,"not commonly aligned or are too far apart to be indexed \n");
     fprintf(stderr,"by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
-    MPI_Abort(MPI_COMM_WORLD,1);
+    MPI_Abort(PETSC_COMM_WORLD,1);
   }
   return itmp2;
 }
@@ -210,7 +210,7 @@ int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
     fprintf(stderr,"PetscScalarAddressToFortran:C and Fortran arrays are\n");
     fprintf(stderr,"not commonly aligned or are too far apart to be indexed \n");
     fprintf(stderr,"by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
-    MPI_Abort(MPI_COMM_WORLD,1);
+    MPI_Abort(PETSC_COMM_WORLD,1);
   }
   return itmp2;
 }

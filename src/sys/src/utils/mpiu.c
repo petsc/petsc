@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.54 1996/08/21 14:17:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.55 1996/09/05 13:59:59 bsmith Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -72,7 +72,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 int PetscPrintf(MPI_Comm comm,char *format,...)
 {
   int rank;
-  if (!comm) comm = MPI_COMM_WORLD;
+  if (!comm) comm = PETSC_COMM_WORLD;
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
     va_list Argp;
@@ -103,8 +103,8 @@ int PetscSetDisplay()
   ierr = OptionsGetString(0,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
   if (flag) return 0;
 
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);  
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  
   if (!rank) {
     str = getenv("DISPLAY");
     if (!str || (str[0] == ':' && size > 1)) {
@@ -115,12 +115,12 @@ int PetscSetDisplay()
       PetscStrncpy(PetscDisplay,str,128);
     }
     len = PetscStrlen(PetscDisplay);
-    MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
-    MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,MPI_COMM_WORLD);
+    MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);
+    MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,PETSC_COMM_WORLD);
   }
   else {
-    MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
-    MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,MPI_COMM_WORLD);
+    MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);
+    MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,PETSC_COMM_WORLD);
     PetscDisplay[len] = 0;
   }
   return 0;  
@@ -361,8 +361,8 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
        The calling sequence of the 2nd argument to this function changed
        between MPI Standard 1.0 and the revisions 1.1 Here we match the 
        new standard, if you are using an MPI implementation that uses 
-       the older version you will get a warning message about the next line,
-       it is only a warning message and should do no harm
+       the older version you will get a warning message about the next line;
+       it is only a warning message and should do no harm.
     */
     MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void*)0);
   }
@@ -372,7 +372,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   if (!flag) {
     /* This communicator is not yet known to this system, so we dup it and set its value */
     MPI_Comm_dup( comm_in, comm_out );
-    MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
+    MPI_Attr_get( PETSC_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
     tagvalp = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;

@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.29 1996/08/17 14:38:51 bsmith Exp curfman $;
+C  $Id: petsc.h,v 1.30 1996/08/27 20:29:05 curfman Exp curfman $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -42,9 +42,15 @@ C
       integer        PETSC_NULL
       character*(80) PETSC_NULL_CHARACTER
 
+C
+C PETSc world communicator
+C
+      MPI_Comm PETSC_COMM_WORLD
+
       common   /petscfortran/  PETSC_NULL,
      *         VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF,
-     *         VIEWER_STDOUT_WORLD,PETSC_NULL_CHARACTER
+     *         VIEWER_STDOUT_WORLD,PETSC_NULL_CHARACTER,
+     *         PETSC_COMM_WORLD
 C
 C     Macro for templating between real and complex
 C
@@ -63,12 +69,13 @@ C
 #define Scalar  double precision
 #endif
 #endif
+
 C
 C     Macros for error checking
 C
 #if defined(PETSC_DEBUG)
-#define SETERRA(n,s)   call MPI_Abort(MPI_COMM_WORLD,n)
-#define CHKERRA(n)     if (n .ne. 0) call MPI_Abort(MPI_COMM_WORLD,n)
+#define SETERRA(n,s)   call MPI_Abort(PETSC_COMM_WORLD,n)
+#define CHKERRA(n)     if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
 #else
 #define SETERRA(n,s)   
 #define CHKERRA(n)     

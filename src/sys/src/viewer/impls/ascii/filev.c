@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.43 1996/07/10 01:51:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.44 1996/09/14 01:44:50 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -20,7 +20,7 @@ int ViewerInitializeStdoutWorld_Private()
   int ierr;
 
   if (VIEWER_STDOUT_WORLD_PRIVATE) return 0;
-  ierr = ViewerFileOpenASCII(MPI_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD_PRIVATE);CHKERRQ(ierr);
+  ierr = ViewerFileOpenASCII(PETSC_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD_PRIVATE);CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.7 1996/08/28 17:31:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.8 1996/09/14 01:37:03 curfman Exp curfman $";
 #endif
 
 /*
@@ -85,11 +85,11 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   int  i, warg = 256,rank;
   char *p;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (!rank) {
     *argc = 1 + iargc_();
   }
-  MPI_Bcast(argc,1,MPI_INT,0,MPI_COMM_WORLD);
+  MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);
 
   *argv = (char **) PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*))); 
   CHKPTRQ(*argv);
@@ -116,7 +116,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
       }
     }
   }
-  MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,MPI_COMM_WORLD);  
+  MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD);  
   if (rank) {
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
@@ -129,7 +129,8 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 extern "C" {
 #endif
 
-extern int PetscInitializedCalled;
+int      PetscInitializedCalled = 0;
+MPI_Comm PETSC_COMM_WORLD = 0;
 
 void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
@@ -146,6 +147,8 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     if (*__ierr) {fprintf(stderr,"PetscInitialize:");return;}
     PetscBeganMPI = 1;
   }
+  if (PETSC_COMM_WORLD == 0) PETSC_COMM_WORLD = MPI_COMM_WORLD;
+
 #if defined(PETSC_COMPLEX)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
@@ -165,8 +168,8 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 
   if (PetscBeganMPI) {
     int rank,size;
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    MPI_Comm_size(PETSC_COMM_WORLD,&size);
     PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
   }
   *__ierr = 0;

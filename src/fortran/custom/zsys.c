@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.20 1996/04/19 20:42:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.21 1996/09/14 01:38:18 curfman Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -160,7 +160,7 @@ void petscintview_(int *n,int *d,int *viwer,int *__ierr)
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: zsys.c,v 1.20 1996/04/19 20:42:52 bsmith Exp bsmith $
+ *  $Id: zsys.c,v 1.21 1996/09/14 01:38:18 curfman Exp curfman $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.
@@ -209,7 +209,7 @@ Possible sources of this problem are a missing \"include 'mpif.h'\",\n\
 a misspelled MPI object (e.g., MPI_COM_WORLD instead of MPI_COMM_WORLD)\n\
 or a misspelled user variable for an MPI object (e.g., \n\
 com instead of comm).\n" );
-    MPI_Abort(MPI_COMM_WORLD,1);
+    MPI_Abort(PETSC_COMM_WORLD,1);
   }
   if (idx == 0) return (void *)0;
   return PtrArray[idx].ptr;
@@ -236,7 +236,7 @@ int MPIR_FromPointer(void *ptr )
   fprintf( stderr, "Pointer conversions exhausted\n" );
   fprintf(stderr, "Too many MPI objects may have been passed to/from Fortran\n\
   without being freed\n" );
-  MPI_Abort(MPI_COMM_WORLD,1);
+  MPI_Abort(PETSC_COMM_WORLD,1);
 }
 
 void MPIR_RmPointer(int idx )
@@ -253,7 +253,7 @@ Possible sources of this problem are a missing \"include 'mpif.h'\",\n\
 a misspelled MPI object (e.g., MPI_COM_WORLD instead of MPI_COMM_WORLD)\n\
 or a misspelled user variable for an MPI object (e.g., \n\
 com instead of comm).\n" );
-    MPI_Abort(MPI_COMM_WORLD,1);
+    MPI_Abort(PETSC_COMM_WORLD,1);
   }
   if (idx == 0) return;
   if (PtrArray[idx].next) {
@@ -262,7 +262,7 @@ com instead of comm).\n" );
     fprintf( stderr, 
 	    "[%d] Error in recovering Fortran pointer; already freed\n", 
 	    myrank );
-    MPI_Abort(MPI_COMM_WORLD,1);
+    MPI_Abort(PETSC_COMM_WORLD,1);
     return;
   }
   PtrArray[idx].next = avail;
