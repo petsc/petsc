@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.95 1997/07/02 22:24:18 bsmith Exp balay $";
+static char vcid[] = "$Id: itcl.c,v 1.96 1997/07/09 20:50:16 balay Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -246,8 +246,9 @@ int KSPPrintHelp(KSP ksp)
     PetscPrintf(ksp->comm,"   %sksp_cancelmonitors: cancel all monitors hardwired in code\n",p);
     PetscPrintf(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
     residual norm to stdout\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_smonitor: same as the above, but prints fewer digits for \n\
-    low residuals.\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_smonitor: same as the above, but prints fewer digits of the\n\
+    residual norm for small residual norms. This is useful to conceal\n\
+    meaningless digits that may be different on different machines.\n",p);
     PetscPrintf(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\
     preconditioned) residual norm\n",p);
     PetscPrintf(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n",p);
