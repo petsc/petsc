@@ -1,5 +1,5 @@
 
-C "$Id: ex14.F,v 1.1 1996/08/23 23:51:33 curfman Exp curfman $";
+C "$Id: ex14.F,v 1.2 1996/08/24 04:20:23 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -185,10 +185,14 @@ C  Set function evaluation routine and vector
 
       call SNESSetFunction(snes,r,FormFunction,user,ierr)
 
-C  Set default Jacobian evaluation routine.  User can override with:
+C  Set Jacobian matrix data structure and default Jacobian evaluation
+C  routine. User can override with:
+C     -snes_fd : default finite differencing approximation of Jacobian
 C     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
 C                (unless user explicitly sets preconditioner) 
-C     -snes_fd : default finite differencing approximation of Jacobian
+C     -snes_mf_operator : form preconditioning matrix as set by the user,
+C                         but use matrix-free approx for Jacobian-vector
+C                         products within Newton-Krylov method
 C
 C  Note:  For the parallel case, vectors and matrices MUST be partitioned
 C     accordingly.  When using distributed arrays (DAs) to create vectors,
@@ -215,7 +219,7 @@ C  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
 C  Evaluate initial guess; then solve nonlinear system.
 C   - The user should initialize the vector, x, with the initial guess
-C     for the nonlinear solver prior to calling SNESSolve.  In particular,
+C     for the nonlinear solver prior to calling SNESSolve().  In particular,
 C     to employ an initial guess of zero, the user should explicitly set
 C     this vector to zero by calling VecSet().
 
@@ -345,11 +349,11 @@ C  FormFunction - Evaluates nonlinear function, F(x).
 C
 C  Input Parameters:
 C  snes - the SNES context
-C  x - input vector
+C  X - input vector
 C  ptr - optional user-defined context, as set by SNESSetFunction()
 C
 C  Output Parameter:
-C  y - function vector
+C  F - function vector
 C
       subroutine FormFunction(snes,X,F,user)
       implicit none

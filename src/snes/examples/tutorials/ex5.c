@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.62 1996/08/24 03:36:34 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.63 1996/08/24 04:03:56 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -131,10 +131,15 @@ int main( int argc, char **argv )
   */
   ierr = SNESSetFunction(snes,r,FormFunction,&user); CHKERRA(ierr);
 
-  /* Set default Jacobian evaluation routine.  User can override with:
+  /* 
+     Set Jacobian matrix data structure and default Jacobian evaluation
+     routine. User can override with:
+     -snes_fd : default finite differencing approximation of Jacobian
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
                 (unless user explicitly sets preconditioner) 
-     -snes_fd : default finite differencing approximation of Jacobian
+     -snes_mf_operator : form preconditioning matrix as set by the user,
+                         but use matrix-free approx for Jacobian-vector
+                         products within Newton-Krylov method
 
      Note:  For the parallel case, vectors and matrices MUST be partitioned
      accordingly.  When using distributed arrays (DAs) to create vectors,
@@ -162,7 +167,7 @@ int main( int argc, char **argv )
   /*
      Evaluate initial guess; then solve nonlinear system.
      - The user should initialize the vector, x, with the initial guess
-       for the nonlinear solver prior to calling SNESSolve.  In particular,
+       for the nonlinear solver prior to calling SNESSolve().  In particular,
        to employ an initial guess of zero, the user should explicitly set
        this vector to zero by calling VecSet().
   */
@@ -177,12 +182,9 @@ int main( int argc, char **argv )
   if (!matrix_free) {
     ierr = MatDestroy(J); CHKERRA(ierr);
   }
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = VecDestroy(user.localX); CHKERRA(ierr);
-  ierr = VecDestroy(user.localF); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = DADestroy(user.da); CHKERRA(ierr);
+  ierr = VecDestroy(user.localX); CHKERRA(ierr); ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(user.localF); CHKERRA(ierr); ierr = VecDestroy(r); CHKERRA(ierr);      
+  ierr = SNESDestroy(snes); CHKERRA(ierr);  ierr = DADestroy(user.da); CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -261,11 +263,11 @@ int FormInitialGuess(AppCtx *user,Vec X)
 
    Input Parameters:
 .  snes - the SNES context
-.  x - input vector
+.  X - input vector
 .  ptr - optional user-defined context, as set by SNESSetFunction()
 
    Output Parameter:
-.  y - function vector
+.  F - function vector
  */
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {

@@ -1,86 +1,194 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.46 1996/08/06 15:31:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.47 1996/08/14 01:42:50 curfman Exp curfman $";
 #endif
 
-static char *help="Uses Newton's method to solve a two-variable system.\n";
+static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
+/*T
+   Concepts: SNES; solving nonlinear equations
+   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
+   Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSolution();
+   Processors: 1
+T*/
+
+/* 
+   Include "snes.h" so that we can use SNES solvers.  Note that this
+   file automatically includes:
+     petsc.h  - base PETSc routines   vec.h - vectors
+     sys.h    - system routines       mat.h - matrices
+     is.h     - index sets            ksp.h - Krylov subspace methods
+     viewer.h - viewers               pc.h  - preconditioners
+     sles.h   - linear solvers
+*/
 #include "snes.h"
+#include <stdio.h>
 
-int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(SNES,Vec,Vec,void*),
-     Monitor(SNES,int,double,void*);
+/* 
+   User-defined routines
+*/
+int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+int FormFunction(SNES,Vec,Vec,void*), Monitor(SNES,int,double,void*);
 
 int main( int argc, char **argv )
 {
-  SNES         snes;               /* nonlinear solver context */
-  Vec          x,r;                /* solution, residual vectors */
-  Mat          J;                  /* Jacobian matrix */
-  SLES         sles;               /* SLES context */
-  PC           pc;                 /* PC context */
-  int          ierr, its;
-  Scalar       pfive = .5;
+  SNES     snes;         /* nonlinear solver context */
+  Vec      x, r;         /* solution, residual vectors */
+  Mat      J;            /* Jacobian matrix */
+  int      ierr, its;
+  Scalar   pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
 
+  /*
+     Create vectors for solution and nonlinear function
+  */
   ierr = VecCreateSeq(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
+
+  /*
+     Create Jacobian matrix data structure
+  */
   ierr = MatCreate(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
 
-  /* Create nonlinear solver */
+  /* 
+     Create nonlinear solver context
+  */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
-  /* Set default preconditioner */
-  ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
-
-  /* Set various routines and options */
+  /* 
+     Set function evaluation routine and vector
+  */
   ierr = SNESSetFunction(snes,r,FormFunction,0);CHKERRA(ierr);
+
+  /* 
+     Set Jacobian matrix data structure and Jacobian evaluation routine
+  */
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,0); CHKERRA(ierr);
+
+  /*
+     Set user-defined monitoring routine (optional)
+  */
+  ierr = SNESSetMonitor(snes,Monitor,PETSC_NULL); CHKERRA(ierr);
+
+  /*
+     Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
+  */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
-  /* Set an initial guess of .5 */
+  /*
+     Evaluate initial guess; then solve nonlinear system.
+     - The user should initialize the vector, x, with the initial guess
+       for the nonlinear solver prior to calling SNESSolve().  In particular,
+       to employ an initial guess of zero, the user should explicitly set
+       this vector to zero by calling VecSet().
+  */
   ierr = VecSet(&pfive,x); CHKERRA(ierr);
-
-  /* Solve nonlinear system */
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its);
 
-  /* Free data structures */
-  ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = MatDestroy(J); CHKERRA(ierr);  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  /* 
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+  */
+  ierr = VecDestroy(x); CHKERRA(ierr); ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = MatDestroy(J); CHKERRA(ierr); ierr = SNESDestroy(snes); CHKERRA(ierr);
+
   PetscFinalize();
   return 0;
-}/* --------------------  Evaluate Function F(x) --------------------- */
+}
+/* ------------------------------------------------------------------- */
+/* 
+   FormFunction - Evaluates nonlinear function, F(x).
+
+   Input Parameters:
+.  snes - the SNES context
+.  x - input vector
+.  ptr - optional user-defined context (not used here)
+
+   Output Parameter:
+.  f - function vector
+ */
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
 {
   int    ierr;
   Scalar *xx, *ff;
 
+  /*
+     Get pointers to vector data
+  */
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
+
+  /*
+     Compute function
+  */
   ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
   ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
+
+  /*
+     Restore vectors
+  */
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr); 
+
   return 0;
-}/* --------------------  Evaluate Jacobian F'(x) -------------------- */
+}
+/* ------------------------------------------------------------------- */
+/*
+   FormJacobian - Evaluates Jacobian matrix.
+
+   Input Parameters:
+.  snes - the SNES context
+.  x - input vector
+.  ptr - optional user-defined context (not used here)
+
+   Output Parameters:
+.  jac - Jacobian matrix
+.  B - optionally different preconditioning matrix
+.  flag - flag indicating matrix structure
+*/
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   Scalar *xx, A[4];
   int    ierr, idx[2] = {0,1};
 
+  /*
+     Get pointer to vector data
+  */
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+
+  /*
+     Compute Jacobian entries and insert into matrix
+  */
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
   ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES); CHKERRQ(ierr);
-  *flag = DIFFERENT_NONZERO_PATTERN;
+  *flag = SAME_NONZERO_PATTERN;
+
+  /*
+     Restore vector
+  */
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+
+  /*
+     Assemble matrix
+  */
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
   return 0;
-}/* --------------------  User-defined monitor ----------------------- */
+}
+/* ------------------------------------------------------------------- */
+/*
+   Monitor - User-defined monitoring routine, set by calling
+   SNESSetMonitor() in the main program.
+
+   Input Parameters:
+.  snes - the SNES context
+.  its - iteration number
+.  fnorm - 2-norm function value (may be estimated)
+.  mctx - optional monitoring context (not used here)
+*/
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
   int      ierr;
@@ -97,6 +205,9 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   else {
     PetscPrintf(comm, "iter = %d, SNES Function norm < 1.e-11\n",its);
   }
+  /* 
+     View the current iterate
+  */
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
   return 0;
