@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.87 1997/03/20 18:51:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.88 1997/04/02 16:38:35 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -287,20 +287,17 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   count = 1;
   while (1) {
     if (lambda <= minlambda) { /* bad luck; use full step */
-      PLogInfo(snes,
-         "SNESCubicLineSearch:Unable to find good step length! %d \n",count);
-      PLogInfo(snes, 
-         "SNESCubicLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",
-             fnorm,*gnorm,*ynorm,lambda,initslope);
+      PLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %d \n",count);
+      PLogInfo(snes,"SNESCubicLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",
+               fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       *flag = -1; break;
     }
     t1 = *gnorm - fnorm - lambda*initslope;
     t2 = gnormprev  - fnorm - lambdaprev*initslope;
-    a = (t1/(lambda*lambda) - t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
-    b = (-lambdaprev*t1/(lambda*lambda) + 
-                             lambda*t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
-    d = b*b - 3*a*initslope;
+    a  = (t1/(lambda*lambda) - t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
+    b  = (-lambdaprev*t1/(lambda*lambda) + lambda*t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
+    d  = b*b - 3*a*initslope;
     if (d < 0.0) d = 0.0;
     if (a == 0.0) {
       lambdatemp = -initslope/(2.0*b);
@@ -326,10 +323,12 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
 #endif
     ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm); CHKERRQ(ierr);
-    if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough */
+    if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough? */
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       PLogInfo(snes,"SNESCubicLineSearch: Cubically determined step, lambda=%g\n",lambda);
       goto theend1;
+    } else {
+      PLogInfo(snes,"SNESCubicLineSearch: Cubic step no good, shrinking lambda,  lambda=%g\n",lambda);
     }
     count++;
   }
