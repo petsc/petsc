@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.18 1998/10/31 16:24:05 balay Exp balay $ 
+# $Id: urlget.py,v 1.19 1998/12/11 23:28:03 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -24,7 +24,7 @@ def basename(filename):
 def uncompress(filename):
     ext = extension(filename)
     if ext == 'gz':
-        err = os.system('gunzip ' + filename)
+        err = os.system('zgunzip ' + filename)
         if err != 0:
             print 'Error unable to invoke gunzip on ' + filename
             exit()
@@ -56,7 +56,12 @@ class ftp_object(url_object):
         self.machine = machine
         self.urlpath = urlpath
         self.buf     = ''
-        self.ftp     = ftplib.FTP(self.machine)
+        try :
+            self.ftp     = ftplib.FTP(self.machine)
+        except:
+            print 'Error! accessing server',self.machine
+            exit()
+            
         self.ftp.login()
 
     def __del__(self):
@@ -71,6 +76,11 @@ class ftp_object(url_object):
         
         self.buf       = ''
         self.ftp.retrlines('LIST ' +self.urlpath,self.readftplines)
+        if self.buf == '':
+            print 'Error! file does not exist on the server'
+            self.ftp.close()
+            exit()
+
         month,day,year = split(self.buf)[5:8]
         hour,min       = '0','0'
 
@@ -105,8 +115,12 @@ class http_object(url_object):
     def __init__(self,machine,urlpath):
         self.machine = machine
         self.urlpath = urlpath
-        self.http    = httplib.HTTP(machine)
-
+        try:
+            self.http = httplib.HTTP(self.machine)
+        except:
+            print 'Error! accessing server',self.machine
+            exit()
+        
         self.http.putrequest('GET',self.urlpath)
         self.http.putheader('Accept','*/*')
         self.http.endheaders()
@@ -179,7 +193,8 @@ class urlget:
             self.url_obj = http_object(self.machine,self.urlpath)
         else:
             print 'Error! Unknown protocol. use ftp or http protocols only'
-
+            exit()
+            
         timestamp = self.url_obj.gettime()
         uselocalcopy = 0
         if os.path.isfile(self.cachefilename) == 1:
@@ -221,12 +236,8 @@ def main():
     else:
         outfilename = ''
 
-    try:
-        x = urlget(url,outfilename)
-        print x.cachefilename
-    except:
-        print 'Error! Accessing url on the server',exc_type,exc_value
-
+    x = urlget(url,outfilename)
+    print x.cachefilename
 
 # The classes in this file can also
 # be used in other python-programs by using 'import'
