@@ -67,7 +67,10 @@ class UsingCxx (base.Base):
 
   def getLinker(self):
     if self._linker is None:
-      return self.configBase.getLinker()
+      self.configBase.pushLanguage('Cxx')
+      linker = self.configBase.getLinker()
+      self.configBase.popLanguage()
+      return linker
     return self._linker
 
   def setLinker(self, linker):
@@ -76,7 +79,9 @@ class UsingCxx (base.Base):
 
   def getLinkerFlags(self):
     if self._linkerFlags is None:
+      self.configBase.pushLanguage('Cxx')
       self.configBase.getLinker()
+      self.configBase.popLanguage()
       return self.configBase.linkerFlags
     return self._linkerFlags
 
