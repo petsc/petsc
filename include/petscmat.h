@@ -760,7 +760,7 @@ E*/
 #define MATORDERING_REVERSE   "reverse"
 
 EXTERN int MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
-EXTERN int MatOrderingRegister(const char[],const char[],const char[],int(*)(Mat,MatOrderingType,IS*,IS*));
+EXTERN int MatOrderingRegister(const char[],const char[],const char[],int(*)(Mat,const MatOrderingType,IS*,IS*));
 
 /*MC
    MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the 
@@ -900,8 +900,8 @@ E*/
 #define MATCOLORING_LF      "lf"
 #define MATCOLORING_ID      "id"
 
-EXTERN int MatGetColoring(Mat,MatColoringType,ISColoring*);
-EXTERN int MatColoringRegister(const char[],const char[],const char[],int(*)(Mat,MatColoringType,ISColoring *));
+EXTERN int MatGetColoring(Mat,const MatColoringType,ISColoring*);
+EXTERN int MatColoringRegister(const char[],const char[],const char[],int(*)(Mat,const MatColoringType,ISColoring *));
 
 /*MC
    MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 

@@ -10,7 +10,7 @@ set APPEND='>>&'
 set RSH='ssh -1'
 set RCP='scp -q -B -oProtocol=1'
 set CONFIGURE='no'
-
+set ARCH=$1
 set dir=`dirname $0`
 source $dir/buildtests/$1
 

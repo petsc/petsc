@@ -259,10 +259,10 @@ runex18:
 	   if (${DIFF} output/ex18_1.out ex18_1.tmp) then true; \
 	   else echo "Possible problem with ex18_1, diffs above"; fi;\
 	   ${RM} -f ex18_1.tmp
-runex19:
-	-@${MPIRUN} -np 1 ex19 -n 25 > ex19_1.tmp 2>&1;\
+runex19f:
+	-@${MPIRUN} -np 1 ex19f -n 25 > ex19_1.tmp 2>&1;\
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
-	   else echo "Possible problem with ex19_1, diffs above"; fi;\
+	   else echo "Possible problem with ex19f_1, diffs above"; fi;\
 	   ${RM} -f ex19_1.tmp
 runex20f:
 	-@${MPIRUN} -np 1 ex20f > ex20_1.tmp 2>&1;\

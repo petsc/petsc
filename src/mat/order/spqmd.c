@@ -9,7 +9,7 @@ EXTERN_C_BEGIN
 */    
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_QMD"
-int MatOrdering_QMD(Mat mat,MatOrderingType type,IS *row,IS *col) 
+int MatOrdering_QMD(Mat mat,const MatOrderingType type,IS *row,IS *col) 
 {
   int        i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow;
   int        ierr,*ia,*ja,*perm;

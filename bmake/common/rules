@@ -438,7 +438,8 @@ fortranstubs:
           grep -v EXTERNAL  |\
           grep -v "warning prebinding disabled"  |\
           grep -v volatile  |\
-          grep -v -i inconsistent | grep -v Anachronism | \
+          grep -v -i inconsistent |\
+          grep -v Anachronism | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           echo "--------------Error detected during compile or link!-----------------------";\
@@ -466,7 +467,9 @@ fortranstubs:
 	  grep -v "Unused external reference" | \
           grep -v "WARNING 134: weak definition of" | \
           grep -v 'continuing despite warning messages' | \
+          grep -v "warning prebinding disabled"  |\
 	  grep -v "Unused dummy argument" | \
+          grep -v "warning multiple definitions of symbol _matgetarray_" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
           echo "--------------Error detected during compile or link!-----------------------";\

@@ -46,6 +46,22 @@ def petsc_configure(configure_options):
       traceback.print_tb(sys.exc_info()[2], file = framework.log)
     sys.exit(1)
   framework.storeSubstitutions(framework.argDB)
+
+  # save the jobs that should be run by the PETSc buildtest
+  fd = open(os.path.abspath(os.path.join('bmake',framework.argDB['PETSC_ARCH'],'jobs')),'w')
+  jobs = []
+  if framework.usingMPIUni:
+    jobs.append('4')
+    if 'FC' in framework.argDB:jobs.append('9')
+  else:
+    jobs.append('1')
+    if 'FC' in framework.argDB:jobs.append('3')
+    if framework.foundX11:jobs.append('2')
+  fd.write(' '.join(jobs)+'\n')
+  fd.close()
+  fd = open(os.path.abspath(os.path.join('bmake',framework.argDB['PETSC_ARCH'],'ejobs')),'w')
+  fd.write(' ')
+  fd.close()
   return 0
 
 if __name__ == '__main__':

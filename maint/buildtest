@@ -13,7 +13,7 @@ set APPEND='>>&'
 set RSH='ssh -1'
 set RCP='scp -q -B -oProtocol=1'
 set CONFIGURE='no'
-
+set ARCH=$1
 set dir=`dirname $0`
 source $dir/buildtests/$1
 set dir=`dirname $dir`
@@ -30,26 +30,25 @@ $RSH $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND maint/b
 if ("${CONFIGURE}" == "yes") then
   $RSH $MACH -n "cd $TMP; config/configure_$ARCH.py $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
   $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
+  set EJOBS=`$RSH $MACH -n cat $TMP/bmake/$1/ejobs`
+  set JOBS=`$RSH $MACH -n cat $TMP/bmake/$1/jobs`
+else
+#  Get the list of packages installed on the machine WHERE THE BUILD IS HAPPENING
+  set EJOBS=`$RSH $MACH -n grep PETSC_HAVE_ $TMP/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
+endif
+
+if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
+  set EJOBS=""
 endif
 
 
 $RSH $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-
 $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 #
-#  Now run the test examples
 #
-#  Get the list of packages installed on the machine WHERE THE BUILD IS HAPPENING
-set EJOBS=`$RSH $MACH -n grep PETSC_HAVE_ $TMP/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
-
-if ("${BOPT}" == "g_complex") then
-  set EJOBS=""
-endif
-if ("${BOPT}" == "O_complex") then
-  set EJOBS=""
-endif
 #
+# Run examples
 $RSH $MACH -n "cd $TMP ;echo 'Build on $MACH $ARCH  $BOPT `date` ' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"
 foreach j ($JOBS $EJOBS)
   $RSH $MACH -n "cd $TMP; $NICE make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree | grep -v 'up to date' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"

@@ -194,7 +194,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoring_Natural" 
-int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
+int MatColoring_Natural(Mat mat,const MatColoringType color, ISColoring *iscoloring)
 {
   int             start,end,ierr,i;
   ISColoringValue *colors;
@@ -217,12 +217,12 @@ EXTERN_C_END
 
 #include "petscsys.h"
 
-PetscFList      MatColoringList = 0;
+PetscFList MatColoringList = 0;
 PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringRegister" 
-int MatColoringRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,MatColoringType,ISColoring*))
+int MatColoringRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatColoringType,ISColoring*))
 {
   int  ierr;
   char fullname[256];
@@ -304,10 +304,10 @@ $    -mat_coloring_view
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
            SNESDefaultComputeJacobianColor()
 @*/
-int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
+int MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
 {
   PetscTruth flag;
-  int        ierr,(*r)(Mat,MatColoringType,ISColoring *);
+  int        ierr,(*r)(Mat,const MatColoringType,ISColoring *);
   char       tname[256];
 
   PetscFunctionBegin;

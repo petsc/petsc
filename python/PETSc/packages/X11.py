@@ -9,12 +9,12 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.foundX11     = 0
+    self.framework.foundX11     = 0
     self.make         = self.framework.require('PETSc.packages.Make', self)
     return
 
   def __str__(self):
-    if self.foundX11:
+    if self.framework.foundX11:
       desc = ['X11:']	
       desc.append('  Includes: '+str(self.include))
       desc.append('  Library: '+str(self.lib))
@@ -180,7 +180,7 @@ acfindx:
     if not foundInclude or not foundLibrary:
       self.emptySubstitutions()
     else:
-      self.foundX11 = 1
+      self.framework.foundX11 = 1
       if includeDir:
         self.include = '-I'+includeDir
       else:
