@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.29 2000/04/26 02:45:03 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.30 2000/04/26 02:53:41 bsmith Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -45,6 +45,9 @@ CGMCOM *c_gmcom;                               /* Pointer to COMMON GMCOM    */
                                                /*============================*/
 int  rank,size,rstart;
 REAL memSize = 0.0,grad_time = 0.0;
+#if defined(_OPENMP)
+int max_threads = 2;
+#endif
 
 #if defined(PARCH_IRIX64) && defined(USE_HW_COUNTERS)
 int       event0,event1;
@@ -93,6 +96,13 @@ int main(int argc,char **args)
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
   /*======================================================================*/
 
+  /*Set the maximum number of threads for OpenMP */
+#if defined(_OPENMP)
+  ierr = OptionsGetInt(PETSC_NULL,"-max_thr",&max_threads,&flg); CHKERRA(ierr);
+  omp_set_num_threads(max_threads);
+  PetscPrintf(PETSC_COMM_WORLD,"Using %d threads for each MPI process\n",
+              max_threads);  
+#endif
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
  
   f77OPENM(&rank);                            /* Open files for I/O         */
