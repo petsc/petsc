@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.16 2001/06/21 21:18:24 bsmith Exp balay $*/
+/*$Id: minres.c,v 1.17 2001/08/07 03:03:56 balay Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -9,7 +9,7 @@
 #include "src/sles/ksp/kspimpl.h"
 
 typedef struct {
-  double haptol;
+  PetscReal haptol;
 } KSP_MINRES;
 
 #undef __FUNCT__  
