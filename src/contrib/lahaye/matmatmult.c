@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.4 2001/08/31 20:54:07 buschelm Exp buschelm $*/
+/*$Id: matmatmult.c,v 1.5 2001/09/01 05:16:27 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -76,8 +76,8 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
         /* If column is not marked, mark it in compressed and uncompressed locations. */
         /* For simplicity, leave uncompressed row unsorted until finished with row, */
         /* and increment nonzero count for this row. */
-        if (densefill[bjj[k]]) {
-          densefill[bjj[k]]  = bjj[k];
+        if (!densefill[bjj[k]]) {
+          densefill[bjj[k]]  = -1;
           sparsefill[cnzi++] = bjj[k];
         }
       }
