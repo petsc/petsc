@@ -15,7 +15,8 @@ add to it).
 
   MAT
 
-   
+    Fixed bugs in MatReorderForNonzeroDiagonal() and made it more
+    robust.   
 
    
 
@@ -41,5 +42,15 @@ add to it).
     Remove the gvec directory from the distribution. If you are using this
  please let us and know and we can provide it or provide alternative code
 to do what you need.
-    
+
+  SNES 
+
+    Changed SNESDefaultMatrixFreeMatCreate() to MatSNESFDMFCreate()
+    Added 
+      MatSNESFDMFSetHHistory(Mat,Scalar *,int);
+      MatSNESFDMFResetHHistory(Mat,Scalar *,int);
+      MatSNESFDMFSetParameters(Mat,double,double);
+      MatSNESFDMFGetH(Mat,Scalar *);
+      MatSNESFDMFKSPMonitor(KSP,int,double,void *); and the 
+      option -snes_mf_ksp_monitr
 
