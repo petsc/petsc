@@ -1,4 +1,4 @@
-/* $Id: ximpl.h,v 1.5 1995/12/13 04:13:13 bsmith Exp bsmith $ */
+/* $Id: ximpl.h,v 1.6 1996/03/10 17:29:14 bsmith Exp bsmith $ */
 
 /*
       Defines the internal data structures for the X-windows 
@@ -6,6 +6,7 @@
 */
 
 #include "drawimpl.h"
+#include "sys.h"
 
 #if !defined(_XIMPL_H) && defined(HAVE_X11)
 #define _XIMPL_H
