@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.173 1996/11/29 23:18:50 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.174 1996/12/02 18:48:24 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3070,19 +3070,19 @@ product is computed. They are set with the command
 \begin{verbatim}
    ierr = SNESSetMatrixFreeParameters(SNES snes,double rerror,double umin);
 \end{verbatim}
-The parameter {\tt rerror} is the square root of 
-the \findex{SNESSetMatrixFreeParameters()}
-relative error in the function evaluations; the default is $ 1.0e-8 $ , which assumes
+\findex{SNESSetMatrixFreeParameters()}
+The parameter {\tt rerror} is the square root of the 
+relative error in the function evaluations, $e_{rel}$; the default is $ 1.0e-8 $ , which assumes
 that the functions are evaluated to full double precision accuracy. The 
-second parameter, {\tt umin}, is a bit more involved, it's default is 
-$ 1.0e-8 $ . The Jacobian matrix vector product is via the formula
+second parameter, {\tt umin} (or $u_{min}$), is a bit more involved, its default is 
+$ 1.0e-8 $ . The Jacobian-vector product is approximated via the formula
 \[
-    \frac{J(u + h*a) - J(u)}{h}
+    F'(u) a \approx \frac{F(u + h*a) - F(u)}{h}
 \]
 where $ h $ is computed via 
 \begin{eqnarray*}
-        h = rerror*u^{T}a/||a||^2                       &    \hbox{if}  |u'a| > umin*||a||_{1} \\
-          = rerror*umin*sign(u^{T}a)*||a||_{1}/||a||^2  &    \hbox{otherwise}.
+        h = e_{rel}*u^{T}a/||a||^2                       &    \hbox{if}  |u'a| > u_{min}*||a||_{1} \\
+          = e_{rel}*u_{min}*sign(u^{T}a)*||a||_{1}/||a||^2  &    \hbox{otherwise}.
 \end{eqnarray*}
 This approach is taken from Brown and Saad \cite{brownsaad:90}.
 These may be set from the options database with 
@@ -3147,22 +3147,22 @@ $ ^\dagger $ Set user-defined matrix formation routine with {\tt SNESSetJacobian
 \end{figure} 
 
 % ---------------------------------------------------------------
-\section{Finite Difference Jacobians}
+\section{Finite Difference Jacobian Approximations}
 \label{sec:fdmatrix}
 
-In certain situations, where, for example, one is unable to compute the Jacobians
-analytically and matrix free methods don't work due to very poorly conditioned matrices,
-PETSc provides some tools to help compute the Jacobians efficiently via 
-finite differences. This is done in several steps:
+PETSc provides some tools to help approximate the Jacobian matrices efficiently via 
+finite differences.  These tools are intended for use in certain situations where
+one is unable to compute Jacobian matrices analytically, and matrix-free methods
+do not work due to very poor conditioning.  The approximation requires several steps:
 \begin{itemize}
-\item First one must color the columns of the (not yet built) Jacobian matrix, so that 
+\item First, one colors the columns of the (not yet built) Jacobian matrix, so that 
       columns of the same color do not share any common rows.
-\item Next one creates a {\tt MatFDColoring} data structure that is used later in 
+\item Next, one creates a {\tt MatFDColoring} data structure that will be used later in 
       actually computing the Jacobian.
-\item Finally one tells SNES to use the {\tt SNESDefaultComputeJacobianWithColoring()}
+\item Finally, one tells SNES to use the {\tt SNESDefaultComputeJacobianWithColoring()}
       routine to compute the Jacobians. 
 \end{itemize}
-A code fragment that demonstrates this is give below.
+A code fragment that demonstrates this process is given below.
 \begin{verbatim}
    ISColoring    iscoloring;
    MatFDColoring fdcoloring;
@@ -3170,74 +3170,84 @@ A code fragment that demonstrates this is give below.
 
    /* 
       This initializes the nonzero structure of the Jacobian. This is artificial
-      because clearly if we had a routine to compute the Jacobian we won't need
-      to use finite differences.
+      because clearly if we had a routine to compute the Jacobian we wouldn't
+      need to use finite differences.
    */
-   ierr = FormJacobian(snes,x,&J,&J,&str,&user); CHKERRA(ierr);
+   FormJacobian(snes,x,&J,&J,&str,&user);
 
    /*
        Color the matrix, i.e. determine groups of columns that share no common 
       rows. These columns in the Jacobian can all be computed simulataneously.
    */
-   ierr = MatGetColoring(J,COLORING_NATURAL,&iscoloring); CHKERRA(ierr);
+   MatGetColoring(J,COLORING_NATURAL,&iscoloring);
+
    /*
        Create the data structure that SNESDefaultComputeJacobianWithColoring() uses
        to compute the actual Jacobians via finite differences.
    */
-   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
-   ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
+   MatFDColoringCreate(J,iscoloring,&fdcoloring);
+   MatFDColoringSetFromOptions(fdcoloring);
+
    /*
-        Tell SNES to use the routine SNESDefaultComputeJacobianWithColoring()
+      Tell SNES to use the routine SNESDefaultComputeJacobianWithColoring()
       to compute Jacobians.
    */
-   ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,fdcoloring);CHKERRA(ierr);  
-   ierr = ISColoringDestroy(iscoloring); CHKERRA(ierr);
+   SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,fdcoloring);
+   ISColoringDestroy(iscoloring);
+
 \end{verbatim}
 
 \findex{MatGetColoring()} \findex{MatFDColoringCreate()} 
 \findex{MatFDColoringSetFromOptions()} \findex{ISColoringDestroy()}
 
-Of course, we are cheating a little. If we don't have a formula for the Jacobian, then
-how do we know what it's nonzero structure is so that it may be colored. This is 
-problem dependent, but fortunately, for most grid-based problems (which is what PETSc
-is designed for) if one knows the stencil used for the nonlinear problem one can usually 
-fairly easily obtain an (over-estimate) of the location of nonzeros in the matrix.
+Of course, we are cheating a bit. If we do not have an analytic
+formula for computing the Jacobian, then how do we know what its
+nonzero structure is so that it may be colored?  Determining the
+structure is problem dependent, but fortunately, for most grid-based
+problems (the class of problems for which PETSc is designed) if one
+knows the stencil used for the nonlinear problem one can usually
+fairly easily obtain an estimate of the location of nonzeros in
+the matrix.
 
-One need not use the routine {\tt MatGetColoring()} to provide the coloring, if, for example,
-you can color the grid directly without using the matrix then you can provide that coloring
-directly to {\tt MatFDColoringCreate()}.  But you must already preset the nonzero 
-structure in the matrix regardless.
+One need not necessarily use the routine {\tt MatGetColoring()} to
+determine a coloring.  For example, if a grid can be colored directly
+(without using the associated matrix), then that coloring can be provided
+to {\tt MatFDColoringCreate()}.  Note that the user must always
+preset the nonzero structure in the matrix regardless of which
+coloring routine is used.
 
-For sequential matrix PETSc provides three matrix coloring routines from the 
-MINPACK package, \cite{more84}. These may be accessed with the command line options
+For sequential matrices PETSc provides three matrix coloring routines from the 
+MINPACK package \cite{more84}. These may be accessed with the command line options
 \begin{verbatim}
    -mat_coloring sl, id, or lf
 \end{verbatim}
-or in the call to {\tt MatGetColoring()} as {\tt COLORING\_SL}, {\tt COLORING\_ID}, or
-{\tt COLORING\_LF}. \findex{-mat_coloring} \findex{COLORING_SL} \findex{COLORING_ID}
+Alternatively, one can set a coloring type of {\tt COLORING\_SL}, {\tt
+COLORING\_ID}, or {\tt COLORING\_LF} when calling {\tt
+MatGetColoring()}. \findex{-mat_coloring} \findex{COLORING_SL} \findex{COLORING_ID}
 \findex{COLORING_LF}
 
-As with the matrix free computation of Jacobians (see Section \ref{sec:nlmatrixfree}),
-there are two parameters that affect the accuracy of the computed Jacobian.
-They are set with the command
+As for the matrix-free computation of Jacobians (see Section
+\ref{sec:nlmatrixfree}), two parameters affect the accuracy of the
+finite difference Jacobian approximation.  These are set with the command
 \begin{verbatim}
    ierr = MatFDColoringSetParameters(MatFDColoring fdcoloring,double rerror,double umin);
 \end{verbatim}
+\findex{MatFDColoringSetParameters()}
 The parameter {\tt rerror} is the square root of 
-the \findex{MatFDColoringSetParameters()}
-relative error in the function evaluations; the default is $ 1.0e-8 $ , which assumes
-that the functions are evaluated to full double precision accuracy. The 
-second parameter, {\tt umin}, is a bit more involved, it's default is 
-$ 1.0e-8 $ . The Jacobian matrix vector product is via the formula
+the relative error in the function evaluations, $e_{rel}$; the default is $ 1.0e-8 $ , which assumes
+that the functions are evaluated to full double-precision accuracy. The 
+second parameter, {\tt umin}, is a bit more involved; its default is 
+$ 1.0e-8 $ .  Column $i$ of the Jacobian matrix (denoted by $F\_{:i}$) is 
+approximated by the formula
 \[
-    J_{:i} = \frac{J(u + h*dx_{i}) - J(u)}{h}
+    F'_{:i} \approx \frac{F(u + h*dx_{i}) - F(u)}{h}
 \]
 where $ h $ is computed via 
 \begin{eqnarray*}
-        h = rerror*u_{i}             &    \hbox{if}  u_{i} > umin \\
-          = rerror*umin*sign(u_{i})  &    \hbox{otherwise}.
+        h = e_{rel}*u_{i}             &    \hbox{if}  u_{i} > u_{min} \\
+        h = e_{rel}*u_{min}*sign(u_{i})  &    \hbox{otherwise}.
 \end{eqnarray*}
-These may be set from the options database with 
+These parameters may be set from the options database with 
 \begin{verbatim}
    -mat_fd_coloring_err <err>
    -mat_fd_coloring_umin <umin>
@@ -3245,7 +3255,7 @@ These may be set from the options database with
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
 Note that these coloring and finite difference Jacobian calculation routines currently 
-only work on sequential routines.
+only work on sequential routines.  Extensions may be forthcoming.
 
 
 % ---------------------------------------------------------------
@@ -4615,7 +4625,7 @@ To deactivate logging of an event for MPE, one should use
     PLogEventMPEDeactivate(int event);
 \end{verbatim}
 The {\tt event} may be either a predefined PETSc event (as listed in
-the file {\tt \$(PETSC\_DIR)/include/plog.h}) or one obtained with
+the file {\tt \$(PETSC\_DIR)/include/petsclog.h}) or one obtained with
 {\tt PetscEventRegister()} (as described in
 Section~\ref{sec:profileuser}).  These routines may be called as many
 times as desired in an application program, so that one could restrict
@@ -4633,7 +4643,7 @@ user-defined portion of code, called an {\em event}, are shown in the
 code fragment below:
 \begin{verbatim}
 
-    #include ``plog.h''
+    #include ``petsclog.h''
     int USER_EVENT;
     PLogEventRegister(&USER_EVENT,"User event name","Color:");
     PLogEventBegin(USER_EVENT,0,0,0,0);
@@ -4742,7 +4752,7 @@ To enable or disable the PETSc logging of individual events, one uses the comman
    PLogEventDeactivate(int event);
 \end{verbatim}
 The {\tt event} may be either a predefined PETSc event (as listed in
-the file {\tt \$(PETSC\_DIR)/include/plog.h}) or one obtained with
+the file {\tt \$(PETSC\_DIR)/include/petsclog.h}) or one obtained with
 {\tt PetscEventRegister()} (as described in Section~\ref{sec:profileuser}).
 
 PETSc also provides routines that deactivate (or activate)
@@ -6482,7 +6492,7 @@ logging and profiling within PETSc.   Chapter~\ref{ch:profiling}
 gives information about using the profiling in application codes. 
 
 The interface for profiling in PETSc is contained in the file 
-{\tt \$(PETSC\_DIR)/include/plog.h}. It includes \findex{PLogObjectCreate()}
+{\tt \$(PETSC\_DIR)/include/petsclog.h}. It includes \findex{PLogObjectCreate()}
 \begin{verbatim}
    PLogObjectCreate(PetscObject h);
 \end{verbatim}
