@@ -1,0 +1,85 @@
+#! /bin/csh -f
+# $Id: petscarch,v 1.13 1999/04/13 17:32:10 bsmith Exp bsmith $ 
+
+#
+#   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
+#
+#   You can place the command
+#       "setenv PETSC_ARCH `$PETSC_DIR/bin/petscarch`"
+#   in a .cshrc file if using the csh or tcsh shell.  Thus, if you have several 
+#   machines of different types that share the same filesystem, then when 
+#   you log into any of them, the PETSC_ARCH will always be set correctly.
+# 
+if (-e /bin/uname) then
+    set LARCH = `/bin/uname -s`
+    if ("$LARCH" == "AIX") then
+        set LARCH = "rs6000"
+    else if ("$LARCH" == "HP-UX") then
+	set LARCH = "hpux"
+    else if ("$LARCH" == "Linux") then
+	set LARCH = "linux"
+    else if ("$LARCH" == "FreeBSD") then
+	set LARCH = "freebsd"    
+    else if ("$LARCH" != "IRIX" && "$LARCH" != "IRIX64") then 
+        set LARCH = `/bin/uname -m`
+    endif
+else  if (-e /usr/bin/uname) then
+    set LARCH = `/usr/bin/uname`
+    if ("$LARCH" == "FreeBSD") then
+      set LARCH = "freebsd"
+    else
+      echo "Unable to determine architecture"
+      set LARCH = "unknown"
+    endif
+else
+    echo "Unable to determine architecture"
+    set LARCH = "unknown"
+endif
+
+set SunOSTest = `expr "$LARCH" : "\(....\)"`
+if ("$SunOSTest" == "sun4") then
+  set LARCH = sun4
+  set Version = `/bin/uname -r`
+  set MajorVersion = `expr "$Version" : "\(.\)"`
+  if ("$MajorVersion" ==  5) then
+    set LARCH = "solaris"
+  endif
+else if ("$LARCH" == "iris4d" || "$LARCH" == "IRIX") then
+  set LARCH = "IRIX"
+  set Version = `/bin/uname -r`
+  set MajorVersion = `expr "$Version" : "\(.\)"`
+  if ("$MajorVersion" ==  5) then
+    set LARCH = "IRIX5"
+  endif
+else if ("$LARCH" == "AIX") then
+   set LARCH = "rs6000"
+else if ("$LARCH" == "RIOS") then
+   set LARCH = "rs6000"
+else if ("$LARCH" == "Linux" ) then 
+  set LARCH = "linux"
+else if ("$LARCH" == "CRAY Y-MP" ) then 
+  set LARCH = "t3d"
+else if ("$LARCH" == "CRAY T3E" ) then
+  set LARCH = "t3e"
+else if ("$LARCH" == "i86pc" ) then
+  set LARCH = "solaris_x86"
+endif
+#
+#  IS rs6000 actually an IBM SP?
+#if ("$LARCH" == "rs6000") then
+#  if (-e /usr/bin/mpcc) then
+#    set LARCH = "rs6000_sp"
+#  endif
+#endif
+# 
+#   Is Solaris machine running 2.7?
+#
+#if ("$LARCH" == "solaris") then
+#  set Version = `/bin/uname -r`
+#  if ("$Version" == "5.7") then
+#    set LARCH = "solaris7"
+#  endif
+#endif
+
+echo $LARCH
+exit 0
