@@ -278,6 +278,10 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
   }
   ierr = (*ctx->ops->compute)(ctx,U,a,&h);CHKERRQ(ierr);
 
+  if (ctx->checkh) {
+    ierr = (*ctx->checkh)(U,a,&h,ctx->checkhctx);CHKERRQ(ierr);
+  }
+
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
@@ -491,6 +495,21 @@ int MatSNESMFSetBase_FD(Mat J,Vec U)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetCheckh_FD"
+int MatSNESMFSetCheckh_FD(Mat J,int (*fun)(Vec,Vec,PetscReal*,void*),void*ectx)
+{
+  int          ierr;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
+
+  PetscFunctionBegin;
+  ctx->checkh    = fun;
+  ctx->checkhctx = ectx;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFromOptions"
 /*@
@@ -541,6 +560,10 @@ int MatSNESMFSetFromOptions(Mat mat)
       ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
       ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
     }
+  }
+  ierr = PetscOptionsName("-snes_mf_check_positivity","Insure that U + h*a is nonnegative","MatSNESMFSetCheckh",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatSNESMFSetCheckh(mat,MatSNESMFCheckPositivity,0);CHKERRQ(ierr);
   }
   if (mfctx->ops->setfromoptions) {
     ierr = (*mfctx->ops->setfromoptions)(mfctx);CHKERRQ(ierr);
@@ -609,6 +632,7 @@ int MatCreate_MFFD(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioniBase_C","MatSNESMFSetFunctioniBase_FD",MatSNESMFSetFunctioniBase_FD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioni_C","MatSNESMFSetFunctioni_FD",MatSNESMFSetFunctioni_FD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetCheckh_C","MatSNESMFSetCheckh_FD",MatSNESMFSetCheckh_FD);CHKERRQ(ierr);
   mfctx->mat = A;
   ierr = VecCreateMPI(A->comm,A->n,A->N,&mfctx->w);CHKERRQ(ierr);
 
@@ -658,7 +682,8 @@ EXTERN_C_END
    Options Database Keys:
 +  -snes_mf_err <error_rel> - Sets error_rel
 .  -snes_mf_unim <umin> - Sets umin (for default PETSc routine that computes h only)
--  -snes_mf_ksp_monitor - KSP monitor routine that prints differencing h
+.  -snes_mf_ksp_monitor - KSP monitor routine that prints differencing h
+-  -snes_mf_check_positivity
 
 .keywords: default, matrix-free, create, matrix
 
@@ -1055,6 +1080,21 @@ int MatSNESMFComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetBase"
+/*@
+    MatSNESMFSetBase - Sets the vector U at which matrix vector products of the 
+        Jacobian are computed
+
+    Collective on Mat
+
+    Input Parameters:
++   J - the MatSNESMF matrix
+-   U - the vector
+
+    Notes: This is rarely used directly
+
+    Level: advanced
+
+@*/
 int MatSNESMFSetBase(Mat J,Vec U)
 {
   int  ierr,(*f)(Mat,Vec);
@@ -1069,7 +1109,95 @@ int MatSNESMFSetBase(Mat J,Vec U)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetCheckh"
+/*@
+    MatSNESMFSetCheckh - Sets a function that checks the computed h and adjusts
+        it to satisfy some criteria
 
+    Collective on Mat
+
+    Input Parameters:
++   J - the MatSNESMF matrix
+.   fun - the function that checks h
+-   ctx - any context needed by the function
+
+    Options Database Keys:
+.   -snes_mf_check_positivity
+
+    Level: advanced
+
+    Notes: For example, MatSNESMFSetCheckPositivity() insures that all entries
+       of U + h*a are non-negative
+
+.seealso:  MatSNESMFSetCheckPositivity()
+@*/
+int MatSNESMFSetCheckh(Mat J,int (*fun)(Vec,Vec,PetscReal*,void*),void* ctx)
+{
+  int  ierr,(*f)(Mat,int (*)(Vec,Vec,PetscReal*,void*),void*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(J,MAT_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)J,"MatSNESMFSetCheckh_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(J,fun,ctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetCheckPositivity"
+/*@
+    MatSNESMFCheckPositivity - Checks that all entries in U + h*a are positive or
+        zero, decreases h until this is satisfied.
+
+    Collective on Vec
+
+    Input Parameters:
++   U - base vector that is added to
+.   a - vector that is added
+.   h - scaling factor on a
+-   dummy - context variable (unused)
+
+    Options Database Keys:
+.   -snes_mf_check_positivity
+
+    Level: advanced
+
+    Notes: This is rarely used directly, rather it is passed as an argument to 
+           MatSNESMFSetCheckh()
+
+.seealso:  MatSNESMFSetCheckh()
+@*/
+int MatSNESMFCheckPositivity(Vec U,Vec a,PetscScalar *h,void *dummy)
+{
+  PetscReal     val, minval;
+  PetscScalar   *u_vec, *a_vec;
+  int           ierr, i, size;
+  MPI_Comm      comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)U,&comm);CHKERRQ(ierr);
+  ierr = VecGetArray(U,&u_vec);CHKERRQ(ierr);  
+  ierr = VecGetArray(a,&a_vec);CHKERRQ(ierr);  
+  ierr = VecGetLocalSize(U,&size);CHKERRQ(ierr);
+  minval = fabs(*h*1.01);
+  for(i=0;i<size;i++) {
+    if (u_vec[i] + *h*a_vec[i] <= 0.0) {
+      val = fabs(u_vec[i]/a_vec[i]);
+      if (val < minval) minval = val;
+    }
+  }
+  ierr = VecRestoreArray(U,&u_vec);CHKERRQ(ierr);  
+  ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);  
+  ierr = PetscGlobalMin(&minval,&val,comm);CHKERRQ(ierr);
+  if (val <= fabs(*h)) {
+    PetscLogInfo(U,"MatSNESMFCheckPositivity: Scaling back h from %g to %g\n",*h,.99*val);
+    if (*h > 0.0) *h =  0.99*val;
+    else          *h = -0.99*val;
+  }
+  PetscFunctionReturn(0);
+}
 
 
 
