@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1998/04/20 19:27:19 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.24 1998/05/12 18:51:58 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -36,6 +36,13 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lnsl -lsocket -lgen
 MPI_INCLUDE    = -I/home/petsc/mpich/include 
 MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
+#
+# For the Berkeley am2 device for MPICH use
+#
+#MPI_LIB        = -L/usr/now/mpi/mpich/lib/solaris/am2/ -lmpi -L/usr/now/lib -L/usr/now/am2/lib \
+#                 -lam2 -lglunix -lens -lglobex -lposix4 -lnsl -lsocket -lgen
+#MPI_INCLUDE    = -I/usr/now/mpi/mpich/include 
+#MPIRUN         = glurun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
