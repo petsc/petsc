@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoom.c,v 1.2 1997/11/09 03:59:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoom.c,v 1.3 1998/04/13 17:49:45 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"     /*I "draw.h"  I*/
@@ -9,12 +9,12 @@ static char vcid[] = "$Id: zoom.c,v 1.2 1997/11/09 03:59:46 bsmith Exp bsmith $"
 /*@C
     DrawZoom - Allows one to create a graphic that users may zoom into.
 
-    Input Parameters:
-.   win - the window where the graph will be made.
-.   func - users function that draws the graphic
-.   ctx - pointer to any user required data
-
     Collective on Draw
+
+    Input Parameters:
++   win - the window where the graph will be made.
+.   func - users function that draws the graphic
+-   ctx - pointer to any user required data
 
 .keywords:  draw, zoom
 

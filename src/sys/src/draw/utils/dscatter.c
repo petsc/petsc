@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.17 1998/04/03 23:16:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.18 1998/04/13 17:49:45 bsmith Exp curfman $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -27,14 +27,14 @@ struct _p_DrawSP {
 /*@C
     DrawSPCreate - Creates a scatter plot data structure.
 
+    Collective over Draw
+
     Input Parameters:
-.   win - the window where the graph will be made.
-.   dim - the number of sets of points which will be drawn
++   win - the window where the graph will be made.
+-   dim - the number of sets of points which will be drawn
 
     Output Parameters:
 .   outctx - the scatter plot context
-
-    Collective over Draw
 
 .keywords:  draw, scatter plot, graph, create
 
@@ -78,11 +78,11 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
 /*@
    DrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
-   Input Parameter:
-.  sp - the line graph context.
-.  dim - the number of curves.
-
    Not Collective (ignored on all processors except processor 0 of DrawSP)
+
+   Input Parameter:
++  sp - the line graph context.
+-  dim - the number of curves.
 
 .keywords:  draw, line, graph, reset
 @*/
@@ -107,10 +107,10 @@ int DrawSPSetDimension(DrawSP sp,int dim)
 /*@
    DrawSPReset - Clears line graph to allow for reuse with new data.
 
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
+
    Input Parameter:
 .  sp - the line graph context.
-
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
 
 .keywords:  draw, line, graph, reset
 @*/
@@ -133,10 +133,10 @@ int DrawSPReset(DrawSP sp)
 /*@C
    DrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
+   Collective over DrawSP
+
    Input Parameter:
 .  sp - the line graph context
-
-   Collective over DrawSP
 
 .keywords:  draw, line, graph, destroy
 
@@ -168,12 +168,12 @@ int DrawSPDestroy(DrawSP sp)
 /*@
    DrawSPAddPoint - Adds another point to each of the scatter plots.
 
-   Input Parameters:
-.  sp - the scatter plot data structure
-.  x, y - the points to two vectors containing the new x and y 
-          point for each curve.
-
    Not Collective (ignored on all processors except processor 0 of DrawSP)
+
+   Input Parameters:
++  sp - the scatter plot data structure
+-  x, y - the points to two vectors containing the new x and y 
+          point for each curve.
 
 .keywords:  draw, line, graph, add, point
 
@@ -217,14 +217,13 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 /*@C
    DrawSPAddPoints - Adds several points to each of the scatter plots.
 
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
 
    Input Parameters:
-.  sp - the LineGraph data structure
++  sp - the LineGraph data structure
 .  xx,yy - points to two arrays of pointers that point to arrays 
            containing the new x and y points for each curve.
-.  n - number of points being added
-
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
+-  n - number of points being added
 
 .keywords:  draw, line, graph, add, points
 
@@ -275,10 +274,10 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
 /*@
    DrawSPDraw - Redraws a scatter plot.
 
+   Not Collective (ignored on all processors except processor 0 of DrawSP)
+
    Input Parameter:
 .  sp - the line graph context
-
-   Not Collective (ignored on all processors except processor 0 of DrawSP)
 
 .keywords:  draw, line, graph
 @*/
@@ -317,11 +316,11 @@ int DrawSPDraw(DrawSP sp)
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Input Parameters:
-.  xsp - the line graph context
-.  x_min,x_max,y_min,y_max - the limits
-
    Not Collective (ignored on all processors except processor 0 of DrawSP)
+
+   Input Parameters:
++  xsp - the line graph context
+-  x_min,x_max,y_min,y_max - the limits
 
 .keywords:  draw, line, graph, set limits
 @*/
@@ -346,13 +345,13 @@ int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
    labels, color, etc. The axis context should not be destroyed by the
    application code.
 
+   Not Collective (except DrawAxis can only be used on processor 0 of DrawSP)
+
    Input Parameter:
 .  sp - the line graph context
 
    Output Parameter:
 .  axis - the axis context
-
-   Not Collective (except DrawAxis can only be used on processor 0 of DrawSP)
 
 .keywords: draw, line, graph, get, axis
 @*/
@@ -371,15 +370,15 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 #undef __FUNC__  
 #define __FUNC__ "DrawSPGetDraw"
 /*@C
-    DrawSPGetDraw - Gets the draw context associated with a line graph.
+   DrawSPGetDraw - Gets the draw context associated with a line graph.
+
+   Not Collective, Draw is parallel if DrawSP is parallel
 
    Input Parameter:
 .  sp - the line graph context
 
    Output Parameter:
 .  win - the draw context
-
-   Not Collective, Draw is parallel if DrawSP is parallel
 
 .keywords: draw, line, graph, get, context
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.52 1998/04/13 17:49:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.53 1998/04/24 02:16:49 bsmith Exp curfman $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -29,14 +29,14 @@ struct _p_DrawLG {
 /*@C
     DrawLGCreate - Creates a line graph data structure.
 
+    Collective over Draw
+
     Input Parameters:
-.   win - the window where the graph will be made.
-.   dim - the number of line cures which will be drawn
++   win - the window where the graph will be made.
+-   dim - the number of line cures which will be drawn
 
     Output Parameters:
 .   outctx - the line graph context
-
-    Collective over Draw
 
 .keywords:  draw, line, graph, create
 
@@ -81,11 +81,11 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 /*@
    DrawLGSetDimension - Change the number of lines that are to be drawn.
 
-   Input Parameter:
-.  lg - the line graph context.
-.  dim - the number of curves.
+   Collective over DrawLG
 
-    Collective over DrawLG
+   Input Parameter:
++  lg - the line graph context.
+-  dim - the number of curves.
 
 .keywords:  draw, line, graph, reset
 @*/
@@ -110,10 +110,10 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 /*@
    DrawLGReset - Clears line graph to allow for reuse with new data.
 
+   Collective over DrawLG
+
    Input Parameter:
 .  lg - the line graph context.
-
-    Collective over DrawLG
 
 .keywords:  draw, line, graph, reset
 @*/
@@ -136,10 +136,10 @@ int DrawLGReset(DrawLG lg)
 /*@C
    DrawLGDestroy - Frees all space taken up by line graph data structure.
 
+   Collective over DrawLG
+
    Input Parameter:
 .  lg - the line graph context
-
-    Collective over DrawLG
 
 .keywords:  draw, line, graph, destroy
 
@@ -172,12 +172,12 @@ int DrawLGDestroy(DrawLG lg)
    DrawLGAddPoint - Adds another point to each of the line graphs. 
    The new point must have an X coordinate larger than the old points.
 
-   Input Parameters:
-.  lg - the LineGraph data structure
-.  x, y - the points to two vectors containing the new x and y 
-          point for each curve.
+   Not Collective, but ignored by all processors except processor 0 in DrawLG
 
-  Not Collective, but ignored by all processors except processor 0 in DrawLG
+   Input Parameters:
++  lg - the LineGraph data structure
+-  x, y - the points to two vectors containing the new x and y 
+          point for each curve.
 
 .keywords:  draw, line, graph, add, point
 
@@ -220,10 +220,10 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 /*@
    DrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
 
+   Not Collective, but ignored by all processors except processor 0 in DrawLG
+
    Input Parameters:
 .  lg - the linegraph context
-
-  Not Collective, but ignored by all processors except processor 0 in DrawLG
 
 .keywords:  draw, line, graph, indicate, data, points
 @*/
@@ -242,13 +242,13 @@ int DrawLGIndicateDataPoints(DrawLG lg)
    DrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
 
+   Not Collective, but ignored by all processors except processor 0 in DrawLG
+
    Input Parameters:
-.  lg - the LineGraph data structure
++  lg - the LineGraph data structure
 .  xx,yy - points to two arrays of pointers that point to arrays 
            containing the new x and y points for each curve.
-.  n - number of points being added
-
-  Not Collective, but ignored by all processors except processor 0 in DrawLG
+-  n - number of points being added
 
 .keywords:  draw, line, graph, add, points
 
@@ -299,10 +299,10 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 /*@
    DrawLGDraw - Redraws a line graph.
 
+   Not Collective, but ignored by all processors except processor 0 in DrawLG
+
    Input Parameter:
 .  lg - the line graph context
-
-   Not Collective, but ignored by all processors except processor 0 in DrawLG
 
 .keywords:  draw, line, graph
 @*/
@@ -346,11 +346,11 @@ int DrawLGDraw(DrawLG lg)
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Input Parameters:
-.  xlg - the line graph context
-.  x_min,x_max,y_min,y_max - the limits
+   Not Collective, but ignored by all processors except processor 0 in DrawLG
 
-  Not Collective, but ignored by all processors except processor 0 in DrawLG
+   Input Parameters:
++  xlg - the line graph context
+-  x_min,x_max,y_min,y_max - the limits
 
 .keywords:  draw, line, graph, set limits
 @*/
@@ -375,13 +375,13 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
    labels, color, etc. The axis context should not be destroyed by the
    application code.
 
+   Not Collective, if DrawLG is parallel then DrawAxis is parallel
+
    Input Parameter:
 .  lg - the line graph context
 
    Output Parameter:
 .  axis - the axis context
-
-   Not Collective, if DrawLG is parallel then DrawAxis is parallel
 
 .keywords: draw, line, graph, get, axis
 @*/
@@ -400,15 +400,15 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 #undef __FUNC__  
 #define __FUNC__ "DrawLGGetDraw"
 /*@C
-    DrawLGGetDraw - Gets the draw context associated with a line graph.
+   DrawLGGetDraw - Gets the draw context associated with a line graph.
+
+   Not Collective, if DrawLG is parallel then Draw is parallel
 
    Input Parameter:
 .  lg - the line graph context
 
    Output Parameter:
 .  win - the draw context
-
-   Not Collective, if DrawLG is parallel then Draw is parallel
 
 .keywords: draw, line, graph, get, context
 @*/

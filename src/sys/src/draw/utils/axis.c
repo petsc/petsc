@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.45 1998/04/01 20:26:20 balay Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.46 1998/04/13 17:49:45 bsmith Exp curfman $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -46,13 +46,13 @@ static double PetscRint(double x )
 /*@C
    DrawAxisCreate - Generate the axis data structure.
 
+   Collective over Draw
+
    Input Parameters:
-.   win - Draw object where axis to to be made
+.  win - Draw object where axis to to be made
 
    Ouput Parameters:
-.   axis - the axis datastructure
-
-   Collective over Draw
+.  axis - the axis datastructure
 
 @*/
 int DrawAxisCreate(Draw win,DrawAxis *ctx)
@@ -88,13 +88,13 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
 #undef __FUNC__  
 #define __FUNC__ "DrawAxisDestroy"
 /*@C
-      DrawAxisDestroy - Frees the space used by an axis structure.
+    DrawAxisDestroy - Frees the space used by an axis structure.
 
-  Input Parameters:
+    Collective over DrawAxis
+
+    Input Parameters:
 .   axis - the axis context
  
-  Collective over DrawAxis
-
 @*/
 int DrawAxisDestroy(DrawAxis ad)
 {
@@ -113,13 +113,13 @@ int DrawAxisDestroy(DrawAxis ad)
     DrawAxisSetColors -  Sets the colors to be used for the axis,       
                          tickmarks, and text.
 
-   Input Parameters:
-.   axis - the axis
+    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
+    Input Parameters:
++   axis - the axis
 .   ac - the color of the axis lines
 .   tc - the color of the tick marks
-.   cc - the color of the text strings
-
-      Not Collective (ignored on all processors except processor 0 of DrawAxis)
+-   cc - the color of the text strings
 
 @*/
 int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
@@ -135,14 +135,12 @@ int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 /*@C
     DrawAxisSetLabels -  Sets the x and y axis labels.
 
+    Not Collective (ignored on all processors except processor 0 of DrawAxis)
 
-   Input Parameters:
-.   axis - the axis
+    Input Parameters:
++   axis - the axis
 .   top - the label at the top of the image
-.   xlabel,ylabel - the labes for the x and y axis
-
-   Not Collective (ignored on all processors except processor 0 of DrawAxis)
-
+-   xlabel,ylabel - the labes for the x and y axis
 
 @*/
 int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
@@ -160,12 +158,12 @@ int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 /*@
     DrawAxisSetLimits -  Sets the limits (in user coords) of the axis
     
-    Input parameters:
-.   ad - Axis structure
-.   xmin,xmax - limits in x
-.   ymin,ymax - limits in y
+    Not Collective (ignored on all processors except processor 0 of DrawAxis)
 
-   Not Collective (ignored on all processors except processor 0 of DrawAxis)
+    Input Parameters:
++   ad - the axis
+.   xmin,xmax - limits in x
+-   ymin,ymax - limits in y
 
 @*/
 int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double ymax)
@@ -184,10 +182,10 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double yma
 /*@
     DrawAxisDraw - Draws an axis.
 
+    Not Collective (ignored on all processors except processor 0 of DrawAxis)
+
     Input Parameter:
 .   ad - Axis structure
-
-   Not Collective (ignored on all processors except processor 0 of DrawAxis)
 
     Note:
     This draws the actual axis.  The limits etc have already been set.

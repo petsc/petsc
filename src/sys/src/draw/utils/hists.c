@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.6 1998/04/03 23:16:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: hists.c,v 1.7 1998/04/13 17:49:45 bsmith Exp curfman $";
 #endif
 
 /*
@@ -30,18 +30,18 @@ struct _p_DrawHist {
 #undef __FUNC__  
 #define __FUNC__ "DrawHistCreate"
 /*@C
-  DrawHistCreate - Creates a histogram data structure.
+   DrawHistCreate - Creates a histogram data structure.
 
-  Input Parameters:
-. win  - The window where the graph will be made
-. bins - The number of bins to use
+   Collective over Draw
 
-  Output Parameters:
-. hist - The histogram context
+   Input Parameters:
++  win  - The window where the graph will be made
+-  bins - The number of bins to use
 
-  Collective over Draw
+   Output Parameters:
+.  hist - The histogram context
 
-  Contributed by: Matthew Knepley
+   Contributed by: Matthew Knepley
 
 .keywords:  draw, histogram, graph, create
 
@@ -84,13 +84,13 @@ int DrawHistCreate(Draw win, int bins, DrawHist *hist)
 #undef __FUNC__  
 #define __FUNC__ "DrawHistSetNumberBins"
 /*@
-  DrawHistSetNumberBins - Change the number of bins that are to be drawn.
+   DrawHistSetNumberBins - Change the number of bins that are to be drawn.
 
-  Input Parameter:
-. hist - The histogram context.
-. dim  - The number of curves.
+   Not Collective (ignored except on processor 0 of DrawHist)
 
-  Not Collective (ignored except on processor 0 of DrawHist)
+   Input Parameter:
++  hist - The histogram context.
+-  dim  - The number of curves.
 
   Contributed by: Matthew Knepley
 
@@ -119,10 +119,10 @@ int DrawHistSetNumberBins(DrawHist hist, int bins)
 /*@
   DrawHistReset - Clears histogram to allow for reuse with new data.
 
+  Not Collective (ignored except on processor 0 of DrawHist)
+
   Input Parameter:
 . hist - The histogram context.
-
-  Not Collective (ignored except on processor 0 of DrawHist)
 
   Contributed by: Matthew Knepley
 
@@ -146,10 +146,10 @@ int DrawHistReset(DrawHist hist)
 /*@C
   DrawHistDestroy - Frees all space taken up by histogram data structure.
 
+  Collective over DrawHist
+
   Input Parameter:
 . hist - The histogram context
-
-  Collective over DrawHist
 
   Contributed by: Matthew Knepley
 
@@ -185,11 +185,11 @@ int DrawHistDestroy(DrawHist hist)
 /*@
   DrawHistAddValue - Adds another value to the histogram.
 
-  Input Parameters:
-. hist  - The histogram
-. value - The value 
-
   Not Collective (ignored except on processor 0 of DrawHist)
+
+  Input Parameters:
++ hist  - The histogram
+- value - The value 
 
   Contributed by: Matthew Knepley
 
@@ -246,10 +246,10 @@ int DrawHistAddValue(DrawHist hist, double value)
 /*@
   DrawHistDraw - Redraws a histogram.
 
+  Not Collective (ignored except on processor 0 of DrawHist)
+
   Input Parameter:
 . hist - The histogram context
-
-  Not Collective (ignored except on processor 0 of DrawHist)
 
   Contributed by: Matthew Knepley
 
@@ -318,12 +318,12 @@ int DrawHistDraw(DrawHist hist)
 /*@
   DrawHistSetColor - Sets the color the bars will be drawn with.
 
-  Input Parameters:
-. hist - The histogram context
-. color - one of the colors defined in draw.h or DRAW_ROTATE to make each bar a 
-          different color
-
   Not Collective (ignored except on processor 0 of DrawHist)
+
+  Input Parameters:
++ hist - The histogram context
+- color - one of the colors defined in draw.h or DRAW_ROTATE to make each bar a 
+          different color
 
 .keywords:  draw, histogram, graph, color
 
@@ -344,11 +344,11 @@ int DrawHistSetColor(DrawHist hist, int color)
   points are added after this call, the limits will be adjusted to
   include those additional points.
 
-  Input Parameters:
-. hist - The histogram context
-. x_min,x_max,y_min,y_max - The limits
-
   Not Collective (ignored except on processor 0 of DrawHist)
+
+  Input Parameters:
++ hist - The histogram context
+- x_min,x_max,y_min,y_max - The limits
 
   Contributed by: Matthew Knepley
 
@@ -375,13 +375,13 @@ int DrawHistSetLimits(DrawHist hist, double x_min, double x_max, int y_min, int 
   labels, color, etc. The axis context should not be destroyed by the
   application code.
 
+  Not Collective (ignored except on processor 0 of DrawHist)
+
   Input Parameter:
 . hist - The histogram context
 
   Output Parameter:
 . axis - The axis context
-
-  Not Collective (ignored except on processor 0 of DrawHist)
 
   Contributed by: Matthew Knepley
 
@@ -405,13 +405,13 @@ int DrawHistGetAxis(DrawHist hist, DrawAxis *axis)
 /*@C
   DrawHistGetDraw - Gets the draw context associated with a histogram.
 
+  Not Collective, Draw is parallel if DrawHist is parallel
+
   Input Parameter:
 . hist - The histogram context
 
   Output Parameter:
 . win  - The draw context
-
-  Not Collective, Draw is parallel if DrawHist is parallel
 
   Contributed by: Matthew Knepley
 
