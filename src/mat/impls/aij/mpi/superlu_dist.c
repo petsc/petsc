@@ -45,6 +45,7 @@ typedef struct {
 extern int MatDestroy_MPIAIJ(Mat);
 extern int MatDestroy_SeqAIJ(Mat);
 
+#if !defined(PETSC_HAVE_SUPERLU)
 /* SuperLU function: Convert a row compressed storage into a column compressed storage. */
 #undef __FUNCT__  
 #define __FUNCT__ "dCompRow_to_CompCol"
@@ -83,6 +84,8 @@ void dCompRow_to_CompCol(int m, int n, int nnz,
 
     SUPERLU_FREE(marker);
 }
+
+#endif /* PETSC_HAVE_SUPERLU*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_SuperLU_DIST"
