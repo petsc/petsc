@@ -24,9 +24,9 @@ c      COMMON /AVCTRS/ AIX(NI,NJ,NK),AJX(NI,NJ,NK),AKX(NI,NJ,NK)
 c      COMMON /AVCTRS/ AIY(NI,NJ,NK),AJY(NI,NJ,NK),AKY(NI,NJ,NK)
 c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
-      double precision CP2(D_NI,D_NK),S(D_NI),CL(D_NI),CD(D_NI)
-      double precision ZLOC(D_NK)
-      double precision chord,pbody,tcl,tcd,areas,cn,cc,area,cls,cds
+      Double CP2(D_NI,D_NK),S(D_NI),CL(D_NI),CD(D_NI)
+      Double ZLOC(D_NK)
+      Double chord,pbody,tcl,tcd,areas,cn,cc,area,cls,cds
       integer          i,k
 
       pvar = 0
@@ -112,8 +112,8 @@ c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
 c      COMMON /SADA/ SADAI(NI,NJ,NK),SADAJ(NI,NJ,NK),SADAK(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
-      double precision ada,qda,ff,p0,r0,c0,pb,u,v,w,rqdq,r0c0,ub
-      double precision u2,v2,w2,con,vb,wb,rb
+      Double ada,qda,ff,p0,r0,c0,pb,u,v,w,rqdq,r0c0,ub
+      Double u2,v2,w2,con,vb,wb,rb
       integer          i,j,k,id
 
       if (size .gt. 1) then
@@ -292,10 +292,10 @@ c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /FREQ/ IFREQ,ISGS
 
-      double precision qer(5),qel(5),eps,dql,dqr,xl2,rqdq,rtmax,rtrms
-      double precision etmax,etrms,con,rt,et,rtrmsr,etrmsr,tcl,tcd
-      double precision areas,cn,cc,area,pbody,cls,cds,xl2a
-      double precision rtol,xl2_init
+      Double qer(5),qel(5),eps,dql,dqr,xl2,rqdq,rtmax,rtrms
+      Double etmax,etrms,con,rt,et,rtrmsr,etrmsr,tcl,tcd
+      Double areas,cn,cc,area,pbody,cls,cds,xl2a
+      Double rtol,xl2_init
       integer          i,j,k,l,m,nsup,converge
 
 
@@ -485,12 +485,12 @@ c      COMMON /DVRBLS/ DR(NI1,NJ1,NK1),DRU(NI1,NJ1,NK1),DRV(NI1,NJ1,NK1)
 c      COMMON /DVRBLS/ DRW(NI1,NJ1,NK1),DE(NI1,NJ1,NK1)
 c      common /gs/ res(5,ni,nj,nk),vec(5,ni,nj,nk)
 
-      double precision a(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      double precision b(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      double precision c(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      double precision T1(D_NI),T2(D_NI),T3(D_NI),T4(D_NI),T5(D_NI)
+      Double a(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      Double b(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      Double c(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      Double T1(D_NI),T2(D_NI),T3(D_NI),T4(D_NI),T5(D_NI)
       integer          i,j,k,i1,i2,j1,j2,k1,k2,is,kc,kd,jb,jd,id,ia
-      double precision s,z1,z2,z3,z4,z5,y1,y2,y3,y4,y5
+      Double s,z1,z2,z3,z4,z5,y1,y2,y3,y4,y5
 
       s=float(-is)
       do 2 k=k1,k2,is

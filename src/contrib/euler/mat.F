@@ -43,7 +43,7 @@ c
 #include "wing.h"
 #include "bcimpl.h"
 
-      double precision one,val,scale,zero,negone
+      Double one,val,scale,zero,negone
       integer          row,nc,km,jm,im,is1(0:*),id,ijkid,iter
       integer          b1c,b2c,b3c,b4c,b5c,b6c,IV,i,j,k,l,m
       integer          col,ierr,sctype,ijkn,ik,ict,ictmark
@@ -608,7 +608,7 @@ c     uniprocessor grid!
 #include "ibcwork.h"
 
 
-      double precision zero,val(5)
+      Double zero,val(5)
       integer          nc,i,j,k,jk,sctype,ijkx,ierr,ik
       integer          ltog(0:nloc-1), nloc, pos(5)
       Vec              Fvec

@@ -246,7 +246,7 @@ c
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      double precision qer(5),qel(5),eps,dql,dqr
+      Double qer(5),qel(5),eps,dql,dqr
       integer          ISKIP,i,j,k,l,m
 
       jform = 0
@@ -331,7 +331,7 @@ c
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      double precision qer(5),qel(5),eps,dti
+      Double qer(5),qel(5),eps,dti
       integer          ltog(0:nloc-1),nloc
       integer          ISKIP,m,ierr,nd2,ijk,jk,rc(5),nc,i,j,k
       Mat              mat
@@ -434,7 +434,7 @@ c
 
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
-      double precision rqdq
+      Double rqdq
       integer          i,j,k
 
       jpressure = 0
@@ -487,9 +487,9 @@ c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /FREQ/ IFREQ,ISGS
 
-      double precision drecv(3),dsend(3),fnorm,rtmax,rtrms,etmax,etrms
-      double precision dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
-      double precision area,pbody,cls,cds,xl2,one,work(*),cfl_new
+      Double drecv(3),dsend(3),fnorm,rtmax,rtrms,etmax,etrms
+      Double dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
+      Double area,pbody,cls,cds,xl2,one,work(*),cfl_new
       integer          i,j,k,ierr,nsup
 
       jmonitor = 0
@@ -721,7 +721,7 @@ c
 #include "param.h"
 #include "wing.h"
 
-      double precision X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
+      Double X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
       integer          itlA, ituA, ileA, ktipA
 
       readmesh = 0
