@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.61 1999/05/10 16:26:42 balay Exp balay $ 
+# $Id: base.site,v 1.62 1999/05/10 21:20:36 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -89,8 +89,8 @@ AMS_LIB     =  -L/home/alice/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil 
 #
 # Optional location of SPAI;
 #
-SPAI_INCLUDE = -I/home/bsmith/libraries/spai_3.0/lib
-SPAI_LIB     = /home/bsmith/libraries/spai_3.0/lib/${PETSC_ARCH}/libspai.a
+SPAI_INCLUDE = -I/home/petsc/software/spai_3.0/lib
+SPAI_LIB     = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
 # 
 # ---------------------------------------------------------------------------------------
 #
