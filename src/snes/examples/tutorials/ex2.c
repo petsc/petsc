@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.49 1996/03/26 00:11:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.50 1996/03/26 04:48:02 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -141,7 +141,7 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   MonitorCtx *monP = (MonitorCtx*) dummy;
   Vec        x;
 
-  fprintf(stdout, "iter = %d, Function norm %g \n",its,fnorm);
+  fprintf(stdout, "iter = %d, SNES Function norm %g \n",its,fnorm);
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer); CHKERRQ(ierr);
   return 0;

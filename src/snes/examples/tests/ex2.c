@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.42 1996/03/19 21:29:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.43 1996/04/15 20:44:02 bsmith Exp curfman $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -83,13 +83,13 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
 
   PetscObjectGetComm((PetscObject)snes,&comm);
   if (fnorm > 1.e-9 || fnorm == 0.0) {
-    PetscPrintf(comm, "iter = %d, Function norm %g \n",its,fnorm);
+    PetscPrintf(comm, "iter = %d, SNES Function norm %g \n",its,fnorm);
   }
   else if (fnorm > 1.e-11){
-    PetscPrintf(comm, "iter = %d, Function norm %5.3e \n",its,fnorm);
+    PetscPrintf(comm, "iter = %d, SNES Function norm %5.3e \n",its,fnorm);
   }
   else {
-    PetscPrintf(comm, "iter = %d, Function norm < 1.e-11\n",its);
+    PetscPrintf(comm, "iter = %d, SNES Function norm < 1.e-11\n",its);
   }
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRQ(ierr);
