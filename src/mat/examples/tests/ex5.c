@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.41 1996/11/07 15:09:50 bsmith Exp $";
+static char vcid[] = "$Id: ex5.c,v 1.1 1996/12/10 13:58:02 bsmith Exp balay $";
 #endif
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTrans(),\n\
@@ -37,6 +37,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(y,&s); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(y,&vstart,&vend); CHKERRA(ierr);
 
+  /* Assembly */
   for ( i=rstart; i<rend; i++ ) { 
     v = 100*(i+1);
     ierr = VecSetValues(z,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
@@ -45,16 +46,30 @@ int main(int argc,char **args)
       ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }
-  ierr = VecAssemblyBegin(z); CHKERRA(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
+  /* Flush off proc Vec values and do more assembly */
+  ierr = VecAssemblyBegin(z); CHKERRA(ierr);
   for (i=vstart; i<vend; i++) {
     v = one*i;
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
     v = 100.0*i;
     ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
   }
+
+  /* Flush off proc Mat values and do more assembly */
+  ierr = MatAssemblyBegin(C,MAT_FLUSH_ASSEMBLY); CHKERRA(ierr);
+  for ( i=rstart; i<rend; i++ ) { 
+    for ( j=0; j<n; j++ ) { 
+      v=10*(i+1)+j+1; 
+      ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+    }
+  }
+  /* Try overlap Coomunication with the next stage XXXSetValues */
   ierr = VecAssemblyEnd(z); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FLUSH_ASSEMBLY); CHKERRA(ierr);
+
+  /* The Assembly for the second Stage */
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = VecAssemblyBegin(y); CHKERRA(ierr);
   ierr = VecAssemblyEnd(y); CHKERRA(ierr);
