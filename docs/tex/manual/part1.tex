@@ -300,7 +300,7 @@ To help the user start using PETSc immediately, we begin with a simple
 uniprocessor example in Figure~\ref{fig_example1} that solves the
 one-dimensional Laplacian problem with finite differences.  This
 sequential code, which can be found in 
-\trl{${PETSC_DIR}/src/sles/examples/tutorials/ex1.c},
+\trl{${PETSC_DIR}/src/ksp/examples/tutorials/ex1.c},
 illustrates the solution of a linear system with KSP, the 
 interface to the preconditioners, Krylov subspace methods, and direct
 linear solvers of PETSc.  Following the code we highlight a few of the most important
@@ -308,7 +308,7 @@ parts of this example.
 
 \begin{figure}[H]
 {\footnotesize
-\fileinclude{../../../src/sles/examples/tutorials/ex1.c}
+\fileinclude{../../../src/ksp/examples/tutorials/ex1.c}
 }
 \caption{Example of Uniprocessor PETSc Code}
 \label{fig_example1}
@@ -472,7 +472,7 @@ details regarding error checking when using the PETSc Fortran interface.
    PETSC ERROR:   destroying unneeded objects.\\
    PETSC ERROR:   Try running with -trdump for more information.\\ 
    PETSC ERROR: MatCreate() line 99 in src/mat/utils/gcreate.c  \\
-   PETSC ERROR: main() line 71 in src/sles/examples/tutorials/ex3.c\\  
+   PETSC ERROR: main() line 71 in src/ksp/examples/tutorials/ex3.c\\  
    MPI Abort by user Aborting program !\\
    Aborting program! \\
    p0\_28969:  p4\_error: : 1
@@ -520,7 +520,7 @@ in the same order on each processor.
 
 The next example, given in Figure~\ref{fig_example2}, illustrates the
 solution of a linear system in parallel.  This code, corresponding to
-\trl{${PETSC_DIR}/src/sles/examples/tutorials/ex2.c}, handles the
+\trl{${PETSC_DIR}/src/ksp/examples/tutorials/ex2.c}, handles the
 two-dimensional Laplacian discretized with finite differences, where
 the linear system is again solved with KSP.  The code performs the
 same tasks as the sequential version within Figure~\ref{fig_example1}.
@@ -533,7 +533,7 @@ part of the matrix and vectors in the parallel case.
 
 \begin{figure}[H]
 {\footnotesize
-\fileinclude{../../../src/sles/examples/tutorials/ex2.c}
+\fileinclude{../../../src/ksp/examples/tutorials/ex2.c}
 }
 \nobreak
 \caption{Example of Multiprocessor PETSc Code}
@@ -559,8 +559,8 @@ given in the file \trllink{troubleshooting.html}{${PETSC_DIR}/docs/troubleshooti
        -I/usr/local/mpi/include  -I../../..//src -g \\
        -DPETSC\_USE\_DEBUG -DPETSC\_MALLOC -DPETSC\_USE\_LOG ex1.c\\
    gcc -g -DPETSC\_USE\_DEBUG -DPETSC\_MALLOC -DPETSC\_USE\_LOG -o ex1 ex1.o \\
-      /home/bsmith/petsc/lib/libg/sun4/libpetscsles.a \\
-      -L/home/bsmith/petsc/lib/libg/sun4 -lpetscstencil -lpetscgrid  -lpetscsles \\
+      /home/bsmith/petsc/lib/libg/sun4/libpetscksp.a \\
+      -L/home/bsmith/petsc/lib/libg/sun4 -lpetscstencil -lpetscgrid  -lpetscksp \\
       -lpetscmat  -lpetscvec -lpetscsys -lpetscdraw  \\
       /usr/local/lapack/lib/lapack.a /usr/local/lapack/lib/blas.a \\
       /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lX11 \\
@@ -676,7 +676,7 @@ following procedure:
 \item Install and test PETSc according to the instructions at the PETSc web site.
 \item Copy one of the many PETSc examples in the directory
       that corresponds to the class of problem of interest (e.g.,
-      for linear solvers, see \trl{${PETSC_DIR}/src/sles/examples/tutorials}).
+      for linear solvers, see \trl{${PETSC_DIR}/src/ksp/examples/tutorials}).
 \item Copy the corresponding makefile within the example directory;
       compile and run the example program.
 \item Use the example program as a starting point for developing a custom code.

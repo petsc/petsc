@@ -16,7 +16,7 @@ method via
 </font face>
 ).  
 
-SNES internally employs <A HREF="PETSC_DIRdocs/manualpages/SLES/index.html">KSP</A> for the solution of 
+SNES internally employs <A HREF="PETSC_DIRdocs/manualpages/KSP/index.html">KSP</A> for the solution of 
 its linear systems.
 SNES users can also set KSP options directly in application
 codes by first extracting the KSP context from the SNES context via

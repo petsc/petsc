@@ -233,10 +233,10 @@ EXTERN int KSPSetNormType(KSP,KSPNormType);
    Notes: this must match finclude/petscksp.h 
 
    Developer note: The string versions of these are in 
-     src/sles/ksp/interface/itfunc.c called convergedreasons.
+     src/ksp/ksp/interface/itfunc.c called convergedreasons.
      If these enums are changed you much change those.
 
-.seealso: SLESSolve(), KSPSolve(), KSPGetConvergedReason()
+.seealso: KSPSolve(), KSPSolve(), KSPGetConvergedReason()
 E*/
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,

@@ -5,7 +5,7 @@ petsc-dist/BitKeeper
 petsc-dist/ChangeSet
 petsc-dist/src/da/examples/tests/scripts
 petsc-dist/src/contrib/sda/examples/tests/scripts
-petsc-dist/src/sles/examples/tests/scripts
+petsc-dist/src/ksp/examples/tests/scripts
 petsc-dist/src/contrib/lahaye/samg
 petsc-dist/src/contrib/markadams2
 petsc-dist/docs/exercises

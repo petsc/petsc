@@ -69,8 +69,8 @@ PETSC_SYS_LIB_BASIC      = -lpetsc
 PETSC_VEC_LIB_BASIC      = -lpetscvec ${PETSC_SYS_LIB_BASIC}
 PETSC_MAT_LIB_BASIC      = -lpetscmat ${PETSC_VEC_LIB_BASIC}
 PETSC_DM_LIB_BASIC       = -lpetscdm ${PETSC_MAT_LIB_BASIC}
-PETSC_SLES_LIB_BASIC     = -lpetscsles ${PETSC_DM_LIB_BASIC}
-PETSC_SNES_LIB_BASIC     = -lpetscsnes ${PETSC_SLES_LIB_BASIC}
+PETSC_KSP_LIB_BASIC     = -lpetscksp ${PETSC_DM_LIB_BASIC}
+PETSC_SNES_LIB_BASIC     = -lpetscsnes ${PETSC_KSP_LIB_BASIC}
 PETSC_TS_LIB_BASIC       = -lpetscts ${PETSC_SNES_LIB_BASIC}
 PETSC_MESH_LIB_BASIC     = -lpetscmesh ${PETSC_TS_LIB_BASIC}
 PETSC_GRID_LIB_BASIC     = -lpetscgrid ${PETSC_MESH_LIB_BASIC}
@@ -83,7 +83,7 @@ PETSC_SYS_LIB     = -L${PETSC_LIB_DIR} ${PETSC_SYS_LIB_BASIC} ${PETSC_EXTERNAL_L
 PETSC_VEC_LIB     = -L${PETSC_LIB_DIR} ${PETSC_VEC_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_MAT_LIB     = -L${PETSC_LIB_DIR} ${PETSC_MAT_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_DM_LIB      = -L${PETSC_LIB_DIR} ${PETSC_DM_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_SLES_LIB    = -L${PETSC_LIB_DIR} ${PETSC_SLES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_KSP_LIB    = -L${PETSC_LIB_DIR} ${PETSC_KSP_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_SNES_LIB    = -L${PETSC_LIB_DIR} ${PETSC_SNES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_TS_LIB      = -L${PETSC_LIB_DIR} ${PETSC_TS_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_MESH_LIB    = -L${PETSC_LIB_DIR} ${PETSC_MESH_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
@@ -99,8 +99,8 @@ PETSC_SYS_LIB_BASIC_COMPLEX      = -lpetsc
 PETSC_VEC_LIB_BASIC_COMPLEX      = -lpetscvec ${PETSC_SYS_LIB_BASIC_COMPLEX}
 PETSC_MAT_LIB_BASIC_COMPLEX      = -lpetscmat ${PETSC_VEC_LIB_BASIC_COMPLEX}
 PETSC_DM_LIB_BASIC_COMPLEX       = -lpetscdm ${PETSC_MAT_LIB_BASIC_COMPLEX}
-PETSC_SLES_LIB_BASIC_COMPLEX     = -lpetscsles ${PETSC_DM_LIB_BASIC_COMPLEX}
-PETSC_SNES_LIB_BASIC_COMPLEX     = -lpetscsnes ${PETSC_SLES_LIB_BASIC_COMPLEX}
+PETSC_KSP_LIB_BASIC_COMPLEX     = -lpetscksp ${PETSC_DM_LIB_BASIC_COMPLEX}
+PETSC_SNES_LIB_BASIC_COMPLEX     = -lpetscsnes ${PETSC_KSP_LIB_BASIC_COMPLEX}
 PETSC_TS_LIB_BASIC_COMPLEX       = -lpetscts ${PETSC_SNES_LIB_BASIC_COMPLEX}
 PETSC_LIB_BASIC_COMPLEX          = ${PETSC_TS_LIB_BASIC_COMPLEX}
 
@@ -108,7 +108,7 @@ PETSC_SYS_LIB_COMPLEX     = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_SYS_LIB_COMPLEX_B
 PETSC_VEC_LIB_COMPLEX     = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_VEC_LIB_COMPLEX_BASIC}
 PETSC_MAT_LIB_COMPLEX     = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_MAT_LIB_COMPLEX_BASIC}
 PETSC_DM_LIB_COMPLEX      = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_DM_LIB_COMPLEX_BASIC} 
-PETSC_SLES_LIB_COMPLEX    = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_SLES_LIB_COMPLEX_BASIC}
+PETSC_KSP_LIB_COMPLEX    = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_KSP_LIB_COMPLEX_BASIC}
 PETSC_SNES_LIB_COMPLEX    = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_SNES_LIB_COMPLEX_BASIC}
 PETSC_TS_LIB_COMPLEX      = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_TS_LIB_COMPLEX_BASIC}
 PETSC_LIB_COMPLEX         = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_LIB_COMPLEX_BASIC}
@@ -146,18 +146,18 @@ EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB} 
 BLOCKSOLVE_DIRS    = src/mat/impls/rowbs/mpi src/mat/utils src/mat/interface src/fortran/custom
 PVODE_DIRS         = src/ts/impls/implicit/pvode src/ts/interface
 AMS_DIRS           = src
-SPAI_DIRS          = src/sles/pc/impls/spai src/sles/pc/interface 
+SPAI_DIRS          = src/ksp/pc/impls/spai src/ksp/pc/interface 
 DSCPACK_DIRS       = src/mat/impls/baij src/mat/impls/aij/seq
 PARMETIS_DIRS      = src/mat/partition src/mesh/impls/triangular/2d/
 MATLAB_ENGINE_DIRS = src/vec/utils src/vec/impls/seq src/vec/impls/mpi src/mat/impls/aij/seq src/dm/da/src src/pf/interface src/fortran/custom
 LUSOL_DIRS         = src/mat/impls/aij/seq
-RAMG_DIRS          = src/contrib/lahaye/ramg src/sles/pc/interface
+RAMG_DIRS          = src/contrib/lahaye/ramg src/ksp/pc/interface
 ADIFOR_DIRS        = 
 SUPERLU_DIST_DIRS  = src/mat/impls/aij
 SUPERLU_DIRS       = src/mat/impls/aij/seq
 TRIANGLE_DIRS      = src/mesh/impls/triangular/2d
-PLAPACK_DIRS       = src/sys/src/utils src/sles/pc/impls/ml
-HYPRE_DIRS         = src/sles/pc/impls/hypre src/vec/impls/hypre src/mat/impls/hypre src/sles/pc/interface
+PLAPACK_DIRS       = src/sys/src/utils src/ksp/pc/impls/ml
+HYPRE_DIRS         = src/ksp/pc/impls/hypre src/vec/impls/hypre src/mat/impls/hypre src/ksp/pc/interface
 SPOOLES_DIR        = src/mat/impls/aij src/mat/impls/sbaij
 ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/custom
 #
@@ -168,7 +168,7 @@ ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/
 PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${EXTERNAL_LIB_BASIC}
 #
 # Some variables used to build shared libraries
-SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscsles libpetscsnes libpetscts \
+SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts \
            libpetscmesh libpetscgrid libpetscgsolver libpetsccontrib
 #
 # The following include files set customized site, optimization, and version

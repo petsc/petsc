@@ -104,11 +104,11 @@ ex14f: ex14f.o  chkopts
 	${RM} -f ex14f.o
 
 ex15: ex15.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_SLES_LIB}
+	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
 	${RM} -f $@.o
 
 ex16: ex16.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_SLES_LIB}
+	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
 	${RM} -f $@.o
 
 #-------------------------------------------------------------------------------------------

@@ -9,7 +9,7 @@
 #define __PETSCPVODE_H
 
 #include "src/ts/tsimpl.h"              /*I   "petscts.h"   I*/
-#include "src/sles/pc/pcimpl.h"         /*I   "petscpc.h"   I*/
+#include "src/ksp/pc/pcimpl.h"         /*I   "petscpc.h"   I*/
 #include "src/mat/matimpl.h"
 
 /*

@@ -366,7 +366,7 @@ extern int NLFDAADSetNewtonIterations_DAAD(NLF,int);
 EXTERN_C_END
 
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-#include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
+#include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 /*
           This is pre-beta FAS code. It's design should not be taken seriously!
 */
@@ -379,7 +379,7 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
   PetscScalar zero = 0.0,mone = -1.0,one = 1.0;
   MG          *mg;
   PC          pc;
-  KSP        ksp;
+  KSP         ksp;
   KSP         ksp;
 
   PetscFunctionBegin;
