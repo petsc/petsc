@@ -2,6 +2,7 @@
 
 configure_options = [
   '--download-mpich=1',
+  '--download-mpich-pm=forker',  
   '--with-gnu-compilers=0',
   '--with-vendor-compilers=ibm',
   # c++ doesn't work yet

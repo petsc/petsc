@@ -5,8 +5,9 @@ configure_options = [
   '--with-cc=gcc',
   '--with-fc=pgf90',
   '--with-cxx=0',
-  '--download-f-blas-lapack=1',
-  '--download-mpich=1'
+  '--download-mpich=1',
+  '--download-mpich-pm=forker',
+  '--download-f-blas-lapack=1'
   ]
 
 if __name__ == '__main__':

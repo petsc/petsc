@@ -7,6 +7,7 @@ configure_options = [
   '--with-cxx=g++',
   '--with-scalar-type=complex',
   '--download-mpich=1',
+  '--download-mpich-pm=forker',
   '--download-f-blas-lapack=1'
   ]
 
