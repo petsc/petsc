@@ -165,7 +165,6 @@ clean:
                output/*~ .mpirtmp
 
 # Builds and runs examples; then cleans directory.
-testexamples: testexamples_1
 examples: examples_1 examples_2
 testexamples_1: examples_1 runexamples_1 clean
 testexamples_2: examples_2 runexamples_2 clean
@@ -178,7 +177,7 @@ buildexamples_3: examples_3 clean
 tree: $(ACTION)
 	@-if [ "$(DIRS)" != "" ]; then \
         for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo $(ACTION) in: `pwd`  ; \
+        (cd $$dir ; echo $(ACTION) in: `pwd`; \
         $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
         PETSC_ARCH=$(PETSC_ARCH)  ) ;fi; \
         done ; fi

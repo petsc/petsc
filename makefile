@@ -34,7 +34,9 @@ all: chkpetsc_dir
 # Builds PETSc test examples for a given BOPT and architecture
 testexamples: chkpetsc_dir
 	-@echo "Beginning to compile and run test examples"
-	-@echo "Using $(CLINKER)  $(PETSC_LIB)"
+	-@echo "Using compiler: $(CC) $(PETSC_INCLUDE) $(PCONF) $(BASEOPT)"
+	-@echo "Using linker: $(CLINKER)"
+	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
            ACTION=testexamples_1  tree 
@@ -45,8 +47,9 @@ testexamples: chkpetsc_dir
 # Builds PETSc test examples for a given BOPT and architecture
 testfortran: chkpetsc_dir
 	-@echo "Beginning to compile and run Fortran test examples"
-	-@echo "Using $(FLINKER) $(PETSC_FORTRAN_LIB) \
-                $(PETSC_LIB)"
+	-@echo "Using compiler: $(FC) $(BASEOPTF)"
+	-@echo "Using linker: $(FLINKER)"
+	-@echo "Using libraries: $(PETSC_FORTRAN_LIB)  $(PETSC_LIB)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
            ACTION=testexamples_3  tree 
