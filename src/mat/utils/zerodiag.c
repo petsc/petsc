@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.26 1998/11/04 19:40:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.27 1998/11/04 19:45:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -85,7 +85,10 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,int *icol,double r
        included (moving from left to right).
  
     2) If (1) fails we check all the columns to the left of the current row
-       and see if we can 
+       and see if one of them has could be swapped. It can be swapped if
+       its corresponding row has a non-zero in the column it is being 
+       swapped with; to make sure the previous nonzero diagonal remains 
+       nonzero
 
 
 @*/
