@@ -73,8 +73,9 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
      we change all the 0 values in the vector RP to the maximum.
   */
   if (ksp->normtype == KSP_NATURAL_NORM) {
-     PetscScalar vr0max, *tmp_RP=0;
-     int         pres, numnp=0, *max_pos=0;
+     PetscReal vr0max;
+     PetscScalar *tmp_RP=0;
+     int         numnp=0, *max_pos=0;
      ierr = VecMax(RP, max_pos, &vr0max); CHKERRQ(ierr);
      ierr = VecGetArray(RP, &tmp_RP);     CHKERRQ(ierr);
      ierr = VecGetLocalSize(RP, &numnp);  CHKERRQ(ierr);
