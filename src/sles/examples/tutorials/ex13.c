@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.7 1997/07/11 16:08:58 balay Exp balay $";
+static char vcid[] = "$Id: ex13.c,v 1.8 1997/09/01 16:36:21 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -11,7 +11,7 @@ static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ();
    Routines: KSPSetTolerances(); PCSetType();
-   Routines: VecGetArray(); VecPlaceArray();
+   Routines: VecCreateSeqWithArray(); VecPlaceArray();
    Processors: 1
 T*/
 
@@ -166,9 +166,11 @@ int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,5,0,&userctx->A); CHKERRQ(ierr);
 
   /* 
-     Create vectors.
+     Create vectors. Here we create vectors with no memory allocated.
+     This way, we can use the data structures already in the program
+     by using VecPlaceArray() subroutine at a later stage.
   */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&userctx->b); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,PETSC_NULL,&userctx->b); CHKERRQ(ierr);
   ierr = VecDuplicate(userctx->b,&userctx->x); CHKERRQ(ierr);
 
   /* 
@@ -191,7 +193,7 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
   int    ierr,i,j,I,J, m = userctx->m, n = userctx->n,its;
   Mat    A = userctx->A;
   PC     pc;
-  Scalar v,*tmpx,*tmpb, hx2 = userctx->hx2, hy2 = userctx->hy2;
+  Scalar v, hx2 = userctx->hx2, hy2 = userctx->hy2;
 
   /*
      This is not the most efficient way of generating the matrix 
@@ -277,8 +279,6 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
      write their entire application using PETSc vectors rather than 
      arrays.
   */
-  ierr = VecGetArray(userctx->x,&tmpx);
-  ierr = VecGetArray(userctx->b,&tmpb);
   ierr = VecPlaceArray(userctx->x,userx); CHKERRQ(ierr);
   ierr = VecPlaceArray(userctx->b,userb); CHKERRQ(ierr);
 
@@ -291,8 +291,6 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
   /*
     Put back the PETSc array that belongs in the vector xuserctx->x
   */
-  ierr = VecPlaceArray(userctx->x,tmpx);
-  ierr = VecPlaceArray(userctx->b,tmpb);
 
   return 0;
 }
