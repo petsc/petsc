@@ -2,82 +2,107 @@
 # $Id: buildtest,v 1.2 2001/10/19 16:20:25 petsc Exp $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
-# Run as buildtest ARCH where ARCH is one of the PETSc archs
-# This script runs on terra, and uses terra:/sandbox/petsc/petsc-test
+# Run as buildtest ARCH where ARCH is one of the default PETSc archs
+# of a configure arch
 #
-# Example usage: buildtest solaris
+# Example usage: ${PETSC_DIR}/maint/newbuildtest solaris
+#                ./maint/newbuildtest solaris
+#                ./maint/newbuildtest 
 #
-set DATAFILESPATH=/home/petsc/datafiles
-set NICE=''
-set APPEND='>>&'
-set maintdir=`dirname $0`
-set dir=`dirname $maintdir`
-set TEST='testexamples_'
-if (${#argv} >= 1 && -f ${maintdir}/buildtests/${1}) then
-  set ARCH=$1
-  set RSH='ssh -1'
-  set CONFIGURE='no'
-  set DASHN='-n'
-  source $maintdir/buildtests/$1
-  set CONFIGURE_FILE=$ARCH
-  set CONFIGURE_ARGS="${argv[2-]}"
-  set PETSC_ARCH_NAME=''
-  echo "Performing buildtest on " $MACH " with arch " $ARCH " at " $TMP
-  rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete $dir/* ${MACH}:$TMP
-  # should delete all previously build libraries
-else
-  # run in-place
-  set TMP=${dir}
-  set RSH='eval'
-  set MACH=''
-  set DASHN=''
-  set CONFIGURE='yes'
-  set CONFIGURE_FILE='configure'
-  set CONFIGURE_ARGS="${argv}"
-  setenv PETSC_DIR $dir
-  set ARCH=`$dir/bin/configarch`
-  set PETSC_ARCH_NAME=-PETSC_ARCH=$ARCH
-  set BOPT='g'
-  echo "Performing buildtest locally with arch " $ARCH " at " $TMP
+set nPETSC_DIR=`pwd`
+if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
+  set maintdir=`dirname $0`
+  set nPETSC_DIR=`dirname $maintdir`
+  if ( ( ${nPETSC_DIR} !~ /*) || (! -f ${nPETSC_DIR}/include/petsc.h )) then
+    if (${?PETSC_DIR}) then 
+      set nPETSC_DIR=${PETSC_DIR}
+      if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
+        echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
+        exit
+      endif
+    else
+      echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
+      exit
+    endif
+  endif
 endif
 
-$RSH $MACH $DASHN "rm -f $TMP/maint/build_$ARCH.$BOPT.$MACH.log $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH $DASHN "touch $TMP/maint/build_$ARCH.$BOPT.$MACH.log $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH $DASHN "echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
+if (${#argv} > 0) then 
+  set ARCH=${1}
+else
+  set ARCH=`${nPETSC_DIR}/bin/configarch`
+endif
+if (${#argv} > 1) then 
+  set CONFIGURE_ARGS="${argv[2-]}"
+else 
+  set CONFIGURE_ARGS=""
+endif
+
+set MACH=`hostname`
+rm -f $nPETSC_DIR/build.log
+rm -f $nPETSC_DIR/buildout.tar
+echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
+
+cd $nPETSC_DIR
+make PETSC_ARCH=linux PETSC_DIR=$nPETSC_DIR update >>& $nPETSC_DIR/build.log
+
+set DATAFILESPATH=/home/petsc/datafiles
+set NICE=''
+set TEST='testexamples_'
+set BOPT=g
+# possibly overwrite the values above
+if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}) then
+  source ${nPETSC_DIR}/config/${ARCH}
+endif
+
+setenv PETSC_DIR $nPETSC_DIR
+set PETSC_ARCH=${ARCH}
+if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}.py) then
+  set CONFIGURE='yes'
+  set CONFIGURE_FILE=$PETSC_ARCH
+else if (${#argv} == 1 && -f ${nPETSC_DIR}/bmake/${ARCH}/variables && ! -f ${nPETSC_DIR}/bmake/${ARCH}/configure.py) then
+  # this is a non-configure PETSC_ARCH
+  set CONFIGURE='no'
+else
+  set CONFIGURE='yes'
+  set CONFIGURE_FILE='configure'
+endif
+echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DIR
+
 
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
-  $RSH $MACH $DASHN "cd $TMP; ./config/${CONFIGURE_FILE}.py ${PETSC_ARCH_NAME} -PETSC_DIR=$TMP ${CONFIGURE_ARGS} $APPEND maint/build_${ARCH}.${BOPT}.${MACH}.log"
-  $RSH $MACH $DASHN "echo '****************************************************' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
-  set EJOBS=`$RSH $MACH $DASHN cat $TMP/bmake/$ARCH/ejobs`
-  set JOBS=`$RSH $MACH $DASHN cat $TMP/bmake/$ARCH/jobs`
-  $RSH $MACH $DASHN "rm -f $TMP/buildout.tar"
-  $RSH $MACH $DASHN "cd $TMP; tar cf buildoutput.tar configure.log bmake/$ARCH/*"
+  ./config/${CONFIGURE_FILE}.py -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& build.log
+  echo '****************************************************' >>& $nPETSC_DIR/build.log
+  set EJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/ejobs`
+  set JOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/jobs`
+  tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
 else
-#  Get the list of packages installed on the machine WHERE THE BUILD IS HAPPENING
-  set EJOBS=`$RSH $MACH $DASHN grep PETSC_HAVE_ $TMP/bmake/$ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
+  #  Get the list of packages installed on the machine
+  set EJOBS=`grep PETSC_HAVE_ $nPETSC_DIR/bmake/$PETSC_ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 endif
+
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/build.log
 
 if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
   set EJOBS=""
 endif
 
-
-$RSH $MACH $DASHN "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH $DASHN "echo '****************************************************' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH $DASHN "echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH $DASHN "cd $TMP; tar rf buildoutput.tar maint/build_$ARCH.$BOPT.$MACH.log"
-#
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT all >>& build.log
+echo '****************************************************' >>& build.log
+echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& build.log
+tar rf buildoutput.tar build.log
 #
 #
 # Run examples
-$RSH $MACH $DASHN "echo 'Build on $MACH $ARCH  $BOPT `date` ' $APPEND $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
+rm -f examples.log
+echo "Build on $MACH $PETSC_ARCH  $BOPT `date` " > examples.log
 foreach j ($JOBS $EJOBS)
-  $RSH $MACH $DASHN "cd $TMP; $NICE make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree | grep -v 'up to date' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"
-  $RSH $MACH $DASHN "echo '******************************************************' $APPEND $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
+  $NICE make PETSC_PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree | grep -v 'up to date' >>& examples.log
+  echo '******************************************************' >>& $nPETSC_DIR/examples.log
 end
-$RSH $MACH $DASHN "echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH $DASHN "echo 'X******************************************************X' $APPEND $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH $DASHN "cd $TMP; tar rf buildoutput.tar maint/examples_$ARCH.$BOPT.$MACH.log"
+echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& $nPETSC_DIR/examples.log
+echo 'X******************************************************X' >>& $nPETSC_DIR/examples.log
+tar rf buildoutput.tar examples.log
 
 

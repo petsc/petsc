@@ -1,0 +1,18 @@
+#! /bin/csh
+
+set TMP=/home/balay/petsc-dev
+set APPEND='2>&1 >>'
+set MACH=balay@parth
+set ARCH=win32_gnu
+
+set day=`date | cut -f1 -d" "`
+
+if ($day == Tue || $day == Thu) then
+  set ARCH=win32_borland
+endif
+
+
+
+
+
+

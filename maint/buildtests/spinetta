@@ -1,0 +1,5 @@
+#! /bin/csh
+#
+set TMP=/sandbox/petsc/petsc-dev
+set MACH=spinetta
+set ARCH=linux-gnu-uni

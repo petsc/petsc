@@ -17,6 +17,8 @@
 #echo "(5) tag the new release with 'bk' and make a new clone for the release"
 
 # If version specified on the commandline, set the version
+echo "Starting date: `date`"
+
 if [ $# = 1 ] ; then 
   version=$1
   echo "Building ~/petsc$version.tar.gz"
@@ -168,3 +170,4 @@ gzip -f $tmpdir/petsc$version.tar
 /bin/rm -f $tmpdir/petsc$version.tar.gz
 chmod ug+w ~/petsc$version.tar.gz
 
+echo "Ending date: `date`"
