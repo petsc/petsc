@@ -1,0 +1,206 @@
+#! /bin/sh
+#
+# Default values
+num=2
+max_minutes=10
+USE_MYRINET=${USE_MYRINET-no}
+infiles=""
+outfiles=""
+verbose="no"
+keep_output="no"
+clear_bogus_head="no"
+#
+# Process arguments
+while [ $# -gt 0 ] ; do
+    arg=$1
+    shift
+    case $arg in 
+    -np) 
+    num=$1
+    shift
+    ;;
+    -maxtime)
+    max_minutes=$1
+    shift
+    ;;
+    -myrinet)
+    USE_MYRINET=yes
+    ;;
+    -normal)
+    USE_MYRINET=no
+    ;;
+    -infile)
+    infiles="$infiles $1"
+    shift
+    ;;
+    -outfile)
+    shift
+    outfiles="$outfiles $1"
+    shift
+    ;;
+    -stdin)
+	# Name of a file to use for standard input.
+	stdinfile="$1"
+	shift
+	;;
+    -stdout)
+        # Name of a file to use for standard output.
+        stdoutfile="$1"
+        shift
+        ;;
+    -stderr)
+        # Name of a file to use for standard error.
+        stderrfile="$1"
+        shift
+        ;;
+    -echo)
+    set -x
+    ;;
+    -keepoutput)
+    keep_output="yes"
+    ;;
+    -v)
+    verbose="yes"
+    ;;
+    -u|-usage|-help)
+    echo "$0       [-np n] [-myrinet] [-normal] [-maxtime min] "
+    echo "         [-infile file] [-outfile file] prog [ progs args ]"
+    echo "Multiple -infile and -outfile args may be used."
+    echo "The environment variable USE_MYRINET, if set to yes, has"
+    echo "the same effect as -myrinet."
+    exit 0;
+    ;;
+    *)
+    if [ -x $arg ] ; then
+        programname=$arg
+    else
+        echo "Unrecognized option $arg"
+	exit 1
+    fi
+    break
+    esac
+done
+#
+#
+jobname="v.tmp"
+jobdir=$HOME/$jobname
+if [ ! -d $jobdir ] ; then mkdir $jobdir ; fi
+rundir=$jobdir/$$
+if [ $verbose = "yes" ] ; then echo "chi_file -create $rundir" ; fi
+chi_file -create $rundir
+#
+# Undocumented step:  copy program into rundir
+cp $programname $rundir
+cp $infiles $rundir
+#
+# Check if this should be a myrinet job:
+has_gm="`nm $programname | egrep 'T gm_init$'`"
+if [ -n "$has_gm" -a "$USE_MYRINET" != "yes" ] ; then
+    echo "Program $programname needs Myrinet"
+    USE_MYRINET=yes
+elif [ -z "$has_gm" -a "$USE_MYRINET" = "yes" ] ; then
+    echo "Program $programname does not use Myrinet"
+    USE_MYRINET=no
+fi 
+# if programname contains a directory path, strip that out
+programbase=`basename $programname`
+#
+#
+# Create the PBS script
+if [ $USE_MYRINET = "yes" ] ; then
+    cat >./.mpirun$$ <<EOF
+#! /bin/bash
+#PBS -S /bin/sh
+#PBS -l nodes=$num
+#PBS -l walltime=0:${max_minutes}:00
+#ctrans nfs_in $rundir
+#ctrans nfs_out $rundir/output
+PATH=$PATH
+export PATH
+pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
+if [ ! -s \${pbsfile} ] ; then
+    sleep 2
+    if [ ! -s \${pbsfile} ] ; then 
+        echo "Could not access \${pbsfile}; may be NFS cache problem"
+	echo "Files in \${HOME} are:"
+	(cd \${HOME} ; pwd ; ls -la)
+	if [ "$HOME" != "\${HOME}" ] ; then
+	    echo "File in $HOME are:"
+	    (cd $HOME ; pwd ; ls -la )
+	fi
+	exit 1
+    fi
+fi
+mpirun.ch_gm -np $num --gm-f \${pbsfile} $rundir/$programbase $@
+#
+exit 0;
+EOF
+else 
+    cat >./.mpirun$$ <<EOF
+#! /bin/bash
+#PBS -S /bin/sh
+#PBS -l nodes=$num
+#PBS -l walltime=0:${max_minutes}:00
+#ctrans nfs_in $rundir
+#ctrans nfs_out $rundir/output
+#
+PATH=$PATH
+export PATH
+cd $rundir
+mpirun.ch_p4 -np $num -machinefile \$PBS_NODEFILE $programbase $@
+#
+exit 0;
+EOF
+fi
+# Interactive wait  
+# qsub -i doesn't do what you want (it is really like qsub -i (run $SHELL) )
+pbs_job_id=`qsub ./.mpirun$$`
+pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
+#
+
+echo -n "Submitted to PBS Job ID $pbs_job_id " 
+date
+
+#rm -f ./.mpirun$$
+# Spin until qstat returns a non-zero return code
+#
+# It would be nice if qstat <id> returned a non-zero code only when 
+# the job exited from the queue (and was now unknown).  Unfortunately,
+# this doesn't always happen.
+outstat=""
+while [ "$outstat" != "Unknown Job" ] ; do
+    while qstat $pbs_job_id >/dev/null 2>&1 ; do
+        sleep 5
+    done
+    outstat=`qstat $pbs_job_id 2>&1 | \
+	sed -e 's/^.*Unknown Job.*$/Unknown Job/'`
+done
+# 
+echo -n "PBS Job ID $pbs_job_id Done "
+date
+#
+# Move the output to the stdout/err of the process running this script
+if [ -s .mpirun$$.o$pbs_job_num ] ; then
+    # This deletes the first two lines, which contain bogus output 
+    # due to a PBS bug.
+    if [ "$clear_bogus_head" = "yes" ] ; then
+        sed -e '1,2d' .mpirun$$.o$pbs_job_num 
+    else
+        if [ -n "$stdoutfile" ] ; then
+            cat .mpirun$$.o$pbs_job_num > $stdoutfile
+	else
+            cat .mpirun$$.o$pbs_job_num 
+	fi
+    fi
+fi
+if [ -s .mpirun$$.e$pbs_job_num ] ; then
+    if [ -n "$stderrfile" ] ; then
+        cat .mpirun$$.e$pbs_job_num >$stderrfile
+    else
+        cat .mpirun$$.e$pbs_job_num >&2
+    fi
+fi
+if [ "$keep_output" != "yes" ] ; then
+    rm -rf .mpirun$$* 
+    rm -f .pbsnodefile.${pbs_job_num}.cc*
+fi
