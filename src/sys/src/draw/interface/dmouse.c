@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -26,7 +27,7 @@
 
 .seealso: PetscDrawSynchronizedGetMouseButton()
 @*/
-PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscErrorCode ierr;
   PetscTruth isnull;
@@ -61,7 +62,7 @@ PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,Pe
 
 .seealso: PetscDrawGetMouseButton()
 @*/
-PetscErrorCode PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscReal      bcast[4];
   PetscErrorCode ierr;

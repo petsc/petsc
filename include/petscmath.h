@@ -13,8 +13,8 @@
 #include <math.h>
 PETSC_EXTERN_CXX_BEGIN
 
-extern  MPI_Datatype        MPIU_2SCALAR;
-extern  MPI_Datatype        MPIU_2INT;
+extern  MPI_Datatype PETSC_DLLEXPORT MPIU_2SCALAR;
+extern  MPI_Datatype PETSC_DLLEXPORT MPIU_2INT;
 /*
 
      Defines operations that are different for complex and real numbers;
@@ -33,7 +33,7 @@ extern  MPI_Datatype        MPIU_2INT;
 */
 #include <complex>
 
-extern  MPI_Datatype        MPIU_COMPLEX;
+extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
 #define MPIU_SCALAR         MPIU_COMPLEX
 #if defined(PETSC_USE_MAT_SINGLE)
 #define MPIU_MATSCALAR        ??Notdone
@@ -128,7 +128,7 @@ typedef double MatReal;
 typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE } PetscScalarPrecision;
 
 /* PETSC_i is the imaginary number, i */
-extern  PetscScalar       PETSC_i;
+extern  PetscScalar PETSC_DLLEXPORT PETSC_i;
 
 /*MC
    PetscMin - Returns minimum of two numbers
@@ -244,9 +244,9 @@ M*/
 #  define PETSC_SMALL                   1.e-10
 #endif
 
-EXTERN PetscErrorCode PetscGlobalMax(PetscReal*,PetscReal*,MPI_Comm);
-EXTERN PetscErrorCode PetscGlobalMin(PetscReal*,PetscReal*,MPI_Comm);
-EXTERN PetscErrorCode PetscGlobalSum(PetscScalar*,PetscScalar*,MPI_Comm);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(PetscReal*,PetscReal*,MPI_Comm);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(PetscReal*,PetscReal*,MPI_Comm);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,MPI_Comm);
 
 
 /* ----------------------------------------------------------------------------*/

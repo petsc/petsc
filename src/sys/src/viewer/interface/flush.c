@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
@@ -20,7 +21,7 @@
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerCreate(), PetscViewerDestroy(),
           PetscViewerSetType()
 @*/
-PetscErrorCode PetscViewerFlush(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFlush(PetscViewer viewer)
 {
   PetscErrorCode ierr;
 

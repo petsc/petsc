@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -28,7 +29,7 @@
 
 .seealso: PetscPOpen(), PetscPClose()
 @*/
-PetscErrorCode PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
+PetscErrorCode PETSC_DLLEXPORT PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
 {
   PetscErrorCode ierr;
   FILE *fd;

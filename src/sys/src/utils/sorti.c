@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
    This file contains routines for sorting integers. Values are sorted in place.
 
@@ -61,7 +62,7 @@ static PetscErrorCode PetscSortInt_Private(PetscInt *v,PetscInt right)
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-PetscErrorCode PetscSortInt(PetscInt n,PetscInt i[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
 {
   PetscErrorCode ierr;
   PetscInt j,k,tmp,ik;
@@ -136,7 +137,7 @@ static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,Pets
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt I[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt I[])
 {
   PetscErrorCode ierr;
   PetscInt j,k,tmp,ik;
@@ -210,7 +211,7 @@ static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScala
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar I[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar I[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;

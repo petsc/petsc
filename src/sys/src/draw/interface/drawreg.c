@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the registration process for PETSc PetscDraw routines
 */
@@ -33,7 +34,7 @@ PetscFList PetscDrawList              = 0;
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType()
 @*/
-PetscErrorCode PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *indraw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *indraw)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -95,7 +96,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm,const char display[],const char tit
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
 @*/
-PetscErrorCode PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
 {
   PetscErrorCode ierr,(*r)(PetscDraw);
   PetscTruth    match;
@@ -163,7 +164,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
 
 .seealso: PetscDrawRegisterDynamic(), PetscDrawRegisterAll()
 @*/
-PetscErrorCode PetscDrawRegisterDestroy(void)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -191,7 +192,7 @@ PetscErrorCode PetscDrawRegisterDestroy(void)
    Level: advanced
 
 @*/
-PetscErrorCode PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 {
   PetscFunctionBegin;
   *type = draw->type_name;
@@ -200,7 +201,7 @@ PetscErrorCode PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawRegister" 
-PetscErrorCode PetscDrawRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscDraw))
+PetscErrorCode PETSC_DLLEXPORT PetscDrawRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscDraw))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
@@ -238,7 +239,7 @@ PetscErrorCode PetscDrawRegister(const char *sname,const char *path,const char *
 .seealso: PetscDrawCreate(), PetscDrawSetType()
 
 @*/
-PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSetFromOptions(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscTruth flg,nox;

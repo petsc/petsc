@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -58,7 +59,7 @@ PetscErrorCode PetscOptionsCheckInitial_Components(void)
 
 .seealso: PetscInitialize(), PetscInitializeFortran()
 @*/
-PetscErrorCode PetscInitializeNoArguments(void)
+PetscErrorCode PETSC_DLLEXPORT PetscInitializeNoArguments(void)
 {
   PetscErrorCode ierr;
   int            argc = 0;
@@ -78,7 +79,7 @@ PetscErrorCode PetscInitializeNoArguments(void)
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode PetscInitialized(PetscTruth *isInitialized)
+PetscErrorCode PETSC_DLLEXPORT PetscInitialized(PetscTruth *isInitialized)
 {
   PetscFunctionBegin;
   PetscValidPointer(isInitialized, 1);
@@ -95,7 +96,7 @@ PetscErrorCode PetscInitialized(PetscTruth *isInitialized)
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode PetscFinalized(PetscTruth *isFinalized)
+PetscErrorCode PETSC_DLLEXPORT PetscFinalized(PetscTruth *isFinalized)
 {
   PetscFunctionBegin;
   PetscValidPointer(isFinalized, 1);
@@ -115,7 +116,7 @@ MPI_Op PetscMaxSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum_Local"
-void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
 
@@ -140,7 +141,7 @@ sum of the second entry.
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum"
-PetscErrorCode PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
+PetscErrorCode PETSC_DLLEXPORT PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
 {
   PetscMPIInt    size,rank;
   PetscInt       *work;
@@ -163,7 +164,7 @@ MPI_Op PetscADMax_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMax_Local"
-void PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -191,7 +192,7 @@ MPI_Op PetscADMin_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMin_Local"
-void PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -221,7 +222,7 @@ MPI_Op PetscSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscSum_Local"
-void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt         i,count = *cnt;
@@ -268,7 +269,7 @@ static char **PetscGlobalArgs = 0;
 .seealso: PetscFinalize(), PetscInitializeFortran()
 
 @*/
-PetscErrorCode PetscGetArgs(int *argc,char ***args)
+PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 {
   PetscFunctionBegin;
   if (!PetscGlobalArgs) {
@@ -356,7 +357,7 @@ $       call PetscInitialize(file,ierr)
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetescGetArgs()
 
 @*/
-PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const char help[])
+PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
   int            flag,dummy_tag;
@@ -518,7 +519,7 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
 
 .seealso: PetscInitialize(), PetscOptionsPrint(), PetscMallocDump(), PetscMPIDump(), PetscEnd()
 @*/
-PetscErrorCode PetscFinalize(void)
+PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -767,7 +768,7 @@ PetscErrorCode PetscFinalize(void)
 
 .seealso: PetscGlobalMin(), PetscGlobalSum()
 @*/
-PetscErrorCode PetscGlobalMax(PetscReal* local,PetscReal* result,MPI_Comm comm)
+PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(PetscReal* local,PetscReal* result,MPI_Comm comm)
 {
   return MPI_Allreduce(local,result,1,MPIU_REAL,MPI_MAX,comm);
 }
@@ -794,7 +795,7 @@ PetscErrorCode PetscGlobalMax(PetscReal* local,PetscReal* result,MPI_Comm comm)
 
 .seealso: PetscGlobalMax(), PetscGlobalSum()
 @*/
-PetscErrorCode PetscGlobalMin(PetscReal* local,PetscReal* result,MPI_Comm comm)
+PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(PetscReal* local,PetscReal* result,MPI_Comm comm)
 {
   return MPI_Allreduce(local,result,1,MPIU_REAL,MPI_MIN,comm);
 }
@@ -821,7 +822,7 @@ PetscErrorCode PetscGlobalMin(PetscReal* local,PetscReal* result,MPI_Comm comm)
 
 .seealso: PetscGlobalMin(), PetscGlobalMax()
 @*/
-PetscErrorCode PetscGlobalSum(PetscScalar* local,PetscScalar* result,MPI_Comm comm)
+PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar* local,PetscScalar* result,MPI_Comm comm)
 {
   return MPI_Allreduce(local,result,1,MPIU_SCALAR,PetscSum_Op,comm);
 }

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -25,7 +26,7 @@ EXTERN_C_END
 
 .seealso:  PetscViewerRegisterDestroy()
 @*/
-PetscErrorCode PetscViewerRegisterAll(const char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *path)
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        The default error handlers and code that allows one to change
    error handlers.
@@ -54,7 +55,7 @@ $     SETERRQ(number,mess)
 .seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
           PetscAttachDebuggerErrorHandler()
 @*/
-PetscErrorCode PetscAbortErrorHandler(int line,const char *fun,const char *file,const char* dir,int n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(int line,const char *fun,const char *file,const char* dir,int n,int p,const char *mess,void *ctx)
 {
   PetscFunctionBegin;
   (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);

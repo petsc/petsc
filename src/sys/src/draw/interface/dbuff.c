@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -20,7 +21,7 @@
    Concepts: double buffer
 
 @*/
-PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

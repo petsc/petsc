@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Code for the parallel NetCDF viewer.
 */
@@ -33,7 +34,7 @@ PetscErrorCode PetscViewerDestroy_Netcdf(PetscViewer v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Netcdf" 
-PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Netcdf(PetscViewer v)
 {  
   PetscErrorCode     ierr;
   PetscViewer_Netcdf *vnetcdf;
@@ -61,7 +62,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerNetcdfGetID" 
-PetscErrorCode PetscViewerNetcdfGetID(PetscViewer viewer,int *ncid)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfGetID(PetscViewer viewer,int *ncid)
 {
   PetscViewer_Netcdf *vnetcdf = (PetscViewer_Netcdf*)viewer->data;
 
@@ -73,7 +74,7 @@ PetscErrorCode PetscViewerNetcdfGetID(PetscViewer viewer,int *ncid)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFileType_Netcdf" 
-PetscErrorCode PetscViewerSetFileType_Netcdf(PetscViewer viewer,PetscViewerFileType type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType_Netcdf(PetscViewer viewer,PetscViewerFileType type)
 {
   PetscViewer_Netcdf *vnetcdf = (PetscViewer_Netcdf*)viewer->data;
 
@@ -86,7 +87,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerNetcdfOpen"
-PetscErrorCode PetscViewerNetcdfOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer* viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer* viewer)
 {
   PetscErrorCode ierr;
 
@@ -101,7 +102,7 @@ PetscErrorCode PetscViewerNetcdfOpen(MPI_Comm comm,const char name[],PetscViewer
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFilename_Netcdf" 
-PetscErrorCode PetscViewerSetFilename_Netcdf(PetscViewer viewer,const char name[])
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_Netcdf(PetscViewer viewer,const char name[])
 {
   int                 rank;
   PetscErrorCode      ierr;

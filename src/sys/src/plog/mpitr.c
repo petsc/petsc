@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
     Code for tracing mistakes in MPI usage. For example, sends that are never received,
   nonblocking messages that are not correctly waited for, etc.
@@ -25,7 +26,7 @@
 
 .seealso:  PetscMallocDump()
  @*/
-PetscErrorCode PetscMPIDump(FILE *fd)
+PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -59,7 +60,7 @@ PetscErrorCode PetscMPIDump(FILE *fd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMPIDump"
-PetscErrorCode PetscMPIDump(FILE *fd)
+PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE *fd)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

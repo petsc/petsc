@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -21,7 +22,7 @@
    Concepts: drawing^line
 
 @*/
-PetscErrorCode PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
 {
   PetscErrorCode ierr;
   PetscTruth isdrawnull;
@@ -50,7 +51,7 @@ PetscErrorCode PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal 
    Level: advanced
 
 @*/
-PetscErrorCode PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawIsNull(PetscDraw draw,PetscTruth *yes)
 {
   PetscErrorCode ierr;
   PetscTruth isdrawnull;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Code for manipulating files.
 */
@@ -30,7 +31,7 @@
 #if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetUserName"
-PetscErrorCode PetscGetUserName(char name[],size_t nlen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
 {
   PetscFunctionBegin;
   GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
@@ -57,7 +58,7 @@ PetscErrorCode PetscGetUserName(char name[],size_t nlen)
 
 .seealso: PetscGetHostName()
 @*/
-PetscErrorCode PetscGetUserName(char name[],size_t nlen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
 {
   struct passwd *pw;
   PetscErrorCode ierr;
@@ -73,7 +74,7 @@ PetscErrorCode PetscGetUserName(char name[],size_t nlen)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetUserName"
-PetscErrorCode PetscGetUserName(char *name,size_t nlen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetUserName(char *name,size_t nlen)
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"
 
@@ -22,7 +23,7 @@ struct _p_PetscViewers {
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewersCreate()
 
 @*/
-PetscErrorCode PetscViewersDestroy(PetscViewers v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewersDestroy(PetscViewers v)
 {
   int         i;
   PetscErrorCode ierr;
@@ -56,7 +57,7 @@ PetscErrorCode PetscViewersDestroy(PetscViewers v)
 .seealso: PetscViewerCreate(), PetscViewersDestroy()
 
 @*/
-PetscErrorCode PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 {
   PetscErrorCode ierr;
 
@@ -90,7 +91,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 .seealso: PetscViewersCreate(), PetscViewersDestroy()
 
 @*/
-PetscErrorCode PetscViewersGetViewer(PetscViewers viewers,int n,PetscViewer *viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,int n,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
 

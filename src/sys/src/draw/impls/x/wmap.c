@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 

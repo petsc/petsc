@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /* 
         Written by Matt Dorbin, mrdorbin@cs.purdue.edu 3/1/99
         For database format and API from LLNL
@@ -51,7 +52,7 @@ PetscErrorCode PetscViewerFlush_Silo(PetscViewer viewer)
 .keywords: PetscViewer, file, get, pointer
 .seealso: PetscViewerSiloOpen()
 @*/
-PetscErrorCode PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
 {
   Viewer_Silo *silo = (Viewer_Silo *) viewer->data;
 
@@ -89,7 +90,7 @@ PetscErrorCode PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
 
 .keywords: PetscViewer, Silo, open
 @*/
-PetscErrorCode PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 {
   PetscViewer    v;
   Viewer_Silo    *silo;
@@ -140,7 +141,7 @@ PetscErrorCode PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer
 .keywords: viewer, Silo, mesh
 .seealso: PetscViewerSiloOpen()
 @*/
-PetscErrorCode PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
 {
   Viewer_Silo    *vsilo = (Viewer_Silo *) viewer->data;
   DBfile         *fp;
@@ -177,7 +178,7 @@ PetscErrorCode PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloSetName(), PetscViewerSiloClearName()
 @*/
-PetscErrorCode PetscViewerSiloGetName(PetscViewer viewer, char **name)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloGetName(PetscViewer viewer, char **name)
 {
   PetscViewer_Silo *vsilo = (PetscViewer_Silo *) viewer->data;
 
@@ -202,7 +203,7 @@ PetscErrorCode PetscViewerSiloGetName(PetscViewer viewer, char **name)
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloSetName(), PetscViewerSiloClearName()
 @*/
-PetscErrorCode PetscViewerSiloSetName(PetscViewer viewer, char *name)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloSetName(PetscViewer viewer, char *name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -226,7 +227,7 @@ PetscErrorCode PetscViewerSiloSetName(PetscViewer viewer, char *name)
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloGetName(), PetscViewerSiloSetName()
 @*/
-PetscErrorCode PetscViewerSiloClearName(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloClearName(PetscViewer viewer)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -252,7 +253,7 @@ PetscErrorCode PetscViewerSiloClearName(PetscViewer viewer)
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloSetMeshName(), PetscViewerSiloClearMeshName()
 @*/
-PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -277,7 +278,7 @@ PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloSetMeshName(), PetscViewerSiloClearMeshName()
 @*/
-PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -301,7 +302,7 @@ PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloGetMeshName(), PetscViewerSiloSetMeshName()
 @*/
-PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloClearMeshName(PetscViewer viewer)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 

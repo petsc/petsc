@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"
 #if defined (PETSC_USE_READ_REAL_TIME)
@@ -6,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "rs6000_time"
-PetscLogDouble rs6000_time(void) 
+PetscLogDouble PETSC_DLLEXPORT rs6000_time(void) 
 {
    timebasestruct_t t;
    PetscLogDouble   time;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -22,7 +23,7 @@ PetscEvent PETSC_Barrier = 0;
    Concepts: barrier
 
 @*/
-PetscErrorCode PetscBarrier(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscBarrier(PetscObject obj)
 {
   PetscErrorCode ierr;
   MPI_Comm comm;

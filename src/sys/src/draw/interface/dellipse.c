@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -21,7 +22,7 @@
 .keywords: draw, ellipse
 .seealso: PetscDrawRectangle(), PetscDrawTriangle()
 @*/
-PetscErrorCode PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
 {
   PetscTruth isdrawnull;
   PetscErrorCode ierr;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -20,7 +21,7 @@
 
 .seealso: PetscObjectGetName()
 @*/
-PetscErrorCode PetscObjectSetName(PetscObject obj,const char name[])
+PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject obj,const char name[])
 {
   PetscErrorCode ierr;
 
@@ -49,7 +50,7 @@ PetscErrorCode PetscObjectSetName(PetscObject obj,const char name[])
 
 .seealso: PetscObjectGetName(), PetscObjectSetName()
 @*/
-PetscErrorCode PetscObjectName(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectName(PetscObject obj)
 {
   PetscErrorCode ierr;
   char       name[64];
@@ -84,7 +85,7 @@ PetscErrorCode PetscObjectName(PetscObject obj)
 .seealso: PetscObjectSetName()
 
 @*/
-PetscErrorCode PetscObjectPublish(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectPublish(PetscObject obj)
 {
   PetscErrorCode ierr;
 
@@ -98,7 +99,7 @@ PetscErrorCode PetscObjectPublish(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectChangeTypeName"
-PetscErrorCode PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
+PetscErrorCode PETSC_DLLEXPORT PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 /*
     Code for drawing color interpolated triangles using X-windows.

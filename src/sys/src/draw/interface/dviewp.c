@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -23,7 +24,7 @@
    Concepts: graphics^in subset of window
 
 @*/
-PetscErrorCode PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -57,7 +58,7 @@ PetscErrorCode PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pet
 .seealso: PetscDrawDivideViewPort(), PetscDrawSetViewPort()
 
 @*/
-PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -120,7 +121,7 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
 
 @*/
-PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewPorts **ports)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewPorts **ports)
 {
   int        i,n;
   PetscErrorCode ierr;
@@ -188,7 +189,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewP
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsCreate()
 
 @*/
-PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 {
   PetscErrorCode ierr;
 
@@ -223,7 +224,7 @@ PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsDestroy(), PetscDrawViewPortsCreate()
 
 @*/
-PetscErrorCode PetscDrawViewPortsSet(PetscDrawViewPorts *ports,int port)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts *ports,int port)
 {
   PetscErrorCode ierr;
 

@@ -1,9 +1,8 @@
-
 /*-------------------------------------------------------------*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array1dCreate"
-PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr)
+PetscErrorCode PETSC_DLLEXPORT F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr)
 {
   PetscErrorCode ierr;
   PetscInt size;
@@ -26,7 +25,7 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array2dCreate"
-PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr)
+PetscErrorCode PETSC_DLLEXPORT F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr)
 {
   PetscErrorCode ierr;
   PetscInt size;

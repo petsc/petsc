@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -25,7 +26,7 @@
    Concepts: MPI communicator^getting from object
 
 @*/
-PetscErrorCode PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
   PetscErrorCode ierr;
 

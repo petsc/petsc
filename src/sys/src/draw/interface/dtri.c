@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -22,7 +23,7 @@
    Concepts: triangle
 
 @*/
-PetscErrorCode PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,
+PetscErrorCode PETSC_DLLEXPORT PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,
                  int c1,int c2,int c3)
 {
   PetscErrorCode ierr;
@@ -55,7 +56,7 @@ PetscErrorCode PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Petsc
      All processors that share the draw MUST call this routine
 
 @*/
-PetscErrorCode PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 {
   PetscReal xl = 0.0,yl = 0.0,xr = 1.0,yr = 1.0,value;
   PetscErrorCode ierr;
@@ -139,7 +140,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 .seealso: PetscDrawTensorContourPatch()
 
 @*/
-PetscErrorCode PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
 {
   PetscErrorCode ierr;
   int           N = m*n;
@@ -237,7 +238,7 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal 
 .seealso: PetscDrawTensorContour()
 
 @*/
-PetscErrorCode PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscReal *v)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscReal *v)
 {
   PetscErrorCode ierr;
   int           c1,c2,c3,c4,i,j;

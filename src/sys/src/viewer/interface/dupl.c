@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
@@ -27,7 +28,7 @@
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerRestoreSingleton()
 @*/
-PetscErrorCode PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -64,7 +65,7 @@ PetscErrorCode PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerGetSingleton()
 @*/
-PetscErrorCode PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -118,7 +119,7 @@ static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallo
 .seealso: CHKMEMQ
 
 @*/
-PetscErrorCode PetscMallocValidate(int line,const char function[],const char file[],const char dir[])
+PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[],const char file[],const char dir[])
 {
   TRSPACE       *head;
   char          *a;
@@ -354,7 +355,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 
 .seealso: PetscMemoryDump(), PetscMemoryGetCurrentUsage()
  @*/
-PetscErrorCode PetscMemoryShowUsage(PetscViewer viewer,const char message[])
+PetscErrorCode PETSC_DLLEXPORT PetscMemoryShowUsage(PetscViewer viewer,const char message[])
 {
   PetscLogDouble allocated,maximum,resident,residentmax;
   PetscErrorCode ierr;
@@ -403,7 +404,7 @@ PetscErrorCode PetscMemoryShowUsage(PetscViewer viewer,const char message[])
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMemoryGetMaximumUsage()
  @*/
-PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space)
+PetscErrorCode PETSC_DLLEXPORT PetscMallocGetCurrentUsage(PetscLogDouble *space)
 {
   PetscFunctionBegin;
   *space = (PetscLogDouble) TRallocated;
@@ -428,7 +429,7 @@ PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space)
 .seealso: PetscMallocDump(), PetscMallocDumpLog(), PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(),
           PetscMemoryGetCurrentUsage()
  @*/
-PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *space)
+PetscErrorCode PETSC_DLLEXPORT PetscMallocGetMaximumUsage(PetscLogDouble *space)
 {
   PetscFunctionBegin;
   *space = (PetscLogDouble) TRMaxMem;
@@ -466,7 +467,7 @@ PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *space)
 
 .seealso:  PetscMallocGetCurrentSize(), PetscMallocDumpLog() 
 @*/
-PetscErrorCode PetscMallocDump(FILE *fp)
+PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 {
   TRSPACE        *head;
   PetscErrorCode ierr;
@@ -506,7 +507,7 @@ PetscErrorCode PetscMallocDump(FILE *fp)
 
 .seealso: PetscMallocDump(), PetscMallocDumpLog()
 @*/
-PetscErrorCode PetscMallocSetDumpLog(void)
+PetscErrorCode PETSC_DLLEXPORT PetscMallocSetDumpLog(void)
 {
   PetscFunctionBegin;
   PetscLogMalloc = 0;
@@ -535,7 +536,7 @@ PetscErrorCode PetscMallocSetDumpLog(void)
 
 .seealso: PetscMallocGetCurrentUsage(), PetscMallocDump(), PetscMallocSetDumpLog()
 @*/
-PetscErrorCode PetscMallocDumpLog(FILE *fp)
+PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 {
   PetscInt       i,j,n,*shortlength,dummy,*perm;
   PetscMPIInt    rank,size,tag = 1212 /* very bad programming */;
@@ -618,14 +619,10 @@ PetscErrorCode PetscMallocDumpLog(FILE *fp)
 
 .seealso: CHKMEMQ(), PetscMallocValidate()
 @*/
-PetscErrorCode  PetscMallocDebug(PetscTruth level)
+PetscErrorCode PETSC_DLLEXPORT PetscMallocDebug(PetscTruth level)
 {
   PetscFunctionBegin;
 
   TRdebugLevel = level;
   PetscFunctionReturn(0);
 }
-
-
-
-

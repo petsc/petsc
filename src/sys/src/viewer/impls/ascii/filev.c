@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -110,7 +111,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 .seealso: PetscViewerASCIIOpen(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerCreate(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscViewerFlush()
 @*/
-PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -138,7 +139,7 @@ PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode PetscViewerASCIISetMode(PetscViewer viewer, PetscFileMode mode)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISetMode(PetscViewer viewer, PetscFileMode mode)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -176,7 +177,7 @@ extern FILE *petsc_history;
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushTab()
 @*/
-PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscTruth        iascii;
@@ -214,7 +215,7 @@ PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
 @*/
-PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPushTab(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscTruth        iascii;
@@ -252,7 +253,7 @@ PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
           PetscViewerASCIIPushTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
 @*/
-PetscErrorCode PetscViewerASCIIPopTab(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPopTab(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscErrorCode    ierr;
@@ -291,7 +292,7 @@ PetscErrorCode PetscViewerASCIIPopTab(PetscViewer viewer)
           PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPushTab(), PetscViewerASCIIOpen(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
 @*/
-PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscTruth        iascii;
@@ -341,7 +342,7 @@ PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
           PetscViewerASCIIPushTab(), PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(),
           PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
 @*/
-PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   PetscMPIInt       rank;
@@ -414,7 +415,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...
           PetscViewerASCIIGetPointer(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 
 @*/
-PetscErrorCode PetscViewerSetFilename(PetscViewer viewer,const char name[])
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename(PetscViewer viewer,const char name[])
 {
   PetscErrorCode ierr,(*f)(PetscViewer,const char[]);
 
@@ -447,7 +448,7 @@ PetscErrorCode PetscViewerSetFilename(PetscViewer viewer,const char name[])
 .seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PetscViewerSetFilename()
 
 @*/
-PetscErrorCode PetscViewerGetFilename(PetscViewer viewer,char **name)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename(PetscViewer viewer,char **name)
 {
   PetscErrorCode ierr,(*f)(PetscViewer,char **);
 
@@ -463,7 +464,7 @@ PetscErrorCode PetscViewerGetFilename(PetscViewer viewer,char **name)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerGetFilename_ASCII" 
-PetscErrorCode PetscViewerGetFilename_ASCII(PetscViewer viewer,char **name)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename_ASCII(PetscViewer viewer,char **name)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
 
@@ -476,7 +477,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFilename_ASCII" 
-PetscErrorCode PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
 {
   PetscErrorCode    ierr;
   size_t            len;
@@ -608,7 +609,7 @@ PetscErrorCode PetscViewerRestoreSingleton_ASCII(PetscViewer viewer,PetscViewer 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_ASCII" 
-PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii;
   PetscErrorCode    ierr;
@@ -666,7 +667,7 @@ EXTERN_C_END
           PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],...)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],...)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscErrorCode    ierr;

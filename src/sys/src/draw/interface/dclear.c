@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -19,7 +20,7 @@
 
 .seealso: PetscDrawBOP(), PetscDrawEOP(), PetscDrawSynchronizedClear()
 @*/
-PetscErrorCode PetscDrawClear(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawClear(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
@@ -45,7 +46,7 @@ PetscErrorCode PetscDrawClear(PetscDraw draw)
 
 .seealso: PetscDrawEOP(), PetscDrawClear()
 @*/
-PetscErrorCode PetscDrawBOP(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawBOP(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
@@ -70,7 +71,7 @@ PetscErrorCode PetscDrawBOP(PetscDraw draw)
 
 .seealso: PetscDrawBOP(), PetscDrawClear()
 @*/
-PetscErrorCode PetscDrawEOP(PetscDraw draw)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawEOP(PetscDraw draw)
 {
   PetscErrorCode ierr;
 

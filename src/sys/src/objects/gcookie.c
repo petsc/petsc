@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -21,7 +22,7 @@
    Level: developer
 
 @*/
-PetscErrorCode PetscObjectGetCookie(PetscObject obj,int *cookie)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject obj,int *cookie)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -47,7 +48,7 @@ PetscErrorCode PetscObjectGetCookie(PetscObject obj,int *cookie)
    Level: developer
 
 @*/
-PetscErrorCode PetscObjectExists(PetscObject obj,PetscTruth *exists)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectExists(PetscObject obj,PetscTruth *exists)
 {
   PetscFunctionBegin;
   *exists = PETSC_FALSE;

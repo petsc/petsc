@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -21,7 +22,7 @@
    Concepts: prefix^setting
 
 */
-PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PETSC_DLLEXPORT PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 {
   PetscErrorCode ierr;
 
@@ -54,7 +55,7 @@ PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
    Concepts: prefix^setting
 
 */
-PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PETSC_DLLEXPORT PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
 {
   char   *buf = obj->prefix;
   PetscErrorCode ierr;
@@ -91,7 +92,7 @@ PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[
    Concepts: prefix^getting
 
 */
-PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
 {
   PetscFunctionBegin;
   *prefix = obj->prefix;
@@ -116,7 +117,7 @@ PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
    Concepts: prefix^setting
 
 */
-PetscErrorCode PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PETSC_DLLEXPORT PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
 {
   char   *buf = obj->prefix;
   PetscErrorCode ierr;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include <petsc.h>
 #if defined (PETSC_USE_NT_TIME)
@@ -6,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "nt_time"
-PetscLogDouble nt_time(void) 
+PetscLogDouble PETSC_DLLEXPORT nt_time(void) 
 {
   static PetscTruth     flag = PETSC_TRUE;
   PetscErrorCode ierr;

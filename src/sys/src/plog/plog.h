@@ -72,7 +72,7 @@ extern int        numObjects, maxObjects;
 extern int        numObjectsDestroyed;
 
 /* Global counters */
-extern PetscLogDouble BaseTime;
+extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
 
 /* A simple stack */
 struct _IntStack {

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -22,7 +23,7 @@
     Concepts: deleting object
 
 @*/
-PetscErrorCode PetscObjectDestroy(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroy(PetscObject obj)
 {
   PetscErrorCode ierr;
 
@@ -53,7 +54,7 @@ PetscErrorCode PetscObjectDestroy(PetscObject obj)
    Level: intermediate
 
 @*/
-PetscErrorCode PetscObjectView(PetscObject obj,PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectView(PetscObject obj,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -95,7 +96,7 @@ PetscErrorCode PetscObjectView(PetscObject obj,PetscViewer viewer)
    Concepts: object type^comparing
 
 @*/
-PetscErrorCode PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
+PetscErrorCode PETSC_DLLEXPORT PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
 {
   PetscErrorCode ierr;
 
@@ -139,7 +140,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[256];
 
 .seealso: PetscObjectRegisterDestroyAll()
 @*/
-PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -160,7 +161,7 @@ PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
 
 .seealso: PetscObjectRegisterDestroy()
 @*/
-PetscErrorCode PetscObjectRegisterDestroyAll(void)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroyAll(void)
 {
   PetscErrorCode ierr;
   int i;

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Code for manipulating files.
 */
@@ -45,7 +46,7 @@
 
    Concepts: home directory
 @*/
-PetscErrorCode PetscGetHomeDirectory(char dir[],size_t maxlen)
+PetscErrorCode PETSC_DLLEXPORT PetscGetHomeDirectory(char dir[],size_t maxlen)
 {
   PetscErrorCode ierr;
   char           *d1 = 0;
@@ -89,7 +90,7 @@ PetscErrorCode PetscGetHomeDirectory(char dir[],size_t maxlen)
    Notes:
    Call PetscFixFilename() just before calling fopen().
 @*/
-PetscErrorCode PetscFixFilename(const char filein[],char fileout[])
+PetscErrorCode PETSC_DLLEXPORT PetscFixFilename(const char filein[],char fileout[])
 {
   PetscErrorCode ierr;
   size_t         i,n;

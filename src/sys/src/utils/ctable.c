@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /* Contributed by - Mark Adams */
 
 #include "petsc.h"
@@ -15,7 +16,7 @@
  * hash table for non-zero data and keys 
  *
  */
-PetscErrorCode PetscTableCreate(const PetscInt n,PetscTable *rta)
+PetscErrorCode PETSC_DLLEXPORT PetscTableCreate(const PetscInt n,PetscTable *rta)
 {
   PetscTable     ta;
   PetscErrorCode ierr;
@@ -41,7 +42,7 @@ PetscErrorCode PetscTableCreate(const PetscInt n,PetscTable *rta)
  * hash table for non-zero data and keys 
  *
  */
-PetscErrorCode PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
+PetscErrorCode PETSC_DLLEXPORT PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -71,7 +72,7 @@ PetscErrorCode PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
  * 
  *
  */
-PetscErrorCode PetscTableDelete(PetscTable ta)
+PetscErrorCode PETSC_DLLEXPORT PetscTableDelete(PetscTable ta)
 {
   PetscErrorCode ierr;
 
@@ -85,7 +86,7 @@ PetscErrorCode PetscTableDelete(PetscTable ta)
 #define __FUNCT__ "PetscTableGetCount"
 /* PetscTableGetCount() ********************************************
  */
-PetscErrorCode PetscTableGetCount(const PetscTable ta,PetscInt *count) 
+PetscErrorCode PETSC_DLLEXPORT PetscTableGetCount(const PetscTable ta,PetscInt *count) 
 { 
   PetscFunctionBegin;
   *count = ta->count;
@@ -96,7 +97,7 @@ PetscErrorCode PetscTableGetCount(const PetscTable ta,PetscInt *count)
 #define __FUNCT__ "PetscTableIsEmpty"
 /* PetscTableIsEmpty() ********************************************
  */
-PetscErrorCode PetscTableIsEmpty(const PetscTable ta,PetscInt *flag) 
+PetscErrorCode PETSC_DLLEXPORT PetscTableIsEmpty(const PetscTable ta,PetscInt *flag) 
 { 
   PetscFunctionBegin;
   *flag = !(ta->count); 
@@ -108,7 +109,7 @@ PetscErrorCode PetscTableIsEmpty(const PetscTable ta,PetscInt *flag)
 /* PetscTableAdd() ********************************************
  *
  */
-PetscErrorCode PetscTableAdd(PetscTable ta,const PetscInt key,const PetscInt data)
+PetscErrorCode PETSC_DLLEXPORT PetscTableAdd(PetscTable ta,const PetscInt key,const PetscInt data)
 {  
   PetscErrorCode ierr;
   PetscInt       ii = 0,hash = HASHT(ta,key);
@@ -169,7 +170,7 @@ PetscErrorCode PetscTableAdd(PetscTable ta,const PetscInt key,const PetscInt dat
  *
  *
  */
-PetscErrorCode PetscTableRemoveAll(PetscTable ta)
+PetscErrorCode PETSC_DLLEXPORT PetscTableRemoveAll(PetscTable ta)
 { 
   PetscErrorCode ierr;
 
@@ -189,7 +190,7 @@ PetscErrorCode PetscTableRemoveAll(PetscTable ta)
  * returns data. If data==0, then no table entry exists.
  *
  */
-PetscErrorCode PetscTableFind(PetscTable ta,const PetscInt key,PetscInt *data) 
+PetscErrorCode PETSC_DLLEXPORT PetscTableFind(PetscTable ta,const PetscInt key,PetscInt *data) 
 {  
   PetscInt hash,ii = 0;
 
@@ -213,7 +214,7 @@ PetscErrorCode PetscTableFind(PetscTable ta,const PetscInt key,PetscInt *data)
 /* PetscTableGetHeadPosition() ********************************************
  *
  */
-PetscErrorCode PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
+PetscErrorCode PETSC_DLLEXPORT PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
 {
   PetscInt i = 0;
 
@@ -239,7 +240,7 @@ PetscErrorCode PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
  *  - iteration - PetscTablePosition is always valid (points to a data)
  *  
  */
-PetscErrorCode PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,PetscInt *pkey,PetscInt *data)
+PetscErrorCode PETSC_DLLEXPORT PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,PetscInt *pkey,PetscInt *data)
 {
   PetscInt           idex; 
   PetscTablePosition pos;

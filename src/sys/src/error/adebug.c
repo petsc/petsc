@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -45,7 +46,7 @@ static PetscTruth Xterm = PETSC_TRUE;
 
 .seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
-PetscErrorCode PetscSetDebugger(const char debugger[],PetscTruth xterm)
+PetscErrorCode PETSC_DLLEXPORT PetscSetDebugger(const char debugger[],PetscTruth xterm)
 {
   PetscErrorCode ierr;
 
@@ -70,7 +71,7 @@ PetscErrorCode PetscSetDebugger(const char debugger[],PetscTruth xterm)
 
 .seealso: PetscSetDebugger(), PetscSetDebuggerFromString()
 @*/
-PetscErrorCode PetscSetDefaultDebugger(void)
+PetscErrorCode PETSC_DLLEXPORT PetscSetDefaultDebugger(void)
 {
   PetscErrorCode ierr;
 
@@ -120,7 +121,7 @@ static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const 
 
 .seealso: PetscSetDebugger(), PetscSetDefaultDebugger()
 @*/
-PetscErrorCode PetscSetDebuggerFromString(char *string)
+PetscErrorCode PETSC_DLLEXPORT PetscSetDebuggerFromString(char *string)
 {
   const char *debugger = PETSC_NULL;
   PetscTruth  xterm    = PETSC_TRUE;
@@ -161,7 +162,7 @@ PetscErrorCode PetscSetDebuggerFromString(char *string)
 
 .seealso: PetscSetDebugger()
 @*/
-PetscErrorCode PetscAttachDebugger(void)
+PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
 {
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int            child=0;
@@ -461,7 +462,7 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-PetscErrorCode PetscAttachDebuggerErrorHandler(int line,const char* fun,const char *file,const char* dir,int num,int p,const char* mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(int line,const char* fun,const char *file,const char* dir,int num,int p,const char* mess,void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -495,7 +496,7 @@ PetscErrorCode PetscAttachDebuggerErrorHandler(int line,const char* fun,const ch
 
 .seealso: PetscSetDebugger(), PetscAttachDebugger()
 @*/
-PetscErrorCode PetscStopForDebugger(void)
+PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
 {
   PetscErrorCode ierr;
   PetscInt       sleeptime=0;

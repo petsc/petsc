@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 /* 
    This file contains simple binary read/write routines.
@@ -24,7 +25,7 @@
   PetscByteSwapInt - Swap bytes in an integer. NOT a PetscInt!
 
 */
-PetscErrorCode PetscByteSwapInt(int *buff,PetscInt n)
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(int *buff,PetscInt n)
 {
   PetscInt  i,j,tmp =0;
   PetscInt  *tptr = &tmp;                /* Need to access tmp indirectly to get */
@@ -46,7 +47,7 @@ PetscErrorCode PetscByteSwapInt(int *buff,PetscInt n)
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
-PetscErrorCode PetscByteSwapShort(short *buff,PetscInt n)
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapShort(short *buff,PetscInt n)
 {
   PetscInt   i,j;
   short      tmp;
@@ -70,7 +71,7 @@ PetscErrorCode PetscByteSwapShort(short *buff,PetscInt n)
   PetscByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-PetscErrorCode PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
 {
   PetscInt  i,j;
   PetscReal tmp,*buff1 = (PetscReal*)buff;
@@ -96,7 +97,7 @@ PetscErrorCode PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
 /*
   PetscByteSwapDouble - Swap bytes in a double
 */
-PetscErrorCode PetscByteSwapDouble(double *buff,PetscInt n)
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
 {
   PetscInt i,j;
   double   tmp,*buff1 = (double*)buff;
@@ -145,7 +146,7 @@ PetscErrorCode PetscByteSwapDouble(double *buff,PetscInt n)
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
-PetscErrorCode PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
+PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 {
 #if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT) || !defined(PETSC_WORDS_BIGENDIAN)
   PetscErrorCode    ierr;
@@ -258,7 +259,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 
 .seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
-PetscErrorCode PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
+PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
   char           *pp = (char*)p;
   int            err,maxblock,wsize,m = (int)n;
@@ -361,7 +362,7 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pet
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite()
 @*/
-PetscErrorCode PetscBinaryOpen(const char name[],int type,int *fd)
+PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],int type,int *fd)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_O_BINARY) 
@@ -410,7 +411,7 @@ PetscErrorCode PetscBinaryOpen(const char name[],int type,int *fd)
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
-PetscErrorCode PetscBinaryClose(int fd)
+PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
 {
   PetscFunctionBegin;
   close(fd);
@@ -449,7 +450,7 @@ PetscErrorCode PetscBinaryClose(int fd)
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
-PetscErrorCode PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
+PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
 #if defined(PETSC_HAVE_LSEEK) || defined(PETSC_HAVE__LSEEK) 
   int iwhence=0;
@@ -512,7 +513,7 @@ PetscErrorCode PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
 @*/
-PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
+PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -558,7 +559,7 @@ PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,PetscInt
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
-PetscErrorCode PetscSynchronizedBinarySeek(MPI_Comm comm,int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
+PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinarySeek(MPI_Comm comm,int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

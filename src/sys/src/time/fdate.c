@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -39,7 +40,7 @@ EXTERN_C_END
     from an error handler. 
 
 @*/
-PetscErrorCode PetscGetDate(char date[],size_t len)
+PetscErrorCode PETSC_DLLEXPORT PetscGetDate(char date[],size_t len)
 {
   char           *str=PETSC_NULL;
 #if defined(PETSC_HAVE_TIME)

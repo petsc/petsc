@@ -1,3 +1,4 @@
+#define PETSC_DLL
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -20,7 +21,7 @@
 
 .seealso: PetscObjectSetName()
 @*/
-PetscErrorCode PetscObjectGetName(PetscObject obj,char *name[])
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetName(PetscObject obj,char *name[])
 {
   PetscErrorCode ierr;
 

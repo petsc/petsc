@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -26,7 +27,7 @@
 .seealso: PetscDrawSetCoordinates()
 
 @*/
-PetscErrorCode PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawGetCoordinates(PetscDraw draw,PetscReal *xl,PetscReal *yl,PetscReal *xr,PetscReal *yr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

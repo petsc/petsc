@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -18,7 +19,7 @@ EXTERN PetscErrorCode PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,v
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-PetscErrorCode PetscHeaderCreate_Private(PetscObject h,PetscCookie cookie,PetscInt type,const char class_name[],MPI_Comm comm,
+PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscCookie cookie,PetscInt type,const char class_name[],MPI_Comm comm,
                                          PetscErrorCode (*des)(PetscObject),PetscErrorCode (*vie)(PetscObject,PetscViewer))
 {
   static PetscInt idcnt = 1;
@@ -57,7 +58,7 @@ extern PetscLogDouble PetscMemoryMaximumUsage;
     PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by 
     the macro PetscHeaderDestroy().
 */
-PetscErrorCode PetscHeaderDestroy_Private(PetscObject h)
+PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
 {
   PetscErrorCode ierr;
 
@@ -117,7 +118,7 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject h)
 
 .seealso: PetscObjectCompose(), PetscObjectDereference()
 @*/
-PetscErrorCode PetscObjectReference(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectReference(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -144,7 +145,7 @@ PetscErrorCode PetscObjectReference(PetscObject obj)
 
 .seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
 @*/
-PetscErrorCode PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -170,7 +171,7 @@ PetscErrorCode PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
 @*/
-PetscErrorCode PetscObjectDereference(PetscObject obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectDereference(PetscObject obj)
 {
   PetscErrorCode ierr;
 
@@ -319,7 +320,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
 
 .seealso: PetscObjectQuery(), PetscObjectContainerCreate()
 @*/
-PetscErrorCode PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 {
   PetscErrorCode ierr;
 
@@ -352,7 +353,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj,const char name[],PetscObject 
 
 .seealso: PetscObjectQuery()
 @*/
-PetscErrorCode PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 {
   PetscErrorCode ierr;
 
@@ -381,7 +382,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj,const char name[],PetscObject *p
 
 .seealso: PetscObjectQuery()
 @*/
-PetscErrorCode PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
 {
   PetscErrorCode ierr;
 
@@ -408,7 +409,7 @@ PetscErrorCode PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void 
 
 .seealso: PetscObjectQuery()
 @*/
-PetscErrorCode PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
 {
   PetscErrorCode ierr;
 
@@ -420,7 +421,7 @@ PetscErrorCode PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,voi
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeFunction"
-PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
 {
   PetscErrorCode ierr;
 
@@ -454,7 +455,7 @@ PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],cons
 
 .seealso: PetscObjectComposeFunctionDynamic()
 @*/
-PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
+PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
 {
   PetscErrorCode ierr;
 
@@ -487,7 +488,7 @@ struct _p_PetscObjectContainer {
 .seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
           PetscObjectContainerSetPointer()
 @*/
-PetscErrorCode PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
 {
   PetscFunctionBegin;
   *ptr = obj->ptr;
@@ -511,7 +512,7 @@ PetscErrorCode PetscObjectContainerGetPointer(PetscObjectContainer obj,void **pt
 .seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
           PetscObjectContainerGetPointer()
 @*/
-PetscErrorCode PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
 {
   PetscFunctionBegin;
   obj->ptr = ptr;
@@ -532,7 +533,7 @@ PetscErrorCode PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr
 
 .seealso: PetscObjectContainerCreate()
 @*/
-PetscErrorCode PetscObjectContainerDestroy(PetscObjectContainer obj)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerDestroy(PetscObjectContainer obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -557,14 +558,14 @@ PetscErrorCode PetscObjectContainerDestroy(PetscObjectContainer obj)
 
 .seealso: PetscObjectContainerDestroy()
 @*/
-PetscErrorCode PetscObjectContainerSetUserDestroy(PetscObjectContainer obj, PetscErrorCode (*des)(void*))
+PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetUserDestroy(PetscObjectContainer obj, PetscErrorCode (*des)(void*))
 {
   PetscFunctionBegin;
   obj->userdestroy = des;
   PetscFunctionReturn(0);
 }
 
-PetscCookie CONTAINER_COOKIE = 0;
+PetscCookie PETSC_DLLEXPORT CONTAINER_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectContainerCreate"
@@ -586,7 +587,7 @@ PetscCookie CONTAINER_COOKIE = 0;
 
 .seealso: PetscObjectContainerDestroy(), PetscObjectContainerSetPointer(), PetscObjectContainerSetPointer()
 @*/
-PetscErrorCode PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 {
   PetscErrorCode       ierr;
   PetscObjectContainer contain;

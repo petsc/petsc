@@ -1,3 +1,4 @@
+#define PETSC_DLL
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -21,7 +22,7 @@ EXTERN_C_END
 
 .seealso:  PetscDrawRegisterDestroy()
 @*/
-PetscErrorCode PetscDrawRegisterAll(const char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterAll(const char *path)
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,4 @@
+#define PETSC_DLL
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include "petscsys.h"
 #include <fcntl.h>
@@ -80,7 +81,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
-PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -110,7 +111,7 @@ PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
 @*/
-PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer viewer)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -143,7 +144,7 @@ PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer viewer)
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
 @*/
-PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -227,7 +228,7 @@ $    PETSC_FILE_WRONLY - open existing file for binary output
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer
 @*/
-PetscErrorCode PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
 {
   PetscErrorCode ierr;
   
@@ -258,7 +259,7 @@ $    PETSC_FILE_WRONLY - open existing file for binary output
 .seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
 
 @*/
-PetscErrorCode PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType type)
 {
   PetscErrorCode ierr,(*f)(PetscViewer,PetscViewerFileType);
 
@@ -274,7 +275,7 @@ PetscErrorCode PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType typ
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFileType_Binary" 
-PetscErrorCode PetscViewerSetFileType_Binary(PetscViewer viewer,PetscViewerFileType type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType_Binary(PetscViewer viewer,PetscViewerFileType type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -298,7 +299,7 @@ EXTERN_C_END
    Level: developer
 
 @*/
-PetscErrorCode PetscViewerBinaryLoadInfo(PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryLoadInfo(PetscViewer viewer)
 {
   FILE           *file;
   char           string[256],*first,*second,*final;
@@ -358,7 +359,7 @@ PetscErrorCode PetscViewerBinaryLoadInfo(PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFilename_Binary" 
-PetscErrorCode PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
+PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 {
   int                 rank;
   PetscErrorCode      ierr;
@@ -493,7 +494,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Binary" 
-PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
 {  
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary;
@@ -558,7 +559,7 @@ $       XXXView(XXX object,PETSC_VIEWER_BINARY_(comm));
 .seealso: PETSC_VIEWER_BINARY_WORLD, PETSC_VIEWER_BINARY_SELF, PetscViewerBinaryOpen(), PetscViewerCreate(),
           PetscViewerDestroy()
 @*/
-PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
+PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_BINARY_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
