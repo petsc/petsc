@@ -16,3 +16,5 @@ Vectors
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
+Convert the Tufo-Fischer parallel direct solver to its own PC.
+
