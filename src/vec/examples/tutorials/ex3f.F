@@ -1,5 +1,5 @@
 
-C      "$Id: ex4f.F,v 1.14 1996/09/28 17:58:14 curfman Exp curfman $";
+C      "$Id: ex3f.F,v 1.2 1996/10/28 23:01:29 curfman Exp balay $";
 
 C  Description: Displays a vector visually.
 C
@@ -46,7 +46,7 @@ C  Create a vector, specifying only its global dimension.
 C  When using VecCreate(), the vector format (currently parallel
 C  or sequential) is determined at runtime.  Also, the parallel
 C  partitioning of the vector is determined by PETSc at runtime.
-      call VecCreate(MPI_COMM_WORLD,n,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,n,x,ierr)
 
 C  Currently, all PETSc parallel vectors are partitioned by
 C  contiguous chunks of rows across the processors.  Determine
@@ -69,13 +69,13 @@ C  by placing code between these two statements.
       call VecAssemblyEnd(x,ierr)
 
 C  Open an X-window viewer.  Note that we specify the same communicator
-C  for the viewer as we used for the distributed vector (MPI_COMM_WORLD).
+C  for the viewer as we used for the distributed vector (PETSC_COMM_WORLD).
 C    - Helpful runtime option:
 C         -draw_pause <pause> : sets time (in seconds) that the
 C               program pauses after DrawPause() has been called
 C              (0 is default, -1 implies until user input).
 
-      call ViewerDrawOpenX(MPI_COMM_WORLD,PETSC_NULL_CHARACTER,
+      call ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,
      &                     PETSC_NULL_CHARACTER,0,0,300,300,viewer,ierr)
 
 C  View the vector

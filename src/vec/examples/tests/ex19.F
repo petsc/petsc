@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.26 1997/07/10 15:51:00 balay Exp bsmith $";
+C    "$Id: ex19.F,v 1.27 1997/08/07 14:38:04 bsmith Exp balay $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -21,7 +21,7 @@ C
        call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 C Create a vector, then duplicate it
-       call VecCreate(MPI_COMM_WORLD,n,x,ierr)
+       call VecCreate(PETSC_COMM_WORLD,n,x,ierr)
        call VecDuplicate(x,y,ierr)
        call VecDuplicate(x,w,ierr)
 

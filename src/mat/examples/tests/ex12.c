@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.4 1997/09/11 20:40:10 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
@@ -15,12 +15,12 @@ int main(int argc,char **args)
   IS          is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   n = 2*size;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;

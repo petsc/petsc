@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex41.c,v 1.4 1997/04/10 00:03:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex41.c,v 1.5 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
@@ -27,13 +27,13 @@ int main(int argc,char **args)
   SETERRA(1,0,"This example does not work with complex numbers");
 #else
   
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);  
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg); CHKERRA(ierr);
 
   /* Read matrix and RHS */
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIAIJ,&A); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.20 1997/07/10 23:14:24 balay Exp bsmith $";
+C "$Id: ex4f.F,v 1.21 1997/08/07 14:42:34 bsmith Exp balay $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -103,9 +103,9 @@ C  Initialize program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
-         call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
          if (rank .eq. 0)
      &      write(6,*) 'This is a uniprocessor example only!'
          SETERRA(1,0,' ')
@@ -131,13 +131,13 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create nonlinear solver context
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create vector data structures; set function evaluation routine
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call VecCreate(MPI_COMM_WORLD,N,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,N,x,ierr)
       call VecDuplicate(x,r,ierr)
 
 C  Set function evaluation routine and vector.  Whenever the nonlinear
@@ -160,7 +160,7 @@ C  techniques for preallocating matrix memory.
       call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,
      &                    ierr)
       if (matrix_free .eq. 0) then
-        call MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
+        call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
       endif
 
 C  Set Jacobian matrix data structure and default Jacobian evaluation
@@ -207,7 +207,7 @@ C  this vector to zero by calling VecSet().
 
 C  Draw contour plot of solution
 
-      call DrawOpenX(MPI_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',
+      call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',
      &               300,0,300,300,draw,ierr)
       call DrawTensorContour(draw,mx,my,PETSC_NULL,PETSC_NULL,x,ierr)
       call DrawSyncFlush(draw,ierr)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.23 1997/04/23 17:50:00 balay Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.24 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   Scalar  v,  one = 1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   /* 
      Assemble the matrix for the five point stencil, YET AGAIN 
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
@@ -93,7 +93,7 @@ int main(int argc,char **args)
   /* 
      Create and set vectors 
   */
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
@@ -102,7 +102,7 @@ int main(int argc,char **args)
   /* 
      Create linear solver context 
   */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
@@ -191,7 +191,7 @@ int main(int argc,char **args)
     KSP  subksp;         /* KSP context for subblock */
     PC   subpc;          /* PC context for subblock */
 
-    PetscPrintf(MPI_COMM_WORLD,"User explicitly sets subdomain solvers.\n");
+    PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n");
 
     /* 
        Set runtime options

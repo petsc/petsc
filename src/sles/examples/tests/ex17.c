@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.16 1997/01/01 03:39:04 bsmith Exp balay $";
+static char vcid[] = "$Id: ex17.c,v 1.17 1997/07/09 20:56:59 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   }
 
   /* Create vectors */
-  ierr = VecCreate(MPI_COMM_WORLD,dim,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,dim,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
 
@@ -47,12 +47,12 @@ int main(int argc,char **args)
     use_random = 0;
     ierr = VecSet(&pfive,u); CHKERRA(ierr);
   } else {
-    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
     ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
   }
 
   /* Create and assemble matrix */
-  ierr = MatCreate(MPI_COMM_WORLD,dim,dim,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,dim,dim,&A); CHKERRA(ierr);
   ierr = FormTestMatrix(A,n,type); CHKERRQ(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-printout",&flg); CHKERRA(ierr);
@@ -63,7 +63,7 @@ int main(int argc,char **args)
   }
 
   /* Create SLES context; set operators and options; solve linear system */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);
   CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
@@ -74,9 +74,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /* Free work space */
   ierr = VecDestroy(x); CHKERRA(ierr); ierr = VecDestroy(u); CHKERRA(ierr);
@@ -148,7 +148,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
     double      h2, sigma1 = 5.0;
     Scalar      sigma2;
     ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg); CHKERRA(ierr);
-    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     for ( I=Istart; I<Iend; I++ ) { 
       *val = -1.0; i = I/n; j = I - i*n;  

@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.3 1997/04/02 21:01:39 bsmith Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex14.c,v 1.5 1997/07/11 16:08:06 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
@@ -110,7 +110,7 @@ int main( int argc, char **argv )
   Scalar   mone = -1.0;       
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  comm = MPI_COMM_WORLD;
+  comm = PETSC_COMM_WORLD;
   MPI_Comm_rank(comm,&user.rank);
   ierr = OptionsHasName(PETSC_NULL,"-no_output",&no_output); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.20 1997/04/10 00:00:00 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.21 1997/07/09 20:49:20 balay Exp balay $";
 #endif
 /*
        Formatted test for ISGeneral routines.
@@ -17,8 +17,8 @@ int main(int argc,char **argv)
   PetscTruth flag;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   /*
      Test IS of size 0 

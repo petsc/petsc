@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex27.c,v 1.1 1996/12/10 13:57:49 bsmith Exp balay $";
+static char vcid[] = "$Id: ex27.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests repeated use of assembly for matrices.\n\
@@ -16,12 +16,12 @@ int main(int argc,char **args)
   Vec         x,y;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   n = 2*size;
 
   /* Create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* Form a couple of vectors to test matrix-vector product */
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&y); CHKERRA(ierr);
   v = 1.0; ierr = VecSet(&v,x); CHKERRA(ierr);
   ierr = MatMult(C,x,y); CHKERRA(ierr);

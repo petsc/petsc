@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.2 1997/04/10 00:03:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex28.c,v 1.3 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
@@ -17,7 +17,7 @@ int main(int argc, char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,4,4,2,nnz,&A); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,4,4,2,nnz,&A); CHKERRA(ierr);
 
   /* build test matrix */
   values[0]=1.0;values[1]=-1.0;
@@ -44,8 +44,8 @@ int main(int argc, char **args)
   ierr = MatLUFactorSymbolic(A,rowperm,colperm,1.0,&LU); CHKERRA(ierr);
   ierr = MatLUFactorNumeric(A,&LU); CHKERRA(ierr);
   ierr = MatView(LU,VIEWER_STDOUT_SELF); CHKERRA(ierr);
-  ierr = VecCreate(MPI_COMM_WORLD,4,&x); CHKERRA(ierr);
-  ierr = VecCreate(MPI_COMM_WORLD,4,&y); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,4,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,4,&y); CHKERRA(ierr);
   values[0]=0;values[1]=1.0;values[2]=-1.0;values[3]=1.0;
   for (i=0; i<4; i++) col[i]=i;
   ierr = VecSetValues(x,4,col,values,INSERT_VALUES); CHKERRA(ierr);

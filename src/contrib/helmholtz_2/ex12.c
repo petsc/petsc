@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.23 1997/07/02 11:34:18 bsmith Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.24 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -205,7 +205,7 @@ int main(int argc,char **args)
      Set problem parameters
   */
 
-  user.comm       = MPI_COMM_WORLD;
+  user.comm       = PETSC_COMM_WORLD;
   user.problem    = 1;
   user.m_eta      = 7;
   user.m_xi       = 7;
@@ -321,9 +321,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,b,b2); CHKERRA(ierr);
   ierr  = VecNorm(b2,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of RHS difference=%g, Iterations=%d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of RHS difference=%g, Iterations=%d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of RHS difference < 1.e-12, Iterations=%d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of RHS difference < 1.e-12, Iterations=%d\n",its);
 
   /*
       Destroy all the PETSc objects created

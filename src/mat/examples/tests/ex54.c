@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex54.c,v 1.2 1997/05/30 15:22:04 balay Exp balay $";
+static char vcid[] = "$Id: ex54.c,v 1.3 1997/07/09 21:37:11 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -19,21 +19,21 @@ int main(int argc,char **args)
   double      s1norm,s2norm,rnorm,tol = 1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg); CHKERRA(ierr);
 
-  ierr = MatCreateMPIBAIJ(MPI_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,
                           PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A); 
   CHKERRA(ierr);
-  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,
                          PETSC_DEFAULT, PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&B); 
   CHKERRA(ierr);
-  ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rand); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand); CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend);  CHKERRA(ierr);
   ierr = MatGetSize(A,&M,&N);

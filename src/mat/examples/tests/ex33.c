@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex33.c,v 1.2 1997/03/26 01:36:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex33.c,v 1.3 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -20,7 +20,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,N,6,PETSC_NULL,
+  ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,6,PETSC_NULL,
          PETSC_NULL,&A); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&b); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&b); CHKERRA(ierr);
   for ( i=0; i<N; i++ ) {
     val = i + 1;
     ierr = VecSetValues(b,1,&i,&val,INSERT_VALUES); CHKERRA(ierr);
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b); CHKERRA(ierr);
 
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,&flg); CHKERRA(ierr);
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view); CHKERRA(ierr);
   ierr = VecView(b,view); CHKERRA(ierr);
   ierr = ViewerDestroy(view); CHKERRA(ierr);

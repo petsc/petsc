@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.1 1997/04/02 16:12:57 curfman Exp balay $";
+static char vcid[] = "$Id: ex16.c,v 1.2 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
@@ -56,7 +56,7 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
@@ -100,7 +100,7 @@ int main(int argc,char **args)
         and VecCreate() are used with the same communicator. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 
@@ -111,7 +111,7 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
@@ -170,9 +170,9 @@ int main(int argc,char **args)
        print statement from all processes that share a communicator.
     */
     if (norm > 1.e-12)
-      PetscPrintf(MPI_COMM_WORLD,"System %d: Norm of error %g iterations %d\n",k,norm,its);
+      PetscPrintf(PETSC_COMM_WORLD,"System %d: Norm of error %g iterations %d\n",k,norm,its);
     else 
-      PetscPrintf(MPI_COMM_WORLD,"System %d: Norm of error < 1.e-12 Iterations %d\n",k,its);
+      PetscPrintf(PETSC_COMM_WORLD,"System %d: Norm of error < 1.e-12 Iterations %d\n",k,its);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

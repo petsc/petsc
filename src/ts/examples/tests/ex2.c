@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.7 1997/07/29 15:28:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.8 1997/07/30 03:39:10 bsmith Exp balay $";
 #endif
 /*
        Formatted test for TS routines.
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
     
   /* set initial conditions */
-  ierr = VecCreate(MPI_COMM_WORLD,3,&global); CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,3,&global); CHKERRQ(ierr);
   ierr = Initial(global,NULL); CHKERRA(ierr);
  
   /* make timestep context */
@@ -145,9 +145,9 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   CHKERRA(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp); CHKERRQ(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
+  PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
     time,tmp[0],tmp[1],tmp[2]);
-  PetscPrintf(MPI_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
+  PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
     time,tmp[0]-solx(time),tmp[1]-soly(time),tmp[2]-solz(time));
   ierr = VecRestoreArray(tmp_vec,&tmp);
   return 0;

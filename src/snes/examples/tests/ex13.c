@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.6 1997/03/26 01:37:56 bsmith Exp balay $";
+static char vcid[] = "$Id: ex13.c,v 1.7 1997/07/09 21:00:05 balay Exp balay $";
 #endif
 
 static char help[] =
@@ -74,14 +74,14 @@ int main( int argc, char **argv )
     }
     N = user.mx*user.my;
 
-    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    MPI_Comm_size(PETSC_COMM_WORLD,&size);
     ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
     ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
       SETERRQ(1,0,"Incompatible number of processors:  Nx * Ny != size");
     
     /* Set up distributed array */
-    ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
+    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
                       PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
     ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
     ierr = VecDuplicate(x,&r); CHKERRA(ierr);
@@ -89,7 +89,7 @@ int main( int argc, char **argv )
     ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
     /* Create nonlinear solver and set function evaluation routine */
-    ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+    ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
     ierr = SNESSetType(snes,method); CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction1,&user); CHKERRA(ierr);
 
@@ -100,7 +100,7 @@ int main( int argc, char **argv )
        */
     ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
     if (!matrix_free) {
-      ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD,N,N,&J); CHKERRA(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user); CHKERRA(ierr);
     }
 
@@ -108,7 +108,7 @@ int main( int argc, char **argv )
     ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
     ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
     ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-    PetscPrintf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+    PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */
     if (!matrix_free) {

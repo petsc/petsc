@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.33 1997/03/14 03:17:37 curfman Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.34 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -52,7 +52,7 @@ int main(int argc,char **args)
         specify only the global size.  The parallel partitioning of
         the matrix will be determined at runtime by PETSc.
   */
-  ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
+  ierr = MatCreateMPIBDiag(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
          0,1,PETSC_NULL,PETSC_NULL,&A); CHKERRA(ierr);
 
   /* 
@@ -62,7 +62,7 @@ int main(int argc,char **args)
       - Here we use MatCreate(), so that the matrix format and
         parallel partitioning will be determined at runtime.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&B); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&B); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
@@ -128,7 +128,7 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 
@@ -137,7 +137,7 @@ int main(int argc,char **args)
   */
   ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&tmp); CHKERRA(ierr);
-  ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
   ierr = VecSetRandom(rctx,tmp); CHKERRA(ierr);
   ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);
   ierr = VecAXPY(&scale,tmp,u); CHKERRA(ierr);
@@ -155,7 +155,7 @@ int main(int argc,char **args)
   /* 
     Create linear solver context
   */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
 
   /* 
      Set operators. Note that we use different matrices to define the

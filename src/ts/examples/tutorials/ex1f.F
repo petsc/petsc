@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.11 1997/07/10 23:13:59 balay Exp bsmith $"
+C "$Id: ex1f.F,v 1.12 1997/08/07 14:41:33 bsmith Exp balay $"
 C
 C   Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -107,7 +107,7 @@ C
 C     Create timestepper context 
 C
 
-      call TSCreate(MPI_COMM_WORLD,TS_NONLINEAR,ts,ierr) 
+      call TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,ts,ierr) 
 
 C
 C     Tell the timestepper context where to compute solutions

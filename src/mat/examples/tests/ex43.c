@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex43.c,v 1.1 1996/12/10 13:57:58 bsmith Exp balay $";
+static char vcid[] = "$Id: ex43.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
@@ -16,15 +16,15 @@ int main(int argc,char **args)
   Viewer  viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* PART 1:  Generate matrix, then write it in binary format */
 
   /* Generate matrix */
-  ierr = MatCreateSeqDense(MPI_COMM_WORLD,m,n,PETSC_NULL,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_WORLD,m,n,PETSC_NULL,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
       v = i*m+j;
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
   ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_BINARY_NATIVE,"Dummy"); CHKERRA(ierr);
   ierr = MatView(C,viewer); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);

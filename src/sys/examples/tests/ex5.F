@@ -1,4 +1,4 @@
-C    "$Id: ex5.F,v 1.7 1996/03/20 03:28:28 bsmith Exp curfman $";
+C    "$Id: ex5.F,v 1.8 1996/08/27 20:24:32 curfman Exp balay $";
 C
 C  Simple PETSc Program written in Fortran 77.
 C
@@ -12,7 +12,7 @@ C
          print*, 'Unable to begin PETSc program'
        endif
 
-       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
        print*, 'Greetings from', rank
 
        call PetscGetArchType(arch,ierr)

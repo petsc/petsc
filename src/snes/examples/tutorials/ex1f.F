@@ -1,4 +1,4 @@
-C "$Id: ex1f.F,v 1.13 1997/08/07 14:42:34 bsmith Exp balay $";
+C "$Id: ex1f.F,v 1.14 1997/09/10 15:18:04 balay Exp balay $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -86,8 +86,8 @@ C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (size .ne. 1) then
          if (rank .eq. 0)
      &      write(6,*) 'This is a uniprocessor example only!'
@@ -98,7 +98,7 @@ C - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create nonlinear solver context
 C - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix and vector data structures; set corresponding routines

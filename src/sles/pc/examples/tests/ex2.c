@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.39 1997/04/10 00:02:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.40 1997/07/09 20:53:11 balay Exp balay $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = MatMult(mat,ustar,b); CHKERRA(ierr);
 
   /* Create PC context and set up data structures */
-  ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
+  ierr = PCCreate(PETSC_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
   /* Create KSP context and set up data structures */
-  ierr = KSPCreate(MPI_COMM_WORLD,&ksp); CHKERRA(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp); CHKERRA(ierr);
   ierr = KSPSetType(ksp,KSPRICHARDSON); CHKERRA(ierr);
   ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);

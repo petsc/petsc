@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.34 1997/04/10 00:06:34 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.35 1997/07/09 21:00:05 balay Exp balay $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -59,7 +59,7 @@ int main( int argc, char **argv )
   }
 
   /* Create nonlinear solver */  
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* create matrix free matrix for Jacobian */

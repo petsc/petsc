@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.17 1997/07/09 20:57:17 balay Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.18 1997/08/27 19:38:40 curfman Exp balay $";
 #endif
 
 static char help[] = 
@@ -93,14 +93,14 @@ int main(int argc,char **args)
        Open binary file.  Note that we use BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
+    ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
            CHKERRA(ierr);
 
     /* 
        Determine matrix format to be used (specified at runtime).
        See the manpage for MatLoad() for available formats.
     */
-    ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+    ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
 
     /*
        Load the matrix and vector; then destroy the viewer.
@@ -120,7 +120,7 @@ int main(int argc,char **args)
 
       /* Create a new vector b by padding the old one */
       ierr = MatGetLocalSize(A,&m,&n); CHKERRA(ierr);
-      ierr = VecCreateMPI(MPI_COMM_WORLD,m,PETSC_DECIDE,&tmp);
+      ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);
       ierr = VecGetOwnershipRange(b,&start,&end); CHKERRA(ierr);
       ierr = VecGetLocalSize(b,&mvec); CHKERRA(ierr);
       ierr = VecGetArray(b,&bold); CHKERRA(ierr);
@@ -159,7 +159,7 @@ int main(int argc,char **args)
     /*
        Create linear solver; set operators; set runtime options.
     */
-    ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+    ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
     ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
     ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
@@ -227,10 +227,10 @@ int main(int argc,char **args)
       /*
          Open a string viewer; then write info to it.
       */
-      ierr = ViewerStringOpen(MPI_COMM_WORLD,slesinfo,120,&viewer); CHKERRA(ierr);
+      ierr = ViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer); CHKERRA(ierr);
       ierr = SLESView(sles,viewer); CHKERRA(ierr);
       matrixname = PetscStrrchr(file[i],'/');
-      PetscPrintf(MPI_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
+      PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
                 matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);
 
       /*
@@ -238,11 +238,11 @@ int main(int argc,char **args)
       */
       ierr = ViewerDestroy(viewer); CHKERRA(ierr);
     } else {
-      PetscPrintf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
+      PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);
       if (norm < 1.e-10) {
-        PetscPrintf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
+        PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-10\n");
       } else {
-        PetscPrintf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+        PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);
       }
     }
     /* 

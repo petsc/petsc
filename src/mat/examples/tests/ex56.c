@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.8 1997/06/03 20:39:40 balay Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.9 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked for MatBAIJ";
 
@@ -14,13 +14,13 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   
   if (size == 1) {
     ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,PETSC_NULL,&A); CHKERRA(ierr);
   } else {
-    ierr = MatCreateMPIBAIJ(MPI_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,1,
+    ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,1,
                             PETSC_NULL,1,PETSC_NULL,&A); CHKERRA(ierr);
   }
 

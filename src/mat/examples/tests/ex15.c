@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.2 1997/04/10 00:03:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex15.c,v 1.3 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
@@ -18,7 +18,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-symmetric",&flg); CHKERRA(ierr);
   if (flg) {  /* Treat matrix as symmetric only if we set this flag */
     ierr = MatSetOption(C,MAT_SYMMETRIC); CHKERRA(ierr);

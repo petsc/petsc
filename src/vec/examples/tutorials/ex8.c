@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.5 1997/07/09 20:50:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.6 1997/08/22 15:10:55 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   Vec     x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
 
   /*
      Create a parallel vector.
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
         PETSc could determine the vector's distribution if we specify
         just the global size.
   */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
   ierr = VecGetSize(x,&N); CHKERRA(ierr);
   ierr = VecSet(&one,x); CHKERRA(ierr);
 

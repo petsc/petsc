@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.24 1996/10/24 15:30:23 curfman Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.25 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -53,8 +53,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-t",&ntimes,&flg); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   n = 2*size;
 
   /* 
@@ -87,9 +87,9 @@ int main(int argc,char **args)
           dimension; the parallel partitioning is determined at runtime. 
         - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C1); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C1); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C1,&Istart,&Iend); CHKERRA(ierr);
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b1); CHKERRA(ierr);
   ierr = VecDuplicate(u,&x1); CHKERRA(ierr);
 
@@ -100,7 +100,7 @@ int main(int argc,char **args)
      names, while the second linear systme uses a different
      options prefix.
   */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles1); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles1); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles1); CHKERRA(ierr);
 
   /* 
@@ -113,7 +113,7 @@ int main(int argc,char **args)
   /*
      Create data structures for second linear system.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C2); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C2); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b2); CHKERRA(ierr);
   ierr = VecDuplicate(u,&x2); CHKERRA(ierr);
@@ -121,7 +121,7 @@ int main(int argc,char **args)
   /*
      Create second linear solver context
   */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles2); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles2); CHKERRA(ierr);
 
   /* 
      Set different options prefix for second linear system.
@@ -398,9 +398,9 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   ierr = VecAXPY(&none,u,b); CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm); CHKERRQ(ierr);
   if (norm > 1.e-12)
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
   PLogEventEnd(CHECK_ERROR,u,x,b,0);
   return 0;
 }
@@ -433,9 +433,9 @@ int MyKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
         data from multiple processors so that the output
         is not jumbled.
   */
-  PetscPrintf(MPI_COMM_WORLD,"iteration %d solution vector:\n",n);
+  PetscPrintf(PETSC_COMM_WORLD,"iteration %d solution vector:\n",n);
   ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"iteration %d KSP Residual norm %14.12e \n",n,rnorm);
+  PetscPrintf(PETSC_COMM_WORLD,"iteration %d KSP Residual norm %14.12e \n",n,rnorm);
   return 0;
 }
 

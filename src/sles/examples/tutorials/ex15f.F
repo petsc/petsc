@@ -1,5 +1,5 @@
 C
-C    "$Id: ex15f.F,v 1.1 1997/09/02 15:08:22 curfman Exp balay $";
+C    "$Id: ex15f.F,v 1.2 1997/09/11 17:01:32 balay Exp balay $";
 C
 C   Solves a linear system in parallel with SLES.  Also indicates
 C   use of a user-provided preconditioner.  Input parameters include:
@@ -78,7 +78,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       n       = 7
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C      Compute the matrix and right-hand-side vector that define
@@ -90,7 +90,7 @@ C  When using MatCreate(), the matrix format can be specified at
 C  runtime. Also, the parallel partitioning of the matrix is
 C  determined by PETSc at runtime.
 
-      call MatCreate(MPI_COMM_WORLD,m*n,m*n,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,m*n,m*n,A,ierr)
 
 C  Currently, all PETSc parallel matrix formats are partitioned by
 C  contiguous chunks of rows across the processors.  Determine which
@@ -148,7 +148,7 @@ C     appropriately partitioned matrices and vectors when MatCreate()
 C     and VecCreate() are used with the same communicator. 
 C   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
@@ -163,7 +163,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Create linear solver context
 
-      call SLESCreate(MPI_COMM_WORLD,sles,ierr)
+      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
 C  Set operators. Here the matrix that defines the linear system
 C  also serves as the preconditioning matrix.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex31.c,v 1.1 1996/12/10 13:57:52 bsmith Exp balay $";
+static char vcid[] = "$Id: ex31.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -21,8 +21,8 @@ int main(int argc,char **args)
   int     MATRIX_GENERATE, MATRIX_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
   N = m*n;
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   PLogEventBegin(MATRIX_GENERATE,0,0,0,0);
 
   /* Generate matrix */
-  ierr = MatCreate(MPI_COMM_WORLD,N,N,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&C); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
@@ -47,8 +47,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  PetscPrintf(MPI_COMM_WORLD,"writing matrix in binary to matrix.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer); 
+  PetscPrintf(PETSC_COMM_WORLD,"writing matrix in binary to matrix.dat ...\n"); 
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"matrix.dat",BINARY_CREATE,&viewer); 
          CHKERRA(ierr);
   ierr = MatView(C,viewer); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
@@ -58,12 +58,12 @@ int main(int argc,char **args)
   /* PART 2:  Read in matrix in binary format */
 
   /* All processors wait until test matrix has been dumped */
-  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Barrier(PETSC_COMM_WORLD);
 
   PLogEventRegister(&MATRIX_READ,"Read Matrix     ",PETSC_NULL);
   PLogEventBegin(MATRIX_READ,0,0,0,0);
-  PetscPrintf(MPI_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer); 
+  PetscPrintf(PETSC_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n"); 
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer); 
          CHKERRA(ierr);
   MatLoad(viewer,MATMPIROWBS,&C); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);

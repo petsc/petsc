@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex32.c,v 1.5 1997/05/03 15:30:21 bsmith Exp balay $";
+static char vcid[] = "$Id: ex32.c,v 1.6 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
@@ -25,8 +25,8 @@ int main(int argc,char **args)
 
   /* Read in matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",filein,127,&flg); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   if ((file = fopen(filein,"r")) == 0) {
     SETERRA(1,0,"cannot open file\n");
@@ -34,8 +34,8 @@ int main(int argc,char **args)
   fscanf(file,"  NUNKNS =%d  NCOEFF =%d\n",&n,&nnz);
   fscanf(file,"  JA POINTER IN SLAPSV\n");
 
-  ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,n,n,20,0,&A); CHKERRA(ierr);
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,n,&b); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b); CHKERRA(ierr);
 
   col = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRA(col);
   for (i=0; i<n+1; i++)
@@ -81,7 +81,7 @@ int main(int argc,char **args)
 
   PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,&flg); CHKERRA(ierr);
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view); CHKERRA(ierr);
   ierr = VecView(b,view); CHKERRA(ierr);
   ierr = ViewerDestroy(view); CHKERRA(ierr);

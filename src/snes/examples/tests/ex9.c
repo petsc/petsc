@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.25 1997/03/28 20:18:55 balay Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.26 1997/07/09 21:00:05 balay Exp balay $";
 #endif
 
 static char help[] =
@@ -76,7 +76,7 @@ int main( int argc, char **argv )
   N = user.mx*user.my*user.mz;
   
   /* Set up distributed array */
-  ierr = DACreate3d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,user.my,user.mz,
+  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,user.my,user.mz,
                     Nx,Ny,Nz,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
@@ -84,7 +84,7 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user); CHKERRA(ierr);
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
@@ -100,7 +100,7 @@ int main( int argc, char **argv )
   /* Solve nonlinear system */
   ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */
   ierr = VecDestroy(user.localX); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.6 1997/04/10 00:04:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.7 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -57,8 +57,8 @@ int main(int argc,char **args)
   N = (m+1)*(m+1);
   M = m*m;
   h = 1.0/m;
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -68,7 +68,7 @@ int main(int argc,char **args)
   /* 
      Create stiffness matrix
   */
-  ierr = MatCreate(MPI_COMM_WORLD,N,N,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&A); CHKERRA(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank); 
 
@@ -90,7 +90,7 @@ int main(int argc,char **args)
   /*
      Create right-hand-side and solution vectors
   */
-  ierr = VecCreate(MPI_COMM_WORLD,N,&u); CHKERRA(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,N,&u); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)u,"Approx. Solution");
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)b,"Right hand side");
@@ -149,7 +149,7 @@ int main(int argc,char **args)
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp); CHKERRA(ierr);
@@ -177,9 +177,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   if (norm*h > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
   else
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.20 1997/07/09 20:58:09 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.21 1997/08/06 22:13:32 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates opening and drawing a window\n";
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Title",x,y,width,height,&draw); CHKERRA(ierr);
+  ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw); CHKERRA(ierr);
   ierr = DrawSetViewPort(draw,.25,.25,.75,.75); CHKERRA(ierr);
   ierr = DrawLine(draw,0.0,0.0,1.0,1.0,DRAW_BLACK); CHKERRA(ierr);
   ierr = DrawString(draw,.2,.2,DRAW_RED,"Some Text"); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.44 1997/04/10 00:04:20 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.45 1997/07/09 20:56:59 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -107,7 +107,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(is); CHKERRA(ierr);
 
   /* solve linear system */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);
   CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
@@ -127,9 +127,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   if (norm*h > 1.e-12)
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
   else
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(ustar); CHKERRA(ierr);

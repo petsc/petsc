@@ -1,5 +1,5 @@
 C
-C static char vcid[] = "$Id: ex1f.F,v 1.6 1997/04/10 00:00:00 bsmith Exp balay $"
+C static char vcid[] = "$Id: ex1f.F,v 1.7 1997/07/10 15:43:17 balay Exp balay $"
 C
 C  Formatted test for IS general routines
 C
@@ -14,8 +14,8 @@ C
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
             CHKERRA(ierr)
-       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
-       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
+       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
 C     Test IS of size 0 
 

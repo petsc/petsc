@@ -28,7 +28,7 @@ int main(int argc,char **args)
   ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
 
   ierr = OptionsGetString(PETSC_NULL,"-fout",fout,127,&flg); CHKERRA(ierr);
-  if (!flg) PetscPrintf(MPI_COMM_WORLD,"Writing submatrix to file : %s\n",fout);
+  if (!flg) PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);
   ierr = ViewerFileOpenBinary(PETSC_COMM_SELF,fout,BINARY_CREATE,&fdout);CHKERRA(ierr);
 
   ierr = MatLoad(fdin,mtype,&A); CHKERRA(ierr);

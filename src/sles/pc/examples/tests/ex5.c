@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.52 1997/04/10 00:02:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.53 1997/07/09 20:53:11 balay Exp balay $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -67,7 +67,7 @@ int main(int Argc, char **Args)
 
   ierr = Create1dLaplacian(N[levels-1],&cmat); CHKERRA(ierr);
 
-  ierr = SLESCreate(MPI_COMM_WORLD,&slesmg); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&slesmg); CHKERRA(ierr);
   ierr = SLESGetPC(slesmg,&pcmg); CHKERRA(ierr);
   ierr = SLESGetKSP(slesmg,&kspmg); CHKERRA(ierr);
   ierr = SLESSetFromOptions(slesmg); CHKERRA(ierr);
@@ -86,7 +86,7 @@ int main(int Argc, char **Args)
   /* zero is finest level */
   for ( i=0; i<levels-1; i++ ) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0); CHKERRA(ierr);
-    ierr = MatCreateShell(MPI_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRA(ierr);
+    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRA(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void*)restrct);CHKERRA(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANS_ADD,(void*)interpolate);CHKERRA(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
@@ -99,7 +99,7 @@ int main(int Argc, char **Args)
     ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
     ierr = PCShellSetName(pc,"user_precond"); CHKERRA(ierr);
     ierr = PCShellGetName(pc,&shellname); CHKERRA(ierr);
-    PetscPrintf(MPI_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);
+    PetscPrintf(PETSC_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);
 
     /* this is a dummy! since SLES requires a matrix passed in  */
     ierr = SLESSetOperators(sles[i],mat[i],mat[i],
@@ -138,7 +138,7 @@ int main(int Argc, char **Args)
   ierr = MGSetR(pcmg,0,x); CHKERRA(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
-  ierr = MatCreateShell(MPI_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
+  ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
   ierr = MatShellSetOperation(fmat,MATOP_MULT,(void*)amult); CHKERRA(ierr);
   ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN); 
   CHKERRA(ierr);

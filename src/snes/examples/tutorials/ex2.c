@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.58 1997/03/26 01:38:02 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.59 1997/07/09 21:00:30 balay Exp balay $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
@@ -54,7 +54,7 @@ int main( int argc, char **argv )
   double     atol, rtol, stol, norm;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   h = 1.0/(n-1);
@@ -63,7 +63,7 @@ int main( int argc, char **argv )
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -71,7 +71,7 @@ int main( int argc, char **argv )
   /*
      Note that we form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
@@ -86,7 +86,7 @@ int main( int argc, char **argv )
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(MPI_COMM_WORLD,n,n,&J); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&J); CHKERRA(ierr);
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -108,7 +108,7 @@ int main( int argc, char **argv )
   /* 
      Set an optional user-defined monitoring routine
   */
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr); 
 
   /*
@@ -129,7 +129,7 @@ int main( int argc, char **argv )
      the option -snes_view
   */
   ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
+  PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
      atol,rtol,stol,maxit,maxf);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -157,7 +157,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d\n\n", its );
+  PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d\n\n", its );
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -169,9 +169,9 @@ int main( int argc, char **argv )
   ierr = VecAXPY(&none,U,x); CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -339,7 +339,7 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
   MonitorCtx *monP = (MonitorCtx*) ctx;
   Vec        x;
 
-  PetscPrintf(MPI_COMM_WORLD,"iter = %d, SNES Function norm %g\n",its,fnorm);
+  PetscPrintf(PETSC_COMM_WORLD,"iter = %d, SNES Function norm %g\n",its,fnorm);
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer); CHKERRQ(ierr);
   return 0;

@@ -1,4 +1,4 @@
-C    "$Id: ex6.F,v 1.4 1996/04/15 22:58:53 balay Exp curfman $";
+C    "$Id: ex6.F,v 1.5 1996/08/27 20:24:20 curfman Exp balay $";
 C
 C  Progran to test random number generation routines from fortran.
 C
@@ -13,7 +13,7 @@ C
          print*, 'Unable to begin PETSc program'
       endif
 
-      call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,r,ierr)
+      call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,r,ierr)
       call PetscRandomGetValue(r,rand,ierr)
       print*, 'Random value:', rand
 

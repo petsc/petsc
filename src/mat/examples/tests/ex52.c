@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex52.c,v 1.1 1996/12/10 13:58:03 bsmith Exp balay $";
+static char vcid[] = "$Id: ex52.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -15,14 +15,14 @@ int main(int argc,char **args)
   Scalar     data=100;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   /* Test MatSetValues() and MatGetValues() */
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg); CHKERRA(ierr);
 
   M    = m*bs*size;
-  ierr = MatCreateMPIBAIJ(MPI_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A); CHKERRA(ierr);
+  ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A); CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(A,&start,&end); CHKERRA(ierr);
   

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.71 1996/10/24 15:30:30 curfman Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.72 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -42,8 +42,8 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   n = 2*size;
 
   /*
@@ -71,7 +71,7 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
@@ -123,7 +123,7 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 
@@ -165,7 +165,7 @@ int main(int argc,char **args)
   /* 
     Create linear solver context
   */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
@@ -195,9 +195,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
   /* 
@@ -282,9 +282,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12)
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex21.c,v 1.1 1996/12/10 13:57:48 bsmith Exp balay $";
+static char vcid[] = "$Id: ex21.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
@@ -16,12 +16,12 @@ int main(int argc,char **args)
   Scalar      v, *values;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   n = 2*size;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
          m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(C,&rstart,&rend); CHKERRA(ierr);
-  PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
+  PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
   for ( i=rstart; i<rend; i++ ) {
     ierr = MatGetRow(C,i,&nz,&idx,&values); CHKERRA(ierr);
     fprintf(stdout,"[%d] get row %d: ", rank, i);
@@ -56,7 +56,7 @@ int main(int argc,char **args)
     ierr = MatRestoreRow(C,i,&nz,&idx,&values); CHKERRA(ierr);
   }
   fflush(stdout);
-  PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
+  PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
 
   ierr = MatConvert(C,MATMPIAIJ,&A); CHKERRA(ierr);
   ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.63 1997/03/14 03:17:41 curfman Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.64 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -60,7 +60,7 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
@@ -104,7 +104,7 @@ int main(int argc,char **args)
         and VecCreate() are used with the same communicator. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 
@@ -116,7 +116,7 @@ int main(int argc,char **args)
   */
   ierr = OptionsHasName(PETSC_NULL,"-random_exact_sol",&flg); CHKERRA(ierr);
   if (flg) {
-    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
     ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
     ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);
   } else {
@@ -137,7 +137,7 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
@@ -196,9 +196,9 @@ int main(int argc,char **args)
      print statement from all processes that share a communicator.
   */
   if (norm > 1.e-12)
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

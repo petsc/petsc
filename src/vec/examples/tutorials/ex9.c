@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.8 1997/09/09 21:07:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.9 1997/09/10 14:47:36 balay Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
@@ -36,8 +36,8 @@ int main(int argc,char **argv)
   Vec        lx,gx,gxs;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
-  MPI_Comm_size(MPI_COMM_WORLD,&size); 
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
+  MPI_Comm_size(PETSC_COMM_WORLD,&size); 
   if (size != 2) SETERRA(1,1,"Must run example with two processors\n");
 
   /*

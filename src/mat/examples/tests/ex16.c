@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.2 1997/01/22 18:43:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex16.c,v 1.3 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests MatGetArray().\n\n";
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   /*
       Create a parallel dense matrix shared by all processors 
   */
-  ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,&A);
+  ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,&A);
          CHKERRA(ierr);
 
   /*
@@ -45,11 +45,11 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRA(ierr);
   for ( i=rstart; i<rend; i++ ) {
     for ( j=0; j<n; j++ ) {
-      PetscSynchronizedPrintf(MPI_COMM_WORLD,"%6.4e ",PetscReal(array[j*(rend-rstart)+i-rstart]));
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%6.4e ",PetscReal(array[j*(rend-rstart)+i-rstart]));
     }
-    PetscSynchronizedPrintf(MPI_COMM_WORLD,"\n");
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n");
   }
-  PetscSynchronizedFlush(MPI_COMM_WORLD);
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = MatRestoreArray(A,&array); CHKERRA(ierr);
 
   /*

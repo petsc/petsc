@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.40 1997/02/05 22:04:33 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.41 1997/07/09 21:00:13 balay Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   PC         pc;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   user.hx = one/(mx+1); user.hy = one/(my+1);
 
   /* Set up distributed array and vectors */
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
          user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(g,&user.y); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
@@ -95,7 +95,7 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = VecGetLocalSize(x,&ldim); CHKERRA(ierr);
-    ierr = MatCreateShell(MPI_COMM_WORLD,ldim,user.ndim,user.ndim,user.ndim,
+    ierr = MatCreateShell(PETSC_COMM_WORLD,ldim,user.ndim,user.ndim,user.ndim,
            (void*)&user,&H); CHKERRA(ierr);
     ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
     ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   } else {
-    ierr = MatCreate(MPI_COMM_WORLD,user.ndim,user.ndim,&H); CHKERRA(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,user.ndim,user.ndim,&H); CHKERRA(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC); CHKERRA(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-defaultH",&flg); CHKERRA(ierr);
     if (flg) ierr = SNESSetHessian(snes,H,H,SNESDefaultComputeHessian,(void *)&user);
@@ -119,8 +119,8 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);
-  PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
+  PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d, ",its);
+  PetscPrintf(PETSC_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
   ierr = VecDestroy(user.s); CHKERRA(ierr);
@@ -363,7 +363,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #else
     floc = real(area*(p5*fquad+flin));
 #endif
-    MPI_Allreduce((void*)&floc,(void*)f,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce((void*)&floc,(void*)f,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec); CHKERRQ(ierr);

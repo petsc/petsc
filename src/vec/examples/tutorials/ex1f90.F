@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f90.F,v 1.3 1997/04/04 16:17:19 curfman Exp bsmith $"
+C    "$Id: ex1f90.F,v 1.4 1997/08/07 14:38:06 bsmith Exp balay $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
@@ -62,7 +62,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       three = 3.0
       n     = 20
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 C  Create a vector, specifying only its global dimension.
 C  When using VecCreate(), the vector format (currently parallel

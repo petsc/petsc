@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.30 1996/11/19 16:29:48 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.31 1997/07/09 20:50:03 balay Exp balay $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
      or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel vectors are partitioned by
@@ -67,14 +67,14 @@ int main(int argc,char **argv)
 
   /*
      Open an X-window viewer.  Note that we specify the same communicator
-     for the viewer as we used for the distributed vector (MPI_COMM_WORLD).
+     for the viewer as we used for the distributed vector (PETSC_COMM_WORLD).
        - Helpful runtime option:
             -draw_pause <pause> : sets time (in seconds) that the
                   program pauses after DrawPause() has been called
                   (0 is default, -1 implies until user input).
 
   */
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,
                          &viewer); CHKERRA(ierr);
 
   /*

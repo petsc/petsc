@@ -1,5 +1,5 @@
 
-C  "$Id: ex16f90.F,v 1.2 1997/01/22 18:43:55 bsmith Exp curfman $";
+C  "$Id: ex16f90.F,v 1.3 1997/04/04 16:11:40 curfman Exp balay $";
 
 C
 C  Tests MatGetArray() on a dense matrix
@@ -38,7 +38,7 @@ C     mat.h90  - to allow access to Fortran 90 features of matrices
 C
 C      Create a parallel dense matrix shared by all processors 
 C
-      call MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,
+      call MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,
      &                        PETSC_DECIDE,m,n,PETSC_NULL,A,ierr)
 
 C
@@ -64,9 +64,9 @@ C
 C      Print the local portion of the matrix to the screen
 C
       call MatGetArrayF90(A,array,ierr) 
-      call PetscSequentialPhaseBegin(MPI_COMM_WORLD,1,ierr)
+      call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
       print*, array
-      call PetscSequentialPhaseEnd(MPI_COMM_WORLD,1,ierr)
+      call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
       call MatRestoreArrayF90(A,array,ierr)   
 C

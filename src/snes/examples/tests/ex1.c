@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.50 1997/07/09 21:00:30 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.51 1997/08/13 22:26:32 bsmith Exp balay $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -83,7 +83,7 @@ int main( int argc, char **argv )
   MatFDColoring  fdcoloring;           
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
   /*
@@ -102,13 +102,13 @@ int main( int argc, char **argv )
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecCreate(MPI_COMM_WORLD,N,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,N,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
 
   /* 
@@ -132,7 +132,7 @@ int main( int argc, char **argv )
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
   if (!matrix_free) {
-    ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
+    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
   }
 
   /*
@@ -217,12 +217,12 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr); 
-  PetscPrintf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /*
      Draw contour plot of solution
   */
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
   ierr = DrawTensorContour(draw,user.mx,user.my,0,0,x); CHKERRA(ierr);
   ierr = DrawSyncFlush(draw); CHKERRA(ierr);
   ierr = DrawPause(draw); CHKERRA(ierr);
@@ -233,7 +233,7 @@ int main( int argc, char **argv )
   */
   ierr = OptionsHasName(PETSC_NULL,"-print_history",&flg); CHKERRA(ierr);
   if (flg) for (i=0; i<its; i++)
-    PetscPrintf(MPI_COMM_WORLD,"iteration %d: Function norm = %g\n",i,history[i]);
+    PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Function norm = %g\n",i,history[i]);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

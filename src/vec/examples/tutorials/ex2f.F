@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.4 1996/11/25 19:01:31 bsmith Exp bsmith $"
+C    "$Id: ex2f.F,v 1.5 1997/07/02 20:53:43 bsmith Exp balay $"
 
 C  Description: Builds a parallel vector with 1 component on the first
 C               processor, 2 on the second, etc.  Then each processor adds
@@ -42,7 +42,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one   = 1.0
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 C  Create a parallel vector.
 C   - In this case, we specify the size of the local portion on 
@@ -52,7 +52,7 @@ C     local size PETSc will choose a reasonable partition trying
 C     to put nearly an equal number of elements on each processor.
 
 
-      call VecCreateMPI(MPI_COMM_WORLD,rank+1,PETSC_DECIDE,x,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,x,ierr)
       call VecGetSize(x,N,ierr)
       call VecSet(one,x,ierr)
 

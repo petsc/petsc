@@ -1,5 +1,5 @@
 
-C    "$Id: ex6f.F,v 1.20 1996/10/24 15:30:08 curfman Exp balay $";
+C    "$Id: ex6f.F,v 1.21 1997/07/10 15:47:31 balay Exp balay $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -61,7 +61,7 @@ C  When using MatCreate(), the matrix format can be specified at
 C  runtime. Also, the parallel partitioning of the matrix is
 C  determined by PETSc at runtime.
 
-      call MatCreate(MPI_COMM_WORLD,m*n,m*n,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,m*n,m*n,A,ierr)
 
 C  The matrix is partitioned by contiguous chunks of rows across the
 C  processors.  Determine which rows of the matrix are locally owned. 
@@ -111,13 +111,13 @@ C   - When using VecCreate(), the parallel partitioning of the vector
 C     is determined by PETSc at runtime.
 C   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreate(MPI_COMM_WORLD,m*n,u,ierr)
+      call VecCreate(PETSC_COMM_WORLD,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
 C  Create linear solver context
 
-      call SLESCreate(MPI_COMM_WORLD,sles,ierr)
+      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
 C  Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
 
@@ -174,7 +174,7 @@ C Use common block to retain matrix between successive subroutine calls
 
 C First time thorough: Create new matrix to define the linear system
       if (count .eq. 1) then
-        call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+        call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
         pflag = 0
         call OptionsHasName(PETSC_NULL_CHARACTER,'-mat_view',pflag,ierr)
         if (pflag .ne. 0) then

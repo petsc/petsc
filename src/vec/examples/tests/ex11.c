@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.35 1997/04/10 00:00:31 bsmith Exp balay $";
+static char vcid[] = "$Id: ex11.c,v 1.36 1997/07/09 20:49:55 balay Exp balay $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\n";
@@ -19,11 +19,11 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,help); 
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
   ierr = VecGetSize(x,&N); CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,N-rank,&y); CHKERRA(ierr);
 

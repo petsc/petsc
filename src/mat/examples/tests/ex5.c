@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.2 1997/03/31 18:18:09 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.3 1997/07/09 20:55:45 balay Exp balay $";
 #endif
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTrans(),\n\
@@ -27,12 +27,12 @@ int main(int argc,char **args)
 
   /* ---------- Assemble matrix and vectors ----------- */
 
-  ierr = MatCreate(MPI_COMM_WORLD,m,n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m,n,&C); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&rstart,&rend); CHKERRA(ierr);
-  ierr = VecCreate(MPI_COMM_WORLD,m,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&z); CHKERRA(ierr);
   ierr = VecDuplicate(x,&w); CHKERRA(ierr);
-  ierr = VecCreate(MPI_COMM_WORLD,n,&y); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,&y); CHKERRA(ierr);
   ierr = VecDuplicate(y,&u); CHKERRA(ierr);
   ierr = VecDuplicate(y,&s); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(y,&vstart,&vend); CHKERRA(ierr);
@@ -79,16 +79,16 @@ int main(int argc,char **args)
 
   /* ------------ Test MatMult(), MatMultAdd()  ---------- */
 
-  PetscPrintf(MPI_COMM_WORLD,"testing MatMult()\n");
+  PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n");
   ierr = MatMult(C,y,x); CHKERRA(ierr);
   ierr = VecView(x,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"testing MatMultAdd()\n");
+  PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n");
   ierr = MatMultAdd(C,y,z,w); CHKERRA(ierr);
   ierr = VecAXPY(&one,z,x); CHKERRA(ierr);
   ierr = VecAXPY(&negone,w,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-8)
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error difference = %g\n",norm);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);
 
   /* ------- Test MatMultTrans(), MatMultTransAdd() ------- */
 
@@ -98,21 +98,21 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"testing MatMultTrans()\n");
+  PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTrans()\n");
   ierr = MatMultTrans(C,x,y); CHKERRA(ierr);
   ierr = VecView(y,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  PetscPrintf(MPI_COMM_WORLD,"testing MatMultTransAdd()\n");
+  PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransAdd()\n");
   ierr = MatMultTransAdd(C,x,u,s); CHKERRA(ierr);
   ierr = VecAXPY(&one,u,y); CHKERRA(ierr);
   ierr = VecAXPY(&negone,s,y); CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-8)
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error difference = %g\n",norm);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);
 
   /* ------- Test MatGetDiagonal(), MatDiagonalScale() ------- */
 
-  PetscPrintf(MPI_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");
+  PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = MatGetDiagonal(C,x); CHKERRA(ierr);

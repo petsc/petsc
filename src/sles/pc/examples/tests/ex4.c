@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.31 1997/04/10 00:02:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.32 1997/07/09 20:53:11 balay Exp balay $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Create PC context and set up data structures */
-  ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
+  ierr = PCCreate(PETSC_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCSOR); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);

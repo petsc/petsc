@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex53.c,v 1.3 1997/04/10 00:03:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex53.c,v 1.4 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
@@ -21,7 +21,7 @@ int main(int argc,char **args)
 
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
 #if defined(PETSC_COMPLEX)
   SETERRA(1,0,"This example does not work with complex numbers");
@@ -30,17 +30,17 @@ int main(int argc,char **args)
  /* Check out if MatLoad() works */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Input file not specified");
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIBAIJ,&A); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATMPIAIJ,&B); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
  
-  ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rand); CHKERRA(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand); CHKERRA(ierr);
   ierr = MatGetLocalSize(A,&m,&n); CHKERRA(ierr);
-  ierr = VecCreateMPI(MPI_COMM_WORLD,m,PETSC_DECIDE,&xx); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xx); CHKERRA(ierr);
   ierr = VecDuplicate(xx,&s1); CHKERRA(ierr);
   ierr = VecDuplicate(xx,&s2); CHKERRA(ierr);
   ierr = VecDuplicate(xx,&yy); CHKERRA(ierr);
@@ -113,7 +113,7 @@ s1norm,s2norm);
     ierr = PetscRandomGetValue(rand,&v); CHKERRA(ierr);
     rows[1] = rstart + (int)(PetscReal(v)*m);
     
-    /* PetscPrintf(MPI_COMM_WORLD," row1 = %d row2 = %d \n",rows[0], rows[1]);*/
+    /* PetscPrintf(PETSC_COMM_WORLD," row1 = %d row2 = %d \n",rows[0], rows[1]);*/
 
     ierr = MatGetValues(A,2,rows,2,cols,vals1); CHKERRA(ierr);
     ierr = MatGetValues(B,2,rows,2,cols,vals2); CHKERRA(ierr);

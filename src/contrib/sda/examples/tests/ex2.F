@@ -1,5 +1,5 @@
 
-/* "$Id: ex2.F,v 1.5 1997/07/10 20:20:41 balay Exp balay $"; */
+/* "$Id: ex2.F,v 1.6 1997/07/10 20:21:00 balay Exp balay $"; */
 
 
 #include "include/FINCLUDE/petsc.h"
@@ -49,23 +49,23 @@ C   not also work with DA contexts.
       call OptionsHasName(PETSC_NULL_CHARACTER,'-2d',flg2,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-3d',flg3,ierr)
       if (flg2 .ne. 0) then
-        call DACreate2d(MPI_COMM_WORLD,periodic,stencil_type,
+        call DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,
      *                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,
      *                  PETSC_NULL,da,ierr)
-        call SDACreate2d(MPI_COMM_WORLD,periodic,stencil_type,
+        call SDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,
      *                  MM,NN,m,n,dof,stencil_width,PETSC_NULL,
      *                  PETSC_NULL,sda,ierr)
       else if (flg3 .ne. 0) then
-        call DACreate3d(MPI_COMM_WORLD,periodic,stencil_type,
+        call DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,
      *                  MM,NN,PP,m,n,p,dof,stencil_width,
                         PETSC_NULL,PETSC_NULL,PETSC_NULL,da,ierr)
-        call SDACreate3d(MPI_COMM_WORLD,periodic,stencil_type,
+        call SDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,
      *                  MM,NN,PP,m,n,p,dof,stencil_width,
                         PETSC_NULL,PETSC_NULL,PETSC_NULL,sda,ierr)
       else
-        call DACreate1d(MPI_COMM_WORLD,periodic,MM,dof,
+        call DACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,
      *                  stencil_width,PETSC_NULL,da,ierr)
-        call SDACreate1d(MPI_COMM_WORLD,periodic,MM,dof,
+        call SDACreate1d(PETSC_COMM_WORLD,periodic,MM,dof,
      *                  stencil_width,PETSC_NULL,sda,ierr)
       endif
 
@@ -103,7 +103,7 @@ C   zero out vectors so that ghostpoints are zero
       call VecAXPY(mone,local,local_copy,ierr)
       call VecNorm(local_copy,NORM_MAX,work,ierr)
       call MPI_Allreduce( work, norm,1,MPI_DOUBLE_PRECISION,MPI_MAX,
-     *                   MPI_COMM_WORLD,ierr )
+     *                   PETSC_COMM_WORLD,ierr )
       print*,'Norm of difference ',norm,' should be zero'
    
       call DADestroy(da,ierr)

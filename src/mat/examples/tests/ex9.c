@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.3 1997/07/02 22:26:04 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.4 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
@@ -19,11 +19,11 @@ int main(int argc,char **args)
   Vec        u, b;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   n = 2*size;
 
-  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&type,&set); CHKERRA(ierr);
+  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set); CHKERRA(ierr);
   if (type == MATMPIBDIAG || type == MATSEQBDIAG) {
     int bs, ndiag, diag[7];  bs = 1, ndiag = 5;
     diag[0] = n;
@@ -32,15 +32,15 @@ int main(int argc,char **args)
     diag[3] = -1;
     diag[4] = -n;
     if (size>1) {ndiag = 7; diag[5] = 2; diag[6] = -2;}
-    ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
+    ierr = MatCreateMPIBDiag(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
            ndiag,bs,diag,PETSC_NULL,&C); CHKERRA(ierr);
   } 
   else if (type == MATMPIDENSE || type == MATSEQDENSE) {
-    ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+    ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
            m*n,m*n,PETSC_NULL,&C); CHKERRA(ierr);
   }
   else if (type == MATMPIAIJ || type == MATSEQAIJ) {
-    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
            m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);
   }
   else SETERRA(1,0,"Invalid matrix type for this example.");
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Form vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecGetLocalSize(u,&ldim);
   ierr = VecGetOwnershipRange(u,&low,&high); CHKERRA(ierr);
@@ -92,10 +92,10 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"matrix information (global sums):\n\
+  PetscPrintf(PETSC_COMM_WORLD,"matrix information (global sums):\n\
      nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);
   ierr = MatGetInfo (C,MAT_GLOBAL_MAX,&info); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"matrix information (global max):\n\
+  PetscPrintf(PETSC_COMM_WORLD,"matrix information (global max):\n\
      nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);
 
   ierr = MatDestroy(C); CHKERRA(ierr);

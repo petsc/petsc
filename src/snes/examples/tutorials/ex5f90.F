@@ -1,5 +1,5 @@
 
-C "$Id: ex5f90.F,v 1.7 1997/08/07 14:42:34 bsmith Exp bsmith $";
+C "$Id: ex5f90.F,v 1.8 1997/08/22 15:18:29 bsmith Exp balay $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -159,8 +159,8 @@ C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 C  Initialize problem parameters
 
@@ -184,7 +184,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create nonlinear solver context
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create vector data structures; set function evaluation routine
@@ -202,7 +202,7 @@ C  Create distributed array (DA) to manage parallel grid and vectors
      &      write(6,*) 'Incompatible number of procs: Nx * Ny != size'
          SETERRA(1,0,' ')
       endif
-      call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
      &                my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
       user(3) = da
 
@@ -254,10 +254,10 @@ C     for preallocating matrix memory.
      &                    ierr)
       if (matrix_free .eq. 0) then
         if (size .eq. 1) then
-          call MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
+          call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
         else
           call VecGetLocalSize(x,m,ierr)
-          call MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,5,PETSC_NULL,
+          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,
      &                         3,PETSC_NULL,J,ierr)
         endif
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)

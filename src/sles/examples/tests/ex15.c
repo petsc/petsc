@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.7 1996/07/08 22:20:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex15.c,v 1.8 1997/07/09 20:56:59 balay Exp balay $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
@@ -21,7 +21,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* Create vectors */
-  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
 
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = VecShift(&avalue,u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreate(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&A); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   /* Create SLES context; set operators and options; solve linear system */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
 
   /* Insure that preconditioner has same null space as matrix */
@@ -67,9 +67,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /* Free work space */
   ierr = VecDestroy(x); CHKERRA(ierr);ierr = VecDestroy(u); CHKERRA(ierr);

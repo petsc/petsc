@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.18 1997/01/01 03:39:04 bsmith Exp balay $";
+C      "$Id: ex12.F,v 1.19 1997/07/10 15:45:03 balay Exp balay $";
 
        implicit none
 
@@ -33,13 +33,13 @@ C
 
 C Read in matrix and RHS
       call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
+      call ViewerFileOpenBinary(PETSC_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
         SETERRA(1,0,' ')
       endif
 
-      call MatGetTypeFromOptions(MPI_COMM_WORLD,PETSC_NULL_CHARACTER,
+      call MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,
      *                           mtype,set,ierr)
       call MatLoad(fd,mtype,A,ierr)
 
@@ -62,7 +62,7 @@ C Set up solution
       call VecDuplicate(b,u,ierr)
 
 C Solve system
-      call SLESCreate(MPI_COMM_WORLD,sles,ierr)
+      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      &                      ierr)
       call SLESSetFromOptions(sles,ierr)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.61 1997/03/14 03:17:44 curfman Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.62 1997/07/09 20:57:17 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   Scalar  none = -1.0, one = 1.0, value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
@@ -48,7 +48,7 @@ int main(int argc,char **args)
      Create matrix.  When using MatCreate(), the matrix format can
      be specified at runtime.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&A); CHKERRA(ierr);
 
   /* 
      Assemble matrix
@@ -69,7 +69,7 @@ int main(int argc,char **args)
      Create vectors.  Note that we form 1 vector from scratch and
      then duplicate as needed.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
 
@@ -85,7 +85,7 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
@@ -139,9 +139,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

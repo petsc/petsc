@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.25 1997/04/10 00:02:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.26 1997/07/09 20:53:11 balay Exp balay $";
 #endif
 
 static char help[] = "Tests the creation of a PC context.\n\n";
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   Mat mat;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
+  ierr = PCCreate(PETSC_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
 
   /* Vector and matrix must be set before calling PCSetUp */

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.2 1997/08/27 19:08:26 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.3 1997/09/10 01:39:35 curfman Exp balay $";
 #endif
 
 static char help[] = 
@@ -52,13 +52,13 @@ int main(int argc,char **args)
      Open binary file.  Note that we use BINARY_RDONLY to indicate
      reading from this file.
   */
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
 
   /* 
      Determine matrix format to be used (specified at runtime).
      See the manpage for MatLoad() for available formats.
   */
-  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
 
   /*
      Load the matrix; then destroy the viewer.
@@ -69,7 +69,7 @@ int main(int argc,char **args)
   /*
        Create eigenvalue computer; set operators; set runtime options.
   */
-  ierr = ECCreate(MPI_COMM_WORLD,EC_EIGENVALUE,&ec); CHKERRA(ierr);
+  ierr = ECCreate(PETSC_COMM_WORLD,EC_EIGENVALUE,&ec); CHKERRA(ierr);
   ierr = ECSetOperators(ec,A,PETSC_NULL); CHKERRA(ierr);
   ierr = ECSetFromOptions(ec); CHKERRA(ierr);
 

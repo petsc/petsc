@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.10 1997/04/10 00:07:10 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.11 1997/07/09 21:01:00 balay Exp balay $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -36,16 +36,16 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-2d",&flg2); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-3d",&flg3); CHKERRA(ierr);
   if (flg2) {
-    ierr = DACreate2d(MPI_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,
+    ierr = DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,&da);
     CHKERRA(ierr);
   } else if (flg3) {
-    ierr = DACreate3d(MPI_COMM_WORLD,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
+    ierr = DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);
     CHKERRA(ierr);
   }
   else {
-    ierr = DACreate1d(MPI_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRA(ierr);
+    ierr = DACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRA(ierr);
   }
 
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
 
   ierr = OptionsHasName(PETSC_NULL,"-save",&flg); CHKERRA(ierr);
   if (flg) {
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     sprintf(filename,"local.%d",rank);
     ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&file); CHKERRA(ierr);
@@ -87,8 +87,8 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(&mone,local,local_copy); CHKERRA(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work); CHKERRA(ierr);
-  MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD );
-  PetscPrintf(MPI_COMM_WORLD,"Norm of difference %g should be zero\n",norm);
+  MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD );
+  PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);
    
 
   ierr = DADestroy(da); CHKERRA(ierr);

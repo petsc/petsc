@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.66 1997/07/02 22:26:20 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.67 1997/07/09 20:56:59 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -36,8 +36,8 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   /* Form matrix */
   ierr = GetElasticityMatrix(m,&mat); CHKERRA(ierr);
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   /* Generate vectors */
   ierr = MatGetSize(mat,&rdim,&cdim); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend); CHKERRA(ierr);
-  ierr = VecCreate(MPI_COMM_WORLD,rdim,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,rdim,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   for (i=rstart; i<rend; i++) {
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = MatMult(mat,u,b); CHKERRA(ierr);
   
   /* Solve linear system */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,mat,mat,SAME_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(ksp,2*m); CHKERRA(ierr);
@@ -74,10 +74,10 @@ int main(int argc,char **args)
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
 
   if (norm > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,
+    PetscPrintf(PETSC_COMM_WORLD,
       "Norm of error %g, Number of iterations %d\n",norm,its);
   else 
-    PetscPrintf(MPI_COMM_WORLD,
+    PetscPrintf(PETSC_COMM_WORLD,
       "Norm of error < 1.e-12, Number of iterations %d\n",its);
 
   /* Free work space */
@@ -172,14 +172,14 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
-  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set); CHKERRQ(ierr);
   ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
   ierr = MatDestroy(submat); CHKERRQ(ierr);
 
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
   ierr = MatView(*newmat,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm); CHKERRQ(ierr);
-  PetscPrintf(MPI_COMM_WORLD,"matrix 1 norm = %g\n",norm);
+  PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",norm);
 
   return 0;
 }

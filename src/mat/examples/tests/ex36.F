@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.18 1997/04/10 00:03:45 bsmith Exp balay $";
+C      "$Id: ex36.F,v 1.19 1997/07/10 15:44:44 balay Exp balay $";
 C
 C   This program demonstrates use of PETSc dense matrices.
 C
@@ -47,7 +47,7 @@ C
 
 C  Create matrix
       call MatCreateSeqDense(PETSC_COMM_SELF,m,n,PETSC_NULL,A,err)
-C      call MatCreateMPIDense(MPI_COMM_WORLD,m,n,m,n,PETSC_NULL,A,err)
+C      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL,A,err)
 
 C  Access array storage
       call MatGetArray(A,aa,ia,err)

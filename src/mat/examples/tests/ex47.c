@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex47.c,v 1.3 1997/04/10 00:03:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex47.c,v 1.4 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -31,17 +31,17 @@ int main(int argc,char **args)
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
 
   /* Load the matrix as AIJ format */
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&va);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&va);CHKERRA(ierr);
   ierr = MatLoad(va,MATSEQAIJ,&A); CHKERRA(ierr);
   ierr = ViewerDestroy(va); CHKERRA(ierr);
 
   /* Load the matrix as BAIJ format */
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&vb);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&vb);CHKERRA(ierr);
   ierr = MatLoad(vb,MATSEQBAIJ,&B); CHKERRA(ierr);
   ierr = ViewerDestroy(vb); CHKERRA(ierr);
 
   /* Load the matrix as BAIJ format */
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&vc);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&vc);CHKERRA(ierr);
   ierr = MatLoad(vc,MATSEQBAIJ,&C); CHKERRA(ierr);
   ierr = ViewerDestroy(vc); CHKERRA(ierr);
 

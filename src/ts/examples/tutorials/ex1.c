@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.9 1997/04/10 00:05:28 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1997/07/09 20:58:39 balay Exp balay $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -101,7 +101,7 @@ int main( int argc, char **argv )
   /* 
      Create timestepper context 
   */
-  ierr = TSCreate(MPI_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
 
   /*
      Tell the timestepper context where to compute solutions

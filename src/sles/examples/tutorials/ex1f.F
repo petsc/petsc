@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.14 1997/07/12 16:14:16 balay Exp bsmith $";
+C    "$Id: ex1f.F,v 1.15 1997/08/07 14:40:39 bsmith Exp balay $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -81,9 +81,9 @@ C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       if (size .ne. 1) then
-         call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
          if (rank .eq. 0)
      &      write(6,*) 'This is a uniprocessor example only!'
          SETERRA(1,0,' ')
@@ -101,7 +101,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix.  When using MatCreate(), the matrix format can
 C  be specified at runtime.
 
-      call MatCreate(MPI_COMM_WORLD,n,n,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,n,n,A,ierr)
 
 C  Assemble matrix.
 C   - Note that MatSetValues() uses 0-based row and column numbers
@@ -132,7 +132,7 @@ C     in Fortran as well as in C (as set here in the array "col").
 C  Create vectors.  Note that we form 1 vector from scratch and
 C  then duplicate as needed.
 
-      call VecCreate(MPI_COMM_WORLD,n,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,n,x,ierr)
       call VecDuplicate(x,b,ierr)
       call VecDuplicate(x,u,ierr)
 
@@ -147,7 +147,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Create linear solver context
 
-      call SLESCreate(MPI_COMM_WORLD,sles,ierr)
+      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
 C  Set operators. Here the matrix that defines the linear system
 C  also serves as the preconditioning matrix.

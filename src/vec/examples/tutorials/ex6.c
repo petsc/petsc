@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.7 1997/04/10 00:00:39 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.8 1997/07/09 20:50:03 balay Exp balay $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   }
 
   /* Open viewer for binary output */
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"input.dat",BINARY_CREATE,&view_out);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"input.dat",BINARY_CREATE,&view_out);
          CHKERRA(ierr);
   ierr = ViewerBinaryGetDescriptor(view_out,&fd); CHKERRA(ierr);
 

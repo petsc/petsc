@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex38.c,v 1.1 1996/12/10 13:57:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex38.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests MatSetValues() for column oriented storage.\n\n"; 
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
-  ierr = MatCreate(MPI_COMM_WORLD,n,n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&C); CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-column_oriented",&flg); CHKERRA(ierr);
   if (flg) {ierr = MatSetOption(C,MAT_COLUMN_ORIENTED); CHKERRA(ierr);}

@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.10 1997/07/25 00:45:41 balay Exp bsmith $";
+C "$Id: ex2f.F,v 1.11 1997/08/07 14:41:33 bsmith Exp balay $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -127,7 +127,7 @@ C  Create distributed array (DA) to manage parallel grid and vectors
 C  Set up the ghost point communication pattern.  There are M total
 C  grid values spread equally among all the processors.
 
-      call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,1,1,
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,
      &     PETSC_NULL,da,ierr)
 
 C  Extract global and local vectors from DA; then duplicate for remaining

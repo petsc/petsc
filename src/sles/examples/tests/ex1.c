@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.3 1997/04/10 00:04:20 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.4 1997/07/09 20:56:59 balay Exp balay $";
 #endif
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
@@ -38,7 +38,7 @@ int main(int argc,char **args)
 
 
   /* solve linear system */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,u,&its); CHKERRA(ierr);

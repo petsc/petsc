@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.23 1996/07/08 22:16:40 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.24 1997/07/09 20:50:03 balay Exp balay $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -22,8 +22,8 @@ int main(int argc,char **args)
   int     VECTOR_GENERATE, VECTOR_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
 
   /* PART 1:  Generate vector, then write it in binary format */
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   PLogEventRegister(&VECTOR_GENERATE,"Generate Vector ","Red:");
   PLogEventBegin(VECTOR_GENERATE,0,0,0,0);
   /* Generate vector */
-  ierr = VecCreate(MPI_COMM_WORLD,m,&u); CHKERRA(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,m,&u); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(u,&low,&high); CHKERRA(ierr);
   ierr = VecGetLocalSize(u,&ldim); CHKERRA(ierr);
   for (i=0; i<ldim; i++) {
@@ -43,9 +43,9 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(u); CHKERRA(ierr);
   ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  PetscPrintf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
+  PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"vector.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
   ierr = VecView(u,viewer); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
@@ -54,14 +54,14 @@ int main(int argc,char **args)
   /* PART 2:  Read in vector in binary format */
 
   /* All processors wait until test vector has been dumped */
-  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Barrier(PETSC_COMM_WORLD);
   PetscSleep(10);
 
   /* Read new vector in binary format */
   PLogEventRegister(&VECTOR_READ,"Read Vector     ","Green:");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
-  PetscPrintf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);
   vtype = VECSEQ;
   ierr = VecLoad(viewer,&u); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);

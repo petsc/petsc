@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex46.c,v 1.1 1996/12/10 13:58:00 bsmith Exp balay $";
+static char vcid[] = "$Id: ex46.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -15,14 +15,14 @@ int main(int argc,char **args)
   int     i, j, I, J, ierr, Istart, Iend, N, m = 4, n = 4, rank, size,flg;
 
   PetscInitialize(&argc,&args,0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   N = m*n;
 
   /* Generate matrix */
-  ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,N,0,0,0,&C); CHKERRA(ierr);
+  ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,0,0,0,&C); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  

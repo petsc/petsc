@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.1 1996/12/10 13:57:46 bsmith Exp balay $";
+static char vcid[] = "$Id: ex19.c,v 1.2 1997/07/09 20:55:45 balay Exp balay $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -35,11 +35,11 @@ int main(int argc,char **args)
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m;         /* number of elements */
   h = 1.0/m;       /* mesh width */
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   /* Create stiffness matrix */
-  ierr = MatCreate(MPI_COMM_WORLD,N,N,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&C); CHKERRA(ierr);
 
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank); 
@@ -72,7 +72,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Create test vectors */
-  ierr = VecCreate(MPI_COMM_WORLD,N,&u); CHKERRA(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,N,&u); CHKERRA(ierr); 
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
 
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b); CHKERRA(ierr);
   ierr = VecNorm(b,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-10 || norm < -1.e-10) {
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error b %g should be near 0\n",norm);
+    PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",norm);
   }
 
   /* Now test MatGetValues() */
@@ -95,7 +95,7 @@ int main(int argc,char **args)
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals); CHKERRA(ierr);
     ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-    PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
     printf("processor number %d: start=%d, end=%d, mystart=%d, myend=%d\n",
             rank,start,end,mystart,myend);
     for (i=0; i<nrsub; i++) {
@@ -111,7 +111,7 @@ int main(int argc,char **args)
 #endif
       }
     }
-    PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
     PetscFree(rsub); PetscFree(csub); PetscFree(vals);
   }
 

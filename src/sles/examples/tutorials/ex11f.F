@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.11 1997/07/10 15:46:17 balay Exp bsmith $";
+C    "$Id: ex11f.F,v 1.12 1997/08/07 14:40:39 bsmith Exp balay $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -94,7 +94,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       none   = -1.0
       n      = 6
       sigma1 = 100.0
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,
      *                       flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
@@ -110,7 +110,7 @@ C  When using MatCreate(), the matrix format can be specified at
 C  runtime. Also, the parallel partitioning of the matrix is
 C  determined by PETSc at runtime.
 
-      call MatCreate(MPI_COMM_WORLD,dim,dim,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,dim,dim,A,ierr)
 
 C  Currently, all PETSc parallel matrix formats are partitioned by
 C  contiguous chunks of rows across the processors.  Determine which
@@ -130,7 +130,7 @@ C   - Always specify global rows and columns of matrix entries.
          sigma2 = 10.0*PETSC_i
       else
          use_random = .true.
-         call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,
+         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,
      *                          rctx,ierr)
       endif
       h2 = 1.0/((n+1)*(n+1))
@@ -175,14 +175,14 @@ C     PETSc at runtime.  We could also specify the local dimensions
 C     if desired.
 C   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreate(MPI_COMM_WORLD,dim,u,ierr)
+      call VecCreate(PETSC_COMM_WORLD,dim,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 
 C  Set exact solution; then compute right-hand-side vector.
 
       if (use_random) then
-         call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,rctx,ierr)
+         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,rctx,ierr)
          call VecSetRandom(rctx,u,ierr)
       else
          pfive = 0.5
@@ -196,7 +196,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Create linear solver context
 
-      call SLESCreate(MPI_COMM_WORLD,sles,ierr)
+      call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
 
 C  Set operators. Here the matrix that defines the linear system
 C  also serves as the preconditioning matrix.

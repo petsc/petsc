@@ -1,5 +1,5 @@
 
-C  "$Id: ex1f90.F,v 1.4 1997/04/10 00:00:03 bsmith Exp balay $";
+C  "$Id: ex1f90.F,v 1.5 1997/07/10 15:43:59 balay Exp balay $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a general index set;
@@ -28,7 +28,7 @@ C
       IS      is
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 C  Create an index set with 5 entries. Each processor creates
 C  its own index set with its own list of integers.
