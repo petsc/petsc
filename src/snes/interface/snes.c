@@ -1273,7 +1273,7 @@ int SNESSetMonitor(SNES snes,int (*func)(SNES,int,PetscReal,void*),void *mctx,in
    Input Parameters:
 .  snes - the SNES context
 
-   Options Database:
+   Options Database Key:
 .  -snes_cancelmonitors - cancels all monitors that have been hardwired
     into a code by calls to SNESSetMonitor(), but does not cancel those 
     set via the options database

@@ -93,9 +93,6 @@ static int PetscCheckDebugger_Private(char *defaultDbg, char *string, char **deb
   int        ierr;
 
   PetscFunctionBegin;
-  if (*debugger != PETSC_NULL) {
-    PetscFunctionReturn(0);
-  }
   ierr = PetscStrstr(string, defaultDbg, &f);                                                             CHKERRQ(ierr);
   if (f) {
     ierr = PetscTestFile(string, 'x', &exists);                                                           CHKERRQ(ierr);

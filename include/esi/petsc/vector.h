@@ -45,15 +45,15 @@ template<class Scalar,class Ordinal>
     virtual esi::ErrorCode put(  Scalar scalar) ;
     virtual esi::ErrorCode scale(  Scalar scalar) ;
     virtual esi::ErrorCode scaleDiagonal(  esi::Vector<Scalar,Ordinal>& x) ;
-    virtual esi::ErrorCode norm1( Scalar& norm)   ;
-    virtual esi::ErrorCode norm2( Scalar& norm)   ;
-    virtual esi::ErrorCode norm2squared( Scalar& norm)   ;
-    virtual esi::ErrorCode normInfinity( Scalar& norm)   ;
+    virtual esi::ErrorCode norm1( TYPENAME esi::Vector<Scalar,Ordinal>::magnitude_type& norm)   ;
+    virtual esi::ErrorCode norm2( TYPENAME esi::Vector<Scalar,Ordinal>::magnitude_type& norm)   ;
+    virtual esi::ErrorCode norm2squared( TYPENAME esi::Vector<Scalar,Ordinal>::magnitude_type& norm)   ;
+    virtual esi::ErrorCode normInfinity( TYPENAME esi::Vector<Scalar,Ordinal>::magnitude_type& norm)   ;
     virtual esi::ErrorCode dot( esi::Vector<Scalar,Ordinal>& x, Scalar& product)   ;
     virtual esi::ErrorCode axpy( esi::Vector<Scalar,Ordinal>& x, Scalar scalar) ;
     virtual esi::ErrorCode aypx(Scalar scalar, esi::Vector<Scalar,Ordinal>& x) ;
 
-    virtual esi::ErrorCode minAbsCoef(Scalar &)  {return 1;}
+    virtual esi::ErrorCode minAbsCoef(TYPENAME esi::Vector<Scalar,Ordinal>::magnitude_type&)  {return 1;}
     virtual esi::ErrorCode axpby(Scalar,esi::Vector<Scalar,Ordinal>&,Scalar,esi::Vector<Scalar,Ordinal>&);
     virtual esi::ErrorCode getCoefPtrReadLock(Scalar *&) ;
     virtual esi::ErrorCode getCoefPtrReadWriteLock(Scalar *&);
@@ -110,15 +110,15 @@ template<>
     virtual esi::ErrorCode put(  double scalar) ;
     virtual esi::ErrorCode scale(  double scalar) ;
     virtual esi::ErrorCode scaleDiagonal(  esi::Vector<double,int>& x) ;
-    virtual esi::ErrorCode norm1( double& norm)   ;
-    virtual esi::ErrorCode norm2( double& norm)   ;
-    virtual esi::ErrorCode norm2squared( double& norm)   ;
-    virtual esi::ErrorCode normInfinity( double& norm)   ;
+    virtual esi::ErrorCode norm1( magnitude_type& norm)   ;
+    virtual esi::ErrorCode norm2( magnitude_type& norm)   ;
+    virtual esi::ErrorCode norm2squared( magnitude_type& norm)   ;
+    virtual esi::ErrorCode normInfinity( magnitude_type& norm)   ;
     virtual esi::ErrorCode dot( esi::Vector<double,int>& x, double& product)   ;
     virtual esi::ErrorCode axpy( esi::Vector<double,int>& x, double scalar) ;
     virtual esi::ErrorCode aypx(double scalar, esi::Vector<double,int>& x) ;
 
-    virtual esi::ErrorCode minAbsCoef(double &)  {return 1;}
+    virtual esi::ErrorCode minAbsCoef(magnitude_type&)  {return 1;}
     virtual esi::ErrorCode axpby(double,esi::Vector<double,int>&,double,esi::Vector<double,int>&);
     virtual esi::ErrorCode getCoefPtrReadLock(double *&) ;
     virtual esi::ErrorCode getCoefPtrReadWriteLock(double *&);

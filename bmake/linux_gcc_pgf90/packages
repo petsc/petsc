@@ -99,8 +99,8 @@ PETSC_HAVE_ADIFOR = -DPETSC_HAVE_ADIFOR
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/libpvode_linux_gcc_pgf90.a
+PVODE_INCLUDE = -I/home/petsc/software/sundials/include
+PVODE_LIB     = -L/home/petsc/software/sundials/lib -lcvode.Linux.i686 -lnvecparallel.Linux.i686 -lshared.Linux.i686
 PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
 # Location of ParMetis

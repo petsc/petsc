@@ -103,6 +103,10 @@ ex14f: ex14f.o  chkopts
 	-${FLINKER} -o ex14f ex14f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
 	${RM} -f ex14f.o
 
+ex15: ex15.o  chkopts
+	-${CLINKER} -o $@ $<  ${PETSC_SLES_LIB}
+	${RM} -f $<
+
 #-------------------------------------------------------------------------------------------
 #   This section is used for testing examples and can be ignored 
 #-------------------------------------------------------------------------------------------

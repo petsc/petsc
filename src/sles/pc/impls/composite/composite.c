@@ -339,7 +339,7 @@ EXTERN_C_END
 .  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL
 
    Options Database Key:
-.  -pc_composite_type <type> - Sets composite preconditioner type
+.  -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
 
    Level: Developer
 
@@ -489,6 +489,29 @@ int PCCompositeSetUseTrue(PC pc)
 }
 
 /* -------------------------------------------------------------------------------------------*/
+
+/*S
+     PCCOMPOSITE - Build a preconditioner by composing together several preconditioners 
+
+   Options Database Keys:
+.  -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
+.  -pc_composite_true - Activates PCCompositeSetUseTrue()
+
+   Level: intermediate
+
+   Concepts: composing solvers
+
+   Notes: To use a Krylov method inside the composite preconditioner, set the PCType of one or more
+          inner PCs to be PCSLES. 
+          Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
+          the incorrect answer) unless you use KSPFGMRES as the other Krylov method
+
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCSHELL, PCSLES, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPC(),
+           PCCompositeGetPC(), PCCompositeSetUseTrue()
+
+S*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

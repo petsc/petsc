@@ -513,7 +513,7 @@ static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
   } else {
     jac->logging     = (int) PETSC_FALSE;
   }
-  jac->ruse = (int) PETSC_TRUE;
+  jac->ruse = (int) PETSC_FALSE;
   jac->symt   = 0;
 
   ierr = PetscOptionsHead("HYPRE ParaSails Options");CHKERRQ(ierr);
@@ -692,6 +692,51 @@ static int PCSetFromOptions_HYPRE(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCHYPRESetType"
+/*@
+     PCHYPRESetType - Sets which hypre preconditioner you wish to use
+
+   Options Database Keys:
+   -pc_hypre_type - One of pilut, parasails, boomerAMG, euclid
+ 
+   Level: intermediate
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCHYPRE
+
+S*/
+int PCHYPRESetType(PC pc,char *name)
+{
+  int ierr,(*f)(PC,char*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPRESetType_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,name);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+/*S
+     PCHYPRE - Allows you to use the matrix element based preconditioners in the LLNL package hypre
+
+   Options Database Keys:
++   -pc_hypre_type - One of pilut, parasails, boomerAMG, euclid
+-   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX to see options for the XXX
+          preconditioner
+ 
+   Level: intermediate
+
+   Notes: The many hypre options can ONLY be set via the options database (e.g. the command line
+          or with PetscOptionsSetValue(), there are no functions to set them)
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCHYPRESetType()
+
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_HYPRE"
@@ -705,6 +750,8 @@ int PCCreate_HYPRE(PC pc)
   ierr                     = PetscMemzero(jac,sizeof(PC_HYPRE));CHKERRQ(ierr);
   pc->data                 = jac;
   pc->ops->setfromoptions  = PCSetFromOptions_HYPRE;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C",
+                                    "PCHYPRESetType_HYPRE",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

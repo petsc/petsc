@@ -259,7 +259,7 @@ int PetscDrawRegister(char *sname,char *path,char *name,int (*function)(PetscDra
    Input Parameter:
 .     draw - the graphics context
 
-   Options Database:
+   Options Database Keys:
 +   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
 -   -nox_warning - when X windows support is not installed this prevents the warning message
                    from being printed

@@ -321,6 +321,27 @@ static int PCSetFromOptions_Jacobi(PC pc)
 
    Application Interface Routine: PCCreate()
 */
+
+/*S
+     PCJacobi - Jacobi (i.e. diagonal scaling preconditioning)
+
+   Options Database Key:
+.    -pc_jacobi_rowmax - use the maximum absolute value in each row as the scaling factor,
+                        rather than the diagonal
+
+   Level: beginner
+
+  Concepts: Jacobi, diagonal scaling, preconditioners
+
+  Notes: By using KSPSetPreconditionerSide(ksp,PC_SYMMETRIC) or -ksp_symmetric_pc you 
+         can scale each side of the matrix by the squareroot of the diagonal entries.
+
+         Zero entries along the diagonal are replaced with the value 1.0
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCJacobiSetUseRowMax(), 
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Jacobi"

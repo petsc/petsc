@@ -149,24 +149,24 @@ esi::petsc::Vector<double,int>::~Vector()
   return VecPointwiseMult(y->vec,this->vec,this->vec);
 }
 
-::esi::ErrorCode esi::petsc::Vector<double,int>::norm1(double &scalar) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::norm1(magnitude_type &scalar) 
 {
   return VecNorm(this->vec,NORM_1,&scalar);
 }
 
-::esi::ErrorCode esi::petsc::Vector<double,int>::norm2(double &scalar) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::norm2(magnitude_type &scalar) 
 {
   return VecNorm(this->vec,NORM_2,&scalar);
 }
 
-::esi::ErrorCode esi::petsc::Vector<double,int>::norm2squared(double &scalar) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::norm2squared(magnitude_type &scalar) 
 {
   int ierr = VecNorm(this->vec,NORM_2,&scalar);CHKERRQ(ierr);
   scalar *= scalar;
   return 0;
 }
 
-::esi::ErrorCode esi::petsc::Vector<double,int>::normInfinity(double &scalar) 
+::esi::ErrorCode esi::petsc::Vector<double,int>::normInfinity(magnitude_type &scalar) 
 {
   return VecNorm(this->vec,NORM_INFINITY,&scalar);
 }

@@ -722,7 +722,7 @@ int PCASMSetOverlap(PC pc,int ovl)
 .ve
 
     Options Database Key:
-$   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
+.   -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
     Level: intermediate
 
@@ -793,6 +793,37 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 }
 
 /* -------------------------------------------------------------------------------------*/
+/*S
+   PCASM - Use the additive Schwarz method, each block is (approximately) solved with 
+           its own SLES object.
+
+   Options Database Keys:
++  -pc_asm_truelocal - Activates PCASMSetUseTrueLocal()
+.  -pc_asm_in_place - Activates in-place factorization
+.  -pc_asm_blocks <blks> - Sets total blocks
+.  -pc_asm_overlap <ovl> - Sets overlap
+-  -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
+
+   Notes: Each processor can have one or more blocks, but a block cannot be shared by more
+     than one processor. Defaults to one block per processor.
+
+     To set options on the solvers for each block append -sub_ to all the SLES, KSP, and PC
+        options database keys. For example, -sub_pc_type ilu -sub_pc_ilu_levels 1 -sub_ksp_type preonly
+        
+     To set the options on the solvers seperate for each block call PCASMGetSubSLES()
+         and set the options directly on the resulting SLES object (you can access its KSP and PC
+         with SLESGetKSP() and SLESGetPC())
+
+   Level: beginner
+
+   Concepts: additive Schwarz method
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCBJACOBI, PCASMSetUseTrueLocal(), PCASMGetSubSLES(), PCASMSetLocalSubdomains(),
+           PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType(),
+           PCASMSetUseInPlace()
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ASM"

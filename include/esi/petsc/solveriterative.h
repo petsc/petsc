@@ -59,10 +59,10 @@ class SolverIterative : public virtual esi::SolverIterative<Scalar,Ordinal>,
     virtual esi::ErrorCode setPreconditioner( esi::Preconditioner<Scalar, Ordinal> & pc );
 
     /** Get the convergence tolerance. */
-    virtual esi::ErrorCode getTolerance( esi::SolverIterative<Scalar,Ordinal>::magnitude_type & tol );
+    virtual esi::ErrorCode getTolerance( TYPENAME esi::SolverIterative<Scalar,Ordinal>::magnitude_type & tol );
 
     /** Set the convergence tolerance. */
-    virtual esi::ErrorCode setTolerance( esi::SolverIterative<Scalar,Ordinal>::magnitude_type tol );
+    virtual esi::ErrorCode setTolerance( TYPENAME esi::SolverIterative<Scalar,Ordinal>::magnitude_type tol );
 
     /** Get the maximum number of iterations. */
     virtual esi::ErrorCode getMaxIterations( Ordinal & maxIterations );
