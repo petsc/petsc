@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.22 2000/04/16 16:43:13 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.23 2000/04/16 16:43:56 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -72,7 +72,7 @@ int main(int argc,char **args)
   SNES          snes;                  /* nonlinear solver context */
   Mat           Jpc;                   /* Jacobian and Preconditioner matrices */
   Scalar        *qnode;
-  int 		ierr,solIt,ileast;
+  int 		ierr,ileast;
   PetscTruth    flg;
   
   ierr = PetscInitialize(&argc,&args,"testgrid/petsc.opt",help);CHKERRQ(ierr);
@@ -107,29 +107,24 @@ int main(int argc,char **args)
  
   c_runge->nitfo = 0;
 
-   /* Get the grid information into local ordering */
-   ierr = GetLocalOrdering(&f_pntr);CHKERRQ(ierr);
+  /* Get the grid information into local ordering */
+  ierr = GetLocalOrdering(&f_pntr);CHKERRQ(ierr);
 
-   /* Allocate Memory for Some Other Grid Arrays */ 
-   ierr = set_up_grid(&f_pntr);CHKERRQ(ierr);
+  /* Allocate Memory for Some Other Grid Arrays */ 
+  ierr = set_up_grid(&f_pntr);CHKERRQ(ierr);
  
-   /* If using least squares for the gradients, calculate the r's */
-   if (f_pntr.ileast == 4) {
-     f77SUMGS(&f_pntr.nnodesLoc,&f_pntr.nedgeLoc,f_pntr.eptr,f_pntr.xyz,f_pntr.rxy,&rank,&f_pntr.nvertices);
-   }
+  /* If using least squares for the gradients, calculate the r's */
+  if (f_pntr.ileast == 4) {
+    f77SUMGS(&f_pntr.nnodesLoc,&f_pntr.nedgeLoc,f_pntr.eptr,f_pntr.xyz,f_pntr.rxy,&rank,&f_pntr.nvertices);
+  }
  
-   user.grid  = &f_pntr;
-   user.tsCtx = &tsCtx;
+  user.grid  = &f_pntr;
+  user.tsCtx = &tsCtx;
 
-
-   /* 
-     Perform the nonlinear solver twice to eliminate the
-   effects of paging in the executable on the first fun of 
-   the nonlinear solver 
-   */
-
-  for (solIt = 0; solIt < 2; solIt++) {
-    PLogStagePush(solIt);
+  /* 
+     Preload the executable to get accurate timings
+  */
+  PreLoadBegin(PETSC_TRUE,"Time integration");
     /* Create nonlinear solver */
     ierr = SetPetscDS(&f_pntr, &tsCtx);CHKERRQ(ierr);
     ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
@@ -139,13 +134,11 @@ int main(int argc,char **args)
     ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
     if (flg) {
-      /* Use matrix-free Jacobian to define Newton system; use explicit (approx)
-         Jacobian for preconditioner */
+      /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
       ierr = MatCreateSNESMF(snes,user.grid->qnode,&Jpc);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
     } else {
-      /* Use explicit (approx) Jacobian to define Newton system and
-         preconditioner */
+      /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
       ierr = SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
     }
  
@@ -208,13 +201,12 @@ int main(int argc,char **args)
     ierr = SNESDestroy(snes);CHKERRQ(ierr);
     ierr = VecScatterDestroy(user.grid->scatter);CHKERRQ(ierr);
     ierr = VecScatterDestroy(user.grid->gradScatter);CHKERRQ(ierr);
-    PLogStagePop();
     ierr = OptionsHasName(PETSC_NULL,"-mem_use",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscShowMemoryUsage(VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
     }
+  PreLoadEnd();
 
-  }
   ierr = PetscPrintf(MPI_COMM_WORLD, "Time taken in gradient calculation is %g sec.\n",grad_time);CHKERRQ(ierr);
 
   PetscFinalize();
