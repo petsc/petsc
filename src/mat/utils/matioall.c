@@ -24,6 +24,9 @@ EXTERN int MatLoad_MPIAIJ_SuperLU_DIST(PetscViewer,MatType,Mat*);
 EXTERN int MatLoad_AIJ_MUMPS(PetscViewer,MatType,Mat*);
 EXTERN int MatLoad_SBAIJ_MUMPS(PetscViewer,MatType,Mat*);
 #endif
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+EXTERN int MatLoad_MPIBAIJ_DSCPACK(PetscViewer,MatType,Mat*);
+#endif
 
 EXTERN_C_END
 extern PetscTruth MatLoadRegisterAllCalled;
@@ -91,6 +94,9 @@ int MatLoadRegisterAll(char *path)
 #if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
   ierr = MatLoadRegisterDynamic(MATAIJMUMPS,  path,"MatLoad_AIJ_MUMPS",  MatLoad_AIJ_MUMPS);CHKERRQ(ierr);
   ierr = MatLoadRegisterDynamic(MATSBAIJMUMPS,path,"MatLoad_SBAIJ_MUMPS",MatLoad_SBAIJ_MUMPS);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+  ierr = MatLoadRegisterDynamic(MATDSCPACK,path,"MatLoad_MPIBAIJ_DSCPACK",MatLoad_MPIBAIJ_DSCPACK);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }  

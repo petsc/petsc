@@ -47,6 +47,9 @@ EXTERN int MatCreate_SeqAIJ_LUSOL(Mat);
 EXTERN int MatCreate_AIJ_MUMPS(Mat);
 EXTERN int MatCreate_SBAIJ_MUMPS(Mat);
 #endif
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+EXTERN int MatCreate_MPIBAIJ_DSCPACK(Mat);
+#endif
 EXTERN_C_END
   
 /*
@@ -129,6 +132,9 @@ int MatRegisterAll(char *path)
 #if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
   ierr = MatRegisterDynamic(MATAIJMUMPS,  path,"MatCreate_AIJ_MUMPS",MatCreate_AIJ_MUMPS);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSBAIJMUMPS,path,"MatCreate_SBAIJ_MUMPS",MatCreate_SBAIJ_MUMPS);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+  ierr = MatRegisterDynamic(MATDSCPACK,path,"MatCreate_MPIBAIJ_DSCPACK",MatCreate_MPIBAIJ_DSCPACK);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

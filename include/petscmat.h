@@ -59,6 +59,7 @@ E*/
 #define MATLUSOL           "lusol"
 #define MATAIJMUMPS        "aijmumps"
 #define MATSBAIJMUMPS      "sbaijmumps"
+#define MATDSCPACK         "dscpack"
 typedef char* MatType;
 
 #define MAT_SER_SEQAIJ_BINARY "seqaij_binary"
