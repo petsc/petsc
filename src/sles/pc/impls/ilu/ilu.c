@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.49 1995/12/08 18:39:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.50 1995/12/21 18:31:13 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -102,6 +102,9 @@ static int PCPrintHelp_ILU(PC pc)
   MPIU_printf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   MPIU_printf(pc->comm," %spc_ilu_levels levels: levels of fill\n",p);
   MPIU_printf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
+  MPIU_printf(pc->comm," %spc_ilu_factorpointwise: DO NOT use block factorization\n");
+  MPIU_printf(pc->comm,"    (note this only applies to MatCreateMPIRowBS, all others\n");
+  MPIU_printf(pc->comm,"    currently only support point factorization.\n");
   return 0;
 }
 

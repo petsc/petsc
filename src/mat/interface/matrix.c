@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.121 1995/12/23 19:28:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.122 1996/01/01 01:02:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1523,5 +1523,36 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is, int ov)
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->ops.increaseoverlap) SETERRQ(PETSC_ERR_SUP,"MatIncreaseOverlap");
   ierr = (*mat->ops.increaseoverlap)(mat,n,is,ov); CHKERRQ(ierr);
+  return 0;
+}
+
+/*@
+   MatPrintHelp - Prints all the options for the matrix.
+
+   Input Parameter:
+.  mat - the matrix 
+
+   Options Database Keys:
+$  -help, -h
+
+.keywords: mat, help
+
+.seealso: MatCreate(), MatCreateXXX()
+@*/
+int MatPrintHelp(Mat mat)
+{
+  static int called = 0;
+  MPI_Comm   comm = mat->comm;
+
+  if (!called) {
+    MPIU_printf(comm,"General matrix options:\n");
+    MPIU_printf(comm,"  -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"  -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"  -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"      -draw_pause <sec> : set seconds of display pause\n");
+    MPIU_printf(comm,"      -display <name> : set alternate display\n");
+    called = 1;
+  }
+  if (mat->ops.printhelp) (*mat->ops.printhelp)(mat);
   return 0;
 }

@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.28 1995/12/21 18:33:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.29 1996/01/01 01:05:05 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
 #include "snesimpl.h"      /*I "snes.h"  I*/
-#include "sys/nreg.h"      /*I  "sys/nreg.h"  I*/
+#include "sys/nreg.h"      
 #include "pinclude/pviewer.h"
 #include <math.h>
 
@@ -80,7 +80,7 @@ int SNESView(SNES snes,Viewer viewer)
 }
 
 /*@
-   SNESSetFromOptions - Sets various SLES parameters from user options.
+   SNESSetFromOptions - Sets various SNES and SLES parameters from user options.
 
    Input Parameter:
 .  snes - the SNES context
@@ -187,7 +187,7 @@ $  -help, -h
 
 .keywords: SNES, nonlinear, help
 
-.seealso: SLESSetFromOptions()
+.seealso: SNESSetFromOptions()
 @*/
 int SNESPrintHelp(SNES snes)
 {
@@ -1099,7 +1099,7 @@ int SNESSetMinFunctionTolerance(SNES snes,double ftol)
          initial guess routine (may be null)
 
    Calling sequence of func:
-   int guess(Vec x, void *ctx)
+   int guess(SNES, Vec x, void *ctx)
 
 .  x - input vector
 .  ctx - optional user-defined initial guess context 
@@ -1135,8 +1135,7 @@ int SNESSetSolution(SNES snes,Vec x,int (*func)(SNES,Vec,void*),void *ctx)
           monitor routine (may be null)
 
    Calling sequence of func:
-   int func((SNES snes,int its, Vec x,Vec f,
-             double norm,void *mctx)
+   int func(SNES snes,int its, Vec x,Vec f,double norm,void *mctx)
 
 $    snes - the SNES context
 $    its - iteration number

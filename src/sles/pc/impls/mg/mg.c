@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.38 1995/11/19 00:33:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.39 1995/12/12 22:48:05 curfman Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -288,13 +288,13 @@ static int PCSetFromOptions_MG(PC pc)
     MGSetNumberSmoothDown(pc,m);
   }
   if (OptionsGetString(pc->prefix,"-pc_mg_method",buff,15)) {
-    MGMethod mg;
+    MGType mg;
     if (!PetscStrcmp(buff,"additive")) mg = MGADDITIVE;
     else if (!PetscStrcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;
     else if (!PetscStrcmp(buff,"full")) mg = MGFULL;
     else if (!PetscStrcmp(buff,"kaskade")) mg = MGKASKADE;
     else SETERRQ(1,"PCSetFromOptions_MG:Unknown method");
-    MGSetMethod(pc,mg);
+    MGSetType(pc,mg);
   }
   return 0;
 }
@@ -360,7 +360,7 @@ int PCCreate_MG(PC pc)
 
 .keywords: MG, set, levels, multigrid
 
-.seealso: MGSetMethod()
+.seealso: MGSetType()
 @*/
 int MGSetLevels(PC pc,int levels)
 {
@@ -375,7 +375,7 @@ int MGSetLevels(PC pc,int levels)
 }
 
 /*@
-   MGSetMethod - Determines the form of multigrid to use, either 
+   MGSetType - Determines the form of multigrid to use, either 
    multiplicative, additive, full, or the Kaskade algorithm.
 
    Input Parameters:
@@ -391,7 +391,7 @@ $      multiplicative, additive, full, kaskade
 
 .seealso: MGSetLevels()
 @*/
-int MGSetMethod(PC pc,MGMethod form)
+int MGSetType(PC pc,MGType form)
 {
   MG *mg = (MG *) pc->data;
   if (pc->type != PCMG) return 0;

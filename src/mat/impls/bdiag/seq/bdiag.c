@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.78 1995/12/23 04:53:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.79 1996/01/01 01:03:44 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1463,7 +1463,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
 {
   Mat          A;
   Mat_SeqBDiag *a;
-  int          i, nda, sizetot;
+  int          i, nda, sizetot,ierr;
 
   *newmat       = 0;
   if ((n%nb) || (m%nb)) SETERRQ(1,"MatCreateSeqBDiag:Invalid block size");
@@ -1533,6 +1533,9 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   a->nz          = a->maxnz; /* Currently not keeping track of exact count */
   a->assembled   = 0;
   a->roworiented = 1;
+  if (OptionsHasName(PETSC_NULL,"-help")) {
+    ierr = MatPrintHelp(A); CHKERRQ(ierr);
+  }
   *newmat        = A;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.103 1995/12/23 04:54:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.104 1996/01/01 01:03:18 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1279,6 +1279,15 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   return 0;
 }
 
+extern int MatPrintHelp_SeqAIJ(Mat);
+static int MatPrintHelp_MPIAIJ(Mat A)
+{
+  Mat_MPIAIJ *a   = (Mat_MPIAIJ*) A->data;
+
+  if (!a->rank) return MatPrintHelp_SeqAIJ(a->A);
+  else return 0;
+}
+
 extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
 static int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
 
@@ -1303,7 +1312,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatILUFactorSymbolic_MPIAIJ,0,
        0,0,MatConvert_MPIAIJ,0,0,MatConvertSameType_MPIAIJ,0,0,
        0,0,0,
-       0,0,MatGetValues_MPIAIJ};
+       0,0,MatGetValues_MPIAIJ,0,
+       MatPrintHelp_MPIAIJ};
 
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
@@ -1491,6 +1501,9 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   PLogObjectParent(mat,a->A);
   ierr =  MatConvert(oldmat->B,MATSAME,&a->B); CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
+  if (OptionsHasName(PETSC_NULL,"-help")) {
+    ierr = MatPrintHelp(mat); CHKERRQ(ierr);
+  }
   *newmat = mat;
   return 0;
 }

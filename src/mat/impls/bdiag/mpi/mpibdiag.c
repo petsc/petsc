@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.63 1995/12/21 18:32:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.64 1996/01/01 01:03:49 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -897,6 +897,9 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   /* used for MatSetValues() input */
   mbd->roworiented = 1;
 
+  if (OptionsHasName(PETSC_NULL,"-help")) {
+    ierr = MatPrintHelp(mat); CHKERRQ(ierr);
+  }
   *newmat = mat;
   return 0;
 }

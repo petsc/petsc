@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.61 1995/12/21 18:33:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.62 1996/01/01 01:04:20 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -38,13 +38,6 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
     MPIU_printf(comm,"  %smat_row, %smat_seqrow, %smat_mpirow\n",p,p,p);
     MPIU_printf(comm,"  %smat_dense, %smat_seqdense, %smat_mpidense\n",p,p,p);
     MPIU_printf(comm,"  %smat_mpirowbs, %smat_bdiag, %smat_seqbdiag, %smat_mpibdiag\n",p,p,p,p); 
-    /* We need to move the following to MatPrintHelp or some analogous routine */
-    MPIU_printf(comm,"More matrix options:\n");
-    MPIU_printf(comm,"  %smat_view_info : view basic matrix info during MatAssemblyEnd()\n",p);
-    MPIU_printf(comm,"  %smat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n",p);
-    MPIU_printf(comm,"  %smat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n",p);
-    MPIU_printf(comm,"      -pause <sec> : set seconds of display pause\n");
-    MPIU_printf(comm,"      -display <name> : set alternate display\n");
   }
   if (OptionsHasName(pre,"-mat_seqdense")) {
     *type = MATSEQDENSE;
@@ -202,11 +195,6 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   }
   if (type == MATMPIDENSE) {
     return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,V);
-  }
-  if (OptionsHasName(PETSC_NULL,"-help")) {
-    MPIU_printf(comm,"Options with default formats (-mat_aij, -mat_seqaij, -mat_mpiaij):\n");
-    MPIU_printf(comm,"  -mat_aij_no_inode : Do not use inodes\n");
-    MPIU_printf(comm,"  -mat_aij_inode_limit <limit> : Set inode limit (max limit=5)\n");
   }
   if (type == MATMPIAIJ) { 
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,PETSC_NULL,0,PETSC_NULL,V);

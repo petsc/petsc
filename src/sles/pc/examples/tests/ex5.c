@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.33 1995/12/21 18:31:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.34 1996/01/01 01:02:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -38,7 +38,7 @@ int main(int Argc, char **Args)
   int         x_mesh = 15,levels = 3,cycles = 1;
   int         i,smooths = 1;
   int         *N, use_jacobi = 0;
-  MGMethod    am = MGMULTIPLICATIVE;
+  MGType      am = MGMULTIPLICATIVE;
   Mat         cmat,mat[20],fmat;
   SLES        csles,sles[20],slesmg;
   double      e[3]; /* l_2 error, max error, residual */
@@ -73,7 +73,7 @@ int main(int Argc, char **Args)
   ierr = SLESSetFromOptions(slesmg); CHKERRA(ierr);
   ierr = PCSetType(pcmg,PCMG); CHKERRA(ierr);
   ierr = MGSetLevels(pcmg,levels); CHKERRA(ierr);
-  ierr = MGSetMethod(pcmg,am); CHKERRA(ierr);
+  ierr = MGSetType(pcmg,am); CHKERRA(ierr);
 
   ierr = MGGetCoarseSolve(pcmg,&csles); CHKERRA(ierr);
   ierr = SLESSetOperators(csles,cmat,cmat,

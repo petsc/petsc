@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.81 1995/12/23 19:45:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.82 1996/01/01 01:03:39 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1395,6 +1395,9 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   bsmap->free_g2p	= 0;
 
   ierr = MatCreateMPIRowbs_local(A,nz,nnz); CHKERRQ(ierr);
+  if (OptionsHasName(PETSC_NULL,"-help")) {
+    ierr = MatPrintHelp(A); CHKERRQ(ierr);
+  }
   *newA = A;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.21 1995/12/19 20:23:35 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.22 1995/12/28 21:37:59 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -18,7 +18,9 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mbs->mat_is_symmetric) 
-    SETERRQ(1,"MatIncompleteCholeskySymbolic_MPIRowbs:Must declare symmetric matrix");
+    SETERRQ(1,"MatIncompleteCholeskySymbolic_MPIRowbs:To use incomplete Cholesky \n\
+        preconditioning with MatCreateMPIRowbs() matrix you must declare it to be \n\
+        a symmetric matrix using the option MatSetOption(A,SYMMETRIC_MATRIX)");
 
   /* Copy permuted matrix */
   mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0);
@@ -38,7 +40,9 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS perm,IS cperm,
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (mbs->mat_is_symmetric) 
-    SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:Not for declared symmetric matrix");
+    SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:To use ILU preconditioner with \n\
+        MatCreateMPIRowbs() matrix you CANNOT declare it to be a symmetric matrix\n\
+        using the option MatSetOption(A,SYMMETRIC_MATRIX)");
 
   /* Copy permuted matrix */
   mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0); 

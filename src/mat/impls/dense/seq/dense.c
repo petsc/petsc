@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.84 1996/01/01 01:03:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.85 1996/01/01 19:39:44 curfman Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -849,6 +849,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
 {
   Mat          mat;
   Mat_SeqDense *l;
+  int          ierr;
 
   *newmat        = 0;
 
@@ -877,6 +878,9 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
     l->user_alloc = 1;
   }
 
+  if (OptionsHasName(PETSC_NULL,"-help")) {
+    ierr = MatPrintHelp(mat); CHKERRQ(ierr);
+  }
   *newmat = mat;
   return 0;
 }

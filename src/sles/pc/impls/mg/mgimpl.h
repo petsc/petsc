@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.4 1995/11/19 00:24:20 bsmith Exp $ */
+/* $Id: mgimpl.h,v 1.6 1995/11/19 00:35:33 bsmith Exp bsmith $ */
 
 /*
       Data structure used for Multigrid preconditioner.
@@ -13,7 +13,7 @@ typedef struct _MG* MG;
 
 struct _MG
 {
-    MGMethod am;                     /* Multiplicative, additive or full */
+    MGType   am;                     /* Multiplicative, additive or full */
     int      cycles;                 /* Number cycles to run */
     int      level;                  /* level = 0 coarsest level */
     Vec      b;                      /* Right hand side */ 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.127 1995/12/23 04:53:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.128 1996/01/01 01:03:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1167,8 +1167,24 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int n, IS *is, int ov)
   }
   SETERRQ(1,"MatIncreaseOverlap_SeqAIJ:Not implemented");
 }
-/* -------------------------------------------------------------------*/
 
+int MatPrintHelp_SeqAIJ(Mat A)
+{
+  static int called = 0; 
+  MPI_Comm   comm = A->comm;
+
+  if (called) return 0; else called = 1;
+  MPIU_printf(comm,"Specific matrix options for SeqAIJ (and MPIAIJ).\n");
+  MPIU_printf(comm,"  -mat_lu_pivotthreshold <threshold>\n");
+  MPIU_printf(comm,"  -mat_aij_oneindex - internal indices begin at 1 not 0.\n");
+  MPIU_printf(comm,"  -mat_aij_no_inode  - Do not use inodes\n");
+  MPIU_printf(comm,"  -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)\n");
+#if defined(HAVE_ESSL)
+  MPIU_printf(comm,"  -mat_aij_essl  - Use IBM sparse LU factorization and solve.\n");
+#endif
+  return 0;
+}
+/* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,MatRestoreRow_SeqAIJ,
        MatMult_SeqAIJ,MatMultAdd_SeqAIJ,
@@ -1192,15 +1208,16 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatConvertSameType_SeqAIJ,0,0,
        MatILUFactor_SeqAIJ,0,0,
        MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,
-       MatGetValues_SeqAIJ};
+       MatGetValues_SeqAIJ,0,
+       MatPrintHelp_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
 extern int MatUseDXML_SeqAIJ(Mat);
 
 /*@C
-   MatCreateSeqAIJ - Creates a sparse matrix in AIJ format
-   (the default uniprocessor PETSc format).
+   MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
+                     (the default uniprocessor PETSc format).
 
    Input Parameters:
 .  comm - MPI communicator, set to MPI_COMM_SELF
@@ -1222,8 +1239,9 @@ extern int MatUseDXML_SeqAIJ(Mat);
    Set nz=0 and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.
 
-   By default, this format uses inodes (identical nodes) when possible.
-   We search for consecutive rows with the same nonzero structure, thereby
+   By default, this format uses inodes (identical nodes) when possible, to 
+   improve numerical efficiency of Matrix vector products and solves. We 
+   search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
    Options Database Keys:
@@ -1311,7 +1329,9 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
     if (!b->indexshift) SETERRQ(1,"MatCreateSeqAIJ:need -mat_aij_oneindex with -mat_aij_dxml");
     ierr = MatUseDXML_SeqAIJ(B); CHKERRQ(ierr);
   }
-
+  if (OptionsHasName(PETSC_NULL,"-help")) {
+    ierr = MatPrintHelp(B); CHKERRQ(ierr);
+  }
   return 0;
 }
 
