@@ -217,7 +217,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec
       ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
       n = 1;
       for (i=1; i<size; i++) {
-        n = PetscMax(n,range[i] - range[i-1]);
+        n = PetscMax(n,range[i+1] - range[i]);
       }
       ierr = PetscMalloc(n*sizeof(PetscScalar),&avec);CHKERRQ(ierr);
       ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
@@ -372,7 +372,7 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
       ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
       n = 1;
       for (i=1; i<size; i++) {
-        n = PetscMax(n,range[i] - range[i-1]);
+        n = PetscMax(n,range[i+1] - range[i]);
       }
       ierr = PetscMalloc(n*sizeof(PetscScalar),&avec);CHKERRQ(ierr);
       ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);

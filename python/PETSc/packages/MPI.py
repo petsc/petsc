@@ -2,6 +2,7 @@ from __future__ import generators
 import config.base
 
 import os
+import os.path
 import re
 
 class Configure(config.base.Configure):
