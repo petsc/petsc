@@ -610,6 +610,7 @@ int MatView_SeqAIJ(Mat A,PetscViewer viewer)
 EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
 EXTERN int MatUseSpooles_SeqAIJ(Mat);
+EXTERN int MatUseUMFPACK_SeqAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJ"
 int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
@@ -618,7 +619,7 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   int          fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax,ierr;
   int          m = A->m,*ip,N,*ailen = a->ilen,shift = a->indexshift,rmax = 0;
   PetscScalar  *aa = a->a,*ap;
-#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_SPOOLES) 
+#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_UMFPACK)
   PetscTruth   flag;
 #endif
 
@@ -675,6 +676,11 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 #if defined(PETSC_HAVE_SPOOLES) 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr); }
+#endif 
+
+#if defined(PETSC_HAVE_UMFPACK) 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_umfpack",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseUMFPACK_SeqAIJ(A);CHKERRQ(ierr); }
 #endif 
 
   PetscFunctionReturn(0);
@@ -2683,6 +2689,7 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu",&flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseSuperLU_SeqAIJ(B);CHKERRQ(ierr); }
 #endif
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_essl",&flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseEssl_SeqAIJ(B);CHKERRQ(ierr); }
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_lusol",&flg);CHKERRQ(ierr);

@@ -42,3 +42,9 @@ PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
 DSCPACK_INCLUDE    = -I/home/petsc/software/DSCPACK1.0/DSC_LIB
 DSCPACK_LIB        = /home/petsc/software/DSCPACK1.0/DSC_LIB/dsclibdbl.a
 PETSC_HAVE_DSCPACK = -DPETSC_HAVE_DSCPACK
+#
+# UMFPACK
+#
+UMFPACK_INCLUDE    = -I/sandbox/hzhang/umfpack
+UMFPACK_LIB        = /sandbox/hzhang/umfpack/umfpack.a
+PETSC_HAVE_UMFPACK = -DPETSC_HAVE_UMFPACK
