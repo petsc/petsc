@@ -28,7 +28,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
-  if (info) f = info->fill;
+  f = info->fill;
   /* get new row pointers */
   ierr     = PetscMalloc((n+1)*sizeof(int),&ainew);CHKERRQ(ierr);
   ainew[0] = 0;
@@ -144,8 +144,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
-  if (info) b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
-  else      b->pivotinblocks = PETSC_TRUE;
+  b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;

@@ -69,8 +69,7 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab;
   (*F)->factor               = FACTOR_LU;
   f                          = (Mat_SeqAIJ*)(*F)->data;
-  if (info) f->lu_dtcol = info->dtcol;
-  else      f->lu_dtcol = 0.0;
+  f->lu_dtcol = info->dtcol;
   PetscFunctionReturn(0);
 }
 

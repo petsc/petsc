@@ -277,8 +277,11 @@ int PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
   
   PetscFunctionBegin;
   dir = (PC_Cholesky*)pc->data;
-  dir->info.damping = damping;
-  dir->info.damp    = 1.0;
+  if (damping == (PetscReal) PETSC_DECIDE) {
+    dir->info.damping = 1.e-12;
+  } else {
+    dir->info.damping = damping;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -577,7 +580,6 @@ int PCCreate_Cholesky(PC pc)
   dir->inplace            = 0;
   dir->info.fill          = 5.0;
   dir->info.damping       = 0.0;
-  dir->info.damp          = 0.0;
   dir->info.pivotinblocks = 1.0;
   dir->col                = 0;
   dir->row                = 0;

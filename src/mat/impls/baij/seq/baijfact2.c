@@ -2664,15 +2664,9 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   PetscReal   f;
 
   PetscFunctionBegin;
-  if (info) {
-    f             = info->fill;
-    levels        = (int)info->levels;
-    diagonal_fill = (int)info->diagonal_fill;
-  } else {
-    f             = 1.0;
-    levels        = 0;
-    diagonal_fill = 0;
-  }
+  f             = info->fill;
+  levels        = (int)info->levels;
+  diagonal_fill = (int)info->diagonal_fill;
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);

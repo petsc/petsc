@@ -31,11 +31,9 @@ int PCILUSetDamping_ILU(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_ILU*)pc->data;
   if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.damping = 0.0;
-    dir->info.damp    = 1.0;
-  } else if (damping != 0.0) {
+    dir->info.damping = 1.e-12;
+  } else {
     dir->info.damping = damping;
-    dir->info.damp    = 1.0;
   }
   PetscFunctionReturn(0);
 }
@@ -593,7 +591,7 @@ static int PCSetFromOptions_ILU(PC pc)
     if (flg) {
       ierr = PCILUSetSinglePrecisionSolves(pc,single_prec);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsHasName(pc->prefix,"-pc_ilu_damping",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCILUSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
@@ -838,7 +836,6 @@ int PCCreate_ILU(PC pc)
   ilu->info.dt                 = PETSC_DEFAULT;
   ilu->info.dtcount            = PETSC_DEFAULT;
   ilu->info.dtcol              = PETSC_DEFAULT;
-  ilu->info.damp               = 0.0;
   ilu->info.damping            = 0.0;
   ilu->info.zeropivot          = 1.e-12;
   ilu->info.pivotinblocks      = 1.0;
