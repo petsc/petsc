@@ -234,10 +234,13 @@ class Configure(config.base.Configure):
     filename = 'conftestval'
     includes = '#include <stdlib.h>\n#include <stdio.h>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n'+'''
-    int val = 1, i = 0;
+    char val[2];
+    int i = 0;
 
     if (!f) exit(1);
-    while((char) val) {val <<= 1; i++;}
+    val[0]=\'\\1\';
+    val[1]=\'\\0\';
+    while(val[0]) {val[0] <<= 1; i++;}
     fprintf(f, "%d\\n", i);\n
     '''
     if not 'bits_per_byte' in self.framework.argDB:
