@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = damg.o 
 OBJSF    =
 LIBBASE  = libpetscksp
-MANSEC   = KSP
+MANSEC   = DA
 LOCDIR   = src/ksp/utils/
 
 include ${PETSC_DIR}/bmake/common/base

@@ -14,8 +14,28 @@ typedef struct {
   PetscTruth      reuseordering;    /* reuses previous reordering computed */
   PetscTruth      reusefill;        /* reuse fill from previous LU */
   MatFactorInfo   info;
+  PetscTruth      nonzerosalongdiagonal;
+  PetscReal       nonzerosalongdiagonaltol;
 } PC_LU;
 
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUReorderForNonzeroDiagonal_LU"
+PetscErrorCode PCLUReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
+{
+  PC_LU *lu = (PC_LU*)pc->data;
+
+  PetscFunctionBegin;
+  lu->nonzerosalongdiagonal = PETSC_TRUE;                 
+  if (z == PETSC_DECIDE) {
+    lu->nonzerosalongdiagonaltol = 1.e-10;
+  } else {
+    lu->nonzerosalongdiagonaltol = z;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -119,7 +139,13 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     if (flg) {
       ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
+
+    ierr = PetscOptionsName("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCLUReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
+    if (flg) {
+      tol = PETSC_DECIDE;
+      ierr = PetscOptionsReal("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCLUReorderForNonzeroDiagonal",lu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
+      ierr = PCLUReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
+    }
 
     ierr = PetscOptionsReal("-pc_lu_pivoting","Pivoting tolerance (used only for some factorization)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
 
@@ -185,7 +211,6 @@ static PetscErrorCode PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 static PetscErrorCode PCSetUp_LU(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
   PC_LU          *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
@@ -202,11 +227,8 @@ static PetscErrorCode PCSetUp_LU(PC pc)
     MatInfo info;
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-      ierr = PetscOptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
-      if (flg) {
-        PetscReal tol = 1.e-10;
-        ierr = PetscOptionsGetReal(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
-        ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
+      if (dir->nonzerosalongdiagonal) {
+        ierr = MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PetscLogObjectParent(pc,dir->row); PetscLogObjectParent(pc,dir->col);}
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
@@ -218,11 +240,8 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
         if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
         ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-        ierr = PetscOptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
-        if (flg) {
-          PetscReal tol = 1.e-10;
-          ierr = PetscOptionsGetReal(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
-          ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
+        if (dir->nonzerosalongdiagonal) {
+         ierr = MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col);CHKERRQ(ierr);
         }
         if (dir->row) {PetscLogObjectParent(pc,dir->row); PetscLogObjectParent(pc,dir->col);}
       }
@@ -370,6 +389,39 @@ PetscErrorCode PCLUSetPivotInBlocks_LU(PC pc,PetscTruth pivot)
 EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUReorderForNonzeroDiagonal"
+/*@
+   PCLUReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  tol - diagonal entries smaller than this in absolute value are considered zero
+
+   Options Database Key:
+.  -pc_lu_nonzeros_along_diagonal
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCLUSetFill(), PCLUSetDamp(), PCILUSetZeroPivot(), MatReorderForNonzeroDiagonal()
+@*/
+PetscErrorCode PCLUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
+{
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,rtol);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetZeroPivot"
@@ -775,8 +827,10 @@ PetscErrorCode PCCreate_LU(PC pc)
   PetscLogObjectMemory(pc,sizeof(PC_LU));
 
   ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
-  dir->fact                = 0;
-  dir->inplace             = PETSC_FALSE;
+  dir->fact                  = 0;
+  dir->inplace               = PETSC_FALSE;
+  dir->nonzerosalongdiagonal = PETSC_FALSE;
+
   dir->info.fill           = 5.0;
   dir->info.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
   dir->info.damping        = 0.0;
@@ -825,6 +879,8 @@ PetscErrorCode PCCreate_LU(PC pc)
                     PCLUSetPivotInBlocks_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetZeroPivot_C","PCLUSetZeroPivot_LU",
                     PCLUSetZeroPivot_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUReorderForNonzeroDiagonal_C","PCLUReorderForNonzeroDiagonal_LU",
+                    PCLUReorderForNonzeroDiagonal_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
