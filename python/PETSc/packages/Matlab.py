@@ -27,6 +27,8 @@ class Configure(config.base.Configure):
       yield self.framework.argDB['with-matlab-dir']
       raise RuntimeError('You set a value for --with-matlab-dir, but '+self.framework.argDB['with-matlab-dir']+' cannot be used\n')
     if self.getExecutable('matlab', getFullPath = 1):
+      # follow any symbolic link of this path
+      self.matlab = os.path.realpath(self.matlab)
       yield os.path.dirname(os.path.dirname(self.matlab))
     return
 
@@ -74,9 +76,10 @@ class Configure(config.base.Configure):
             else:
               matlab_dl = ''
             self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            return
 
-    if not self.foundMatlab:
-      self.emptySubstitutions()
+    # if we got here we did not find one
+    self.emptySubstitutions()
     return
 
   def emptySubstitutions(self):
