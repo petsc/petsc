@@ -24,3 +24,6 @@ The MCS Division of Argonne National Laboratory has an 80-node IBM SP,
 a PC cluster running Linux, a 96-node SGI Origin2000, as well as two
 smaller SGI machines with InfiniteReality graphics engines. In
 addition, we have access to a 512-node Cray T3E. 
+
+  Lois C. McInnes
+  Barry Smith
