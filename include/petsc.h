@@ -65,18 +65,89 @@
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
 
+/*M
+    PETSC_NULL - standard way of passing in a null or array or pointer
+
+   Level: beginner
+
+   Notes: accepted by many PETSc functions to not set a parameter and instead use
+          some default
+
+          This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER, 
+          PETSC_NULL_DOUBLE_PRECISION etc
+
+.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
+
+M*/
 #define PETSC_NULL           0
+
+/*M
+    PETSC_DECIDE - standard way of passing in integer or floating point parameter
+       where you wish PETSc to use the default.
+
+   Level: beginner
+
+.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
+
+M*/
 #define PETSC_DECIDE         -1
+
+/*M
+    PETSC_DEFAULT - standard way of passing in integer or floating point parameter
+       where you wish PETSc to use the default.
+
+   Level: beginner
+
+.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
+
+M*/
 #define PETSC_DEFAULT        -2
 
 #define PETSC_YES            PETSC_TRUE
 #define PETSC_NO             PETSC_FALSE
 #define PETSC_IGNORE         PETSC_NULL
+
+/*M
+    PETSC_DETERMINE - standard way of passing in integer or floating point parameter
+       where you wish PETSc to compute the required value.
+
+   Level: beginner
+
+.seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE, VecSetSizes()
+
+M*/
 #define PETSC_DETERMINE      PETSC_DECIDE
 
+/*M
+    PETSC_COMM_WORLD - a duplicate of the MPI_COMM_WORLD communicator which represents
+           all the processs
 
+   Level: beginner
+
+   Notes: PETSC_COMM_WORLD and MPI_COMM_WORLD are equivalent except that passint MPI_COMM_WORLD
+          into PETSc object constructors will result in using more MPI resources since an MPI_Comm_dup()
+          will be done on it internally. We recommend always using PETSC_COMM_WORLD
+
+.seealso: PETSC_COMM_SELF
+
+M*/
 extern MPI_Comm   PETSC_COMM_WORLD;
+
+/*M
+    PETSC_COMM_SELF - a duplicate of the MPI_COMM_SELF communicator which represents
+           the current process
+
+   Level: beginner
+
+   Notes: PETSC_COMM_SELF and MPI_COMM_SELF are equivalent except that passint MPI_COMM_SELF
+          into PETSc object constructors will result in using more MPI resources since an MPI_Comm_dup()
+          will be done on it internally. We recommend always using PETSC_COMM_SELF
+
+.seealso: PETSC_COMM_WORLD
+
+M*/
 extern MPI_Comm   PETSC_COMM_SELF;
+
 extern PetscTruth PetscInitializeCalled;
 EXTERN int        PetscSetCommWorld(MPI_Comm);
 EXTERN int        PetscSetHelpVersionFunctions(int (*)(MPI_Comm),int (*)(MPI_Comm));
