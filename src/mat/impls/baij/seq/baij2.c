@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.37 1999/01/06 15:55:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.38 1999/01/12 23:15:41 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -783,7 +783,7 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
   if (!a->mult_work) {
     k = PetscMax(a->m,a->n);
-    a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));CHKPTRQ(a->mult_work);
+    a->mult_work = (Scalar *) PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
   }
   work = a->mult_work;
   for ( i=0; i<mbs; i++ ) {
@@ -905,7 +905,7 @@ int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
 
       if (!a->mult_work) {
         k = PetscMax(a->m,a->n);
-        a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));CHKPTRQ(a->mult_work);
+        a->mult_work = (Scalar *) PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
       }
       work = a->mult_work;
       for ( i=0; i<mbs; i++ ) {
@@ -1032,7 +1032,7 @@ int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
       if (!a->mult_work) {
         k = PetscMax(a->m,a->n);
-        a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));CHKPTRQ(a->mult_work);
+        a->mult_work = (Scalar *) PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
       }
       work = a->mult_work;
       for ( i=0; i<mbs; i++ ) {
