@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.19 1996/09/12 16:25:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: random.c,v 1.20 1996/09/28 17:30:35 curfman Exp curfman $";
 #endif
 
 /*
@@ -22,9 +22,11 @@ static char vcid[] = "$Id: random.c,v 1.19 1996/09/12 16:25:36 bsmith Exp curfma
 
 /* Private data */
 struct _PetscRandom {
-  PETSCHEADER                         /* general PETSc header */
+  PETSCHEADER                      /* general PETSc header */
   unsigned long seed;
-  Scalar        low, high;
+  Scalar        low, width;       /* lower bound and width of the interval over
+                                     which the random numbers are distributed */
+  PetscTruth    iset;             /* if true, indicates that the user has set the interval */
   /* array for shuffling ??? */
 };
 
@@ -36,7 +38,7 @@ struct _PetscRandom {
    Intput Parameter:
 .  r  - the random number generator context
 
-.keywords: system, random, destroy
+.keywords: random, destroy
 
 .seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
 @*/
@@ -45,6 +47,39 @@ int PetscRandomDestroy(PetscRandom r)
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
   PLogObjectDestroy((PetscObject)r);
   PetscHeaderDestroy((PetscObject)r);
+  return 0;
+}
+
+/*@C
+   PetscRandomSetInterval - Sets the interval over which the random numbers
+   will be randomly distributed.  By default, this interval is [0,1).
+
+   Input Parameters:
+.  r  - the random number generator context
+
+   Example of Usage:
+$    PetscRandomCreate(RANDOM_DEFAULT,&r);
+$    PetscRandomSetInterval(RANDOM_DEFAULT,&r);
+$    PetscRandomGetValue(r,&value1);
+$    PetscRandomGetValue(r,&value2);
+$    PetscRandomDestroy(r);
+
+.keywords: random, set, interval
+
+.seealso: PetscRandomCreate()
+@*/
+int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
+{
+  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
+#if defined(PETSC_COMPLEX)
+  if (PetscReal(low) >= PetscReal(high)) SETERRQ(1,"PetscRandomSetInterval: only low < high");
+  if (PetscImaginary(low) >= PetscImaginary(high)) SETERRQ(1,"PetscRandomSetInterval: only low < high");
+#else
+  if (low >= high) SETERRQ(1,"PetscRandomSetInterval: only low < high");
+#endif
+  r->low   = low;
+  r->width = high-low;
+  r->iset  = PETSC_TRUE;
   return 0;
 }
 
@@ -77,6 +112,10 @@ extern void   srand48(long);
 .  r  - the random number generator context
 
    Notes:
+   By default, we generate random numbers via srand48()/drand48() that
+   are uniformly distributed over [0,1).  The user can shift and stretch
+   this interval by calling PetscRandomSetInterval().
+  
    Currently three types of random numbers are supported. These types
    are equivalent when working with real numbers.
 $     RANDOM_DEFAULT - both real and imaginary components are random
@@ -93,9 +132,9 @@ $    PetscRandomGetValue(r,&value2);
 $    PetscRandomGetValue(r,&value3);
 $    PetscRandomDestroy(r);
 
-.keywords: system, random, create
+.keywords: random, create
 
-.seealso: PetscRandomGetValue(), PetscRandomDestroy(), VecSetRandom()
+.seealso: PetscRandomGetValue(), PetscRandomSetInterval(), PetscRandomDestroy(), VecSetRandom()
 @*/
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
@@ -107,6 +146,10 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
     SETERRQ(PETSC_ERR_SUP,"PetscRandomCreate:Not for this random number type");
   PetscHeaderCreate(rr,_PetscRandom,PETSCRANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
+  rr->low   = 0.0;
+  rr->width = 1.0;
+  rr->iset  = PETSC_FALSE;
+  rr->seed  = 0;
   MPI_Comm_rank(comm,&rank);
   srand48(0x12345678+rank);
   *r = rr;
@@ -130,21 +173,32 @@ $    PetscRandomGetValue(r,&value2);
 $    PetscRandomGetValue(r,&value3);
 $    PetscRandomDestroy(r);
 
-.keywords: system, random, get, value
+.keywords: random, get, value
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
 @*/
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
-#if defined(PETSC_COMPLEX)
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-  if (r->type == RANDOM_DEFAULT)                *val = drand48() + drand48()*PETSC_i;
-  else if (r->type == RANDOM_DEFAULT_REAL)      *val = drand48();
-  else if (r->type == RANDOM_DEFAULT_IMAGINARY) *val= drand48()*PETSC_i;
+#if defined(PETSC_COMPLEX)
+  if (r->type == RANDOM_DEFAULT) {
+    if (r->iset == PETSC_TRUE)
+         *val = PetscReal(r->width)*drand48() + PetscReal(r->low) +
+                (PetscImaginary(r->width)*drand48() + PetscImaginary(r->low)) * PETSC_i;
+    else *val = drand48() + drand48()*PETSC_i;
+  }
+  else if (r->type == RANDOM_DEFAULT_REAL) {
+    if (r->iset == PETSC_TRUE) *val = PetscReal(r->width)*drand48() + PetscReal(r->low);
+    else                       *val = drand48();
+  }
+  else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
+    if (r->iset == PETSC_TRUE) *val = (PetscImaginary(r->width)*drand48() + PetscImaginary(r->low)) * PETSC_i;
+    else                       *val = drand48()*PETSC_i;
+  }
   else SETERRQ(1,"PetscRandomGetValue:Invalid random number type");
 #else
-  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-  *val = drand48();
+  if (r->iset == PETSC_TRUE) *val = r->width * drand48() + r->low;
+  else                       *val = drand48();
 #endif
   return 0;
 }
