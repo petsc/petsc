@@ -122,7 +122,7 @@ int MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   PetscValidPointer(C,3);
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
 
-  if (fill <=0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%d must be > 0",fill);
+  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
   ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
   ierr = (*A->ops->matmult)(A,B,scall,fill,C);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ int MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
   PetscValidPointer(C,3);
 
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
-  if (fill <=0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%d must be > 0",fill);
+  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
   /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
   /* When other implementations exist, attack the multiple dispatch problem. */
@@ -219,6 +219,8 @@ int MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
 
   PetscFunctionReturn(0);
 }
+
+EXTERN int MatDestroy_MPIAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMult"
 int MatDestroy_MPIAIJ_MatMatMult(Mat A)
@@ -290,7 +292,7 @@ int MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
   /* attach the supporting struct to C for reuse of symbolic C */
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
   (*C)->spptr         = (void*)mult;
-  (*C)->ops->destroy  = MatDestroy_MPIAIJ_MatMatMult;
+  (*C)->ops->destroy  = MatDestroy_MPIAIJ_MatMatMult; 
   
   PetscFunctionReturn(0);
 }
@@ -303,7 +305,7 @@ int MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
-  int            *ci,*cj,*lnk,idx0,idx;
+  int            *ci,*cj,*lnk;
   int            am=A->M,bn=B->N,bm=B->M;
   int            i,j,anzi,brow,bnzj,cnzi,nlnk,lnk_init=-1,nspacedouble=0;
   MatScalar      *ca;
@@ -321,7 +323,7 @@ int MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
   LNKLISTINITIALIZE(lnk_init,bn,lnk);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
-  ierr = GetMoreSpace(fill*(ai[am]+bi[bm]),&free_space);CHKERRQ(ierr);
+  ierr = GetMoreSpace(int(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* Determine symbolic info for each row of the product: */
