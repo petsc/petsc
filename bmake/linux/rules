@@ -1,4 +1,4 @@
-# $Id: base,v 1.35 1998/05/31 15:47:49 balay Exp balay $ 
+# $Id: base,v 1.36 1998/06/12 17:39:48 balay Exp bsmith $ 
 
 PARCH    = linux
 CC       = gcc -fPIC
@@ -17,7 +17,10 @@ SHELL    = /bin/sh
 CLINKER  = gcc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 FLINKER  = g77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 
-SYS_LIB  = -lc
+#
+#  -ldl is the dynamic link library that allows one to use dlopen() etc
+#
+SYS_LIB  = -ldl -lc
 
 include ${PETSC_DIR}/bmake/common
 
