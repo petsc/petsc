@@ -353,7 +353,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   if (ai[n] != 0) {
     PetscReal af = ((PetscReal)bi[n])/((PetscReal)ai[n]);
     ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
-    ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %g or use \n",af));CHKERRQ(ierr);
+    ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %G or use \n",af));CHKERRQ(ierr);
     ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqAIJ:PCLUSetFill(pc,%g);\n",af));CHKERRQ(ierr);
     ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqAIJ:for best performance.\n"));CHKERRQ(ierr);
   } else {
