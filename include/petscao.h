@@ -9,6 +9,7 @@
 #define __PETSCAO_H
 #include "petscis.h"
 #include "petscmat.h"
+PETSC_EXTERN_CXX_BEGIN
 
 typedef enum {AO_BASIC=0, AO_ADVANCED, AO_MAPPING, AO_NEW} AOType;
 
@@ -156,6 +157,5 @@ EXTERN int AOData2dGridDestroy(AOData2dGrid);
 EXTERN int AOData2dGridCreate(AOData2dGrid*);
 EXTERN int AOData2dGridToAOData(AOData2dGrid,AOData*);
 
+PETSC_EXTERN_CXX_END
 #endif
-
-

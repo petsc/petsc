@@ -9,6 +9,7 @@
 #define __PETSCVEC_H
 #include "petscis.h"
 #include "petscsys.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*S
      PetscMap - Abstract PETSc object that defines the layout of vector and
@@ -482,13 +483,7 @@ typedef struct _p_Vecs* Vecs;
 #define VecsCreateSeq(comm,p,m,x) (PetscNew(struct _p_Vecs,x) || VecCreateSeq(comm,p*m,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
 #define VecsCreateSeqWithArray(comm,p,m,a,x) (PetscNew(struct _p_Vecs,x) || VecCreateSeqWithArray(comm,p*m,a,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
 #define VecsDuplicate(x,y)        (PetscNew(struct _p_Vecs,y) || VecDuplicate(x->v,&(*(y))->v) || (-1 == ((*(y))->n = (x)->n)))
+
+
+PETSC_EXTERN_CXX_END
 #endif
-
-
-
-
-
-
-
-
-

@@ -2,7 +2,7 @@
 
 #if !defined (__GCC_SSE_H_)
 #define __GCC_SSE_H_
-
+PETSC_EXTERN_CXX_BEGIN
 
 /* Might require GCC version: gcc --version =  egcs-2.91.66 or more current (earlier versions not tested) */
 /* Requires GAS (as) version: as --version = GNU assembler 2.9.5 */
@@ -486,4 +486,5 @@ typedef struct {float field[4];} _sse_register;
 
 /* ================================================================================================ */
 
+PETSC_EXTERN_CXX_END
 #endif

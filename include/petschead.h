@@ -7,6 +7,7 @@
 #if !defined(_PETSCHEAD_H)
 #define _PETSCHEAD_H
 #include "petsc.h"  
+PETSC_EXTERN_CXX_BEGIN
 
 EXTERN int PetscCommDuplicate_Private(MPI_Comm,MPI_Comm*,int*);
 EXTERN int PetscCommDestroy_Private(MPI_Comm*);
@@ -262,4 +263,5 @@ struct _p_PetscObject {
 EXTERN int PetscObjectPublishBaseBegin(PetscObject);
 EXTERN int PetscObjectPublishBaseEnd(PetscObject);
 
+PETSC_EXTERN_CXX_END
 #endif /* _PETSCHEAD_H */

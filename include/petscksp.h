@@ -5,6 +5,7 @@
 #ifndef __PETSCKSP_H
 #define __PETSCKSP_H
 #include "petscpc.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*S
      KSP - Abstract PETSc object that manages all Krylov methods
@@ -258,4 +259,5 @@ EXTERN int KSPLGTrueMonitorCreate(MPI_Comm,const char[],const char[],int,int,int
 EXTERN int KSPLGTrueMonitor(KSP,int,PetscReal,void*);
 EXTERN int KSPLGTrueMonitorDestroy(PetscDrawLG);
 
+PETSC_EXTERN_CXX_END
 #endif

@@ -27,6 +27,7 @@
 */
 #if !defined(__PETSCBT_H)
 #define __PETSCBT_H
+PETSC_EXTERN_CXX_BEGIN
 
 /*S
      PetscBT - PETSc bitarrays
@@ -84,6 +85,5 @@ extern int  _BT_idx;
                                    _BT_mask        = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
                                    (_BT_c & _BT_mask) != 0)
 
+PETSC_EXTERN_CXX_END
 #endif
-
-

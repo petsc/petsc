@@ -6,6 +6,7 @@
 #if !defined(__PETSCPC_H)
 #define __PETSCPC_H
 #include "petscmat.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*
     PCList contains the list of preconditioners currently registered
@@ -322,4 +323,5 @@ EXTERN int PCHYPRESetType(PC,const char[]);
 EXTERN int PCBJacobiGetLocalBlocks(PC,int*,const int*[]);
 EXTERN int PCBJacobiGetTotalBlocks(PC,int*,const int*[]);
 
+PETSC_EXTERN_CXX_END
 #endif /* __PETSCPC_H */

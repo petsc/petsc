@@ -4,8 +4,8 @@
 */
 #if !defined(__PETSCSYS_H)
 #define __PETSCSYS_H
-
 #include "petsc.h"
+PETSC_EXTERN_CXX_BEGIN
 
 EXTERN int  PetscGetArchType(char[],int);
 EXTERN int  PetscGetHostName(char[],int);
@@ -135,5 +135,5 @@ typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCA
 
 EXTERN int PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
 
-
+PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

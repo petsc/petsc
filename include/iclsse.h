@@ -2,8 +2,10 @@
 
 #ifndef __ICL_SSE_H_
 #define __ICL_SSE_H_
-
 #include <xmmintrin.h>
+PETSC_EXTERN_CXX_BEGIN
+
+
 /* SSE_FUNCTION_BEGIN must be after the LAST declaration in the outermost SSE scope */
 #define SSE_SCOPE_BEGIN { __m128 XMM0,XMM1,XMM2,XMM3,XMM4,XMM5,XMM6,XMM7; {
 #define SSE_SCOPE_END   }}
@@ -323,4 +325,5 @@
 
 /* ================================================================================================ */
 
+PETSC_EXTERN_CXX_END
 #endif

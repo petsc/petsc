@@ -8,6 +8,7 @@
 #define __PETSCDA_H
 #include "petscvec.h"
 #include "petscao.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*S
      DA - Abstract PETSc object that manages distributed field data for a single structured grid
@@ -412,6 +413,5 @@ M*/
 #define DMMGSetUser(ctx,level,usr) 0,(ctx)[levels]->user = usr
 #define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
 
+PETSC_EXTERN_CXX_END
 #endif
-
-

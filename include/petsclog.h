@@ -7,7 +7,7 @@
 #if !defined(__PetscLog_H)
 #define __PetscLog_H
 #include "petsc.h"  
-
+PETSC_EXTERN_CXX_BEGIN
 /*
   Each PETSc object class has it's own cookie (internal integer in the 
   data structure used for error checking). These are all defined by an offset 
@@ -490,4 +490,6 @@ extern PetscTruth PetscPreLoadingOn;         /* true if we are currently in a pr
   }\
   _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
+
+PETSC_EXTERN_CXX_END
 #endif

@@ -11,9 +11,8 @@ Cray T3D/T3E.
 */
 #if !defined(_BLASLAPACK_H)
 #define _BLASLAPACK_H
-
 #include "petsc.h"
-
+PETSC_EXTERN_CXX_BEGIN
 
 #if defined(PETSC_BLASLAPACK_MKL64_ONLY)
 #define PETSC_MISSING_LAPACK_GESVD
@@ -432,6 +431,5 @@ EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,PetscReal*,Pe
 #endif
 
 EXTERN_C_END
-
+PETSC_EXTERN_CXX_END
 #endif
-

@@ -4,8 +4,8 @@
 */
 #if !defined(__PETSCERROR_H)
 #define __PETSCERROR_H
-
 #include "petsc.h"
+PETSC_EXTERN_CXX_BEGIN
 
 #if defined(PETSC_HAVE_AMS)
 #include "ams.h"
@@ -473,13 +473,5 @@ EXTERN int PetscStackPublish(void);
 EXTERN int PetscStackDepublish(void);
 
 
+PETSC_EXTERN_CXX_END
 #endif
-
-
-
-
-
-
-
-
-

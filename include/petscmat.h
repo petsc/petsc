@@ -5,6 +5,7 @@
 #ifndef __PETSCMAT_H
 #define __PETSCMAT_H
 #include "petscvec.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*S
      Mat - Abstract PETSc matrix object
@@ -1247,7 +1248,5 @@ EXTERN int MatUseSpooles_SeqSBAIJ(Mat);
 EXTERN int MatUseSpooles_MPISBAIJ(Mat);
 EXTERN int MatUseMUMPS_MPIAIJ(Mat);
 
+PETSC_EXTERN_CXX_END
 #endif
-
-
-

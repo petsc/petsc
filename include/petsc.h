@@ -5,7 +5,19 @@
 */
 #if !defined(__PETSC_H)
 #define __PETSC_H
+/* ========================================================================== */
+/* 
+   This facilitates using C version of PETSc from C++
+*/
 
+#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+#define PETSC_EXTERN_CXX_BEGIN extern "C" {
+#define PETSC_EXTERN_CXX_END extern }
+#else
+#define PETSC_EXTERN_CXX_BEGIN
+#define PETSC_EXTERN_CXX_END
+#endif
+PETSC_EXTERN_CXX_BEGIN
 /* ========================================================================== */
 /* 
    Current PETSc version number and release date
@@ -891,6 +903,7 @@ M*/
 #  define PETSC_MAX_PATH_LEN     4096
 #endif
 
+PETSC_EXTERN_CXX_END
 #endif
 
 

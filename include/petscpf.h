@@ -6,6 +6,7 @@
 #if !defined(__PETSCPF_H)
 #define __PETSCPF_H
 #include "petscvec.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*
     PPetscFList contains the list of preconditioners currently registered
@@ -65,8 +66,6 @@ EXTERN int PFGetType(PF,PFType*);
 EXTERN int PFView(PF,PetscViewer);
 
 #define PFSetOptionsPrefix(a,s) PetscObjectSetOptionsPrefix((PetscObject)(a),s)
+
+PETSC_EXTERN_CXX_END
 #endif
-
-
-
-
