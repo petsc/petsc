@@ -16,11 +16,11 @@ DIFF               = diff -w
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = ${WIN32FE} bcc32 -w-8019 -w-8060 -w-8057 -w-8004 -w-8066
-C_FC		   = ${WIN32FE} bcf77
+C_FC		   = 
 C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = ${WIN32FE} bcc32
-C_FLINKER	   = ${WIN32FE} bcf77
+C_FLINKER	   = 
 C_CCV		   = ${WIN32FE} bcc32 --version
 C_FCV              = 
 C_SYS_LIB	   = 
@@ -32,11 +32,11 @@ O_COPTFLAGS	   = -O
 O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 CXX_CC		   = ${WIN32FE} bcc32 -P -RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066
-CXX_FC		   = ${WIN32FE} bcf77
+CXX_FC		   = 
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = ${WIN32FE} bcc32 -P
-CXX_FLINKER	   = ${WIN32FE} bcf77
+CXX_FLINKER	   = 
 CXX_CCV		   = ${WIN32FE} bcc32 --version
 CXX_SYS_LIB	   = 
 # ------------------------- BOPT - g_c++ options ------------------------------
