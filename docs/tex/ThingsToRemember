@@ -50,10 +50,18 @@ PETScView info:
 
 ------------Accounts (around the world and around the block) -----
 
+NCSA Power Challenge 
+Machine: loki.ncsa.uiuc.edu sig.ncsa.uiuc.edu 
+Userid: barrys
+default password: ud3x8e4h
+Account (whatever that means?) ryc
+
+
 ANL Solaris machine: tiamat
 UT account:
   use seaboard.pe.utexas.edu (also have brazos.pe.utexas.edu  and frankfort)
 
+---------
 
 SGI Power Challenge (IRIX64): 
    machine:  inca.usi.utah.edu
@@ -68,6 +76,8 @@ SGI Power Challenge (IRIX64):
 
    Also, Paul Plassman has access to an account at NCSA.
 
+---------
+
 ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
    Decommissioned on 6/28/96!   :-)
    See the file ~mcinnes/README on crabcake for up-to-date info on
@@ -81,6 +91,8 @@ ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
         pexec "mpirun -np 4 ex8 -log_summary" -sz 4
 ICASE/NASA SP: poseidon.larc.nasa.gov, account: mcinnes
 
+---------
+
 Paragon account at San Diego
    telnet paragate.sdsc.edu 7577
    user id u12461
@@ -90,6 +102,8 @@ Paragon account at San Diego
    you must run make with the -e option and have the environmental
    argument PETSC_DIR properly set.
 
+---------
+
 Nightly build:
   On solaris it is at poplar.math.ucla.edu username bsmith
   On Cray t3d it is at h4p.nersc.gov       username bsmith
@@ -97,6 +111,8 @@ Nightly build:
      uses at to start itself up again 24 hours later.
   The password is in petsc/maint/autoftp
   h4p.nersc.gov name changed to h4p.llnl.gov
+
+---------
 
 ICASE suns:
   ete08-f.icase.ed
@@ -106,10 +122,7 @@ ICASE suns:
   A good idea is to look at mpich***/util/machines/machines.sun4 at icase.
   It lists the good sun4s at icase.
 
-SUN ULTRA account: 
-user :bsmith
-passwd:petsc-passwd
-eple.ii.uib.no ( also plomme, morell, rips)
+---------
 
 Linux accounts:
   machine: ursula.cs.msstate.edu
@@ -118,6 +131,8 @@ Linux accounts:
 
   See petsc-maint mail from Igor Markov (UCLA) for another account 
      on his home PC running Linux.
+
+---------
 
 Cornell Theory Center IBM SP2
 user: bsmith
@@ -131,6 +146,8 @@ Scheduler use: llsubmit
 http://www.tc.cornell.edu/Resources/
 spstatus
 use kpasswd to change the password
+
+---------
 
 Accounts on NAS machines
 For your convenience NAS User Services is available to answer questions
