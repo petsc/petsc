@@ -304,7 +304,7 @@ dnl
 MKDIR=false
 if test -n "$MKDIRBASE" ; then
    rm -rf .conftest
-   if $MKDIRBASE -p .conftest/.tmp && -d .conftest/.tmp ; then
+   if $MKDIRBASE -p .conftest/.tmp && test -d .conftest/.tmp ; then
        MKDIR="$MKDIRBASE -p"
    else
        AC_MSG_WARN([])
