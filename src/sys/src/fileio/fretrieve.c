@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.33 2000/07/07 14:50:20 bsmith Exp balay $*/
+/*$Id: fretrieve.c,v 1.34 2000/08/16 15:12:21 balay Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -440,8 +440,8 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
         }
       }
       ierr = PetscStrncpy(llibname,buf,llen);CHKERRQ(ierr);
-      ierr = PetscFree(par);CHKERRQ(ierr);
     }
+    ierr = PetscFree(par);CHKERRQ(ierr);
   }
   if (sharedtmp) { /* send library name to all processors */
     ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);
