@@ -94,16 +94,6 @@ Fortran.
 
 /* --------------------------------------------------------------------*/
 /*
-    DVF (win32) uses STDCALL calling convention by default
-*/
-#if defined (PETSC_USE_FORTRAN_STDCALL)
-#define PETSC_STDCALL __stdcall
-#else
-#define PETSC_STDCALL 
-#endif
-
-/* --------------------------------------------------------------------*/
-/*
     This defines the mappings from Fortran charactor strings 
   to C charactor strings on the Cray T3D.
 */

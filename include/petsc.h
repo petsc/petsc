@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.253 1999/10/04 21:59:44 balay Exp balay $ */
+/* $Id: petsc.h,v 1.254 1999/10/04 22:00:34 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -404,6 +404,17 @@ extern int PetscScalarView(int,Scalar[],Viewer);
 #else
 #define EXTERN_C_BEGIN 
 #define EXTERN_C_END 
+#endif
+
+/* --------------------------------------------------------------------*/
+/*
+    DVF (win32) uses STDCALL calling convention by default.
+    The following is used by the fortran interface.
+*/
+#if defined (PETSC_USE_FORTRAN_STDCALL)
+#define PETSC_STDCALL __stdcall
+#else
+#define PETSC_STDCALL 
 #endif
 
 #endif
