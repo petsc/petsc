@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.71 1997/03/09 17:57:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.72 1997/03/09 22:57:39 bsmith Exp curfman $";
 #endif
 
 /*
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: pbvec.c,v 1.71 1997/03/09 17:57:02 bsmith Exp bsmith 
 
 #undef __FUNC__  
 #define __FUNC__ "VecDot_MPI"
-static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
+extern int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 {
   Scalar    sum, work;
   VecDot_Seq(  xin, yin, &work );
@@ -31,7 +31,7 @@ static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetOption_MPI" /* ADIC Ignore */
-static int VecSetOption_MPI(Vec v,VecOption op)
+extern int VecSetOption_MPI(Vec v,VecOption op)
 {
   Vec_MPI *w = (Vec_MPI *) v->data;
 
@@ -41,7 +41,7 @@ static int VecSetOption_MPI(Vec v,VecOption op)
   return 0;
 }
     
-static int VecDuplicate_MPI( Vec, Vec *);
+extern int VecDuplicate_MPI( Vec, Vec *);
 
 static struct _VeOps DvOps = { VecDuplicate_MPI, 
             VecDuplicateVecs_Default, VecDestroyVecs_Default, VecDot_MPI, 
@@ -203,7 +203,7 @@ int VecCreateGhost(MPI_Comm comm,int n,int nghost,int N,Vec *lv,Vec *vv)
 
 #undef __FUNC__  
 #define __FUNC__ "VecDuplicate_MPI"
-static int VecDuplicate_MPI( Vec win, Vec *v)
+extern int VecDuplicate_MPI( Vec win, Vec *v)
 {
   int     ierr;
   Vec_MPI *vw, *w = (Vec_MPI *)win->data;

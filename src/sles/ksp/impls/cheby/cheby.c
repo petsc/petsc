@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.46 1997/01/06 20:22:39 balay Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.47 1997/02/22 02:23:16 bsmith Exp curfman $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -45,7 +45,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSolve_Chebychev"
-int  KSPSolve_Chebychev(KSP ksp,int *its)
+int KSPSolve_Chebychev(KSP ksp,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i = 0,pres,hist_len,cerr,ierr;
   Scalar           alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0, tmp;
@@ -149,7 +149,7 @@ int  KSPSolve_Chebychev(KSP ksp,int *its)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView_Chebychev" /* ADIC Ignore */
-static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
+int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 {
   KSP           ksp = (KSP)obj;
   KSP_Chebychev *cheb = (KSP_Chebychev *) ksp->data;

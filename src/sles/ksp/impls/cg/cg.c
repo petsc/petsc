@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.55 1997/01/27 18:15:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.56 1997/02/22 02:23:03 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -174,7 +174,7 @@ int KSPDestroy_CG(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView_CG" /* ADIC Ignore */
-static int KSPView_CG(PetscObject obj,Viewer viewer)
+int KSPView_CG(PetscObject obj,Viewer viewer)
 {
 #if defined(PETSC_COMPLEX)
   KSP         ksp = (KSP)obj;

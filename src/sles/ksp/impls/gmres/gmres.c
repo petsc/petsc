@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.79 1997/02/06 23:00:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.80 1997/02/22 02:23:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -67,7 +67,7 @@ static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_GMRES"
-static int    KSPSetUp_GMRES(KSP ksp )
+int    KSPSetUp_GMRES(KSP ksp )
 {
   unsigned  int size, hh, hes, rs, cc;
   int       ierr,  max_k, k;
@@ -280,7 +280,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSolve_GMRES"
-static int KSPSolve_GMRES(KSP ksp,int *outits )
+int KSPSolve_GMRES(KSP ksp,int *outits )
 {
   int       ierr, restart, its, itcount, converged;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
@@ -336,7 +336,7 @@ static int KSPAdjustWork_GMRES(KSP ksp )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDestroy_GMRES" /* ADIC Ignore */
-static int KSPDestroy_GMRES(PetscObject obj)
+int KSPDestroy_GMRES(PetscObject obj)
 {
   KSP       ksp = (KSP) obj;
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
@@ -509,7 +509,7 @@ static int GMRESGetNewVectors( KSP ksp,int it )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPBuildSolution_GMRES"
-static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
+int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data; 
   int       ierr;
@@ -533,7 +533,7 @@ static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView_GMRES" /* ADIC Ignore */
-static int KSPView_GMRES(PetscObject obj,Viewer viewer)
+int KSPView_GMRES(PetscObject obj,Viewer viewer)
 {
   KSP         ksp = (KSP)obj;
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data; 
