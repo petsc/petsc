@@ -206,7 +206,7 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS is[],int ov)
 /*
   Sample message format:
   If a processor A wants processor B to process some elements corresponding
-  to index sets 1s[1], is[5]
+  to index sets is[1], is[5]
   mesg [0] = 2   (no of index sets in the mesg)
   -----------  
   mesg [1] = 1 => is[1]
@@ -216,7 +216,7 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS is[],int ov)
   mesg [6] = sizeof(is[5]);
   -----------
   mesg [7] 
-  mesg [n]  datas[1]
+  mesg [n]  data(is[1])
   -----------  
   mesg[n+1]
   mesg[m]  data(is[5])
@@ -293,7 +293,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
 
   nrqs     = 0;              /* no of outgoing messages */
   msz      = 0;              /* total mesg length (for all proc */
-  w1[rank] = 0;              /* no mesg sent to intself */
+  w1[rank] = 0;              /* no mesg sent to itself */
   w3[rank] = 0;
   for (i=0; i<size; i++) {
     if (w1[i])  {w2[i] = 1; nrqs++;} /* there exists a message to proc i */
@@ -534,7 +534,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
       table  - an array of char - size = Mbs bits.
       
      Output:
-      isz    - array containing the count of the solution elements correspondign
+      isz    - array containing the count of the solution elements corresponding
                to each index set;
       data   - pointer to the solutions
 */
@@ -597,7 +597,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,PetscBT *table,int *i
 
   For better efficiency perhaps we should malloc seperately each xdata[i],
 then if a remalloc is required we need only copy the data for that one row
-rather then all previous rows as it is now where a single large chunck of 
+rather than all previous rows as it is now where a single large chunck of 
 memory is used.
 
 */
