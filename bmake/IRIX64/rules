@@ -1,4 +1,4 @@
-# $Id: base,v 1.43 1998/06/23 14:41:19 balay Exp balay $ 
+# $Id: base,v 1.44 1998/09/09 21:18:07 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -woff 1164 -woff 1048
@@ -35,6 +35,12 @@ libf:
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ###################
+# Need to build libpetscfortran as a shared library as well, 
+# as-fast option produces bad .a files
+#
+SHLIBS = libpetsccontrib libpetscmat libpetscsles libpetscsnes libpetscsys \
+libpetscts libpetscvec libpetscts libpetscgvec libpetscfortran
+
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \
