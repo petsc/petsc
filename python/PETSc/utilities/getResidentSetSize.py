@@ -17,7 +17,8 @@ class Configure(config.base.Configure):
     self.headers       = self.framework.require('config.headers',     self)
     self.functions.functions.append('getrusage')
     self.functions.functions.append('sbreak')
-    self.functions.functions.append('getpagesize')        
+    self.functions.functions.append('getpagesize')
+    self.functions.functions.append('task_info')            
     return
 
   def __str__(self):
@@ -32,6 +33,7 @@ class Configure(config.base.Configure):
     if self.functions.haveFunction('sbreak'):
       self.addDefine('USE_SBREAK_FOR_SIZE', 1)
       return
+    # /proc is used on Linux systems
     if os.path.isfile(os.path.join('/proc',str(os.getpid()),'stat')):
       self.addDefine('PETSC_USE_PROC_FOR_SIZE', 1)
       try:
@@ -46,9 +48,50 @@ class Configure(config.base.Configure):
         return
       except:
         pass
+    # task_info() is  used on Mach and darwin (MacOS X) systems
+    if self.functions.haveFunction('task_info'):
+      (output,status) = self.outputRun('#include <mach/mach.h>\n#include <stdlib.h>\n#include <stdio.h>\n','''
+#define  ARRAYSIZE 10000000
+  int *m,i;
+  unsigned int count;
+  task_basic_info_data_t ti1,ti2;
+  double ratio;
+
+  if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti1,&count) != KERN_SUCCESS) {
+    printf("failed calling task_info()");
+    return 1;
+  }
+  printf("original resident size %g \\n",(double)ti1.resident_size);
+  m = malloc(ARRAYSIZE*sizeof(int));
+  if (!m) {
+    printf("Error calling malloc()\\n");
+    return 2;
+  }
+  for (i=0; i<ARRAYSIZE; i++){
+    m[i] = i+1;
+  }
+  if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti2,&count) != KERN_SUCCESS) {
+    printf("failed calling task_info()");
+    return 3;
+  }
+  printf("final resident size %g \\n",(double)ti2.resident_size);
+  ratio = ((double)ti2.resident_size - ti1.resident_size)/(ARRAYSIZE*sizeof(int));
+  printf("Should be near 1.0 %g \\n",ratio);
+  if (ratio > .95 && ratio < 1.05) {
+    printf("task_info() returned a reasonable resident size\\n");
+    return 0;
+  }
+  return 4;''')      
+      if status == 0:
+        self.framework.log.write("Using task_info() for PetscGetResidentSetSize() \n")
+        return
+      self.delDefine('HAVE_TASK_INFO')
+      self.framework.log.write("task_info() does not work \n"+output)
+      
+    # getrusage() is still used on BSD systems
     if self.functions.haveFunction('getrusage'):
       if self.functions.haveFunction('getpagesize'):
-        (output,status) = self.outputRun('#include <ctype.h>\n#include <sys/times.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n#include <sys/resource.h>\n#include <stdlib.h>','''
+        (output,status) = self.outputRun('#include <stdio.h>\n#include <ctype.h>\n#include <sys/times.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n#include <sys/resource.h>\n#include <stdlib.h>','''
   #define ARRAYSIZE 10000000
   int i,*m;
   struct   rusage temp1,temp2;

@@ -24,7 +24,11 @@
 #endif
 #include "petscfix.h"
 
-#if defined (PETSC_HAVE_SYS_RESOURCE_H)
+#if defined(PETSC_HAVE_TASK_INFO)
+#include <mach/mach.h>
+#endif
+
+#if defined(PETSC_HAVE_SYS_RESOURCE_H)
 #include <sys/resource.h>
 #endif
 #if defined(PETSC_HAVE_SYS_PROCFS_H)
@@ -68,22 +72,26 @@
 PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
-  FILE            *file;
-  int             fd;
-  char            proc[PETSC_MAX_PATH_LEN];
-  prpsinfo_t      prusage;
+  FILE                   *file;
+  int                    fd;
+  char                   proc[PETSC_MAX_PATH_LEN];
+  prpsinfo_t             prusage;
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
-  long            *ii = sbreak(0); 
-  int             fd = ii - (long*)0; 
+  long                   *ii = sbreak(0); 
+  int                    fd = ii - (long*)0; 
 #elif defined(PETSC_USE_PROC_FOR_SIZE)
-  FILE            *file;
-  char            proc[PETSC_MAX_PATH_LEN];
+  FILE                   *file;
+  char                   proc[PETSC_MAX_PATH_LEN];
+#elif defined(PETSC_HAVE_TASK_INFO)
+  task_basic_info_data_t ti;
+  unsigned int           count;
 #elif defined(PETSC_HAVE_GETRUSAGE)
-  static struct   rusage temp;
+  static struct rusage   temp;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
+
   sprintf(proc,"/proc/%d",(int)getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) {
     SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",file);
@@ -93,13 +101,24 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
   }
   *mem = (double)prusage.pr_byrssize;
   close(fd);
+
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
+
   *mem = (PetscLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
+
 #elif defined(PETSC_USE_PROC_FOR_SIZE)
+
   sprintf(proc,"/proc/%d/status",(int)getpid());
   if (!(file = fopen(proc,"r"))) {
     SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
   }
+  fclose(file);
+
+#elif defined(PETSC_HAVE_TASK_INFO)
+
+  if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti,&count) != KERN_SUCCESS) SETERRQ(PETSC_ERR_LIB,"Mach system call failed");
+  *mem = (PetscLogDouble) ti.resident_size;
+  
 #elif defined(PETSC_HAVE_GETRUSAGE)
 
   getrusage(RUSAGE_SELF,&temp);
