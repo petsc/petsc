@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.13 1995/10/06 22:25:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.14 1995/10/11 15:20:06 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -38,8 +38,15 @@ extern int MatLoad_MPIBDiag(Viewer,MatType,Mat *);
    relatively small blocks of data rather than reading the entire
    matrix and then subsetting it.
 
-   Currently, the _entire_ matrix must be loaded.  This should
-   probably change.
+   The standard binary matrix storage format is
+
+    int    MAT_COOKIE
+    int    number rows
+    int    number columns
+    int    total number of nonzeros
+    int    *number nonzeros in each row
+    int    *column indices of all nonzeros (starting index is zero)
+    Scalar *values of all nonzeros
 
 .seealso: MatView(), VecLoad() 
  @*/  
