@@ -1,47 +1,60 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.3 1999/01/08 14:52:28 balay Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.4 1999/02/21 02:55:52 bsmith Exp bsmith $";
 #endif
 
 /* 
    Plots vectors obtained with DACreate2d()
 */
 
-#include "da.h"      /*I  "da.h"   I*/
+#include "src/dm/da/daimpl.h"      /*I  "da.h"   I*/
+
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI_Draw_DA2d"
-int VecView_MPI_Draw_DA2d(Vec xin,Viewer v)
+int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 {
   DA             da;
-  int            i,rank,size,ierr,n,igstart,igsize,N,step;
-  int            istart,isize,j,M,jgsize,jgstart;
+  int            i,rank,size,ierr,igstart,N,step,s,M;
+  int            istart,isize,j,jgstart;
+  int            c1, c2, c3, c4, k,id,n,m,*lx,*ly;
   double         coors[4],ymin,ymax,min,max,xmin,xmax,xminw,xmaxw,yminw,ymaxw;
-  Scalar         *array,*xy;
-  Draw           draw;
+  double         x1, x2, x3, x4, y_1, y2, y3, y4,scale;
+  double         minw,maxw;
+  Scalar         *v,*xy;
+  Draw           draw,popup;
   PetscTruth     isnull;
   MPI_Comm       comm;
   Vec            xlocal,xcoor;
   DAPeriodicType periodic;
+  DA             dac;
 
   PetscFunctionBegin;
-  ierr = ViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
+  ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
 
+  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
+  /*
+       Create DA for 1 set of ghost points with the box stencil.
+  */
+  ierr = DAGetInfo(da,0,&M,&N,0,&m,&n,0,0,&s,0);CHKERRQ(ierr);
+  ierr = DAGetOwnershipRange(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,1,s,lx,ly,&dac);CHKERRQ(ierr); 
+
   /*
       Get local (ghosted) values of vector
   */
-  ierr = DACreateLocalVector(da,&xlocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
 
-  ierr = DAGetInfo(da,0,&M,&N,0,0,0,0,&step,0,&periodic);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&igstart,&jgstart,0,&igsize,&jgsize,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
-  ierr = VecGetArray(xlocal,&array); CHKERRQ(ierr);
+  ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&step,0,&periodic);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&m,&n,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
+  ierr = VecGetArray(xlocal,&v); CHKERRQ(ierr);
 
   /* get coordinates of nodes */
   ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
@@ -49,72 +62,81 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer v)
     ierr = DACreateUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
     ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
   }
-  ierr = VecGetArray(xcoor,&xy);CHKERRQ(ierr);
 
-  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank);
 
   /*
-      Determine the min and max x coordinate in plot 
+      Determine the min and max  coordinates in plot 
   */
-  n   = igsize*jgsize;
-  xminw = 1.e20; xmaxw = -1.e20;
-  yminw = 1.e20; ymaxw = -1.e20;
-  for ( i=0; i<n; i++ ) {
-    xminw = PetscMin(xminw,PetscReal(xy[2*i]));
-    xmaxw = PetscMax(xmaxw,PetscReal(xy[2*i]));
-    yminw = PetscMin(yminw,PetscReal(xy[2*i+1]));
-    ymaxw = PetscMax(ymaxw,PetscReal(xy[2*i+1]));
-  }
+  ierr = VecStrideMin(xcoor,0,PETSC_NULL,&xminw);CHKERRQ(ierr);
+  ierr = VecStrideMax(xcoor,0,PETSC_NULL,&xmaxw);CHKERRQ(ierr);
+  ierr = VecStrideMin(xcoor,1,PETSC_NULL,&yminw);CHKERRQ(ierr);
+  ierr = VecStrideMax(xcoor,1,PETSC_NULL,&ymaxw);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&xminw,&xmin,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&xmaxw,&xmax,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&yminw,&ymin,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&ymaxw,&ymax,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
-  ierr = MPI_Bcast(coors,4,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
+  ierr = VecGetArray(xcoor,&xy);CHKERRQ(ierr);
 
-  for ( j=0; j<step; j++ ) {
-    ierr = ViewerDrawGetDraw(v,j,&draw);CHKERRQ(ierr);
+  PLogInfo(da,"Preparing DA 2d contour plot coordinates %g %g %g %g\n",coors[0],coors[1],coors[2],coors[3]);
+
+  for ( k=0; k<step; k++ ) {
+    ierr = ViewerDrawGetDraw(viewer,k,&draw);CHKERRQ(ierr);
     ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
+    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
     /*
-        Determine the min and max y coordinate in plot 
+        Determine the min and max coordinate in plot 
     */
-    min = 1.e20; max = -1.e20;
-    for ( i=0; i<n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
-      if (PetscReal(array[j+i*step]) < min) min = PetscReal(array[j+i*step]);
-      if (PetscReal(array[j+i*step]) > max) max = PetscReal(array[j+i*step]);
-#else
-      if (array[j+i*step] < min) min = array[j+i*step];
-      if (array[j+i*step] > max) max = array[j+i*step];
-#endif
-    }
+    ierr = VecStrideMin(xin,k,PETSC_NULL,&min);CHKERRQ(ierr);
+    ierr = VecStrideMax(xin,k,PETSC_NULL,&max);CHKERRQ(ierr);
     if (min + 1.e-10 > max) {
       min -= 1.e-5;
       max += 1.e-5;
     }
-    ierr = MPI_Reduce(&min,&ymin,1,MPI_DOUBLE,MPI_MIN,0,comm);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&max,&ymax,1,MPI_DOUBLE,MPI_MAX,0,comm);CHKERRQ(ierr);
-
-    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
     if (!rank) {
       char *title;
 
-      ierr = DrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
-      ierr = DAGetFieldName(da,j,&title);CHKERRQ(ierr);
+      ierr = DAGetFieldName(da,k,&title);CHKERRQ(ierr);
       ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
     }
     ierr = DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
+    PLogInfo(da,"DA 2d contour plot min %g max %g\n",min,max);
+
+    scale = (245.0 - DRAW_BASIC_COLORS)/(max - min);
+
+    /* Draw the contour plot patch */
+    for ( j=0; j<n-1; j++ ) {
+      for ( i=0; i<m-1; i++ ) {
+#if !defined(USE_PETSC_COMPLEX)
+        id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1]; c1 = (int) (DRAW_BASIC_COLORS + scale*(v[k+step*id]-min));
+        id = i+j*m+1;  x2 = xy[2*id];y2  = y_1;        c2 = (int) (DRAW_BASIC_COLORS + scale*(v[k+step*id]-min));
+        id = i+j*m+1+m;x3 = x2;      y3  = xy[2*id+1]; c3 = (int) (DRAW_BASIC_COLORS + scale*(v[k+step*id]-min));
+        id = i+j*m+m;  x4 = x1;      y4  = y3;         c4 = (int) (DRAW_BASIC_COLORS + scale*(v[k+step*id]-min));
+#else
+#endif
+        ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
+        ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);
+      }
+    }
+
+    ierr = DrawGetPopup(draw,&popup); CHKERRQ(ierr);
+    ierr = DrawScalePopup(popup,min,max); CHKERRQ(ierr);
+
 
     ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);
     ierr = DrawPause(draw); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(xcoor,&xy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xin,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xlocal,&v); CHKERRQ(ierr);
+  ierr = VecDestroy(xlocal);CHKERRQ(ierr);
+  ierr = DADestroy(dac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+
+
