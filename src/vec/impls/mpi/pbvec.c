@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.148 2000/04/12 04:22:23 bsmith Exp balay $*/
+/*$Id: pbvec.c,v 1.149 2000/04/28 20:11:16 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -595,11 +595,13 @@ int VecDuplicate_MPI(Vec win,Vec *v)
   ierr = VecCreate(win->comm,win->n,win->N,v);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,0,win->map);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
+  ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
+    ierr = PetscMemcpy(vw->localrep->ops,w->localrep,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     PLogObjectParent(*v,vw->localrep);
     vw->localupdate = w->localupdate;

@@ -1,4 +1,4 @@
-/*$Id: getcolv.c,v 1.10 2000/04/09 04:36:57 bsmith Exp bsmith $*/
+/*$Id: getcolv.c,v 1.11 2000/04/12 04:24:13 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
 
@@ -7,7 +7,7 @@
 /*@
    MatGetColumnVector - Gets the values from a given column of a matrix.
 
-   Collective on Mat and Vec
+   Not Collective
 
    Input Parameters:
 +  X - the matrix
@@ -37,7 +37,7 @@ int MatGetColumnVector(Mat A,Vec yy,int col)
   if (col >= N)  SETERRQ2(1,1,"Requested column %d larger than number columns in matrix %d",col,N);
 
   ierr = VecGetSize(yy,&Mv);CHKERRQ(ierr);
-  if (M != Mv) SETERRQ2(1,1,"Matrix does not have same number of columns %d as vector %d",M,Mv);
+  if (M != Mv) SETERRQ2(1,1,"Matrix does not have same number of rows %d as vector %d",M,Mv);
 
   ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);
