@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.91 1999/02/25 19:45:05 bsmith Exp balay $ 
+# $Id: makefile,v 1.92 1999/02/25 20:00:05 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -17,7 +17,7 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
                   ex17.PETSc runex17 ex17.rm ex25.PETSc runex25 ex25.rm  \
                   ex26.PETSc runex26 ex26.rm ex29.PETSc runex29 ex29.rm clean
-TESTEXAMPLES_2  = ex27.PETSc runex27 ex27.rm clean
+TESTEXAMPLES_2  = clean
 TESTEXAMPLES_3  = ex19.PETSc runex19 ex19.rm ex20.PETSc ex20.rm clean
 TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm 
 TESTEXAMPLES_4  = ex2.PETSc runex2 ex2.rm ex4.PETSc\
@@ -28,7 +28,7 @@ BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc \
 		  ex8.PETSc ex8.rm ex9.PETSc ex9.rm  \
                   ex11.PETSc ex11.rm ex12.PETSc ex12.rm ex13.PETSc ex13.rm \
                   ex14.PETSc ex14.rm ex17.PETSc ex17.rm clean
-BUILDEXAMPLES_2 = ex27.PETSc ex27.rm clean
+BUILDEXAMPLES_2 = 
 BUILDEXAMPLES_3 = ex19.PETSc ex19.rm clean
 BUILDEXAMPLES_4 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex6.PETSc  \
 		  ex6.rm ex7.PETSc ex7.rm ex8.PETSc ex8.rm ex14.PETSc ex14.rm clean
@@ -36,7 +36,7 @@ BUILDEXAMPLES_9  = ex19.PETSc ex19.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex22.c \
-		  ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c
+		  ex23.c ex24.c ex25.c ex26.c ex28.c ex29.c
 EXAMPLESF       = ex17f.F ex19.F ex20.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -274,29 +274,21 @@ runex23:
 	   if (diff output/ex23_1.out ex23_1.tmp) then true; \
 	   else echo "Possible problem with ex23_1, diffs above"; fi;\
 	   ${RM} -f ex23_1.tmp input.dat
-
 runex24:
 	-@${MPIRUN} -np 3 ex24 > ex24_1.tmp 2>&1;\
 	   if (diff output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1, diffs above"; fi;\
 	   ${RM} -f ex24_1.tmp input.dat
-
 runex25:
 	-@${MPIRUN} -np 3 ex25 > ex25_1.tmp 2>&1;\
 	   if (diff output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1, diffs above"; fi;\
 	   ${RM} -f ex25_1.tmp
-
 runex26:
 	-@${MPIRUN} -np 4 ex26 | sort > ex26_1.tmp 2>&1;\
 	   if (diff output/ex26_1.out ex26_1.tmp) then true; \
 	   else echo "Possible problem with ex26_1, diffs above"; fi;\
 	   ${RM} -f ex26_1.tmp
-
-runex27:
-	-@${MPIRUN} -np 1 ex27
-	-@${MPIRUN} -np 4 ex27
-
 runex29:
 	-@${MPIRUN} -np 3 ex29 -n 126 > ex29_1.tmp 2>&1;\
 	   if (diff output/ex29_1.out ex29_1.tmp) then true; \
