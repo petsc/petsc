@@ -57,7 +57,7 @@ extern char PetscErrorBaseMessage[1024];
 int PetscErrorMessage(int errnum,char **text,char **specific)
 {
   PetscFunctionBegin;
-  if (text && errnum >= PETSC_ERR_MEM && errnum <= PETSC_ERR_MAT_CH_ZRPVT) {
+  if (text && errnum >= PETSC_ERR_MEM && errnum <= PETSC_ERR_MEM_MALLOC_0) {
     *text = PetscErrorStrings[errnum-PETSC_ERR_MEM];
   } else if (text) *text = 0;
 

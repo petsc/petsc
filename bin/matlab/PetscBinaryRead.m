@@ -1,10 +1,14 @@
-function [A,b] = PetscBinary(filename)
+function [A,b] = PetscBinaryRead(filename)
 %
 %  Reads in PETSc binary file matrix and optionally
 %  vector and emits as Matlab sparse matrix (and vector)
 %
 fd = fopen(filename,'r','ieee-be');
 header = fread(fd,4,'int32');
+if isempty(header)
+  disp('File is empty')
+  return
+end
 if header(1) ~= 1211216
   disp('File does not start with a PETSc binary matrix')
   return
@@ -31,11 +35,11 @@ A = sparse(i,j,s,m,n,nz);
 if nargout == 2
   header = fread(fd,2,'int32');
   if isempty(header)
-    disp('File does not contain PETSc binary vector')
+    disp('File does not contain PETSc binary vector - 1')
     return
   end
   if header(1) ~= 1211214
-    disp('File does not contain PETSc binary vector')
+    disp('File does not contain PETSc binary vector - 2')
     return
   end
   if header(2) ~= m

@@ -36,6 +36,7 @@
 
 */
 #define PETSC_ERR_MEM             55   /* unable to allocate requested memory */
+#define PETSC_ERR_MEM_MALLOC_0    85   /* cannot malloc zero size */
 #define PETSC_ERR_SUP             56   /* no support for requested operation */
 #define PETSC_ERR_SIG             59   /* signal received */
 #define PETSC_ERR_FP              72   /* floating point exception */
