@@ -1,9 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.19 1998/12/18 15:57:02 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.20 1998/12/21 01:00:55 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
 */
+
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
@@ -329,7 +330,6 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-/* #define USE_FORTRAN_KERNEL_SOLVEBAIJ */
 
 /*
       Special case where the matrix was ILU(0) factored in the natural
