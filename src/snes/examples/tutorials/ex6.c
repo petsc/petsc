@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.41 1996/10/02 02:22:47 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.42 1996/10/02 02:31:21 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -81,7 +81,7 @@ int main( int argc, char **argv )
   /*
      Note that in this case we create separate matrices for the Jacobian
      and preconditioner matrix.  Both of these are computed in the
-     routine FromJacobian()
+     routine FormJacobian()
   */
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
 
@@ -170,7 +170,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 /*
    FormJacobian - This routine demonstrates the use of different
    matrices for the Jacobian and preconditioner
-nn
+
    Input Parameters:
 .  snes - the SNES context
 .  x - input vector
