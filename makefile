@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.319 2000/09/15 15:26:36 bsmith Exp balay $ 
+# $Id: makefile,v 1.320 2000/09/15 16:57:57 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -292,9 +292,9 @@ allmanualpages: deletemanualpages
 	-${OMAKE} ACTION=manualpages_buildcite ttree
 	-${OMAKE} ACTION=manualpages ttree
 	-maint/wwwindex.py ${PETSC_DIR}
-	-maint/examplesindex.tcl
-	-maint/htmlkeywords.tcl
 	-${OMAKE} ACTION=manexamples tree
+	-${OMAKE} manconcepts
+	-${OMAKE} ACTION=exampleconcepts tree
 	-@chmod g+w docs/manualpages/*/*.html
 
 # Builds Fortran stub files
@@ -435,13 +435,12 @@ exercises:
 	-@rm -f docs/pageform.txt
 	-@echo "title=\"PETSc Exercises\""                >  docs/pageform.txt 
 	-@echo "access_title=Exercise Sections"              >>  docs/pageform.txt 
-	-@echo "access_format=short"                                            >> pageform.txt
+	-@echo "access_format=short"                        >> docs/pageform.txt
 	-@echo "startpage=../exercises/introduction.htm"  >> docs/pageform.txt
 	-@echo "NONE title=\"Introduction\" command=link src=../exercises/introduction.htm" >> docs/pageform.txt
 	-@echo "Generating HTML for individual directories"
 	-@echo "========================================="
-	cd src/vec/examples/tutorials; ${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker
-	cd src/snes/examples/tutorials; ${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker
+	-@${OMAKE} PETSC_DIR=${PETSC_DIR} ACTION=pagemaker tree
 	-@echo "Completed HTML for individual directories"
 	-@echo "NONE title=\"<HR>\" " >> docs/pageform.txt; 
 	-@echo "NONE title=\"PETSc Documentation\" command=link src=../index.html target=replace" >> docs/pageform.txt
