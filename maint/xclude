@@ -3,7 +3,6 @@ petsc/docs/www/petsc.cit
 petsc/bmake/sun4.local
 petsc/src/ts
 petsc/include/ts
-petsc/src/contrib
 petsc/src/contrib/RCS
 petsc/src/contrib/sda/
 petsc/src/contrib/ysmp
