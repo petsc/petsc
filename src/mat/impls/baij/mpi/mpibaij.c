@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.24 1996/08/23 22:21:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.25 1996/09/14 03:08:37 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -903,6 +903,24 @@ static int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   }
   return 0;
 }
+
+int MatDiagonalScale_MPIBAIJ(Mat A,Vec ll,Vec rr)
+{
+  Mat a = ((Mat_MPIBAIJ *) A->data)->A;
+  Mat b = ((Mat_MPIBAIJ *) A->data)->B;
+  int ierr,s1,s2,s3;
+
+  if (ll)  {
+    ierr = VecGetLocalSize(ll,&s1); CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&s2,&s3); CHKERRQ(ierr);
+    if (s1!=s2) SETERRQ(1,"MatDiagonalScale_MPIBAIJ: non-conforming local sizes");
+    ierr = MatDiagonalScale(a,ll,0); CHKERRQ(ierr);
+    ierr = MatDiagonalScale(b,ll,0); CHKERRQ(ierr);
+  }
+  if (rr) SETERRQ(1,"MatDiagonalScale_MPIBAIJ:not supported for right vector");
+  return 0;
+}
+
 /* the code does not do the diagonal entries correctly unless the 
    matrix is square and the column and row owerships are identical.
    This is a BUG. The only way to fix it seems to be to access 
@@ -1048,7 +1066,7 @@ static struct _MatOps MatOps = {
   MatMultAdd_MPIBAIJ,MatMultTrans_MPIBAIJ,MatMultTransAdd_MPIBAIJ,MatSolve_MPIBAIJ,
   MatSolveAdd_MPIBAIJ,MatSolveTrans_MPIBAIJ,MatSolveTransAdd_MPIBAIJ,MatLUFactor_MPIBAIJ,
   0,0,MatTranspose_MPIBAIJ,MatGetInfo_MPIBAIJ,
-  0,MatGetDiagonal_MPIBAIJ,0,MatNorm_MPIBAIJ,
+  0,MatGetDiagonal_MPIBAIJ,MatDiagonalScale_MPIBAIJ,MatNorm_MPIBAIJ,
   MatAssemblyBegin_MPIBAIJ,MatAssemblyEnd_MPIBAIJ,0,MatSetOption_MPIBAIJ,
   MatZeroEntries_MPIBAIJ,MatZeroRows_MPIBAIJ,MatLUFactorSymbolic_MPIBAIJ,
   MatLUFactorNumeric_MPIBAIJ,0,0,MatGetSize_MPIBAIJ,

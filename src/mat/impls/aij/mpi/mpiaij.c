@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.166 1996/09/14 03:07:58 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.167 1996/09/19 20:43:08 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1157,11 +1157,11 @@ int MatDiagonalScale_MPIAIJ(Mat A,Vec ll,Vec rr)
   if (ll)  {
     ierr = VecGetLocalSize(ll,&s1); CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&s2,&s3); CHKERRQ(ierr);
-    if (s1!=s2) SETERRQ(1,"Diagonal scale non-conforming local sizes");
+    if (s1!=s2) SETERRQ(1,"MatDiagonalScale_MPIAIJ:non-conforming local sizes");
     ierr = MatDiagonalScale(a,ll,0); CHKERRQ(ierr);
     ierr = MatDiagonalScale(b,ll,0); CHKERRQ(ierr);
   }
-  if (rr) SETERRQ(1,"Diagonal Scale only for left vector");
+  if (rr) SETERRQ(1,"MatDiagonalScale_MPIAIJ:not supported for right vector");
   return 0;
 }
 
