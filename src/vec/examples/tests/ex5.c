@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);
   ierr = ISDestroy(is1);CHKERRA(ierr);
-  ierr = ISDestroy(is2);CHKERRA(err);
+  ierr = ISDestroy(is2);CHKERRA(ierr);
 
   PetscFinalize(); 
   return 0;
