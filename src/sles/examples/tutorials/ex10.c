@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.37 2000/04/18 02:54:42 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.38 2000/04/18 03:04:12 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -17,8 +17,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Concepts: PLog^Profiling multiple stages of code;
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView();
-   Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops();
-   Routines: PetscBarrier(); PetscGetTime();
+   Routines: PreLoadBegin(); PreLoadStage(); PreLoadEnd(); PLogFlops();
+   Routines: PetscGetTime();
    Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
    Routines: ViewerBinaryOpen(); ViewerStringOpen(); ViewerDestroy();
    Processors: n

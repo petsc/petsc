@@ -37,6 +37,8 @@ add to it).
 
   added int PetscShowMemoryUsage(Viewer viewer,char *message)
 
+  added PreLoadBegin(), PreLoadStage() and PreLoadEnd() to simplify getting
+  accurate timings by peloading. See src/snes/examples/tutorials/ex10.c
 
   Viewers
 
