@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2001/08/30 19:38:22 bsmith Exp bsmith $
+# $Id: makefile,v 1.2 2001/09/07 20:09:07 bsmith Exp bsmith $
 
 #requirespackage  'PETSC_HAVE_ESI'
 #requireslanguage  CPP
@@ -7,7 +7,7 @@
 
 ALL: lib
 
-CFLAGS   = ${ESI_INCLUDE}
+CFLAGS   = ${ESI_INCLUDE}  ${CCA_INCLUDE}
 FFLAGS   =
 SOURCEC  = emap.c evector.c
 OBJSC    = emap.o evector.o
