@@ -17,7 +17,7 @@
 .   lab - the PetscViewer
 
     Options Database Keys:
-+   -ams_port <port number>
++   -ams_port <port number> - port number where you are running AMS client
 .   -ams_publish_objects - publish all PETSc objects to be visible to the AMS memory snooper,
                            use PetscObjectPublish() to publish individual objects
 .   -ams_publish_stack - publish the PETSc stack frames to the snooper

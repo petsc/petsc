@@ -3428,6 +3428,10 @@ int MatZeroRows(Mat mat,IS is,PetscScalar *diag)
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
+   merely zeroed.
+
    The user can set a value in the diagonal entry (or for the AIJ and
    row formats can optionally remove the main diagonal entry from the
    nonzero structure as well, by passing a null pointer (PETSC_NULL
