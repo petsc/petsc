@@ -1,11 +1,11 @@
 
-C "$Id: ex5f.F,v 1.11 1996/09/30 19:55:24 curfman Exp bsmith $";
+C "$Id: ex5f.F,v 1.12 1996/09/30 20:10:27 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
 C  domain, using distributed arrays (DAs) to partition the parallel grid.
 C  The command line options include:
-C    -par <parameter>, where <parameter> indicates the problem's nonlinearity
+C    -par <parameter>, where <parameter> indicates the nonlinearity of the problem
 C       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 C    -mx <xg>, where <xg> = number of grid points in the x-direction
 C    -my <yg>, where <yg> = number of grid points in the y-direction
