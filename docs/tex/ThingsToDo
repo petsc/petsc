@@ -1,6 +1,8 @@
 
 Additional Capabilities that PETSc Needs:
 
+  X - denotes accomplishment!
+
  o High priorities - should be done before the general release, June 20:
 
    - Upgrade WWW pages, especially installation information.  Use MPICH 
@@ -10,11 +12,11 @@ Additional Capabilities that PETSc Needs:
 
    - More nonlinear solvers, including those for unconstrained minimization
 
-   - Build wrapper for html manpages
-
    - Build new picture clipper for petsc homepage
 
-   - make HTML summary to be pointed to by map.
+   X make HTML summary to be pointed to by map.
+
+   X Build wrapper for html manpages
 
  o Lower Priority issues:
 
@@ -42,6 +44,10 @@ Possible projects for summer students:
    into PETSc.  
 
  - Develop additional test problems:
+    - Develop utilities to create common matrices and vectors (for testing
+      SLES, to serve as templates, and to fulfill basic needs).  
+      See  /home/gropp/tools.n/solvers/examples/formsol.c and
+      /home/gropp/tools.n/fd/* for ideas.
     - Convert more MINPACK-2 example problems to the PETSc coding style
     - Consider CUTE test suite
 
