@@ -151,6 +151,10 @@ ex28: ex28.o  chkopts
 	-${CLINKER} -o ex28 ex28.o  ${PETSC_KSP_LIB}
 	${RM} ex28.o
 
+ex29: ex29.o  chkopts
+	-${CLINKER} -o ex29 ex29.o  ${PETSC_KSP_LIB}
+	${RM} ex29.o
+
 ex31: ex31.o  chkopts
 	-${CLINKER} -o $@ $<  ${PETSC_KSP_LIB}
 	${RM} $<

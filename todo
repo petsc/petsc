@@ -89,8 +89,18 @@ General
     hmmm, I put the creates in vecinitializepackage but there is no good place to put the frees
     in vecfinalizepackage() and have a PETSc way to register packages that are freed on the end of petsc
 
-
   Allow setting precision of printed numbers in ASCII viewers.
 
+Related Packages
 
+  Download and look at HiFlow
 
+  Get VTK working on laptop
+
+  Send Marc a mail with:
+
+    Our presentation slides
+
+    Link to the PETSc site
+
+    Explanation of all options for solving in example
