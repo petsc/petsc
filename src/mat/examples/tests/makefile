@@ -224,6 +224,10 @@ ex48: ex48.o chkopts
 	-$(CLINKER) -o ex48 ex48.o $(PETSC_LIB)
 	$(RM) ex48.o
 
+ex50: ex50.o chkopts
+	-$(CLINKER) -o ex50 ex50.o $(PETSC_LIB)
+	$(RM) ex50.o
+
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
 MATSHAPES = A B
