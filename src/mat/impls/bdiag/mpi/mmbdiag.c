@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.20 1996/04/26 00:51:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.21 1996/08/08 14:43:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -14,16 +14,16 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *lmbd = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr, N = mbd->N, *indices, *garray, ec=0;
-  int          nb = lmbd->nb, d, i, j, diag;
+  int          bs = lmbd->bs, d, i, j, diag;
   IS           tofrom;
   Vec          gvec;
 
-  /* For the first stab we make an array as long as the number of columns */
+  /* We make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
   indices = (int *) PetscMalloc( N*sizeof(int) ); CHKPTRQ(indices);
   PetscMemzero(indices,N*sizeof(int));
 
-  if (nb == 1) {
+  if (bs == 1) {
     for (d=0; d<lmbd->nd; d++) {
       diag = lmbd->diag[d];
       if (diag > 0) { /* col = loc */
@@ -43,13 +43,13 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
       diag = lmbd->diag[d];
       if (diag > 0) { /* col = loc */
         for (j=0; j<lmbd->bdlen[d]; j++) {
-          if (!indices[nb*j]) ec += nb; 
-          for (i=0; i<nb; i++) indices[nb*j+i] = 1;
+          if (!indices[bs*j]) ec += bs; 
+          for (i=0; i<bs; i++) indices[bs*j+i] = 1;
         }
       } else { /* col = loc-diag */
         for (j=0; j<lmbd->bdlen[d]; j++) {
-          if (!indices[nb*(j-diag)]) ec += nb; 
-          for (i=0; i<nb; i++) indices[nb*(j-diag)+i] = 1;
+          if (!indices[bs*(j-diag)]) ec += bs; 
+          for (i=0; i<bs; i++) indices[bs*(j-diag)+i] = 1;
         }
       }
     }
@@ -68,8 +68,9 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
 
   /* create temporary index set for building scatter-gather */
   ierr = ISCreateSeq(MPI_COMM_SELF,ec,garray,&tofrom); CHKERRQ(ierr);
-  CHKERRQ(ierr);
   PetscFree(garray);
+
+ ISView(tofrom,0); 
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 
@@ -79,7 +80,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = VecCreateMPI(mat->comm,PETSC_DECIDE,mbd->N,&gvec); CHKERRQ(ierr);
 
   /* generate the scatter context */
-  ierr = VecScatterCreate(gvec,tofrom,mbd->lvec,tofrom,&mbd->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,tofrom,mbd->lvec,tofrom,&mbd->Mvctx);CHKERRQ(ierr);
   PLogObjectParent(mat,mbd->Mvctx);
   PLogObjectParent(mat,mbd->lvec);
   PLogObjectParent(mat,tofrom);
