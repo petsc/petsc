@@ -33,7 +33,7 @@ Additional Capabilities that PETSc Needs:
     MatReroderingRegister) to replace the lame procedure described in,
     e.g., PCRegisterAll.  
 
-  - Fix PETSc components picture (add new matrices, pcs, etc)
+  X Fix PETSc components picture (add new matrices, pcs, etc)
 
   X Replace -log_summary data in Part 1 of users manual (to correspond
     with profiling chapter info (ILU/GMRES on 1 proc).
@@ -75,7 +75,7 @@ Additional Capabilities that PETSc Needs:
   * Have all preconditioners (including LU) support null space, see 
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
-  - Make configure fully functional in PETSc 2.0
+  * Make configure fully functional in PETSc 2.0
 
   - Chapter in users manual on how PETSc would be used with 
     different types of grid problems. Or different document.
