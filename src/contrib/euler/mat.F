@@ -1,6 +1,6 @@
       integer function buildmat( mat, sctype, is1, iter,
      &                     b1, b2, b3, b4, b5, b6, d, dt, ltog, nloc,
-     &                     b1bc, b2bc, b3bc, b2bc_tmp )
+     &                     b1bc, b2bc, b3bc, b2bc_tmp, ao )
 c
 c  buildmat - Assembles matrix in generic PETSc format.  
 c
@@ -49,6 +49,7 @@ c
       integer col,ierr,sctype,ijkn,ik,ict,ictmark
       integer nloc,ltog(0:nloc-1),rstart,rend,jk,ijk
       Mat     mat
+      AO      ao
 
       buildmat = 0
 c     IV corresponds to INSERT_VALUES mode for MatSetValues()
@@ -279,6 +280,9 @@ c       so we can just use them here.
 c              uniprocessor: col = ijkid + m
 c               col = ijkid + m
 c               call AOApplicationToPetsc(ao,1,col,ierr)
+c               if (col .ne. is1(ict))
+c     &             write(6,*) 'MAT LAST: k,j,i,l,m,ict,col,ictc = ',
+c     &                    k,j,i,l,m,ict,col,is1(ict)
 c               call MatSetValues( mat, 1, row, 1, col,
 c     &              b2bc_tmp(l,m,i,2,k), IV, ierr )
                call MatSetValues( mat, 1, row, 1, is1(ict),
@@ -1054,7 +1058,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c -------------------------------------------------------------------
 
       integer function nzmat(format,ncd,nc_block,istart,iend,is1,
-     &                       ltog,nloc,wkdim,nnz_d,nnz_o)
+     &                       ltog,nloc,wkdim,nnz_d,nnz_o,ao)
 c
 c  nnzmat - Determines nonzero structure of the (parallel) Jacobian
 c           matrix in the arrays nnz_d and nnz_o.  These arrays can
@@ -1100,8 +1104,8 @@ c
 C  Note: Can delete ncd
 
       integer ijk,ijkn,ncd,istart,iend,format,ijk_noghosts
-      integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,nc_block
-      integer col,ict,chunk,row,id,ijkid,is1(0:*)
+      integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,nc_block,col1
+      integer col,ict,chunk,row,id,ijkid,is1(0:*),ierr,ao,m
       integer nloc,ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
 
       nzmat = 0
@@ -1283,12 +1287,8 @@ c           ijkn = northern neighbor (j=2)
                col = ltog(ijkn + l)
                if (col .ge. istart .and. col .lt. iend) then
                   nnz_d(row) = nnz_d(row) + chunk
-                  write(6,*) 'nnz_D: i,j,k,row,ct = ',
-     &                        rank,i,j,k,row,nnz_d(row)
                else
                   nnz_o(row) = nnz_o(row) + chunk
-                  write(6,*) 'nnz_O: i,j,k,row,ct = ',
-     &                    rank,i,j,k,row,nnz_o(row)
                endif
  202        continue
          goto 200
@@ -1312,13 +1312,17 @@ c       Luckily, we have already determined these column numbers
 c       in the index set is1 when setting up the vector scatters,
 c       so we can just use them here.
 c              uniprocessor: col = ijkid + l
-c               col = ijkid + l
-c               call AOApplicationToPetsc(ao,1,col,ierr)
-               col = is1(ict)
+            do 124 m=1,nc
+               col = ijkid + m
+               call AOApplicationToPetsc(ao,1,col,ierr)
+               col1 = is1(ict)
+               if (col .ne. col1)
+     &           write(6,*) 'ALLOC: k,j,i,ict,col, col1 = ',
+     &                       k,j,i,ict,col,col1
                if (col .ge. istart .and. col .lt. iend) then
-                  nnz_d(row) = nnz_d(row) + chunk
+                  nnz_d(row) = nnz_d(row) + 1
                else
-                  nnz_o(row) = nnz_o(row) + chunk
+                  nnz_o(row) = nnz_o(row) + 1
                endif
                ict = ict + 1
  124        continue
