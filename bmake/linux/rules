@@ -32,9 +32,10 @@ libf: $(OBJSF)
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f $*.c
 
+SLSUFFIX = so.1.0
 shared: chkopts
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \
 	for LIBNAME in $(SHLIBS) ; \
-	  do $(CLINKER) -shared -Wl,-soname,$$LIBNAME.so.1.0,--whole-archive -o $$LIBNAME.so.1.0 $$LIBNAME.a ; \
+	  do $(CLINKER) -shared -Wl,-soname,$$LIBNAME.$(SLSUFFIX),--whole-archive -o $$LIBNAME.$(SLSUFFIX) $$LIBNAME.a ; \
 	done

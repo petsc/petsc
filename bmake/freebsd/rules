@@ -52,11 +52,12 @@ libf: $(LIBNAME)($(OBJSF))
 # CC       = gcc  -DPARCH_freebsd -fPIC
 #
 # 2. Add the following target to "base"
+#SLSUFFIX = so.1.0
 #shared: chkopts
 #	-@echo making shared libraries in $(LDIR) ;\
 #	cd $(LDIR); \
 #	for LIBNAME in $(SHLIBS) ; \
-#	  do $(LD) -Bshareable -Bforcearchive -o $$LIBNAME.so.1.0 $$LIBNAME.a  > /dev/null 2>&1; \
+#	  do $(LD) -Bshareable -Bforcearchive -o $$LIBNAME.$(SLSUFFIX) $$LIBNAME.a  > /dev/null 2>&1; \
 #	done
 #
 #3. To make shared libs do in PETSC_DIR:

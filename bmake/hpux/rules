@@ -55,6 +55,7 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
+SLSUFFIX = sl
 shared: chkopts
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \
@@ -64,7 +65,7 @@ shared: chkopts
 	for LIBNAME in $(SHLIBS) ; \
 	  do \
 	    $(AR) x ../$$LIBNAME.a ;\
-	    $(LD) -b  *.o  -o ../$$LIBNAME.sl ; \
+	    $(LD) -b  *.o  -o ../$$LIBNAME.$(SLSUFFIX) ; \
 	    $(RM) -f * ; \
 	done ;\
 	cd ../ ; \

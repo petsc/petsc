@@ -52,7 +52,7 @@ shared: chkopts
 	cd $(LDIR); \
 	for LIBNAME in $(SHLIBS) ; \
 	  do $(LD) -elf -no_library_replacement -shared -rdata_shared \
-	  -all  $$LIBNAME.a  -o $$LIBNAME.so ; \
+	  -all  $$LIBNAME.a  -o $$LIBNAME.$(SLSUFFIX) ; \
 	done
 
 

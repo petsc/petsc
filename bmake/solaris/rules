@@ -40,7 +40,7 @@ shared: chkopts
 	for LIBNAME in $(SHLIBS) ; \
 	  do \
 	    $(AR) x ../$$LIBNAME.a ;\
-	    $(LD) -G  -h $$LIBNAME.so *.o  -o ../$$LIBNAME.so ; \
+	    $(LD) -G  -h $$LIBNAME.$(SLSUFFIX) *.o  -o ../$$LIBNAME.$(SLSUFFIX) ; \
 	    $(RM) -f * ; \
 	done ;\
 	cd ../ ; \
