@@ -1,14 +1,14 @@
-# $Id: makefile,v 1.33 1998/03/06 00:16:14 bsmith Exp balay $
+# $Id: makefile,v 1.34 1998/03/19 02:09:31 balay Exp bsmith $
 
 ALL: lib
 
 CFLAGS   =  ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' 
-SOURCEC  = gcreate.c convert.c stash.c axpy.c zerodiag.c matio.c matioall.c \
-           conaij.c conbdiag.c getcolv.c
+SOURCEC  = convert.c stash.c axpy.c zerodiag.c matio.c matioall.c \
+           conaij.c conbdiag.c getcolv.c gcreate.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = gcreate.o convert.o stash.o axpy.o zerodiag.o matio.o matioall.o \
-           conaij.o conbdiag.o getcolv.o
+OBJSC    = convert.o stash.o axpy.o zerodiag.o matio.o matioall.o \
+           conaij.o conbdiag.o getcolv.o gcreate.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
