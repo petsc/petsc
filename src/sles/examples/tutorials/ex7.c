@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.4 1995/08/22 19:36:59 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.5 1995/08/23 17:17:49 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -29,6 +29,7 @@ int main(int argc,char **args)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);  n = 2*numtids;
 
+  /* Create and assemble matrix */
   ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,
          0,0,0,0,&A); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) {   /* assemble matrix for the five point stencil */
@@ -44,6 +45,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
 
+  /* Create vectors for exact solution, approx solution, and RHS */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
@@ -51,11 +53,16 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
+  /* Create SLES context and set operators */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,ALLMAT_DIFFERENT_NONZERO_PATTERN);
-  CHKERRA(ierr);
+         CHKERRA(ierr);
+
+  /* Set default preconditioner */
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCBJACOBI); CHKERRA(ierr);
+
+  /* Set options */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
   /* Set local solvers for Block Jacobi method.  Currently only 1 block 
@@ -85,13 +92,15 @@ int main(int argc,char **args)
     ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   }
 
-  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);   /* check the error */
+  /* Check the error */
+  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
   if (norm > 1.e-12)
     MPIU_printf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
   else 
     MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
+  /* Destroy work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);  ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);  ierr = MatDestroy(A); CHKERRA(ierr);
