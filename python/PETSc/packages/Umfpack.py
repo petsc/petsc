@@ -28,7 +28,7 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('UMFPACK','-with-umfpack=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for Umfpack'))
     help.addArgument('UMFPACK','-with-umfpack-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing Umfpack'))
-    help.addArgument('UMFPACK','-with-umfpack-include=<lib>',nargs.ArgDir(None,None,'Indicate the header files for Umfpack'))
+    help.addArgument('UMFPACK','-with-umfpack-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for Umfpack'))
     help.addArgument('UMFPACK','-with-umfpack-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the Umfpack installation'))
     return
 
