@@ -14,8 +14,8 @@ class Configure(config.base.Configure):
     self.found         = 0
     self.compilers     = self.framework.require('config.compilers', self)
     self.libraries     = self.framework.require('config.libraries', self)
-    self.sourceControl = self.framework.require('config.sourceControl', self) #???
-    self.arch          = self.framework.require('PETSc.utilities.arch', self) #???
+    #self.sourceControl = self.framework.require('config.sourceControl', self) #???
+    #self.arch          = self.framework.require('PETSc.utilities.arch', self) #???
     self.mpi           = self.framework.require('PETSc.packages.MPI', self)
     self.name         = 'Scotch'
     self.PACKAGE      = self.name.upper()
@@ -117,32 +117,31 @@ class Configure(config.base.Configure):
       import urllib
 
       packages = self.framework.argDB['with-external-packages-dir']
-      if hasattr(self.sourceControl, 'bk'):
+#      if hasattr(self.sourceControl, 'bk'):
 #        self.logPrint("Retrieving Scotch; this may take several minutes\n", debugSection='screen')
 #        config.base.Configure.executeShellCommand('bk clone bk://scotch.bkbits.net/Scotch-dev '+os.path.join(packages,'Scotch'), log = self.framework.log, timeout= 600.0)
 #      else:       
-        try:
-          self.logPrint("Retrieving Scotch; this may take several minutes\n", debugSection='screen')
-          urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/scotch_3.4.1A_i586_pc_linux2.tar.gz', os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar.gz'))
-        except Exception, e:
-          raise RuntimeError('Error downloading Scotch: '+str(e))
-        try:
-          config.base.Configure.executeShellCommand('cd '+packages+'; gunzip scotch_3.4.1A_i586_pc_linux2.tar.gz', log = self.framework.log)
-        except RuntimeError, e:
-          raise RuntimeError('Error unzipping scotch_3.4.1A_i586_pc_linux2.tar.gz: '+str(e))
-        try:
-          config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf scotch_3.4.1A_i586_pc_linux2.tar', log = self.framework.log)
-        except RuntimeError, e:
-          raise RuntimeError('Error doing tar -xf scotch_3.4.1A_i586_pc_linux2.tar: '+str(e))
-        os.unlink(os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar'))
-      self.framework.actions.addArgument('Scotch', 'Download', 'Downloaded Scotch into '+self.getDir())
+      try:
+        self.logPrint("Retrieving Scotch; this may take several minutes\n", debugSection='screen')
+        urllib.urlretrieve('http://www.labri.fr/Perso/~pelegrin/scotch/distrib/scotch_3.4.1A_i586_pc_linux2.tar.gz', os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar.gz'))
+      except Exception, e:
+        raise RuntimeError('Error downloading Scotch: '+str(e))
+      try:
+        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip scotch_3.4.1A_i586_pc_linux2.tar.gz', log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error unzipping scotch_3.4.1A_i586_pc_linux2.tar.gz: '+str(e))
+      try:
+        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf scotch_3.4.1A_i586_pc_linux2.tar', log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error doing tar -xf scotch_3.4.1A_i586_pc_linux2.tar: '+str(e))
+      os.unlink(os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar'))
+    self.framework.actions.addArgument('Scotch', 'Download', 'Downloaded Scotch into '+self.getDir())
     # Get the Scotch directories
     scotchDir = self.getDir()  #~scotch_3.4
     installDir = os.path.join(scotchDir, 'bin/i586_pc_linux2') #~scotch_3.4/bin/i586_pc_linux2
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    #lib = libraryGuesses ???
-    lib = [[os.path.join(installDir, 'libscotch.a'), os.path.join(installDir, 'libscotcherr.a'),os.path.join(installDir, 'libscotcherrcom.a'), os.path.join(installDir, 'libcommon.a'),]]
+    lib = self.libraryGuesses(installDir) 
     include = [[installDir]]
     return ('Downloaded Scotch', lib, include)
 
