@@ -4,19 +4,23 @@ cc: bsmith, balay, gropp, curfman
 Subject: new local PETSc installation
 
 
-We have installed a new local version of PETSc (version 2.0.22) in
-/home/petsc/petsc.solid.  Please see the docs/changes.html file for 
+We have installed a new local version of PETSc (version 2.0.24) in
+/home/petsc/petsc-2.0.24.  Please see the docs/changes.html file for 
 new features and changes in the software.
 
 The previous version PETSc release will be located in 
-/home/petsc/petsc-2.0.21
+/home/petsc/petsc-2.0.22
+
+Please note the following changes in the local build:
+ - PETSC_ARCH on quad is now rs6000_sp instead of rs6000.
+ - The link /home/petsc/petsc.solid is no longer used.
 
 Please try using the new code when you have a chance.  Please only
 revert to one of the previous versions in case of emergency.  Be sure
 to let us know by writing to petsc-maint@mcs.anl.gov if you experience
 any problems with the new code, as we should be able to resolve them
 quickly.  Also, let us know if you need to use a variant of
-PETSc-2.0.22 that hasn't been built (by specifying the needed
+PETSc-2.0.24 that hasn't been built (by specifying the needed
 PETSC_ARCH and BOPT).
 
 
@@ -27,12 +31,13 @@ Satish, Barry, Lois, and Bill
 
 The following versions are currently installed:
 
-   Arch     PETSC_ARCH   BOPT                    machine (examples)
-  ----------------------------------------------------------
-  Suns      solaris      g,O                                 fire
-  SP (new)  rs6000       g,O,g_c++,O_c++,g_complex,O_complex quad
-  SGI       IRIX64       g,O,g_complex,O_complex             yukon
-  SGI       IRIX         g,O                                 violet
-  Suns      sun4         g,g_c++                             cosmo
+   machine   PETSC_ARCH   BOPT 
+  -----------------------------------------------------------
+  quad       rs6000_sp    g,O,g_c++,O_c++,g_complex,O_complex
+  denali     IRIX64       g,O,g_complex,O_complex
+  fire       solaris      g,O,g_complex,O_complex
+  violet     IRIX         g,O
+  tri*       rs6000       g,O
+  cosmo      sun4         g,O
 
 
