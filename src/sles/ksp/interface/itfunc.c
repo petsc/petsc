@@ -315,6 +315,21 @@ int KSPSolve(KSP ksp,int *its)
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_operator_binary",&flag2);CHKERRQ(ierr);
+  if (flag2) {
+    Mat A,B;
+    ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_preconditioned_operator_binary",&flag2);CHKERRQ(ierr);
+  if (flag2) {
+    Mat B;
+    ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

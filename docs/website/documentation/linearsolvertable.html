@@ -1,0 +1,410 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Summary of Sparse Linear Solvers Available from PETSc</title>
+</head>
+
+<body>
+
+<h2 align="center">Summary of Sparse Linear Solvers Available from PETSc</h2>
+
+<table border="1" width="79%" height="1288">
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">Algorithm </td>
+    <td width="23%" height="19">Package*</td>
+    <td width="12%" height="19">
+      <p align="center">Parallel</td>
+    <td width="12%" height="19">
+      <p align="center">Complex</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">Krylov methods</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">Richardson</td>
+    <td width="23%" height="19">&nbsp;&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">Chebychev</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">conjugate gradients</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">GMRES</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">Bi-CG-stab</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">transpose free QMR</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">conjugate residuals</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">conjugate gradient squared</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">bi-conjugate gradient</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">MINRES</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">flexible GMRES</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">LSQR</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="16"></td>
+    <td width="25%" height="16"></td>
+    <td width="27%" height="16">SYMMLQ</td>
+    <td width="23%" height="16">&nbsp; ---</td>
+    <td width="12%" align="center" height="16">X</td>
+    <td width="12%" align="center" height="16">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="16"></td>
+    <td width="25%" height="16"></td>
+    <td width="27%" height="16">LGMRES</td>
+    <td width="23%" height="16">&nbsp; ---</td>
+    <td width="12%" align="center" height="16">X</td>
+    <td width="12%" align="center" height="16">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">BCGS</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">Preconditioners</td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">Jacobi</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">SOR</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19"></td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">block Jacobi</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">additive Schwarz</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">Incomplete factorizations</td>
+    <td width="27%" height="19">ILU(k)</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">ICC(k)</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">ILU dt</td>
+    <td width="23%" height="19"><a href="http://www-unix.mcs.anl.gov/petsc/petsc-2/miscellaneous/acknwldg.html#otherpackages">Sparsekit</a></td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">ILU(k)</td>
+    <td width="23%" height="19">Euclid/hpypre</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">ILU dt</td>
+    <td width="23%" height="19">Euclid/pilut</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19"></td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">ILU(0)/ICC(0)</td>
+    <td width="23%" height="19">BlockSolve95</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">Multigrid</td>
+    <td width="27%" height="19">infrastructure</td>
+    <td width="23%" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">geometric structured grid</td>
+    <td width="23%" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">algebraic</td>
+    <td width="23%" height="19">BoomerAMG/hypre</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">&nbsp;</td>
+    <td width="23%" height="19">SAMG</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">Approximate inverses</td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">Parasails/hypre</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">&nbsp;</td>
+    <td width="23%" height="19">SPAI</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="25%" height="38"></td>
+    <td width="25%" height="38">Substructuring</td>
+    <td width="27%" height="38">balancing Neumann-Neumann</td>
+    <td width="23%" height="38">&nbsp;&nbsp; ---</td>
+    <td width="12%" align="center" height="38">X</td>
+    <td width="12%" align="center" height="38">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19">FETI</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">Direct solvers</td>
+    <td width="25%" height="19">LU</td>
+    <td width="27%" height="19">LU</td>
+    <td width="23%" height="19">&nbsp;&nbsp; ---</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">LU</td>
+    <td width="23%" height="19">Matlab</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">&nbsp;</td>
+    <td width="23%" height="19">Spooles</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">SuperLU</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">MUMPS</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19"></td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">ESSL </td>
+    <td width="12%" align="center" height="19"></td>
+    <td width="12%" align="center" height="19"></td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">UMFPACK</td>
+    <td width="12%" align="center" height="19"></td>
+    <td width="12%" align="center" height="19"></td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">LUSOL</td>
+    <td width="12%" align="center" height="19"></td>
+    <td width="12%" align="center" height="19"></td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19">Cholesky</td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">&nbsp;&nbsp;&nbsp;&nbsp; ---</td>
+    <td width="12%" align="center" height="19"></td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">Spooles</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19"></td>
+    <td width="25%" height="19"></td>
+    <td width="27%" height="19"></td>
+    <td width="23%" height="19">DSCPACK</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19"></td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">QR</td>
+    <td width="27%" height="19">&nbsp;</td>
+    <td width="23%" height="19">Matlab</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="27%" height="19">&nbsp;</td>
+    <td width="23%" height="19">Spooles</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+    <td width="12%" align="center" height="19">X</td>
+  </tr>
+  <tr>
+    <td width="25%" height="19">&nbsp;</td>
+    <td width="25%" height="19">XXt and XYt </td>
+    <td width="27%" height="19">&nbsp;</td>
+    <td width="23%" height="19">&nbsp; ---</td>
+    <td width="12%" align="center" height="19">X</td>
+    <td width="12%" align="center" height="19">&nbsp;</td>
+  </tr>
+</table>
+
+<p>* indicates this is part of the PETSc software</p>
+<p>This page was inspired by <a href="http://www.netlib.org/utk/people/JackDongarra/la-sw.html">Jack
+Dongarra's freely available software for linear algebra list</a></p>
+
+</body>
+
+</html>
