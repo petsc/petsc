@@ -1,7 +1,8 @@
-# $Id: base,v 1.32 1997/09/10 18:12:08 balay Exp bsmith $ 
+# $Id: base,v 1.33 1997/09/15 20:38:16 bsmith Exp balay $ 
 
 PARCH    = freebsd
-CC       = /usr/local/gcc-2.7.2/bin/gcc  -DPARCH_freebsd
+#CC       = /usr/local/gcc-2.7.2/bin/gcc  -DPARCH_freebsd
+CC       = /home/alice/egcs/freebsd/bin/gcc -DPARCH_freebsd
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then leave this blank.
@@ -12,7 +13,8 @@ CCV      = $(CC) --version
 # We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
 # large Fortran files, you can increase the 1000 if need be.
 # 
-FC       = f77 -Nn1000
+#FC       = f77 -Nn1000
+FC       = /home/alice/egcs/freebsd/bin/g77 
 AR       = ar
 RM       = rm -f *.c.*
 #
@@ -23,8 +25,10 @@ RM       = rm -f *.c.*
 OMAKE    = gmake  --no-print-directory
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = /usr/local/gcc-2.7.2/bin/gcc $(COPTFLAGS)
-FLINKER  = f77 $(FOPTFLAGS)
+#CLINKER  = /usr/local/gcc-2.7.2/bin/gcc $(COPTFLAGS)
+#FLINKER  = f77 $(FOPTFLAGS)
+CLINKER  = /home/alice/egcs/freebsd/bin/gcc $(COPTFLAGS)
+FLINKER  = /home/alice/egcs/freebsd/bin/g77 $(FOPTFLAGS)
 
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE 
 CONF     = -DHAVE_PWD_H -DHAVE_STDLIB_H -DHAVE_STRING_H \
