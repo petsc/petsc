@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.18 1998/09/11 20:57:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.19 1998/09/22 13:52:58 curfman Exp bsmith $";
 #endif
 
 #include "user.h"
@@ -182,7 +182,7 @@ int UserSetJacobian(SNES snes,Euler *app)
     if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
 
     if (!PetscStrcmp(app->mmtype,MMFP)) {
-      ierr = SNESDefaultMatrixFreeMatCreate(snes,app->X,&app->Jmf); CHKERRQ(ierr); 
+      ierr = MatCreateSNESFDMF(snes,app->X,&app->Jmf); CHKERRQ(ierr); 
     } else if (!PetscStrcmp(app->mmtype,MMEULER)) {
       ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
     } else {
