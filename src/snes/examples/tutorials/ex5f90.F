@@ -1,5 +1,5 @@
 
-C "$Id: ex5f90.F,v 1.3 1997/02/05 22:04:41 bsmith Exp curfman $";
+C "$Id: ex5f90.F,v 1.4 1997/07/10 20:22:46 balay Exp balay $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -309,8 +309,6 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call SNESDestroy(snes,ierr)
       call DADestroy(da,ierr)
       call PetscFinalize(ierr)
-
-      stop
       end
 
 C ---------------------------------------------------------------------
