@@ -1,14 +1,14 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS        =  $(PETSC_INCLUDE) $(PCONF)
-FFLAGS        = 
-SOURCEC       = 
-SOURCEF       =
-SOURCEH       =
-OBJSC         =
-OBJSF         =
-LIBBASE       = libpetscdraw
+CFLAGS	      =	 $(PETSC_INCLUDE) $(PCONF)
+FFLAGS	      = 
+SOURCEC	      = 
+SOURCEF	      =
+SOURCEH	      =
+OBJSC	      =
+OBJSF	      =
+LIBBASE	      = libpetscdraw
 
 RUNEXAMPLES_2 = runex1 runex2 runex3 runex4
 EXAMPLES_2    = ex1 ex2 ex3 ex4

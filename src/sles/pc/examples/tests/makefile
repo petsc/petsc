@@ -1,19 +1,22 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS        =   $(PCONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
+CFLAGS	      =	  $(PCONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
 
-SOURCEC       = 
-SOURCEF       =
-SOURCEH       =
-OBJSC         =
-OBJSF         =
-LIBBASE       = libpetscvec
+SOURCEC	      = 
+SOURCEF	      =
+SOURCEH	      =
+OBJSC	      =
+OBJSF	      =
+LIBBASE	      = libpetscvec
 EXAMPLES_1    = ex1 ex2 ex3 ex4
 RUNEXAMPLES_1 = runex1 runex2 runex3 runex4
 EXAMPLES_2    = ex5
 RUNEXAMPLES_2 = runex5
+EXAMPLES_4    = ex1 ex2 ex3 ex4 ex
+RUNEXAMPLES_4 = unex1 runex2 runex3 runex4 runex5
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
@@ -41,36 +44,36 @@ ex6: ex6.o
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
-           if (diff output/ex1_1.out ex1_1.tmp) then true; \
-           else echo "Possible problem with ex1_1, diffs above"; fi; \
-           $(RM) -f ex1_1.tmp 
+	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   $(RM) -f ex1_1.tmp 
 runex2:
-	-@$(MPIRUN) ex2 -ksp_method cg -ksp_smonitor > ex2_1.tmp 2>&1;   \
-           if (diff output/ex2_1.out ex2_1.tmp) then true; \
-           else echo "Possible problem with ex2_1, diffs above"; fi; \
-           $(RM) -f ex2_1.tmp 
+	-@$(MPIRUN) ex2 -ksp_method cg -ksp_smonitor > ex2_1.tmp 2>&1;	 \
+	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
+	   else echo "Possible problem with ex2_1, diffs above"; fi; \
+	   $(RM) -f ex2_1.tmp 
 runex3:
 	-@$(MPIRUN) ex3 -ksp_method gmres -ksp_smonitor -pc_method sor\
-                             -pc_sor_symmetric > ex3_1.tmp 2>&1;   \
-           if (diff output/ex3_1.out ex3_1.tmp) then true; \
-           else echo "Possible problem with ex3_1, diffs above"; fi; \
-           $(RM) -f ex3_1.tmp 
+			     -pc_sor_symmetric > ex3_1.tmp 2>&1;   \
+	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
+	   else echo "Possible problem with ex3_1, diffs above"; fi; \
+	   $(RM) -f ex3_1.tmp 
 runex4:
-	-@$(MPIRUN) ex4  > ex4_1.tmp 2>&1;   \
-           if (diff output/ex4_1.out ex4_1.tmp) then true; \
-           else echo "Possible problem with ex4_1, diffs above"; fi; \
-           $(RM) -f ex4_1.tmp 
+	-@$(MPIRUN) ex4	 > ex4_1.tmp 2>&1;   \
+	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
+	   else echo "Possible problem with ex4_1, diffs above"; fi; \
+	   $(RM) -f ex4_1.tmp 
 
 runex5:
 	-@$(MPIRUN) ex5 > ex5_1.tmp 2>&1;   \
-           if (diff output/ex5_1.out ex5_1.tmp) then true; \
-           else echo "Possible problem with ex5_1, diffs above"; fi; \
-           $(RM) -f ex5_1.tmp 
+	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
+	   else echo "Possible problem with ex5_1, diffs above"; fi; \
+	   $(RM) -f ex5_1.tmp 
 
 runex6:
 	-@$(MPIRUN) ex6 > ex6_1.tmp 2>&1;   \
-           if (diff output/ex6_1.out ex6_1.tmp) then true; \
-           else echo "Possible problem with ex6_1, diffs above"; fi; \
-           $(RM) -f ex6_1.tmp 
+	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
+	   else echo "Possible problem with ex6_1, diffs above"; fi; \
+	   $(RM) -f ex6_1.tmp 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

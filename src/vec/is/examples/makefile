@@ -1,14 +1,14 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS        =  $(PETSC_INCLUDE) $(PCONF)
-FFLAGS        = 
-SOURCEC       = 
-SOURCEF       =
-SOURCEH       =
-OBJSC         =
-OBJSF         =
-LIBBASE       = libpetscvec
+CFLAGS	      =	 $(PETSC_INCLUDE) $(PCONF)
+FFLAGS	      = 
+SOURCEC	      = 
+SOURCEF	      =
+SOURCEH	      =
+OBJSC	      =
+OBJSF	      =
+LIBBASE	      = libpetscvec
 RUNEXAMPLES_1 = runex2
 EXAMPLES_1    = ex2
 RUNEXAMPLES_2 = runex1
@@ -34,18 +34,18 @@ ex3: ex3.o  chkopts
 
 runex1:
 	-@$(MPIRUN)  ex1  > ex1_1.tmp 2>&1;\
-           if (diff output/ex1_1.out ex1_1.tmp) then true; \
-           else echo "Possible problem with ex1_1, diffs above"; fi ;\
-           $(RM) -f ex1_1.tmp
+	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   else echo "Possible problem with ex1_1, diffs above"; fi ;\
+	   $(RM) -f ex1_1.tmp
 runex2:
 	-@$(MPIRUN)  ex2  > ex2_1.tmp 2>&1;\
-           if (diff output/ex2_1.out ex2_1.tmp) then true; \
-           else echo "Possible problem with ex2_1, diffs above"; fi ;\
-           $(RM) -f ex2_1.tmp
+	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
+	   else echo "Possible problem with ex2_1, diffs above"; fi ;\
+	   $(RM) -f ex2_1.tmp
 runex3:
 	-@$(MPIRUN) ex3 > ex3_1.tmp 2>&1;\
-           if (diff output/ex3_1.out ex3_1.tmp) then true; \
-           else echo "Possible problem with ex3_1, diffs above"; fi;\
-           $(RM) -f ex3_1.tmp
+	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
+	   else echo "Possible problem with ex3_1, diffs above"; fi;\
+	   $(RM) -f ex3_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

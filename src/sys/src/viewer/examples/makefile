@@ -1,17 +1,19 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS        =  $(PETSC_INCLUDE) $(PCONF) -I$(PETSC_DIR)/include
-FFLAGS        = 
-SOURCEC       = 
-SOURCEF       =
-SOURCEH       =
-OBJSC         =
-OBJSF         =
-LIBBASE       = libpetscvec
+CFLAGS	      =	 $(PETSC_INCLUDE) $(PCONF) -I$(PETSC_DIR)/include
+FFLAGS	      = 
+SOURCEC	      = 
+SOURCEF	      =
+SOURCEH	      =
+OBJSC	      =
+OBJSF	      =
+LIBBASE	      = libpetscvec
 EXAMPLES_2    = 
 EXAMPLESC     = ex1.c ex2.c
 RUNEXAMPLES_2 = 
+EXAMPLES_4    = ex1.c ex2.c
+RUNEXAMPLES_4 = 
 
 runex2:
 	@echo "There are no externally runable examples in this directory"
