@@ -180,8 +180,10 @@ typedef struct {
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   MPI_Status    *send_status;           /* array of send status */
-  PetscInt      nsends,nrecvs;         /* numbers of sends and receives */
-  MatScalar     *svalues,*rvalues;     /* sending and receiving data */
+  PetscInt      nsends,nrecvs;          /* numbers of sends and receives */
+  MatScalar     *svalues;               /* sending data */
+  MatScalar     **rvalues;              /* receiving data (values) */
+  PetscInt      **rindices;             /* receiving data (indices) */
   PetscInt      rmax;                   /* maximum message length */
   PetscInt      *nprocs;                /* tmp data used both duiring scatterbegin and end */
   PetscInt      nprocessed;             /* number of messages already processed */
