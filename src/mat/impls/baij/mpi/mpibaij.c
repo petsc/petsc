@@ -1547,13 +1547,11 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-    break;
   case MAT_USE_HASH_TABLE:
     a->ht_flag = PETSC_TRUE;
     break;
   default: 
     SETERRQ(PETSC_ERR_SUP,"unknown option");
-    break;
   }
   PetscFunctionReturn(0);
 }

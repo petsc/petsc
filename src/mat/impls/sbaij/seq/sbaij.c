@@ -175,10 +175,8 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-    break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
-    break;
   }
   PetscFunctionReturn(0);
 }
