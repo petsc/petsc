@@ -34,7 +34,6 @@ E*/
 #define TS_PVODE           "pvode"
 typedef char *TSType;
 
-#define TS_SER_BEULER_BINARY "beuler_binary"
 typedef char *TSSerializeType;
 
 /*E
@@ -53,13 +52,13 @@ extern int TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 EXTERN int TSInitializePackage(char *);
 
 EXTERN int TSCreate(MPI_Comm,TSProblemType,TS*);
-EXTERN int TSSetType(TS,TSType);
-EXTERN int TSGetProblemType(TS,TSProblemType*);
+EXTERN int TSSerialize(MPI_Comm, TS *, PetscViewer, PetscTruth);
 EXTERN int TSDestroy(TS);
 
+EXTERN int TSSetProblemType(TS,TSProblemType);
+EXTERN int TSGetProblemType(TS,TSProblemType*);
 EXTERN int TSSetMonitor(TS,int(*)(TS,int,PetscReal,Vec,void*),void *,int (*)(void*));
 EXTERN int TSClearMonitor(TS);
-EXTERN int TSGetType(TS,TSType*);
 
 EXTERN int TSSetOptionsPrefix(TS,char *);
 EXTERN int TSAppendOptionsPrefix(TS,char *);
@@ -121,32 +120,38 @@ EXTERN int TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 EXTERN int TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
 EXTERN int TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
 
-extern PetscFList      TSList;
-EXTERN int        TSRegisterAll(char*);
-EXTERN int        TSRegisterDestroy(void);
+/* Dynamic creation and loading functions */
+extern PetscFList TSList;
 extern PetscTruth TSRegisterAllCalled;
-
+EXTERN int TSGetType(TS,TSType*);
+EXTERN int TSSetType(TS,TSType);
 EXTERN int TSRegister(const char[], const char[], const char[], int (*)(TS));
-extern int TSSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, TS *, PetscViewer, PetscTruth));
+EXTERN int TSRegisterAll(const char[]);
+EXTERN int TSRegisterDestroy(void);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,0)
-#define TSSerializeRegisterDynamic(a,b,c,d) TSSerializeRegister(a,b,c,0)
 #else
 #define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,d)
-#define TSSerializeRegisterDynamic(a,b,c,d) TSSerializeRegister(a,b,c,d)
 #endif
 
 extern PetscFList TSSerializeList;
-extern int TSSerializeRegisterAll(const char []);
-extern int TSSerializeRegisterDestroy(void);
-extern int TSSerializeRegisterAllCalled;
-extern int TSSerialize(MPI_Comm comm, TS *, PetscViewer, PetscTruth);
-extern int TSSetSerializeType(TS, TSSerializeType);
+extern PetscTruth TSSerializeRegisterAllCalled;
+EXTERN int TSSetSerializeType(TS, TSSerializeType);
+EXTERN int TSGetSerializeType(TS, TSSerializeType *);
+EXTERN int TSSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, TS *, PetscViewer, PetscTruth));
+EXTERN int TSSerializeRegisterAll(const char []);
+EXTERN int TSSerializeRegisterDestroy(void);
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define TSSerializeRegisterDynamic(a,b,c,d) TSSerializeRegister(a,b,c,0)
+#else
+#define TSSerializeRegisterDynamic(a,b,c,d) TSSerializeRegister(a,b,c,d)
+#endif
 
 EXTERN int TSGetSNES(TS,SNES*);
 EXTERN int TSGetSLES(TS,SLES*);
 
 EXTERN int TSView(TS,PetscViewer);
+EXTERN int TSViewFromOptions(TS,char *);
 
 EXTERN int TSSetApplicationContext(TS,void *);
 EXTERN int TSGetApplicationContext(TS,void **);

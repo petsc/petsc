@@ -6,6 +6,196 @@ int TS_COOKIE;
 int TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSSetTypeFromOptions"
+/*
+  TSSetTypeFromOptions - Sets the type of ts from user options.
+
+  Collective on TS
+
+  Input Parameter:
+. ts - The ts
+
+  Level: intermediate
+
+.keywords: TS, set, options, database, type
+.seealso: TSSetFromOptions(), TSSetType()
+*/
+static int TSSetTypeFromOptions(TS ts)
+{
+  PetscTruth opt;
+  char      *defaultType;
+  char       typeName[256];
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (ts->type_name != PETSC_NULL) {
+    defaultType = ts->type_name;
+  } else {
+    defaultType = TS_EULER;
+  }
+
+  if (!TSRegisterAllCalled) {
+    ierr = TSRegisterAll(PETSC_NULL);                                                                     CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = TSSetType(ts, typeName);                                                                       CHKERRQ(ierr);
+  } else {
+    ierr = TSSetType(ts, defaultType);                                                                    CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+  return(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetFromOptions"
+/*@
+   TSSetFromOptions - Sets various TS parameters from user options.
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Options Database Keys:
++  -ts_type <type> - TS_EULER, TS_BEULER, TS_PVODE, TS_PSEUDO, TS_CRANK_NICHOLSON
+.  -ts_max_steps maxsteps - maximum number of time-steps to take
+.  -ts_max_time time - maximum time to compute to
+.  -ts_dt dt - initial time step
+.  -ts_monitor - print information at each timestep
+-  -ts_xmonitor - plot information at each timestep
+
+   Level: beginner
+
+.keywords: TS, timestep, set, options, database
+
+.seealso: TSGetType
+@*/
+int TSSetFromOptions(TS ts)
+{
+  PetscReal  dt;
+  PetscTruth opt;
+  int        ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  ierr = PetscOptionsBegin(ts->comm, ts->prefix, "Time step options", "TS");                              CHKERRQ(ierr);
+
+  /* Handle generic TS options */
+  ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetInitialTime", ts->ptime, &ts->ptime, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&opt);CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ts->initial_time_step = ts->time_step = dt;
+  }
+
+  /* Monitor options */
+    ierr = PetscOptionsName("-ts_monitor","Monitor timestep size","TSDefaultMonitor",&opt);               CHKERRQ(ierr);
+    if (opt == PETSC_TRUE) {
+      ierr = TSSetMonitor(ts,TSDefaultMonitor,PETSC_NULL,PETSC_NULL);                                     CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-ts_xmonitor","Monitor timestep size graphically","TSLGMonitor",&opt);       CHKERRQ(ierr);
+    if (opt == PETSC_TRUE) {
+      ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL,PETSC_NULL);                                          CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-ts_vecmonitor","Monitor solution graphically","TSVecViewMonitor",&opt);     CHKERRQ(ierr);
+    if (opt == PETSC_TRUE) {
+      ierr = TSSetMonitor(ts,TSVecViewMonitor,PETSC_NULL,PETSC_NULL);                                     CHKERRQ(ierr);
+    }
+
+  /* Handle TS type options */
+  ierr = TSSetTypeFromOptions(ts);                                                                        CHKERRQ(ierr);
+
+  /* Handle specific TS options */
+  if (ts->ops->setfromoptions != PETSC_NULL) {
+    ierr = (*ts->ops->setfromoptions)(ts);                                                                CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();                                                                               CHKERRQ(ierr);
+
+  /* Handle subobject options */
+  switch(ts->problem_type) {
+  case TS_LINEAR:
+    ierr = SLESSetFromOptions(ts->sles);                                                                  CHKERRQ(ierr);
+    break;
+  case TS_NONLINEAR:
+    ierr = SNESSetFromOptions(ts->snes);                                                                  CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid problem type: %d", ts->problem_type);
+  }
+
+  ierr = TSViewFromOptions(ts, ts->name);                                                                 CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "TSViewFromOptions"
+/*@
+  TSViewFromOptions - This function visualizes the ts based upon user options.
+
+  Collective on TS
+
+  Input Parameter:
+. ts - The ts
+
+  Level: intermediate
+
+.keywords: TS, view, options, database
+.seealso: TSSetFromOptions(), TSView()
+@*/
+int TSViewFromOptions(TS ts, char *title)
+{
+  PetscViewer viewer;
+  PetscDraw   draw;
+  PetscTruth  opt;
+  char       *titleStr;
+  char        typeName[1024];
+  char        fileName[1024];
+  int         len;
+  int         ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);                                               CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscOptionsGetString(ts->prefix, "-ts_view", typeName, 1024, &opt);                           CHKERRQ(ierr);
+    ierr = PetscStrlen(typeName, &len);                                                                   CHKERRQ(ierr);
+    if (len > 0) {
+      ierr = PetscViewerCreate(ts->comm, &viewer);                                                        CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, typeName);                                                        CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(ts->prefix, "-ts_view_file", fileName, 1024, &opt);                    CHKERRQ(ierr);
+      if (opt == PETSC_TRUE) {
+        ierr = PetscViewerSetFilename(viewer, fileName);                                                  CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerSetFilename(viewer, ts->name);                                                  CHKERRQ(ierr);
+      }
+      ierr = TSView(ts, viewer);                                                                          CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);                                                                    CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);                                                                  CHKERRQ(ierr);
+    } else {
+      ierr = TSView(ts, PETSC_NULL);                                                                      CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscOptionsHasName(ts->prefix, "-ts_view_draw", &opt);                                          CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscViewerDrawOpen(ts->comm, 0, 0, 0, 0, 300, 300, &viewer);                                  CHKERRQ(ierr);
+    ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);                                                      CHKERRQ(ierr);
+    if (title != PETSC_NULL) {
+      titleStr = title;
+    } else {
+      ierr = PetscObjectName((PetscObject) ts);                                                           CHKERRQ(ierr) ;
+      titleStr = ts->name;
+    }
+    ierr = PetscDrawSetTitle(draw, titleStr);                                                             CHKERRQ(ierr);
+    ierr = TSView(ts, viewer);                                                                            CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);                                                                      CHKERRQ(ierr);
+    ierr = PetscDrawPause(draw);                                                                          CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);                                                                    CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSComputeRHSJacobian"
 /*@
    TSComputeRHSJacobian - Computes the Jacobian matrix that has been
@@ -615,122 +805,65 @@ int TSGetSolution(TS ts,Vec *v)
   PetscFunctionReturn(0);
 }
 
+/* ----- Routines to initialize and destroy a timestepper ---- */
 #undef __FUNCT__  
-#define __FUNCT__ "TSPublish_Petsc"
-static int TSPublish_Petsc(PetscObject obj)
-{
-#if defined(PETSC_HAVE_AMS)
-  TS   v = (TS) obj;
-  int  ierr;
-#endif  
-
-  PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Step",&v->steps,1,AMS_INT,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Time",&v->ptime,1,AMS_DOUBLE,AMS_READ,
-                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"CurrentTimeStep",&v->time_step,1,
-                               AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-
-/* -----------------------------------------------------------*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSCreate"
+#define __FUNCT__ "TSSetProblemType"
 /*@C
-   TSCreate - Creates a timestepper context.
+  TSSetProblemType - Sets the type of problem to be solved.
 
-   Collective on MPI_Comm
+  Not collective
 
-   Input Parameter:
-+  comm - MPI communicator
--  type - One of  TS_LINEAR,TS_NONLINEAR
-   where these types refer to problems of the forms
+  Input Parameters:
++ ts   - The TS
+- type - One of TS_LINEAR, TS_NONLINEAR where these types refer to problems of the forms
 .vb
          U_t = A U    
          U_t = A(t) U 
          U_t = F(t,U) 
 .ve
 
-   Output Parameter:
-.  ts - the new TS context
-
    Level: beginner
 
-.keywords: TS, timestep, create, context
-
-.seealso: TSSetUp(), TSStep(), TSDestroy(), TSProblemType, TS
+.keywords: TS, problem type
+.seealso: TSSetUp(), TSProblemType, TS
 @*/
-int TSCreate(MPI_Comm comm, TSProblemType problemtype, TS *ts)
-{
-  TS  t;
-  int ierr;
-
+int TSSetProblemType(TS ts, TSProblemType type) {
   PetscFunctionBegin;
-  PetscValidPointer(ts);
-  *ts = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = TSInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
-#endif
-
-  PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_COOKIE, -1, "TS", comm, TSDestroy, TSView);
-  PetscLogObjectCreate(t);
-  PetscLogObjectMemory(t, sizeof(struct _p_TS));
-  ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));                                                     CHKERRQ(ierr);
-  t->bops->publish      = TSPublish_Petsc;
-  t->type_name          = PETSC_NULL;
-
-  t->problem_type       = problemtype;
-  t->vec_sol            = PETSC_NULL;
-  t->vec_sol_always     = PETSC_NULL;
-  t->numbermonitors     = 0;
-  t->isGTS              = PETSC_FALSE;
-  t->isExplicit         = PETSC_NULL;
-  t->Iindex             = PETSC_NULL;
-  t->sles               = PETSC_NULL;
-  t->A                  = PETSC_NULL;
-  t->B                  = PETSC_NULL;
-  t->snes               = PETSC_NULL;
-  t->funP               = PETSC_NULL;
-  t->jacP               = PETSC_NULL;
-  t->setupcalled        = 0;
-  t->data               = PETSC_NULL;
-  t->user               = PETSC_NULL;
-  t->max_steps          = 5000;
-  t->max_time           = 5.0;
-  t->time_step          = .1;
-  t->time_step_old      = t->time_step;
-  t->initial_time_step  = t->time_step;
-  t->steps              = 0;
-  t->ptime              = 0.0;
-  t->linear_its         = 0;
-  t->nonlinear_its      = 0;
-  t->work               = PETSC_NULL;
-  t->nwork              = 0;
-  t->ops->applymatrixbc = TSDefaultSystemMatrixBC;
-  t->ops->applyrhsbc    = TSDefaultRhsBC;
-  t->ops->applysolbc    = TSDefaultSolutionBC;
-  t->ops->prestep       = TSDefaultPreStep;
-  t->ops->update        = TSDefaultUpdate;
-  t->ops->poststep      = TSDefaultPostStep;
-  t->ops->reform        = PETSC_NULL;
-  t->ops->reallocate    = PETSC_NULL;
-  t->ops->serialize     = PETSC_NULL;
-
-  *ts = t;
+  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  ts->problem_type = type;
   PetscFunctionReturn(0);
 }
 
-/* ----- Routines to initialize and destroy a timestepper ---- */
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetProblemType"
+/*@C
+  TSGetProblemType - Gets the type of problem to be solved.
+
+  Not collective
+
+  Input Parameter:
+. ts   - The TS
+
+  Output Parameter:
+. type - One of TS_LINEAR, TS_NONLINEAR where these types refer to problems of the forms
+.vb
+         U_t = A U    
+         U_t = A(t) U 
+         U_t = F(t,U) 
+.ve
+
+   Level: beginner
+
+.keywords: TS, problem type
+.seealso: TSSetUp(), TSProblemType, TS
+@*/
+int TSGetProblemType(TS ts, TSProblemType *type) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidPointer(type);
+  *type = ts->problem_type;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp"
@@ -1528,34 +1661,6 @@ int TSGetTime(TS ts,PetscReal* t)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   *t = ts->ptime;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSGetProblemType" 
-/*@C
-   TSGetProblemType - Returns the problem type of a TS (timestepper) context.
-
-   Not Collective
-
-   Input Parameter:
-.  ts   - The TS context obtained from TSCreate()
-
-   Output Parameter:
-.  type - The problem type, TS_LINEAR or TS_NONLINEAR
-
-   Level: intermediate
-
-   Contributed by: Matthew Knepley
-
-.keywords: ts, get, type
-
-@*/
-int TSGetProblemType(TS ts,TSProblemType *type)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  *type = ts->problem_type;
   PetscFunctionReturn(0);
 }
 
