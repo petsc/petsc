@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.58 2001/07/12 01:49:06 buschelm Exp $*/
+/*$Id: baijfact2.c,v 1.59 2001/07/12 16:57:11 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2857,78 +2857,206 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   }
 
   if (row_identity && col_identity) {
-    ierr = MatSeqBAIJ_UpdateFactorizerSolver_NaturalOrdering(*fact);CHKERRQ(ierr);
+    ierr = MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(*fact);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0); 
 }
 
-int MatSeqBAIJ_UpdateFactorizerSolver_NaturalOrdering(Mat inA)
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering"
+int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
 {
   /*
       Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
       with natural ordering
   */
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)inA->data;
+  PetscTruth  sse_enabled;
+  int         ierr;
 
   PetscFunctionBegin;
   switch (a->bs) {
   case 1:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
-    inA->ops->solve           = MatSolve_SeqBAIJ_1_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1_NaturalOrdering;
-    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=1\n");
+    break;
   case 2:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
-    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=2\n");
     break;
   case 3:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3_NaturalOrdering;
-    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=3\n");
     break; 
   case 4:
-#if defined(PETSC_HAVE_SSE)
-    {
-      PetscTruth sse_enabled;
-      int        ierr;
-
-      ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
-      if (sse_enabled) {
-        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-      } else {
-        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
-      }
+    ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+    if (sse_enabled) {
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+      PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n"); 
+    } else {
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+      PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=4\n"); 
     }
-#else
-    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
-#endif
-    if (!a->single_precision_solves) { /* If this option was set, don't clobber this pointer */ 
-      inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
-    }
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
-    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
     break;
   case 5:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering;
-    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=5\n"); 
     break;
   case 6: 
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6_NaturalOrdering;
-    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=6\n");
     break; 
   case 7:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
-    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7_NaturalOrdering;
-    inA->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
-    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=7\n");
     break; 
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSeqBAIJ_UpdateSolvers"
+int MatSeqBAIJ_UpdateSolvers(Mat A)
+{
+  /*
+      Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
+      with natural ordering
+  */
+  Mat_SeqBAIJ *a  = (Mat_SeqBAIJ *)A->data;
+  IS          row = a->row, col = a->col;
+  PetscTruth  row_identity, col_identity;
+  PetscTruth  sse_enabled,use_single,use_natural;
+  int         ierr;
+
+  PetscFunctionBegin;
+  ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
+  ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
+
+  if (row_identity && col_identity) {
+    use_natural = PETSC_TRUE;
+  } else {
+    use_natural = PETSC_FALSE;
+  }
+  switch (a->bs) {
+  case 1:
+    if (use_natural) {
+      A->ops->solve           = MatSolve_SeqBAIJ_1_NaturalOrdering;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1_NaturalOrdering;
+      PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=1\n");
+      PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
+    } else {
+      A->ops->solve           = MatSolve_SeqBAIJ_1;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1;
+    }
+    break;
+  case 2:
+    if (use_natural) {
+      A->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
+      PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=2\n");
+      PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
+    } else {
+      A->ops->solve           = MatSolve_SeqBAIJ_2;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2;
+    }
+    break;
+  case 3:
+    if (use_natural) {
+      A->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3_NaturalOrdering;
+      PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=3\n");
+      PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
+    } else {
+      A->ops->solve           = MatSolve_SeqBAIJ_3;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3;
+    }
+    break; 
+  case 4:
+    ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+    if (sse_enabled) {
+      if (a->single_precision_solves) {
+        use_single = PETSC_TRUE;
+      }
+    } else {
+      use_single = PETSC_FALSE;
+    }
+    if (use_natural) {
+      if (use_single) {
+        A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
+        PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place natural ordering solve BS=4\n");
+      } else {
+        A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+        PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
+      }
+      A->ops->solvetranspose    = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
+      PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
+    } else {
+      if (use_single) {
+        A->ops->solve           = MatSolve_SeqBAIJ_4_SSE_Demotion;
+        PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE solve BS=4\n");
+      } else {
+        A->ops->solve           = MatSolve_SeqBAIJ_4;
+      }
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4;
+    }
+    break;
+  case 5:
+    if (use_natural) {
+      A->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering;
+      PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=5\n");
+      PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=5\n");
+    } else {
+      A->ops->solve           = MatSolve_SeqBAIJ_5;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5;
+    }
+    break;
+  case 6: 
+    if (use_natural) {
+      A->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6_NaturalOrdering;
+      PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=6\n");
+      PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=6\n");
+    } else {
+      A->ops->solve           = MatSolve_SeqBAIJ_6;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6;
+    }
+    break; 
+  case 7:
+    if (use_natural) {
+      A->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7_NaturalOrdering;
+      PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=7\n");
+      PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=7\n");
+    } else {
+      A->ops->solve           = MatSolve_SeqBAIJ_7;
+      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7;
+    }
+    break; 
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolve_SeqBAIJ_Update"
+int MatSolve_SeqBAIJ_Update(Mat A,Vec x,Vec y) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSeqBAIJ_UpdateSolvers(A);
+  ierr = (*A->ops->solve)(A,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolveTranspose_SeqBAIJ_Update"
+int MatSolveTranspose_SeqBAIJ_Update(Mat A,Vec x,Vec y) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSeqBAIJ_UpdateSolvers(A);
+  ierr = (*A->ops->solvetranspose)(A,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
