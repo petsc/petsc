@@ -892,6 +892,7 @@ PetscErrorCode SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*func)(SNES
     snes->jacobian_pre = B;
     ierr               = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
   }
+  ierr = KSPSetOperators(snes->ksp,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

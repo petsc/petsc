@@ -147,6 +147,7 @@ EXTERN PetscErrorCode KSPSetResidualHistory(KSP,PetscReal[],int,PetscTruth);
 EXTERN PetscErrorCode PCKSPGetKSP(PC,KSP*);
 EXTERN PetscErrorCode PCBJacobiGetSubKSP(PC,int*,int*,KSP*[]);
 EXTERN PetscErrorCode PCASMGetSubKSP(PC,int*,int*,KSP*[]);
+EXTERN PetscErrorCode PCFieldSplitGetSubKSP(PC,PetscInt*,KSP*[]);
 
 EXTERN PetscErrorCode KSPBuildSolution(KSP,Vec,Vec *);
 EXTERN PetscErrorCode KSPBuildResidual(KSP,Vec,Vec,Vec *);
