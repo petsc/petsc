@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-import bs
-
 import os
 import types
 

@@ -1,4 +1,3 @@
-import bs
 import fileset
 import logging
 import nargs
@@ -26,6 +25,7 @@ class Maker (logging.Logger):
   """
   def __init__(self, argDB = None):
     if argDB is None:
+      import bs
       self.argDB = bs.argDB
     else:
       self.argDB = argDB
