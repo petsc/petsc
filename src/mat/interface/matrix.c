@@ -3875,6 +3875,8 @@ PetscErrorCode MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
 +  m - the number of global rows
 -  n - the number of global columns
 
+   Note: both output parameters can be PETSC_NULL on input.
+
    Level: beginner
 
    Concepts: matrices^size
@@ -3905,6 +3907,8 @@ PetscErrorCode MatGetSize(Mat mat,PetscInt *m,PetscInt* n)
    Output Parameters:
 +  m - the number of local rows
 -  n - the number of local columns
+
+   Note: both output parameters can be PETSC_NULL on input.
 
    Level: beginner
 
@@ -3939,6 +3943,8 @@ PetscErrorCode MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* n)
    Output Parameters:
 +  m - the global index of the first local row
 -  n - one more than the global index of the last local row
+
+   Note: both output parameters can be PETSC_NULL on input.
 
    Level: beginner
 
