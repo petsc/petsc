@@ -86,13 +86,20 @@ extern int    gettimeofday(struct timeval *,struct timezone *);
 #if defined(__cplusplus)
 extern "C" {
 extern char     *mktemp(char *);
-extern double   atof(const char*);
+/*
+   Older OS versions may require
+   
+   extern double   atof(const char*);
+*/
 }
 #else
 
 extern char   *mktemp(char *); 
-extern double atof(const char*);
-
+/*
+   Older OS versions may require
+   
+   extern double atof(const char*);
+*/
 #endif
 
 #endif
