@@ -1,22 +1,22 @@
 
-To: leaf, dstevens, canfield, taylor, jichen, meena, maa, freitag, diachin, plassman, kwong, bischof, roh, pwu, zwu, adams, kaushik
+To: leaf, gunter, dstevens, canfield, taylor, jichen, meena, maa, freitag, diachin, plassman, kwong, bischof, roh, pwu, hovland, zwu, adams, kaushik, michalakes, elliott, resiga
 cc: bsmith, balay, gropp, curfman
 Subject: new local PETSc installation
 
 
-We have installed a new local version of PETSc (version 2.0.15)
+We have installed a new local version of PETSc (version 2.0.17)
 in /home/petsc/petsc.solid.  Please see the file
 /home/petsc/petsc.solid/Changes for new features and changes 
 in the software.
 
-The previous two versions (PETSc 2.0.13 and 2.0.14) are located in
-/home/petsc/petsc-2.0.13 and /home/petsc/petsc-2.0.14.  Please try 
+The previous two versions (PETSc 2.0.15 and 2.0.16) are located in
+/home/petsc/petsc-2.0.15 and /home/petsc/petsc-2.0.16.  Please try 
 using the new code when you have a chance.  Please only revert to the
 previous version in case of emergency.  Be sure to let us know by
 writing to petsc-maint@mcs.anl.gov if you experience any problems with
 the new code, as we should be able to resolve them quickly.  Also,
-let us know if you need to use a variant of PETSc-2.0.15 that hasn't
-been built (by specifying needed PETSC_ARCH and BOPT).
+let us know if you need to use a variant of PETSc-2.0.17 that hasn't
+been built (by specifying the needed PETSC_ARCH and BOPT).
 
 Thanks for your support.
 Barry, Satish, Bill, and Lois
