@@ -71,19 +71,21 @@ class Defaults(logging.Logger):
       sources = []
     return map(lambda file: os.path.splitext(os.path.split(file)[1])[0], sources)
 
-  def getSIDLServerCompiler(self, lang, rootDir, generatedRoots):
-    compiler           = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, self.compileExt),
-                                                                                               compilerFlags = self.usingSIDL.getServerCompilerFlags())
-    compiler.language  = lang
-    compiler.outputDir = rootDir
+  def getSIDLServerCompiler(self, lang, rootDir, generatedRoots, flags = None):
+    if not flags: flags = self.usingSIDL.getServerCompilerFlags()
+    compiler            = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, self.compileExt),
+                                                                                                compilerFlags = flags)
+    compiler.language   = lang
+    compiler.outputDir  = rootDir
     self.usingSIDL.compilerDefaults.setupIncludes(compiler)
     return compiler
 
-  def getSIDLClientCompiler(self, lang, rootDir):
-    compiler           = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLClient(fileset.ExtensionFileSet(rootDir, self.compileExt),
-                                                                                               compilerFlags = self.usingSIDL.getClientCompilerFlags())
-    compiler.language  = lang
-    compiler.outputDir = rootDir
+  def getSIDLClientCompiler(self, lang, rootDir, flags = None):
+    if not flags: flags = self.usingSIDL.getClientCompilerFlags()
+    compiler            = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLClient(fileset.ExtensionFileSet(rootDir, self.compileExt),
+                                                                                                compilerFlags = flags)
+    compiler.language   = lang
+    compiler.outputDir  = rootDir
     self.usingSIDL.compilerDefaults.setupIncludes(compiler)
     return compiler
 
@@ -130,7 +132,8 @@ class Defaults(logging.Logger):
     for package in self.getPackages():
       for lang in self.usingSIDL.internalClientLanguages[package]:
         targets.append(target.Target(None, [self.usingSIDL.compilerDefaults.getTagger('client'),
-                                            self.getSIDLClientCompiler(lang, self.usingSIDL.getServerRootDir(lang, package))]))
+                                            self.getSIDLClientCompiler(lang, self.usingSIDL.getServerRootDir(lang, package),
+                                                                       flags = self.usingSIDL.getCompilerFlags())]))
     return targets
 
   def getSIDLTarget(self):
