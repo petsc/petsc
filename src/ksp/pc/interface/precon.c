@@ -24,7 +24,7 @@ int PCGetDefaultType_Private(PC pc,const char* type[])
     if (size == 1) {
       ierr = MatHasOperation(pc->pmat,MATOP_ICCFACTOR_SYMBOLIC,&flg1);CHKERRQ(ierr);
       ierr = MatHasOperation(pc->pmat,MATOP_ILUFACTOR_SYMBOLIC,&flg2);CHKERRQ(ierr);
-      if (flg1) { /* for sbaij mat */
+      if (flg1 && !flg2) { /* for sbaij mat */
 	*type = PCICC;
       } else if (flg2) {
 	*type = PCILU;

@@ -12,23 +12,24 @@ int main(int argc,char **args)
   PetscViewer viewer;
   char        file[128];
   PetscTruth  flg;
-  int         ierr,n = 1,rank,issize;
-  IS          is;
+  int         ierr,n = 2,rank,issize;
+  IS          is,iss[2];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(viewer,MATBAIJ,&BAIJ);CHKERRQ(ierr);
+  ierr = MatLoad(viewer,MATMPIBAIJ,&BAIJ);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(viewer,MATSBAIJ,&SBAIJ);CHKERRQ(ierr);
+  ierr = MatLoad(viewer,MATMPISBAIJ,&SBAIJ);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
   ierr = MatGetSize(BAIJ,&issize,0);CHKERRQ(ierr);
   issize = 9;
   ierr = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&is);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(BAIJ,n,&is,&is,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(SBAIJ,n,&is,&is,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
+  iss[0] = is;iss[1] = is;
+  ierr = MatGetSubMatrices(BAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(SBAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
