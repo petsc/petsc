@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.132 1996/09/14 03:34:01 curfman Exp curfman $ */
+/* $Id: petsc.h,v 1.133 1996/10/02 02:47:28 curfman Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -182,8 +182,11 @@ extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
 /*M PetscBarrier - Blocks Until this routine is executed by all
     processors owning the object A
 
-  Input Parameters:
-. A - PETSc object  ( Mat, Vec, IS, SNES etc...)
+   Input Parameters:
+.  A - PETSc object  ( Mat, Vec, IS, SNES etc...)
+
+   Synopsis:
+   void PetscBarrier(PetscObject obj)
 
   Notes: 
   This routine calls MPI_Barrier with the communicator

@@ -294,6 +294,7 @@ allmanpages: deletemanpages allwwwpages alllatexpages
 	-make ACTION=manpages tree
 	-cd src/fortran/custom; make manpages
 	-cd docs/man; catman -W .
+	-@chmod g+w docs/man/man*/*
 allwwwpages: deletewwwpages
 	-make ACTION=wwwpages_buildcite tree
 	-cd src/fortran/custom; make wwwpages_buildcite
@@ -301,9 +302,11 @@ allwwwpages: deletewwwpages
 	-make ACTION=wwwpages tree
 	-maint/wwwman
 	-maint/examplesindex.tcl -www
+	-@chmod g+w docs/www/man*/*
 alllatexpages: deletelatexpages
 	-make ACTION=latexpages tree
 	-cd src/fortran/custom; make latexpages
+	-@chmod g+w docs/tex/rsum/*
 
 # Builds Fortran stub files
 allfortranstubs:
