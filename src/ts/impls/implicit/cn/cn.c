@@ -1,9 +1,10 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.7 1998/07/29 02:21:57 curfman Exp curfman $";
+static char vcid[] = "$Id: cn.c,v 1.8 1998/07/29 02:33:28 curfman Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
+    THIS IS NOT YET COMPLETE -- DO NOT USE!!
 */
 #include <math.h>
 #include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
