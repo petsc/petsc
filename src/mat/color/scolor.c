@@ -4,10 +4,10 @@
 #include "src/mat/color/color.h"
 
 EXTERN_C_BEGIN
-EXTERN int MatColoring_Natural(Mat,MatColoringType,ISColoring*);
-EXTERN int MatFDColoringSL_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN int MatFDColoringLF_Minpack(Mat,MatColoringType,ISColoring*);
-EXTERN int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
+EXTERN int MatColoring_Natural(Mat,const MatColoringType,ISColoring*);
+EXTERN int MatFDColoringSL_Minpack(Mat,const MatColoringType,ISColoring*);
+EXTERN int MatFDColoringLF_Minpack(Mat,const MatColoringType,ISColoring*);
+EXTERN int MatFDColoringID_Minpack(Mat,const MatColoringType,ISColoring*);
 EXTERN_C_END
 
 #undef __FUNCT__  
