@@ -129,12 +129,9 @@
      &     PETSC_NULL_OBJECT,ierr)
 !
 !    We disable the logging of an event.
-!      - Note that activation/deactivation of PETSc events and MPE 
-!        events is handled separately.
 !      - Note that the user can activate/deactive both user-defined
 !        events and predefined PETSc events.
 !
-      call PetscLogEventMPEDeactivate(USER_EVENT1,ierr)
       call PetscLogEventDeactivate(USER_EVENT1,ierr)
       call PetscLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &
@@ -146,7 +143,6 @@
 !
 !    We next enable the logging of an event
 !
-      call PetscLogEventMPEActivate(USER_EVENT1,ierr)
       call PetscLogEventActivate(USER_EVENT1,ierr)
       call PetscLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,                         &

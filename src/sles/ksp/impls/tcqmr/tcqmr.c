@@ -107,7 +107,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
       ep     = -cl*eptmp + sl*alpha;
       deltmp = -sl*eptmp - cl*alpha;
     }
-    if (PetscAbsScalar(Gamma) > PetscAbsScalar(deltmp)) {
+    if (PetscAbsReal(Gamma) > PetscAbsScalar(deltmp)) {
       ta = -deltmp / Gamma;
       s  = 1.0 / PetscSqrtScalar(1.0 + ta*ta);
       c  = s*ta;
