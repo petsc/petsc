@@ -30,6 +30,7 @@ all: chkpetsc_dir
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=libfast  tree 
+	-@cd $(PETSC_DIR)/src/sys/src ; $(OMAKE) PETSC_ARCH=$(PETSC_ARCH) rs6000_time
 	$(RANLIB) $(PDIR)/*.a
 	-@echo "Completed building libraries"
 	-@echo "------------------------------------------"
