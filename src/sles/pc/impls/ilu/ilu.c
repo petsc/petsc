@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.83 1997/02/03 05:57:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.84 1997/02/04 21:24:21 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -209,10 +209,10 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   PetscPrintf(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);
   PetscPrintf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
-  PetscPrintf(pc->comm," %spc_ilu_factorpointwise:Do NOT use block factorization\n",p);
-  PetscPrintf(pc->comm," %spc_ilu_use_drop_tolerance dt,maxrowcount:   \n",p);
-  PetscPrintf(pc->comm," %spc_ilu_reuse_reordering:                    \n",p);
-  PetscPrintf(pc->comm," %spc_ilu_reuse_fill:                    \n",p);
+  PetscPrintf(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);
+  PetscPrintf(pc->comm," %spc_ilu_use_drop_tolerance <dt,maxrowcount>: \n",p);
+  PetscPrintf(pc->comm," %spc_ilu_reuse_reordering:                          \n",p);
+  PetscPrintf(pc->comm," %spc_ilu_reuse_fill:                             \n",p);
   PetscPrintf(pc->comm," %spc_ilu_nonzeros_along_diagonal: changes column ordering to \n",p);
   PetscPrintf(pc->comm,"    reduce the change of obtaining zero pivot during ILU.\n");
   return 0;

@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+ - Document which routines are not currently supported (e.g., PCILUSetUseDropTolerance()).
+
  - Make sure one can run block Jacobi on several matrices with number of rows
    on all matrices but first zero for both AIJ and BAIJ matrices.
 

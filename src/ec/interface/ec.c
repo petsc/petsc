@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ec.c,v 1.1 1997/01/08 00:25:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ec.c,v 1.2 1997/01/22 18:46:10 bsmith Exp curfman $";
 #endif
 
 /*
@@ -326,14 +326,14 @@ int ECPrintHelp(EC ec)
   if (ec->prefix) PetscStrcat(p,ec->prefix);
   PetscPrintf(ec->comm,"EC options --------------------------------------------------\n");
   ECPrintTypes_Private(ec->comm,p,"ec_type");
-  PetscPrintf(ec->comm,"  %sec_view : print information on solvers used for eigenvalues\n",p);
-  PetscPrintf(ec->comm,"  %sec_view_eigenvalues : print eigenvalues to screen\n",p);
-  PetscPrintf(ec->comm,"  %sec_view_eigenvalues_draw : plot eigenvalues to screen\n",p);
-  PetscPrintf(ec->comm,"  %sec_spectrum_number n : number of eigenvalues to compute\n",p);
-  PetscPrintf(ec->comm,"  %sec_spectrum_portion <largest_real,largest_magnitude,smallest_\n",p);
-  PetscPrintf(ec->comm,"                         real,smallest_magnitude,interior>\n");
-  PetscPrintf(ec->comm,"  %sec_spectrum_location location : find eigenvalues nearby.\n",p);
-  PetscPrintf(ec->comm,"                         Use with interior portion (listed above).\n");
+  PetscPrintf(ec->comm,"  %sec_view: print information on solvers used for eigenvalues\n",p);
+  PetscPrintf(ec->comm,"  %sec_view_eigenvalues: print eigenvalues to screen\n",p);
+  PetscPrintf(ec->comm,"  %sec_view_eigenvalues_draw: plot eigenvalues to screen\n",p);
+  PetscPrintf(ec->comm,"  %sec_spectrum_number <n>: number of eigenvalues to compute\n",p);
+  PetscPrintf(ec->comm,"  %sec_spectrum_portion <largest_real,largest_magnitude,smallest_real\n",p);
+  PetscPrintf(ec->comm,"                smallest_magnitude,interior>: specify spectrum portion\n");
+  PetscPrintf(ec->comm,"  %sec_spectrum_location <location>: find eigenvalues nearby.\n",p);
+  PetscPrintf(ec->comm,"                Use with interior portion (listed above).\n");
   if (ec->printhelp) {
     ierr = (*ec->printhelp)(ec,p); CHKERRQ(ierr);
   }

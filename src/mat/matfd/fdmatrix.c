@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdmatrix.c,v 1.6 1997/01/01 03:37:22 bsmith Exp balay $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.7 1997/01/06 20:24:04 balay Exp curfman $";
 #endif
 
 /*
@@ -136,8 +136,8 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
 {
   PetscValidHeaderSpecific(fd,MAT_FDCOLORING_COOKIE);
 
-  PetscPrintf(fd->comm,"-mat_fd_coloring_err <err> set sqrt rel tol in function. Default 1.e-8\n");
-  PetscPrintf(fd->comm,"-mat_fd_coloring_umin <umin> see users manual. Default 1.e-8\n");
+  PetscPrintf(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to 1.e-8\n");
+  PetscPrintf(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to 1.e-8\n");
   return 0;
 }
 

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.205 1997/01/27 18:16:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.206 1997/02/11 18:54:38 curfman Exp curfman $";
 #endif
 
 /*
@@ -1537,12 +1537,12 @@ int MatPrintHelp_SeqAIJ(Mat A)
 
   if (called) return 0; else called = 1;
   PetscPrintf(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");
-  PetscPrintf(comm,"  -mat_lu_pivotthreshold <threshold>\n");
-  PetscPrintf(comm,"  -mat_aij_oneindex - internal indices begin at 1 instead of the default 0.\n");
-  PetscPrintf(comm,"  -mat_aij_no_inode  - Do not use inodes\n");
-  PetscPrintf(comm,"  -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)\n");
+  PetscPrintf(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");
+  PetscPrintf(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");
+  PetscPrintf(comm,"  -mat_aij_no_inode: Do not use inodes\n");
+  PetscPrintf(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");
 #if defined(HAVE_ESSL)
-  PetscPrintf(comm,"  -mat_aij_essl  - Use IBM sparse LU factorization and solve.\n");
+  PetscPrintf(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");
 #endif
   return 0;
 }

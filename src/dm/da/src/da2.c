@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.69 1997/02/07 23:31:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.70 1997/02/11 19:27:27 curfman Exp curfman $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -813,8 +813,8 @@ int DAPrintHelp(DA da)
   comm = da->comm;
   if (!called) {
     PetscPrintf(comm,"General Distributed Array (DA) options:\n");
-    PetscPrintf(comm,"  -da_view : print DA distribution to screen\n");
-    PetscPrintf(comm,"  -da_view_draw : display DA in window\n");
+    PetscPrintf(comm,"  -da_view: print DA distribution to screen\n");
+    PetscPrintf(comm,"  -da_view_draw: display DA in window\n");
     called = 1;
   }
   return 0;

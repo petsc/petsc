@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.224 1997/02/05 21:59:44 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.225 1997/02/06 23:45:21 balay Exp curfman $";
 #endif
 
 /*
@@ -2286,8 +2286,8 @@ int MatDestroyMatrices(int n,Mat **mat)
 #define __FUNC__ "MatIncreaseOverlap"
 /*@
    MatIncreaseOverlap - Given a set of submatrices indicated by index sets,
-   replaces the index by larger ones that represent submatrices with more
-   overlap.
+   replaces the index sets by larger ones that represent submatrices with
+   additional overlap.
 
    Input Parameters:
 .  mat - the matrix
@@ -2338,11 +2338,11 @@ int MatPrintHelp(Mat mat)
   comm = mat->comm;
   if (!called) {
     PetscPrintf(comm,"General matrix options:\n");
-    PetscPrintf(comm,"  -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
-    PetscPrintf(comm,"  -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
-    PetscPrintf(comm,"  -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
-    PetscPrintf(comm,"      -draw_pause <sec> : set seconds of display pause\n");
-    PetscPrintf(comm,"      -display <name> : set alternate display\n");
+    PetscPrintf(comm,"  -mat_view_info: view basic matrix info during MatAssemblyEnd()\n");
+    PetscPrintf(comm,"  -mat_view_info_detailed: view detailed matrix info during MatAssemblyEnd()\n");
+    PetscPrintf(comm,"  -mat_view_draw: draw nonzero matrix structure during MatAssemblyEnd()\n");
+    PetscPrintf(comm,"      -draw_pause <sec>: set seconds of display pause\n");
+    PetscPrintf(comm,"      -display <name>: set alternate display\n");
     called = 1;
   }
   if (mat->ops.printhelp) (*mat->ops.printhelp)(mat);
