@@ -1,10 +1,10 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.18 1998/04/24 00:05:46 balay Exp balay $ 
+# $Id: buildntdist,v 1.19 1998/04/24 00:06:16 balay Exp bsmith $ 
 # 
 
 if ($#argv == 1) then
   set version=$1
-  echo "Building ~/petscnt$version.tar"
+  echo "Building ~/petscnt$version.tar.gz"
 else
   set version=""
 endif
@@ -40,6 +40,13 @@ chmod -R u+w petsc
 /home/bsmith/petsc/maint/makecpp.tcl /mcs/tmp/petscnt/petsc
 
 /bin/rm -f /mcs/tmp/petscnt.tar /mcs/tmp/cblas.tar
+
+#
+# Build the tag files
+#
+cd /mcs/tmp/petscnt/petsc
+make -f /home/bsmith/petsc/makefile etags etags_examples ctags
+
 if ($#argv == 1) then
   mv petsc petsc$version
 endif
