@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: builddist,v 1.39 1997/09/10 19:40:00 balay Exp curfman $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -16,7 +16,8 @@ echo "(7) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run cor
 echo "(8) Made sure Fortran include files match C ones?"
 echo "(9) Converted hpux/base.* files to nonshared mode?"
 echo "(10) Taken away chmod g+* from petsc/makefile?"
-echo "(11) Built TAGS, tags files?"
+echo "(11) Taken away chmod g+* from petsc/makefile?"
+echo "(12) Fixed default flag -DUSE_FORTRAN_KERNELS (or not) in base.O_complex, base.g_complex files?"
 #
 if ($#argv == 1) then
   set version=$1
