@@ -51,7 +51,7 @@
 @*/
 PetscErrorCode PetscGetRelativePath(const char fullpath[],char path[],size_t flen)
 {
-  char  *p;
+  char           *p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -143,7 +143,6 @@ PetscErrorCode PetscSharedInitialize(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,flag;
-  size_t         len;
   char           filename[PETSC_MAX_PATH_LEN];
   usptr_t        **arena;
 
@@ -178,10 +177,8 @@ PetscErrorCode PetscSharedInitialize(MPI_Comm comm)
         SETERRQ1(PETSC_ERR_FILE_OPEN, "Unable to open temporary file %s", filename);
       }
 #endif
-      ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
     } 
-    ierr     = MPI_Bcast(&len,1,MPI_INT,0,comm);CHKERRQ(ierr);
-    ierr     = MPI_Bcast(filename,len+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
+    ierr     = MPI_Bcast(filename,PETSC_MAX_PATH_LEN,MPI_CHAR,0,comm);CHKERRQ(ierr);
     ierr     = PetscOptionsGetInt(PETSC_NULL,"-shared_size",&Petsc_Shared_size,&flag);CHKERRQ(ierr);
     usconfig(CONF_INITSIZE,Petsc_Shared_size);
     *arena   = usinit(filename); 
@@ -197,7 +194,7 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
 {
   char           *value;
   PetscErrorCode ierr;
-  PetscInt            shift;
+  PetscInt       shift;
   PetscMPIInt    rank,flag;
   usptr_t        **arena;
 

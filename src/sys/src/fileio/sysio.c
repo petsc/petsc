@@ -50,9 +50,9 @@ PetscErrorCode PetscByteSwapInt(PetscInt *buff,PetscInt n)
 PetscErrorCode PetscByteSwapShort(short *buff,PetscInt n)
 {
   PetscInt   i,j;
-  short tmp;
-  short *tptr = &tmp;           /* take care pf bug in DEC-ALPHA g++ */
-  char  *ptr1,*ptr2 = (char*)&tmp;
+  short      tmp;
+  short      *tptr = &tmp;           /* take care pf bug in DEC-ALPHA g++ */
+  char       *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
   for (j=0; j<n; j++) {

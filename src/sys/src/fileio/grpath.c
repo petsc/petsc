@@ -61,12 +61,12 @@
 PetscErrorCode PetscGetRealPath(char path[],char rpath[])
 {
   PetscErrorCode ierr;
-  char       tmp3[PETSC_MAX_PATH_LEN];
-  PetscTruth flg;
+  char           tmp3[PETSC_MAX_PATH_LEN];
+  PetscTruth     flg;
 #if !defined(PETSC_HAVE_REALPATH) && !defined(PARCH_win32) && defined(PETSC_HAVE_READLINK)
-  char       tmp1[PETSC_MAX_PATH_LEN],tmp4[PETSC_MAX_PATH_LEN],*tmp2;
-  size_t     N,len,len1,len2;
-  int        n,m;
+  char           tmp1[PETSC_MAX_PATH_LEN],tmp4[PETSC_MAX_PATH_LEN],*tmp2;
+  size_t         N,len,len1,len2;
+  int            n,m;
 #endif
 
   PetscFunctionBegin;

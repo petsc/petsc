@@ -35,7 +35,7 @@
 #include "petscfix.h"
 
 EXTERN_C_BEGIN
-EXTERN int Petsc_DelTag(MPI_Comm,int,void*,void*);
+EXTERN PetscMPIInt Petsc_DelTag(MPI_Comm,PetscMPIInt,void*,void*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -69,10 +69,10 @@ EXTERN_C_END
   as the "/tmp" directory.
 
 @*/
-PetscErrorCode PetscGetTmp(MPI_Comm comm,char *dir,int len)
+PetscErrorCode PetscGetTmp(MPI_Comm comm,char *dir,size_t len)
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetenv(comm,"PETSC_TMP",dir,len,&flg);CHKERRQ(ierr);
@@ -360,13 +360,14 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
     Level: developer
 
 @*/
-PetscErrorCode PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
+PetscErrorCode PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,size_t llen,PetscTruth *found)
 {
   char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
   const char        *pdir;
   FILE              *fp;
-  PetscErrorCode ierr;
-  int               i,rank;
+  PetscErrorCode    ierr;
+  int               i;
+  PetscMPIInt       rank;
   size_t            len = 0;
   PetscTruth        flg1,flg2,sharedtmp,exists;
 

@@ -452,13 +452,14 @@ static PetscErrorCode PetscDrawResizeWindow_X(PetscDraw draw,int w,int h)
 #define __FUNCT__ "PetscDrawCheckResizedWindow_X" 
 static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
 {
-  PetscDraw_X  *win = (PetscDraw_X*)draw->data;
+  PetscDraw_X    *win = (PetscDraw_X*)draw->data;
   PetscErrorCode ierr;
-  int          x,y,rank;
-  Window       root;
-  unsigned int w,h,border,depth,geo[2];
-  PetscReal    xl,xr,yl,yr;
-  XRectangle   box;
+  int            x,y;
+  PetscMPIInt    rank;
+  Window         root;
+  unsigned int   w,h,border,depth,geo[2];
+  PetscReal      xl,xr,yl,yr;
+  XRectangle     box;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);

@@ -41,8 +41,8 @@ MPI_Datatype  MPIU_2SCALAR = 0;
 /*
      These are needed by petscbt.h
 */
-char _BT_mask = ' ',_BT_c = ' ';
-PetscErrorCode  _BT_idx  = 0;
+char      _BT_mask = ' ',_BT_c = ' ';
+PetscInt  _BT_idx  = 0;
 
 /*
      Determines if all PETSc objects are published to the AMS
@@ -107,8 +107,8 @@ PetscErrorCode PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 PetscErrorCode PetscLogCloseHistoryFile(FILE **fd)
 {
   PetscErrorCode ierr;
-  int  rank;
-  char date[64];
+  PetscMPIInt    rank;
+  char           date[64];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -145,13 +145,13 @@ PetscReal  PetscCompareTolerance = 1.e-10;
 
 .seealso: PetscCompareDouble(), PetscCompareScalar()
 @*/
-PetscErrorCode PetscCompareInt(int d)
+PetscErrorCode PetscCompareInt(PetscInt d)
 {
   PetscErrorCode ierr;
-  int work = d;
+  PetscInt       work = d;
 
   PetscFunctionBegin;
-  ierr = MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&work,1,MPIU_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (d != work) {
     SETERRQ(PETSC_ERR_PLIB,"Inconsistent integer");
   }
@@ -178,7 +178,7 @@ PetscErrorCode PetscCompareInt(int d)
 @*/
 PetscErrorCode PetscCompareDouble(double d)
 {
-  double work = d;
+  double         work = d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -210,7 +210,7 @@ PetscErrorCode PetscCompareDouble(double d)
 @*/
 PetscErrorCode PetscCompareScalar(PetscScalar d)
 {
-  PetscScalar work = d;
+  PetscScalar    work = d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -237,7 +237,6 @@ PetscErrorCode PetscCompareInitialize(double tol)
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   int            i,*gflag,mysize;
-  size_t         len;
   char           pname[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
   MPI_Group      group_all,group_sub;
   PetscTruth     work;
@@ -250,12 +249,10 @@ PetscErrorCode PetscCompareInitialize(double tol)
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscStrcpy(basename,pname);CHKERRQ(ierr);
-    ierr = PetscStrlen(basename,&len);CHKERRQ(ierr);
   }
 
   /* broadcase name from first processor to all processors */
-  ierr = MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Bcast(basename,len+1,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(basename,PETSC_MAX_PATH_LEN,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   /* determine what processors belong to my group */
   ierr = PetscStrcmp(pname,basename,&work);CHKERRQ(ierr);
@@ -297,21 +294,21 @@ PetscErrorCode PetscCompareInitialize(double tol)
 
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_MPI_AbortOnError"
-void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag) 
+void Petsc_MPI_AbortOnError(MPI_Comm *comm,PetscMPIInt *flag) 
 {
   PetscFunctionBegin;
-  (*PetscErrorPrintf)("MPI error %d\n",*flag);
+  (*PetscErrorPrintf)("MPI error %d\n",(int)*flag);
   abort();
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_MPI_DebuggerOnError"
-void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag) 
+void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,PetscMPIInt *flag) 
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  (*PetscErrorPrintf)("MPI error %d\n",*flag);
+  (*PetscErrorPrintf)("MPI error %d\n",(int)*flag);
   ierr = PetscAttachDebugger();
   if (ierr) { /* hopeless so get out */
     MPI_Finalize();
@@ -344,7 +341,7 @@ PetscErrorCode PetscEnd(void)
   return 0;
 }
 
-PetscTruth        PetscOptionsPublish = PETSC_FALSE;
+PetscTruth   PetscOptionsPublish = PETSC_FALSE;
 EXTERN PetscErrorCode        PetscLogInfoAllow(PetscTruth,char *);
 EXTERN PetscErrorCode        PetscSetUseTrMalloc_Private(void);
 extern PetscTruth petscsetmallocvisited;
@@ -509,8 +506,8 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
     */
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (size > 2) {
-      int        dummy;
-      MPI_Status status;
+      PetscMPIInt dummy;
+      MPI_Status  status;
       for (i=0; i<size; i++) {
         ierr = MPI_Send(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD);CHKERRQ(ierr);
       }

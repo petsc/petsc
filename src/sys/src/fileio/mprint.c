@@ -191,8 +191,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format
 PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  int            i,j,n,tag;
+  PetscMPIInt    rank,size,tag,i,j,n;
   char           message[QUEUESTRINGSIZE];
   MPI_Status     status;
   FILE           *fd;
@@ -267,7 +266,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm)
 PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
   PetscErrorCode ierr;
-  int rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -314,10 +313,10 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
-  int       rank;
-  size_t    len;
-  char      *nformat,*sub1,*sub2;
-  PetscReal value;
+  PetscMPIInt    rank;
+  size_t         len;
+  char           *nformat,*sub1,*sub2;
+  PetscReal      value;
 
   PetscFunctionBegin;
   if (!comm) comm = PETSC_COMM_WORLD;
@@ -365,7 +364,7 @@ PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
 PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
-  int rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   if (!comm) comm = PETSC_COMM_WORLD;
@@ -428,7 +427,7 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
     */
 #if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
     {
-      int rank;
+      PetscMPIInt rank;
       if (PetscGlobalRank > 8) rank = 8; else rank = PetscGlobalRank;
       PetscSleep(rank);
     }
@@ -480,7 +479,7 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
     Input Parameters:
 +   comm - the communicator
 .   fd - the file pointer
--   len - the lenght of the output buffer
+-   len - the length of the output buffer
 
     Output Parameter:
 .   string - the line read from the file
@@ -491,10 +490,10 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,int len,char string[])
+PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char string[])
 {
   PetscErrorCode ierr;
-  int rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

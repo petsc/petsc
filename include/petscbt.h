@@ -40,8 +40,8 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 #define PetscBT char*
 
-extern char _BT_mask,_BT_c;
-extern int  _BT_idx;
+extern char      _BT_mask,_BT_c;
+extern PetscInt  _BT_idx;
 
 #define PetscBTLength(m)        ((m)/PETSC_BITS_PER_BYTE+1)*sizeof(char)
 #define PetscBTMemzero(m,array) PetscMemzero(array,(m)/PETSC_BITS_PER_BYTE+1)
