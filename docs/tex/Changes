@@ -74,7 +74,8 @@ Improvements, additions may be added as needed.
 
   TS
 
-   
+   TSSetMonitor() now takes an additional final optional argument that will destroy the
+monitor context.
 
 
 
