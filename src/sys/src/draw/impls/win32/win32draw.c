@@ -1,4 +1,4 @@
-/* $Id: win32draw.c,v 1.8 2001/01/17 19:44:13 balay Exp bsmith $ */
+/* $Id: win32draw.c,v 1.9 2001/02/08 20:56:45 bsmith Exp buschelm $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"
@@ -742,7 +742,7 @@ void MessageLoopThread_Win32(PetscDraw draw)
 }
 
 
-static struct _DrawOps DvOps = { PetscDrawSetDoubleBuffer_Win32,
+static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_Win32,
                                  PetscDrawFlush_Win32,
                                  PetscDrawLine_Win32,
                                  PetscDrawLineSetWidth_Win32,
@@ -985,7 +985,7 @@ static int  MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
   WindowNode current = NULL;
   MouseNode  newnode;
   POINT      mousepos;
-  
+  int        ierr; 
   
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
   current = WindowListHead;

@@ -52,7 +52,7 @@ typedef struct  {
   WindowNode node;/* so we can grab windownode info if needed */
   DWORD      popup,caption,overlapped;
  
-}Draw_Win32;
+} PetscDraw_Win32;
 
 
 
