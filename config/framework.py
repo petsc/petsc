@@ -629,7 +629,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       import nargs
       import sys
 
-      args = filter(lambda a: not a.endswith('-with-batch') and not a.endswith('-with-batch=1'), self.clArgs)
       body = ['FILE *output = fopen("reconfigure","w");']
       body.append('fprintf(output, "\\nconfigure_options = [\\n");')
       body.extend(self.batchBodies)
