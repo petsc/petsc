@@ -109,12 +109,20 @@ struct _MatOps {
                  (*matmultsymbolic)(Mat,Mat,PetscReal,Mat*),
                  (*matmultnumeric)(Mat,Mat,Mat),
                  (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*),
-                 (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*),
-/*95*/           (*ptapnumeric)(Mat,Mat,Mat),
+                 (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*), /* double dispatch wrapper routine */
+/*95*/           (*ptapnumeric)(Mat,Mat,Mat),             /* double dispatch wrapper routine */
                  (*matmulttranspose)(Mat,Mat,MatReuse,PetscReal,Mat*),
                  (*matmulttransposesymbolic)(Mat,Mat,PetscReal,Mat*),
-                 (*matmulttransposenumeric)(Mat,Mat,Mat);
+                 (*matmulttransposenumeric)(Mat,Mat,Mat),
+                 (*ptapsymbolic_seqaij)(Mat,Mat,PetscReal,Mat*), /* actual implememtation, P=seqaij */
+/*100*/          (*ptapnumeric_seqaij)(Mat,Mat,Mat),             /* actual implememtation, P=seqaij */
+                 (*ptapsymbolic_mpiaij)(Mat,Mat,PetscReal,Mat*), /* actual implememtation, P=mpiaij */
+                 (*ptapnumeric_mpiaij)(Mat,Mat,Mat);             /* actual implememtation, P=mpiaij */
 };
+/*
+    If you add MatOps entries above also add them to the MATOP enum
+    in include/petscmat.h and include/finclude/petscmat.h
+*/
 
 /*
    Utility private matrix routines

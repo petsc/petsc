@@ -1254,7 +1254,11 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_PTAP_NUMERIC=95,
                MATOP_MAT_MULTTRANSPOSE=96,
                MATOP_MAT_MULTTRANSPOSE_SYMBOLIC=97,
-               MATOP_MAT_MULTTRANSPOSE_NUMERIC=98
+               MATOP_MAT_MULTTRANSPOSE_NUMERIC=98,
+               MATOP_PTAP_SYMBOLIC_SEQAIJ=99,
+               MATOP_PTAP_NUMERIC_SEQAIJ=100,
+               MATOP_PTAP_SYMBOLIC_MPIAIJ=101,
+               MATOP_PTAP_NUMERIC_MPIAIJ=102
              } MatOperation;
 EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));

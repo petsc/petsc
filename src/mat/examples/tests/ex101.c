@@ -1,8 +1,6 @@
 static char help[] = "Testing PtAP for SeqMAIJ matrix, P, with SeqAIJ matrix, A.\n\n";
 
 #include "petscmat.h"
-EXTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat,Mat,PetscReal,Mat*);
-EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat,Mat,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -45,9 +43,8 @@ int main(int argc,char **argv) {
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
-  /* Perform SeqAIJ_SeqMAIJ PtAP -- this will use the interface once dispatch mechanism is figured out */
-  ierr = MatPtAPSymbolic_SeqAIJ_SeqMAIJ(A,P,1.,&mC);CHKERRQ(ierr);
-  ierr = MatPtAPNumeric_SeqAIJ_SeqMAIJ(A,P,mC);CHKERRQ(ierr);
+  /* Perform SeqAIJ_SeqMAIJ PtAP */
+  ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,1.,&mC);CHKERRQ(ierr);
   ierr = MatView(mC,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Perform SeqAIJ_SeqAIJ PtAP for comparison testing */
