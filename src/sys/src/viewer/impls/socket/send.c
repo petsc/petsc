@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.17 1995/07/20 04:00:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: send.c,v 1.18 1995/08/01 04:10:00 curfman Exp curfman $";
 #endif
 /* 
  
@@ -22,6 +22,9 @@ typedef unsigned long   u_long;
 #if defined(PARCH_rs6000)
 #include <ctype.h>
 #endif
+#if defined(PARCH_alpha)
+#include <machine/endian.h>
+#endif
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -38,23 +41,26 @@ typedef unsigned long   u_long;
      Many machines don't prototype many of the socket functions?
 */
 #if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_freebsd) \
-    || defined(PARCH_hpux)
+    || defined(PARCH_hpux) || defined(PARCH_alpha)
 #if defined(__cplusplus)
 extern "C" {
 #endif
-#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_hpux)
+#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_hpux) \
+    && !defined(PARCH_alpha)
 extern int setsockopt(int,int,int,char*,int);
 #endif
 extern int write(int,char*,int);
 extern int close(int);
 #if !defined(PARCH_freebsd)
 extern int socket(int,int,int);
-#if !defined(PARCH_hpux)
+#if !defined(PARCH_hpux) && !defined(PARCH_alpha)
 extern int connect(int,struct sockaddr *,int);
 #endif
 #endif
+#if !defined(PARCH_alpha)
 extern int sleep(unsigned);
 extern int usleep(unsigned);
+#endif
 #if defined(__cplusplus)
 };
 #endif
