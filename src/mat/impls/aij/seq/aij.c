@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.232 1997/08/04 16:28:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.233 1997/08/22 15:13:29 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1689,7 +1689,7 @@ extern int MatUseDXML_SeqAIJ(Mat);
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
    By default, this format uses inodes (identical nodes) when possible, to 
-   improve numerical efficiency of Matrix vector products and solves. We 
+   improve numerical efficiency of matrix-vector products and solves. We 
    search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
 
