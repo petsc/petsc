@@ -52,6 +52,16 @@ PETScView info:
 
 ------------Accounts (around the world and around the block) -----
 
+Nersc Cray T3E 
+login: bsmith
+passwd: petsc-password
+
+machine mcurie.nersc.gov
+
+help : consult@nersc.gov
+1 800 666 3772 select option 3
+---------------
+
 NCSA Convex Exemplar account
 Machine: lena.ncsa.uiuc.edu
 userid: barrys
