@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.18 1996/04/12 15:59:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.19 1996/08/08 14:40:48 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -104,13 +104,13 @@ $    -ksp_xtruemonitor : automatically sets true line graph monitor
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-int KSPLGTrueMonitorCreate(char *host,char *label,int x,int y,int m,
+int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,
                        int n, DrawLG *draw)
 {
   Draw win;
   int  ierr,rank;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_rank(comm,&rank);
   if (rank) { *draw = 0; return 0;}
 
   ierr = DrawOpenX(MPI_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);

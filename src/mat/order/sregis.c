@@ -1,18 +1,19 @@
 #ifndef lint
-static char vcid[] = "$Id: sregis.c,v 1.11 1996/07/02 18:06:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.12 1996/08/08 14:43:21 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
 
-extern int MatOrder_Natural(int*,int*,int*,int*,int*);
-extern int MatOrder_ND(int*,int*,int*,int*,int*);
-extern int MatOrder_1WD(int*,int*,int*,int*,int*);
-extern int MatOrder_QMD(int*,int*,int*,int*,int*);
-extern int MatOrder_RCM(int*,int*,int*,int*,int*);
-extern int MatOrder_RowLength(int*,int*,int*,int*,int*);
+extern int MatOrder_Natural(Mat,MatReordering,IS*,IS*);
+extern int MatOrder_ND(Mat,MatReordering,IS*,IS*);
+extern int MatOrder_1WD(Mat,MatReordering,IS*,IS*);
+extern int MatOrder_QMD(Mat,MatReordering,IS*,IS*);
+extern int MatOrder_RCM(Mat,MatReordering,IS*,IS*);
+extern int MatOrder_RowLength(Mat,MatReordering,IS*,IS*);
+extern int MatOrder_Flow(Mat,MatReordering,IS*,IS*);
 
 /*@C
-  MatReorderingRegisterAll - Registers all of the sequential matrix 
+  MatReorderingRegisterAll - Registers all of the matrix 
   reordering routines in PETSc.
 
   Adding new methods:
@@ -38,6 +39,7 @@ $       routine requires recompilation.
 @*/
 int MatReorderingRegisterAll()
 {
+  int           ierr;
   MatReordering name;
   static int  called = 0;
   if (called) return 0; else called = 1;
@@ -46,13 +48,13 @@ int MatReorderingRegisterAll()
        Do not change the order of these unless similarly changing 
     them in include/mat.h
   */
-  MatReorderingRegister(&name,"natural",PETSC_TRUE,1,MatOrder_Natural);
-  MatReorderingRegister(&name,"nd"     ,PETSC_TRUE,1,MatOrder_ND);
-  MatReorderingRegister(&name,"1wd"    ,PETSC_TRUE,1,MatOrder_1WD);
-  MatReorderingRegister(&name,"rcm"    ,PETSC_TRUE,1,MatOrder_RCM);
-  MatReorderingRegister(&name,"qmd"    ,PETSC_TRUE,1,MatOrder_QMD);
-  MatReorderingRegister(&name,"rl"     ,PETSC_FALSE,0,MatOrder_RowLength);
-  MatReorderingRegister(&name,"flow"   ,PETSC_FALSE,0,0);
+  ierr = MatReorderingRegister(&name,"natural",MatOrder_Natural);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(&name,"nd"     ,MatOrder_ND);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(&name,"1wd"    ,MatOrder_1WD);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(&name,"rcm"    ,MatOrder_RCM);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(&name,"qmd"    ,MatOrder_QMD);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(&name,"rl"     ,MatOrder_RowLength);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(&name,"flow"   ,MatOrder_Flow);CHKERRQ(ierr);
   return 0;
 }
 

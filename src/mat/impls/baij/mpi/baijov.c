@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.10 1996/08/08 14:43:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.11 1996/08/15 12:48:12 bsmith Exp bsmith $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -1176,7 +1176,8 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   else {
     *submat = submats = (Mat *)PetscMalloc(ismax*sizeof(Mat)); CHKPTRQ(submats);
     for (i=0; i<ismax; i++) {
-      ierr = MatCreateSeqBAIJ(comm,a->bs,nrow[i]*bs,ncol[i]*bs,0,lens[i],submats+i);CHKERRQ(ierr);
+      ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,a->bs,nrow[i]*bs,ncol[i]*bs,0,lens[i],submats+i);
+             CHKERRQ(ierr);
     }
   }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.50 1996/09/07 21:30:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: aijnode.c,v 1.51 1996/09/07 22:03:02 curfman Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -14,7 +14,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 /*
       This builds symmetric version of nonzero structure, 
 */
-static int MatGetIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **jja,
+static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                             int ishift,int oshift)
 {
   int *work,*ia,*ja,*j, nz, m ,n, row, col, *jmax;
@@ -94,7 +94,7 @@ static int MatGetIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **jja,
 /*
       This builds nonsymmetric version of nonzero structure, 
 */
-static int MatGetIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
+static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                int ishift,int oshift)
 {
   int *work,*ia,*ja,*j, nz, m ,n, row, col;
@@ -165,7 +165,7 @@ static int MatGetIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **j
   return 0;
 }
 
-static int MatGetIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                  PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -176,14 +176,14 @@ static int MatGetIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,in
 
   ishift = a->indexshift;
   if (symmetric) {
-    ierr = MatGetIJ_SeqAIJ_Inode_Symmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
   } else {
-    ierr = MatGetIJ_SeqAIJ_Inode_Nonsymmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
   }
   return 0;
 }
 
-static int MatRestoreIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                      PetscTruth *done)
 {
   if (!ia) return 0;
@@ -593,8 +593,8 @@ int Mat_AIJ_CheckInode(Mat A)
   A->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
   A->ops.solve           = MatSolve_SeqAIJ_Inode;
   A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
-  A->ops.getij           = MatGetIJ_SeqAIJ_Inode;
-  A->ops.restoreij       = MatRestoreIJ_SeqAIJ_Inode;
+  A->ops.getrowij        = MatGetRowIJ_SeqAIJ_Inode;
+  A->ops.restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
   a->inode.node_count    = node_count;
   a->inode.size          = ns;
   PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes. Limit used: %d. Using Inode routines\n",node_count,a->inode.limit);
@@ -1012,8 +1012,8 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     C->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
     C->ops.solve           = MatSolve_SeqAIJ_Inode;
     C->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
-    C->ops.getij           = MatGetIJ_SeqAIJ_Inode;
-    C->ops.restoreij       = MatRestoreIJ_SeqAIJ_Inode;
+    C->ops.getrowij        = MatGetRowIJ_SeqAIJ_Inode;
+    C->ops.restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
     for(i = 0, row = 0; i< node_max; ++i){
       nsz = nsa[i];
       for( j = 0; j < nsz; ++j, ++row)

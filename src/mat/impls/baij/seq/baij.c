@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.66 1996/08/15 12:48:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.67 1996/08/22 19:51:47 curfman Exp bsmith $";
 #endif
 
 /*
@@ -11,62 +11,6 @@ static char vcid[] = "$Id: baij.c,v 1.66 1996/08/15 12:48:03 bsmith Exp curfman 
 #include "src/inline/spops.h"
 #include "petsc.h"
 
-extern   int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
-
-static int MatGetReordering_SeqBAIJ(Mat A,MatReordering type,IS *rperm,IS *cperm)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr, *ia, *ja,n = a->mbs,*idx,i,ishift,oshift;
-
-  /* 
-     this is tacky: In the future when we have written special factorization
-     and solve routines for the identity permutation we should use a 
-     stride index set instead of the general one.
-  */
-  if (type  == ORDER_NATURAL) {
-    idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
-    for ( i=0; i<n; i++ ) idx[i] = i;
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
-    PetscFree(idx);
-    ISSetPermutation(*rperm);
-    ISSetPermutation(*cperm);
-    ISSetIdentity(*rperm);
-    ISSetIdentity(*cperm);
-    return 0;
-  }
-
-  MatReorderingRegisterAll();
-  ishift = 0;
-  oshift = -MatReorderingIndexShift[(int)type];
-  if (MatReorderingRequiresSymmetric[(int)type]) {
-    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,ishift,oshift,&ia,&ja);CHKERRQ(ierr);
-    ierr = MatGetReordering_IJ(n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
-    PetscFree(ia); PetscFree(ja);
-  } else {
-    if (ishift == oshift) {
-      ierr = MatGetReordering_IJ(n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
-    }
-    else if (ishift == -1) {
-      /* temporarily subtract 1 from i and j indices */
-      int nz = a->i[n] - 1; 
-      for ( i=0; i<nz; i++ ) a->j[i]--;
-      for ( i=0; i<n+1; i++ ) a->i[i]--;
-      ierr = MatGetReordering_IJ(n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
-      for ( i=0; i<nz; i++ ) a->j[i]++;
-      for ( i=0; i<n+1; i++ ) a->i[i]++;
-    } else {
-      /* temporarily add 1 to i and j indices */
-      int nz = a->i[n] - 1; 
-      for ( i=0; i<nz; i++ ) a->j[i]++;
-      for ( i=0; i<n+1; i++ ) a->i[i]++;
-      ierr = MatGetReordering_IJ(n,a->i,a->j,type,rperm,cperm);CHKERRQ(ierr);
-      for ( i=0; i<nz; i++ ) a->j[i]--;
-      for ( i=0; i<n+1; i++ ) a->i[i]--;
-    }
-  }
-  return 0; 
-}
 
 /*
      Adds diagonal pointers to sparse matrix structure.
@@ -95,6 +39,51 @@ int MatMarkDiag_SeqBAIJ(Mat A)
 #include "pinclude/pviewer.h"
 #include "sys.h"
 
+extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
+
+static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
+                            PetscTruth *done)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr, n = a->mbs,i;
+
+  *nn = n;
+  if (!ia) return 0;
+  if (symmetric) {
+    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,oshift,ia,ja);CHKERRQ(ierr);
+  } else if (oshift == 1) {
+    /* temporarily add 1 to i and j indices */
+    int nz = a->i[n] + 1; 
+    for ( i=0; i<nz; i++ ) a->j[i]++;
+    for ( i=0; i<n+1; i++ ) a->i[i]++;
+    *ia = a->i; *ja = a->j;
+  } else {
+    *ia = a->i; *ja = a->j;
+  }
+
+  return 0; 
+}
+
+static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
+                                PetscTruth *done)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         i,n = a->mbs;
+
+  if (!ia) return 0;
+  if (symmetric) {
+    PetscFree(*ia);
+    PetscFree(*ja);
+  }
+    if (oshift == 1) {
+    int nz = a->i[n]; 
+    for ( i=0; i<nz; i++ ) a->j[i]--;
+    for ( i=0; i<n+1; i++ ) a->i[i]--;
+  }
+  return 0; 
+}
+
+
 static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -104,6 +93,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   col_lens = (int *) PetscMalloc((4+a->m)*sizeof(int));CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
+
   col_lens[1] = a->m;
   col_lens[2] = a->n;
   col_lens[3] = a->nz*bs2;
@@ -376,14 +366,18 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; brow = row/bs;  
+#if defined(PETSC_BOPT_g)  
     if (row < 0) SETERRQ(1,"MatSetValues_SeqBAIJ:Negative row");
     if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBAIJ:Row too large");
+#endif
     rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
     rmax = imax[brow]; nrow = ailen[brow]; 
     low = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
+#if defined(PETSC_BOPT_g)  
       if (in[l] < 0) SETERRQ(1,"MatSetValues_SeqBAIJ:Negative column");
       if (in[l] >= a->n) SETERRQ(1,"MatSetValues_SeqBAIJ:Column too large");
+#endif
       col = in[l]; bcol = col/bs;
       ridx = row % bs; cidx = col % bs;
       if (roworiented) {
@@ -396,7 +390,7 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
       while (high-low > 5) {
         t = (low+high)/2;
         if (rp[t] > bcol) high = t;
-        else             low  = t;
+        else              low  = t;
       }
       for ( i=low; i<high; i++ ) {
         if (rp[i] > bcol) break;
@@ -447,10 +441,10 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
       /* shift up all the later entries in this row */
       for ( ii=N; ii>=i; ii-- ) {
         rp[ii+1] = rp[ii];
-         PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(Scalar));
+        PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(Scalar));
       }
       if (N>=i) PetscMemzero(ap+bs2*i,bs2*sizeof(Scalar)); 
-      rp[i] = bcol; 
+      rp[i]                      = bcol; 
       ap[bs2*i + bs*cidx + ridx] = value; 
       noinsert:;
       low = i;
@@ -1686,7 +1680,6 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        0,MatAssemblyEnd_SeqBAIJ,
        0,
        MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,MatZeroRows_SeqBAIJ,
-       MatGetReordering_SeqBAIJ,
        MatLUFactorSymbolic_SeqBAIJ,MatLUFactorNumeric_SeqBAIJ_N,0,0,
        MatGetSize_SeqBAIJ,MatGetSize_SeqBAIJ,MatGetOwnershipRange_SeqBAIJ,
        MatILUFactorSymbolic_SeqBAIJ,0,
@@ -1696,7 +1689,9 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetSubMatrices_SeqBAIJ,MatIncreaseOverlap_SeqBAIJ,
        MatGetValues_SeqBAIJ,0,
        MatPrintHelp_SeqBAIJ,MatScale_SeqBAIJ,
-       0,0,0,MatGetBlockSize_SeqBAIJ};
+       0,0,0,MatGetBlockSize_SeqBAIJ,
+       MatGetRowIJ_SeqBAIJ,
+       MatRestoreRowIJ_SeqBAIJ};
 
 /*@C
    MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block
@@ -1733,7 +1728,10 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 {
   Mat         B;
   Mat_SeqBAIJ *b;
-  int         i,len,ierr,flg,mbs=m/bs,nbs=n/bs,bs2=bs*bs;
+  int         i,len,ierr,flg,mbs=m/bs,nbs=n/bs,bs2=bs*bs,size;
+
+  MPI_Comm_size(comm,&size);
+  if (size > 1) SETERRQ(1,"MatCreateSeqBAIJ:Comm must be of size 1");
 
   if (mbs*bs!=m || nbs*bs!=n) 
     SETERRQ(1,"MatCreateSeqBAIJ:Number rows, cols must be divisible by blocksize");

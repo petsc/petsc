@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.73 1996/08/14 02:11:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.74 1996/09/12 16:25:09 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -123,7 +123,7 @@ int KSPSetFromOptions(KSP ksp)
   if (flg){
     DrawLG lg;
     if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
-    ierr = KSPLGTrueMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
+    ierr = KSPLGTrueMonitorCreate(ksp->comm,0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
     PLogObjectParent(ksp,(PetscObject) lg);
     KSPSetMonitor(ksp,KSPLGTrueMonitor,(void *)lg);
     ksp->xmonitor = lg; 

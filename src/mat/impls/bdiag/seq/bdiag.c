@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.113 1996/08/15 12:47:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.114 1996/08/22 20:06:54 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2021,7 +2021,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
        MatGetInfo_SeqBDiag,0,
        MatGetDiagonal_SeqBDiag_N,MatDiagonalScale_SeqBDiag,MatNorm_SeqBDiag,
        0,MatAssemblyEnd_SeqBDiag,
-       0,MatSetOption_SeqBDiag,MatZeroEntries_SeqBDiag,MatZeroRows_SeqBDiag,0,
+       0,MatSetOption_SeqBDiag,MatZeroEntries_SeqBDiag,MatZeroRows_SeqBDiag,
        0,MatLUFactorNumeric_SeqBDiag_N,0,0,
        MatGetSize_SeqBDiag,MatGetSize_SeqBDiag,MatGetOwnershipRange_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag,0,
@@ -2073,7 +2073,10 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
 {
   Mat          B;
   Mat_SeqBDiag *b;
-  int          i, nda, sizetot, ierr,  nd2 = 128,flg1,idiag[128];
+  int          i, nda, sizetot, ierr,  nd2 = 128,flg1,idiag[128],size;
+
+  MPI_Comm_size(comm,&size);
+  if (size > 1) SETERRQ(1,"MatCreateSeqBAIJ:Comm must be of size 1");
 
   *A = 0;
   if (bs == PETSC_DEFAULT) bs = 1;

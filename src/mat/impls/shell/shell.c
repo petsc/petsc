@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.37 1996/08/04 23:12:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.38 1996/08/08 14:43:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -85,7 +85,7 @@ static struct _MatOps MatOps = {0,0,
        0,0,
        0,
        0,0,0,0,
-       0,0,MatGetSize_Shell,MatGetLocalSize_Shell,
+       0,MatGetSize_Shell,MatGetLocalSize_Shell,
        0,0,0,
        0,0,0,0 };
 

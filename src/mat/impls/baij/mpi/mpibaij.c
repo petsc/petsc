@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.23 1996/08/22 19:53:50 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.24 1996/08/23 22:21:21 curfman Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -21,6 +21,7 @@ extern int MatSolveTrans_MPIBAIJ(Mat,Vec,Vec);
 extern int MatSolveTransAdd_MPIBAIJ(Mat,Vec,Vec,Vec);
 extern int MatILUFactorSymbolic_MPIBAIJ(Mat,IS,IS,double,int,Mat *);
 
+
 /* 
      Local utility routine that creates a mapping from the global column 
    number to the local number in the off-diagonal part of the local 
@@ -40,14 +41,25 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
   return 0;
 }
 
-
-static int MatGetReordering_MPIBAIJ(Mat mat,MatReordering type,IS *rperm,IS *cperm)
+static int MatGetRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
+                            PetscTruth *done)
 {
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
+  Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *) mat->data;
   int         ierr;
-  if (baij->size == 1) {
-    ierr = MatGetReordering(baij->A,type,rperm,cperm); CHKERRQ(ierr);
-  } else SETERRQ(1,"MatGetReordering_MPIBAIJ:not supported in parallel");
+  if (aij->size == 1) {
+    ierr = MatGetRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  } else SETERRQ(1,"MatGetRowIJ_MPIBAIJ:not supported in parallel");
+  return 0;
+}
+
+static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
+                                PetscTruth *done)
+{
+  Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *) mat->data;
+  int        ierr;
+  if (aij->size == 1) {
+    ierr = MatRestoreRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  } else SETERRQ(1,"MatRestoreRowIJ_MPIBAIJ:not supported in parallel");
   return 0;
 }
 
@@ -1038,13 +1050,15 @@ static struct _MatOps MatOps = {
   0,0,MatTranspose_MPIBAIJ,MatGetInfo_MPIBAIJ,
   0,MatGetDiagonal_MPIBAIJ,0,MatNorm_MPIBAIJ,
   MatAssemblyBegin_MPIBAIJ,MatAssemblyEnd_MPIBAIJ,0,MatSetOption_MPIBAIJ,
-  MatZeroEntries_MPIBAIJ,MatZeroRows_MPIBAIJ,MatGetReordering_MPIBAIJ,MatLUFactorSymbolic_MPIBAIJ,
+  MatZeroEntries_MPIBAIJ,MatZeroRows_MPIBAIJ,MatLUFactorSymbolic_MPIBAIJ,
   MatLUFactorNumeric_MPIBAIJ,0,0,MatGetSize_MPIBAIJ,
   MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,MatILUFactorSymbolic_MPIBAIJ,0,
   0,0,0,MatConvertSameType_MPIBAIJ,0,0,
   0,0,0,MatGetSubMatrices_MPIBAIJ,
   MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,MatPrintHelp_MPIBAIJ,
-  MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ};
+  MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ,
+  MatGetRowIJ_MPIBAIJ,
+  MatRestoreRowIJ_MPIBAIJ};
                                 
 
 /*@C

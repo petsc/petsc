@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.93 1996/08/22 19:53:58 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.94 1996/08/23 22:21:37 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -774,7 +774,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        MatGetDiagonal_MPIBDiag,0,MatNorm_MPIBDiag,
        MatAssemblyBegin_MPIBDiag,MatAssemblyEnd_MPIBDiag,
        0,
-       MatSetOption_MPIBDiag,MatZeroEntries_MPIBDiag,MatZeroRows_MPIBDiag,0,
+       MatSetOption_MPIBDiag,MatZeroEntries_MPIBDiag,MatZeroRows_MPIBDiag,
        0,0,0,0,
        MatGetSize_MPIBDiag,MatGetLocalSize_MPIBDiag,
        MatGetOwnershipRange_MPIBDiag,0,0,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.47 1996/08/15 16:05:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.48 1996/08/22 19:54:09 curfman Exp bsmith $";
 #endif
 
 /*
@@ -124,6 +124,7 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   work = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
   MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);
   nreceives = work[rank]; 
+  if (nreceives > size) SETERRQ(1,"MatAssemblyBegin_MPIDense:Internal PETSc error");
   MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);
   nmax = work[rank];
   PetscFree(work);
@@ -138,10 +139,8 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
        This could be done better.
   */
-  rvalues = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));
-  CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));
-  CHKPTRQ(recv_waits);
+  rvalues = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
+  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
     MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,comm,recv_waits+i);
   }
@@ -150,10 +149,8 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (Scalar *) PetscMalloc( 3*(mdn->stash.n+1)*sizeof(Scalar) );
-  CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));
-  CHKPTRQ(send_waits);
+  svalues = (Scalar *) PetscMalloc( 3*(mdn->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
+  send_waits = (MPI_Request *) PetscMalloc((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
   starts = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
@@ -804,7 +801,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatAssemblyBegin_MPIDense,MatAssemblyEnd_MPIDense,
        0,
        MatSetOption_MPIDense,MatZeroEntries_MPIDense,MatZeroRows_MPIDense,
-       0,0,0,
+       0,0,
 /*       0,MatLUFactorSymbolic_MPIDense,MatLUFactorNumeric_MPIDense, */
        0,0,
        MatGetSize_MPIDense,MatGetLocalSize_MPIDense,

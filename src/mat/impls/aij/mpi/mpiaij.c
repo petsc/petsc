@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.164 1996/08/21 19:59:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.165 1996/08/22 19:53:29 curfman Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -27,13 +27,25 @@ static int CreateColmap_MPIAIJ_Private(Mat mat)
 
 extern int DisAssemble_MPIAIJ(Mat);
 
-static int MatGetReordering_MPIAIJ(Mat mat,MatReordering type,IS *rperm,IS *cperm)
+static int MatGetRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
+                           PetscTruth *done)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
   if (aij->size == 1) {
-    ierr = MatGetReordering(aij->A,type,rperm,cperm); CHKERRQ(ierr);
-  } else SETERRQ(1,"MatGetReordering_MPIAIJ:not supported in parallel");
+    ierr = MatGetRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  } else SETERRQ(1,"MatGetRowIJ_MPIAIJ:not supported in parallel");
+  return 0;
+}
+
+static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
+                               PetscTruth *done)
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  int        ierr;
+  if (aij->size == 1) {
+    ierr = MatRestoreRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  } else SETERRQ(1,"MatRestoreRowIJ_MPIAIJ:not supported in parallel");
   return 0;
 }
 
@@ -1170,7 +1182,6 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatAssemblyBegin_MPIAIJ,MatAssemblyEnd_MPIAIJ,
        0,
        MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,
-       MatGetReordering_MPIAIJ,
        MatLUFactorSymbolic_MPIAIJ,MatLUFactorNumeric_MPIAIJ,0,0,
        MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
        MatILUFactorSymbolic_MPIAIJ,0,
@@ -1178,7 +1189,10 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        0,0,0,
        MatGetSubMatrices_MPIAIJ,MatIncreaseOverlap_MPIAIJ,MatGetValues_MPIAIJ,0,
        MatPrintHelp_MPIAIJ,
-       MatScale_MPIAIJ,0,0,0,MatGetBlockSize_MPIAIJ};
+       MatScale_MPIAIJ,0,0,0,
+       MatGetBlockSize_MPIAIJ,
+       MatGetRowIJ_MPIAIJ,
+       MatRestoreRowIJ_MPIAIJ};
 
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format

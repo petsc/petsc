@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.22 1996/08/08 14:43:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.23 1996/08/15 12:47:54 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -11,50 +11,60 @@ static char vcid[] = "$Id: sorder.c,v 1.22 1996/08/08 14:43:21 bsmith Exp bsmith
 
 static NRList *__MatReorderingList = 0;
 
-PetscTruth MatReorderingRequiresSymmetric[25];
-int        MatReorderingIndexShift[25];
+extern int MatOrder_Flow_SeqAIJ(Mat,MatReordering,IS *,IS *);
 
-int MatGetReordering_IJ(int n,int *ia,int* ja,MatReordering type,IS *rperm,IS *cperm)
+int MatOrder_Flow(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
-  int  ierr,*permr,*permc,(*r)(int*,int*,int*,int*,int*);
-
-  permr = (int *) PetscMalloc( (2*n+1)*sizeof(int) ); CHKPTRQ(permr);
-  permc = permr + n;
-
-  /* Get the function pointers for the method requested */
-  if (!__MatReorderingList) {MatReorderingRegisterAll();}
-  if (!__MatReorderingList) {
-    SETERRQ(1,"MatGetReordering_IJ:Could not get list of methods"); 
+  if (mat->type == MATSEQAIJ) {
+    return MatOrder_Flow_SeqAIJ(mat,type,irow,icol);
   }
-  r =  (int (*)(int*,int*,int*,int*,int*))NRFindRoutine( 
-                              __MatReorderingList,(int)type,(char *)0 );
-  if (!r) {SETERRQ(1,"MatGetReordering_IJ:Unknown method");}
-
-  ierr = (*r)(&n,ia,ja,permr,permc); CHKERRQ(ierr);
-
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
-  ISSetPermutation(*rperm);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
-  ISSetPermutation(*cperm);
-  PetscFree(permr); 
-
-  /* 
-     this is tacky: In the future when we have written special factorization
-     and solve routines for the identity permutation we should use a 
-     stride index set instead of the general one.
-  */
-  if (type == ORDER_NATURAL) {
-    ISSetIdentity(*rperm);
-    ISSetIdentity(*cperm);
-  }
-
-  return 0; 
+  SETERRQ(1,"MatOrder_Flow:Cannot do default flow ordering for matrix type");
 }
 
-int MatOrder_Natural(int *N,int *ia,int* ja, int* permr, int* permc)
+int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
-  int n = *N, i;
-  for ( i=0; i<n; i++ ) permr[i] = permc[i] = i;
+  int        n, size,ierr,i,*ii;
+  MPI_Comm   comm;
+  PetscTruth done;
+
+  if (mat->type == MATMPIROWBS) {
+    int start, end;
+    /*
+        BlockSolve Format doesn't really require the reordering, but PETSc wants
+       to provide it to everyone.
+    */
+    ierr = MatGetOwnershipRange(mat,&start,&end); CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,end-start,start,1,irow); CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,end-start,start,1,icol); CHKERRQ(ierr);
+    ierr = ISSetIdentity(*irow); CHKERRQ(ierr);
+    ierr = ISSetIdentity(*icol); CHKERRQ(ierr);
+    return 0;
+  }
+    
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm); CHKERRQ(ierr);
+  MPI_Comm_size(comm,&size);
+
+  if (size > 1) {
+    SETERRQ(1,"MatOrder_Natural:Currently only for 1 processor matrices");
+  }
+
+  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
+
+  /*
+    We actually create general index sets because this avoids mallocs to
+    to obtain the indices in the MatSolve() routines.
+    ierr = ISCreateStride(MPI_COMM_SELF,n,0,1,irow); CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,n,0,1,icol); CHKERRQ(ierr);
+  */
+  ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
+  for ( i=0; i<n; i++ ) ii[i] = i;
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,ii,irow); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,ii,icol); CHKERRQ(ierr);
+  PetscFree(ii);
+
+  ierr = ISSetIdentity(*irow); CHKERRQ(ierr);
+  ierr = ISSetIdentity(*icol); CHKERRQ(ierr);
   return 0;
 }
 
@@ -63,38 +73,36 @@ int MatOrder_Natural(int *N,int *ia,int* ja, int* permr, int* permc)
    This produces a symmetric reordering but does not require a 
    matrix with symmetric non-zero structure.
 */
-int MatOrder_RowLength(int *N,int *ia,int* ja, int* permr, int* permc)
+int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
-  int n = *N, i, *lens,ierr;
+  int        ierr,n,*ia,*ja,*permr,*lens,i;
+  PetscTruth done;
 
-  lens = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(lens);
+  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done); CHKERRQ(ierr);
+  if (!done) SETERRQ(1,"MatOrder_RowLength:Cannot get rows for matrix");
+
+  lens  = (int *) PetscMalloc( 2*n*sizeof(int) ); CHKPTRQ(lens);
+  permr = lens + n;
   for ( i=0; i<n; i++ ) { 
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
   }
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done); CHKERRQ(ierr);
 
   ierr = PetscSortIntWithPermutation(n, lens, permr); CHKERRQ(ierr);
-  PetscFree(lens);
 
-  /* column permutations get same as row */
-  for ( i=0; i<n; i++ ) { 
-    permc[i] = permr[i];
-  }
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,irow); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,permr,icol); CHKERRQ(ierr);
+  PetscFree(lens);
   return 0;
 }
 
-extern int MatOrder_Natural(int*,int*,int*,int*,int*);
 /*@C
    MatReorderingRegister - Adds a new sparse matrix reordering to the 
-   matrix package. This is only for adding reordering for sequential 
-   matrices. The reordering routine has input in the usual compressed
-   row storage format with indices starting at zero (indexshift == 0)
-   or one (indexshift == 1).
+   matrix package. 
 
    Input Parameters:
 .  sname -  corresponding string for name
-.  sym - PETSC_TRUE if requires symmetric nonzero structure, else PETSC_FALSE.
-.  indexshift - 0 or 1 depending on first index your program expects.
 .  order - routine that does reordering
 
    Output Parameters:
@@ -104,8 +112,7 @@ extern int MatOrder_Natural(int*,int*,int*,int*,int*);
 
 .seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
 @*/
-int  MatReorderingRegister(MatReordering *name,char *sname,PetscTruth sym,int shift,
-                           int (*order)(int*,int*,int*,int*,int*))
+int  MatReorderingRegister(MatReordering *name,char *sname,int (*order)(Mat,MatReordering,IS*,IS*))
 {
   int         ierr;
   static int  numberregistered = 0;
@@ -126,10 +133,7 @@ int  MatReorderingRegister(MatReordering *name,char *sname,PetscTruth sym,int sh
   }
 
   *name = (MatReordering) numberregistered++;
-  ierr = NRRegister(__MatReorderingList,(int)*name,sname,(int (*)(void*))order);
-  CHKERRQ(ierr);
-  MatReorderingRequiresSymmetric[(int)*name] = sym;
-  MatReorderingIndexShift[(int)*name]        = shift;
+  ierr = NRRegister(__MatReorderingList,(int)*name,sname,(int (*)(void*))order);CHKERRQ(ierr);
   return 0;
 }
 
@@ -201,6 +205,66 @@ int MatReorderingGetName(MatReordering meth,char **name)
   int ierr;
   if (!__MatReorderingList) {ierr = MatReorderingRegisterAll(); CHKERRQ(ierr);}
    *name = NRFindName( __MatReorderingList, (int)meth );
+  return 0;
+}
+
+extern int MatAdjustForInodes(Mat,IS *,IS *);
+
+/*@C
+   MatGetReordering - Gets a reordering for a matrix to reduce fill or to
+   improve numerical stability of LU factorization.
+
+   Input Parameters:
+.  mat - the matrix
+.  type - type of reordering, one of the following:
+$      ORDER_NATURAL - Natural
+$      ORDER_ND - Nested Dissection
+$      ORDER_1WD - One-way Dissection
+$      ORDER_RCM - Reverse Cuthill-McGee
+$      ORDER_QMD - Quotient Minimum Degree
+
+   Output Parameters:
+.  rperm - row permutation indices
+.  cperm - column permutation indices
+
+   Options Database Keys:
+   To specify the ordering through the options database, use one of
+   the following 
+$    -mat_order natural, -mat_order nd, -mat_order 1wd, 
+$    -mat_order rcm, -mat_order qmd
+
+   The user can define additional orderings; see MatReorderingRegister().
+
+.keywords: matrix, set, ordering, factorization, direct, ILU, LU,
+           fill, reordering, natural, Nested Dissection,
+           One-way Dissection, Cholesky, Reverse Cuthill-McGee, 
+           Quotient Minimum Degree
+
+.seealso:  MatGetReorderingTypeFromOptions(), MatReorderingRegister()
+@*/
+int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
+{
+  int         ierr;
+  int         (*r)(Mat,MatReordering,IS*,IS*);
+
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!mat->assembled) SETERRQ(1,"MatGetReordering:Not for unassembled matrix");
+  if (mat->factor) SETERRQ(1,"MatGetReordering:Not for factored matrix"); 
+  if (!__MatReorderingList) {
+    ierr = MatReorderingRegisterAll();CHKERRQ(ierr);
+  }
+
+  ierr = MatGetReorderingTypeFromOptions(0,&type); CHKERRQ(ierr);
+  PLogEventBegin(MAT_GetReordering,mat,0,0,0);
+  r =  (int (*)(Mat,MatReordering,IS*,IS*))NRFindRoutine(__MatReorderingList,(int)type,(char *)0);
+  if (!r) {SETERRQ(1,"MatGetReordering:Unknown type");}
+
+  ierr = (*r)(mat,type,rperm,cperm); CHKERRQ(ierr);
+  ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);
+  ierr = ISSetPermutation(*cperm); CHKERRQ(ierr);
+
+  ierr = MatAdjustForInodes(mat,rperm,cperm); CHKERRQ(ierr);
+  PLogEventEnd(MAT_GetReordering,mat,0,0,0);
   return 0;
 }
 

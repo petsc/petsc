@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.17 1996/03/08 05:47:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.18 1996/08/08 14:42:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
 
 /*
-  MatToSymmetricIJ_SeqAIJ - Convert a sparse AIJ matrix to IJ format 
-           (ignore the "A" part) Allocates the space needed. Uses only 
+  MatToSymmetricIJ_SeqAIJ - Convert a (generally nonsymmetric) sparse AIJ matrix
+           to IJ format (ignore the "A" part) Allocates the space needed. Uses only 
            the lower triangular part of the matrix.
 
     Description:
@@ -41,7 +41,7 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
   work = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */
-  ia[0] = -shiftout;
+  ia[0] = shiftout;
   for (row = 0; row < n; row++) {
     nz = ai[row+1] - ai[row];
     j  = aj + ai[row];
@@ -71,8 +71,8 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
     while (nz--) {
       col = *j++ + shiftin;
       if (col > row) { break;}
-      if (col != row) {ja[work[col]++] = row - shiftout; }
-      ja[work[row]++] = col - shiftout;
+      if (col != row) {ja[work[col]++] = row + shiftout; }
+      ja[work[row]++] = col + shiftout;
     }
   }
   PetscFree(work);

@@ -1,26 +1,37 @@
 #ifndef lint
-static char vcid[] = "$Id: spnd.c,v 1.12 1995/11/03 03:05:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spnd.c,v 1.13 1996/08/08 14:43:21 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
+#include "mat.h"
 #include "src/mat/impls/order/order.h"
 
 /*
     MatOrder_ND - Find the nested dissection ordering of a given matrix.
 */    
-int MatOrder_ND( int *Nrow, int *ia, int *ja, int* perm,int *permc )
+int MatOrder_ND( Mat mat, MatReordering type, IS *row, IS *col)
 {
-  int i,  *mask, *xls, *ls, nrow = *Nrow;
+  int        ierr, i,  *mask, *xls, *ls, nrow,*ia,*ja,*perm;
+  PetscTruth done;
 
-  mask = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(mask);
-  xls  = (int *)PetscMalloc( (nrow + 1) * sizeof(int) ); CHKPTRQ(xls);
-  ls   = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(ls);
+  ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
+  if (!done) SETERRQ(1,"MatOrder_ND:Cannot get rows for matrix");
+
+  mask = (int *)PetscMalloc( (4*nrow +1) * sizeof(int) ); CHKPTRQ(mask);
+  perm = mask + nrow;
+  xls  = perm + nrow;
+  ls   = xls  + nrow + 1;
 
   gennd( &nrow, ia, ja, mask, perm, xls, ls );
-  PetscFree( mask ); PetscFree( xls ); PetscFree( ls );
+  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
 
+  /* shift because Sparsepack indices start at one */
   for (i=0; i<nrow; i++) perm[i]--;
-  PetscMemcpy(permc,perm,nrow*sizeof(int));
+
+  ierr = ISCreateGeneral(MPI_COMM_SELF,nrow,perm,row); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,nrow,perm,col); CHKERRQ(ierr);
+  PetscFree(mask);
+
   return 0;
 }
 

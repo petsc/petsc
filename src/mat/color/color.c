@@ -11,14 +11,14 @@
     MatFDColoringDegreeSequence_Minpack - Calls the MINPACK routine seqr() that
       computes the degree sequence required by MINPACK coloring routines.
 */
-int MatFDColoringDegreeSequence_Minpack(int m,int *ria, int *rja, int *cia, int *cja, int **seq)
+int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int *ria, int **seq)
 {
   int *work;
 
   work = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(work);  
   *seq = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(*seq);
 
-  MINPACKdegr(&m,rja,ria,cja,cia,*seq,work);
+  MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
 
   PetscFree(work);
   return 0;
@@ -53,15 +53,15 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,int *ncolors,IS **is)
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(1,"MatFDColoringSL_Minpack:Ordering requires IJ");
 
-  ierr = MatFDColoringDegreeSequence_Minpack(n,ria,rja,cia,cja,&seq); CHKERRQ(ierr);
+  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
 
   list = (int*) PetscMalloc( 5*n*sizeof(int) ); CHKPTRQ(list);
   work = list + n;
 
-  MINPACKslo(&n,rja,ria,cja,cia,seq,list,&clique,work,work+n,work+2*n,work+3*n);
+  MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
   coloring = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(coloring);
-  MINPACKseq(&n,rja,ria,cja,cia,list,coloring,ncolors,work);
+  MINPACKseq(&n,cja,cia,rja,ria,list,coloring,ncolors,work);
 
   PetscFree(list);
   PetscFree(seq);

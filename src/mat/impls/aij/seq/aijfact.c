@@ -1,12 +1,17 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.65 1996/08/08 14:42:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.66 1996/08/22 20:07:14 curfman Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
+
+int MatOrder_Flow_SeqAIJ(Mat mat,MatReordering type,IS *irow,IS *icol)
+{
+  SETERRQ(1,"MatOrder_Flow_SeqAIJ:Code not written");
+}
+
 /*
     Factorization code for AIJ format. 
 */
-
 int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b;
@@ -17,6 +22,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
+  
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
@@ -289,7 +295,7 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   IS         iscol = a->col, isrow = a->row;
   int        *r,*c, ierr, i,  n = a->m, *vi, *ai = a->i, *aj = a->j;
-  int        nz,shift = a->indexshift;
+  int        nz,shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp, *tmps, *aa = a->a, sum, *v;
 
   if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqAIJ:Not for unfactored matrix");
@@ -298,8 +304,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
-  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr); c = c + (n-1);
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
@@ -323,8 +329,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
     x[*c--] = tmp[i] = sum*aa[a->diag[i]+shift];
   }
 
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   return 0;
 }
@@ -333,7 +339,7 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   IS         iscol = a->col, isrow = a->row;
   int        *r,*c, ierr, i,  n = a->m, *vi, *ai = a->i, *aj = a->j;
-  int        nz, shift = a->indexshift;
+  int        nz, shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp, *aa = a->a, sum, *v;
 
   if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolveAdd_SeqAIJ:Not for unfactored matrix");
@@ -343,8 +349,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp  = a->solve_work;
 
-  ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&c); CHKERRQ(ierr); c = c + (n-1);
+  ierr = ISGetIndices(isrow,&rout); CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout); CHKERRQ(ierr); c = cout + (n-1);
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
@@ -368,8 +374,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
     x[*c--] += tmp[i];
   }
 
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
   PLogFlops(2*a->nz);
 
   return 0;
@@ -380,7 +386,7 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   IS         iscol = a->col, isrow = a->row, invisrow,inviscol;
   int        *r,*c, ierr, i, n = a->m, *vi, *ai = a->i, *aj = a->j;
-  int        nz,shift = a->indexshift;
+  int        nz,shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp, *aa = a->a, *v;
 
   if (A->factor != FACTOR_LU)  SETERRQ(1,"MatSolveTrans_SeqAIJ:Not unfactored matrix");
@@ -392,8 +398,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   ierr = ISInvertPermutation(isrow,&invisrow); CHKERRQ(ierr);
   ierr = ISInvertPermutation(iscol,&inviscol); CHKERRQ(ierr);
 
-  ierr = ISGetIndices(invisrow,&r); CHKERRQ(ierr);
-  ierr = ISGetIndices(inviscol,&c); CHKERRQ(ierr);
+  ierr = ISGetIndices(invisrow,&rout); CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(inviscol,&cout); CHKERRQ(ierr); c = cout;
 
   /* copy the b into temp work space according to permutation */
   for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
@@ -422,8 +428,8 @@ int MatSolveTrans_SeqAIJ(Mat A,Vec bb, Vec xx)
   /* copy tmp into x according to permutation */
   for ( i=0; i<n; i++ ) x[r[i]] = tmp[i];
 
-  ierr = ISRestoreIndices(invisrow,&r); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(inviscol,&c); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(invisrow,&rout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(inviscol,&cout); CHKERRQ(ierr);
   ierr = ISDestroy(invisrow); CHKERRQ(ierr);
   ierr = ISDestroy(inviscol); CHKERRQ(ierr);
 
@@ -436,7 +442,7 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   IS         iscol = a->col, isrow = a->row, invisrow,inviscol;
   int        *r,*c, ierr, i, n = a->m, *vi, *ai = a->i, *aj = a->j;
-  int        nz,shift = a->indexshift;
+  int        nz,shift = a->indexshift, *rout, *cout;
   Scalar     *x,*b,*tmp, *aa = a->a, *v;
 
   if (A->factor != FACTOR_LU)SETERRQ(1,"MatSolveTransAdd_SeqAIJ:Not unfactored matrix");
@@ -449,8 +455,8 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   /* invert the permutations */
   ierr = ISInvertPermutation(isrow,&invisrow); CHKERRQ(ierr);
   ierr = ISInvertPermutation(iscol,&inviscol); CHKERRQ(ierr);
-  ierr = ISGetIndices(invisrow,&r); CHKERRQ(ierr);
-  ierr = ISGetIndices(inviscol,&c); CHKERRQ(ierr);
+  ierr = ISGetIndices(invisrow,&rout); CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(inviscol,&cout); CHKERRQ(ierr); c = cout;
 
   /* copy the b into temp work space according to permutation */
   for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
@@ -479,8 +485,8 @@ int MatSolveTransAdd_SeqAIJ(Mat A,Vec bb, Vec zz,Vec xx)
   /* copy tmp into x according to permutation */
   for ( i=0; i<n; i++ ) x[r[i]] += tmp[i];
 
-  ierr = ISRestoreIndices(invisrow,&r); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(inviscol,&c); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(invisrow,&rout); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(inviscol,&cout); CHKERRQ(ierr);
   ierr = ISDestroy(invisrow); CHKERRQ(ierr);
   ierr = ISDestroy(inviscol); CHKERRQ(ierr);
 

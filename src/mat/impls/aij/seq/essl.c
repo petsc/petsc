@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.11 1996/07/02 18:06:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.12 1996/08/08 14:42:46 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -28,12 +28,6 @@ typedef struct {
 
 
 extern int MatDestroy_SeqAIJ(PetscObject);
-
-static int MatGetReordering_SeqAIJ_Essl(Mat mat,MatReordering type,IS *rperm,IS *cperm)
-{
-  *rperm = *cperm = 0;
-  return 0;
-}
 
 static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
 {
@@ -135,7 +129,6 @@ int MatUseEssl_SeqAIJ(Mat A)
 
   A->ops.lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
   A->ops.lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Essl;
-  A->ops.getreordering    = MatGetReordering_SeqAIJ_Essl;
 
   return 0;
 }

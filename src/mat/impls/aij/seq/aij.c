@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.183 1996/08/22 19:52:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.184 1996/09/07 15:35:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -27,7 +27,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
-static int MatGetIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+static int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                            PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -39,17 +39,19 @@ static int MatGetIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia
   if (symmetric) {
     ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
   } else if (oshift == 0 && ishift == -1) {
-    /* temporarily subtract 1 from i and j indices */
     int nz = a->i[a->n]; 
-    for ( i=0; i<nz; i++ ) a->j[i]--;
-    for ( i=0; i<a->n+1; i++ ) a->i[i]--;
-    *ia = a->i; *ja = a->j;
+    /* malloc space and  subtract 1 from i and j indices */
+    *ia = (int *) PetscMalloc( (a->n+1)*sizeof(int) ); CHKPTRQ(*ia);
+    *ja = (int *) PetscMalloc( (nz+1)*sizeof(int) ); CHKPTRQ(*ja);
+    for ( i=0; i<nz; i++ ) (*ja)[i] = a->j[i] - 1;
+    for ( i=0; i<a->n+1; i++ ) (*ia)[i] = a->i[i] - 1;
   } else if (oshift == 1 && ishift == 0) {
-    /* temporarily add 1 to i and j indices */
     int nz = a->i[a->n] + 1; 
-    for ( i=0; i<nz; i++ ) a->j[i]++;
-    for ( i=0; i<a->n+1; i++ ) a->i[i]++;
-    *ia = a->i; *ja = a->j;
+    /* malloc space and  add 1 to i and j indices */
+    *ia = (int *) PetscMalloc( (a->n+1)*sizeof(int) ); CHKPTRQ(*ia);
+    *ja = (int *) PetscMalloc( (nz+1)*sizeof(int) ); CHKPTRQ(*ja);
+    for ( i=0; i<nz; i++ ) (*ja)[i] = a->j[i] + 1;
+    for ( i=0; i<a->n+1; i++ ) (*ia)[i] = a->i[i] + 1;
   } else {
     *ia = a->i; *ja = a->j;
   }
@@ -57,26 +59,80 @@ static int MatGetIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia
   return 0; 
 }
 
-static int MatRestoreIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+static int MatRestoreRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        i,ishift;
+  int        ishift = a->indexshift;
  
   if (!ia) return 0;
-  ishift = a->indexshift;
-  if (symmetric) {
+  if (symmetric || (oshift == 0 && ishift == -1) || (oshift == 1 && ishift == 0)) {
     PetscFree(*ia);
     PetscFree(*ja);
-  } else if (oshift == 0 && ishift == -1) {
-    int nz = a->i[a->n] + 1; 
-    for ( i=0; i<nz; i++ ) a->j[i]++;
-    for ( i=0; i<a->n+1; i++ ) a->i[i]++;
-  } else if (oshift == 1 && ishift == 0) {
-    int nz = a->i[a->n] - 1; 
-    for ( i=0; i<nz; i++ ) a->j[i]--;
-    for ( i=0; i<a->n+1; i++ ) a->i[i]--;
   }
+  return 0; 
+}
+
+static int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
+                           PetscTruth *done)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        ierr,i,ishift = a->indexshift,*collengths,*cia,*cja,n = A->n;
+  int        nz = a->i[n]+ishift,row,*jj,m,col;
+ 
+  *nn     = A->n;
+  if (!ia) return 0;
+  if (symmetric) {
+    ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
+  } else {
+    collengths = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(collengths);
+    PetscMemzero(collengths,n*sizeof(int));
+    cia        = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(cia);
+    cja        = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cja);
+    jj = a->j;
+    for ( i=0; i<nz; i++ ) {
+      collengths[jj[i] + ishift]++;
+    }
+    cia[0] = oshift;
+    for ( i=0; i<n; i++) {
+      cia[i+1] = cia[i] + collengths[i];
+    }
+    PetscMemzero(collengths,n*sizeof(int));
+    jj = a->j;
+    for ( row=0; row<n; row++ ) {
+      m = a->i[row+1] - a->i[row];
+      for ( i=0; i<m; i++ ) {
+
+        col = *jj++ + ishift;
+printf("row col %d %d\n",row,col);
+        cja[cia[col] + collengths[col]++ - oshift] = row + oshift;  
+      }
+    }
+
+    jj = cja;
+    for ( i=0; i<n; i++ ) {
+      m = cia[i+1] - cia[i];
+      printf("Column %d length %d\n",i,m);
+      for ( row = 0; row < m; row++ ) {
+        printf("%d ",*jj++);
+      }
+      printf("\n");
+    }
+    PetscFree(collengths);
+    *ia = cia; *ja = cja;
+  }
+  
+  return 0; 
+}
+
+static int MatRestoreColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,
+                                     int **ja,PetscTruth *done)
+{
+  if (!ia) return 0;
+
+  PetscFree(*ia);
+  PetscFree(*ja);
+  
   return 0; 
 }
 
@@ -92,15 +148,19 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
   Scalar     *ap,value, *aa = a->a;
 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
-    row  = im[k];   
+    row  = im[k]; 
+#if defined(PETSC_BOPT_g)  
     if (row < 0) SETERRQ(1,"MatSetValues_SeqAIJ:Negative row");
     if (row >= a->m) SETERRQ(1,"MatSetValues_SeqAIJ:Row too large");
+#endif
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift;
     rmax = imax[row]; nrow = ailen[row]; 
     low = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
+#if defined(PETSC_BOPT_g)  
       if (in[l] < 0) SETERRQ(1,"MatSetValues_SeqAIJ:Negative column");
       if (in[l] >= a->n) SETERRQ(1,"MatSetValues_SeqAIJ:Column too large");
+#endif
       col = in[l] - shift;
       if (roworiented) {
         value = *v++; 
@@ -1351,8 +1411,10 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatScale_SeqAIJ,0,0,
        MatILUDTFactor_SeqAIJ,
        MatGetBlockSize_SeqAIJ,
-       MatGetIJ_SeqAIJ,
-       MatRestoreIJ_SeqAIJ};
+       MatGetRowIJ_SeqAIJ,
+       MatRestoreRowIJ_SeqAIJ,
+       MatGetColumnIJ_SeqAIJ,
+       MatRestoreColumnIJ_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
