@@ -22,9 +22,7 @@ int PetscPOpen(MPI_Comm comm,char *program,
   if (!rank && vbinary->fdes) {
     close(vbinary->fdes);
     if (vbinary->storecompressed) {
-#if defined (PARCH_win32)
-      SETERRQ(1,1,"Cannot compress files on NT");
-#else 
+#if defined(PETSC_HAVE_GZIP) && defined(PETSC_HAVE_POPEN)
       char par[1024],buf[1024];
       FILE *fp;
       /* compress the file */
@@ -36,6 +34,8 @@ int PetscPOpen(MPI_Comm comm,char *program,
       if (fgets(buf,1024,fp)) {
         SETERRQ2(1,1,"Error from command %s\n%s",par,buf);
       }
+#else 
+      SETERRQ(PETSC_ERR_SUP,"Compressed files are unsupported on this platform.");
 #endif
     }
   }

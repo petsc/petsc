@@ -450,9 +450,7 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
     fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
-#if !defined(PETSC_HAVE_WINDOWS_H)
     fprintf(fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
-#endif
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
     fflush(fd);

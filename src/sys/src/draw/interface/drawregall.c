@@ -29,7 +29,7 @@ PetscErrorCode PetscDrawRegisterAll(const char *path)
   
 #if defined(PETSC_HAVE_X11)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_X,     path,"PetscDrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);
-#elif defined (PETSC_HAVE_WIN32)
+#elif defined(PETSC_HAVE_WINDOWS_H)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_WIN32, path,"PetscDrawCreate_Win32", PetscDrawCreate_Win32);CHKERRQ(ierr);
 #endif
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_NULL,  path,"PetscDrawCreate_Null",  PetscDrawCreate_Null);CHKERRQ(ierr);

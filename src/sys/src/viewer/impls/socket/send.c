@@ -1,4 +1,3 @@
-
 #include "petsc.h"
 #include "petscsys.h"
 
@@ -24,17 +23,29 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_SOCKET_H)
 #include <sys/socket.h>
+#endif
+#if defined(PETSC_HAVE_SYS_WAIT_H)
 #include <sys/wait.h>
+#endif
+#if defined(PETSC_HAVE_NETINET_IN_H)
 #include <netinet/in.h>
+#endif
+#if defined(PETSC_HAVE_NETDB_H)
 #include <netdb.h>
+#endif
+#if defined(PETSC_HAVE_FCNTL_H)
 #include <fcntl.h>
+#endif
 #if defined(PETSC_HAVE_STROPTS_H)
 #include <stropts.h>
 #endif
-#if defined (PETSC_HAVE_IO_H)
+#if defined(PETSC_HAVE_IO_H)
 #include <io.h>
+#endif
+#if defined(PETSC_HAVE_WINSOCK2_H)
+#include <Winsock2.h>
 #endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
@@ -65,7 +76,11 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 
   PetscFunctionBegin;
   if (vmatlab->port) {
+#if defined(PETSC_HAVE_CLOSESOCKET)
+    ierr = closesocket(vmatlab->port);
+#else
     ierr = close(vmatlab->port);
+#endif
     if (ierr) SETERRQ(PETSC_ERR_LIB,"System error closing socket");
   }
   ierr = PetscFree(vmatlab);CHKERRQ(ierr);
@@ -103,33 +118,51 @@ PetscErrorCode SOCKCall_Private(char *hostname,int portnum,int *t)
       perror("SEND: error socket");  SETERRQ(PETSC_ERR_LIB,"system error");
     }
     if (connect(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
-       if (errno == EADDRINUSE) {
+#if defined(PETSC_HAVE_WSAGETLASTERROR)
+      ierr = WSAGetLastError();
+      if (ierr == WSAEADDRINUSE) {
         (*PetscErrorPrintf)("SEND: address is in use\n");
-      }
-#if !defined(PARCH_win32_gnu)
-       else if (errno == EALREADY) {
+      } else if (ierr == WSAEALREADY) {
         (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
+      } else if (ierr == WSAEISCONN) {
+        (*PetscErrorPrintf)("SEND: socket already connected\n"); 
+        Sleep((unsigned) 1);
+      } else if (ierr == WSAECONNREFUSED) {
+        /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
+        Sleep((unsigned) 1);
+      } else {
+        perror(NULL); SETERRQ(PETSC_ERR_LIB,"system error");
       }
-      else if (errno == EISCONN) {
+#else
+      if (errno == EADDRINUSE) {
+        (*PetscErrorPrintf)("SEND: address is in use\n");
+      } else if (errno == EALREADY) {
+        (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
+      } else if (errno == EISCONN) {
         (*PetscErrorPrintf)("SEND: socket already connected\n"); 
         sleep((unsigned) 1);
-      }
-#endif
-      else if (errno == ECONNREFUSED) {
+      } else if (errno == ECONNREFUSED) {
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         sleep((unsigned) 1);
       } else {
         perror(NULL); SETERRQ(PETSC_ERR_LIB,"system error");
       }
-      flg = PETSC_TRUE; close(s);
+#endif
+      flg = PETSC_TRUE;
+#if defined(PETSC_HAVE_CLOSESOCKET)
+      closesocket(s);
+#else
+      close(s);
+#endif
     } 
     else flg = PETSC_FALSE;
   }
   *t = s;
-  PetscFunctionReturn(0);
 #endif
+  PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_SOCKET)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketOpen" 
 /*@C
@@ -363,7 +396,7 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
-#else /* defined (PARCH_win32) */
+#else /* !defined (PETSC_HAVE_SOCKET) */ 
  
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketOpen" 

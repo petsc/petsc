@@ -2,14 +2,14 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
-#define PARCH_win32 
 #define PETSC_ARCH_NAME "win32ms_wmpi"
-#define PETSC_HAVE_WIN32
+#define PETSC_HAVE_WINDOWS_H
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_STDLIB_H 
 #define PETSC_HAVE_STRING_H 
 #define PETSC_HAVE_SEARCH_H
 #define PETSC_HAVE_IO_H
+#define PETSC_HAVE_DIRECT_H
 #define PETSC_HAVE_SYS_STAT_H
 
 #define PETSC_STDCALL __stdcall

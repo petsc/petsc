@@ -309,7 +309,7 @@ PetscErrorCode PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
   PetscFunctionBegin;
   if (!a && !b) c = 0;
   else if (!a || !b) c = 1;
-#if defined (PARCH_win32)
+#if defined(PETSC_HAVE_STRICMP)
   else c = stricmp(a,b);
 #else
   else c = strcasecmp(a,b);

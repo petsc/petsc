@@ -45,17 +45,16 @@ static char starttime[256];
 @*/
 PetscErrorCode PetscGetDate(char date[],size_t len)
 {
-  char           *str=0;
-#if defined (PARCH_win32)
+  char           *str=PETSC_NULL;
+#if defined(PETSC_HAVE_TIME)
   time_t         aclock;
-  PetscErrorCode ierr;
 #else
   struct timeval tp;
-  PetscErrorCode ierr;
 #endif
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined (PARCH_win32)
+#if defined(PETSC_HAVE_TIME)
   time(&aclock);
   ierr = PetscStrncpy(date,asctime(localtime(&aclock)),len);CHKERRQ(ierr);
 #else

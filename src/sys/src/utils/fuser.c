@@ -12,15 +12,10 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_win32)
-#include <windows.h>
-#include <io.h>
-#include <direct.h>
-#endif
-#if defined (PARCH_win32_gnu)
+#if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
@@ -32,7 +27,7 @@
 #include "petscfix.h"
 
 
-#if defined(PETSC_HAVE_GET_USER_NAME)
+#if defined(PETSC_HAVE_GETUSERNAME)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetUserName"
 PetscErrorCode PetscGetUserName(char name[],size_t nlen)

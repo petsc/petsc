@@ -8,21 +8,15 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined (PETSC_HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_win32)
-#include <windows.h>
-#include <io.h>
-#include <direct.h>
+#if defined(PETSC_HAVE_TIME_H)
+#include <time.h>
 #endif
-#if defined (PARCH_win32_gnu)
-#include <windows.h>
-#endif
-#include <time.h>  
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif

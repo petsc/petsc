@@ -1,4 +1,3 @@
-
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include "petscsys.h"
 #include <fcntl.h>
@@ -413,7 +412,7 @@ PetscErrorCode PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[
       fname = vbinary->filename;
     }
 
-#if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
+#if defined(PETSC_HAVE_O_BINARY)
     if (type == PETSC_FILE_CREATE) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);

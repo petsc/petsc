@@ -17,15 +17,6 @@
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PETSC_HAVE_WINDOWS_H)
-#include <windows.h>
-#endif
-#if defined(PETSC_HAVE_IO_H)
-#include <io.h>
-#endif
-#if defined(PETSC_HAVE_DIRECT_H)
-#include <direct.h>
-#endif
 #include <fcntl.h>
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
@@ -124,7 +115,7 @@ PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 #elif defined(PETSC_HAVE__FULLPATH)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
-PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 {
   PetscFunctionBegin;
   _fullpath(fullpath,path,flen);
@@ -133,7 +124,7 @@ PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
 #else
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
-PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
 {
   PetscErrorCode ierr;
 

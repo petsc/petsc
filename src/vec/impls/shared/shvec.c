@@ -84,17 +84,11 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_PARAM_H)
 #include <sys/param.h>
+#endif
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
-#endif
-#if defined(PARCH_win32)
-#include <windows.h>
-#include <io.h>
-#include <direct.h>
-#endif
-#if defined (PARCH_win32_gnu)
-#include <windows.h>
 #endif
 #include <fcntl.h>
 #include <time.h>  

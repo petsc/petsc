@@ -2,7 +2,6 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
-#define PARCH_win32_gnu
 #define PETSC_ARCH_NAME "win32_gnu"
 
 #define PETSC_HAVE_GETCWD

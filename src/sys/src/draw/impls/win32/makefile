@@ -1,5 +1,5 @@
 
-#requirespackage 'PETSC_HAVE_WIN32'
+#requirespackage 'PETSC_HAVE_WINDOWS_H'
 
 ALL: lib 
 

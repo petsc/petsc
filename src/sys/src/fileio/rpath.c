@@ -16,15 +16,6 @@
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PETSC_HAVE_WINDOWS_H)
-#include <windows.h>
-#endif
-#if defined(PETSC_HAVE_IO_H)
-#include <io.h>
-#endif
-#if defined(PETSC_HAVE_DIRECT_H)
-#include <direct.h>
-#endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif

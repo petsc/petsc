@@ -35,7 +35,7 @@ PetscErrorCode PetscSSEHardwareTest(PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#ifdef PARCH_linux
+#if defined(PETSC_HAVE_FORK)
 #include <signal.h>
 /* 
    Early versions of the Linux kernel disables SSE hardware because
@@ -75,8 +75,7 @@ PetscErrorCode PetscSSEOSEnabledTest_Linux(PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#endif
-#ifdef PARCH_win32
+#else
 /* 
    Windows 95/98/NT4 should have a Windows Update/Service Patch which enables this hardware.
    Windows ME/2000 doesn't disable SSE Hardware 

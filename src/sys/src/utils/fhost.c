@@ -6,15 +6,10 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_win32)
-#include <windows.h>
-#include <io.h>
-#include <direct.h>
-#endif
-#if defined (PARCH_win32_gnu)
+#if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
@@ -53,13 +48,13 @@ PetscErrorCode PetscGetHostName(char name[],size_t nlen)
   char           *domain;
   PetscErrorCode ierr;
   PetscTruth     flag;
-#if defined(PETSC_HAVE_UNAME) && !defined(PARCH_win32) && !defined(PARCH_win32_gnu)
+#if defined(PETSC_HAVE_UNAME)
   struct utsname utname;
 #endif
 
 
   PetscFunctionBegin;
-#if defined(PARCH_win32) || defined(PARCH_win32_gnu)
+#if defined(PETSC_HAVE_GETCOMPUTERNAME)
   GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
 #elif defined(PETSC_HAVE_UNAME)
   uname(&utname); 

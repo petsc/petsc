@@ -2,9 +2,8 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
-#define PARCH_win32 
 #define PETSC_ARCH_NAME "win32"
-#define PETSC_HAVE_WIN32
+#define PETSC_HAVE_WINDOWS_H
 #define PETSC_HAVE_ICL
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_STDLIB_H 

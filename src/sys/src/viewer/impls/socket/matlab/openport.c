@@ -32,12 +32,21 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_SOCKET_H)
 #include <sys/socket.h>
+#endif
+#if defined(PETSC_HAVE_SYS_WAIT_H)
 #include <sys/wait.h>
+#endif
+#if defined(PETSC_HAVE_NETINET_IN_H)
 #include <netinet/in.h>
+#endif
+#if defined(PETSC_HAVE_NETDB_H)
 #include <netdb.h>
+#endif
+#if defined(PETSC_HAVE_FCNTL_H)
 #include <fcntl.h>
+#endif
 #if defined(PETSC_HAVE_STROPTS_H)
 #include <stropts.h>
 #endif
@@ -50,13 +59,16 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
-
+#if defined(PETSC_HAVE_WINSOCK2_H)
+#include <winsock2.h>
+#endif
+typedef int socklen_t;
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "petscfix.h"
 #include "mex.h"
 
 EXTERN PetscErrorCode SOCKConnect_Private(int);
-#define ERROR(a) {fprintf(stdout,"OPENPORT: %s \n",a); return ;}
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"OPENPORT: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
@@ -67,7 +79,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   int t,portnumber;
 
   /* check output parameters */
-  if (nlhs != 1) ERROR("Open requires one output argument.");
+  if (nlhs != 1) PETSC_MEX_ERROR("Open requires one output argument.");
 
   /* figure out portnumber user wants to use; default to 5005 */
   if (!nrhs) {
@@ -80,7 +92,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   }
 
   /* open connection */
-  t = SOCKConnect_Private(portnumber); if (t == -1)  ERROR("opening socket");
+  t = SOCKConnect_Private(portnumber); if (t == -1)  PETSC_MEX_ERROR("opening socket");
 
   plhs[0]  = mxCreateDoubleMatrix(1,1,mxREAL);
  
@@ -137,11 +149,10 @@ PetscErrorCode establish(u_short portnum)
   PetscErrorCode     ierr;
   struct sockaddr_in sa;  
   struct hostent     *hp;
-  struct utsname     utname;
 
   /* Note we do not use gethostname since that is not POSIX */
-  uname(&utname); strncpy(myname,utname.nodename,MAXHOSTNAME);
-  bzero(&sa,sizeof(struct sockaddr_in));
+  ierr = PetscGetHostName(myname,MAXHOSTNAME);
+  ierr = PetscMemzero(&sa,sizeof(struct sockaddr_in));
   hp = gethostbyname(myname);
   if (!hp) {
      fprintf(stdout,"RECEIVE: error from gethostbyname\n");
@@ -161,15 +172,18 @@ PetscErrorCode establish(u_short portnum)
   }
 
   while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
-     if (errno != EADDRINUSE) { 
-        close(s);
-        fprintf(stdout,"RECEIVE: error from bind\n");
-        return(-1);
-     }
-     close(listenport); 
+#if defined(PETSC_HAVE_WSAGETLASTERROR)
+    ierr = WSAGetLastError();
+    if (ierr != WSAEADDRINUSE) {
+#else
+    if (errno != EADDRINUSE) { 
+#endif
+      close(s);
+      fprintf(stdout,"RECEIVE: error from bind\n");
+      return(-1);
+    }
+    close(listenport); 
   }
   listen(s,0);
   return(s);
 }
-#endif    
- 
