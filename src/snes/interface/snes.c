@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.48 1996/01/30 00:44:12 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.49 1996/02/01 18:54:09 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -684,7 +684,7 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
     "SNESComputeJacobian: For SNES_NONLINEAR_EQUATIONS only");
   if (!snes->computejacobian) return 0;
   PLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);
-  *flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
+  *flg = DIFFERENT_NONZERO_PATTERN;
   ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP); CHKERRQ(ierr);
   PLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);
   return 0;
@@ -1237,8 +1237,9 @@ int SNESSolve(SNES snes,Vec x,int *its)
 {
   int ierr, flg;
 
-  if (!snes->setup_called) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  if (!snes->setup_called) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
+  else {snes->vec_sol = snes->vec_sol_always = x;}
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
