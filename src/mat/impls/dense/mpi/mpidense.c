@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.2 1995/10/20 02:59:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.3 1995/10/22 04:19:52 bsmith Exp curfman $";
 #endif
 
 #include "mpidense.h"
@@ -348,15 +348,50 @@ static int MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 
-/*
-  This only works correctly for square matrices where the subblock A->A is the 
-   diagonal block
-*/
+static int MatMultTrans_MPIDense(Mat A,Vec xx,Vec yy)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *) A->data;
+  int          ierr;
+
+  if (!a->assembled) SETERRQ(1,"MatMulTrans_MPIDense:must assemble matrix");
+  ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
+         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
+         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  return 0;
+}
+
+static int MatMultTransAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *) A->data;
+  int          ierr;
+
+  if (!a->assembled) SETERRQ(1,"MatMulTransAdd_MPIDense:must assemble matrix");
+  ierr = MatMultTransAdd(a->A,xx,yy,a->lvec); CHKERRQ(ierr);
+  /* send it on its way */
+  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
+         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,
+         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  return 0;
+}
+
 static int MatGetDiagonal_MPIDense(Mat A,Vec v)
 {
   Mat_MPIDense *a = (Mat_MPIDense *) A->data;
+  Mat_SeqDense *aloc = (Mat_SeqDense *) a->A->data;
+  int          ierr, i, n, m = a->m, radd;
+  Scalar       *x;
   if (!a->assembled) SETERRQ(1,"MatGetDiag_MPIDense:must assemble matrix");
-  return MatGetDiagonal(a->A,v);
+  ierr = VecGetArray(v,&x); CHKERRQ(ierr);
+  ierr = VecGetSize(v,&n); CHKERRQ(ierr);
+  if (n != a->M) SETERRQ(1,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
+  radd = a->rstart*m*m;
+  for ( i=0; i<m; i++ ) {
+    x[i] = aloc->v[radd + i*m + i];
+  }
+  return 0;
 }
 
 static int MatDestroy_MPIDense(PetscObject obj)
@@ -396,11 +431,21 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   int          ierr, format;
   PetscObject  vobj = (PetscObject) viewer;
   FILE         *fd;
- 
+
   if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
     if (format == FILE_FORMAT_INFO) {
-      ; /* do nothing for now */
+      int nz, nzalloc, mem, rank;
+      MPI_Comm_rank(mat->comm,&rank);
+      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+      ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
+      MPIU_Seq_begin(mat->comm,1);
+        fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d \n",
+            rank,mdn->m,nz,nzalloc,mem);       
+      fflush(fd);
+      MPIU_Seq_end(mat->comm,1);
+      ierr = VecScatterView(mdn->Mvctx,viewer);
+      return 0; 
     }
   }
 
@@ -420,9 +465,9 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
     }
     else {
       /* assemble the entire matrix onto first processor. */
-      Mat       A;
-      int       M = mdn->M, N = mdn->N,m,row,i, nz, *cols;
-      Scalar    *vals;
+      Mat          A;
+      int          M = mdn->M, N = mdn->N,m,row,i, nz, *cols;
+      Scalar       *vals;
       Mat_SeqDense *Amdn = (Mat_SeqDense*) mdn->A->data;
 
       if (!rank) {
@@ -559,18 +604,25 @@ static int MatRestoreRow_MPIDense(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+static int MatNorm_MPIDense(Mat mat,MatNormType type,double *norm)
+{
+  *norm = 0.0;
+  SETERRQ(1,"MatNorm_MPIDense:Not finished");
+  return 0;
+}
+
 static int MatCopyPrivate_MPIDense(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,MatRestoreRow_MPIDense,
        MatMult_MPIDense,MatMultAdd_MPIDense,
-       0, 0, 
+       MatMultTrans_MPIDense,MatMultTransAdd_MPIDense,
        0, 0, 
        0, 0, 0, 
        0, 0, 0,
        MatGetInfo_MPIDense, 0,
-       MatGetDiagonal_MPIDense, 0, 0,
+       MatGetDiagonal_MPIDense, 0, MatNorm_MPIDense,
        MatAssemblyBegin_MPIDense,MatAssemblyEnd_MPIDense,
        0,
        MatSetOption_MPIDense,MatZeroEntries_MPIDense,MatZeroRows_MPIDense,
