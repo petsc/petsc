@@ -212,7 +212,7 @@ lint:
 # Builds Fortran-77 wrappers - not yet available
 C2f77:
 	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/c2f77 \
-          -mnative -ansi -nomsgs -anyname -mapptr -mpi $(SOURCEC)
+          -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr $(SOURCEC)
 
 
 # Builds man pages (xman version)
