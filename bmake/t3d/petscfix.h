@@ -29,22 +29,27 @@ typedef struct rusage* s_rusage;
 #if defined(PARCH_sun4)
 #if defined(__cplusplus)
 extern "C" {
-extern char   *mktemp(char *);
-extern char   *getcwd(char *,long unsigned int);
-extern char   *getwd(char *);
 extern int     getdomainname(char *,int);
+extern char   *getwd(char *);
+extern int    getrusage(int,s_rusage);
+extern char   *mktemp(char *);
 extern char   *realpath(char *,char *);
+extern void   *memalign(int,int);
+
+/*
+extern char   *getcwd(char *,long unsigned int);
 extern void   *malloc(long unsigned int );
 extern void   perror(const char *);
 extern double atof(const char *);
 extern void    free(void *);
-extern int    getrusage(int,s_rusage);
-extern void   *memalign(int,int);
+*/
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
-extern void   exit(int);
-extern int    strcasecmp(const char *,const char *);
 extern int    getpagesize();
+/*
+extern int    strcasecmp(const char *,const char *);
+extern void   exit(int);
+*/
 /*
    On some machines with older versions of the gnu compiler and 
    system libraries these prototypes may be needed
@@ -63,13 +68,15 @@ extern char   *getwd(char *);
 extern char   *mktemp(char *);
 extern int     getdomainname(char *,int);
 extern char   *realpath(char *,char *);
+extern int    getrusage(int,s_rusage);
+extern int    vfprintf (FILE *, const char *, char * );
+extern int    getpagesize();
+/*
 extern double atof(const char*);
 extern int    fclose(FILE *);
 extern void   perror(const char *);
-extern int    vfprintf (FILE *, const char *, char * );
-extern int    getrusage(int,s_rusage);
 extern int    strcasecmp(const char *,const char *);
-extern int    getpagesize();
+ */
 /*
    On some machines with older versions of the gnu compiler and 
    system libraries these prototypes may be needed
@@ -285,25 +292,6 @@ extern int    getpagesize();
 
 /* -----------------------linux ------------------------------------------*/
 #if defined(PARCH_linux)
-
-#if defined(__cplusplus)
-extern "C" {
-extern char   *mktemp(char *);
-extern char   *getwd(char *);
-extern char   *getenv( char *);
-extern int    atoi(char*);
-extern void   perror(const char *);
-extern double atof(const char *);
-extern int    free(void *);
-extern void   *malloc(long unsigned int );
-extern void   *memalign (size_t, size_t);
-}
-
-#else
-extern char   *getenv( char *);
-extern double atof(char *);
-extern int    atoi(char*);
-#endif
 #endif
 
 /* -----------------------Windows NT with gcc --------------------------*/
@@ -313,13 +301,6 @@ extern int    atoi(char*);
 extern "C" {
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
-extern void   *malloc(long unsigned int );
-extern int    free(void *);
-extern char   *getenv( char *);
-extern double atof(char *);
-extern int    atoi(char*);
-extern unsigned sleep(unsigned);
-extern int    close(int);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
 extern int    getdomainname(char *,int);
@@ -328,13 +309,6 @@ extern int    getdomainname(char *,int);
 #else
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
-extern void   *malloc(long unsigned int );
-extern int    free(void *);
-extern char   *getenv( char *);
-extern double atof(char *);
-extern int    atoi(char*);
-extern unsigned sleep(unsigned);
-extern int    close(int);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
 extern int    getdomainname(char *,int);
@@ -343,7 +317,6 @@ extern int    getdomainname(char *,int);
 
 /* -----------------------Windows NT with MS Visual C++ ---------------------*/
 #if defined(PARCH_nt)
-
 #endif
 
 #endif
