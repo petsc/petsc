@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.19 1995/07/20 15:03:05 curfman Exp curfman $ */
+/* $Id: ksp.h,v 1.20 1995/07/20 17:53:18 curfman Exp curfman $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -14,7 +14,7 @@ typedef struct _KSP*     KSP;
 /*  Possible Krylov Space Methods */
 typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
                KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
-               KSPPREONLY } KSPMethod;
+               KSPPREONLY, KSPQCG } KSPMethod;
 
 extern int KSPCreate(MPI_Comm,KSP *);
 extern int KSPSetMethod(KSP,KSPMethod);
