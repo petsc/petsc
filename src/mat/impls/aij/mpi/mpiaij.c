@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.140 1996/04/11 14:07:38 curfman Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.141 1996/04/26 00:03:32 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
 #include "src/vec/vecimpl.h"
-#include "vec/inline/spops.h"
+#include "src/inline/spops.h"
 
 /* local utility routine that creates a mapping from the global column 
 number to the local number in the off-diagonal part of the local 

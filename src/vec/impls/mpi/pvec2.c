@@ -1,12 +1,12 @@
 
-/* $Id: pvec2.c,v 1.13 1995/11/01 23:14:39 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.14 1995/11/02 04:14:12 bsmith Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
 */
 #include <math.h>
 #include "pvecimpl.h" 
-#include "inline/dot.h"
+#include "src/inline/dot.h"
 
 static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
