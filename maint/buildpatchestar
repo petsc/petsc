@@ -11,7 +11,7 @@
 /bin/rm -f ~/petsc-patches.tar.gz ~/petscnt-patches.tar.gz 
 grep '##' /home/bsmith/petsc/docs/tex/petsc-patches.html  | cut -d '>' -f 2 >! \
          /tmp/petsc-patches-file-list.tmp
-tar cf ~/petsc-patches.tar -I /tmp/petsc-patches-file-list.tmp
+/bin/tar cf ~/petsc-patches.tar -I /tmp/petsc-patches-file-list.tmp
 /bin/rm -f /tmp/petsc-patches-file-list.tmp
 gzip ~/petsc-patches.tar
 chgrp petsc ~/petsc-patches.tar.gz
