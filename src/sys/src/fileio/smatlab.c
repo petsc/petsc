@@ -1,10 +1,10 @@
-/* $Id: smatlab.c,v 1.7 2000/05/05 22:13:54 balay Exp bsmith $ */
+/* $Id: smatlab.c,v 1.8 2000/06/17 20:47:59 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscStartMatlab"	
+#define __FUNC__ /*<a name="PetscStartMatlab"></a>*/"PetscStartMatlab"	
 /*@C
     PetscStartMatlab - starts up Matlab with a Matlab script
 
@@ -53,11 +53,13 @@ int PetscStartMatlab(MPI_Comm comm,char *machine,char *script,FILE **fp)
   if (found) PetscFunctionReturn(0);
 #endif
 
-  /* the remote machine won't know about current directory, so add it to Matlab path */
-  /* the extra \" are to protect possible () in the script command from the shell */
-  sprintf(command,"echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m",script);
-  ierr = PetscPOpen(comm,machine,command,"r",&fd);CHKERRQ(ierr);
-  ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
+  if (script) {
+    /* the remote machine won't know about current directory, so add it to Matlab path */
+    /* the extra \" are to protect possible () in the script command from the shell */
+    sprintf(command,"echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m",script);
+    ierr = PetscPOpen(comm,machine,command,"r",&fd);CHKERRQ(ierr);
+    ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
+  }
 
   ierr = PetscPOpen(comm,machine,"xterm -display ${DISPLAY} -e matlab -nosplash","r",fp);CHKERRQ(ierr);
 
