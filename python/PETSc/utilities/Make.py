@@ -21,6 +21,7 @@ class Configure(config.base.Configure):
   def configureMake(self):
     '''Check various things about make'''
     self.getExecutable(self.framework.argDB['with-make'], getFullPath = 1,resultName = 'make')
+    
     # Check for GNU make
     haveGNUMake = 0
     try:
@@ -36,6 +37,7 @@ class Configure(config.base.Configure):
           haveGNUMake = 1
       except RuntimeError, e:
         self.framework.log.write('Make check failed: '+str(e)+'\n')
+        
     # Setup make flags
     self.flags = ''
     if haveGNUMake:
@@ -44,17 +46,10 @@ class Configure(config.base.Configure):
       
     # Check to see if make allows rules which look inside archives
     if haveGNUMake:
-      self.framework.addSubstitution('LIB_C_TARGET', 'libc: ${LIBNAME}(${OBJSC} ${SOBJSC})')
-      self.framework.addSubstitution('LIB_F_TARGET', '''
-libf: ${OBJSF}
-	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}''')
+      self.addMakeRule('libc','${LIBNAME}(${OBJSC} ${SOBJSC})')
     else:
-      self.framework.addSubstitution('LIB_C_TARGET', '''
-libc: ${OBJSC}
-	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}''')
-      self.framework.addSubstitution('LIB_F_TARGET', '''
-libf: ${OBJSF}
-	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}''')
+      self.addMakeRule('libc','${OBJSC}','${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
+    self.addMakeRule('libf','${OBJSF}','${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
     return
 
   def configure(self):

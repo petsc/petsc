@@ -17,6 +17,8 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
+    help.addArgument('PETSc', 'PETSC_DIR',                nargs.Arg(None, None, 'The root directory of the PETSc installation'))
+    help.addArgument('PETSc', 'PETSC_ARCH',               nargs.Arg(None, None, 'The machine architecture'))
     help.addArgument('PETSc', '-with-default-arch=<bool>',nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
 
   def configureDirectories(self):
@@ -38,7 +40,6 @@ class Configure(config.base.Configure):
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
 
-    #  HMMm, not good a macro name DIR???
     self.addMakeMacro('DIR', self.dir)
     self.addDefine('DIR', self.dir)
     self.framework.argDB['PETSC_DIR'] = self.dir

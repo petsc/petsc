@@ -65,8 +65,6 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('PETSc', 'PETSC_DIR',                     nargs.Arg(None, None, 'The root directory of the PETSc installation'))
-    help.addArgument('PETSc', 'PETSC_ARCH',                    nargs.Arg(None, None, 'The machine architecture'))
     help.addArgument('PETSc', '-with-debug=<bool>',            nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
     help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-stack=<bool>',            nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
@@ -625,7 +623,8 @@ class Configure(config.base.Configure):
   def configure(self):
     self.framework.header          = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
     self.framework.cHeader         = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
-    self.framework.makeMacroHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf'    
+    self.framework.makeMacroHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf'
+    self.framework.makeRuleHeader  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscrules'        
     if self.framework.argDB['with-64-bit-ints']:
       self.addDefine('USE_64BIT_INT', 1)
       self.framework.argDB['with-external-packages'] = 0
