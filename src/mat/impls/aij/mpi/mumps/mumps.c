@@ -1,6 +1,6 @@
 /*$Id: mumps.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 /* 
-    Provides an interface to the MUMPS_4.2_beta sparse solver
+    Provides an interface to the MUMPS_4.3 sparse solver
 */
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
