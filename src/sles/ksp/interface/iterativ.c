@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.64 1997/10/19 03:23:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.65 1997/11/13 00:19:13 bsmith Exp curfman $";
 #endif
 
 /*
@@ -32,8 +32,8 @@ int KSPDefaultFreeWork( KSP ksp )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGetResidualNorm"
-/*@C
-    KSPGetResidualNorm - Get's the last (approximate) residual norm computed.
+/*@C KSPGetResidualNorm - Gets the last (approximate preconditioned)
+    residual norm that has been computed.
  
     Input Parameters:
 .   ksp - the iterative context
@@ -41,8 +41,7 @@ int KSPDefaultFreeWork( KSP ksp )
     Output Parameters:
 .   rnorm - residual norm
 
-
-.keywords: KSP, residual norm
+.keywords: KSP, get, residual norm
 
 .seealso: KSPComputeResidual()
 @*/
@@ -202,9 +201,9 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 .  dummy - unused convergence context 
 
    Returns:
-   1 if the iteration has converged
-  -1 if residual norm exceeds divergence threshold;
-   0 otherwise.
+$   1 if the iteration has converged;
+$  -1 if residual norm exceeds divergence threshold;
+$   0 otherwise.
 
    Notes:
    KSPDefaultConverged() reaches convergence when
