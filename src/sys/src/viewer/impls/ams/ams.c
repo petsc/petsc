@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.11 1998/12/03 16:26:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.12 1998/12/17 22:12:12 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"
@@ -14,20 +14,6 @@ typedef struct {
   char       *ams_name;
   AMS_Comm   ams_comm;
 } Viewer_AMS;
-
-Viewer VIEWER_AMS_WORLD_PRIVATE = 0;
-
-#undef __FUNC__  
-#define __FUNC__ "ViewerInitializeAMSWorld_Private"
-int ViewerInitializeAMSWorld_Private(void)
-{
-  int  ierr;
-
-  PetscFunctionBegin;
-  if (VIEWER_AMS_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = ViewerAMSOpen(PETSC_COMM_WORLD,"PETSc",&VIEWER_AMS_WORLD_PRIVATE); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_AMS"
@@ -48,57 +34,77 @@ static int ViewerDestroy_AMS(Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "ViewerAMSOpen"
-/*@C
-    ViewerAMSOpen - Opens an AMS memory snooper viewer. 
-
-    Collective on MPI_Comm
-
-    Input Parameters:
-+   comm - the MPI communicator
--   name - name of AMS communicator being created
-
-    Output Parameter:
-.   lab - the viewer
-
-    Options Database Key:
-.   -ams_port <port number>
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-    Notes:
-    This viewer can be destroyed with ViewerDestroy().
-
-.keywords: Viewer, open, AMS memory snooper
-
-.seealso: ViewerDestroy(), ViewerStringSPrintf()
-@*/
-int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
+#define __FUNC__ "ViewerCreate_AMS"
+int ViewerCreate_AMS(Viewer v)
 {
-  Viewer     v;
   Viewer_AMS *vams;
-  int        ierr,port = -1,flag;
+  int        ierr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
-  PLogObjectCreate(v);
   v->ops->destroy = ViewerDestroy_AMS;
   v->type_name    = (char *) PetscMalloc((1+PetscStrlen(AMS_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
   PetscStrcpy(v->type_name,AMS_VIEWER);
   vams            = PetscNew(Viewer_AMS);CHKPTRQ(vams);
   v->data         = (void *) vams;
+  vams->ams_comm  = -1;
+  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerAMSSetCommName_C",
+                                    "ViewerAMSSetCommName_AMS",
+                                     (void*)ViewerAMSSetCommName_AMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerAMSGetAMSComm_C",
+                                    "ViewerAMSGetAMSComm_AMS",
+                                     (void*)ViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerAMSSetCommName_AMS"
+int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
+{
+  Viewer_AMS *vams = (Viewer_AMS*) v->data;
+  int        ierr,port = -1,flag;
+
+  PetscFunctionBegin;
   ierr = OptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
-  ierr = AMS_Comm_publish((char *)name,&vams->ams_comm,MPI_TYPE,comm,&port);CHKERRQ(ierr);
+  ierr = AMS_Comm_publish((char *)name,&vams->ams_comm,MPI_TYPE,v->comm,&port);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-viewer_ams_printf",&flag);CHKERRQ(ierr);
   if (!flag) {
     ierr = AMS_Set_output_file("/dev/null"); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
-  *lab           = v;
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerAMSGetAMSComm_AMS"
+int ViewerAMSGetAMSComm_AMS(Viewer lab,AMS_Comm *ams_comm)
+{
+  Viewer_AMS *vams = (Viewer_AMS *)lab->data;
+
+  PetscFunctionBegin;
+  if (vams->ams_comm == -1) SETERRQ(1,1,"AMS communicator name not yet set with ViewerAMSSetCommName()");
+  *ams_comm = vams->ams_comm;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerAMSSetCommName"
+int ViewerAMSSetCommName(Viewer v,const char name[])
+{
+  int ierr, (*f)(Viewer,const char[]);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)v,"ViewerAMSSetCommName_C",(void **)&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(v,name);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -122,18 +128,34 @@ int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
 
 .seealso: ViewerDestroy(), ViewerAMSOpen()
 @*/
-int ViewerAMSGetAMSComm(Viewer lab,AMS_Comm *ams_comm)
+int ViewerAMSGetAMSComm(Viewer v,AMS_Comm *ams_comm)
 {
-  Viewer_AMS *vams = (Viewer_AMS *)lab->data;
+  int ierr, (*f)(Viewer,AMS_Comm *);
 
   PetscFunctionBegin;
-  if (PetscStrcmp(lab->type_name,"ams")) SETERRQ(1,1,"Not an AMS viewer");
-
-  *ams_comm = vams->ams_comm;
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)v,"ViewerAMSGetAMSComm_C",(void **)&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(v,ams_comm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------------*/
+Viewer VIEWER_AMS_WORLD_PRIVATE = 0;
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerInitializeAMSWorld_Private"
+int ViewerInitializeAMSWorld_Private(void)
+{
+  int  ierr;
+
+  PetscFunctionBegin;
+  if (VIEWER_AMS_WORLD_PRIVATE) PetscFunctionReturn(0);
+  ierr = ViewerAMSOpen(PETSC_COMM_WORLD,"PETSc",&VIEWER_AMS_WORLD_PRIVATE); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
     The variable Petsc_Viewer_Ams_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a Viewer.

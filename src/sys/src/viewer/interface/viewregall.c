@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewregall.c,v 1.2 1999/01/12 23:17:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewregall.c,v 1.3 1999/01/13 21:46:16 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -42,8 +42,10 @@ int ViewerRegisterAll(char *path)
   ierr = ViewerRegister(BINARY_VIEWER,   path,"ViewerCreate_Binary",     ViewerCreate_Binary);CHKERRQ(ierr);
   ierr = ViewerRegister(STRING_VIEWER,   path,"ViewerCreate_String",     ViewerCreate_String);CHKERRQ(ierr);
   ierr = ViewerRegister(DRAW_VIEWER,     path,"ViewerCreate_Draw",       ViewerCreate_Draw);CHKERRQ(ierr);
-
-  /*  ierr = ViewerRegister(SOCKET_VIEWER,   path,"ViewerCreate_Socket",     ViewerCreate_Socket);CHKERRQ(ierr);
-  ierr = ViewerRegister(AMS_VIEWER,      path,"ViewerCreate_AMS",        ViewerCreate_AMS);CHKERRQ(ierr); */
+  ierr = ViewerRegister(SOCKET_VIEWER,   path,"ViewerCreate_Socket",     ViewerCreate_Socket);CHKERRQ(ierr);
+#if defined(HAVE_AMS)
+  ierr = ViewerRegister(AMS_VIEWER,      path,"ViewerCreate_AMS",        ViewerCreate_AMS);CHKERRQ(ierr); 
+#endif
   PetscFunctionReturn(0);
 }
+
