@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: bc.c,v 1.9 1997/10/11 18:39:18 curfman Exp curfman $";
 #endif
 
 /*
@@ -299,6 +299,8 @@ int BoundaryConditionsExplicit(Euler *app,Vec X)
   ierr = VecScatterEnd(X,app->Xbc,INSERT_VALUES,SCATTER_FORWARD,app->Xbcscatter); CHKERRQ(ierr);
 
   /* Convert BC work vector to Julianne format work arrays */
+  /* temporary_restore */
+  ierr = RestoreWork(app,app->da,app->Xbc,app->localXBC,&app->xx_bc); CHKERRQ(ierr);
   ierr = PackWork(app,app->da,app->Xbc,app->localXBC,&app->xx_bc); CHKERRQ(ierr);
 
   /* Set certain explicit boundary conditions using scattered data */
@@ -306,6 +308,10 @@ int BoundaryConditionsExplicit(Euler *app,Vec X)
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz);
+
+  /* Restore these vectors */
+  ierr = RestoreWork(app,app->da,app->Xbc,app->localXBC,&app->xx_bc); CHKERRQ(ierr);
+  ierr = RestoreWork(app,app->da1,app->Pbc,app->localP,&app->p_bc); CHKERRQ(ierr);
 
   return 0;
 }
