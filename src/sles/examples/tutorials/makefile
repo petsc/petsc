@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.68 1999/11/24 21:55:05 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.69 1999/11/25 18:43:43 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -412,7 +412,7 @@ runex18:
 	   else echo "Possible problem with ex18_1, diffs above"; fi; \
 	   ${RM} -f ex18_1.tmp
 runex20:
-	-@${MPIRUN} ex20 -options_file ex20options -ksp_smonitor > ex20_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex20 -options_file ex20options -ksp_smonitor > ex20_1.tmp 2>&1; \
 	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   ${RM} -f ex20_1.tmp

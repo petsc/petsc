@@ -299,6 +299,7 @@ static double InterpolatingFunctionsElement(int partial, int node, double xi, do
     if( node == 2){return 0.25 *         (1+xi)         *(1);}
     if( node == 3){return 0.25 *(1-xi)*                   (1);}
   }  
+  return 0.0;
 }
 
 /*-----------------------------------------------------------------*/

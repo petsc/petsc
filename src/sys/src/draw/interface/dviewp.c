@@ -1,4 +1,4 @@
-/*$Id: dviewp.c,v 1.30 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dviewp.c,v 1.31 1999/11/24 21:52:47 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -126,7 +126,10 @@ int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) {
+    *ports = PETSC_NULL;
+    PetscFunctionReturn(0);
+  }
 
   *ports = PetscNew(DrawViewPorts);CHKPTRQ(*ports);
   (*ports)->draw   = draw;
