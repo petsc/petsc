@@ -1,4 +1,4 @@
-/*$Id: axpy.c,v 1.44 2000/04/12 04:24:13 bsmith Exp balay $*/
+/*$Id: axpy.c,v 1.45 2000/05/05 22:16:35 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -131,7 +131,7 @@ int MatDiagonalShift(Mat Y,Vec D)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidHeaderSpecific(D,VEC_COOKIE);
-  if (Y->ops->shift) {
+  if (Y->ops->diagonalshift) {
     ierr = (*Y->ops->diagonalshift)(D,Y);CHKERRQ(ierr);
   } else {
     int    vstart,vend;
