@@ -45,6 +45,10 @@ ICASE/NASA paragon: crabcake.larc.nasa.gov
 ICASE/NASA SP: poseidon.larc.nasa.gov
 
 SGI Power Challenge (IRIX64): machine: inca.usi.utah.edu; login: usilcm
+   machine:  inca.usi.utah.edu
+   login ID:  usilcm
+   info:  http://www.usi.utah.edu 
+          http://usi.utah.edu/user_guides/cug/cug.html
 
 Location of email sent to petsc-maint:
   
