@@ -1,4 +1,4 @@
-/*$Id: PetscMalloc.c,v 1.21 2000/11/28 17:32:38 bsmith Exp bsmith $*/
+/*$Id: PetscMalloc.c,v 1.22 2001/01/15 21:49:39 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -25,13 +25,13 @@ int main(int argc,char **argv)
   }
   
   /* Take care of paging effects */
-  dummy = PetscMalloc(100);CHKPTRA(dummy);
+  ierr = PetscMalloc(100,&dummy);CHKERRA(ierr);
   ierr = PetscFree(dummy);CHKERRA(ierr);
   ierr = PetscGetTime(&x);CHKERRA(ierr);
 
   /* Do all mallocs */
   for (i=0 ; i< 1000; i++) {
-    arr[i] = PetscMalloc(rand1[i]);CHKPTRA(arr[i]);
+    ierr = PetscMalloc(rand1[i],& arr[i]);CHKERRA(ierr);
   }
   
   ierr = PetscGetTime(&x);CHKERRA(ierr);
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
 
   /* Do some mallocs */
   for (i=0; i< 1000; i+=2) {
-    arr[i] = PetscMalloc(rand2[i]);CHKPTRA(arr[i]);
+    ierr = PetscMalloc(rand2[i],&arr[i]);CHKERRA(ierr);
  }
   ierr = PetscGetTime(&y);CHKERRA(ierr);
   

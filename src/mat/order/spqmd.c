@@ -1,4 +1,4 @@
-/*$Id: spqmd.c,v 1.37 2000/09/28 21:12:22 bsmith Exp bsmith $*/
+/*$Id: spqmd.c,v 1.38 2001/01/15 21:46:34 bsmith Exp balay $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"
@@ -19,14 +19,14 @@ int MatOrdering_QMD(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  perm   = (int *)PetscMalloc(nrow * sizeof(int));CHKERRQ(ierr);
-  iperm  = (int *)PetscMalloc(nrow * sizeof(int));CHKERRQ(ierr);
-  deg    = (int *)PetscMalloc(nrow * sizeof(int));CHKERRQ(ierr);
-  marker = (int *)PetscMalloc(nrow * sizeof(int));CHKERRQ(ierr);
-  rchset = (int *)PetscMalloc(nrow * sizeof(int));CHKERRQ(ierr);
-  nbrhd  = (int *)PetscMalloc(nrow * sizeof(int));CHKERRQ(ierr);
-  qsize  = (int *)PetscMalloc(nrow * sizeof(int));CHKERRQ(ierr);
-  qlink  = (int *)PetscMalloc(nrow * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(int),&perm);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(int),&iperm);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(int),&deg);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(int),&marker);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(int),&rchset);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(int),&nbrhd);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(int),&qsize);CHKERRQ(ierr);
+  ierr = PetscMalloc(nrow * sizeof(int),&qlink);CHKERRQ(ierr);
   /* WARNING - genqmd trashes ja */    
   SPARSEPACKgenqmd(&nrow,ia,ja,perm,iperm,deg,marker,rchset,nbrhd,qsize,qlink,&nofsub);
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);

@@ -1,14 +1,13 @@
-/*$Id: dscorder.c,v 1.2 2000/12/21 03:22:41 balay Exp bsmith $*/
+/*$Id: dscorder.c,v 1.3 2001/01/15 21:46:39 bsmith Exp balay $*/
 /* 
         Provides an interface to the DSCPACK-S ordering routines.
 */
 #include "petscmat.h"
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX) 
-#include "dscmain.h"
-
 extern int dsc_s_nz; /* golbal communication mechanism for dscpack */
 
 EXTERN_C_BEGIN
+#include "dscmain.h"
 
 #undef __FUNC__
 #define __FUNC__ "MatOrdering_DSC"
@@ -63,5 +62,7 @@ ERROR_HANDLE:
   ierr = MatRestoreRowIJ(mat,0,PETSC_TRUE,&m,&ai,&aj,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_END
 
 #endif

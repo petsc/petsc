@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.41 2000/05/05 22:19:31 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.42 2001/01/15 21:49:08 bsmith Exp balay $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
   if (flg) {
-ierr = PetscMalloc(size*sizeof(int),&(    localnodes ));CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(int),&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) { localnodes[i] = 2;}
     localnodes[size-1] = M - 2*(size-1);
   }

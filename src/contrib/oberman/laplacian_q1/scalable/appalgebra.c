@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.3 2000/11/06 17:04:37 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.4 2001/01/15 21:49:25 bsmith Exp balay $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -285,7 +285,7 @@ int SetBoundaryConditions(AppCtx *appctx)
 
   /* get list of vertices on the boundary and their coordinates */
   ierr = AppPartitionGetBoundaryNodesAndCoords(part,&n,&vertex_ptr,&coord_ptr);CHKERRQ(ierr);
-ierr = PetscMalloc((n+1)*sizeof(double),&  values );CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(double),&values);CHKERRQ(ierr);
   for(i=0;i<n;i++){
     /* evaluate boundary condition function at point */
     ierr = PFApply(appctx->bc,1,coord_ptr+(2*i),values+i);CHKERRQ(ierr);

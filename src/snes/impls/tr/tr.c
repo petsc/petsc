@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.120 2000/09/28 21:14:16 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.121 2001/01/15 21:47:56 bsmith Exp balay $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -341,6 +341,7 @@ EXTERN_C_BEGIN
 int SNESCreate_EQ_TR(SNES snes)
 {
   SNES_EQ_TR *neP;
+  int ierr;
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {

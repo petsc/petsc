@@ -1,4 +1,4 @@
-/*$Id: sregis.c,v 1.34 2000/05/10 16:41:27 bsmith Exp bsmith $*/
+/*$Id: sregis.c,v 1.35 2000/12/01 16:27:10 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"     /*I       "petscmat.h"   I*/
 
@@ -49,7 +49,7 @@ int MatOrderingRegisterAll(char *path)
   ierr = MatOrderingRegisterDynamic(MATORDERING_RCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_QMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_ROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DSC)
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX) 
   ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_ND    ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_MMD   ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_MDF   ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);

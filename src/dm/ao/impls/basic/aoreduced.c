@@ -1,4 +1,4 @@
-/*$Id: aoreduced.c,v 1.25 2000/09/28 21:15:12 bsmith Exp bsmith $*/
+/*$Id: aoreduced.c,v 1.26 2001/01/15 21:48:44 bsmith Exp balay $*/
 
 #include "src/dm/ao/aoimpl.h"     /*I   "petscao.h"  I*/
 #include "petscsys.h"
@@ -28,7 +28,7 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   */
   ierr  = PetscDataTypeGetSize(segment->datatype,&dsize);CHKERRQ(ierr);
   bs    = segment->bs;
-ierr = PetscMalloc((n+1)*bs*dsize,&  odata );CHKERRQ(ierr);
+  ierr  = PetscMalloc((n+1)*bs*dsize,&odata);CHKERRQ(ierr);
   idata = (char*)segment->data;
   for (i=0; i<n; i++) {
     ierr = PetscMemcpy(odata + i*bs*dsize,idata + keys[i]*bs*dsize,bs*dsize);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ ierr = PetscMalloc((n+1)*bs*dsize,&  odata );CHKERRQ(ierr);
     if (!PetscBTLookupSet(mask,found[i] - imin)) count++;
   }
   ierr = PetscBTMemzero(imax-imin,mask);CHKERRQ(ierr);
-ierr = PetscMalloc((count+1)*sizeof(int),&  out );CHKERRQ(ierr);
+  ierr = PetscMalloc((count+1)*sizeof(int),&out);CHKERRQ(ierr);
   count = 0;
   for (i=0; i<n; i++) {
     if (found[i] < 0) continue;

@@ -1,23 +1,17 @@
-# $Id: makefile,v 1.37 2000/08/17 19:36:51 balay Exp $ 
-#
-#  All the Sparspak routines have been converted to C with the F2C 
-# converter. We do not include in the distribution the original Fortran 77 
-# code in the interest of saving disk space. 
-#
+# $Id: makefile,v 1.31 2000/11/28 17:28:44 bsmith Exp $ 
+
+#requirespackage 'PETSC_HAVE_DSCPACK'
+
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${DSCPACK_INCLUDE}
 FFLAGS   =
-SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c sorder.c sregis.c\
-           degree.c  fnroot.c genqmd.c qmdqt.c rcm.c fn1wd.c gen1wd.c \
-           genrcm.c qmdrch.c rootls.c fndsep.c gennd.c qmdmrg.c qmdupd.c
-SOURCEH  = order.h 
-OBJSC    = sp1wd.o spinver.o spnd.o spqmd.o sprcm.o sorder.o sregis.o\
-           degree.o  fnroot.o genqmd.o qmdqt.o rcm.o fn1wd.o gen1wd.o \
-           genrcm.o qmdrch.o rootls.o fndsep.o gennd.o qmdmrg.o qmdupd.o
+SOURCEC  = dscorder.c
+SOURCEH  = 
+OBJSC    = dscorder.o
 LIBBASE  = libpetscmat
-DOCS     = readme
-LOCDIR   = src/mat/order/
+DOCS     = 
+LOCDIR   = src/mat/order/dsc
 MANSEC   = MatOrderings
 
 

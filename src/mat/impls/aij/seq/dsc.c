@@ -1,12 +1,17 @@
-/*$Id: dsc.c,v 1.2 2000/12/21 03:23:06 balay Exp bsmith $*/
+/*$Id: dsc.c,v 1.3 2001/01/15 21:45:34 bsmith Exp balay $*/
 /* 
         Provides an interface to the DSCPACK-S
 */
 
 #include "src/mat/impls/aij/seq/aij.h" 
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX) 
+EXTERN_C_BEGIN
 #include "dscmain.h"
+extern int Initialize_A_Nonz(int,int*,int*,real_number_type*,
+                        int,int*,int*,real_number_type**);
+EXTERN_C_END
 
+extern int MatDestroy_SeqAIJ(Mat);
 
 /* golbal data for DSCPACK  communcation between reordering and factorization */
 int dsc_s_nz = 0;      /* num of nonzeros in lower/upper half of the matrix */
@@ -82,9 +87,9 @@ int MatCholeskyFactorNumeric_SeqAIJ_DSC(Mat A, Mat *F)
     DSC_Re_Init();
   }
 
-  ierr  = ISGetIndices(iscol,&perm);CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&iperm);CHKERRQ(ierr);
-  ierr =Initialize_A_Nonz(m,ai,aj,a_nonz,dsc_s_nz,perm,iperm, &s_a_nonz);
+  ierr = ISGetIndices(iscol,&perm);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&iperm);CHKERRQ(ierr);
+  ierr = Initialize_A_Nonz(m,ai,aj,a_nonz,dsc_s_nz,perm,iperm, &s_a_nonz);
   if (ierr <0) SETERRQ(PETSC_ERR_ARG_SIZ, "Error setting up permuted nonzero vector");
               
   DSC_N_Fact(s_a_nonz); 
@@ -145,8 +150,6 @@ ERROR_HANDLE:
 
   PetscFunctionReturn(0);
 }
-
-EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatSeqAIJUseDSC"

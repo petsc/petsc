@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.24 2000/09/28 21:12:57 bsmith Exp bsmith $*/
+/*$Id: milu.c,v 1.25 2001/01/15 21:47:00 bsmith Exp balay $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -72,7 +72,7 @@ static int PCSetup_mILU(PC pc)
   PetscFunctionBegin;
   ierr  = MatGetOwnershipRange(omat,&first,&last);CHKERRQ(ierr);
   lsize = last-first;
-ierr = PetscMalloc((lsize+1)*sizeof(double),&  mprop );CHKERRQ(ierr);
+  ierr = PetscMalloc((lsize+1)*sizeof(double),&mprop);CHKERRQ(ierr);
   {
     int irow;
     for (irow=first; irow<last; irow++) {

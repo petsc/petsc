@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.74 2000/09/28 21:13:31 bsmith Exp bsmith $*/
+/*$Id: qcg.c,v 1.75 2001/01/15 21:47:27 bsmith Exp balay $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -315,7 +315,7 @@ int KSPCreate_QCG(KSP ksp)
   KSP_QCG *cgP;
 
   PetscFunctionBegin;
-ierr = PetscMalloc(sizeof(KSP_QCG),&(  cgP  ));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(KSP_QCG),&cgP);CHKERRQ(ierr);
   ierr = PetscMemzero(cgP,sizeof(KSP_QCG));CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,sizeof(KSP_QCG));
   ksp->data                      = (void*)cgP;

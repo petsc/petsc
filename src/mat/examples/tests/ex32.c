@@ -1,4 +1,4 @@
-/*$Id: ex32.c,v 1.21 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex32.c,v 1.22 2001/01/15 21:46:09 bsmith Exp balay $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -34,13 +34,13 @@ int main(int argc,char **args)
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A);CHKERRA(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRA(ierr);
 
-ierr = PetscMalloc((n+1)*sizeof(int),&  col );CHKPTRA(col);
+  ierr = PetscMalloc((n+1)*sizeof(int),&col);CHKERRA(ierr);
   for (i=0; i<n+1; i++)
     fscanf(file,"     I=%d%d\n",&j,&col[i]);
   fscanf(file,"  EOD JA\n");
 
-ierr = PetscMalloc(nnz*sizeof(Scalar),&(  val ));CHKPTRA(val);
-ierr = PetscMalloc(nnz*sizeof(int),&(  row ));CHKPTRA(row);
+  ierr = PetscMalloc(nnz*sizeof(Scalar),&val);CHKERRA(ierr);
+  ierr = PetscMalloc(nnz*sizeof(int),&row);CHKERRA(ierr);
   fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
   for (i=0; i<nnz; i++) {
     fscanf(file,"    %d%d%le\n",&j,&row[i],&val[i]);
@@ -48,8 +48,8 @@ ierr = PetscMalloc(nnz*sizeof(int),&(  row ));CHKPTRA(row);
   }
   fscanf(file,"  EOD IA\n");
 
-ierr = PetscMalloc(n*sizeof(Scalar),&(  bval ));CHKPTRA(bval);
-ierr = PetscMalloc(n*sizeof(int),&(  brow ));CHKPTRA(brow);
+  ierr = PetscMalloc(n*sizeof(Scalar),&bval);CHKERRA(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&brow);CHKERRA(ierr);
   fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
   for (i=0; i<n; i++) {
     fscanf(file,"      %d%le%d\n",&j,bval+i,&j);

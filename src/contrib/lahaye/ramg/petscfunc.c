@@ -126,7 +126,7 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
   ierr = VecGetArray(V,&values); CHKERRA(ierr); 
   PetscFOpen(MPI_COMM_WORLD,filename,"w",&fout);
   for (i=0;i<numnodes;i++)
-      PetscFPrintf(MPI_COMM_WORLD,fout,"%14.12e \n", values[i] ); 
+      PetscFPrintf(MPI_COMM_WORLD,fout,"%14.12e \n", values[i]); 
   PetscFClose(MPI_COMM_WORLD,fout);
 
   ierr = VecRestoreArray(V,&values); CHKERRA(ierr);
@@ -155,7 +155,7 @@ int MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reason,
   CONVHIST *convhist = (CONVHIST*) ctx;
  
   bnrm2 =    convhist->BNRM2;
-  ierr = KSPGetTolerances(ksp, &rtol, PETSC_NULL, PETSC_NULL, PETSC_NULL ); 
+  ierr = KSPGetTolerances(ksp, &rtol, PETSC_NULL, PETSC_NULL, PETSC_NULL); 
          CHKERRA(ierr);
   if (rnorm/bnrm2 < rtol){ 
     PetscPrintf(MPI_COMM_WORLD,"[test] %d %g \r",n,rnorm/bnrm2);
@@ -302,10 +302,10 @@ int PrintMatrix(Mat mat, char* path, char* base)
        #if defined(PETSC_USE_COMPLEX)
          ierr = PetscViewerASCIIPrintf( viewer,"%d %d %22.18e %22.18e\n", 
                 I+1, cols_getrow[j]+1, real(vals_getrow[j]), 
-                imag(vals_getrow[j]) ); 
+                imag(vals_getrow[j])); 
        #else
          ierr = PetscViewerASCIIPrintf( viewer,"%d %d %22.18e \n", 
-                I+1, cols_getrow[j]+1, vals_getrow[j] ); 
+                I+1, cols_getrow[j]+1, vals_getrow[j]); 
        #endif 
      }
    }
@@ -330,27 +330,20 @@ int PrintVector(Vec vec, char* path, char* base)
    sprintf(filename, "%s%s%s", path, base, ".m");
    printf("   [PrintVector]::Generating file %s ...\n", filename); 
    ierr = VecGetSize(vec, &size); CHKERRA(ierr);
-   values = (Scalar *) PetscMalloc(size * sizeof(Scalar)); 
-            CHKERRQ(ierr); 
+   ierr = PetscMalloc(size * sizeof(Scalar),&values);CHKERRQ(ierr); 
    ierr = VecGetArray(vec, &values); CHKERRA(ierr);
-   ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer); 
-          CHKERRA(ierr);
-   ierr = PetscViewerASCIIPrintf(viewer,"function [z] = %s()\n",base); 
-          CHKERRA(ierr);
-   ierr = PetscViewerASCIIPrintf(viewer,"z = [\n"); 
-          CHKERRA(ierr);
+   ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer);CHKERRA(ierr);
+   ierr = PetscViewerASCIIPrintf(viewer,"function [z] = %s()\n",base);CHKERRA(ierr);
+   ierr = PetscViewerASCIIPrintf(viewer,"z = [\n");CHKERRA(ierr);
    for (i=0;i<size;i++){
      #if defined(PETSC_USE_COMPLEX)
        ierr = PetscViewerASCIIPrintf(viewer, "%22.18e %22.18e \n",
-                                real( values[i] ), imag( values[i] )); 
-              CHKERRA(ierr);
+                                real( values[i] ), imag( values[i]);CHKERRA(ierr);
      #else 
-       ierr = PetscViewerASCIIPrintf(viewer, "%22.18e \n", values[i] ); 
-              CHKERRA(ierr);
+       ierr = PetscViewerASCIIPrintf(viewer, "%22.18e \n", values[i]);CHKERRA(ierr);
      #endif 
    }
-  ierr = PetscViewerASCIIPrintf(viewer,"]; \n"); 
-          CHKERRA(ierr);
+   ierr = PetscViewerASCIIPrintf(viewer,"]; \n");CHKERRA(ierr);
    ierr = PetscViewerDestroy(viewer); CHKERRA(ierr);
    ierr = VecRestoreArray(vec, &values); CHKERRA(ierr);
    printf("   [PrintVector]::Done Generating file !\n", filename);    

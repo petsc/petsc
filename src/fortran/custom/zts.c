@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.34 2000/09/26 19:11:19 balay Exp bsmith $*/
+/*$Id: zts.c,v 1.35 2001/01/15 21:49:49 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscts.h"
@@ -164,8 +164,7 @@ void PETSC_STDCALL tsgetsolution_(TS *ts,Vec *v,int *ierr)
 void PETSC_STDCALL tscreate_(MPI_Comm *comm,TSProblemType *problemtype,TS *outts,int *ierr)
 {
   *ierr = TSCreate((MPI_Comm)PetscToPointerComm(*comm),*problemtype,outts);
-  ((PetscObject)*outts)->fortran_func_pointers = (void**)PetscMalloc(7*sizeof(void *));
-  if (!((PetscObject)*outts)->fortran_func_pointers) {*ierr = 1; return;}
+  *ierr = PetscMalloc(7*sizeof(void *),&((PetscObject)*outts)->fortran_func_pointers);
 }
 
 void PETSC_STDCALL tsgetsnes_(TS *ts,SNES *snes,int *ierr)

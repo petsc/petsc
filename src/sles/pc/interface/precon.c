@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.202 2000/10/24 20:26:23 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.203 2001/01/15 21:46:45 bsmith Exp balay $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1341,7 +1341,7 @@ int PCComputeExplicitOperator(PC pc,Mat *mat)
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-ierr = PetscMalloc((m+1)*sizeof(int),&  rows );CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   if (size == 1) {

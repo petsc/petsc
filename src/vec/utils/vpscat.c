@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.152 2000/12/04 23:53:32 kaushik Exp bsmith $*/
+/*$Id: vpscat.c,v 1.153 2001/01/15 21:44:37 bsmith Exp balay $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2316,7 +2316,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   ctx->todata  = (void*)to;
 
   /* move data into send scatter context */
-  ierr = PetscMalloc((size+nsends+1)*sizeof(int),lowner);CHKERRQ(ierr);
+  ierr = PetscMalloc((size+nsends+1)*sizeof(int),&lowner);CHKERRQ(ierr);
   start         = lowner + size;
   count         = 0;
   to->starts[0] = start[0] = 0;

@@ -1,4 +1,4 @@
-/*$Id: eige.c,v 1.28 2000/09/28 21:13:11 bsmith Exp bsmith $*/
+/*$Id: eige.c,v 1.29 2001/01/15 21:47:10 bsmith Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -49,7 +49,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
-ierr = PetscMalloc((m+1)*sizeof(int),&  rows );CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   if (size == 1) {
@@ -171,18 +171,18 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
 #else
     clen = 2*n;
 #endif
-ierr = PetscMalloc(clen*sizeof(Scalar),&(    cwork    ));CHKERRQ(ierr);
-    idummy   = n;
-    lwork    = 5*n;
-ierr = PetscMalloc(lwork*sizeof(PetscReal),&(    work     ));CHKERRQ(ierr);
-ierr = PetscMalloc(n*sizeof(PetscReal),&(    realpart ));CHKERRQ(ierr);
-    zero     = 0;
+    ierr   = PetscMalloc(clen*sizeof(Scalar),&cwork);CHKERRQ(ierr);
+    idummy = n;
+    lwork  = 5*n;
+    ierr   = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
+    ierr   = PetscMalloc(n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
+    zero   = 0;
     LAgeev_(&zero,array,&n,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
     ierr = PetscFree(work);CHKERRQ(ierr);
 
     /* For now we stick with the convention of storing the real and imaginary
        components of evalues separately.  But is this what we really want? */
-ierr = PetscMalloc(n*sizeof(int),&(    perm ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
 
 #if !defined(PETSC_USE_COMPLEX)
     for (i=0; i<n; i++) {
@@ -217,13 +217,13 @@ ierr = PetscMalloc(n*sizeof(int),&(    perm ));CHKERRQ(ierr);
 
     idummy   = n;
     lwork    = 5*n;
-ierr = PetscMalloc(2*n*sizeof(PetscReal),&(    realpart ));CHKERRQ(ierr);
+    ierr     = PetscMalloc(2*n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
     imagpart = realpart + n;
-ierr = PetscMalloc(5*n*sizeof(PetscReal),&(    work     ));CHKERRQ(ierr);
+    ierr     = PetscMalloc(5*n*sizeof(PetscReal),&work);CHKERRQ(ierr);
     LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
     if (ierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
-ierr = PetscMalloc(n*sizeof(int),&(    perm ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
     ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -241,14 +241,14 @@ ierr = PetscMalloc(n*sizeof(int),&(    perm ));CHKERRQ(ierr);
 
     idummy   = n;
     lwork    = 5*n;
-ierr = PetscMalloc(5*n*sizeof(Scalar),&(    work     ));CHKERRQ(ierr);
-ierr = PetscMalloc(2*n*sizeof(PetscReal),&(    rwork    ));CHKERRQ(ierr);
-ierr = PetscMalloc(n*sizeof(Scalar),&(    eigs     ));CHKERRQ(ierr);
+    ierr = PetscMalloc(5*n*sizeof(Scalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(Scalar),&eigs);CHKERRQ(ierr);
     LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
     if (ierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
-ierr = PetscMalloc(n*sizeof(int),&(    perm ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
     for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
     ierr = PetscSortDoubleWithPermutation(n,r,perm);CHKERRQ(ierr);

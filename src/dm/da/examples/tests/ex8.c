@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.21 2000/05/05 22:19:31 balay Exp bsmith $*/
+/*$Id: ex8.c,v 1.22 2001/01/15 21:49:08 bsmith Exp balay $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
@@ -50,7 +50,7 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
     on each processor. Just list them in the global natural ordering.
 
   */
-ierr = PetscMalloc((nslice+1)*sizeof(int),&  sliceindices );CHKERRQ(ierr);
+  ierr = PetscMalloc((nslice+1)*sizeof(int),&sliceindices);CHKERRQ(ierr);
   count = 0;
   if (rank < P) {
     for (j=0; j<N; j++) {

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.62 2000/10/24 20:27:13 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.63 2001/01/15 21:48:04 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -78,7 +78,7 @@ int main(int argc,char **argv)
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
   if (user.problem == 2) {
-ierr = PetscMalloc(2*(mx+my+4)*sizeof(Scalar),&    user.work );CHKERRQ(ierr);
+    ierr = PetscMalloc(2*(mx+my+4)*sizeof(Scalar),&user.work);CHKERRQ(ierr);
   } else {
     user.work = 0;
   }

@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.5 2000/08/01 20:58:20 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.6 2001/01/15 21:49:27 bsmith Exp balay $*/
 
 /*
      Loads the qquadrilateral grid database from a file  and sets up the local 
@@ -16,7 +16,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   PetscViewer binary;
   char   filename[256];
 
-  (*appctx) = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(AppCtx),appctx);CHKERRQ(ierr);
   (*appctx)->comm = comm;
 
 /*  ---------------
@@ -81,7 +81,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   /* make the extra index set needed for MatZeroRows */
   ierr = ISGetIndices(isvertex,&vertex_indices);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isvertex,&vertex_size);CHKERRQ(ierr);
-ierr = PetscMalloc(((2*vertex_size)+1)*sizeof(int),&  vertex_blocked );CHKERRQ(ierr);
+  ierr = PetscMalloc(((2*vertex_size)+1)*sizeof(int),&vertex_blocked);CHKERRQ(ierr);
   for(i=0;i<vertex_size;i++){
     vertex_blocked[2*i] = 2*vertex_indices[i];
     vertex_blocked[2*i+1] =  2*vertex_indices[i] + 1;
@@ -116,7 +116,7 @@ ierr = PetscMalloc(((2*vertex_size)+1)*sizeof(int),&  vertex_blocked );CHKERRQ(i
   /*  Now create a blocked IS for MatZeroRowsLocal */
   ierr = ISGetIndices(vertex_boundary,&vertex_indices);CHKERRQ(ierr);
   ierr = ISGetLocalSize(vertex_boundary,&vertex_boundary_size);CHKERRQ(ierr); 
-ierr = PetscMalloc((2*vertex_boundary_size)*sizeof(int),&(  vertex_boundary_blocked ));CHKERRQ(ierr); 
+  ierr = PetscMalloc((2*vertex_boundary_size)*sizeof(int),&vertex_boundary_blocked);CHKERRQ(ierr); 
   for(i=0;i<vertex_boundary_size;i++){ 
      vertex_boundary_blocked[2*i] = 2*vertex_indices[i]; 
      vertex_boundary_blocked[2*i+1] = 2*vertex_indices[i] + 1; 

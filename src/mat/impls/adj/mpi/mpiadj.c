@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.54 2000/11/08 15:15:20 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.55 2001/01/15 21:46:00 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -100,10 +100,10 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
 int MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data; 
-  int        i,j,*diag,m = A->m;
+  int        i,j,*diag,m = A->m,ierr;
 
   PetscFunctionBegin;
-ierr = PetscMalloc((m+1)*sizeof(int),&  diag );CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(int),&diag);CHKERRQ(ierr);
   PetscLogObjectMemory(A,(m+1)*sizeof(int));
   for (i=0; i<A->m; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
@@ -338,7 +338,7 @@ int MatCreate_MPIAdj(Mat B)
   /* we don't know the "local columns" so just use the row information :-(*/
   ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
-ierr = PetscMalloc((size+1)*sizeof(int),&  b->rowners );CHKERRQ(ierr);
+  ierr = PetscMalloc((size+1)*sizeof(int),&b->rowners);CHKERRQ(ierr);
   PetscLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
   ierr = MPI_Allgather(&B->m,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0] = 0;
@@ -462,9 +462,9 @@ int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
   }
 
   /* malloc space for nonzeros */
-ierr = PetscMalloc((nzeros+1)*sizeof(int),&  a  );CHKERRQ(ierr);
-ierr = PetscMalloc((N+1)*sizeof(int),&  ia );CHKERRQ(ierr);
-ierr = PetscMalloc((nzeros+1)*sizeof(int),&  ja );CHKERRQ(ierr);
+  ierr = PetscMalloc((nzeros+1)*sizeof(int),&a);CHKERRQ(ierr);
+  ierr = PetscMalloc((N+1)*sizeof(int),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc((nzeros+1)*sizeof(int),&ja);CHKERRQ(ierr);
 
   nzeros = 0;
   ia[0]  = 0;

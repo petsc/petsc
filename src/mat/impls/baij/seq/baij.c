@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.214 2000/11/28 17:29:14 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.215 2001/01/15 21:45:50 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -50,7 +50,7 @@ int MatMissingDiagonal_SeqBAIJ(Mat A)
 int MatMarkDiagonal_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
-  int         i,j,*diag,m = a->mbs;
+  int         i,j,*diag,m = a->mbs,ierr;
 
   PetscFunctionBegin;
   if (a->diag) PetscFunctionReturn(0);
@@ -214,7 +214,7 @@ int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
 int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data;
-  int          itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*idx_i,bs2;
+  int          itmp,i,j,k,M,*ai,*aj,bs,bn,bp,*idx_i,bs2,ierr;
   MatScalar    *aa,*aa_i;
   Scalar       *v_i;
 

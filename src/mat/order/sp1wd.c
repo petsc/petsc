@@ -1,4 +1,4 @@
-/*$Id: sp1wd.c,v 1.36 2000/09/28 21:12:22 bsmith Exp bsmith $*/
+/*$Id: sp1wd.c,v 1.37 2001/01/15 21:46:34 bsmith Exp balay $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"
@@ -18,7 +18,7 @@ int MatOrdering_1WD(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  mask = (int *)PetscMalloc((5*nrow+1) * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((5*nrow+1) * sizeof(int),&mask);CHKERRQ(ierr);
   xls  = mask + nrow;
   ls   = xls + nrow + 1;
   xblk = ls + nrow;

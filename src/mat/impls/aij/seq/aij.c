@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.358 2000/11/28 17:28:56 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.359 2001/01/15 21:45:34 bsmith Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1672,7 +1672,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS *is,int ov)
   if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"illegal overlap value used");
 
   ierr = PetscMalloc((m+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
-  ierr  = PetscBTCreate(m,table);CHKERRQ(ierr);
+  ierr = PetscBTCreate(m,table);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++) {
     /* Initialize the two local arrays */

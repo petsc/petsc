@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.21 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.22 2001/01/15 21:47:36 bsmith Exp balay $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -70,14 +70,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-ierr = PetscMalloc(N*sizeof(Scalar),&(  userx    ));CHKPTRA(userx);
-ierr = PetscMalloc(N*sizeof(Scalar),&(  userb    ));CHKPTRA(userb);
-ierr = PetscMalloc(N*sizeof(Scalar),&(  solution ));CHKPTRA(solution);
+  ierr = PetscMalloc(N*sizeof(Scalar),&userx);CHKERRA(ierr);
+  ierr = PetscMalloc(N*sizeof(Scalar),&userb);CHKERRA(ierr);
+  ierr = PetscMalloc(N*sizeof(Scalar),&solution);CHKERRA(ierr);
 
   /* 
       Allocate an array to hold the coefficients in the elliptic operator
   */
-ierr = PetscMalloc(N*sizeof(Scalar),&(  rho ));CHKERRA(ierr);
+  ierr = PetscMalloc(N*sizeof(Scalar),&rho);CHKERRA(ierr);
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the

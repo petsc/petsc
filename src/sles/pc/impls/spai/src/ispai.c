@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.18 2000/11/28 17:30:26 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.19 2001/01/15 21:47:01 bsmith Exp balay $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -562,10 +562,10 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   M->bs = 1;
   M->max_block_size = 1;
 
-ierr = PetscMalloc(sizeof(int)*size,&(  M->mnls ));CHKERRQ(ierr);
-ierr = PetscMalloc(sizeof(int)*size,&(  M->start_indices ));CHKERRQ(ierr);
-ierr = PetscMalloc(sizeof(int)*n,&(  M->pe ));CHKERRQ(ierr);
-ierr = PetscMalloc(sizeof(int)*n,&(  M->block_sizes ));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(int)*size,&M->mnls);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(int)*size,&M->start_indices);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(int)*n,&M->pe);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(int)*n,&M->block_sizes);CHKERRQ(ierr);
   for (i=0; i<n; i++) M->block_sizes[i] = 1;
 
   ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
@@ -595,8 +595,8 @@ ierr = PetscMalloc(sizeof(int)*n,&(  M->block_sizes ));CHKERRQ(ierr);
   rows     = M->lines;
 
   /* Determine the mapping from global indices to pointers */
-  mapping = (int*)PetscMalloc(M->n*sizeof(int));CHKERRQ(ierr);
-  pe = 0;
+  ierr       = PetscMalloc(M->n*sizeof(int),&mapping);CHKERRQ(ierr);
+  pe         = 0;
   local_indx = 0;
   for (i=0; i<M->n; i++) {
     if (local_indx >= M->mnls[pe]) {
@@ -608,7 +608,7 @@ ierr = PetscMalloc(sizeof(int)*n,&(  M->block_sizes ));CHKERRQ(ierr);
   }
 
 
-ierr = PetscMalloc(mnl*sizeof(int),&(  num_ptr ));CHKERRQ(ierr);
+  ierr = PetscMalloc(mnl*sizeof(int),&num_ptr);CHKERRQ(ierr);
 
   /*********************************************************/
   /************** Set up the row structure *****************/
@@ -628,10 +628,10 @@ ierr = PetscMalloc(mnl*sizeof(int),&(  num_ptr ));CHKERRQ(ierr);
   }
 
   for (i=rstart; i<rend; i++) {
-    row_indx             = i-rstart;
-    len                  = num_ptr[row_indx];
-    rows->ptrs[row_indx] = (int*)PetscMalloc(len*sizeof(int));CHKERRQ(ierr);
-    rows->A[row_indx]    = (double*)PetscMalloc(len*sizeof(double));CHKERRQ(ierr);
+    row_indx = i-rstart;
+    len      = num_ptr[row_indx];
+    ierr     = PetscMalloc(len*sizeof(int),&rows->ptrs[row_indx]);CHKERRQ(ierr);
+    ierr     = PetscMalloc(len*sizeof(double),&rows->A[row_indx]);CHKERRQ(ierr);
   }
 
   /* copy the matrix */
@@ -669,9 +669,9 @@ ierr = PetscMalloc(mnl*sizeof(int),&(  num_ptr ));CHKERRQ(ierr);
     }
 
     for (i=rstart; i<rend; i++) {
-      row_indx             = i-rstart;
-      len                  = num_ptr[row_indx];
-      rows->rptrs[row_indx] = (int*)PetscMalloc(len*sizeof(int));CHKERRQ(ierr);
+      row_indx = i-rstart;
+      len      = num_ptr[row_indx];
+      ierr     = PetscMalloc(len*sizeof(int),&rows->rptrs[row_indx]);CHKERRQ(ierr);
     }
 
     /* copy the matrix (i.e., the structure) */
@@ -725,8 +725,8 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
-ierr = PetscMalloc(m*sizeof(int),&(  d_nnz ));
-ierr = PetscMalloc(m*sizeof(int),&(  o_nnz ));
+  ierr = PetscMalloc(m*sizeof(int),&d_nnz);
+  ierr = PetscMalloc(m*sizeof(int),&o_nnz);
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
   last_diag_col = first_diag_col + B->mnls[rank];
@@ -785,18 +785,16 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
   
   ierr = VecCreateMPI(PETSC_COMM_WORLD,m,M,Pv);CHKERRA(ierr);
 
-ierr = PetscMalloc(size*sizeof(int),&(  mnls ));
-  MPI_Barrier(PETSC_COMM_WORLD);
-  MPI_Allgather((void*)&v->mnl,1,MPI_INT,
-		(void*)mnls,1,MPI_INT,
-		PETSC_COMM_WORLD);
+  ierr = PetscMalloc(size*sizeof(int),&mnls);
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allgather((void*)&v->mnl,1,MPI_INT,(void*)mnls,1,MPI_INT,PETSC_COMM_WORLD);CHKERRQ(ierr);
   
-ierr = PetscMalloc(size*sizeof(int),&(  start_indices ));
+  ierr = PetscMalloc(size*sizeof(int),&start_indices);
   start_indices[0] = 0;
   for (i=1; i<size; i++) 
     start_indices[i] = start_indices[i-1] +mnls[i-1];
   
-  global_indices = (int*)PetscMalloc(v->mnl*sizeof(int));
+  ierr = PetscMalloc(v->mnl*sizeof(int),&global_indices);
   for (i=0; i<v->mnl; i++) 
     global_indices[i] = start_indices[rank] + i;
 

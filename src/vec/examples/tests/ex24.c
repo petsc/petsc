@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.12 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex24.c,v 1.13 2001/01/15 21:45:13 bsmith Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   } else {
     m = n;
   }
-ierr = PetscMalloc((m)*sizeof(int),&(  blks ));CHKPTRA(blks);
+  ierr = PetscMalloc((m)*sizeof(int),&blks);CHKERRA(ierr);
   blks[0] = n*rank*bs;
   for (i=1; i<m; i++) {
     blks[i] = blks[i-1] + bs;   

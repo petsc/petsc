@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.64 2000/09/28 21:13:26 bsmith Exp bsmith $*/
+/*$Id: lsqr.c,v 1.65 2001/01/15 21:47:23 bsmith Exp balay $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -187,7 +187,7 @@ int KSPCreate_LSQR(KSP ksp)
   int      ierr;
 
   PetscFunctionBegin;
-ierr = PetscMalloc(sizeof(KSP_LSQR),&(  lsqr ));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(KSP_LSQR),&lsqr);CHKERRQ(ierr);
   ierr = PetscMemzero(lsqr,sizeof(KSP_LSQR));CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,sizeof(KSP_LSQR));
   ksp->data                      = (void*)lsqr;

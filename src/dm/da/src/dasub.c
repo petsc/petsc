@@ -1,4 +1,4 @@
-/*$Id: dasub.c,v 1.30 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: dasub.c,v 1.31 2001/01/15 21:48:51 bsmith Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -55,7 +55,7 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
-ierr = PetscMalloc(2*size*sizeof(int),&(  owners ));CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size*sizeof(int),&owners);CHKERRQ(ierr);
   ranks = owners + size;
   ierr = MPI_Allgather(&flag,1,MPI_INT,owners,1,MPI_INT,da->comm);CHKERRQ(ierr);
   ict = 0;

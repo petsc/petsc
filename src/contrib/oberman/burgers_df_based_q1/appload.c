@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.15 2000/08/01 20:58:21 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.16 2001/01/15 21:49:29 bsmith Exp balay $*/
 /*
      Loads the quadrilateral grid database from a file  and sets up the local 
      data structures. 
@@ -19,7 +19,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   char       filename[256];
   AppView    *view;  /*added by H. */
 
-  (*appctx) = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(AppCtx),appctx);CHKERRQ(ierr);
   (*appctx)->comm = comm;
   view    = &(*appctx)->view; /*added by H. */
 
@@ -192,8 +192,8 @@ int AppCtxSetLocal(AppCtx *appctx)
   /* Create some boundary information */
   ierr = ISGetIndices(grid->isvertex_boundary,&grid->vertex_boundary);CHKERRQ(ierr);
   ierr = ISGetLocalSize(grid->isvertex_boundary,&grid->vertex_boundary_count);CHKERRQ(ierr);
-  grid->boundary_df = (int*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(int));CHKERRQ(ierr);
-  grid->bvs = (double*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(double));CHKERRQ(ierr);
+  ierr = PetscMalloc(2*grid->vertex_boundary_count*sizeof(int),&grid->boundary_df);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*grid->vertex_boundary_count*sizeof(double),&grid->bvs);CHKERRQ(ierr);
   for(i = 0; i < grid->vertex_boundary_count; i++){
     grid->boundary_df[2*i] = grid->vertex_df[2*grid->vertex_boundary[i]];
     grid->boundary_df[2*i+1] = grid->vertex_df[2*grid->vertex_boundary[i]+1];
@@ -203,7 +203,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   if(0){printf("here  comes boundary df\n"); PetscIntView(2*grid->vertex_boundary_count,grid->boundary_df,PETSC_VIEWER_STDOUT_SELF); }
 
   /* need a list of x,y coors corresponding to the boundary vertices only */
-  grid->bvc = (double*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(double));CHKERRQ(ierr);
+  ierr = PetscMalloc(2*grid->vertex_boundary_count*sizeof(double),&grid->bvc);CHKERRQ(ierr);
   for(i = 0; i < grid->vertex_boundary_count; i++){
     grid->bvc[2*i] = grid->vertex_value[2*grid->vertex_boundary[i]];
     grid->bvc[2*i+1]  = grid->vertex_value[2*grid->vertex_boundary[i]+1];

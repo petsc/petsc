@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.25 2000/10/24 20:26:00 bsmith Exp bsmith $*/
+/*$Id: sbaij2.c,v 1.26 2001/01/15 21:46:03 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -39,9 +39,9 @@ int MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse sca
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
   
-ierr = PetscMalloc((1+oldcols)*sizeof(int),&  smap  );CHKERRQ(ierr);
+  ierr  = PetscMalloc((1+oldcols)*sizeof(int),&smap);CHKERRQ(ierr);
   ssmap = smap;
-ierr = PetscMalloc((1+nrows)*sizeof(int),&  lens  );CHKERRQ(ierr);
+  ierr  = PetscMalloc((1+nrows)*sizeof(int),&lens);CHKERRQ(ierr);
   ierr  = PetscMemzero(smap,oldcols*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) smap[irow[i]] = i+1; /* nrows = ncols */
   /* determine lens of each row */
@@ -115,7 +115,7 @@ int MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *
   
   /* Verify if the indices corespond to each element in a block 
    and form the IS with compressed IS */
-  vary = (int*)PetscMalloc(2*(a->mbs+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(2*(a->mbs+1)*sizeof(int),&vary);CHKERRQ(ierr);
   iary = vary + a->mbs;
   ierr = PetscMemzero(vary,(a->mbs)*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++; 
@@ -143,7 +143,7 @@ int MatGetSubMatrices_SeqSBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat 
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-ierr = PetscMalloc((n+1)*sizeof(Mat),&    *B );CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*sizeof(Mat),B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
@@ -542,7 +542,7 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   ii   = a->i;
 
   if (!a->mult_work) {    
-    a->mult_work = (Scalar*)PetscMalloc((A->m+1)*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMalloc((A->m+1)*sizeof(Scalar),&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work; 
     
@@ -1049,7 +1049,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   ii   = a->i;
 
   if (!a->mult_work) {    
-    a->mult_work = (Scalar*)PetscMalloc((A->m+1)*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMalloc((A->m+1)*sizeof(Scalar),&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work; 
   
@@ -1165,9 +1165,9 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
     *norm = sqrt(sum_diag + 2*sum_off);
 
   }  else if (type == NORM_INFINITY) { /* maximum row sum */
-ierr = PetscMalloc(mbs*sizeof(int),&(    il ));CHKERRQ(ierr); 
-ierr = PetscMalloc(mbs*sizeof(int),&(    jl ));CHKERRQ(ierr);
-ierr = PetscMalloc(bs*sizeof(PetscReal),&(    sum ));CHKERRQ(ierr);
+    ierr = PetscMalloc(mbs*sizeof(int),&il);CHKERRQ(ierr); 
+    ierr = PetscMalloc(mbs*sizeof(int),&jl);CHKERRQ(ierr);
+    ierr = PetscMalloc(bs*sizeof(PetscReal),&sum);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       jl[i] = mbs; il[0] = 0;
     }

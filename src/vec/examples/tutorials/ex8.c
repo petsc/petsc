@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.16 2000/09/22 20:43:24 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.17 2001/01/15 21:45:20 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
 a parallel vector.\n\n";
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = VecGetSize(x,&M);CHKERRA(ierr);
   ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRA(ierr);
   ng   = rend - rstart + 2;
-ierr = PetscMalloc(ng*sizeof(int),&(  gindices ));CHKPTRA(gindices);
+  ierr = PetscMalloc(ng*sizeof(int),&gindices);CHKERRA(ierr);
   gindices[0] = rstart - 1; 
   for (i=0; i<ng-1; i++) {
     gindices[i+1] = gindices[i] + 1;

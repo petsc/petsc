@@ -121,13 +121,11 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ndig   = 8*nnu; 
 
    /*..Allocate memory for RAMG variables..*/ 
-   Asky     = (double *) PetscMalloc(nda  * sizeof(double)); CHKERRQ(ierr); 
-   ia       = (int*)     PetscMalloc(ndia * sizeof(int)); CHKERRQ(ierr); 
-   ja       = (int*)     PetscMalloc(ndja * sizeof(int)); CHKERRQ(ierr); 
-   u_approx = (double *) PetscMalloc(ndu  * sizeof(double)); 
-                         CHKERRQ(ierr); 
-   rhs      = (double *) PetscMalloc(ndf  * sizeof(double)); CHKERRQ(ierr); 
-   ig       = (int*)     PetscMalloc(ndig * sizeof(int)); CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndia * sizeof(int),&ia);CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndja * sizeof(int),&ja);CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndu  * sizeof(double),&u_approx);CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndf  * sizeof(double),&rhs);CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndig * sizeof(int),&ig);CHKERRQ(ierr); 
 
    /*..Store PETSc matrix in compressed skyline format required by RAMG..*/ 
    nnz_count = 0;
@@ -164,7 +162,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
        ja[j]++;
 
    /*..Allocate memory for RAMG parameters..*/
-   ramg_param = (struct RAMG_PARAM*) PetscMalloc(sizeof(struct RAMG_PARAM));CHKERRQ(ierr);
+   ierr = PetscNew(struct RAMG_PARAM,&ramg_param);CHKERRQ(ierr);
 
    /*..Set RAMG parameters..*/
    RamgGetParam(ramg_param); 
@@ -346,7 +344,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
               &ecg2, &ewt2, &nwt, &ntr, &ierr); 
 
    /*..Create auxilary vector..*/ 
-   cols        = (int *) PetscMalloc(numnodes * sizeof(int));CHKERRQ(ierr);
+   ierr = PetscMalloc(numnodes * sizeof(int),&cols);CHKERRQ(ierr);
    for (I=0;I<numnodes;I++)
        cols[I] = I; 
 

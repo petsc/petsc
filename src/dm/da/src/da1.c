@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.119 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.120 2001/01/15 21:48:51 bsmith Exp balay $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -154,7 +154,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 1;
   da->gtog1      = 0;
-ierr = PetscMalloc(dof*sizeof(char*),&(  da->fieldname  ));CHKERRQ(ierr);
+  ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
@@ -237,7 +237,7 @@ ierr = PetscMalloc(dof*sizeof(char*),&(  da->fieldname  ));CHKERRQ(ierr);
   /* global to local must retrieve ghost points */
   ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
-ierr = PetscMalloc((x+2*s)*sizeof(int),&  idx  );CHKERRQ(ierr);  
+  ierr = PetscMalloc((x+2*s)*sizeof(int),&idx);CHKERRQ(ierr);  
   PetscLogObjectMemory(da,(x+2*s)*sizeof(int));
 
   nn = 0;
@@ -314,8 +314,8 @@ ierr = PetscMalloc((x+2*s)*sizeof(int),&  idx  );CHKERRQ(ierr);
   */
   ierr = VecScatterCopy(gtol,&da->ltol);CHKERRQ(ierr);
   PetscLogObjectParent(da,da->ltol);
-  left  = xs - Xs;
-  idx   = (int*)PetscMalloc((Xe-Xs)*sizeof(int));CHKERRQ(ierr);
+  left = xs - Xs;
+  ierr = PetscMalloc((Xe-Xs)*sizeof(int),&idx);CHKERRQ(ierr);
   for (j=0; j<Xe-Xs; j++) {
     idx[j] = left + j;
   }  
@@ -351,7 +351,7 @@ ierr = PetscMalloc((x+2*s)*sizeof(int),&  idx  );CHKERRQ(ierr);
      Maybe we'll change in the near future.
    */
   ierr = VecGetSize(global,&gdim);CHKERRQ(ierr);
-ierr = PetscMalloc(gdim*sizeof(int),&(  da->gtog1 ));CHKERRQ(ierr);
+  ierr = PetscMalloc(gdim*sizeof(int),&da->gtog1);CHKERRQ(ierr);
   PetscLogObjectMemory(da,gdim*sizeof(int));
   for (i=0; i<gdim; i++) da->gtog1[i] = i;
 

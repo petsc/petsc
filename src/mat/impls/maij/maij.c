@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.12 2000/12/01 03:12:25 bsmith Exp bsmith $*/
+/*$Id: maij.c,v 1.13 2001/01/15 21:46:01 bsmith Exp balay $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -1085,7 +1085,7 @@ int MatCreateMAIJ(Mat A,int dof,Mat *maij)
       ierr = VecCreateSeq(PETSC_COMM_SELF,n*dof,&b->w);CHKERRQ(ierr);
 
       /* create two temporary Index sets for build scatter gather */
-ierr = PetscMalloc((n+1)*sizeof(int),&      garray );CHKERRQ(ierr);
+      ierr = PetscMalloc((n+1)*sizeof(int),&garray);CHKERRQ(ierr);
       for (i=0; i<n; i++) garray[i] = dof*mpiaij->garray[i];
       ierr = ISCreateBlock(A->comm,dof,n,garray,&from);CHKERRQ(ierr);
       ierr = PetscFree(garray);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex73.c,v 1.5 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex73.c,v 1.6 2001/01/15 21:46:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a PETSc matrix from a file partitions it\n\n";
@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr = MatPartitioningApply(part,&is);CHKERRA(ierr);
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRA(ierr);
-ierr = PetscMalloc(size*sizeof(int),&(  nlocal ));CHKPTRA(nlocal);
+  ierr = PetscMalloc(size*sizeof(int),&nlocal);CHKERRA(ierr);
   /* get number of new vertices for each processor */
   ierr = ISPartitioningCount(is,nlocal);CHKERRA(ierr); 
   ierr = ISDestroy(is);CHKERRA(ierr);

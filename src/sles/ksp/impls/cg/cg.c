@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.111 2000/09/28 21:13:18 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.112 2001/01/15 21:47:16 bsmith Exp balay $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -79,10 +79,10 @@ int KSPSetUp_CG(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-ierr = PetscMalloc(2*(maxit+1)*sizeof(Scalar),&    cgP->e );CHKERRQ(ierr);
+    ierr = PetscMalloc(2*(maxit+1)*sizeof(Scalar),&cgP->e);CHKERRQ(ierr);
     PetscLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->d                         = cgP->e + maxit + 1; 
-ierr = PetscMalloc(2*(maxit+1)*sizeof(PetscReal),&    cgP->ee );CHKERRQ(ierr);
+    ierr = PetscMalloc(2*(maxit+1)*sizeof(PetscReal),&cgP->ee);CHKERRQ(ierr);
     PetscLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->dd                        = cgP->ee + maxit + 1;
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
@@ -323,9 +323,10 @@ EXTERN_C_BEGIN
 int KSPCreate_CG(KSP ksp)
 {
   int    ierr;
-ierr = PetscMalloc(sizeof(KSP_CG),&(  KSP_CG *cg ));CHKERRQ(ierr);
+  KSP_CG *cg;
 
   PetscFunctionBegin;
+  ierr = PetscNew(KSP_CG,&cg);CHKERRQ(ierr);
   ierr = PetscMemzero(cg,sizeof(KSP_CG));CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,sizeof(KSP_CG));
 #if !defined(PETSC_USE_COMPLEX)

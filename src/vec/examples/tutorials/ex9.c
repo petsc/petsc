@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.25 2000/09/28 21:10:40 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.26 2001/01/15 21:45:20 bsmith Exp balay $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRA(ierr);
   if (flg) {
-ierr = PetscMalloc((nlocal+nghost)*sizeof(Scalar),&    tarray );CHKPTRA(tarray);
+    ierr = PetscMalloc((nlocal+nghost)*sizeof(Scalar),&tarray);CHKERRA(ierr);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRA(ierr);
   } else {
     ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRA(ierr);

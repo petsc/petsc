@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.44 2000/09/28 21:15:32 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.45 2001/01/15 21:49:08 bsmith Exp balay $*/
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
@@ -44,11 +44,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRA(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRA(1,"Must set -m option with -distribute option");
-ierr = PetscMalloc(m*sizeof(int),&(    lx ));CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(int),&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRA(1,"Must set -n option with -distribute option");
-ierr = PetscMalloc(n*sizeof(int),&(    ly ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
   }
@@ -102,7 +102,7 @@ ierr = PetscMalloc(n*sizeof(int),&(    ly ));CHKERRQ(ierr);
     ierr = DAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL);CHKERRA(ierr);
     ierr = DAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao);CHKERRA(ierr);
-ierr = PetscMalloc(nloc*sizeof(int),&(    iglobal ));CHKPTRA(iglobal);
+    ierr = PetscMalloc(nloc*sizeof(int),&iglobal);CHKERRA(ierr);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
        using the DA ordering of grid points */

@@ -92,7 +92,8 @@ int InputGrid (AOData *aodata)
     double *coords, *p;
     ierr = PetscOptionsHasName(PETSC_NULL,"-dirichlet_on_left",&flg);CHKERRQ(ierr);
     ierr = PetscBTCreate(n_vertices,boundary);CHKERRQ(ierr);
-    p = coords = (double*) PetscMalloc (2 * n_vertices * sizeof(double)); CHKERRQ(ierr);
+    ierr = PetscMalloc (2 * n_vertices * sizeof(double),&coors); CHKERRQ(ierr);
+    p = coords;
     if (!flg) { /* All the boundary is Dirichlet */
       for (i=0; i<=n_x; i++) {
         for (j=0; j<=n_y; j++) {
@@ -110,7 +111,7 @@ int InputGrid (AOData *aodata)
       }
       for (j=0; j<=n_y; j++) { PetscBTSet(boundary,j); }
     }
-    ierr = AODataSegmentAdd(*aodata,"vertex","values"  ,2,n_vertices,indices,coords  ,PETSC_DOUBLE );CHKERRQ(ierr);
+    ierr = AODataSegmentAdd(*aodata,"vertex","values"  ,2,n_vertices,indices,coords  ,PETSC_DOUBLE);CHKERRQ(ierr);
     ierr = AODataSegmentAdd(*aodata,"vertex","boundary",1,n_vertices,indices,boundary,PETSC_LOGICAL);CHKERRQ(ierr);
     ierr = PetscFree(coords);CHKERRQ(ierr);
     ierr = PetscFree(boundary);CHKERRQ(ierr);
@@ -119,14 +120,17 @@ int InputGrid (AOData *aodata)
   /* Create list of edges. Each edge contains 2 vertices. Each non-boundary edge is shared by 2 cells. */
   {
     int *edge_vertices, *edge_cells, *p, *q;
-    p = edge_vertices = (int*) PetscMalloc (2 * n_edges * sizeof(int)); CHKERRQ(ierr);
-    q = edge_cells    = (int*) PetscMalloc (2 * n_edges * sizeof(int)); CHKERRQ(ierr);
+    ierr = PetscMalloc (2 * n_edges * sizeof(int),&edge_vertices); CHKERRQ(ierr);
+    p    = edge_vertices;
+    ierr = PetscMalloc (2 * n_edges * sizeof(int),&edge_cells); CHKERRQ(ierr);
+    q    = edge_cells;
+
     {/* i = 0 */
       for (j=0; j<n_y; j++) {
-        *(p++) =                 (j  );  *(q++) =             (j-1); /* when j==0, boundary */
-        *(p++) =       (n_y+1) + (j  );  *(q++) =             (j  );
-        *(p++) =                 (j  );  *(q++) =                -1; /* boundary */
-        *(p++) =                 (j+1);  *(q++) =             (j  );
+        *(p++) =                 (j);  *(q++) =             (j-1); /* when j==0, boundary */
+        *(p++) =       (n_y+1) + (j);  *(q++) =             (j);
+        *(p++) =                 (j);  *(q++) =                -1; /* boundary */
+        *(p++) =                 (j+1);  *(q++) =             (j);
       }
     }
     for (i=1; i<n_x; i++) {
@@ -137,10 +141,10 @@ int InputGrid (AOData *aodata)
         *(p++) = (i  )*(n_y+1) + (  1);  *(q++) = (i  )*n_y        ;
       }
       for (j=1; j<n_y; j++) {
-        *(p++) = (i  )*(n_y+1) + (j  );  *(q++) = (i  )*n_y + (j-1); 
-        *(p++) = (i+1)*(n_y+1) + (j  );  *(q++) = (i  )*n_y + (j  );
-        *(p++) = (i  )*(n_y+1) + (j  );  *(q++) = (i-1)*n_y + (j  );
-        *(p++) = (i  )*(n_y+1) + (j+1);  *(q++) = (i  )*n_y + (j  );
+        *(p++) = (i  )*(n_y+1) + (j);  *(q++) = (i  )*n_y + (j-1); 
+        *(p++) = (i+1)*(n_y+1) + (j);  *(q++) = (i  )*n_y + (j);
+        *(p++) = (i  )*(n_y+1) + (j);  *(q++) = (i-1)*n_y + (j);
+        *(p++) = (i  )*(n_y+1) + (j+1);  *(q++) = (i  )*n_y + (j);
       }
     }
     for (i=0; i<n_x; i++) {
@@ -151,7 +155,7 @@ int InputGrid (AOData *aodata)
     }
     {/* i = n_x; */
       for (i=n_x, j=0; j<n_y; j++) {
-        *(p++) = (n_x)*(n_y+1) + (j  );  *(q++) = (n_x-1)*n_y + (j  );
+        *(p++) = (n_x)*(n_y+1) + (j);  *(q++) = (n_x-1)*n_y + (j);
         *(p++) = (n_x)*(n_y+1) + (j+1);  *(q++) = -1; /* boundary */
       }
     }
@@ -165,7 +169,9 @@ int InputGrid (AOData *aodata)
   /* First, each non-boundary cell has 4 neighbours: west, north, east and south. */
   {
     int *cell_cells, *p;
-    p = cell_cells    = (int*) PetscMalloc (4 * n_cells * sizeof(int)); CHKERRQ(ierr);
+    ierr = PetscMalloc (4 * n_cells * sizeof(int),&cell_cells); CHKERRQ(ierr);
+    p = cell_cells;
+
     {/* i = 0 */
       {/* j = 0; */
         *(p++) =                -1; /* boundary */
@@ -228,12 +234,13 @@ int InputGrid (AOData *aodata)
     }
 
     ierr = AODataSegmentAdd(*aodata,"cell","cell",4,n_cells,indices,cell_cells,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscFree(cell_cells   );CHKERRQ(ierr);
+    ierr = PetscFree(cell_cells);CHKERRQ(ierr);
   }
   /* Then, each cell has 4 vertices: SW, NW, NE, SE. */
   {
     int *cell_vertices, *p;
-    p = cell_vertices = (int*) PetscMalloc (4 * n_cells * sizeof(int)); CHKERRQ(ierr);
+    ierr = PetscMalloc (4 * n_cells * sizeof(int),&cell_vertices); CHKERRQ(ierr);
+    p = cell_vertices;
     for (i=0; i<n_x; i++) {
       for (j=0; j<n_y; j++) {
         *(p++) = (  i)*(n_y+1) + (  j);
@@ -248,7 +255,9 @@ int InputGrid (AOData *aodata)
   /* Finally, each cell has 4 edges: west, north, east, south. */
   {
     int *cell_edges, *p;
-    p = cell_edges = (int*) PetscMalloc (4 * n_cells * sizeof(int)); CHKERRQ(ierr);
+    ierr = PetscMalloc (4 * n_cells * sizeof(int),&cell_edges); CHKERRQ(ierr);
+    p = cell_edges;
+
     for (i=0; i<(n_x-1); i++) {
       for (j=0; j<(n_y-1); j++) {
         *(p++) = 2*((i  )*n_y + (j  )) + 1;

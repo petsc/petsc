@@ -1,4 +1,4 @@
-/*$Id: PetscMemcpy.c,v 1.16 2000/11/28 17:32:38 bsmith Exp bsmith $*/
+/*$Id: PetscMemcpy.c,v 1.17 2001/01/15 21:49:39 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -12,8 +12,8 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,0,0);
 
-ierr = PetscMalloc(8000000*sizeof(Scalar),&(  A ));
-ierr = PetscMalloc(8000000*sizeof(Scalar),&(  B ));
+  ierr = PetscMalloc(8000000*sizeof(Scalar),&A);CHKERRA(ierr);
+  ierr = PetscMalloc(8000000*sizeof(Scalar),&B);CHKERRA(ierr);
 
   for (i=0; i<8000000; i++) {
     A[i] = i%61897;

@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.152 2000/09/29 02:35:48 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.153 2001/01/15 21:48:51 bsmith Exp balay $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -302,7 +302,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 2;
   da->gtog1      = 0;
-ierr = PetscMalloc(dof*sizeof(char*),&(  da->fieldname  ));CHKERRQ(ierr);
+  ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
@@ -369,7 +369,8 @@ ierr = PetscMalloc(dof*sizeof(char*),&(  da->fieldname  ));CHKERRQ(ierr);
     if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %d %d",x,s);
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
     else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
-    flx =ierr = PetscMalloc(m*sizeof(int),&( lx ));CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(int),&lx);CHKERRQ(ierr);
+    flx = lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > i);
     }
@@ -403,7 +404,8 @@ ierr = PetscMalloc(dof*sizeof(char*),&(  da->fieldname  ));CHKERRQ(ierr);
     if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %d %d",y,s);
     if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
     else                    { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
-    fly =ierr = PetscMalloc(n*sizeof(int),&( ly ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&ly);CHKERRQ(ierr);
+    fly  = ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > i);
     }
@@ -442,7 +444,7 @@ ierr = PetscMalloc(dof*sizeof(char*),&(  da->fieldname  ));CHKERRQ(ierr);
 
   /* determine starting point of each processor */
   nn = x*y;
-ierr = PetscMalloc((2*size+1)*sizeof(int),&  bases );CHKERRQ(ierr);
+  ierr = PetscMalloc((2*size+1)*sizeof(int),&bases);CHKERRQ(ierr);
   ldims = (int*)(bases+size+1);
   ierr = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
@@ -466,7 +468,7 @@ ierr = PetscMalloc((2*size+1)*sizeof(int),&  bases );CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y,start,1,&to);CHKERRQ(ierr);
 
   left  = xs - Xs; down  = ys - Ys; up    = down + y;
-  idx = (int*)PetscMalloc(x*(up - down)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(x*(up - down)*sizeof(int),&idx);CHKERRQ(ierr);
   count = 0;
   for (i=down; i<up; i++) {
     for (j=0; j<x; j++) {
@@ -500,7 +502,7 @@ ierr = PetscMalloc((2*size+1)*sizeof(int),&  bases );CHKERRQ(ierr);
     /* bottom */
     left  = xs - Xs; down = ys - Ys; up    = down + y;
     count = down*(xe-xs) + (up-down)*(Xe-Xs) + (Ye-Ys-up)*(xe-xs);
-ierr = PetscMalloc(count*sizeof(int),&(    idx   ));CHKERRQ(ierr);
+    ierr  = PetscMalloc(count*sizeof(int),&idx);CHKERRQ(ierr);
     count = 0;
     for (i=0; i<down; i++) {
       for (j=0; j<xe-xs; j++) {
@@ -598,7 +600,7 @@ ierr = PetscMalloc(count*sizeof(int),&(    idx   ));CHKERRQ(ierr);
     n0 = n2 = n6 = n8 = -1;
   }
 
-ierr = PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(int),&  idx );CHKERRQ(ierr);
+  ierr = PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(int),&idx);CHKERRQ(ierr);
   PetscLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(int));
   nn = 0;
 
@@ -914,7 +916,7 @@ ierr = PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(int),&  idx );CHKERRQ(ierr);
   ierr = VecScatterCopy(gtol,&da->ltol);CHKERRQ(ierr);
   PetscLogObjectParent(da,da->ltol);
   left  = xs - Xs; down  = ys - Ys; up    = down + y;
-  idx = (int*)PetscMalloc(x*(up - down)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(x*(up - down)*sizeof(int),&idx);CHKERRQ(ierr);
   count = 0;
   for (i=down; i<up; i++) {
     for (j=0; j<x; j++) {
@@ -934,7 +936,7 @@ ierr = PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(int),&  idx );CHKERRQ(ierr);
 
     ierr = ISCreateStride(comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
 
-ierr = PetscMalloc(Nlocal*sizeof(int),&(    lidx ));CHKERRQ(ierr);
+    ierr = PetscMalloc(Nlocal*sizeof(int),&lidx);CHKERRQ(ierr);
     for (j=ys; j<ye; j++) {
       for (i=xs; i<xe; i++) {
         /*  global number in natural ordering */
@@ -954,11 +956,11 @@ ierr = PetscMalloc(Nlocal*sizeof(int),&(    lidx ));CHKERRQ(ierr);
   }
 
   if (!flx) {
-ierr = PetscMalloc(m*sizeof(int),&(    flx  ));CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(int),&flx);CHKERRQ(ierr);
     ierr = PetscMemcpy(flx,lx,m*sizeof(int));CHKERRQ(ierr);
   }
   if (!fly) {
-ierr = PetscMalloc(n*sizeof(int),&(    fly  ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&fly);CHKERRQ(ierr);
     ierr = PetscMemcpy(fly,ly,n*sizeof(int));CHKERRQ(ierr);
   }
   da->lx = flx;
@@ -978,9 +980,9 @@ ierr = PetscMalloc(n*sizeof(int),&(    fly  ));CHKERRQ(ierr);
    */
   ldim = x*y;
   ierr = VecGetSize(global,&gdim);CHKERRQ(ierr);
-ierr = PetscMalloc(gdim*sizeof(int),&(  da->gtog1 ));CHKERRQ(ierr);
+  ierr = PetscMalloc(gdim*sizeof(int),&da->gtog1);CHKERRQ(ierr);
   PetscLogObjectMemory(da,gdim*sizeof(int));
-ierr = PetscMalloc((2*(gdim+ldim))*sizeof(int),&  gA        );CHKERRQ(ierr);
+  ierr = PetscMalloc((2*(gdim+ldim))*sizeof(int),&gA);CHKERRQ(ierr);
   gB        = (int *)(gA + ldim);
   gAall     = (int *)(gB + ldim);
   gBall     = (int *)(gAall + gdim);
@@ -1162,7 +1164,7 @@ int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
     int       i,*groupies;
 
     ierr     = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
-ierr = PetscMalloc(csize*sizeof(int),&(    groupies ));CHKERRQ(ierr);
+    ierr = PetscMalloc(csize*sizeof(int),&groupies);CHKERRQ(ierr);
     for (i=0; i<csize; i++) {
       groupies[i] = (rank/csize)*csize + i;
     }

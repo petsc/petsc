@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.12 2000/09/28 21:16:15 bsmith Exp bsmith $*/
+/*$Id: const.c,v 1.13 2001/01/15 21:49:44 bsmith Exp balay $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNC__  
@@ -76,7 +76,7 @@ int PFCreate_Constant(PF pf,void *value)
   Scalar *loc;
 
   PetscFunctionBegin;
-ierr = PetscMalloc(2*sizeof(Scalar),&(  loc    ));CHKERRQ(ierr);
+  ierr = PetscMalloc(2*sizeof(Scalar),&loc);CHKERRQ(ierr);
   if (value) loc[0] = *(Scalar*)value; else loc[0] = 0.0;
   loc[1] = pf->dimout;
   ierr   = PFSet(pf,PFApply_Constant,PFApplyVec_Constant,PFView_Constant,PFDestroy_Constant,loc);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ int PFCreate_Identity(PF pf,void *value)
   if (pf->dimout != pf->dimin) {
     SETERRQ2(1,"Input dimension must match output dimension for Identity function, dimin = %d dimout = %d\n",pf->dimin,pf->dimout);
   }
-ierr = PetscMalloc(sizeof(int),&(  loc    ));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(int),&loc);CHKERRQ(ierr);
   loc[0] = pf->dimout;
   ierr   = PFSet(pf,PFApply_Identity,PFApplyVec_Identity,PFView_Identity,PFDestroy_Identity,loc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.4 2000/09/28 21:13:02 bsmith Exp bsmith $*/
+/*$Id: nn.c,v 1.5 2001/01/15 21:47:03 bsmith Exp balay $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -231,20 +231,21 @@ int PCNNCreateCoarseMatrix (PC pc)
   PetscFunctionBegin;
 
   /* Allocate memory for mat (the +1 is to handle the case n_neigh equal to zero) */
-  mat = (Scalar*) PetscMalloc((n_neigh*n_neigh+1)*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMalloc((n_neigh*n_neigh+1)*sizeof(Scalar),&mat);CHKERRQ(ierr);
 
   /* Allocate memory for DZ */
   /* Notice that DZ_OUT[0] is allocated some space that is never used. */
   /* This is just in order to DZ_OUT and DZ_IN to have exactly the same form. */
   {
     int size_of_Z = 0;
-    pcnn->DZ_IN  = (Scalar**) PetscMalloc ((n_neigh+1)*sizeof(Scalar*));CHKERRQ(ierr); DZ_IN = pcnn->DZ_IN;
-    DZ_OUT       = (Scalar**) PetscMalloc ((n_neigh+1)*sizeof(Scalar*));CHKERRQ(ierr);
+    ierr  = PetscMalloc ((n_neigh+1)*sizeof(Scalar*),&pcnn->DZ_IN);CHKERRQ(ierr);
+    DZ_IN = pcnn->DZ_IN;
+    ierr  = PetscMalloc ((n_neigh+1)*sizeof(Scalar*),&DZ_OUT);CHKERRQ(ierr);
     for (i=0; i<n_neigh; i++) {
       size_of_Z += n_shared[i];
     }
-    DZ_IN[0]  = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKERRQ(ierr);
-    DZ_OUT[0] = (Scalar*) PetscMalloc ((size_of_Z+1)*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMalloc ((size_of_Z+1)*sizeof(Scalar),&DZ_IN[0]);CHKERRQ(ierr);
+    ierr = PetscMalloc ((size_of_Z+1)*sizeof(Scalar),&DZ_OUT[0]);CHKERRQ(ierr);
   }
   for (i=1; i<n_neigh; i++) {
     DZ_IN[i]  = DZ_IN [i-1] + n_shared[i-1];
@@ -266,7 +267,7 @@ int PCNNCreateCoarseMatrix (PC pc)
   {
     int tag;
     ierr = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
-    send_request = (MPI_Request*) PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request));CHKERRQ(ierr);
+    ierr = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
     recv_request = send_request + (n_neigh);
     for (i=1; i<n_neigh; i++) {
       ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,pc->comm,&(send_request[i]));CHKERRQ(ierr);
@@ -312,7 +313,8 @@ int PCNNCreateCoarseMatrix (PC pc)
 
   /* Complete the sending. */
   if (n_neigh>1) {
-    MPI_Status *stat = (MPI_Status*) PetscMalloc((n_neigh-1)*sizeof(MPI_Status));CHKERRQ(ierr);
+    MPI_Status *stat;
+    ierr = PetscMalloc((n_neigh-1)*sizeof(MPI_Status),&stat);CHKERRQ(ierr);
     ierr = MPI_Waitall(n_neigh-1,&(send_request[1]),stat);CHKERRQ(ierr);
     ierr = PetscFree(stat);CHKERRQ(ierr);
   }

@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.57 2000/09/28 21:15:12 bsmith Exp bsmith $*/
+/*$Id: aodatabasic.c,v 1.58 2001/01/15 21:48:44 bsmith Exp balay $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -353,7 +353,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
   if (!keys && n == key->N) {
     char *fdata1;
     if (dtype == PETSC_LOGICAL) Nb = PetscBTLength(key->N); else Nb = key->N;
-ierr = PetscMalloc((Nb*bs+1)*datasize,&    fdata1 );CHKERRQ(ierr);
+    ierr = PetscMalloc((Nb*bs+1)*datasize,&fdata1);CHKERRQ(ierr);
     ierr = PetscBitMemcpy(fdata1,0,data,0,key->N*bs,dtype);CHKERRQ(ierr);
     segment->data = (void*)fdata1;
   } else if (!keys) {
@@ -361,7 +361,7 @@ ierr = PetscMalloc((Nb*bs+1)*datasize,&    fdata1 );CHKERRQ(ierr);
   } else {
     /* transmit all lengths to all processors */
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-ierr = PetscMalloc(2*size*sizeof(int),&(    lens ));CHKERRQ(ierr);
+    ierr = PetscMalloc(2*size*sizeof(int),&lens);CHKERRQ(ierr);
     disp = lens + size;
     ierr = MPI_Allgather(&n,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
     N =  0;
@@ -376,8 +376,8 @@ ierr = PetscMalloc(2*size*sizeof(int),&(    lens ));CHKERRQ(ierr);
     /*
       Allocate space for all keys and all data 
     */
-ierr = PetscMalloc((N+1)*sizeof(int),&    akeys );CHKERRQ(ierr);
-ierr = PetscMalloc((N*bs+1)*datasize,&    adata );CHKERRQ(ierr);
+    ierr = PetscMalloc((N+1)*sizeof(int),&akeys);CHKERRQ(ierr);
+    ierr = PetscMalloc((N*bs+1)*datasize,&adata);CHKERRQ(ierr);
 
     ierr = MPI_Allgatherv(keys,n,MPI_INT,akeys,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
@@ -395,9 +395,9 @@ ierr = PetscMalloc((N*bs+1)*datasize,&    adata );CHKERRQ(ierr);
       /*
         Now we have all the keys and data we need to put it in order
       */
-      fkeys = (int*)PetscMalloc((key->N+1)*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscMalloc((key->N+1)*sizeof(int),&fkeys);CHKERRQ(ierr);
       ierr = PetscMemzero(fkeys,(key->N+1)*sizeof(int));CHKERRQ(ierr);
-      fdata2 = (char*)PetscMalloc((key->N*bs+1)*datasize);CHKERRQ(ierr);
+      ierr = PetscMalloc((key->N*bs+1)*datasize,&fdata2);CHKERRQ(ierr);
 
       for (i=0; i<N; i++) {
         if (fkeys[akeys[i]] != 0) {
@@ -421,7 +421,8 @@ ierr = PetscMalloc((N*bs+1)*datasize,&    adata );CHKERRQ(ierr);
             convert to bytes to send with MPI
       */
       PetscBT fdata3,mvalues = (PetscBT) data;
-ierr = PetscMalloc((n+1)*bs*sizeof(char),&      char *values );CHKERRQ(ierr);
+      char *values;
+      ierr = PetscMalloc((n+1)*bs*sizeof(char),&values);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
         for (j=0; j<bs; j++) {
           if (PetscBTLookup(mvalues,i*bs+j)) values[i*bs+j] = 1; else values[i*bs+j] = 0;
@@ -435,8 +436,8 @@ ierr = PetscMalloc((n+1)*bs*sizeof(char),&      char *values );CHKERRQ(ierr);
       /*
         Now we have all the keys and data we need to put it in order
       */
-      fkeys = (int*)PetscMalloc((key->N+1)*sizeof(int));CHKERRQ(ierr);
-      ierr  = PetscMemzero(fkeys,(key->N+1)*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscMalloc((key->N+1)*sizeof(int),&fkeys);CHKERRQ(ierr);
+      ierr = PetscMemzero(fkeys,(key->N+1)*sizeof(int));CHKERRQ(ierr);
       ierr = PetscBTCreate(N*bs,fdata3);CHKERRQ(ierr);
 
       for (i=0; i<N; i++) {
@@ -531,7 +532,7 @@ int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,vo
   ierr  = PetscDataTypeGetSize(segment->datatype,&dsize);CHKERRQ(ierr);
   bs    = segment->bs;
   if (segment->datatype == PETSC_LOGICAL) nb = PetscBTLength(n); else nb = n;
-ierr = PetscMalloc((nb+1)*bs*dsize,&  odata );CHKERRQ(ierr);
+  ierr = PetscMalloc((nb+1)*bs*dsize,&odata);CHKERRQ(ierr);
   idata = (char*)segment->data;
   for (i=0; i<n; i++) {
     ierr = PetscBitMemcpy(odata,i*bs,idata,keys[i]*bs,bs,segment->datatype);CHKERRQ(ierr);
@@ -571,7 +572,7 @@ int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *ke
   ierr = AODataSegmentGet_Basic(ao,name,segname,n,keys,(void **)&globals);CHKERRQ(ierr);
   
   /* allocate space to store them in local indexing */
-ierr = PetscMalloc((n+1)*bs*sizeof(int),&  locals );CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*bs*sizeof(int),&locals);CHKERRQ(ierr);
 
   ierr = ISGlobalToLocalMappingApply(key->ltog,IS_GTOLM_MASK,n*bs,globals,PETSC_NULL,locals);CHKERRQ(ierr);
 
@@ -638,7 +639,7 @@ int AODataKeyRemap_Basic(AOData aodata,char *keyname,AO ao)
     bs      = seg->bs;
     data    = (char*)seg->data;
     if (seg->datatype == PETSC_LOGICAL) nkb = PetscBTLength(nk*bs); else nkb = nk*bs;
-ierr = PetscMalloc((nkb+1)*dsize,&    tmpdata );CHKERRQ(ierr);
+    ierr = PetscMalloc((nkb+1)*dsize,&tmpdata);CHKERRQ(ierr);
 
     for (k=0; k<nk; k++) {
       ierr = PetscBitMemcpy(tmpdata,inew[k]*bs,data,k*bs,bs,seg->datatype);CHKERRQ(ierr);
@@ -680,8 +681,8 @@ int AODataKeyGetAdjacency_Basic(AOData aodata,char *keyname,Mat *adj)
   for (i=0; i<bs*nlocal; i++) {
     if (nb[i] >= 0) cnt++;
   }
-  ii    = (int*)PetscMalloc((nlocal + 1)*sizeof(int));CHKERRQ(ierr);
-ierr = PetscMalloc((cnt+1)*sizeof(int),&  jj    );CHKERRQ(ierr);
+  ierr = PetscMalloc((nlocal + 1)*sizeof(int),&ii);CHKERRQ(ierr);
+  ierr = PetscMalloc((cnt+1)*sizeof(int),&jj);CHKERRQ(ierr);
   ii[0] = 0;
   cnt   = 0;
   for (i=0; i<nlocal; i++) {
@@ -715,7 +716,7 @@ int AODataSegmentPartition_Basic(AOData aodata,char *keyname,char *segname)
 
   ierr = AODataKeyFind_Private(aodata,segname,&flag,&keyseg);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Cannot locate segment as a key");
-  isc  = (int*)PetscMalloc(keyseg->N*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(keyseg->N*sizeof(int),&isc);CHKERRQ(ierr);
   ierr = PetscMemzero(isc,keyseg->N*sizeof(int));CHKERRQ(ierr);
 
   ierr = AODataSegmentFind_Private(aodata,keyname,segname,&flag,&key,&segment);CHKERRQ(ierr);
@@ -772,7 +773,7 @@ int AODataKeyGetActive_Basic(AOData aodata,char *name,char *segname,int n,int *k
     }
   }
 
-ierr = PetscMalloc((cnt+1)*sizeof(int),&  fnd );CHKERRQ(ierr);
+  ierr = PetscMalloc((cnt+1)*sizeof(int),&fnd);CHKERRQ(ierr);
   cnt = 0;
   for (i=0; i<n; i++) {
     if (PetscBTLookup(bt,keys[i]*bs+wl)) {
@@ -812,7 +813,7 @@ int AODataKeyGetActiveLocal_Basic(AOData aodata,char *name,char *segname,int n,i
     }
   }
 
-ierr = PetscMalloc((cnt+1)*sizeof(int),&  fnd );CHKERRQ(ierr);
+  ierr = PetscMalloc((cnt+1)*sizeof(int),&fnd);CHKERRQ(ierr);
   cnt = 0;
   for (i=0; i<n; i++) {
     if (PetscBTLookup(bt,keys[i]*bs+wl)) {
@@ -820,7 +821,7 @@ ierr = PetscMalloc((cnt+1)*sizeof(int),&  fnd );CHKERRQ(ierr);
     }
   }
   
-ierr = PetscMalloc((n+1)*sizeof(int),&  locals );CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(int),&locals);CHKERRQ(ierr);
   ierr = ISGlobalToLocalMappingApply(key->ltog,IS_GTOLM_MASK,cnt,fnd,PETSC_NULL,locals);CHKERRQ(ierr);  
   ierr = PetscFree(fnd);CHKERRQ(ierr);
   ierr = ISCreateGeneral(aodata->comm,cnt,locals,is);CHKERRQ(ierr);
@@ -955,7 +956,7 @@ int AODataLoadBasic(PetscViewer viewer,AOData *aoout)
 
   for (i=0; i<nkeys; i++) {
     if (!i) {
-      key      = PetscNew(AODataKey,&key);CHKERRQ(ierr);
+      ierr     = PetscNew(AODataKey,&key);CHKERRQ(ierr);
       ao->keys = key;
     } else {
       ierr = PetscNew(AODataKey,&key->next);CHKERRQ(ierr);
@@ -971,7 +972,7 @@ int AODataLoadBasic(PetscViewer viewer,AOData *aoout)
 
     /* determine Nlocal and rowners for key */
     key->nlocal  = key->N/size + ((key->N % size) > rank);
-ierr = PetscMalloc((size+1)*sizeof(int),&    key->rowners );CHKERRQ(ierr);
+    ierr = PetscMalloc((size+1)*sizeof(int),&key->rowners);CHKERRQ(ierr);
     ierr = MPI_Allgather(&key->nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
     key->rowners[0] = 0;
     for (j=2; j<=size; j++) {
@@ -1003,7 +1004,7 @@ ierr = PetscMalloc((size+1)*sizeof(int),&    key->rowners );CHKERRQ(ierr);
       /* allocate the space for the data */
       ierr = PetscDataTypeGetSize(seg->datatype,&dsize);CHKERRQ(ierr);
       if (seg->datatype == PETSC_LOGICAL) Nb = PetscBTLength(key->N*seg->bs); else Nb = key->N*seg->bs;
-ierr = PetscMalloc(Nb*dsize,&(      seg->data ));CHKERRQ(ierr);
+      ierr = PetscMalloc(Nb*dsize,&seg->data);CHKERRQ(ierr);
       /* read in the data */
       ierr = PetscBinaryRead(fd,seg->data,key->N*seg->bs,seg->datatype);CHKERRQ(ierr);
       seg->next = 0;

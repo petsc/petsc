@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.210 2000/12/01 16:07:39 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.211 2001/01/15 21:45:26 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -284,7 +284,7 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
   int __ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
-ierr = PetscMalloc(2*__tmp*sizeof(int),&(  dnz ));CHKERRQ(ierr);onz = dnz + __tmp;\
+  __ierr = PetscMalloc(2*__tmp*sizeof(int),&dnz);CHKERRQ(__ierr);onz = dnz + __tmp;\
   __ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(__ierr);\
   __ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __start = __end - __ctmp;\
   __ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __rstart = __rstart - __tmp;

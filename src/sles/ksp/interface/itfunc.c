@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.149 2000/09/28 21:13:11 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.150 2001/01/15 21:47:10 bsmith Exp balay $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -231,7 +231,7 @@ int KSPSolve(KSP ksp,int *its)
     if (!n) {
       ierr = PetscPrintf(ksp->comm,"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
-ierr = PetscMalloc(2*n*sizeof(PetscReal),&(      r ));CHKERRQ(ierr);
+      ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);
       c = r + n;
       ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
       if (flag1) {
@@ -267,7 +267,7 @@ ierr = PetscMalloc(2*n*sizeof(PetscReal),&(      r ));CHKERRQ(ierr);
     int       n,i;
     PetscReal *r,*c;
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
-ierr = PetscMalloc(2*n*sizeof(PetscReal),&(    r ));CHKERRQ(ierr);
+    ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);
     c = r + n;
     ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr); 
     if (flag1) {

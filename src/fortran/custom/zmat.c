@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.89 2001/01/04 16:51:17 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.90 2001/01/15 21:49:49 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -444,8 +444,7 @@ void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,vo
 {
   *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,*ctx,mat);
   if (*ierr) return;
-  ((PetscObject)*mat)->fortran_func_pointers = (void**)PetscMalloc(sizeof(void *));
-  if (!((PetscObject)*mat)->fortran_func_pointers) {*ierr = 1; return;}
+  *ierr = PetscMalloc(sizeof(void *),&((PetscObject)*mat)->fortran_func_pointers);
 }
 
 static int ourmult(Mat mat,Vec x,Vec y)

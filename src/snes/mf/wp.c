@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.28 2000/09/28 21:14:10 bsmith Exp bsmith $*/
+/*$Id: wp.c,v 1.29 2001/01/15 21:47:52 bsmith Exp balay $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -278,10 +278,10 @@ int MatSNESMFCreate_WP(MatSNESMFCtx ctx)
   PetscFunctionBegin;
 
   /* allocate my own private data structure */
-ierr = PetscMalloc(sizeof(MatSNESMFWP),&(  hctx                     ));CHKERRQ(ierr);
-  ctx->hctx                = (void*)hctx;
-  hctx->computenormU       = PETSC_FALSE;
-  hctx->computenorma       = PETSC_TRUE;
+  ierr               = PetscNew(MatSNESMFWP,&hctx);CHKERRQ(ierr);
+  ctx->hctx          = (void*)hctx;
+  hctx->computenormU = PETSC_FALSE;
+  hctx->computenorma = PETSC_TRUE;
 
   /* set the functions I am providing */
   ctx->ops->compute        = MatSNESMFCompute_WP;

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.64 2000/12/05 23:53:10 kaushik Exp bsmith $";*/
+/* "$Id: flow.c,v 1.65 2001/01/15 21:49:32 bsmith Exp balay $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -14,8 +14,8 @@ and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 #endif
 #endif
 
-#define ICALLOC(size,y) *(y) = (int*)PetscMalloc((PetscMax(size,1))*sizeof(int));CHKERRQ(ierr);
-#define FCALLOC(size,y) *(y) = (Scalar*)PetscMalloc((PetscMax(size,1))*sizeof(Scalar));CHKERRQ(ierr);
+#define ICALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(int),y);CHKERRQ(ierr);
+#define FCALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(Scalar),y);CHKERRQ(ierr);
  
 typedef struct {
  Vec     qnew,qold,func;
@@ -2162,7 +2162,7 @@ int set_up_grid(GRID *grid)
 {
    int nnodes,nedge;
    int nsface,nvface,nfface,nbface;
-   int tnode;
+   int tnode,ierr;
    /*int vface,lnodes,nnz,ncell,kvisc,ilu0,nsrch,ileast,ifcn,valloc;*/
    /*int nsnode,nvnode,nfnode; */
    /*int mgzero=0;*/ /* Variable so we dont allocate memory for multigrid */

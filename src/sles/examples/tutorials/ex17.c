@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.14 2000/10/24 20:26:55 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.15 2001/01/15 21:47:36 bsmith Exp balay $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -95,7 +95,7 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
    */
   ierr = VecGetArray(u,&ua);CHKERRA(ierr);
-ierr = PetscMalloc(n*sizeof(int),&(  cols ));CHKPTRA(cols);
+  ierr = PetscMalloc(n*sizeof(int),&cols);CHKERRA(ierr);
   for (i=0; i<n; i++) { 
     cols[i] = i;
   }

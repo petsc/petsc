@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.12 2000/09/28 21:09:43 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.13 2001/01/15 21:44:15 bsmith Exp balay $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
 
-ierr = PetscMalloc(n*sizeof(int),&(  values ));CHKPTRA(values);
+  ierr = PetscMalloc(n*sizeof(int),&values);CHKERRA(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rand,&value);CHKERRA(ierr);
     values[i] = (int)(n*PetscRealPart(value) + 2.0);
@@ -27,7 +27,7 @@ ierr = PetscMalloc(n*sizeof(int),&(  values ));CHKPTRA(values);
 
   ierr = PetscLogEventRegister(&event,"Sort",PETSC_NULL);CHKERRA(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRA(ierr);
-ierr = PetscMalloc(n*sizeof(int),&(  values ));CHKPTRA(values);
+  ierr = PetscMalloc(n*sizeof(int),&values);CHKERRA(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rand,&value);CHKERRA(ierr);
     values[i] = (int)(n*PetscRealPart(value) + 2.0);

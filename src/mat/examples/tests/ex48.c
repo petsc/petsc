@@ -1,4 +1,4 @@
-/*$Id: ex48.c,v 1.16 2000/07/10 03:39:52 bsmith Exp bsmith $*/
+/*$Id: ex48.c,v 1.17 2001/01/15 21:46:09 bsmith Exp balay $*/
 
 static char help[] = 
 "Tests the vatious routines in MatBAIJ format.\n";
@@ -169,7 +169,7 @@ int main(int argc,char **args)
   
   
   /* Do LUFactor() on both the matrices */
-ierr = PetscMalloc(M*sizeof(int),&(  idx  ));CHKPTRA(idx);
+  ierr = PetscMalloc(M*sizeof(int),&idx);CHKERRA(ierr);
   for (i=0; i<M; i++) idx[i] = i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is1);CHKERRA(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,M,idx,&is2);CHKERRA(ierr);

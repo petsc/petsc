@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.123 2000/12/13 17:19:27 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.124 2001/01/15 21:46:57 bsmith Exp balay $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -119,7 +119,7 @@ static int PCSetUp_ASM(PC pc)
     n_local      = osm->n_local;
     n_local_true = osm->n_local_true;  
     if (!osm->is){ /* build the index sets */
-      osm->is    = (IS*)PetscMalloc((n_local_true+1)*sizeof(IS **));CHKERRQ(ierr);
+      ierr  = PetscMalloc((n_local_true+1)*sizeof(IS **),&osm->is);CHKERRQ(ierr);
       ierr  = MatGetOwnershipRange(pc->pmat,&start_val,&end_val);CHKERRQ(ierr);
       ierr  = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
       sz    = end_val - start_val;
@@ -136,10 +136,10 @@ static int PCSetUp_ASM(PC pc)
       osm->is_flg = PETSC_TRUE;
     }
 
-    osm->sles = (SLES*)PetscMalloc((n_local_true+1)*sizeof(SLES **));CHKERRQ(ierr);
-    osm->scat = (VecScatter*)PetscMalloc(n_local*sizeof(VecScatter **));CHKERRQ(ierr);
-    osm->x    = (Vec*)PetscMalloc(2*n_local*sizeof(Vec **));CHKERRQ(ierr);
-    osm->y    = osm->x + n_local;
+    ierr   = PetscMalloc((n_local_true+1)*sizeof(SLES **),&osm->sles);CHKERRQ(ierr);
+    ierr   = PetscMalloc(n_local*sizeof(VecScatter **),&osm->scat);CHKERRQ(ierr);
+    ierr   = PetscMalloc(2*n_local*sizeof(Vec **),&osm->x);CHKERRQ(ierr);
+    osm->y = osm->x + n_local;
 
     /*  Extend the "overlapping" regions by a number of steps  */
     ierr = MatIncreaseOverlap(pc->pmat,n_local_true,osm->is,osm->overlap);CHKERRQ(ierr);
@@ -883,7 +883,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   if (dof != 1) SETERRQ(PETSC_ERR_SUP,"");
 
   *Nsub = N*M;
-  *is = (IS*)PetscMalloc((*Nsub)*sizeof(IS **));CHKERRQ(ierr);
+  ierr = PetscMalloc((*Nsub)*sizeof(IS **),is);CHKERRQ(ierr);
   ystart = 0;
   loc_outter = 0;
   for (i=0; i<N; i++) {
@@ -898,7 +898,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
       xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
       xright = xstart + width + overlap; if (xright > m) xright = m;
       nidx   = (xright - xleft)*(yright - yleft);
-ierr = PetscMalloc(nidx*sizeof(int),&(      idx    ));CHKERRQ(ierr);
+      ierr = PetscMalloc(nidx*sizeof(int),&idx);CHKERRQ(ierr);
       loc    = 0;
       for (ii=yleft; ii<yright; ii++) {
         count = m*ii + xleft;

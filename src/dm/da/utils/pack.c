@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.12 2000/09/28 21:15:40 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.13 2001/01/15 21:49:13 bsmith Exp balay $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -478,6 +478,7 @@ int VecPackGather(VecPack packer,Vec gvec,...)
 int VecPackAddArray(VecPack packer,int n)
 {
   struct VecPackLink *mine,*next = packer->next;
+  int ierr;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
@@ -651,7 +652,7 @@ int VecPackGetGlobalIndices(VecPack packer,...)
 
     if (next->type == VECPACK_ARRAY) {
       
-      *idx   = (int*)PetscMalloc(next->n*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscMalloc(next->n*sizeof(int),idx);CHKERRQ(ierr);
       if (!packer->rank) {
         ierr   = VecGetArray(global,&array);CHKERRQ(ierr);
         array += next->rstart;
@@ -664,21 +665,21 @@ int VecPackGetGlobalIndices(VecPack packer,...)
     } else if (next->type == VECPACK_DA) {
       Vec local;
 
-      ierr    = DACreateLocalVector(next->da,&local);CHKERRQ(ierr);
-      ierr    = VecGetArray(global,&array);CHKERRQ(ierr);
-      array  += next->rstart;
-      ierr    = DAGetGlobalVector(next->da,&dglobal);CHKERRQ(ierr);
-      ierr    = VecPlaceArray(dglobal,array);CHKERRQ(ierr);
-      ierr    = DAGlobalToLocalBegin(next->da,dglobal,INSERT_VALUES,local);CHKERRQ(ierr);
-      ierr    = DAGlobalToLocalEnd(next->da,dglobal,INSERT_VALUES,local);CHKERRQ(ierr);
-      array  -= next->rstart;
-      ierr    = VecRestoreArray(global,&array);CHKERRQ(ierr);
-      ierr    = VecResetArray(dglobal);CHKERRQ(ierr);
-      ierr    = DARestoreGlobalVector(next->da,&dglobal);CHKERRQ(ierr);
+      ierr   = DACreateLocalVector(next->da,&local);CHKERRQ(ierr);
+      ierr   = VecGetArray(global,&array);CHKERRQ(ierr);
+      array += next->rstart;
+      ierr   = DAGetGlobalVector(next->da,&dglobal);CHKERRQ(ierr);
+      ierr   = VecPlaceArray(dglobal,array);CHKERRQ(ierr);
+      ierr   = DAGlobalToLocalBegin(next->da,dglobal,INSERT_VALUES,local);CHKERRQ(ierr);
+      ierr   = DAGlobalToLocalEnd(next->da,dglobal,INSERT_VALUES,local);CHKERRQ(ierr);
+      array -= next->rstart;
+      ierr   = VecRestoreArray(global,&array);CHKERRQ(ierr);
+      ierr   = VecResetArray(dglobal);CHKERRQ(ierr);
+      ierr   = DARestoreGlobalVector(next->da,&dglobal);CHKERRQ(ierr);
 
-      ierr    = VecGetArray(local,&array);CHKERRQ(ierr);
-      ierr    = VecGetSize(local,&n);CHKERRQ(ierr);
-ierr = PetscMalloc(n*sizeof(int),&(      *idx    ));CHKERRQ(ierr);
+      ierr   = VecGetArray(local,&array);CHKERRQ(ierr);
+      ierr   = VecGetSize(local,&n);CHKERRQ(ierr);
+      ierr   = PetscMalloc(n*sizeof(int),idx);CHKERRQ(ierr);
       for (i=0; i<n; i++) (*idx)[i] = (int)PetscRealPart(array[i]);
       ierr    = VecRestoreArray(local,&array);CHKERRQ(ierr);
       ierr    = VecDestroy(local);CHKERRQ(ierr);
@@ -698,8 +699,10 @@ ierr = PetscMalloc(n*sizeof(int),&(      *idx    ));CHKERRQ(ierr);
 #define __FUNC__ "VecPackGetLocalVectors_Array"
 int VecPackGetLocalVectors_Array(VecPack packer,struct VecPackLink *mine,Scalar **array)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  *array = (Scalar*)PetscMalloc(mine->n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(mine->n*sizeof(Scalar),array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: sprcm.c,v 1.37 2000/09/28 21:12:22 bsmith Exp bsmith $*/
+/*$Id: sprcm.c,v 1.38 2001/01/15 21:46:34 bsmith Exp balay $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"
@@ -18,7 +18,7 @@ int MatOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  mask = (int *)PetscMalloc(4*nrow * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(4*nrow * sizeof(int),&mask);CHKERRQ(ierr);
   perm = mask + nrow;
   xls  = perm + nrow;
 

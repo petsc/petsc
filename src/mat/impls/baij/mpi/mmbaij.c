@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.36 2000/10/24 20:25:55 bsmith Exp bsmith $*/
+/*$Id: mmbaij.c,v 1.37 2001/01/15 21:45:57 bsmith Exp balay $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -39,8 +39,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   } 
   /* form array of columns we need */
-ierr = PetscMalloc((ec+1)*sizeof(int),&  garray );CHKERRQ(ierr);
-  ierr   = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
+  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
+  ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
     gid--; lid--;
@@ -68,8 +68,8 @@ ierr = PetscMalloc((ec+1)*sizeof(int),&  garray );CHKERRQ(ierr);
 #else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
-ierr = PetscMalloc((Nbs+1)*sizeof(int),&  indices );CHKERRQ(ierr);
-  ierr    = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((Nbs+1)*sizeof(int),&indices);CHKERRQ(ierr);
+  ierr = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++; 
@@ -78,7 +78,7 @@ ierr = PetscMalloc((Nbs+1)*sizeof(int),&  indices );CHKERRQ(ierr);
   }
 
   /* form array of columns we need */
-ierr = PetscMalloc((ec+1)*sizeof(int),&  garray );CHKERRQ(ierr);
+  ierr = PetscMalloc((ec+1)*sizeof(int),&garray);CHKERRQ(ierr);
   ec = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
@@ -114,7 +114,7 @@ ierr = PetscMalloc((ec+1)*sizeof(int),&  garray );CHKERRQ(ierr);
     garray[i] = garray[i]/bs;
   }
 
-ierr = PetscMalloc((ec+1)*sizeof(int),&  stmp );CHKERRQ(ierr);
+  ierr = PetscMalloc((ec+1)*sizeof(int),&stmp);CHKERRQ(ierr);
   for (i=0; i<ec; i++) { stmp[i] = bs*i; } 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,&to);CHKERRQ(ierr);
   ierr = PetscFree(stmp);CHKERRQ(ierr);
@@ -168,14 +168,15 @@ int DisAssemble_MPIBAIJ(Mat A)
   int         ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
   int         k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m = A->m;
   MatScalar   *a = Bbaij->a;
-#if defined(PETSC_USE_MAT_SINGLE)
-  Scalar      *atmp = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar));
-  int         l;
-#else     
   Scalar      *atmp;
+#if defined(PETSC_USE_MAT_SINGLE)
+  int         l;
 #endif
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_MAT_SINGLE)
+  ierr = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar),&atmp);CHKERRQ(ierr);
+#endif
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
   ierr = VecDestroy(baij->lvec);CHKERRQ(ierr); baij->lvec = 0;
@@ -195,14 +196,14 @@ int DisAssemble_MPIBAIJ(Mat A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-ierr = PetscMalloc(mbs*sizeof(int),&(  nz ));CHKERRQ(ierr);
+  ierr = PetscMalloc(mbs*sizeof(int),&nz);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,baij->bs,m,n,0,nz,&Bnew);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
   
-ierr = PetscMalloc(bs*sizeof(int),&(  rvals ));CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(int),&rvals);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     rvals[0] = bs*i;
     for (j=1; j<bs; j++) { rvals[j] = rvals[j-1] + 1; }

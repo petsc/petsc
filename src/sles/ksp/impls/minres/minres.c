@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.10 2000/09/28 21:13:36 bsmith Exp bsmith $*/
+/*$Id: minres.c,v 1.11 2001/01/15 21:47:29 bsmith Exp balay $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -201,6 +201,7 @@ EXTERN_C_BEGIN
 int KSPCreate_MINRES(KSP ksp)
 {
   KSP_MINRES *minres;
+  int ierr;
 
   PetscFunctionBegin;
 

@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.19 2000/09/28 21:14:25 bsmith Exp bsmith $*/
+/*$Id: ex5s.c,v 1.20 2001/01/15 21:48:06 bsmith Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -179,8 +179,8 @@ int main(int argc,char **argv)
      Color the grid; since this is a five point stencil we can get away with 
      9 colors.
   */
-  ierr   = VecGetOwnershipRange(r,&rstart,&rend);CHKERRA(ierr);
-  colors = (int*)PetscMalloc((rend-rstart)*sizeof(int));CHKPTRA(colors);
+  ierr = VecGetOwnershipRange(r,&rstart,&rend);CHKERRA(ierr);
+  ierr = PetscMalloc((rend-rstart)*sizeof(int),&colors);CHKERRA(ierr);
   for (i=rstart; i<rend; i++) {
     colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
   }

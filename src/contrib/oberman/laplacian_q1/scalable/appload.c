@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.1 2000/08/17 15:47:45 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.2 2001/01/15 21:49:25 bsmith Exp balay $*/
 #include "appctx.h"
 
 /*
@@ -20,7 +20,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  (*appctx)       = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(AppCtx),appctx);CHKERRQ(ierr);
   (*appctx)->comm = comm;
 
   ierr = PetscOptionsGetInt   (PETSC_NULL,"-nx"  ,&Nelx,&flg);CHKERRQ(ierr); if (!flg) { Nelx = 5;   }

@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.71 2000/12/23 00:35:58 bsmith Exp bsmith $*/
+/*$Id: zoptions.c,v 1.72 2001/01/15 21:49:49 bsmith Exp balay $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -275,7 +275,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
     Scalar               *work;
     PetscObjectContainer container;
 
-ierr = PetscMalloc((N+1)*sizeof(Scalar),&    work );CHKERRQ(ierr); 
+    ierr = PetscMalloc((N+1)*sizeof(Scalar),&work);CHKERRQ(ierr); 
 
     /* shift work by that number of bytes */
     work = (Scalar*)(((char*)work) + shift);

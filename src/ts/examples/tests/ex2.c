@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.27 2000/10/24 20:27:27 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.28 2001/01/15 21:48:34 bsmith Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -125,7 +125,7 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-ierr = PetscMalloc(n*sizeof(int),&(  idx));
+  ierr = PetscMalloc(n*sizeof(int),&idx);CHKERRQ(ierr);
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -166,7 +166,7 @@ int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
   ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-ierr = PetscMalloc(n*sizeof(int),&(  idx));
+  ierr = PetscMalloc(n*sizeof(int),&idx);CHKERRQ(ierr);
   for(i=0; i<n; i++) idx[i]=i;
   
   /* Create local sequential vectors */

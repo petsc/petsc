@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.55 2000/09/28 21:12:19 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.56 2001/01/15 21:46:32 bsmith Exp balay $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -47,7 +47,7 @@ static int MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
     SETERRQ(PETSC_ERR_SUP,"Square partitioning requires p to divide n"); 
   }
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
-  color = (int*)PetscMalloc((rend-rstart)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((rend-rstart)*sizeof(int),&color);CHKERRQ(ierr);
   /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
   for (cell=rstart; cell<rend; cell++) {
     color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));

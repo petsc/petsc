@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.64 2000/09/28 21:14:25 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.65 2001/01/15 21:48:06 bsmith Exp balay $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
@@ -116,13 +116,13 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr    = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-    ierr    = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-ierr = PetscMalloc(Khistl*sizeof(double),&(    Khist   ));CHKPTRA(Khist);
-    ierr    = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRA(ierr);
-ierr = PetscMalloc(Shistl*sizeof(double),&(    Shist   ));CHKPTRA(Shist);
-ierr = PetscMalloc(Shistl*sizeof(int),&(    Shistit ));CHKPTRA(Shistit);
-    ierr    = SNESSetConvergenceHistory(snes,Shist,Shistit,Shistl,PETSC_FALSE);CHKERRA(ierr);
+    ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
+    ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
+    ierr = PetscMalloc(Khistl*sizeof(double),&Khist);CHKERRA(ierr);
+    ierr = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRA(ierr);
+    ierr = PetscMalloc(Shistl*sizeof(double),&Shist);CHKERRA(ierr);
+    ierr = PetscMalloc(Shistl*sizeof(int),&Shistit);CHKERRA(ierr);
+    ierr = SNESSetConvergenceHistory(snes,Shist,Shistit,Shistl,PETSC_FALSE);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

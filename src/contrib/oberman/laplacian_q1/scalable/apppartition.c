@@ -1,4 +1,4 @@
-/*$Id: apppartition.c,v 1.3 2000/09/28 21:15:52 bsmith Exp bsmith $*/
+/*$Id: apppartition.c,v 1.4 2001/01/15 21:49:25 bsmith Exp balay $*/
 #include "appctx.h"
 
 int AppPartitionGetOwnedSize(AppPartition *part, int *m);
@@ -165,7 +165,8 @@ int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMa
 
   PetscFunctionBegin;
 
-  p = indices = (int*)PetscMalloc((part->nelx+1)*(part->nely+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((part->nelx+1)*(part->nely+1)*sizeof(int),&indices);CHKERRQ(ierr);
+  p = indices;
 
   I = (part->rank / part->nsdy);
   J = (part->rank % part->nsdy);
@@ -283,8 +284,10 @@ int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boun
     *n = counter;
 
     counter++; /* This is to avoid zero-length allocations. */
-    pb =ierr = PetscMalloc(counter*sizeof(int),&( *boundary ));CHKERRQ(ierr);
-    pc =ierr = PetscMalloc(2*counter*sizeof(double),&( *coords   ));CHKERRQ(ierr);
+    ierr = PetscMalloc(counter*sizeof(int),boundary);CHKERRQ(ierr);
+    pb   = *boundary;
+    ierr = PetscMalloc(2*counter*sizeof(double),coords);CHKERRQ(ierr);
+    pc   = *coords;
   }
 
   if (I==0) {

@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.42 2000/10/24 20:26:18 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.43 2001/01/15 21:46:33 bsmith Exp balay $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -67,7 +67,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   }
 #endif
 
-  locals = (int*)PetscMalloc((mat->m+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((mat->m+1)*sizeof(int),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   PARKMETIS(vtxdist,xadj,part->vertex_weights,adjncy,adj->values,locals,(int*)parmetis,part->comm);

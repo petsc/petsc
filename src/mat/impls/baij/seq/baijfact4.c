@@ -1,4 +1,4 @@
-/*$Id: baijfact4.c,v 1.1 2001/01/06 15:35:15 bsmith Exp bsmith $*/
+/*$Id: baijfact4.c,v 1.2 2001/01/15 21:45:50 bsmith Exp balay $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -22,10 +22,10 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-ierr = PetscMalloc(bs2*(n+1)*sizeof(MatScalar),&  rtmp );CHKERRQ(ierr);
+  ierr = PetscMalloc(bs2*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   ierr = PetscMemzero(rtmp,bs2*(n+1)*sizeof(MatScalar));CHKERRQ(ierr);
   /* generate work space needed by dense LU factorization */
-  v_work     = (MatScalar*)PetscMalloc(bs*sizeof(int) + (bs+bs2)*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr       = PetscMalloc(bs*sizeof(int) + (bs+bs2)*sizeof(MatScalar),&v_work);CHKERRQ(ierr);
   multiplier = v_work + bs;
   v_pivots   = (int*)(multiplier + bs2);
 

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.20 2000/05/08 15:09:20 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.21 2001/01/15 21:48:46 bsmith Exp balay $*/
 
 static char help[] = "Tests AOData \n\n";
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal);CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
-ierr = PetscMalloc(n*sizeof(int),&(  keys ));CHKPTRA(keys);
+  ierr = PetscMalloc(n*sizeof(int),&keys);CHKERRA(ierr);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -46,7 +46,7 @@ ierr = PetscMalloc(n*sizeof(int),&(  keys ));CHKPTRA(keys);
   /* 
       Allocate data for the first key and first segment 
   */
-ierr = PetscMalloc(bs*n*sizeof(int),&(  data ));CHKPTRA(data);
+  ierr = PetscMalloc(bs*n*sizeof(int),&data);CHKERRA(ierr);
   for (i=0; i<n; i++) {
     data[2*i]   = -(start + i);
     data[2*i+1] = -(start + i) - 10000;
@@ -58,7 +58,7 @@ ierr = PetscMalloc(bs*n*sizeof(int),&(  data ));CHKPTRA(data);
       Allocate data for first key and second segment 
   */
   bs   = 3;
-ierr = PetscMalloc(bs*n*sizeof(double),&(  gd   ));CHKPTRA(gd);
+  ierr = PetscMalloc(bs*n*sizeof(double),&gd);CHKERRA(ierr);
   for (i=0; i<n; i++) {
     gd[3*i]   = -(start + i);
     gd[3*i+1] = -(start + i) - 10000;

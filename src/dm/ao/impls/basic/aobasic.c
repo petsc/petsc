@@ -1,4 +1,4 @@
-/*$Id: aobasic.c,v 1.57 2000/09/28 21:15:12 bsmith Exp bsmith $*/
+/*$Id: aobasic.c,v 1.58 2001/01/15 21:48:44 bsmith Exp balay $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -150,7 +150,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   /* transmit all lengths to all processors */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-ierr = PetscMalloc(2*size*sizeof(int),&(  lens ));CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size*sizeof(int),&lens);CHKERRQ(ierr);
   disp = lens + size;
   ierr = MPI_Allgather(&napp,1,MPI_INT,lens,1,MPI_INT,comm);CHKERRQ(ierr);
   N =  0;
@@ -165,7 +165,7 @@ ierr = PetscMalloc(2*size*sizeof(int),&(  lens ));CHKERRQ(ierr);
   */
   if (!mypetsc) {
     start = disp[rank];
-ierr = PetscMalloc((napp+1)*sizeof(int),&    petsc );CHKERRQ(ierr);
+    ierr  = PetscMalloc((napp+1)*sizeof(int),&petsc);CHKERRQ(ierr);
     for (i=0; i<napp; i++) {
       petsc[i] = start + i;
     }
@@ -174,14 +174,14 @@ ierr = PetscMalloc((napp+1)*sizeof(int),&    petsc );CHKERRQ(ierr);
   }
 
   /* get all indices on all processors */
-ierr = PetscMalloc(2*N*sizeof(int),&(  allpetsc ));CHKERRQ(ierr);
-  allapp   = allpetsc + N;
-  ierr = MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
-  ierr = PetscFree(lens);CHKERRQ(ierr);
+  ierr   = PetscMalloc(2*N*sizeof(int),&allpetsc);CHKERRQ(ierr);
+  allapp = allpetsc + N;
+  ierr   = MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);CHKERRQ(ierr);
+  ierr   = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-ierr = PetscMalloc(2*N*sizeof(int),&(  aodebug->app   ));CHKERRQ(ierr);
+  ierr = PetscMalloc(2*N*sizeof(int),&aodebug->app);CHKERRQ(ierr);
   PetscLogObjectMemory(ao,2*N*sizeof(int));
   aodebug->petsc = aodebug->app + N;
   ierr           = PetscMemzero(aodebug->app,2*N*sizeof(int));CHKERRQ(ierr);

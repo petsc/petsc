@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.54 2000/09/28 21:12:29 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.55 2001/01/15 21:46:39 bsmith Exp balay $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -19,8 +19,8 @@ int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int 
   int ierr;
 
   PetscFunctionBegin;
-ierr = PetscMalloc(m*sizeof(int),&(  work ));CHKERRQ(ierr);  
-ierr = PetscMalloc(m*sizeof(int),&(  *seq ));CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(int),&work);CHKERRQ(ierr);  
+  ierr = PetscMalloc(m*sizeof(int),seq);CHKERRQ(ierr);
 
   MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
 
@@ -67,12 +67,12 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-ierr = PetscMalloc(5*n*sizeof(int),&(  list ));CHKERRQ(ierr);
+  ierr = PetscMalloc(5*n*sizeof(int),&list);CHKERRQ(ierr);
   work = list + n;
 
   MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-ierr = PetscMalloc(n*sizeof(int),&(  coloring ));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   ierr = PetscFree(list);CHKERRQ(ierr);
@@ -106,13 +106,13 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-ierr = PetscMalloc(5*n*sizeof(int),&(  list ));CHKERRQ(ierr);
+  ierr = PetscMalloc(5*n*sizeof(int),&list);CHKERRQ(ierr);
   work = list + n;
 
   n1   = n - 1;
   none = -1;
   MINPACKnumsrt(&n,&n1,seq,&none,list,work+2*n,work+n);
-ierr = PetscMalloc(n*sizeof(int),&(  coloring ));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   ierr = PetscFree(list);CHKERRQ(ierr);
@@ -147,12 +147,12 @@ int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
 
-ierr = PetscMalloc(5*n*sizeof(int),&(  list ));CHKERRQ(ierr);
+  ierr = PetscMalloc(5*n*sizeof(int),&list);CHKERRQ(ierr);
   work = list + n;
 
   MINPACKido(&n,&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
 
-ierr = PetscMalloc(n*sizeof(int),&(  coloring ));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&coloring);CHKERRQ(ierr);
   MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
 
   ierr = PetscFree(list);CHKERRQ(ierr);
@@ -182,9 +182,9 @@ int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&N,&N);CHKERRQ(ierr);
-ierr = PetscMalloc(N*sizeof(IS*),&(  is  ));CHKERRQ(ierr); 
-  *iscoloring       = (ISColoring)PetscMalloc(sizeof(struct _p_ISColoring));CHKERRQ(ierr);
-  (*iscoloring)->n  = N;
+  ierr = PetscMalloc(N*sizeof(IS*),&is);CHKERRQ(ierr); 
+  ierr = PetscNew(struct _p_ISColoring,iscoloring);CHKERRQ(ierr);
+    (*iscoloring)->n  = N;
   (*iscoloring)->is = is;
   
   ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);

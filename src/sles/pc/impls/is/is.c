@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.2 2000/08/24 22:42:38 bsmith Exp bsmith $*/
+/*$Id: is.c,v 1.3 2001/01/15 21:47:02 bsmith Exp balay $*/
 #include "src/sles/pc/impls/is/is.h"
 
 /* -------------------------------------------------------------------------- */
@@ -48,8 +48,8 @@ int PCISSetUp(PC pc)
     /* Identifying interior and interface nodes, in local numbering */
     ierr = VecGetSize(pcis->vec1_N,&pcis->n);CHKERRQ(ierr);
     ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-    idx_I_local = (int*)PetscMalloc(pcis->n*sizeof(int));CHKERRQ(ierr);
-    idx_B_local = (int*)PetscMalloc(pcis->n*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(pcis->n*sizeof(int),&idx_I_local);CHKERRQ(ierr);
+    ierr = PetscMalloc(pcis->n*sizeof(int),&idx_B_local);CHKERRQ(ierr);
     for (i=0, pcis->n_B=0, n_I=0; i<pcis->n; i++) {
       if (array[i] == 1.0) { idx_I_local[n_I]       = i; n_I++;       }
       else                 { idx_B_local[pcis->n_B] = i; pcis->n_B++; }
@@ -102,7 +102,7 @@ int PCISSetUp(PC pc)
     ierr = PCGetVector(pc,&global);CHKERRQ(ierr);
     ierr = VecDuplicate(global,&pcis->vec1_global);CHKERRQ(ierr);
   }
-  pcis->work_N = (Scalar*)PetscMalloc((pcis->n)*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMalloc((pcis->n)*sizeof(Scalar),&pcis->work_N);CHKERRQ(ierr);
 
   /* Creating the scatter contexts */
   ierr = VecScatterCreate(pc->vec,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);

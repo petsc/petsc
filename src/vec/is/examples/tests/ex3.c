@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.11 2000/05/05 22:14:45 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.12 2001/01/15 21:44:31 bsmith Exp balay $*/
 /*
        Tests ISAllGather()
 */
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
      Create IS
   */
   n = 4 + rank;
-ierr = PetscMalloc(n*sizeof(int),&(  indices ));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(int),&indices);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     indices[i] = rank + i;
   }

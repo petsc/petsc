@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.50 2000/09/28 21:15:09 bsmith Exp bsmith $*/
+/*$Id: aodata.c,v 1.51 2001/01/15 21:48:41 bsmith Exp balay $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -27,7 +27,7 @@
 @*/ 
 int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 {
-  int       n,i;
+  int       n,i,ierr;
   AODataKey *key = ao->keys;
 
   PetscFunctionBegin;
@@ -35,7 +35,7 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 
   *nkeys = n = ao->nkeys;
   if (keys) {
-    *keys = (char**)PetscMalloc((n+1)*sizeof(char *));CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*sizeof(char *),&keys);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       if (!key) SETERRQ(PETSC_ERR_COR,"Less keys in database then indicated");
       (*keys)[i] = key->name;
@@ -1026,8 +1026,8 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
   if (nlocal)    *nlocal    = key->nlocal;
   if (nsegments) *nsegments = n = key->nsegments;
   if (nsegments && segnames) {
-    *segnames = (char**)PetscMalloc((n+1)*sizeof(char *));CHKERRQ(ierr);
-    seg       = key->segments;
+    ierr = PetscMalloc((n+1)*sizeof(char *),&segnames);CHKERRQ(ierr);
+    seg  = key->segments;
     for (i=0; i<n; i++) {
       if (!seg) SETERRQ(PETSC_ERR_COR,"Less segments in database then indicated");
       (*segnames)[i] = seg->name;
@@ -1432,7 +1432,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   if (oldkey) { oldkey->next = key;} 
   else        { aodata->keys = key;} 
   ierr           = PetscStrlen(name,&len);CHKERRQ(ierr);
-ierr = PetscMalloc((len+1)*sizeof(char),&  key->name      );CHKERRQ(ierr);
+  ierr           = PetscMalloc((len+1)*sizeof(char),&key->name);CHKERRQ(ierr);
   ierr           = PetscStrcpy(key->name,name);CHKERRQ(ierr);
   key->N         = N;
   key->nsegments = 0;
@@ -1444,9 +1444,9 @@ ierr = PetscMalloc((len+1)*sizeof(char),&  key->name      );CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /*  Set nlocal and ownership ranges */
-  ierr         = PetscSplitOwnership(comm,&nlocal,&N);CHKERRQ(ierr);
-ierr = PetscMalloc((size+1)*sizeof(int),&  key->rowners );CHKERRQ(ierr);
-  ierr = MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr            = PetscSplitOwnership(comm,&nlocal,&N);CHKERRQ(ierr);
+  ierr            = PetscMalloc((size+1)*sizeof(int),&key->rowners);CHKERRQ(ierr);
+  ierr            = MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   key->rowners[0] = 0;
   for (i=2; i<=size; i++) {
     key->rowners[i] += key->rowners[i-1];

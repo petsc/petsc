@@ -1,4 +1,4 @@
-/*$Id: ex41.c,v 1.18 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex41.c,v 1.19 2001/01/15 21:46:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
 is similar to ex40.c; here the index sets used are random. Input arguments are:\n\
@@ -46,9 +46,9 @@ int main(int argc,char **args)
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
   
   /* Create the IS corresponding to subdomains */
-  is1    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is1);
-  is2    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is2);
-  idx    = (int*)PetscMalloc(m *sizeof(int));CHKPTRA(idx);
+  ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRA(ierr);
+  ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRA(ierr);
+  ierr = PetscMalloc(m *sizeof(int),&idx);CHKERRA(ierr);
 
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {

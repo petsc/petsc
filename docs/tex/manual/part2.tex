@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.347 2000/11/10 16:48:29 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.348 2001/01/15 21:50:18 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -6194,7 +6194,7 @@ possibly user-defined routines as well) with
 \end{verbatim}
 Likewise, all memory allocations should be checked with 
 \begin{verbatim}
-ierr = PetscMalloc(n*sizeof(double),&(   ptr ));CHKPTRQ(void *ptr);
+ierr = PetscMalloc(n*sizeof(double),&ptr);CHKPTRQ(void *ptr);
 \end{verbatim}
 If this procedure is followed throughout all of the user's libraries 
 and codes, any error will by default generate a clean traceback of 

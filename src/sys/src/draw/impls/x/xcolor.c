@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.68 2000/11/25 03:46:46 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.69 2001/01/15 21:43:29 bsmith Exp balay $*/
 
 /*
     Code for managing color the X implementation of the PetscDraw routines.
@@ -83,7 +83,7 @@ int PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Col
   if (colormap) {
     gColormap = colormap;
   } else {
-    gColormap   = DefaultColormap(display,screen);CHKERRQ(ierr);
+    gColormap   = DefaultColormap(display,screen);
   }
 
   /* set the basic colors into the color map */
@@ -94,11 +94,11 @@ int PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Col
 
   /* set the uniform hue colors into the color map */
   ncolors = 256-PETSC_DRAW_BASIC_COLORS;
-  ierr = PetscMalloc(3*ncolors*sizeof(unsigned char),&red);CHKERRQ(ierr);
-  green = red   + ncolors;
-  blue  = green + ncolors;
-  ierr = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
+  ierr    = PetscMalloc(3*ncolors*sizeof(unsigned char),&red);CHKERRQ(ierr);
+  green   = red   + ncolors;
+  blue    = green + ncolors;
+  ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
+  ierr    = PetscOptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=PETSC_DRAW_BASIC_COLORS; i<ncolors+PETSC_DRAW_BASIC_COLORS; i++) {
       colordef.red    = ((int)red[i-PETSC_DRAW_BASIC_COLORS]   * 65535) / 255;
@@ -138,7 +138,7 @@ int PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Co
   if (colormap) {
     gColormap = colormap;
   } else {
-    gColormap = XCreateColormap(display,RootWindow(display,screen),visual,AllocAll);CHKERRQ(ierr);
+    gColormap = XCreateColormap(display,RootWindow(display,screen),visual,AllocAll);
   }
 
   cmap_base = 0;

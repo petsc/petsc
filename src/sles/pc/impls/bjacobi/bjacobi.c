@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.149 2000/11/28 17:30:17 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.150 2001/01/15 21:46:51 bsmith Exp balay $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -54,7 +54,7 @@ static int PCSetUp_BJacobi(PC pc)
       }
       if (size == 1) {
         jac->n_local = jac->n;
-        jac->l_lens  = (int*)PetscMalloc(jac->n_local*sizeof(int));CHKERRQ(ierr);
+        ierr         = PetscMalloc(jac->n_local*sizeof(int),&jac->l_lens);CHKERRQ(ierr);
         ierr         = PetscMemcpy(jac->l_lens,jac->g_lens,jac->n_local*sizeof(int));CHKERRQ(ierr);
         /* check that user set these correctly */
         sum = 0;
@@ -81,12 +81,12 @@ static int PCSetUp_BJacobi(PC pc)
                       are not compatible with parallel matrix layout");
  end_1: 
         jac->n_local = i_end - i_start;
-        jac->l_lens  = (int*)PetscMalloc(jac->n_local*sizeof(int));CHKERRQ(ierr); 
+        ierr         = PetscMalloc(jac->n_local*sizeof(int),&jac->l_lens);CHKERRQ(ierr); 
         ierr         = PetscMemcpy(jac->l_lens,jac->g_lens+i_start,jac->n_local*sizeof(int));CHKERRQ(ierr);
       }
     } else { /* no global blocks given, determine then using default layout */
       jac->n_local = jac->n/size + ((jac->n % size) > rank);
-      jac->l_lens  = (int*)PetscMalloc(jac->n_local*sizeof(int));CHKERRQ(ierr);
+      ierr         = PetscMalloc(jac->n_local*sizeof(int),&jac->l_lens);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
         jac->l_lens[i] = ((M/bs)/jac->n_local + (((M/bs) % jac->n_local) > i))*bs;
         if (!jac->l_lens[i]) SETERRQ(PETSC_ERR_ARG_SIZ,"Too many blocks given");
@@ -95,7 +95,7 @@ static int PCSetUp_BJacobi(PC pc)
   } else if (jac->n < 0 && jac->n_local < 0) { /* no blocks given */
     jac->n         = size;
     jac->n_local   = 1;
-ierr = PetscMalloc(sizeof(int),&(    jac->l_lens    ));CHKERRQ(ierr);
+    ierr           = PetscMalloc(sizeof(int),&jac->l_lens);CHKERRQ(ierr);
     jac->l_lens[0] = M;
   }
 
@@ -318,7 +318,7 @@ int PCBJacobiSetTotalBlocks_BJacobi(PC pc,int blocks,int *lens)
   if (!lens) {
     jac->g_lens = 0;
   } else {
-ierr = PetscMalloc(blocks*sizeof(int),&(    jac->g_lens ));CHKERRQ(ierr);
+    ierr = PetscMalloc(blocks*sizeof(int),&jac->g_lens);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,blocks*sizeof(int));
     ierr = PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));CHKERRQ(ierr);
   }
@@ -341,7 +341,7 @@ int PCBJacobiSetLocalBlocks_BJacobi(PC pc,int blocks,int *lens)
   if (!lens) {
     jac->l_lens = 0;
   } else {
-ierr = PetscMalloc(blocks*sizeof(int),&(    jac->l_lens ));CHKERRQ(ierr);
+    ierr = PetscMalloc(blocks*sizeof(int),&jac->l_lens);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,blocks*sizeof(int));
     ierr = PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));CHKERRQ(ierr);
   }
@@ -709,12 +709,12 @@ static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     pc->ops->applytranspose= PCApplyTranspose_BJacobi_Singleblock;
     pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Singleblock;
 
-ierr = PetscMalloc(sizeof(PC_BJacobi_Singleblock),&(    bjac         ));CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PC_BJacobi_Singleblock),&bjac);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,sizeof(PC_BJacobi_Singleblock));
     bjac->x      = x;
     bjac->y      = y;
 
-ierr = PetscMalloc(sizeof(SLES),&(    jac->sles    ));CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(SLES),&jac->sles);CHKERRQ(ierr);
     jac->sles[0] = sles;
     jac->data    = (void*)bjac;
   } else {
@@ -898,18 +898,18 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     pc->ops->applytranspose= PCApplyTranspose_BJacobi_Multiblock;
     pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiblock;
 
-ierr = PetscMalloc(sizeof(PC_BJacobi_Multiblock),&(    bjac         ));CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PC_BJacobi_Multiblock),&bjac);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,sizeof(PC_BJacobi_Multiblock));
-ierr = PetscMalloc(n_local*sizeof(SLES),&(    jac->sles    ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n_local*sizeof(SLES),&jac->sles);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,sizeof(n_local*sizeof(SLES)));
-ierr = PetscMalloc(2*n_local*sizeof(Vec),&(    bjac->x      ));CHKERRQ(ierr);
+    ierr = PetscMalloc(2*n_local*sizeof(Vec),&bjac->x);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,sizeof(2*n_local*sizeof(Vec)));
     bjac->y      = bjac->x + n_local;
-ierr = PetscMalloc(n_local*sizeof(Scalar),&(    bjac->starts ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n_local*sizeof(Scalar),&bjac->starts);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,sizeof(n_local*sizeof(Scalar)));
     
     jac->data    = (void*)bjac;
-ierr = PetscMalloc(n_local*sizeof(IS),&(    bjac->is     ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n_local*sizeof(IS),&bjac->is);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,sizeof(n_local*sizeof(IS)));
 
     start = 0;

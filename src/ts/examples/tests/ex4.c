@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.3 2000/10/24 20:27:27 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.4 2001/01/15 21:48:34 bsmith Exp balay $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -224,7 +224,7 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-ierr = PetscMalloc(n*sizeof(int),&(  idx));
+  ierr = PetscMalloc(n*sizeof(int),&idx);CHKERRQ(ierr);
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -281,7 +281,7 @@ int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecGetSize(globalin,&len);CHKERRQ(ierr);
 
   /* Set the index sets */
-ierr = PetscMalloc(len*sizeof(int),&(  idx));
+  ierr = PetscMalloc(len*sizeof(int),&idx);CHKERRQ(ierr);
   for(i=0; i<len; i++) idx[i]=i;
  
   /* Create local sequential vectors */

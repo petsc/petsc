@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.5 2000/08/01 20:58:20 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.6 2001/01/15 21:49:27 bsmith Exp balay $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
@@ -339,8 +339,8 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ierr = VecGetArray(x,&sdnz);CHKERRQ(ierr);
 
   /* now copy values into and integer array, adding one for the diagonal entry */
-ierr = PetscMalloc((vertex_local_n+1)*sizeof(int),&  dnz  );CHKERRQ(ierr);
-ierr = PetscMalloc((vertex_local_n+1)*sizeof(int),&  onz  );CHKERRQ(ierr);
+  ierr = PetscMalloc((vertex_local_n+1)*sizeof(int),&dnz);CHKERRQ(ierr);
+  ierr = PetscMalloc((vertex_local_n+1)*sizeof(int),&onz);CHKERRQ(ierr);
   for (i=0; i<vertex_local_n; i++) {
     dnz[i] = 1 + (int)PetscRealPart(sdnz[i]);
     onz[i] = (int)PetscRealPart(sonz[i]);
@@ -515,7 +515,7 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = ISGetLocalSize(vertex_boundary,&nindices);CHKERRQ(ierr);
 
   /* create space for the array of boundary values */
-ierr = PetscMalloc(2*(nindices+1)*sizeof(double),&  bvs );CHKERRQ(ierr);
+  ierr = PetscMalloc(2*(nindices+1)*sizeof(double),&bvs);CHKERRQ(ierr);
 
  /****** Perform computation ***********/
   ierr = ISGetIndices(vertex_boundary,&indices);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.11 2000/11/19 15:19:08 bsmith Exp bsmith $*/
+/*$Id: is.c,v 1.12 2001/01/15 21:46:02 bsmith Exp balay $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -189,7 +189,7 @@ int MatCreate_IS(Mat A)
   Mat_IS *b;
 
   PetscFunctionBegin;
-  ierr                = PetscNew(Mat_IS,&b));CHKERRQ(ierr);
+  ierr                = PetscNew(Mat_IS,&b);CHKERRQ(ierr);
   A->data             = (void*)b;
   ierr = PetscMemzero(b,sizeof(Mat_IS));CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);

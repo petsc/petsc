@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.67 2000/10/24 20:26:38 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.68 2001/01/15 21:47:06 bsmith Exp balay $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -57,7 +57,7 @@ int main(int Argc,char **Args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-j",&flg);CHKERRA(ierr);
   if (flg) {use_jacobi = 1;}
          
-ierr = PetscMalloc(levels*sizeof(int),&(  N ));CHKPTRA(N);
+  ierr = PetscMalloc(levels*sizeof(int),&N);CHKERRA(ierr);
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;

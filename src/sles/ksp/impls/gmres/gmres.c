@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.158 2001/01/03 04:16:09 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.159 2001/01/15 21:47:19 bsmith Exp balay $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -55,7 +55,7 @@ int    KSPSetUp_GMRES(KSP ksp)
   cc            = (max_k + 1);
   size          = (hh + hes + rs + 2*cc) * sizeof(Scalar);
 
-ierr = PetscMalloc(size,&(  gmres->hh_origin  ));CHKERRQ(ierr);
+  ierr = PetscMalloc(size,&gmres->hh_origin);CHKERRQ(ierr);
   ierr = PetscMemzero(gmres->hh_origin,size);CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,size);
   gmres->hes_origin = gmres->hh_origin + hh;
@@ -66,17 +66,17 @@ ierr = PetscMalloc(size,&(  gmres->hh_origin  ));CHKERRQ(ierr);
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
     size = (max_k + 3)*(max_k + 9)*sizeof(Scalar);
-ierr = PetscMalloc(size,&(    gmres->Rsvd ));CHKERRQ(ierr);
-ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&    gmres->Dsvd );CHKERRQ(ierr);
+    ierr = PetscMalloc(size,&gmres->Rsvd);CHKERRQ(ierr);
+    ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
     PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  gmres->vecs = (Vec*)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *),&gmres->vecs);CHKERRQ(ierr);
   gmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  gmres->user_work   = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKERRQ(ierr);
-ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int),&  gmres->mwork_alloc );CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *),&gmres->user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int),&gmres->mwork_alloc);CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
 
   if (gmres->q_preallocate) {
@@ -504,7 +504,7 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
   }
   if (!gmres->nrs) {
     /* allocate the work area */
-    gmres->nrs = (Scalar *)PetscMalloc(gmres->max_k*sizeof(Scalar));
+    ierr = PetscMalloc(gmres->max_k*sizeof(Scalar),&gmres->nrs);CHKERRQ(ierr);
     PetscLogObjectMemory(ksp,gmres->max_k*sizeof(Scalar));
   }
 
@@ -680,7 +680,7 @@ int KSPCreate_GMRES(KSP ksp)
   int       ierr;
 
   PetscFunctionBegin;
-ierr = PetscMalloc(sizeof(KSP_GMRES),&(  gmres ));CHKERRQ(ierr);
+  ierr = PetscNew(KSP_GMRES,&gmres);CHKERRQ(ierr);
   ierr  = PetscMemzero(gmres,sizeof(KSP_GMRES));CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,sizeof(KSP_GMRES));
   ksp->data                              = (void*)gmres;

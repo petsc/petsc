@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.88 2000/09/27 21:41:40 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.89 2000/11/28 17:26:31 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -130,3 +130,10 @@ PETSC_PYTHON    = -DPETSC_PYTHON="python1.5"
 #
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB
+#
+#
+# Location of DSCPACK
+#
+DSCPACK_INCLUDE     = -I/home/petsc/software/DSCPACK-S/DSC_LIB -DDBL_R_NUM
+DSCPACK_LIB         = /home/petsc/software/DSCPACK-S/DSC_LIB/dsclibdbl.a
+PETSC_HAVE_DSCPACK  = -DPETSC_HAVE_DSCPACK

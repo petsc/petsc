@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.53 2000/09/28 21:14:17 bsmith Exp bsmith $*/
+/*$Id: snestest.c,v 1.54 2001/01/15 21:47:58 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -92,6 +92,7 @@ EXTERN_C_BEGIN
 int SNESCreate_Test(SNES  snes)
 {
   SNES_Test *neP;
+  int ierr;
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {

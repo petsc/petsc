@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.83 2000/12/01 16:34:43 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.84 2001/01/15 21:46:34 bsmith Exp balay $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -42,7 +42,7 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol);CHKERRQ(ierr);
     */
-ierr = PetscMalloc(n*sizeof(int),&(    ii ));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-ierr = PetscMalloc(2*n*sizeof(int),&(  lens  ));CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*n*sizeof(int),&lens);CHKERRQ(ierr);
   permr = lens + n;
   for (i=0; i<n; i++) { 
     lens[i]  = ia[i+1] - ia[i];

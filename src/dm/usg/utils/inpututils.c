@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.11 2000/09/28 21:15:42 bsmith Exp bsmith $ */
+/* $Id: inpututils.c,v 1.12 2001/01/15 21:49:15 bsmith Exp balay $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -45,7 +45,7 @@ int AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
   */
   nmax = PetscMax(agrid->cell_n,agrid->vertex_n);
   nmax = PetscMax(nmax,agrid->edge_n);
-ierr = PetscMalloc(nmax*sizeof(int),&(  keys ));CHKERRQ(ierr);
+  ierr = PetscMalloc(nmax*sizeof(int),&keys);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
     keys[i] = i;
   }
@@ -91,9 +91,10 @@ int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
   /*
      Allocate large arrays to hold the nodes and cellrilateral lists 
   */
-  vertex = agrid->vertex = (double *)PetscMalloc(2*agrid->vertex_max*sizeof(double));CHKERRQ(ierr);
-  cell = agrid->cell_vertex = (int *)PetscMalloc(4*agrid->cell_max*sizeof(int));CHKERRQ(ierr);
-
+  ierr   = PetscMalloc(2*agrid->vertex_max*sizeof(double),&agrid->vertex);CHKERRQ(ierr);
+  vertex = agrid->vertex;
+  ierr   = PetscMalloc(4*agrid->cell_max*sizeof(int),&agrid->cell_vertex);CHKERRQ(ierr);
+  cell   = agrid->cell_vertex;
 
 
   /*
@@ -226,15 +227,19 @@ int AOData2dGridAddNode(AOData2dGrid agrid, double cx, double cy, int *cn)
 #define __FUNC__ "AOData2dGridComputeNeighbors"
 int AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 {
-  int  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e;
+  int  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e,ierr;
 
   PetscFunctionBegin;
   agrid->edge_max = 2*agrid->vertex_n;
   agrid->edge_n   = 0;
-  edge            = agrid->edge_vertex = (int*)PetscMalloc(2*agrid->edge_max*sizeof(int));CHKPTRA(edge);
-  cell_edge       = agrid->cell_edge   = (int*)PetscMalloc(4*agrid->cell_max*sizeof(int));CHKPTRA(cell_edge);
-  edge_cell       = agrid->edge_cell   = (int*)PetscMalloc(2*agrid->edge_max*sizeof(int));CHKPTRA(edge_cell);
-  cell = agrid->cell_vertex;
+  ierr      = PetscMalloc(2*agrid->edge_max*sizeof(int),&agrid->edge_vertex);CHKERRQ(ierr);
+  edge      = agrid->edge_vertex;
+  ierr      = PetscMalloc(4*agrid->cell_max*sizeof(int),agrid->cell_edge);CHKERRQ(ierr);
+  cell_edge = agrid->cell_edge;
+  ierr      = PetscMalloc(2*agrid->edge_max*sizeof(int),&agrid->edge_cell);CHKERRQ(ierr);
+  edge_cell = agrid->edge_cell;
+
+  cell      = agrid->cell_vertex;
 
   /*
        Mark all neighbors (to start) with -1 to indicate missing neighbor
@@ -311,7 +316,8 @@ int AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 
   }
 
-  neighbors = agrid->cell_cell = (int*)PetscMalloc(4*agrid->cell_n*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(4*agrid->cell_n*sizeof(int),&agrid->cell_cell);CHKERRQ(ierr);
+  neighbors = agrid->cell_cell;
   for (i=0; i<agrid->cell_n; i++) {
     for (j=0; j<4; j++) {
       e = 2*agrid->cell_edge[4*i+j]; 
@@ -340,7 +346,7 @@ int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
   /*
       count contains number of cell that contain the given vertex 
   */
-  count = (int *)PetscMalloc(agrid->vertex_n*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(agrid->vertex_n*sizeof(int),&count);CHKERRQ(ierr);
   ierr = PetscMemzero(count,agrid->vertex_n*sizeof(int));CHKERRQ(ierr);
 
   for (i=0; i<agrid->cell_n; i++) {

@@ -1,4 +1,4 @@
-/*$Id: axpy.c,v 1.49 2000/10/24 20:26:14 bsmith Exp bsmith $*/
+/*$Id: axpy.c,v 1.50 2001/01/15 21:46:25 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -50,7 +50,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
         ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       }
     } else {
-ierr = PetscMalloc((n1+1)*sizeof(Scalar),&      vals );CHKERRQ(ierr);
+      ierr = PetscMalloc((n1+1)*sizeof(Scalar),&vals);CHKERRQ(ierr);
       for (i=start; i<end; i++) {
         ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
         for (j=0; j<ncols; j++) {
@@ -238,7 +238,7 @@ int MatComputeExplicitOperator(Mat inmat,Mat *mat)
   ierr = VecCreateMPI(comm,m,M,&in);CHKERRQ(ierr);
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);
-ierr = PetscMalloc((m+1)*sizeof(int),&  rows );CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   if (size == 1) {

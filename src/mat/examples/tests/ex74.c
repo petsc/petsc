@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.37 2000/11/07 17:49:35 hzhang Exp bsmith $*/
+/*$Id: ex74.c,v 1.38 2001/01/15 21:46:09 bsmith Exp balay $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
@@ -179,9 +179,9 @@ int main(int argc,char **args)
   /* Test MatGetRow() */
   if (getrow){
     row = n/2; 
-ierr = PetscMalloc(n*sizeof(Scalar),&(    vr1 ));CHKERRQ(ierr); 
+    ierr = PetscMalloc(n*sizeof(Scalar),&vr1);CHKERRQ(ierr); 
     vr1_wk = vr1;  
-ierr = PetscMalloc(n*sizeof(Scalar),&(    vr2 ));CHKERRQ(ierr); 
+    ierr = PetscMalloc(n*sizeof(Scalar),&vr2);CHKERRQ(ierr); 
     vr2_wk = vr2;
     ierr = MatGetRow(A,row,&J,&cols1,&vr1);CHKERRA(ierr); 
     vr1_wk += J-1;
@@ -206,8 +206,8 @@ ierr = PetscMalloc(n*sizeof(Scalar),&(    vr2 ));CHKERRQ(ierr);
     /* Test GetSubMatrix() */
     /* get a submatrix consisting of every next block row and column of the original matrix */
     /* for symm. matrix, iscol=isrow. */
-ierr = PetscMalloc(n*sizeof(IS),&(    isrow  ));CHKPTRA(isrow);
-ierr = PetscMalloc(n*sizeof(int),&(    ip_ptr ));CHKERRA(ierr);
+    ierr = PetscMalloc(n*sizeof(IS),&isrow);CHKERRA(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&ip_ptr);CHKERRA(ierr);
     j = 0;
     for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
       for (i=0; i<bs; i++) ip_ptr[j++] = n1*bs + i;  

@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.68 2000/10/24 20:25:52 bsmith Exp bsmith $*/
+/*$Id: baij2.c,v 1.69 2001/01/15 21:45:50 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -94,9 +94,9 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
 
-ierr = PetscMalloc((1+oldcols)*sizeof(int),&  smap  );CHKERRQ(ierr);
+  ierr = PetscMalloc((1+oldcols)*sizeof(int),&smap);CHKERRQ(ierr);
   ssmap = smap;
-ierr = PetscMalloc((1+nrows)*sizeof(int),&  lens  );CHKERRQ(ierr);
+  ierr = PetscMalloc((1+nrows)*sizeof(int),&lens);CHKERRQ(ierr);
   ierr  = PetscMemzero(smap,oldcols*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<ncols; i++) smap[icol[i]] = i+1;
   /* determine lens of each row */
@@ -208,7 +208,7 @@ int MatGetSubMatrices_SeqBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat *
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-ierr = PetscMalloc((n+1)*sizeof(Mat),&    *B );CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*sizeof(Mat),B);CHKERRQ(ierr);
   }
 
   for (i=0; i<n; i++) {
@@ -513,8 +513,8 @@ int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 
 
   if (!a->mult_work) {
-    k = PetscMax(A->m,A->n);
-ierr = PetscMalloc((k+1)*sizeof(Scalar),&    a->mult_work );CHKERRQ(ierr);
+    k    = PetscMax(A->m,A->n);
+    ierr = PetscMalloc((k+1)*sizeof(Scalar),&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
@@ -876,8 +876,8 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
 
   if (!a->mult_work) {
-    k = PetscMax(A->m,A->n);
-ierr = PetscMalloc((k+1)*sizeof(Scalar),&    a->mult_work );CHKERRQ(ierr);
+    k    = PetscMax(A->m,A->n);
+    ierr = PetscMalloc((k+1)*sizeof(Scalar),&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work;
   for (i=0; i<mbs; i++) {
@@ -1042,7 +1042,7 @@ int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 
       if (!a->mult_work) {
         k = PetscMax(A->m,A->n);
-ierr = PetscMalloc((k+1)*sizeof(Scalar),&        a->mult_work );CHKERRQ(ierr);
+        ierr = PetscMalloc((k+1)*sizeof(Scalar),&a->mult_work);CHKERRQ(ierr);
       }
       work = a->mult_work;
       for (i=0; i<mbs; i++) {
@@ -1172,7 +1172,7 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
       if (!a->mult_work) {
         k = PetscMax(A->m,A->n);
-ierr = PetscMalloc((k+1)*sizeof(Scalar),&        a->mult_work );CHKERRQ(ierr);
+        ierr = PetscMalloc((k+1)*sizeof(Scalar),&a->mult_work);CHKERRQ(ierr);
       }
       work = a->mult_work;
       for (i=0; i<mbs; i++) {

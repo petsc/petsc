@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.10 2000/11/05 16:36:56 bsmith Exp bsmith $*/
+/*$Id: ex76.c,v 1.11 2001/01/15 21:46:09 bsmith Exp balay $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -148,7 +148,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(rand,x);CHKERRA(ierr);
 
   /* Test MatReordering() */
-ierr = PetscMalloc(mbs*sizeof(int),&(  ip_ptr ));CHKERRA(ierr);
+  ierr = PetscMalloc(mbs*sizeof(int),&ip_ptr);CHKERRA(ierr);
   for (i=0; i<mbs; i++) ip_ptr[i] = i;
   if(reorder){
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 

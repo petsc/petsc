@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.86 2000/10/25 14:29:39 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.87 2001/01/15 21:47:31 bsmith Exp balay $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -105,9 +105,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr); 
 
   /* Form stiffness for element */
-  K = (double**)PetscMalloc(81*sizeof(double *));CHKERRQ(ierr);
+  ierr = PetscMalloc(81*sizeof(double *),&K);CHKERRQ(ierr);
   for (i=0; i<81; i++) {
-    K[i]ierr = PetscMalloc(81*sizeof(double),&( ));CHKERRQ(ierr);
+    ierr = PetscMalloc(81*sizeof(double),&K[i]);CHKERRQ(ierr);
   }
   ierr = Elastic20Stiff(K);CHKERRQ(ierr);
 
@@ -151,7 +151,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict = 0;
-  rowkeep = (int*)PetscMalloc((N-nstart)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc((N-nstart)*sizeof(int),&rowkeep);CHKERRQ(ierr);
   for (i=nstart; i<N; i++) {
     ierr = MatGetRow(mat,i,&nz,0,0);CHKERRQ(ierr);
     if (nz) rowkeep[ict++] = i;

@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.46 2000/11/28 17:29:54 bsmith Exp bsmith $*/
+/*$Id: matstash.c,v 1.47 2001/01/15 21:46:25 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"
 
@@ -38,7 +38,7 @@ int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
   ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
 
   nopt = stash->size;
-ierr = PetscMalloc(nopt*sizeof(int),&(  opt  ));CHKERRQ(ierr);
+  ierr = PetscMalloc(nopt*sizeof(int),&opt);CHKERRQ(ierr);
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-matstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
   if (flg) {
     if (nopt == 1)                max = opt[0];
@@ -109,9 +109,9 @@ int MatStashScatterEnd_Private(MatStash *stash)
   PetscFunctionBegin;
   /* wait on sends */
   if (nsends) {
-ierr = PetscMalloc(2*nsends*sizeof(MPI_Status),&(    send_status ));CHKERRQ(ierr);
-    ierr        = MPI_Waitall(2*nsends,stash->send_waits,send_status);CHKERRQ(ierr);
-    ierr        = PetscFree(send_status);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*nsends*sizeof(MPI_Status),&send_status);CHKERRQ(ierr);
+    ierr = MPI_Waitall(2*nsends,stash->send_waits,send_status);CHKERRQ(ierr);
+    ierr = PetscFree(send_status);CHKERRQ(ierr);
   }
 
   /* Now update nmaxold to be app 10% more than max n used, this way the
@@ -229,12 +229,12 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
   } else                              newnmax = stash->nmax*2;
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
-ierr = PetscMalloc((newnmax)*(2*sizeof(int)+bs2*sizeof(MatScalar)),&  n_array );CHKERRQ(ierr);
-  n_idx   = (int*)(n_array + bs2*newnmax);
-  n_idy   = (int*)(n_idx + newnmax);
-  ierr = PetscMemcpy(n_array,stash->array,bs2*stash->nmax*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(n_idy,stash->idy,stash->nmax*sizeof(int));CHKERRQ(ierr);
+  ierr  = PetscMalloc((newnmax)*(2*sizeof(int)+bs2*sizeof(MatScalar)),&n_array);CHKERRQ(ierr);
+  n_idx = (int*)(n_array + bs2*newnmax);
+  n_idy = (int*)(n_idx + newnmax);
+  ierr  = PetscMemcpy(n_array,stash->array,bs2*stash->nmax*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(int));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(n_idy,stash->idy,stash->nmax*sizeof(int));CHKERRQ(ierr);
   if (stash->array) {ierr = PetscFree(stash->array);CHKERRQ(ierr);}
   stash->array   = n_array; 
   stash->idx     = n_idx; 
@@ -431,12 +431,12 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 
   PetscFunctionBegin;
 
-  bs2 = stash->bs*stash->bs;
+  bs2   = stash->bs*stash->bs;
   /*  first count number of contributors to each processor */
-ierr = PetscMalloc(2*size*sizeof(int),&(  nprocs ));CHKERRQ(ierr);
-  ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
-  procs  = nprocs + size;
-  owner  = (int*)PetscMalloc((stash->n+1)*sizeof(int));CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*size*sizeof(int),&nprocs);CHKERRQ(ierr);
+  ierr  = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
+  procs = nprocs + size;
+  ierr  = PetscMalloc((stash->n+1)*sizeof(int),&owner);CHKERRQ(ierr);
 
   for (i=0; i<stash->n; i++) {
     idx = stash->idx[i];
@@ -449,7 +449,7 @@ ierr = PetscMalloc(2*size*sizeof(int),&(  nprocs ));CHKERRQ(ierr);
   nsends = 0;  for (i=0; i<size; i++) { nsends += procs[i];} 
   
   /* inform other processors of number of messages and max length*/
-ierr = PetscMalloc(2*size*sizeof(int),&(  work      ));CHKERRQ(ierr);
+  ierr      = PetscMalloc(2*size*sizeof(int),&work);CHKERRQ(ierr);
   ierr      = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   nmax      = work[rank];
   nreceives = work[size+rank]; 
@@ -459,9 +459,9 @@ ierr = PetscMalloc(2*size*sizeof(int),&(  work      ));CHKERRQ(ierr);
      allocate the largest needed buffer for each receive. Potentially 
      this is a lot of wasted space.
   */
-ierr = PetscMalloc((nreceives+1)*(nmax+1)*(bs2*sizeof(MatScalar)+2*sizeof(int)),&  rvalues    );CHKERRQ(ierr);
-  rindices   = (int*)(rvalues + bs2*nreceives*nmax);
-ierr = PetscMalloc((nreceives+1)*2*sizeof(MPI_Request),&  recv_waits );CHKERRQ(ierr);
+  ierr     = PetscMalloc((nreceives+1)*(nmax+1)*(bs2*sizeof(MatScalar)+2*sizeof(int)),&rvalues);CHKERRQ(ierr);
+  rindices = (int*)(rvalues + bs2*nreceives*nmax);
+  ierr     = PetscMalloc((nreceives+1)*2*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
   for (i=0,count=0; i<nreceives; i++) {
     ierr = MPI_Irecv(rvalues+bs2*nmax*i,bs2*nmax,MPIU_MATSCALAR,MPI_ANY_SOURCE,tag1,comm,
                      recv_waits+count++);CHKERRQ(ierr);
@@ -472,11 +472,11 @@ ierr = PetscMalloc((nreceives+1)*2*sizeof(MPI_Request),&  recv_waits );CHKERRQ(i
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues    = (MatScalar*)PetscMalloc((stash->n+1)*(bs2*sizeof(MatScalar)+2*sizeof(int)));CHKERRQ(ierr);
-  sindices   = (int*)(svalues + bs2*stash->n);
-ierr = PetscMalloc(2*(nsends+1)*sizeof(MPI_Request),&  send_waits );CHKERRQ(ierr);
-ierr = PetscMalloc(2*size*sizeof(int),&(  startv     ));CHKERRQ(ierr);
-  starti     = startv + size;
+  ierr     = PetscMalloc((stash->n+1)*(bs2*sizeof(MatScalar)+2*sizeof(int)),&svalues);CHKERRQ(ierr);
+  sindices = (int*)(svalues + bs2*stash->n);
+  ierr     = PetscMalloc(2*(nsends+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
+  ierr     = PetscMalloc(2*size*sizeof(int),&startv);CHKERRQ(ierr);
+  starti   = startv + size;
   /* use 2 sends the first with all_a, the next with all_i and all_j */
   startv[0]  = 0; starti[0] = 0;
   for (i=1; i<size; i++) { 

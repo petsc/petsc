@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.50 2000/10/24 20:26:55 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.51 2001/01/15 21:47:36 bsmith Exp balay $*/
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\
@@ -122,7 +122,7 @@ int main(int argc,char **args)
 
       Note: The default decomposition is 1 block per processor.
   */
-ierr = PetscMalloc(m*sizeof(int),&(  blks ));CHKPTRA(blks);
+  ierr = PetscMalloc(m*sizeof(int),&blks);CHKERRA(ierr);
   for (i=0; i<m; i++) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);
   ierr = PetscFree(blks);CHKERRA(ierr);

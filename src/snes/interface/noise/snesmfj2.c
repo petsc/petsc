@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.28 2000/09/28 21:14:09 bsmith Exp bsmith $*/
+/*$Id: snesmfj2.c,v 1.29 2001/01/15 21:47:51 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -229,7 +229,7 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   char          p[64];
 
   PetscFunctionBegin;
-ierr = PetscMalloc(sizeof(MFCtx_Private),&(  mfctx ));CHKERRQ(ierr);
+  ierr = PetscNew(MFCtx_Private,&mfctx);CHKERRQ(ierr);
   ierr  = PetscMemzero(mfctx,sizeof(MFCtx_Private));CHKERRQ(ierr);
   PetscLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->sp   = 0;

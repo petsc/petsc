@@ -1,4 +1,4 @@
-/*$Id: borthog3.c,v 1.20 2000/09/07 15:18:12 balay Exp bsmith $*/
+/*$Id: borthog3.c,v 1.21 2001/01/15 21:47:19 bsmith Exp balay $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -29,7 +29,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it)
   /* Don't allocate small arrays */
   if (it < 100) lhh = shh;
   else {
-    lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMalloc((it+1) * sizeof(Scalar),&lhh);CHKERRQ(ierr);
   }
   
   /* update Hessenberg matrix and do unmodified Gram-Schmidt */

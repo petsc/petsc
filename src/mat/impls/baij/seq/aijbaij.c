@@ -1,4 +1,4 @@
-/*$Id: aijbaij.c,v 1.3 2000/10/24 20:25:52 bsmith Exp bsmith $*/
+/*$Id: aijbaij.c,v 1.4 2001/01/15 21:45:50 bsmith Exp balay $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -13,7 +13,7 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
   Scalar      *aa = a->a;
 
   PetscFunctionBegin;
-ierr = PetscMalloc(n*bs*sizeof(int),&(  rowlengths ));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*bs*sizeof(int),&rowlengths);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     maxlen = PetscMax(maxlen,(ai[i+1] - ai[i]));
     for (j=0; j<bs; j++) {
@@ -26,8 +26,8 @@ ierr = PetscMalloc(n*bs*sizeof(int),&(  rowlengths ));CHKERRQ(ierr);
   ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
-ierr = PetscMalloc(bs*sizeof(int),&(  rows ));CHKERRQ(ierr);
-ierr = PetscMalloc(bs*maxlen*sizeof(int),&(  cols ));CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(int),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*maxlen*sizeof(int),&cols);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     for (j=0; j<bs; j++) {
       rows[j] = i*bs+j;

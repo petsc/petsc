@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.12 2000/05/05 22:19:15 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.13 2001/01/15 21:48:46 bsmith Exp balay $*/
 
 static char help[] = "Tests AODataRemap \n\n";
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal);CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
-ierr = PetscMalloc(n*sizeof(int),&(  keys ));CHKPTRA(keys);
+  ierr = PetscMalloc(n*sizeof(int),&keys);CHKERRA(ierr);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -46,7 +46,7 @@ ierr = PetscMalloc(n*sizeof(int),&(  keys ));CHKPTRA(keys);
   /* 
       Allocate data for the first key and first segment 
   */
-ierr = PetscMalloc(bs*n*sizeof(int),&(  data ));CHKPTRA(data);
+  ierr = PetscMalloc(bs*n*sizeof(int),&data);CHKERRA(ierr);
   for (i=0; i<n; i++) {
     data[i]   = start + i + 1; /* the data is the neighbor to the right */
   }
@@ -63,7 +63,7 @@ ierr = PetscMalloc(bs*n*sizeof(int),&(  data ));CHKPTRA(data);
   /*
          Remap the database so that i -> nglobal - i - 1
   */
-ierr = PetscMalloc(n*sizeof(int),&(  news ));CHKPTRA(news);
+  ierr = PetscMalloc(n*sizeof(int),&news);CHKERRA(ierr);
   for (i=0; i<n; i++) {
     news[i] = nglobal - i - start - 1;
   }

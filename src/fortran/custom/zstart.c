@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.76 2000/09/06 20:53:53 balay Exp bsmith $*/
+/*$Id: zstart.c,v 1.77 2001/01/15 21:49:49 bsmith Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -128,7 +128,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   }
   ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD); if (ierr) return ierr;
 
-ierr = PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)),&  *argv );CHKERRQ(ierr);
+  ierr = PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)),argv);CHKERRQ(ierr);
   (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (!rank) {

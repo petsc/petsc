@@ -1,4 +1,4 @@
-/*$Id: baijfact8.c,v 1.1 2001/01/06 15:35:16 bsmith Exp bsmith $*/
+/*$Id: baijfact8.c,v 1.2 2001/01/15 21:45:50 bsmith Exp balay $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -31,7 +31,7 @@ int MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat A,Mat *B)
   MatScalar   *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-ierr = PetscMalloc(36*(n+1)*sizeof(MatScalar),&  rtmp  );CHKERRQ(ierr);
+  ierr = PetscMalloc(36*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];

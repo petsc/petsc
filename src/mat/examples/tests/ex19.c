@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.22 2000/10/24 20:26:04 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.23 2001/01/15 21:46:09 bsmith Exp balay $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -91,9 +91,9 @@ int main(int argc,char **args)
   if (flg) {
     ierr = MatGetOwnershipRange(C,&mystart,&myend);CHKERRA(ierr);
     nrsub = myend - mystart; ncsub = 4;
-ierr = PetscMalloc(nrsub*ncsub*sizeof(Scalar),&(    vals ));CHKPTRA(vals);
-ierr = PetscMalloc(nrsub*sizeof(int),&(    rsub ));CHKPTRA(rsub);
-ierr = PetscMalloc(ncsub*sizeof(int),&(    csub ));CHKPTRA(csub);
+    ierr = PetscMalloc(nrsub*ncsub*sizeof(Scalar),&vals);CHKERRA(ierr);
+    ierr = PetscMalloc(nrsub*sizeof(int),&rsub);CHKERRA(ierr);
+    ierr = PetscMalloc(ncsub*sizeof(int),&csub);CHKERRA(ierr);
     for (i=myend-1; i>=mystart; i--) rsub[myend-i-1] = i;
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRA(ierr);

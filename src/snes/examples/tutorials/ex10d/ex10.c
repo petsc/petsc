@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.19 2000/10/24 20:27:20 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.20 2001/01/15 21:48:23 bsmith Exp balay $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -174,7 +174,7 @@ int main(int argc,char **argv)
   if (!fptr1) {
       SETERRQ(0,"Could no open output file");
   }
-ierr = PetscMalloc(user.Nvglobal*sizeof(int),&(  user.gloInd ));
+  ierr = PetscMalloc(user.Nvglobal*sizeof(int),&user.gloInd);
   fprintf(fptr1,"Rank is %d\n",rank);
   for (inode = 0; inode < user.Nvglobal; inode++) {
     fgets(str,256,fptr);
@@ -213,7 +213,7 @@ ierr = PetscMalloc(user.Nvglobal*sizeof(int),&(  user.gloInd ));
   */
   ierr = MPI_Scan(&user.Nvlocal,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRA(ierr);
   rstart -= user.Nvlocal;
-ierr = PetscMalloc(user.Nvlocal*sizeof(int),&(  pordering ));CHKPTRA(pordering);
+  ierr = PetscMalloc(user.Nvlocal*sizeof(int),&pordering);CHKERRA(ierr);
 
   for (i=0; i < user.Nvlocal; i++) {
     pordering[i] = rstart + i;
@@ -228,8 +228,8 @@ ierr = PetscMalloc(user.Nvlocal*sizeof(int),&(  pordering ));CHKPTRA(pordering);
   /* 
     Keep the global indices for later use 
   */
-ierr = PetscMalloc(user.Nvlocal*sizeof(int),&(  user.locInd ));
-ierr = PetscMalloc(Nvneighborstotal*sizeof(int),&(  tmp ));
+  ierr = PetscMalloc(user.Nvlocal*sizeof(int),&user.locInd);CHKERRQ(ierr);
+  ierr = PetscMalloc(Nvneighborstotal*sizeof(int),&tmp);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Demonstrate the use of AO functionality 
@@ -294,10 +294,10 @@ ierr = PetscMalloc(Nvneighborstotal*sizeof(int),&(  tmp ));
     number of processors. Importantly, it allows us to use NO SEARCHING
     in setting up the data structures.
   */
-ierr = PetscMalloc(user.Nvglobal*sizeof(int),&(  vertices     ));CHKPTRA(vertices);
-ierr = PetscMalloc(user.Nvglobal*sizeof(int),&(  verticesmask ));CHKPTRA(verticesmask);
-  ierr         = PetscMemzero(verticesmask,user.Nvglobal*sizeof(int));CHKERRA(ierr);
-  nvertices    = 0;
+  ierr      = PetscMalloc(user.Nvglobal*sizeof(int),&vertices);CHKERRA(ierr);
+  ierr      = PetscMalloc(user.Nvglobal*sizeof(int),&verticesmask);CHKERRA(ierr);
+  ierr      = PetscMemzero(verticesmask,user.Nvglobal*sizeof(int));CHKERRA(ierr);
+  nvertices = 0;
  
   /* 
     First load "owned vertices" into list 
@@ -362,7 +362,7 @@ ierr = PetscMalloc(user.Nvglobal*sizeof(int),&(  verticesmask ));CHKPTRA(vertice
     local representation
   */
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRA(ierr);
-ierr = PetscMalloc(nvertices*sizeof(int),&(  svertices ));CHKPTRA(svertices);
+  ierr = PetscMalloc(nvertices*sizeof(int),&svertices);CHKERRA(ierr);
   for (i=0; i<nvertices; i++) svertices[i] = bs*vertices[i];
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRA(ierr);
   ierr = PetscFree(svertices);CHKERRA(ierr);

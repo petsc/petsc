@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.55 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.56 2001/01/15 21:47:31 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b);CHKERRA(ierr);
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
-ierr = PetscMalloc((4*m+1)*sizeof(int),&  rows );CHKERRQ(ierr);
+  ierr = PetscMalloc((4*m+1)*sizeof(int),&rows);CHKERRQ(ierr);
   for (i=0; i<m+1; i++) {
     rows[i] = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */

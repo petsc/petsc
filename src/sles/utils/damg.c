@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.22 2000/09/28 21:14:03 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.23 2001/01/15 21:47:46 bsmith Exp balay $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -48,9 +48,9 @@ int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
     if (narray > 2) ratioz = array[2]; else ratioz = ratioy;
   }
 
-ierr = PetscMalloc(nlevels*sizeof(DMMG),&(  p ));CHKERRQ(ierr);
+  ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
-    p[i]             = (DMMG)PetscMalloc(sizeof(struct _p_DMMG));CHKERRQ(ierr);
+    ierr             = PetscNew(struct _p_DMMG,&p[i]);CHKERRQ(ierr);
     ierr             = PetscMemzero(p[i],sizeof(struct _p_DMMG));CHKERRQ(ierr);
     p[i]->nlevels    = nlevels - i;
     p[i]->ratiox     = ratiox;
@@ -372,7 +372,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 
   ierr  = SLESGetPC(sles,&pc);CHKERRA(ierr);
   ierr  = PCSetType(pc,PCMG);CHKERRA(ierr);
-ierr = PetscMalloc(nlevels*sizeof(MPI_Comm),&(  comms ));CHKERRQ(ierr);
+  ierr = PetscMalloc(nlevels*sizeof(MPI_Comm),&comms);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
     comms[i] = dmmg[i]->comm;
   }

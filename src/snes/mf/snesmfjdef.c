@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.21 2000/09/28 21:14:10 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.22 2001/01/15 21:47:52 bsmith Exp balay $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -254,10 +254,10 @@ int MatSNESMFCreate_Default(MatSNESMFCtx ctx)
   PetscFunctionBegin;
 
   /* allocate my own private data structure */
-ierr = PetscMalloc(sizeof(MatSNESMFDefault),&(  hctx                     ));CHKERRQ(ierr);
-  ctx->hctx                = (void*)hctx;
+  ierr       = PetscNew(MatSNESMFDefault,&hctx);CHKERRQ(ierr);
+  ctx->hctx  = (void*)hctx;
   /* set a default for my parameter */
-  hctx->umin               = 1.e-6;
+  hctx->umin = 1.e-6;
 
   /* set the functions I am providing */
   ctx->ops->compute        = MatSNESMFCompute_Default;

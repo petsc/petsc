@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.9 2000/09/28 21:13:37 bsmith Exp bsmith $*/
+/*$Id: symmlq.c,v 1.10 2001/01/15 21:47:30 bsmith Exp balay $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -200,6 +200,7 @@ EXTERN_C_BEGIN
 int KSPCreate_SYMMLQ(KSP ksp)
 {
   KSP_SYMMLQ *symmlq;
+  int ierr;
 
   PetscFunctionBegin;
 

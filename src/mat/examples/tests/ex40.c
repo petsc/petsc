@@ -1,4 +1,4 @@
-/*$Id: ex40.c,v 1.18 2000/09/28 21:11:49 bsmith Exp bsmith $*/
+/*$Id: ex40.c,v 1.19 2001/01/15 21:46:09 bsmith Exp balay $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -41,8 +41,8 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(fd);CHKERRA(ierr);
   
   /* Create the IS corresponding to subdomains */
-  is1    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is1);
-  is2    = (IS*)PetscMalloc(nd*sizeof(IS **));CHKPTRA(is2);
+  ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRA(ierr);
+  ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRA(ierr);
 
   /* Create the random Index Sets */
   ierr = MatGetSize(A,&m,&n);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.56 2000/12/08 15:45:39 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.57 2001/01/15 21:49:13 bsmith Exp balay $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -119,7 +119,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 
   /* create the coloring */
   if (coloring) {
-ierr = PetscMalloc(nc*nx*ny*sizeof(int),&(    colors ));CHKERRQ(ierr);
+    ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
     ii = 0;
     for (j=ys; j<ys+ny; j++) {
       for (i=xs; i<xs+nx; i++) {
@@ -138,11 +138,11 @@ ierr = PetscMalloc(nc*nx*ny*sizeof(int),&(    colors ));CHKERRQ(ierr);
     /* create empty Jacobian matrix */
     ierr    = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
 
-ierr = PetscMalloc(col*col*nc*nc*sizeof(Scalar),&(    values  ));CHKERRQ(ierr);
-    ierr    = PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
-ierr = PetscMalloc(nc*sizeof(int),&(    rows    ));CHKERRQ(ierr);
-ierr = PetscMalloc(col*col*nc*nc*sizeof(int),&(    cols    ));CHKERRQ(ierr);
-    ierr    = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+    ierr = PetscMalloc(col*col*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
+    ierr = PetscMalloc(col*col*nc*nc*sizeof(int),&cols);CHKERRQ(ierr);
+    ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
     /* determine the matrix preallocation information */
     ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 
   /* create the coloring */
   if (coloring) {
-ierr = PetscMalloc(nc*nx*ny*nz*sizeof(int),&(    colors ));CHKERRQ(ierr);
+    ierr = PetscMalloc(nc*nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
     ii = 0;
     for (k=zs; k<zs+nz; k++) {
       for (j=ys; j<ys+ny; j++) {
@@ -285,12 +285,12 @@ ierr = PetscMalloc(nc*nx*ny*nz*sizeof(int),&(    colors ));CHKERRQ(ierr);
   if (J) {
     int bs = nc;
     /* create empty Jacobian matrix */
-    ierr    = MatCreate(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
-ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(Scalar),&(    values  ));CHKERRQ(ierr);
-    ierr    = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
-ierr = PetscMalloc(nc*sizeof(int),&(    rows    ));CHKERRQ(ierr);
-ierr = PetscMalloc(col*col*col*nc*sizeof(int),&(    cols    ));CHKERRQ(ierr);
-    ierr    = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+    ierr = MatCreate(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
+    ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
+    ierr = PetscMalloc(col*col*col*nc*sizeof(int),&cols);CHKERRQ(ierr);
+    ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
 
     /* determine the matrix preallocation information */
     ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);CHKERRQ(ierr);
@@ -415,7 +415,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
 
   /* create the coloring */
   if (coloring) {
-ierr = PetscMalloc(nc*nx*sizeof(int),&(    colors ));CHKERRQ(ierr);
+    ierr = PetscMalloc(nc*nx*sizeof(int),&colors);CHKERRQ(ierr);
     i1 = 0;
     for (i=xs; i<xs+nx; i++) {
       for (l=0; l<nc; l++) {
@@ -436,15 +436,15 @@ ierr = PetscMalloc(nc*nx*sizeof(int),&(    colors ));CHKERRQ(ierr);
     } else {
       ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
     }
-    ierr    = MatSeqAIJSetPreallocation(*J,col*nc,0);CHKERRQ(ierr);  
-    ierr    = MatSeqBAIJSetPreallocation(*J,bs,col,0);CHKERRQ(ierr);  
-    ierr    = MatMPIAIJSetPreallocation(*J,col*nc,0,0,0);CHKERRQ(ierr);
-    ierr    = MatMPIBAIJSetPreallocation(*J,bs,col,0,0,0);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(*J,col*nc,0);CHKERRQ(ierr);  
+    ierr = MatSeqBAIJSetPreallocation(*J,bs,col,0);CHKERRQ(ierr);  
+    ierr = MatMPIAIJSetPreallocation(*J,col*nc,0,0,0);CHKERRQ(ierr);
+    ierr = MatMPIBAIJSetPreallocation(*J,bs,col,0,0,0);CHKERRQ(ierr);
 
-ierr = PetscMalloc(col*nc*nc*sizeof(Scalar),&(    values  ));CHKERRQ(ierr);
-    ierr    = PetscMemzero(values,col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
-ierr = PetscMalloc(nc*sizeof(int),&(    rows    ));CHKERRQ(ierr);
-ierr = PetscMalloc(col*nc*sizeof(int),&(    cols    ));CHKERRQ(ierr);
+    ierr = PetscMalloc(col*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values,col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
+    ierr = PetscMalloc(col*nc*sizeof(int),&cols);CHKERRQ(ierr);
    
     ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
