@@ -4,15 +4,20 @@ PETSc Users Mailing list info:
 
   Perl script for WWW petsc-users subscription is located in:
         charlotte:/www/ncsa_httpd/cgi-bin/petsc/subscribe-to-petsc-users
-            (MUST access from charlotte)
+            (MUST access from charlotte) ... NOT currently used
   To add this to petsc.html, just add hyperlink to petsc-users.html
 
   petsc-users mailing list password is bsbglmdk
 
 General WWW info:
 
+  Steps for making the PETSc picture gif file for petsc.html:
+    - draw figure in petscwww.fig and scale appropriately
+    - start xv, then grab the region and save as petscwww.gif
+    - fix petsc.map if necessary
+
   email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
-     contains the (unused) WWW interface for petsc-maint.
+     contains the WWW interface for petsc-maint ... NOT currently used
 
 Nightly build:
  
@@ -29,3 +34,5 @@ Location of email sent to petsc-maint:
   /mcs/adm/request/petsc-maint/[active,resolved]
   it may be processed with /usr/local/req-1.0/petsc-maint/bin/petsctkreq
   make sure that /usr/local/req-1.0/petsc-maint/bin/ is in your path.
+
+
