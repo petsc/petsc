@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.48 2000/08/08 03:52:11 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.49 2000/08/08 16:32:39 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -57,12 +57,12 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
 AMS_Comm ams;
 AMS_Memory memid;
 int ams_err;
 char *msg;
-char *vtk = "vtk", *grid_type = "Unstructured Grid", *cell_type = "VTK_TRIANGLE";
+char *vtk = "vtk", *grid_type = "Unstructured Grid", *cell_type = "VTK_TETRA";
 int point_dims[2], cell_dims[2];
 int p_start_ind[2], p_end_ind[2];
 int c_start_ind[2], c_end_ind[2];
@@ -88,8 +88,9 @@ int main(int argc,char **args)
   int 		ierr;
   PetscTruth    flg;
   MPI_Comm      comm;
-#ifdef PETSC_HAVE_AMS
-  int           fdes;
+#ifdef HAVE_AMS
+  int           fdes,i, *itmp;
+  Scalar        *qsc;
 #endif  
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
@@ -149,13 +150,13 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
     /* AMS Stuff */
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
     /* Create and publish the Communicator */
     ams_err = AMS_Comm_publish("FUN3D",&ams, MPI_TYPE, comm);
     AMS_Check_error(ams_err,&msg);
   
     /* Create a Memory */
-    ams_err = AMS_Memory_create(ams,"FUN3D-MEM",&memid);
+    ams_err = AMS_Memory_create(ams,"FUN3DMEM",&memid);
     AMS_Check_error(ams_err,&msg);
 
     /* Add vtk fields to the memory */
@@ -172,7 +173,7 @@ int main(int argc,char **args)
     point_dims[0] = user.grid->nnodes;
     point_dims[1] = 3;
 
-    ams_err =  AMS_Memory_add_field(memid,"point dims",point_dims,2,AMS_INT,
+    ams_err =  AMS_Memory_add_field(memid,"point_dims",point_dims,2,AMS_INT,
                                AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
     AMS_Check_error(ams_err,&msg);
 
@@ -180,12 +181,12 @@ int main(int argc,char **args)
     cell_dims[0] = user.grid->ncell;
     cell_dims[1] = 3;
 
-    ams_err =  AMS_Memory_add_field(memid,"cell dims",cell_dims,2,AMS_INT,
+    ams_err =  AMS_Memory_add_field(memid,"cell_dims",cell_dims,2,AMS_INT,
                                AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
     AMS_Check_error(ams_err,&msg);
 
     /* Add cell type field */
-    ams_err =  AMS_Memory_add_field(memid,"cell type",&cell_type,1,AMS_STRING,
+    ams_err =  AMS_Memory_add_field(memid,"cell_type",&cell_type,1,AMS_STRING,
                                AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);
     AMS_Check_error(ams_err,&msg);
 
@@ -212,12 +213,21 @@ int main(int argc,char **args)
     if (!rank) {
      ierr = PetscBinaryOpen("cells.msh",BINARY_RDONLY,&fdes);CHKERRQ(ierr);
     }
-     ICALLOC(user.grid->ncell,&user.grid->c2n);
-     ierr = PetscSynchronizedBinaryRead(comm,fdes,user.grid->c2n,user.grid->ncell,PETSC_INT);CHKERRQ(ierr);
+    ICALLOC(4*user.grid->ncell,&itmp);
+    ICALLOC(4*user.grid->ncell,&user.grid->c2n);
+    ierr = PetscSynchronizedBinaryRead(comm,fdes,itmp,4*user.grid->ncell,PETSC_INT);CHKERRQ(ierr);
     if (!rank) {
      ierr = PetscBinaryClose(fdes);
     }
-    ams_err =  AMS_Memory_add_field(memid,"cells",user.grid->nntet,4*user.grid->ncell,
+    for (i = 0; i < user.grid->ncell; i++) {
+      int j;
+      j = 4*i;
+      user.grid->c2n[j]   = itmp[i]-1;
+      user.grid->c2n[j+1] = itmp[i+user.grid->ncell]-1;
+      user.grid->c2n[j+2] = itmp[i+2*user.grid->ncell]-1;
+      user.grid->c2n[j+3] = itmp[i+3*user.grid->ncell]-1;
+    }
+    ams_err =  AMS_Memory_add_field(memid,"cells",user.grid->c2n,4*user.grid->ncell,
                           AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF); 
     AMS_Check_error(ams_err,&msg);
 
@@ -248,9 +258,29 @@ int main(int argc,char **args)
     ierr = SNESCreate(comm,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
     ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
 
-#ifdef PETSC_HAVE_AMS
-    /* Add points field */
+#ifdef HAVE_AMS
+
+ /* Add points field -- temporary fix for Matt*/
     if (!user.PreLoading) {
+
+    FCALLOC(user.grid->nnodesLoc, &qsc);
+    for (i=0; i<user.grid->nnodesLoc; i++)
+         qsc[i] = 0.1;
+
+    ams_err =  AMS_Memory_add_field(memid,"scalars",qsc, user.grid->nnodesLoc,
+                          AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
+    AMS_Check_error(ams_err,&msg);
+
+    /* Set Field Dimensions */
+    s_start_ind[0] = rstart;   /* Starting index in the first dimension */
+    s_end_ind[0] = rstart+user.grid->nnodesLoc-1;    /* Ending index in the first dimension */
+
+    /*
+     * This would be an array of ??? rows and 4 columns
+     */ 
+    ams_err = AMS_Memory_set_field_block(memid,"scalars",1,s_start_ind,s_end_ind);
+    AMS_Check_error(ams_err,&msg);
+   
     ierr = VecGetArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
     ams_err =  AMS_Memory_add_field(memid,"supervectors",qnode,4*user.grid->nnodesLoc,
                           AMS_DOUBLE,AMS_READ,AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);
@@ -330,6 +360,18 @@ int main(int argc,char **args)
     if (flg) {
       ierr = PetscShowMemoryUsage(VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
     }
+
+#ifdef HAVE_AMS
+    if (!user.PreLoading) {
+    printf("Destroying the Memory\n");
+    ams_err = AMS_Memory_destroy(memid);
+    AMS_Check_error(ams_err, &msg);
+
+    printf("Destroying the AMS Communicator \n");
+    ams_err = AMS_Comm_destroy(ams);
+    AMS_Check_error(ams_err, &msg);
+    }
+#endif
 
     ierr = VecDestroy(user.grid->qnode);CHKERRQ(ierr);
     ierr = VecDestroy(user.grid->qnodeLoc);CHKERRQ(ierr);
@@ -561,7 +603,22 @@ int Update(SNES snes,void *ctx)
  for (i = 0; i < max_steps && fratio <= tsCtx->fnorm_ratio; i++) {
   ierr = ComputeTimeStep(snes,i,user);CHKERRQ(ierr);
   /*tsCtx->ptime +=  tsCtx->dt;*/
+
+#ifdef HAVE_AMS
+
+  ams_err = AMS_Memory_take_write_access(memid);
+  AMS_Check_error(ams_err, &msg);
+#endif
+
   ierr = SNESSolve(snes,grid->qnode,&its);CHKERRQ(ierr);
+
+#ifdef HAVE_AMS
+
+  ams_err = AMS_Memory_grant_write_access(memid);
+  AMS_Check_error(ams_err, &msg);
+  sleep(5);
+#endif
+
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
   if (nfailsCum >= 2) SETERRQ(1,1,"Unable to find a Newton Step");
