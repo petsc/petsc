@@ -155,7 +155,7 @@ class CursesInstall (BootstrapInstall):
 
   def getBrowser(self, stdscr):
     list = ['No browser']
-    list.append('A different browser or a browser on a different machine (you will be prompted for it)')
+    list.append('A different browser or one on a different machine (you will be prompted)')
     for l in ['netscape','lynx','opera','mozilla','galeon']:
       output = BootstrapInstall.getExecutable(l)
       if output: list.append(output)
