@@ -254,7 +254,6 @@ class ArgDir(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
-    import os.path
     # Should check whether it is a well-formed path
     value = os.path.expanduser(value)
     if self.mustExist and not os.path.isdir(value):
@@ -291,7 +290,6 @@ class ArgDirList(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
-    import os.path
     if not isinstanceof(value, list):
       value = [value]
     # Should check whether it is a well-formed path
@@ -367,6 +365,7 @@ class ArgExecutable(Arg):
     return self.value
 
   def checkExecutable(self, dir, name):
+    import os
     prog = os.path.join(dir, name)
     return os.path.isfile(prog) and os.access(prog, os.X_OK)
 

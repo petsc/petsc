@@ -42,6 +42,7 @@ class Make(script.Script):
     help = script.Script.setupHelp(self, help)
     help.addArgument('Make', 'forceConfigure', nargs.ArgBool(None, 0, 'Force a reconfiguration', isTemporary = 1))
     help.addArgument('Make', 'defaultRoot', nargs.ArgDir(None, '../..', 'Directory root for all packages', isTemporary = 1))
+    help.addArgument('Make', 'prefix', nargs.ArgDir(None, None, 'Root for installation of libraries and binaries', mustExist = 0, isTemporary = 1))
     return help
 
   def setupDependencies(self, sourceDB):
