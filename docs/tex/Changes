@@ -64,6 +64,11 @@ add to it).
 
   General
 
+   Routines XXXRegister() are now XXXRegisterDynamic() used for registering new object types
+in dynamic libraries and XXXRegister_Private() is now XXXRegister() used to register new object
+types whose definitions are in the exectuable.
+
+
    The final argument to OptionsHasName() and OptionsGetXXX() is a PetscTruth * instead
    of an int*
 
