@@ -73,7 +73,8 @@ class Base(logging.Logger):
        - This has the problem that when we reload a module of the same name, this gets screwed up
          Therefore, we call it in the initializer, and stash it'''
     if not hasattr(self, '_root_'):
-      if hasattr(sys.modules[self.__module__], '__file__'):
+      # Work around a bug with pdb in 2.3
+      if hasattr(sys.modules[self.__module__], '__file__') and not os.path.basename(sys.modules[self.__module__].__file__) == 'pdb.py':
         self._root_ = os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
       else:
         self._root_ = os.getcwd()
