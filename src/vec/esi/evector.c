@@ -17,7 +17,10 @@ esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)
 
   ierr = inmap->getLocalSize(n);
   ierr = inmap->getGlobalSize(N);
-  ierr = VecCreateMPI(*comm,n,N,&this->vec);
+  ierr = VecCreate(*comm,&this->vec);
+  ierr = VecSetSizes(this->vec,n,N);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->vec,"esi");
+  ierr = VecSetFromOptions(this->vec);
   this->pobject = (PetscObject)this->vec;
   this->map = (::esi::IndexSpace<int> *)inmap;
   this->map->addReference();
@@ -343,13 +346,14 @@ EXTERN_C_END
 // See dccafe/cxx/dc/framework/ComponentFactory.h for details.
 EXTERN_C_BEGIN
 char **getComponentList() {
-  static char *list[6];
+  static char *list[7];
   list[0] = "create_esi_petsc_vectorfactory esi::petsc::Vector";
   list[1] = "create_petra_esi_vectorfactory Petra_ESI_Vector";
   list[2] = "create_esi_petsc_indexspacefactory esi::petsc::IndexSpace";
   list[3] = "create_petra_esi_indexspacefactory Petra_ESI_IndexSpace";
   list[4] = "create_esi_petsc_operatorfactory esi::petsc::Operator";
-  list[5] = 0;
+  list[5] = "create_petra_esi_operatorfactory Petra_ESI_CRS_Matrix";
+  list[6] = 0;
   return list;
 }
 EXTERN_C_END
@@ -395,6 +399,83 @@ gov::cca::Component *create_petra_esi_indexspacefactory(void)
 void *create_petra_esi_indexspacefactory(void)
 {
   return (void *)(new Petra_ESI_IndexSpaceFactory<int>);
+}
+#endif
+EXTERN_C_END
+#endif
+
+  /* -----should be in ematrix.c but Trilinos sucks----------------------------------------------------------*/
+
+#if defined(PETSC_HAVE_TRILINOS)
+#include "esi/petsc/matrix.h"
+#include "Petra_ESI_CRS_Matrix.h"
+
+/*
+         This class is the same as the Petra_ESI_CRS_Matrix class except it puts values into the Petra_CRS_Grap()
+*/
+template<class Scalar,class Ordinal> class MyPetra_ESI_CRS_Matrix : public virtual Petra_ESI_CRS_Matrix<Scalar,Ordinal>
+{
+  public:
+
+  MyPetra_ESI_CRS_Matrix(Petra_DataAccess CV,const Petra_CRS_Graph& graph) :  Petra_ESI_Object(), Petra_RDP_CRS_Matrix(CV, graph), Petra_ESI_CRS_Matrix<Scalar,Ordinal>(CV, graph){graph_ = (Petra_CRS_Graph*)&graph;};
+
+  virtual ~MyPetra_ESI_CRS_Matrix() { };
+
+  virtual esi::ErrorCode copyInRow(Ordinal row, Scalar* coefs, Ordinal* colIndices, Ordinal length)
+    { int ierr;
+      ierr = graph_->InsertGlobalIndices(row, length, colIndices);CHKERRQ(ierr); 
+      ierr = Petra_ESI_CRS_Matrix<Scalar,Ordinal>::copyInRow(row,coefs,colIndices,length);CHKERRQ(ierr);
+      return 0;
+     }
+
+  private:
+    Petra_CRS_Graph *graph_; 
+};
+
+
+template<class Scalar,class Ordinal> class Petra_ESI_CRS_OperatorFactory : public virtual ::esi::OperatorFactory<Scalar,Ordinal>
+{
+  public:
+
+    // constructor
+    Petra_ESI_CRS_OperatorFactory(void){};
+  
+    // Destructor.
+    virtual ~Petra_ESI_CRS_OperatorFactory(void){};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *svc)
+    {
+      svc->addProvidesPort(this,svc->createPortInfo("getOperator", "esi::OperatorFactory", 0));
+    };
+#endif
+
+    // Construct a Operator
+    virtual ::esi::ErrorCode getOperator(::esi::IndexSpace<Ordinal>&rmap,::esi::IndexSpace<Ordinal>&cmap,::esi::Operator<Scalar,Ordinal>*&v)
+    {
+      int       ierr;
+      Petra_Map *rowmap,*colmap;
+      ierr = rmap.getInterface("Petra_Map",static_cast<void *>(rowmap));CHKERRQ(ierr);
+      ierr = cmap.getInterface("Petra_Map",static_cast<void *>(colmap));CHKERRQ(ierr);
+      Petra_CRS_Graph  *graph = new Petra_CRS_Graph(Copy,*(Petra_BlockMap*)rowmap,*(Petra_BlockMap*)colmap,1);
+      ierr = rmap.addReference();CHKERRQ(ierr);
+      ierr = cmap.addReference();CHKERRQ(ierr);
+      v = new MyPetra_ESI_CRS_Matrix<Scalar,Ordinal>(Copy,*graph);
+      return 0;
+    };
+};
+
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_CCA)
+gov::cca::Component *create_petra_esi_operatorfactory(void)
+{
+  return dynamic_cast<gov::cca::Component *>(new Petra_ESI_CRS_OperatorFactory<double,int>);
+}
+#else
+void *create_petra_esi_operatorfactory(void)
+{
+  return (void *)(new Petra_ESI_CRS_OperatorFactory<double,int>);
 }
 #endif
 EXTERN_C_END

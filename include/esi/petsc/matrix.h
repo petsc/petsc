@@ -73,7 +73,7 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode getRowAllocatedLength(Ordinal row, int& result) {;};
     virtual esi::ErrorCode setAllValues(Scalar) {;};
     virtual esi::ErrorCode allocateRowsSameLength(Ordinal) {;};
-    virtual esi::ErrorCode copyOutRow(Ordinal, Scalar *,int *,int,int&) {;};
+    virtual esi::ErrorCode copyOutRow(Ordinal, Scalar *,int *,int,int&) ;
     virtual esi::ErrorCode copyOutRowIndices(Ordinal, int *,int,int&) {;};
     virtual esi::ErrorCode copyOutRowCoefficients(Ordinal, Scalar *,int,int&) {;};
 

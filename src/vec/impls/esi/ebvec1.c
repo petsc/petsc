@@ -535,10 +535,10 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace
   PetscFunctionBegin;
   ierr = PetscOptionsGetString(PETSC_NULL,"-is_esi_type",name,1024,&found);CHKERRQ(ierr);
   if (!found) {
-    ierr = PetscStrcpy(name,"esi::petsc::IndexSpaceFactory");CHKERRQ(ierr);
+    ierr = PetscStrcpy(name,"esi::petsc::IndexSpace");CHKERRQ(ierr);
   }
   ierr = PetscFListFind(*(MPI_Comm*)comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(1,"Unable to load esi::IndexSpaceFactory constructor %s",name);
+  if (!r) SETERRQ1(1,"Unable to load esi::IndexSpace Factory constructor %s",name);
 #if defined(PETSC_HAVE_CCA)
   gov::cca::Component *component = (gov::cca::Component *)(*r)();
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
@@ -575,6 +575,9 @@ int VecESISetType(Vec V,char *name)
 #else
   f    = (::esi::VectorFactory<double,int> *)(*r)();
 #endif
+  if (V->n == PETSC_DECIDE) {
+    ierr = PetscSplitOwnership(V->comm,&V->n,&V->N);CHKERRQ(ierr);
+  }
   ierr = ESICreateIndexSpace("MPI",&V->comm,V->n,map);CHKERRQ(ierr);
   ierr = f->getVector(*map,ve);CHKERRQ(ierr);
   ierr = map->deleteReference();CHKERRQ(ierr);

@@ -14,7 +14,8 @@ typedef struct {
   int                                   rstart,rend; /* range of local rows */
   esi::Operator<double,int>             *eop;
   esi::MatrixData<int>                  *emat;
-  esi::MatrixRowWriteAccess<double,int> *rmat;
+  esi::MatrixRowReadAccess<double,int>  *rmat;
+  esi::MatrixRowWriteAccess<double,int> *wmat;
 } Mat_ESI;
 
 #undef __FUNCT__  
@@ -33,7 +34,8 @@ typedef struct {
   PetscFunctionBegin;
 
   ierr = v->getInterface("esi::MatrixData",static_cast<void*>(x->emat));
-  ierr = v->getInterface("esi::MatrixRowWriteAccess",static_cast<void*>(x->rmat));CHKERRQ(ierr);
+  ierr = v->getInterface("esi::MatrixRowReadAccess",static_cast<void*>(x->rmat));CHKERRQ(ierr);
+  ierr = v->getInterface("esi::MatrixRowWriteAccess",static_cast<void*>(x->wmat));CHKERRQ(ierr);
   if (!x->emat) SETERRQ(1,"PETSc currently requires esi::Operator to support esi::MatrixData interface");
 
   ierr = PetscTypeCompare((PetscObject)xin,0,&tesi);CHKERRQ(ierr);
@@ -103,7 +105,13 @@ int MatESISetType(Mat V,char *name)
 #else
   f    = (::esi::OperatorFactory<double,int> *)(*r)();
 #endif
+  if (V->m == PETSC_DECIDE) {
+    ierr = PetscSplitOwnership(V->comm,&V->m,&V->M);CHKERRQ(ierr);
+  }
   ierr = ESICreateIndexSpace("MPI",&V->comm,V->m,rmap);CHKERRQ(ierr);
+  if (V->n == PETSC_DECIDE) {
+    ierr = PetscSplitOwnership(V->comm,&V->n,&V->N);CHKERRQ(ierr);
+  }
   ierr = ESICreateIndexSpace("MPI",&V->comm,V->n,cmap);CHKERRQ(ierr);
   ierr = f->getOperator(*rmap,*cmap,ve);CHKERRQ(ierr);
   ierr = rmap->deleteReference();CHKERRQ(ierr);
@@ -134,6 +142,7 @@ int MatESISetFromOptions(Mat V)
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_ESI"
@@ -153,7 +162,7 @@ int MatSetValues_ESI(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMo
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for (j=0; j<n; j++) {
-          ierr = esi->rmat->copyInRow(im[i],&v[i+j*m],&in[j],1);CHKERRQ(ierr);
+          ierr = esi->wmat->copyInRow(im[i],&v[i+j*m],&in[j],1);CHKERRQ(ierr);
        }
     } else {
       ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
@@ -211,7 +220,7 @@ int MatAssemblyEnd_ESI(Mat mat,MatAssemblyType mode)
     }
   }
   ierr = MatStashScatterEnd_Private(&mat->stash);CHKERRQ(ierr);
-  a->rmat->loadComplete();CHKERRQ(ierr);
+  a->wmat->loadComplete();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -244,6 +253,45 @@ int MatDestroy_ESI(Mat v)
   ierr = MatStashDestroy_Private(&v->bstash);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&v->stash);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_ESI"
+int MatView_ESI(Mat A,PetscViewer viewer)
+{
+  Mat_ESI              *a = (Mat_ESI*)A->data;
+  int                  ierr,i,rstart,m,*cols,nz,j;
+  PetscTruth           issocket,isascii,isbinary,isdraw;
+  esi::IndexSpace<int> *rmap,*cmap;
+
+  PetscScalar *values;
+
+  PetscFunctionBegin;  
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  if (isascii) {
+    ierr   = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    cols   = new int[100];
+    values = new PetscScalar[100];
+    ierr   = a->emat->getIndexSpaces(rmap,cmap);CHKERRQ(ierr);
+    ierr   = rmap->getLocalPartitionOffset(rstart);CHKERRQ(ierr);
+    ierr   = rmap->getLocalSize(m);CHKERRQ(ierr);
+    for (i=rstart; i<rstart+m; i++) {
+      ierr = PetscViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
+      ierr = a->rmat->copyOutRow(i,values,cols,nz,nz);CHKERRQ(ierr);
+      for (j=0; j<nz; j++) {
+        ierr = PetscViewerASCIIPrintf(viewer," %d %g ",cols[j],values[j]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -312,7 +360,8 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        MatDestroy_ESI,
-       				       0};
+       MatView_ESI,
+       0};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

@@ -15,10 +15,13 @@ esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSp
   ierr = inrmap->getLocalSize(cn);
   ierr = inrmap->getGlobalSize(cN);
   ierr = MatCreate(*comm,rn,cn,rN,cN,&this->mat);if (ierr) return;
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->mat,"esi");
   ierr = MatSetFromOptions(this->mat);
 
   this->rmap = inrmap;
   this->cmap = incmap;
+  ierr = inrmap->addReference();
+  ierr = incmap->addReference();
 
   this->pobject = (PetscObject)this->mat;
   PetscObjectGetComm((PetscObject)this->mat,&this->comm);
@@ -155,6 +158,19 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::setRowLength(int row,int length)
 {
 
   return 1;
+}
+
+esi::ErrorCode esi::petsc::Matrix<double,int>::copyOutRow(int row, double* coefs, int* colIndices,int alength,int &length)
+{
+  int         *col;
+  PetscScalar *values;
+  
+  int ierr = MatGetRow(this->mat,row,&length,&col,&values);CHKERRQ(ierr);
+  if (length > alength) SETERRQ(1,"Not enough room for values");
+  ierr = PetscMemcpy(coefs,values,length*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(colIndices,col,length*sizeof(int));CHKERRQ(ierr);
+  ierr = MatRestoreRow(this->mat,row,&length,&col,&values);CHKERRQ(ierr);
+  
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRow(int row, int& length, double*& coefs, int*& colIndices)
