@@ -266,6 +266,13 @@ runex6_6:
 	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco1_ns \
 	   -mat_mpirowbs -pc_type ilu -pc_ilu_factorpointwise 
 	-@echo "ex6_6: This program tested the ILU preconditioner in BlockSolve95."
+runex6_7:
+	-@$(MPIRUN) ex6 -pc_type asm -pc_asm_blocks 6 \
+	   -f $(PETSC_DIR)/src/mat/examples/matrices/small \
+	   -matload_block_size 6  -ksp_smonitor  > ex6_7.tmp 2>&1; \
+	   if (diff output/ex6_7.out ex6_7.tmp) then true; \
+	   else echo "Possible problem with ex6_7, diffs above"; fi; \
+	   $(RM) -f ex6_7.tmp
 runex7:
 	-@$(MPIRUN) -np 2 ex7 -ksp_smonitor > ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
