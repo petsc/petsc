@@ -7,6 +7,12 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+
+   After the SUSE rpm and Debian packages are made for 2.1.0 and
+listed at our download page annouce the newest PETSc release to
+freshmeat.
+
+     
   Provide sparse matrix matrix matrix R A R^T or sparse matrix-matrix? 
      Possibilities coloring? or look at RAMG/SAMG contrib/lahaye fortran code
      for ideas to do it efficiently.
