@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.14 1999/01/19 16:53:36 balay Exp bsmith $ 
+# $Id: base.site,v 1.15 1999/02/01 15:09:42 bsmith Exp bsmith $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -56,7 +56,7 @@ MPE_INCLUDE   = -I${MPI_HOME}/mpe
 # Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE    = -I/home/petsc/BlockSolve95/include
-BS_LIB        = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
+BS_LIB        = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
@@ -98,5 +98,5 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-#DYLIBPATH     = /home/bsmith/lapack:/home/bsmith/blas
+DYLIBPATH     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}:
 
