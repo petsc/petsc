@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.276 1999/02/03 03:17:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.277 1999/02/11 20:16:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -530,7 +530,6 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
-  PetscTruth     localdiag;
 
   PetscFunctionBegin;
   ierr = ISGetSize(is,&N); CHKERRQ(ierr);
@@ -632,33 +631,22 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
 
        Contributed by: Mathew Knepley
   */
-  localdiag = PETSC_FALSE;
+  /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
+  ierr = MatZeroRows(l->B,istmp,0); CHKERRQ(ierr); 
   if (diag && (l->A->M == l->A->N)) {
-    localdiag = PETSC_TRUE;
     ierr      = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
+  } else if (diag) {
+    ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
+    for ( i = 0; i < slen; i++ ) {
+      row  = lrows[i] + rstart;
+      ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   } else {
     ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
   }
-  ierr = MatZeroRows(l->B,istmp,0); CHKERRQ(ierr);
   ierr = ISDestroy(istmp); CHKERRQ(ierr);
-
-  if (diag && (localdiag == PETSC_FALSE)) {
-    for ( i = 0; i < slen; i++ ) {
-      row = lrows[i] + rstart;
-      MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);
-    }
-    MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
-    MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
-  }
-
-  if (diag) {
-    for ( i = 0; i < slen; i++ ) {
-      row = lrows[i] + rstart;
-      MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);
-    }
-    MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
-    MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
-  }
   PetscFree(lrows);
 
   /* wait on sends */
