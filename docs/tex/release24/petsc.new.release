@@ -1,28 +1,34 @@
 
-Subject: New release of PETSc 2.0
-Sender: owner-petsc-users@mcs.anl.gov
-Precedence: bulk
+PETSc Users,
 
+We have just released a new version of PETSc (2.0.13) with a
+variety of extensions and enhancements to the software.  You can find
+a list of new features and changes in PETSc in the "Changes" file at
+ftp://info.mcs.anl.gov/pub/petsc or
+http://www.mcs.anl.gov/petsc/petsc.html.
 
-PETSc-Users,
-
-We have just released a new version of PETSc (2.0.Beta.10) with
-several important performance enhancements and a variety of additions
-to the code.  You can find a list of new features and changes in PETSc
-in the "Changes" file at ftp://info.mcs.anl.gov/pub/petsc or
-http://www.mcs.anl.gov/petsc/petsc.html. In particular, those who use the 
-AIJ or MPIAIJ matrix formats for multicomponent problems will see
-a significant speedup on IBM rs6000s and DEC alphas. We also provide 
-code that will allow you to compile PETSc without installing MPI for 
-those who are ONLY using PETSc for sequential computing (sorry it took 
-so long).
-
+Highlights of new features added since the last public release of
+PETSc (version 2.0.10) include:
+  - New scalable time-spepping module
+  - New overlapping additive Schwarz preconditioner (parallel and
+      sequential versions)
+  - Improved logging capabilities, including (1) gathering of data for
+      viewing with Upshot/Nupshot when using MPICH and (2) optional use of
+      multiple stages for monitoring
+  - Enhancements to Fortran interface, including support of files with
+      suffixes .F and .f
+  - New high-level interface to BlockSolve95, a software package of
+      high-performance parallel preconditioners (ICC and ILU) for
+      symmetric and structurally symmetric systems.
+  - Support for complex numbers in most of the KSP solvers
+  - Miscellaneous improvements and enhancements throughout the software
+  - Improved HTML version of man pages with full hypertext links
 
 As always, please send bug reports, questions, and requests for new 
 features to petsc-maint@mcs.anl.gov.
 
 Thanks for your support.
 
-The PETSc team,
-  Satish, Barry, Lois, and Bill
+The PETSc developers,
+Barry, Satish, Lois, and Bill
 
