@@ -69,7 +69,6 @@ PC/Mat
 
 DMMG
 
-   Add DMMGSetNullSpace() to provide single function that sets null space for all levels
 
    Add manual pages for DMMGGet....
 
