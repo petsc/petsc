@@ -12,7 +12,7 @@ class Installer(install.base.Base):
     self.argDB = nargs.ArgDict('ArgDict')
     self.argDB.setLocalType('backup',       nargs.ArgBool('Backup makes a tar archive of the generated source rather than installing'))
     self.argDB.setLocalType('forceInstall', nargs.ArgBool('Forced installation overwrites any existing project'))
-    self.argDB.insertArgList(clArgs)
+    self.argDB.insertArgs(clArgs)
 
     install.base.Base.__init__(self, self.argDB)
     self.retriever = install.retrieval.Retriever(self.argDB)
