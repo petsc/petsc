@@ -182,7 +182,11 @@ class SIDLMake(Make):
 
   def getSidl(self):
     if not hasattr(self, '_sidl'):
-      self._sidl = [os.path.join(self.root, 'sidl', f) for f in filter(lambda s: os.path.splitext(s)[1] == '.sidl', os.listdir(os.path.join(self.root, 'sidl')))]
+      import graph
+      g = graph.DirectedGraph([os.path.join(self.root, 'sidl', f) for f in filter(lambda s: os.path.splitext(s)[1] == '.sidl', os.listdir(os.path.join(self.root, 'sidl')))])
+      for vertex in g.vertices:
+        g.addEdges(vertex, outputs = self.builder.sourceDB.getDependencies(vertex))
+      self._sidl = [v for v in g.topologicalSort(g)]
     return self._sidl
   def setSidl(self, sidl):
     self._sidl = sidl
@@ -277,21 +281,6 @@ class SIDLMake(Make):
     builder.loadConfiguration(name)
     return
 
-  def setupSIDL(self, builder, sidlFile):
-    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
-    self.loadConfiguration(builder, 'SIDL '+baseName)
-    builder.pushConfiguration('SIDL '+baseName)
-    builder.pushLanguage('SIDL')
-    compiler            = builder.getCompilerObject()
-    compiler.clients    = self.clientLanguages
-    compiler.clientDirs = dict([(lang, 'client-'+lang.lower()) for lang in self.clientLanguages])
-    compiler.servers    = self.serverLanguages
-    compiler.serverDirs = dict([(lang, 'server-'+lang.lower()+'-'+baseName) for lang in self.serverLanguages])
-    compiler.includes   = self.includes+list(builder.sourceDB.getDependencies(sidlFile))
-    builder.popLanguage()
-    builder.popConfiguration()
-    return
-
   def getSIDLClientDirectory(self, builder, sidlFile, language):
     baseName  = os.path.splitext(os.path.basename(sidlFile))[0]
     clientDir = None
@@ -318,7 +307,10 @@ class SIDLMake(Make):
     for depMake, depSidlFiles in self.dependencies.values():
       for depSidlFile in depSidlFiles:
         try:
-          compiler.includeDirectories.add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
+          if hasattr(compiler.includeDirectories, 'add'):
+            compiler.includeDirectories.add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
+          else:
+            compiler.includeDirectories[language].add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
         except KeyError, e:
           if e.args[0] == language:
             self.logPrint('Dependency '+depSidlFile+' has no client for '+language, debugSection = 'screen')
@@ -342,6 +334,27 @@ class SIDLMake(Make):
             self.logPrint('Dependency '+depSidlFile+' has no client for '+language, debugSection = 'screen')
           else:
             raise e
+    return
+
+  def setupSIDL(self, builder, sidlFile):
+    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
+    self.loadConfiguration(builder, 'SIDL '+baseName)
+    builder.pushConfiguration('SIDL '+baseName)
+    builder.pushLanguage('SIDL')
+    compiler            = builder.getCompilerObject()
+    compiler.clients    = self.clientLanguages
+    compiler.clientDirs = dict([(lang, 'client-'+lang.lower()) for lang in self.clientLanguages])
+    compiler.servers    = self.serverLanguages
+    compiler.serverDirs = dict([(lang, 'server-'+lang.lower()+'-'+baseName) for lang in self.serverLanguages])
+    compiler.includes   = self.includes+list(builder.sourceDB.getDependencies(sidlFile))
+    for language in self.serverLanguages:
+      if not hasattr(compiler, 'includeDirectories'):
+        compiler.includeDirectories = {}
+      if not language in compiler.includeDirectories:
+        compiler.includeDirectories[language] = sets.Set()
+      self.addDependencyIncludes(compiler, language)
+    builder.popLanguage()
+    builder.popConfiguration()
     return
 
   def setupIOR(self, builder, sidlFile, language):

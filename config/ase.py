@@ -1,5 +1,7 @@
 import config.base
 
+import os
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -8,6 +10,7 @@ class Configure(config.base.Configure):
     self.libraries    = self.framework.require('config.libraries', self)
     self.include      = []
     self.lib          = None
+    self.baseName     = 'ase'
     return
 
   def __str__(self):
@@ -16,28 +19,43 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('ASE', '-aseVersion', nargs.ArgInt(None, 2, 'Specify the ASE version'))
+    help.addArgument('ASE', '-ase-dir', nargs.ArgDir(None, None, 'Specify the ASE Runtime directory'))
     return
 
-  def configureASEVersion(self):
-    self.version = self.argDB['aseVersion']
-    if self.version == 1:
-      self.baseName = 'sidl'
-    elif self.version == 2:
-      self.baseName = 'ase'
-    return
+  def checkASEDir(self, dir):
+    '''Try to determine if this is a valid Runtime directory'''
+    if not os.path.isdir(self.dir):
+      return 0
+    if not os.path.isdir(os.path.join(self.dir, 'server-python-ase')):
+      return 0
+    if not os.path.isfile(os.path.join(self.dir, 'make.py')):
+      return 0
+    if not os.path.isfile(os.path.join(self.dir, 'make.py')):
+      return 0
+    return 1
 
   def configureASELibraries(self):
-    import os
-
-    self.dir = self.argDB['ASE_DIR']
-    self.lib = [os.path.join(self.argDB['ASE_DIR'], 'lib', 'lib-python-'+self.baseName+'.so')]
-    if not os.path.isdir(self.argDB['ASE_DIR']):
-      raise RuntimeError('Invalid ASE directory: '+str(self.argDB['ASE_DIR']))
-    if not os.path.samefile(os.getcwd(), self.argDB['ASE_DIR']):
+    self.dir = ''
+    if 'ase-dir' in self.argDB:
+      self.dir  = self.argDB['ase-dir']
+    else:
+      dir = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'ase', 'Runtime')
+      if os.path.isdir(dir):
+        self.dir = dir
+    if not self.checkASEDir(self.dir):
+      raise RuntimeError('Invalid ASE directory: '+str(self.dir))
+    self.lib = [os.path.join(self.dir, 'lib', 'lib-python-ase.so')]
+    if not os.path.samefile(os.getcwd(), self.dir):
       for lib in self.lib:
         if not os.path.isfile(lib):
           raise RuntimeError('Invalid ASE library: '+str(lib))
+    return
+
+  def configureScandal(self):
+    '''Set SCANDAL_DIR to the scandal directory for now'''
+    dir = os.path.join(os.path.dirname(self.dir), 'Compiler', 'driver', 'python')
+    if os.path.isdir(dir):
+      self.argDB['SCANDAL_DIR'] = dir
     return
 
   def setOutput(self):
@@ -53,7 +71,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.executeTest(self.configureASEVersion)
     self.executeTest(self.configureASELibraries)
+    self.executeTest(self.configureScandal)
     self.setOutput()
     return

@@ -14,6 +14,8 @@ class Compiler(script.Script):
     self.servers         = []
     self.serverDirs      = {}
     self.includes        = []
+    self.includeDirectories = {}
+    self.systemIncludeDirectories = {}
     self.versionControl  = None
     self.useShell        = 1
     return
@@ -115,6 +117,8 @@ class Compiler(script.Script):
     self.scandal.clientDirs = {}
     self.scandal.servers    = self.servers
     self.scandal.serverDirs = self.serverDirs
+    self.scandal.includeDirectories = self.includeDirectories
+    self.scandal.systemIncludeDirectories = self.systemIncludeDirectories
     self.editServer(self.serverDirs)
     self.scandal.run()
     for lang in self.scandal.outputFiles:
@@ -132,6 +136,10 @@ class Compiler(script.Script):
       cmd.append('--server='+server)
       cmd.append('--serverDirs={'+server+':'+self.serverDirs[server]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
+      if server in self.includeDirectories:
+        cmd.append('--includeDirs={'+server+':['+','.join(self.includeDirectories[server])+']}')
+      if server in self.systemIncludeDirectories:
+        cmd.append('--systemIncludeDirs={'+server+':['+','.join(self.systemIncludeDirectories[server])+']}')
       cmd.append('--ior=0')
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
