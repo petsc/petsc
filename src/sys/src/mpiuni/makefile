@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 1998/03/19 02:14:32 balay Exp balay $ 
+# $Id: makefile,v 1.17 1998/04/23 23:27:03 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -9,6 +9,6 @@ SOURCEH	 = mpi.h
 OBJSC	 = mpi.o
 OBJSF	 =
 LIBBASE	 = libmpiuni
-LOCDIR   = src/mpiuni/
+LOCDIR   = src/sys/src/mpiuni/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 1998/04/23 23:28:27 balay Exp bsmith $ 
+# $Id: makefile,v 1.11 1998/05/08 16:12:56 bsmith Exp bsmith $ 
 
 ALL: lib 
 CFLAGS	  = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
@@ -10,6 +10,6 @@ OBJSF	  =
 MANSEC	  = p
 LIBBASE	  = libpetscsys
 DIRS	  = 
-LOCDIR	  = src/plog/src/
+LOCDIR	  = src/sys/src/plog/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
