@@ -17,10 +17,10 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-EXTERN PetscErrorCode   PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode   PetscFreeAlign(void*,int,const char[],const char[],const char[]);
-EXTERN PetscErrorCode   PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
-EXTERN PetscErrorCode   PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetUseTrMalloc_Private"
@@ -176,7 +176,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[
     double aligned pointer to requested storage, or null if not
     available.
  */
-PetscErrorCode PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void**result)
+PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void**result)
 {
   TRSPACE          *head;
   char             *inew;
@@ -258,7 +258,7 @@ PetscErrorCode PetscTrMallocDefault(size_t a,int lineno,const char function[],co
 .   file  - file name where used.  Use __FILE__ for this
 .   dir - directory where file is. Use __SDIR__ for this
  */
-PetscErrorCode PetscTrFreeDefault(void *aa,int line,const char function[],const char file[],const char dir[])
+PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char function[],const char file[],const char dir[])
 {
   char           *a = (char*)aa;
   TRSPACE        *head;

@@ -34,7 +34,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMallocAlign"
-PetscErrorCode PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)
+PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t mem,int line,const char func[],const char file[],const char dir[],void** result)
 {
   if (!mem) SETERRQ(PETSC_ERR_MEM_MALLOC_0,"Cannot malloc size zero");
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
@@ -65,7 +65,7 @@ PetscErrorCode PetscMallocAlign(size_t mem,int line,const char func[],const char
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFreeAlign"
-PetscErrorCode PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
+PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
 {
 #if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   int shift;
@@ -95,7 +95,7 @@ PetscErrorCode PetscFreeAlign(void *ptr,int line,const char func[],const char fi
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFreeDefault"
-PetscErrorCode PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
+PetscErrorCode PETSC_DLLEXPORT PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
 {
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
   int err = free(ptr); 
