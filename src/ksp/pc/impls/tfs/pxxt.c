@@ -5,7 +5,7 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-#include "src/mat/impls/aij/mpi/libtfs/xxt.h"
+#include "src/ksp/pc/impls/tfs/xxt.h"
 
 typedef struct {
   xxt_ADT xxt;
@@ -131,7 +131,7 @@ int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#include "src/mat/impls/aij/mpi/libtfs/xyt.h"
+#include "src/ksp/pc/impls/tfs/xyt.h"
 
 typedef struct {
   xyt_ADT xyt;
