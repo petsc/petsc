@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.318 2000/09/14 19:42:17 balay Exp bsmith $ 
+# $Id: makefile,v 1.319 2000/09/15 15:26:36 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -279,7 +279,7 @@ SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 	     maint/autoftp include/foldinclude/generateincludes
 
 # Builds all the documentation - should be done every night
-alldoc: allmanpages
+alldoc: allmanualpages
 	cd docs/tex/manual; ${OMAKE} manual.dvi manual.ps manual.html splitmanual.html
 
 # Deletes man pages (HTML version)
@@ -288,7 +288,6 @@ deletemanualpages:
                  ${PETSC_DIR}/docs/manualpages/manualpages.cit 
 
 # Builds all versions of the man pages
-allmanpages: allmanualpages
 allmanualpages: deletemanualpages
 	-${OMAKE} ACTION=manualpages_buildcite ttree
 	-${OMAKE} ACTION=manualpages ttree

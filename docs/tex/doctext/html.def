@@ -46,4 +46,5 @@ location   <P><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../%1#
 # Only do the actual title
 # Without a title, the page will be broken.
 mantitle   <TITLE>%1</TITLE>%n</HEAD>%n<BODY BGCOLOR="FFFFFF">%n<A NAME="%1"><H1>%1</H1></A>%n
-
+eof 
+bof 

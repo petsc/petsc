@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.30 2000/09/15 16:03:27 bsmith Exp bsmith $ 
+# $Id: wwwindex.py,v 1.31 2000/09/15 16:12:23 bsmith Exp balay $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -175,7 +175,7 @@ def modifylevel(filename,secname):
       # and also add the bold format.
       tmpbuf = re_level.sub('',buf)
       re_loc = re.compile('(<FONT COLOR="#CC3333">Location:</FONT>)')
-      tmpbuf = re_loc.sub('<P><FONT COLOR="#CC3333">Level:</FONT>' + level + r'\n<BR>\1',tmpbuf)
+      tmpbuf = re_loc.sub('<P><B><FONT COLOR="#CC3333">Level:</FONT></B>' + level + r'\n<BR>\1',tmpbuf)
 
       re_loc = re.compile('</BODY></HTML>')
       outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../../index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
