@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Crank-Nicholson - finish TS implementation!! done only for linear constant coeff case!
+
   - Fix up TS to support boundary conditions. User could provide an IS indicating
     which nodes are boundary nodes and then the "adjustment" of the nonlinear function
     and Jacobian would not be done for those rows of the vector and matrix
@@ -86,6 +88,10 @@ rcheng@oasys.dt.navy.mil
   * add map object to vectors and matrices to replace current local size, ownership range etc.
 
   - Add man pages for SETERRA/SETERRQ, CHKERRA, CHKERRQ
+
+ - TS stuff
+   - Add verify timestep for all TS styles.
+   - Multi-stage explicit methods
 
   - Support saving SLES etc objects with a binary viewer to read in later
 
@@ -327,10 +333,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
   - Make a variant of SNES-TR method that doesn't use KSPBuildSolution() in
     the convergence test.  Talk to Jorge about the importance of this test.
 
- - TS stuff
-   - Add verify timestep for all TS styles.
-   - Crank-Nicholson
-   - Multi-stage explicit methods
 
   - Consider adding a utility routine that determines the d_nnz, and o_nnz
     for preallocating matrix space for parallel matrices.  Create an empty
