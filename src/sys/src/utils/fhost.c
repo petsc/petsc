@@ -4,7 +4,7 @@
 */
 #include "petsc.h"
 #include "petscsys.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -18,10 +18,10 @@
 #if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #include "petscfix.h"
@@ -54,10 +54,10 @@ int PetscGetHostName(char name[],int nlen)
   char           *domain;
   int            ierr;
   PetscTruth     flag;
-#if defined(HAVE_UNAME)
+#if defined(PETSC_HAVE_UNAME)
   struct utsname utname;
 #endif
-#if defined(HAVE_GETDOMAINNAME) && !defined(HAVE_SYSINFO_3ARG)
+#if defined(PETSC_HAVE_GETDOMAINNAME) && !defined(PETSC_HAVE_SYSINFO_3ARG)
   PetscTruth     match;
 #endif
 
@@ -65,12 +65,12 @@ int PetscGetHostName(char name[],int nlen)
 
 #if defined(PARCH_win32) || defined(PARCH_win32_gnu)
   GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
-#elif defined(HAVE_UNAME)
+#elif defined(PETSC_HAVE_UNAME)
   uname(&utname); 
   ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
-#elif defined(HAVE_GETHOSTNAME)
+#elif defined(PETSC_HAVE_GETHOSTNAME)
   gethostname(name,nlen);
-#elif defined(HAVE_SYSINFO_3ARG)
+#elif defined(PETSC_HAVE_SYSINFO_3ARG)
   sysinfo(SI_HOSTNAME,name,nlen);
 #endif
 
@@ -81,9 +81,9 @@ int PetscGetHostName(char name[],int nlen)
     ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
     if (l == nlen) {name[nlen-1] = 0; PetscFunctionReturn(0);}
     name[l++] = '.';
-#if defined(HAVE_SYSINFO_3ARG)
+#if defined(PETSC_HAVE_SYSINFO_3ARG)
     sysinfo(SI_SRPC_DOMAIN,name+l,nlen-l);
-#elif defined(HAVE_GETDOMAINNAME)
+#elif defined(PETSC_HAVE_GETDOMAINNAME)
     getdomainname(name+l,nlen - l);
     /* change domain name if it is an ANL crap one */
     ierr = PetscStrcmp(name+l,"qazwsxedc",&match);CHKERRQ(ierr);

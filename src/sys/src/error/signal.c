@@ -129,8 +129,8 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   PetscFunctionReturn(0);
 }
 
-#if !defined(SIGNAL_CAST)
-#define SIGNAL_CAST
+#if !defined(PETSC_SIGNAL_CAST)
+#define PETSC_SIGNAL_CAST
 #endif
 
 #undef __FUNCT__  
@@ -157,17 +157,17 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 
   PetscFunctionBegin;
   if (!SignalSet && routine) {
-    signal(SIGILL,  SIGNAL_CAST PetscSignalHandler_Private);
-    signal(SIGFPE,  SIGNAL_CAST PetscSignalHandler_Private);
-    signal(SIGSEGV, SIGNAL_CAST PetscSignalHandler_Private);
-#if !defined(MISSING_SIGSYS)
-    signal(SIGSYS,  SIGNAL_CAST PetscSignalHandler_Private);
+    signal(SIGILL,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    signal(SIGSEGV, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#if !defined(PETSC_MISSING_SIGSYS)
+    signal(SIGSYS,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(MISSING_SIGBUS)
-    signal(SIGBUS, SIGNAL_CAST PetscSignalHandler_Private);
+#if !defined(PETSC_MISSING_SIGBUS)
+    signal(SIGBUS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-#if !defined(MISSING_SIGQUIT)
-    signal(SIGQUIT, SIGNAL_CAST PetscSignalHandler_Private);
+#if !defined(PETSC_MISSING_SIGQUIT)
+    signal(SIGQUIT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
     SignalSet = PETSC_TRUE;
   }
@@ -175,13 +175,13 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
-#if !defined(MISSING_SIGSYS)
+#if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
 #endif
-#if !defined(MISSING_SIGBUS)
+#if !defined(PETSC_MISSING_SIGBUS)
     signal(SIGBUS,  0);
 #endif
-#if !defined(MISSING_SIGQUIT)
+#if !defined(PETSC_MISSING_SIGQUIT)
     signal(SIGQUIT, 0);
 #endif
     SignalSet = PETSC_FALSE;
@@ -211,13 +211,13 @@ int PetscPopSignalHandler(void)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
-#if !defined(MISSING_SIGSYS)
+#if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
 #endif
-#if !defined(MISSING_SIGBUS)
+#if !defined(PETSC_MISSING_SIGBUS)
     signal(SIGBUS,  0);
 #endif
-#if !defined(MISSING_SIGQUIT)
+#if !defined(PETSC_MISSING_SIGQUIT)
     signal(SIGQUIT, 0);
 #endif
     SignalSet = PETSC_FALSE;

@@ -16,7 +16,7 @@ DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc -64 -woff 1164
-C_FC		   = f90 -freeform -cpp -64  -DPETSC_HAVE_IRIXF90 -DMISSING_DREAL
+C_FC		   = f90 -freeform -cpp -64  -DPETSC_HAVE_IRIXF90 -DPETSC_MISSING_DREAL
 C_CLINKER_SLFLAG   = -rpath
 C_FLINKER_SLFLAG   = -rpath
 C_CLINKER	   = cc  -64 -Wl,-woff,84,-woff,85,-woff,134
@@ -35,7 +35,7 @@ O_FOPTFLAGS	   = -O3 -OPT:Olimit=0
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC -64 -woff 1164
-CXX_FC		   = f90 -freeform -cpp -64  -DPETSC_HAVE_IRIXF90 -DMISSING_DREAL
+CXX_FC		   = f90 -freeform -cpp -64  -DPETSC_HAVE_IRIXF90 -DPETSC_MISSING_DREAL
 CXX_CLINKER_SLFLAG = -rpath
 CXX_FLINKER_SLFLAG = -rpath
 CXX_CLINKER	   = CC -64 -Wl,-woff,84,-woff,85,-woff,134

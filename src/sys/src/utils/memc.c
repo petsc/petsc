@@ -11,13 +11,13 @@
   <string.h> instead of <memory.h> 
 */
 #include <memory.h>
-#if defined(HAVE_STRINGS_H)
+#if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
-#if defined(HAVE_STRING_H)
+#if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "petscfix.h"
@@ -233,7 +233,7 @@ int PetscMemcmp(const void *str1,const void *str2,int len,PetscTruth *e)
 int PetscMemmove(void *a,void *b,int n)
 {
   PetscFunctionBegin;
-#if !defined(HAVE_MEMMOVE)
+#if !defined(PETSC_HAVE_MEMMOVE)
   if (a < b) {
     if (a <= b - n) {
       memcpy(a,b,n);

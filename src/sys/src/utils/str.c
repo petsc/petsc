@@ -7,10 +7,10 @@
 */
 #include "petsc.h"                   /*I  "petsc.h"   I*/
 #include "petscsys.h"
-#if defined(HAVE_STRING_H)
+#if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
-#if defined(HAVE_STRINGS_H)
+#if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
 #include "petscfix.h"

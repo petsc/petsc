@@ -296,7 +296,7 @@ int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   MatScalar    *v;
   int          ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
-#if defined(HAVE_PRAGMA_DISJOINT)
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*v,*z,*xb)
 #endif
 

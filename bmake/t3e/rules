@@ -17,7 +17,7 @@ oshared:
 #  For Cray C90 etc add the additional flag
 #define PETSC_HAVE_CRAY90_POINTER 1 
 #  to petscconf.h in this directory and change
-#define SIZEOF_SHORT 4
+#define PETSC_SIZEOF_SHORT 4
 #  to
-#define SIZEOF_SHORT 8
+#define PETSC_SIZEOF_SHORT 8
 

@@ -9,7 +9,7 @@
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 

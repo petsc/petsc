@@ -4,7 +4,7 @@
    error handlers.
 */
 #include "petsc.h"           /*I "petsc.h" I*/
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "petscfix.h"

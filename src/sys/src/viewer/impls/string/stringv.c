@@ -1,7 +1,7 @@
 /*$Id: stringv.c,v 1.44 2001/04/10 19:34:06 bsmith Exp $*/
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "petscfix.h"
@@ -60,7 +60,7 @@ int PetscViewerStringSPrintf(PetscViewer viewer,char *format,...)
   if (!vstr->string) SETERRQ(1,"Must call PetscViewerStringSetString() before using");
 
   va_start(Argp,format);
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(tmp,format,(char *)Argp);
 #else
   vsprintf(tmp,format,Argp);

@@ -5,7 +5,7 @@
 #include "petsc.h"
 #include "petscsys.h"
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "petscfix.h"
@@ -109,7 +109,7 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
   if (!rank) {
     char buf[1024];
     while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
-#if defined(HAVE_POPEN)
+#if defined(PETSC_HAVE_POPEN)
     pclose(fd);
 #else
     SETERRQ(1,"Cannot run programs, no popen()");
@@ -150,7 +150,7 @@ int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE 
 {
   int  ierr,rank,i,len,cnt;
   char commandt[1024],command[1024];
-#if defined(HAVE_POPEN)
+#if defined(PETSC_HAVE_POPEN)
   FILE *fd;
 #endif
 
@@ -184,7 +184,7 @@ int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE 
   if (!rank) {
     PetscLogInfo(0,"Running command :%s\n",commandt);
 
-#if defined(HAVE_POPEN)
+#if defined(PETSC_HAVE_POPEN)
     if (!(fd = popen(commandt,mode))) {
        SETERRQ1(1,"Cannot run command %s",commandt);
     }

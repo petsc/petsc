@@ -4,7 +4,7 @@
 */
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
@@ -206,7 +206,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
   /* Compose the message evaluating the print format */
   if (mess) {
     va_start(Argp,mess);
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
     vsprintf(buf,mess,(char *)Argp);
 #else
     vsprintf(buf,mess,Argp);

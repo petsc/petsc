@@ -14,15 +14,15 @@ typedef unsigned long   u_long;
 #endif
 
 #include <errno.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include <sys/types.h>
 #include <ctype.h>
-#if defined(HAVE_MACHINE_ENDIAN_H)
+#if defined(PETSC_HAVE_MACHINE_ENDIAN_H)
 #include <machine/endian.h>
 #endif
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #if !defined(PARCH_win32)
@@ -31,10 +31,10 @@ typedef unsigned long   u_long;
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
-#if defined(HAVE_STROPTS_H)
+#if defined(PETSC_HAVE_STROPTS_H)
 #include <stropts.h>
 #endif
-#if defined (HAVE_IO_H)
+#if defined (PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
 
@@ -78,7 +78,7 @@ static int PetscViewerDestroy_Socket(PetscViewer viewer)
 #define __FUNCT__ "SOCKCall_Private" 
 int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
-#if !defined(MISSING_SOCKETS)
+#if !defined(PETSC_MISSING_SOCKETS)
   struct sockaddr_in sa;
   struct hostent     *hp;
   int                s = 0,ierr;
@@ -86,7 +86,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 #endif
 
   PetscFunctionBegin;
-#if defined(MISSING_SOCKETS)
+#if defined(PETSC_MISSING_SOCKETS)
   SETERRQ(1,"This system does not support Unix tcp/ip");
 #else
   if (!(hp=gethostbyname(hostname))) {

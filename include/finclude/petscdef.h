@@ -28,10 +28,10 @@
 ! ???? All integers should also be changed to PetscFortranInt ?????
 !
 
-#if (SIZEOF_VOID_P == 8)
+#if (PETSC_SIZEOF_VOID_P == 8)
 #define PetscOffset integer*8
 #define PetscFortranAddr integer*8
-#elif defined (MISSING_FORTRANSTAR)
+#elif defined (PETSC_MISSING_FORTRANSTAR)
 #define PetscOffset integer
 #define PetscFortranAddr integer
 #else
@@ -39,15 +39,15 @@
 #define PetscFortranAddr integer*4
 #endif
 
-#if (SIZEOF_INT == 8)
+#if (PETSC_SIZEOF_INT == 8)
 #define PetscFortranInt integer*8
-#elif defined (MISSING_FORTRANSTAR)
+#elif defined (PETSC_MISSING_FORTRANSTAR)
 #define PetscFortranInt integer
 #else
 #define PetscFortranInt integer*4
 #endif
 
-#if defined (MISSING_FORTRANSTAR)
+#if defined (PETSC_MISSING_FORTRANSTAR)
 #define PetscFortranFloat real
 #define PetscFortranDouble double precision
 #define PetscFortranComplex complex (KIND=SELECTED_REAL_KIND(14))
@@ -76,7 +76,7 @@
 !
 ! F90 uses real(), conjg() when KIND parameter is used.
 !
-#if defined (MISSING_DREAL)
+#if defined (PETSC_MISSING_DREAL)
 #define PetscRealPart(a) real(a)
 #define PetscConj(a) conjg(a)
 #else

@@ -2,18 +2,18 @@
 
 #include "petsc.h"
 #include "petscsys.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
-#if defined(HAVE_SYS_STAT_H)
+#if defined(PETSC_HAVE_SYS_STAT_H)
 #include <sys/stat.h>
 #endif
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -27,12 +27,12 @@
 #if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "petscfix.h"
 
-#if defined (HAVE__ACCESS) || defined(HAVE_ACCESS)
+#if defined (PETSC_HAVE__ACCESS) || defined(PETSC_HAVE_ACCESS)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
@@ -44,7 +44,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
   else if (mode == 'w') m = W_OK;
   else if (mode == 'x') m = X_OK;
   else SETERRQ(PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
-#if defined(HAVE_ACCESS)
+#if defined(PETSC_HAVE_ACCESS)
   if(!access(fname, m))  *flg = PETSC_TRUE;
 #else
   if (m == X_OK) SETERRQ1(PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
@@ -53,7 +53,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
   PetscFunctionReturn(0);
 }
 
-#else  /* HAVE_ACCESS or HAVE__ACCESS */
+#else  /* PETSC_HAVE_ACCESS or PETSC_HAVE__ACCESS */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
@@ -110,7 +110,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
   PetscFunctionReturn(0);
 }
 
-#endif /* HAVE_ACCESS */
+#endif /* PETSC_HAVE_ACCESS */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFileStat"

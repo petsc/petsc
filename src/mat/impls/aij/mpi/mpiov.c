@@ -174,7 +174,7 @@ static int MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS *is)
     char *t_p;
 
     len   = (imax)*(sizeof(PetscBT) + sizeof(int*)+ sizeof(int)) + 
-      (m)*imax*sizeof(int)  + (m/BITS_PER_BYTE+1)*imax*sizeof(char) + 1;
+      (m)*imax*sizeof(int)  + (m/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char) + 1;
     ierr  = PetscMalloc(len,&table);CHKERRQ(ierr);
     ierr  = PetscMemzero(table,len);CHKERRQ(ierr);
     data  = (int **)(table + imax);
@@ -182,7 +182,7 @@ static int MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS *is)
     d_p   = (int  *)(isz   + imax);
     t_p   = (char *)(d_p   + m*imax);
     for (i=0; i<imax; i++) {
-      table[i] = t_p + (m/BITS_PER_BYTE+1)*i;
+      table[i] = t_p + (m/PETSC_BITS_PER_BYTE+1)*i;
       data[i]  = d_p + (m)*i;
     }
   }

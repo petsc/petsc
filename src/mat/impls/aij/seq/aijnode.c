@@ -401,7 +401,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   int          ierr,*idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
   int          shift = a->indexshift;
   
-#if defined(HAVE_PRAGMA_DISJOINT)
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*v1,*v2,*v3,*v4,*v5)
 #endif
 

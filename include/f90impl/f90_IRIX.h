@@ -21,7 +21,7 @@ typedef struct {
 #define F90_SCALAR_ID F90_COMPLEX_ID
 #endif
 
-#if (SIZEOF_VOID_P == 8)
+#if (PETSC_SIZEOF_VOID_P == 8)
 #define F90_LONG_ID    35667976
 #else
 #define F90_LONG_ID    33562624

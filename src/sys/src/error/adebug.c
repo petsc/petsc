@@ -6,10 +6,10 @@
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <signal.h> 
 #include "petscsys.h"
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif 
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "petscfix.h"

@@ -4,16 +4,16 @@
 */
 #include "petsc.h"
 #include "petscsys.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -28,7 +28,7 @@
 #include <windows.h>
 #endif
 #include <fcntl.h>
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "petscfix.h"
@@ -37,7 +37,7 @@
 #define MAXPATHLEN 1024
 #endif
 
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
@@ -86,7 +86,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
   if (fullpath[0] == '~') {
     char tmppath[MAXPATHLEN];
     if (fullpath[1] == '/') {
-#if !defined(MISSING_GETPWUID)
+#if !defined(PETSC_MISSING_GETPWUID)
 	pwde = getpwuid(geteuid());
 	if (!pwde) PetscFunctionReturn(0);
 	ierr = PetscStrcpy(tmppath,pwde->pw_dir);CHKERRQ(ierr);

@@ -882,7 +882,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   int          n,i,jrow,j;
 #endif
 
-#if defined(HAVE_PRAGMA_DISJOINT)
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*v)
 #endif
 

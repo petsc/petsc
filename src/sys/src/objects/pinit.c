@@ -617,7 +617,7 @@ int PetscFinalize(void)
 
      Note: In certain cases PETSC_COMM_WORLD is never MPI_Comm_free()ed because 
    the communicator has some outstanding requests on it. Specifically if the 
-   flag HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
+   flag PETSC_HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
    src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDuplicate_Private()
    is never freed as it should be. Thus one may obtain messages of the form
    [ 1] 8 bytes PetscCommDuplicate_Private() line 645 in src/sys/src/mpiu.c indicating the

@@ -9,7 +9,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined (HAVE_STDLIB_H)
+#if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -24,12 +24,12 @@
 #include <windows.h>
 #endif
 #include <time.h>  
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "petscfix.h"
 
-#if defined (HAVE_SYS_TIMES_H)
+#if defined (PETSC_HAVE_SYS_TIMES_H)
 
 #include <sys/times.h>
 #include <limits.h>
@@ -45,7 +45,7 @@ int PetscGetCPUTime(PetscLogDouble *t)
   PetscFunctionReturn(0);
 }
 
-#elif defined(HAVE_CLOCK)
+#elif defined(PETSC_HAVE_CLOCK)
 
 #include <time.h>
 #include <sys/types.h>

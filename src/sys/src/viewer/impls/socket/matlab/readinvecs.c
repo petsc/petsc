@@ -10,10 +10,10 @@
 #include "petscvec.h"
 #include "mex.h"
 #include <fcntl.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined (HAVE_IO_H)
+#if defined (PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
 

@@ -1,13 +1,13 @@
 /*$Id: psleep.c,v 1.30 2001/03/23 23:20:45 balay Exp $*/
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
-#if defined (HAVE_UNISTD_H)
+#if defined (PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined (HAVE_STDLIB_H)
+#if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined (HAVE_DOS_H)   /* borland */
+#if defined (PETSC_HAVE_DOS_H)   /* borland */
 #include <dos.h>
 #endif
 #include "petscfix.h"
@@ -36,9 +36,9 @@ int PetscSleep(int s)
 {
   PetscFunctionBegin;
   if (s < 0) getc(stdin);
-#if defined (HAVE_SLEEP)
+#if defined (PETSC_HAVE_SLEEP)
   else       sleep(s);
-#elif defined (HAVE__SLEEP)
+#elif defined (PETSC_HAVE__SLEEP)
   else       _sleep(s*1000);
 #else
   #error No sleep function located!
