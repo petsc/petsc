@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import args
+import argtest
 import maker
 import sourceDatabase
 
@@ -7,7 +8,7 @@ import atexit
 import cPickle
 import os
 import sys
-import argtest
+import traceback
 
 class BS (maker.Maker):
   targets     = {}
@@ -139,12 +140,17 @@ class BS (maker.Maker):
     self.saveSourceDB()
 
   def main(self):
-    if argDB.has_key('target'):
-      for target in argDB['target']:
-        if self.targets.has_key(target):
-          self.targets[target].execute()
-        elif hasattr(self, 't_'+target):
-          getattr(self, 't_'+target)()
-        else:
-          print 'Invalid target: '+target
+    try:
+      if argDB.has_key('target'):
+        for target in argDB['target']:
+          if self.targets.has_key(target):
+            self.targets[target].execute()
+          elif hasattr(self, 't_'+target):
+            getattr(self, 't_'+target)()
+          else:
+            print 'Invalid target: '+target
+    except Exception, e:
+      print str(e)
+      if not argDB.has_key('noStackTrace') or not int(argDB['noStackTrace']):
+        print traceback.print_tb(sys.exc_info()[2])
     self.cleanupDir(self.tmpDir)
