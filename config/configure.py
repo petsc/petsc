@@ -19,7 +19,7 @@ def petsc_configure(configure_options):
   except ImportError:
     sys.exit('''Could not locate BuildSystem in $PETSC_DIR/python.
     You can download this package using "bk clone bk://sidl.bkbits.net/BuildSystem $PETSC_DIR/python/BuildSystem"''')
-  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options)
+  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
   framework.configure()
