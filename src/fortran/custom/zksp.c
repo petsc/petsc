@@ -1,13 +1,15 @@
-/*$Id: zksp.c,v 1.45 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zksp.c,v 1.46 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define kspgetconvergedreason_     KSPGETCONVERGEDREASON
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC
 #define kspfgmresmodifypcsles_     KSPFGMRESMODIFYPCSLES
 #define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
 #define kspdefaultconverged_       KSPDEFAULTCONVERGED
+#define kspskipconverged_          KSPSKIPCONVERGED
 #define kspdefaultmonitor_         KSPDEFAULTMONITOR
 #define ksptruemonitor_            KSPTRUEMONITOR
 #define kspvecviewmonitor_         KSPVECVIEWMONITOR
@@ -34,10 +36,12 @@
 #define kspgetoptionsprefix_       KSPGETOPTIONSPREFIX
 #define kspview_                   KSPVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define kspgetconvergedreason_     kspgetconvergedreason
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
 #define kspfgmresmodifypcsles_     kspfgmresmodifypcsles
 #define kspfgmresmodifypcnochange_ kspfgmresmodifypcnochange
 #define kspdefaultconverged_       kspdefaultconverged
+#define kspskipconverged_          kspskipconverged
 #define kspsingularvaluemonitor_   kspsingularvaluemonitor
 #define kspdefaultmonitor_         kspdefaultmonitor
 #define ksptruemonitor_            ksptruemonitor
@@ -67,6 +71,11 @@
 
 EXTERN_C_BEGIN
 
+void PETSC_STDCALL kspgetconvergedreason_(KSP *ksp,KSPConvergedReason *reason,int *ierr)
+{
+  *ierr = KSPGetConvergedReason(*ksp,reason);
+}
+
 /* function */
 void PETSC_STDCALL kspview_(KSP *ksp,Viewer *viewer, int *ierr)
 {
@@ -79,6 +88,12 @@ void kspdefaultconverged_(KSP *ksp,int *n,double *rnorm,KSPConvergedReason *flag
 {
   if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
   *ierr = KSPDefaultConverged(*ksp,*n,*rnorm,flag,dummy);
+}
+
+void kspskipconverged_(KSP *ksp,int *n,double *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
+{
+  if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
+  *ierr = KSPSkipConverged(*ksp,*n,*rnorm,flag,dummy);
 }
 
 void PETSC_STDCALL kspgetresidualhistory_(KSP *ksp,int *na,int *ierr)
@@ -150,6 +165,8 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
 {
   if ((void *)converge == (void *)kspdefaultconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,0);
+  } else if ((void *)converge == (void *)kspskipconverged_) {
+    *ierr = KSPSetConvergenceTest(*ksp,KSPSkipConverged,0);
   } else {
     f2 = converge;
     *ierr = KSPSetConvergenceTest(*ksp,ourtest,cctx);
