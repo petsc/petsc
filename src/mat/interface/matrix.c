@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.122 1996/01/01 01:02:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.123 1996/01/02 20:15:38 bsmith Exp balay $";
 #endif
 
 /*
@@ -1092,7 +1092,7 @@ $  -mat_view_info : Prints info on matrix.
 $  -mat_view_info_detailed: More detailed information.
 $  -mat_view_ascii : Prints matrix out in ascii.
 $  -display <name> : Set display name (default is host)
-$  -pause <sec> : Set number of seconds to pause after display
+$  -draw_pause <sec> : Set number of seconds to pause after display
  
    Note: 
    MatSetValues() generally caches the values.  The matrix is ready to
