@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.11 1995/04/25 18:59:00 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.12 1995/04/27 20:15:16 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -190,14 +190,14 @@ static int MatView_MPIRowbs_local(Mat mat,Viewer ptr)
   return 0;
 }
 
-static int MatBeginAssembly_MPIRowbs_local(Mat mat,int mode)
+static int MatAssemblyBegin_MPIRowbs_local(Mat mat,int mode)
 { 
   return 0;
 }
 
 /* Note: The local end assembley routine must be calle through
    the parallel version only! */
-static int MatEndAssembly_MPIRowbs_local(Mat mat,int mode)
+static int MatAssemblyEnd_MPIRowbs_local(Mat mat,int mode)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   BSspmat      *A = mrow->A;
@@ -312,7 +312,7 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
     either case.
 */
 
-static int MatBeginAssembly_MPIRowbs(Mat mat,int mode)
+static int MatAssemblyBegin_MPIRowbs(Mat mat,int mode)
 { 
   Mat_MPIRowbs  *mrow = (Mat_MPIRowbs *) mat->data;
   MPI_Comm    comm = mat->comm;
@@ -449,7 +449,7 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-static int MatEndAssembly_MPIRowbs(Mat mat,int mode)
+static int MatAssemblyEnd_MPIRowbs(Mat mat,int mode)
 { 
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   MPI_Status   *send_status,recv_status;
@@ -488,8 +488,8 @@ static int MatEndAssembly_MPIRowbs(Mat mat,int mode)
   FREE(mrow->send_waits); FREE(mrow->svalues);
 
   mrow->insertmode = NotSetValues;
-  ierr = MatBeginAssembly_MPIRowbs_local(mat,mode); CHKERR(ierr);
-  ierr = MatEndAssembly_MPIRowbs_local(mat,mode); CHKERR(ierr);
+  ierr = MatAssemblyBegin_MPIRowbs_local(mat,mode); CHKERR(ierr);
+  ierr = MatAssemblyEnd_MPIRowbs_local(mat,mode); CHKERR(ierr);
 
   if (mode == FINAL_ASSEMBLY) {   /* BlockSolve stuff */
     if ((mrow->assembled) && (!mrow->nonew)) {  /* Free the old info */
@@ -519,8 +519,8 @@ static int MatEndAssembly_MPIRowbs(Mat mat,int mode)
       mrow->inv_diag[i] = 1.0/(mrow->pA->scale_diag[i]);
       ierr = VecSetValues(mrow->diag,1,&loc,&val,InsertValues); CHKERR(ierr);
     }
-    ierr = VecBeginAssembly( mrow->diag ); CHKERR(ierr);
-    ierr = VecEndAssembly( mrow->diag ); CHKERR(ierr);
+    ierr = VecAssemblyBegin( mrow->diag ); CHKERR(ierr);
+    ierr = VecAssemblyEnd( mrow->diag ); CHKERR(ierr);
     mrow->assembled = 1;
     mrow->reassemble_begun = 0;
   }
@@ -832,7 +832,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        MatGetInfo_MPIRowbs,0,
        0,
        MatGetDiagonal_MPIRowbs,0,0,
-       MatBeginAssembly_MPIRowbs,MatEndAssembly_MPIRowbs,
+       MatAssemblyBegin_MPIRowbs,MatAssemblyEnd_MPIRowbs,
        0,
        MatSetOption_MPIRowbs,MatZeroEntries_MPIRowbs,0,0,
        0,0,0,MatCholeskyFactorNumeric_MPIRowbs,

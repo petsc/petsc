@@ -3,8 +3,6 @@
 #define __OPTIONS_PACKAGE
 #include "petsc.h"
 
-int OptionsCreate(int* ,char ***,char *,char*);
-int OptionsDestroy();
 #include <stdio.h>
 int OptionsPrint(FILE *);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.29 1995/04/28 15:06:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.30 1995/05/02 16:05:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -597,8 +597,8 @@ static int MatGetSubMatrix_Dense(Mat matin,IS isrow,IS iscol,Mat *submat)
     ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,InsertValues); 
            CHKERR(ierr);
   }
-  ierr = MatBeginAssembly(newmat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatEndAssembly(newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(newmat,FINAL_ASSEMBLY); CHKERR(ierr);
 
   /* Free work space */
   FREE(smap); FREE(cwork); FREE(vwork);

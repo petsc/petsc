@@ -43,8 +43,8 @@ int main(int argc,char **args)
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,InsertValues); CHKERRA(ierr);
     }
   }
-  ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Generate vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
@@ -57,8 +57,8 @@ int main(int argc,char **args)
     v = one*i + 100*mytid;
     ierr = VecSetValues(u,1,&iglobal,&v,InsertValues); CHKERRA(ierr);
   }
-  ierr = VecBeginAssembly(u); CHKERRA(ierr);
-  ierr = VecEndAssembly(u); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(u); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(u); CHKERRA(ierr);
   
   /* Compute right-hand-side */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
@@ -101,8 +101,8 @@ int main(int argc,char **args)
       v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,InsertValues); CHKERRA(ierr);
     }
   } 
-  ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr); 
+  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr); 
 
   /* Compute another right-hand-side; then solve */
   ierr = MatMult(C,u,b); CHKERRA(ierr);

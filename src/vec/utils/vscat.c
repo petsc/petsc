@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.14 1995/03/27 21:26:44 curfman Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.15 1995/04/28 05:51:44 curfman Exp bsmith $";
 #endif
 
 
@@ -457,7 +457,7 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 
 .seealso: VecPipelineEnd(), VecScatterCtxCreate()
 @*/
-int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode, 
+int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,PipeLineMode mode, 
                                         VecScatterCtx inctx)
 {
   int numtid;
@@ -496,7 +496,7 @@ int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode,
 
 .seealso: VecPipelineBegin(), VecScatterCtxCreate()
 @*/
-int VecPipelineEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode,
+int VecPipelineEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,PipeLineMode mode,
                    VecScatterCtx ctx)
 {
   int numtid;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.33 1995/04/27 21:52:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.34 1995/04/28 05:14:26 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -120,7 +120,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
     either case.
 */
 
-static int MatBeginAssembly_MPIAIJ(Mat mat,int mode)
+static int MatAssemblyBegin_MPIAIJ(Mat mat,int mode)
 { 
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   MPI_Comm    comm = mat->comm;
@@ -223,7 +223,7 @@ static int MatBeginAssembly_MPIAIJ(Mat mat,int mode)
 }
 extern int MatSetUpMultiply_MPIAIJ(Mat);
 
-static int MatEndAssembly_MPIAIJ(Mat mat,int mode)
+static int MatAssemblyEnd_MPIAIJ(Mat mat,int mode)
 { 
   int        ierr;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -277,15 +277,15 @@ static int MatEndAssembly_MPIAIJ(Mat mat,int mode)
   FREE(aij->send_waits); FREE(aij->svalues);
 
   aij->insertmode = NotSetValues;
-  ierr = MatBeginAssembly(aij->A,mode); CHKERR(ierr);
-  ierr = MatEndAssembly(aij->A,mode); CHKERR(ierr);
+  ierr = MatAssemblyBegin(aij->A,mode); CHKERR(ierr);
+  ierr = MatAssemblyEnd(aij->A,mode); CHKERR(ierr);
 
   if (!aij->assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERR(ierr);
     aij->assembled = 1;
   }
-  ierr = MatBeginAssembly(aij->B,mode); CHKERR(ierr);
-  ierr = MatEndAssembly(aij->B,mode); CHKERR(ierr);
+  ierr = MatAssemblyBegin(aij->B,mode); CHKERR(ierr);
+  ierr = MatAssemblyEnd(aij->B,mode); CHKERR(ierr);
 
   return 0;
 }
@@ -538,6 +538,8 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
   return 0;
 }
 #include "draw.h"
+#include "pviewer.h"
+
 static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {
   Mat        mat = (Mat) obj;
@@ -607,8 +609,8 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
         row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
       } 
       FREE(ct);
-      ierr = MatBeginAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
-      ierr = MatEndAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
+      ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERR(ierr);
+      ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERR(ierr);
       if (!mytid) {
         ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERR(ierr);
       }
@@ -1081,7 +1083,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatGetInfo_MPIAIJ,0,
        MatCopy_MPIAIJ,
        MatGetDiagonal_MPIAIJ,0,0,
-       MatBeginAssembly_MPIAIJ,MatEndAssembly_MPIAIJ,
+       MatAssemblyBegin_MPIAIJ,MatAssemblyEnd_MPIAIJ,
        0,
        MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,0,
        0,0,0,0,

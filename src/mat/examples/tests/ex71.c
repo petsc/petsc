@@ -32,8 +32,8 @@ int main(int argc,char **args)
   ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uyy,&stencil); CHKERR(ierr);
   StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
   StencilDestroy(stencil);
-  ierr = MatBeginAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatEndAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_DIRICHLET,&stencil); 
   CHKERR(ierr);  
   ierr = StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);

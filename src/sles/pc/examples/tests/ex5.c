@@ -270,8 +270,8 @@ int Create1dLaplacian(int n,Mat *mat)
     MatSetValues(*mat,1,&idx,1,&i,&mone,InsertValues);
     MatSetValues(*mat,1,&i,1,&idx,&mone,InsertValues);
   }
-  ierr = MatBeginAssembly(*mat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatEndAssembly(*mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(*mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(*mat,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
 

@@ -43,8 +43,8 @@ int main(int argc,char **argv)
     value = (Scalar) (i + 10*mytid);
     ierr = VecSetValues(y,1,&i,&value,InsertValues); CHKERRA(ierr);
   }
-  ierr = VecBeginAssembly(y); CHKERRA(ierr);
-  ierr = VecEndAssembly(y); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(y); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(y); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(y,is2,x,is1,InsertValues,ScatterAll,ctx);

@@ -56,8 +56,8 @@ int main(int argc,char **args)
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = MatSetValues(C,4,idx,4,idx,Ke,AddValues); CHKERRA(ierr);
   }
-  ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* create right hand side and solution */
 
@@ -76,8 +76,8 @@ int main(int argc,char **args)
      ierr = FormElementRhs(x,y,h*h,r); CHKERRA(ierr);
      ierr = VecSetValues(b,4,idx,r,AddValues); CHKERRA(ierr);
   }
-  ierr = VecBeginAssembly(b); CHKERRA(ierr);
-  ierr = VecEndAssembly(b); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(b); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(b); CHKERRA(ierr);
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
   rows = (int *) MALLOC( 4*m*sizeof(int) ); CHKPTR(rows);
@@ -101,10 +101,10 @@ int main(int argc,char **args)
      ierr = VecSetValues(b,1,&rows[i],&val,InsertValues); CHKERRA(ierr);
   }    
   FREE(rows);
-  ierr = VecBeginAssembly(u); CHKERRA(ierr);
-  ierr = VecEndAssembly(u); CHKERRA(ierr);
-  ierr = VecBeginAssembly(b); CHKERRA(ierr);
-  ierr = VecEndAssembly(b); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(u); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(u); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(b); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(b); CHKERRA(ierr);
 
   ierr = MatZeroRows(C,is,&one); CHKERRA(ierr);
   ierr = ISDestroy(is); CHKERRA(ierr);
@@ -123,8 +123,8 @@ int main(int argc,char **args)
      val = y;
      ierr = VecSetValues(ustar,1,&i,&val,InsertValues); CHKERRA(ierr);
   }
-  ierr = VecBeginAssembly(ustar); CHKERRA(ierr);
-  ierr = VecEndAssembly(ustar); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(ustar); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(ustar); CHKERRA(ierr);
 
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,&norm); CHKERRA(ierr);

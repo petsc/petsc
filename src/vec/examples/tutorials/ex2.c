@@ -30,8 +30,8 @@ int main(int argc,char **argv)
   for ( i=0; i<N-mytid; i++ ) {
     ierr = VecSetValues(x,1,&i,&one,AddValues); CHKERRA(ierr);  
   }
-  ierr = VecBeginAssembly(x); CHKERRA(ierr);
-  ierr = VecEndAssembly(x); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
   VecView(x,SYNC_STDOUT_VIEWER);
 

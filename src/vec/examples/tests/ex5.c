@@ -42,8 +42,8 @@ int main(int argc,char **argv)
     value = (Scalar) i;
     ierr = VecSetValues(x,1,&i,&value,InsertValues); CHKERRA(ierr);
   }
-  ierr = VecBeginAssembly(x); CHKERRA(ierr);
-  ierr = VecEndAssembly(x); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(x); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
   VecView(x,SYNC_STDOUT_VIEWER); if (!mytid) printf("----\n");
 

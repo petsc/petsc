@@ -39,8 +39,8 @@ int main(int argc,char **argv)
   else {
     idx = 7; ierr = VecSetValues(y,1,&idx,&three,InsertValues);CHKERRA(ierr); 
   } 
-  ierr = VecBeginAssembly(y); CHKERRA(ierr);
-  ierr = VecEndAssembly(y); CHKERRA(ierr);
+  ierr = VecAssemblyBegin(y); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(y); CHKERRA(ierr);
 
   VecView(y,SYNC_STDOUT_VIEWER);
 

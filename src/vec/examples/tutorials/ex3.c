@@ -29,8 +29,8 @@ int main(int argc,char **argv)
     v = (double) i;
     VecSetValues(x,1,&i,&v,InsertValues);
   }
-  VecBeginAssembly(x);
-  VecEndAssembly(x);
+  VecAssemblyBegin(x);
+  VecAssemblyEnd(x);
 
   ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,300,300,&win); CHKERRA(ierr);
   ierr = DrawLGCreate(win,1,&lg); CHKERRA(ierr);

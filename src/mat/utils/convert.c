@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.6 1995/04/15 03:28:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.7 1995/05/02 16:33:20 curfman Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -121,7 +121,7 @@ int MatConvert_AIJ(Mat mat, MATTYPE newtype, Mat *newmat)
       ierr = MatDetermineDiagonals_Private(mat,nb,m,n,rr,cr,&ndiag,&diag);
       ierr = MatCreateSequentialBDiag(mat->comm,m,n,ndiag,nb,diag,0,newmat);
 
-      MatEndAssembly(*newmat,FINAL_ASSEMBLY); MatView(*newmat,0);
+      MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); MatView(*newmat,0);
 
       FREE(rr), FREE(diag);
       CHKERR(ierr); break;
@@ -137,7 +137,7 @@ int MatConvert_AIJ(Mat mat, MATTYPE newtype, Mat *newmat)
     ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
   }
   ierr = MatBeginAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatEndAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------ */
@@ -171,6 +171,6 @@ int MatConvert_MPIAIJ(Mat mat, MATTYPE newtype, Mat *newmat)
     ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork); CHKERR(ierr);
   }
   ierr = MatBeginAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatEndAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.18 1995/04/27 21:45:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.19 1995/04/28 05:09:09 curfman Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -54,7 +54,7 @@ static struct _VeOps DvOps = { VecCreate_MPIBlas,
             VecWAXPY_Seq, VecPMult_Seq,
             VecPDiv_Seq, 
             VecSetValues_MPI,
-            VecBeginAssembly_MPI,VecEndAssembly_MPI,
+            VecAssemblyBegin_MPI,VecAssemblyEnd_MPI,
             VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,
             VecGetOwnershipRange_MPI,0,VecMax_MPI,VecMin_MPI};
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.27 1995/04/28 06:13:47 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.28 1995/04/28 06:44:13 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -466,7 +466,7 @@ int VecFreeVecs(Vec *vv,int m)
 
 /*@
    VecSetValues - Inserts or adds values into certain locations of a vector. 
-   These values may be cached, so VecBeginAssembly() and VecEndAssembly() 
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
    MUST be called after all calls to VecSetValues() have been completed.
 
    Input Parameters:
@@ -485,7 +485,7 @@ int VecFreeVecs(Vec *vv,int m)
 
 .keywords: vector, set, values
 
-.seealso:  VecBeginAssembly(), VecEndAsembly()
+.seealso:  VecAssemblyBegin(), VecEndAsembly()
 @*/
 int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
@@ -494,7 +494,7 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 }
 
 /*@
-   VecBeginAssembly - Begins assembling the vector.  This routine should
+   VecAssemblyBegin - Begins assembling the vector.  This routine should
    be called after completing all calls to VecSetValues().
 
    Input Parameter:
@@ -502,9 +502,9 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 
 .keywords: vector, begin, assembly, assemble
 
-.seealso: VecEndAssembly(), VecSetValues()
+.seealso: VecAssemblyEnd(), VecSetValues()
 @*/
-int VecBeginAssembly(Vec vec)
+int VecAssemblyBegin(Vec vec)
 {
   int ierr;
   VALIDHEADER(vec,VEC_COOKIE);
@@ -515,17 +515,17 @@ int VecBeginAssembly(Vec vec)
 }
 
 /*@
-   VecEndAssembly - Completes assembling the matrix.  This routine should
-   be called after all calls to VecSetValues() and after VecBeginAssembly().
+   VecAssemblyEnd - Completes assembling the matrix.  This routine should
+   be called after all calls to VecSetValues() and after VecAssemblyBegin().
 
    Input Parameter:
 .  vec - the vector
 
 .keywords: vector, end, assembly, assemble
 
-.seealso: VecBeginAssembly(), VecSetValues()
+.seealso: VecAssemblyBegin(), VecSetValues()
 @*/
-int VecEndAssembly(Vec vec)
+int VecAssemblyEnd(Vec vec)
 {
   int ierr;
   VALIDHEADER(vec,VEC_COOKIE);
