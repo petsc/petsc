@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.273 1998/05/04 12:38:09 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.274 1998/05/06 18:45:35 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2975,6 +2975,22 @@ commands \findex{MGSetRhs()} \findex{MGSetX()} \findex{MGSetR()}
 \end{verbatim}
 The user is responsible for freeing these vectors once the iteration 
 is complete.
+
+One can control the KSP and PC options used on the various levels
+(as well as the coarse grid) using the prefix {\tt mg\_levels\_} (
+{\tt mg\_coarse\_} for the coarse grid).
+\findex{-mg_levels} For example,
+\begin{verbatim}
+  -mg_levels_ksp_type cg
+\end{verbatim}
+will cause the CG method to be used as the Krylov method for each level.
+Or
+\begin{verbatim}
+  -mg_levels_pc_type ilu -mg_levels_pc_ilu_levels 2
+\end{verbatim}
+will cause the the ILU preconditioner to be used on each level with 
+two levels of fill in the incomplete factorization.
+
 
 % ---------------------------------------------------------------
 \chapter{SNES: Nonlinear Solvers and Unconstrained Minimization}
