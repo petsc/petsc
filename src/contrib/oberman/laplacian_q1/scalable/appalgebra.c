@@ -9,7 +9,7 @@
 #define __FUNCT__ "pde_rhs"
 int pde_rhs(void *dummy,int n,double *xx,double *f)
 {
-  double pi = M_PI, x = xx[0], y = xx[1];
+  double pi = PETSC_PI, x = xx[0], y = xx[1];
   PetscFunctionBegin;
   *f = 8*pi*pi*sin(2*pi*x)*sin(2*pi*y)-20*pi*cos(2*pi*x)*sin(2*pi*y);
   PetscFunctionReturn(0);

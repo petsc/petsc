@@ -133,7 +133,7 @@ int main(int argc,char **argv)
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(TS ts,PetscReal time,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 {
   DA             da = (DA)ptr;
   PetscErrorCode ierr;

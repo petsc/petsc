@@ -61,7 +61,7 @@
       PetscReal        h
 
       common /params/ zero_d0,one_d0,two_d0,four_d0,h
-      common /appctx/ M,da,localwork,solution,debug
-      common /appctx/ u_local,comm,rank,size
+      common /appctx/ M,da,localwork,solution
+      common /appctx/ u_local,comm,rank,size,debug
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

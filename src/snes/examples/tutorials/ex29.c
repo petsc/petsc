@@ -57,8 +57,8 @@ PetscInt DAVecHDFOutput(DA,Vec,char*);
 #define D_xx(x,m,i,j) ((x[(j)][(i)+1].m - two*x[(j)][(i)].m + x[(j)][(i)-1].m) * hydhx * dhxdhy)
 #define D_yy(x,m,i,j) ((x[(j)+1][(i)].m - two*x[(j)][(i)].m + x[(j)-1][(i)].m) * hxdhy * dhxdhy)
 #define Lapl(x,m,i,j) (D_xx(x,m,i,j) + D_yy(x,m,i,j))
-#define lx            (2.*M_PI)
-#define ly            (4.*M_PI)
+#define lx            (2.*PETSC_PI)
+#define ly            (4.*PETSC_PI)
 #define sqr(a)        ((a)*(a))
 
 /* 
@@ -406,14 +406,14 @@ PetscErrorCode Initialize(DMMG *dmmg)
       for (i=xs-1; i<xs+xm+1; i++) {
 	xx = i * hx;
 
-	if (xx < -M_PI/2) {
-	  localx[j][i].phi = pert * gam / k * erf((xx + M_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
-	} else if (xx < M_PI/2) {
+	if (xx < -PETSC_PI/2) {
+	  localx[j][i].phi = pert * gam / k * erf((xx + PETSC_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
+	} else if (xx < PETSC_PI/2) {
 	  localx[j][i].phi = - pert * gam / k * erf(xx / (sqrt(2.0) * d_e)) * (-sin(k*yy));
-	} else if (xx < 3*M_PI/2){
-	  localx[j][i].phi = pert * gam / k * erf((xx - M_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
+	} else if (xx < 3*PETSC_PI/2){
+	  localx[j][i].phi = pert * gam / k * erf((xx - PETSC_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	} else {
-	  localx[j][i].phi = - pert * gam / k * erf((xx - 2.*M_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
+	  localx[j][i].phi = - pert * gam / k * erf((xx - 2.*PETSC_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	}
 #ifdef EQ
 	localx[j][i].psi = 0.;
