@@ -623,9 +623,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObj
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
 {
-  PetscErrorCode      ierr;
-  char                type[256];
-
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
   PetscFunctionReturn(0); 
@@ -651,9 +648,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject obj)
 {
-  PetscErrorCode ierr;
-  PetscTruth     flg, iseqtr;
-
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
   PetscFunctionReturn(0);
