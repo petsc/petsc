@@ -1,7 +1,13 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.32 1997/09/10 18:12:08 balay Exp bsmith $ 
 
 PARCH    = freebsd
 CC       = /usr/local/gcc-2.7.2/bin/gcc  -DPARCH_freebsd
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then leave this blank.
+#
+CCV      = $(CC) --version
+#
 #
 # We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
 # large Fortran files, you can increase the 1000 if need be.
