@@ -14,7 +14,7 @@ LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = cc    -KPIC -dalign -xtarget=native
+C_CC		   = cc -KPIC -dalign -xtarget=native
 C_FC		   = f90 -xpp=cpp -dalign
 C_CLINKER_SLFLAG   = -R
 C_FLINKER_SLFLAG   = -R
@@ -22,7 +22,7 @@ C_CLINKER	   = cc
 C_FLINKER	   = f90
 C_CCV		   = cc -V -c
 C_FCV		   = f90 -V
-C_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl  -lm
+C_SYS_LIB	   = -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl  -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
@@ -31,14 +31,14 @@ O_COPTFLAGS	   = -fast -xO4  -fsimple=2 -xtarget=native
 O_FOPTFLAGS	   = -fast
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = CC  -w -features=anachronisms -instances=static -KPIC
+CXX_CC		   = CC -w -features=anachronisms -instances=static -KPIC
 CXX_FC		   = f90   -xpp=cpp
 CXX_CLINKER_SLFLAG = -R
 CXX_FLINKER_SLFLAG = -R
 CXX_CLINKER	   = CC
 CXX_FLINKER	   = CC
 CXX_CCV		   = CC    -V -c
-CXX_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl -lm
+CXX_SYS_LIB	   = -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl -lm
 # older versions of the compiler may require -lcomplex before the -ldl
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g  -xs
