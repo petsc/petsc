@@ -523,7 +523,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
         nshift++; 
         break;
       }
-      if (PetscAbsScalar(pv[diag]) < zeropivot*rs) {
+      if (PetscAbsScalar(pv[diag]) <= zeropivot*rs) {
         if (damping) {
           if (ndamp) damping *= 2.0;
           damp = PETSC_TRUE;

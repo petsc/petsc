@@ -1445,6 +1445,18 @@ int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscTruth *f)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatIsSymmetric_SeqAIJ"
+int MatIsSymmetric_SeqAIJ(Mat A,PetscTruth *f)
+{
+  Mat B; int ierr;
+  PetscFunctionBegin;
+  ierr = MatIsTranspose_SeqAIJ(A,A,f); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalScale_SeqAIJ"
 int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
@@ -2140,7 +2152,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        0,
-/*85*/ MatLoad_SeqAIJ};
+/*85*/ MatLoad_SeqAIJ,
+       MatIsSymmetric_SeqAIJ,
+};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
