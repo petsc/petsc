@@ -1,7 +1,7 @@
-/* $Id: petsc.h,v 1.209 1998/04/22 04:20:30 curfman Exp curfman $ */
+/* $Id: petsc.h,v 1.210 1998/04/23 13:08:37 curfman Exp curfman $ */
 /*
-   This is the main PETSc include file (for C and C++).  It is included by
-   all other PETSc include files so almost never has to be specifically included.
+   This is the main PETSc include file (for C and C++).  It is included by all
+   other PETSc include files, so it almost never has to be specifically included.
 */
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
