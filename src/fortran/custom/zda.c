@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.15 1997/12/03 14:06:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.16 1998/01/14 02:34:51 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -117,6 +117,9 @@ void dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                  int *w,int *s,int *lx,int *ly,int *lz,DA *inra, int *__ierr )
 {
   DA da;
+  if (FORTRANNULL(lx)) lx = PETSC_NULL;
+  if (FORTRANNULL(ly)) ly = PETSC_NULL;
+  if (FORTRANNULL(lz)) lz = PETSC_NULL;
   *__ierr = DACreate3d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
                         *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
   *(int*) inra = PetscFromPointer(da);
