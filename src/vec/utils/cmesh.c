@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.57 1999/01/27 21:20:04 balay Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.58 1999/01/31 16:03:39 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"        /*I "vec.h" I*/
@@ -68,7 +68,6 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],V
   VecScatter    ctx;
   PetscObject   vobj = (PetscObject) win;
   Draw          popup;
-  double        *x,*y;
   MPI_Comm      comm;
 #if !defined(USE_PETSC_COMPLEX)
   int           xin=1,yin=1,i,pause,showgrid;

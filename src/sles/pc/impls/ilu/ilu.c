@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.120 1999/01/31 16:08:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.121 1999/01/31 21:51:09 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -507,7 +507,7 @@ static int PCView_ILU(PC pc,Viewer viewer)
 #define __FUNC__ "PCSetUp_ILU"
 static int PCSetUp_ILU(PC pc)
 {
-  int         ierr,flg, (*setup)(PC);
+  int         ierr,flg;
   PC_ILU      *ilu = (PC_ILU *) pc->data;
   MatILUInfo  info;
 
