@@ -8,7 +8,8 @@ add to it).
 
   VEC
 
-   
+
+     All VecGetArray() must now be matched with a VecRestoreArray()   
 
   
 
