@@ -39,7 +39,7 @@ int main(int argc,char **args)
   /* -mat_type <seqsbaij_derived type>, e.g., seqsbaijspooles, sbaijmumps */
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
-  if (type != MATSEQSBAIJ) doIcc = PETSC_FALSE;
+  ierr = PetscTypeCompare((PetscObject)sA,MATSEQSBAIJ,&doIcc);CHKERRQ(ierr);
   /* printf(" mattype: %s\n",type); */
   ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);
 
