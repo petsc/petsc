@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.36 1996/03/25 23:17:49 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.37 1996/03/26 00:10:00 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -59,17 +59,30 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     success = 0;
     ierr = VecCopy(G,RHS); CHKERRQ(ierr);
     ierr = VecScale(&neg_one,RHS); CHKERRQ(ierr);
+    ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);
+           CHKERRQ(ierr);
+    ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
+           CHKERRQ(ierr);
     while (!success) {
-      ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);
-             CHKERRQ(ierr);
-      /* Modify diagonal elements of Hessian */
-      ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
-             CHKERRQ(ierr);
       ierr = SLESSolve(snes->sles,RHS,S,&iters); CHKERRQ(ierr);
       ierr = VecNorm(S,NORM_2,&snorm); CHKERRQ(ierr);
-      if ((iters < 0) || (iters >= kspmaxit)) {
+      if ((iters < 0) || (iters >= kspmaxit)) { /* Modify diagonal of Hessian */
         neP->gamma_factor *= two; 
         neP->gamma = neP->gamma_factor*(*gnorm); 
+#if !defined(PETSC_COMPLEX)
+        PLogInfo(snes,"  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",
+          neP->gamma_factor,neP->gamma);
+#else
+        PLogInfo(snes,"  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
+          real(neP->gamma_factor),real(neP->gamma));
+#endif
+        ierr = MatShift(&neP->gamma,snes->jacobian); CHKERRQ(ierr);
+        if ((snes->jacobian_pre != snes->jacobian) && (flg != SAME_PRECONDITIONER))
+          {ierr = MatShift(&neP->gamma,snes->jacobian_pre); CHKERRQ(ierr);}
+       /* We currently assume that all diagonal elements were allocated in
+        original matrix, so that nonzero pattern is same ... should fix this */
+        ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
+               SAME_NONZERO_PATTERN); CHKERRQ(ierr);
       } else {
         success = 1;
       }
