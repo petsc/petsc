@@ -844,7 +844,7 @@ S*/
 typedef struct _p_MatPartitioning *MatPartitioning;
 
 /*E
-    MatPartitioningType - String with the name of a PETSc matrix partitioing or the creation function
+    MatPartitioningType - String with the name of a PETSc matrix partitioning or the creation function
        with an optional dynamic library name, for example 
        http://www.mcs.anl.gov/petsc/lib.a:partitioningcreate()
 
@@ -858,6 +858,7 @@ typedef char* MatPartitioningType;
 
 EXTERN int MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 EXTERN int MatPartitioningSetType(MatPartitioning,MatPartitioningType);
+EXTERN int MatPartitioningSetNParts(MatPartitioning,int);
 EXTERN int MatPartitioningSetAdjacency(MatPartitioning,Mat);
 EXTERN int MatPartitioningSetVertexWeights(MatPartitioning,int*);
 EXTERN int MatPartitioningApply(MatPartitioning,IS*);
