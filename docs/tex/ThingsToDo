@@ -41,6 +41,7 @@ West Bethesda, Md.  20817-5700
 rcheng@oasys.dt.navy.mil
 
 
+  - add map object to vectors and matrices to replace current local size, ownership range etc.
 
   - Add support for some KSP methods not to compute the residual norms,
     or do convergence test.
