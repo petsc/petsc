@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: map.c,v 1.3 1999/01/27 21:20:33 balay Exp bsmith $";
+static char vcid[] = "$Id: map.c,v 1.4 1999/01/31 16:03:50 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all map operations.
@@ -20,10 +20,11 @@ static char vcid[] = "$Id: map.c,v 1.3 1999/01/27 21:20:33 balay Exp bsmith $";
    Output Parameter:
 .  n - the local size
 
+   Level: developer
 
 .seealso: MapGetSize(), MapGetLocalRange(), MapGetGlobalRange()
 
-.keywords: 
+.keywords: Map, get, local, size
 @*/
 int MapGetLocalSize(Map m,int *n)
 {
@@ -48,9 +49,11 @@ int MapGetLocalSize(Map m,int *n)
    Output Parameter:
 .  N - the global size
 
+   Level: developer
+
 .seealso: MapGetLocalSize(), MapGetLocalRange(), MapGetGlobalRange()
 
-.keywords: 
+.keywords: Map, get, size
 @*/
 int MapGetSize(Map m,int *N)
 {
@@ -65,7 +68,7 @@ int MapGetSize(Map m,int *N)
 #undef __FUNC__  
 #define __FUNC__ "MapGetLocalRange"
 /*@C
-   MapGetLocalRange - Gets the local ownership range for this procesor
+   MapGetLocalRange - Gets the local ownership range for this procesor.
 
    Not Collective
 
@@ -76,7 +79,9 @@ int MapGetSize(Map m,int *N)
 +  rstart - the first local index
 -  rend   - the last local index + 1
 
-.seealso: MapGetLocalSize(), MapGetSize(), MapGetGlobalRange()
+   Level: developer
+
+.seealso: MapGetLocalSize(), MapGetGlobalRange()
 
 .keywords: 
 @*/
@@ -93,7 +98,7 @@ int MapGetLocalRange(Map m,int *rstart,int *rend)
 #undef __FUNC__  
 #define __FUNC__ "MapGetGlobalRange"
 /*@C
-   MapGetGlobalRange - Gets the ownership ranges for all processors
+   MapGetGlobalRange - Gets the ownership ranges for all processors.
 
    Not Collective
 
@@ -105,7 +110,9 @@ int MapGetLocalRange(Map m,int *rstart,int *rend)
            associated with the map. range[rank], range[rank+1] is the 
            range for processor 
 
-.seealso: MapGetLocalSize(), MapGetSize(), MapGetLocalRange()
+   Level: developer
+
+.seealso: MapGetSize(), MapGetLocalRange()
 
 .keywords: 
 @*/
@@ -122,16 +129,18 @@ int MapGetGlobalRange(Map m,int *range[])
 #undef __FUNC__  
 #define __FUNC__ "MapDestroy"
 /*@C
-   MapDestroy - Destroys a map object
+   MapDestroy - Destroys a map object.
 
    Not Collective
 
    Input Parameter:
 .  m - the map object
 
-.seealso: MapGetLocalSize(), MapGetSize(), MapGetLocalRange()
+   Level: developer
 
-.keywords: 
+.seealso: MapCreateMPI()
+
+.keywords: Map, destroy
 @*/
 int MapDestroy(Map m)
 {
