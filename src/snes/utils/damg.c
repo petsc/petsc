@@ -168,7 +168,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg,DM dm)
   for (i=1; i<nlevels; i++) {
     ierr = DMRefine(dmmg[i-1]->dm,dmmg[i]->comm,&dmmg[i]->dm);CHKERRQ(ierr);
   }
-  ierr = DMMGSetUp(dmmg);CHKERRQ(ierr);
+  ierr = DMMGSetUp(dmmg);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -286,7 +286,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
+  if (dmmg[level]->rhs) {
+    ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
+  }
   if (dmmg[level]->matricesset) {
     ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     dmmg[level]->matricesset = PETSC_FALSE;
@@ -340,8 +342,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
     for (i=0; i<nlevels; i++) {
       ierr = MGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
       ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
-      ierr = MGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
+      if (i < nlevels-1) { /* don't set for finest level, they are set in PCApply_MG()*/
+	ierr = MGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
+	ierr = MGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
+      }
       ierr = MGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
       ierr = MGSetResidual(pc,i,MGDefaultResidual,dmmg[i]->J);CHKERRQ(ierr);
       if (monitor) {

@@ -101,6 +101,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DA da,Vec vec,void *array)
     gxs = xs;
     gys = ys;
     gzs = zs;
+  } else if (N != gxm*gym*gzm*dof) {
+    SETERRQ3(PETSC_ERR_ARG_INCOMP,"Vector local size %D is not compatible with DA local sizes %D %D\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
   }
 
   if (dim == 1) {

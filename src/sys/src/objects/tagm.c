@@ -9,19 +9,22 @@
 
 /* ---------------------------------------------------------------- */
 /*
-   A simple way to manage tags inside a private 
-   communicator.  It uses the attribute to determine if a new communicator
-   is needed.
+   A simple way to manage tags inside a communicator.  
+
+   It uses the attributes to determine if a new communicator
+      is needed and to store the available tags.
 
    Notes on the implementation
 
    The tagvalues to use are stored in a two element array.  The first element
    is the first free tag value.  The second is used to indicate how
    many "copies" of the communicator there are used in destroying.
+
+  
 */
 
-static PetscMPIInt Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
-
+static PetscMPIInt Petsc_Tag_keyval  = MPI_KEYVAL_INVALID;
+static PetscMPIInt Petsc_Comm_keyval = MPI_KEYVAL_INVALID;
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_DelTag" 
@@ -40,8 +43,32 @@ PetscMPIInt PETSC_DLLEXPORT Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogInfo((0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %ld\n",(long)comm));CHKERRQ(ierr);
+  ierr = PetscLogInfo((0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %ld\n",(long)comm));if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   ierr = PetscFree(attr_val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  PetscFunctionReturn(MPI_SUCCESS);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "Petsc_DelComm" 
+/*
+   Private routine to delete internal storage when a communicator is freed.
+  This is called by MPI, not by users.
+
+  The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
+  it was MPI_Comm *comm.  
+
+    Note: this is declared extern "C" because it is passed to the system routine signal()
+          which is an extern "C" routine. 
+*/
+PetscMPIInt PETSC_DLLEXPORT Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogInfo((0,"Petsc_DelComm:Deleting PETSc communicator imbedded in a user MPI_Comm %ld\n",(long)comm));if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  /* actually don't delete anything because we cannot increase the reference count of the communicator anyways */
   PetscFunctionReturn(MPI_SUCCESS);
 }
 EXTERN_C_END
@@ -189,21 +216,36 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
     */
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTag,&Petsc_Tag_keyval,(void*)0);CHKERRQ(ierr);
   }
-
   ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
 
   if (!flg) {
-    /* This communicator is not yet known to this system, so we duplicate it and set its value */
-    ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
-    ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
-    if (!flg) {
-      SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+    /* check if this communicator has a PETSc communicator imbedded in it */
+    if (Petsc_Comm_keyval == MPI_KEYVAL_INVALID) {
+      ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_Comm_keyval,(void*)0);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc(2*sizeof(PetscMPIInt),&tagvalp);CHKERRQ(ierr);
-    tagvalp[0] = *maxval;
-    tagvalp[1] = 0;
-    ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);
-    ierr = PetscLogInfo((0,"PetscCommDuplicate: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval));CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm_in,Petsc_Comm_keyval,(void**)comm_out,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    if (!flg) {
+      /* This communicator is not yet known to this system, so we duplicate it and set its value */
+      ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
+      ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+      if (!flg) {
+        SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      }
+      ierr = PetscMalloc(2*sizeof(PetscMPIInt),&tagvalp);CHKERRQ(ierr);
+      tagvalp[0] = *maxval;
+      tagvalp[1] = 0;
+      ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);
+      ierr = PetscLogInfo((0,"PetscCommDuplicate: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval));CHKERRQ(ierr);
+
+      /* save PETSc communicator inside user communicator, so we can get it next time */
+      ierr       = MPI_Attr_put(comm_in,Petsc_Comm_keyval,(void*)*comm_out);CHKERRQ(ierr);
+    } else {
+      ierr = MPI_Attr_get(*comm_out,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+      if (!flg) {
+        SETERRQ(PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tagvalp attribute set");
+      }
+      ierr = PetscLogInfo((0,"PetscCommDuplicate: Using internal PETSc communicator %ld %ld\n",(long)comm_in,(long)*comm_out));CHKERRQ(ierr);
+    }
   } else {
 #if defined(PETSC_USE_DEBUG)
     PetscMPIInt tag;

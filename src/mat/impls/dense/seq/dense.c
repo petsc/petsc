@@ -410,7 +410,7 @@ PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   its  = its*lits;
   if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
   while (its--) {
-    if (flag & SOR_FORWARD_SWEEP){
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
       for (i=0; i<m; i++) {
 #if defined(PETSC_USE_COMPLEX)
         /* cannot use BLAS dot for complex because compiler/linker is 
@@ -427,7 +427,7 @@ PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         x[i] = (1. - omega)*x[i] + omega*(xt+v[i + i*m]*x[i])/(v[i + i*m]+shift);
       }
     }
-    if (flag & SOR_BACKWARD_SWEEP) {
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
       for (i=m-1; i>=0; i--) {
 #if defined(PETSC_USE_COMPLEX)
         /* cannot use BLAS dot for complex because compiler/linker is 

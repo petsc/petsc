@@ -2,7 +2,7 @@
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
-   Laplacian u = 1,0 < x,y,z < 1,
+   - Laplacian u = 1,0 < x,y,z < 1,
 
 with boundary conditions
 
