@@ -46,7 +46,7 @@ class Configure(config.base.Configure):
     if self.getExecutables(compilers, resultName = 'CC'):
       self.framework.argDB['CC'] = self.CC
       self.addSubstitution('CC', self.CC)
-      # Check for GCC
+      # Check for gcc
       self.isGCC = 0
       if self.framework.argDB['CC'].endswith('gcc'):
         self.isGCC = 1
@@ -112,6 +112,17 @@ class Configure(config.base.Configure):
     if self.getExecutables(compilers, resultName = 'CXX'):
       self.framework.argDB['CXX'] = self.CXX
       self.addSubstitution('CXX', self.CXX)
+      # Check for g++
+      self.isGCXX = 0
+      if self.framework.argDB['CXX'].endswith('g++'):
+        self.isGCXX = 1
+      else:
+        try:
+          import commands
+          (status, output) = commands.getstatusoutput(self.framework.argDB['CXX']+' --help')
+          if not status and output.find('www.gnu.org') >= 0:
+            self.isGCXX = 1
+        except Exception, e: pass
 
       if self.framework.argDB.has_key('with-cxxcpp'):
         preprocessors = self.framework.argDB['with-cxxcpp']

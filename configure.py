@@ -5,6 +5,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     libraries = [('cygwin', 'log')]
     # Add dependencies
+    self.compilers = self.framework.require('config.compilers', self)
     self.libraries = self.framework.require('config.libraries', self)
     self.libraries.libraries.extend(libraries)
     return
@@ -13,6 +14,17 @@ class Configure(config.base.Configure):
     '''If libcygwin.a is found, define HAVE_CYGWIN'''
     if self.libraries.haveLib('cygwin'):
       self.framework.addDefine('HAVE_CYGWIN', 1)
+    return
+
+  def checkCompiler(self):
+    '''Make sure the compiler is recent enough'''
+    if self.compilers.isGCXX:
+      (status,output) = commands.getstatusoutput(self.framework.argDB['CXX']+' -dumpversion')
+      if not status == 0:
+        raise RuntimeError('g++ is not in your path; please make sure that you have a g++ of at least version 3 installed in your path. Get gcc/g++ at http://gcc.gnu.com')
+      version = output.split('.')[0]
+      if not version == '3':
+        raise RuntimeError('The g++ in your path is version '+version+'; please install a g++ of at least version 3 or fix your path. Get gcc/g++ at http://gcc.gnu.com')
     return
 
   def configure(self):
