@@ -10,6 +10,10 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+
+  - Change remotetest to use gzip instead of compress, if it 
+    is available on all machines.
+
  - allow more then one KSP monitor.
 
  - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
