@@ -15,14 +15,14 @@ MKDIR            = mkdir -p
 DIFF             = diff -w
 # ######################### C and Fortran compiler ########################
 #
-C_CC             = ${WIN32FE} icl
-C_FC             = ${WIN32FE} ifl -Qfpp
+C_CC             = ${WIN32FE} icl --use ecl --nodetect 
+C_FC             = ${WIN32FE} ifl --use efl --nodetect -Qfpp
 C_CLINKER_SLFLAG = -L
 C_FLINKER_SLFLAG = -L
-C_CLINKER        = ${WIN32FE} icl
-C_FLINKER        = ${WIN32FE} ifl
-C_CCV            = icl 2>&1| head -1
-C_FCV            = ifl 2>&1| head -1
+C_CLINKER        = ${WIN32FE} icl --use ecl --nodetect
+C_FLINKER        = ${WIN32FE} ifl --use efl --nodetect
+C_CCV            = ecl 2>&1| head -1
+C_FCV            = efl 2>&1| head -1
 C_SYS_LIB        = libPEPCF90MT.lib kernel32.lib user32.lib  gdi32.lib advapi32.lib
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -MT -Z7 -W2
@@ -33,14 +33,14 @@ O_FOPTFLAGS      = -MT -O3 -W0
 # Additional optimization flags for pentium III : -G6 -QaxK -Qip -Qprec -Qsox-
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = ${WIN32FE} icl -TP -GX 
-CXX_FC           = ${WIN32FE} ifl -Qfpp
+CXX_CC           = ${WIN32FE} icl --use ecl --nodetect -TP -GX 
+CXX_FC           = ${WIN32FE} ifl --use efl --nodetect -Qfpp
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER      = ${WIN32FE} icl
-CXX_FLINKER      = ${WIN32FE} ifl
-CXX_CCV          = icl 2>&1| head -1
-CXX_FCV          = ifl 2>&1| head -1
+CXX_CLINKER      = ${WIN32FE} icl --use ecl --nodetect
+CXX_FLINKER      = ${WIN32FE} ifl --use efl --nodetect
+CXX_CCV          = ecl 2>&1| head -1
+CXX_FCV          = efl 2>&1| head -1
 CXX_SYS_LIB      = libPEPCF90MT.lib kernel32.lib user32.lib  gdi32.lib advapi32.lib
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -MT -Z7 -W2
