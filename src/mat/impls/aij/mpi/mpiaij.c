@@ -3551,7 +3551,7 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
   VecScatter        ctx=a->Mvctx;
   MPI_Comm          comm=ctx->comm;
   PetscMPIInt       *rprocs,*sprocs,tag=ctx->tag,rank; 
-  PetscInt          *rowlen,*bufj,*bufJ,ncols,aBn,row,*b_othi,*b_othj;
+  PetscInt          *rowlen,*bufj,*bufJ,ncols,aBn=a->B->n,row,*b_othi,*b_othj;
   PetscScalar       *rvalues,*svalues,*b_otha,*bufa,*bufA;
   PetscInt          i,j,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj,*sstarts,*sstartsj,len;
   MPI_Request       *rwaits,*swaits;
@@ -3628,7 +3628,6 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
     ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&bufa);CHKERRQ(ierr);
 
     /* create i-array of B_oth */
-    aBn = a->B->n;
     ierr = PetscMalloc((aBn+2)*sizeof(PetscInt),&b_othi);CHKERRQ(ierr);
     b_othi[0] = 0;
     len = 0; /* total length of j or a array to be received */

@@ -135,7 +135,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char st
   */
   ierr = PetscStrlen(mengine->buffer,&len);CHKERRQ(ierr);
   len -= 2;
-  while (len >= 0) {
+  while (len > 0) {
     len--;
     if (mengine->buffer[len] == ' ') break;
     if (mengine->buffer[len] == '\n') break;
