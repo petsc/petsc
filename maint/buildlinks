@@ -9,6 +9,6 @@ cd $petscdir
 set shadowdir=/home/curfman/petsc
 echo "Building links from" $petscdir "to" $shadowdir "..."
 
-find . \( -name RCS -prune -o -name docs \) -o -type d \
+find . \( -name RCS -prune -o -name docs -prune \) -o -type d \
        -exec $petscdir/maint/addlinks $shadowdir \{\} \
        >& $petscdir/maint/links.log \;
