@@ -65,7 +65,7 @@ class Configure(config.base.Configure):
 
   def getDirBLACS(self):
     '''Find the directory containing BLACS'''
-    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+    packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -85,10 +85,10 @@ class Configure(config.base.Configure):
     except RuntimeError:
       import urllib
 
-      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      packages = self.framework.argDB['with-external-packages-dir']
       try:
-        self.framework.log.write('Downloading it using "bk clone bk://petsc.bkbits.net/blacs-dev $PETSC_DIR/packages/blacs-dev"''\n')
-        (status,output) = commands.getstatusoutput('bk clone bk://petsc.bkbits.net/blacs-dev packages/blacs-dev')
+        self.framework.log.write('Downloading it using "bk clone bk://petsc.bkbits.net/blacs-dev '+os.path.join(packages,'blacs-dev')+'"\n')
+        (status,output) = commands.getstatusoutput('bk clone bk://petsc.bkbits.net/blacs-dev '+os.path.join(packages,'blacs-dev'))
         if status:
           if output.find('ommand not found') >= 0:
             print '''******** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path'''
@@ -169,7 +169,7 @@ framework.log)[0]
 
   def getDirSCALAPACK(self):
     '''Find the directory containing SCALAPACK'''
-    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+    packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -188,17 +188,17 @@ framework.log)[0]
       scalapackDir = self.getDirSCALAPACK()
     except RuntimeError:
       import urllib
-      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      packages = self.framework.argDB['with-external-packages-dir']
       try:
         urllib.urlretrieve('http://www.netlib.org/scalapack/scalapack.tgz', os.path.join(packages, 'scalapack.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading SCALAPACK: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd packages; gunzip scalapack.tar.gz', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip scalapack.tar.gz', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error unzipping scalapack.tar.gz: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd packages; tar -xf scalapack.tar', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf scalapack.tar', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf scalapack.tar: '+str(e))
       os.unlink(os.path.join(packages, 'scalapack.tar'))

@@ -16,7 +16,7 @@ include ${PETSC_DIR}/bmake/common/test
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir
 	-@${OMAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs chk_fortranstubs blaslapack mpich build shared
+all_build: chk_petsc_dir chklib_dir info info_h deletelibs  blaslapack build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -114,7 +114,7 @@ build:
 #
 #  Compiles the blas and lapack source code if found
 blaslapack:
-	-@if [ -d packages/f2cblaslapack/${PETSC_ARCH} -a ! -s packages/f2cblaslapack/${PETSC_ARCH}/libf2cblas.a ] ; then cd packages/f2cblaslapack;\
+	-@if [ -d externalpackages/f2cblaslapack/${PETSC_ARCH} -a ! -s externalpackages/f2cblaslapack/${PETSC_ARCH}/libf2cblas.a ] ; then cd externalpackages/f2cblaslapack;\
         echo "=========================================";\
         echo "Building C Blas/Lapack libraries";\
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
@@ -122,26 +122,9 @@ blaslapack:
         ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleanblaslapack ;\
         echo "Completed C building Blas/Lapack libraries";\
         echo "========================================="; fi
-	-@if [ -d packages/fblaslapack/${PETSC_ARCH} -a ! -s packages/fblaslapack/${PETSC_ARCH}/libfblas.a ] ; then cd packages/fblaslapack;\
-        echo "=========================================";\
-        echo "Building Fortran Blas/Lapack libraries";\
-        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
-        ${MV} libfblas.a libflapack.a ${PETSC_ARCH};\
-        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} cleanblaslapck ;\
-        echo "Completed building Fortran Blas/Lapack libraries";\
-        echo "========================================="; fi
 #
-#  Compiles MPICH if found
-mpich:
-	-@releasename=`ls -d packages/mpich* 2> /dev/null`;\
-        if [ -d packages/$${releasename}/${PETSC_ARCH} -a ! -d packages/$${releasename}/${PETSC_ARCH}/lib ] ; then cd packages/$${releasename} ;\
-          echo "=========================================";\
-          echo "Compiling and installing " $${releasename};\
-          make; make install; \
-          echo "=========================================";\
-        fi;
 #
-# Builds PETSc test examples for a given BOPT and architecture
+# Builds PETSc test examples for a given architecture
 #
 test: 
 	-@echo "Running test examples to verify correct installation"
@@ -301,6 +284,9 @@ install_docs:
 # Builds all etags files
 alletags:
 	-@maint/generateetags.py
+
+allfortranstubs:
+	-@maint/generatefortranstubs.py ${BFORT}
 #
 # These are here for the target allci and allco, and etags
 #
@@ -317,11 +303,7 @@ SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint
              maint/lex.py  maint/mapnameslatex.py maint/startnightly maint/startnightly.tao maint/submitPatch.py \
              maint/update-docs.py  maint/wwwindex.py maint/xcludebackup maint/xcludecblas maint/zap maint/zapall \
              python/PETSc/Configure.py python/PETSc/Options.py \
-             python/PETSc/packages/ADIC.py python/PETSc/packages/MPE.py python/PETSc/packages/Mathematica.py \
-             python/PETSc/packages/PLAPACK.py python/PETSc/packages/Triangle.py python/PETSc/packages/Matlab.py \
-             python/PETSc/packages/PVODE.py python/PETSc/packages/BlasLapack.py python/PETSc/packages/MPI.py \
-             python/PETSc/packages/BlockSolve.py python/PETSc/packages/NetCDF.py python/PETSc/packages/ParMetis.py \
-             python/PETSc/packages/update.py maint/confignightly/* config/*.py
+             python/PETSc/packages/*.py python/PETSc/utilities/*.py
 
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
@@ -371,24 +353,6 @@ chk_concepts_dir: chk_loc
 	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 #
-#  checks if should build Fortran stubs
-chk_fortranstubs:
-	-@if [ ! -f "${PETSC_DIR}/src/fortran/auto/makefile.src" -a "${C_FC}" != "" ]; then \
-          ${OMAKE} PETSC_DIR=${PETSC_DIR} allfortranstubs ;\
-        fi
-
-# Builds Fortran stub files
-allfortranstubs:
-	-@which ${BFORT} > /dev/null 2>&1;  \
-        if [ "$$?" != "0" ]; then \
-          echo "No bfort available, skipping building Fortran stubs";\
-        else \
-          ${RM} -f ${PETSC_DIR}/src/fortran/auto/*.c ;\
-	  touch ${PETSC_DIR}/src/fortran/auto/makefile.src ;\
-	  ${OMAKE} ACTION=fortranstubs tree_basic ;\
-	  cd ${PETSC_DIR}/src/fortran/auto; ${RM} makefile.src; echo SOURCEC = ` ls *.c | tr -s '\n' ' '` > makefile.src ;\
-	  cd ${PETSC_DIR}/src/fortran/auto; ${OMAKE} fixfortran ;\
-        fi
 
 allci: 
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  alltree 
@@ -523,6 +487,6 @@ petscPython.tgz:
 
 .PHONY: info info_h all all_build build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
-        allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
+        allhtml allcleanhtml  allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         start_configure configure_petsc configure_clean petscPython.tgz
 

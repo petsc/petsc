@@ -122,7 +122,7 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing HYPRE'''
-    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+    packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -143,7 +143,7 @@ class Configure(config.base.Configure):
     except RuntimeError:
       import urllib
 
-      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      packages = self.framework.argDB['with-external-packages-dir']
       if not os.path.isfile(os.path.expanduser(os.path.join('~','.hypre_license'))):
         print "**************************************************************************************************"
         print "You must register to use hypre at http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html"
@@ -154,16 +154,14 @@ class Configure(config.base.Configure):
       
       try:
         urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/tmp/hypre.tar.gz', os.path.join(packages, 'hypre.tar.gz'))
-#         import commands
-#         commands.getstatusoutput('cp /Users/barrysmith/hypre.tar.gz '+os.path.join(packages, 'hypre.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading HYPRE: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd packages; gunzip hypre.tar.gz', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip hypre.tar.gz', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error unzipping hypre.tar.gz: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd packages; tar -xf hypre.tar', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf hypre.tar', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf hypre.tar: '+str(e))
       os.unlink(os.path.join(packages, 'hypre.tar'))

@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing c2html'''
-    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+    packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -34,17 +34,17 @@ class Configure(config.base.Configure):
     except RuntimeError:
       import urllib
 
-      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      packages = self.framework.argDB['with-external-packages-dir']
       try:
         urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz', os.path.join(packages, 'c2html.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading C2html: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd packages; gunzip c2html.tar.gz', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip c2html.tar.gz', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error unzipping c2html.tar.gz: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd packages; tar -xf c2html.tar', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf c2html.tar', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf c2html.tar: '+str(e))
       os.unlink(os.path.join(packages, 'c2html.tar'))
