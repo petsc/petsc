@@ -84,7 +84,7 @@ int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   int          n = xin->n,ierr;
 
   PetscFunctionBegin;
-  if (type == NORM_2) {
+  if (type == NORM_2 || type == NORM_FROBENIUS) {
 
 #if defined(PETSC_HAVE_SLOW_NRM2)
 #if defined(PETSC_USE_FORTRAN_KERNEL_NORM)

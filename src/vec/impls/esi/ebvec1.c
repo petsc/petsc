@@ -371,7 +371,7 @@ int VecNorm_ESI(Vec vin,NormType ntype,PetscReal *norm)
   int     ierr;
 
   PetscFunctionBegin;
-  if (ntype == NORM_2) {
+  if (ntype == NORM_2 || ntype == NORM_FROBENIUS) {
     ierr = x->evec->norm2(*norm);CHKERRQ(ierr);
   } else if (ntype == NORM_1) {
     ierr = x->evec->norm1(*norm);CHKERRQ(ierr);

@@ -24,7 +24,7 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   int         n=xin->n,ierr,one = 1;
 
   PetscFunctionBegin;
-  if (type == NORM_2) {
+  if (type == NORM_2 || type == NORM_FROBENIUS) {
     ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
     /*
       This is because the Fortran BLAS 1 Norm is very slow! 
