@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.6 1998/04/14 17:02:36 balay Exp bsmith $ */
+/* $Id: petscconf.h,v 1.7 1998/04/15 14:41:06 bsmith Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -32,5 +32,4 @@
 
 #define HAVE_FAST_MPI_WTIME
 
-#define HAVE_MEMALIGN
 #endif
