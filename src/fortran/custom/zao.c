@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.22 1996/09/14 03:34:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: zao.c,v 1.2 1996/10/03 19:57:12 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -20,11 +20,11 @@ extern "C" {
 #endif
 void aocreatedebug_(MPI_Comm comm,int *napp,int *myapp,int *mypetsc,AO *aoout, int *__ierr ){
 *__ierr = AOCreateDebug(
-	(MPI_Comm)PetscToPointer( *(int*)(comm) ),*napp,myapp,mypetsc,aoout);
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*napp,myapp,mypetsc,aoout);
 }
 void aocreatedebugis_(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout, int *__ierr ){
 *__ierr = AOCreateDebugIS(
-	(MPI_Comm)PetscToPointer( *(int*)(comm) ),
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),
 	(IS)PetscToPointer( *(int*)(isapp) ),
 	(IS)PetscToPointer( *(int*)(ispetsc) ),aoout);
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.23 1996/10/03 19:50:47 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.24 1996/10/03 19:57:00 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -270,11 +270,11 @@ PETSC ERROR:com instead of comm).\n",rank );
 
 void petscsequentialphasebegin_(MPI_Comm comm,int *ng, int *__ierr ){
 *__ierr = PetscSequentialPhaseBegin(
-	(MPI_Comm)PetscToPointer( *(int*)(comm) ),*ng);
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*ng);
 }
 void petscsequentialphaseend_(MPI_Comm comm,int *ng, int *__ierr ){
 *__ierr = PetscSequentialPhaseEnd(
-	(MPI_Comm)PetscToPointer( *(int*)(comm) ),*ng);
+	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*ng);
 }
 
 #endif
