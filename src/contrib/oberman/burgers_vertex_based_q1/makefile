@@ -21,5 +21,5 @@ main: chkopts main.o appview.o appload.o functions.o integrator.o
 
 include $(PETSC_DIR)/bmake/common/base
 
-TESTEXAMPLES_1 = main.PETSc main.rm
+TESTEXAMPLES_C = main.PETSc main.rm
 include $(PETSC_DIR)/bmake/common/test

@@ -16,8 +16,8 @@ ex3: ex3.o   chkopts
 runex3:
 	-@${MPIRUN} -np 1 ./ex3
 
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm
+TESTEXAMPLES_C_X11  = 
+TESTEXAMPLES_C_X11_MPIUNI  = ex3.PETSc runex3 ex3.rm
 
 include ${PETSC_DIR}/bmake/common/test
 

@@ -1,30 +1,22 @@
 #
 #  testexamples_X - Runs various PETSc test suites
-#    1 - basic C suite used in installation tests
-#    2 - additional C suite including graphics
-#    3 - basic Fortran .F suite
-#    4 - uniprocessor version of 1 and 2
-#    5 - C examples that require complex numbers
+
 #    6 - C examples that don't work with complex numbers, require PETSc matrices
 #    8 - Fortran .F examples that don't work with complex numbers
-#    9 - uniprocessor version of 3
-#   10 - Fortran examples that require complex
-#   11 - uniprocessor version of 5
-#   12 - basic f90 examples
 #   13 - Examples that should only be compiled.
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 
-testexamples_1: ${TESTEXAMPLES_1} clean
-testexamples_2: ${TESTEXAMPLES_2} clean
-testexamples_3: ${TESTEXAMPLES_3} clean
-testexamples_4: ${TESTEXAMPLES_4} clean
-testexamples_5: ${TESTEXAMPLES_5} clean
+testexamples_C: ${TESTEXAMPLES_C} clean
+testexamples_C_X11: ${TESTEXAMPLES_C_X11} clean
+testexamples_Fortran: ${TESTEXAMPLES_Fortran} clean
+testexamples_C_X11_MPIUni: ${TESTEXAMPLES_C_X11_MPIUni} clean
+testexamples_C_Complex: ${TESTEXAMPLES_C_Complex} clean
 testexamples_6: ${TESTEXAMPLES_6} clean
-testexamples_8: ${TESTEXAMPLES_8} clean
-testexamples_9: ${TESTEXAMPLES_9} clean
-testexamples_10: ${TESTEXAMPLES_10} clean
-testexamples_11: ${TESTEXAMPLES_11} clean
-testexamples_12: ${TESTEXAMPLES_12} clean
+testexamples_Fortran_NoComplex: ${TESTEXAMPLES_Fortran_NoComplex} clean
+testexamples_Fortran_MPIUni: ${TESTEXAMPLES_Fortran_MPIUni} clean
+testexamples_Fortran_Complex: ${TESTEXAMPLES_Fortran_Complex} clean
+testexamples_C_Complex_MPIUni: ${TESTEXAMPLES_C_Complex_MPIUni} clean
+testexamples_F90: ${TESTEXAMPLES_F90} clean
 testexamples_13: ${TESTEXAMPLES_13} clean
 testexamples_17: ${TESTEXAMPLES_17} clean
 testexamples_18: ${TESTEXAMPLES_18} clean
@@ -42,30 +34,30 @@ testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:
 
-buildexamples_1: 
-	-@${OMAKE} testexamples_1 TESTEXAMPLES_1=`echo ${TESTEXAMPLES_1} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_2: 
-	-@${OMAKE} testexamples_2 TESTEXAMPLES_2=`echo ${TESTEXAMPLES_2} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_3:
-	-@${OMAKE} testexamples_3 TESTEXAMPLES_3=`echo ${TESTEXAMPLES_3} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_4:
-	-@${OMAKE} testexamples_4 TESTEXAMPLES_4=`echo ${TESTEXAMPLES_4} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_5:
-	-@${OMAKE} testexamples_5 TESTEXAMPLES_5=`echo ${TESTEXAMPLES_5} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_C: 
+	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_C_X11: 
+	-@${OMAKE} testexamples_C_X11 TESTEXAMPLES_C_X11=`echo ${TESTEXAMPLES_C_X11} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_Fortran:
+	-@${OMAKE} testexamples_Fortran TESTEXAMPLES_FORTRAN=`echo ${TESTEXAMPLES_FORTRAN} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_C_X11_MPIUni:
+	-@${OMAKE} testexamples_C_X11_MPIUni TESTEXAMPLES_C_X11_MPIUNI=`echo ${TESTEXAMPLES_C_X11_MPIUNI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_C_Complex:
+	-@${OMAKE} testexamples_C_Complex TESTEXAMPLES_C_COMPLEX=`echo ${TESTEXAMPLES_C_COMPLEX} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_6:
 	-@${OMAKE} testexamples_6 TESTEXAMPLES_6=`echo ${TESTEXAMPLES_6} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_BLOCKSOLVE:
 	-@${OMAKE} testexamples_BLOCKSOLVE TESTEXAMPLES_BLOCKSOLVE=`echo ${TESTEXAMPLES_BLOCKSOLVE} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_8:
-	-@${OMAKE} testexamples_8 TESTEXAMPLES_8=`echo ${TESTEXAMPLES_8} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_9:
-	-@${OMAKE} testexamples_9 TESTEXAMPLES_9=`echo ${TESTEXAMPLES_9} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_10:
-	-@${OMAKE} testexamples_10 TESTEXAMPLES_10=`echo ${TESTEXAMPLES_10} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_11:
-	-@${OMAKE} testexamples_11 TESTEXAMPLES_11=`echo ${TESTEXAMPLES_11} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_12:
-	-@${OMAKE} testexamples_12 TESTEXAMPLES_12=`echo ${TESTEXAMPLES_12} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_Fortran_NoComplex:
+	-@${OMAKE} testexamples_Fortran_NoComplex TESTEXAMPLES_FORTRAN_NOCOMPLEX=`echo ${TESTEXAMPLES_FORTRAN_NOCOMPLEX} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_Fortran_MPIUni:
+	-@${OMAKE} testexamples_Fortran_MPIUni TESTEXAMPLES_FORTRAN_MPIUNI=`echo ${TESTEXAMPLES_FORTRAN_MPIUNI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_Fortran_Complex:
+	-@${OMAKE} testexamples_Fortran_Complex TESTEXAMPLES_FORTRAN_COMPLEX=`echo ${TESTEXAMPLES_FORTRAN_COMPLEX} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_C_Complex_MPIUni:
+	-@${OMAKE} testexamples_C_Complex_MPIUni TESTEXAMPLES_C_COMPLEX_MPIUNI=`echo ${TESTEXAMPLES_C_COMPLEX_MPIUNI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_F90:
+	-@${OMAKE} testexamples_F90 TESTEXAMPLES_F90=`echo ${TESTEXAMPLES_F90} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_13:
 	-@${OMAKE} testexamples_13 TESTEXAMPLES_13=`echo ${TESTEXAMPLES_13} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_18:

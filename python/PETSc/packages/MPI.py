@@ -197,16 +197,21 @@ class Configure(PETSc.package.Package):
     installDir = os.path.join(lamDir, self.arch.arch)
     # Configure and Build LAM
     self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, '--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    args = ['--prefix='+installDir, '--with-rsh=ssh','--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
     self.framework.popLanguage()
     if 'CXX' in self.framework.argDB:
       self.framework.pushLanguage('Cxx')
       args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
+    else:
+      args.append('--disable-CXX')
     if 'FC' in self.framework.argDB:
       self.framework.pushLanguage('FC')
       args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
+    else:
+      args.append('--disable-F77')
+      args.append('--disable-F90')
     args = ' '.join(args)
 
     try:
@@ -237,12 +242,16 @@ class Configure(PETSc.package.Package):
       fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
-
       #need to run ranlib on the libraries using the full path
       try:
         output  = config.base.Configure.executeShellCommand(self.setcompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on LAM/MPI libraries: '+str(e))
+      # start up LAM demon; not lamboot does not close stdout, so call will ALWAYS timeout.
+      try:
+        output  = config.base.Configure.executeShellCommand('PATH=${PATH}:'+os.path.join(installDir,'bin')+' '+os.path.join(installDir,'bin','lamboot'), timeout=10, log = self.framework.log)[0]
+      except:
+        pass
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed LAM/MPI into '+installDir)
     return self.getDir()
 

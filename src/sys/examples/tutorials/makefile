@@ -62,11 +62,11 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp 
 
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+TESTEXAMPLES_C  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                    ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm
-TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+TESTEXAMPLES_C_X11_MPIUNI  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                    ex3.PETSc runex3 ex3.rm
-TESTEXAMPLES_3  = ex3f.PETSc runex3f ex3f.rm
+TESTEXAMPLES_FORTRAN  = ex3f.PETSc runex3f ex3f.rm
 TESTEXAMPLES_13 = ex4.PETSc ex4.rm
 
 include ${PETSC_DIR}/bmake/common/test

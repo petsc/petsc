@@ -387,23 +387,23 @@ runex27:
 runex27_p:
 	-@${MPIRUN} -np 1 ./ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3 -use_parabolic
 
-TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
+TESTEXAMPLES_C	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 runex5_5 runex5_6 runex5_7 runex5_9\
                    runex5_13 ex5.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 ex19.rm  \
                    ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
                    ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 ex25.rm ex29.PETSc ex29.rm 
-TESTEXAMPLES_2	 = ex5.PETSc runex5_8 runex5_10 ex5.rm 
-TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_C_X11 = ex5.PETSc runex5_8 runex5_10 ex5.rm 
+TESTEXAMPLES_FORTRAN	 = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_6   = ex30.PETSc ex30.rm
-TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_3 ex5f.rm
-TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+TESTEXAMPLES_FORTRAN_NOCOMPLEX	 = ex5f.PETSc runex5f runex5f_3 ex5f.rm
+TESTEXAMPLES_FORTRAN_MPIUNI	 = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_C_X11_MPIUNI	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 		   runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
 		   ex5.PETSc ex5.rm \
                    ex14.PETSc ex14.rm 
 TESTEXAMPLES_6   = 
-TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm
+TESTEXAMPLES_F90	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm
 TESTEXAMPLES_13  = 
 TESTEXAMPLES_MATLAB_ENGINE  = ex5.PETSc runex5_11 runex5_13 ex5.rm
 TESTEXAMPLES_AMS  = 
