@@ -9,9 +9,9 @@ static char help[] = "Tests the routines VecConvertMPIToSeqAll, VecConvertMPIToM
 int main(int argc,char **argv)
 {
   int           start,end;
-  int           n = 3,ierr,size,rank,i;
-  PetscScalar   value;
-  Vec           x,y,z;
+  int           n = 3,ierr,size,rank,i,len;
+  PetscScalar   value,*yy;
+  Vec           x,y,z,y_t;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -32,9 +32,15 @@ int main(int argc,char **argv)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecConvertMPIToSeqAll(x,&y);CHKERRQ(ierr);
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
+
+  /* Cannot view the above vector with VecView(), so place it in an MPI Vec
+     and do a VecView() */
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(y,&len);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,len,PETSC_DECIDE,yy,&y_t);CHKERRQ(ierr);
+  ierr = VecView(y_t,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecDestroy(y_t);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
 
   ierr = VecConvertMPIToMPIZero(x,&z);CHKERRQ(ierr);
   ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
