@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.145 2000/02/21 01:27:19 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.146 2000/03/14 17:29:40 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -891,6 +891,13 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     levels        = 0;
     diagonal_fill = 0;
   }
+  if (!isrow) {
+    ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&isrow);CHKERRQ(ierr);
+  }
+  if (!iscol) {
+    ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&iscol);CHKERRQ(ierr);
+  }
+
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
 
   /* special case that simply copies fill pattern */
