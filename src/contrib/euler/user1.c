@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.75 1998/05/13 20:58:24 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.76 1998/05/16 17:46:37 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -46,7 +46,7 @@ Runtime options include:\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
     -pc_ilu_in_place         : When using matrix-free KSP with ILU(0), do so in-place\n\
     -sub_pc_ilu_in_place     : When using matrix-free KSP with ILU(0) for subblocks, do so in-place\n\
-  -discr_order <1,2,1.5>     : Order of discretization, where 1.5 indicates 1st -> 2nd transition\n\
+  -order <1,2,1.5>           : Order of discretization, where 1.5 indicates 1st -> 2nd transition\n\
   -limiter <lim>             : Limiter (used for second-order discretizations only)\n\
         <lim> = [none,minmod,superbee,vanleer,vanalbada]\n\
   -psi                       : Blend of discretization stencils\n\

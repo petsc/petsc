@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.54 1998/04/01 00:20:56 balay Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.55 1998/05/20 17:50:53 curfman Exp curfman $";
 #endif
 
 /*
@@ -287,6 +287,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   Vec      P_uni, X_uni;
   Scalar   *xx, *pp, *xc = app->xc, *yc = app->yc, *zc = app->zc;
   Scalar   mach, sfluid, ssound, r, yv, xv, xmin, xmax, ymin, ymax, zmin, zmax, gamma1, gm1;
+  Scalar   zv, e_av, p_av;
 
 #define xcoord3(i,j,k) xc[(k)*nj*ni + (j)*ni + (i)]
 #define ycoord3(i,j,k) yc[(k)*nj*ni + (j)*ni + (i)]
@@ -294,6 +295,11 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
 #define den3(i,j,k) xx[5*((k)*nj1*ni1 + (j)*ni1 + (i))]
 #define ru3(i,j,k) xx[5*((k)*nj1*ni1 + (j)*ni1 + (i)) + 1]
 #define rv3(i,j,k) xx[5*((k)*nj1*ni1 + (j)*ni1 + (i)) + 2]
+
+/* new additions */
+#define rw3(i,j,k) xx[5*((k)*nj1*ni1 + (j)*ni1 + (i)) + 3]
+#define e3(i,j,k) xx[5*((k)*nj1*ni1 + (j)*ni1 + (i)) + 4]
+#define p3(i,j,k) pp[(k)*nj1*ni1 + (j)*ni1 + (i)]
 
   /* Since we call MonitorDumpGeneral() from the routine ComputeFunction(), packing and
      computing the pressure have already been done. */
@@ -343,11 +349,19 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
       }
     }
     */
-    fprintf(fp,"VARIABLES=x,y,z,pressure,mach\n");
+    fprintf(fp,"VARIABLES=x,y,z,pressure,mach,x-momentum,y-momentum,z-momentum,energy\n");
 
     gamma1 = 1.4;
     gm1    = gamma1 - 1.0;
 
+    kstart = 0;
+    kend   = app->nk;
+    istart = 0;
+    iend   = app->ni;
+    jstart = 0;
+    jend   = app->nj;
+
+    /*
     if (app->problem == 1) {
       kstart = 0;
       kend   = app->ktip + 3;
@@ -370,7 +384,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
       jstart = 0;
       jend   = app->nj;
     } else SETERRQ(1,0,"Unsupported problem");
-
+ */
     fprintf(fp,"istart=%d, iend=%d, jstart=%d, jend=%d, kstart=%d, kend=%d\n",
                 istart,iend,jstart,jend,kstart,kend);
     xmin = 1000;
@@ -379,6 +393,33 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
     ymax = -1000;
     zmin = 1000;
     zmax = -1000;
+
+    for (k=kstart; k<kend; k++) {
+      for (j=jstart; j<jend; j++) {
+        for (i=istart; i<iend; i++) {
+          ijkx  = k*nj1*ni1 + j*ni1 + i;
+          yv = 0.25 * (rv3(i,j,k) + rv3(i+1,j,k) + rv3(i,j+1,k) + rv3(i+1,j+1,k));
+          xv = 0.25 * (ru3(i,j,k) + ru3(i+1,j,k) + ru3(i,j+1,k) + ru3(i+1,j+1,k));
+          r  = 0.25 * (den3(i,j,k) + den3(i+1,j,k) + den3(i,j+1,k) + den3(i+1,j+1,k));
+          zv = 0.25 * (rw3(i,j,k) + rw3(i+1,j,k) + rw3(i,j+1,k) + rw3(i+1,j+1,k));
+          e_av = 0.25 * (e3(i,j,k) + e3(i+1,j,k) + e3(i,j+1,k) + e3(i+1,j+1,k));
+          p_av = 0.25 * (p3(i,j,k) + p3(i+1,j,k) + p3(i,j+1,k) + p3(i+1,j+1,k));
+          sfluid = sqrt(xv*xv + yv*yv) / r;
+          ssound = sqrt(pow(r,gm1));
+          mach = sfluid/ssound;
+          fprintf(fp,"%8.4f\t%8.4f\t%8.4f\t%8.4f\t%8.4f\t%8.4f\t%8.4f\t%8.4f\t%8.4f\n",
+            xcoord3(i,j,k),ycoord3(i,j,k),zcoord3(i,j,k),p_av,mach,xv,yv,zv,e_av);
+            xmin = PetscMin(xmin,xcoord3(i,j,k));
+            xmax = PetscMax(xmax,xcoord3(i,j,k));
+            ymin = PetscMin(ymin,ycoord3(i,j,k));
+            ymax = PetscMax(ymax,ycoord3(i,j,k));
+            zmin = PetscMin(zmin,zcoord3(i,j,k));
+            zmax = PetscMax(zmax,zcoord3(i,j,k));
+        }
+      }
+    }
+
+    /*
     for (k=kstart; k<kend; k++) {
       for (j=jstart; j<jend; j++) {
         for (i=istart; i<iend; i++) {
@@ -400,6 +441,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
         }
       }
     }
+   */
     fprintf(fp,"\nxmin=%g, xmax=%g, ymin=%g, ymax=%g, zmin=%g, zmax=%g\n",
                 xmin, xmax, ymin, ymax, zmin, zmax);
     fclose(fp); 
