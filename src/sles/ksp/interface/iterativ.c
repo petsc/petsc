@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.11 1995/03/30 21:17:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.12 1995/04/12 23:50:18 curfman Exp curfman $";
 #endif
 
 /*
@@ -33,6 +33,8 @@ int KSPiDefaultFreeWork( KSP itP )
 
    Returns:
    the number of errors encountered.
+
+   Keywords:  KSP, errors, check, definition
  @*/
 int KSPCheckDef( KSP itP )
 {
@@ -51,15 +53,17 @@ int KSPCheckDef( KSP itP )
 
 /*ARGSUSED*/
 /*@C
-  KSPDefaultMonitor - Default code to print residual at each iteration 
-  in the iterative solvers.
+   KSPDefaultMonitor - Default code to print the residual norm at each 
+   iteration of the iterative solvers.
 
-  Input Parameters:
-. itP   - iterative context
-. n     - iteration number
-. rnorm - 2-norm residual value (may be estimated).  
-. dummy - unused monitor context 
- @*/
+   Input Parameters:
+.  itP   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm residual value (may be estimated).  
+.  dummy - unused monitor context 
+
+   Keywords:  KSP, default, monitor, residual
+@*/
 int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
   printf("%d %14.12e \n",n,rnorm); return 0;
@@ -67,20 +71,21 @@ int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 
 /*ARGSUSED*/
 /*@
-  KSPDefaultConverged - Default code to determine convergence in
-  the iterative solvers.
+   KSPDefaultConverged - Default code to determine convergence of
+   the iterative solvers.
 
-  Input Parameters:
-. itP   - iterative context
-. n     - iteration number
-. rnorm - 2-norm residual value (may be estimated).  
-. dummy - unused converged context 
+   Input Parameters:
+.  itP   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm residual value (may be estimated).  
+.  dummy - unused converged context 
 
-  Returns:
-  1 if the iteration has converged or exceeds divergence threshold, 
-  0 otherwise.
+   Returns:
+   1 if the iteration has converged or exceeds divergence threshold;
+   0 otherwise.
   
- @*/
+   Keywords:  KSP, default, convergence, residual
+@*/
 int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 {
   VALIDHEADER(itP,KSP_COOKIE);
@@ -94,15 +99,17 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 }
 
 /*@
-  KSPDefaultBuildSolution - Default code to create/move the solution.
+   KSPDefaultBuildSolution - Default code to create/move the solution.
 
-  Input Parameters:
-. itP  - iterative context
-. v    - pointer to user vector  
+   Input Parameters:
+.  itP - iterative context
+.  v   - pointer to the user's vector  
 
-  Returns:
-  pointer to a vector containing the solution.
- @*/
+   Output Parameter:
+.  V - pointer to a vector containing the solution
+
+   Keywords:  KSP, build, solution, default
+@*/
 int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 {
   int ierr;
@@ -115,16 +122,18 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 }
 
 /*@
-  KSPDefaultBuildResidual - Default code to compute the residual.
+   KSPDefaultBuildResidual - Default code to compute the residual.
 
-  Input Parameters:
-. itP  - iterative context
-. t    - pointer to temporay vector
-. v    - pointer to user vector  
+   Input Parameters:
+.  itP - iterative context
+.  t   - pointer to temporary vector
+.  v   - pointer to user vector  
 
-  Returns:
-  pointer to a vector containing the residual.
- @*/
+   Output Parameter:
+.  V - pointer to a vector containing the residual
+
+   Keywords:  KSP, build, residual, default
+@*/
 int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
 {
   int    ierr, pflag;
@@ -217,6 +226,8 @@ int KSPiDefaultDestroy(PetscObject obj)
   send fixes to gropp@mcs.anl.gov .
 
   This routine does NOT clear the values; use KSPClearWorkCounts to do that.
+
+  Keywords:  KSP, work, counts, operations
 @*/
 int KSPGetWorkCounts( KSP itP, int *matop, int *amult, int *binv, int *vecs,
                       int * scalars )
@@ -235,6 +246,8 @@ int KSPGetWorkCounts( KSP itP, int *matop, int *amult, int *binv, int *vecs,
 
   Input Parameter:
 . itP - Iterative context
+
+  Keywords:  KSP, work, counts, operations, clear
 @*/
 int KSPClearWorkCounts( KSP itP )
 {
