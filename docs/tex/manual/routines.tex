@@ -19,10 +19,12 @@
 % hold the table lines.  Note that we do not use a tabular environment
 % so that a multipage table can be generated.
 % The first argument is used for sorting purposes only
-\def\k#1#2#3{\tightboxit{\parindent=0pt \begin{tabular}{l} #2 \\ #3 \end{tabular}}}
-\def\CoDe#1{{\tt #1}}
-\def\DeFn#1{ \hskip.3in
-    \parbox[t]{6.0in}{\raggedright\vspace{2pt}#1\vskip2pt}\break}
+\def\k#1#2#3{\tightboxit{
+    \parindent=0pt\hskip.3in\begin{tabular}{l} #2 \\ #3 \end{tabular}}}
+\def\CoDe#1{ 
+    \parbox[t]{6.0in}{\raggedright \parindent=-0.3in #1 \vskip2pt}\break}
+\def\DeFn#1{ 
+    \parbox[t]{6.0in}{\raggedright \vspace{2pt} #1 \vskip2pt}\break}
 \catcode`\_=13
 \def_{{\tt \char`\_}}
 
