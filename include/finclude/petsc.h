@@ -1,6 +1,6 @@
 C
-C  $Id: petsc.h,v 1.42 1997/06/18 12:53:56 bsmith Exp balay $;
-BC
+C  $Id: petsc.h,v 1.43 1997/07/10 23:14:39 balay Exp balay $;
+C
 C  Base include file for Fortran use of the PETSc package
 C
 #define MPI_Comm integer
@@ -8,6 +8,7 @@ C
 #include "mpif.h"
 
 #define PetscTruth integer
+#define Double double precision
 
 C
 C     Flags
@@ -61,15 +62,9 @@ C     Macro for templating between real and complex
 C
 #if defined(PETSC_COMPLEX)
 #define PetscReal(a) real(a)
-#if defined(PARCH_t3d)
-#define Scalar        complex
-#define DoubleComplex complex
-#define MPIU_SCALAR   MPI_COMPLEX
-#else
 #define Scalar        double complex
 #define DoubleComplex double complex
 #define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
-#endif
 C
 C     Representation of complex i
 C
@@ -77,13 +72,8 @@ C
       parameter (PETSC_i = (0,1.0))
 #else
 #define PetscReal(a) a
-#if defined(PARCH_t3d)
-#define Scalar       real
-#define MPIU_SCALAR  MPI_REAL
-#else
 #define Scalar       double precision
 #define MPIU_SCALAR  MPI_DOUBLE_PRECISION
-#endif
 #endif
 
 C
