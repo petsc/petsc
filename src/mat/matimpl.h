@@ -270,12 +270,13 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(PetscTruth singlemalloc,Pet
 /*
     Allocates larger a, i, and j arrays for the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-#define MatSeqXAIJReallocateAIJ(A,BS2,NROW,ROW,RMAX,AA,AI,AJ,AM,RP,AP,AIMAX)\
+#define MatSeqXAIJReallocateAIJ(A,BS2,NROW,ROW,COL,RMAX,AA,AI,AJ,AM,RP,AP,AIMAX,NONEW) \
       if (NROW >= RMAX) { \
         /* there is no extra room in row, therefore enlarge */ \
         PetscInt    new_nz = AI[AM] + CHUNKSIZE,len,*new_i,*new_j; \
         PetscScalar *new_a; \
  \
+        if (NONEW == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
         /* malloc new storage space */ \
         ierr = PetscMalloc3(BS2*new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);\
  \

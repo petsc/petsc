@@ -601,3 +601,60 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObj
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectSetFromOptions"
+/*@
+   PetscObjectSetFromOptions - Sets generic parameters from user options.
+
+   Collective on obj
+
+   Input Parameter:
+.  obj - the PetscObjcet
+
+   Options Database Keys:
+
+   Notes:
+   We have no generic options at present, so this does nothing
+
+   Level: beginner
+
+.keywords: set, options, database
+.seealso: PetscObjectSetOptionsPrefix(), PetscObjectGetOptionsPrefix()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
+{
+  PetscErrorCode      ierr;
+  char                type[256];
+
+  PetscFunctionBegin;
+  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectSetUp"
+/*@
+   PetscObjectSetUp - Sets up the internal data structures for the later use.
+
+   Collective on PetscObject
+
+   Input Parameters:
+.  obj - the PetscObject
+
+   Notes:
+   This does nothing at present.
+
+   Level: advanced
+
+.keywords: setup
+.seealso: PetscObjectDestroy()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject obj)
+{
+  PetscErrorCode ierr;
+  PetscTruth     flg, iseqtr;
+
+  PetscFunctionBegin;
+  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscFunctionReturn(0);
+}
