@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.12 1998/10/26 17:15:35 bsmith Exp bsmith $";
+!    "$Id: ex14f.F,v 1.13 1999/04/01 16:20:28 bsmith Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -235,6 +235,7 @@
        call MatDestroy(J,ierr)
        call VecDestroy(user(3),ierr)
        call VecDestroy(X,ierr)
+       call VecDestroy(Y,ierr)
        call VecDestroy(user(4),ierr)
        call VecDestroy(F,ierr)
        call SLESDestroy(sles,ierr)
@@ -564,3 +565,5 @@
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return 
       end
+
+
