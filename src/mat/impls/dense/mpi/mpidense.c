@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.17 1995/12/21 18:31:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.18 1995/12/23 04:53:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,26 +13,41 @@ static char vcid[] = "$Id: mpidense.c,v 1.17 1995/12/21 18:31:33 bsmith Exp bsmi
 static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,
                                int *idxn,Scalar *v,InsertMode addv)
 {
-  Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
-  int          ierr, i, j, rstart = mdn->rstart, rend = mdn->rend, row;
+  Mat_MPIDense *A = (Mat_MPIDense *) mat->data;
+  int          ierr, i, j, rstart = A->rstart, rend = A->rend, row;
+  int          roworiented = A->roworiented;
 
-  if (mdn->insertmode != NOT_SET_VALUES && mdn->insertmode != addv) {
+  if (A->insertmode != NOT_SET_VALUES && A->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIDense:Cannot mix inserts and adds");
   }
-  mdn->insertmode = addv;
+  A->insertmode = addv;
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,"MatSetValues_MPIDense:Negative row");
-    if (idxm[i] >= mdn->M) SETERRQ(1,"MatSetValues_MPIDense:Row too large");
+    if (idxm[i] >= A->M) SETERRQ(1,"MatSetValues_MPIDense:Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
-      for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIDense:Negative column");
-        if (idxn[j] >= mdn->N) SETERRQ(1,"MatSetValues_MPIDense:Column too large");
-        ierr = MatSetValues(mdn->A,1,&row,1,&idxn[j],v+i*n+j,addv); CHKERRQ(ierr);
+      if (roworiented) {
+        ierr = MatSetValues(A->A,1,&row,n,idxn,v+i*n,addv); CHKERRQ(ierr);
+      }
+      else {
+        for ( j=0; j<n; j++ ) {
+          if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIDense:Negative column");
+          if (idxn[j] >= A->N) SETERRQ(1,"MatSetValues_MPIDense:Column too large");
+          ierr = MatSetValues(A->A,1,&row,1,&idxn[j],v+i+j*m,addv); CHKERRQ(ierr);
+        }
       }
     } 
     else {
-      ierr = StashValues_Private(&mdn->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
+      if (roworiented) {
+        ierr = StashValues_Private(&A->stash,idxm[i],n,idxn,v+i*n,addv); CHKERRQ(ierr);
+      }
+      else { /* must stash each seperately */
+        row = idxm[i];
+        for ( j=0; j<n; j++ ) {
+          ierr = StashValues_Private(&A->stash,row,1,&idxn[j],v+i+j*m,addv);
+                 CHKERRQ(ierr);
+        }
+      }
     }
   }
   return 0;
@@ -590,7 +605,7 @@ static int MatSetOption_MPIDense(Mat A,MatOption op)
            op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_MPIDense:Option ignored\n");
   else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIDense:COLUMN_ORIENTED");}
+    { a->roworiented = 0; MatSetOption(a->A,op);} 
   else if (op == NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIDense:NO_NEW_DIAGONALS");}
   else 
@@ -848,9 +863,10 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   ierr = StashBuild_Private(&a->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix vector multiply */
-  a->lvec      = 0;
-  a->Mvctx     = 0;
-  a->assembled = 0;
+  a->lvec        = 0;
+  a->Mvctx       = 0;
+  a->assembled   = 0;
+  a->roworiented = 1;
 
   *newmat = mat;
   return 0;
