@@ -623,8 +623,8 @@ acfindx:
     self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/src/sys/src/mpiuni/mpirun')
     self.framework.addSubstitution('MPE_INCLUDE', '')
     self.framework.addSubstitution('MPE_LIB',     '')
-    self.addDefine('HAVE_MPI_COMM_F2C', 1)
-    self.addDefine('HAVE_MPI_COMM_C2F', 1)
+    self.mpi.addDefine('HAVE_MPI_COMM_F2C', 1)
+    self.mpi.addDefine('HAVE_MPI_COMM_C2F', 1)
     return
 
   def configureMissingPrototypes(self):
