@@ -1,0 +1,52 @@
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FCLIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes). 
+#
+#FC_LIB         =  /usr/lib/libfor.a /usr/lib/libutil.a \
+#                 /usr/lib/libFutil.a /usr/lib/libots.a 
+FC_LIB         =  /usr/lib/libutil.a \
+                 /usr/lib/libFutil.a /usr/lib/libots.a 
+
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# If you are lucky, you may have the DEC Alpha math library installed on 
+# your machine. The library name is dxml as indicated below, it contains
+# both BLAS and Lapack.
+#
+BLAS_LIB        = -ldxml
+LAPACK_LIB      = 
+#
+#BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
+#LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a 
+MPI_INCLUDE    = -I/usr/local/mpi/include
+MPIRUN         = /usr/local/mpi/bin/mpirun
+#
+# PCONF - indicates which external packages are available at your site
+# Make sure that the next line below does not have -DHAVE_BLOCKSOLVE
+# unless you have BlockSolve installed.
+# Make sure that you have the DEC alpha dxml library installed on your 
+# machine and -ldxml in the BLAS_LIB line above if you define 
+# HAVE_DXML below.
+#
+PCONF      =  -DHAVE_DXML -DHAVE_BLOCKSOLVE
+#
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#
+
