@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.11 2000/07/13 20:09:03 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.12 2000/07/13 21:00:08 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -227,12 +227,16 @@ int DAMGSolve(DAMG *damg)
 {
   int        i,ierr,nlevels = damg[0]->nlevels;
   PetscTruth gridseq;
+  KSP        ksp;
 
   PetscFunctionBegin;
   ierr = OptionsHasName(0,"-damg_grid_sequence",&gridseq);CHKERRQ(ierr);
   if (gridseq) {
     for (i=0; i<nlevels-1; i++) {
       ierr = (*damg[i]->solve)(damg,i);CHKERRQ(ierr);
+      ierr = MatInterpolate(damg[i+1]->R,damg[i]->x,damg[i+1]->x);CHKERRQ(ierr);
+      ierr = SLESGetKSP(damg[i+1]->sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
     }
   }
   ierr = (*DAMGGetFine(damg)->solve)(damg,nlevels-1);CHKERRQ(ierr);

@@ -1,4 +1,5 @@
-/*$Id: ex22.c,v 1.2 2000/07/10 03:37:52 bsmith Exp bsmith $*/
+
+/*$Id: ex22.c,v 1.3 2000/07/12 03:31:17 bsmith Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -26,13 +27,14 @@ The command line options are:\n\
 
 
 extern int ComputeJacobian(DAMG,Mat);
+extern int ComputeRHS(DAMG,Vec);
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int    ierr,i,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
-  DAMG   *ctx;
+  DAMG   *damg;
   DA     cda; /* DA for the coarsest grid */
   SLES   sles;
   Scalar one = 1.0;
@@ -45,28 +47,37 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(0,"-mz",&mz,0);CHKERRQ(ierr);
   ierr = OptionsGetInt(0,"-nlevels",&nlevels,0);CHKERRQ(ierr);
 
-  ierr = DAMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&ctx);CHKERRQ(ierr);
+  ierr = DAMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&damg);CHKERRQ(ierr);
 
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,PETSC_DECIDE,
                     PETSC_DECIDE,PETSC_DECIDE,sw,dof,0,0,0,&cda);CHKERRQ(ierr);  
   ierr = DASetFieldName(cda,0,"First field");CHKERRQ(ierr);
   ierr = DASetUniformCoordinates(cda,-1.0,1.0,-2.0,2.0,-3.0,3.0);CHKERRQ(ierr);
-  ierr = DAMGSetCoarseDA(ctx,cda);CHKERRQ(ierr);
+  ierr = DAMGSetCoarseDA(damg,cda);CHKERRQ(ierr);
 
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = DAMGSetSLES(ctx,sles,ComputeJacobian);CHKERRQ(ierr);
+  ierr = DAMGSetSLES(damg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
 
-  ierr = VecSet(&one,DAMGGetb(ctx));CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,DAMGGetJ(ctx),DAMGGetJ(ctx),DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = SLESSolve(sles,DAMGGetb(ctx),DAMGGetx(ctx),PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAMGSolve(damg);CHKERRQ(ierr);
 
-  ierr = DAMGDestroy(ctx);CHKERRQ(ierr);
-  ierr = SLESDestroy(sles);CHKERRQ(ierr);
+  ierr = DAMGDestroy(damg);CHKERRQ(ierr);
   PetscFinalize();
 
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "ComputeRHS"
+int ComputeRHS(DAMG damg,Vec b)
+{
+  int    ierr,mx,my,mz;
+  Scalar h;
+
+  PetscFunctionBegin;
+  ierr = DAGetInfo(damg->da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  h    = 1.0/((mx-1)*(my-1)*(mz-1));
+  ierr = VecSet(&h,b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
     
 #undef __FUNC__
 #define __FUNC__ "ComputeJacobian"
