@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.21 2000/01/11 21:02:45 bsmith Exp balay $"
+! "$Id: ex5f90.F,v 1.22 2000/05/05 22:18:34 balay Exp bsmith $"
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -41,8 +41,37 @@
 !  The uniprocessor version of this code is snes/examples/tutorials/ex4f.F
 !
 !  --------------------------------------------------------------------------
+#define PETSC_AVOID_DECLARATIONS
+#define PETSC_AVOID_MPIF_H
+
+      module f90sucks
+      type userctx
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscsnes.h"
+        Vec     localX,localF
+        DA      da
+        integer xs,xe,xm,gxs,gxe,gxm
+        integer ys,ye,ym,gys,gye,gym
+        integer mx,my,rank,size
+        double precision lambda
+      end type userctx
+      Interface
+        Subroutine SNESSetFunction(snes,vec,func,user,ierr)
+          SNES snes
+          Vec vec
+          integer ierr
+          integer user
+          external func          
+        End Subroutine
+      End Interface
+      end module f90sucks
+#undef PETSC_AVOID_DECLARATIONS
+#undef PETSC_AVOID_MPIF_H
 
       program main
+      use f90sucks
       implicit none
 !
 !  We place common blocks, variable declarations, and other include files
@@ -53,7 +82,8 @@
 #include "ex5f.h"
 #include "include/finclude/petscvec.h90"
 #include "include/finclude/petscda.h90"
-!#include "include/finclude/petscmat.h90"
+
+
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -77,6 +107,7 @@
       double precision       lambda_max,lambda_min
       integer,pointer     :: ltog_a(:)
       integer                nloc
+      type (userctx)         user
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -106,6 +137,8 @@
          SETERRA(1,0,' ')
       endif
       N = mx*my
+
+      user%lambda = lambda
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
@@ -171,7 +204,7 @@
 
 !  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
+      call SNESSetFunction(snes,r,FormFunction,user,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
@@ -398,17 +431,19 @@
 !  This routine merely handles ghost point scatters and accesses
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
-      subroutine FormFunction(snes,X,F,dummy,ierr)
+      subroutine FormFunction(snes,X,F,user,ierr)
+      use f90sucks
       implicit none
 
 #include "ex5f.h"
 #include "include/finclude/petscvec.h90"
 
+
 !  Input/output variables:
-      SNES     snes
-      Vec      X,F
-      integer  dummy
-      integer  ierr
+      SNES           snes
+      Vec            X,F
+      integer        ierr
+      type (userctx) user
 
 !  Declarations for use with local arrays:
       Scalar,pointer :: lx_v(:),lf_v(:)
@@ -434,7 +469,7 @@
 
 !  Compute function over the locally owned part of the grid
 
-      call ApplicationFunction(lx_v,lf_v,ierr)
+      call ApplicationFunction(lx_v,lf_v,user,ierr)
 
 !  Restore vectors
 
@@ -467,7 +502,8 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-      subroutine ApplicationFunction(x,f,ierr)
+      subroutine ApplicationFunction(x,f,user,ierr)
+      use f90sucks
 
       implicit none
 
@@ -482,11 +518,13 @@
       Scalar   u,uxx,uyy
       integer  i,j
 
+      type (userctx) user
+
       one    = 1.0
       two    = 2.0
       hx     = one/dble(mx-1)
       hy     = one/dble(my-1)
-      sc     = hx*hy*lambda
+      sc     = hx*hy*user%lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
 
