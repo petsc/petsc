@@ -116,6 +116,7 @@ int PetscViewerDestroyMathematica_Private(void)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMathematicaSetupConnection_Private"
 int PetscViewerMathematicaSetupConnection_Private(PetscViewer v) {
+#ifdef PETSC_HAVE_MATHEMATICA
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
 #ifdef MATHEMATICA_3_0
   int                      argc = 6;
@@ -127,8 +128,10 @@ int PetscViewerMathematicaSetupConnection_Private(PetscViewer v) {
   char                     hostname[256];
   long                     lerr;
   int                      ierr;
+#endif
 
   PetscFunctionBegin;
+#ifdef PETSC_HAVE_MATHEMATICA
   /* Link name */
   argv[0] = "-linkname";
   if (vmath->linkname == PETSC_NULL) {
@@ -174,7 +177,6 @@ int PetscViewerMathematicaSetupConnection_Private(PetscViewer v) {
   }
 #endif
 
-#ifdef PETSC_HAVE_MATHEMATICA
   vmath->link = MLOpenInEnv(mathematicaEnv, argc, argv, &lerr);
 #endif
 
