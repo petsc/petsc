@@ -160,7 +160,7 @@ etags:
 	$(RM) TAGS
 	etags -f TAGS	 src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS src/*/examples/*/*.c src/*/examples/*/*/*.c
-	etags -a -f TAGS src/*/examples/*/*.F src/*/examples/*/*/*.F 
+	etags -a -f TAGS src/*/examples/*/*.F
 	etags -a -f TAGS src/*/examples/*/*.f
 	etags -a -f TAGS src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
@@ -172,7 +172,6 @@ etags:
 	etags -a -f TAGS include/FINCLUDE/*.h 
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS src/gvec/impls/*/*/*/*/*.c
-	etags -a -f TAGS src/gvec/impls/*/*/*/*.c
 	etags -a -f TAGS src/gvec/impls/*/*/*/makefile src/gvec/impls/*/*/*/*/makefile
 	etags -a -f TAGS makefile src/*/src/makefile
 	etags -a -f TAGS src/*/interface/makefile src/makefile 
