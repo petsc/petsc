@@ -13,7 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
-                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c
+                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F
 
 include ${PETSC_DIR}/bmake/common/base
@@ -363,6 +363,10 @@ ex96: ex96.o chkopts
 ex98: ex98.o chkopts
 	-${CLINKER} -o ex98 ex98.o ${PETSC_KSP_LIB}
 	${RM} ex98.o
+
+ex99: ex99.o chkopts
+	-${CLINKER} -o ex99 ex99.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	${RM} ex99.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
