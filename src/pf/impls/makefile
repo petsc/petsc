@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.29 1998/06/15 15:54:47 balay Exp $
+# $Id: makefile,v 1.1 2000/02/01 19:33:26 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -6,12 +6,12 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  =  
 SOURCEF  =
-SOURCEH  = dvecimpl.h
+SOURCEH  = 
 OBJSC    =  
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = seq mpi shared
-LOCDIR   = src/vec/impls/
+DIRS     = constant
+LOCDIR   = src/pf/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.185 2000/01/08 01:19:02 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.186 2000/01/13 22:20:22 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -35,7 +35,7 @@ extern int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,Scalar**,Mat*);
 extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*); 
 extern int MatCreateSeqBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
 extern int MatCreateMPIBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
-extern int MatCreateMPICSR(MPI_Comm,int,int,int*,int*,MatScalar *,Mat*);
+extern int MatCreateMPICSR(MPI_Comm,int,int,int*,int*,int *,Mat*);
 
 extern int MatDestroy(Mat);
 
@@ -74,7 +74,8 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_IGNORE_OFF_PROC_ENTRIES=73,MAT_ROWS_UNSORTED=74,
               MAT_COLUMNS_UNSORTED=75,MAT_NEW_NONZERO_LOCATION_ERR=76,
               MAT_NEW_NONZERO_ALLOCATION_ERR=77,MAT_USE_HASH_TABLE=78,
-              MAT_KEEP_ZEROED_ROWS=79,MAT_IGNORE_ZERO_ENTRIES=80} MatOption;
+              MAT_KEEP_ZEROED_ROWS=79,MAT_IGNORE_ZERO_ENTRIES=80,MAT_USE_INODES=81,
+              MAT_DO_NOT_USE_INODES} MatOption;
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
 extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,PetscTruth*);
@@ -230,9 +231,9 @@ extern int MatOrderingRegister(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,
 #else
 #define MatOrderingRegisterDynamic(a,b,c,d) MatOrderingRegister(a,b,c,d)
 #endif
-extern int MatOrderingRegisterDestroy(void);
-extern int MatOrderingRegisterAll(char*);
-extern int MatOrderingRegisterAllCalled;
+extern int        MatOrderingRegisterDestroy(void);
+extern int        MatOrderingRegisterAll(char*);
+extern PetscTruth MatOrderingRegisterAllCalled;
 
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
@@ -300,9 +301,9 @@ extern int MatColoringRegister(char*,char*,char*,int(*)(Mat,MatColoringType,ISCo
 #else
 #define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,d)
 #endif
-extern int MatColoringRegisterAll(char *);
-extern int MatColoringRegisterAllCalled;
-extern int MatColoringRegisterDestroy(void);
+extern int        MatColoringRegisterAll(char *);
+extern PetscTruth MatColoringRegisterAllCalled;
+extern int        MatColoringRegisterDestroy(void);
 extern int MatColoringPatch(Mat,int,int *,ISColoring*);
 
 /*
@@ -339,7 +340,7 @@ typedef char* MatPartitioningType;
 extern int MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 extern int MatPartitioningSetType(MatPartitioning,MatPartitioningType);
 extern int MatPartitioningSetAdjacency(MatPartitioning,Mat);
-extern int MatPartitioningSetVertexWeights(MatPartitioning,double*);
+extern int MatPartitioningSetVertexWeights(MatPartitioning,int*);
 extern int MatPartitioningApply(MatPartitioning,IS*);
 extern int MatPartitioningDestroy(MatPartitioning);
 
@@ -350,9 +351,10 @@ extern int MatPartitioningRegister(char*,char*,char*,int(*)(MatPartitioning));
 #define MatPartitioningRegisterDynamic(a,b,c,d) MatPartitioningRegister(a,b,c,d)
 #endif
 
-extern int MatPartitioningRegisterAll(char *);
-extern int MatPartitioningRegisterAllCalled;
-extern int MatPartitioningRegisterDestroy(void);
+extern int        MatPartitioningRegisterAll(char *);
+extern PetscTruth MatPartitioningRegisterAllCalled;
+extern int        MatPartitioningRegisterDestroy(void);
+
 extern int MatPartitioningView(MatPartitioning,Viewer);
 extern int MatPartitioningSetFromOptions(MatPartitioning);
 extern int MatPartitioningPrintHelp(MatPartitioning);

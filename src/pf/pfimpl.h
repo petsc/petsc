@@ -1,4 +1,4 @@
-/* $Id: pfimpl.h,v 1.1 2000/01/22 23:01:13 bsmith Exp bsmith $ */
+/* $Id: pfimpl.h,v 1.2 2000/01/24 04:05:24 bsmith Exp bsmith $ */
 
 #ifndef _PFIMPL
 #define _PFIMPL
@@ -11,6 +11,7 @@ struct _PFOps {
   int          (*applyvec)(void*,Vec,Vec);
   int          (*destroy)(void*);
   int          (*view)(void*,Viewer);
+  int          (*setfromoptions)(PF);
 };
 
 struct _p_PF {

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.42 1999/03/09 21:18:21 balay Exp bsmith $ */
+/* $Id: sys.h,v 1.43 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -56,15 +56,15 @@ extern int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
   machine. Use these rather then sizeof() in computing sizes for 
   PetscBinarySeek().
 */
-#define BINARY_INT_SIZE    32
-#define BINARY_FLOAT_SIZE  32
-#define BINARY_CHAR_SIZE    8
-#define BINARY_SHORT_SIZE  16
-#define BINARY_DOUBLE_SIZE 64
+#define BINARY_INT_SIZE    (32/8)
+#define BINARY_FLOAT_SIZE  (32/8)
+#define BINARY_CHAR_SIZE    (8/8)
+#define BINARY_SHORT_SIZE  (16/8)
+#define BINARY_DOUBLE_SIZE (64/8)
 #define BINARY_SCALAR_SIZE sizeof(Scalar)
 
 typedef enum {BINARY_SEEK_SET = 0,BINARY_SEEK_CUR = 1,BINARY_SEEK_END = 2} PetscBinarySeekType;
-extern int PetscBinarySeek(int,int,PetscBinarySeekType);
+extern int PetscBinarySeek(int,int,PetscBinarySeekType,int*);
 
 extern int PetscSetDebugger(const char[],int);
 extern int PetscAttachDebugger(void);

@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.3 2000/01/06 20:43:21 bsmith Exp bsmith $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
 }
 
 /*
-         Sets up the non-linear system associated with the PDE and solves it
+         Sets up the non-linear system asociated with the PDE and solves it
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtSolve"
@@ -147,9 +147,9 @@ int AppCtxCreateVector(AppCtx* appctx)
   /* The local to global mapping */
  ISLocalToGlobalMapping ltog = grid->ltog;
  /* number of vertices on this processor */
-  int   vertex_n = grid->vertex_n;
+  int   vertex_local_n = grid->vertex_local_n;
   /* number of vertices including ghosted ones */
- int vertex_n_ghosted = grid->vertex_n_ghosted;
+ int vertex_n = grid->vertex_n;
  /* global number of each vertex on the processor */
  IS  vertex_global = grid->vertex_global;
 /* blocked global number of each vertex on the processor */
@@ -171,7 +171,7 @@ const int two = 2;
   PetscFunctionBegin;
 
   /*  Create vector to contain load, nonlinear function, and initial guess  */
-  ierr = VecCreateMPI(comm,two*vertex_n,PETSC_DECIDE,&b);CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm,two*vertex_local_n,PETSC_DECIDE,&b);CHKERRQ(ierr);
   ierr = VecSetBlockSize(b,two);  CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlocked(b,ltog);CHKERRQ(ierr);
  
@@ -184,7 +184,7 @@ const int two = 2;
   algebra->f       = f;
   algebra->g       = g;
  
-  ierr = VecCreateSeq(PETSC_COMM_SELF,2*vertex_n_ghosted,&f_local);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,2*vertex_n,&f_local);CHKERRQ(ierr);
   ierr = VecScatterCreate(f,vertex_global_blocked,f_local,0,&dgtol);CHKERRQ(ierr);
   /* for vecscatter,second argument is the IS to scatter.  
  Use the  blocked form created in appload.c */  
@@ -194,12 +194,12 @@ const int two = 2;
   algebra->dgtol = dgtol;
 
   /* Create work vectors for MatCreate */
-  ierr = VecCreateMPI(comm,vertex_n,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm,vertex_local_n,PETSC_DECIDE,&x);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(x,ltog);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&z);
  
   /* Create local work vectors for MatCreate */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,vertex_n_ghosted,&w_local);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,vertex_n,&w_local);CHKERRQ(ierr);
   ierr = VecDuplicate(w_local,&x_local);CHKERRQ(ierr);
   ierr = VecDuplicate(w_local,&z_local);CHKERRQ(ierr);
   /* only need to create one scatter, it works on duplicate  vectors */ 
@@ -239,11 +239,11 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ISLocalToGlobalMapping dltog = grid->dltog;
 
  /* number of vertices on this processor */
-  int   vertex_n = grid->vertex_n;
+  int   vertex_local_n = grid->vertex_local_n;
   /* number of cells on this processor */
   int    cell_n = grid->cell_n;
   /* neighbours of the cell */
-  int  *cell_cell = grid->cell_cell;
+  int  *cell_neighbors = grid->cell_neighbors;
   /* vertices of the cell (in local numbering) */
   int  *cell_vertex = grid->cell_vertex;
 
@@ -298,7 +298,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   /* loop over cells */
   for (i=0; i<cell_n; i++) {
     vertices = cell_vertex + four*i;
-    cells    = cell_cell   + four*i;
+    cells    = cell_neighbors   + four*i;
     
     /* loop over vertices */
     for (j=0; j<four; j += 1) {
@@ -339,9 +339,9 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ierr = VecGetArray(x,&sdnz);CHKERRQ(ierr);
 
   /* now copy values into and integer array, adding one for the diagonal entry */
-  dnz  = (int*)PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(dnz);
-  onz  = (int*)PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(onz);
-  for (i=0; i<vertex_n; i++) {
+  dnz  = (int*)PetscMalloc((vertex_local_n+1)*sizeof(int));CHKPTRQ(dnz);
+  onz  = (int*)PetscMalloc((vertex_local_n+1)*sizeof(int));CHKPTRQ(onz);
+  for (i=0; i<vertex_local_n; i++) {
     dnz[i] = 1 + (int)PetscRealPart(sdnz[i]);
     onz[i] = (int)PetscRealPart(sonz[i]);
   }
@@ -349,11 +349,11 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ierr = VecRestoreArray(z,&sonz);CHKERRQ(ierr);
 
   /* now create the matrix */
-  ierr = MatCreateMPIBAIJ(comm,2,2*vertex_n,2*vertex_n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,&A);CHKERRQ(ierr);
+  ierr = MatCreateMPIBAIJ(comm,2,2*vertex_local_n,2*vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,&A);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(A,ltog);CHKERRQ(ierr);
 
   /* Dupicate the matrix for now.  Later the Jacobian will not have the same nonzero structure  */
-   ierr = MatCreateMPIBAIJ(comm,2,2*vertex_n,2*vertex_n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,&J);CHKERRQ(ierr);
+   ierr = MatCreateMPIBAIJ(comm,2,2*vertex_local_n,2*vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,&J);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr); 
  ierr = MatSetLocalToGlobalMapping(J,dltog);CHKERRQ(ierr); 
 
@@ -434,7 +434,7 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   /* Global to Local scatter (the blocked version) */
   VecScatter dgtol = algebra->dgtol;         
  /* The geometrical values of the vertices */
-  double     *vertex_values = grid->vertex_value;
+  double     *vertex_coords = grid->vertex_coords;
  /* The array of vertices in the local numbering for each cell */
   int  *cell_vertex = grid->cell_vertex;
  /* the number of cells on this processor */
@@ -443,7 +443,7 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   IS         vertex_boundary = grid->vertex_boundary;
 
 /****** Internal Variables ***********/
-  /* need a local vector of size 2*(vertex_n_ghosted)*/
+  /* need a local vector of size 2*(vertex_n)*/
   Vec f_local = algebra->f_local;
   
   double result[8],coors[8];
@@ -479,8 +479,8 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
       cell_values[2*j] = uvvals[2*vertex_ptr[j]];
       cell_values[2*j+1] = uvvals[2*vertex_ptr[j]+1];
       /* get geometrical coordinates */
-      coors[2*j] = vertex_values[2*vertex_ptr[j]];
-      coors[2*j+1] = vertex_values[2*vertex_ptr[j]+1];
+      coors[2*j] = vertex_coords[2*vertex_ptr[j]];
+      coors[2*j+1] = vertex_coords[2*vertex_ptr[j]+1];
     }
 
     /* compute the values of basis functions on this element */
@@ -522,10 +522,10 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = VecGetArray(f_local,&uvvals);CHKERRQ(ierr);
    
   for(i = 0; i < nindices; i++){
-    /* get the vertex_value corresponding to element of indices
+    /* get the vertex_coords corresponding to element of indices
        then evaluate bc(vertex value) and put this in bvs(i) */
-    xval = grid->vertex_value[2*indices[i]];
-    yval = grid->vertex_value[2*indices[i]+1];
+    xval = grid->vertex_coords[2*indices[i]];
+    yval = grid->vertex_coords[2*indices[i]+1];
 
     bvs[2*i] = uvvals[2*indices[i]] - pde_bc1(xval,yval);
     bvs[2*i+1] = uvvals[2*indices[i]+1] - pde_bc2(xval,yval);
@@ -588,7 +588,7 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 /* number of vertices on this processor */
  /* number of vertices including ghosted ones */
   /* The geometrical values of the vertices */
-  double     *vertex_values = grid->vertex_value;
+  double     *vertex_coords = grid->vertex_coords;
   /* the number of cells on this processor */
   int  cell_n = grid->cell_n;
  
@@ -619,8 +619,8 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
     vert_ptr = cell_vertex + 4*i;   
  
     for (j=0; j<4; j++) {
-      coors[2*j] = vertex_values[2*vert_ptr[j]];
-      coors[2*j+1] = vertex_values[2*vert_ptr[j]+1];
+      coors[2*j] = vertex_coords[2*vert_ptr[j]];
+      coors[2*j+1] = vertex_coords[2*vert_ptr[j]+1];
 
       cell_values[2*j] = uvvals[2*vert_ptr[j]];
       cell_values[2*j+1] = uvvals[2*vert_ptr[j]+1];
@@ -669,7 +669,7 @@ int AppCtxSetRhs(AppCtx* appctx)
   /* The array of vertices in the local numbering for each cell */
   int        *cell_vertex = grid->cell_vertex;
   /* The geometrical values of the vertices */
-  double     *vertex_values = grid->vertex_value;
+  double     *vertex_coords = grid->vertex_coords;
  /* The number of vertices per cell (4 in the case of billinear) */
   int NVs = grid->NVs;
   /* extract the rhs functions */
@@ -691,8 +691,8 @@ int AppCtxSetRhs(AppCtx* appctx)
       vertices = cell_vertex+NVs*i;
       /*  Load the cell vertex coordinates */
       for (j=0; j<4; j++) {
-	coors[2*j] = vertex_values[2*vertices[j]];
-	coors[2*j+1] = vertex_values[2*vertices[j]+1];   
+	coors[2*j] = vertex_coords[2*vertices[j]];
+	coors[2*j+1] = vertex_coords[2*vertices[j]+1];   
       }
       /****** Perform computation ***********/
       /* compute the values of basis functions on this element */
@@ -740,7 +740,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
  /* The array of vertices in the local numbering for each cell */
   int        *cell_vertex = grid->cell_vertex;
   /* The geometrical values of the vertices */
-  double     *vertex_values = grid->vertex_value;
+  double     *vertex_coords = grid->vertex_coords;
   /* The number of vertices on this processor */
 
   /* The viscosity */
@@ -768,8 +768,8 @@ int AppCtxSetMatrix(AppCtx* appctx)
     vert_ptr = cell_vertex + NVs*i;    
     /*  Load the cell vertex coordinates */
     for (j=0; j<NVs; j++) {
-      coors[2*j] = vertex_values[2*vert_ptr[j]];
-      coors[2*j+1] = vertex_values[2*vert_ptr[j]+1];
+      coors[2*j] = vertex_coords[2*vert_ptr[j]];
+      coors[2*j+1] = vertex_coords[2*vert_ptr[j]+1];
     }
  /****** Perform computation ***********/
     /* compute the values of basis functions on this element */

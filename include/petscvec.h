@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.101 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.102 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -95,9 +95,9 @@ extern int VecSetBlockSize(Vec,int);
 extern int VecGetBlockSize(Vec,int*);
 extern int VecSetValuesBlocked(Vec,int,const int[],const Scalar[],InsertMode);
 
-extern int VecRegisterAllCalled;
-extern int VecRegisterAll(const char []);
-extern int VecRegister(const char[],const char[],const char[],int(*)(Vec));
+extern PetscTruth VecRegisterAllCalled;
+extern int        VecRegisterAll(const char []);
+extern int        VecRegister(const char[],const char[],const char[],int(*)(Vec));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,0)
 #else

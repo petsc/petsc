@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.20 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.21 2000/01/19 21:42:33 bsmith Exp bsmith $ */
 
 /* 
   An application ordering is mapping between an application-centric
@@ -99,6 +99,7 @@ extern int AOData2dGridComputeVertexBoundary(AOData2dGrid);
 extern int AOData2dGridDraw(AOData2dGrid,Draw);
 extern int AOData2dGridDestroy(AOData2dGrid);
 extern int AOData2dGridCreate(AOData2dGrid*);
+extern int AOData2dGridToAOData(AOData2dGrid,AOData*);
 
 #endif
 

@@ -1,16 +1,16 @@
-# $Id: makefile,v 1.34 1999/02/02 21:27:35 balay Exp $ 
+# $Id: makefile,v 1.1 2000/01/22 22:59:42 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = precon.c pcset.c pcregis.c pcnull.c
+SOURCEC  = pf.c pfall.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = precon.o pcset.o pcregis.o pcnull.o
+OBJSC    = pf.o pfall.o
 OBJSF    =
 LIBBASE  = libpetscsles
-MANSEC   = PC
-LOCDIR   = src/sles/pc/interface/
+MANSEC   = Vec
+LOCDIR   = src/pf/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

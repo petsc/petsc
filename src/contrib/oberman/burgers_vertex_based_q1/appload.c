@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.3 2000/01/06 20:43:21 bsmith Exp bsmith $*/
 
 /*
      Loads the qquadrilateral grid database from a file  and sets up the local 
@@ -62,8 +62,8 @@ int AppCtxSetLocal(AppCtx *appctx)
   int                    ierr,rank;
 
   int                    *cell_vertex;
-  double                 *vertex_value;
-  int                    cell_n,vertex_n_ghosted,*cell_cell;
+  double                 *vertex_coords;
+  int                    cell_n,vertex_n,*cell_neighbors;
   int  *vertex_indices;
   IS                     iscell,isvertex,vertex_boundary;
 
@@ -95,18 +95,18 @@ int AppCtxSetLocal(AppCtx *appctx)
       Get the local edge and vertex lists
   */
   ierr = AODataSegmentGetLocalIS(ao,"cell","vertex",iscell,(void **)&cell_vertex);CHKERRQ(ierr);
-  ierr = AODataSegmentGetIS(ao,"cell","cell",iscell,(void **)&cell_cell);CHKERRQ(ierr);
+  ierr = AODataSegmentGetIS(ao,"cell","cell",iscell,(void **)&cell_neighbors);CHKERRQ(ierr);
 
   /* 
       Get the numerical values of all vertices for local vertices
   */
-  ierr = AODataSegmentGetIS(ao,"vertex","values",isvertex,(void **)&vertex_value);CHKERRQ(ierr);
+  ierr = AODataSegmentGetIS(ao,"vertex","values",isvertex,(void **)&vertex_coords);CHKERRQ(ierr);
 
   /*
       Get the size of local objects for plotting
   */
   ierr = ISGetSize(iscell,&cell_n);CHKERRQ(ierr);
-  ierr = ISGetSize(isvertex,&vertex_n_ghosted);CHKERRQ(ierr);
+  ierr = ISGetSize(isvertex,&vertex_n);CHKERRQ(ierr);
 
   ierr = AODataSegmentGetIS(ao,"vertex","boundary",isvertex,(void **)&grid->vertex_boundary_flag);CHKERRQ(ierr);
 
@@ -129,15 +129,15 @@ int AppCtxSetLocal(AppCtx *appctx)
   grid->vertex_global_blocked       = isvertex_global_blocked; /* my addition */
   grid->vertex_boundary_blocked = isvertex_boundary_blocked; /* my addition */
   grid->cell_n               = cell_n;
-  grid->cell_cell            = cell_cell;
+  grid->cell_neighbors            = cell_neighbors;
 
   grid->vertex_global        = isvertex;
-  grid->vertex_value         = vertex_value;
+  grid->vertex_coords         = vertex_coords;
 
   grid->vertex_boundary      = vertex_boundary;
-  grid->vertex_n_ghosted     = vertex_n_ghosted;
+  grid->vertex_n     = vertex_n;
 
-  ierr = AODataKeyGetInfo(ao,"vertex",PETSC_NULL,&grid->vertex_n,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = AODataKeyGetInfo(ao,"vertex",PETSC_NULL,&grid->vertex_local_n,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = AODataSegmentGetInfo(ao,"cell","vertex",&grid->NVs,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -199,9 +199,9 @@ int AppCtxDestroy(AppCtx *appctx)
   AOData     ao = appctx->aodata;
   AppGrid    *grid = &appctx->grid;
 
-  ierr = AODataSegmentRestoreIS(ao,"vertex","values",PETSC_NULL,(void **)&grid->vertex_value);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(ao,"vertex","values",PETSC_NULL,(void **)&grid->vertex_coords);CHKERRQ(ierr);
   ierr = AODataSegmentRestoreLocalIS(ao,"cell","vertex",PETSC_NULL,(void **)&grid->cell_vertex);CHKERRQ(ierr);
-  ierr = AODataSegmentRestoreIS(ao,"cell","cell",PETSC_NULL,(void **)&grid->cell_cell);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(ao,"cell","cell",PETSC_NULL,(void **)&grid->cell_neighbors);CHKERRQ(ierr);
   ierr = AODataSegmentRestoreIS(ao,"vertex","boundary",PETSC_NULL,(void **)&grid->vertex_boundary_flag);CHKERRQ(ierr);
  
   ierr = AODataDestroy(ao);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.68 1999/12/01 16:15:18 balay Exp bsmith $*/
+/*$Id: zstart.c,v 1.69 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -16,7 +16,7 @@
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
 
-extern int          PetscBeganMPI;
+extern PetscTruth PetscBeganMPI;
 
 #if defined(PETSC_HAVE_NAGF90)
 #define iargc_  f90_unix_MP_iargc
@@ -172,16 +172,16 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
 #if defined (PARCH_win32)
-  short  flg,i;
+  short flg,i;
 #else
-  int i;
+  int   i;
 #endif
-  int  j,flag,argc = 0,dummy_tag;
-  char **args = 0,*t1,name[256];
-
+  int   j,flag,argc = 0,dummy_tag,size;
+  char  **args = 0,*t1,name[256],hostname[16];
+  
   *ierr = 1;
   *ierr = PetscMemzero(name,256); if (*ierr) return;
-  if (PetscInitializedCalled) {*ierr = 0; return;}
+  if (PetscInitializeCalled) {*ierr = 0; return;}
   
   *ierr = OptionsCreate(); 
   if (*ierr) return;
@@ -210,9 +210,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   if (!flag) {
     mpi_init_(ierr);
     if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:");return;}
-    PetscBeganMPI    = 1;
+    PetscBeganMPI    = PETSC_TRUE;
   }
-  PetscInitializedCalled = 1;
+  PetscInitializeCalled = PETSC_TRUE;
 
   if (!PETSC_COMM_WORLD) {
     PETSC_COMM_WORLD          = MPI_COMM_WORLD;
@@ -274,13 +274,12 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   *ierr = PetscInitializeFortran();
   if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up common block");return;}
 
-  if (PetscBeganMPI) {
-    int size;
-
-    *ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
-    if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting MPI_Comm_size()");return;}
-    PLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
-  }
+  *ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting MPI_Comm_size()");return;}
+  PLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
+  *ierr = PetscGetHostName(hostname,16);
+  if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting hostname");return;}
+  PLogInfo(0,"Running on machine: %s\n",hostname);
   
   *ierr = OptionsCheckInitial_Components(); 
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}

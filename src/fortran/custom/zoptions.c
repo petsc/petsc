@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.65 1999/12/13 17:47:10 balay Exp bsmith $*/
+/*$Id: zoptions.c,v 1.66 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -8,7 +8,7 @@
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
-extern int          PetscBeganMPI;
+extern PetscTruth PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscgetarchtype_             PETSCGETARCHTYPE

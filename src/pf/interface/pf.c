@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.3 2000/01/24 19:17:43 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.4 2000/02/01 19:01:02 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -69,7 +69,7 @@ int PFDestroy(PF pf)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(pf);CHKERRQ(ierr);
 
-  if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf);CHKERRQ(ierr);}
+  if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf->data);CHKERRQ(ierr);}
   PLogObjectDestroy(pf);
   PetscHeaderDestroy(pf);
   PetscFunctionReturn(0);
@@ -185,6 +185,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
     n    = n/pf->dimin;
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    if (!pf->ops->apply) SETERRQ(1,1,"No function has been provided for this PF");
     ierr = (*pf->ops->apply)(pf->data,n,xx,yy);CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
@@ -220,6 +221,7 @@ int PFApply(PF pf,int n,Scalar* x,Scalar* y)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different arrays");
+  if (!pf->ops->apply) SETERRQ(1,1,"No function has been provided for this PF");
 
   ierr = (*pf->ops->apply)(pf->data,n,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -364,8 +366,6 @@ int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
 @*/
 int PFGetType(PF pf,PFType *meth)
 {
-  int ierr;
-
   PetscFunctionBegin;
   *meth = (PFType) pf->type_name;
   PetscFunctionReturn(0);
@@ -433,5 +433,47 @@ int PFSetType(PF pf,PFType type,void *ctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PFSetFromOptions"
+/*@
+   PFSetFromOptions - Sets PF options from the options database.
+
+   Collective on PF
+
+   Input Parameters:
+.  pf - the mathematical function context
+
+   Options Database Keys:
+
+   Notes:  
+   To see all options, run your program with the -help option
+   or consult the users manual.
+
+   Level: developerintermediate
+
+.keywords: PF, set, from, options, database
+
+.seealso: PFPrintHelp()
+@*/
+int PFSetFromOptions(PF pf)
+{
+  int        ierr,i;
+  char       type[256];
+  PetscTruth flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pf,PF_COOKIE);
+
+  ierr = OptionsGetString(pf->prefix,"-pf_type",type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
+  }
+
+  if (pf->ops->setfromoptions) {
+    ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
 
 

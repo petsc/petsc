@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.41 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.42 2000/01/20 03:56:24 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -123,6 +123,7 @@ extern  int __gierr;
 #endif
 
 extern int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*);
+extern int PetscEmacsClientErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 extern int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 extern int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 

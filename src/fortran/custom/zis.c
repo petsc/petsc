@@ -1,8 +1,9 @@
-/*$Id: zis.c,v 1.30 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zis.c,v 1.31 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "is.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define ispartitioningcount_   ISPARTITIONINGCOUNT
 #define isdestroy_             ISDESTROY
 #define iscreatestride_        ISCREATESTRIDE
 #define iscreategeneral_       ISCREATEGENERAL
@@ -24,6 +25,7 @@
 #define isallgather_                  ISALLGATHER
 #define iscoloringdestroy_            ISCOLORINGDESTROY
 #define iscoloringview_               ISCOLORINGVIEW
+#define ispartitioningtonumbering_    ISPARTITIONINGTONUMBERING
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define iscoloringview_        iscoloringview
 #define iscoloringdestroy_     iscoloringdestroy
@@ -46,9 +48,21 @@
 #define iscoloringcreate_      iscoloringcreate
 #define islocaltoglobalmappingcreate_ islocaltoglobalmappingcreate
 #define isallgather_                  isallgather
+#define ispartitioningcount_          ispartitioningcount
+#define ispartitioningtonumbering_    ispartitioningtonumbering
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL ispartitioningtonumbering_(IS *is,IS *isout,int *ierr)
+{
+  *ierr = ISPartitioningToNumbering(*is,isout);
+}
+
+void PETSC_STDCALL ispartitioningcount_(IS *is,int *count,int *ierr)
+{
+  *ierr = ISPartitioningCount(*is,count);
+}
 
 void PETSC_STDCALL iscoloringdestroy_(ISColoring *iscoloring,int *ierr)
 {
@@ -131,9 +145,9 @@ void PETSC_STDCALL iscreategeneral_(MPI_Comm *comm,int *n,int *idx,IS *is,int *i
   *ierr = ISCreateGeneral((MPI_Comm)PetscToPointerComm(*comm),*n,idx,is);
 }
 
-void PETSC_STDCALL isinvertpermutation_(IS *is,IS *isout,int *ierr)
+void PETSC_STDCALL isinvertpermutation_(IS *is,int *nlocal,IS *isout,int *ierr)
 {
-  *ierr = ISInvertPermutation(*is,isout);
+  *ierr = ISInvertPermutation(*is,*nlocal,isout);
 }
 
 void PETSC_STDCALL iscreateblock_(MPI_Comm *comm,int *bs,int *n,int *idx,IS *is,int *ierr)

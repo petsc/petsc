@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.96 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.97 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -56,9 +56,9 @@ extern int PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
 extern int PCApplyRichardson(PC,Vec,Vec,Vec,int);
 extern int PCApplyRichardsonExists(PC,PetscTruth*);
 
-extern int PCRegisterDestroy(void);
-extern int PCRegisterAll(char*);
-extern int PCRegisterAllCalled;
+extern int        PCRegisterDestroy(void);
+extern int        PCRegisterAll(char*);
+extern PetscTruth PCRegisterAllCalled;
 
 extern int PCRegister(char*,char*,char*,int(*)(PC));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
