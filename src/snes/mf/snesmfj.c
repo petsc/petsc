@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.33 1996/08/09 23:32:18 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.34 1996/09/05 23:56:28 curfman Exp curfman $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -54,10 +54,10 @@ int SNESMatrixFreeView_Private(Mat J,Viewer viewer)
 /*
   SNESMatrixFreeMult_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
-       y = ( F(u + ha) - F(u) ) /h, 
+        y = ( F(u + ha) - F(u) ) /h, 
   where F = nonlinear function, as set by SNESSetFunction()
-       u = current iterate
-       h = difference interval
+        u = current iterate
+        h = difference interval
 */
 int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
 {
