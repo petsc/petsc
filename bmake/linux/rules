@@ -1,4 +1,4 @@
-# $Id: base,v 1.19 1997/09/10 18:14:20 balay Exp bsmith $ 
+# $Id: base,v 1.20 1997/09/15 16:22:07 bsmith Exp balay $ 
 
 PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
@@ -47,6 +47,14 @@ libf: $(OBJSF)
 	cp $*.F __$*.c
 	$(CC) -E  $(CFLAGS) __$*.c  > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	$(RM) $*.f __$*.c
+
+.F.a:
+	$(RM) $*.f __$*.c
+	cp $*.F __$*.c
+	$(CC) -E  $(CFLAGS) __$*.c  > $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.f __$*.c
 
 SLSUFFIX = so.1.0

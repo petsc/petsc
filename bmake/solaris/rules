@@ -1,4 +1,4 @@
-# $Id: base,v 1.20 1997/09/10 18:19:00 balay Exp bsmith $ 
+# $Id: base,v 1.21 1997/09/15 16:22:07 bsmith Exp balay $ 
 
 PARCH    = solaris
 #
@@ -38,12 +38,33 @@ libf: $(LIBNAME)($(OBJSF))
 
 #############
 
-.F.o: 
-	$(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
-.F.a: 
-	$(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
+#.F.o: 
+#	$(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
+#.F.a: 
+#	$(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
+#	$(AR) cr $(LIBNAME) $*.o
+#	$(RM) $*.o
+.F.f:
+	$(RM) $*.f __$*.c
+	cp $*.F __$*.c
+	$(CC) -E  $(CFLAGS) __$*.c  > $*.f
+	$(RM)  __$*.c
+
+.F.o:
+	$(RM) $*.f __$*.c
+	cp $*.F __$*.c
+	$(CC) -E  $(CFLAGS) __$*.c  > $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	$(RM) $*.f __$*.c
+
+.F.a:
+	$(RM) $*.f __$*.c
+	cp $*.F __$*.c
+	$(CC) -E  $(CFLAGS) __$*.c  > $*.f
+	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
+	$(RM) $*.f __$*.c
+
 
 shared: chkopts_basic
 	-@echo making shared libraries in $(LDIR) ;\

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.91 1997/09/10 19:40:20 balay Exp balay $ 
+# $Id: buildtest,v 1.92 1997/09/12 18:23:50 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -13,6 +13,7 @@ set CCST=/ccsthome/petsc/petsc
 set PETSC=/home/petsc/petsc
 set LOIS=/home/curfman/petsc
 set BALAY=/home/balay/petsc
+set TMP=/tmp/petsc
 #
 #  load the machine names and versions to test
 #
@@ -28,7 +29,7 @@ if ($day == Sun) then
   set J4=(0      5          6          6             6           0            0          0           7           5            )
   set J5=(0      10         7          8             8           0            0          0           8           10           )
   set J6=(0      0          8          0             0           0            0          0           1           0            )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
+  set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif
 if ($day == Mon) then
   set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        maple       yukon        )
@@ -41,7 +42,7 @@ if ($day == Mon) then
   set J4=(0      0          6          6             6           7           7           6           5           5            )
   set J5=(0      0          8          7             7           0           8           7           10          10           )
   set J6=(0      0          0          8             8           0           0           8           0           0            )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
+  set H=($PETSC  $TMP       $TMP       $TMP          $TMP        $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif  
 if ($day == Tue) then
   set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        maple       yukon        )
@@ -54,7 +55,7 @@ if ($day == Tue) then
   set J4=(6      6          5          6             6           7           8           6           6           6            )
   set J5=(0      7          10         7             7           0           0           7           8           8            )
   set J6=(0      8          0          8             8           0           0           8           0           0            )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc    )
+  set H=($PETSC  $TMP       $TMP       $TMP          $TMP        $LOIS       $TMP        $CCST       $TMP        $TMP          )
 endif
 if ($day == Wed) then
   set M =(snake  maverick   violet     elvis         clyde       ptera       maverick    quad        maple       yukon        )
@@ -67,7 +68,7 @@ if ($day == Wed) then
   set J4=(6      6          6          5             5           7           0           5           6           4            )
   set J5=(0      8          7          10            10          0           0           10          7           7            )
   set J6=(0      0          8          0             0           0           0           0           8           8            )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
+  set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif
 if ($day == Thu) then
   set M =(snake  maverick   violet     elvis         clyde       ptera       maverick    quad        maple       yukon        )
@@ -80,7 +81,7 @@ if ($day == Thu) then
   set J4=(6      5          6          6             6           7           5           6           6           6            )
   set J5=(0      10         8          8             8           0           10          8           7           7            )
   set J6=(0      0          0          0             0           0           0           0           8           8            )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
+  set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif  
 if ($day == Fri) then
   set M =(snake  maverick   violet     elvis         clyde       ptera       maverick    quad        maple       yukon        )
@@ -93,7 +94,7 @@ if ($day == Fri) then
   set J4=(6      6          5          5             5           7           7           5           6           6            )
   set J5=(0      8          10         10            10          0           8           10          8           7            )
   set J6=(0      0          0          0             0           0           0           0           0           8            )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
+  set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif
 if ($day == Sat) then
   set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        maple       yukon        )
@@ -106,7 +107,7 @@ if ($day == Sat) then
   set J4=(6      6          6          5             6           7           10          7           5           6            )
   set J5=(0      7          7          10            7           0           0           8           10          8            )
   set J6=(0      8          8          0             8           0           0           0           4           0            )
-  set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
+  set H=($PETSC  $TMP       $TMP       $TMP          $TMP        $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif
 #
 #  test for each machine
