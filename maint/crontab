@@ -7,15 +7,15 @@
 #
 #  The timing between these runs IS important.
 #
-40 0 * * * /home/bsmith/petsc/maint/buildtest_bsmith
+40 0 * * * /home/bsmith/petsc/maint/buildtest bsmith
+55 0 * * * /home/bsmith/petsc/maint/buildtest petsc
 55 0 * * * /home/bsmith/petsc/maint/buildtest_curfman
-55 0 * * * /home/bsmith/petsc/maint/buildtest_petsc
 55 0 * * * /home/bsmith/petsc/maint/buildtest_balay
 55 0 * * * rsh clyde -n /sphome/curfman/petsc/maint/buildtest_spcurfman
 #
-# Makes the three shadow directories.  Must be done before the library builds.
+# Makes the shadow directories.  Must be done before the library builds.
 #
-15 0 * * * /home/bsmith/petsc/maint/buildlinks /home/balay/Petsc_build > /dev/null
-15 0 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc > /dev/null
-15 0 * * * /home/bsmith/petsc/maint/buildlinks /home/petsc/petsc > /dev/null
-15 0 * * * rsh clyde -n /home/bsmith/petsc/maint/buildlinks /sphome/curfman/petsc > /dev/null
+05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/balay/Petsc_build > /dev/null
+05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc > /dev/null
+05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/petsc/petsc > /dev/null
+05 0 * * * rsh clyde -n /home/bsmith/petsc/maint/buildlinks /sphome/curfman/petsc > /dev/null
