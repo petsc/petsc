@@ -1005,11 +1005,13 @@ PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
 
-  if (issocket) {
+  if (iascii) {
+    ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SOCKET)
+  } else if (issocket) {
     if (a->lda>A->m) SETERRQ(PETSC_ERR_SUP,"Case can not handle LDA");
     ierr = PetscViewerSocketPutScalar(viewer,A->m,A->n,a->v);CHKERRQ(ierr);
-  } else if (iascii) {
-    ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
+#endif
   } else if (isbinary) {
     ierr = MatView_SeqDense_Binary(A,viewer);CHKERRQ(ierr);
   } else if (isdraw) {

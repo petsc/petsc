@@ -181,7 +181,6 @@ int main(int argc,char **argv)
 
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
-  /* ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr); */
   for (i=0; i<nlevels; i++) {
     appctx = (AppCtx*)dmmg[i]->user;
     ierr   = MatDestroy(appctx->J);CHKERRQ(ierr);

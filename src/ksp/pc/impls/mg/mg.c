@@ -524,6 +524,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   ierr = KSPSetUp(mg[0]->smoothd);CHKERRQ(ierr);
   if (mg[0]->eventsetup) {ierr = PetscLogEventEnd(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
 
+#if defined(PETSC_HAVE_SOCKET)
   /*
      Dump the interpolation/restriction matrices to matlab plus the 
    Jacobian/stiffness on each level. This allows Matlab users to 
@@ -538,6 +539,8 @@ static PetscErrorCode PCSetUp_MG(PC pc)
       ierr = MatView(pc->mat,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
     }
   }
+#endif
+
   ierr = PetscOptionsHasName(pc->prefix,"-pc_mg_dump_binary",&dump);CHKERRQ(ierr);
   if (dump) {
     for (i=1; i<n; i++) {

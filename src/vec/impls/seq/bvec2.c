@@ -330,8 +330,10 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (iascii){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SOCKET)
   } else if (issocket) {
     ierr = PetscViewerSocketPutScalar(viewer,xin->n,1,x->array);CHKERRQ(ierr);
+#endif
   } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATHEMATICA)

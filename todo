@@ -23,8 +23,10 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   Optimizations
    ------------
 
-  (Priority 1) Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
+  (Priority 1) Change DACreate2/3d to create VecScatters() that have the dof blocksize. Currently (sadly)
   the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
+  Did DACreate2d() for ltog; still need to do gtol; also check that uses a blocked version of vecscatter
+  do 3d for ltog first plus test
 
     (Priority 1) Use blocksize in MPIAIJ to pass in getsubmatrices for faster in ASM.
 
@@ -56,7 +58,6 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
    (Priority 2) General mechanism for DMGetMatrix() etc ...for composite matrices
 
-   Make Fortran kernels support PetscInt 
 
   ------------
   Cleaner code
@@ -64,7 +65,7 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
   (Priority 2) Add more PetscMallocXXX() especially in the VecScatterCreate_.... stuff.
 
-  (Priority 0) change Victor's Compose state macros to use () style with no chkerrq stuff
+  (Priority 0) Fix bad macros with inline
 
   (Priority 0) for configure optional external packages, write a package independent rule to check if the
   user wants the package installed and if all stuff it needs is available. See hypre.py

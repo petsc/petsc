@@ -12,13 +12,11 @@ int main(int argc,char **args)
   PetscScalar    one = 1.0,v;
   Vec            x;
   Mat            A;
-  PetscViewer    viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,"eagle",-1,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
@@ -34,15 +32,16 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  ierr = MatView(A,viewer);CHKERRQ(ierr);
-
+#if defined(PETSC_HAVE_SOCKET)
+  ierr = MatView(A,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
+#endif
   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
   ierr = VecSet(&one,x);CHKERRQ(ierr);
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SOCKET)
+  ierr = VecView(x,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
+#endif
   
   ierr = PetscSleep(30);CHKERRQ(ierr);
-  ierr = PetscObjectDestroy((PetscObject)viewer);CHKERRQ(ierr);
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
