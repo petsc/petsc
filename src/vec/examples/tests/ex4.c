@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.53 2001/03/23 23:21:30 balay Exp balay $*/
+/*$Id: ex4.c,v 1.54 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
 
@@ -20,7 +20,8 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   /* create two index sets */

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.52 2001/03/23 23:21:30 balay Exp balay $*/
+/*$Id: ex3.c,v 1.53 2001/08/07 03:02:26 balay Exp bsmith $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";
@@ -25,7 +25,8 @@ int main(int argc,char **argv)
 
   /* create two vector */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&y);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,n,PETSC_DECIDE,&y);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecSet(&one,x);CHKERRQ(ierr);
   ierr = VecSet(&two,y);CHKERRQ(ierr);
 
