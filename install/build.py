@@ -38,6 +38,7 @@ class Builder(install.urlMapping.UrlMapping):
       except Exception, e:
         self.debugPrint('Problem loading dictionary from '+dictFilename+'\n--> '+str(e), 2, 'install')
         raise e
+    else: keys = None
     return (data, keys)
 
   def unloadLocalDict(self, data, oldKeys):
