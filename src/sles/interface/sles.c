@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.51 1996/01/26 04:34:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.52 1996/02/08 18:27:29 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -351,19 +351,25 @@ int SLESGetPC(SLES sles,PC *pc)
 .  sles - the sles context
 .  Amat - the matrix associated with the linear system
 .  Pmat - matrix to be used in constructing preconditioner, usually the same
-          as Amat.  If Pmat is 0 for repeated linear solves, the old 
-          preconditioner is used.
+          as Amat. 
 .  flag - flag indicating information about matrix structure.  When solving
-   just one linear system, this flag is NOT used and can thus be set to 0.
+   just one linear system, this flag is NOT used and can thus be set to PETSC_NULL.
 
    Notes: 
    The flag can be used to eliminate unnecessary work in the repeated
    solution of linear systems of the same size.  The available options are
-$    SAME_NONZERO_PATTERN - 
-$       Pmat has the same nonzero structure 
-$       during successive linear solves
+$    SAME_PRECONDITIONER -
+$      Pmat is identical during successive linear solves.
+$      This option is intended for folks who are using
+$      different Amat and Pmat matrices and want to reuse the
+$      same preconditioner matrix.  For example, this option
+$      saves work by not recomputing incomplete factorization
+$      for ILU/ICC preconditioners.
+$    SAME_NONZERO_PATTERN -
+$      Pmat has the same nonzero structure during
+$      successive linear solves. 
 $    DIFFERENT_NONZERO_PATTERN -
-$       Pmat has a different nonzero structure
+$      Pmat does not have the same nonzero structure.
 
 .keywords: SLES, set, operators, matrix, preconditioner, linear system
 
