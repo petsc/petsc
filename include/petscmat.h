@@ -281,7 +281,7 @@ EXTERN int MatGetBlockSize(Mat,int *);
 EXTERN int MatMult(Mat,Vec,Vec);
 EXTERN int MatMultAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatMultTranspose(Mat,Vec,Vec);
-EXTERN int MatIsTranspose(Mat,Mat,PetscTruth*);
+EXTERN int MatIsTranspose(Mat,Mat,PetscReal,PetscTruth*);
 EXTERN int MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatMultConstrained(Mat,Vec,Vec);
 EXTERN int MatMultTransposeConstrained(Mat,Vec,Vec);
@@ -324,7 +324,7 @@ typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 
 EXTERN int MatCopy(Mat,Mat,MatStructure);
 EXTERN int MatView(Mat,PetscViewer);
-EXTERN int MatIsSymmetric(Mat,PetscTruth*);
+EXTERN int MatIsSymmetric(Mat,PetscReal,PetscTruth*);
 EXTERN int MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN int MatLoad(PetscViewer,const MatType,Mat*);
 EXTERN int MatMerge(MPI_Comm,Mat,Mat*);

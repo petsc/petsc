@@ -1394,22 +1394,24 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatIsTranspose_SeqAIJ"
-int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscTruth *f)
+int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscTruth *f)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *) A->data,*bij = (Mat_SeqAIJ*) A->data;
-  int *adx,*bdx,*aii,*bii,*aptr,*bptr; PetscScalar *va,*vb;
-  int ma,na,mb,nb, i,ierr;
+  int        *adx,*bdx,*aii,*bii,*aptr,*bptr; PetscScalar *va,*vb;
+  int        ma,na,mb,nb, i,ierr;
 
   PetscFunctionBegin;
   bij = (Mat_SeqAIJ *) B->data;
   
   ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
   ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
-  if (ma!=nb || na!=mb)
-    SETERRQ(1,"Incompatible A/B sizes for symmetry test");
+  if (ma!=nb || na!=mb){
+    *f = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
   aii = aij->i; bii = bij->i;
   adx = aij->j; bdx = bij->j;
-  va = aij->a; vb = bij->a;
+  va  = aij->a; vb = bij->a;
   ierr = PetscMalloc(ma*sizeof(int),&aptr);CHKERRQ(ierr);
   ierr = PetscMalloc(mb*sizeof(int),&bptr);CHKERRQ(ierr);
   for (i=0; i<ma; i++) aptr[i] = aii[i];
@@ -1420,16 +1422,21 @@ int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscTruth *f)
     /*printf("row %d spans %d--%d; we start @ %d\n",
       i,idx[ii[i]],idx[ii[i+1]-1],idx[aptr[i]]);*/
     while (aptr[i]<aii[i+1]) {
-      int idc,idr; PetscScalar vc,vr;
+      int         idc,idr; 
+      PetscScalar vc,vr;
       /* column/row index/value */
-      idc = adx[aptr[i]]; idr = bdx[bptr[idc]];
-      vc = va[aptr[i]]; vr = vb[bptr[idc]];
+      idc = adx[aptr[i]]; 
+      idr = bdx[bptr[idc]];
+      vc  = va[aptr[i]]; 
+      vr  = vb[bptr[idc]];
       /*printf("comparing %d: (%d,%d)=%e to (%d,%d)=%e\n",
 	aptr[i],i,idc,vc,idc,idr,vr);*/
-      if (i!=idr || vc!=vr) {
-	*f = PETSC_FALSE; goto done;
+      if (i!=idr || PetscAbsScalar(vc-vr) > tol) {
+	*f = PETSC_FALSE;
+        goto done;
       } else {
-	aptr[i]++; if (B || i!=idc) bptr[idc]++;
+	aptr[i]++; 
+        if (B || i!=idc) bptr[idc]++;
       }
     }
   }
@@ -1438,18 +1445,17 @@ int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscTruth *f)
   if (B) {
     ierr = PetscFree(bptr);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatIsSymmetric_SeqAIJ"
-int MatIsSymmetric_SeqAIJ(Mat A,PetscTruth *f)
+int MatIsSymmetric_SeqAIJ(Mat A,PetscReal tol,PetscTruth *f)
 {
   int ierr;
   PetscFunctionBegin;
-  ierr = MatIsTranspose_SeqAIJ(A,A,f);CHKERRQ(ierr);
+  ierr = MatIsTranspose_SeqAIJ(A,A,tol,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

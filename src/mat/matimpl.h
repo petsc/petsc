@@ -100,7 +100,7 @@ struct _MatOps {
             (*solves)(Mat, Vecs, Vecs),
             (*getinertia)(Mat,int*,int*,int*),
 /*85*/      (*load)(PetscViewer,const MatType,Mat*),
-            (*issymmetric)(Mat,PetscTruth*),
+            (*issymmetric)(Mat,PetscReal,PetscTruth*),
             (*ishermitian)(Mat,PetscTruth*),
             (*isstructurallysymmetric)(Mat,PetscTruth*),
             (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec),
