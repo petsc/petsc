@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.77 1997/04/25 20:22:10 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.78 1997/04/25 21:08:29 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -124,7 +124,7 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
+  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
                     user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
 
   /*
@@ -190,11 +190,11 @@ int main( int argc, char **argv )
     ierr = MatSetLocalToGlobalMapping(J,nloc,ltog); CHKERRA(ierr);
 
       /* Debugging print statement */
-      /* { int i;
+    /*     { int i;
         for (i=0; i<nloc; i++)
-           printf("[%d] i=%d, idx=%d\n",PetscGlobalRank,i,ltog[i]);
-     }
-      */
+           printf("[%d] nloc %d i=%d, idx=%d\n",PetscGlobalRank,nloc,i,ltog[i]);
+     } */ 
+      
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
