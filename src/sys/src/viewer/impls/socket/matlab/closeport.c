@@ -22,7 +22,7 @@ typedef unsigned long   u_long;
 #include <fcntl.h>
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
-#define ERROR(a) {fprintf(stdout,"CLOSEPORT: %s \n",a); return ;}
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"CLOSEPORT: %s \n",a); return ;}
 typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
@@ -37,11 +37,11 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   linger.onoff = 1;
   linger.time  = 0; 
 
-  if (!nrhs) ERROR("Needs one argument, the port");
+  if (!nrhs) PETSC_MEX_ERROR("Needs one argument, the port");
   t = (int)*mxGetPr(prhs[0]);
 
   if (setsockopt(t,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) 
-    ERROR("Setting linger");
-  if (close(t)) ERROR("closing socket");
+    PETSC_MEX_ERROR("Setting linger");
+  if (close(t)) PETSC_MEX_ERROR("closing socket");
   return;
 }

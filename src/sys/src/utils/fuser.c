@@ -27,7 +27,7 @@
 #include "petscfix.h"
 
 
-#if defined(PETSC_HAVE_GETUSERNAME)
+#if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetUserName"
 PetscErrorCode PetscGetUserName(char name[],size_t nlen)

@@ -17,11 +17,11 @@ class Configure(config.base.Configure):
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
-                                            'sys/socket','sys/wait','netinet/in','netdb','Direct'])
+                                            'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
-                 'uname','snprintf','_snprintf','_fullpath','_lseek','time','fork','stricmp']
+                 'uname','snprintf','_snprintf','_fullpath','_lseek','time','fork','stricmp','bzero','dlopen','dlsym']
     libraries1 = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers', self)
     self.compilers    = self.framework.require('config.compilers',    self)
@@ -318,8 +318,11 @@ class Configure(config.base.Configure):
       if self.libraries.check('Ws2_32.lib','socket',prototype='#include <Winsock2.h>',call='socket(0,0,0);'):
         self.addDefine('HAVE_WINSOCK2_H',1)
         self.addDefine('HAVE_SOCKET', 1)
-        self.addDefine('HAVE_CLOSESOCKET',1)
-        self.addDefine('HAVE_WSAGETLASTERROR',1)
+        if self.checkLink('#include <Winsock2.h>','closesocket(0)'):
+          self.addDefine('HAVE_CLOSESOCKET',1)
+        if self.checkLink('#include <Winsock2.h>','WSAGetLastError()'):
+          self.addDefine('HAVE_WSAGETLASTERROR',1)
+        if self.check
     return
 
   def configureMissingSignals(self):
@@ -395,10 +398,14 @@ class Configure(config.base.Configure):
                               call='GetComputerName(NULL,NULL);'):
         self.addDefine('HAVE_WINDOWS_H',1)
         self.addDefine('HAVE_GETCOMPUTERNAME',1)
+      if self.base.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
+        self.addDefine('HAVE_GETPROCADDRESS',1)
+      if self.base.checkLink('#include <Windows.h>','LoadLibrary(0)'):
+        self.addDefine('HAVE_LOADLIBRARY',1)
     if not self.functions.haveFunction('GetUserName'):
       if self.libraries.check('Advapi32.lib','GetUserName',prototype='#include <Windows.h>',
                               call='GetUserName(NULL,NULL);'):
-        self.addDefine('HAVE_GETUSERNAME',1)
+        self.addDefine('HAVE_GET_USER_NAME',1)
     self.libraries.check('User32.lib','GetDC',prototype='#include <Windows.h>',call='GetDC(0);')
     self.libraries.check('Gdi32.lib','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);')
     if self.framework.argDB['CC'].find('win32fe') >= 0:

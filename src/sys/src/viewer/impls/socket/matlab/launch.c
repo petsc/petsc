@@ -9,7 +9,7 @@ extern int fork();
 extern int system(const char *);
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
-#define ERROR(a) {fprintf(stdout,"LAUNCH: %s \n",a); return ;}
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"LAUNCH: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
@@ -26,9 +26,9 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   }
 
   /* check output parameters */
-  if (nlhs > 1) ERROR("Open requires at most one output argument.");
-  if (!nrhs) ERROR("Open requires at least one input argument.");
-  if (!mxIsChar(prhs[0])) ERROR("First arg must be string.");
+  if (nlhs > 1) PETSC_MEX_ERROR("Open requires at most one output argument.");
+  if (!nrhs) PETSC_MEX_ERROR("Open requires at least one input argument.");
+  if (!mxIsChar(prhs[0])) PETSC_MEX_ERROR("First arg must be string.");
 
   if (nrhs == 1) np = 1;  
   else           np = (int)*mxGetPr(prhs[1]);
@@ -36,7 +36,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   /* attempt a fork */
   child = fork();
   if (child < 0) {
-    ERROR("Unable to fork.");
+    PETSC_MEX_ERROR("Unable to fork.");
   } else if (!child) {  /* I am child, start up MPI program */
     mxGetString(prhs[0],program,1000);
     sprintf(executable,"mpirun -np %d %s",np,program);

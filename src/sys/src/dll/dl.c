@@ -50,6 +50,7 @@ PetscFList CCAList = 0;
       Code to maintain a list of opened dynamic libraries and load symbols
 */
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DLFCN_H)
 #include <dlfcn.h>
 #endif
 struct _PetscDLLibraryList {

@@ -60,9 +60,11 @@ typedef unsigned long   u_long;
 #include <strings.h>
 #endif
 #if defined(PETSC_HAVE_WINSOCK2_H)
-#include <winsock2.h>
+#include <Winsock2.h>
 #endif
-typedef int socklen_t;
+#if defined(PETSC_HAVE_WS2TCPIP_H)
+#include <Ws2tcpip.h>
+#endif
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "petscfix.h"
 #include "mex.h"
@@ -149,10 +151,24 @@ PetscErrorCode establish(u_short portnum)
   PetscErrorCode     ierr;
   struct sockaddr_in sa;  
   struct hostent     *hp;
+#if defined(PETSC_HAVE_UNAME)
+  struct utsname     utname;
+#elif defined(PETSC_HAVE_GETCOMPUTERNAME)
+  int                namelen=MAXHOSTNAME;
+#endif
 
   /* Note we do not use gethostname since that is not POSIX */
-  ierr = PetscGetHostName(myname,MAXHOSTNAME);
-  ierr = PetscMemzero(&sa,sizeof(struct sockaddr_in));
+#if defined(PETSC_HAVE_GETCOMPUTERNAME)
+  GetComputerName((LPTSTR)name,(LPDWORD)&namelen);
+#elif defined(PETSC_HAVE_UNAME)
+  uname(&utname);
+  strncpy(name,utname.nodename,MAXHOSTNAME);
+#endif
+#if defined(PETSC_HAVE_BZERO)
+  bzero(&sa,sizeof(struct sockaddr_in));
+#else
+  memset(&sa,0,sizeof(struct sockaddr_in));
+#endif
   hp = gethostbyname(myname);
   if (!hp) {
      fprintf(stdout,"RECEIVE: error from gethostbyname\n");

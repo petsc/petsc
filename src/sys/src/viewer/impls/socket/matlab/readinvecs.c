@@ -23,7 +23,7 @@
 #include <stropts.h>
 #endif
 
-#define ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return -1;}
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return -1;}
 /*-----------------------------------------------------------------*/
 /*
        Reads in a single vector
@@ -36,14 +36,14 @@ PetscErrorCode ReadInVecs(mxArray *plhs[],int t,int dim,int *dims)
   
   /* get size of matrix */
   if (PetscBinaryRead(t,&cookie,1,PETSC_INT))   return -1;  /* finished reading file */
-  if (cookie != VEC_FILE_COOKIE) ERROR("could not read vector cookie");
-  if (PetscBinaryRead(t,&M,1,PETSC_INT))        ERROR("reading number rows"); 
+  if (cookie != VEC_FILE_COOKIE) PETSC_MEX_ERROR("could not read vector cookie");
+  if (PetscBinaryRead(t,&M,1,PETSC_INT))        PETSC_MEX_ERROR("reading number rows"); 
   
   if (dim == 1) {
     plhs[0]  = mxCreateDoubleMatrix(M,1,mxREAL);
   } else if (dim == 2) {
     if (dims[0]*dims[1] != M) {
-      printf("ERROR: m %d * n %d != M %d\n",dims[0],dims[1],M);
+      printf("PETSC_MEX_ERROR: m %d * n %d != M %d\n",dims[0],dims[1],M);
       return -1;
     }
     plhs[0]  = mxCreateDoubleMatrix(dims[0],dims[1],mxREAL);
@@ -53,18 +53,18 @@ PetscErrorCode ReadInVecs(mxArray *plhs[],int t,int dim,int *dims)
 
   /* read in matrix */
   if (!compx) { /* real */
-    if (PetscBinaryRead(t,mxGetPr(plhs[0]),M,PETSC_DOUBLE)) ERROR("read dense matrix");
+    if (PetscBinaryRead(t,mxGetPr(plhs[0]),M,PETSC_DOUBLE)) PETSC_MEX_ERROR("read dense matrix");
   } else { /* complex, currently not used */
     for (i=0; i<M; i++) {
-      if (PetscBinaryRead(t,mxGetPr(plhs[0])+i,1,PETSC_DOUBLE)) ERROR("read dense matrix");
-      if (PetscBinaryRead(t,mxGetPi(plhs[0])+i,1,PETSC_DOUBLE)) ERROR("read dense matrix");
+      if (PetscBinaryRead(t,mxGetPr(plhs[0])+i,1,PETSC_DOUBLE)) PETSC_MEX_ERROR("read dense matrix");
+      if (PetscBinaryRead(t,mxGetPi(plhs[0])+i,1,PETSC_DOUBLE)) PETSC_MEX_ERROR("read dense matrix");
     }
   }
   return 0;
 }
 
-#undef ERROR
-#define ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return;}
+#undef PETSC_MEX_ERROR
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return;}
 /*-----------------------------------------------------------------*/
 
 #undef __FUNCT__  
@@ -77,9 +77,9 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   FILE       *file;
 
   /* check output parameters */
-  if (nlhs != 1) ERROR("Receive requires one output argument.");
+  if (nlhs != 1) PETSC_MEX_ERROR("Receive requires one output argument.");
   if (fd == -1) {
-    if (!mxIsChar(prhs[0])) ERROR("First arg must be string.");
+    if (!mxIsChar(prhs[0])) PETSC_MEX_ERROR("First arg must be string.");
   
     /* open the file */
     mxGetString(prhs[0],filename,256);

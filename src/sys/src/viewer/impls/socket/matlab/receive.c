@@ -20,7 +20,7 @@ EXTERN PetscErrorCode ReceiveSparseMatrix(mxArray **,int);
 EXTERN PetscErrorCode ReceiveDenseIntMatrix(mxArray **,int);
 EXTERN PetscErrorCode ReceiveDenseMatrix(mxArray **,int);
 
-#define ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return ;}
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
@@ -31,13 +31,13 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
  int    type,t;
 
   /* check output parameters */
-  if (nlhs != 1) ERROR("Receive requires one output argument.");
+  if (nlhs != 1) PETSC_MEX_ERROR("Receive requires one output argument.");
 
-  if (!nrhs) ERROR("Receive requires one input argument.");
+  if (!nrhs) PETSC_MEX_ERROR("Receive requires one input argument.");
   t = (int)*mxGetPr(prhs[0]);
 
   /* get type of matrix */
-  if (PetscBinaryRead(t,&type,1,PETSC_INT))   ERROR("reading type"); 
+  if (PetscBinaryRead(t,&type,1,PETSC_INT))   PETSC_MEX_ERROR("reading type"); 
 
   if (type == DENSEREAL) ReceiveDenseMatrix(plhs,t);
   if (type == DENSEINT) ReceiveDenseIntMatrix(plhs,t);

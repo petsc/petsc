@@ -10,7 +10,7 @@
 #include "petscsys.h"
 #include "mex.h"
 
-#define ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return -1;}
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return -1;}
 #undef __FUNCT__  
 #define __FUNCT__ "ReceiveSparseMatrix"
 PetscErrorCode ReceiveSparseMatrix(mxArray *plhs[],int t)
@@ -21,11 +21,11 @@ PetscErrorCode ReceiveSparseMatrix(mxArray *plhs[],int t)
   double *tv,*v,*diag,*vi;
 
   /* get size of matrix */
-  if (PetscBinaryRead(t,&m,1,PETSC_INT))   ERROR("reading number columns"); 
-  if (PetscBinaryRead(t,&n,1,PETSC_INT))   ERROR("reading number rows"); 
+  if (PetscBinaryRead(t,&m,1,PETSC_INT))   PETSC_MEX_ERROR("reading number columns"); 
+  if (PetscBinaryRead(t,&n,1,PETSC_INT))   PETSC_MEX_ERROR("reading number rows"); 
   /* get number of nonzeros */
-  if (PetscBinaryRead(t,&nnz,1,PETSC_INT))   ERROR("reading nnz"); 
-  if (PetscBinaryRead(t,&compx,1,PETSC_INT))   ERROR("reading row lengths"); 
+  if (PetscBinaryRead(t,&nnz,1,PETSC_INT))   PETSC_MEX_ERROR("reading nnz"); 
+  if (PetscBinaryRead(t,&compx,1,PETSC_INT))   PETSC_MEX_ERROR("reading row lengths"); 
   /* Create a matrix for Matlab */
   /* since Matlab stores by columns not rows we actually will 
      create transpose of desired matrix */
@@ -35,16 +35,16 @@ PetscErrorCode ReceiveSparseMatrix(mxArray *plhs[],int t)
   v = mxGetPr(plhs[0]);
   /* Matlab sparse matrix pointers start at 0 not 1 */
   if (!compx) {
-    if (PetscBinaryRead(t,v,nnz,PETSC_DOUBLE)) ERROR("reading values");
+    if (PetscBinaryRead(t,v,nnz,PETSC_DOUBLE)) PETSC_MEX_ERROR("reading values");
   } else {
     for (i=0; i<nnz; i++) {
       vi = mxGetPi(plhs[0]);
-      if (PetscBinaryRead(t,v+i,1,PETSC_DOUBLE)) ERROR("reading values");
-      if (PetscBinaryRead(t,vi+i,1,PETSC_DOUBLE)) ERROR("reading values");
+      if (PetscBinaryRead(t,v+i,1,PETSC_DOUBLE)) PETSC_MEX_ERROR("reading values");
+      if (PetscBinaryRead(t,vi+i,1,PETSC_DOUBLE)) PETSC_MEX_ERROR("reading values");
     }
   }
-  if (PetscBinaryRead(t,c,m+1,PETSC_INT)) ERROR("reading column pointers");
-  if (PetscBinaryRead(t,r,nnz,PETSC_INT)) ERROR("reading row pointers");
+  if (PetscBinaryRead(t,c,m+1,PETSC_INT)) PETSC_MEX_ERROR("reading column pointers");
+  if (PetscBinaryRead(t,r,nnz,PETSC_INT)) PETSC_MEX_ERROR("reading row pointers");
   return 0;
 }
 
