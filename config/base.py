@@ -128,21 +128,21 @@ class Configure:
 
   def checkCCompilerSetup(self):
     if not self.framework.argDB.has_key('CC'):
-      raise RuntimeError('Could not find a C compiler. Make sure the compiler module is loaded.')
+      raise RuntimeError('Could not find a C compiler. Please set with the option --with-cc or -CC and load the compilers module.')
     if not self.framework.argDB.has_key('CPP'):
-      raise RuntimeError('Could not find a C preprocessor. Make sure the compiler module is loaded.')
+      raise RuntimeError('Could not find a C preprocessor. Please set with the option --with-cpp or -CPP and load the compilers module.')
     return
 
   def checkCxxCompilerSetup(self):
     if not self.framework.argDB.has_key('CXX'):
-      raise RuntimeError('Could not find a C++ compiler. Make sure the compiler module is loaded.')
+      raise RuntimeError('Could not find a C++ compiler. Please set with the option --with-cxx or -CXX and load the compilers module.')
     if not self.framework.argDB.has_key('CXXCPP'):
       raise RuntimeError('Could not find a C++ preprocessor. Make sure the compiler module is loaded.')
     return
 
   def checkF77CompilerSetup(self):
     if not self.framework.argDB.has_key('FC'):
-      raise RuntimeError('Could not find a Fortran 77 compiler. Make sure the compiler module is loaded.')
+      raise RuntimeError('Could not find a Fortran 77 compiler. Please set with the option --with-fc or -FC and load the compilers module.')
     return
 
   def getCompiler(self):

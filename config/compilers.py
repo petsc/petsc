@@ -41,27 +41,42 @@ class Configure(config.base.Configure):
     '''Determine the C compiler using --with-cc, then CC, then a search
     - Also determines the preprocessor from --with-cpp, then CPP, then the C compiler'''
     if self.framework.argDB.has_key('with-cc'):
-      self.CC = self.framework.argDB['with-cc']
+      compilers = self.framework.argDB['with-cc']
     elif self.framework.argDB.has_key('CC'):
-      self.CC = self.framework.argDB['CC']
+      compilers = self.framework.argDB['CC']
     else:
-      if not self.getExecutables(['gcc', 'cc', 'xlC', 'xlc', 'pgcc'], resultName = 'CC'):
-        raise RuntimeError('Could not find a C compiler. Please set with the option --with-cc or -CC')
-    self.framework.argDB['CC'] = self.CC
-    self.addSubstitution('CC', self.CC)
+      compilers = ['gcc', 'cc', 'xlC', 'xlc', 'pgcc']
+    if not isinstance(compilers, list): compilers = [compilers]
+    if self.getExecutables(compilers, resultName = 'CC'):
+      self.framework.argDB['CC'] = self.CC
+      self.addSubstitution('CC', self.CC)
+      # Check for GCC
+      self.isGCC = 0
+      if self.framework.argDB['CC'].endsWith('gcc'):
+        self.isGCC = 1
+      else:
+        try:
+          import commands
+          (status, output) = commands.getstatusoutput(self.framework.argDB['CC']+' --help')
+          if not status and output.find('www.gnu.org') >= 0:
+            self.isGCC = 1
+        except Exception, e: pass
 
-    if self.framework.argDB.has_key('with-cpp'):
-      self.CPP = self.framework.argDB['with-cpp']
-    elif self.framework.argDB.has_key('CPP'):
-      self.CPP = self.framework.argDB['CPP']
-    else:
-      self.CPP = self.CC+' -E'
-    self.framework.argDB['CPP'] = self.CPP
-    self.addSubstitution('CPP', self.CPP)
+      if self.framework.argDB.has_key('with-cpp'):
+        preprocessors = self.framework.argDB['with-cpp']
+      elif self.framework.argDB.has_key('CPP'):
+        preprocessors = self.framework.argDB['CPP']
+      else:
+        preprocessors = [self.framework.argDB['CC']+' -E']
+      if not isinstance(preprocessors, list):  = [preprocessors]
+      if self.getExecutables(preprocessors, resultName = 'CPP'):
+        self.framework.argDB['CPP'] = self.CPP
+        self.addSubstitution('CPP', self.CPP)
     return
 
   def checkCRestrict(self):
     '''Check for the C restrict keyword'''
+    if not self.framework.argDB.has_key('CC'): return
     keyword = 'unsupported'
     self.pushLanguage('C')
     # Try the official restrict keyword, then gcc's __restrict__, then
@@ -83,7 +98,8 @@ class Configure(config.base.Configure):
 
   def checkCFormatting(self):
     '''Activate format string checking if using the GNU compilers'''
-    if self.CC  == "gcc":
+    if not self.framework.argDB.has_key('CC'): return
+    if self.isGCC:
       self.addDefine('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
     return
 
@@ -91,27 +107,31 @@ class Configure(config.base.Configure):
     '''Determine the C++ compiler using --with-cxx, then CXX, then a search
     - Also determines the preprocessor from --with-cxxcpp, then CXXCPP, then the C++ compiler'''
     if self.framework.argDB.has_key('with-cxx'):
-      self.CXX = self.framework.argDB['with-cxx']
+      compilers = self.framework.argDB['with-cxx']
     elif self.framework.argDB.has_key('CXX'):
-      self.CXX = self.framework.argDB['CXX']
+      compilers = self.framework.argDB['CXX']
     else:
-      if not self.getExecutables(['g++', 'c++', 'CC', 'xlC', 'pgCC', 'cxx', 'cc++', 'cl'], resultName = 'CXX'):
-        raise RuntimeError('Could not find a C++ compiler. Please set with the option --with-cxx or -CXX')
-    self.framework.argDB['CXX'] = self.CXX
-    self.addSubstitution('CXX', self.CXX)
+      compilers = ['g++', 'c++', 'CC', 'xlC', 'pgCC', 'cxx', 'cc++', 'cl']
+    if not isinstance(compilers, list): compilers = [compilers]
+    if self.getExecutables(compilers, resultName = 'CXX'):
+      self.framework.argDB['CXX'] = self.CXX
+      self.addSubstitution('CXX', self.CXX)
 
-    if self.framework.argDB.has_key('with-cxxcpp'):
-      self.CXXCPP = self.framework.argDB['with-cxxcpp']
-    elif self.framework.argDB.has_key('CXXCPP'):
-      self.CXXCPP = self.framework.argDB['CXXCPP']
-    else:
-      self.CXXCPP = self.CXX+' -E'
-    self.framework.argDB['CXXCPP'] = self.CXXCPP
-    self.addSubstitution('CXXCPP', self.CXXCPP)
+      if self.framework.argDB.has_key('with-cxxcpp'):
+        preprocessors = self.framework.argDB['with-cxxcpp']
+      elif self.framework.argDB.has_key('CXXCPP'):
+        preprocessors = self.framework.argDB['CXXCPP']
+      else:
+        preprocessors = [self.CXX+' -E']
+      if not isinstance(preprocessors, list): preprocessors = [preprocessors]
+      if self.getExecutables(preprocessors, resultName = 'CXXCPP'):
+        self.framework.argDB['CXXCPP'] = self.CXXCPP
+        self.addSubstitution('CXXCPP', self.CXXCPP)
     return
 
   def checkCxxNamespace(self):
     '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
+    if not self.framework.argDB.has_key('CXX'): return
     self.pushLanguage('C++')
     if self.checkCompile('namespace petsc {int dummy;}'):
       self.addDefine('HAVE_CXX_NAMESPACE', 1)
@@ -121,14 +141,15 @@ class Configure(config.base.Configure):
   def checkFortranCompiler(self):
     '''Determine the Fortran compiler using --with-fc, then FC, then a search'''
     if self.framework.argDB.has_key('with-fc'):
-      self.FC = self.framework.argDB['with-fc']
+      compilers = self.framework.argDB['with-fc']
     elif self.framework.argDB.has_key('FC'):
-      self.FC = self.framework.argDB['FC']
+      compilers = self.framework.argDB['FC']
     else:
-      if not self.getExecutables(['g77', 'f77', 'pgf77'], resultName = 'FC'):
-        raise RuntimeError('Could not find a Fortran 77 compiler. Please set with the option --with-fc or -FC')
-    self.framework.argDB['FC'] = self.FC
-    self.addSubstitution('FC', self.FC)
+      compilers = ['g77', 'f77', 'pgf77']
+    if not isinstance(compilers, list): compilers = [compilers]
+    if self.getExecutables(cmpilers, resultName = 'FC'):
+      self.framework.argDB['FC'] = self.FC
+      self.addSubstitution('FC', self.FC)
     return
 
   def mangleFortranFunction(self, name):
@@ -146,6 +167,7 @@ class Configure(config.base.Configure):
   def checkFortranNameMangling(self):
     '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, or HAVE_FORTRAN_CAPS
     Also checks wierd g77 behavior, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
+    if not self.framework.argDB.has_key('FC'): return
     oldLIBS = self.framework.argDB['LIBS']
 
     # Define known manglings and write tests in C
@@ -213,15 +235,15 @@ class Configure(config.base.Configure):
   def checkFortran90Compiler(self):
     '''Determine the Fortran 90 compiler using --with-f90, then F90, then a search'''
     if self.framework.argDB.has_key('with-f90'):
-      self.F90 = self.framework.argDB['with-f90']
+      compilers = self.framework.argDB['with-f90']
     elif self.framework.argDB.has_key('F90'):
-      self.F90 = self.framework.argDB['F90']
+      compilers = self.framework.argDB['F90']
     else:
-      if not self.getExecutables(['f90', 'pgf90', 'ifc'], resultName = 'F90'):
-        #raise RuntimeError('Could not find a Fortran 90 compiler. Please set with the option --with-f90 or -F90')
-        self.F90 = 'f90'
-    self.framework.argDB['F90'] = self.F90
-    self.addSubstitution('F90', self.F90)
+      compilers = ['f90', 'pgf90', 'ifc']
+    if not isinstance(compilers, list): compilers = [compilers]
+    if self.getExecutables(compilers, resultName = 'F90'):
+      self.framework.argDB['F90'] = self.F90
+      self.addSubstitution('F90', self.F90)
     return
 
   def checkFortran90Interface(self):
@@ -256,7 +278,7 @@ class Configure(config.base.Configure):
     came from the OCTAVE_FLIBS macro in octave-2.0.13/aclocal.m4,
     and full credit should go to John W. Eaton for writing this
     extremely useful macro.  Thank you John.'''
-    isGCC = self.framework.argDB['CC'] == 'gcc'
+    if not self.framework.argDB.has_key('CC') or not self.framework.argDB.has_key('FC'): return
     oldFlags = self.framework.argDB['LDFLAGS']
     self.framework.argDB['LDFLAGS'] += ' -v'
     self.pushLanguage('F77')
@@ -274,7 +296,7 @@ class Configure(config.base.Configure):
     ldRunPath = re.findall(r'^.*LD_RUN_PATH *= *([^ ]*).*', output)
     if ldRunPath: ldRunPath = ldRunPath[0]
     if ldRunPath and ldRunPath[0] == '/':
-      if isGCC:
+      if self.isGCC:
         ldRunPath = '-Xlinker -R -Xlinker '+ldRunPath
       else:
         ldRunPath = '-R '+ldRunPath
@@ -299,7 +321,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-bI:.*$', arg)
         if m:
           if not arg in lflags:
-            if isGCC:
+            if self.isGCC:
               lflags.append('-Xlinker')
             lflags.append(arg)
             #print 'Found binary include: '+arg
