@@ -44,6 +44,8 @@ to see if converged or diverged and why.
   optiions -pc_ilu_mat_ordering_type <nd,...> and  -pc_lu_mat_ordering_type <nd,...> now set 
   the ordering type.
 
+  We now provide a drop tolerance based ILU for SeqAIJ matrix format via Yousef Saad's SPARSEKIT2
+  software.
  
   AO
 
