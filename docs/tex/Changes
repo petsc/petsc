@@ -35,6 +35,8 @@ add to it).
 
   General
 
+  added int PetscShowMemoryUsage(Viewer viewer,char *message)
+
 
   Viewers
 

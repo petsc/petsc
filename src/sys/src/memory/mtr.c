@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.140 2000/04/12 04:21:28 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.141 2000/04/16 04:00:07 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -395,6 +395,42 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
   
   if (head->next) head->next->prev = head->prev;
   ierr = PetscFreeAlign(a,line,function,file,dir);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscShowMemoryUsage"></a>*/"PetscShowMemoryUsage"
+/*@
+    PetscShowMemoryUsage - Shows the amount of memory currently being used 
+        in a communicator.
+   
+    Collective on Viewer
+
+    Input Parameter:
++    viewer - the viewer that defines the communicator
+-    message - string printed before values
+
+    Level: intermediate
+
+.keywords: memory, allocation, tracing, space, statistics
+
+.seealso: PetscTrDump(),PetscTrSpace(), PetscGetResidentSetSize()
+ @*/
+int PetscShowMemoryUsage(Viewer viewer,char *message)
+{
+  PLogDouble allocated,maximum,resident;
+  int        ierr,rank;
+  MPI_Comm   comm;
+
+  PetscFunctionBegin;
+  ierr = PetscTrSpace(&allocated,PETSC_NULL,&maximum);CHKERRQ(ierr);
+  ierr = PetscGetResidentSetSize(&resident);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = ViewerASCIIPrintf(viewer,message);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Space allocated %g, max space allocated %g, process memory %g\n",rank,allocated,maximum,resident);CHKERRQ(ierr);
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
