@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.31 1995/08/04 01:51:30 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.32 1995/08/05 20:42:10 curfman Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -354,12 +354,13 @@ $  -trdump : dumps unfreed memory during call to PetscFinalize()
 int TrDump( FILE *fp )
 {
   TRSPACE *head;
-  int     id;
+  int     id,mytid;
 
+  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   if (fp == 0) fp = stderr;
   head = TRhead;
   while (head) {
-    fprintf( fp, "%d bytes at address [%p], id = ", 
+    fprintf( fp, "[%d]%d bytes at address [%p], id = ",mytid, 
 	     (int) head->size, head + sizeof(TrSPACE) );
     if (head->id >= 0) {
 	head->fname[TR_FNAME_LEN-1] = 0;
@@ -373,7 +374,8 @@ int TrDump( FILE *fp )
     }
     head = head->next;
   }
-  fprintf( fp, "The maximum space allocated was %d bytes\n",(int)TRMaxMem);
+  fprintf( fp, "[%d]The maximum space allocated was %d bytes\n",mytid,
+                                                              (int)TRMaxMem);
   return 0;
 }
 
