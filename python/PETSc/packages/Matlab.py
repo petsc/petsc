@@ -82,8 +82,9 @@ class Configure(config.base.Configure):
               matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
             else:
               matlab_sys = ''
-            if self.setCompilers.slpath:
-              self.addSubstitution('MATLAB_LIB',self.setCompilers.slpath+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            flagName = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
+            if flagName in self.framework.argDB:
+              self.addSubstitution('MATLAB_LIB',self.framework.argDB[flagName]+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
             else:
               self.addSubstitution('MATLAB_LIB','-L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)              
             return
