@@ -1,5 +1,5 @@
 
-C "$Id: ex5f90.F,v 1.9 1997/09/22 15:19:17 balay Exp bsmith $";
+C "$Id: ex5f90.F,v 1.10 1998/03/12 23:23:23 bsmith Exp balay $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -93,6 +93,7 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/snes.h"
+#include "include/FINCLUDE/is.h"
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                   Variable declarations
@@ -186,7 +187,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create nonlinear solver context
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,
+     &               ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create vector data structures; set function evaluation routine
@@ -204,8 +206,8 @@ C  Create distributed array (DA) to manage parallel grid and vectors
      &      write(6,*) 'Incompatible number of procs: Nx * Ny != size'
          SETERRA(1,0,' ')
       endif
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
-     &                my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
+     &                mx,my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,da,ierr)
       user(3) = da
 
 C
@@ -271,8 +273,8 @@ C        - Note that the Fortran interface to DAGetGlobalIndices() differs from
 C          the C version.  See the Fortran chapter of the users manual for details.
 
         call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
-        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog_a(ltog_i),
-     &       isltog,ierr)
+        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,
+     &                                   ltog_a(ltog_i),isltog,ierr)
         call MatSetLocalToGlobalMapping(J,isltog,ierr)
         call ISLocalToGlobalMappingDestroy(isltog,ierr)
 
