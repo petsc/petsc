@@ -161,7 +161,6 @@ testfortran: chkopts
 # use lib and check for errors here.
 # Note: F90 interface currently only supported in NAG F90 compiler
 fortran90: chkpetsc_dir
-	-$(RM) -f $(PDIR)/libpetscfortran.*
 	-@echo "Beginning to compile Fortran90 interface library"
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
