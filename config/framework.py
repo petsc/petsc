@@ -236,9 +236,13 @@ class Framework(config.base.Configure):
     guard = 'INCLUDED_'+os.path.basename(name).upper().replace('.', '_')
     f.write('#if !defined('+guard+')\n')
     f.write('#define '+guard+'\n\n')
+    if hasattr(self, 'headerTop'):
+      f.write(str(self.headerTop)+'\n')
     self.outputDefines(f, self)
     for child in self.children:
       self.outputDefines(f, child)
+    if hasattr(self, 'headerBottom'):
+      f.write(str(self.headerBottom)+'\n')
     f.write('#endif /* '+guard+' */\n')
     f.close()
     return

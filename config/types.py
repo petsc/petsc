@@ -53,15 +53,19 @@ class Configure(config.base.Configure):
     return
 
   def checkComplex(self):
-    '''Check for complex numbers if --enable-complex is given, and defines PETSC_USE_COMPLEX if they are present'''
+    '''Check for complex numbers in namespace std, and if --enable-complex is given, defines PETSC_USE_COMPLEX if they are present'''
+    self.pushLanguage('C++')
+    includes = '#include <complex>\n'
+    body     = 'std::complex<double> x;\n'
+    found    = 0
+    if self.checkLink(includes, body):
+      self.addDefine('HAVE_COMPLEX', 1)
+      found = 1
+    self.popLanguage()
+
     self.getArgument('complex', '0', '-enable-', int, 'Complex arithemtic flag')
-    if self.complex:
-      self.pushLanguage('C++')
-      includes = '#include <complex>\n'
-      body     = 'std::complex<double> x;\n'
-      if self.checkLink(includes, body):
-        self.addDefine('PETSC_USE_COMPLEX', 1)
-      self.popLanguage()
+    if found and self.complex:
+      self.addDefine('PETSC_USE_COMPLEX', 1)
     return
 
   def checkFortranStar(self):
