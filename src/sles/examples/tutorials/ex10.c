@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex21.c,v 1.10 1996/08/28 16:03:25 balay Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.11 1996/08/28 18:42:04 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -17,13 +17,12 @@ users manual for a discussion of preloading.  Input parameters include\n\
 /*T
    Concepts: SLES (solving linear equations)
    Concepts: Plog (profiling multiple stages of code)
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions()
-   Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView()
-   Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops()
-   Routines: PetscBarrier(); PetscGetTime()
-   Routines: MatGetTypeFromOptions(); MatLoad()
-   Routines: VecLoad()
-   Routines: ViewerFileOpenBinary(); ViewerStringOpen(); ViewerDestroy()
+   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+   Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView();
+   Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops();
+   Routines: PetscBarrier(); PetscGetTime();
+   Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
+   Routines: ViewerFileOpenBinary(); ViewerStringOpen(); ViewerDestroy();
    Processors: n
 T*/
 

@@ -1,5 +1,5 @@
 
-C    "$Id: ex6f.F 1.14 1996/09/25 20:51:17 curfman Exp curfman $";
+C    "$Id: ex6f.F 1.15 1996/09/25 20:55:13 curfman Exp curfman $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -10,7 +10,7 @@ C/*T
 C  Concepts: SLES (repeatedly solving linear systems)
 C  Concepts: SLES (different matrices for linear system and preconditioner)
 C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C  Routines: SLESSolve(); SLESView(); SLESGetKSP(); KSPSetMonitor();
+C  Routines: SLESSolve(); SLESGetKSP(); KSPSetMonitor();
 C  Routines: KSPBuildSolution();
 C  Processors: n
 CT*/

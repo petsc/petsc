@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.19 1996/08/27 18:17:16 curfman Exp curfman $";
+static char vcid[] = "$Id: ex9.c,v 1.20 1996/08/28 18:41:58 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -13,7 +13,7 @@ structures throughout the process.  Note the various stages of event logging.\n\
    Concepts: Plog (profiling multiple stages of code)
    Concepts: Plog (user-defined event profiling)
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSetUp()
-   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESAppendOptionsPrefix()
+   Routines: SLESSolve(); SLESGetKSP(); SLESAppendOptionsPrefix()
    Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd()
    Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops()
    Routines: MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS)

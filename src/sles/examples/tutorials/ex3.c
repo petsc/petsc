@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.47 1996/08/15 12:48:52 bsmith Exp $";
+static char vcid[] = "$Id: ex3.c,v 1.1 1996/08/28 19:59:55 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -12,7 +12,7 @@ differently from the way it is assembled.  Input arguments are:\n\
 /*T
    Concepts: SLES (solving linear equations)
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
+   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
    Routines: KSPSetTolerances(); PCSetType();
    Processors: n
 T*/
