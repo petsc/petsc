@@ -53,6 +53,12 @@
 
 #define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
 #define PETSC_HAVE_CXX_NAMESPACE
+
+#define PETSC_HAVE_SYS_SOCKET_H
+#define PETSC_HAVE_WINDOWS_H
+#define PETSC_HAVE_SYS_WAIT_H
+#define PETSC_HAVE_NETINET_IN_H
+#define PETSC_HAVE_NETDB_H
  
 #define PETSC_DIR_SEPARATOR '/'
 #define PETSC_PATH_SEPARATOR ':'

@@ -23,7 +23,7 @@ C_CLINKER	   = ${WIN32FE} bcc32
 C_FLINKER	   = 
 C_CCV		   = ${WIN32FE} bcc32 --version
 C_FCV              = 
-C_SYS_LIB	   = 
+C_SYS_LIB	   = ws2_32.lib kernel32.lib advapi32.lib user32.lib gdi32.lib
 # ------------------------- BOPT - g_c++ options ------------------------------
 G_COPTFLAGS	   = -v
 G_FOPTFLAGS	   =
@@ -38,7 +38,7 @@ CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = ${WIN32FE} bcc32 -P
 CXX_FLINKER	   = 
 CXX_CCV		   = ${WIN32FE} bcc32 --version
-CXX_SYS_LIB	   = 
+CXX_SYS_LIB	   = ws2_32.lib kernel32.lib advapi32.lib user32.lib gdi32.lib
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -v
 GCXX_FOPTFLAGS	   = 
