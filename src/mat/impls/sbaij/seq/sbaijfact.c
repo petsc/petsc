@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.7 2000/07/25 13:47:46 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.8 2000/07/26 15:42:02 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -42,8 +42,9 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
   /* Don't know how many column pointers are needed so estimate. 
      Use Modified Sparse Row storage for u and ju, see Sasd pp.85 */
   /* if (info) f = info->fill; */
+  iu   = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(iu);
   umax = (int)(f*ai[mbs] + 1); umax += mbs + 1; 
-  ju = iu = (int*)PetscMalloc(umax*sizeof(int));CHKPTRQ(ju);
+  ju   = (int*)PetscMalloc(umax*sizeof(int));CHKPTRQ(ju);
   iu[0] = mbs+1; 
   juptr = mbs;
   jl =  (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(jl);
@@ -113,11 +114,11 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
       if (maxadd < nzk) maxadd = (mbs-k)*(nzk+1)/2;
       umax += maxadd;
 
-      /* allocate a longer ju (NOTE: iu poits to the beginning of ju) */
+      /* allocate a longer ju */
       jutmp = (int*)PetscMalloc(umax*sizeof(int));CHKPTRQ(jutmp);
       ierr  = PetscMemcpy(jutmp,ju,iu[k]*sizeof(int));CHKERRQ(ierr);
-      ierr = PetscFree(ju);CHKERRQ(ierr);       
-      ju = iu = jutmp; 
+      ierr  = PetscFree(ju);CHKERRQ(ierr);       
+      ju    = jutmp; 
       realloc++; /* count how many times we realloc */
     }
 
