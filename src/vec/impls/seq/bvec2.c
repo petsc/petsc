@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.128 1998/06/16 14:21:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.129 1998/06/16 14:57:22 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -244,6 +244,7 @@ static int VecView_Seq_Ams(Vec xin,Viewer viewer)
     /* create the AMS memory for publishing the vector values */
     ierr = ViewerAMSGetAliceComm(viewer,&acomm);CHKERRQ(ierr);
     ierr = ALICE_Memory_create(acomm,"vector_values",&amem);CHKERRQ(ierr);
+    ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr); 
     ierr = ALICE_Memory_add_field(amem,"values",x->array,x->n,ALICE_DOUBLE,ALICE_READ,
                                   ALICE_COMMON,ALICE_REDUCT_UNDEF);CHKERRQ(ierr);
     ierr = ALICE_Memory_publish(amem);CHKERRQ(ierr);
@@ -255,6 +256,7 @@ static int VecView_Seq_Ams(Vec xin,Viewer viewer)
     ierr = PetscObjectContainerCreate(xin->comm,&container);CHKERRQ(ierr);
     ierr = PetscObjectContainerSetPointer(container,(void *) amem);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)xin,"AMS_Memory",(PetscObject)container);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)container);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectContainerGetPointer(container,(void **)&amem);CHKERRQ(ierr);
     ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
