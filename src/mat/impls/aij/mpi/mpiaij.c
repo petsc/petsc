@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.105 1996/01/02 20:16:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.106 1996/01/03 14:56:52 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1356,10 +1356,10 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    local matrix (a rectangular submatrix). 
 
    The user can specify preallocated storage for the diagonal part of
-   the local submatrix with either d_nz or d_nnz (not both).  Set d_nz=0
-   and d_nnz=PETSC_NULL for PETSc to control dynamic memory allocation.  
-   Likewise, specify preallocated storage for the off-diagonal part of 
-   the local submatrix with o_nz or o_nnz (not both).
+   the local submatrix with either d_nz or d_nnz (not both).  Set 
+   d_nz=PETSC_DEFAULT and d_nnz=PETSC_NULL for PETSc to control dynamic
+   memory allocation.  Likewise, specify preallocated storage for the
+   off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
 
    By default, this format uses inodes (identical nodes) when possible.
    We search for consecutive rows with the same nonzero structure, thereby
@@ -1428,6 +1428,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   a->cstart = a->cowners[a->rank]; 
   a->cend   = a->cowners[a->rank+1]; 
 
+  if (d_nz == PETSC_DEFAULT) d_nz = 5;
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,n,d_nz,d_nnz,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
   if (o_nz == PETSC_DEFAULT) o_nz = 0;
