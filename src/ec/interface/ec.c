@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ec.c,v 1.7 1997/07/09 21:37:39 balay Exp bsmith $";
+static char vcid[] = "$Id: ec.c,v 1.8 1997/08/22 17:49:15 curfman Exp curfman $";
 #endif
 
 /*
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: ec.c,v 1.7 1997/07/09 21:37:39 balay Exp bsmith $";
    ECDestroy - Destroys EC context that was created with ECCreate().
 
    Input Parameter:
-.  ec - the eigenvalue context
+.  ec - the eigenvalue computation context
 
 .keywords: EC, destroy
 
@@ -39,7 +39,7 @@ int ECDestroy(EC ec)
    ECView - Prints the EC data structure.
 
    Input Parameters:
-.  EC - the Krylov space context
+.  EC - the eigenvalue computation context
 .  viewer - visualization context
 
    Note:
@@ -83,18 +83,19 @@ int ECView(EC ec,Viewer viewer)
 #define __FUNC__ "ECGetEigenvalues"
 /*@
    ECGetEigenvalues - Returns pointers to the real and 
-      imaginary components of the eigenvalues computed 
-      with an EC context.
+   imaginary components of the eigenvalues computed 
+   with an EC context.
 
    Input Parameters:
-.  ec - the eigenvalue context
+.  ec - the eigenvalue computation context
 
    Output Parameters:
-.   n - number of eigenvalues computed
-.   rpart - array containing the real parts of the eigenvalues
-.   ipart - array containing the imaginary parts of the eigenvalues
+.  n - number of eigenvalues computed
+.  rpart - array containing the real parts of the eigenvalues
+.  ipart - array containing the imaginary parts of the eigenvalues
 
-   Notes: Must call after ECSolve()
+   Notes:
+   ECGetEigenvalues() may be called only after ECSolve().
 
 .keywords: EC, setup
 
@@ -115,18 +116,19 @@ int ECGetEigenvalues(EC ec,int *n,double **rpart,double **ipart)
 #define __FUNC__ "ECGetEigenvectors"
 /*@
    ECGetEigenvectors - Returns pointers to the eigenvectors
-      computed  with an EC context.
+   computed  with an EC context.
 
    Input Parameters:
-.  ec - the eigenvalue context
+.  ec - the eigenvalue computation context
 
    Output Parameters:
-.   n - number of eigenvectors computed
-.   evecs - the eigenvectors
+.  n - number of eigenvectors computed
+.  evecs - the eigenvectors
 
-   Notes: Must call after ECSolveEigenvectors()
+   Notes:
+   ECGetEigenvectors() may be called only after ECSolveEigenvectors().
 
-.keywords: EC, setup
+.keywords: EC, get, eigenvectors
 
 .seealso: ECCreate(), ECSolve(), ECDestroy(), ECSolveEigenvectors()
 @*/
@@ -142,10 +144,10 @@ int ECGetEigenvectors(EC ec,int *n,Vec *evecs)
 #undef __FUNC__  
 #define __FUNC__ "ECSetUp"
 /*@
-   ECSetUp - Prepares for the use of a eigenvalue solver.
+   ECSetUp - Prepares for the use of an eigenvalue solver.
 
    Input parameters:
-.  ec - the eigenvalue context
+.  ec - the eigenvalue computation context
 
 .keywords: EC, setup
 
@@ -168,8 +170,8 @@ int ECSetUp(EC ec)
 #undef __FUNC__  
 #define __FUNC__ "ECSetEigenvectorsRequired"
 /*@C
-   ECSetEigenvectorsRequired - Indicates that one wishes
-     both eigenvalues and eigenvectors to be computed.
+   ECSetEigenvectorsRequired - Indicates that both eigenvalues and
+   eigenvectors should be computed.
 
    Output Parameter:
 .  ec - eigenvalue computation context
@@ -231,7 +233,7 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
   ctx->cnvP          = 0;
 
   ctx->setupcalled   = 0;
-  /* this violates our rule about seperating abstract from implementations*/
+  /* this violates our rule about separating abstract from implementations */
   return ECSetType(*ec,EC_LAPACK);
 }
 
@@ -243,10 +245,10 @@ int ECCreate(MPI_Comm comm,ECProblemType pt,EC *ec)
    Input Parameter:
 .   ec - the eigenvalue computation context
 
-   Options Database Command:
+   Options Database Commands:
 $  -ec_type  <method>
 $      Use -help for a list of available methods
-$      (for instance, lapack, ???)
+$      (for instance, LAPACK, ???)
 $  -ec_spectrum_portion <largest_real_part,largest_magnitude, 
 $                        smallest_real_part,smallest_magnitude,
 $                        interior>
@@ -345,9 +347,9 @@ int ECPrintHelp(EC ec)
    ECSetOperators - Sets the operators for which eigenvalues are to be computed.
 
    Input Parameter:
-.   ec - the eigenvalue computation context
-.   A  - the matrix for which eigenvalues are requested
-.   B  - optional matrix for generalized eigenvalue problem
+.  ec - the eigenvalue computation context
+.  A  - the matrix for which eigenvalues are requested
+.  B  - optional matrix for generalized eigenvalue problem
 
 .keywords: EC, set, help
 
@@ -374,7 +376,7 @@ int ECSetOperators(EC ec,Mat A,Mat B)
 #define __FUNC__ "ECSetSpectrumPortion"
 /*@
    ECSetSpectrumPortion - Sets the portion of the spectrum from which 
-     you wish to compute eigenvalues
+   eigenvalues will be computed.
 
    Input Parameter:
 .   ec - the eigenvalue computation context
