@@ -1,6 +1,7 @@
 #!/usr/bin/env python
   
 configure_options = [
+  '--with-shared=0',
   '--with-cc=gcc -std=c89',
   '--with-fc=f77',
   '--download-mpich=1',
