@@ -463,7 +463,11 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     for (i=0; i<n; i++) {
       d = PetscAbsScalar((a->a)[ddiag[i]+shift]);
       /* calculate amt of shift needed for this row */
-      if (d<0) row_shift = 0; else row_shift = -2*d;
+      if (d<0) {
+        row_shift = 0; 
+      } else {
+        row_shift = -2*d;
+      }
       v = a->a+aai[i]+shift;
       for (j=0; j<aai[i+1]-aai[i]; j++) 
 	row_shift += PetscAbsScalar(v[j]);

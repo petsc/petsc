@@ -68,7 +68,7 @@ int main(int argc,char **argv)
    * with ILU(0) preconditioning
    */
   ierr = SLESCreate(comm,&solver); CHKERRQ(ierr);
-  ierr = SLESSetOperators(solver,A,A,0); CHKERRQ(ierr);
+  ierr = SLESSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
 
   ierr = SLESGetKSP(solver,&itmeth); CHKERRQ(ierr);
   ierr = KSPSetType(itmeth,KSPCG); CHKERRQ(ierr);

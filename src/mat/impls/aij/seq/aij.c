@@ -1503,14 +1503,15 @@ int MatIsSymmetric_SeqAIJ(Mat A,Mat B,PetscTruth *f)
       if (i!=idr || vc!=vr) {
 	*f = PETSC_FALSE; goto done;
       } else {
-	aptr[i]++; if ((int)B || i!=idc) bptr[idc]++;
+	aptr[i]++; if (B || i!=idc) bptr[idc]++;
       }
     }
   }
  done:
   ierr = PetscFree(aptr); CHKERRQ(ierr);
-  if ((int)B) {
-    ierr = PetscFree(bptr); CHKERRQ(ierr);}
+  if (B) {
+    ierr = PetscFree(bptr); CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
