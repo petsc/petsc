@@ -1,4 +1,4 @@
-# $Id: base,v 1.32 1998/04/09 00:20:41 balay Exp bsmith $ 
+# $Id: base,v 1.33 1998/04/13 16:20:43 bsmith Exp balay $ 
 
 #
 #
@@ -63,7 +63,9 @@ libf: ${LIBNAME}(${OBJSF})
 
 SLSUFFIX = so.1.0 
 shared: chkopts_basic
-	-@ echo making shared libraries in ${LDIR} ;\
+	-@ if [ "${BOPT}" != "Opg" ] && [ "${BOPT}" != "Opg_c++" ] \
+	&&  [ "${BOPT}" != "Opg_complex" ] ; then \
+	echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \
 	${RM} -rf tmp; \
 	mkdir tmp; \
@@ -84,4 +86,5 @@ shared: chkopts_basic
 	  fi; \
 	done; \
 	cd ../ ; \
-	${RM} -rf tmp
+	${RM} -rf tmp; \
+	fi
