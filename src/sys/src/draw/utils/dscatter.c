@@ -274,7 +274,7 @@ int PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
       if (y[i] > sp->ymax) sp->ymax = y[i]; 
       if (y[i] < sp->ymin) sp->ymin = y[i];
 
-      sp->x[k]   = x[i];
+      sp->x[k] = x[i];
       sp->y[k] = y[i];
       k += sp->dim;
     }
@@ -296,6 +296,8 @@ int PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 
    Level: intermediate
 
+.seealso: PetscDrawLGDraw(), PetscDrawLGSPDraw()
+
 @*/
 int PetscDrawSPDraw(PetscDrawSP sp)
 {
@@ -314,10 +316,11 @@ int PetscDrawSPDraw(PetscDrawSP sp)
   ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
   
   ierr = MPI_Comm_rank(sp->comm,&rank);CHKERRQ(ierr);
-  if (rank)   PetscFunctionReturn(0);
-  for (i=0; i<dim; i++) {
-    for (j=0; j<nopts; j++) {
-      ierr = PetscDrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
+  if (!rank) {
+    for (i=0; i<dim; i++) {
+      for (j=0; j<nopts; j++) {
+	ierr = PetscDrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscDrawFlush(sp->win);CHKERRQ(ierr);

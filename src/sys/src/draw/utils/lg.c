@@ -328,6 +328,8 @@ int PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 
    Level: intermediate
 
+.seealso: PetscDrawSPDraw(), PetscDrawLGSPDraw()
+
 @*/
 int PetscDrawLGDraw(PetscDrawLG lg)
 {
@@ -348,13 +350,14 @@ int PetscDrawLGDraw(PetscDrawLG lg)
   
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
-        ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
-                        lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i);CHKERRQ(ierr);
         if (lg->use_dots) {
           ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
         }
       }
     }
+
+
   }
   ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);
   ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
@@ -488,5 +491,69 @@ int PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGSPDraw" 
+/*@
+   PetscDrawLGSPDraw - Redraws a line graph.
+
+   Not Collective,but ignored by all processors except processor 0 in PetscDrawLG
+
+   Input Parameter:
+.  lg - the line graph context
+
+   Level: intermediate
+
+.seealso: PetscDrawLGDraw(), PetscDrawSPDraw()
+
+   Developer Notes: This code cheats and uses the fact that the LG and SP structs are the same
+
+@*/
+int PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
+{
+  PetscDrawLG sp = (PetscDrawLG)spin;
+  PetscReal   xmin,xmax,ymin,ymax;
+  int         i,j,dim,nopts,rank,ierr;
+  PetscDraw   draw = lg->win;
+
+  PetscFunctionBegin;
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
+  PetscValidHeaderSpecific(sp,DRAWSP_COOKIE); 
+
+  xmin = PetscMin(lg->xmin,sp->xmin);
+  ymin = PetscMin(lg->ymin,sp->ymin);
+  xmax = PetscMax(lg->xmax,sp->xmax);
+  ymax = PetscMax(lg->ymax,sp->ymax);
+
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(lg->comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+  
+    dim   = lg->dim;
+    nopts = lg->nopts;
+    for (i=0; i<dim; i++) {
+      for (j=1; j<nopts; j++) {
+        ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i);CHKERRQ(ierr);
+        if (lg->use_dots) {
+          ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
+        }
+      }
+    }
+
+    dim   = sp->dim;
+    nopts = sp->nopts;
+    for (i=0; i<dim; i++) {
+      for (j=0; j<nopts; j++) {
+	ierr = PetscDrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);
+  ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
 
 

@@ -294,6 +294,7 @@ EXTERN int PetscDrawSPSetDimension(PetscDrawSP,int);
 EXTERN int PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis *);
 EXTERN int PetscDrawSPGetDraw(PetscDrawSP,PetscDraw *);
 EXTERN int PetscDrawSPSetLimits(PetscDrawSP,PetscReal,PetscReal,PetscReal,PetscReal); 
+EXTERN int PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
 
 /*S
      PetscDrawHG - Manages drawing histograms

@@ -609,7 +609,6 @@ int VecScale (const PetscScalar *alpha,Vec x)
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->scale)(alpha,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
-  /*x->normvalid = PETSC_FALSE;*/
   if (x->normvalid) x->normcurrent = PetscAbsScalar(*alpha)*x->normcurrent;
   PetscFunctionReturn(0);
 }
