@@ -257,6 +257,90 @@ typedef enum {/* converged */
               SNES_DIVERGED_LOCAL_MIN          = -8,  /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
 
+/*MC
+     SNES_CONVERGED_FNORM_ABS - 2-norm(F) <= abstol
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_CONVERGED_FNORM_RELATIVE - 2-norm(F) <= rtol*2-norm(F(x_0)) where x_0 is the initial guess
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_CONVERGED_PNORM_RELATIVE - The 2-norm of the last step <= xtol * 2-norm(x) where x is the current
+          solution and xtol is the 4th argument to SNESSetTolerances()
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_DIVERGED_FUNCTION_COUNT - The user provided function has been called more times then the final
+         argument to SNESSetTolerances()
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_DIVERGED_FNORM_NAN - the 2-norm of the current function evaluation is not-a-number (NaN), this
+      is usually caused by a division of 0 by 0.
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_DIVERGED_MAX_IT - SNESSolve() has reached the maximum number of iterations requested
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_DIVERGED_LS_FAILURE - The line search has failed. This only occurs for a SNESType of SNESLS
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_DIVERGED_LOCAL_MIN - the algorithm seems to have stagnated at a local minimum that is not zero
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
+/*MC
+     SNES_CONERGED_ITERATING - this only occurs if SNESGetConvergedReason() is called during the SNESSolve()
+
+   Level: beginner
+
+.seealso:  SNESSolve(), SNESGetConvergedReason(), SNESConvergedReason, SNESSetTolerances()
+
+M*/
+
 EXTERN PetscErrorCode SNESSetConvergenceTest(SNES,PetscErrorCode (*)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void*);
 EXTERN PetscErrorCode SNESConverged_LS(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 EXTERN PetscErrorCode SNESConverged_TR(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);

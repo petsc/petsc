@@ -328,7 +328,7 @@ EXTERN PetscErrorCode KSPSetNormType(KSP,KSPNormType);
      src/ksp/ksp/interface/itfunc.c called convergedreasons.
      If these enums are changed you must change those.
 
-.seealso: KSPSolve(), KSPGetConvergedReason()
+.seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances()
 E*/
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,
@@ -347,6 +347,127 @@ typedef enum {/* converged */
               KSP_DIVERGED_INDEFINITE_PC       = -8,
  
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
+
+/*MC
+     KSP_CONVERGED_RTOL - norm(r) <= rtol*norm(b)
+
+   Level: beginner
+
+   See KSPNormType and KSPSetNormType() for possible norms that may be used. By default
+       for left preconditioning it is the 2-norm of the preconditioned residual, and the
+       2-norm of the residual for right preconditioning
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_CONVERGED_ATOL - norm(r) <= atol
+
+   Level: beginner
+
+   See KSPNormType and KSPSetNormType() for possible norms that may be used. By default
+       for left preconditioning it is the 2-norm of the preconditioned residual, and the
+       2-norm of the residual for right preconditioning
+
+   Level: beginner
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_DIVERGED_DTOL - norm(r) >= dtol*norm(b)
+
+   Level: beginner
+
+   See KSPNormType and KSPSetNormType() for possible norms that may be used. By default
+       for left preconditioning it is the 2-norm of the preconditioned residual, and the
+       2-norm of the residual for right preconditioning
+
+   Level: beginner
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_DIVERGED_ITS - Ran out of iterations before any convergence criteria was 
+      reached
+
+   Level: beginner
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of the
+           preconditioner is applied.
+
+
+   Level: beginner
+
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_DIVERGED_BREAKDOWN - A breakdown in the Krylov method was detected so the
+          method could not continue to enlarge the Krylov space.
+
+   Level: beginner
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_DIVERGED_BREAKDOWN_BICG - A breakdown in the KSPBICG method was detected so the
+          method could not continue to enlarge the Krylov space.
+
+
+   Level: beginner
+
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_DIVERGED_NONSYMMETRIC - It appears the operator or preconditioner is not
+        symmetric and this Krylov method (KSPCG, KSPMINRES, KSPCR) requires symmetry
+
+   Level: beginner
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_DIVERGED_INDEFINITE_PC - It appears the preconditioner is indefinite (has both
+        positive and negative eigenvalues) and this Krylov method (KSPCG) requires it to
+        be positive definite
+
+   Level: beginner
+
+     Notes: This can happen with the PCICC preconditioner, use -pc_icc_shift to force 
+  the PCICC preconditioner to generate a positive definite preconditioner
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
+
+/*MC
+     KSP_CONVERGED_ITERATING - This flag is returned if you call KSPGetConvergedReason()
+        while the KSPSolve() is still running.
+
+   Level: beginner
+
+.seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()
+
+M*/
 
 EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *);
 EXTERN PetscErrorCode KSPGetConvergenceContext(KSP,void **);
