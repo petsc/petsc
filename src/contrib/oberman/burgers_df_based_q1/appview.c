@@ -36,11 +36,9 @@ int AppCtxView(Draw idraw,void *iappctx)
 
   Draw                   drawglobal = appctx->view.drawglobal;
   Draw                   drawlocal = appctx->view.drawlocal;
-  double                 xl,yl,xr,yr,xm,ym,xp,yp;
+  double                 xl,yl,xr,yr,xm,ym,xp,yp,w,h;
   char                   num[5];
 
-  ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
-  ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
 
   MPI_Comm_rank(appctx->comm,&rank); c = rank + 2;
 
@@ -64,16 +62,18 @@ int AppCtxView(Draw idraw,void *iappctx)
     for (j=0; j<ncell; j++) {
       ij = ncell*i + ((j+1) % ncell);
       xr = vertex_value[2*cell_vertex[ij]]; yr = vertex_value[2*cell_vertex[ij] + 1];
-      ierr = DrawLine(drawglobal,xl,yl,xr,yr,c);CHKERRQ(ierr);
-      ierr = DrawLine(drawlocal,xl,yl,xr,yr,DRAW_BLUE);CHKERRQ(ierr);
+      ierr = DrawLine(idraw,xl,yl,xr,yr,c);CHKERRQ(ierr);
       xp += xl;         yp += yl;
       xl  = xr;         yl =  yr;
     }
     xp /= ncell; yp /= ncell;
-    sprintf(num,"%d",i);
-    ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);
-    sprintf(num,"%d",cell_global[i]);
-    ierr = DrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);
+    if (idraw == drawlocal) {
+      sprintf(num,"%d",i);
+      ierr = DrawString(idraw,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);
+    } else {
+      sprintf(num,"%d",cell_global[i]);
+      ierr = DrawString(idraw,xp,yp,c,num);CHKERRQ(ierr);
+    }
   }
 
   /*
@@ -87,32 +87,36 @@ int AppCtxView(Draw idraw,void *iappctx)
       ij = ncell*i + ((j+1) % ncell);
       xr = vertex_value[2*cell_vertex[ij]]; yr = vertex_value[2*cell_vertex[ij] + 1];
       if (PetscBTLookup(vertex_boundary_flag,cell_vertex[ijp]) && PetscBTLookup(vertex_boundary_flag,cell_vertex[ij])) {
-        ierr = DrawLine(drawglobal,xl,yl,xr,yr,c);CHKERRQ(ierr);
-        ierr = DrawLine(drawlocal,xl,yl,xr,yr,DRAW_BLUE);CHKERRQ(ierr);
+        ierr = DrawLine(idraw,xl,yl,xr,yr,c);CHKERRQ(ierr);
       }
       xp += xl;         yp += yl;
       xl  = xr;         yl =  yr;
       ijp = ij;
     }
     xp /= ncell; yp /= ncell;
-    sprintf(num,"%d",i);
-    ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);
-    sprintf(num,"%d",cell_global[i]);
-    ierr = DrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);
+    if (idraw == drawlocal) {
+      sprintf(num,"%d",i);
+      ierr = DrawString(idraw,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);
+    } else {
+      sprintf(num,"%d",cell_global[i]);
+      ierr = DrawString(idraw,xp,yp,c,num);CHKERRQ(ierr);
+    }
   }
 
   /*
       Number vertices
   */
+  ierr = DrawStringGetSize(draw,&w,&h);CHKERRQ(ierr);
   for (i=0; i<vertex_n; i++ ) {
     xm = vertex_value[2*i]; ym = vertex_value[2*i + 1];
     ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
-    ierr = DrawPoint(drawglobal,xm,ym,DRAW_ORANGE);CHKERRQ(ierr);
-    ierr = DrawPoint(drawlocal,xm,ym,DRAW_ORANGE);CHKERRQ(ierr);
-    sprintf(num,"%d",i);
-    ierr = DrawString(drawlocal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
-    sprintf(num,"%d",vertex_global[i]);
-    ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
+    if (idraw == drawlocal) {
+      sprintf(num,"%d",i);
+      ierr = DrawString(drawlocal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
+    } else {
+      sprintf(num,"%d",vertex_global[i]);
+      ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
+    }
   }
   for ( i=0; i<nverts; i++ ) {
     xm = vertex_value[2*verts[i]]; ym = vertex_value[2*verts[i] + 1];
@@ -158,9 +162,6 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
   double                 x0,x1,x2,y0,y1,y2,vmin,vmax;
 
   Scalar                 *values;
-
-  ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
-  ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
 
   cell_n        = grid->cell_n;
   ierr = ISGetIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
@@ -299,6 +300,7 @@ int AppCtxGraphics(AppCtx *appctx)
        Visualize the grid 
     */
     ierr = DrawZoom((appctx)->view.drawglobal,AppCtxView,appctx); CHKERRA(ierr);
+    ierr = DrawZoom((appctx)->view.drawlocal,AppCtxView,appctx); CHKERRA(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-matlab_graphics",&(appctx)->view.matlabgraphics); CHKERRQ(ierr);
 
