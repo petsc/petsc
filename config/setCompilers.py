@@ -176,13 +176,18 @@ class Configure(config.base.Configure):
           if self.framework.argDB['with-64-bit-pointers']:
             if Configure.isGNU(self.CC):
               self.pushLanguage('C')
-              self.addCompilerFlag('-m64')
+              try:
+                self.addCompilerFlag('-m64')
+              except RuntimeError, e:
+                self.logPrint('GNU 64-bit C compilation not working: '+str(e))
               self.popLanguage()
-            else:
-              if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-                self.pushLanguage('C')
+            elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+              self.pushLanguage('C')
+              try:
                 self.addCompilerFlag('-xarch=v9')
-                self.popLanguage()
+              except RuntimeError, e:
+                self.logPrint('Solaris 64-bit C compilation not working: '+str(e))
+              self.popLanguage()
           break
       except RuntimeError, e:
         import os
@@ -315,19 +320,24 @@ class Configure(config.base.Configure):
             if self.framework.argDB['with-64-bit-pointers']:
               if Configure.isGNU(self.CC):
                 self.pushLanguage('C++')
-                self.addCompilerFlag('-m64')
+                try:
+                  self.addCompilerFlag('-m64')
+                except RuntimeError, e:
+                  self.logPrint('GNU 64-bit C++ compilation not working: '+str(e))
                 self.popLanguage()
-              else:
-                if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-                  self.pushLanguage('C++')
+              elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+                self.pushLanguage('C++')
+                try:
                   self.addCompilerFlag('-xarch=v9')
-                  self.popLanguage()
+                except RuntimeError, e:
+                  self.logPrint('Solaris 64-bit C++ compilation not working: '+str(e))
+                self.popLanguage()
             break
         except RuntimeError, e:
           import os
 
           if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
-            self.framework.logPrint('  MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+            self.logPrint('  MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
           del self.framework.argDB['CXX']
       if 'CXX' in self.framework.argDB:
         break
@@ -447,13 +457,18 @@ class Configure(config.base.Configure):
           if self.framework.argDB['with-64-bit-pointers']:
             if Configure.isGNU(self.CC):
               self.pushLanguage('FC')
-              self.addCompilerFlag('-m64')
+              try:
+                self.addCompilerFlag('-m64')
+              except RuntimeError, e:
+                self.logPrint('GNU 64-bit Fortran compilation not working: '+str(e))
               self.popLanguage()
-            else:
-              if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-                self.pushLanguage('FC')
+            elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+              self.pushLanguage('FC')
+              try:
                 self.addCompilerFlag('-xarch=v9')
-                self.popLanguage()
+              except RuntimeError, e:
+                self.logPrint('Solaris 64-bit Fortran compilation not working: '+str(e))
+              self.popLanguage()
           break
       except RuntimeError, e:
         import os
