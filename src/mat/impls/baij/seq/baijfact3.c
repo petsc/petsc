@@ -13,13 +13,13 @@
 #define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"
 PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;
-  IS          isicol;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b;
+  IS             isicol;
   PetscErrorCode ierr;
-  int         *r,*ic,i,n = a->mbs,*ai = a->i,*aj = a->j;
-  int         *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = a->bs,bs2=a->bs2;
-  int         *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
-  PetscReal   f = 1.0;
+  PetscInt       *r,*ic,i,n = a->mbs,*ai = a->i,*aj = a->j;
+  PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = a->bs,bs2=a->bs2;
+  PetscInt       *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
+  PetscReal      f = 1.0;
 
   PetscFunctionBegin;
   if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
@@ -29,16 +29,16 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 
   f = info->fill;
   /* get new row pointers */
-  ierr     = PetscMalloc((n+1)*sizeof(int),&ainew);CHKERRQ(ierr);
+  ierr     = PetscMalloc((n+1)*sizeof(PetscInt),&ainew);CHKERRQ(ierr);
   ainew[0] = 0;
   /* don't know how many column pointers are needed so estimate */
-  jmax     = (int)(f*ai[n] + 1);
-  ierr     = PetscMalloc((jmax)*sizeof(int),&ajnew);CHKERRQ(ierr);
+  jmax     = (PetscInt)(f*ai[n] + 1);
+  ierr     = PetscMalloc((jmax)*sizeof(PetscInt),&ajnew);CHKERRQ(ierr);
   /* fill is a linked list of nonzeros in active row */
-  ierr     = PetscMalloc((2*n+1)*sizeof(int),&fill);CHKERRQ(ierr);
+  ierr     = PetscMalloc((2*n+1)*sizeof(PetscInt),&fill);CHKERRQ(ierr);
   im       = fill + n + 1;
   /* idnew is location of diagonal in factor */
-  ierr     = PetscMalloc((n+1)*sizeof(int),&idnew);CHKERRQ(ierr);
+  ierr     = PetscMalloc((n+1)*sizeof(PetscInt),&idnew);CHKERRQ(ierr);
   idnew[0] = 0;
 
   for (i=0; i<n; i++) {
@@ -87,14 +87,14 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
       /* estimate how much additional space we will need */
       /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
       /* just double the memory each time */
-      int maxadd = jmax;
+      PetscInt maxadd = jmax;
       /* maxadd = (int)((f*(ai[n]+1)*(n-i+5))/n); */
       if (maxadd < nnz) maxadd = (n-i)*(nnz+1);
       jmax += maxadd;
 
       /* allocate a longer ajnew */
-      ierr  = PetscMalloc(jmax*sizeof(int),&ajtmp);CHKERRQ(ierr);
-      ierr  = PetscMemcpy(ajtmp,ajnew,ainew[i]*sizeof(int));CHKERRQ(ierr);
+      ierr  = PetscMalloc(jmax*sizeof(PetscInt),&ajtmp);CHKERRQ(ierr);
+      ierr  = PetscMemcpy(ajtmp,ajnew,ainew[i]*sizeof(PetscInt));CHKERRQ(ierr);
       ierr  = PetscFree(ajnew);CHKERRQ(ierr);
       ajnew = ajtmp;
       realloc++; /* count how many times we realloc */
@@ -152,7 +152,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = PetscMalloc((bs*n+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
-  PetscLogObjectMemory(*B,(ainew[n]-n)*(sizeof(int)+sizeof(MatScalar)));
+  PetscLogObjectMemory(*B,(ainew[n]-n)*(sizeof(PetscInt)+sizeof(MatScalar)));
   b->maxnz = b->nz = ainew[n];
   
   (*B)->factor                 = FACTOR_LU;
