@@ -5,4 +5,6 @@
 # docs/tex/petsc-patches-file-list
 #
 cd /mcs/www-unix/petsc
+/bin/rm  /home/ftp/pub/petsc/petsc-patches.tar
 tar cf /home/ftp/pub/petsc/petsc-patches.tar -I /home/bsmith/petsc/docs/tex/petsc-patches-file-list
+chmod g+w /home/ftp/pub/petsc/petsc-patches.tar
