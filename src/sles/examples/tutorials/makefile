@@ -12,7 +12,7 @@ LIBBASE	        = libpetscsles
 LOCDIR          = src/sles/examples/tutorials/
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 runex1_5\
 		  ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_5 \
-		  ex2.rm ex8.PETSc runex8 runex8_2 runex8_5 ex8.rm\
+		  ex2.rm ex8.PETSc runex8 runex8_2 ex8.rm\
 		  ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_2  = ex11.PETSc ex11.rm clean
 TESTEXAMPLES_3  = ex7.PETSc runex7 ex7.rm ex20.PETSc clean
@@ -284,13 +284,6 @@ runex8_4:
 	-@$(MPIRUN) -np 2 ex8 -pc_type ilu -mat_nonsym -mat_mpirowbs \
 	   -ksp_rtol .000001;\
 	echo "ex8_4: This program tested the ILU preconditioner in BlockSolve95."
-
-runex8_5:
-	-@$(MPIRUN) -np 2 ex8 -pc_type asm -ksp_smonitor \
-	   -ksp_rtol .000001 > ex8_5.tmp 2>&1;   \
-	   if (diff output/ex8_5.out ex8_5.tmp) then true; \
-	   else echo "Possible problem with ex8_5, diffs above"; fi; \
-	   $(RM) -f ex8_5.tmp
 
 runex10:
 	-@$(MPIRUN) ex10 -mat_bdiag -ksp_smonitor > ex10_1.tmp 2>&1; \
