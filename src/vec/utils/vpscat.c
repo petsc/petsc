@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.147 2000/11/30 16:43:05 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.148 2000/11/30 22:01:36 bsmith Exp kaushik $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1262,7 +1262,8 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   /*  wait on receives */
   count = nrecvs;
   if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
-    n        = rstarts[count+1] - rstarts[0];
+    ierr     = MPI_Waitall(nrecvs,rwaits,&rstatus);CHKERRQ(ierr);
+    n        = rstarts[count];
     val      = rvalues;
     lindices = indices;
     if (addv == INSERT_VALUES) {
