@@ -74,7 +74,7 @@ static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,in
 static int MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-  int         i,n = a->mbs,ierr;
+  int         i,n = a->mbs;
 
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);

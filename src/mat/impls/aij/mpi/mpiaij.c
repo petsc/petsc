@@ -2573,7 +2573,7 @@ int MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
 @*/
 int MatMerge(MPI_Comm comm,Mat inmat, Mat *outmat)
 {
-  int         ierr,rank,len,m,n,i,rstart,*indx,nnz,I,*dnz,*onz;
+  int         ierr,m,n,i,rstart,*indx,nnz,I,*dnz,*onz;
   PetscScalar *values;
   PetscMap    columnmap,rowmap;
 
