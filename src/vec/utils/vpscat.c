@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.74 1997/05/22 14:02:14 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.75 1997/05/23 02:41:47 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -1536,6 +1536,11 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   MPI_Comm    comm = xin->comm;
   MPI_Request *send_waits,*recv_waits;
   MPI_Status  recv_status;
+
+  if (x->size == 1) {
+    ierr = VecScatterCreate_StoP(nx,inidx,ny,inidy,yin,ctx); CHKERRQ(ierr);
+    return 0;
+  }
 
   /*
   Each processor ships off its inidx[j] and inidy[j] to the appropriate processor
