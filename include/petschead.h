@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.72 1999/05/04 20:38:34 balay Exp bsmith $ */
+/* $Id: petschead.h,v 1.73 1999/05/12 03:35:01 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -149,16 +149,20 @@ valid
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Object");            \
   }}
 
-#define PetscValidIntPointer(h)                                     \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
-  if ((unsigned long)h & (unsigned long)3){                         \
-    SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Invalid Pointer to Int");       \
-  }}
-
 #define PetscValidPointer(h)                                        \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
   if ((unsigned long)h & (unsigned long)3){                         \
     SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Invalid Pointer");              \
+  }}
+
+#define PetscValidCharPointer(h)                                    \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
+  }
+
+#define PetscValidIntPointer(h)                                     \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
+  if ((unsigned long)h & (unsigned long)3){                         \
+    SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Invalid Pointer to Int");       \
   }}
 
 #if !defined(PETSC_HAVE_DOUBLE_ALIGN)
@@ -198,11 +202,15 @@ valid
       SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Invalid Object");            \
   }}
 
-#define PetscValidIntPointer(h)                                     \
+#define PetscValidPointer(h)                                        \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
   }
 
-#define PetscValidPointer(h)                                        \
+#define PetscValidCharPointer(h)                                    \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
+  }
+
+#define PetscValidIntPointer(h)                                     \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
   }
 
@@ -217,6 +225,7 @@ valid
 #endif
 
 #endif
+#define PetscValidDoublePointer(h) PetscValidScalarPointer(h)
 
 /*
     For example, in the dot product between two vectors,
