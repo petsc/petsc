@@ -22,7 +22,8 @@ class Logger(object):
     self.debugSections     = Logger.debugSections
     self.debugIndent       = Logger.debugIndent
     self.log               = log
-    self.writer            = defaultWriter()
+    if argDB.has_key('debugWriter'): self.writer = argDB['debugWriter']
+    else                             self.writer = defaultWriter()
     return
 
   def setWriter(self,writer):

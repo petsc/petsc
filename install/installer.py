@@ -2,7 +2,7 @@
 import os
 import sys
 
-def runinstaller(opts = []):
+def runinstaller(opts = [],debugWriter = None):
   try:
     import install.setuprc
     install.setuprc.setupRC(os.path.dirname(os.path.abspath(os.path.dirname(sys.modules['install.setuprc'].__file__))))
@@ -12,7 +12,7 @@ def runinstaller(opts = []):
 
   import importer
   import installerclass
-  installer   = installerclass.Installer(sys.argv[1:]+opts)
+  installer   = installerclass.Installer(sys.argv[1:]+opts,debugWriter = debugWriter)
     
   compilerUrl = 'bk://sidl.bkbits.net/Compiler'
   # Must copy list since target is reset by each make below

@@ -454,12 +454,24 @@ class CursesInstall (BootstrapInstall):
     pipe = os.popen(self.browser+' '+url)
     return 0
 
+
+class defaultWriter:
+  def __init__(self):
+    pass
+
+  def write(self,mess):
+    import sys
+    sys.stdout.write(mess)
+
 if __name__ ==  '__main__':
   try:
+    args = ['-debugSections=[install]','-debugLevel=2','-installedprojects=[]']
+
     if len(sys.argv) > 1 and sys.argv[1] == '-batch':
       installer = BootstrapInstall()
     else:
       installer = CursesInstall()
+
     installer.welcome()
     if not installer.installBitkeeper():
       sys.exit('Could not locate Bitkeeper')
@@ -473,8 +485,7 @@ if __name__ ==  '__main__':
     sys.stdout.flush()
     sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
     import install.installer
-    args = ['-debugSections=[install]','-debugLevel=2','-installedprojects=[]']
-    install.installer.runinstaller(args)
+    install.installer.runinstaller(args,debugWriter = defaultWriter() )
   except Exception, e:
     import traceback
 
