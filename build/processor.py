@@ -193,6 +193,10 @@ class Linker(Processor):
         library = os.path.join(dir, base[:-7]+'module')
       else:
         library = os.path.join(dir, base)
+    # Ensure the directory exists
+    dir = os.path.dirname(library)
+    if not os.path.exists(dir):
+      os.makedirs(dir)
     return library+'.'+self.libExt
 
   def getOptimizationFlags(self, source):

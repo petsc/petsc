@@ -502,6 +502,7 @@ Arg class, which wraps the usual value.'''
     elif not self.saveTimer:
       import threading
       self.saveTimer = threading.Timer(5, self.save, [], {'force': 1})
+      self.saveTimer.setDaemon(1)
       self.saveTimer.start()
     return
 
@@ -509,6 +510,7 @@ Arg class, which wraps the usual value.'''
     '''Shutdown the dictionary, writing out changes and notifying parent'''
     if self.saveTimer:
       self.saveTimer.cancel()
+      self.save(force = 1)
     if self.isServer and os.path.isfile(self.addrFilename):
       os.remove(self.addrFilename)
     if not self.parent is None:

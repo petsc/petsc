@@ -12,11 +12,12 @@ class Framework(base.Base):
     '''Setup the project, argument database, and source database'''
     base.Base.__init__(self, clArgs, argDB)
     import build.builder
-    self.project     = project
-    self.targets     = {}
-    self.directories = {}
-    self.filesets    = {}
-    self.builder     = build.builder.Builder(None)
+    self.project         = project
+    self.targets         = {}
+    self.directories     = {}
+    self.filesets        = {}
+    self.configureHeader = None
+    self.builder         = build.builder.Builder(None)
     self.setupSourceDB(os.path.join(self.project.getRoot(), 'bsSource.db'))
     self.setupDependencies()
     self.createTmpDir()
@@ -173,6 +174,46 @@ class Framework(base.Base):
     return self._compileTemplate
   compileTemplate = property(getCompileTemplate, doc = 'This is the default template for source operations')
 
+  def t_configure(self):
+    '''Runs configure.py if it is present, and either configure.log is missing or -forceConfigure is given'''
+    if self.argDB['noConfigure']: return
+    import config.framework
+    import sys
+
+    root      = self.project.getRoot()
+    framework = config.framework.Framework(sys.argv[1:])
+    for arg in ['debugLevel', 'debugSections']:
+      framework.argDB[arg] = self.argDB[arg]
+    framework.argDB['log'] = os.path.join(root, 'configure.log')
+    if not self.configureHeader is None:
+      framework.header     = self.configureHeader
+    # Perhaps these initializations should just be local arguments
+    framework.argDB['CPPFLAGS'] = ''
+    framework.argDB['LIBS']     = ''
+    # Load default configure module
+    try:
+      framework.children.append(self.getMakeModule(root, 'configure').Configure(framework))
+    except ImportError:
+      return
+    # Run configuration only if the log file was absent or it is forced (must setup logging early to check)
+    framework.setupLogging()
+    if not framework.logExists or self.argDB['forceConfigure']:
+      framework.configure()
+    return
+
+  def t_sidl(self):
+    '''Recompile the SIDL for this project'''
+    return self.executeGraph(self.sidlTemplate.getTarget(), input = self.filesets['sidl'])
+
+  def t_compile(self):
+    '''Recompile the entire source for this project'''
+    import build.buildGraph
+
+    sidlGraph    = self.sidlTemplate.getTarget()
+    compileGraph = self.compileTemplate.getTarget()
+    compileGraph.prependGraph(sidlGraph)
+    return self.executeGraph(compileGraph, input = self.filesets['sidl'])
+
   def t_install(self):
     '''Install all necessary data for this project into the current RDict'''
     # Update project in 'installedprojects'
@@ -191,18 +232,22 @@ class Framework(base.Base):
     self.debugPrint('Updated project dependence graph with project '+str(self.project), 2, 'install')
     return p
 
-  def t_sidl(self):
-    '''Recompile the SIDL for this project'''
-    return self.executeGraph(self.sidlTemplate.getTarget(), input = self.filesets['sidl'])
+  def t_uninstall(self):
+    '''Remove this project from the current RDict'''
+    # Remove project from 'installedprojects'
+    p = self.getInstalledProject(self.project.getUrl())
+    if not p is None:
+      projects = argDB['installedprojects']
+      projects.remove(p)
+      argDB['installedprojects'] = projects
+    # TODO: Remove project from 'projectDependenceGraph'
+    return p
 
-  def t_compile(self):
-    '''Recompile the entire source for this project'''
-    import build.buildGraph
-
-    sidlGraph    = self.sidlTemplate.getTarget()
-    compileGraph = self.compileTemplate.getTarget()
-    compileGraph.prependGraph(sidlGraph)
-    return self.executeGraph(compileGraph, input = self.filesets['sidl'])
+  def t_default(self):
+    '''Configure, build, and install this project'''
+    self.executeTarget('configure')
+    self.executeTarget('compile')
+    return self.executeTarget('install')
 
   def t_printTargets(self):
     '''Prints a list of all the targets available'''

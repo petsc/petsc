@@ -21,10 +21,16 @@ class Template(base.Base):
     return
 
   def addServer(self, lang):
+    '''Designate that a server for lang should be built, which also implies the client'''
     return self.usingSIDL.addServer(lang)
 
   def addClient(self, lang):
+    '''Designate that a client for lang should be built'''
     return self.usingSIDL.addClient(lang)
+
+  def addStaticPackage(self, package):
+    '''For a static package, the client is statically linked to the server since dynamic loading is not feasible'''
+    return self.usingSIDL.addStaticPackage(package)
 
   def addRepositoryDirs(self, compiler):
     compiler.repositoryDirs.extend([vertex.getRoot() for vertex in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project) if not vertex == self.project])
