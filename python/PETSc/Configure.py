@@ -47,6 +47,9 @@ class Configure(config.base.Configure):
     # Put in dependencies
     self.framework.require('PETSc.packages.update', self.setCompilers)
     self.framework.require('PETSc.packages.compilerFlags', self.compilers)
+
+    # List of packages actually found
+    self.framework.packages = []
     return
 
   def __str__(self):
@@ -77,7 +80,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
     help.addArgument('PETSc', '-prefix=<path>',              nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-gcov=<bool>',           nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
-    help.addArgument('PETSc', '-with-64-bit-ints=<bool>',     nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))    
+    help.addArgument('PETSc', '-with-64-bit-ints=<bool>',     nargs.ArgBool(None, 1, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))    
     return
 
   def defineAutoconfMacros(self):
@@ -557,7 +560,9 @@ class Configure(config.base.Configure):
 
   def configureRegression(self):
     '''Output a file listing the jobs that should be run by the PETSc buildtest'''
-    jobs = []
+    jobs  = []    # Jobs can be run on with all BOPTs
+    rjobs = []    # Jobs can only be run with real numbers; i.e. NOT BOPT=g_complex or BOPT=O_complex
+    ejobs = []    # Jobs that require an external package install (also cannot work with complex)
     if self.usingMPIUni:
       jobs.append('4')
       if 'FC' in self.framework.argDB:
@@ -569,7 +574,10 @@ class Configure(config.base.Configure):
       if 'FC' in self.framework.argDB:
         jobs.append('3')
       if self.update.hasdatafiles:
-        jobs.append('6')        
+        rjobs.append('6')
+      # add jobs for each external package (except X11, already done)
+      for i in self.framework.packages:
+        ejobs.append(i.name.upper())
     if os.path.isfile(os.path.join(self.bmakeDir, 'jobs')):
       try:
         os.unlink(os.path.join(self.bmakeDir, 'jobs'))
@@ -585,9 +593,18 @@ class Configure(config.base.Configure):
       except:
         raise RuntimeError('Unable to remove file '+os.path.join(self.bmakeDir, 'ejobs')+'. Did a different user create it?')
     ejobsFile = file(os.path.abspath(os.path.join(self.bmakeDir, 'ejobs')), 'w')
-    ejobsFile.write(' ')
+    ejobsFile.write(' '.join(ejobs)+'\n')
     ejobsFile.close()
     self.framework.actions.addArgument('PETSc', 'File creation', 'Generated list of jobs for testing in '+os.path.join(self.bmakeDir,'ejobs'))
+    if os.path.isfile(os.path.join(self.bmakeDir, 'rjobs')):
+      try:
+        os.unlink(os.path.join(self.bmakeDir, 'rjobs'))
+      except:
+        raise RuntimeError('Unable to remove file '+os.path.join(self.bmakeDir, 'rjobs')+'. Did a different user create it?')
+    rjobsFile = file(os.path.abspath(os.path.join(self.bmakeDir, 'rjobs')), 'w')
+    rjobsFile.write(' '.join(rjobs)+'\n')
+    rjobsFile.close()
+    self.framework.actions.addArgument('PETSc', 'File creation', 'Generated list of jobs for testing in '+os.path.join(self.bmakeDir,'rjobs'))
     return
 
   def configureScript(self):

@@ -691,7 +691,6 @@ void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,PetscErro
 void PETSC_STDCALL matseqaijsetpreallocation_(Mat *mat,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);
-  CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatSeqAIJSetPreallocation(*mat,*nz,nnz);
 }
 
@@ -705,7 +704,6 @@ void PETSC_STDCALL matmpiaijsetpreallocation_(Mat *mat,PetscInt *d_nz,PetscInt *
 void PETSC_STDCALL matseqbaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);
-  CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatSeqBAIJSetPreallocation(*mat,*bs,*nz,nnz);
 }
 
@@ -718,7 +716,6 @@ void PETSC_STDCALL matmpibaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *d
 
 void PETSC_STDCALL matseqsbaijsetpreallocation_(Mat *mat,PetscInt *bs,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLINTEGER(nnz);
   CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatSeqSBAIJSetPreallocation(*mat,*bs,*nz,nnz);
 }

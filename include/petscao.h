@@ -51,8 +51,8 @@ EXTERN PetscErrorCode AOApplicationToPetscIS(AO,IS);
 
 EXTERN PetscErrorCode AOPetscToApplicationPermuteInt(AO, PetscInt, PetscInt[]);
 EXTERN PetscErrorCode AOApplicationToPetscPermuteInt(AO, PetscInt, PetscInt[]);
-EXTERN PetscErrorCode AOPetscToApplicationPermuteReal(AO, PetscInt, double[]);
-EXTERN PetscErrorCode AOApplicationToPetscPermuteReal(AO, PetscInt, double[]);
+EXTERN PetscErrorCode AOPetscToApplicationPermuteReal(AO, PetscInt, PetscReal[]);
+EXTERN PetscErrorCode AOApplicationToPetscPermuteReal(AO, PetscInt, PetscReal[]);
 
 EXTERN PetscErrorCode AOMappingHasApplicationIndex(AO, PetscInt, PetscTruth *);
 EXTERN PetscErrorCode AOMappingHasPetscIndex(AO, PetscInt, PetscTruth *);

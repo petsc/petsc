@@ -221,7 +221,7 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';setenv HYPRE_INSTALL_DIR '+installDir+';make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
@@ -276,6 +276,7 @@ class Configure(config.base.Configure):
     self.addSubstitution(self.PACKAGE+'_INCLUDE','-I'+self.include[0])
     self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_'+self.PACKAGE,1)
+    self.framework.packages.append(self)
     
   def setEmptyOutput(self):
     self.addSubstitution(self.PACKAGE+'_INCLUDE', '')

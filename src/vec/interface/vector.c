@@ -386,9 +386,11 @@ PetscErrorCode VecNorm(Vec x,NormType type,PetscReal *val)
   /*
    * Cached data?
    */
-  ierr = VecNormComposedDataID(type,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,*val,flg);CHKERRQ(ierr);
-  if (flg) PetscFunctionReturn(0);
+  if (type!=NORM_1_AND_2) {
+    ierr = VecNormComposedDataID(type,&type_id);CHKERRQ(ierr);
+    ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,*val,flg);CHKERRQ(ierr);
+    if (flg) PetscFunctionReturn(0);
+  }
   
 
   ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);

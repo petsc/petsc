@@ -80,6 +80,7 @@ if ("${CONFIGURE}" == "yes") then
   echo '****************************************************' >>& $nPETSC_DIR/build.log
   set EJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/ejobs`
   set JOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/jobs`
+  set RJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/rjobs`
   tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
 else
   #  Get the list of packages installed on the machine
@@ -91,6 +92,7 @@ make BOPT=g PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nP
 
 if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
   set EJOBS=""
+  set RJOBS=""
 endif
 
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT all >>& build.log
@@ -102,7 +104,7 @@ tar rf buildoutput.tar build.log
 # Run examples
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  $BOPT `date` " > examples.log
-foreach j ($JOBS $EJOBS)
+foreach j ($JOBS $EJOBS $RJOBS)
   $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
   echo '******************************************************' >>& $nPETSC_DIR/examples.log
 end

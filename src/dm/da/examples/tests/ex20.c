@@ -15,7 +15,7 @@ static char help[] = "Tests SDALocalToLocalxxx().\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt    size,rank;
-  PetscInt       M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt,st;
+  PetscInt       M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt = 0,st = 0;
   PetscErrorCode ierr;
   PetscTruth     flg2,flg3,flg;
   DAPeriodicType periodic = DA_NONPERIODIC;

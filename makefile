@@ -348,7 +348,7 @@ BMAKEFILES = bmake/common/base bmake/common/test \
 	     bmake/predefined/*/petscconf.h bmake/predefined/*/petscfix.h bmake/config/packages.in \
 	     bmake/config/petscfix.h.in  bmake/config/rules.in  \
 	     bmake/config/variables.in bmake/adic.init bmake/adicmf.init
-DOCS	   = bmake/readme bmake/petscconf.defs
+DOCS	   = bmake/readme
 SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint/buildconfigtest maint/builddistlite \
              maint/buildtest maint/checkBuilds.py maint/copylognightly maint/copylognightly.tao maint/countfiles maint/findbadfiles \
              maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris maint/fixtags.py \

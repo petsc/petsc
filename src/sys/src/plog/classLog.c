@@ -82,7 +82,7 @@ PetscErrorCode ClassRegInfoDestroy(ClassRegInfo *c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (c->name != PETSC_NULL) {
+  if (c->name) {
     ierr = PetscFree(c->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -328,7 +328,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
     BaseTime += (end - start);
   }
   /* Record the creation action */
-  if (logActions == PETSC_TRUE) {
+  if (logActions) {
     PetscTime(actions[numActions].time);
     actions[numActions].time  -= BaseTime;
     actions[numActions].action = CREATE;
@@ -341,7 +341,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
     numActions++;
   }
   /* Record the object */
-  if (logObjects == PETSC_TRUE) {
+  if (logObjects) {
     objects[numObjects].parent = -1;
     objects[numObjects].obj    = obj;
     ierr = PetscMemzero(objects[numObjects].name, 64 * sizeof(char));CHKERRQ(ierr);
@@ -373,9 +373,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
   ClassPerfLog   classPerfLog;
   Action        *tmpAction;
   PetscLogDouble start, end;
-  int            oclass, pclass;
-  PetscObject    parent;
-  PetscTruth     exists;
+  int            oclass;
   int            stage;
   PetscErrorCode ierr;
 
@@ -388,15 +386,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
   ierr = ClassRegLogGetClass(classRegLog, obj->cookie, &oclass);CHKERRQ(ierr);
   classPerfLog->classInfo[oclass].destructions++;
   classPerfLog->classInfo[oclass].mem += obj->mem;
-  /* Credit all ancestors with your memory */
-  parent = obj->parent;
-  while (parent != PETSC_NULL) {
-    ierr = PetscObjectExists(parent, &exists);CHKERRQ(ierr);
-    if (exists == PETSC_FALSE) break;
-    ierr = ClassRegLogGetClass(classRegLog, parent->cookie, &pclass);CHKERRQ(ierr);
-    classPerfLog->classInfo[pclass].descMem += obj->mem;   
-    parent = parent->parent;
-  } 
+  /* Cannot Credit all ancestors with your memory because they may have already been destroyed*/
   numObjectsDestroyed++;
   /* Dynamically enlarge logging structures */
   if (numActions >= maxActions) {
@@ -410,7 +400,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
     BaseTime += (end - start);
   }
   /* Record the destruction action */
-  if (logActions == PETSC_TRUE) {
+  if (logActions) {
     PetscTime(actions[numActions].time);
     actions[numActions].time  -= BaseTime;
     actions[numActions].action = DESTROY;
@@ -422,18 +412,8 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
     ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);CHKERRQ(ierr);
     numActions++;
   }
-  if (logObjects == PETSC_TRUE) {
-    if (obj->parent != PETSC_NULL) {
-      ierr = PetscObjectExists(obj->parent, &exists);CHKERRQ(ierr);
-      if (exists == PETSC_TRUE) {
-        objects[obj->id].parent = obj->parent->id;
-      } else {
-        objects[obj->id].parent = -1;
-      }
-    } else {
-      objects[obj->id].parent   = -1;
-    }
-    if (obj->name != PETSC_NULL) {
+  if (logObjects) {
+    if (obj->name) {
       ierr = PetscStrncpy(objects[obj->id].name, obj->name, 64);CHKERRQ(ierr);
     }
     objects[obj->id].obj      = PETSC_NULL;
