@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.84 1997/07/09 20:53:48 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.85 1997/07/22 21:48:11 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -236,6 +236,9 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
           Possibly adjust diagonal entry on current row to force
         LU matrix to have same row sum as initial matrix. 
     */
+    if (pv[diag] == 0.0) {
+      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+    }
     if (preserve_row_sums) {
       pj  = b->j + ai[i] + shift;
       sum = rowsums[i];
@@ -258,9 +261,6 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       if (ssum < 1000. && ssum > .001) pv[diag] = sum; 
     }
     /* check pivot entry for current row */
-    if (pv[diag] == 0.0) {
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
-    }
   }
 
   /* invert diagonal entries for simplier triangular solves */
@@ -386,8 +386,8 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
   /* backward solve the upper triangular */
   for ( i=n-1; i>=0; i-- ){
     adiag_i = adiag[i];
-    v       = aa + adiag_i;
-    vi      = aj + adiag_i;
+    v       = aa + adiag_i + 1;
+    vi      = aj + adiag_i + 1;
     nz      = ai[i+1] - adiag_i - 1;
     sum     = x[i];
     while (nz--) sum -= *v++ * x[*vi++];
