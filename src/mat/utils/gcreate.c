@@ -157,7 +157,11 @@ PetscErrorCode MatSetFromOptions(Mat B)
   }
   if (!B->type_name) {
     ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
-    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
+    if (size == 1){
+      ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

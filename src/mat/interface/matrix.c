@@ -2733,9 +2733,9 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
     ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
   }
   B = *M;
-  if (ltog) {
+  if (ltog && !B->mapping) {
     ierr = MatSetLocalToGlobalMapping(B,ltog);CHKERRQ(ierr);
-    if (!ltogb){
+    if (!ltogb && !B->bmapping){
       ierr = ISLocalToGlobalMappingBlock(ltog,B->bs,&ltogb);
     } 
     ierr = MatSetLocalToGlobalMappingBlock(B,ltogb);CHKERRQ(ierr);
