@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.26 1996/02/05 19:32:38 curfman Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.27 1996/02/15 02:06:09 curfman Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -50,11 +50,12 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 
   PetscObjectGetComm((PetscObject)x1,&comm);
   MatZeroEntries(*J);
-  ierr = VecDuplicate(x1,&j1); CHKERRQ(ierr);
-  ierr = VecDuplicate(x1,&j2); CHKERRQ(ierr);
-  ierr = VecDuplicate(x1,&x2); CHKERRQ(ierr);
-  PLogObjectParent(snes,j1); PLogObjectParent(snes,j2);
-  PLogObjectParent(snes,x2);
+  if (!snes->nvwork) {
+    ierr = VecDuplicateVecs(x1,3,&snes->vwork); CHKERRQ(ierr);
+    snes->nvwork = 3;
+    PLogObjectParents(snes,3,snes->vwork);
+  }
+  j1 = snes->vwork[0]; j2 = snes->vwork[1]; x2 = snes->vwork[2];
 
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
@@ -98,7 +99,6 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     VecRestoreArray(j2,&y);
   }
   MatAssemblyBegin(*J,FINAL_ASSEMBLY);
-  VecDestroy(x2); VecDestroy(j1); VecDestroy(j2);
   MatAssemblyEnd(*J,FINAL_ASSEMBLY);
   return 0;
 }

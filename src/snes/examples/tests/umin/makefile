@@ -13,7 +13,7 @@ LIBBASE       = libpetscsnes
 EXAMPLES_1    = ex2 ex3
 RUNEXAMPLES_1 = runex2 runex2_2 runex2_3 runex3 runex3_2
 EXAMPLES_2    = ex4
-RUNEXAMPLES_2 = 
+RUNEXAMPLES_2 = runex4
 EXAMPLES_3    = ex1
 RUNEXAMPLES_3 = runex1 runex1_2
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
@@ -42,11 +42,6 @@ FOBJ4 = pdgl2fg.o
 ex4: ex4.o $(FOBJ4) chkopts
 	-$(CLINKER) -o ex4 ex4.o $(FOBJ4)  $(PETSC_LIB)
 	$(RM) ex4.o $(FOBJ4)
-
-PETSC_CONTRIB = -L$(LDIR) -lpetsccontrib
-ex5: ex5.o chkopts dgl2hs.o dgl2fg.o dgl2co.o
-	-$(CLINKER) -o ex5 ex5.o dgl2hs.o dgl2fg.o dgl2co.o $(PETSC_CONTRIB) $(PETSC_LIB)
-	$(RM) ex5.o
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
@@ -90,5 +85,11 @@ runex3_3:
            if (diff output/ex3_3.out ex3_3.tmp) then true; \
            else echo "Possible problem with ex3_3, diffs above"; fi;\
 	   $(RM) -f ex3_3.tmp
+
+runex4:
+	-@$(MPIRUN) -np 2 ex4 -snes_smonitor > ex4_1.tmp 2>&1;\
+           if (diff output/ex4_1.out ex4_1.tmp) then true; \
+           else echo "Possible problem with ex4_1, diffs above"; fi;\
+	   $(RM) -f ex4_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
