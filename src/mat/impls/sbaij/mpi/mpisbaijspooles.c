@@ -16,13 +16,13 @@ int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
 {
   Mat_MPISBAIJ  *mat = (Mat_MPISBAIJ*)A->data;
   Mat_Spooles   *lu;   
-  int           ierr,M=A->M,N=A->N;
+  int           ierr;
   
   PetscFunctionBegin;	
   A->ops->lufactornumeric  = MatFactorNumeric_MPIAIJ_Spooles;  
 
   /* Create the factorization matrix F */  
-  ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,M,N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
   
   (*F)->ops->choleskyfactornumeric = MatFactorNumeric_MPIAIJ_Spooles;
   (*F)->factor                     = FACTOR_CHOLESKY;  

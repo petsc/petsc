@@ -16,13 +16,13 @@ int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat_MPIAIJ    *mat = (Mat_MPIAIJ*)A->data;
   Mat_Spooles   *lu;   
-  int           ierr,M=A->M,N=A->N;
+  int           ierr;
 
   PetscFunctionBegin;	
   A->ops->lufactornumeric = MatFactorNumeric_MPIAIJ_Spooles; 
 
   /* Create the factorization matrix F */  
-  ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,M,N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
   
   (*F)->ops->lufactornumeric = MatFactorNumeric_MPIAIJ_Spooles;
   (*F)->factor               = FACTOR_LU;  
