@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.10 1999/02/01 18:04:59 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.11 1999/02/01 18:14:35 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -95,7 +95,7 @@ def modifylevel(filename):
       # and also add the bold format.
       tmpbuf = re_level.sub('',buf)
       re_loc = re.compile('(<B>Location:</B>)')
-      outbuf = re_loc.sub('<B>Level:</B>' + level + r'\n<BR>\1',tmpbuf)
+      outbuf = re_loc.sub('<P><B>Level:</B>' + level + r'\n<BR>\1',tmpbuf)
       
       # write the modified manpage
       try:
