@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.13 1995/04/13 17:25:01 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.14 1995/04/13 21:08:27 curfman Exp curfman $";
 #endif
 
 /*
@@ -34,8 +34,7 @@ int KSPiDefaultFreeWork( KSP itP )
    Returns:
    the number of errors encountered.
 
-   Notes:
-   Keywords:  KSP, errors, check, definition
+.keywords: KSP, errors, check, definition
  @*/
 int KSPCheckDef( KSP itP )
 {
@@ -63,8 +62,9 @@ int KSPCheckDef( KSP itP )
 .  rnorm - 2-norm residual value (may be estimated).  
 .  dummy - unused monitor context 
 
-   Notes:
-   Keywords:  KSP, default, monitor, residual
+.keywords: KSP, default, monitor, residual
+
+.seealso: KSPSetMonitor(), KSPLGMonitorCreate()
 @*/
 int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
@@ -86,8 +86,9 @@ int KSPDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
    1 if the iteration has converged or exceeds divergence threshold;
    0 otherwise.
 
-   Notes:  
-   Keywords:  KSP, default, convergence, residual
+.keywords: KSP, default, convergence, residual
+
+.seealso: KSPSetConvergenceTest()
 @*/
 int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 {
@@ -111,8 +112,9 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
    Output Parameter:
 .  V - pointer to a vector containing the solution
 
-   Notes:  
-   Keywords:  KSP, build, solution, default
+.keywords:  KSP, build, solution, default
+
+.seealso: KSPGetSolution(), KSPDefaultBuildResidual()
 @*/
 int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 {
@@ -136,8 +138,9 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
    Output Parameter:
 .  V - pointer to a vector containing the residual
 
-   Notes:  
-   Keywords:  KSP, build, residual, default
+.keywords:  KSP, build, residual, default
+
+.seealso: KSPDefaultBuildSolution()
 @*/
 int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
 {
@@ -227,11 +230,13 @@ int KSPiDefaultDestroy(PetscObject obj)
   The counts provided by this routine depend on correctly counting the
   number of operations in the iterative methods; those are not currently
   very accurate.  Users are encouraged to look at the source codes and
-  send fixes to gropp@mcs.anl.gov .
+  send fixes to petsc-maint@mcs.anl.gov .
 
   This routine does NOT clear the values; use KSPClearWorkCounts to do that.
 
-  Keywords:  KSP, work, counts, operations
+.keywords: KSP, work, counts, operations
+
+.seealso: KSPClearWorkCounts()
 @*/
 int KSPGetWorkCounts( KSP itP, int *matop, int *amult, int *binv, int *vecs,
                       int * scalars )
@@ -251,8 +256,9 @@ int KSPGetWorkCounts( KSP itP, int *matop, int *amult, int *binv, int *vecs,
    Input Parameter:
 .  itP - Iterative context
 
-   Notes:
-   Keywords:  KSP, work, counts, operations, clear
+.keywords: KSP, work, counts, operations, clear
+
+.seealso: KSPGetWorkCounts()
 @*/
 int KSPClearWorkCounts( KSP itP )
 {

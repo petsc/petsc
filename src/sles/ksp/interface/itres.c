@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.7 1995/04/13 17:14:48 curfman Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.8 1995/04/13 21:08:13 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -22,7 +22,7 @@ $     A x = b
 $     M u = f    
    where M = AC (right preconditioning) or CA (left preconditioning).
 
-   Keywords:  KSP, residual
+.keywords: KSP, residual
 @*/
 int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 {
@@ -72,19 +72,23 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
    Input Parameters:
 .  itP  - iterative context
 .  vsoln - solution vector 
-.  vt1   - temporary vector
+.  vt1   - temporary work vector
 
    Output Parameter:
 .  vsoln - contains solution on output  
 
    Notes:
-   Keywords:  KSP, unwind, preconditioner
+   If preconditioning on the right, this routine solves for the 
+   correction to the unpreconditioned problem.  If preconditioning
+   on the left, nothing is done.
+
+.keywords: KSP, unwind, preconditioner
+
+.seealso: KSPSetRightPreconditioner()
 @*/
 int KSPUnwindPre( KSP itP, Vec vsoln, Vec vt1 )
 {
   VALIDHEADER(itP,KSP_COOKIE);
-/* If we preconditioned on the right, we need to solve for the correction to
-   the unpreconditioned problem.  Nothing needs to be done on the left. */
   if (itP->right_pre) {
     PCApply(itP->B, vsoln, vt1 );
     VecCopy( vt1, vsoln );

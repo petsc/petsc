@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.22 1995/04/13 21:08:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.23 1995/04/15 03:26:48 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -17,8 +17,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.22 1995/04/13 21:08:32 curfman Exp bsm
 .  ksp - the Krylov space context
 .  viewer - the location to display context (usually 0)
 
-   Notes:
-   Keywords:  KSP, view
+.keywords: KSP, view
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
@@ -48,7 +47,9 @@ static NRList *__ITList = 0;
    Notes:
    The default KSP method is GMRES with a restart of 10.
 
-   Keywords:  KSP, create, context
+.keywords: KSP, create, context
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy()
 @*/
 int KSPCreate(MPI_Comm comm,KSP *ksp)
 {
@@ -112,14 +113,14 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
    for instance, KSPCG or KSPGMRES.  
 
    Input Parameter:
-.  ctx      - the Krylov space context.
-.  itmethod - a known method.  
+.  ctx      - the Krylov space context
+.  itmethod - a known method
 
    Notes:  
    See "petsc/include/ksp.h" for available methods (for instance KSPCG 
    or KSPGMRES).
 
-   Keywords:  KSP, set, method
+.keywords: KSP, set, method
  @*/
 int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 {
@@ -149,8 +150,9 @@ int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 .  sname  - corresponding string for name
 .  create - routine to create method context
 
-   Notes:
-   Keywords:  KSP, register
+.keywords: KSP, register
+
+.seealso: KSPRegisterAll(), KSPRegisterDestroy()
 @*/
 int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
 {
@@ -164,8 +166,9 @@ int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
    KSPRegisterDestroy - Frees the list of iterative solvers that were
    registered by KSPRegister().
 
-   Notes:
-   Keywords: KSP, register, destroy
+.keywords: KSP, register, destroy
+
+.seealso: KSPRegisterAll(), KSPRegisterAll()
 @*/
 int KSPRegisterDestroy()
 {
@@ -192,8 +195,9 @@ int KSPRegisterDestroy()
    Options Database Key:
 $  -kspmethod  itmethod
 
-   Notes:
-   Keywords: KSP, options, database, get, method
+.keywords: KSP, options, database, get, method
+
+.seealso: KSPGetMethodName()
 @*/
 int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
 {
@@ -216,8 +220,9 @@ int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
    Output Parameter:
 .  name - name of KSP method
 
-   Notes:
-   Keywords: KSP, get, method, name
+.keywords: KSP, get, method, name
+
+.seealso: KSPGetMethodFromOptions()
 @*/
 int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 {
@@ -235,11 +240,9 @@ int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 .  prefix - prefix (usually "-")
 .  name - the options database name (by default "kspmethod") 
 
-   Note:
-   This routine is called from KSPPrintHelp().
+.keywords: KSP, print, methods, options, database
 
-   Notes:
-   Keywords: KSP, print, methods, options, database
+.seealso: KSPPrintHelp()
 @*/
 int KSPPrintMethods(char* prefix,char *name)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.15 1995/04/13 17:25:21 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.16 1995/04/13 21:08:37 curfman Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -13,16 +13,15 @@ static char vcid[] = "$Id: itcl.c,v 1.15 1995/04/13 17:25:21 curfman Exp curfman
 
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
-   This must be called before KSPSetUp() if the user is to be allowed 
-   to set the Krylov method. 
+   This routine must be called before KSPSetUp() if the user is to be 
+   allowed to set the Krylov method. 
 
    Input Parameters:
 .  ctx - the Krylov space context
-   
-   Notes:
-   See KSPPrintHelp() for a list of avaliable KSP options.
 
-   Keywords:  KSP, options, database
+.keywords: KSP, options, database
+
+.seealso: KSPPrintHelp()
 @*/
 int KSPSetFromOptions(KSP ctx)
 {
@@ -79,8 +78,9 @@ int KSPSetFromOptions(KSP ctx)
    Input Parameters:
 .  ctx - the KSP context
 
-   Notes:
-   Keywords:  KSP, help
+.keywords: KSP, help
+
+.seealso: KSPSetMethodFromOptions()
 @*/
 int KSPPrintHelp(KSP ctx)
 {
@@ -120,8 +120,7 @@ int KSPPrintHelp(KSP ctx)
 .  ksp - the Krylov context
 .  prefix - the prefix string to prepend to all KSP option requests
 
-   Notes:
-   Keywords:  KSP, options, prefix, database
+.keywords: KSP, options, prefix, database
 @*/
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {

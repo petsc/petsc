@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.13 1995/04/13 15:23:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.14 1995/04/13 21:08:23 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -12,8 +12,9 @@ static char vcid[] = "$Id: itfunc.c,v 1.13 1995/04/13 15:23:06 bsmith Exp curfma
    Input Parameter:
 .  itP   - iterative context obtained from KSPCreate()
 
-   Notes:
-   Keywords:  KSP, setup
+.keywords: KSP, setup
+
+.seealso: KSPCreate(), KSPSolve(), KSPDestroy()
 @*/
 int KSPSetUp(KSP itP)
 {
@@ -41,7 +42,9 @@ int KSPSetUp(KSP itP)
    is used, this happens when the residual grows to more than 10000 
    times the initial residual.
 
-   Keywords:  KSP, solve, linear system
+.keywords: KSP, solve, linear system
+
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy()
 @*/
 int KSPSolve(KSP itP, int *its) 
 {
@@ -59,8 +62,9 @@ int KSPSolve(KSP itP, int *its)
    Input Parameter:
 .  itP   - iterative context obtained from KSPCreate()
 
-   Notes:
-   Keywords:  KSP, destroy
+.keywords: KSP, destroy
+
+.seealso: KSPCreate(), KSPSetUp(), KSPSolve()
 @*/
 int KSPDestroy(KSP itP)
 {
@@ -78,8 +82,9 @@ int KSPDestroy(KSP itP)
    Options Database Key:
 $  -kspmax_it  maxits
 
-   Notes:
-   Keywords:  KSP, maximum, iterations
+.keywords: KSP, maximum, iterations
+
+.seealso: KSPSetRelativeTolerance(), KSPSetAbsoluteTolerance()
 @*/
 int KSPSetIterations(KSP itP, int maxits)
 {
@@ -101,7 +106,9 @@ int KSPSetIterations(KSP itP, int maxits)
     can be emulated by using either right or left preconditioning and a pre 
     or post processing step.
 
-    Keywords:  KSP, right, preconditioner, flag
+.keywords: KSP, right, preconditioner, flag
+
+.seealso: KSPGetPreconditionerSide()
 @*/
 int KSPSetRightPreconditioner(KSP itP)
 {
@@ -122,8 +129,9 @@ $
 $      side = 1:  right preconditioning
 $      side = 0:  left preconditioning (default)
 
-    Notes:
-    Keywords:  KSP, right, left, side, preconditioner, flag
+.keywords: KSP, right, left, side, preconditioner, flag
+
+.seealso: KSPSetRightPreconditioner()
 @*/
 int KSPGetPreconditionerSide(KSP itP, int *side) 
 {
@@ -141,10 +149,9 @@ int KSPGetPreconditionerSide(KSP itP, int *side)
     Output Parameter:
     method - the method type
 
-    Notes:
-    KSPGetMethod() gets the method from the command line.
+.keywords: KSP, method, type
 
-    Keywords:  KSP, method, type
+.seealso: KSPGetMethod()
 @*/
 int KSPGetMethodFromContext( KSP itP, KSPMETHOD *method )
 {
@@ -170,7 +177,9 @@ $  -ksprtol  tol
    will terminate the iteration. See also KSPSetConvergenceTest() for 
    setting user-defined stopping criteria.
 
-   Keywords:  KSP, relative, tolerance, convergence, norm, residual
+.keywords:  KSP, relative, tolerance, convergence, norm, residual
+
+.seealso: KSPSetAbsoluteTolerance(), KSPSetDivergenceTolerance
 @*/
 int KSPSetRelativeTolerance(KSP itP, double tol)
 {
@@ -190,8 +199,9 @@ int KSPSetRelativeTolerance(KSP itP, double tol)
    Options Database Key:
 $  -kspdivtol  tol
 
-   Notes:
-   Keywords:  KSP, convergence, divergence, tolerance, residual, norm
+.keywords: KSP, convergence, divergence, tolerance, residual, norm
+
+.seealso: KSPSetAbsoluteTolerance(), KSPSetRelativeTolerance()
 @*/
 int KSPSetDivergenceTolerance(KSP itP, double tol)
 {
@@ -217,7 +227,9 @@ $  -kspatol  tol
    will terminate the iterations. See also KSPSetConvergenceTest() 
    for setting user-defined stopping criteria.
 
-   Keywords:  KSP, convergence, tolerance, absolute, residual, norm
+.keywords: KSP, convergence, tolerance, absolute, residual, norm
+
+.seealso: KSPSetRelativeTolerance(), KSPSetDivergenceTolerance
 @*/
 int KSPSetAbsoluteTolerance(KSP itP, double tol) 
 {
@@ -233,8 +245,9 @@ int KSPSetAbsoluteTolerance(KSP itP, double tol)
    Input Parameter:
 .  itP - iterative context obtained from KSPCreate()
 
-   Notes:
-   Keywords:  KSP, residual, norm, flag
+.keywords: KSP, residual, norm, calculate, flag
+
+.seealso: KSPSetDoNotCalculateResidual()
 @*/
 int KSPSetCalculateResidual(KSP itP)
 {
@@ -253,7 +266,9 @@ int KSPSetCalculateResidual(KSP itP)
    Notes:
    Most Krylov methods do not yet take advantage of this flag.
 
-   Keywords:  KSP, residual, calculate, flag
+.keywords: KSP, residual, norm, calculate, flag
+
+.seealso: KSPSetCalculateResidual()
 @*/
 int KSPSetDoNotCalculateResidual(KSP itP)
 {      
@@ -278,7 +293,7 @@ int KSPSetDoNotCalculateResidual(KSP itP)
    Options Database Key:
 $  -ksppreres
 
-   Keywords:  KSP, residual, preconditioned, flag
+.keywords: KSP, residual, precondition, flag
 @*/
 int KSPSetUsePreconditionedResidual(KSP itP)
 {
@@ -295,8 +310,7 @@ int KSPSetUsePreconditionedResidual(KSP itP)
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
 
-   Notes:
-   Keywords:  KSP, initial guess, nonzero
+.keywords: KSP, initial guess, nonzero
 @*/
 int KSPSetInitialGuessNonzero(KSP itP)
 {
@@ -305,9 +319,9 @@ int KSPSetInitialGuessNonzero(KSP itP)
 }
 
 /*@
-   KSPSetCalculateEigenvalues - Sets a flag so that the the method will
-   calculate the extreme eigenvalues via a Lanczos or Arnoldi process
-   as it solves the linear system.
+   KSPSetCalculateEigenvalues - Sets a flag so that the extreme eigenvalues 
+   will be calculated via a Lanczos or Arnoldi process as the linear system 
+   is solved.
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
@@ -318,7 +332,7 @@ $  -kspeigen
    Notes:
    Currently this option is not valid for all iterative methods.
 
-   Keywords:  KSP, eigenvalues, calculate, flag
+.keywords: KSP, eigenvalues, calculate, flag
 @*/
 int KSPSetCalculateEigenvalues(KSP itP)
 {
@@ -335,8 +349,9 @@ int KSPSetCalculateEigenvalues(KSP itP)
 .  itP - Iterative context obtained from KSPCreate()
 .  b   - right-hand-side vector
 
-   Notes:
-   Keywords:  KSP, right-hand-side, rhs, set
+.keywords: KSP, right-hand-side, rhs
+
+.seealso: KSPGetRhs(), KSPSetSolution()
 @*/
 int KSPSetRhs(KSP itP,Vec b)
 {
@@ -355,8 +370,9 @@ int KSPSetRhs(KSP itP,Vec b)
    Output Parameter:
 .  r - right-hand-side vector
 
-   Notes:
-   Keywords:  KSP, right-hand-side, rhs, get
+.keywords: KSP, right-hand-side, rhs
+
+.seealso: KSPSetRhs(), KSPGetSolution()
 @*/
 int KSPGetRhs(KSP itP,Vec *r)
 {   
@@ -372,8 +388,9 @@ int KSPGetRhs(KSP itP,Vec *r)
 .  itP - iterative context obtained from KSPCreate()
 .  x   - solution vector
 
-   Notes:
-   Keywords:  KSP, solution, set
+.keywords: KSP, solution
+
+.seealso: KSPSetRhs(), KSPGetSolution()
 @*/
 int KSPSetSolution(KSP itP, Vec x)
 {
@@ -393,8 +410,9 @@ int KSPSetSolution(KSP itP, Vec x)
    Output Parameters:
 .  v - solution vector
 
-   Notes:
-   Keywords:  KSP, solution, get
+.keywords: KSP, solution
+
+.seealso: KSPGetRhs(), KSPSetSolution()
 @*/
 int KSPGetSolution(KSP itP, Vec *v)
 {
@@ -413,7 +431,9 @@ int KSPGetSolution(KSP itP, Vec *v)
    Use KSPGetBinv() to retrieve the preconditioner context (for example,
    to free it at the end of the computations).
 
-   Keywords:  KSP, preconditioner, Binv, set
+.keywords: KSP, precondition, Binv
+
+.seealso: KSPGetBinv()
 @*/
 int KSPSetBinv(KSP itP,PC B)
 {
@@ -432,8 +452,9 @@ int KSPSetBinv(KSP itP,PC B)
    Output Parameter:
 .  B - preconditioner context
 
-   Notes:
-   Keywords:  KSP, preconditioner, Binv, get
+.keywords: KSP, preconditioner, Binv
+
+.seealso: KSPSetBinv()
 @*/
 int KSPGetBinv(KSP itP, PC *B)
 {
@@ -463,7 +484,6 @@ int KSPGetBinv(KSP itP, PC *B)
 
    Options Database Keys:
 $  -kspmonitor   : key for setting KSPDefaultMonitor()
-$  -kspxmonitor  : key for setting KSPLGDefaultMonitor()
 
    Notes:  
    The default is to do nothing.  To print the residual, or preconditioned 
@@ -471,7 +491,9 @@ $  -kspxmonitor  : key for setting KSPLGDefaultMonitor()
    KSPDefaultMonitor() as the monitor routine, with a null monitoring 
    context.
 
-   Keywords:  KSP, monitor, set
+.keywords: KSP, monitor
+
+.seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
 int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
 {
@@ -490,8 +512,9 @@ int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
    Output Parameter:
 .  ctx - monitoring context
 
-   Notes:
-   Keywords:  KSP, monitor, context
+.keywords: KSP, monitor, context
+
+.seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
 int KSPGetMonitorContext(KSP itP, void **ctx)
 {
@@ -510,8 +533,7 @@ int KSPGetMonitorContext(KSP itP, void **ctx)
 .  a   - array to hold history
 .  na  - size of a
 
-   Notes:
-   Keywords:  KSP, residual, history, norm
+.keywords: KSP, residual, history, norm
 @*/
 int KSPSetResidualHistory(KSP itP, double *a, int na)
 {
@@ -551,7 +573,9 @@ int KSPSetResidualHistory(KSP itP, double *a, int na)
    The residual value that is tested may be an approximation; routines 
    that need exact values should compute them.
 
-   Keywords:  KSP, convergence, test, context
+.keywords: KSP, convergence, test, context
+
+.seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
 int KSPSetConvergenceTest(KSP itP, int (*converge)(KSP,int,double,void*), 
                           void *cctx)
@@ -571,8 +595,9 @@ int KSPSetConvergenceTest(KSP itP, int (*converge)(KSP,int,double,void*),
    Output Parameter:
 .  ctx - monitoring context
 
-   Notes:
-   Keywords:  KSP, convergence, test, context
+.keywords: KSP, convergence, test, context
+
+.seealso: KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
 int KSPGetConvergenceContext(KSP itP, void **ctx)
 {
@@ -596,7 +621,9 @@ int KSPGetConvergenceContext(KSP itP, void **ctx)
    Regardless of whether or not v is provided, the solution is 
    returned in V.
 
-   Keywords:  KSP, build, solution
+.keywords: KSP, build, solution
+
+.seealso: KSPGetSolution(), KSPBuildResidual()
 @*/
 int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 {
@@ -626,7 +653,9 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
    Regardless of whether or not v is provided, the residual is 
    returned in V.
 
-   Keywords:  KSP, build, residual
+.keywords: KSP, build, residual
+
+.seealso: KSPBuildSolution()
 @*/
 int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
 {

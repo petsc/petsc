@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.7 1995/04/13 17:24:44 curfman Exp curfman $";
+static char vcid[] = "$Id: xmon.c,v 1.8 1995/04/13 21:08:06 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -22,8 +22,9 @@ static char vcid[] = "$Id: xmon.c,v 1.7 1995/04/13 17:24:44 curfman Exp curfman 
    Output Parameter:
 .  ctx - the drawing context
 
-   Notes:
-   Keywords:  KSP, monitor, line graph, residual, create
+.keywords: KSP, monitor, line graph, residual, create
+
+.seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
 int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
                        int n, DrawLGCtx *ctx)
@@ -57,8 +58,9 @@ int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
    Input Parameter:
 .  ctx - the drawing context
 
-   Notes:
-   Keywords:  KSP, monitor, line graph, destroy
+.keywords: KSP, monitor, line graph, destroy
+
+.seealso: KSPLGMonitorCreate(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
 int KSPLGMonitorDestroy(DrawLGCtx ctx)
 {

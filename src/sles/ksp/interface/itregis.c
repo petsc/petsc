@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.6 1995/04/13 17:26:25 curfman Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.7 1995/04/13 21:08:18 curfman Exp curfman $";
 #endif
 
 
@@ -14,7 +14,9 @@ static char vcid[] = "$Id: itregis.c,v 1.6 1995/04/13 17:26:25 curfman Exp curfm
    To prevent all the methods from being registered and thus save 
    memory, copy this routine and register only those methods desired.
 
-   Keywords:  KSP, register, all
+.keywords: KSP, register, all
+
+.seealso:  KSPRegister(), KSPRegisterDestroy()
 @*/
 int KSPRegisterAll()
 {
