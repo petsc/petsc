@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: $";
+#endif
 /* 
    This is part of the MatlabSockettool Package. It is called by 
  the receive.mex4 Matlab program. 

@@ -8,9 +8,8 @@
 #include <math.h>
 #include "mex.h"
 
-/* Output Arguments */
-#define ERROR(a) {fprintf(stderr,"RECEIVE: %s \n",a); return 0;}
 
+#define ERROR(a) {fprintf(stderr,"RECEIVE: %s \n",a); return -1;}
 int ReceiveSparseMatrix(Matrix *plhs[],int t)
 {
   int    *tr,*tc;
@@ -24,16 +23,18 @@ int ReceiveSparseMatrix(Matrix *plhs[],int t)
   /* get number of nonzeros */
   if (read_int(t,&nnz,1))   ERROR("reading nnz"); 
   /* Create a matrix for Matlab */
-  plhs[0] = mxCreateSparse(m, n, nnz, REAL);
+  /* since Matlab stores by columns not rows we actually will 
+     create transpose of desired matrix */
+  plhs[0] = mxCreateSparse(n,m, nnz, REAL);
   r = mxGetIr(plhs[0]);
   c = mxGetJc(plhs[0]);
   v = mxGetPr(plhs[0]);
-  /* malloc space for data to be received into. */
   if (read_double(t,v,nnz)) ERROR("reading offdiag");
   if (read_int(t,c,m+1)) ERROR("reading column pointers");
   if (read_int(t,r,nnz)) ERROR("reading row pointers");
-
-
-
+  /* pointers start at 0 not 1 */
+  for ( i=0; i<m+1; i++ ) {c[i]--;}
+  for ( i=0; i<nnz; i++ ) {r[i]--;}
+  return 0;
 }
 
