@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.22 2000/07/28 19:27:53 balay Exp hzhang $*/
+/*$Id: ex74.c,v 1.23 2000/07/28 21:12:31 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -299,7 +299,7 @@ int main(int argc,char **args)
 #ifndef Cholesky
   /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
   if (bs == 1) {
-    for (lf=-1; lf<0; lf++){   
+    for (lf=-1; lf<10; lf++){   
       if (lf==-1) {  /* Cholesky factor */
         fill = 5.0;
         ierr = MatCholeskyFactorSymbolic(sA,isrow,fill,&sC);CHKERRA(ierr);
@@ -313,6 +313,7 @@ int main(int argc,char **args)
       
       ierr = MatMult(sA,x,b);CHKERRA(ierr);
       ierr = MatSolve(sC,b,y);CHKERRA(ierr);
+      ierr = MatDestroy(sC);CHKERRA(ierr);
       
       /* Check the error */
       ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
@@ -323,7 +324,7 @@ int main(int argc,char **args)
       norm1 = norm2;
     } 
   }
-  ierr = MatDestroy(sC);CHKERRA(ierr);
+
   ierr = ISDestroy(isrow);CHKERRA(ierr);
 #endif
   ierr = MatDestroy(A);CHKERRA(ierr);
