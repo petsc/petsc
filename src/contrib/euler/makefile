@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.22 1997/11/17 17:05:03 curfman Exp curfman $ 
+# $Id: makefile,v 1.23 1998/03/19 18:43:02 curfman Exp balay $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -53,8 +53,8 @@
 # CONF     - needed for handling 64-bit pointer conversion to Fortran
 #             (shouldn't be needed by most applications)
 
-#  CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -DACTIVATE_JULIANNE
- CFLAGS    = $(CPPFLAGS) $(CONF) $(FCONF) -D__SDIR__='"src/contrib/euler/"' \
+#  CFLAGS    = ${CPPFLAGS} ${CONF} ${FCONF} -DACTIVATE_JULIANNE
+ CFLAGS    = ${CPPFLAGS} ${CONF} ${FCONF} -D__SDIR__='"src/contrib/euler/"' \
              -DACTIVATE_PVAR 
 
 # -----------------------------------------------------------------------
@@ -92,23 +92,23 @@ ALL: ex1
   SOURCEF_JULIANNE = xjul.F
   SOURCEF_PETSC    = xmod.F mat.F obselete.F 
   SOURCEF_FP       = resid_fp.F xnd_fp.F rbuild_fp.F
-  SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_FP) $(SOURCEF_JULIANNE)
+  SOURCEF          = ${SOURCEF_COMMON} ${SOURCEF_PETSC} ${SOURCEF_FP} ${SOURCEF_JULIANNE}
 
   OBJSF_COMMON     = xnd.o resid.o jac.o pvar.o resid_duct.o
   OBJSF_JULIANNE   = xjul.o
   OBJSF_PETSC      = xmod.o mat.o obselete.o
 
   OBJSF_FP         = resid_fp.o xnd_fp.o rbuild_fp.o 
-  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_FP) 
-#  OBJSF           = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
+  OBJSF            = ${OBJSF_COMMON} ${OBJSF_PETSC} ${OBJSF_FP} 
+#  OBJSF           = ${OBJSF_COMMON} ${OBJSF_PETSC} ${OBJSF_JULIANNE}
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
 # Define C source code:
   OBJSC_MM   = mmregis.o mmset.o mmbasic.o mmmethods.o matv.o fdda.o
   SOURCEC_MM = mmregis.c mmset.c mmbasic.c mmmethods.c matv.c fdda.c
-  OBJSC      = user1.o grid.o jacob.o bc.o misc.o mfj.o monitor.o vrml.o $(OBJSC_MM)
-  SOURCEC    = user1.c grid.c jacob.c bc.c misc.c mfj.c monitor.c vrml.c $(SOURCEC_MM)
+  OBJSC      = user1.o grid.o jacob.o bc.o misc.o mfj.o monitor.o vrml.o ${OBJSC_MM}
+  SOURCEC    = user1.c grid.c jacob.c bc.c misc.c mfj.c monitor.c vrml.c ${SOURCEC_MM}
 
 # Source no longer used.
 # SOURCE_SURPLUS = regmpimat.c matbd.F
@@ -126,19 +126,19 @@ ALL: ex1
               ang.h avctrs.h consts.h coord.h bc.h es.h fv.h \
               gs.h init.h sada.h sigma.h wing.h bcimpl.h ibcwork.h \
               aux_fp.h
-  SOURCEH   = $(SOURCEH_C) $(SOURCEH_F)
+  SOURCEH   = ${SOURCEH_C} ${SOURCEH_F}
 
 # -----------------------------------------------------------------------
 # Define programs
 # -----------------------------------------------------------------------
 
-ex1: chkopts $(OBJSC) $(OBJSF) $(SOURCEH)
-	-$(FLINKER) -o ex1 $(OBJSC) $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+ex1: chkopts ${OBJSC} ${OBJSF} ${SOURCEH}
+	-${FLINKER} -o ex1 ${OBJSC} ${OBJSF} ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 
 # We have trouble with multiply defined main when using the fortran linker on ptera (alpha)
 # The following works though.
-ex1_alpha: chkopts $(OBJSC) $(OBJSF) $(SOURCEH)
-	-$(CLINKER) -o ex1 $(OBJSC) $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB) \
+ex1_alpha: chkopts ${OBJSC} ${OBJSF} ${SOURCEH}
+	-${CLINKER} -o ex1 ${OBJSC} ${OBJSF} ${PETSC_FORTRAN_LIB} ${PETSC_LIB} \
               /usr/lib/libm_4sqrt.a 
 
 # -----------------------------------------------------------------------
@@ -146,12 +146,12 @@ ex1_alpha: chkopts $(OBJSC) $(OBJSF) $(SOURCEH)
 # -----------------------------------------------------------------------
 
 runex1:
-	-@$(MPIRUN) ex1 -optionsleft > log.3d.me.p1 2>&1;	  \
+	-@${MPIRUN} ex1 -optionsleft > log.3d.me.p1 2>&1;	  \
 	   if (diff output/order2/log.3d.me.p1 log.3d.me.p1) then true; \
 	   else echo "Output differences as above"; 
 
 runex1_2:
-	-@$(MPIRUN)  ex1 -optionsleft \
+	-@${MPIRUN}  ex1 -optionsleft \
 	   -matrix_free -cfl_advance > log.3d.mf.p1 2>&1;	  \
 	   if (diff output/order2/log.3d.mf.p1 log.3d.me.p1) then true; \
 	   else echo "Output differences as above"; 
@@ -159,7 +159,7 @@ runex1_2:
 # original solver (uniprocessor only!)
 # output in file nd.out.5
 runex1_5:
-	-@$(MPIRUN) ex1 -julianne
+	-@${MPIRUN} ex1 -julianne
 
 # -----------------------------------------------------------------------
 # Define utilities
@@ -172,27 +172,27 @@ runex1_5:
 # To locate later occurrences, use M-,
 
 etags_euler:
-	$(RM) TAGS_EULER
-	etags -f TAGS_EULER $(SOURCEC) $(SOURCEF) $(SOURCEH)
+	${RM} TAGS_EULER
+	etags -f TAGS_EULER ${SOURCEC} ${SOURCEF} ${SOURCEH}
 
 etags_fortran:
-	$(RM) TAGS_FORTRAN
-	etags -f TAGS_FORTRAN $(SOURCEF) $(SOURCEH_F)
+	${RM} TAGS_FORTRAN
+	etags -f TAGS_FORTRAN ${SOURCEF} ${SOURCEH_F}
 
 clean_f:
-	$(RM) $(OBJSF)
+	${RM} ${OBJSF}
 
 clean_mm:
-	$(RM) $(OBJSC_MM)
+	${RM} ${OBJSC_MM}
 
 clean_c:
-	$(RM) $(OBJSC)
+	${RM} ${OBJSC}
 
 #
 # Make PETSc tar file (containing all but input files that define meshes)
 #
 tar_euler:
-	cp $(SOURCEC) $(SOURCEF) $(SOURCEH) makefile nd.in euler 
+	cp ${SOURCEC} ${SOURCEF} ${SOURCEH} makefile nd.in euler 
 	chmod 664 euler/*
 	tar -cf euler.tar euler
 	gzip euler.tar
@@ -201,7 +201,7 @@ tar_euler:
 # Include statement for using PETSc portable makefiles
 # -----------------------------------------------------------------------
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 # redefine PETSc lib location to use tmp space
 # LDIR = /tmp/curfman/petsc-2.0.20/libg/
@@ -221,26 +221,26 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 # Compilation rule for rs6000 only (using debugger)
 # Use the compiler option -C for array bounds checking
 #.F.o:
-#	-$(RM) $*.f __$*.c
+#	-${RM} $*.f __$*.c
 #	-cp $*.F __$*.c
-#	-$(CC) $(CFLAGS) -E  __$*.c | grep -v '^ *#' > $*.f
-#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-##	-$(RM) $*.f __$*.c
+#	-${CC} ${CFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
+#	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+##	-${RM} $*.f __$*.c
 
 # Compilation rule for freebsd only (using debugger)
 #.F.o:
-#	$(RM) $*.f
-#	-cpp $(CFLAGS)  $*.F > $*.f 
-#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-##	$(RM) $*.f
+#	${RM} $*.f
+#	-cpp ${CFLAGS}  $*.F > $*.f 
+#	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+##	${RM} $*.f
 
 # Compilation rule for sun4, IRIX64 (using array bounds checking)
 #.F.o: 
-#	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) -C $*.F
-##	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
+#	${FC}  -c ${FFLAGS}  ${FOPTFLAGS} ${CFLAGS} -C $*.F
+##	${FC}  -c ${FFLAGS}  ${FOPTFLAGS} ${CFLAGS} $*.F
 
 # Compilation rule for Cray t3e
 #.F.o:
-#	-cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
-#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-##	-$(RM) $*.f 
+#	-cpp  -DPARCH_t3d ${CFLAGS} -P $*.F $*.f
+#	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+##	-${RM} $*.f 
