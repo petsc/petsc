@@ -25,6 +25,10 @@ c   Type of scaling of system
         integer DT_MULT, DT_DIV
         parameter(DT_MULT=0, DT_DIV=1)
 
+c   Type of timestepping
+        integer LOCAL_TS, GLOBAL_TS
+        parameter(LOCAL_TS=0, GLOBAL_TS=1)
+
 c   The following are the test problem dimensions:
        integer d_ni,d_nj,d_nk,d_ni1,d_nj1,d_nk1
 c     needed for m6c
