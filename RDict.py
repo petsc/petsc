@@ -33,7 +33,7 @@ Arg class, which wraps the usual value.'''
   def writeLogLine(self, message):
     '''Writes the message to the log along with the current time'''
     import time
-    self.logFile.write('('+str(os.getpid())+')'+message+' ['+time.asctime(time.localtime())+']\n')
+    self.logFile.write('('+str(os.getpid())+')('+str(id(self))+')'+message+' ['+time.asctime(time.localtime())+']\n')
     self.logFile.flush()
     return
 
@@ -240,8 +240,9 @@ Arg class, which wraps the usual value.'''
     try: os.remove(addrFilename)
     except: pass
     oldDir = os.getcwd()
+    source = os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)), 'RDict.py')
     os.chdir(os.path.dirname(addrFilename))
-    os.spawnvp(os.P_NOWAIT, 'python', ['python', os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)), 'RDict.py'), 'server'])
+    os.spawnvp(os.P_NOWAIT, 'python', ['python', source, 'server'])
     os.chdir(oldDir)
     for i in range(10):
       time.sleep(1)
@@ -338,6 +339,7 @@ Arg class, which wraps the usual value.'''
 
     # check if server is running
     if os.path.exists(self.addrFilename) and RDict(parentDirectory = '.').hasParent():
+      self.writeLogLine('SERVER: Another server is already running')
       raise RuntimeError('Server already running')
 
     # wish there was a better way to get a usable socket
@@ -346,7 +348,7 @@ Arg class, which wraps the usual value.'''
     p        = 1
     while p < 1000 and flag == 'nosocket':
       try:
-        server = SocketServer.ForkingTCPServer((socket.gethostname(), basePort+p), ProcessHandler)
+        server = SocketServer.ThreadingTCPServer((socket.gethostname(), basePort+p), ProcessHandler)
         flag   = 'socket'
       except Exception, e:
         p = p + 1
@@ -354,7 +356,7 @@ Arg class, which wraps the usual value.'''
       p = 1
       while p < 1000 and flag == 'nosocket':
         try:
-          server = SocketServer.ForkingTCPServer(('localhost', basePort+p), ProcessHandler)
+          server = SocketServer.ThreadingTCPServer(('localhost', basePort+p), ProcessHandler)
           flag   = 'socket'
         except Exception, e:
           p = p + 1
@@ -396,6 +398,7 @@ Arg class, which wraps the usual value.'''
       data   = dict(self.localitems())
       cPickle.dump(data, dbFile)
       dbFile.close()
+      self.writeLogLine('Saved local dictionary to '+os.path.abspath(self.saveFilename))
     elif not self.saveTimer:
       import threading
       self.saveTimer = threading.Timer(5, self.save, [], {'force': 1})
@@ -435,6 +438,9 @@ if __name__ ==  '__main__':
       elif action == 'clear':
         print 'Clearing all dictionaries'
         RDict().clear()
+      elif action == 'insert':
+        rdict = RDict(parentDirectory = parent)
+        rdict[sys.argv[3]] = sys.argv[4]
       else:
         sys.exit('Unknown action: '+action)
   except Exception, e:
