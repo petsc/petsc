@@ -8,6 +8,6 @@ BIB2HTML = bib2html
 RM       = rm -f
 SHELL    = /bin/sh
 SED      = /bin/sed
-OMAKE    = gmake --no-print-directory
+OMAKE    = make --no-print-directory
 MKDIR    = mkdir -p
 

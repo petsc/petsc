@@ -1,6 +1,6 @@
 #! /bin/sh
-# this script works on linux (uses /bin/mail)
-echo "PETSc Tuesday 1:00pm meeting in room C-244 reminder" | /bin/mail -s "PETSc Tuesday 1:00pm meeting reminder" petsc-developers@mcs.anl.gov
+# this script works on linux (uses /usr/bin/mail)
+echo "PETSc Tuesday 1:00pm meeting in room C-244 reminder" | /usr/bin/mail -s "PETSc Tuesday 1:00pm meeting reminder" petsc-developers@mcs.anl.gov
 
 
 

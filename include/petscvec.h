@@ -133,9 +133,9 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec,PetscInt,PetscInt);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDot(Vec,Vec,PetscScalar*);
-PetscPolymorphicFunction(VecDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s);
+PetscPolymorphicFunction(VecDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDot(Vec,Vec,PetscScalar*);  
-PetscPolymorphicFunction(VecTDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s);
+PetscPolymorphicFunction(VecTDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(PetscInt,Vec,const Vec[],PetscScalar*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(PetscInt,Vec,const Vec[],PetscScalar*); 
 
@@ -235,15 +235,15 @@ PetscPolymorphicScalar(VecAYPX,(PetscScalar _t,Vec x,Vec y),(&_T,x,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(const PetscScalar*,Vec,Vec,Vec);
 PetscPolymorphicScalar(VecWAXPY,(PetscScalar _t,Vec x,Vec y,Vec z),(&_T,x,y,z))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMax,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseMax,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMaxAbs,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseMaxAbs,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMin,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseMin,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec,Vec,PetscReal*);    
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(const PetscScalar*,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec);
@@ -254,19 +254,19 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec,Vec*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec,PetscInt,Vec*[]);         
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroyVecs(Vec[],PetscInt); 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetPetscMap(Vec,PetscMap*);
-PetscPolymorphicFunction(VecGetPetscMap,(Vec x),(x,&y),PetscMap,y);
+PetscPolymorphicFunction(VecGetPetscMap,(Vec x),(x,&y),PetscMap,y)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec,NormType,PetscReal*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec,PetscInt *,PetscReal *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec,PetscInt *,PetscReal *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec,PetscScalar*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
-PetscPolymorphicFunction(VecStrideNorm,(Vec x,PetscInt i),(x,i,NORM_2,&r),PetscReal,r);
-PetscPolymorphicFunction(VecStrideNorm,(Vec x,PetscInt i,NormType t),(x,i,t,&r),PetscReal,r);
+PetscPolymorphicFunction(VecStrideNorm,(Vec x,PetscInt i),(x,i,NORM_2,&r),PetscReal,r)
+PetscPolymorphicFunction(VecStrideNorm,(Vec x,PetscInt i,NormType t),(x,i,t,&r),PetscReal,r)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec,PetscInt,PetscInt *,PetscReal *);
-PetscPolymorphicFunction(VecStrideMax,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),PetscReal,r);
+PetscPolymorphicFunction(VecStrideMax,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),PetscReal,r)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec,PetscInt,PetscInt *,PetscReal *);
-PetscPolymorphicFunction(VecStrideMin,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),PetscReal,r);
+PetscPolymorphicFunction(VecStrideMin,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),PetscReal,r)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec,PetscInt,PetscScalar*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec,PetscInt,Vec,InsertMode);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec,PetscInt,Vec,InsertMode);
@@ -343,7 +343,7 @@ M*/
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec,PetscInt*);
-PetscPolymorphicFunction(VecGetBlockSize,(Vec x),(x,&i),PetscInt,i);
+PetscPolymorphicFunction(VecGetBlockSize,(Vec x),(x,&i),PetscInt,i)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlocked(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
 /* Dynamic creation and loading functions */
@@ -405,11 +405,11 @@ M*/
 
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
-PetscPolymorphicFunction(VecScatterCreate,(Vec x,IS is1,Vec y,IS is2),(x,is1,y,is2,&s),VecScatter,s);
-PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,IS is,Vec y,VecScatter *s),(x,is,y,PETSC_NULL,s));
-PetscPolymorphicFunction(VecScatterCreate,(Vec x,IS is,Vec y),(x,is,y,PETSC_NULL,&s),VecScatter,s);
-PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,Vec y,IS is,VecScatter *s),(x,PETSC_NULL,y,is,s));
-PetscPolymorphicFunction(VecScatterCreate,(Vec x,Vec y,IS is),(x,PETSC_NULL,y,is,&s),VecScatter,s);
+PetscPolymorphicFunction(VecScatterCreate,(Vec x,IS is1,Vec y,IS is2),(x,is1,y,is2,&s),VecScatter,s)
+PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,IS is,Vec y,VecScatter *s),(x,is,y,PETSC_NULL,s))
+PetscPolymorphicFunction(VecScatterCreate,(Vec x,IS is,Vec y),(x,is,y,PETSC_NULL,&s),VecScatter,s)
+PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,Vec y,IS is,VecScatter *s),(x,PETSC_NULL,y,is,s))
+PetscPolymorphicFunction(VecScatterCreate,(Vec x,Vec y,IS is),(x,PETSC_NULL,y,is,&s),VecScatter,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
@@ -440,14 +440,14 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec,PetscTruth*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, char *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec,Vec,PetscTruth*);
-PetscPolymorphicFunction(VecEqual,(Vec x,Vec y),(x,y,&s),PetscTruth,s);
+PetscPolymorphicFunction(VecEqual,(Vec x,Vec y),(x,y,&s),PetscTruth,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,const VecType,Vec*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer,Vec);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec,PetscInt*);
-PetscPolymorphicFunction(VecGetSize,(Vec x),(x,&s),PetscInt,s);
+PetscPolymorphicFunction(VecGetSize,(Vec x),(x,&s),PetscInt,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec,PetscInt*);
-PetscPolymorphicFunction(VecGetLocalSize,(Vec x),(x,&s),PetscInt,s);
+PetscPolymorphicFunction(VecGetLocalSize,(Vec x),(x,&s),PetscInt,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec,PetscInt*,PetscInt*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
@@ -457,14 +457,14 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec,PetscInt,c
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDotBegin(Vec,Vec,PetscScalar *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDotEnd(Vec,Vec,PetscScalar *);
-PetscPolymorphicFunction(VecDotEnd,(Vec x,Vec y),(x,y,&s),PetscScalar,s);
+PetscPolymorphicFunction(VecDotEnd,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDotBegin(Vec,Vec,PetscScalar *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDotEnd(Vec,Vec,PetscScalar *);
-PetscPolymorphicFunction(VecTDotEnd,(Vec x,Vec y),(x,y,&s),PetscScalar,s);
+PetscPolymorphicFunction(VecTDotEnd,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormBegin(Vec,NormType,PetscReal *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec,NormType,PetscReal *);
-PetscPolymorphicFunction(VecNormEnd,(Vec x,NormType t),(x,t,&s),PetscReal,s);
-PetscPolymorphicFunction(VecNormEnd,(Vec x),(x,NORM_2,&s),PetscReal,s);
+PetscPolymorphicFunction(VecNormEnd,(Vec x,NormType t),(x,t,&s),PetscReal,s)
+PetscPolymorphicFunction(VecNormEnd,(Vec x),(x,NORM_2,&s),PetscReal,s)
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_TREAT_OFF_PROC_ENTRIES} VecOption;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec,VecOption);

@@ -110,7 +110,7 @@ typedef int PetscInt;
 #endif  
 
 #if !defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
-/*@M
+/*@C
       PetscPolymorphicSubroutine - allows defining a C++ polymorphic version of 
             a PETSc function that remove certain optional arguments for a simplier user interface
 
@@ -130,7 +130,7 @@ typedef int PetscInt;
 @*/
 #define PetscPolymorphicSubroutine(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {return A C;}
 
-/*@M
+/*@C
       PetscPolymorphicScalar- allows defining a C++ polymorphic version of 
             a PETSc function that replaces a PetscScalar * argument with a PetscScalar argument
 
@@ -150,7 +150,7 @@ typedef int PetscInt;
 @*/
 #define PetscPolymorphicScalar(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {PetscScalar _T = _t; return A C;}
 
-/*@M
+/*@C
       PetscPolymorphicFunction - allows defining a C++ polymorphic version of 
             a PETSc function that remove certain optional arguments for a simplier user interface
             and returns the computed value (istead of an error code)
