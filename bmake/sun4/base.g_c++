@@ -1,9 +1,12 @@
-# $Id: base.g_c++,v 1.9 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base.g_c++,v 1.10 1998/04/23 21:22:17 balay Exp balay $ 
 
-CLINKER    = g++ ${COPTFLAGS}
-CC         = g++ -fPIC
-PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g -DUSE_PETSC_STACK
-COPTFLAGS  = -g 
-FOPTFLAGS  = -g -dalign
-SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
+CC         = ${CXX_CC}
+FC         = ${CXX_FC}
+CLINKER    = ${CXX_CLINKER}
+FLINKER    = ${CXX_FLINKER}
+
+PETSCFLAGS = ${GCXX_PETSCFLAGS}
+COPTFLAGS  = ${GCXX_COPTFLAGS}
+FOPTFLAGS  = ${GCXX_FOPTFLAGS}
+SYS_LIB    = ${GCXX_LIB}
 
