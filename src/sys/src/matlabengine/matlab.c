@@ -143,7 +143,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
   sscanf(engine->buffer+len," %d\n",&flops);
   PetscLogFlops(flops);
   /* strip out of engine->buffer the end part about flops */
-  if (len < 14) SETERRQ(1,"Internal PETSc error");
+  if (len < 14) SETERRQ1(1,"Error from Matlab %s",engine->buffer);
   len -= 14;
   engine->buffer[len] = 0;
 
