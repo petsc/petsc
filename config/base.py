@@ -40,7 +40,7 @@ Finding Executables
 Output
 ------
 
-  addDefine(), addSubstitution(), addArgumentSubtitution(), addTypedef()
+  addDefine(), addSubstitution(), addArgumentSubtitution(), addTypedef(), addPrototype()
 '''
 import script
 
@@ -52,10 +52,12 @@ class Configure(script.Script):
     self.framework       = framework
     self.defines         = {}
     self.typedefs        = {}
+    self.prototypes      = {}
     self.subst           = {}
     self.argSubst        = {}
     self.language        = []
     self.compilerDefines = 'confdefs.h'
+    self.compilerFixes   = 'conffix.h'
     self.pushLanguage('C')
     return
 
@@ -82,6 +84,17 @@ class Configure(script.Script):
     '''Designate that "name" should be typedefed to "value" in the configuration header'''
     self.framework.log.write('Typedefed '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
     self.typedefs[value] = name
+    return
+
+  def addPrototype(self, prototype, language = 'All'):
+    '''Add a missing function prototype
+       - The language argument defaults to "All"
+       - Other language choices are C, C++, extern C'''
+    self.framework.log.write('Added prototype '+prototype+' to language '+language+' in '+str(self.__module__)+'\n')
+    language = language.replace('+', 'x')
+    if not language in self.prototypes:
+      self.prototypes[language] = []
+    self.prototypes[language].append(prototype)
     return
 
   def addSubstitution(self, name, value):
@@ -206,7 +219,7 @@ class Configure(script.Script):
     if includes and not includes[-1] == '\n':
       includes += '\n'
     if language in ['C', 'C++', 'Cxx']:
-      codeStr = '#include "confdefs.h"\n'+includes
+      codeStr = '#include "confdefs.h"\n#include "conffix.h"\n'+includes
       if not body is None:
         if codeBegin is None:
           codeBegin = '\nint main() {\n'
@@ -239,11 +252,13 @@ class Configure(script.Script):
 
     command = self.getPreprocessorCmd()
     self.framework.outputHeader(self.compilerDefines)
+    self.framework.outputCHeader(self.compilerFixes)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
     (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
+    if os.path.isfile(self.compilerFixes): os.remove(self.compilerFixes)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     return (out, err, ret)
 
@@ -273,11 +288,13 @@ class Configure(script.Script):
 
     command = self.getCompilerCmd()
     self.framework.outputHeader(self.compilerDefines)
+    self.framework.outputCHeader(self.compilerFixes)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body, codeBegin, codeEnd))
     f.close()
     (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
+    if os.path.isfile(self.compilerFixes): os.remove(self.compilerFixes)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     return (out, err, ret)

@@ -28,6 +28,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.substFiles   = {}
     self.logName      = 'configure.log'
     self.header       = 'matt_config.h'
+    self.cHeader      = 'matt_fix.h'
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.warningRE    = re.compile('warning', re.I)
@@ -129,6 +130,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if self.header:
       self.outputHeader(self.header)
       self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
+    if self.cHeader:
+      self.outputCHeader(self.cHeader)
+      self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
     self.log.write('\n')
     self.actions.output(self.log)
     return
@@ -380,15 +384,24 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         self.outputDefine(f, prefix+pair[0], pair[1])
     return
 
-  def outputTypedefs(self, f, child, prefix = None):
+  def outputTypedefs(self, f, child):
     '''If the child contains a dictionary named "typedefs", the entries are output as typedefs in the config header.'''
-    if not hasattr(child, 'typedefs') or not isinstance(child.defines, dict): return
+    if not hasattr(child, 'typedefs') or not isinstance(child.typedefs, dict): return
     for newType, oldType in child.typedefs.items():
       f.write('typedef ')
       f.write(oldType)
       f.write(' ')
       f.write(newType)
       f.write(';\n')
+    return
+
+  def outputPrototypes(self, f, child, language = 'All'):
+    '''If the child contains a dictionary named "prototypes", the entries for the given language are output as function prototypes in the C config header.'''
+    if not hasattr(child, 'prototypes') or not isinstance(child.prototypes, dict): return
+    if language in child.prototypes:
+      for prototype in child.prototypes[language]:
+        f.write(prototype)
+        f.write('\n')
     return
 
   def outputHeader(self, name):
@@ -410,11 +423,47 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputDefines(f, self)
     for child in self.childGraph.vertices:
       self.outputDefines(f, child)
+    if hasattr(self, 'headerBottom'):
+      f.write(str(self.headerBottom)+'\n')
+    f.write('#endif\n')
+    if not isinstance(name, file):
+      f.close()
+    return
+
+  def outputCHeader(self, name):
+    '''Write the C specific configuration header'''
+    if isinstance(name, file):
+      f = name
+      filename = 'Unknown'
+    else:
+      dir = os.path.dirname(name)
+      if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+      f = file(name, 'w')
+      filename = os.path.basename(name)
+    guard = 'INCLUDED_'+filename.upper().replace('.', '_')
+    f.write('#if !defined('+guard+')\n')
+    f.write('#define '+guard+'\n\n')
     self.outputTypedefs(f, self)
     for child in self.childGraph.vertices:
       self.outputTypedefs(f, child)
-    if hasattr(self, 'headerBottom'):
-      f.write(str(self.headerBottom)+'\n')
+    self.outputPrototypes(f, self)
+    for child in self.childGraph.vertices:
+      self.outputPrototypes(f, child)
+    f.write('#if defined(__cplusplus)\n')
+    self.outputPrototypes(f, self, 'Cxx')
+    for child in self.childGraph.vertices:
+      self.outputPrototypes(f, child, 'Cxx')
+    f.write('extern "C" {\n')
+    self.outputPrototypes(f, self, 'extern C')
+    for child in self.childGraph.vertices:
+      self.outputPrototypes(f, child, 'extern C')
+    f.write('}\n')
+    f.write('#else\n')
+    self.outputPrototypes(f, self, 'C')
+    for child in self.childGraph.vertices:
+      self.outputPrototypes(f, child, 'C')
+    f.write('#endif\n')
     f.write('#endif\n')
     if not isinstance(name, file):
       f.close()
