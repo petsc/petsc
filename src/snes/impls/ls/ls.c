@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.27 1995/06/29 23:54:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.28 1995/07/08 14:43:39 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -342,7 +342,6 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Quadratically determined step, lambda %g\n",lambda);
       goto theend;
-      return 0;
   }
 
   /* Fit points with cubic */

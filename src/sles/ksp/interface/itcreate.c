@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.39 1995/07/07 17:15:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.40 1995/07/07 19:17:03 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -28,7 +28,7 @@ int KSPView(KSP ksp,Viewer viewer)
                                         vobj->type == FILES_VIEWER)){
     fd = ViewerFileGetPointer_Private(viewer);
     fprintf(fd,"KSP Object:\n");
-    KSPGetMethodName(ksp->type,&method);
+    KSPGetMethodName((KSPMethod)ksp->type,&method);
     fprintf(fd,"  method: %s\n",method);
     if (ksp->guess_zero) fprintf(fd,
       "  maximum iterations=%d\n, initial guess is zero",ksp->max_it);
@@ -40,10 +40,7 @@ int KSPView(KSP ksp,Viewer viewer)
   }
   return 0;
 }
-int _KSPView(PetscObject obj,Viewer viewer)
-{
-  return  KSPView((KSP) obj,viewer);
-}
+
 static NRList *__ITList = 0;
 /*@
    KSPCreate - Creates the default KSP context.
@@ -66,7 +63,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   PETSCHEADERCREATE(ctx,_KSP,KSP_COOKIE,KSPGMRES,comm);
   PLogObjectCreate(ctx);
   *ksp               = ctx;
-  ctx->view          = _KSPView;
+  ctx->view          = 0;
   ctx->prefix        = 0;
 
   ctx->type          = (KSPMethod) -1;
