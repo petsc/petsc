@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.110 1999/01/26 21:32:05 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.111 1999/01/27 21:37:07 balay Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -41,6 +41,8 @@ static int SLESPublish_Petsc(PetscObject object)
    The user can open alternative visualization contexts with
 .    ViewerASCIIOpen() - output to a specified file
 
+   Level: beginner
+
 .keywords: SLES, view
 
 .seealso: ViewerASCIIOpen()
@@ -70,6 +72,8 @@ int SLESView(SLES sles,Viewer viewer)
 
    Input Parameter:
 .  sles - the SLES context
+
+   Level: beginner
 
 .keywords: SLES, help
 
@@ -111,6 +115,8 @@ int SLESPrintHelp(SLES sles)
    example, the block Jacobi and block diagonal preconditioners use
    the prefix "sub_" for options relating to the individual blocks.  
 
+   Level: intermediate
+
 .keywords: SLES, set, options, prefix, database
 
 .seealso: SLESAppendOptionsPrefix(), SLESGetOptionsPrefix()
@@ -148,6 +154,8 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
    example, the block Jacobi and block diagonal preconditioners use
    the prefix "sub_" for options relating to the individual blocks.  
 
+   Level: intermediate
+
 .keywords: SLES, append, options, prefix, database
 
 .seealso: SLESSetOptionsPrefix(), SLESGetOptionsPrefix()
@@ -183,6 +191,8 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
    example, the block Jacobi and block diagonal preconditioners use
    the prefix "sub" for options relating to the individual blocks.  
 
+   Level: intermediate
+
 .keywords: SLES, get, options, prefix, database
 
 .seealso: SLESSetOptionsPrefix()
@@ -207,6 +217,8 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
 
    Input Parameter:
 .  sles - the SLES context
+
+   Level: beginner
 
 .keywords: SLES, set, options, database
 
@@ -236,6 +248,8 @@ int SLESSetFromOptions(SLES sles)
 
    Output Parameter:
 .  sles - the newly created SLES context
+
+   Level: beginner
 
 .keywords: SLES, create, context
 
@@ -270,6 +284,8 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 
    Input Parameters:
 .  sles - the SLES context
+
+   Level: beginner
 
 .keywords: SLES, destroy, context
 
@@ -309,6 +325,8 @@ int SLESDestroy(SLES sles)
    performance data for this computational phase (for example, for
    incomplete factorization using the ILU preconditioner) using the 
    PETSc log facilities, calling SLESSetUp() is required.
+
+   Level: advanced
 
 .keywords: SLES, solve, linear system
 
@@ -396,6 +414,8 @@ static int slesdoublecount = 0;
      and SLESSolve() for each solve.  See SLESSetOperators() for
      options that can save work for such cases.
 
+   Level: beginner
+
 .keywords: SLES, solve, linear system
 
 .seealso: SLESCreate(), SLESSetOperators(), SLESGetKSP(), KSPSetTolerances(),
@@ -480,6 +500,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
      and SLESSolve() for each solve.  See SLESSetOperators() for
      options that can save work for such cases.
 
+   Level: beginner
 
 .keywords: SLES, solve, linear system
 
@@ -527,7 +548,9 @@ int SLESSolveTrans(SLES sles,Vec b,Vec x,int *its)
 
    Notes:  
    The user can then directly manipulate the KSP context to set various 
-   options, etc.
+   options (e.g., by calling KSPSetType()), etc.
+
+   Level: beginner
    
 .keywords: SLES, get, KSP, context
 
@@ -556,7 +579,9 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 
    Notes:  
    The user can then directly manipulate the PC context to set various 
-   options, etc.
+   options (e.g., by calling PCSetType()), etc.
+
+   Level: beginner
 
 .keywords: SLES, get, PC, context
 
@@ -589,7 +614,6 @@ int SLESGetPC(SLES sles,PC *pc)
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
-
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
    during the repeated solution of linear systems of the same size.  The
@@ -617,11 +641,11 @@ $      Pmat does not have the same nonzero structure.
     If in doubt about whether your preconditioner matrix has changed
     structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
+    Level: beginner
 
 .keywords: SLES, set, operators, matrix, preconditioner, linear system
 
 .seealso: SLESSolve(), SLESGetPC(), PCGetOperators()
-
 @*/
 int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 {
@@ -654,6 +678,8 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
    
    Calling SLESSetUpOnBlocks() is the same as calling PCSetUpOnBlocks()
    on the PC context within the SLES context.
+
+   Level: advanced
 
 .keywords: SLES, setup, blocks
 
