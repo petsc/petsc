@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.48 2000/05/05 22:16:41 balay Exp bsmith $*/
+/*$Id: partition.c,v 1.49 2000/06/05 03:47:41 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -113,7 +113,7 @@ int MatPartitioningRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatPartitioningList) {
-    ierr = FListDestroy(MatPartitioningList);CHKERRQ(ierr);
+    ierr = FListDestroy(&MatPartitioningList);CHKERRQ(ierr);
     MatPartitioningList = 0;
   }
   PetscFunctionReturn(0);
