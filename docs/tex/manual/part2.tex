@@ -4349,15 +4349,19 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
 The Explicit Runge-Kutta timestepper with variable timesteps is an
 implementation of standard Runge-Kutta using Dormand-Prince
 5(4). It is easy to change this table if needed. Since the time-stepper is using variable timesteps, the
-``TSSetInitialTimeStep'' function was not in use, so I used it to set
-the tolerance.
+``TSSetInitialTimeStep()'' function is not used.
 
-Setting the tolerance defines the global tolerance, for the whole time
-periode. The tolerance for each timestep is calculated relatively to
+Setting the tolerance with 
+\begin{tabbing}
+TSRKSetTolerance(TS ts,double tolerance)
+\end{tabbing}
+or \trl{-ts_rk_tol} \findex{-ts_rk_tol} \findex{TSRKSetTolerance()}
+defines the global tolerance, for the whole time
+period. The tolerance for each timestep is calculated relatively to
 the size of the timestep.
 
 The error in each timestep is calculated using the two solutions given
-from Dormand-Prince 5(4). The local error is calculated finding the
+from Dormand-Prince 5(4). The local error is calculated from the
 2-norm from the difference of the two solutions.
 
 Other timestep features:

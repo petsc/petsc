@@ -759,6 +759,9 @@ int TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
 
     Contributed by: Liyang Xu
 
+     See the Cvode/Pvode users manual for exact details on these parameters. Essentially
+    these regulate the size of the error for a SINGLE timestep.
+
    Level: intermediate
 
 .keywords: PVode, tolerance

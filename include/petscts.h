@@ -223,5 +223,7 @@ EXTERN int TSPVodeSetLinearTolerance(TS,PetscReal);
 EXTERN int TSPVodeSetExactFinalTime(TS,PetscTruth);
 EXTERN int TSPVodeGetParameters(TS,int *,long int*[],double*[]);
 
+EXTERN int TSRKSetTolerance(TS,PetscReal);
+
 PETSC_EXTERN_CXX_END
 #endif

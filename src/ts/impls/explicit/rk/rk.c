@@ -16,6 +16,7 @@ typedef struct {
    int		nok,nnok; /* counters for ok and not ok steps */
    PetscReal	maxerror; /* variable to tell the maxerror allowed */
    PetscReal    ferror; /* variable to tell (global maxerror)/(total time) */
+   PetscReal    tolerance; /* initial value set for maxerror by user */
    Vec		tmp,tmp_y,*k; /* two temp vectors and the k vectors for rk */
    PetscScalar	a[7][6]; /* rk scalars */
    PetscScalar	b1[7],b2[7]; /* rk scalars */
@@ -24,6 +25,49 @@ typedef struct {
    clock_t      start,end; /* variables to mesure cpu time */
 } TS_Rk;
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "TSRKSetTolerance_RK"
+int TSRKSetTolerance_RK(TS ts,PetscReal aabs)
+{
+  TS_Rk *rk = (TS_Rk*)ts->data;
+  
+  PetscFunctionBegin;
+  rk->tolerance = aabs;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRKSetTolerance"
+/*@
+   TSRKSetTolerance - Sets the total error the RK explicit time integrators 
+                      will allow over the given time interval.
+
+   Collective on TS
+
+   Input parameters:
++    ts  - the time-step context
+-    aabs - the absolute tolerance  
+
+   Level: intermediate
+
+.keywords: RK, tolerance
+
+.seealso: TSPVodeSetTolerance()
+
+@*/
+int TSRKSetTolerance(TS ts,PetscReal aabs)
+{
+  int ierr,(*f)(TS,PetscReal);  
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSRKSetTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,aabs);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__  
@@ -34,9 +78,9 @@ static int TSSetUp_Rk(TS ts)
   int	ierr;
 
   PetscFunctionBegin;
-  rk->nok = 0;
-  rk->nnok = 0;
-  rk->maxerror = ts->time_step;
+  rk->nok      = 0;
+  rk->nnok     = 0;
+  rk->maxerror = rk->tolerance;
 
   /* fixing maxerror: global vs local */
   rk->ferror = rk->maxerror / (ts->max_time - ts->ptime);
@@ -370,7 +414,7 @@ static int TSStep_Rk(TS ts,int *steps,PetscReal *ptime)
 static int TSDestroy_Rk(TS ts)
 {
   TS_Rk *rk = (TS_Rk*)ts->data;
-  int      i,ierr;
+  int   i,ierr;
 
   /* REMEMBER TO DESTROY ALL */
   
@@ -391,7 +435,13 @@ static int TSDestroy_Rk(TS ts)
 #define __FUNCT__ "TSSetFromOptions_Rk"
 static int TSSetFromOptions_Rk(TS ts)
 {
+  TS_Rk *rk = (TS_Rk*)ts->data;
+  int   ierr;
+
   PetscFunctionBegin;
+  ierr = PetscOptionsHead("RK ODE solver options");CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_rk_tol","Tolerance for convergence","TSRKSetTolerance",rk->tolerance,&rk->tolerance,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -431,6 +481,9 @@ int TSCreate_Rk(TS ts)
   ierr = PetscNew(TS_Rk,&rk);CHKERRQ(ierr);
   PetscLogObjectMemory(ts,sizeof(TS_Rk));
   ts->data = (void*)rk;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","TSRKSetTolerance_RK",
+                                           TSRKSetTolerance_RK);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
