@@ -1,6 +1,7 @@
 # $Id: makefile,v 1.53 2001/04/07 02:43:36 bsmith Exp $ 
 
-ALL: manual.pdf
+#clean is required - otherwise 'temporary file manual.pdf can upset the build
+ALL: clean manual.pdf
 
 PDFELATEX = unset TEXINPUTS; pdfelatex 
 NOADIC    = true
