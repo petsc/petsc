@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.60 1996/01/12 03:52:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.61 1996/01/12 22:06:00 bsmith Exp balay $";
 #endif
 /*
   These routines simplify the use of command line, file options, etc.,
@@ -147,7 +147,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
     MPI_Comm_size(MPI_COMM_WORLD,&size);
     PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
   }
-  OptionsHasName(PETSC_NULL,"-help",&flg);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (help && flg) {
     MPIU_printf(MPI_COMM_WORLD,help);
   }
@@ -185,30 +185,26 @@ int PetscFinalize()
 
   ViewerDestroy_Private();
 #if defined(PETSC_LOG)
-  OptionsHasName(PETSC_NULL,"-log_summary",&flg1);
-  if (flg1) {
-    PLogPrint(MPI_COMM_WORLD,stdout);
-  }
+  ierr = OptionsHasName(PETSC_NULL,"-log_summary",&flg1); CHKERRQ(ierr);
+  if (flg1) { PLogPrint(MPI_COMM_WORLD,stdout); }
   mname[0] = 0;
-  OptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1);
-  OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2);
+  ierr = OptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1); CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2); CHKERRQ(ierr);
   if (flg1 || flg2){
     if (mname[0]) PLogDump(mname); 
     else PLogDump(0);
   }
   PLogDestroy();
 #endif
-  OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1);
-  if (!flg1) {
-    PetscPopSignalHandler();
-  }
-  OptionsHasName(PETSC_NULL,"-trdump",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1); CHKERRQ(ierr);
+  if (!flg1) { PetscPopSignalHandler(); }
+  ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  OptionsHasName(PETSC_NULL,"-optionstable",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-optionstable",&flg1); CHKERRQ(ierr);
   if (flg1) {
     if (!rank) OptionsPrint(stdout);
   }
-  OptionsHasName(PETSC_NULL,"-optionsleft",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-optionsleft",&flg1); CHKERRQ(ierr);
   if (flg1) {
     if (!rank) {
       int nopt = OptionsAllUsed();
@@ -226,12 +222,12 @@ int PetscFinalize()
       }
     } 
   }
-  OptionsHasName(PETSC_NULL,"-log_history",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-log_history",&flg1); CHKERRQ(ierr);
   if (flg1) {
     PLogCloseHistoryFile(&petsc_history);
     petsc_history = 0;
   }
-  OptionsHasName(PETSC_NULL,"-trdump",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   if (flg1) {
     OptionsDestroy_Private();
     NRDestroyAll();
@@ -280,30 +276,30 @@ int OptionsCheckInitial_Private()
 {
   char     string[64];
   MPI_Comm comm = MPI_COMM_WORLD;
-  int      flg1,flg2,flg3;
+  int      flg1,flg2,flg3, ierr;
 
 #if defined(PETSC_BOPT_g)
-  OptionsHasName(PETSC_NULL,"-notrmalloc",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-notrmalloc", &flg1); CHKERRQ(ierr);
  if (!flg1) {
     PetscSetUseTrMalloc_Private();
   }
 #else
-  OptionsHasName(PETSC_NULL,"-trdump",&flg1);
-  OptionsHasName(PETSC_NULL,"-trmalloc",&flg2);
+  ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2); CHKERRQ(ierr);
   if (flg1 || flg2)) {
     PetscSetUseTrMalloc_Private();
   }
 #endif
-  OptionsHasName(PETSC_NULL,"-malloc_debug",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-malloc_debug",&flg1); CHKERRQ(ierr);
   if (flg1) {
     TrDebugLevel(1);
 #if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
     malloc_debug(2);
 #endif
   }
-  OptionsHasName(PETSC_NULL,"-v",&flg1);
-  OptionsHasName(PETSC_NULL,"-version",&flg2)
-  OptionsHasName(PETSC_NULL,"-help",&flg3)
+  ierr = OptionsHasName(PETSC_NULL,"-v",&flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-version",&flg2); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg3); CHKERRQ(ierr);
   if (flg1 || flg2 || flg3 ){
     MPIU_printf(comm,"--------------------------------------------\
 ------------------------------\n");
@@ -315,11 +311,11 @@ int OptionsCheckInitial_Private()
     MPIU_printf(comm,"--------------------------------------------\
 ---------------------------\n");
   }
-  OptionsHasName(PETSC_NULL,"-fp_trap",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-fp_trap",&flg1); CHKERRQ(ierr);
   if (flg1) {
     PetscSetFPTrap(FP_TRAP_ALWAYS);
   }
-  OptionsHasName(PETSC_NULL,"-on_error_abort",&flg1);
+  ierr = OptionsHasName(PETSC_NULL,"-on_error_abort",&flg1); CHKERRQ(ierr);
   if (flg1) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
   }
@@ -337,7 +333,8 @@ int OptionsCheckInitial_Private()
     if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString(PETSC_NULL,"-display",string,64)){
+    ierr = OptionsGetString(PETSC_NULL,"-display",string,64, &flg1); CHKERRQ(ierr);
+    if (flg1){
       display = string;
     }
     if (!display) {
@@ -348,10 +345,11 @@ int OptionsCheckInitial_Private()
     if (sfree) free(display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
-  if (OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64)) {
-    char *debugger = 0, *display = 0;
-    int  xterm     = 1, sfree = 0,size = 1;
-    MPI_Errhandler abort_handler;
+  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64, &flg1); CHKERRQ(ierr);
+if(flg1) {
+  char *debugger = 0, *display = 0;
+  int  xterm     = 1, sfree = 0,size = 1;
+  MPI_Errhandler abort_handler;
     /*
        we have to make sure that all processors have opened 
        connections to all other processors, otherwise once the 
@@ -379,7 +377,7 @@ int OptionsCheckInitial_Private()
     if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString(PETSC_NULL,"-display",string,64)){
+    if (OptionsGetString(PETSC_NULL,"-display",string,64, &flg1)){
       display = string;
     }
     if (!display) {
@@ -394,34 +392,40 @@ int OptionsCheckInitial_Private()
     MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);
     MPI_Errhandler_set(comm,abort_handler);
   }
-  if (!OptionsHasName(PETSC_NULL,"-no_signal_handler")) {
+     ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler", &flg1); CHKERRQ(ierr);
+     if (!flg1) {
     PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
   }
 #if defined(PETSC_LOG)
   {
-  char mname[256];
-  mname[0] = 0;
-  if (OptionsGetString(PETSC_NULL,"-log_history",mname,256)) {
-    int ierr;
-    if (mname[0]) {
-      ierr = PLogOpenHistoryFile(mname,&petsc_history); CHKERRQ(ierr);
+    char mname[256];
+    mname[0] = 0;
+    ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1); CHKERRQ(ierr);
+    if(flg1) {
+      if (mname[0]) {
+        ierr = PLogOpenHistoryFile(mname,&petsc_history); CHKERRQ(ierr);
+      }
+      else {
+        ierr = PLogOpenHistoryFile(0,&petsc_history); CHKERRQ(ierr);
+      }
     }
-    else {
-      ierr = PLogOpenHistoryFile(0,&petsc_history); CHKERRQ(ierr);
-    }
   }
-  }
-  if (OptionsHasName(PETSC_NULL,"-info")) {
-    PLogAllowInfo(PETSC_TRUE);
-  }
-  if (OptionsHasName(PETSC_NULL,"-log_all")) {
-    PLogAllBegin();
-  }
-  else if (OptionsHasName(PETSC_NULL,"-log") || OptionsHasName(PETSC_NULL,"-log_summary")) {
+     ierr = OptionsHasName(PETSC_NULL,"-info", &flg1); CHKERRQ(ierr);
+     if (flg1) {
+     PLogAllowInfo(PETSC_TRUE);
+   }
+   ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
+   ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
+   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
+   if (flg1) {
+     PLogAllBegin();
+   }
+   else if (flg2 || flg3) {
     PLogBegin();
   }
 #endif
-  if (OptionsHasName(PETSC_NULL,"-help")) {
+    ierr = OptionsHasName(PETSC_NULL,"-help", &flg1);
+     if (flg1) {
     MPIU_printf(comm,"Options for all PETSc programs:\n");
     MPIU_printf(comm," -on_error_abort: cause an abort when an error is");
     MPIU_printf(comm," detected. Useful \n       only when run in the debugger\n");
