@@ -4828,3 +4828,66 @@ int MatSetValuesAdifor(Mat mat,int nl,void *v)
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+EXTERN int MatMPIAIJDiagonalScaleLocal(Mat,Vec);
+EXTERN int MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalScaleLocal"
+/*@ 
+   MatDiagonalScaleLocal - Scales columns of a matrix given the scaling values including the 
+         ghosted ones.
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  diag = the diagonal values, including ghost ones
+
+   Level: developer
+
+   Notes: Works only for MPIAIJ and MPIBAIJ matrices
+      
+.seealso: MatDiagonalScale()
+@*/
+int MatDiagonalScaleLocal(Mat mat,Vec diag)
+{
+  int        ierr;
+  PetscTruth flag;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(diag,VEC_COOKIE);
+  PetscValidType(mat);
+
+  if (!mat->assembled) {
+    SETERRQ(1,"Matrix must be already assembled");
+  }
+  ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIAIJ,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = MatMPIAIJDiagonalScaleLocal(mat,diag);CHKERRQ(ierr);
+  } else {
+    ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatMPIBAIJDiagonalScaleLocal(mat,diag);CHKERRQ(ierr);
+    } else {
+      int size;
+      ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
+      if (size == 1) {
+        int n,m;
+        ierr = VecGetSize(diag,&n);CHKERRQ(ierr);
+        ierr = MatGetSize(mat,0,&m);CHKERRQ(ierr);
+        if (m == n) {
+          ierr = MatDiagonalScale(mat,0,diag);CHKERRQ(ierr);
+        } else {
+          SETERRQ(1,"Only supprted for sequential matrices when no ghost points/periodic conditions");
+        }
+      } else {
+        SETERRQ(1,"Only supported for MPIAIJ and MPIBAIJ parallel matrices");
+      }
+    }
+  }
+  ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -112,8 +112,6 @@
 #define matsetvaluesstencil_             matsetvaluesstencil
 #endif
 
-/* The following variables have to be declared outsize EXTERN_C stuff - otherwise MS compilers are unhappy */
-extern int *uglyrmapd,*uglyrmapo;
 
 EXTERN_C_BEGIN
 
@@ -256,7 +254,7 @@ static PetscScalar *my_ovals = 0;
 
 void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar *vals,int *ierr)
 {
-  int    **oocols = &my_ocols;
+  int         **oocols = &my_ocols;
   PetscScalar **oovals = &my_ovals;
 
   if (matgetrowactive) {
@@ -267,8 +265,8 @@ void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar
      return;
   }
 
-  CHKFORTRANNULLINTEGER(cols); if (cols) oocols = PETSC_NULL;
-  CHKFORTRANNULLSCALAR(vals);  if (vals) oovals = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = PETSC_NULL;
 
   *ierr = MatGetRow(*mat,*row,ncols,oocols,oovals); 
   if (*ierr) return;
@@ -288,8 +286,8 @@ void PETSC_STDCALL matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,PetscSc
      *ierr = 1;
      return;
   }
-  CHKFORTRANNULLINTEGER(cols); if (cols) oocols = PETSC_NULL;
-  CHKFORTRANNULLSCALAR(vals);  if (vals) oovals = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(cols); if (!cols) oocols = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(vals);  if (!vals) oovals = PETSC_NULL;
 
   *ierr = MatRestoreRow(*mat,*row,ncols,oocols,oovals); 
   matgetrowactive = 0;
@@ -617,30 +615,16 @@ void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,int *ierr
   *ierr = MatZeroRowsLocal(*mat,*is,diag);
 }
 
-/*        Patch added for Glenn */
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define matmpibaijdiagonalscalelocal_    MATMPIBAIJDIAGONALSCALELOCAL
 #define matdiagonalscalelocal_           MATDIAGONALSCALELOCAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matmpibaijdiagonalscalelocal_    matmpibaijdiagonalscalelocal
 #define matdiagonalscalelocal_           matdiagonalscalelocal
 #endif
 
-void matmpibaijdiagonalscalelocal_(Mat *A,Vec *scale,int *ierr)
-{
-  if (!uglyrmapd) {
-    *ierr = MatMPIBAIJDiagonalScaleLocalSetUp(*A,*scale);
-    if (*ierr) return;
-  }
-  *ierr = MatMPIBAIJDiagonalScaleLocal(*A,*scale);
-}
 
-void PETSC_STDCALL matdiagonalscalelocal_(Mat *A,Vec *scale, int *__ierr ){
-  if (!uglyrmapd) {
-    *__ierr = MatMPIBAIJDiagonalScaleLocalSetUp(*A,*scale);
-    if (*__ierr) return;
-  }
-  *__ierr = MatMPIBAIJDiagonalScaleLocal(*A,*scale);
+void PETSC_STDCALL matdiagonalscalelocal_(Mat *A,Vec *scale, int *ierr )
+{
+  *ierr = MatDiagonalScaleLocal(*A,*scale);
 }
 
 EXTERN_C_END

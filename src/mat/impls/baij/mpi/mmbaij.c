@@ -233,9 +233,9 @@ int DisAssemble_MPIBAIJ(Mat A)
 
 /*      ugly stuff added for Glenn someday we should fix this up */
 
-int *uglyrmapd = 0,*uglyrmapo = 0;  /* mapping from the local ordering to the "diagonal" and "off-diagonal"
+static int *uglyrmapd = 0,*uglyrmapo = 0;  /* mapping from the local ordering to the "diagonal" and "off-diagonal"
                                       parts of the local matrix */
-Vec uglydd = 0,uglyoo = 0;   /* work vectors used to scale the two parts of the local matrix */
+static Vec uglydd = 0,uglyoo = 0;   /* work vectors used to scale the two parts of the local matrix */
 
 
 #undef __FUNCT__
@@ -312,6 +312,10 @@ int MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
   PetscScalar  *d,*o,*s;
   
   PetscFunctionBegin;
+  if (!uglyrmapd) {
+    ierr = MatMPIBAIJDiagonalScaleLocalSetUp(A,scale);CHKERRQ(ierr);
+  }
+
   ierr = VecGetArray(scale,&s);CHKERRQ(ierr);
   
   ierr = VecGetLocalSize(uglydd,&n);CHKERRQ(ierr);
