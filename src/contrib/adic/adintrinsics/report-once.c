@@ -1,9 +1,13 @@
+#include <stdio.h>
 #include "petscconf.h"
 #if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
+#endif
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
 #endif
 
 #if defined(__cplusplus)
@@ -15,8 +19,6 @@ extern "C" {
 #else
 #define RO_EXTERN
 #endif
-#include <stdio.h>
-#include <stdlib.h>
 #include "knr-compat.h"
 #ifndef DISABLE_FORTRAN
 #define MAX_PREPRO_ARGS 31 /* This is an option for cfortran.h */
