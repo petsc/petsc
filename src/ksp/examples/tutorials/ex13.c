@@ -192,7 +192,6 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
   Mat         A = userctx->A;
   PC          pc;
   PetscScalar v,hx2 = userctx->hx2,hy2 = userctx->hy2;
-  KSP         ksp;
 
   /*
      This is not the most efficient way of generating the matrix 
