@@ -105,7 +105,6 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     ai=mat->i; aj=mat->j; av=mat->a;
     nz=mat->s_nz;
   }
-
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) lu->mtxA = InpMtx_new() ;
   InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, m) ;
   ivec1 = InpMtx_ivec1(lu->mtxA);  
