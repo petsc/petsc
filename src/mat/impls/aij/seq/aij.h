@@ -13,7 +13,7 @@
   one big malloc 
 */
 typedef struct {
-  int    sorted, roworiented, nonew, singlemalloc,outofrange,assembled;
+  int    sorted, roworiented, nonew, singlemalloc,assembled;
   int    m,n,nz,mem,*diag,       /* rows and columns */
          *i,*imax, *ilen,        /* j + i[k] - 1  is start of row k */
          *j;                     /* ilen is actual lenght of row */
