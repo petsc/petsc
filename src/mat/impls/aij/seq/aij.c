@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.364 2001/02/27 21:34:59 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.365 2001/02/27 22:02:32 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1816,6 +1816,23 @@ int MatSetUpPreallocation_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatGetArray_SeqAIJ"
+int MatGetArray_SeqAIJ(Mat A,Scalar **array)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data; 
+  PetscFunctionBegin;
+  *array = a->a;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatRestoreArray_SeqAIJ"
+int MatRestoreArray_SeqAIJ(Mat A,Scalar **array)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
@@ -1853,8 +1870,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetOwnershipRange_SeqAIJ,
        MatILUFactorSymbolic_SeqAIJ,
        0,
-       0,
-       0,
+       MatGetArray_SeqAIJ,
+       MatRestoreArray_SeqAIJ,
        MatDuplicate_SeqAIJ,
        0,
        0,
@@ -2152,6 +2169,7 @@ int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *engine)
   Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
   mxArray    *mmat; 
 
+  PetscFunctionBegin;
   ierr = PetscFree(aij->a);CHKERRQ(ierr);
   aij->indexshift = 0;
 
@@ -2164,7 +2182,7 @@ int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *engine)
   aij->singlemalloc = PETSC_TRUE;
   aij->freedata     = PETSC_TRUE;
 
-  ierr = PetscMemcpy(aij->a,amxGetPr(mmat),ij->nz*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(aij->a,mxGetPr(mmat),aij->nz*sizeof(Scalar));CHKERRQ(ierr);
   /* Matlab stores by column, not row so we pass in the transpose of the matrix */
   ierr = PetscMemcpy(aij->j,mxGetIr(mmat),aij->nz*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(aij->i,mxGetJc(mmat),(mat->m+1)*sizeof(int));CHKERRQ(ierr);

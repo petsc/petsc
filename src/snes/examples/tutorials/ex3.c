@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.80 2001/03/13 04:58:12 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.81 2001/03/13 05:00:26 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -306,7 +306,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   DA             da = user->da;
   Scalar         *xx,*ff,*FF,d;
-  int            i,ierr,N,xs,xm;
+  int            i,ierr,M,xs,xm;
   Vec            xlocal;
 
   PetscFunctionBegin;
@@ -335,7 +335,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
        xs, xm  - starting grid index, width of local grid (no ghost points)
   */
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecGetSize(f,&N);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+                   PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Set function values for boundary points; define local interior grid point range:
@@ -346,7 +347,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
     ff[0] = xx[0];
     xs++;xm--;
   }
-  if (xs+xm == N) {  /* right boundary */
+  if (xs+xm == M) {  /* right boundary */
     ff[xs+xm-1] = xx[xs+xm-1] - 1.0;
     xm--;
   }
@@ -503,7 +504,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
   StepCheckCtx   *check = (StepCheckCtx*) ctx;
   Scalar         *xa,*xa_last,tmp;
   double         rdiff;
-  DA             da = user->da;
+  DA             da;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
@@ -511,6 +512,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
 
   if (iter > 1) {
     ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
+    da   = user->da;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %d with tolerance %g\n",
        iter,check->tolerance);CHKERRQ(ierr);
 

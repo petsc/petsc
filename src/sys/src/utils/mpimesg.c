@@ -1,8 +1,10 @@
-/*$Id: mpimesg.c,v 1.9 2001/03/06 18:56:34 balay Exp balay $*/
+/*$Id: mpimesg.c,v 1.10 2001/03/09 20:05:36 balay Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
 
+#undef __FUNC__  
+#define __FUNC__ "PetscGatherNumberOfMessages"
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
 
@@ -32,8 +34,6 @@
 
 .seealso: PetscGatherMessageLengths()
 @*/
-#undef __FUNC__  
-#define __FUNC__ "PetscGatherNumberOfMessages"
 int PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nrecvs)
 {
   int *recv_buf,size,rank,i,ierr,*iflags_local;
@@ -71,6 +71,8 @@ int PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nre
 }
 
 
+#undef __FUNC__  
+#define __FUNC__ "PetscGatherMessageLengths"
 /*@C
   PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive, 
   including (from-id,length) pairs for each message.
@@ -103,8 +105,6 @@ int PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nre
 
 .seealso: PetscGatherNumberOfMessages()
 @*/
-#undef __FUNC__  
-#define __FUNC__ "PetscGatherMessageLengths"
 int PetscGatherMessageLengths(MPI_Comm comm,int nsends,int nrecvs,int *ilengths,int **onodes,int **olengths)
 {
   int         size,i,j,tag,ierr;
@@ -156,6 +156,8 @@ int PetscGatherMessageLengths(MPI_Comm comm,int nsends,int nrecvs,int *ilengths,
   And post Irecvs on these buffers using node info from onodes
   
  */
+#undef __FUNC__  
+#define __FUNC__ "PetscPostIrecvInt"
 int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,int ***rbuf,MPI_Request **r_waits)
 {
   int         len=0,**rbuf_t,i,ierr;
@@ -183,8 +185,9 @@ int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths
   *r_waits = r_waits_t;
   PetscFunctionReturn(0);
 }
-/* Scalar Version */
 
+#undef __FUNC__  
+#define __FUNC__ "PetscPostIrecvScalar"
 int PetscPostIrecvScalar(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,Scalar ***rbuf,MPI_Request **r_waits)
 {
   int         len=0,i,ierr;

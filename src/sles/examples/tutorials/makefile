@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.90 2001/02/28 18:58:52 balay Exp bsmith $ 
+# $Id: makefile,v 1.91 2001/03/13 15:36:48 bsmith Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -6,7 +6,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/sles/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                   ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c ex23.c
+                   ex12.c ex13.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c ex23.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
 TUTORIALS        = ex23.c ex22.c
 MANSEC           = SLES
