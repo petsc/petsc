@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.26 2000/08/13 15:05:22 bsmith Exp $*/
+/*$Id: ex76.c,v 1.1 2000/09/20 20:15:37 balay Exp hzhang $*/
 
 static char help[] = "Tests vatious sequential routines in MatSBAIJ format. Same as ex74.c except introducing a matrix permutation for factorization and solve.\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   int     n,mbs=16,bs=1,nz=3,prob=1;
   Scalar  neg_one = -1.0,four=4.0,value[3],alpha=1;
   int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
-  IS      ip, perm, iscol;
+  IS      perm, iscol;
   PetscRandom rand;
 
   PetscTruth       reorder=PETSC_TRUE,getrow=PETSC_FALSE,diagscale=PETSC_FALSE;
