@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.7 2000/09/02 02:47:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.8 2000/09/25 20:50:24 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: matreg.c,v 1.7 2000/09/02 02:47:48 bsmith Exp bsmith 
 #include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
-PetscTruth MatRegisterAllCalled = 0;
+PetscTruth MatRegisterAllCalled = PETSC_FALSE;
 
 /*
    Contains the list of registered Mat routines
