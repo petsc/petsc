@@ -39,11 +39,18 @@ ex3: ex3.o chkopts
 
 ex4: ex4.o $(FOBJ4) chkopts
 	-$(CLINKER) -o ex4 ex4.o $(FOBJ4)  $(PETSC_LIB)
-	$(RM) ex4.o $(FOBJ4)
+	$(RM) ex4.o
+#	$(RM) ex4.o $(FOBJ4)
 
 ex5: ex5.o $(FOBJ4) chkopts
 	-$(CLINKER) -o ex5 ex5.o $(FOBJ4)  $(PETSC_LIB)
-	$(RM) ex5.o $(FOBJ4)
+	$(RM) ex5.o
+#	$(RM) ex5.o $(FOBJ4)
+
+ex6: ex6.o $(FOBJ4) chkopts
+	-$(CLINKER) -o ex6 ex6.o $(FOBJ4)  $(PETSC_LIB)
+	$(RM) ex6.o
+#	$(RM) ex6.o $(FOBJ4)
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
