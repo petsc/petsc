@@ -300,6 +300,7 @@ int MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+extern int MatSeqAIJFactorInfo_SuperLU(Mat,PetscViewer);
 extern int MatMPIAIJFactorInfo_SuperLu(Mat,PetscViewer);
 extern int MatFactorInfo_Spooles(Mat,PetscViewer);
 extern int MatSeqAIJFactorInfo_UMFPACK(Mat,PetscViewer);
@@ -348,6 +349,9 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+     ierr = MatSeqAIJFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
      ierr = MatMPIAIJFactorInfo_SuperLu(A,viewer);CHKERRQ(ierr);
 #endif

@@ -3,7 +3,6 @@
 /* 
         Provides an interface to the SuperLU sparse solver
           Modified for SuperLU 2.0 by Matthew Knepley
-
 */
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -14,20 +13,13 @@ EXTERN_C_BEGIN
 #include "util.h"
 EXTERN_C_END
 
-
 typedef struct {
-  SuperMatrix  A;
-  SuperMatrix  B;
-  SuperMatrix  AC;
-  SuperMatrix  L;
-  SuperMatrix  U;
-  int          *perm_r;
-  int          *perm_c;
-  int          relax;
-  int          panel_size;
+  SuperMatrix  A,B,AC,L,U;
+  int          *perm_r,*perm_c,ispec,relax,panel_size;
   double       pivot_threshold;
   NCformat     *store;
   MatStructure flg;
+  PetscTruth   SuperluMatOdering;
 } Mat_SeqAIJ_SuperLU;
 
 
@@ -66,14 +58,12 @@ int MatDestroy_SeqAIJ_SuperLU(Mat A)
 #define __FUNCT__ "MatCreateNull_SeqAIJ_SuperLU"
 int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
 {
-  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
-  int                 numRows = A->m;
-  int                 numCols = A->n;
-  SCformat           *Lstore;
+  Mat_SeqAIJ_SuperLU  *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
+  int                 numRows = A->m,numCols = A->n;
+  SCformat            *Lstore;
   int                 numNullCols,size;
-  PetscScalar             *nullVals,*workVals;
-  int                 row,newRow,col,newCol,block,b;
-  int                 ierr;
+  PetscScalar         *nullVals,*workVals;
+  int                 row,newRow,col,newCol,block,b,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
@@ -127,8 +117,7 @@ int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
   PetscScalar        *array;
-  int                m;
-  int                ierr;
+  int                m,ierr;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
@@ -157,13 +146,14 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   Mat_SeqAIJ         *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)(*F)->spptr;
   int                *etree,i,ierr;
+  PetscTruth         flag;
 
   PetscFunctionBegin;
   /* Create the SuperMatrix for A^T:
-
        Since SuperLU only likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve().
   */
+  
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numerical factorization */
     lu->A.Stype   = NC;
     lu->A.Dtype   = _D;
@@ -195,8 +185,21 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   }
   StatInitCalled++;
 
+  ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
+  /* use SuperLU mat ordeing */
+  ierr = PetscOptionsInt("-mat_superlu_ordering","SuperLU ordering type (one of 0, 1, 2, 3)
+     0: natural ordering;
+     1: MMD applied to A'*A;
+     2: MMD applied to A'+A;
+     3: COLAMD, approximate minimum degree column ordering","None",lu->ispec,&lu->ispec,&flag);CHKERRQ(ierr);
+  if (flag) {
+    get_perm_c(lu->ispec, &lu->A, lu->perm_c);
+    lu->SuperluMatOdering = PETSC_TRUE; 
+  }
+  PetscOptionsEnd();
+
   /* Create the elimination tree */
-  ierr           = PetscMalloc(A->n*sizeof(int),&etree);CHKERRQ(ierr);
+  ierr = PetscMalloc(A->n*sizeof(int),&etree);CHKERRQ(ierr);
   sp_preorder("N",&lu->A,lu->perm_c,etree,&lu->AC);
   /* Factor the matrix */
   dgstrf("N",&lu->AC,lu->pivot_threshold,0.0,lu->relax,lu->panel_size,etree,PETSC_NULL,0,lu->perm_r,lu->perm_c,&lu->L,&lu->U,&ierr);
@@ -242,6 +245,7 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   B->ops->solve           = MatSolve_SeqAIJ_SuperLU;
   B->ops->destroy         = MatDestroy_SeqAIJ_SuperLU;
   B->factor               = FACTOR_LU;
+  (*F)->assembled         = PETSC_TRUE;  /* required by -sles_view */
   
   ierr            = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
   B->spptr        = (void*)lu;
@@ -251,10 +255,13 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
   ierr = PetscMalloc(A->n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
   ierr = PetscMalloc(A->m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);
+
+  /* use PETSc mat ordering */  
   ierr = ISGetIndices(c,&ca);CHKERRQ(ierr);
   ierr = PetscMemcpy(lu->perm_c,ca,A->m*sizeof(int));CHKERRQ(ierr);
   ierr = ISRestoreIndices(c,&ca);CHKERRQ(ierr);
-  
+  lu->SuperluMatOdering = PETSC_FALSE;
+
   if (info) {
     lu->pivot_threshold = info->dtcol; 
   } else {  
@@ -280,6 +287,23 @@ int MatUseSuperLU_SeqAIJ(Mat A)
   if (!flg) PetscFunctionReturn(0);
 
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
+
+  PetscFunctionReturn(0);
+}
+
+/* used by -sles_view */
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqAIJFactorInfo_SuperLU"
+int MatSeqAIJFactorInfo_SuperLU(Mat A,PetscViewer viewer)
+{
+  Mat_SeqAIJ_SuperLU      *lu= (Mat_SeqAIJ_SuperLU*)A->spptr;
+  int                     ierr;
+  PetscFunctionBegin;
+  /* check if matrix is SuperLU type */
+  if (A->ops->solve != MatSolve_SeqAIJ_SuperLU) PetscFunctionReturn(0);
+
+  ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
+  if(lu->SuperluMatOdering) ierr = PetscViewerASCIIPrintf(viewer,"  SuperLU mat ordering: %d\n",lu->ispec);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
