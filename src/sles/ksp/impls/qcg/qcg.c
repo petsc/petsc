@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.78 2001/03/23 23:23:45 balay Exp buschelm $*/
+/*$Id: qcg.c,v 1.79 2001/07/09 22:35:23 buschelm Exp buschelm $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -18,8 +18,8 @@ static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
     Collective on KSP
 
     Input Parameters:
-+   ksp - the iterative context
--   delta - the tolerance (0 is the default, which gives an error)
++   ksp   - the iterative context
+-   delta - the trust region radius (0 is the default, which gives an error)
 
     Options Database Key:
 .   -ksp_qcg_trustregionradius <delta>
@@ -355,6 +355,23 @@ int KSPQCGSetTrustRegionRadius_QCG(KSP ksp,double delta)
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetFromOptions_QCG"
+int KSPSetFromOptions_QCG(KSP ksp)
+{
+  int        ierr;
+  double     delta;
+  KSP_QCG    *cgP = (KSP_QCG*)ksp->data;
+  PetscTruth flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("KSP QCG Options");CHKERRQ(ierr);
+  ierr = PetscOptionsDouble("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPQCGSetTrustRegionRadius(ksp,delta);CHKERRQ(ierr); }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_QCG"
@@ -371,6 +388,7 @@ int KSPCreate_QCG(KSP ksp)
   ksp->pc_side                   = PC_SYMMETRIC;
   ksp->calc_res                  = PETSC_TRUE;
   ksp->ops->setup                = KSPSetUp_QCG;
+  ksp->ops->setfromoptions       = KSPSetFromOptions_QCG;
   ksp->ops->solve                = KSPSolve_QCG;
   ksp->ops->destroy              = KSPDestroy_QCG;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
