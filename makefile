@@ -148,6 +148,31 @@ deletelatexpages:
 # and move to the first occurrence, use M-x tags-search and the string.
 # To locate later occurrences, use M-,
 
+TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h include/FINCLUDE/*.h 
+TAGS_BMAKE_FILES    = bmake/common bmake/*/base*
+TAGS_EXAMPLE_FILES  = src/*/examples/*/*.[c,h,F,f] src/*/examples/*/*/*.[c,h,F,f] \
+	src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]
+TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
+	docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
+	docs/tex/manual/part1.tex docs/tex/manual/part2.tex
+TAGS_SRC_FILES      = src/*/*.h src/*/interface/*.[c,h] src/*/src/*.[c,h] \
+	src/*/utils/*.[c,h] \
+	src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
+	src/gvec/impls/*/*/*/*/*.[c,h] src/contrib/*/*.[c,h] src/contrib/*/src/*.[c,h] \
+	src/fortran/custom/*.[c,h,F]
+TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
+	makefile \
+	src/makefile src/*/makefile src/*/src/makefile \
+	src/*/interface/makefile \
+	src/*/utils/makefile \
+	src/*/impls/makefile src/*/impls/*/makefile src/*/impls/*/*/makefile \
+	src/*/examples/makefile src/*/examples/*/makefile src/*/examples/*/*/makefile \
+	src/gvec/impls/*/*/*/*/makefile src/gvec/impls/*/*/*/makefile \
+	src/fortran/*/makefile \
+	src/contrib/*/makefile src/contrib/*/src/makefile \
+	src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile \
+	docs/makefile
+
 # Builds all etags files
 alletags:
 	-make etags_complete
@@ -158,147 +183,56 @@ alletags:
 # Builds the basic etags file.	This should be employed by most users.
 etags:
 	$(RM) TAGS
-	etags -f TAGS	 src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS src/*/examples/*/*.c src/*/examples/*/*/*.c
-	etags -a -f TAGS src/*/examples/*/*.F
-	etags -a -f TAGS src/*/examples/*/*.f
-	etags -a -f TAGS src/*/*.h src/*/*/*.h src/*/interface/*.c 
-	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
-	etags -a -f TAGS src/*/impls/*/*/*.c  src/benchmarks/*.c
-	etags -a -f TAGS src/contrib/*/*.c src/contrib/*/src/*.c 
-	etags -a -f TAGS src/contrib/*/examples/*/*.c src/contrib/*/examples/*/*.F
-	etags -a -f TAGS src/contrib/*/src/*.h
-	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
-	etags -a -f TAGS include/FINCLUDE/*.h 
-	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
-	etags -a -f TAGS src/gvec/impls/*/*/*/*/*.c
-	etags -a -f TAGS src/gvec/impls/*/*/*/makefile src/gvec/impls/*/*/*/*/makefile
-	etags -a -f TAGS makefile src/*/src/makefile
-	etags -a -f TAGS src/*/interface/makefile src/makefile 
-	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
-	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
-	etags -a -f TAGS src/*/examples/*/makefile src/*/examples/*/*/makefile
-	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
-	etags -a -f TAGS src/contrib/*/makefile src/contrib/*/src/makefile 
-	etags -a -f TAGS src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile 
-	etags -a -f TAGS src/fortran/makefile src/fortran/auto/makefile 
-	etags -a -f TAGS src/fortran/custom/makefile
-	etags -a -f TAGS include/makefile include/*/makefile 
-	etags -a -f TAGS bmake/common bmake/*/base*
-	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c 
-	etags -a -f TAGS src/benchmarks/*.c src/fortran/custom/*.F
+	etags -f TAGS $(TAGS_INCLUDE_FILES) 
+	etags -a -f TAGS $(TAGS_SRC_FILES) 
+	etags -a -f TAGS $(TAGS_EXAMPLE_FILES) 
+	etags -a -f TAGS $(TAGS_MAKEFILE_FILES) 
+	etags -a -f TAGS $(TAGS_BMAKE_FILES) 
 	chmod g+w TAGS
 
 # Builds complete etags list; only for PETSc developers.
 etags_complete:
 	$(RM) TAGS_COMPLETE
-	etags -f TAGS_COMPLETE	  src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS_COMPLETE src/*/examples/*/*.c src/*/examples/*/*/*.c
-	etags -a -f TAGS_COMPLETE src/*/examples/*/*.F 
-	etags -a -f TAGS_COMPLETE src/*/examples/*/*.f
-	etags -a -f TAGS_COMPLETE src/*/*.h src/*/*/*.h src/*/interface/*.c 
-	etags -a -f TAGS_COMPLETE src/*/src/*.c src/*/impls/*/*.c 
-	etags -a -f TAGS_COMPLETE src/*/impls/*/*/*.c  src/benchmarks/*.c
-	etags -a -f TAGS_COMPLETE src/contrib/*/*.c src/contrib/*/src/*.c 
-	etags -a -f TAGS_COMPLETE src/contrib/*/src/*.h 
-	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*/*.c
-	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*/*.F
-	etags -a -f TAGS_COMPLETE include/*.h include/pinclude/*.h bmake/common
-	etags -a -f TAGS_COMPLETE include/FINCLUDE/*.h 
-	etags -a -f TAGS_COMPLETE src/*/impls/*.c src/*/utils/*.c
-	etags -a -f TAGS_COMPLETE src/gvec/impls/*/*/*/*/*.c
-	etags -a -f TAGS_COMPLETE src/gvec/impls/*/*/*/makefile src/gvec/impls/*/*/*/*/makefile
-	etags -a -f TAGS_COMPLETE makefile src/*/src/makefile
-	etags -a -f TAGS_COMPLETE src/*/interface/makefile src/makefile 
-	etags -a -f TAGS_COMPLETE src/*/impls/makefile src/*/impls/*/makefile
-	etags -a -f TAGS_COMPLETE src/*/utils/makefile src/*/examples/makefile
-	etags -a -f TAGS_COMPLETE src/*/examples/*/makefile 
-	etags -a -f TAGS_COMPLETE src/*/examples/*/*/makefile
-	etags -a -f TAGS_COMPLETE src/*/makefile src/*/impls/*/*/makefile
-	etags -a -f TAGS_COMPLETE src/contrib/*/makefile 
-	etags -a -f TAGS_COMPLETE src/contrib/*/src/makefile 
-	etags -a -f TAGS_COMPLETE src/contrib/*/examples/makefile
-	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*/makefile
-	etags -a -f TAGS_COMPLETE src/fortran/makefile src/fortran/auto/makefile 
-	etags -a -f TAGS_COMPLETE src/fortran/custom/makefile
-	etags -a -f TAGS_COMPLETE include/makefile include/*/makefile 
-	etags -a -f TAGS_COMPLETE bmake/common bmake/*/base*
-	etags -a -f TAGS_COMPLETE src/fortran/custom/*.c src/fortran/auto/*.c 
-	etags -a -f TAGS_COMPLETE src/benchmarks/*.c
-	etags -a -f TAGS_COMPLETE src/fortran/custom/*.F 
-	etags -a -f TAGS_COMPLETE docs/tex/manual/routin.tex 
-	etags -a -f TAGS_COMPLETE docs/tex/manual/manual.tex
-	etags -a -f TAGS_COMPLETE docs/tex/manual/manual_tex.tex
-	etags -a -f TAGS_COMPLETE docs/tex/manual/intro.tex 
-	etags -a -f TAGS_COMPLETE docs/tex/manual/part1.tex
-	etags -a -f TAGS_COMPLETE docs/tex/manual/part2.tex
-	etags -a -f TAGS_COMPLETE docs/tex/manual/intro.tex docs/makefile
+	etags -f TAGS_COMPLETE $(TAGS_INCLUDE_FILES) 
+	etags -a -f TAGS_COMPLETE $(TAGS_SRC_FILES) 
+	etags -a -f TAGS_COMPLETE $(TAGS_EXAMPLE_FILES)
+	etags -a -f TAGS_COMPLETE $(TAGS_MAKEFILE_FILES) 
+	etags -a -f TAGS_COMPLETE $(TAGS_BMAKE_FILES) 
+	etags -a -f TAGS_COMPLETE $(TAGS_DOC_FILES)
 	chmod g+w TAGS_COMPLETE
 
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
 	$(RM) TAGS_NO_EXAMPLES
-	etags -f TAGS_NO_EXAMPLES src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/*/*.h src/*/interface/*.c 
-	etags -a -f TAGS_NO_EXAMPLES src/*/src/*.c  src/*/impls/*/*.c 
-	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c 
-	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/*.c src/contrib/*/src/*.c 
-	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/*.h
-	etags -a -f TAGS_NO_EXAMPLES include/*.h include/pinclude/*.h
-	etags -a -f TAGS_NO_EXAMPLES include/FINCLUDE/*.h
-	etags -a -f TAGS_NO_EXAMPLES bmake/common
-	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
-	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/*/*.c
-	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/makefile 
-	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/*/makefile
-	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile 
-	etags -a -f TAGS_NO_EXAMPLES src/*/interface/makefile src/makefile 
-	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
-	etags -a -f TAGS_NO_EXAMPLES src/*/utils/makefile
-	etags -a -f TAGS_NO_EXAMPLES src/*/makefile src/*/impls/*/*/makefile
-	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/makefile 
-	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/makefile 
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/makefile 
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/makefile 
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/makefile
-	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile 
-	etags -a -f TAGS_NO_EXAMPLES bmake/common bmake/*/base*
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/*.c
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c 
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.F
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/routin.tex 
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/manual.tex
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/intro.tex
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/part1.tex 
-	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/part2.tex 
-	etags -a -f TAGS_NO_EXAMPLES docs/makefile
+	etags -f TAGS_NO_EXAMPLES $(TAGS_INCLUDE_FILES) 
+	etags -a -f TAGS_NO_EXAMPLES $(TAGS_SRC_FILES)
+	etags -a -f TAGS_NO_EXAMPLES $(TAGS_MAKEFILE_FILES) 
+	etags -a -f TAGS_NO_EXAMPLES $(TAGS_BMAKE_FILES) 
+	etags -a -f TAGS_NO_EXAMPLES $(TAGS_DOC_FILES)
 	chmod g+w TAGS_NO_EXAMPLES
 
 # Builds the etags file for makefiles
-etags_makefiles:
+etags_makefiles: 
 	$(RM) TAGS_MAKEFILES
-	etags -a -f TAGS_MAKEFILES bmake/common
-	etags -a -f TAGS_MAKEFILES makefile src/*/src/makefile 
-	etags -a -f TAGS_MAKEFILES src/*/interface/makefile src/makefile
-	etags -a -f TAGS_MAKEFILES src/*/impls/makefile src/*/impls/*/makefile
-	etags -a -f TAGS_MAKEFILES src/*/utils/makefile src/*/interface/makefile
-	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile
-	etags -a -f TAGS_MAKEFILES src/*/examples/makefile 
-	etags -a -f TAGS_MAKEFILES src/*/examples/*/makefile
-	etags -a -f TAGS_MAKEFILES src/*/examples/*/*/makefile
-	etags -a -f TAGS_MAKEFILES src/gvec/impls/*/*/*/*/makefile
-	etags -a -f TAGS_MAKEFILES src/gvec/impls/*/*/*/makefile
-	etags -a -f TAGS_MAKEFILES src/fortran/makefile 
-	etags -a -f TAGS_MAKEFILES src/fortran/auto/makefile 
-	etags -a -f TAGS_MAKEFILES src/contrib/*/makefile 
-	etags -a -f TAGS_MAKEFILES src/contrib/*/src/makefile 
-	etags -a -f TAGS_MAKEFILES src/contrib/*/examples/makefile
-	etags -a -f TAGS_MAKEFILES src/contrib/*/examples/*/makefile
-	etags -a -f TAGS_MAKEFILES src/fortran/custom/makefile
-	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile
-	etags -a -f TAGS_MAKEFILES bmake/common bmake/*/base*
-	etags -a -f TAGS_MAKEFILES docs/makefile
+	etags -f TAGS_MAKEFILES $(TAGS_MAKEFILE_FILES) 
+	etags -a -f TAGS_MAKEFILES $(TAGS_BMAKE_FILES) 
 	chmod g+w TAGS_MAKEFILES
+
+#
+# ctags builds the tags file required for VI.
+# To use the tags file do the following:
+# 1. within vi invole the command - :set tags=/home/bsmith/petsc/tags
+#    or add  the command to your ~/.exrc file - set tags=/home/bsmith/petsc/tags
+# 2. now to go to a tag do - :tag TAGNAME for eg - :tag MatCreate
+# 
+ctags:  
+	$(RM) tags
+	ctags -w -f tags $(TAGS_INCLUDE_FILES) 
+	ctags -w -a -f tags $(TAGS_SRC_FILES) 
+	ctags -w -a -f tags $(TAGS_EXAMPLE_FILES)
+	ctags -w -a -f tags $(TAGS_MAKEFILE_FILES) 
+	ctags -w -a -f tags $(TAGS_BMAKE_FILES)
+	chmod g+w tags
 
 # ------------------------------------------------------------------
 #
