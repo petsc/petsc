@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.3 1995/04/24 21:08:05 curfman Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.8 1995/04/25 19:08:57 curfman Exp curfman $";
 #endif
 
 /*
@@ -65,7 +65,7 @@ static struct _MatOps MatOps = {0,0,
 .  comm - MPI communicator
 .  m - number of rows
 .  n - number of columns
-.  ctx - pointer to your data needed by matrix-vector multiply
+.  ctx - pointer to data needed by matrix-vector multiplication routine(s)
 
    Output Parameter:
 .  mat - the matrix
@@ -76,11 +76,12 @@ static struct _MatOps MatOps = {0,0,
    use the shell type if you plan to define a complete matrix class.
 
   Usage:
-$   int (*mult)(void *,Vec,Vec);
 $   MatShellCreate(m,n,ctx,&mat);
 $   MatShellSetMult(mat,mult);
 
-.keywords: Mat, matrix, shell
+.keywords: matrix, shell, create
+
+.seealso: MatShellSetMult(), MatShellSetMultTransAdd()
 @*/
 int MatShellCreate(MPI_Comm comm,int m, int n, void *ctx,Mat *mat)
 {
@@ -102,13 +103,22 @@ int MatShellCreate(MPI_Comm comm,int m, int n, void *ctx,Mat *mat)
 }
 
 /*@
-   MatShellSetMult - sets routine to use as matrix vector multiply.
+   MatShellSetMult - Sets the routine for computing the matrix-vector product.
 
-  Input Parameters:
-.  mat - the matrix to add the operation to, created with MatShellCreate()
-.  mult - the matrix vector multiply routine.
+   Input Parameters:
+.  mat - the matrix associated with this operation, created 
+         with MatShellCreate()
+.  mult - the user-defined routine
 
-  Keywords: matrix, multiply
+   Calling sequence of mult:
+   int mult (void *ptr,Vec xin,Vec xout)
+.  ptr - the application context for matrix data
+.  xin - input vector
+.  xout - output vector
+
+.keywords: matrix, multiply, shell, set
+
+.seealso: MatShellCreate(), MatShellSetMultTransAdd()
 @*/
 int MatShellSetMult(Mat mat, int (*mult)(void*,Vec,Vec))
 {
@@ -119,13 +129,22 @@ int MatShellSetMult(Mat mat, int (*mult)(void*,Vec,Vec))
   return 0;
 }
 /*@
-   MatShellSetMultTransAdd - sets routine to use as matrix vector multiply.
+   MatShellSetMultTransAdd - Sets the routine for computing v3 = v2 + A' * v1.
 
-  Input Parameters:
-.  mat - the matrix to add the operation to, created with MatShellCreate()
-.  mult - the matrix vector multiply routine.
+   Input Parameters:
+.  mat - the matrix associated with this operation, created 
+         with MatShellCreate()
+.  mult - the user-defined routine
 
-  Keywords: matrix, multiply, transpose
+   Calling sequence of mult:
+   int mult (void *ptr,Vec v1,Vec v2,Vec v3)
+.  ptr - the application context for matrix data
+.  v1, v2 - the input vectors
+.  v3 - the result
+
+.keywords: matrix, multiply, transpose
+
+.seealso: MatShellCreate(), MatShellSetMult()
 @*/
 int MatShellSetMultTransAdd(Mat mat, int (*mult)(void*,Vec,Vec,Vec))
 {
