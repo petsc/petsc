@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: elapack.c,v 1.6 1997/09/10 01:59:19 curfman Exp curfman $";
+static char vcid[] = "$Id: elapack.c,v 1.7 1997/09/10 16:41:15 curfman Exp curfman $";
 #endif
 
 /*
@@ -183,7 +183,7 @@ static int ECSolve_Lapack(EC ec)
   if (!rank) {
     Scalar *work, sdummy;
     double *realpart = ec->realpart, *imagpart = ec->imagpart;
-    double *r = la->r, *c = la->c;
+    double *r = la->r;
     int    idummy, lwork, *perm;
 
     idummy   = n;
@@ -191,7 +191,6 @@ static int ECSolve_Lapack(EC ec)
     work     = (Scalar *) PetscMalloc( 5*n*sizeof(Scalar) ); CHKPTRQ(work);
     LAgeev_("N","N",&n,array,&n,la->cwork,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,r,&ierr);
     if (ierr) SETERRQ(1,0,"Error in LAPACK routine");
-    printf("optimal work dim = %g\n",work[0]);
     PetscFree(work);
 
     /* For now we stick with the convention of storing the real and imaginary
@@ -199,13 +198,12 @@ static int ECSolve_Lapack(EC ec)
     perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
     for ( i=0; i<n; i++ ) {
       r[i] = PetscReal(la->cwork[i]);
-      c[i] = PetscImaginary(la->cwork[i]);
       perm[i] = i;
     }
     ierr = PetscSortDoubleWithPermutation(n,r,perm); CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
-      realpart[i] = r[perm[i]];
-      imagpart[i] = c[perm[i]];
+      realpart[i] = PetscReal(la->cwork[perm[i]]);
+      imagpart[i] = PetscImaginary(la->cwork[perm[i]]);
     }
     PetscFree(perm);
     MPI_Bcast(realpart,2*n,MPI_DOUBLE,0,comm);
