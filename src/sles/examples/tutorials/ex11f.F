@@ -1,13 +1,31 @@
 
-C    "$Id: ex2f.F,v 1.31 1996/08/31 15:32:26 curfman Exp $";
+C    "$Id: ex11f.F,v 1.1 1996/09/25 02:33:19 curfman Exp curfman $";
+C
+C/*T
+C  Concepts: SLES (solving a Helmholtz equation)
+C  Concepts: Complex numbers
+C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+C  Routines: SLESSolve(); PetscRandomCreate(); PetscRandomGetValue();
+C  Routines: PetscRandomDestroy();
+C  Processors: n
+CT*/
 C
 C  Description: Solves a complex linear system in parallel with SLES (Fortran code).
 C
-C  Concepts: SLES (solving linear systems)
-C  Concepts: Complex numbers
-C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C  Routines: SLESSolve();
-C  Processors: n
+C  The model problem:
+C     Solve Helmholtz equation on the unit square: (0,1) x (0,1)
+C          -delta u - sigma1*u + i*sigma2*u = f, 
+C           where delta = Laplace operator
+C     Dirichlet b.c.'s on all sides
+C     Use the 2-D, five-point finite difference stencil.
+C
+C  Compiling the code:
+C     This code uses the complex numbers version of PETSc, so one of the
+C     following values of BOPT must be used for compiling the PETSc libraries
+C     and this example:
+C        BOPT=g_complex   - debugging version
+C        BOPT=O_complex   - optimized version
+C        BOPT=Opg_complex - profiling version
 C
 C -----------------------------------------------------------------------
 
@@ -27,8 +45,8 @@ C     ksp.h    - Krylov subspace methods
 C     sles.h   - SLES interface
 C  Include the following to use PETSc random numbers:
 C     sys.h    - system routines
-C  Additional include statements may be needed if using additional
-C  PETSc routines in a Fortran program, e.g.,
+C  Additional include statements may be needed if using other PETSc
+C  routines in a Fortran program, e.g.,
 C     viewer.h - viewers
 C     is.h     - index sets
 C
@@ -46,24 +64,23 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
 C  Variables:
 C     sles     - linear solver context
-C     ksp      - Krylov subspace method context
-C     pc       - preconditioner context
 C     x, b, u  - approx solution, right-hand-side, exact solution vectors
 C     A        - matrix that defines linear system
 C     its      - iterations for convergence
 C     norm     - norm of error in solution
+C     rctx     - random number context
 C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
 
+      SLES        sles
+      Mat         A 
+      Vec         x, b, u
+      PetscRandom rctx
       Double      norm, h2, sigma1
-      integer     dim, flg, its, ierr, n, rank, size
+      integer     dim, flg, its, ierr, n, rank
       integer     Istart, Iend, i, j, II, JJ
       Scalar      none, sigma2, v
-      Vec         x, b, u
-      Mat         A 
-      SLES        sles
-      PetscRandom rctx
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program
@@ -74,7 +91,6 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       dim = n*n
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
-      call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C      Compute the matrix and right-hand-side vector that define
@@ -94,17 +110,11 @@ C  rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
-C  Set matrix elements for the 2-D, five-point stencil in parallel.
+C  Set matrix elements in parallel.
 C   - Each processor needs to insert only elements that it owns
 C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
 C   - Always specify global row and columns of matrix entries.
-
-C  Problem domain: unit square: (0,1) x (0,1)
-C       Solve Helmholtz equation:
-C          -delta u - sigma1*u + i*sigma2*u = f, 
-C           where delta = Laplace operator
-C       Dirichlet b.c.'s on all sides
 
       sigma1 = 100.0
       call OptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,
@@ -114,7 +124,7 @@ C       Dirichlet b.c.'s on all sides
       h2 = 1.0/((n+1)*(n+1))
 
       do 10, II=Istart,Iend-1
-        v = -1.0*h2
+        v = -1.0
         i = II/n
         j = II - i*n  
         if ( i.gt.0 ) then
@@ -134,7 +144,7 @@ C       Dirichlet b.c.'s on all sides
           call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
         endif
         call PetscRandomGetValue(rctx,sigma2,ierr)
-        v = 4.0*h2 - sigma1 + sigma2
+        v = 4.0 - sigma1*h2 + sigma2*h2
         call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
  10   continue
 

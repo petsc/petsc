@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.7 1996/08/23 22:21:51 curfman Exp curfman $";
+static char vcid[] = "$Id: ex12.c,v 1.8 1996/08/27 18:28:14 curfman Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -19,8 +19,9 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
   -k1 <k1> : parameter k1\n\n";
 
 /*T
-   Concepts: SLES (solving linear equations); DA (using distributed arrays)
-   Concepts: Helmholtz equation; Complex numbers; Preallocating matrix memory
+   Concepts: SLES (solving a Helmholtz equation)
+   Concepts: DA (using distributed arrays)
+   Concepts: Complex numbers; Preallocating matrix memory
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSetUp(); SLESSetUpOnBlocks();
    Routines: SLESSolve(); SLESView(); SLESGetPC(); SLESGetKSP();
