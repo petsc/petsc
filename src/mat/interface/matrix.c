@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.354 1999/11/24 21:53:42 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.355 1999/12/14 17:59:43 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -1130,33 +1130,36 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 /* ----------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "MatILUDTFactor"
-/*@  
+/*@C  
    MatILUDTFactor - Performs a drop tolerance ILU factorization.
 
    Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
-.  dt  - the drop tolerance
-.  maxnz - the maximum number of nonzeros per row allowed
+.  info - information about the factorization to be done
 .  row - row permutation
 -  col - column permutation
 
    Output Parameters:
 .  fact - the factored matrix
 
+   Level: developer
+
    Notes:
    Most users should employ the simplified SLES interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
    See, e.g., SLESCreate().
 
-   Level: developer
+   This is currently only supported for the SeqAIJ matrix format using code
+   from Yousef Saad's SPARSEKIT2 package. That code is copyright by Yousef
+   Saad with the GNU copyright.
 
 .keywords: matrix, factor, LU, in-place
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatILUDTFactor(Mat mat,double dt,int maxnz,IS row,IS col,Mat *fact)
+int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
 {
   int ierr;
 
@@ -1168,7 +1171,7 @@ int MatILUDTFactor(Mat mat,double dt,int maxnz,IS row,IS col,Mat *fact)
   if (!mat->ops->iludtfactor) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_ILUFactor,mat,row,col,0); 
-  ierr = (*mat->ops->iludtfactor)(mat,dt,maxnz,row,col,fact);CHKERRQ(ierr);
+  ierr = (*mat->ops->iludtfactor)(mat,info,row,col,fact);CHKERRQ(ierr);
   PLogEventEnd(MAT_ILUFactor,mat,row,col,0);
 
   PetscFunctionReturn(0);
