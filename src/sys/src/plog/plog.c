@@ -29,11 +29,13 @@ int PETSC_LARGEST_EVENT  = PETSC_EVENT;
 int PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
 /* Action and object logging variables */
-Action *actions = PETSC_NULL;
-Object *objects = PETSC_NULL;
-int     numActions = 0, maxActions = 100;
-int     numObjects = 0, maxObjects = 100;
-int     numObjectsDestroyed = 0;
+Action    *actions    = PETSC_NULL;
+Object    *objects    = PETSC_NULL;
+PetscTruth logActions = PETSC_TRUE;
+PetscTruth logObjects = PETSC_TRUE;
+int        numActions = 0, maxActions = 100;
+int        numObjects = 0, maxObjects = 100;
+int        numObjectsDestroyed = 0;
 
 /* Global counters */
 PetscLogDouble BaseTime;
@@ -146,10 +148,14 @@ int PetscLogBegin_Private(void) {
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_actions", &opt);                                   CHKERRQ(ierr);
   if (opt == PETSC_FALSE) {
     ierr = PetscMalloc(maxActions * sizeof(Action), &actions);                                            CHKERRQ(ierr);
+  } else {
+    logActions = PETSC_FALSE;
   }
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_objects", &opt);                                   CHKERRQ(ierr);
   if (opt == PETSC_FALSE) {
     ierr = PetscMalloc(maxObjects * sizeof(Object), &objects);                                            CHKERRQ(ierr);
+  } else {
+    logObjects = PETSC_FALSE;
   }
   _PetscLogPHC = PetscLogObjCreateDefault;
   _PetscLogPHD = PetscLogObjDestroyDefault;
@@ -282,8 +288,62 @@ int PetscLogTraceBegin(FILE *file)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogActions"
+/*@C
+  PetscLogActions - Determines whether actions are logged for the graphical viewer.
+
+  Not Collective
+
+  Input Parameter:
+. flag - PETSC_TRUE if actions are to be logged
+
+  Level: intermediate
+
+  Note: Logging of actions continues to consume more memory as the program
+  runs. Long running programs should consider turning this feature off.
+
+  Options Database Keys:
+. log_exclude_actions - Turns off actions logging
+
+.keywords: log, stage, register
+.seealso: PetscLogStagePush(), PetscLogStagePop()
+@*/
+int PetscLogActions(PetscTruth flag) {
+  PetscFunctionBegin;
+  logActions = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogObjects"
+/*@C
+  PetscLogObjects - Determines whether objects are logged for the graphical viewer.
+
+  Not Collective
+
+  Input Parameter:
+. flag - PETSC_TRUE if objects are to be logged
+
+  Level: intermediate
+
+  Note: Logging of objects continues to consume more memory as the program
+  runs. Long running programs should consider turning this feature off.
+
+  Options Database Keys:
+. log_exclude_objects - Turns off objects logging
+
+.keywords: log, stage, register
+.seealso: PetscLogStagePush(), PetscLogStagePop()
+@*/
+int PetscLogObjects(PetscTruth flag) {
+  PetscFunctionBegin;
+  logObjects = flag;
+  PetscFunctionReturn(0);
+}
+
 /*------------------------------------------------ Stage Functions --------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLogStageRegister"
 /*@C
   PetscLogStageRegister - Attaches a charactor string name to a logging stage.
@@ -1552,7 +1612,7 @@ int PetscLogObjectState(PetscObject obj, const char format[], ...)
   va_list Argp;
 
   PetscFunctionBegin;
-  if (!objects) PetscFunctionReturn(0);
+  if (logObjects == PETSC_FALSE) PetscFunctionReturn(0);
   va_start(Argp, format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(objects[obj->id].info, format, (char *) Argp);

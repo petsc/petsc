@@ -89,6 +89,8 @@ EXTERN int (*_PetscLogPHD)(PetscObject);
 EXTERN int PetscLogBegin(void);
 EXTERN int PetscLogAllBegin(void);
 EXTERN int PetscLogTraceBegin(FILE *);
+EXTERN int PetscLogActions(PetscTruth);
+EXTERN int PetscLogObjects(PetscTruth);
 /* General functions */
 EXTERN int PetscLogGetRGBColor(char **);
 EXTERN int PetscLogDestroy(void);
