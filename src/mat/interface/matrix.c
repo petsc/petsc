@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.157 1996/03/26 04:46:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.158 1996/03/26 23:12:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -217,8 +217,6 @@ int MatDestroy(Mat mat)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   ierr = (*mat->destroy)((PetscObject)mat); CHKERRQ(ierr);
-  PLogObjectDestroy(mat);
-  PetscHeaderDestroy(mat);
   return 0;
 }
 /*@
