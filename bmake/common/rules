@@ -843,12 +843,18 @@ push:
 #   Updates your PETSc version to the latest set of patches
 #
 update:
-	-@if [ -d ${PETSC_DIR}/BitKeeper ]; then \
+	-@if [ -d ${PETSC_DIR}/BitKeeperhi ]; then \
           echo "Using BK to update source code" ; \
           ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} pull ;\
         else \
-          echo "Using patch to update source code" ;  \
-	  ${PETSC_DIR}/bin/update.py ${UPDATE_OPTIONS};\
+          which python > /dev/null 2>1;  \
+          if [ "$$?" != "0" ]; then \
+            echo "Automatic update requires Python in your path";\
+            echo "See http://www.mcs.anl.gov/petsc/petsc-2/download/petsc-patches.html";\
+          else \
+            echo "Using patch to update source code" ;  \
+	    ${PETSC_DIR}/bin/update.py ${UPDATE_OPTIONS};\
+          fi;\
         fi
 
 
