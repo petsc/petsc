@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.20 1998/04/29 19:56:25 bsmith Exp bsmith $ 
+# $Id: buildntdist,v 1.21 1998/04/29 20:42:29 bsmith Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -32,8 +32,10 @@ mv  adic blaslapack
 cd /mcs/tmp/petscnt/petsc
 /bin/rm -rf bin
 find /mcs/tmp/petscnt -type d -name output -exec /bin/rm -rf {} \;
-/bin/rm -rf bmake/alpha* bmake/sun4* bmake/solaris* bmake/hpux bmake/t3d bmake/t3e
-/bin/rm -rf bmake/paragon bmake/rs6000* bmake/freebsd* bmake/linux bmake/IRIX*
+/bin/rm -rf bmake/alpha* bmake/sun4* bmake/solaris* bmake/hpux 
+/bin/rm -rf bmake/paragon bmake/rs6000* bmake/freebsd* bmake/linux 
+/bin/rm -rf bmake/nt_gnu bmake/t3d bmake/t3e bmake/IRIX*
+/bin/rm -rf src/blaslapack/examples
 
 cd /mcs/tmp/petscnt
 chmod -R u+w petsc
