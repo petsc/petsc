@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.185 1999/11/24 21:54:03 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.186 2000/01/11 21:00:57 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1253,7 +1253,8 @@ int MatGetOwnershipRange_MPIBAIJ(Mat matin,int *m,int *n)
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ*)matin->data;
 
   PetscFunctionBegin;
-  *m = mat->rstart*mat->bs; *n = mat->rend*mat->bs;
+  if (m) *m = mat->rstart*mat->bs;
+  if (n) *n = mat->rend*mat->bs;
   PetscFunctionReturn(0);
 }
 
@@ -1574,7 +1575,7 @@ int MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
   if (ll) {
     ierr = VecGetLocalSize(ll,&s1);CHKERRQ(ierr);
     if (s1!=s2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"left vector non-conforming local size");
-    ierr = (*b->ops->diagonalscale)(b,ll,0);CHKERRQ(ierr);
+    ierr = (*b->ops->diagonalscale)(b,ll,PETSC_NULL);CHKERRQ(ierr);
   }
   /* scale  the diagonal block */
   ierr = (*a->ops->diagonalscale)(a,ll,rr);CHKERRQ(ierr);
@@ -1582,7 +1583,7 @@ int MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
   if (rr) {
     /* Do a scatter end and then right scale the off-diagonal block */
     ierr = VecScatterEnd(rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
-    ierr = (*b->ops->diagonalscale)(b,0,baij->lvec);CHKERRQ(ierr);
+    ierr = (*b->ops->diagonalscale)(b,PETSC_NULL,baij->lvec);CHKERRQ(ierr);
   } 
   
   PetscFunctionReturn(0);

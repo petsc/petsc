@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.299 2000/01/26 16:49:43 balay Exp bsmith $ 
+# $Id: makefile,v 1.300 2000/01/31 19:09:38 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -88,6 +88,7 @@ info_h:
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
 	-@cat MINFO | sed -e 's/$$/  \\n\\/' > ${MINFO}
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> ${MINFO}
+	-@chmod g+w ${MINFO}
 	-@$(RM) MINFO
 #
 # Builds the PETSc libraries
