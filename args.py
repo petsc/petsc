@@ -123,7 +123,11 @@ class ArgDict (UserDict.UserDict, logging.Logger):
       return None
 
   def parseArg(self, arg):
-    if arg and arg[0] == '[' and arg[-1] == ']': arg = string.split(arg[1:-1], ',')
+    if arg and arg[0] == '[' and arg[-1] == ']':
+      if len(arg) > 2:
+        arg = string.split(arg[1:-1], ',')
+      else:
+        arg = []
     return arg
 
   def expandVars(self, path):
