@@ -1,4 +1,4 @@
-/*$Id: snesj2.c,v 1.26 2001/01/15 21:47:49 bsmith Exp balay $*/
+/*$Id: snesj2.c,v 1.27 2001/03/23 23:24:07 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
@@ -58,6 +58,10 @@ int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure 
   ierr = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
   PetscStackPop;
   snes->nfuncs++;
+  if (J != B) {
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x1,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
