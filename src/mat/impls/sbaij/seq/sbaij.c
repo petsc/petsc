@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.5 2000/07/24 19:04:56 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.6 2000/07/24 19:46:55 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1141,8 +1141,8 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode
   PetscFunctionReturn(0);
 } 
 
-extern int MatLUFactorSymbolic_SeqSBAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
-extern int MatLUFactor_SeqSBAIJ(Mat,IS,IS,MatLUInfo*);
+extern int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
+extern int MatCholeskyFactor_SeqSBAIJ(Mat,IS,IS,MatLUInfo*);
 extern int MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS*,int);
 extern int MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 extern int MatGetSubMatrices_SeqSBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
@@ -1172,13 +1172,13 @@ extern int MatSolveTranspose_SeqSBAIJ_3(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_2(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_1(Mat,Vec,Vec);
 
-extern int MatLUFactorNumeric_SeqSBAIJ_N(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqSBAIJ_1(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqSBAIJ_2(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqSBAIJ_3(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqSBAIJ_4(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqSBAIJ_5(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqSBAIJ_6(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat,Mat*);
 
 extern int MatMult_SeqSBAIJ_1(Mat,Vec,Vec);
 extern int MatMult_SeqSBAIJ_2(Mat,Vec,Vec);
