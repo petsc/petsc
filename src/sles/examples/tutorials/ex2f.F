@@ -1,8 +1,10 @@
 
-C    "$Id: ex2f.F,v 1.37 1996/10/24 15:36:37 curfman Exp curfman $";
+C    "$Id: ex2f.F,v 1.38 1996/10/26 18:30:54 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
+C
+C  Program usage: mpirun ex2f [-help] [all PETSc options]
 C
 C/*T
 C  Concepts: SLES^Solving a system of linear equations (basic parallel example);
@@ -10,6 +12,7 @@ C  Concepts: SLES^Setting a user-defined monitoring routine when solving a linea
 C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
 C  Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); PCSetType();
 C  Routines: KSPBuildSolution(); KSPSetMonitor(); KSPSetTolerances();
+C  Routines: PetscRandomCreate(); PetscRandomGetValue(); PetscRandomDestroy();
 C  Processors: n
 CT*/
 C
@@ -22,6 +25,23 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                    Include files
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
+C  Important Note:  
+C  This program uses CPP for preprocessing, as indicated by the use of
+C  PETSc include files in the directory petsc/include/FINCLUDE.  This
+C  convention enables use of the CPP preprocessor, which allows the use
+C  of the #include statements that define PETSc objects and variables.
+C
+C  Use of the conventional Fortran include statements is also supported
+C  In this case, the PETsc include files are located in the directory
+C  petsc/include/finclude.
+C         
+C  Since one must be very careful to include each file no more than once
+C  in a Fortran routine, application programmers must exlicitly list
+C  each file needed for the various PETSc components within their
+C  program (unlike the C/C++ interface).
+C
+C  See the Fortran section of the PETSc users manual for details.
+C
 C  The following include statements are required for SLES Fortran programs:
 C     petsc.h  - base PETSc routines
 C     vec.h    - vectors
@@ -29,6 +49,8 @@ C     mat.h    - matrices
 C     pc.h     - preconditioners
 C     ksp.h    - Krylov subspace methods
 C     sles.h   - SLES interface
+C  Include the following to use PETSc random numbers:
+C     sys.h    - system routines
 C  Additional include statements may be needed if using additional
 C  PETSc routines in a Fortran program, e.g.,
 C     viewer.h - viewers
@@ -40,6 +62,7 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/ksp.h"
 #include "include/FINCLUDE/sles.h"
+#include "include/FINCLUDE/sys.h"
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                   Variable declarations
@@ -53,19 +76,31 @@ C     x, b, u  - approx solution, right-hand-side, exact solution vectors
 C     A        - matrix that defines linear system
 C     its      - iterations for convergence
 C     norm     - norm of error in solution
+C     rctx     - random number generator context
 C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
-
-      Double   norm,tol
+C
+C  Note that vectors are declared as PETSc "Vec" objects.  These vectors
+C  are mathematical objects that contain more than just an array of
+C  double precision numbers. I.e., vectors in PETSc are not just
+C        double precision x(*).
+C  However, local vector data can be easily accessed via VecGetArray().
+C  See the Fortran section of the PETSc users manual for details.
+C  
+      Double   norm
       integer  i, j, II, JJ, ierr, m, n
       integer  rank, size, its, Istart, Iend, flg
-      Scalar   v, one, none
+      Scalar   v, one, neg_one
       Vec      x, b, u
       Mat      A 
-      KSP      ksp
-      PC       pc
       SLES     sles
+      KSP      ksp
+      PetscRandom rctx
+
+C  These variables are not currently used.
+C      PC       pc
+C      Double   tol
 
 C  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
 C  MUST be declared as external.
@@ -80,7 +115,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       m = 3
       n = 3
       one  = 1.0
-      none = -1.0
+      neg_one = -1.0
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
@@ -147,7 +182,11 @@ C  by placing code between these two statements.
 C  Create parallel vectors.
 C   - Here, the parallel partitioning of the vector is determined by
 C     PETSc at runtime.  We could also specify the local dimensions
-C     if desired.
+C     if desired -- or use the more general routine VecCreate().
+C   - When solving a linear system, the vectors and matrices MUST
+C     be partitioned accordingly.  PETSc automatically generates
+C     appropriately partitioned matrices and vectors when MatCreate()
+C     and VecCreate() are used with the same communicator. 
 C   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
@@ -155,9 +194,28 @@ C   - Note: We form 1 vector from scratch and then duplicate as needed.
       call VecDuplicate(b,x,ierr)
 
 C  Set exact solution; then compute right-hand-side vector.
+C  By default we use an exact solution of a vector with all
+C  elements of 1.0;  Alternatively, using the runtime option
+C  -random_sol forms a solution vector with random components.
 
-      call VecSet(one,u,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,
+     &             "-random_exact_sol",flg,ierr)
+      if (flg .eq. 1) then
+         call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,
+     &                          rctx,ierr)
+         call VecSetRandom(rctx,u,ierr)
+         call PetscRandomDestroy(rctx,ierr)
+      else
+         call VecSet(one,u,ierr)
+      endif
       call MatMult(A,u,b,ierr)
+
+C  View the exact solution vector if desired
+
+      call OptionsHasName(PETSC_NULL_CHARACTER,
+     &             "-view_exact_sol",flg,ierr)
+      if (flg .eq. 1)
+     &   call VecView(u,VIEWER_STDOUT_WORLD,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C         Create the linear solver and set various options
@@ -179,14 +237,19 @@ C     we can then directly directly call any KSP and PC routines
 C     to set various options.
 C   - The following four statements are optional; all of these
 C     parameters could alternatively be specified at runtime via
-C     SLESSetFromOptions();
+C     SLESSetFromOptions(). All of these defaults can be
+C     overridden at runtime, as indicated below.
 
-      call SLESGetKSP(sles,ksp,ierr)
-      call SLESGetPC(sles,pc,ierr)
-      call PCSetType(pc,PCJACOBI,ierr)
-      tol = 1.e-7
-      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
-     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
+       call SLESGetKSP(sles,ksp,ierr)
+
+C     We comment out this section of code since the Jacobi
+C     preconditioner is not a good general default.
+
+C      call SLESGetPC(sles,pc,ierr)
+C      call PCSetType(pc,PCJACOBI,ierr)
+C      tol = 1.e-7
+C      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
+C     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
 C  Set user-defined monitoring routine if desired
 
@@ -218,7 +281,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Check the error
 
-      call VecAXPY(none,u,x,ierr)
+      call VecAXPY(neg_one,u,x,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
@@ -238,6 +301,12 @@ C  are no longer needed.
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
+
+C  Always call PetscFinalize() before exiting a program.  This routine
+C    - finalizes the PETSc libraries as well as MPI
+C    - provides summary and diagnostic information if certain runtime
+C      options are chosen (e.g., -log_summary).  See PetscFinalize()
+C      manpage for more information.
 
       call PetscFinalize(ierr)
       stop
