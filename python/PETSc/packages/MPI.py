@@ -2,6 +2,7 @@ from __future__ import generators
 import config.base
 
 import os
+import re
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -121,7 +122,6 @@ class Configure(config.base.Configure):
     output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
     if not status:
       # need to strip out information from batch system
-      import re
       f = re.match('([0-9]*.[0-9]*)',output)
       if not f: return 'Unknown'
       return f.group()
@@ -182,6 +182,16 @@ class Configure(config.base.Configure):
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
       raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
+    # Try configure package directories
+    dirExp = re.compile(r'mpi(ch)?(-.*)?')
+    for packageDir in self.framework.argDB['package-dirs']:
+      for f in os.listdir(packageDir):
+        dir = os.path.join(packageDir, f)
+        if not os.path.isdir(dir):
+          continue
+        if not dirExp.match(f):
+          continue
+        yield ('Package directory installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try SUSE location
     dir = os.path.abspath(os.path.join('/opt', 'mpich'))
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
@@ -385,8 +395,7 @@ class Configure(config.base.Configure):
       path.append(os.path.join(os.path.dirname(inc), 'bin'))
     for lib in self.lib:
       path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
-    path.append('')
-    self.getExecutable('mpirun', path = ':'.join(path), getFullPath = 1)
+    self.getExecutable('mpirun', path = path, useDefaultPath = 1)
     return
 
   def setOutput(self):
