@@ -1,6 +1,6 @@
-/*$Id: ex24.c,v 1.19 2001/04/30 03:52:57 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.20 2001/04/30 14:46:30 bsmith Exp bsmith $*/
 
-static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint.\n\n";
+static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjoint.\n\n";
 
 #include "petscda.h"
 #include "petscpf.h"
@@ -38,14 +38,12 @@ static char help[] = "Solves PDE optimization problem of ex22.c with finite diff
        The lambda and u are NOT interlaced.
 */
 
-typedef int (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
+
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int PDEFormFunction(DA,int (*)(DALocalInfo*,void*,void*,void*),Vec,Vec,void*);
-extern int PDEFormJacobian(DA,ISColoring,int (*)(DALocalInfo*,void*,void*,void*),Vec,Mat,void*);
 
 typedef struct {
   ISColoring iscoloring;  /* coloring of grid used for computing Jacobian of PDE */
-  Mat        J;         /* Jacobian of PDE system */
+  Mat        J;           /* Jacobian of PDE system */
 } AppCtx;
 
 #undef __FUNCT__
@@ -75,10 +73,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
   /* ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr);   
-  /* Create a global vector from a da arrays */
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+
+  /* create VecPack object to manage composite vector */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
@@ -142,69 +141,6 @@ int PDEFormFunctionLocal(DALocalInfo *info,Scalar *u,Scalar *fu,PassiveScalar *w
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PDEFormFunction"
-int PDEFormFunction(DA da,int (*lf)(DALocalInfo*,void*,void*,void*),Vec vu,Vec vfu,void *w)
-{
-  int         ierr;
-  void        *u,*fu;
-  DALocalInfo info;
-
-  PetscFunctionBegin;
-
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
-
-  ierr = (*lf)(&info,u,fu,w);CHKERRQ(ierr);
-
-  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#if defined(PETSC_HAVE_ADIC)
-
-/* #include "adic_utils.h" */
-
-#undef __FUNCT__
-#define __FUNCT__ "PDEFormJacobian"
-int PDEFormJacobian(DA da,ISColoring iscoloring,int (*lf)(DALocalInfo*,void*,void*,void*),Vec vu,Mat J,void *w)
-{
-  int         ierr,gtdof,tdof;
-  Scalar      *u,*ustart;
-  DALocalInfo info;
-  void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
-
-  PetscFunctionBegin;
-
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-
-  /* get space for derivative objects.  */
-  ierr = DAGetADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
-  ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
-  my_AD_SetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
-  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
-
-  my_AD_ResetIndep();
-  my_AD_SetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors);
-  my_AD_IncrementTotalGradSize(iscoloring->n);
-  my_AD_SetIndepDone();
-
-  ierr = (*lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
-
-  /* stick the values into the matrix */
-  ierr = MatSetValuesAD(J,(Scalar**)ad_fstart);CHKERRQ(ierr);
-
-  /* return space for derivative objects.  */
-  ierr = DARestoreADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DARestoreADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#endif
-
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
@@ -219,60 +155,60 @@ int PDEFormJacobian(DA da,ISColoring iscoloring,int (*lf)(DALocalInfo*,void*,voi
 #define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
-  DMMG    dmmg = (DMMG)dummy;
-  int     ierr,xs,xm,i,N,nredundant;
-  Scalar  *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
-  Vec     vu,vlambda,vfu,vflambda,vglambda;
-  DA      da,dadummy;
-  VecPack packer = (VecPack)dmmg->dm;
-  AppCtx  *appctx = (AppCtx*)dmmg->user;
+  DMMG       dmmg = (DMMG)dummy;
+  int        ierr,xs,xm,i,N,nredundant;
+  Scalar     *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
+  Vec        vu,vlambda,vfu,vflambda,vglambda;
+  DA         da,dadummy;
+  VecPack    packer = (VecPack)dmmg->dm;
+  AppCtx     *appctx = (AppCtx*)dmmg->user;
   PetscTruth skipadic;
 
   PetscFunctionBegin;
-  ierr = VecPackGetEntries(packer,&nredundant,&da,&dadummy);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(0,"-skipadic",&skipadic);CHKERRQ(ierr);
+
+  ierr = VecPackGetEntries(packer,&nredundant,&da,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  d    = (N-1.0);
+  h    = 1.0/d;
+  h2   = 2.0*h;
+
   ierr = VecPackGetLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   ierr = VecPackScatter(packer,U,w,vu,vlambda);CHKERRQ(ierr);
   ierr = VecPackGetAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
   ierr = VecPackGetAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
-  /* Evaluate the Jacobian of PDEFormFunction() */
-  ierr = PDEFormJacobian(da,appctx->iscoloring,(int (*)(DALocalInfo*,void*,void*,void*))ad_PDEFormFunctionLocal,vu,appctx->J,w);CHKERRQ(ierr);
-  ierr = MatMultTranspose(appctx->J,vglambda,vflambda);CHKERRQ(ierr); 
+  /* G() */
+  ierr = DAFormFunction1(da,(DALocalFunction1)PDEFormFunctionLocal,vu,vfu,w);CHKERRQ(ierr);
+  if (!skipadic) {
+    /* lambda^T G_u() */
+    ierr = DAFormJacobian1(da,appctx->iscoloring,(DALocalFunction1)ad_PDEFormFunctionLocal,vu,appctx->J,w);CHKERRQ(ierr);
+    ierr = MatMultTranspose(appctx->J,vglambda,vflambda);CHKERRQ(ierr); 
+  }
 
-  PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
-  /*  ierr = MatView((Mat)dmmg->user,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-  /* derivative of constraint portion of L() w.r.t. u */
-  ierr = PDEFormFunction(da,(int (*)(DALocalInfo*,void*,void*,void*))PDEFormFunctionLocal,vu,vfu,w);CHKERRQ(ierr);
-
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,vlambda,(void**)&lambda);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,vflambda,(void**)&flambda);CHKERRQ(ierr);
-  d    = (N-1.0);
-  h    = 1.0/d;
-  h2   = 2.0*h;
 
-  /* derivative of L() w.r.t. w */
+  /* L_w */
   if (xs == 0) { /* only first processor computes this */
     fw[0] = -2.*d*lambda[0];
   }
 
-  ierr = PetscOptionsHasName(0,"-skipadic",&skipadic);CHKERRQ(ierr);
+  /* lambda^T G_u() */
   if (skipadic) {
-  for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1] + h2*lambda[0]*u[0];
-    else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2] + h2*lambda[1]*u[1];
-    else if (i == N-1) flambda[N-1] = 2.*d*lambda[N-1] - d*lambda[N-2] + h2*lambda[N-1]*u[N-1];
-    else if (i == N-2) flambda[N-2] = 2.*d*lambda[N-2] - d*lambda[N-3] + h2*lambda[N-2]*u[N-2];
-    else               flambda[i]   = - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]) + h2*lambda[i]*u[i];
-  }  
+    for (i=xs; i<xs+xm; i++) {
+      if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1] + h2*lambda[0]*u[0];
+      else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2] + h2*lambda[1]*u[1];
+      else if (i == N-1) flambda[N-1] = 2.*d*lambda[N-1] - d*lambda[N-2] + h2*lambda[N-1]*u[N-1];
+      else if (i == N-2) flambda[N-2] = 2.*d*lambda[N-2] - d*lambda[N-3] + h2*lambda[N-2]*u[N-2];
+      else               flambda[i]   = - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]) + h2*lambda[i]*u[i];
+    }  
   }
 
-  /* derivative of function part of L() w.r.t. u */
+  /* F_u */
   for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   flambda[0]   +=    h*u[0];
     else if (i == 1)   flambda[1]   +=    h2*u[1];
