@@ -1511,23 +1511,51 @@ EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);
 #endif
 
 #include "petscblaslapack.h"
-
+extern int MatAXPY_SeqAIJ(PetscScalar *,Mat,Mat,MatStructure);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_MPIAIJ"
 int MatAXPY_MPIAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int        ierr,one;
-  Mat_MPIAIJ *xx  = (Mat_MPIAIJ *)X->data,*yy = (Mat_MPIAIJ *)Y->data;
+  int        ierr,one=1;
+  Mat_MPIAIJ *xx = (Mat_MPIAIJ *)X->data,*yy = (Mat_MPIAIJ *)Y->data;
   Mat_SeqAIJ *x,*y;
 
   PetscFunctionBegin;
-  if (str == SAME_NONZERO_PATTERN) {
+  if (str == SAME_NONZERO_PATTERN) {  
     x  = (Mat_SeqAIJ *)xx->A->data;
     y  = (Mat_SeqAIJ *)yy->A->data;
-    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);    
     x  = (Mat_SeqAIJ *)xx->B->data;
     y  = (Mat_SeqAIJ *)yy->B->data;
     BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+  } else if (str == SUBSET_NONZERO_PATTERN) {  /* B indeces have problem: map to original index! */
+    ierr = MatAXPY_SeqAIJ(a,xx->A,yy->A,str);CHKERRQ(ierr);
+    /* ierr = MatAXPY_SeqAIJ(a,xx->B,yy->B,str);CHKERRQ(ierr); */
+
+    int rank,nx,ny;
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (rank == 0) {
+      x  = (Mat_SeqAIJ *)xx->B->data;
+      int j,row=0,*garray=xx->garray;
+      MatGetSize(xx->B,PETSC_NULL,&nx);
+      MatGetSize(yy->B,PETSC_NULL,&ny);
+      printf("nx: %d, ny: %d\n",nx,ny);
+      for (j=0; j<nx; j++){
+        printf("%d, ",garray[j]);
+      }
+      printf("\n----------- \n");
+      for (j=x->i[row]; j<x->i[row+1]; j++){
+        printf("%d, ",x->j[j]);
+      }
+      printf("\n----------- \n");
+      /* printf("[%d], xx->A: \n", rank);
+         ierr = MatView(xx->A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
+      printf("[%d], xx->B: \n", rank);
+      ierr = MatView(xx->B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      printf(" -----------\n");
+    }
+    
+    ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }

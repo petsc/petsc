@@ -241,7 +241,7 @@ EXTERN int        MatDuplicate(Mat,MatDuplicateOption,Mat*);
 
 .seealso: MatCopy(), SLESSetOperators(), PCSetOperators()
 E*/
-typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
+typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER,SUBSET_NONZERO_PATTERN} MatStructure;
 
 EXTERN int MatCopy(Mat,Mat,MatStructure);
 EXTERN int MatView(Mat,PetscViewer);
