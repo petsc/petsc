@@ -324,7 +324,37 @@ class Configure(config.base.Configure):
       self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1)
     return
 
-  def checkMkdir(self):
+  def configureMake(self):
+    '''Check various things about make'''
+    self.framework.getExecutable('make', getFullPath = 1)
+    # Check for GNU make
+    haveGNUMake = 0
+    try:
+      import commands
+      (status, output) = commands.getstatusoutput('strings '+self.framework.make)
+      if not status and output.find('GNU Make') >= 0:
+        haveGNUMake = 1
+    except Exception, e: print 'Make check failed: '+str(e)
+    # Setup make flags
+    flags = ''
+    if haveGNUMake:
+      flags += ' --no-print-directory'
+    self.framework.addSubstitution('MAKE_FLAGS', flags.strip())
+    self.framework.addSubstitution('SET_MAKE', '')
+    # Check to see if make allows rules which look inside archives
+    if haveGNUMake:
+      self.framework.addSubstitution('LIB_C_TARGET', 'libc: ${LIBNAME}(${OBJSC} ${SOBJSC})')
+      self.framework.addSubstitution('LIB_F_TARGET', 'libf: ${LIBNAME}(${OBJSF})')
+    else:
+      self.framework.addSubstitution('LIB_C_TARGET', '''
+libc: ${OBJSC}
+	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}''')
+      self.framework.addSubstitution('LIB_F_TARGET', '''
+libf: ${OBJSF}
+	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}''')
+    return
+
+  def configureMkdir(self):
     '''Make sure we can have mkdir automatically make intermediate directories'''
     # We use the framework in order to remove the PETSC_ namespace
     self.framework.getExecutable('mkdir', getFullPath = 1)
@@ -341,23 +371,12 @@ class Configure(config.base.Configure):
   def configurePrograms(self):
     '''Check for the programs needed to build and run PETSc'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.checkMkdir()
     self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
     self.framework.getExecutable('sed',  getFullPath = 1)
     self.framework.getExecutable('diff', getFullPath = 1)
     self.framework.getExecutable('ar',   getFullPath = 1)
-    self.framework.getExecutable('make', getFullPath = 1)
-    try:
-      import commands
-      (status, output) = commands.getstatusoutput('strings '+self.framework.make)
-      flags            = ''
-      if not status and output.find('GNU Make') >= 0:
-        flags += ' --no-print-directory'
-      self.framework.addSubstitution('MAKE_FLAGS', flags.strip())
-    except Exception, e: print 'Make check failed: '+str(e)
     self.framework.addSubstitution('AR_FLAGS', 'cr')
     self.framework.getExecutable(self.framework.argDB['with-ranlib'])
-    self.framework.addSubstitution('SET_MAKE', '')
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
@@ -496,6 +515,8 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
+    self.executeTest(self.configureMake)
+    self.executeTest(self.configureMkdir)
     self.executeTest(self.configurePrograms)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMissingFunctions)
