@@ -87,11 +87,11 @@ int TSCreate_Euler(TS ts)
   int      ierr;
 
   PetscFunctionBegin;
-  ts->setup	      = TSSetUp_Euler;
-  ts->step            = TSStep_Euler;
-  ts->destroy         = TSDestroy_Euler;
-  ts->setfromoptions  = TSSetFromOptions_Euler;
-  ts->view            = TSView_Euler;
+  ts->ops->setup           = TSSetUp_Euler;
+  ts->ops->step            = TSStep_Euler;
+  ts->ops->destroy         = TSDestroy_Euler;
+  ts->ops->setfromoptions  = TSSetFromOptions_Euler;
+  ts->ops->view            = TSView_Euler;
 
   ierr = PetscNew(TS_Euler,&euler);CHKERRQ(ierr);
   PetscLogObjectMemory(ts,sizeof(TS_Euler));

@@ -62,7 +62,7 @@ int TSSetType(TS ts,TSType type)
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
-  if (ts->destroy) {ierr = (*(ts)->destroy)(ts);CHKERRQ(ierr);}
+  if (ts->ops->destroy) {ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);}
   ts->sles = 0;
   ts->snes = 0;
 
@@ -193,8 +193,8 @@ int TSSetFromOptions(TS ts)
     if (flg) {
       ierr = TSSetMonitor(ts,TSVecViewMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-    if (ts->setfromoptions) {
-      ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);
+    if (ts->ops->setfromoptions) {
+      ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
