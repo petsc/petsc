@@ -28,7 +28,7 @@ typedef struct {
 
 typedef struct {
   f90_header()
-  tripple dim[3];     
+  tripple dim[2];     
 }F90Array2d;
 
 typedef struct {

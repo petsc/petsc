@@ -23,6 +23,9 @@
 
       write (6,100) x%a, x%b(1), x%c
  100  format("From Fortran Main:",i3," ",1pe8.2," ",i3)
+
+      DEALLOCATE(x%b)
+
       end program
 
 

@@ -2,12 +2,17 @@
 #include <stdio.h>
 #include "petscf90.h"
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortran_routine_ FORTRAN_ROUTINE
 #define c_routine_ C_ROUTINE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define fortran_routine_ fortran_routine
 #define c_routine_ c_routine
+#endif
+
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#define fortran_routine_ fortran_routine__
+#define c_routine_ c_routine__
 #endif
 
 typedef struct {
