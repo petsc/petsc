@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = socket ascii binary string ams draw
+DIRS     = socket ascii binary string ams draw mathematica silo
 LOCDIR   = src/sys/src/viewer/impls/
 
 include ${PETSC_DIR}/bmake/common/base

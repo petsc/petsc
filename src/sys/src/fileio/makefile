@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' -DPETSC_DIR='"${PETSC_DIR}"'
+CPPFLAGS  = -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"'
 SOURCEC	  = ffpath.c ftest.c ghome.c mpiuopen.c rpath.c \
             fpath.c fwd.c grpath.c mprint.c sysio.c fretrieve.c smatlab.c
 SOURCEF	  =

@@ -126,18 +126,6 @@ EXTERN int VecDuplicateVecs(Vec,int,Vec*[]);
 EXTERN int VecDestroyVecs(const Vec[],int); 
 EXTERN int VecGetPetscMap(Vec,PetscMap*);
 
-/*E
-    InsertMode - Whether entries are inserted or added into vectors or matrices
-     to continue to add values to it
-
-    Level: beginner
-
-.seealso: VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
-          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(),
-          MatSetValuesBlockedLocal(), MatSetValuesLocal()
-E*/
-typedef enum {NOT_SET_VALUES,INSERT_VALUES,ADD_VALUES,MAX_VALUES} InsertMode;
-
 EXTERN int VecStrideNorm(Vec,int,NormType,PetscReal*);
 EXTERN int VecStrideGather(Vec,int,Vec,InsertMode);
 EXTERN int VecStrideScatter(Vec,int,Vec,InsertMode);
@@ -170,15 +158,6 @@ EXTERN int        VecRegister(const char[],const char[],const char[],int(*)(Vec)
 #endif
 
 
-/*E
-    ScatterMode - Determines the direction of a scatter
-
-   Level: beginner
-
-.seealso: VecScatter, VecScatterBegin(), VecScatterEnd()
-E*/
-typedef enum {SCATTER_FORWARD=0,SCATTER_REVERSE=1,SCATTER_FORWARD_LOCAL=2,
-              SCATTER_REVERSE_LOCAL=3,SCATTER_LOCAL=2} ScatterMode;
 EXTERN int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 EXTERN int VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 EXTERN int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);

@@ -154,7 +154,7 @@ EXTERN int PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 
 .seealso: PetscDrawGetMouseButton(), PetscDrawSynchronizedGetMouseButton()
 E*/
-typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT } PetscDrawButton;
+typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT,BUTTON_LEFT_SHIFT,BUTTON_CENTER_SHIFT,BUTTON_RIGHT_SHIFT} PetscDrawButton;
 
 EXTERN int PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
 EXTERN int PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);

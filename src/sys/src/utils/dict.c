@@ -5,7 +5,7 @@ static char vcid[] = "$Id: dict.c,v 1.3 2000/01/10 03:27:01 knepley Exp $";
 #include "petscsys.h"
 
 /* Logging support */
-int DICT_COOKIE;
+int DICT_COOKIE = PETSC_LARGEST_COOKIE_PREDEFINED;
 
 typedef struct _p_DictNode {
   char               *key;
@@ -20,8 +20,8 @@ struct _p_Dict {
   DictNode *dictHead;
 };
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictCreate"
 /*@C
   ParameterDictCreate - Creates an empty parameter dictionary.
 
@@ -45,16 +45,16 @@ int ParameterDictCreate(MPI_Comm comm, ParameterDict *dict)
   PetscFunctionBegin;
   PetscValidPointer(dict);
   PetscHeaderCreate(d, _p_Dict, int, DICT_COOKIE, 0, "Dict", comm, ParameterDictDestroy, PETSC_NULL);
-  PLogObjectCreate(d);
-  PLogObjectMemory(d, sizeof(struct _p_Dict));
+  PetscLogObjectCreate(d);
+  PetscLogObjectMemory(d, sizeof(struct _p_Dict));
 
   d->dictHead = PETSC_NULL;
   *dict       = d;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictDestroy"
 /*@C
   ParameterDictDestroy - Destroys a parameter dictionary object.
 
@@ -84,13 +84,13 @@ int ParameterDictDestroy(ParameterDict dict)
     ierr = PetscFree(node->key);                                                                          CHKERRQ(ierr);
     ierr = PetscFree(node);                                                                               CHKERRQ(ierr);
   }
-  PLogObjectDestroy(dict);
+  PetscLogObjectDestroy(dict);
   PetscHeaderDestroy(dict);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictSetInteger"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictSetInteger"
 /*@C
   ParameterDictSetInteger - Adds an integer argument to the dictionary
 
@@ -113,7 +113,7 @@ int ParameterDictSetInteger(ParameterDict dict, const char key[], int data)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidPointer(key);
+  PetscValidCharPointer(key);
   ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
   node->intData  = data;
   node->realData = 0.0;
@@ -125,8 +125,8 @@ int ParameterDictSetInteger(ParameterDict dict, const char key[], int data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictSetDouble"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictSetDouble"
 /*@C
   ParameterDictSetDouble - Adds a real argument to the dictionary
 
@@ -149,7 +149,7 @@ int ParameterDictSetDouble(ParameterDict dict, const char key[], double data)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidPointer(key);
+  PetscValidCharPointer(key);
   ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
   node->intData  = 0;
   node->realData = data;
@@ -161,8 +161,8 @@ int ParameterDictSetDouble(ParameterDict dict, const char key[], double data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictSetObject"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictSetObject"
 /*@C
   ParameterDictSetObject - Adds an object argument to the dictionary
 
@@ -185,7 +185,7 @@ int ParameterDictSetObject(ParameterDict dict, const char key[], void *data)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidPointer(key);
+  PetscValidCharPointer(key);
   ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
   node->intData  = 0;
   node->realData = 0.0;
@@ -197,8 +197,8 @@ int ParameterDictSetObject(ParameterDict dict, const char key[], void *data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictRemove"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictRemove"
 /*@C
   ParameterDictRemove - Removes an argument from the dictionary
 
@@ -221,7 +221,7 @@ int ParameterDictRemove(ParameterDict dict, const char key[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidPointer(key);
+  PetscValidCharPointer(key);
   found = PETSC_FALSE;
   node  = dict->dictHead;
   prev  = node;
@@ -247,8 +247,8 @@ int ParameterDictRemove(ParameterDict dict, const char key[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictGetInteger"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictGetInteger"
 /*@C
   ParameterDictGetInteger - Gets an integer argument from the dictionary
 
@@ -274,8 +274,8 @@ int ParameterDictGetInteger(ParameterDict dict, const char key[], int *data)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidPointer(key);
-  PetscValidPointer(data);
+  PetscValidCharPointer(key);
+  PetscValidIntPointer(data);
   found = PETSC_FALSE;
   node  = dict->dictHead;
   /* Check the rest */
@@ -290,8 +290,8 @@ int ParameterDictGetInteger(ParameterDict dict, const char key[], int *data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictGetDouble"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictGetDouble"
 /*@C
   ParameterDictGetDouble - Gets a real argument from the dictionary
 
@@ -317,8 +317,8 @@ int ParameterDictGetDouble(ParameterDict dict, const char key[], double *data)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidPointer(key);
-  PetscValidPointer(data);
+  PetscValidCharPointer(key);
+  PetscValidDoublePointer(data);
   found = PETSC_FALSE;
   node  = dict->dictHead;
   /* Check the rest */
@@ -333,8 +333,8 @@ int ParameterDictGetDouble(ParameterDict dict, const char key[], double *data)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ParameterDictGetObject"
+#undef __FUNCT__  
+#define __FUNCT__ "ParameterDictGetObject"
 /*@C
   ParameterDictGetObject - Gets an object argument from the dictionary
 
@@ -360,7 +360,7 @@ int ParameterDictGetObject(ParameterDict dict, const char key[], void **data)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE);
-  PetscValidPointer(key);
+  PetscValidCharPointer(key);
   PetscValidPointer(data);
   found = PETSC_FALSE;
   node  = dict->dictHead;

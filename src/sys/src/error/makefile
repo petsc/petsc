@@ -2,7 +2,7 @@
 
 ALL: lib 
 
-CFLAGS    = -DPETSC_DIR='"${PETSC_DIR}"'
+CFLAGS    =
 FFLAGS    =
 SOURCEC	  = adebug.c err.c errtrace.c errabort.c errstop.c fp.c signal.c stack.c
 SOURCEF	  =

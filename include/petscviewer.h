@@ -40,6 +40,8 @@ typedef char* PetscViewerType;
 #define PETSC_VIEWER_STRING       "string"
 #define PETSC_VIEWER_DRAW         "draw"
 #define PETSC_VIEWER_AMS          "ams"
+#define PETSC_VIEWER_MATHEMATICA  "mathematica"
+#define PETSC_VIEWER_SILO         "silo"
 
 extern PetscFList PetscViewerList;
 EXTERN int PetscViewerRegisterAll(char *);
@@ -61,6 +63,8 @@ EXTERN int PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
 EXTERN int PetscViewerStringOpen(MPI_Comm,char[],int,PetscViewer*);
 EXTERN int PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
 EXTERN int PetscViewerAMSSetCommName(PetscViewer,const char[]);
+EXTERN int PetscViewerMathematicaOpen(MPI_Comm, int, const char[], const char[], PetscViewer *);
+EXTERN int PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 
 EXTERN int PetscViewerGetType(PetscViewer,PetscViewerType*);
 EXTERN int PetscViewerSetType(PetscViewer,PetscViewerType);
@@ -79,6 +83,7 @@ E*/
 typedef enum { 
   PETSC_VIEWER_ASCII_DEFAULT,
   PETSC_VIEWER_ASCII_MATLAB, 
+  PETSC_VIEWER_ASCII_MATHEMATICA,
   PETSC_VIEWER_ASCII_IMPL,
   PETSC_VIEWER_ASCII_INFO,
   PETSC_VIEWER_ASCII_INFO_LONG,
@@ -123,6 +128,21 @@ EXTERN int PetscViewerSocketSetConnection(PetscViewer,const char[],int);
 EXTERN int PetscViewerSetFilename(PetscViewer,const char[]);
 EXTERN int PetscViewerGetFilename(PetscViewer,char**);
 
+EXTERN int ViewerMathematicaGetName(PetscViewer, char **);
+EXTERN int ViewerMathematicaSetName(PetscViewer, const char []);
+EXTERN int ViewerMathematicaClearName(PetscViewer);
+EXTERN int ViewerMathematicaSkipPackets(PetscViewer, int);
+#ifdef PETSC_HAVE_MATHEMATICA
+EXTERN int ViewerMathematicaGetLink(PetscViewer, MLINK *);
+#endif
+
+EXTERN int ViewerSiloGetName(PetscViewer, char **);
+EXTERN int ViewerSiloSetName(PetscViewer, const char []);
+EXTERN int ViewerSiloClearName(PetscViewer);
+EXTERN int ViewerSiloGetMeshName(PetscViewer, char **);
+EXTERN int ViewerSiloSetMeshName(PetscViewer, const char []);
+EXTERN int ViewerSiloClearMeshName(PetscViewer);
+
 /*
      These are all the default viewers that do not have 
    to be explicitly opened
@@ -132,6 +152,7 @@ EXTERN PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm);
 EXTERN PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm);
+EXTERN PetscViewer VIEWER_MATHEMATICA_WORLD_PRIVATE;
 
 #define PETSC_VIEWER_STDOUT_SELF  PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)
 #define PETSC_VIEWER_STDOUT_WORLD PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)
@@ -143,6 +164,7 @@ EXTERN PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm);
 #define PETSC_VIEWER_SOCKET_SELF  PETSC_VIEWER_SOCKET_(PETSC_COMM_SELF)
 #define PETSC_VIEWER_BINARY_WORLD PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD)
 #define PETSC_VIEWER_BINARY_SELF  PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
+#define VIEWER_MATHEMATICA_WORLD (ViewerInitializeMathematicaWorld_Private(),VIEWER_MATHEMATICA_WORLD_PRIVATE) 
 
 /*
     PetscViewer based on the ALICE Memory Snooper

@@ -10,7 +10,7 @@
 #include "petscis.h"
 #include "petscmat.h"
 
-typedef enum {AO_BASIC=0,AO_ADVANCED=1} AOType;
+typedef enum {AO_BASIC=0, AO_ADVANCED, AO_MAPPING, AO_NEW} AOType;
 
 #define AO_COOKIE PETSC_COOKIE+20
 
@@ -25,16 +25,48 @@ typedef enum {AO_BASIC=0,AO_ADVANCED=1} AOType;
 S*/
 typedef struct _p_AO* AO;
 
+#define AO_SER_BASIC_BINARY   "basic_binary"
+#define AO_SER_MAPPING_BINARY "mapping_binary"
+typedef char *AOSerializeType;
+
 EXTERN int AOCreateBasic(MPI_Comm,int,int*,int*,AO*);
 EXTERN int AOCreateBasicIS(IS,IS,AO*);
+
+EXTERN int AOCreateMapping(MPI_Comm,int,int*,int*,AO*);
+EXTERN int AOCreateMappingIS(IS,IS,AO*);
+
+EXTERN int AOView(AO,PetscViewer);
+EXTERN int AODestroy(AO);
+
+EXTERN PetscFList AOSerializeList;
+EXTERN int AOSerializeRegisterAll(const char []);
+EXTERN int AOSerializeRegisterDestroy();
+EXTERN int AOSerializeRegisterAllCalled;
+EXTERN int AOSerialize(MPI_Comm, AO *, PetscViewer, PetscTruth);
+EXTERN int AOSetSerializeType(AO, AOSerializeType);
+
+EXTERN int AORegister_Private(const char [], const char [], const char [], int (*)(AO));
+EXTERN int AOSerializeRegister_Private(const char [], const char [], const char [], int (*)(MPI_Comm, AO *, PetscViewer, PetscTruth));
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define AORegister(a,b,c,d) AORegister_Private(a,b,c,0)
+#define AOSerializeRegister(a,b,c,d) AOSerializeRegister_Private(a,b,c,0)
+#else
+#define AORegister(a,b,c,d) AORegister_Private(a,b,c,d)
+#define AOSerializeRegister(a,b,c,d) AOSerializeRegister_Private(a,b,c,d)
+#endif
 
 EXTERN int AOPetscToApplication(AO,int,int*);
 EXTERN int AOApplicationToPetsc(AO,int,int*);
 EXTERN int AOPetscToApplicationIS(AO,IS);
 EXTERN int AOApplicationToPetscIS(AO,IS);
 
-EXTERN int AODestroy(AO);
-EXTERN int AOView(AO,PetscViewer);
+EXTERN int AOPetscToApplicationPermuteInt(AO, int, int *);
+EXTERN int AOApplicationToPetscPermuteInt(AO, int, int *);
+EXTERN int AOPetscToApplicationPermuteReal(AO, int, double *);
+EXTERN int AOApplicationToPetscPermuteReal(AO, int, double *);
+
+EXTERN int AOMappingHasApplicationIndex(AO, int, PetscTruth *);
+EXTERN int AOMappingHasPetscIndex(AO, int, PetscTruth *);
 
 /* ----------------------------------------------------*/
 

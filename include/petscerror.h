@@ -43,6 +43,7 @@
 #define PETSC_ERR_LIB             76   /* error in library called by PETSc */
 #define PETSC_ERR_PLIB            77   /* PETSc library generated inconsistent data */
 #define PETSC_ERR_MEMC            78   /* memory corruption */
+#define PETSC_ERR_MAX_ITER        82   /* Maximum iterations reached */
 
 #define PETSC_ERR_ARG_SIZ         60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN         61   /* two arguments not allowed to be the same */
@@ -65,6 +66,10 @@
 #define PETSC_ERR_MAT_LU_ZRPVT    71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT    81   /* detected a zero pivot during Cholesky factorization */
 
+#define PETSC_ERR_MESH_NULL_ELEM  84   /* Element had no interior */
+
+#define PETSC_ERR_DISC_SING_JAC   83   /* Singular element Jacobian */
+
 #if defined(PETSC_USE_DEBUG)
 #define SETERRQ(n,s)              {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);}
 #define SETERRQ1(n,s,a1)          {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1);}
@@ -73,9 +78,9 @@
 #define SETERRQ4(n,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4);}
 #define SETERRABORT(n,s)          {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);MPI_Abort(n);}
 
-#define CHKERRQ(n)        if (n) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);}
-#define CHKERRABORT(n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);MPI_Abort(n);}
-#define CHKERRCONTINUE(n) if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);}
+#define CHKERRQ(n)           if (n) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);}
+#define CHKERRABORT(comm, n) if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);MPI_Abort(comm, n);}
+#define CHKERRCONTINUE(n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);}
 
 #define CHKMEMQ {int _7_ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
 

@@ -63,11 +63,11 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
   /* Initialize communication */
   ierr = MPI_Comm_size(comm, &numProcs);                                                                  CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);                                                                      CHKERRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &numSendGhosts);                                             CHKPTRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &numRecvGhosts);                                             CHKPTRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &sumSendGhosts);                                             CHKPTRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &sumRecvGhosts);                                             CHKPTRQ(ierr);
-  ierr = PetscMalloc(numProcs * sizeof(int), &offsets);                                                   CHKPTRQ(ierr);
+  ierr = PetscMalloc(numProcs * sizeof(int), &numSendGhosts);                                             CHKERRQ(ierr);
+  ierr = PetscMalloc(numProcs * sizeof(int), &numRecvGhosts);                                             CHKERRQ(ierr);
+  ierr = PetscMalloc(numProcs * sizeof(int), &sumSendGhosts);                                             CHKERRQ(ierr);
+  ierr = PetscMalloc(numProcs * sizeof(int), &sumRecvGhosts);                                             CHKERRQ(ierr);
+  ierr = PetscMalloc(numProcs * sizeof(int), &offsets);                                                   CHKERRQ(ierr);
   ierr = PetscMemzero(numSendGhosts,  numProcs * sizeof(int));                                            CHKERRQ(ierr);
   ierr = PetscMemzero(numRecvGhosts,  numProcs * sizeof(int));                                            CHKERRQ(ierr);
   ierr = PetscMemzero(sumSendGhosts,  numProcs * sizeof(int));                                            CHKERRQ(ierr);
@@ -97,11 +97,11 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
 
   ierr = PetscDataTypeGetSize(dataType, &typeSize);                                                       CHKERRQ(ierr);
   if (totSendGhosts) {
-    ierr = PetscMalloc(totSendGhosts * sizeof(int), &sendIndices);                                        CHKPTRQ(ierr);
+    ierr = PetscMalloc(totSendGhosts * sizeof(int), &sendIndices);                                        CHKERRQ(ierr);
   }
   if (totRecvGhosts) {
-    ierr = PetscMalloc(totRecvGhosts * sizeof(int), &recvIndices);                                        CHKPTRQ(ierr);
-    ierr = PetscMalloc(totRecvGhosts * typeSize,    &tempVars);                                           CHKPTRQ(ierr);
+    ierr = PetscMalloc(totRecvGhosts * sizeof(int), &recvIndices);                                        CHKERRQ(ierr);
+    ierr = PetscMalloc(totRecvGhosts * typeSize,    &tempVars);                                           CHKERRQ(ierr);
   }
 
   /* Must order ghosts by processor */

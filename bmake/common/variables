@@ -63,7 +63,8 @@ PETSC_DM_LIB_BASIC       = -lpetscdm ${PETSC_MAT_LIB_BASIC}
 PETSC_SLES_LIB_BASIC     = -lpetscsles ${PETSC_DM_LIB_BASIC}
 PETSC_SNES_LIB_BASIC     = -lpetscsnes ${PETSC_SLES_LIB_BASIC}
 PETSC_TS_LIB_BASIC       = -lpetscts ${PETSC_SNES_LIB_BASIC}
-PETSC_LIB_BASIC          = ${PETSC_TS_LIB_BASIC}
+PETSC_MESH_LIB_BASIC     = -lpetscmesh ${PETSC_DM_LIB_BASIC}
+PETSC_LIB_BASIC          = ${PETSC_TS_LIB_BASIC} ${PETSC_MESH_LIB_BASIC}
 PETSC_FORTRAN_LIB_BASIC  = -lpetscfortran
 PETSC_CONTRIB_BASIC      = -lpetsccontrib
 
@@ -74,6 +75,7 @@ PETSC_DM_LIB      = -L${PETSC_LIB_DIR} ${PETSC_DM_LIB_BASIC} ${PETSC_EXTERNAL_LI
 PETSC_SLES_LIB    = -L${PETSC_LIB_DIR} ${PETSC_SLES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_SNES_LIB    = -L${PETSC_LIB_DIR} ${PETSC_SNES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_TS_LIB      = -L${PETSC_LIB_DIR} ${PETSC_TS_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
+PETSC_MESH_LIB    = -L${PETSC_LIB_DIR} ${PETSC_MESH_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_LIB         = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_FORTRAN_LIB = -L${PETSC_LIB_DIR} ${PETSC_FORTRAN_LIB_BASIC}
 PETSC_CONTRIB     = -L${PETSC_LIB_DIR} ${PETSC_CONTRIB_BASIC}
@@ -113,13 +115,13 @@ PCONF         = ${PETSC_HAVE_MPE}     ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVOD
                 ${PETSC_HAVE_AMS}     ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB_ENGINE} \
                 ${PETSC_HAVE_ADIC}    ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL} ${PETSC_HAVE_DSCPACK} \
                 ${PETSC_HAVE_RAMG}    ${PETSC_HAVE_MATLAB}     ${PETSC_HAVE_ESSL}  ${PETSC_HAVE_ADIFOR} \
-                ${PETSC_HAVE_SUPERLU} \
+                ${PETSC_HAVE_SUPERLU} ${PETSC_HAVE_TRIANGLE} \
                 ${PETSC_HAVE_ESI}
 EXTERNAL_LIB  = ${MPE_LIB}            ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
                 ${AMS_LIB}            ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
                 ${ADIC_LIB}                                    ${LUSOL_LIB}        ${DSCPACK_LIB} \
                 ${RAMG_LIB}                                                        ${ADIFOR_LIB} \
-                ${SUPERLU_LIB}
+                ${SUPERLU_LIB}        ${TRIANGLE_LIB}
 #
 # ----------------------------------------------------------------------------------------
 #
@@ -128,7 +130,7 @@ EXTERNAL_LIB  = ${MPE_LIB}            ${BLOCKSOLVE_LIB}        ${PVODE_LIB}     
 PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${EXTERNAL_LIB_BASIC}
 #
 # Some variables used to build shared libraries
-SHLIBS   = libpetsccontrib libpetsc libpetscmat libpetscsles libpetscsnes libpetscts libpetscvec libpetscdm
+SHLIBS   = libpetsccontrib libpetsc libpetscmat libpetscsles libpetscsnes libpetscts libpetscvec libpetscdm libpetscmesh
 SLSUFFIX = so
 #
 # The following include files set customized site, optimization, and version

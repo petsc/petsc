@@ -147,10 +147,11 @@ typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE } PetscScalarPrecision;
 /* PETSC_i is the imaginary number, i */
 extern  PetscScalar       PETSC_i;
 
-#define PetscMin(a,b)      (((a)<(b)) ? (a) : (b))
-#define PetscMax(a,b)      (((a)<(b)) ? (b) : (a))
-#define PetscAbsInt(a)     (((a)<0)   ? -(a) : (a))
-#define PetscAbsReal(a)  (((a)<0)   ? -(a) : (a))
+#define PetscMin(a,b)   (((a)<(b)) ?  (a) : (b))
+#define PetscMax(a,b)   (((a)<(b)) ?  (b) : (a))
+#define PetscAbsInt(a)  (((a)<0)   ? -(a) : (a))
+#define PetscAbsReal(a) (((a)<0)   ? -(a) : (a))
+#define PetscSqr(a)     ((a)*(a))
 
 /* ----------------------------------------------------------------------------*/
 /*

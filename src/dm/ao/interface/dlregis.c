@@ -7,9 +7,9 @@ static char vcid[] = "$Id: dlregis.c,v 1.1 2000/01/10 06:34:46 knepley Exp $";
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryRegister"
+#define __FUNC__ "PetscDLLibraryRegister"
 /*
-  DLLibraryRegister - This function is called when the dynamic library it is in is opened.
+  PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
   This one registers all the mesh generators and partitioners that are in
   the basic DM library.
@@ -17,7 +17,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
 */
-int DLLibraryRegister(char *path)
+int PetscDLLibraryRegister(char *path)
 {
   int ierr;
 
@@ -27,9 +27,11 @@ int DLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = PLogClassRegister(&PETSC_AO_COOKIE,     "Application Order");                                    CHKERRQ(ierr);
-  ierr = PLogClassRegister(&PETSC_AODATA_COOKIE, "Application Data");                                     CHKERRQ(ierr);
-  ierr = PLogClassRegister(&PETSC_DA_COOKIE,     "Distributed array");                                    CHKERRQ(ierr);
+#if PETSC_USE_NEW_LOGGING
+  ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");                                      CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");                                       CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");                                      CHKERRQ(ierr);
+#endif
   ierr = AOSerializeRegisterAll(path);                                                                    CHKERRQ(ierr);
   return(0);
 }
@@ -45,8 +47,8 @@ static char *version = PETSC_VERSION_NUMBER;
 /* --------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryInfo"
-int DLLibraryInfo(char *path,char *type,char **mess) 
+#define __FUNC__ "PetscDLLibraryInfo"
+int PetscDLLibraryInfo(char *path,char *type,char **mess) 
 { 
   PetscTruth iscontents, isauthors, isversion;
   int        ierr;

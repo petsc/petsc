@@ -319,9 +319,24 @@ static int PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *button,Pets
   while (XCheckTypedEvent(win->disp,ButtonPress,&report));
   XMaskEvent(win->disp,ButtonReleaseMask,&report);
   switch (report.xbutton.button) {
-    case Button1: *button = BUTTON_LEFT;   break;
-    case Button2: *button = BUTTON_CENTER; break;
-    case Button3: *button = BUTTON_RIGHT;  break;
+    case Button1:
+      if (report.xbutton.state & ShiftMask)
+        *button = BUTTON_LEFT_SHIFT;
+      else
+        *button = BUTTON_LEFT;
+      break;
+    case Button2:
+      if (report.xbutton.state & ShiftMask)
+        *button = BUTTON_CENTER_SHIFT;
+      else
+        *button = BUTTON_CENTER;
+      break;
+    case Button3:
+      if (report.xbutton.state & ShiftMask)
+        *button = BUTTON_RIGHT_SHIFT;
+      else
+        *button = BUTTON_RIGHT;
+      break;
   }
   XQueryPointer(win->disp,report.xmotion.window,&root,&child,&root_x,&root_y,&px,&py,&keys_button);
 

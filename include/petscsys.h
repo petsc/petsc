@@ -82,5 +82,38 @@ EXTERN int PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
 EXTERN int PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,PetscScalar***,MPI_Request**);
 
 EXTERN int PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
-#endif      
 
+/* ParameterDict objects encapsulate arguments to generic functions, like mechanisms over interfaces */
+EXTERN int ParameterDictCreate(MPI_Comm, ParameterDict *);
+EXTERN int ParameterDictDestroy(ParameterDict);
+EXTERN int ParameterDictRemove(ParameterDict, const char []);
+EXTERN int ParameterDictSetInteger(ParameterDict, const char [], int);
+EXTERN int ParameterDictSetDouble(ParameterDict, const char [], double);
+EXTERN int ParameterDictSetObject(ParameterDict, const char [], void *);
+EXTERN int ParameterDictGetInteger(ParameterDict, const char [], int *);
+EXTERN int ParameterDictGetDouble(ParameterDict, const char [], double *);
+EXTERN int ParameterDictGetObject(ParameterDict, const char [], void **);
+
+/* Parallel communication routines */
+/*E
+  InsertMode - Whether entries are inserted or added into vectors or matrices
+
+  Level: beginner
+
+.seealso: VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
+          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(),
+          MatSetValuesBlockedLocal(), MatSetValuesLocal()
+E*/
+typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
+/*E
+  ScatterMode - Determines the direction of a scatter
+
+  Level: beginner
+
+.seealso: VecScatter, VecScatterBegin(), VecScatterEnd()
+E*/
+typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCATTER_REVERSE_LOCAL=3, SCATTER_LOCAL=2} ScatterMode;
+
+EXTERN int PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
+
+#endif      

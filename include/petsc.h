@@ -273,6 +273,12 @@ EXTERN int  PetscGetArgs(int*,char ***);
 EXTERN int  PetscEnd();
 
 /*
+   ParameterDict is an abstraction for arguments to interface mechanisms
+*/
+extern int DICT_COOKIE;
+typedef struct _p_Dict *ParameterDict;
+
+/*
     Functions that can act on any PETSc object.
 */
 EXTERN int PetscObjectDestroy(PetscObject);
@@ -303,10 +309,12 @@ EXTERN int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 EXTERN int PetscObjectPublish(PetscObject);
 EXTERN int PetscObjectChangeTypeName(PetscObject,char *);
+EXTERN int PetscObjectChangeSerializeName(PetscObject,char *);
 EXTERN int PetscObjectRegisterDestroy(PetscObject);
 EXTERN int PetscObjectRegisterDestroyAll(void);
 EXTERN int PetscObjectName(PetscObject);
 EXTERN int PetscTypeCompare(PetscObject,char*,PetscTruth*);
+EXTERN int PetscSerializeCompare(PetscObject,char*,PetscTruth*);
 
 /*
     Defines PETSc error handling.
