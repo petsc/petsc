@@ -2,7 +2,8 @@
 We are pleased to announce a beta release of PETSc 2.0 for MPI.  The
 Portable, Extensible Toolkit for Scientific Computation (PETSc) has
 been completely rewritten for MPI and incorporates many extensions,
-revisions, and additions to previous versions.
+revisions, and additions to previous versions.  PETSc may be used from
+Fortran, C and C++.
 
 PETSc provides many tools for the parallel (and uniprocessor),
 numerical solution of PDEs that require solving large-scale, sparse
@@ -22,8 +23,6 @@ We are particularly interested in feedback regarding the PETSc
 programming model, functionality, and ease of use of the software.
 This release has not been fully optimized, so users should expect to
 see improved performance in later versions.
-
-PETSc may be used from Fortran, C and C++.
 
 Information regarding PETSc as well as the complete software distribution 
 can be obtained from http://www.mcs.anl.gov/petsc/petsc.html or 
