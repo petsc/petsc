@@ -26,7 +26,7 @@ Additional Capabilities that PETSc Needs:
   * add -mpidump option that lists all unfinished MPI operations at end, 
          including PetscMPIDump()
 
-  - Add diagnotics for memory allocation using PLogInfo (like already done 
+  * Add diagnotics for memory allocation using PLogInfo (like already done 
     for AIJ format) for all matrix formats if it's not already in place.
 
   - Fix PCView() for ASM, block Jacobi, block GS so that parallel case
