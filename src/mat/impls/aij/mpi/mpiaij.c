@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.72 1995/09/06 03:05:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.73 1995/09/06 19:05:34 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -528,10 +528,10 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
-     (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER)) {
+     (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
    /* do nothing for now */
   }
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
+  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILE_VIEWER) {
     FILE *fd;
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
@@ -543,7 +543,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
     fflush(fd);
     MPIU_Seq_end(mat->comm,1);
   }
-  else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == FILES_VIEWER) || 
+  else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILES_VIEWER) || 
             vobj->cookie == DRAW_COOKIE) {
     int numtids = aij->numtids, mytid = aij->mytid;
     if (numtids == 1) {

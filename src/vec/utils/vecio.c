@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.8 1995/09/06 03:04:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.9 1995/09/06 23:44:04 bsmith Exp bsmith $";
 #endif
 
 /* 
    This file contains simple binary input routines for vectors.  The
    analogous output routines are within each vector implementation's 
-   VecView (with viewer types BIN_FILE_VIEWER and BIN_FILES_VIEWER).
+   VecView (with viewer types BINARY_FILE_VIEWER)
  */
 
 #include "petsc.h"
@@ -46,7 +46,7 @@ int VecLoad(Viewer bview,IS ind,Vec *newvec)
   MPI_Status  status,*statuses;
 
   PETSCVALIDHEADERSPECIFIC(obj,VIEWER_COOKIE);
-  if (obj->type != BIN_FILE_VIEWER)
+  if (obj->type != BINARY_FILE_VIEWER)
    SETERRQ(1,"VecLoad:Invalid viewer;open viewer with ViewerFileOpenBinary()");
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
   

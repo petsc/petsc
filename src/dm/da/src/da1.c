@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.15 1995/09/06 03:06:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.16 1995/09/06 14:05:41 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -30,7 +30,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
   if (vobj->cookie == VIEWER_COOKIE) {
     FILE *fd;
     ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
-    if (vobj->type == FILE_VIEWER) {
+    if (vobj->type == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(da->comm,1);
       fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",mytid,da->M,
                  da->m,da->w,da->s);
@@ -38,7 +38,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
       fflush(fd);
       MPIU_Seq_end(da->comm,1);
     }
-    else if (vobj->type == FILES_VIEWER) {
+    else if (vobj->type == ASCII_FILES_VIEWER) {
 
       if (!mytid) {
       }

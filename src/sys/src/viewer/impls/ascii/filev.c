@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.21 1995/09/06 03:06:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.22 1995/09/06 13:43:11 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -29,7 +29,7 @@ static int ViewerDestroy_File(PetscObject obj)
 {
   Viewer v = (Viewer) obj;
   int    mytid = 0;
-  if (v->type == FILES_VIEWER) {MPI_Comm_rank(v->comm,&mytid);} 
+  if (v->type == ASCII_FILES_VIEWER) {MPI_Comm_rank(v->comm,&mytid);} 
   if (!mytid && v->fd != stderr && v->fd != stdout) fclose(v->fd);
   PLogObjectDestroy(obj);
   PETSCHEADERDESTROY(obj);
@@ -97,9 +97,9 @@ int ViewerFileOpen(MPI_Comm comm,char *name,Viewer *lab)
 {
   Viewer v;
   if (comm == MPI_COMM_SELF) {
-    PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,FILE_VIEWER,comm);
+    PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm);
   } else {
-    PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,FILES_VIEWER,comm);
+    PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,ASCII_FILES_VIEWER,comm);
   }
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_File;
@@ -145,7 +145,7 @@ $    FILE_FORMAT_INFO - basic information about object
 int ViewerFileSetFormat(Viewer v,int format,char *name)
 {
   PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
-  if (v->type == FILES_VIEWER || v->type == FILE_VIEWER) {
+  if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
     v->format = format;
     v->outputname = name;
   }

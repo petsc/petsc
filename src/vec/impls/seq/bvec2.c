@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.45 1995/09/06 03:04:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.46 1995/09/06 23:44:08 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -126,13 +126,13 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
   }
 
   if (vobj->cookie == VIEWER_COOKIE) {
-    if ((vobj->type == FILE_VIEWER) || (vobj->type == FILES_VIEWER)){
+    if ((vobj->type == ASCII_FILE_VIEWER) || (vobj->type == ASCII_FILES_VIEWER)){
       return VecView_Seq_File(xin,ptr);
     }
     else if (vobj->type == MATLAB_VIEWER) {
       return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array);
     } 
-    else if (vobj->type==BIN_FILE_VIEWER) {
+    else if (vobj->type==BINARY_FILE_VIEWER) {
       return VecView_Seq_Binary(xin,ptr);
     }
   }

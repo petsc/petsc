@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.27 1995/09/04 17:25:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.28 1995/09/06 03:05:45 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -428,14 +428,14 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
-     (vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER)) {
+     (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
       Mat_BDiag *dmat = (Mat_BDiag *) mbd->A->data;
       FILE *fd;
       ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
       MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
                    dmat->nb,mbd->gnd);
   }
-  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
+  else if (vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILE_VIEWER) {
     FILE *fd;
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
@@ -445,7 +445,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
     fflush(fd);
     MPIU_Seq_end(mat->comm,1);
   }
-  else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == FILES_VIEWER) || 
+  else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == ASCII_FILES_VIEWER) || 
             vobj->cookie == DRAW_COOKIE) {
     int numtids = mbd->numtids, mytid = mbd->mytid; 
     if (numtids == 1) { 

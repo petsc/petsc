@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.57 1995/09/04 17:23:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.58 1995/09/06 03:04:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -38,8 +38,8 @@ int KSPView(KSP ksp,Viewer viewer)
   FILE        *fd;
   char        *method;
   int         ierr;
-  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
-                                        vobj->type == FILES_VIEWER)) {
+  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == ASCII_FILE_VIEWER ||
+                                        vobj->type == ASCII_FILES_VIEWER)) {
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     MPIU_fprintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetMethodName((KSPMethod)ksp->type,&method);

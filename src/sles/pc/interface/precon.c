@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.47 1995/09/04 17:24:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.48 1995/09/06 03:04:57 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -463,7 +463,7 @@ int PCView(PC pc,Viewer viewer)
   char *cstring;
   int  fmt, ierr, mat_exists;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if ((vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER) &&
+  if ((vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) &&
      vobj->cookie == VIEWER_COOKIE) {
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerFileGetFormat_Private(viewer,&fmt); CHKERRQ(ierr);

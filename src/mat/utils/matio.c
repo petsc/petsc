@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.4 1995/09/06 03:06:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.5 1995/09/06 13:35:15 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -13,6 +13,9 @@ static char vcid[] = "$Id: matio.c,v 1.4 1995/09/06 03:06:00 bsmith Exp curfman 
 #include "pinclude/pviewer.h"
 #include "matimpl.h"
 #include "row.h"
+
+extern int MatLoad_MPIRowbs(Viewer,MatType,IS,IS,Mat *);
+
 
 /* -------------------------------------------------------------------- */
 /* This version reads from MATROW and writes to MATAIJ/MATROW 
@@ -50,19 +53,24 @@ static char vcid[] = "$Id: matio.c,v 1.4 1995/09/06 03:06:00 bsmith Exp curfman 
 
 .seealso: MatView(), VecLoadBinary() 
 */  
-int MatLoad(MPI_Comm comm,Viewer bview,MatType outtype,IS ind,IS ind2,Mat *newmat)
+int MatLoad(Viewer bview,MatType outtype,IS ind,IS ind2,Mat *newmat)
 {
-  Mat mat;
-  int rows, i, nz, nnztot, *rlen, ierr, lsize, gsize, *rptr, j, dstore;
-  int *cwork, rstart, rend, readst, *pind, *pind2, iinput, iglobal, fd;
-  Scalar *awork;
-  MatType type;
-  long startloc, mark;
+  Mat         mat;
+  int         rows, i, nz, nnztot, *rlen, ierr, lsize, gsize, *rptr, j, dstore;
+  int         *cwork, rstart, rend, readst, *pind, *pind2, iinput, iglobal, fd;
+  Scalar      *awork;
+  long        startloc, mark;
   PetscObject vobj = (PetscObject) bview;
+  MatType     type;
+  MPI_Comm    comm = vobj->comm;
 
   PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
-  if (vobj->type != BIN_FILE_VIEWER)
+  if (vobj->type != BINARY_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary().");
+
+  if (outtype == MATMPIROW_BS) {
+    return MatLoad_MPIRowbs(bview,type,ind,ind2,newmat);
+  }
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
 
   /* Get the location of the beginning of the matrix data, in case the

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.5 1995/09/05 19:24:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.6 1995/09/06 03:06:21 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -36,9 +36,9 @@ static int ViewerDestroy_BinaryFile(PetscObject obj)
 .  comm - MPI communicator
 .  name - name of file 
 .  type - type of file
-$    BIN_CREAT - create new file for binary output
-$    BIN_RDONLY - open existing file for binary input
-$    BIN_WRONLY - open existing file for binary output
+$    BINARY_CREATE - create new file for binary output
+$    BINARY_RDONLY - open existing file for binary input
+$    BINARY_WRONLY - open existing file for binary output
 
    Output Parameter:
 .  binv - viewer for binary input/output to use with the specified file
@@ -55,23 +55,23 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,
 {  
   int    mytid;
   Viewer v;
-  PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BIN_FILE_VIEWER,comm);
+  PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm);
   PLogObjectCreate(v);
   v->destroy = ViewerDestroy_BinaryFile;
   *binv = v;
 
   MPI_Comm_rank(comm,&mytid);
   if (!mytid) {
-    if (type == BIN_CREAT) {
+    if (type == BINARY_CREATE) {
       if ((v->fdes = creat(name,0666)) == -1)
         SETERRQ(1,"ViewerFileOpenBinary: Cannot create file for writing");
     } 
-    else if (type == BIN_RDONLY) {
+    else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
         SETERRQ(1,"ViewerFileOpenBinary: Cannot open file for reading");
       }
     }
-    else if (type == BIN_WRONLY) {
+    else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY,0)) == -1) {
         SETERRQ(1,"ViewerFileOpenBinary: Cannot open file for writing");
       }

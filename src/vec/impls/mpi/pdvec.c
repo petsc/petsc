@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.23 1995/09/05 18:17:53 curfman Exp bsmith $ */
+/* $Id: pdvec.c,v 1.24 1995/09/06 03:04:21 bsmith Exp bsmith $ */
 
 #include "pinclude/pviewer.h"
 #include "sysio.h"
@@ -261,16 +261,16 @@ static int VecView_MPI(PetscObject obj,Viewer ptr)
   }
 
   if (vobj->cookie == VIEWER_COOKIE) {
-    if (vobj->type == FILE_VIEWER){
+    if (vobj->type == ASCII_FILE_VIEWER){
       return VecView_MPI_File(xin,ptr);
     }
-    else if (vobj->type == FILES_VIEWER){
+    else if (vobj->type == ASCII_FILES_VIEWER){
       return VecView_MPI_Files(xin,ptr);
     }
     else if (vobj->type == MATLAB_VIEWER) {
       return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array);
     } 
-    else if (vobj->type==BIN_FILE_VIEWER) {
+    else if (vobj->type==BINARY_FILE_VIEWER) {
       return VecView_MPI_Binary(xin,ptr);
     }
   }
