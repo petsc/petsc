@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.52 1999/03/01 19:25:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.53 1999/03/01 19:30:01 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -60,8 +60,6 @@ int XiSetVisual(Draw_X* XiWin,Colormap colormap)
        As a test due to problems on SGI reported in petsc-maint 1534 change
     to always use default visual
   */
-  XiWin->vis    = DefaultVisual( XiWin->disp, XiWin->screen );
-  XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
 
 
   /* this is slow */
@@ -240,6 +238,8 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
   PetscFunctionBegin;
   ierr = XiOpenDisplay( w, host ); CHKERRQ(ierr);
 
+  w->vis    = DefaultVisual( w->disp, w->screen );
+  w->depth  = DefaultDepth(w->disp,w->screen);
 
   ierr = XiSetVisual( w, (Colormap)0); CHKERRQ(ierr);
 
@@ -275,6 +275,8 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
   w->win = win;
   XGetWindowAttributes(w->disp, w->win, &attributes);
 
+  w->vis    = DefaultVisual( w->disp, w->screen );
+  w->depth  = DefaultDepth(w->disp,w->screen);
   ierr = XiSetVisual( w,attributes.colormap); CHKERRQ(ierr);
 
   XGetGeometry( w->disp, w->win, &root, &d, &d, 
