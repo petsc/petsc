@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.18 1995/04/16 03:47:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.19 1995/04/25 16:23:07 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"
@@ -203,28 +203,38 @@ int SLESGetPC(SLES sles,PC *pc)
 
    Input Parameters:
 .  sles - the sles context
-.  mat - the matrix to use
-.  pmat - matrix to be used in constructing the preconditioner, usually
-          the same as mat.  If pmat is 0, the old preconditioner is reused.  
-.  flag - use 0 or MAT_SAME_NONZERO_PATTERN
+.  Amat - the matrix associated with the linear system
+.  Pmat - matrix to be used in constructing preconditioner, usually the same
+          as Amat.  If Pmat is 0 for repeated linear solves, the old 
+          preconditioner is used.
+.  flag - flag indicating information about matrix structure.  When solving
+   just one linear system, this flag is NOT used and can thus be set to 0.
 
-   Notes:
-   The flag can be used to eliminate unnecessary repeated work in the 
-   repeated solution of linear systems of the same size using the same 
-   preconditioner.  The user can set flag = MAT_SAME_NONZERO_PATTERN to 
-   indicate that the preconditioning matrix has the same nonzero pattern 
-   during successive linear solves.
+   Notes: 
+   The flag can be used to eliminate unnecessary work in the repeated
+   solution of linear systems of the same size.  The available options are
+$    MAT_SAME_NONZERO_PATTERN - 
+$       Amat has the same nonzero structure 
+$       during successive linear solves
+$    PMAT_SAME_NONZERO_PATTERN -
+$       Pmat has the same nonzero structure 
+$       during successive linear solves
+$    ALLMAT_SAME_NONZERO_PATTERN -
+$       Both Amat and Pmat have the same nonzero
+$       structure during successive linear solves
+$    ALLMAT_DIFFERENT_NONZERO_PATTERN -
+$       Neither Amat nor Pmat has same nonzero structure
 
 .keywords: SLES, set, operators, matrix, preconditioner, linear system
 
 .seealso: SLESSolve()
 @*/
-int SLESSetOperators(SLES sles,Mat mat,Mat pmat,int flag)
+int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 {
   VALIDHEADER(sles,SLES_COOKIE);
-  VALIDHEADER(mat,MAT_COOKIE);
-  if (pmat) {VALIDHEADER(pmat,MAT_COOKIE);}
-  PCSetOperators(sles->pc,mat,pmat,flag);
+  VALIDHEADER(Amat,MAT_COOKIE);
+  if (Pmat) {VALIDHEADER(Pmat,MAT_COOKIE);}
+  PCSetOperators(sles->pc,Amat,Pmat,flag);
   sles->setupcalled = 0;  /* so that next solve call will call setup */
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.12 1995/05/05 03:49:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.13 1995/05/12 04:16:14 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -110,7 +110,7 @@ static int PCSetUp_ILU(PC pc)
     ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERR(ierr);
     PLogObjectParent(pc,dir->fact);
   }
-  else if (!(pc->flag & MAT_SAME_NONZERO_PATTERN)) { 
+  else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
     ierr = MatDestroy(dir->fact); CHKERR(ierr);
     ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERR(ierr);
   }
