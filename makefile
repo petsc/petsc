@@ -397,7 +397,7 @@ alladic:
 	-@cd src/adic/blas ; \
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
 	-@cd src/adic/lapack ; \
-            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree
 
 alladiclib:
 	-@echo "Beginning to compile ADIC libraries in all directories"
@@ -417,7 +417,7 @@ alladiclib:
 	-@cd src/adic/blas ; \
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adiclib
 	-@cd src/adic/lapack ; \
-            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adiclib
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adiclib  tree
 	-@cd src/adic/src ; \
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib
 
