@@ -33,6 +33,7 @@ typedef struct {
   int                     MatInputMode;
   SOLVEstruct_t           SOLVEstruct; 
   MatStructure            flg;
+  MPI_Comm                comm_superlu;
 #if defined(PETSC_USE_COMPLEX)
   doublecomplex           *val;
 #else
@@ -72,6 +73,7 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
   /* Release the SuperLU_DIST process grid. */
   superlu_gridexit(&lu->grid);
 
+  ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = PetscFree(lu);CHKERRQ(ierr); 
   
   if (size == 1){
@@ -397,6 +399,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
   /* Set the input options */
   set_default_options(&options);
   lu->MatInputMode = GLOBAL;
+  ierr = MPI_Comm_dup(A->comm,&(lu->comm_superlu));CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   lu->nprow = size/2;               /* Default process rows.      */
@@ -478,7 +481,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
   PetscOptionsEnd();
 
   /* Initialize the SuperLU process grid. */
-  superlu_gridinit(A->comm, lu->nprow, lu->npcol, &lu->grid);
+  superlu_gridinit(lu->comm_superlu, lu->nprow, lu->npcol, &lu->grid);
 
   /* Initialize ScalePermstruct and LUstruct. */
   ScalePermstructInit(M, N, &lu->ScalePermstruct);
