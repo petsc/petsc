@@ -530,7 +530,6 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   SLES        sles;
   PetscViewer ascii;
   MPI_Comm    comm;
-  MatType     type;
 
   PetscFunctionBegin;
   if (!dmmg)     SETERRQ(1,"Passing null as DMMG");
@@ -591,11 +590,10 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     if (!dmmg[i]->B) {
       ierr = MPI_Comm_size(dmmg[i]->comm,&size);CHKERRQ(ierr);
       if (size==1) {
-        type = MATSEQAIJ;
+        ierr = DMGetMatrix(dmmg[i]->dm,MATSEQAIJ,&dmmg[i]->B);CHKERRQ(ierr);
       } else {
-        type = MATMPIAIJ;
+        ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
       }
-      ierr = DMGetMatrix(dmmg[i]->dm,type,&dmmg[i]->B);CHKERRQ(ierr);
     } 
     if (!dmmg[i]->J) {
       dmmg[i]->J = dmmg[i]->B;
