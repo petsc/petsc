@@ -6,7 +6,7 @@
 #
 # Makes the shadow directorys.
 #
-15 0 * * * /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
-15 0 * * * /home/bsmith/petsc/maint/buildlinks /ccsthome/bsmith/petsc > /dev/null
-30 4 * * * /usr/ucb/rsh terra /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
-30 4 * * * /usr/ucb/rsh chiba /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
+15 0 * * * rsh terra /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
+15 0 * * * rsh terra /home/bsmith/petsc/maint/buildlinks /ccsthome/bsmith/petsc > /dev/null
+30 4 * * * rsh terra /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
+30 4 * * * rsh chiba /home/bsmith/petsc/maint/buildlinks /sandbox/bsmith/petsc > /dev/null
