@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.90 1995/10/01 21:52:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.91 1995/10/05 01:31:33 curfman Exp bsmith $";
 #endif
 
 /*
@@ -387,6 +387,32 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
   PLogEventEnd(MAT_LUFactor,mat,row,col,0); 
   return 0;
 }
+/*@  
+   MatILUFactor - Performs in-place ILU factorization of matrix.
+
+   Input Parameters:
+.  mat - the matrix
+.  row - row permutation
+.  col - column permutation
+.  f - expected fill as ratio of original fill.
+.  level - number of levels of fill.
+
+   Note: probably really only in-place when level is zero.
+.keywords: matrix, factor, ILU, in-place
+
+.seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
+@*/
+int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (!mat->ops.ilufactor) SETERRQ(PETSC_ERR_SUP,"MatILUFactor");
+  PLogEventBegin(MAT_ILUFactor,mat,row,col,0); 
+  ierr = (*mat->ops.ilufactor)(mat,row,col,f,level); CHKERRQ(ierr);
+  PLogEventEnd(MAT_ILUFactor,mat,row,col,0); 
+  return 0;
+}
+
 /*@  
    MatLUFactorSymbolic - Performs symbolic LU factorization of matrix.
    Call this routine before calling MatLUFactorNumeric().
@@ -1271,9 +1297,13 @@ int MatGetArray(Mat mat,Scalar **v)
 @*/
 int MatGetSubMatrix(Mat mat,IS irow,IS icol,Mat *submat)
 {
+  int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->ops.getsubmatrix) SETERRQ(PETSC_ERR_SUP,"MatGetSubMatrix");
-  return (*mat->ops.getsubmatrix)(mat,irow,icol,submat);
+  PLogEventBegin(MAT_GetSubMatrix,mat,irow,icol,0);
+  ierr = (*mat->ops.getsubmatrix)(mat,irow,icol,submat); CHKERRQ(ierr);
+  PLogEventEnd(MAT_GetSubMatrix,mat,irow,icol,0);
+  return 0;
 }
 
 /*@
