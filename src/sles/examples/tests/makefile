@@ -9,21 +9,21 @@ SOURCEH	      = pargrid.h
 OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscsles
-EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex8
+EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex8 ex19
 RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
 		runex2 runex2_2 runex2_3 runex2_4 runex2_5\
 		runex3 runex3_2 runex3_3\
 		runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
-		runex8 runex8_2
+		runex8 runex8_2 runex19
 EXAMPLES_2    = ex10 ex11 ex6 ex8 ex13 ex14 ex15 ex18
 RUNEXAMPLES_2 = runex11 runex6 runex6_2 runex6_3 runex6_4 runex6_5 runex6_6 \
 		runex13 runex8_3 runex8_4
 EXAMPLES_3    = ex7 ex12 ex16
 RUNEXAMPLES_3 = runex7 runex16
-EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex8 ex11 
+EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex8 ex11 ex19
 EXAMPLES_5    = ex17
 RUNEXAMPLES_4 = runex1 runex1_3 runex1_5 runex2 runex2_3 runex2_5 \
-		runex3 runex4 
+		runex3 runex4 runex19
 RUNEXAMPLES_5 = runex17
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
 		ex11.c ex13.c ex14.c ex15.c ex17.c ex18.c ex19.c
@@ -252,6 +252,7 @@ runex6_5:
 	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
 	   else echo "Possible problem with ex6_5, diffs above"; fi; \
 	   $(RM) -f ex6_4.tmp
+
 # Note: We test these BlockSolve95 examples differently from the usual
 # because the coloring heuristic is machine-dependent; convergence rates
 # may differ slightly on various architectures.
@@ -317,5 +318,12 @@ runex17:
 	   if (diff output/ex17_1.out ex17_1.tmp) then true; \
 	   else echo "Possible problem with ex17_1, diffs above"; fi; \
 	   $(RM) -f ex17_1.tmp
+
+runex19:
+	-@$(MPIRUN) ex19 -t 2 -ksp_smonitor -ksp_type gmres \
+	   -s2_ksp_type bcgs -s2_ksp_smonitor > ex19_1.tmp 2>&1; \
+	   if (diff output/ex19_1.out ex19_1.tmp) then true; \
+	   else echo "Possible problem with ex19_1, diffs above"; fi; \
+	   $(RM) -f ex19_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
