@@ -685,7 +685,8 @@ int PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
 .  -pc_lu_in_place - Activates in-place factorization
 .  -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 .  -pc_lu_pivoting - dttol
--  -pc_lu_pivot_in_blocks <true,false>
+-  -pc_lu_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
+                                         stability of factorization.
 
    Notes: Not all options work for all matrix formats
           Run with -help to see additional options for particular matrix formats or factorization
