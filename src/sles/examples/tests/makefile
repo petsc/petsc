@@ -26,7 +26,7 @@ RUNEXAMPLES_4 = runex1 runex1_3 runex1_5 runex2 runex2_3 runex2_5 \
 		runex3 runex4 
 RUNEXAMPLES_5 = runex17
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
-		ex11.c ex13.c ex14.c ex15.c ex17.c ex18.c
+		ex11.c ex13.c ex14.c ex15.c ex17.c ex18.c ex19.c
 EXAMPLESF     = ex7.F ex12.F ex16.F
 
 ex1: ex1.o  chkopts
@@ -100,6 +100,10 @@ ex17: ex17.o  chkopts
 ex18: ex18.o  chkopts
 	-$(CLINKER) -o ex18 ex18.o  $(PETSC_LIB)
 	$(RM) ex18.o
+
+ex19: ex19.o  chkopts
+	-$(CLINKER) -o ex19 ex19.o  $(PETSC_LIB)
+	$(RM) ex19.o
 
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
