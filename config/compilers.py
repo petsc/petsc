@@ -303,8 +303,9 @@ class Configure(config.base.Configure):
         m = re.match(r'^-[lLR].*$', arg)
         if m:
           # HP Fortran prints these libraries in a very strange way
-          if arg == '-l:libU77.a': arg = '-lU77'
-          if arg == '-l:libF90.a': arg = '-lF90'            
+          if arg == '-l:libU77.a':  arg = '-lU77'
+          if arg == '-l:libF90.a':  arg = '-lF90'
+          if arg == '-l:libIO77.a': arg = '-lIO77'                      
           if not arg in lflags:
             
             #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
