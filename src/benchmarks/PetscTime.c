@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: MPI_Wtime.c,v 1.3 1996/03/06 17:40:32 balay Exp $";
+static char vcid[] = "$Id: PetscTime.c,v 1.4 1996/03/06 17:42:38 balay Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -20,7 +20,7 @@ int main( int argc, char **argv)
    PetscTime(y);
    PetscTime(y);
    PetscTime(y);
-   PetscTime(y);
+   PetscTime(y); 
    PetscTime(y);
    PetscTime(y);
    PetscTime(y);
