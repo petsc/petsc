@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.103 1996/09/28 16:13:15 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.104 1996/09/28 16:17:51 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -522,8 +522,9 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 .  Pmat - matrix to be used in constructing preconditioner, usually the same
           as Amat. 
 .  flag - flag indicating information about the preconditioner matrix structure
-   during successive linear solves. When solving just one linear system, this
-   flag is ignored.
+   during successive linear solves.  This flag is ignored the first time a
+   linear system is solved, and thus is irrelevant when solving just one linear
+   system.
 
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
@@ -532,7 +533,7 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 $    SAME_PRECONDITIONER -
 $      Pmat is identical during successive linear solves.
 $      This option is intended for folks who are using
-$      different Amat and Pmat matrices and want to reuse the
+$      different Amat and Pmat matrices and wish to reuse the
 $      same preconditioner matrix.  For example, this option
 $      saves work by not recomputing incomplete factorization
 $      for ILU/ICC preconditioners.

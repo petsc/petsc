@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.66 1996/08/08 14:44:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.67 1996/08/18 20:04:03 curfman Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -362,8 +362,9 @@ int SLESGetPC(SLES sles,PC *pc)
 .  Pmat - matrix to be used in constructing preconditioner, usually the same
           as Amat. 
 .  flag - flag indicating information about the preconditioner matrix structure
-   during successive linear solves. When solving just one linear system, this
-   flag is ignored.
+   during successive linear solves.  This flag is ignored the first time a
+   linear system is solved, and thus is irrelevant when solving just one linear
+   system.
 
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
