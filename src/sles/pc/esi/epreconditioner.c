@@ -130,7 +130,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operato
         For now require Operator to be a PETSc Mat
   */
   Mat A;
-  int ierr = op.getInterface("Mat",(void*&)A);
+  int ierr = op.getInterface("Mat",reinterpret_cast<void*&>(A));
   ierr = PCSetOperators(this->pc,A,A,DIFFERENT_NONZERO_PATTERN);
   return 0;
 }
