@@ -13,14 +13,14 @@ LOCDIR        = src/snes/examples/
 EXAMPLES_1    = ex3 ex4 ex5 ex6
 RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6 \
 		runex6_2 runex6_3 runex6_4 runex6_5 runex6_6
-EXAMPLES_2    = ex1 ex2 ex7 ex8 ex9
+EXAMPLES_2    = ex1 ex2 ex7 ex8 ex9 ex13
 RUNEXAMPLES_2 = runex1 runex2 runex7 runex8 runex8_2 runex9 
-EXAMPLES_3    = ex12
+EXAMPLES_3    = ex12 
 RUNEXAMPLES_3 = runex12
 EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9
 RUNEXAMPLES_4 = runex1 runex2 runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 \
 		runex7 
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex13.c
 EXAMPLESF     = ex12.F ex10.f
 DIRS	      = umin
 #
@@ -74,6 +74,9 @@ ex11: ex11.o  chkopts
 ex12: ex12.o  chkopts
 	-$(FLINKER) -o ex12 ex12.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex12.o
+ex13: ex13.o  chkopts
+	-$(CLINKER) -o ex13 ex13.o $(PETSC_LIB)
+	$(RM) ex13.o
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
