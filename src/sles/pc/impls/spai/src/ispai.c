@@ -120,14 +120,14 @@ static int PCSetUp_SPAI(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_SPAI"
-static int PCApply_SPAI(PC pc,Vec x,Vec y)
+static int PCApply_SPAI(PC pc,Vec xx,Vec y)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
   int      ierr;
 
   PetscFunctionBegin;
   /* Now using PETSc's multiply */
-  ierr = MatMult(ispai->PM,x,y);CHKERRQ(ierr);
+  ierr = MatMult(ispai->PM,xx,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -176,11 +176,11 @@ static int PCView_SPAI(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetEpsilon_SPAI"
-int PCSPAISetEpsilon_SPAI(PC pc,double epsilon)
+int PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
-  ispai->epsilon = epsilon;
+  ispai->epsilon = epsilon1;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -190,11 +190,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetNBSteps_SPAI"
-int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps)
+int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
-  ispai->nbsteps = nbsteps;
+  ispai->nbsteps = nbsteps1;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -205,11 +205,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMax_SPAI"
-int PCSPAISetMax_SPAI(PC pc,int max)
+int PCSPAISetMax_SPAI(PC pc,int max1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
-  ispai->max = max;
+  ispai->max = max1;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -219,11 +219,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMaxNew_SPAI"
-int PCSPAISetMaxNew_SPAI(PC pc,int maxnew)
+int PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
-  ispai->maxnew = maxnew;
+  ispai->maxnew = maxnew1;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -233,11 +233,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetBlockSize_SPAI"
-int PCSPAISetBlockSize_SPAI(PC pc,int block_size)
+int PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
-  ispai->block_size = block_size;
+  ispai->block_size = block_size1;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -288,13 +288,13 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetEpsilon"
-int PCSPAISetEpsilon(PC pc,double epsilon)
+int PCSPAISetEpsilon(PC pc,double epsilon1)
 {
   int ierr,(*f)(PC,double);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetEpsilon_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,epsilon);CHKERRQ(ierr);
+    ierr = (*f)(pc,epsilon1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -303,13 +303,13 @@ int PCSPAISetEpsilon(PC pc,double epsilon)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetNBSteps"
-int PCSPAISetNBSteps(PC pc,int nbsteps)
+int PCSPAISetNBSteps(PC pc,int nbsteps1)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetNBSteps_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,nbsteps);CHKERRQ(ierr);
+    ierr = (*f)(pc,nbsteps1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -319,13 +319,13 @@ int PCSPAISetNBSteps(PC pc,int nbsteps)
 /* added 1/7/99 g.h. */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMax"
-int PCSPAISetMax(PC pc,int max)
+int PCSPAISetMax(PC pc,int max1)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMax_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,max);CHKERRQ(ierr);
+    ierr = (*f)(pc,max1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -334,13 +334,13 @@ int PCSPAISetMax(PC pc,int max)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMaxNew"
-int PCSPAISetMaxNew(PC pc,int maxnew)
+int PCSPAISetMaxNew(PC pc,int maxnew1)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMaxNew_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,maxnew);CHKERRQ(ierr);
+    ierr = (*f)(pc,maxnew1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -349,13 +349,13 @@ int PCSPAISetMaxNew(PC pc,int maxnew)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetBlockSize"
-int PCSPAISetBlockSize(PC pc,int block_size)
+int PCSPAISetBlockSize(PC pc,int block_size1)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetBlockSize_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,block_size);CHKERRQ(ierr);
+    ierr = (*f)(pc,block_size1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -414,8 +414,8 @@ int PCSPAISetSp(PC pc,int sp)
 static int PCSetFromOptions_SPAI(PC pc)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
-  int        ierr,nbsteps,max,maxnew,block_size,cache_size,verbose,sp;
-  double     epsilon;
+  int        ierr,nbsteps1,max1,maxnew1,block_size1,cache_size,verbose,sp;
+  double     epsilon1;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -424,22 +424,22 @@ static int PCSetFromOptions_SPAI(PC pc)
     if (flg) {
       ierr = PCSPAISetEpsilon(pc,epsilon);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps1,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetNBSteps(pc,nbsteps);CHKERRQ(ierr);
     }
     /* added 1/7/99 g.h. */
-    ierr = PetscOptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max1,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCSPAISetMax(pc,max);CHKERRQ(ierr);
+      ierr = PCSPAISetMax(pc,max1);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsInt("-pc_spai_maxnew","","PCSPAISetMaxNew",ispai->maxnew,&maxnew,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_maxnew","","PCSPAISetMaxNew",ispai->maxnew,&maxnew1,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCSPAISetMaxNew(pc,maxnew);CHKERRQ(ierr);
+      ierr = PCSPAISetMaxNew(pc,maxnew1);CHKERRQ(ierr);
     } 
-    ierr = PetscOptionsInt("-pc_spai_block_size","","PCSPAISetBlockSize",ispai->block_size,&block_size,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_spai_block_size","","PCSPAISetBlockSize",ispai->block_size,&block_size1,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCSPAISetBlockSize(pc,block_size);CHKERRQ(ierr);
+      ierr = PCSPAISetBlockSize(pc,block_size1);CHKERRQ(ierr);
     }
     ierr = PetscOptionsInt("-pc_spai_cache_size","","PCSPAISetCacheSize",ispai->cache_size,&cache_size,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -559,10 +559,10 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   M->bs = 1;
   M->max_block_size = 1;
 
-  M->mnls          = malloc(sizeof(int)*size);
-  M->start_indices = malloc(sizeof(int)*size);
-  M->pe            = malloc(sizeof(int)*n);
-  M->block_sizes   = malloc(sizeof(int)*n);
+  M->mnls          = (int*)malloc(sizeof(int)*size);
+  M->start_indices = (int*)malloc(sizeof(int)*size);
+  M->pe            = (int*)malloc(sizeof(int)*n);
+  M->block_sizes   = (int*)malloc(sizeof(int)*n);
   for (i=0; i<n; i++) M->block_sizes[i] = 1;
 
   ierr = MPI_Allgather(&mnl,1,MPI_INT,M->mnls,1,MPI_INT,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -625,8 +625,8 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   for (i=rstart; i<rend; i++) {
     row_indx             = i-rstart;
     len                  = num_ptr[row_indx];
-    rows->ptrs[row_indx] = malloc(len*sizeof(int));
-    rows->A[row_indx]    = malloc(len*sizeof(double));
+    rows->ptrs[row_indx] = (int*)malloc(len*sizeof(int));
+    rows->A[row_indx]    = (double*)malloc(len*sizeof(double));
   }
 
   /* copy the matrix */
@@ -665,7 +665,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
     for (i=rstart; i<rend; i++) {
       row_indx = i-rstart;
       len      = num_ptr[row_indx];
-      rows->rptrs[row_indx]     = malloc(len*sizeof(int));
+      rows->rptrs[row_indx]     = (int*)malloc(len*sizeof(int));
     }
 
     /* copy the matrix (i.e., the structure) */
