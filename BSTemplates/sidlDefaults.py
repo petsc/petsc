@@ -108,7 +108,7 @@ class UsingSIDL (logging.Logger):
     rootDir = self.getRootDir()
     for lang in SIDLConstants.getLanguages():
       self.includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = rootDir))
-      if self.compilerDefaults().generatesAllStubs():
+      if self.compilerDefaults.generatesAllStubs():
         self.includeDirs[lang].append(self.getClientRootDir(lang, root = rootDir))
     # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
     self.includeDirs['Python'].append(os.path.join(rootDir, 'python'))
