@@ -38,6 +38,10 @@ SLES_LIB    =   -L$(LDIR) -lpetscsles -lpetscksp \
                 $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 
 #
+#  Link if you are programming in Fortran 
+#
+PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscfort
+#
 # These include files set customized site, optimization, and version options.
 # Do NOT remove any of these include files.  You should have to edit only
 # $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site for your particular
@@ -130,12 +134,13 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
         fi
 
 # Builds Fortran-77 wrappers library - not yet available
-C2f77lib: 
+C2f77lib: chkpetsc_dir
 	@-if [ -n "$(WOBJS)" ] ; then \
 	echo "Compiling wrappers: " $(WSOURCE); \
 	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(IPETSCDIR) $(WSOURCE); \
 	$(AR) cr $(LDIR)/libpetscfort.a $(WOBJS) ; \
-	$(RM) -f $(WOBJS) $(WSOURCE); \
+	$(RANLIB) $(LDIR)/libpetscfort.a ;\
+	$(RM) -f $(WOBJS); \
 	fi
 
 # Deletes Fortran-77 wrapper code; use only if never coding PETSc calls
@@ -147,13 +152,15 @@ C2f77delete:
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
-               trashz \#*\# *.mex* *.stolen
+               trashz \#*\# *.mex* *.stolen *.trace Log.*
 
 # Builds and runs examples; then cleans directory.
 testexamples: testexamples_1
 examples: examples_1 examples_2
 testexamples_1: examples_1 runexamples_1 clean
 testexamples_2: examples_2 runexamples_2 clean
+buildexamples_1: examples_1 clean
+buildexamples_2: examples_2 clean
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
@@ -192,7 +199,7 @@ lint:
 # Builds Fortran-77 wrappers - not yet available
 C2f77:
 	@-if [ -n "$(WOBJS)" ] ; then \
-  	/home/gropp/tools.n/c2fort/bfort -ansi -nomsgs -anyname -mapptr -mpi \
+  	/home/gropp/tools.n/c2fort/bfort -mnative -ansi -nomsgs -anyname -mapptr -mpi \
                          $(SOURCEC); fi
 
 
