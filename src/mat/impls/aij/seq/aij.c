@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.206 1997/02/11 18:54:38 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.207 1997/02/11 19:46:31 curfman Exp curfman $";
 #endif
 
 /*
@@ -1465,7 +1465,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
     ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
     ierr = ISGetSize(is[i],&n);  CHKERRQ(ierr);
     
-    /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
+    /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
       if(!BT_LOOKUP(table, idx[j])) { nidx[isz++] = idx[j];}
     }
@@ -1473,7 +1473,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
     ierr = ISDestroy(is[i]); CHKERRQ(ierr);
     
     k = 0;
-    for ( j=0; j<ov; j++){ /* for each overlap*/
+    for ( j=0; j<ov; j++){ /* for each overlap */
       n = isz;
       for ( ; k<n ; k++){ /* do only those rows in nidx[k], which are not done yet */
         row   = nidx[k];
