@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.113 2000/05/05 22:17:17 balay Exp bsmith $*/
+/*$Id: asm.c,v 1.114 2000/05/29 21:59:32 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -956,7 +956,6 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
 @*/
 int PCASMGetLocalSubdomains(PC pc,int *n,IS **is)
 {
-  int    ierr;
   PC_ASM *osm;
 
   PetscFunctionBegin;
