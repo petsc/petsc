@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.19 1997/01/01 03:39:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.20 1997/04/22 14:43:02 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -177,7 +177,7 @@ int main(int argc,char **args)
 
      - Use PCASMGetSubSLES() to extract the array of SLES contexts for
        the local blocks.
-     - See ex5.c for a simple example of setting different linear solvers
+     - See ex7.c for a simple example of setting different linear solvers
        for the individual blocks for the block Jacobi method (which is
        equivalent to the ASM method with zero overlap).
   */
