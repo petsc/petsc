@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
        cgctx.h defines the simple data structured used to store information
     related to the type of matrix (e.g. complex symmetric) being solved and
@@ -293,7 +295,7 @@ PetscErrorCode KSPSetFromOptions_CGNE(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCGSetType_CGNE" 
-PetscErrorCode KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg;
 
@@ -332,7 +334,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CGNE"
-PetscErrorCode KSPCreate_CGNE(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg;

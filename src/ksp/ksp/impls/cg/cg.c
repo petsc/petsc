@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -318,7 +319,7 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCGSetType_CG" 
-PetscErrorCode KSPCGSetType_CG(KSP ksp,KSPCGType type)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg;
 
@@ -354,7 +355,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CG"
-PetscErrorCode KSPCreate_CG(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg;

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/pc/impls/mg/mgimpl.h"       /*I "petscksp.h" I*/
                           /*I "petscmg.h"   I*/
@@ -23,7 +24,7 @@
 
 .seealso: MGSetResidual()
 @*/
-PetscErrorCode MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
+PetscErrorCode PETSCKSP_DLLEXPORT MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
   PetscErrorCode ierr;
   PetscScalar    mone = -1.0;
@@ -53,7 +54,7 @@ PetscErrorCode MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 
 .keywords: MG, multigrid, get, coarse grid
 @*/ 
-PetscErrorCode MGGetCoarseSolve(PC pc,KSP *ksp)  
+PetscErrorCode PETSCKSP_DLLEXPORT MGGetCoarseSolve(PC pc,KSP *ksp)  
 { 
   MG *mg = (MG*)pc->data;
 
@@ -82,7 +83,7 @@ PetscErrorCode MGGetCoarseSolve(PC pc,KSP *ksp)
 
 .seealso: MGDefaultResidual()
 @*/
-PetscErrorCode MGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
   MG *mg = (MG*)pc->data;
 
@@ -120,7 +121,7 @@ PetscErrorCode MGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,Vec
 
 .seealso: MGSetRestriction()
 @*/
-PetscErrorCode MGSetInterpolate(PC pc,PetscInt l,Mat mat)
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetInterpolate(PC pc,PetscInt l,Mat mat)
 { 
   MG *mg = (MG*)pc->data;
 
@@ -156,7 +157,7 @@ PetscErrorCode MGSetInterpolate(PC pc,PetscInt l,Mat mat)
 
 .seealso: MGSetInterpolate()
 @*/
-PetscErrorCode MGSetRestriction(PC pc,PetscInt l,Mat mat)  
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetRestriction(PC pc,PetscInt l,Mat mat)  
 {
   MG *mg = (MG*)pc->data;
 
@@ -189,7 +190,7 @@ PetscErrorCode MGSetRestriction(PC pc,PetscInt l,Mat mat)
 
 .seealso: MGGetSmootherUp(), MGGetSmootherDown()
 @*/
-PetscErrorCode MGGetSmoother(PC pc,PetscInt l,KSP *ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT MGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 {
   MG *mg = (MG*)pc->data;
 
@@ -219,7 +220,7 @@ PetscErrorCode MGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 
 .seealso: MGGetSmootherUp(), MGGetSmootherDown()
 @*/
-PetscErrorCode MGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT MGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 {
   MG             *mg = (MG*)pc->data;
   PetscErrorCode ierr;
@@ -266,7 +267,7 @@ PetscErrorCode MGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 
 .seealso: MGGetSmootherUp(), MGGetSmoother()
 @*/
-PetscErrorCode MGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT MGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 {
   PetscErrorCode ierr;
   MG             *mg = (MG*)pc->data;
@@ -296,7 +297,7 @@ PetscErrorCode MGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 
 .seealso: MGSetCycles()
 @*/
-PetscErrorCode MGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt c) 
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt c) 
 {
   MG *mg = (MG*)pc->data;
 
@@ -326,7 +327,7 @@ PetscErrorCode MGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt c)
 
 .seealso: MGSetX(), MGSetR()
 @*/
-PetscErrorCode MGSetRhs(PC pc,PetscInt l,Vec c)  
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetRhs(PC pc,PetscInt l,Vec c)  
 { 
   MG *mg = (MG*)pc->data;
 
@@ -356,7 +357,7 @@ PetscErrorCode MGSetRhs(PC pc,PetscInt l,Vec c)
 
 .seealso: MGSetRhs(), MGSetR()
 @*/
-PetscErrorCode MGSetX(PC pc,PetscInt l,Vec c)  
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetX(PC pc,PetscInt l,Vec c)  
 { 
   MG *mg = (MG*)pc->data;
 
@@ -384,7 +385,7 @@ PetscErrorCode MGSetX(PC pc,PetscInt l,Vec c)
 
 .keywords: MG, multigrid, set, residual, level
 @*/
-PetscErrorCode MGSetR(PC pc,PetscInt l,Vec c)
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetR(PC pc,PetscInt l,Vec c)
 { 
   MG *mg = (MG*)pc->data;
 

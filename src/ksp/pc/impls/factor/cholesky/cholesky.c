@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -20,7 +21,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot_Cholesky"
-PetscErrorCode PCFactorSetZeroPivot_Cholesky(PC pc,PetscReal z)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_Cholesky(PC pc,PetscReal z)
 {
   PC_Cholesky *ch;
 
@@ -34,7 +35,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftNonzero_Cholesky"
-PetscErrorCode PCFactorSetShiftNonzero_Cholesky(PC pc,PetscReal shift)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_Cholesky(PC pc,PetscReal shift)
 {
   PC_Cholesky *dir;
 
@@ -52,7 +53,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftPd_Cholesky"
-PetscErrorCode PCFactorSetShiftPd_Cholesky(PC pc,PetscTruth shift)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_Cholesky(PC pc,PetscTruth shift)
 {
   PC_Cholesky *dir;
  
@@ -67,7 +68,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetReuseOrdering_Cholesky"
-PetscErrorCode PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
 {
   PC_Cholesky *lu;
   
@@ -81,7 +82,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetReuseFill_Cholesky"
-PetscErrorCode PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
 {
   PC_Cholesky *lu;
   
@@ -314,7 +315,7 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetFill_Cholesky"
-PetscErrorCode PCCholeskySetFill_Cholesky(PC pc,PetscReal fill)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetFill_Cholesky(PC pc,PetscReal fill)
 {
   PC_Cholesky *dir;
   
@@ -328,7 +329,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetUseInPlace_Cholesky"
-PetscErrorCode PCCholeskySetUseInPlace_Cholesky(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetUseInPlace_Cholesky(PC pc)
 {
   PC_Cholesky *dir;
 
@@ -342,7 +343,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetMatOrdering_Cholesky"
-PetscErrorCode PCCholeskySetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
@@ -378,7 +379,7 @@ EXTERN_C_END
 
 .seealso: PCCholeskySetReuseFill(), PCICholeskySetReuseOrdering(), PCICholeskyDTSetReuseFill()
 @*/
-PetscErrorCode PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
 {
   PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
@@ -412,7 +413,7 @@ PetscErrorCode PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
 
 .seealso: PCICholeskySetReuseOrdering(), PCCholeskySetReuseOrdering(), PCICholeskyDTSetReuseFill()
 @*/
-PetscErrorCode PCCholeskySetReuseFill(PC pc,PetscTruth flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetReuseFill(PC pc,PetscTruth flag)
 {
   PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
@@ -452,7 +453,7 @@ PetscErrorCode PCCholeskySetReuseFill(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetFill()
 @*/
-PetscErrorCode PCCholeskySetFill(PC pc,PetscReal fill)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetFill(PC pc,PetscReal fill)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
@@ -498,7 +499,7 @@ PetscErrorCode PCCholeskySetFill(PC pc,PetscReal fill)
 
 .seealso: PCICholeskySetUseInPlace()
 @*/
-PetscErrorCode PCCholeskySetUseInPlace(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetUseInPlace(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
@@ -530,7 +531,7 @@ PetscErrorCode PCCholeskySetUseInPlace(PC pc)
 
 .seealso: PCICholeskySetMatOrdering()
 @*/
-PetscErrorCode PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 {
   PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
@@ -572,7 +573,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Cholesky"
-PetscErrorCode PCCreate_Cholesky(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
 {
   PetscErrorCode ierr;
   PC_Cholesky    *dir;

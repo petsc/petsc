@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 #include "petscksp.h"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "global.h"
@@ -51,7 +52,7 @@ M*/
      Output Parameter:
      shell - user-defined preconditioner context..*/
 
-PetscErrorCode SamgShellPCCreate(SamgShellPC **shell)
+PetscErrorCode PETSCKSP_DLLEXPORT SamgShellPCCreate(SamgShellPC **shell)
 {
    SamgShellPC *newctx; 
    PetscErrorCode ierr; 
@@ -76,7 +77,7 @@ PetscErrorCode SamgShellPCCreate(SamgShellPC **shell)
 
     This routine calls the setup phase of RAMG..*/
  
-PetscErrorCode SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
+PetscErrorCode PETSCKSP_DLLEXPORT SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
 {
    PetscErrorCode ierr;
    int  numnodes, numnonzero, nnz_count; 
@@ -268,7 +269,7 @@ PetscErrorCode SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
 /*  VecRestoreArray. The values in vals_getarray are then copy to   */
 /*  rhs of the AMG code using memcpy.                               */
 
-PetscErrorCode SamgShellPCApply(void *ctx, Vec r, Vec z)
+PetscErrorCode PETSCKSP_DLLEXPORT SamgShellPCApply(void *ctx, Vec r, Vec z)
 {
    PetscErrorCode ierr;
    int  I, numnodes, numnonzero, *cols; 
@@ -387,7 +388,7 @@ PetscErrorCode SamgShellPCApply(void *ctx, Vec r, Vec z)
     Input Parameter:
     shell - user-defined preconditioner context..*/
 
-PetscErrorCode SamgShellPCDestroy(SamgShellPC *shell)
+PetscErrorCode PETSCKSP_DLLEXPORT SamgShellPCDestroy(SamgShellPC *shell)
 {
   /*..Free memory allocated by samg..*/ 
   SAMG_cleanup(); 
@@ -407,7 +408,7 @@ PetscErrorCode SamgShellPCDestroy(SamgShellPC *shell)
     OUTPUT: The parameters set in the SAMG_PARAM context
 ..*/   
 
-PetscErrorCode SamgGetParam(SAMG_PARAM *samg_param)
+PetscErrorCode PETSCKSP_DLLEXPORT SamgGetParam(SAMG_PARAM *samg_param)
 {
   PetscErrorCode ierr; 
 

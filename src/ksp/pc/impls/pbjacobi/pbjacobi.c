@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /* 
    Include files needed for the PBJacobi preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners 
@@ -197,7 +199,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_PBJacobi"
-PetscErrorCode PCCreate_PBJacobi(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PBJacobi(PC pc)
 {
   PC_PBJacobi    *jac;
   PetscErrorCode ierr;

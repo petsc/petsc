@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"
 
@@ -146,7 +147,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_TFQMR"
-PetscErrorCode KSPCreate_TFQMR(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TFQMR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

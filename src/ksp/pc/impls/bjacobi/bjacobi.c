@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -281,7 +283,7 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiSetUseTrueLocal_BJacobi"
-PetscErrorCode PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
 {
   PC_BJacobi   *jac;
 
@@ -295,7 +297,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetSubKSP_BJacobi"
-PetscErrorCode PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
 {
   PC_BJacobi   *jac = (PC_BJacobi*)pc->data;;
 
@@ -315,7 +317,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiSetTotalBlocks_BJacobi"
-PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,PetscInt *lens)
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt blocks,PetscInt *lens)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data; 
   PetscErrorCode ierr;
@@ -338,7 +340,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetTotalBlocks_BJacobi"
-PetscErrorCode PCBJacobiGetTotalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetTotalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
   PC_BJacobi *jac = (PC_BJacobi*) pc->data;
 
@@ -352,7 +354,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiSetLocalBlocks_BJacobi"
-PetscErrorCode PCBJacobiSetLocalBlocks_BJacobi(PC pc,PetscInt blocks,const PetscInt lens[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetLocalBlocks_BJacobi(PC pc,PetscInt blocks,const PetscInt lens[])
 {
   PC_BJacobi     *jac;
   PetscErrorCode ierr;
@@ -375,7 +377,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetLocalBlocks_BJacobi"
-PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
   PC_BJacobi *jac = (PC_BJacobi*) pc->data;
 
@@ -416,7 +418,7 @@ EXTERN_C_END
 
 .seealso: PCSetOperators(), PCBJacobiSetLocalBlocks()
 @*/
-PetscErrorCode PCBJacobiSetUseTrueLocal(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetUseTrueLocal(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
@@ -460,7 +462,7 @@ PetscErrorCode PCBJacobiSetUseTrueLocal(PC pc)
 
 .seealso: PCBJacobiGetSubKSP()
 @*/
-PetscErrorCode PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp[])
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt *,PetscInt *,KSP **);
 
@@ -501,7 +503,7 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetLocalBlocks()
 @*/
-PetscErrorCode PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt,const PetscInt[]);
 
@@ -536,7 +538,7 @@ PetscErrorCode PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt lens
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiGetLocalBlocks()
 @*/
-PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt*, const PetscInt *[]);
 
@@ -572,7 +574,7 @@ PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetTotalBlocks()
 @*/
-PetscErrorCode PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt,const PetscInt []);
 
@@ -608,7 +610,7 @@ PetscErrorCode PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt lens
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiGetTotalBlocks()
 @*/
-PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt*, const PetscInt *[]);
 
@@ -653,7 +655,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_BJacobi"
-PetscErrorCode PCCreate_BJacobi(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BJacobi(PC pc)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/impls/gmres/gmresp.h"
 #include "petscblaslapack.h"
@@ -9,8 +10,8 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
 #if defined(PETSC_MISSING_LAPACK_GESVD) 
   PetscFunctionBegin;
   /*
-      The Cray math libraries on T3D/T3E, and Intel Math Kernel Libraries (MKL) for PCs do not 
-      seem to have the DGESVD() lapack routines
+      The Cray math libraries on T3D/T3E, and early versions of Intel Math Kernel Libraries (MKL)
+      for PCs do not seem to have the DGESVD() lapack routines
   */
   SETERRQ(PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
 #else

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -189,7 +190,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_LSQR"
-PetscErrorCode KSPCreate_LSQR(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr;
   PetscErrorCode ierr;

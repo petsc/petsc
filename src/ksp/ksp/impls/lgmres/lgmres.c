@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "lgmresp.h"   /*I petscksp.h I*/
 
@@ -10,7 +11,7 @@ static PetscErrorCode    BuildLgmresSoln(PetscScalar*,Vec,Vec,KSP,PetscInt);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGMRESSetAugDim"
-PetscErrorCode KSPLGMRESSetAugDim(KSP ksp, PetscInt dim) 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim(KSP ksp, PetscInt dim) 
 {
   PetscErrorCode ierr;
 
@@ -21,7 +22,7 @@ PetscErrorCode KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGMRESSetConstant"
-PetscErrorCode KSPLGMRESSetConstant(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -898,7 +899,7 @@ EXTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,Petsc
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGMRESSetConstant_LGMRES" 
-PetscErrorCode KSPLGMRESSetConstant_LGMRES(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant_LGMRES(KSP ksp)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   PetscFunctionBegin;
@@ -911,7 +912,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGMRESSetAugDim_LGMRES" 
-PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
@@ -929,11 +930,11 @@ EXTERN_C_END
 
 /* use these options from gmres */
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP,double);
-EXTERN PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-EXTERN PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-EXTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
-EXTERN PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol_GMRES(KSP,double);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
 EXTERN_C_END
 
 /*MC
@@ -975,7 +976,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_LGMRES"
-PetscErrorCode KSPCreate_LGMRES(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LGMRES(KSP ksp)
 {
   KSP_LGMRES     *lgmres;
   PetscErrorCode ierr;

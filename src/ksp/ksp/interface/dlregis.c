@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "petscksp.h"
 
@@ -16,7 +17,7 @@
 .keywords: PC, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PCInitializePackage(const char path[]) {
+PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;
@@ -73,7 +74,7 @@ PetscErrorCode PCInitializePackage(const char path[]) {
 .keywords: KSP, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode KSPInitializePackage(const char path[]) {
+PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;
@@ -123,7 +124,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister(char *path)
 {
   PetscErrorCode ierr;
 

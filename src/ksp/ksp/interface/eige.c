@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -28,7 +29,7 @@
 
 .seealso: KSPComputeEigenvaluesExplicitly()
 @*/
-PetscErrorCode KSPComputeExplicitOperator(KSP ksp,Mat *mat)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 {
   Vec            in,out;
   PetscErrorCode ierr;
@@ -125,7 +126,7 @@ PetscErrorCode KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
 .seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
-PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c) 
+PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c) 
 {
   Mat                BA;
   PetscErrorCode     ierr;

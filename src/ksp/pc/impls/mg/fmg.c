@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */

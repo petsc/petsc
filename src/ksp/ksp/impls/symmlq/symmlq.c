@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"
 
@@ -210,7 +211,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_SYMMLQ"
-PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SYMMLQ(KSP ksp)
 {
   KSP_SYMMLQ     *symmlq;
   PetscErrorCode ierr;

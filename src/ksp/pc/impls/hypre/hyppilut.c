@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
 
 */
@@ -611,7 +613,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCHYPRESetType_HYPRE"
-PetscErrorCode PCHYPRESetType_HYPRE(PC pc,const char name[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -727,7 +729,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc)
            PCHYPRE
 
 @*/
-PetscErrorCode PCHYPRESetType(PC pc,const char name[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
 {
   PetscErrorCode ierr,(*f)(PC,const char[]);
 
@@ -766,7 +768,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_HYPRE"
-PetscErrorCode PCCreate_HYPRE(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC pc)
 {
   PC_HYPRE       *jac;
   PetscErrorCode ierr;

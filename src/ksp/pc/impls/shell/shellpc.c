@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
    This provides a simple shell for Fortran (and C programmers) to 
   create their own preconditioner without writing much interface code.
@@ -113,7 +115,7 @@ static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetSetUp_Shell"
-PetscErrorCode PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(void*))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(void*))
 {
   PC_Shell *shell;
 
@@ -127,7 +129,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApply_Shell"
-PetscErrorCode PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec),void *ptr)
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec),void *ptr)
 {
   PC_Shell *shell;
 
@@ -142,7 +144,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetView_Shell"
-PetscErrorCode PCShellSetView_Shell(PC pc,PetscErrorCode (*view)(void*,PetscViewer))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView_Shell(PC pc,PetscErrorCode (*view)(void*,PetscViewer))
 {
   PC_Shell *shell;
 
@@ -156,7 +158,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApplyTranspose_Shell"
-PetscErrorCode PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*applytranspose)(void*,Vec,Vec))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*applytranspose)(void*,Vec,Vec))
 {
   PC_Shell *shell;
 
@@ -170,7 +172,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetName_Shell"
-PetscErrorCode PCShellSetName_Shell(PC pc,const char name[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetName_Shell(PC pc,const char name[])
 {
   PC_Shell       *shell;
   PetscErrorCode ierr;
@@ -185,7 +187,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellGetName_Shell"
-PetscErrorCode PCShellGetName_Shell(PC pc,char *name[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName_Shell(PC pc,char *name[])
 {
   PC_Shell *shell;
 
@@ -199,7 +201,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApplyRichardson_Shell"
-PetscErrorCode PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void *ptr)
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void *ptr)
 {
   PC_Shell *shell;
 
@@ -239,7 +241,7 @@ EXTERN_C_END
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetApply()
 @*/
-PetscErrorCode PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(void*))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(void*))
 {
   PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*));
 
@@ -278,7 +280,7 @@ PetscErrorCode PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(void*))
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose()
 @*/
-PetscErrorCode PCShellSetView(PC pc,PetscErrorCode (*view)(void*,PetscViewer))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView(PC pc,PetscErrorCode (*view)(void*,PetscViewer))
 {
   PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,PetscViewer));
 
@@ -318,7 +320,7 @@ PetscErrorCode PCShellSetView(PC pc,PetscErrorCode (*view)(void*,PetscViewer))
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose()
 @*/
-PetscErrorCode PCShellSetApply(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec),void *ptr)
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec),void *ptr)
 {
   PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,Vec,Vec),void *);
 
@@ -360,7 +362,7 @@ PetscErrorCode PCShellSetApply(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec),void
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApply()
 @*/
-PetscErrorCode PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(void*,Vec,Vec))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(void*,Vec,Vec))
 {
   PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,Vec,Vec));
 
@@ -391,7 +393,7 @@ PetscErrorCode PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(v
 
 .seealso: PCShellGetName()
 @*/
-PetscErrorCode PCShellSetName(PC pc,const char name[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetName(PC pc,const char name[])
 {
   PetscErrorCode ierr,(*f)(PC,const char []);
 
@@ -424,7 +426,7 @@ PetscErrorCode PCShellSetName(PC pc,const char name[])
 
 .seealso: PCShellSetName()
 @*/
-PetscErrorCode PCShellGetName(PC pc,char *name[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC pc,char *name[])
 {
   PetscErrorCode ierr,(*f)(PC,char *[]);
 
@@ -473,7 +475,7 @@ PetscErrorCode PCShellGetName(PC pc,char *name[])
 
 .seealso: PCShellSetApply()
 @*/
-PetscErrorCode PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void *ptr)
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void *ptr)
 {
   PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt),void *);
 
@@ -511,7 +513,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Shell"
-PetscErrorCode PCCreate_Shell(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
 {
   PetscErrorCode ierr;
   PC_Shell       *shell;

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 /* 
    Provides an interface to the ML 3.0 smoothed Aggregation 
@@ -436,7 +437,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ML"
-PetscErrorCode PCCreate_ML(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
 {
   PetscErrorCode       ierr;
   PC_ML                *pc_ml;

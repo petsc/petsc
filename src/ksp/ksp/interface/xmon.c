@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"              /*I  "petscksp.h"   I*/
 
@@ -31,7 +32,7 @@
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
 @*/
-PetscErrorCode KSPLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -46,7 +47,7 @@ PetscErrorCode KSPLGMonitorCreate(const char host[],const char label[],int x,int
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGMonitor"
-PetscErrorCode KSPLGMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG    lg = (PetscDrawLG) monctx;
   PetscErrorCode ierr;
@@ -89,7 +90,7 @@ PetscErrorCode KSPLGMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 
 .seealso: KSPLGMonitorCreate(), KSPLGTrueMonitorDestroy(), KSPSetMonitor()
 @*/
-PetscErrorCode KSPLGMonitorDestroy(PetscDrawLG drawlg)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMonitorDestroy(PetscDrawLG drawlg)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -133,7 +134,7 @@ PetscErrorCode KSPLGMonitorDestroy(PetscDrawLG drawlg)
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-PetscErrorCode KSPLGTrueMonitorCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitorCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -152,7 +153,7 @@ PetscErrorCode KSPLGTrueMonitorCreate(MPI_Comm comm,const char host[],const char
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGTrueMonitor"
-PetscErrorCode KSPLGTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG    lg = (PetscDrawLG) monctx;
   PetscReal      x[2],y[2],scnorm;
@@ -209,7 +210,7 @@ PetscErrorCode KSPLGTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 
 .seealso: KSPLGTrueMonitorCreate(), KSPSetMonitor()
 @*/
-PetscErrorCode KSPLGTrueMonitorDestroy(PetscDrawLG drawlg)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitorDestroy(PetscDrawLG drawlg)
 {
   PetscErrorCode ierr;
   PetscDraw      draw;

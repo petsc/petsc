@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
 
 */
@@ -304,7 +306,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetFields_FieldSplit"
-PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc,PetscInt n,PetscInt *fields)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,PetscInt n,PetscInt *fields)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -344,7 +346,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitGetSubKSP_FieldSplit"
-PetscErrorCode PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -380,7 +382,7 @@ EXTERN_C_END
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT
 
 @*/
-PetscErrorCode PCFieldSplitSetFields(PC pc,PetscInt n, PetscInt *fields)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,PetscInt n, PetscInt *fields)
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt,PetscInt *);
 
@@ -416,7 +418,7 @@ PetscErrorCode PCFieldSplitSetFields(PC pc,PetscInt n, PetscInt *fields)
 
 .seealso: PCFIELDSPLIT
 @*/
-PetscErrorCode PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt*,KSP **);
 
@@ -435,7 +437,7 @@ PetscErrorCode PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetType_FieldSplit"
-PetscErrorCode PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType_FieldSplit(PC pc,PCCompositeType type)
 {
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
 
@@ -466,7 +468,7 @@ EXTERN_C_END
 .seealso: PCCompositeSetType()
 
 @*/
-PetscErrorCode PCFieldSplitSetType(PC pc,PCCompositeType type)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type)
 {
   PetscErrorCode ierr,(*f)(PC,PCCompositeType);
 
@@ -508,7 +510,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_FieldSplit"
-PetscErrorCode PCCreate_FieldSplit(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
 {
   PetscErrorCode ierr;
   PC_FieldSplit  *jac;

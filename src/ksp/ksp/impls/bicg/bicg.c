@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"
 
@@ -162,7 +163,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_BiCG"
-PetscErrorCode KSPCreate_BiCG(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BiCG(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

@@ -1,26 +1,27 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode KSPCreate_Richardson(KSP);
-EXTERN PetscErrorCode KSPCreate_Chebychev(KSP);
-EXTERN PetscErrorCode KSPCreate_CG(KSP);
-EXTERN PetscErrorCode KSPCreate_CGNE(KSP);
-EXTERN PetscErrorCode KSPCreate_TCQMR(KSP);
-EXTERN PetscErrorCode KSPCreate_GMRES(KSP);
-EXTERN PetscErrorCode KSPCreate_BCGS(KSP);
-EXTERN PetscErrorCode KSPCreate_BCGSL(KSP);
-EXTERN PetscErrorCode KSPCreate_CGS(KSP);
-EXTERN PetscErrorCode KSPCreate_TFQMR(KSP);
-EXTERN PetscErrorCode KSPCreate_LSQR(KSP);
-EXTERN PetscErrorCode KSPCreate_PREONLY(KSP);
-EXTERN PetscErrorCode KSPCreate_CR(KSP);
-EXTERN PetscErrorCode KSPCreate_QCG(KSP);
-EXTERN PetscErrorCode KSPCreate_BiCG(KSP);
-EXTERN PetscErrorCode KSPCreate_FGMRES(KSP);
-EXTERN PetscErrorCode KSPCreate_MINRES(KSP);
-EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP);
-EXTERN PetscErrorCode KSPCreate_LGMRES(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Chebychev(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TCQMR(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGS(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGS(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TFQMR(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_PREONLY(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CR(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_QCG(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BiCG(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_MINRES(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SYMMLQ(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LGMRES(KSP);
 EXTERN_C_END
   
 /*
@@ -43,7 +44,7 @@ EXTERN PetscTruth KSPRegisterAllCalled;
 
 .seealso:  KSPRegisterDestroy()
 @*/
-PetscErrorCode KSPRegisterAll(const char path[])
+PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

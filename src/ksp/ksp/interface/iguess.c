@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 /* 
@@ -15,7 +16,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessCreate" 
-PetscErrorCode KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 {
   KSPIGUESS *itg;
   PetscErrorCode ierr;
@@ -38,7 +39,7 @@ PetscErrorCode KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessDestroy" 
-PetscErrorCode KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 {
   PetscErrorCode ierr;
 
@@ -53,7 +54,7 @@ PetscErrorCode KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessFormB"
-PetscErrorCode KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
   PetscErrorCode ierr;
   int         i;
@@ -73,7 +74,7 @@ PetscErrorCode KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessFormX"
-PetscErrorCode KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 {
   PetscErrorCode ierr;
   int i;
@@ -91,7 +92,7 @@ PetscErrorCode KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessUpdate"
-PetscErrorCode  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
 {
   PetscReal    normax,norm;
   PetscScalar  tmp;

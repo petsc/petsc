@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian

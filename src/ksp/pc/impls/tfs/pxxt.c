@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
 

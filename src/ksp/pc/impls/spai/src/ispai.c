@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
 */
@@ -172,7 +174,7 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetEpsilon_SPAI"
-PetscErrorCode PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -186,7 +188,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetNBSteps_SPAI"
-PetscErrorCode PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -201,7 +203,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMax_SPAI"
-PetscErrorCode PCSPAISetMax_SPAI(PC pc,int max1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMax_SPAI(PC pc,int max1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -215,7 +217,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMaxNew_SPAI"
-PetscErrorCode PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -229,7 +231,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetBlockSize_SPAI"
-PetscErrorCode PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -243,7 +245,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetCacheSize_SPAI"
-PetscErrorCode PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -257,7 +259,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetVerbose_SPAI"
-PetscErrorCode PCSPAISetVerbose_SPAI(PC pc,int verbose)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetVerbose_SPAI(PC pc,int verbose)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -271,7 +273,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetSp_SPAI"
-PetscErrorCode PCSPAISetSp_SPAI(PC pc,int sp)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetSp_SPAI(PC pc,int sp)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -303,7 +305,7 @@ EXTERN_C_END
 
 .seealso: PCSPAI, PCSetType()
   @*/
-PetscErrorCode PCSPAISetEpsilon(PC pc,double epsilon1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetEpsilon(PC pc,double epsilon1)
 {
   PetscErrorCode ierr,(*f)(PC,double);
   PetscFunctionBegin;
@@ -337,7 +339,7 @@ PetscErrorCode PCSPAISetEpsilon(PC pc,double epsilon1)
 
 .seealso: PCSPAI, PCSetType(), PCSPAISetMaxNew()
 @*/
-PetscErrorCode PCSPAISetNBSteps(PC pc,int nbsteps1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetNBSteps(PC pc,int nbsteps1)
 {
   PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
@@ -365,7 +367,7 @@ PetscErrorCode PCSPAISetNBSteps(PC pc,int nbsteps1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode PCSPAISetMax(PC pc,int max1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMax(PC pc,int max1)
 {
   PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
@@ -392,7 +394,7 @@ PetscErrorCode PCSPAISetMax(PC pc,int max1)
 
 .seealso: PCSPAI, PCSetType(), PCSPAISetNBSteps()
 @*/
-PetscErrorCode PCSPAISetMaxNew(PC pc,int maxnew1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMaxNew(PC pc,int maxnew1)
 {
   PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
@@ -436,7 +438,7 @@ PetscErrorCode PCSPAISetMaxNew(PC pc,int maxnew1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode PCSPAISetBlockSize(PC pc,int block_size1)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetBlockSize(PC pc,int block_size1)
 {
   PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
@@ -467,7 +469,7 @@ PetscErrorCode PCSPAISetBlockSize(PC pc,int block_size1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode PCSPAISetCacheSize(PC pc,int cache_size)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetCacheSize(PC pc,int cache_size)
 {
   PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
@@ -495,7 +497,7 @@ PetscErrorCode PCSPAISetCacheSize(PC pc,int cache_size)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode PCSPAISetVerbose(PC pc,int verbose)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetVerbose(PC pc,int verbose)
 {
   PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
@@ -529,7 +531,7 @@ PetscErrorCode PCSPAISetVerbose(PC pc,int verbose)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-PetscErrorCode PCSPAISetSp(PC pc,int sp)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetSp(PC pc,int sp)
 {
   PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
@@ -623,7 +625,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SPAI"
-PetscErrorCode PCCreate_SPAI(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
 {
   PC_SPAI *ispai;
   PetscErrorCode ierr;

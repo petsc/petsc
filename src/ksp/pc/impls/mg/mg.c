@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -481,7 +483,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 
 .seealso: MGSetType(), MGGetLevels()
 @*/
-PetscErrorCode MGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
   MG             *mg;
@@ -519,7 +521,7 @@ PetscErrorCode MGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
 .seealso: MGSetLevels()
 @*/
-PetscErrorCode MGGetLevels(PC pc,PetscInt *levels)
+PetscErrorCode PETSCKSP_DLLEXPORT MGGetLevels(PC pc,PetscInt *levels)
 {
   MG  *mg;
 
@@ -555,7 +557,7 @@ PetscErrorCode MGGetLevels(PC pc,PetscInt *levels)
 
 .seealso: MGSetLevels()
 @*/
-PetscErrorCode MGSetType(PC pc,MGType form)
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetType(PC pc,MGType form)
 {
   MG *mg;
 
@@ -591,7 +593,7 @@ $  -pc_mg_cycles n - 1 denotes a V-cycle; 2 denotes a W-cycle.
 
 .seealso: MGSetCyclesOnLevel()
 @*/
-PetscErrorCode MGSetCycles(PC pc,PetscInt n)
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetCycles(PC pc,PetscInt n)
 { 
   MG       *mg;
   PetscInt i,levels;
@@ -623,7 +625,7 @@ PetscErrorCode MGSetCycles(PC pc,PetscInt n)
 
 .keywords: MG, check, set, multigrid
 @*/
-PetscErrorCode MGCheck(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT MGCheck(PC pc)
 {
   MG       *mg;
   PetscInt i,n,count = 0;
@@ -688,7 +690,7 @@ PetscErrorCode MGCheck(PC pc)
 
 .seealso: MGSetNumberSmoothUp()
 @*/
-PetscErrorCode MGSetNumberSmoothDown(PC pc,PetscInt n)
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothDown(PC pc,PetscInt n)
 { 
   MG             *mg;
   PetscErrorCode ierr;
@@ -734,7 +736,7 @@ PetscErrorCode MGSetNumberSmoothDown(PC pc,PetscInt n)
 
 .seealso: MGSetNumberSmoothDown()
 @*/
-PetscErrorCode  MGSetNumberSmoothUp(PC pc,PetscInt n)
+PetscErrorCode PETSCKSP_DLLEXPORT MGSetNumberSmoothUp(PC pc,PetscInt n)
 { 
   MG             *mg;
   PetscErrorCode ierr;
@@ -788,7 +790,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_MG"
-PetscErrorCode PCCreate_MG(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_MG(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply          = PCApply_MG;

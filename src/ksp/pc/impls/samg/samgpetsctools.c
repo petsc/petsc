@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 #include "global.h"
 #include "petscksp.h"
 #include "samgfunc.h"
@@ -20,7 +22,7 @@ static  double Machine_Precision_Eps = 2.e-16;
             numnodes: number of nodes on finest grid 
             numnonzeros: number of nonzeros on coarsest grid 
     OUTPUT: grid  : array of grids                   ..*/   
-PetscErrorCode SamgGetGrid(int levels, int numnodes, int numnonzero, 
+PetscErrorCode PETSCKSP_DLLEXPORT SamgGetGrid(int levels, int numnodes, int numnonzero, 
                 GridCtx* grid, void* ctx)
 {
    int      k; 
@@ -98,7 +100,7 @@ PetscErrorCode SamgGetGrid(int levels, int numnodes, int numnonzero,
     OUTPUT: coarsemat: coarse level matrix  
 ..*/
 
-PetscErrorCode SamgGetCoarseMat(int level, int ia_shift, int ja_shift, 
+PetscErrorCode PETSCKSP_DLLEXPORT SamgGetCoarseMat(int level, int ia_shift, int ja_shift, 
                      Mat* coarsemat, void* ctx)
 {
    int      nnu_k, nna_k; /* size and non-zeros of operator on level k     */ 
@@ -179,7 +181,7 @@ PetscErrorCode SamgGetCoarseMat(int level, int ia_shift, int ja_shift,
        number of rows equal to fine grid dim 
                  cols          coarse. 
 ..*/  
-PetscErrorCode SamgGetInterpolation(int level, int iw_shift, int jw_shift,
+PetscErrorCode PETSCKSP_DLLEXPORT SamgGetInterpolation(int level, int iw_shift, int jw_shift,
                          Mat* interpolation, void* ctx) 
 {
    int     rows_weights, cols_weights, nna_weights; 
@@ -262,7 +264,7 @@ PetscErrorCode SamgGetInterpolation(int level, int iw_shift, int jw_shift,
 #define __FUNCT__ "SamgPetscWriteOperator"
 /*..Write coarser grid operators constructed by SAMG to ASCII file..*/
 
-PetscErrorCode SamgPetscWriteOperator(const int numnodes, const double* Asky, 
+PetscErrorCode PETSCKSP_DLLEXPORT SamgPetscWriteOperator(const int numnodes, const double* Asky, 
                            const int* ia, const int* ja, int extension)
 {
 
@@ -301,7 +303,7 @@ PetscErrorCode SamgPetscWriteOperator(const int numnodes, const double* Asky,
 #define __FUNCT__ "SamgPetscWriteInterpol"
 /*..Write interpolation operators constructed by SAMG to ASCII file..*/
 
-PetscErrorCode SamgPetscWriteInterpol(const int numrows, const double* weights, 
+PetscErrorCode PETSCKSP_DLLEXPORT SamgPetscWriteInterpol(const int numrows, const double* weights, 
                   const int* iweights, const int* jweights, int extension)
 {
 
@@ -347,7 +349,7 @@ return 0;
     PETSc. This routine computes I^H_h A^h I^h_H by PETSc matrix - matrix 
     multiplications, and compares this product with A^H..*/ 
  
-PetscErrorCode SamgCheckGalerkin(int levels, Mat A, GridCtx* grid, 
+PetscErrorCode PETSCKSP_DLLEXPORT SamgCheckGalerkin(int levels, Mat A, GridCtx* grid, 
                       void* ctx)
 {
    Mat     FineLevelMatrix, Restriction, HalfGalerkin, Galerkin, Diff; 

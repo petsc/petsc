@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -20,7 +22,7 @@ PetscErrorCode KSPSetUp_Chebychev(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPChebychevSetEigenvalues_Chebychev"
-PetscErrorCode KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
 
@@ -52,7 +54,7 @@ EXTERN_C_END
 
 .keywords: KSP, Chebyshev, set, eigenvalues
 @*/
-PetscErrorCode KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
   PetscErrorCode ierr,(*f)(KSP,PetscReal,PetscReal);
 
@@ -233,7 +235,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_Chebychev"
-PetscErrorCode KSPCreate_Chebychev(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Chebychev(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_Chebychev  *chebychevP;

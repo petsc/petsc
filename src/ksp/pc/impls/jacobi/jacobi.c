@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 /*  -------------------------------------------------------------------- 
 
@@ -65,7 +66,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCJacobiSetUseRowMax_Jacobi"
-PetscErrorCode PCJacobiSetUseRowMax_Jacobi(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -341,7 +342,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Jacobi"
-PetscErrorCode PCCreate_Jacobi(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi      *jac;
   PetscErrorCode ierr;
@@ -411,7 +412,7 @@ EXTERN_C_END
    Concepts: Jacobi preconditioner
 
 @*/
-PetscErrorCode PCJacobiSetUseRowMax(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 

@@ -1,7 +1,9 @@
+#define PETSCKSP_DLL
+
 #include "fetipc.h"
 #include "src/mat/impls/feti/feti.h" 
 
-int PCCreateFeti(PC *pc)
+int PETSCKSP_DLLEXPORT PCCreateFeti(PC *pc)
 {
     PetscFunctionBegin;
     PCCreate(PETSC_COMM_WORLD,pc);                     /* call the base constructor */ 
@@ -93,7 +95,7 @@ int PCLoad_Feti(PC pc)
     PetscFunctionReturn(0);
 }
 
-int PCFetiSetMatFeti(PC pc, Mat A) /* set pointer to MatFeti for access to B and copy some information    */
+int PETSCKSP_DLLEXPORT PCFetiSetMatFeti(PC pc, Mat A) /* set pointer to MatFeti for access to B and copy some information    */
 {                                  /* PCSetOperators also sets pc->mat: always called on SLESSetOperators */
     int dom_per_proc;
     PC_Feti * pcfeti=(PC_Feti*)pc->data;
@@ -143,7 +145,7 @@ int PCFetiSetMatFeti(PC pc, Mat A) /* set pointer to MatFeti for access to B and
 
 } 
 
-int PCFetiDomainLoad(PC_FetiDomain *pcdomain,const char * prefix)
+int PETSCKSP_DLLEXPORT PCFetiDomainLoad(PC_FetiDomain *pcdomain,const char * prefix)
 {
     char num[256]={};
 
@@ -159,7 +161,7 @@ int PCFetiDomainLoad(PC_FetiDomain *pcdomain,const char * prefix)
     PetscFunctionReturn(0);
 }
 
-int PCFetiDomainSetUp(PC_FetiDomain *pcdomain)
+int PETSCKSP_DLLEXPORT PCFetiDomainSetUp(PC_FetiDomain *pcdomain)
 {
     PC pc;
     KSP ksp;
@@ -186,7 +188,7 @@ int PCFetiDomainSetUp(PC_FetiDomain *pcdomain)
     PetscFunctionReturn(0);
 }
 
-int PCFetiSetUp(PC pc)  /* setup SLES Kii_inv */
+int PETSCKSP_DLLEXPORT PCFetiSetUp(PC pc)  /* setup SLES Kii_inv */
 {
     PC_Feti * pcfeti=(PC_Feti*)pc->data;
     PetscFunctionBegin;
@@ -197,7 +199,7 @@ int PCFetiSetUp(PC pc)  /* setup SLES Kii_inv */
     PetscFunctionReturn(0);
 }
 
-int PCFetiSetUpTemporarySpace(PC pc)
+int PETSCKSP_DLLEXPORT PCFetiSetUpTemporarySpace(PC pc)
 {
     PC_Feti * pcfeti=(PC_Feti*)pc->data;
 
@@ -214,7 +216,7 @@ int PCFetiSetUpTemporarySpace(PC pc)
 
 }
 
-int PCFetiDestroyTemporarySpace(PC pc)
+int PETSCKSP_DLLEXPORT PCFetiDestroyTemporarySpace(PC pc)
 {
     PC_Feti * pcfeti;
 
@@ -324,9 +326,9 @@ int PCApply_Feti(PC pc, Vec src_lambda, Vec dst_lambda)
     PetscFunctionReturn(0);
 }
 
-int PCFetiApplySchurComplement(Vec xb, Vec yb) { /**/ }
+int PETSCKSP_DLLEXPORT PCFetiApplySchurComplement(Vec xb, Vec yb) { /**/ }
 
-int PCFetiDomainDestroy(PC_FetiDomain *pcdomain)
+int PETSCKSP_DLLEXPORT PCFetiDomainDestroy(PC_FetiDomain *pcdomain)
 {
     PetscFunctionBegin;
 

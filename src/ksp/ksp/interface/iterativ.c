@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 /*
    This file contains some simple default routines.  
@@ -48,7 +49,7 @@ PetscErrorCode KSPDefaultFreeWork(KSP ksp)
 
 .seealso: KSPBuildResidual()
 @*/
-PetscErrorCode KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -80,7 +81,7 @@ PetscErrorCode KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 
 .seealso: KSPBuildResidual(), KSPGetResidualNorm()
 @*/
-PetscErrorCode KSPGetIterationNumber(KSP ksp,PetscInt *its)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -117,7 +118,7 @@ PetscErrorCode KSPGetIterationNumber(KSP ksp,PetscInt *its)
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/
-PetscErrorCode KSPSingularValueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscReal emin,emax,c;
   PetscErrorCode ierr;
@@ -158,7 +159,7 @@ PetscErrorCode KSPSingularValueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
 @*/
-PetscErrorCode KSPVecViewMonitor(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec         x;
@@ -196,7 +197,7 @@ PetscErrorCode KSPVecViewMonitor(KSP ksp,PetscInt its,PetscReal fgnorm,void *dum
 
 .seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
 @*/
-PetscErrorCode KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer viewer = (PetscViewer) dummy;
@@ -238,7 +239,7 @@ PetscErrorCode KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 
 .seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
 @*/
-PetscErrorCode KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec          resid,work;
@@ -278,7 +279,7 @@ PetscErrorCode KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-PetscErrorCode KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer viewer = (PetscViewer) dummy;
@@ -324,7 +325,7 @@ PetscErrorCode KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscReal fnorm,void *dum
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetNormType()
 @*/
-PetscErrorCode KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -373,7 +374,7 @@ $      rnorm > dtol * rnorm_0,
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason()
 @*/
-PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -530,7 +531,7 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 .  work - the array of vectors created
 
  */
-PetscErrorCode  KSPGetVecs(KSP ksp,PetscInt nw,Vec **work)
+PetscErrorCode KSPGetVecs(KSP ksp,PetscInt nw,Vec **work)
 {
   PetscErrorCode ierr;
   Vec vec;
@@ -561,7 +562,7 @@ PetscErrorCode  KSPGetVecs(KSP ksp,PetscInt nw,Vec **work)
   Notes:
   Call this only if no work vectors have been allocated 
  */
-PetscErrorCode  KSPDefaultGetWork(KSP ksp,PetscInt nw)
+PetscErrorCode KSPDefaultGetWork(KSP ksp,PetscInt nw)
 {
   PetscErrorCode ierr;
 
@@ -634,7 +635,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
 .seealso: KSPSetConvergenceTest(), KSPDefaultConverged(), KSPSetTolerances(), KSPConvergedReason
 @*/
-PetscErrorCode KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

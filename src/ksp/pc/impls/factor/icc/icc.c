@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -8,7 +10,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot_ICC"
-PetscErrorCode PCFactorSetZeroPivot_ICC(PC pc,PetscReal z)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_ICC(PC pc,PetscReal z)
 {
   PC_ICC *icc;
 
@@ -22,7 +24,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftNonzero_ICC"
-PetscErrorCode PCFactorSetShiftNonzero_ICC(PC pc,PetscReal shift)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_ICC(PC pc,PetscReal shift)
 {
   PC_ICC *dir;
 
@@ -40,7 +42,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftPd_ICC"
-PetscErrorCode PCFactorSetShiftPd_ICC(PC pc,PetscTruth shift)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_ICC(PC pc,PetscTruth shift)
 {
   PC_ICC *dir;
  
@@ -55,7 +57,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetMatOrdering_ICC"
-PetscErrorCode PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
 {
   PC_ICC         *dir = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
@@ -70,7 +72,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetFill_ICC"
-PetscErrorCode PCICCSetFill_ICC(PC pc,PetscReal fill)
+PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetFill_ICC(PC pc,PetscReal fill)
 {
   PC_ICC *dir;
 
@@ -84,7 +86,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetLevels_ICC"
-PetscErrorCode PCICCSetLevels_ICC(PC pc,PetscInt levels)
+PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetLevels_ICC(PC pc,PetscInt levels)
 {
   PC_ICC *icc;
 
@@ -117,7 +119,7 @@ EXTERN_C_END
 .keywords: PC, ICC, set, matrix, reordering
 
 @*/
-PetscErrorCode PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
 {
   PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
@@ -149,7 +151,7 @@ PetscErrorCode PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
    Concepts: ICC^setting levels of fill
 
 @*/
-PetscErrorCode PCICCSetLevels(PC pc,PetscInt levels)
+PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetLevels(PC pc,PetscInt levels)
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt);
 
@@ -190,7 +192,7 @@ $  -pc_icc_fill <fill>
 
 .seealso: PCLUSetFill()
 @*/
-PetscErrorCode PCICCSetFill(PC pc,PetscReal fill)
+PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetFill(PC pc,PetscReal fill)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
@@ -386,7 +388,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ICC"
-PetscErrorCode PCCreate_ICC(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
 {
   PetscErrorCode ierr;
   PC_ICC         *icc;

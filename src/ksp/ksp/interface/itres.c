@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -35,7 +36,7 @@ $     b-Ax
 
 .seealso:  KSPMonitor()
 @*/
-PetscErrorCode KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 {
   PetscScalar    mone = -1.0;
   MatStructure   pflag;
@@ -99,7 +100,7 @@ PetscErrorCode KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec
 
 .seealso: KSPSetPreconditionerSide()
 @*/
-PetscErrorCode KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/pc/impls/is/nn/nn.h"
 
@@ -171,7 +172,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_NN"
-PetscErrorCode PCCreate_NN(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC pc)
 {
   PetscErrorCode ierr;
   PC_NN          *pcnn;

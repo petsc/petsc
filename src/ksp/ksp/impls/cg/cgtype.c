@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
 
@@ -29,7 +30,7 @@
 
 .keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
 @*/
-PetscErrorCode KSPCGSetType(KSP ksp,KSPCGType type)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP ksp,KSPCGType type)
 {
   PetscErrorCode ierr,(*f)(KSP,KSPCGType);
 

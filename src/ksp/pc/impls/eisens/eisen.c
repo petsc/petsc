@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
  %50 of the usual amount of floating point ops used for SSOR + Krylov 
@@ -180,7 +182,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCEisenstatSetOmega_Eisenstat"
-PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
+PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
   PC_Eisenstat  *eis;
 
@@ -195,7 +197,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCEisenstatNoDiagonalScaling_Eisenstat"
-PetscErrorCode PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis;
 
@@ -237,7 +239,7 @@ $    -pc_type  sor  -pc_sor_symmetric
 
 .seealso: PCSORSetOmega()
 @*/
-PetscErrorCode PCEisenstatSetOmega(PC pc,PetscReal omega)
+PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatSetOmega(PC pc,PetscReal omega)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
@@ -275,7 +277,7 @@ PetscErrorCode PCEisenstatSetOmega(PC pc,PetscReal omega)
 
 .seealso: PCEisenstatSetOmega()
 @*/
-PetscErrorCode PCEisenstatNoDiagonalScaling(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCEisenstatNoDiagonalScaling(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
@@ -313,7 +315,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Eisenstat"
-PetscErrorCode PCCreate_Eisenstat(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
   PC_Eisenstat   *eis;

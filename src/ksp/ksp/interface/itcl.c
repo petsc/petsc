@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
     Code for setting KSP options from the options database.
 */
@@ -29,7 +31,7 @@ PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
 
 .seealso: KSPSetFromOptions()
 @*/
-PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*kspcheck)(KSP))
+PetscErrorCode PETSCKSP_DLLEXPORT KSPAddOptionsChecker(PetscErrorCode (*kspcheck)(KSP))
 {
   PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
@@ -76,7 +78,7 @@ PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*kspcheck)(KSP))
 
 .seealso: KSPAppendOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
-PetscErrorCode KSPSetOptionsPrefix(KSP ksp,const char prefix[])
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -108,7 +110,7 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 
 .seealso: KSPSetOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
-PetscErrorCode KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
+PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -141,7 +143,7 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 
 .seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix()
 @*/
-PetscErrorCode KSPGetOptionsPrefix(KSP ksp,char *prefix[])
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP ksp,char *prefix[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

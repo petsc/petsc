@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
@@ -114,7 +116,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetSymmetric_SOR"
-PetscErrorCode PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
 {
   PC_SOR *jac;
 
@@ -128,7 +130,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetOmega_SOR"
-PetscErrorCode PCSORSetOmega_SOR(PC pc,PetscReal omega)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega_SOR(PC pc,PetscReal omega)
 {
   PC_SOR *jac;
 
@@ -143,7 +145,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSORSetIterations_SOR"
-PetscErrorCode PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
 {
   PC_SOR *jac;
 
@@ -195,7 +197,7 @@ EXTERN_C_END
 
 .seealso: PCEisenstatSetOmega(), PCSORSetIterations(), PCSORSetOmega()
 @*/
-PetscErrorCode PCSORSetSymmetric(PC pc,MatSORType flag)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetSymmetric(PC pc,MatSORType flag)
 {
   PetscErrorCode ierr,(*f)(PC,MatSORType);
 
@@ -229,7 +231,7 @@ PetscErrorCode PCSORSetSymmetric(PC pc,MatSORType flag)
 
 .seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega()
 @*/
-PetscErrorCode PCSORSetOmega(PC pc,PetscReal omega)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetOmega(PC pc,PetscReal omega)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
@@ -266,7 +268,7 @@ PetscErrorCode PCSORSetOmega(PC pc,PetscReal omega)
 
 .seealso: PCSORSetOmega(), PCSORSetSymmetric()
 @*/
-PetscErrorCode PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt,PetscInt);
 
@@ -309,7 +311,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SOR"
-PetscErrorCode PCCreate_SOR(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC pc)
 {
   PetscErrorCode ierr;
   PC_SOR         *jac;

@@ -1,3 +1,4 @@
+#define PETSCKSP_DLL
 
 #include "src/ksp/ksp/kspimpl.h"
 
@@ -147,7 +148,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CR"
-PetscErrorCode KSPCreate_CR(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->pc_side                   = PC_LEFT;

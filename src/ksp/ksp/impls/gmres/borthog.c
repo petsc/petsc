@@ -1,3 +1,5 @@
+#define PETSCKSP_DLL
+
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -27,7 +29,7 @@
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
-PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,PetscInt it)
 {
   KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
   PetscErrorCode ierr;
