@@ -173,13 +173,14 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertM
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%d,%d) in the matrix",row,col);
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
-        int         new_nz = ai[A->m] + CHUNKSIZE,len,*new_i,*new_j;
+        int         new_nz = ai[A->m] + CHUNKSIZE,*new_i,*new_j;
+        size_t      len;
         PetscScalar *new_a;
 
         if (nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%d,%d) in the matrix requiring new malloc()",row,col);
 
         /* malloc new storage space */
-        len     = new_nz*(sizeof(int)+sizeof(PetscScalar))+(A->m+1)*sizeof(int);
+        len     = ((size_t) new_nz)*(sizeof(int)+sizeof(PetscScalar))+(A->m+1)*sizeof(int);
 	ierr    = PetscMalloc(len,&new_a);CHKERRQ(ierr);
         new_j   = (int*)(new_a + new_nz);
         new_i   = new_j + new_nz;
@@ -188,9 +189,9 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertM
         for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];}
         for (ii=row+1; ii<A->m+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;}
         ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow+shift)*sizeof(int));CHKERRQ(ierr);
-        len  = (new_nz - CHUNKSIZE - ai[row] - nrow - shift);
+        len  = (((size_t) new_nz) - CHUNKSIZE - ai[row] - nrow - shift);
         ierr = PetscMemcpy(new_j+ai[row]+shift+nrow+CHUNKSIZE,aj+ai[row]+shift+nrow,len*sizeof(int));CHKERRQ(ierr);
-        ierr = PetscMemcpy(new_a,aa,(ai[row]+nrow+shift)*sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscMemcpy(new_a,aa,(((size_t) ai[row])+nrow+shift)*sizeof(PetscScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+ai[row]+shift+nrow+CHUNKSIZE,aa+ai[row]+shift+nrow,len*sizeof(PetscScalar));CHKERRQ(ierr);
         /* free up old matrix storage */
         ierr = PetscFree(a->a);CHKERRQ(ierr);
@@ -2231,7 +2232,7 @@ EXTERN_C_BEGIN
 int MatStoreValues_SeqAIJ(Mat mat)
 {
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *)mat->data;
-  int        nz = aij->i[mat->m]+aij->indexshift,ierr;
+  size_t       nz = aij->i[mat->m]+aij->indexshift,ierr;
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
@@ -2426,7 +2427,7 @@ int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *engine)
   mmat = engGetArray((Engine *)engine,obj->name);
 
   aij->nz           = (mxGetJc(mmat))[mat->m];
-  ierr              = PetscMalloc(aij->nz*(sizeof(int)+sizeof(PetscScalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);
+  ierr              = PetscMalloc(((size_t) aij->nz)*(sizeof(int)+sizeof(PetscScalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);
   aij->j            = (int*)(aij->a + aij->nz);
   aij->i            = aij->j + aij->nz;
   aij->singlemalloc = PETSC_TRUE;
@@ -2565,8 +2566,9 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
 int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
 {
   Mat_SeqAIJ *b;
-  int        i,len=0,ierr;
+  size_t     len = 0;
   PetscTruth flg2,skipallocation = PETSC_FALSE;
+  int        i,ierr;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)B,MATSEQAIJ,&flg2);CHKERRQ(ierr);
@@ -2602,7 +2604,7 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
 
   if (!skipallocation) {
     /* allocate the matrix space */
-    len             = nz*(sizeof(int) + sizeof(PetscScalar)) + (B->m+1)*sizeof(int);
+    len             = ((size_t) nz)*(sizeof(int) + sizeof(PetscScalar)) + (B->m+1)*sizeof(int);
     ierr            = PetscMalloc(len,&b->a);CHKERRQ(ierr);
     b->j            = (int*)(b->a + nz);
     ierr            = PetscMemzero(b->j,nz*sizeof(int));CHKERRQ(ierr);
@@ -2725,7 +2727,8 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   Mat        C;
   Mat_SeqAIJ *c,*a = (Mat_SeqAIJ*)A->data;
-  int        i,len,m = A->m,shift = a->indexshift,ierr;
+  int        i,m = A->m,shift = a->indexshift,ierr;
+  size_t     len;
 
   PetscFunctionBegin;
   *B = 0;
@@ -2753,7 +2756,7 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
   /* allocate the matrix space */
   c->singlemalloc = PETSC_TRUE;
-  len   = (m+1)*sizeof(int)+(a->i[m])*(sizeof(PetscScalar)+sizeof(int));
+  len   = ((size_t) (m+1))*sizeof(int)+(a->i[m])*(sizeof(PetscScalar)+sizeof(int));
   ierr  = PetscMalloc(len,&c->a);CHKERRQ(ierr);
   c->j  = (int*)(c->a + a->i[m] + shift);
   c->i  = c->j + a->i[m] + shift;
