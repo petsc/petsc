@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.11 1995/06/03 04:25:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.12 1995/06/08 03:11:52 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -119,6 +119,7 @@ static int SNESSolve_TR(SNES snes, int *its )
          ynorm = norm;
        }
        VecAXPY(&one, X, Y );	/* Y <- X + Y */
+       ierr = VecCopy(X,snes->vec_sol_update_always); CHKERRQ(ierr);
        ierr = SNESComputeFunction(snes,Y,G); CHKERRQ(ierr); /* (+/-) F(X) */
        VecNorm( G, &gnorm );	/* gnorm <- || g || */ 
        if (fnorm == gpnorm) rho = 0.0;
@@ -144,7 +145,7 @@ static int SNESSolve_TR(SNES snes, int *its )
      snes->norm = fnorm;
      if (history && history_len > i+1) history[i+1] = fnorm;
      TMP = F; F = G; snes->vec_func_always = F; G = TMP;
-     TMP = X; X = Y;snes->vec_sol_always = X; Y = TMP;
+     TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
      VecNorm(X, &xnorm );		/* xnorm = || X || */
      if (snes->Monitor) (*snes->Monitor)(snes,i+1,fnorm,snes->monP);
 
@@ -162,14 +163,13 @@ static int SNESSolve_TR(SNES snes, int *its )
    if (i == maxits) *its = i-1; else *its = i + 1;
    return 0;
 }
-/* -------------------------------------------------------------*/
-
 /*------------------------------------------------------------*/
 static int SNESSetUp_TR( SNES snes )
 {
   int ierr;
-  snes->nwork = 3;
+  snes->nwork = 4;
   ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work ); CHKERRQ(ierr);
+  snes->vec_sol_update_always = snes->work[3];
   return 0;
 }
 /*------------------------------------------------------------*/

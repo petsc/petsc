@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.11 1995/05/25 22:48:44 bsmith Exp curfman $ */
+/* $Id: snesimpl.h,v 1.12 1995/06/13 00:30:26 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -18,7 +18,7 @@ struct _SNES {
 
   int   (*ComputeInitialGuess)(SNES,Vec,void*); /* Calculates initial guess */
   Vec   vec_sol,vec_sol_always;     /* Pointer to solution */
-  Vec   vec_sol_update;             /* Pointer to solution update */
+  Vec   vec_sol_update_always;      /* Pointer to solution update */
   void  *gusP;
 
   int   (*ComputeFunction)(SNES,Vec,Vec,void *);

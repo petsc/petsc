@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.22 1995/06/08 03:11:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.23 1995/06/13 01:18:08 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -59,6 +59,7 @@ int SNESSolve_LS( SNES snes, int *outits )
                                 &flg,snes->jacP); CHKERRQ(ierr);
        ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
        ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERRQ(ierr);
+       ierr = VecCopy(Y,snes->vec_sol_update_always); CHKERRQ(ierr);
        ierr = (*neP->LineSearch)(snes, X, F, G, Y, W, fnorm, &ynorm, &gnorm );
        CHKERRQ(ierr);
 
@@ -89,9 +90,10 @@ int SNESSolve_LS( SNES snes, int *outits )
 int SNESSetUp_LS(SNES snes )
 {
   int ierr;
-  snes->nwork = 3;
+  snes->nwork = 4;
   ierr = VecGetVecs( snes->vec_sol, snes->nwork,&snes->work ); CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work ); 
+  snes->vec_sol_update_always = snes->work[3];
   return 0;
 }
 /* ------------------------------------------------------------ */
