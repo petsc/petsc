@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.141 2000/04/09 04:37:55 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.142 2000/04/12 04:25:01 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -37,7 +37,7 @@ static int    GMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal*);
 static int    BuildGmresSoln(Scalar*,Vec,Vec,KSP,int);
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_GMRES"
+#define __FUNC__ /*<a name="KSPSetUp_GMRES"></a>*/"KSPSetUp_GMRES"
 int    KSPSetUp_GMRES(KSP ksp)
 {
   unsigned  int size,hh,hes,rs,cc;
@@ -104,7 +104,7 @@ int    KSPSetUp_GMRES(KSP ksp)
     This routine computes the initial residual
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"GMRESResidual"
+#define __FUNC__ /*<a name="GMRESResidual"></a>*/"GMRESResidual"
 static int GMRESResidual(KSP ksp)
 {
   KSP_GMRES    *gmres = (KSP_GMRES *)(ksp->data);
@@ -149,7 +149,7 @@ static int GMRESResidual(KSP ksp)
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"GMREScycle"
+#define __FUNC__ /*<a name="GMREScycle"></a>*/"GMREScycle"
 int GMREScycle(int *itcount,KSP ksp)
 {
   KSP_GMRES  *gmres = (KSP_GMRES *)(ksp->data);
@@ -249,7 +249,7 @@ int GMREScycle(int *itcount,KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPSolve_GMRES"
+#define __FUNC__ /*<a name="KSPSolve_GMRES"></a>*/"KSPSolve_GMRES"
 int KSPSolve_GMRES(KSP ksp,int *outits)
 {
   int       ierr,its,itcount;
@@ -300,7 +300,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPDestroy_GMRES" 
+#define __FUNC__ /*<a name="KSPDestroy_GMRES"></a>*/"KSPDestroy_GMRES" 
 int KSPDestroy_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -340,7 +340,7 @@ int KSPDestroy_GMRES(KSP ksp)
      This is an internal routine that knows about the GMRES internals.
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"BuildGmresSoln"
+#define __FUNC__ /*<a name="BuildGmresSoln"></a>*/"BuildGmresSoln"
 static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 {
   Scalar    tt,zero = 0.0,one = 1.0;
