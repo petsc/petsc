@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.25 1995/11/01 19:12:32 bsmith Exp curfman $ */
+/* $Id: plog.h,v 1.26 1995/11/15 01:18:35 curfman Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -85,7 +85,13 @@
 #define VEC_ScatterBegin                        74
 #define VEC_ScatterEnd                          75
 
-/* event numbers 80 to 99 are reserved for applications */
+/* 
+   event numbers 80 to 99 are reserved for applications, make sure that
+   src/sys/src/plog.c defines enough entries in (*name)[] to go up to 
+   PLOG_USER_EVENT_HIGH.
+*/
+#define PLOG_USER_EVENT_LOW                     80
+#define PLOG_USER_EVENT_HIGH                    120
 
 /* Global flop counter */
 extern double _TotalFlops;
@@ -116,7 +122,7 @@ extern double _TotalFlops;
    information.
 
     Example of Usage:
-$     #define USER_EVENT 85
+$     #define USER_EVENT PLOG_USER_EVENT_LOW
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
 $     [code segment to monitor]
@@ -145,7 +151,7 @@ extern int PLogEventRegister(int,char*);
    PLogEventBegin - Logs the beginning of a user event. 
 
    Input Parameters:
-.  e - integer associated with the event (80 < e < 99) 
+.  e - integer associated with the event (PLOG_USER_EVENT_LOW <= e < PLOG_USER_EVENT_HIGH) 
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
@@ -163,7 +169,7 @@ extern int PLogEventRegister(int,char*);
    to supplement this PETSc information.
 
     Example of Usage:
-$     #define USER_EVENT 85
+$     #define USER_EVENT PLOG_USER_EVENT_LOW
 $     int user_event_flops;
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
@@ -183,7 +189,7 @@ M*/
    PLogEventEnd - Log the end of a user event.
 
    Input Parameters:
-.  e - integer associated with the event (80 < e < 99) 
+.  e - integer associated with the event (PLOG_USER_EVENT_LOW <= e < PLOG_USER_EVENT_HIGH) 
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
@@ -201,7 +207,7 @@ M*/
    to supplement this PETSc information.
 
     Example of Usage:
-$     #define USER_EVENT 85
+$     #define USER_EVENT PLOG_EVENT_USER_LOW
 $     int user_event_flops;
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
@@ -242,3 +248,4 @@ extern int PLogInfo(PetscObject,char*,...);
 #endif
 
 #endif
+
