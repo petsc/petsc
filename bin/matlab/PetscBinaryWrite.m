@@ -21,9 +21,9 @@ for l=1:nargin-1
     header = fwrite(fd,[1211216,m,n,nz],'int32');
     n_nz = full(sum(A' ~= 0));
 
-    sum_nz = sum(nnz);
+    sum_nz = sum(n_nz);
     if(sum_nz ~=nz)
-      str = sprintf('No-Nonzeros m-rowlenths do not match %d %d',nz,sum_nz);
+      str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
       error(str);
     end
 
