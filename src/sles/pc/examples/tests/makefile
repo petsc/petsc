@@ -19,6 +19,7 @@ SYSLIB   = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
 LINCLUDE = $(SOURCEH)
 
 runexamples: 
+        -@echo "Examples in src/pc/examples -----------------"
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
            if (diff ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \
