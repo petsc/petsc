@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.38 1998/03/24 21:13:03 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.39 1998/04/08 22:30:13 balay Exp balay $";
 #endif
 
 /*
@@ -31,8 +31,6 @@ extern int          PetscBeganMPI;
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
-#define petscinitializefortran_       PETSCINITIALIZEFORTRAN
-#define petsc_null_function_          PETSC_NULL_FUNCTION
 #if defined(PARCH_nt)
 #define IARGC                        NARGS
 #endif
@@ -41,8 +39,6 @@ extern int          PetscBeganMPI;
 #define petscfinalize_                petscfinalize
 #define petscinitialize_              petscinitialize
 #define mpi_init_                     mpi_init
-#define petscinitializefortran_       petscinitializefortran
-#define petsc_null_function_          petsc_null_function
 /*
     HP-UX does not have Fortran underscore but iargc and getarg 
   do have underscores????
@@ -65,7 +61,6 @@ int OptionsCheckInitial_Private(),
 */
 #if defined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
 #define mpi_init_             mpi_init__
-#define petsc_null_function_  petsc_null_function__
 #endif
 
 #if defined(__cplusplus)
@@ -274,11 +269,6 @@ void petscfinalize_(int *__ierr)
 void petscsetcommworld_(MPI_Comm *comm,int *__ierr)
 {
   *__ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *comm )  );
-}
-
-void petsc_null_function_(void)
-{
-  return;
 }
 
 #if defined(__cplusplus)

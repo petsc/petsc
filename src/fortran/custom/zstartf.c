@@ -6,10 +6,16 @@
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
 #define petscsetcommonblock_          PETSCSETCOMMONBLOCK
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
+#define petsc_null_function_          PETSC_NULL_FUNCTION
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscinitializefortran_       petscinitializefortran
 #define petscsetcommonblock_          petscsetcommonblock
 #define petscsetfortranbasepointers_  petscsetfortranbasepointers
+#define petsc_null_function_          petsc_null_function
+#endif
+
+#if defined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#define petsc_null_function_  petsc_null_function__
 #endif
 
 #if defined(__cplusplus)
@@ -70,6 +76,12 @@ void petscsetfortranbasepointers_(void *fnull,char *fcnull,void *ffnull)
   PETSC_NULL_FUNCTION_Fortran   = ffnull;
 }
 #endif 
+
+
+void petsc_null_function_(void)
+{
+  return;
+}
 
 #if defined(__cplusplus)
 }
