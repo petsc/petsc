@@ -1,5 +1,6 @@
-#if   BLAS
-#if   r8
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
+#if   defined(BLAS)
+#if   defined(r8)
 double ddot (int n, double *x, int incx, double *y, int incy);
 void   daxpy(long int n, double da, double *dx, long int incx, 
 	     double *dy, long int incy);
@@ -16,8 +17,8 @@ float scopy(int n, float *x, int incx, float *y, int incy);
 #define axpy saxpy
 #define copy scopy
 #endif
-#elif CBLAS
-#if   r8
+#elif defined(CBLAS)
+#if   defined(r8)
 double cblas_ddot (int n, double *x, int incx, double *y, int incy);
 void   cblas_daxpy(long int n, double da, double *dx, long int incx, 
 		   double *dy, long int incy);
