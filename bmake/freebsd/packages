@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.24 1999/06/30 22:48:03 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.25 1999/11/05 14:42:55 bsmith Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -9,8 +9,8 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html 
 # for information on retrieving them.
 #
-BLAS_LIB       = /home/petsc/blaslapack/blas.a ${FC_LIB}
-LAPACK_LIB     = /home/petsc/blaslapack/lapack.a
+BLAS_LIB       = /home/petsc/software/blaslapack/blas.a ${FC_LIB}
+LAPACK_LIB     = /home/petsc/software/blaslapack/lapack.a
 #
 # Location of X-windows software
 #
@@ -19,11 +19,15 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /home/petsc/mpich
-MPI_BUILD_HOME = ${MPI_HOME}/build/freebsd/ch_p4
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
-MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
+MPI_HOME       = /home/petsc/software/mpich-1.2.0/freebsd
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirunb
+#MPI_HOME       = /home/petsc/mpich
+#MPI_BUILD_HOME = ${MPI_HOME}/build/freebsd/ch_p4
+#MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
+#MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+#MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 # Unless you are using the p4 secure server you should remove the -p4ssport 1861 
 # from below. If you are using the secure server you should put in the appropriate
 # port number below instead of 1861

@@ -1,6 +1,6 @@
-/*$Id: rs6000_time.c,v 1.4 1999/10/24 14:01:31 bsmith Exp bsmith $*/
+/*$Id: rs6000_time.c,v 1.5 2000/01/11 20:59:38 bsmith Exp balay $*/
 
-#include <petsc.h>
+#include "petsc.h"
 #if defined (PETSC_USE_READ_REAL_TIME)
 #include <sys/time.h>
 #include <sys/systemcfg.h>
