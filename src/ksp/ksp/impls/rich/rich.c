@@ -27,7 +27,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscInt       i,maxit;
   MatStructure   pflag;
   PetscReal      rnorm = 0.0;
-  PetscScalar    scale,mone = -1.0;
+  PetscScalar    scale,mone = -1.0,dt;
   Vec            x,b,r,z;
   Mat            Amat,Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
@@ -65,7 +65,8 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
           ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'B'*Br     */
         } else {
-          ierr = VecDot(r,z,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*r  = r'Br = e'*A'*B*A*e  */
+          ierr = VecDot(r,z,&dt);CHKERRQ(ierr); 
+          rnorm = PetscAbsScalar(dt);                    /*   rnorm <- z'*r  = r'Br = e'*A'*B*A*e  */
         }
       }
       ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);

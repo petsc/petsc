@@ -441,7 +441,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag *bag,PetscViewer view)
         ierr = PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_SCALAR) {
         PetscScalar value = *(PetscScalar*)(((char*)bag) + nitem->offset);
+#if defined(PETSC_USE_COMPLEX)
+        ierr = PetscViewerASCIIPrintf(view,"  %s = %g + %gi; %s\n",nitem->name,PetscRealPart(value),PetscImaginaryPart(value),nitem->help);CHKERRQ(ierr);
+#else
         ierr = PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
+#endif
       } else if (nitem->dtype == PETSC_INT) {
         PetscInt value = *(PetscInt*)(((char*)bag) + nitem->offset);
         ierr = PetscViewerASCIIPrintf(view,"  %s = %D; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
