@@ -14,36 +14,19 @@ add to it).
 
   MAT
 
-    Added two additional arguments to MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *)
-    where m and n are the local ownership sizes. To get the effect of the old MatCreate()
-    use m and n equal to PETSC_DECIDE
     
-   Changed MatSetLocalToGlobalMappingBlocked() to MatSetLocalToGlobalMappingBlock() so that it would be less then 32 characters long.
 
   KSP
 
-    Added additional final argument to KSPSetMonitor() an optional destroy routine for the 
-    monitor context.
     
-    Added -ksp_gmres_krylov_monitor and KSPGMRESKrylovMonitor() to allow one to view the vectors
-    in the Krylov space.
-     
     
   SLES
  
-    Added SLESSetDiagonalScale(), -sles_diagonal_scale to allow one to scale the system
-    before computing the preconditioner and solving. For certain systems this can improve the
-    convergence of the iterative method. But be careful because this CHANGES the right hand side
-    and the matrix unless you also use the options SLESSetDiagonalScaleFix(), -sles_diagonal_scale_fix
    
- 
 
   PC
 
-   MGSetRestriction and MGSetInterpolation now accept either the appropriate matrix or its transpose;
-  PETSc figures out which one it is based on the number of rows and columns. Now you don't need to use
-  the Shell matrices if you computed it "the other way then PETSc use to expect".
-
+  
   
 
  
@@ -56,81 +39,17 @@ add to it).
     
   Draw
 
-    DrawCreate() and DrawOpenX() now can take DRAW_FULL_SIZE, DRAW_HALF_SIZE, DRAW_THIRD_SIZE ... as arguments
-    for w and or h.
-    
-
-    
-
+   
   General
 
-   Routines XXXRegister() are now XXXRegisterDynamic() used for registering new object types
-in dynamic libraries and XXXRegister_Private() is now XXXRegister() used to register new object
-types whose definitions are in the exectuable.
+ 
+  Viewers
 
 
-   The final argument to OptionsHasName() and OptionsGetXXX() is a PetscTruth * instead
-   of an int*
-
-   PETSc functions and objects that began with Table now begin with PetscTable
-
-   Changed these routines to return an error code.
-extern int   PetscStrchr(const char[],char,char **);
-extern int   PetscStrrchr(const char[],char,char **);
-extern int   PetscStrstr(const char[],const char[],char **);
-extern int   PetscStrtok(const char[],const char[],char **);    
-extern int   PetscStrlen(const char[],int *);
-added PetscStrallocpy(const char[],char **);
-PetscStrncmp() and PetscStrcasecmp() now return PETSC_TRUE as a final argument
-if the strings match else PETSC_FALSE. Note this means removing ! from your current
-tests and adding it where you don't have it.
-
-PetscMemcmp() now has a final argument of true for matching memories.
-
-   The Fortran versions of the PetscStrxxx() and PetscMemxxx() routines also now 
-have the error flag as the final argument.
-   
-   Added CHKMEMQ and CHKMEMA macros to help track down memory corruption.
-   
-   PetscFree() now always returns an error code that may be checked with CHKERRQ(). 
-   On systems where free() returns a void (and the user has no access to an error
-   condition in free(), PetscFree() returns 0 i.e. no error; on other systems it 
-   returns the error number from free.
-
-   using -trdump with PETSC_USE_STACK compile option (default for BOPT=g*) will print the entire
-   stack for each malloc, allow one to more easily track down where mallocs where made that where not
-   freed.
-
-  The BT bitarray macros are now prefixed with PetscBT
-
-  Added PetscSum_Op to replace MPI_SUM for reductions with MPIU_SCALAR
-
-  Added PetscMaxSum_Op to do max on first half of entries and sum on second half.
-
-  Viewer
-
- Added ViewerASCIISynchronizedPrintf(viewer,....)
    
 
   SNES 
 
-  Changed calling sequence of SNES monitoring routines to add an additional output parameter indicating
-  why it converged or diverged.
-
-   Added SNESGetConvergedReason() to find out if a SNESSolve() has converged/diverged and why
-
-
-  Added SNESVecViewMonitorUpdate() and -snes_vecmonitor_update to display the Newton update at each iteration.    
-
-  Added additional final argument to SNESSetMonitor() an optional destroy routine for the 
-    monitor context.
-
-  Changed calling sequence of MatSNESMFAddNullSpace() to take PCNullSpace object rather than 
-  array of vectors.
-
-  Added SNESSetLineSearchParams() and  SNESGetLineSearchParams(), contributed by Matt Knepley.
-
-  Added final ctx argument to SNESGetFunction(), SNESGetGradient() and SNESGetMinimizationFunction()
 
   DA
 
