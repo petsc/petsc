@@ -60,7 +60,7 @@ extern PetscFList KSPList;
 EXTERN int KSPRegisterAll(const char[]);
 EXTERN int KSPRegisterDestroy(void);
 
-EXTERN int KSPRegister(const char[],const char[],char[],int(*)(KSP));
+EXTERN int KSPRegister(const char[],const char[],const char[],int(*)(KSP));
 
 /*MC
    KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
