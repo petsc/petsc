@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.66 1999/04/06 18:13:44 balay Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.67 1999/04/16 16:11:54 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -41,6 +41,7 @@ static char vcid[] = "$Id: zmat.c,v 1.66 1999/04/06 18:13:44 balay Exp bsmith $"
 #define matgetsubmatrices_               MATGETSUBMATRICES
 #define matgetcoloring_                  MATGETCOLORING
 #define matpartitioningsettype_          MATPARTITIONINGSETTYPE
+#define matduplicate_                    MATDUPLICATE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
@@ -77,6 +78,7 @@ static char vcid[] = "$Id: zmat.c,v 1.66 1999/04/06 18:13:44 balay Exp bsmith $"
 #define matcopy_                         matcopy
 #define matgetsubmatrices_               matgetsubmatrices
 #define matgetcoloring_                  matgetcoloring
+#define matduplicate_                    matduplicate
 #endif
 
 EXTERN_C_BEGIN
@@ -446,6 +448,12 @@ void matgetsubmatrices_(Mat *mat, int *n, IS *isrow, IS *iscol,MatReuse *scall,
     *__ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
   }
 }
-  
+
+void matduplicate_(Mat *matin,MatDuplicateOption *op,Mat *matout, int *__ierr )
+{
+  *__ierr = MatDuplicate(*matin,*op,matout);
+}
+
+
 EXTERN_C_END
 
