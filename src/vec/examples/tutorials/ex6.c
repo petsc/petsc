@@ -50,7 +50,8 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryGetDescriptor(view_in,&fd);CHKERRQ(ierr);
 
   /* Create vector and get pointer to data space */
-  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,m,&vec);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&vec);CHKERRQ(ierr);
+  ierr = VecSetSizes(vec,PETSC_DECIDE,m);CHKERRQ(ierr);
   ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
 

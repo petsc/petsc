@@ -18,11 +18,13 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&y);CHKERRQ(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr); 
+  ierr = VecSetSizes(y,PETSC_DECIDE,m);CHKERRQ(ierr); 
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecDuplicate(y,&x);CHKERRQ(ierr);
   ierr = VecSet(&value,x);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,m,0,1,&perm);CHKERRQ(ierr);
 

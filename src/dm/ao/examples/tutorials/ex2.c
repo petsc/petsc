@@ -484,7 +484,8 @@ int DataMoveElements(GridData *gdata)
      but since this is just a setup phase in the entire numerical computation that 
      is only called once it is not a measureable performance bottleneck.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,3*counts[rank],PETSC_DECIDE,&vele);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&vele);CHKERRQ(ierr);
+  ierr = VecSetSizes(vele,3*counts[rank],PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(vele);CHKERRQ(ierr);
 
   /* 

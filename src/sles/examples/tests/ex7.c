@@ -69,7 +69,8 @@ int main(int argc,char **args)
 
       /* Create a new vector b by padding the old one */
       ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-      ierr = VecCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,&tmp);
+      ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
+      ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
       ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);

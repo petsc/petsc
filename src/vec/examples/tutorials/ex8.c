@@ -33,7 +33,8 @@ int main(int argc,char **argv)
         PETSc could determine the vector's distribution if we specify
         just the global size.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,rank+1,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,rank+1,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecGetSize(x,&N);CHKERRQ(ierr);
   ierr = VecSet(&one,x);CHKERRQ(ierr);

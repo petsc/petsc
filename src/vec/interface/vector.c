@@ -6,9 +6,9 @@
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecSetTypeFromOptions"
-/*@
-  VecSetTypeFromOptions - Sets the type of vector from user options. Defaults to a PETSc sequential vector on one
+#define __FUNCT__ "VecSetTypeFromOptions_Private"
+/*
+  VecSetTypeFromOptions_Private - Sets the type of vector from user options. Defaults to a PETSc sequential vector on one
   processor and a PETSc MPI vector on more than one processor.
 
   Collective on Vec
@@ -20,8 +20,8 @@
 
 .keywords: Vec, set, options, database, type
 .seealso: VecSetFromOptions(), VecSetType()
-@*/
-static int VecSetTypeFromOptions(Vec vec)
+*/
+static int VecSetTypeFromOptions_Private(Vec vec)
 {
   PetscTruth opt;
   char      *defaultType;
@@ -92,7 +92,7 @@ int VecSetFromOptions(Vec vec)
   }
 
   /* Handle vector type options */
-  ierr = VecSetTypeFromOptions(vec);                                                                      CHKERRQ(ierr);
+  ierr = VecSetTypeFromOptions_Private(vec);                                                              CHKERRQ(ierr);
 
   /* Handle specific vector options */
   if (vec->ops->setfromoptions != PETSC_NULL) {

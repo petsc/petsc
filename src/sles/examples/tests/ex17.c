@@ -35,7 +35,8 @@ int main(int argc,char **args)
   }
 
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,dim);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);

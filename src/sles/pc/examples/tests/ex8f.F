@@ -117,7 +117,8 @@
 !     if desired.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,u,ierr)
+      call VecCreate(PETSC_COMM_WORLD,u,ierr)
+      call VecSetSizes(u,PETSC_DECIDE,dim,ierr)
       call VecSetFromOptions(u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)

@@ -22,7 +22,8 @@
        call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 ! Create a vector, then duplicate it
-       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+       call VecCreate(PETSC_COMM_WORLD,x,ierr)
+       call VecSetSizes(x,PETSC_DECIDE,n,ierr)
        call VecSetFromOptions(x,ierr)
        call VecDuplicate(x,y,ierr)
        call VecDuplicate(x,w,ierr)

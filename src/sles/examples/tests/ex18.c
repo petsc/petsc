@@ -43,7 +43,8 @@ int main(int argc,char **args)
     Vec    tmp;
     PetscScalar *bold,*bnew;
     /* create a new vector b by padding the old one */
-    ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&tmp);CHKERRQ(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
+    ierr = VecSetSizes(tmp,PETSC_DECIDE,m);CHKERRQ(ierr);
     ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
     ierr = VecGetArray(tmp,&bnew);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bold);CHKERRQ(ierr);

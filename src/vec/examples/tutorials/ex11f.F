@@ -41,7 +41,8 @@
 
 !
 !     Create a vector, specifying only its global dimension.
-!     When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel,
+!     When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
+!     the vector format (currently parallel,
 !     shared, or sequential) is determined at runtime.  Also, the parallel
 !     partitioning of the vector is determined by PETSc at runtime.
 !
@@ -53,10 +54,12 @@
 !                            (available only on the SGI); otherwise,
 !                            is the same as VecCreateMPI()
 !
-!     With VecCreate() and VecSetFromOptions() the option -vec_type mpi or -vec_type shared causes the 
+!     With VecCreate(), VecSetSizes() and VecSetFromOptions() the option
+!     -vec_type mpi or -vec_type shared causes the 
 !     particular type of vector to be formed.
 
-      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,x,ierr)
+      call VecSetSizes(x,PETSC_DECIDE,n,ierr)
       call VecSetFromOptions(x,ierr)
 
 !

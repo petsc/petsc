@@ -25,7 +25,8 @@ int main(int argc,char **argv)
 
   /* create two vector */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,n,PETSC_DECIDE,&y);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
+  ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecSet(&one,x);CHKERRQ(ierr);
   ierr = VecSet(&two,y);CHKERRQ(ierr);

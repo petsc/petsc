@@ -38,7 +38,8 @@ int main(int argc,char **args)
  
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,&xx);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&xx);CHKERRQ(ierr);
+  ierr = VecSetSizes(xx,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);

@@ -112,7 +112,8 @@
 !     is determined by PETSc at runtime.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
+      call VecCreate(PETSC_COMM_WORLD,u,ierr)
+      call VecSetSizes(u,PETSC_DECIDE,m*n,ierr)
       call VecSetFromOptions(u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)

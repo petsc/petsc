@@ -43,7 +43,8 @@ int main(int argc,char **args)
   /* Generate vectors */
   ierr = MatGetSize(mat,&rdim,&cdim);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,rdim,&u);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecSetSizes(u,PETSC_DECIDE,rdim);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);

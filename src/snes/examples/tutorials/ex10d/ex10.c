@@ -352,7 +352,8 @@ int main(int argc,char **argv)
   /* 
     Create vector data structures 
   */
-  ierr = VecCreate(MPI_COMM_WORLD,user.Nvlocal,N,&x);CHKERRQ(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,user.Nvlocal,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&user.localX);CHKERRQ(ierr);

@@ -36,7 +36,8 @@ int main(int argc,char **args)
 
   PetscInitializeFortran();  
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&vec);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&vec);CHKERRQ(ierr);
+  ierr = VecSetSizes(vec,PETSC_DECIDE,m);CHKERRQ(ierr);
   ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
 
   /* 

@@ -56,7 +56,8 @@ int main(int argc,char **args)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Form a couple of vectors to test matrix-vector product */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,m*n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   v = 1.0; ierr = VecSet(&v,x);CHKERRQ(ierr);

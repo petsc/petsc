@@ -18,7 +18,8 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
@@ -124,7 +125,8 @@ int main(int argc,char **argv)
     allocating a larger data structure internally
   */
   for (i=0; i<40; i++) {
-    ierr  = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,vecs+i);CHKERRQ(ierr);
+    ierr  = VecCreate(PETSC_COMM_WORLD,vecs+i);CHKERRQ(ierr);
+    ierr  = VecSetSizes(vecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);
     ierr  = VecSetFromOptions(vecs[i]);CHKERRQ(ierr);
     value = (PetscReal)i;
     ierr  = VecSet(&value,vecs[i]);CHKERRQ(ierr);

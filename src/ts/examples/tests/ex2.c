@@ -45,7 +45,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
     
   /* set initial conditions */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&global);CHKERRQ(ierr);
+  ierr = VecSetSizes(global,PETSC_DECIDE,3);CHKERRQ(ierr);
   ierr = VecSetFromOptions(global);CHKERRQ(ierr);
   ierr = Initial(global,PETSC_NULL);CHKERRQ(ierr);
  

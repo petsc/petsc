@@ -43,7 +43,8 @@ int main(int argc,char **args)
   ierr = MatLUFactorSymbolic(A,rowperm,colperm,PETSC_NULL,&LU);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&LU);CHKERRQ(ierr);
   ierr = MatView(LU,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,4,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,4);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   values[0]=0;values[1]=1.0;values[2]=-1.0;values[3]=1.0;

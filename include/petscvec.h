@@ -94,14 +94,14 @@ EXTERN int VecCreateMPI(MPI_Comm,int,int,Vec*);
 EXTERN int VecCreateSeqWithArray(MPI_Comm,int,const PetscScalar[],Vec*);  
 EXTERN int VecCreateMPIWithArray(MPI_Comm,int,int,const PetscScalar[],Vec*);  
 EXTERN int VecCreateShared(MPI_Comm,int,int,Vec*);  
-EXTERN int VecCreate(MPI_Comm, Vec *); 
-EXTERN int VecSerialize(MPI_Comm, Vec *, PetscViewer, PetscTruth);
+EXTERN int VecCreate(MPI_Comm,Vec *); 
+EXTERN int VecSerialize(MPI_Comm,Vec *,PetscViewer,PetscTruth);
 EXTERN int VecSetType(Vec,VecType); 
 EXTERN int VecSetFromOptions(Vec);
 EXTERN int VecPrintHelp(Vec);
 EXTERN int VecDestroy(Vec);        
 
-EXTERN int VecSetSizes(Vec, int, int);
+EXTERN int VecSetSizes(Vec,int,int);
 
 EXTERN int PetscMapDestroy(PetscMap);
 EXTERN int PetscMapGetLocalSize(PetscMap,int *);

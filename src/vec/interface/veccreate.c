@@ -20,8 +20,8 @@ static char vcid[] = "$Id: vecserialize.c,v 1.10 2000/01/10 03:18:14 knepley Exp
   Level: beginner
 
 .keywords: vector, create
-.seealso: VecSetType(), VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(), 
-          VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
+.seealso: VecSetType(), VecSetSizes(), VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(),
+          VecDuplicateVecs(), VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
 int VecCreate(MPI_Comm comm, Vec *vec)
 {

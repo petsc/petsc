@@ -56,7 +56,8 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create a vector, specifying only its global dimension.
-!  When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
+!  When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
+!  the vector format (currently parallel
 !  or sequential) is determined at runtime.  Also, the parallel
 !  partitioning of the vector is determined by PETSc at runtime.
 !
@@ -68,10 +69,12 @@
 !                         (available only on the SGI); otherwise,
 !                         is the same as VecCreateMPI()
 !
-!     VecCreate() and VecSetFromOptions() allows one to determine at runtime which version to use
+!     VecCreate(), VecSetSizes() and VecSetFromOptions() allows one 
+!                 to determine at runtime which version to use
 !                 with the options -vec_type mpi or -vec_type shared
 !
-      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,x,ierr)
+      call VecSetSizes(x,PETSC_DECIDE,n,ierr)
       call VecSetFromOptions(x,ierr)
 
 !  Duplicate some work vectors (of the same format and

@@ -32,14 +32,16 @@ int main(int argc,char **argv)
   /* 
       Create multi-component vector with 2 components
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&v);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
+  ierr = VecSetSizes(v,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(v,2);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
 
   /* 
       Create single-component vector
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n/2,&s);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&s);CHKERRQ(ierr);
+  ierr = VecSetSizes(s,PETSC_DECIDE,n/2);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s);CHKERRQ(ierr);
 
   /*

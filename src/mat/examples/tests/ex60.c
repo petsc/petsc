@@ -37,7 +37,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&yy);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&yy);CHKERRQ(ierr);
+  ierr = VecSetSizes(yy,PETSC_DECIDE,m*n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(yy);CHKERRQ(ierr);
 
   ierr = MatGetColumnVector(C,yy,col);CHKERRQ(ierr);

@@ -32,7 +32,8 @@ int main(int argc,char **args)
   fscanf(file,"  JA POINTER IN SLAPSV\n");
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,20,0,&A);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+  ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
   ierr = PetscMalloc((n+1)*sizeof(int),&col);CHKERRQ(ierr);

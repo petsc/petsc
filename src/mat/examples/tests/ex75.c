@@ -178,7 +178,9 @@ int main(int argc,char **args)
 
   /* vectors */
   /*--------------------*/
-  ierr = VecCreate(PETSC_COMM_WORLD,i,PETSC_DECIDE,&x); /* i is obtained from MatGetLocalSize() */CHKERRQ(ierr);
+ /* i is obtained from MatGetLocalSize() */
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,i,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr); 
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);  

@@ -77,14 +77,15 @@ int main(int argc,char **args)
         runtime. Also, the parallel partitioning of the matrix is
         determined by PETSc at runtime.
       - Create parallel vectors.
-        - When using VecCreate(), we specify only the vector's global
+        - When using VecSetSizes(), we specify only the vector's global
           dimension; the parallel partitioning is determined at runtime. 
         - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C1);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C1);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C1,&Istart,&Iend);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b1);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x1);CHKERRQ(ierr);

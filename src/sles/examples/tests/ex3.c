@@ -70,7 +70,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create right-hand-side and solution vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u);CHKERRQ(ierr); 
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr); 
+  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr); 
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);

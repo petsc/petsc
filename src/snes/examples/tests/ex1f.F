@@ -145,7 +145,8 @@
 !  Create vector data structures; set function evaluation routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,x,ierr)
+      call VecCreate(PETSC_COMM_WORLD,x,ierr)
+      call VecSetSizes(x,PETSC_DECIDE,N,ierr)
       call VecSetFromOptions(x,ierr)
       call VecDuplicate(x,r,ierr)
 

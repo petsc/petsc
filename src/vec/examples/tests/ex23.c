@@ -32,7 +32,8 @@ int main(int argc,char **argv)
   /* create two vectors */
   if (!rank) nlocal = 8;
   else nlocal = 4;
-  ierr = VecCreate(PETSC_COMM_WORLD,nlocal,12,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,nlocal,12);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,8,&y);CHKERRQ(ierr);
 

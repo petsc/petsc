@@ -115,7 +115,8 @@ int VecDuplicate_ESI(Vec xin,Vec *xout)
   esi::Vector<double,int> *nevec;
 
   PetscFunctionBegin;
-  ierr = VecCreate(xin->comm,xin->n,xin->N,xout);CHKERRQ(ierr);
+  ierr = VecCreate(xin->comm,xout);CHKERRQ(ierr);
+  ierr = VecSetSizes(*xout,xin->n,xin->N);CHKERRQ(ierr);
   ierr = x->evec->clone(nevec);
   ierr = VecESISetVector(*xout,nevec);CHKERRQ(ierr);
   ierr = nevec->deleteReference();CHKERRQ(ierr);
@@ -419,7 +420,8 @@ int VecCreate_PetscESI(Vec V)
   PetscFunctionBegin;
   V->ops->destroy = 0;  /* since this is called from VecSetType() we have to make sure it doesn't get destroyed twice */
   ierr = VecSetType(V,VECESI);CHKERRQ(ierr);
-  ierr = VecCreate(V->comm,V->n,V->N,&v);CHKERRQ(ierr);
+  ierr = VecCreate(V->comm,&v);CHKERRQ(ierr);
+  ierr = VecSetSizes(v,V->n,V->N);CHKERRQ(ierr);
   if (V->bs > 1) {ierr = VecSetBlockSize(v,V->bs);CHKERRQ(ierr);}
   ierr = VecSetType(v,VECMPI);CHKERRQ(ierr);
   ve   = new esi::petsc::Vector<double,int>(v);

@@ -38,10 +38,12 @@ int main(int Argc,char **Args)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   /* Create the necessary vectors; one element per processor */
-  ierr = VecCreate(comm,1,PETSC_DECIDE,&tar_v);CHKERRQ(ierr);
+  ierr = VecCreate(comm,&tar_v);CHKERRQ(ierr);
+  ierr = VecSetSizes(tar_v,1,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(tar_v);CHKERRQ(ierr);
   ierr = VecSet(&zero,tar_v);CHKERRQ(ierr);
-  ierr = VecCreate(comm,1,PETSC_DECIDE,&src_v);CHKERRQ(ierr);
+  ierr = VecCreate(comm,&src_v);CHKERRQ(ierr);
+  ierr = VecSetSizes(src_v,1,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(src_v);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,1,&loc_v);CHKERRQ(ierr);
   /* -- little trick: we need a distributed and a local vector

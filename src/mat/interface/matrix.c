@@ -1310,9 +1310,9 @@ int MatMultConstrained(Mat mat,Vec x,Vec y)
 }   
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMultConstrained"
+#define __FUNCT__ "MatMultTransposeConstrained"
 /*@
-   MatMultConstrained - The inner multiplication routine for a
+   MatMultTransposeConstrained - The inner multiplication routine for a
    constrained matrix P^T A^T P.
 
    Collective on Mat and Vec

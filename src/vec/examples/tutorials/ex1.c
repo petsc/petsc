@@ -34,9 +34,9 @@ int main(int argc,char **argv)
 
   /* 
      Create a vector, specifying only its global dimension.
-     When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel,
-     shared, or sequential) is determined at runtime.  Also, the parallel
-     partitioning of the vector is determined by PETSc at runtime.
+     When using VecCreate(), VecSetSizes() and VecSetFromOptions(), the vector format 
+     (currently parallel, shared, or sequential) is determined at runtime.  Also, the 
+     parallel partitioning of the vector is determined by PETSc at runtime.
 
      Routines for creating particular vector types directly are:
         VecCreateSeq() - uniprocessor vector
@@ -46,12 +46,13 @@ int main(int argc,char **argv)
                             (available only on the SGI); otherwise,
                             is the same as VecCreateMPI()
 
-     With VecCreate() and VecSetFromOptions() the option -vec_type mpi or -vec_type shared causes the 
-     particular type of vector to be formed.
+     With VecCreate(), VecSetSizes() and VecSetFromOptions() the option -vec_type mpi or 
+     -vec_type shared causes the particular type of vector to be formed.
 
   */
 
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /*

@@ -143,7 +143,8 @@ int AppCtxCreateRhsAndMatrix (AppCtx *appctx)
   if (!flg) {
     ierr = VecCreateMPI(comm,part->m,PETSC_DETERMINE,&algebra->b);CHKERRQ(ierr);
   } else {
-    ierr = VecCreate(comm,part->m,PETSC_DETERMINE,&algebra->b);CHKERRQ(ierr);
+    ierr = VecCreate(comm,&algebra->b);CHKERRQ(ierr);
+    ierr = VecSetSizes(algebra->b,part->m,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(algebra->b);CHKERRQ(ierr);
   }
   /* Create the structure for the stiffness matrix */

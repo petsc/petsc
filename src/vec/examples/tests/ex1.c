@@ -16,7 +16,8 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_SELF,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetType(x,"mpi");CHKERRQ(ierr);
   ierr = VecSetType(x,"seq");CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);

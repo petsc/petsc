@@ -28,7 +28,8 @@ int main(int argc,char **args)
   ierr = PetscLogEventRegister(&VECTOR_GENERATE,"Generate Vector","Red:");CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
   /* Generate vector */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&u);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecSetSizes(u,PETSC_DECIDE,m);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
   ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);

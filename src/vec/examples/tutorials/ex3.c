@@ -33,11 +33,13 @@ int main(int argc,char **argv)
   
   /* 
      Create a vector, specifying only its global dimension.
-     When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
-     or sequential) is determined at runtime.  Also, the parallel
-     partitioning of the vector is determined by PETSc at runtime.
+     When using VecCreate(), VecSetSizes() and VecSetFromOptions(), 
+     the vector format (currently parallel or sequential) is 
+     determined at runtime.  Also, the parallel partitioning of 
+     the vector is determined by PETSc at runtime.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /* 

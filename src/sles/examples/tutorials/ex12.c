@@ -107,7 +107,8 @@ int main(int argc,char **args)
 
   /* 
      Create parallel vectors.
-      - When using VecCreate() and VecSetFromOptions(), we specify only the vector's global
+      - When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
+      we specify only the vector's global
         dimension; the parallel partitioning is determined at runtime. 
       - When solving a linear system, the vectors and matrices MUST
         be partitioned accordingly.  PETSc automatically generates
@@ -115,7 +116,8 @@ int main(int argc,char **args)
         and VecCreate() are used with the same communicator. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
+  ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr); 
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
