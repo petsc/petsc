@@ -2,11 +2,18 @@ CC       = cc -DPARCH_IRIX
 FC       = f77
 AR       = ar
 RM       = rm -f
-RANLIB   = true
-OMAKE    = $(PETSC_DIR)/bmake/$(PETSC_ARCH)/make_dso_IRIX $(LDIR)
+#
+# the  following is used to convert petsclib into dynamic libraries 
+#
+RANLIB   = $(PETSC_DIR)/bmake/$(PETSC_ARCH)/make_dso_IRIX $(LDIR)
+OMAKE    = make
 SHELL    = /bin/sh
-CLINKER  = cc $(COPTFLAGS)
-FLINKER  = f77 $(FOPTFLAGS)
+#
+# -rpath is requied to specify the location of any dynamic libraries
+# which are not found in the standard locations (/lib:/usr/lib:) etc
+#
+CLINKER  = cc $(COPTFLAGS) -rpath $(LDIR)
+FLINKER  = f77 $(FOPTFLAGS) -rpath $(LDIR)
 
 SYS_LIB    = -lfpe -lsun 
 #
