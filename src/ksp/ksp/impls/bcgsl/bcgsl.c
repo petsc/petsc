@@ -106,6 +106,8 @@ int bcgsl_cleanup_i(KSP ksp)
   PetscFunctionBegin;
 
   /* free all workspace */
+  ierr = PetscFree(ksp->work); CHKERRQ(ierr);
+#if 0
   ierr = VecDestroy(VB);CHKERRQ(ierr);
   ierr = VecDestroy(VRT);CHKERRQ(ierr);
   ierr = VecDestroyVecs(VVR,bcgsl->ell+1);CHKERRQ(ierr);
@@ -126,6 +128,7 @@ int bcgsl_cleanup_i(KSP ksp)
     ierr = PetscFree(AY0t);CHKERRQ(ierr);
     ierr = PetscFree(AYlt);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }
 
