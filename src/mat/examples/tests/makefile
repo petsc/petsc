@@ -10,8 +10,8 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
-EXAMPLES = ex1 ex2 ex4 ex5 ex6 ex7
-EXAMPLESC= ex1.c ex2.c ex4.c ex5.c ex6.c ex7.c
+EXAMPLES = ex1 ex2 ex4 ex5 ex6 ex7 ex8
+EXAMPLESC= ex1.c ex2.c ex4.c ex5.c ex6.c ex7.c ex8.c
 SYSLIB   = $(LDIR)/libpetscvec.a $(LDIR)/libpetscsys.a \
            $(LAPACK) $(BLAS) \
            $(CLIB) $(SLIB) $(FCLIB) -lm 
@@ -44,5 +44,9 @@ ex6: ex6.o
 ex7: ex7.o
 	-$(CLINKER) -o ex7 ex7.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex7.o
+
+ex8: ex8.o
+	-$(CLINKER) -o ex8 ex8.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex8.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
