@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.43 2000/01/11 21:01:31 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.44 2000/02/02 20:09:30 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -291,8 +291,8 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
 #undef __FUNC__  
 #define __FUNC__ "MatGetColoring" 
 /*@C
-   MatGetColoring - Gets a coloring for a matrix to reduce fill or to
-   improve numerical stability of LU factorization.
+   MatGetColoring - Gets a coloring for a matrix to reduce the number of function evaluations
+   needed to compute a sparse Jacobian via differencing.
 
    Collective on Mat
 
@@ -319,9 +319,13 @@ $    -mat_coloring_view
 
    The user can define additional colorings; see MatColoringRegisterDynamic().
 
+   The sequential colorings SL, LF, and ID are obtained via the Minpack software that was
+   converted to C using f2c.
+
 .keywords: matrix, get, coloring
 
-.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic()
+.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
+           SNESDefaultComputeJacobianColor()
 @*/
 int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
 {
