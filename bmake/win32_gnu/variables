@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.9 1999/09/07 19:01:50 bsmith Exp balay $ 
+# $Id: base_variables,v 1.10 2000/02/10 16:34:03 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -30,7 +30,7 @@ CXX_CC		   = g++
 CXX_FC		   = g77 -Wno-globals
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER	   = g++
+CXX_CLINKER	   = g77
 CXX_FLINKER	   = g77
 CXX_CCV		   = gcc --version
 CXX_SYS_LIB	   = -ladvapi32 -lg2c -lstdc++
