@@ -25,10 +25,7 @@ if ($shadowdir == /sphome/curfman/petsc) then
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
         >>& $petscdir/maint/links$suffix.log \;
 else
-# prune rs6000 and freebsd because these are already symbolic links to 
-# the main PETSc directory (needed for testexamples)
-  find . \( -name RCS -prune -o -name docs -prune -o -name freebsd -prune \
-            -o -name rs6000 -prune \) \
+  find . \( -name RCS -prune -o -name docs -prune \) \
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
         >>& $petscdir/maint/links$suffix.log \;
 endif
