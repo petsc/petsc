@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.24 1995/10/30 03:32:02 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.25 1995/11/01 19:12:32 bsmith Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -9,8 +9,8 @@
 #include "petsc.h"  
 
 /*
-  If you add it here, make sure you add to petsc/bin/petscview.cfg
-  and src/sys/src/plog.c!!
+  If you add an event here, make sure you add to petsc/bin/petscview.cfg
+  and petsc/src/sys/src/plog.c!!
 */
 #define MAT_Mult                                0
 #define MAT_AssemblyBegin                       1
@@ -80,9 +80,10 @@
 
 #define MAT_GetSubMatrix                        70
 #define KSP_GMRESOrthogonalization              71
-#define MAT_GetSubMatrices                      72
-#define VEC_ScatterBegin                        73
-#define VEC_ScatterEnd                          74
+#define KSP_Solve                               72
+#define MAT_GetSubMatrices                      73
+#define VEC_ScatterBegin                        74
+#define VEC_ScatterEnd                          75
 
 /* event numbers 80 to 99 are reserved for applications */
 
