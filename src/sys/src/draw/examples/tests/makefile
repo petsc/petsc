@@ -10,8 +10,8 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscdraw
-EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6
-EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+EXAMPLES = ex1 ex2 ex3 ex4
+EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
 LINCLUDE = $(SOURCEH)
 
 runexamples:
@@ -36,13 +36,5 @@ ex3: ex3.o
 ex4: ex4.o 
 	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
 	$(RM) -f ex4.o
-
-ex5: ex5.o 
-	-$(CLINKER) -o ex5 ex5.o  $(PETSC_LIB)
-	$(RM) -f ex5.o
-
-ex6: ex6.o 
-	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
-	$(RM) -f ex6.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
