@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.32 1995/07/17 20:41:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.33 1995/07/20 03:59:29 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -121,8 +121,8 @@ int MatGetName(Mat mat,char **name)
   matname[4] = "MATROW";
   matname[5] = "MATMPIROW";
   matname[6] = "MATMPIROW_BS";
-  matname[7] = "MATMPIBDIAG";
-  matname[8] = "MATBDIAG";
+  matname[7] = "MATBDIAG";
+  matname[8] = "MATMPIBDIAG";
   if (itype < 0 || itype > 8) *name = "unknown matrix type";
   else                        *name = matname[itype];
   return 0;
