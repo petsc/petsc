@@ -16,6 +16,10 @@ General WWW info:
   email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
      contains the WWW interface for petsc-maint ... NOT currently used
 
+Converting from Chameleon to MPI:
+  See /home/gropp/chameleon/README.  The converter program is
+  /home/gropp/tools.n/bin/inlinecomm.
+
 Debugging on the Cray t3d:  use totalview:
   With totalview you don't use mpirun; you just run totalview programname. 
   Also when linking to use totalview you must hardwire the number of
