@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.5 1997/10/11 22:46:53 keyes Exp keyes $";
+c  "$Id: resid_fp.F,v 1.6 1997/10/11 22:49:38 keyes Exp keyes $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -114,11 +114,12 @@ c
 c   Form density and contravariant velocities at FV cell edge centers (I+1/2)
 c   as functions of PHI(I,J,K) and PHI(I+1,J,K)
 c
-      xvel(i,j,k)=    (fp(i+1,j  ,k  )-fp(i  ,j  ,k  ))/ajy(i,j,k)
-      yvel(i,j,k)=p25*(fp(i+1,j+1,k  )-fp(i+1,j-1,k  )+
-     &                 fp(i  ,j+1,k  )-fp(i  ,j-1,k  ))/aix(i,j,k)
+      xvel(i,j,k)=    (fp(i+1,j,k)-fp(i,j,k))/ajy(i,j,k)
+      yvel(i,j,k)=p25*(fp(i+1,j+1,k)-fp(i+1,j-1,k)+
+     &                 fp(i,j+1,k)-fp(i,j-1,k))/aix(i,j,k)
       zvel(i,j,k)=zero
-      den (i,j,k)=(one+p5*gm1*(fsmach**2-(xvel**2+yvel**2)))**rgm1
+      den (i,j,k)=( one+p5*gm1*(fsmach**2-
+     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 c
 c   Form i-flux at the FV cell edge centers (I+1/2)
 c
@@ -144,11 +145,12 @@ c
 c   Form density and contravariant velocities at FV cell edge centers (J+1/2)
 c   as functions of PHI(I,J,K) and PHI(I,J+1,K)
 c
-      xvel(i,j,k)=p25*(fp(i+1,j+1,k  )-fp(i-1,j+1,k  )+
-     &                 fp(i+1,j  ,k  )-fp(i-1,j  ,k  ))/ajy(i,j,k)
-      yvel(i,j,k)=    (fp(i  ,j+1,k  )-fp(i  ,j  ,k  ))/aix(i,j,k)
+      xvel(i,j,k)=p25*(fp(i+1,j+1,k)-fp(i-1,j+1,k)+
+     &                 fp(i+1,j,k)-fp(i-1,j,k))/ajy(i,j,k)
+      yvel(i,j,k)=    (fp(i,j+1,k)-fp(i,j,k))/aix(i,j,k)
       zvel(i,j,k)=zero
-      den (i,j,k)=(one+p5*gm1*(fsmach**2-(xvel**2+yvel**2)))**rgm1
+      den (i,j,k)=( one+p5*gm1*(fsmach**2-
+     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 c
 c   Form j-flux at the FV cell edge centers (J+1/2)
 c
@@ -207,8 +209,6 @@ c ---------------------------------------------------------------
 c residbc - Forms the residual components due to boundary conditions.
 c           This routine is called by localfortranfct().
 c
-c           This routine used as a starting point similar uniprocessor
-c           code written by M.D. Tidriri.
 
 #include "param.h"
 #include "varbls.h"
@@ -236,7 +236,7 @@ c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
       double precision  u2,v2,w2,ub,con,r0c0,rb,vb,wb,pinj1k,rinj1k,pij1
       double precision  pijnk1,rni1jk,r1jk
       double precision  pi,xloc,amplitude
-      parameter(pi=atan(1.0d0)*4.0d0,amplitude=0.1d0)
+      parameter(pi=3.14159265,amplitude=0.1d0)
       integer i,j,k
 
       residbc_fp = 0
@@ -311,7 +311,8 @@ c      DO 8 K=2,NK
 c      DO 8 J=2,NJ
 c
 c simple outflow condition
-      fbcfpi2(j,k)=fp(ni1,j,k)-fp(ni,j,k)-ajy(ni,j,k)*fsmach
+      fbcfpi2(j,k)=fp(ni1,j,k)-fp(ni,j,k)-
+     &             ajy(ni,j,k)*fsmach
     8 CONTINUE
       endif
 c
