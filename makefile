@@ -23,7 +23,7 @@ all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared
 info:
 	-@echo "=========================================="
 	-@echo " "
-	-@echo "See docs/troubleshooting.html and docs/bugreporting.html"
+	-@echo "See docs/faq.html and docs/bugreporting.html"
 	-@echo "for help with installation problems. Please send EVERYTHING"
 	-@echo "printed out below when reporting problems"
 	-@echo " "
@@ -34,6 +34,8 @@ info:
 	-@echo "=========================================="
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
+	-@echo "config/configure.py run at " ${CONFIGURE_RUN_TIME}
+	-@echo "config/configure.py options " ${CONFIGURE_OPTIONS}
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
@@ -69,6 +71,8 @@ info_h:
 	-@$(RM) -f MINFO ${MINFO}
 	-@echo  "static const char *petscmachineinfo = \"  " >> MINFO
 	-@echo  "Libraries compiled on `date` on `hostname` " >> MINFO
+	-@echo  "config/configure.py run at " ${CONFIGURE_RUN_TIME} >> MINFO
+	-@echo  "config/configure.py options " ${CONFIGURE_OPTIONS} >> MINFO
 	-@echo  Machine characteristics: `uname -a` "" >> MINFO
 	-@echo  "Using PETSc directory: ${PETSC_DIR}" >> MINFO
 	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
@@ -109,8 +113,11 @@ build:
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
 	@grep -i " error " make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
-           echo "Error during compile, check " make_log_${PETSC_ARCH}; \
-           echo "Send it and configure.log to petsc-maint@mcs.anl.gov"; exit 1; fi
+           echo "********************************************************************; \
+           echo "         Error during compile, check " make_log_${PETSC_ARCH}; \
+           echo "     Send it and configure.log to petsc-maint@mcs.anl.gov";\
+           echo "********************************************************************; \
+           exit 1; fi
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
