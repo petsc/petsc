@@ -1,0 +1,73 @@
+                 readme for ksp (formally iter) directory
+/*D
+     KSPIntro - This is the introductory manual page for the Krylov 
+space package The Krylov space  package consists of lower level
+routines which implement various iterative accelerators for the solution
+of linear systems. For a simple interface, see the solvers directory.
+
+Description:
+    It includes support for Richardson, Conjugate Gradient, Chebychev,
+GMRES, a transpose free QMR, etc.
+
+    The routines are intended to be data structure independent. That is 
+the routines should work as written without change on serial and parallel
+machines independent of how the vectors, matrices, etc. are stored.
+
+    The vector independence is achieved by using the Ve* vector package
+for all the vector operations, the user must proved routines which 
+perform the matrix multiplies and preconditioner. Particular
+implementations of those are availible in other parts of this package,
+including the solvers directory, but the KSP* routines are intended
+just for the accelerators, not the preconditioners.
+
+   To provide complete flexibility, the KSP* routines use a context
+variable. The Krylov space context, KSPCntx.
+
+     
+$ ------------------Sample Calling Seqences-----------------
+
+$ Example 1: a single solve.
+
+$   KSPCtx     *itP;
+$   ... put stuff in usrP ...
+$   itP = KSPCreateContext(KSPCG);
+$   ... use KSPSet*() to set user parameters and functions ...
+$   KSPSetUp(itP);
+$   KSPSolve(itP);
+$   KSPDestroy(itP);
+
+$ Example 2: inside a nonlinear problem 
+
+$   KSPCntx     *itP;
+$   ... put stuff in usrP ...
+$   itP = KSPCreateContext(KSPGMRES);
+$   ... use KSPSet*() to set user parameters and functions ...
+$   KSPSetUp(itP);
+$   LOOP
+$        ... linearize  and set matrix multiply and rhs ....
+$        KSPSolve(itP);
+$   ENDLOOP
+$   KSPDestroy(itP);
+
+$ Example 3: domain decomposition 
+
+$   KSPCntx     *itP, **itPlocal;
+$   itP = KSPCreateContext(KSPGMRES);
+$   itPLocal = KSPCreateContext(KSPGMRES);
+$   ... use SetKSP*() to set user parameters and functions ...
+$   KSPSetUp(itP);
+$   KSPSetUp(itPLocal);
+$   KSPSetBinv(itP,a_domain_decomposition_preconditioner);
+$   KSPSolve(itP); 
+$   KSPDestroy(itP);
+
+$   where  the routine a_domain_decomposition_preconditioner is of the form
+
+$        LOOP i=0; i<n;
+$            ... change  usrPlocal[i] ...
+$            KSPSolve(itPLocal[i]);
+$            ... put solution into appropriate place ....
+$        ENDLOOP
+D*/
+  
+   
