@@ -60,6 +60,9 @@ class Configure(config.base.Configure):
 
   def checkComplex(self):
     '''Check for complex numbers in namespace std, and if --enable-complex is given, defines PETSC_USE_COMPLEX if they are present'''
+    if not self.framework.argDB['CXX']: return
+    print '\n '+self.framework.argDB['CXX']+'\n'
+
     self.pushLanguage('C++')
     includes = '#include <complex>\n'
     body     = 'std::complex<double> x;\n'

@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
       desc.append('  C Linker:           '+self.getLinker())
       desc.append('  C Linker Flags:     '+self.linkerFlags)
       self.popLanguage()
-    if 'CXX' in self.framework.argDB:
+    if 'CXX' in self.framework.argDB and self.framework.argDB['CXX']:
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler())
       desc.append('  C++ Compiler Flags: '+self.compilerFlags)
@@ -285,7 +285,9 @@ class Configure(config.base.Configure):
       self.addSubstitution('CXX', self.framework.argDB['CXX'])
       self.isGCXX = Configure.isGNU(self.framework.argDB['CXX'])
     else:
-      raise RuntimeError('Could not locate a functional C compiler')
+      self.addSubstitution('CXX', '')
+      self.isGCXX = 0
+      self.framework.argDB['CXX'] = None
     return
 
   def generateCxxPreprocessorGuesses(self):
@@ -300,6 +302,9 @@ class Configure(config.base.Configure):
 
   def checkCxxPreprocessor(self):
     '''Locate a functional Cxx preprocessor'''
+    if not self.framework.argDB['CXX']:
+      self.addSubstitution('CXXCPP', '')
+      return
     for compiler in self.generateCxxPreprocessorGuesses():
       try:
         if self.getExecutable(compiler, resultName = 'CXXCPP'):
@@ -323,6 +328,9 @@ class Configure(config.base.Configure):
 
   def checkCxxFlags(self):
     '''Try to turn on debugging if no flags are given'''
+    if not self.framework.argDB['CXX']:
+      self.addSubstitution('CXXFLAGS', '')
+      return
     if not self.framework.argDB['CXXFLAGS']:
       self.pushLanguage('C++')
       flag = '-g'
@@ -334,6 +342,8 @@ class Configure(config.base.Configure):
 
   def checkCxxNamespace(self):
     '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
+    if not self.framework.argDB['CXX']:
+      return
     if not self.framework.argDB.has_key('CXX'): return
     self.pushLanguage('C++')
     if self.checkCompile('namespace petsc {int dummy;}'):

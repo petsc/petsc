@@ -95,6 +95,7 @@ class Configure(config.base.Configure):
 
   def checkSignalHandlerType(self):
     '''Checks the type of C++ signals handlers, and defines SIGNAL_CAST to the correct value'''
+    if not self.framework.argDB['CXX']: return
     self.pushLanguage('C++')
     if not self.checkCompile('#include <signal.h>\nstatic void myhandler(int sig) {}\n', 'signal(SIGFPE,myhandler);\n'):
       self.addDefine('SIGNAL_CAST', '(void (*)(int))')
