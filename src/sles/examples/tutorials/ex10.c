@@ -235,6 +235,23 @@ int main(int argc,char **args)
     tsetup = tsetup2 - tsetup1;
 
     /*
+      Test MatGetInertia()
+      Usage:
+      ex10 -f0 <mat_binaryfile> -ksp_type preonly -pc_type cholesky -mat_type seqsbaij -test_inertia -mat_sigma <sigma>
+     */
+    ierr = PetscOptionsHasName(PETSC_NULL,"-test_inertia",&flg);CHKERRQ(ierr);
+    if (flg){
+      PC      pc;
+      int     nneg, nzero, npos;
+      Mat     F;
+     
+      ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+      ierr = PCGetFactoredMatrix(pc,&F);CHKERRQ(ierr);
+      ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %d, nzero: %d, npos: %d\n",nneg,nzero,npos);
+    }
+
+    /*
        Tests "diagonal-scaling of preconditioned residual norm" as used 
        by many ODE integrator codes including PVODE. Note this is different
        than diagonally scaling the matrix before computing the preconditioner
