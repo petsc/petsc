@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.149 1996/03/08 05:46:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.150 1996/03/10 17:28:02 bsmith Exp curfman $";
 #endif
 
 /*
@@ -65,9 +65,7 @@ int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 /*@C
    MatGetRow - Gets a row of a matrix.  You MUST call MatRestoreRow()
    for each row that you get to ensure that your application does
-   not bleed memory. The user may changes the values in the data
-   structures returned, but this must be done with extreme care since
-   these structures may represent the actual data in the matrix.
+   not bleed memory.
 
    Input Parameters:
 .  mat - the matrix
@@ -83,12 +81,16 @@ int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
    to the structure of a matrix.  We hope that we provide enough
    high-level matrix routines that few users will need it. 
 
-   For better efficiency, set cols and/or vals to zero if you do not 
-   wish to extract these quantities.
+   For better efficiency, set cols and/or vals to PETSC_NULL if you do
+   not wish to extract these quantities.
+
+   The user can only examine the values extracted with MatGetRow();
+   the values cannot be altered.  To change the matrix entries, one
+   must use {\tt MatSetValues()}.
 
 .keywords: matrix, row, get, extract
 
-.seealso: MatRestoreRow()
+.seealso: MatRestoreRow(), MatSetValues()
 @*/
 int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 {
