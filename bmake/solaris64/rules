@@ -1,4 +1,4 @@
-# $Id: base,v 1.41 1998/06/26 20:19:27 balay Exp balay $ 
+# $Id: base,v 1.42 1998/08/25 21:35:40 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -6,6 +6,10 @@ PARCH    = solaris
 #  -dalign -xtarget=native from below.
 #
 CC       = cc -KPIC -dalign -xtarget=native
+#
+# If using the sun bundled compiler /usr/ucb/cc, the following should be used
+# 
+#CC       = /usr/ucb/cc -Xa -KPIC -dalign -xtarget=native
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then leave this blank.
