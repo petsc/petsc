@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.79 1995/12/12 22:54:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.80 1995/12/21 18:32:09 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1078,7 +1078,7 @@ static int MatSetOption_MPIRowbs(Mat A,MatOption op)
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) A->data;
 
   if      (op == ROW_ORIENTED)              a->roworiented = 1;
-  else if (op == COLUMN_ORIENTED)           a->roworiented = 0;
+/*  else if (op == COLUMN_ORIENTED)           a->roworiented = 0; */
   else if (op == COLUMNS_SORTED)            a->sorted      = 1;
   else if (op == NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
