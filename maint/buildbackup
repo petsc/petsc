@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildbackup,v 1.7 1997/09/11 15:52:10 balay Exp balay $ 
+# $Id: buildbackup,v 1.8 1997/09/11 16:29:23 balay Exp balay $ 
 
 # 
 #  Makes a complete backup of PETSc src incase the PETSc disk is lost
@@ -20,7 +20,7 @@ cd /home/bsmith/petsc/docs/tex
 #
 # Delete the old backup files
 #
-find /ccsthome/petsc/userbackups -type f -name "PetscBackup-*" -mtime +2 -exec ls -l {} \; -exec rm -f {} \; >>& $LOGFILE
+find /ccsthome/petsc/userbackups -type f -name "PetscBackup-*" -mtime +1 -exec ls -l {} \; -exec rm -f {} \; >>& $LOGFILE
 #
 # Create a new backup file
 #
