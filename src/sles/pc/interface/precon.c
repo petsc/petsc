@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.22 1995/05/03 16:17:29 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.23 1995/05/12 20:52:20 curfman Exp curfman $";
 #endif
 
 /*  
@@ -329,7 +329,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
 .seealso: PCSetOperators()
 @*/
-int PCGetOperators(PC pc,Mat *mat,Mat *pmat,int *flag)
+int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
   VALIDHEADER(pc,PC_COOKIE);
   *mat  = pc->mat;

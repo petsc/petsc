@@ -55,7 +55,7 @@ extern int PCBSIterSolve(PC,Vec,Vec,int*);
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 
-extern int PCGetOperators(PC,Mat*,Mat*,int*);
+extern int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 
 extern int PCLUSetOrdering(PC,MatOrdering);
 extern int PCLUSetUseInplace(PC);

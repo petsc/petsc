@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.12 1995/05/11 19:06:46 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.13 1995/05/12 04:19:04 bsmith Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -23,7 +23,7 @@ extern int SNESSetMethod(SNES,SNESMethod);
 extern int SNESSetMonitor(SNES, int (*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int (*)(SNES,Vec,void*),void *);
 extern int SNESSetFunction(SNES, Vec, int (*)(SNES,Vec,Vec,void*),void *,int);
-extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,int*,void*),void *);
+extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESDestroy(SNES);
 extern int SNESSetUp(SNES);
 extern int SNESSolve(SNES,int*);
@@ -57,10 +57,10 @@ extern int SNESSetMaxFunctionEvaluations(SNES,int);
 #endif
 
 extern int SNESComputeInitialGuess(SNES,Vec);
-extern int SNESComputeFunction(SNES,Vec, Vec);
-extern int SNESDefaultComputeJacobian(SNES, Vec,Mat *,Mat *,int *,void *);
-extern int SNESDefaultMatrixFreeComputeJacobian(SNES, Vec,Mat *,
-                                                      Mat *,int *,void *);
+extern int SNESComputeFunction(SNES,Vec,Vec);
+extern int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int SNESDefaultMatrixFreeComputeJacobian(SNES,Vec,Mat*,Mat*,
+                                                MatStructure*,void*);
 
 #endif
 
