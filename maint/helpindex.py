@@ -1,6 +1,6 @@
-#! /usr/bin/env python1.5
-#!/bin/env python1.5
-# $Id: helpindex.py,v 1.12 2000/09/28 04:27:11 balay Exp bsmith $ 
+#! /usr/bin/env python
+#!/bin/env python
+# $Id: helpindex.py,v 1.13 2001/03/21 17:29:47 bsmith Exp bsmith $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -143,7 +143,7 @@ def printdata(LOC,fd,dict):
                   filename = dict[prim_key]['PetscNoKey'][link_name]                  
                   del dict[prim_key]['PetscNoKey'][link_name]
                   
-                  temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
+                  temp = "<A HREF=\"" + "../../" + filename + ".html\">" + link_name + "</A>"
                   fd.write("<TABLE>\n")
                   fd.write("<TD WIDTH=4 ><BR></TD>")
                   fd.write("<TD WIDTH=260 ><B><FONT SIZE=4>")
@@ -205,7 +205,7 @@ def printdata(LOC,fd,dict):
                         link_name = link_names[0]
                         link_names = link_names[1:]
                         filename = dict[prim_key][sub_key][link_name]
-                        temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
+                        temp = "<A HREF=\"" + "../../" + filename + ".html\">" + link_name + "</A>"
                         fd.write("<TABLE>")
                         fd.write("<TD WIDTH=60 ><BR></TD>")
                         fd.write("<TD WIDTH=205><FONT COLOR=\"#CC3333\"><B>")
@@ -219,7 +219,7 @@ def printdata(LOC,fd,dict):
 
                   for link_name in link_names:
                         filename = dict[prim_key][sub_key][link_name]
-                        temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
+                        temp = "<A HREF=\"" + "../../" + filename + ".html\">" + link_name + "</A>"
                         fd.write("<TABLE>")
                         fd.write("<TD WIDTH=270><BR></TD>")
                         fd.write("<TD WIDTH=500>")
@@ -250,18 +250,19 @@ def main():
 
       # open and read in the input files
       fd1 = open( PETSC_DIR + '/docs/tex/exampleconcepts','r')
-      fd2 = open( PETSC_DIR + '/docs/tex/manconcepts','r')
+#      fd2 = open( PETSC_DIR + '/docs/tex/manconcepts','r')
 
       for line in fd1.readlines():
             updatedata(PETSC_DIR,dict,strip(line))
-      for line in fd2.readlines():
-            updatedata(PETSC_DIR,dict,strip(line))
+#      for line in fd2.readlines():
+#            updatedata(PETSC_DIR,dict,strip(line))
 
       fd1.close()
-      fd2.close()
+#      fd2.close()
       #make sure there is no problem re-writing to this file
       os.system('/bin/rm -f ' + LOC + '/docs/manualpages/help.html')
       fd = open( LOC + '/docs/manualpages/help.html','w')
+
       printdata(LOC,fd,dict)
       fd.close()
       

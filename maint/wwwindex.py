@@ -1,6 +1,6 @@
-#!/usr/bin/env python1.5
-#!/bin/env python1.5
-# $Id: wwwindex.py,v 1.40 2001/03/23 04:30:50 bsmith Exp balay $ 
+#!/usr/bin/env python
+#!/bin/env python
+# $Id: wwwindex.py,v 1.41 2001/04/04 16:16:36 balay Exp bsmith $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
