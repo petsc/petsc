@@ -19,10 +19,10 @@ EXTERN PetscErrorCode PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,v
    in the default values.  Called by the macro PetscHeaderCreate().
 */
 PetscErrorCode PetscHeaderCreate_Private(PetscObject h,int cookie,int type,const char class_name[],MPI_Comm comm,
-                              PetscErrorCode (*des)(PetscObject),PetscErrorCode (*vie)(PetscObject,PetscViewer))
+                                         PetscErrorCode (*des)(PetscObject),PetscErrorCode (*vie)(PetscObject,PetscViewer))
 {
-  static int idcnt = 1;
-  PetscErrorCode ierr;
+  static PetscInt idcnt = 1;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   h->cookie                 = cookie;

@@ -1,4 +1,5 @@
-# $Id: makefile,v 1.5 2001/08/22 18:00:54 balay Exp $ 
+
+#requirespackage  'PETSC_USE_32_BIT_INT'
 
 ALL: lib
 

@@ -10,7 +10,7 @@ typedef struct {
 #define __FUNCT__ "MatMult_Normal"
 PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
 {
-  Mat_Normal *Na = (Mat_Normal*)N->data;
+  Mat_Normal     *Na = (Mat_Normal*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -23,7 +23,7 @@ PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
 #define __FUNCT__ "MatDestroy_Normal"
 PetscErrorCode MatDestroy_Normal(Mat N)
 {
-  Mat_Normal *Na = (Mat_Normal*)N->data;
+  Mat_Normal     *Na = (Mat_Normal*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -42,9 +42,9 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
 {
   Mat_Normal        *Na = (Mat_Normal*)N->data;
   Mat               A = Na->A;
-  PetscErrorCode ierr;
-  int i,j,rstart,rend,nnz;
-  const int         *cols;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,rstart,rend,nnz;
+  const PetscInt    *cols;
   PetscScalar       *diag,*work,*values;
   const PetscScalar *mvalues;
   PetscMap          cmap;
@@ -91,8 +91,8 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
 PetscErrorCode MatCreateNormal(Mat A,Mat *N)
 {
   PetscErrorCode ierr;
-  int m,n;
-  Mat_Normal *Na;  
+  PetscInt       m,n;
+  Mat_Normal     *Na;  
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);

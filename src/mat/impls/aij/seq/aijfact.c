@@ -1099,7 +1099,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   PetscFunctionReturn(0); 
 }
 
-#include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
@@ -1111,11 +1110,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
   } 
-  
-  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(a->sbaijMat,fact);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(a->sbaijMat,fact);CHKERRQ(ierr);
   ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
   a->sbaijMat = PETSC_NULL; 
-  
   PetscFunctionReturn(0); 
 }
 
