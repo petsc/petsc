@@ -224,7 +224,7 @@ class ArgDict (RDict.RArgs):
       self.purelocal = 1
     else:
       self.purelocal = 0
-      RDict.RArgs.__init__(self, name, addr = addr)
+    RDict.RArgs.__init__(self, name, addr = addr, purelocal = self.purelocal)
     self.local  = {}
     self.target = ['default']
     #  the list of targets is always local

@@ -212,7 +212,7 @@ class DArgs:
 
 #  This is the client end of a remote dictionary
 class RArgs (UserDict.UserDict):
-  def __init__(self, name = "default", readpw = "open", dictpw = "open", addpw = "open", writepw = "open", addr = None):
+  def __init__(self, name = "default", readpw = "open", dictpw = "open", addpw = "open", writepw = "open", addr = None, purelocal = 0):
     UserDict.UserDict.__init__(self)
     self.name    = name
     if dictpw  == "open": dictpw  = readpw
@@ -222,10 +222,11 @@ class RArgs (UserDict.UserDict):
     self.dictpw  = dictpw
     self.addpw   = addpw
     self.writepw = writepw
-    if addr is None:
-      self.addr  = self.getServerAddr()
-    else:
-      self.addr  = (addr[0], int(addr[1]))
+    if not purelocal:
+      if addr is None:
+        self.addr  = self.getServerAddr()
+      else:
+        self.addr  = (addr[0], int(addr[1]))
     return
 
   def getServerAddr(self):
