@@ -941,7 +941,7 @@ runex100:
 	${RM} -f ex100.tmp
 
 runex101:
-	-@${MPIRUN} -np 1  ex101  > ex101.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex101  > ex101.tmp 2>&1;   \
 	   if (${DIFF} output/ex101.out ex101.tmp) then true; \
 	   else echo "Possible problem with ex101_1, diffs above"; fi; \
 	   ${RM} -f ex101.tmp

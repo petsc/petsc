@@ -33,7 +33,7 @@
       call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,NN,y,ierr)
       call VecCreateSeq(MPI_COMM_SELF,NN,x,ierr)
 
-      call VecSet(zero,x,ierr)
+      call VecSet(x,zero,ierr)
       call VecGetOwnershipRange(y,low,high,ierr)
       ione = 1
       do 10, i=0,n-1
