@@ -7,7 +7,7 @@ class defaultWriter:
     import sys
     sys.stdout.write(mess)
     
-#dW = defaultWriter()
+dW = defaultWriter()
 
 class Logger(object):
   debugLevel    = None

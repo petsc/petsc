@@ -489,8 +489,8 @@ class CursesInstall (BootstrapInstall):
 
   def cursesRunInstaller(self,stdscr,args):
     import install.installer
-    global dW
-    dW = cursesWriter(stdscr,3,3,21,83)
+    import logging
+    logging.dW = cursesWriter(stdscr,3,3,21,83)
     install.installer.runinstaller(args)
 
 
