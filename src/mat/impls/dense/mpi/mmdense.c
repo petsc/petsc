@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.13 1997/10/19 03:25:11 bsmith Exp balay $";
+static char vcid[] = "$Id: mmdense.c,v 1.14 1998/08/26 22:02:27 balay Exp balay $";
 #endif
 
 /*
@@ -40,8 +40,6 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#if defined (__JUNK__)
-
 int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatGetSubMatrixCall,Mat*);
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIDense" 
@@ -49,7 +47,7 @@ int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,
                              MatGetSubMatrixCall scall,Mat **submat)
 { 
   Mat_MPIDense  *c = (Mat_MPIDense *) C->data;
-  int         nmax,nstages_local,nstages,i,pos,max_no,ierr;
+  int           nmax,nstages_local,nstages,i,pos,max_no,ierr;
 
   PetscFunctionBegin;
   /* Allocate memory to hold all the submatrices */
@@ -81,21 +79,19 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,
                              MatGetSubMatrixCall scall,Mat *submats)
 { 
   Mat_MPIDense  *c = (Mat_MPIDense *) C->data;
-  Mat         A = c->A;
+  Mat            A = c->A;
   Mat_SeqDense  *a = (Mat_SeqDense*)A->data, *mat;
+  int         N = c->N, rstart = c->rstart,count;
   int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
-  int         **sbuf1,**sbuf2, rank, m,i,j,k,l,ct1,ct2,ierr, **rbuf1,row,proc;
-  int         nrqs, msz, **ptr,index,*req_size,*ctr,*pa,*tmp,tcol,bsz,nrqr;
-  int         **rbuf3,*req_source,**sbuf_aj, **rbuf2, max1,max2,**rmap;
-  int         **cmap,**lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
-  int         len,ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*cmap_i,*lens_i;
-  int         *rmap_i,tag0,tag1,tag2,tag3;
-  MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
-  MPI_Request *r_waits4,*s_waits3,*s_waits4;
-  MPI_Status  *r_status1,*r_status2,*s_status1,*s_status3,*s_status2;
-  MPI_Status  *r_status3,*r_status4,*s_status4;
+  int         **sbuf1, rank, m,i,j,k,l,ct1,ierr, **rbuf1,row,proc;
+  int         nrqs, msz, **ptr,index,*ctr,*pa,*tmp,bsz,nrqr;
+  int         is_no,jmax,*irow_i,**rmap,*rmap_i;
+  int         len,ctr_j,*sbuf1_j,*rbuf1_i;
+  int         tag0,tag1;
+  MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2;
+  MPI_Status  *r_status1,*r_status2,*s_status1,*s_status2;
   MPI_Comm    comm;
-  Scalar      **rbuf4, **sbuf_aa, *vals, *mat_a, *sbuf_aa_i;
+  Scalar      **rbuf2,**sbuf2;
 
   PetscFunctionBegin;
   comm   = C->comm;
@@ -106,8 +102,6 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,
   
   /* Get some new tags to keep the communication clean */
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1); CHKERRQ(ierr);
-  ierr = PetscObjectGetNewTag((PetscObject)C,&tag2); CHKERRQ(ierr);
-  ierr = PetscObjectGetNewTag((PetscObject)C,&tag3); CHKERRQ(ierr);
 
     /* Check if the col indices are sorted */
   for ( i=0; i<ismax; i++ ) {
@@ -117,7 +111,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,
     if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IScol is not sorted");
   }
 
-  len    = (2*ismax+1)*(sizeof(int *) + sizeof(int)) + (m+1)*sizeof(int);
+  len    =  2*ismax*(sizeof(int *)+sizeof(int)) + (m+1)*sizeof(int);
   irow   = (int **)PetscMalloc(len); CHKPTRQ(irow);
   icol   = irow + ismax;
   nrow   = (int *) (icol + ismax);
@@ -259,231 +253,104 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,
   s_waits1 = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));CHKPTRQ(s_waits1);
   for ( i=0; i<nrqs; ++i ) {
     j = pa[i];
-    /* printf("[%d] Send Req to %d: size %d \n", rank,j, w1[j]); */
     ierr = MPI_Isend( sbuf1[j], w1[j], MPI_INT, j, tag0, comm, s_waits1+i);CHKERRQ(ierr);
   }
 
-  /* Post Receives to capture the buffer size */
+  /* Post recieves to capture the row_data from other procs */
   r_waits2 = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));CHKPTRQ(r_waits2);
-  rbuf2    = (int**)PetscMalloc((nrqs+1)*sizeof(int *));CHKPTRQ(rbuf2);
-  rbuf2[0] = tmp + msz;
-  for ( i=1; i<nrqs; ++i ) {
+  rbuf2    = (Scalar**)PetscMalloc((nrqs+1)*sizeof(Scalar *));CHKPTRQ(rbuf2);
+  for ( i=0; i<nrqs; i++ ) {
     j        = pa[i];
-    rbuf2[i] = rbuf2[i-1]+w1[pa[i-1]];
-  }
-  for ( i=0; i<nrqs; ++i ) {
-    j    = pa[i];
-    ierr = MPI_Irecv( rbuf2[i], w1[j], MPI_INT, j, tag1, comm, r_waits2+i);CHKERRQ(ierr);
+    count    = (w1[j] - (2*sbuf1[j][0] + 1))*N;
+    rbuf2[i] = (Scalar *)PetscMalloc((count+1)*sizeof(Scalar)); CHKPTRQ(rbuf2[i]);
+    ierr     = MPI_Irecv( rbuf2[i], count, MPIU_SCALAR, j, tag1, comm, r_waits2+i);CHKERRQ(ierr);
   }
 
-  /* Send to other procs the buf size they should allocate */
- 
+  /* Receive messages(row_nos) and then, pack and send off the rowvalues
+     to the correct processors */
 
-  /* Receive messages*/
   s_waits2  = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request));CHKPTRQ(s_waits2);
   r_status1 = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(r_status1);
-  len         = 2*nrqr*sizeof(int) + (nrqr+1)*sizeof(int*);
-  sbuf2       = (int**) PetscMalloc(len);CHKPTRQ(sbuf2);
-  req_size    = (int *) (sbuf2 + nrqr);
-  req_source  = req_size + nrqr;
+  sbuf2       = (Scalar **) PetscMalloc((nrqr+1)*sizeof(Scalar*));CHKPTRQ(sbuf2);
  
   {
-    int        *sbuf2_i;
-
+    Scalar *sbuf2_i,*v_start;
+    int    s_proc;
     for ( i=0; i<nrqr; ++i ) {
       ierr = MPI_Waitany(nrqr, r_waits1, &index, r_status1+i);CHKERRQ(ierr);
-      req_size[index] = 0;
-      rbuf1_i         = rbuf1[index];
+      s_proc          = r_status1[i].MPI_SOURCE; /* send processor */
+      rbuf1_i         = rbuf1[index]; /* Actual message from s_proc */
+      /* no of rows = end - start; since start is array index[], 0index, whel end
+         is length of the buffer - which is 1index */
       start           = 2*rbuf1_i[0] + 1;
       MPI_Get_count(r_status1+i,MPI_INT, &end);
-      sbuf2[index] = (int *)PetscMalloc((end+1)*sizeof(int));CHKPTRQ(sbuf2[index]);
+      /* allocate memory sufficinet to hold all the row values */
+      sbuf2[index] = (Scalar *)PetscMalloc((end-start)*N*sizeof(Scalar));CHKPTRQ(sbuf2[index]);
       sbuf2_i      = sbuf2[index];
+      /* Now pack the data */
       for ( j=start; j<end; j++ ) {
-        /** ncols            = sAi[id+1] - sAi[id] + sBi[id+1] - sBi[id]; */
-        /** ncols is now the whole row in the dense case */
-        /** Can get rid of this unnecessary communication */
-        ncols            = c->N;
-        sbuf2_i[j]       = ncols;
-        req_size[index] += ncols;
+        row = rbuf1_i[j] - rstart;
+        v_start = a->v + row;
+        for ( k=0; k<N; k++ ) {
+          sbuf2_i[0] = v_start[0];
+          sbuf2_i++; v_start+=a->m;
+        }
       }
-      req_source[index] = r_status1[i].MPI_SOURCE;
-      /* form the header */
-      sbuf2_i[0]   = req_size[index];
-      for ( j=1; j<start; j++ ) { sbuf2_i[j] = rbuf1_i[j]; }
-      ierr = MPI_Isend(sbuf2_i,end,MPI_INT,req_source[index],tag1,comm,s_waits2+i); CHKERRQ(ierr);
+      /* Now send off the data */
+      ierr = MPI_Isend(sbuf2[index],(end-start)*N,MPIU_SCALAR,s_proc,tag1,comm,s_waits2+i); CHKERRQ(ierr);
     }
   }
+  /* End Send-Recv of IS + row_numbers */
   PetscFree(r_status1); PetscFree(r_waits1);
-
-  /*  recv buffer sizes */
-  /* Receive messages*/
-  
-  rbuf3     = (int**)PetscMalloc((nrqs+1)*sizeof(int*)); CHKPTRQ(rbuf3);
-  rbuf4     = (Scalar**)PetscMalloc((nrqs+1)*sizeof(Scalar*));CHKPTRQ(rbuf4);
-  r_waits3  = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));CHKPTRQ(r_waits3);
-  r_waits4  = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));CHKPTRQ(r_waits4);
-  r_status2 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(r_status2);
-
-  for ( i=0; i<nrqs; ++i ) {
-    ierr = MPI_Waitany(nrqs, r_waits2, &index, r_status2+i);CHKERRQ(ierr);
-    rbuf3[index] = (int *)PetscMalloc((rbuf2[index][0]+1)*sizeof(int));CHKPTRQ(rbuf3[index]);
-    rbuf4[index] = (Scalar *)PetscMalloc((rbuf2[index][0]+1)*sizeof(Scalar));CHKPTRQ(rbuf4[index]);
-    ierr = MPI_Irecv(rbuf3[index],rbuf2[index][0], MPI_INT, 
-              r_status2[i].MPI_SOURCE, tag2, comm, r_waits3+index); CHKERRQ(ierr);
-    ierr = MPI_Irecv(rbuf4[index],rbuf2[index][0], MPIU_SCALAR, 
-              r_status2[i].MPI_SOURCE, tag3, comm, r_waits4+index); CHKERRQ(ierr);
-  } 
-  PetscFree(r_status2); PetscFree(r_waits2);
-  
-  /* Wait on sends1 and sends2 */
   s_status1 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(s_status1);
-  s_status2 = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(s_status2);
+  ierr      = MPI_Waitall(nrqs,s_waits1,s_status1);CHKERRQ(ierr);
+  PetscFree(s_status1); PetscFree(s_waits1);
 
-  ierr = MPI_Waitall(nrqs,s_waits1,s_status1);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrqr,s_waits2,s_status2);CHKERRQ(ierr);
-  PetscFree(s_status1); PetscFree(s_status2);
-  PetscFree(s_waits1); PetscFree(s_waits2);
-
-  /* Now allocate buffers for a->j, and send them off */
-  /** No space required for a->j... as the complete row is packed and sent */
-  /** sbuf_aj = (int **)PetscMalloc((nrqr+1)*sizeof(int *));CHKPTRQ(sbuf_aj); */
-  /** for ( i=0,j=0; i<nrqr; i++ ) j += req_size[i]; */
-  /** sbuf_aj[0] = (int*) PetscMalloc((j+1)*sizeof(int)); CHKPTRQ(sbuf_aj[0]); */
-  /** for ( i=1; i<nrqr; i++ )  sbuf_aj[i] = sbuf_aj[i-1] + req_size[i-1]; */
-
-  s_waits3 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request));CHKPTRQ(s_waits3);
-  {
-    int nzA, nzB, *a_i = a->i, *b_i = b->i, imark;
-    int *cworkA, *cworkB, cstart = c->cstart, rstart = c->rstart, *bmap = c->garray;
-    int *a_j = a->j, *b_j = b->j, ctmp, *t_cols;
-
-    for ( i=0; i<nrqr; i++ ) {
-      rbuf1_i   = rbuf1[i]; 
-      sbuf_aj_i = sbuf_aj[i];
-      ct1       = 2*rbuf1_i[0] + 1;
-      ct2       = 0;
-      for ( j=1,max1=rbuf1_i[0]; j<=max1; j++ ) { 
-        kmax = rbuf1[i][2*j];
-        for ( k=0; k<kmax; k++,ct1++ ) {
-          row    = rbuf1_i[ct1] - rstart;
-          nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
-          ncols  = nzA + nzB;
-          cworkA = a_j + a_i[row]; cworkB = b_j + b_i[row];
-
-          /* load the column indices for this row into cols*/
-          cols  = sbuf_aj_i + ct2;
-          for ( l=0; l<nzB; l++ ) {
-            if ((ctmp = bmap[cworkB[l]]) < cstart)  cols[l] = ctmp;
-            else break;
-          }
-          imark = l;
-          for ( l=0; l<nzA; l++ )   cols[imark+l] = cstart + cworkA[l];
-          for ( l=imark; l<nzB; l++ ) cols[nzA+l] = bmap[cworkB[l]];
-
-          ct2 += ncols;
-        }
-      }
-      ierr = MPI_Isend(sbuf_aj_i,req_size[i],MPI_INT,req_source[i],tag2,comm,s_waits3+i);CHKERRQ(ierr);
-    }
-  } 
-  r_status3 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(r_status3);
-  s_status3 = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(s_status3);
-
-  /* Allocate buffers for a->a, and send them off */
-  sbuf_aa = (Scalar **)PetscMalloc((nrqr+1)*sizeof(Scalar *));CHKPTRQ(sbuf_aa);
-  for ( i=0,j=0; i<nrqr; i++ ) j += req_size[i];
-  sbuf_aa[0] = (Scalar*) PetscMalloc((j+1)*sizeof(Scalar));CHKPTRQ(sbuf_aa[0]);
-  for ( i=1; i<nrqr; i++ )  sbuf_aa[i] = sbuf_aa[i-1] + req_size[i-1];
-  
-  s_waits4 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request));CHKPTRQ(s_waits4);
-  {
-    int    nzA, nzB, *a_i = a->i, *b_i = b->i,  *cworkB, imark;
-    int    cstart = c->cstart, rstart = c->rstart, *bmap = c->garray;
-    int    *b_j = b->j;
-    Scalar *vworkA, *vworkB, *a_a = a->a, *b_a = b->a,*t_vals;
-    
-    for ( i=0; i<nrqr; i++ ) {
-      rbuf1_i   = rbuf1[i];
-      sbuf_aa_i = sbuf_aa[i];
-      ct1       = 2*rbuf1_i[0]+1;
-      ct2       = 0;
-      for ( j=1,max1=rbuf1_i[0]; j<=max1; j++ ) {
-        kmax = rbuf1_i[2*j];
-        for ( k=0; k<kmax; k++,ct1++ ) {
-          row    = rbuf1_i[ct1] - rstart;
-          nzA    = a_i[row+1] - a_i[row];     nzB = b_i[row+1] - b_i[row];
-          ncols  = nzA + nzB;
-          cworkB = b_j + b_i[row];
-          vworkA = a_a + a_i[row]; 
-          vworkB = b_a + b_i[row];
-
-          /* load the column values for this row into vals*/
-          vals  = sbuf_aa_i+ct2;
-          for ( l=0; l<nzB; l++ ) {
-            if ((bmap[cworkB[l]]) < cstart)  vals[l] = vworkB[l];
-            else break;
-          }
-          imark = l;
-          for ( l=0; l<nzA; l++ )   vals[imark+l] = vworkA[l];
-          for ( l=imark; l<nzB; l++ ) vals[nzA+l] = vworkB[l];
-          ct2 += ncols;
-        }
-      }
-      ierr = MPI_Isend(sbuf_aa_i,req_size[i],MPIU_SCALAR,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
-    }
-  } 
-  r_status4 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(r_status4);
-  s_status4 = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(s_status4);
-  PetscFree(rbuf1);
-
-  /* Form the matrix */
-  /* create col map */
-  {
-    int *icol_i;
-    
-    len     = (1+ismax)*sizeof(int *) + ismax*c->N*sizeof(int);
-    cmap    = (int **)PetscMalloc(len); CHKPTRQ(cmap);
-    cmap[0] = (int *)(cmap + ismax);
-    PetscMemzero(cmap[0],(1+ismax*c->N)*sizeof(int));
-    for ( i=1; i<ismax; i++ ) { cmap[i] = cmap[i-1] + c->N; }
+  /* Create the submatrices */
+  if (scall == MAT_REUSE_MATRIX) {
     for ( i=0; i<ismax; i++ ) {
-      jmax   = ncol[i];
-      icol_i = icol[i];
-      cmap_i = cmap[i];
-      for ( j=0; j<jmax; j++ ) { 
-        cmap_i[icol_i[j]] = j+1; 
+      mat = (Mat_SeqDense *)(submats[i]->data);
+      if ((mat->m != nrow[i]) || (mat->n != ncol[i])) {
+        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
+      }
+      PetscMemzero(mat->v,mat->m*mat->n*sizeof(Scalar));
+      submats[i]->factor = C->factor;
+    }
+  } else {
+    for ( i=0; i<ismax; i++ ) {
+      ierr = MatCreateSeqDense(PETSC_COMM_SELF,nrow[i],ncol[i],PETSC_NULL,submats+i);CHKERRQ(ierr);
+    }
+  }
+  
+  /* Assemble the matrices */
+  {
+    int    col;
+    Scalar *imat_v,*mat_v,*imat_vi,*mat_vi;
+  
+    for ( i=0; i<ismax; i++ ) {
+      mat       = (Mat_SeqDense *) submats[i]->data;
+      mat_v     = a->v;
+      imat_v    = mat->v;
+      irow_i    = irow[i];
+      m         = nrow[i];
+      for ( j=0; j<m; j++ ) {
+        row      = irow_i[j] ;
+        proc     = rtable[row];
+        if (proc == rank) {
+          row      = row - rstart;
+          mat_vi   = mat_v + row;
+          imat_vi  = imat_v + j;
+          for ( k=0; k<ncol[i]; k++ ) {
+            col = icol[i][k];
+            imat_vi[k*m] = mat_vi[col*a->m];
+          }
+        } 
       }
     }
   }
 
-  /* Create lens which is required for MatCreate... */
-  for ( i=0,j=0; i<ismax; i++ ) { j += nrow[i]; }
-  len     = (1+ismax)*sizeof(int *) + j*sizeof(int);
-  lens    = (int **)PetscMalloc(len); CHKPTRQ(lens);
-  lens[0] = (int *)(lens + ismax);
-  PetscMemzero(lens[0], j*sizeof(int));
-  for ( i=1; i<ismax; i++ ) { lens[i] = lens[i-1] + nrow[i-1]; }
-  
-  /* Update lens from local data */
-  for ( i=0; i<ismax; i++ ) {
-    jmax   = nrow[i];
-    cmap_i = cmap[i];
-    irow_i = irow[i];
-    lens_i = lens[i];
-    for ( j=0; j<jmax; j++ ) {
-      row  = irow_i[j];
-      proc = rtable[row];
-      if (proc == rank) {
-        ierr = MatGetRow_MPIDense(C,row,&ncols,&cols,0); CHKERRQ(ierr);
-        for ( k=0; k<ncols; k++ ) {
-          if (cmap_i[cols[k]]) { lens_i[j]++;}
-        }
-        ierr = MatRestoreRow_MPIDense(C,row,&ncols,&cols,0); CHKERRQ(ierr);
-      }
-    }
-  }
-  
-  /* Create row map*/
+  /* Create row map. This maps c->row to submat->row for each submat*/
+  /* this is a very expensive operation wrt memory usage */
   len     = (1+ismax)*sizeof(int *) + ismax*c->M*sizeof(int);
   rmap    = (int **)PetscMalloc(len); CHKPTRQ(rmap);
   rmap[0] = (int *)(rmap + ismax);
@@ -498,154 +365,45 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,
     }
   }
  
-  /* Update lens from offproc data */
+  /* Now Receive the row_values and assemble the rest of the matrix */
+
+  r_status2 = (MPI_Status *) PetscMalloc((nrqs+1)*sizeof(MPI_Status));CHKPTRQ(r_status2);
+
   {
-    int *rbuf2_i, *rbuf3_i, *sbuf1_i;
-
-    for ( tmp2=0; tmp2<nrqs; tmp2++ ) {
-      ierr = MPI_Waitany(nrqs, r_waits3, &i, r_status3+tmp2);CHKERRQ(ierr);
-      index   = pa[i];
-      sbuf1_i = sbuf1[index];
-      jmax    = sbuf1_i[0];
-      ct1     = 2*jmax+1; 
-      ct2     = 0;               
-      rbuf2_i = rbuf2[i];
-      rbuf3_i = rbuf3[i];
-      for ( j=1; j<=jmax; j++ ) {
-        is_no   = sbuf1_i[2*j-1];
-        max1    = sbuf1_i[2*j];
-        lens_i  = lens[is_no];
-        cmap_i  = cmap[is_no];
-        rmap_i  = rmap[is_no];
-        for ( k=0; k<max1; k++,ct1++ ) {
-          row  = rmap_i[sbuf1_i[ct1]]; /* the val in the new matrix to be */
-          max2 = rbuf2_i[ct1];
-          for ( l=0; l<max2; l++,ct2++ ) {
-            if (cmap_i[rbuf3_i[ct2]]) {
-              lens_i[row]++;
-            }
-          }
-        }
-      }
-    }
-  }    
-  PetscFree(r_status3); PetscFree(r_waits3);
-  ierr = MPI_Waitall(nrqr,s_waits3,s_status3); CHKERRQ(ierr);
-  PetscFree(s_status3); PetscFree(s_waits3);
-
-  /* Create the submatrices */
-  if (scall == MAT_REUSE_MATRIX) {
-    /*
-        Assumes new rows are same length as the old rows, hence bug!
-    */
-    for ( i=0; i<ismax; i++ ) {
-      mat = (Mat_SeqDense *)(submats[i]->data);
-      if ((mat->m != nrow[i]) || (mat->n != ncol[i])) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
-      }
-      if (PetscMemcmp(mat->ilen,lens[i], mat->m *sizeof(int))) {
-        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong no of nonzeros");
-      }
-      /* Initial matrix as if empty */
-      PetscMemzero(mat->ilen,mat->m*sizeof(int));
-      submats[i]->factor = C->factor;
-    }
-  } else {
-    for ( i=0; i<ismax; i++ ) {
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,nrow[i],ncol[i],0,lens[i],submats+i);CHKERRQ(ierr);
-    }
-  }
-
-  /* Assemble the matrices */
-  /* First assemble the local rows */
-  {
-    int    ilen_row,*imat_ilen, *imat_j, *imat_i,old_row;
-    Scalar *imat_a;
+    int    is_max,tmp1,col,*sbuf1_i,is_sz;
+    Scalar *rbuf2_i,*imat_v,*imat_vi;
   
-    for ( i=0; i<ismax; i++ ) {
-      mat       = (Mat_SeqDense *) submats[i]->data;
-      imat_ilen = mat->ilen;
-      imat_j    = mat->j;
-      imat_i    = mat->i;
-      imat_a    = mat->a;
-      cmap_i    = cmap[i];
-      rmap_i    = rmap[i];
-      irow_i    = irow[i];
-      jmax      = nrow[i];
-      for ( j=0; j<jmax; j++ ) {
-        row      = irow_i[j];
-        proc     = rtable[row];
-        if (proc == rank) {
-          old_row  = row;
+    for ( tmp1=0; tmp1<nrqs; tmp1++ ) { /* For each message */
+      ierr = MPI_Waitany(nrqs,r_waits2,&i,r_status2+tmp1);CHKERRQ(ierr);
+      /* Now dig out the corresponding sbuf1, which contains the IS data_structure */
+      sbuf1_i = sbuf1[pa[i]];
+      is_max  = sbuf1_i[0];
+      ct1     = 2*is_max+1;
+      rbuf2_i = rbuf2[i];
+      for ( j=1; j<=is_max; j++ ) { /* For each IS belonging to the message */
+        is_no     = sbuf1_i[2*j-1];
+        is_sz     = sbuf1_i[2*j];
+        mat       = (Mat_SeqDense *) submats[is_no]->data;
+        imat_v    = mat->v;
+        rmap_i    = rmap[is_no];
+        m         = nrow[is_no];
+        for ( k=0; k<is_sz; k++,rbuf2_i+=N) {  /* For each row */
+          row      = sbuf1_i[ct1]; ct1++;
           row      = rmap_i[row];
-          ilen_row = imat_ilen[row];
-          ierr     = MatGetRow_MPIDense(C,old_row,&ncols,&cols,&vals);CHKERRQ(ierr);
-          mat_i    = imat_i[row];
-          mat_a    = imat_a + mat_i;
-          mat_j    = imat_j + mat_i;
-          for ( k=0; k<ncols; k++ ) {
-            if ((tcol = cmap_i[cols[k]])) { 
-              *mat_j++ = tcol - -1;
-              *mat_a++ = vals[k];
-              ilen_row++;
-            }
+          imat_vi  = imat_v + row;
+          for ( l=0; l<ncol[is_no]; l++ ) { /* For each col */
+            col = icol[is_no][l];
+            imat_vi[l*m] = rbuf2_i[col];
           }
-          ierr = MatRestoreRow_MPIDense(C,old_row,&ncols,&cols,&vals);CHKERRQ(ierr);
-          imat_ilen[row] = ilen_row; 
         }
       }
     }
   }
-
-  /*   Now assemble the off proc rows*/
-  {
-    int    *sbuf1_i,*rbuf2_i,*rbuf3_i,*imat_ilen,ilen;
-    int    *imat_j,*imat_i;
-    Scalar *imat_a,*rbuf4_i;
-
-    for ( tmp2=0; tmp2<nrqs; tmp2++ ) {
-      ierr = MPI_Waitany(nrqs, r_waits4, &i, r_status4+tmp2);CHKERRQ(ierr);
-      index   = pa[i];
-      sbuf1_i = sbuf1[index];
-      jmax    = sbuf1_i[0];           
-      ct1     = 2*jmax + 1; 
-      ct2     = 0;    
-      rbuf2_i = rbuf2[i];
-      rbuf3_i = rbuf3[i];
-      rbuf4_i = rbuf4[i];
-      for ( j=1; j<=jmax; j++ ) {
-        is_no     = sbuf1_i[2*j-1];
-        rmap_i    = rmap[is_no];
-        cmap_i    = cmap[is_no];
-        mat       = (Mat_SeqDense *) submats[is_no]->data;
-        imat_ilen = mat->ilen;
-        imat_j    = mat->j;
-        imat_i    = mat->i;
-        imat_a    = mat->a;
-        max1      = sbuf1_i[2*j];
-        for ( k=0; k<max1; k++, ct1++ ) {
-          row   = sbuf1_i[ct1];
-          row   = rmap_i[row]; 
-          ilen  = imat_ilen[row];
-          mat_i = imat_i[row];
-          mat_a = imat_a + mat_i;
-          mat_j = imat_j + mat_i;
-          max2 = rbuf2_i[ct1];
-          for ( l=0; l<max2; l++,ct2++ ) {
-            if ((tcol = cmap_i[rbuf3_i[ct2]])) {
-              *mat_j++ = tcol - 1;
-              *mat_a++ = rbuf4_i[ct2];
-              ilen++;
-            }
-          }
-          imat_ilen[row] = ilen;
-        }
-      }
-    }
-  }    
-  PetscFree(r_status4); PetscFree(r_waits4);
-  ierr = MPI_Waitall(nrqr,s_waits4,s_status4); CHKERRQ(ierr);
-  PetscFree(s_waits4); PetscFree(s_status4);
+  /* End Send-Recv of row_values */
+  PetscFree(r_status2); PetscFree(r_waits2);
+  s_status2 = (MPI_Status *) PetscMalloc((nrqr+1)*sizeof(MPI_Status));CHKPTRQ(s_status1);
+  ierr      = MPI_Waitall(nrqr,s_waits2,s_status2); CHKERRQ(ierr);
+  PetscFree(s_status2); PetscFree(s_waits2);
 
   /* Restore the indices */
   for ( i=0; i<ismax; i++ ) {
@@ -658,30 +416,21 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,
   PetscFree(w1);
   PetscFree(pa);
 
-  PetscFree(sbuf1);
+
+  for ( i=0; i<nrqs; ++i ) {
+    PetscFree(rbuf2[i]);
+  }
   PetscFree(rbuf2);
+  PetscFree(sbuf1);
+  PetscFree(rbuf1);
+
   for ( i=0; i<nrqr; ++i ) {
     PetscFree(sbuf2[i]);
   }
-  for ( i=0; i<nrqs; ++i ) {
-    PetscFree(rbuf3[i]);
-    PetscFree(rbuf4[i]);
-  }
 
   PetscFree(sbuf2);
-  PetscFree(rbuf3);
-  PetscFree(rbuf4 );
-  PetscFree(sbuf_aj[0]);
-  PetscFree(sbuf_aj);
-  PetscFree(sbuf_aa[0]);
-  PetscFree(sbuf_aa);
-  
-  PetscFree(cmap);
   PetscFree(rmap);
-  PetscFree(lens);
 
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag3); CHKERRQ(ierr);
-  ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag2); CHKERRQ(ierr);
   ierr = PetscObjectRestoreNewTag((PetscObject)C,&tag1); CHKERRQ(ierr);
 
   for ( i=0; i<ismax; i++ ) {
@@ -692,4 +441,3 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,
   PetscFunctionReturn(0);
 }
 
-#endif
