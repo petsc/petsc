@@ -47,11 +47,11 @@ PetscErrorCode MatConvert_Shell(Mat oldmat,const MatType newtype,MatReuse reuse,
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(oldmat);CHKERRQ(ierr);
+    ierr = MatHeaderCopy(oldmat,mat);CHKERRQ(ierr);
+  } else {
+    *newmat = mat;
   }
-  *newmat = mat;
   PetscFunctionReturn(0);
 }
 

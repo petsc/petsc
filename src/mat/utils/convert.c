@@ -35,10 +35,10 @@ PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,MatReuse reuse,Mat
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(mat);CHKERRQ(ierr);
+    ierr = MatHeaderCopy(mat,M);CHKERRQ(ierr);
+  } else {
+    *newmat = M;
   }
-  *newmat = M;
   PetscFunctionReturn(0);
 }

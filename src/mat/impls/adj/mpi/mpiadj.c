@@ -563,11 +563,11 @@ PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *newmat
   ierr = MatSetType(B,type);CHKERRQ(ierr);
   ierr = MatMPIAdjSetPreallocation(B,ia,ja,a);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
   }
-  *newmat = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
