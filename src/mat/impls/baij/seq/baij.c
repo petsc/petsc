@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.203 2000/04/12 04:23:32 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.204 2000/04/13 03:57:14 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -172,6 +172,9 @@ int MatDestroy_SeqBAIJ(Mat A)
   if (a->mult_work) {ierr = PetscFree(a->mult_work);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
+#if defined(PETSC_USE_MAT_SINGLE)
+  if (a->setvaluescopy) {ierr = PetscFree(a->setvaluescopy);CHKERRQ(ierr);}
+#endif
   ierr = PetscFree(a);CHKERRQ(ierr);
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
@@ -688,10 +691,17 @@ int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 #define __FUNC__ /*<a name=""></a>*/"MatSetValuesBlocked_SeqBAIJ"
 int MatSetValuesBlocked_SeqBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
-  int       ierr,i,N = m*n*((Mat_SeqBAIJ*)mat->data)->bs2;
-  MatScalar *vsingle = (MatScalar*)v;
+  Mat_SeqBAIJ *b = (Mat_SeqBAIJ*)mat->data;
+  int         ierr,i,N = m*n*b->bs2;
+  MatScalar   *vsingle;
 
   PetscFunctionBegin;  
+  if (N > b->setvalueslen) {
+    if (b->setvaluescopy) {ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);}
+    b->setvaluescopy = (MatScalar*)PetscMalloc(N*sizeof(MatScalar));CHKPTRQ(b->setvaluescopy);
+    b->setvalueslen  = N;
+  }
+  vsingle = b->setvaluescopy;
   for (i=0; i<N; i++) {
     vsingle[i] = v[i];
   }
@@ -973,7 +983,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is,Scalar *diag)
   rows  = (int*)PetscMalloc((3*is_n+1)*sizeof(int));CHKPTRQ(rows);
   sizes = rows + is_n;
 
-  /* initialize copy IS valurs to rows, and sort them */
+  /* copy IS values to rows, and sort them */
   for (i=0; i<is_n; i++) { rows[i] = is_idx[i]; }
   ierr = PetscSortInt(is_n,rows);CHKERRQ(ierr);
   if (baij->keepzeroedrows) {
@@ -996,7 +1006,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is,Scalar *diag)
           baij->j[baij->i[row/bs]] = row/bs;
           ierr = PetscMemzero(aa,count*bs*sizeof(MatScalar));CHKERRQ(ierr);
         } 
-        /* Now insert all the diagoanl values for this bs */
+        /* Now insert all the diagonal values for this bs */
         for (k=0; k<bs; k++) {
           ierr = (*A->ops->setvalues)(A,1,rows+j+k,1,rows+j+k,diag,INSERT_VALUES);CHKERRQ(ierr);
         } 
@@ -1008,8 +1018,8 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is,Scalar *diag)
       if (sizes[i] != 1) SETERRQ(1,0,"Internal Error. Value should be 1");
 #endif
       for (k=0; k<count; k++) { 
-        aa[0] = zero; 
-        aa+=bs;
+        aa[0] =  zero; 
+        aa    += bs;
       }
       if (diag) {
         ierr = (*A->ops->setvalues)(A,1,rows+j,1,rows+j,diag,INSERT_VALUES);CHKERRQ(ierr);
@@ -1608,6 +1618,10 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   b->icol             = 0;
   b->reallocs         = 0;
   b->saved_values     = 0;
+#if defined(PEYSC_USE_MAT_SINGLE)
+  b->setvalueslen     = 0;
+  b->setvaluescopy    = PETSC_NULL;
+#endif
   
   b->m       = m; B->m = m; B->M = m;
   b->n       = n; B->n = n; B->N = n;
