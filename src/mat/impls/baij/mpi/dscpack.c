@@ -403,7 +403,7 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F)
 {
   Mat_MPIBAIJ_DSC         *lu;   
-  int                     ierr,size; 
+  int                     ierr; 
   PetscTruth              flg;
   char                    buff[32], *ftype[] = {"LDLT","LLT"},
                           *ltype[] = {"LBLAS1","LBLAS2","LBLAS3"},

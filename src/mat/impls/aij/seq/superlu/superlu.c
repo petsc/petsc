@@ -217,7 +217,7 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 {
   Mat_SeqAIJ         *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)(*F)->spptr;
-  int                *etree,i,ierr;
+  int                *etree,ierr;
   PetscTruth         flag;
 
   PetscFunctionBegin;

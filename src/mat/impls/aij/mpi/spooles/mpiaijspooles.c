@@ -24,7 +24,6 @@ int MatAssemblyEnd_MPIAIJ_Spooles(Mat A,MatAssemblyType mode) {
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_Spooles"
 int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat_MPIAIJ    *mat = (Mat_MPIAIJ*)A->data;
   Mat_Spooles   *lu;
   Mat B;
   int           ierr;

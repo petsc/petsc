@@ -47,7 +47,7 @@ int MatAssemblyEnd_SeqSBAIJ_Spooles(Mat A,MatAssemblyType mode) {
 int MatGetInertia_SeqSBAIJ_Spooles(Mat F,int *nneg,int *nzero,int *npos)
 { 
   Mat_Spooles          *lu = (Mat_Spooles*)F->spptr; 
-  int                  ierr,neg,zero,pos;
+  int                  neg,zero,pos;
 
   PetscFunctionBegin;
   FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos) ;

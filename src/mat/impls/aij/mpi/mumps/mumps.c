@@ -56,10 +56,9 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
 {
   int              *ai, *aj, *bi, *bj, rstart,nz, *garray;
   int              ierr,i,j,jj,jB,irow,m=A->m,*ajj,*bjj,countA,countB,colA_start,jcol;
-  int              *row,*col,*diagA;
+  int              *row,*col;
   PetscScalar      *av, *bv,*val;
   Mat_AIJ_MUMPS *mumps = (Mat_AIJ_MUMPS *)A->spptr;
-  PetscTruth       isAIJ;
 
   PetscFunctionBegin;
   
@@ -204,7 +203,7 @@ int MatView_AIJ_MUMPS(Mat A,PetscViewer viewer) {
 int MatSolve_AIJ_MUMPS(Mat A,Vec b,Vec x)
 {
   Mat_AIJ_MUMPS *lu = (Mat_AIJ_MUMPS*)A->spptr; 
-  PetscScalar      *rhs,*array;
+  PetscScalar      *array;
   Vec              x_seq;
   IS               iden;
   VecScatter       scat;

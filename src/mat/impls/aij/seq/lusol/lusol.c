@@ -452,7 +452,6 @@ EXTERN_C_END
 int MatUseLUSOL_SeqAIJ(Mat A)
 {
   int        ierr, m, n;
-  PetscTruth match;
      
   PetscFunctionBegin;
   ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);

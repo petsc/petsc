@@ -14,7 +14,7 @@ LIB_SUFFIX         = a
 DIFF               = diff -w
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = gcc -D__USE_FIXED_PROTOTYPES__
+C_CC		   = gcc -D__USE_FIXED_PROTOTYPES__ -Wall
 C_FC		   = g77 -Wno-globals
 C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
