@@ -12,7 +12,7 @@ else
 endif
 
 cd $petscdir
-/bin/rm -f $petscdir/maint/links.log
+/bin/rm -f $petscdir/maint/links$suffix.log
 echo "Building links from" $petscdir "to" $shadowdir "(`date`)" \
      > $petscdir/maint/links$suffix.log
 if ($shadowdir == /sphome/curfman/petsc) then
