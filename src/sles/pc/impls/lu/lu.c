@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.102 1998/10/25 02:53:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.103 1998/12/03 03:59:12 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -448,7 +448,7 @@ int PCLUSetMatReordering(PC pc, MatReorderingType ordering)
   int ierr, (*f)(PC,MatReorderingType);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatReodering_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatReordering_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
