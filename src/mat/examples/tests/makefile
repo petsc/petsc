@@ -376,6 +376,11 @@ runex11:
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   $(RM) -f ex11_1.tmp
+runex11_2:
+	-@$(MPIRUN)  ex11 -mat_seqbaij -mat_block_size 5 > ex11_2.tmp 2>&1;   \
+	   if (diff output/ex11_2.out ex11_2.tmp) then true; \
+	   else echo "Possible problem with ex11_2, diffs above"; fi; \
+	   $(RM) -f ex11_2.tmp
 runex12:
 	-@$(MPIRUN)  -np 2 ex12 > ex12_1.tmp 2>&1;   \
 	   if (diff output/ex12_1.out ex12_1.tmp) then true; \

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.58 1996/07/10 14:56:44 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.59 1996/07/11 04:04:53 balay Exp balay $";
 #endif
 
 /*
@@ -1464,6 +1464,67 @@ static int MatGetBlockSize_SeqBAIJ(Mat mat, int *bs)
   return 0;
 }
 
+/* idx should be of length atlease bs */
+static int MatZeroRows_SeqBAIJ_Check_Block(int *idx, int bs, PetscTruth *flg)
+{
+  int i,row;
+  row = idx[0];
+  if (row%bs!=0) { *flg = PETSC_FALSE; return 0; }
+  
+  for ( i=1; i<bs; i++ ) {
+    if (row+i != idx[i]) { *flg = PETSC_FALSE; return 0; }
+  }
+  *flg = PETSC_TRUE;
+  return 0;
+}
+  
+static int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
+{
+  Mat_SeqBAIJ *baij=(Mat_SeqBAIJ*)A->data;
+  IS          is_local;
+  int         ierr,i,j,count,m=baij->m,is_n,*is_idx,*rows,bs=baij->bs,bs2=baij->bs2;
+  PetscTruth  flg;
+  Scalar      zero = 0.0,*aa;
+
+  /* Make a copy of the IS and  sort it */
+  ierr = ISGetSize(is,&is_n);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&is_idx);CHKERRQ(ierr);
+  ierr = ISCreateSeq(A->comm,is_n,is_idx,&is_local); CHKERRQ(ierr);
+  ierr = ISSort(is_local); CHKERRQ(ierr);
+  ierr = ISGetIndices(is_local,&rows); CHKERRQ(ierr);
+
+  i = 0;
+  while (i < is_n) {
+    if (rows[i]<0 || rows[i]>m) SETERRQ(1,"MatZeroRows_SeqBAIJ:row out of range");
+    flg = PETSC_FALSE;
+    if (i+bs <= is_n) {ierr = MatZeroRows_SeqBAIJ_Check_Block(rows+i,bs,&flg); CHKERRQ(ierr); }
+    if (flg) { /* There exists a block of rows to be Zerowed */
+      baij->ilen[rows[i]/bs] = 0;
+      i += bs;
+    } else { /* Zero out only the requested row */
+      count = (baij->i[rows[i]/bs +1] - baij->i[rows[i]/bs])*bs;
+      aa    = baij->a + baij->i[rows[i]/bs]*bs2 + (rows[i]%bs);
+      for ( j=0; j<count; j++ ) { 
+        aa[0] = zero; 
+        aa+=bs;
+      }
+      i++;
+    }
+  } 
+  if (diag) {
+    for ( j=0; j<is_n; j++ ) {
+      ierr = (*A->ops.setvalues)(A,1,rows+j,1,rows+j,diag,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = ISRestoreIndices(is,&is_idx); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is_local,&rows); CHKERRQ(ierr);
+  ierr = ISDestroy(is_local); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
@@ -1478,7 +1539,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetDiagonal_SeqBAIJ,MatDiagonalScale_SeqBAIJ,MatNorm_SeqBAIJ,
        0,MatAssemblyEnd_SeqBAIJ,
        0,
-       MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,0,
+       MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,MatZeroRows_SeqBAIJ,
        MatGetReordering_SeqBAIJ,
        MatLUFactorSymbolic_SeqBAIJ,MatLUFactorNumeric_SeqBAIJ_N,0,0,
        MatGetSize_SeqBAIJ,MatGetSize_SeqBAIJ,MatGetOwnershipRange_SeqBAIJ,
