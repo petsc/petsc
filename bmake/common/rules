@@ -129,14 +129,10 @@ C2f77lib:
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(CEXAMPLES) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
-               trashz \#*\# *.mex*
+               trashz \#*\# *.mex* *.stolen
 
 # Builds and runs examples; then cleans directory.
 testexamples: examples runexamples clean
-
-# Builds examples but does not run them; then cleans directory.
-# This is used temporarily for the SP
-buildexamples: examples clean
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
@@ -181,8 +177,12 @@ lint:
 # Builds Fortran-77 wrappers - not yet available
 C2f77:
 	@-if [ -n "$(WOBJS)" ] ; then \
-  	$(IPETSCDIR)/c2f77/bfort -nomsgs -anyname -mapptr \
-                         $(SOURCEC) $(SOURCEH); fi
+  	bfort.new -ansi -nomsgs -anyname -mapptr \
+                         $(SOURCEC); fi
+
+# Builds Fortran-77 wrapper files
+C2f77delete: 
+	@-if [ -n "$(WOBJS)" ] ; then $(RM) -f $(WSOURCEC) $(WOBJS) ; fi
 
 # Builds man pages (xman version)
 manpages:
