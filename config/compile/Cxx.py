@@ -1,3 +1,4 @@
+import args
 import config.compile.processor
 import config.framework
 import config.libraries
@@ -36,14 +37,21 @@ class Compiler(config.compile.processor.Processor):
 class Linker(config.compile.processor.Processor):
   '''The C++ linker'''
   def __init__(self, argDB):
-    compiler        = Compiler(argDB)
+    compiler           = Compiler(argDB)
+    self.configLibrary = config.libraries.Configure(config.framework.Framework(argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['CXX_LD', 'LD', compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = []
     if self.name == compiler.name:
       self.flagsName.extend(compiler.flagsName[:-1])
-    self.configLibrary = config.libraries.Configure(config.framework.Framework('', self.argDB))
     return
+
+  def setArgDB(self, argDB):
+    args.ArgumentProcessor.setArgDB(self, argDB)
+    self.configLibrary.argDB           = argDB
+    self.configLibrary.framework.argDB = argDB
+    return
+  argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 
   def getExtraArguments(self):
     if not hasattr(self, '_extraArguments'):

@@ -307,7 +307,7 @@ class SIDLMake(Make):
       return config.outputFiles['ELF']
     return []
 
-  def buildPythonSkeletons(self, builder, sidlFile, language, generatedSource):
+  def buildPythonSkeleton(self, builder, sidlFile, language, generatedSource):
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     config   = builder.pushConfiguration(language+' Skeleton '+baseName)
     for f in generatedSource:
@@ -321,12 +321,12 @@ class SIDLMake(Make):
   def buildPythonServer(self, builder, sidlFile, language, generatedSource):
     baseName    = os.path.splitext(os.path.basename(sidlFile))[0]
     iorObjects  = self.buildPythonIOR(builder, sidlFile, language, generatedSource['Server IOR']['Cxx'])
-    skelObjects = self.buildPythonSkeletons(builder, sidlFile, language, generatedSource['Server '+language]['Cxx'])
+    skelObjects = self.buildPythonSkeleton(builder, sidlFile, language, generatedSource['Server '+language]['Cxx'])
     config      = builder.pushConfiguration(language+' Server '+baseName)
     library     = os.path.join(os.getcwd(), 'lib', 'lib'+baseName+'.so')
     if not os.path.isdir(os.path.dirname(library)):
       os.makedirs(os.path.dirname(library))
-    builder.link(iorObjects+skelObjects, library, shared = 1)
+    builder.link(iorObjects.union(skelObjects), library, shared = 1)
     builder.popConfiguration()
     builder.saveConfiguration(language+' Server '+baseName)
     if 'Linked ELF' in config.outputFiles:

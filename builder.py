@@ -1,6 +1,8 @@
 import logging
 import script
 
+import sets
+
 class CompileError(RuntimeError):
   pass
 
@@ -183,6 +185,14 @@ class Builder(logging.Logger):
       self.logPrint('Loaded configuration '+configurationName+' from cache: size '+str(len(cache)))
     return self.getConfiguration(configurationName)
 
+  def updateOutputFiles(self, outputFiles, newOutputFiles):
+    for language in newOutputFiles:
+      if language in outputFiles:
+        outputFiles[language].union_update(newOutputFiles[language])
+      else:
+        outputFiles[language] = newOutputFiles[language]
+    return outputFiles
+
   def getLanguageProcessor(self):
     return self.configurations[self.configurationName[-1]]
 
@@ -268,14 +278,10 @@ class Builder(logging.Logger):
       else:
         output, error, status = script.Script.executeShellCommand(self.getCompilerCommand(source, target), checkCommand = check, log = self.log)
         if not target is None:
-          outputFiles = {'ELF': [target]}
+          outputFiles = {'ELF': sets.Set([target])}
         else:
           outputFiles = {}
-      for language in outputFiles:
-        if language in config.outputFiles:
-          config.outputFiles[language].extend(outputFiles[language])
-        else:
-          config.outputFiles[language] = outputFiles[language]
+      self.updateOutputFiles(config.outputFiles, outputFiles)
     else:
       output      = ''
       error       = ''
@@ -342,8 +348,8 @@ class Builder(logging.Logger):
         check(None, status, output, error)
       else:
         output, error, status = script.Script.executeShellCommand(self.getLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
-        outputFiles = {'Linked ELF': [target]}
-      config.outputFiles.update(outputFiles)
+        outputFiles = {'Linked ELF': sets.Set([target])}
+      self.updateOutputFiles(config.outputFiles, outputFiles)
     else:
       output      = ''
       error       = ''

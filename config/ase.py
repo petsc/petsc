@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
     if not os.path.isdir(self.argDB['ASE_DIR']):
       raise RuntimeError('Invalid ASE directory: '+str(self.argDB['ASE_DIR']))
     if not os.getcwd() == self.argDB['ASE_DIR']:
-      for lib in self.libs:
+      for lib in self.lib:
         if not os.path.isfile(lib):
           raise RuntimeError('Invalid ASE library: '+str(lib))
     return
