@@ -1,9 +1,9 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbarrier.c,v 1.85 1998/04/28 15:19:23 bsmith Exp $";
+static char vcid[] = "$Id: pbarrier.c,v 1.1 1998/05/20 15:04:07 balay Exp balay $";
 #endif
 
-#include "petsc.h"
+#include "petsc.h"              /*I "petsc.h" I*/
 
 /*@
     PetscBarrier - Blocks until this routine is executed by all

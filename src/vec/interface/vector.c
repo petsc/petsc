@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.138 1998/05/19 01:49:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.139 1998/05/20 13:39:34 bsmith Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1575,6 +1575,31 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
   PetscValidIntPointer(high);
   ierr = (*x->ops->getmap)(x,&map);CHKERRQ(ierr);
   ierr = MapGetLocalRange(map,low,high);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecGetMap"
+/*@
+   VecGetMap - Returns the map associated with the vector
+
+   Not Collective
+
+   Input Parameter:
+.  x - the vector
+
+   Output Parameters:
+.  map - the map
+
+.keywords: vector, get, map
+@*/
+int VecGetMap(Vec x,Map *map)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  ierr = (*x->ops->getmap)(x,map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
