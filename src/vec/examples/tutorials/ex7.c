@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.6 1996/10/23 22:14:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.7 1996/11/12 16:55:39 curfman Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
@@ -8,9 +8,9 @@ static char help[] = "Demonstrates calling a Fortran computational routine from 
 #include "vec.h"
 
 /*
-     This is because some machines REQUIRE linking with the Fortran linker if you 
-   do any Fortran IO. The Fortran linker requires one of these routines, even though
-   it will never be called.
+   These dummy routines are listed because some machines REQUIRE linking with the
+   Fortran linker if and Fortran IO is done. The Fortran linker requires one of
+   these routines, even though it will never be called.
 */
 
 int MAIN__()
@@ -19,6 +19,11 @@ int MAIN__()
 }
 
 int __main()
+{
+  return 0;
+}
+
+int MAIN_()
 {
   return 0;
 }
