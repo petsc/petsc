@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.110 1997/01/21 03:37:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.111 1997/01/21 19:13:51 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -593,6 +593,9 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->xmonitor          = 0;
   snes->vwork             = 0;
   snes->nwork             = 0;
+  snes->conv_hist_size    = 0;
+  snes->conv_act_size     = 0;
+  snes->conv_hist         = 0;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   kctx = PetscNew(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
@@ -1437,6 +1440,37 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*
 {
   (snes)->converged = func;
   (snes)->cnvP      = cctx;
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESSetConvergenceHistory"
+/*@
+   SNESSetConvergenceHistory - Sets the array used to hold the convergence history.
+
+   Input Parameters:
+.  snes - iterative context obtained from SNESCreate()
+.  a   - array to hold history
+.  na  - size of a
+
+   Notes:
+   If set, this array will contain the function norms (for
+   SNES_NONLINEAR_EQUATIONS methods) or gradient norms
+   (for SNES_UNCONSTRAINED_MINIMIZATION methods) computed
+   at each step.
+
+   This routine is useful, e.g., when running a code for purposes
+   of accurate performance monitoring, when no I/O should be done
+   during the section of code that is being timed.
+
+.keywords: SNES, set, convergence, history
+@*/
+int SNESSetConvergenceHistory(SNES snes, double *a, int na)
+{
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  if (na) PetscValidScalarPointer(a);
+  snes->conv_hist      = a;
+  snes->conv_hist_size = na;
   return 0;
 }
 
