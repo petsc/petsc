@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.8 1997/10/10 04:07:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.9 1997/10/19 03:31:07 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -120,6 +120,7 @@ int AODataFindSegment_Private(AOData aodata,char *keyname, char *segname, int *f
 int AODataGetSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = (*aodata->ops.getsegment)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
@@ -148,6 +149,7 @@ int AODataGetSegment(AOData aodata,char *name,char *segment,int n,int *keys,void
 int AODataRestoreSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = (*aodata->ops.restoresegment)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
@@ -175,6 +177,7 @@ int AODataRestoreSegment(AOData aodata,char *name,char *segment,int n,int *keys,
 int AODataGetSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
   int ierr,n,*keys;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
@@ -207,6 +210,7 @@ int AODataGetSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
 int AODataRestoreSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
   int ierr,n,*keys;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -244,6 +248,7 @@ int AODataRestoreSegmentIS(AOData aodata,char *name,char *segment,IS is,void **d
 int AODataGetLocalSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = (*aodata->ops.getlocalsegment)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
@@ -272,6 +277,7 @@ int AODataGetLocalSegment(AOData aodata,char *name,char *segment,int n,int *keys
 int AODataRestoreLocalSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = (*aodata->ops.restorelocalsegment)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
@@ -299,6 +305,7 @@ int AODataRestoreLocalSegment(AOData aodata,char *name,char *segment,int n,int *
 int AODataGetLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
   int ierr,n,*keys;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
@@ -331,6 +338,7 @@ int AODataGetLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **
 int AODataRestoreLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
 {
   int ierr,n,*keys;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
@@ -344,6 +352,86 @@ int AODataRestoreLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,voi
 }
 
 /* ------------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "AODataGetNeighbors" 
+/*@
+   AODataGetNeighbors - Given a list of keys generates a new list containing
+         those keys plus neighbors found in a neighbors list.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  n - the number of data items needed by this processor
+.  keys - the keys provided by this processor
+
+   Output Parameters:
+.  is - the indices retrieved
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
+          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
+          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment(), 
+          AODataGetNeighborsIS()
+@*/
+int AODataGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
+{
+  int ierr;
+  IS  reduced,input;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+ 
+  /* get the list of neighbors */
+  ierr = AODataGetReducedSegment(aodata,name,name,n,keys,&reduced);CHKERRQ(ierr);
+
+  ierr = ISCreateGeneral(aodata->comm,n,keys,&input);CHKERRQ(ierr);
+  ierr = ISSum(input,reduced,is);CHKERRQ(ierr);
+  ierr = ISDestroy(input);CHKERRQ(ierr);
+  ierr = ISDestroy(reduced);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataGetNeighborsIS" 
+/*@
+   AODataGetNeighborsIS - Given a list of keys generates a new list containing
+         those keys plus neighbors found in a neighbors list.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  n - the number of data items needed by this processor
+.  keys - the keys provided by this processor
+
+   Output Parameters:
+.  is - the indices retrieved
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
+          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
+          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment(), 
+          AODataGetNeighbors()
+@*/
+int AODataGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
+{
+  int ierr;
+  IS  reduced;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+ 
+  /* get the list of neighbors */
+  ierr = AODataGetReducedSegmentIS(aodata,name,name,keys,&reduced);CHKERRQ(ierr);
+
+  ierr = ISSum(keys,reduced,is);CHKERRQ(ierr);
+  ierr = ISDestroy(reduced);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "AODataGetReducedSegment" 
@@ -369,6 +457,7 @@ int AODataRestoreLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,voi
 int AODataGetReducedSegment(AOData aodata,char *name,char *segment,int n,int *keys,IS *is)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = (*aodata->ops.getreducedsegment)(aodata,name,segment,n,keys,is); CHKERRQ(ierr);
@@ -396,6 +485,7 @@ int AODataGetReducedSegment(AOData aodata,char *name,char *segment,int n,int *ke
 int AODataGetReducedSegmentIS(AOData aodata,char *name,char *segment,IS is,IS *isout)
 {
   int ierr,n,*keys;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
@@ -428,6 +518,7 @@ int AODataGetReducedSegmentIS(AOData aodata,char *name,char *segment,IS is,IS *i
 int AODataAddKeyLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping map)
 {
   int       ierr,ikey,flag;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
@@ -462,6 +553,7 @@ int AODataAddKey(AOData aodata,char *name,int nlocal,int N,int nsegments)
   int       ierr,ikey,flag,Ntmp,size,rank,i,len;
   AODataKey *key;
   MPI_Comm  comm = aodata->comm;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
@@ -533,6 +625,7 @@ int AODataAddSegment(AOData aodata,char *name,char *segment,int bs,int n,int *ke
 {
   int      ierr,i,flg1;
   MPI_Comm comm = aodata->comm;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
@@ -579,6 +672,7 @@ int AODataAddSegmentIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
                        PetscDataType dtype)
 {
   int n,*keys,ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
@@ -610,6 +704,7 @@ int AODataAddSegmentIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
 int AODataGetInfoKeyOwnership(AOData aodata,char *name,int *rstart,int *rend)
 {
   int key,ierr,flag;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
@@ -643,6 +738,7 @@ int AODataGetInfoKeyOwnership(AOData aodata,char *name,int *rstart,int *rend)
 int AODataGetInfoKey(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments)
 {
   int key,ierr,flag;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
@@ -681,6 +777,7 @@ int AODataGetInfoSegment(AOData aodata,char *keyname,char *segname,int *nglobal,
                          int *bs, PetscDataType *dtype)
 {
   int key,ierr,flag,seg;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
@@ -710,6 +807,7 @@ int AODataGetInfoSegment(AOData aodata,char *keyname,char *segname,int *nglobal,
 int AODataView(AOData aodata, Viewer viewer)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   ierr = (*aodata->view)((PetscObject)aodata,viewer);CHKERRQ(ierr);
@@ -731,6 +829,7 @@ int AODataView(AOData aodata, Viewer viewer)
 int AODataDestroy(AOData aodata)
 {
   int ierr;
+
   PetscFunctionBegin;
 
   if (!aodata) PetscFunctionReturn(0);
