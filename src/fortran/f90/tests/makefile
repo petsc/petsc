@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.13 2000/08/29 15:51:47 balay Exp balay $ 
+# $Id: makefile,v 1.14 2000/08/30 21:18:49 balay Exp balay $ 
 
 ALL: lib
 
@@ -27,7 +27,7 @@ test_IRIX: test_IRIX.o test_IRIXf90.o
 
 runex1f90:
 	-@ex1f90 > ex1f90_1.tmp 2>&1;	  \
-	   if (diff output/ex1f90_1.out ex1f90_1.tmp) then true; \
+	   if (${DIFF} output/ex1f90_1.out ex1f90_1.tmp) then true; \
 	   else echo "Possible problem with ex1f90_1, diffs above"; fi; \
 	   ${RM} -f ex1f90_1.tmp
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.25 2000/08/17 04:50:57 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.26 2000/09/22 20:42:48 bsmith Exp balay $ 
 
 ALL:
 
@@ -38,13 +38,13 @@ ex4: ex4.o   chkopts
 #
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1; \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp 
 
 runex2:
 	-@${MPIRUN} -np 1 ex2 > ex2_1.tmp 2>&1; \
-	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
+	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp 
 

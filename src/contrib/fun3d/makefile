@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 2000/08/11 20:41:42 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.18 2000/08/17 04:53:33 bsmith Exp balay $ 
 
 #requiresscalar real
 
@@ -32,12 +32,12 @@ puns3d: puns3d.a.o
 
 runflow1:
 	-@${MPIRUN} -np 1 flow -options_file testgrid/petsc.opt -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part.1 | grep clift | tail -1 > runflow1.tmp 2>&1;   \
-	   if (diff testgrid/coef.dat runflow1.tmp) then true; \
+	   if (${DIFF} testgrid/coef.dat runflow1.tmp) then true; \
 	   else echo "Possible problem with runflow1, diffs above"; fi; \
 	   ${RM} -f runflow1.tmp
 runflow4:
 	-@${MPIRUN} -np 4 flow -options_file testgrid/petsc.opt -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part.4 | grep clift | tail -1 > runflow4.tmp 2>&1;   \
-	   if (diff testgrid/coef.dat runflow4.tmp) then true; \
+	   if (${DIFF} testgrid/coef.dat runflow4.tmp) then true; \
 	   else echo "Possible problem with runflow4, diffs above"; fi; \
 	   ${RM} -f runflow4.tmp
 runflow64:

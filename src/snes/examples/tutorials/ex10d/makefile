@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.8 2000/08/07 22:16:33 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.9 2000/08/17 04:52:55 bsmith Exp balay $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -16,7 +16,7 @@ ex10: ex10.o  chkopts
 #-----------------------------------------------------------------
 runex10:
 	-@$(MPIRUN) -np 2 ex10 -snes_smonitor > ex10_1.tmp 2>&1;   \
-	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
+	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 

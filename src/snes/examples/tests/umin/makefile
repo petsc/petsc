@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.71 2001/03/13 04:09:37 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.72 2001/03/22 20:32:00 bsmith Exp balay $ 
 
 # This directory contains example programs for the SNES unconstrained
 # minimization solvers.  Examples of solving systems of nonlinear
@@ -27,32 +27,32 @@ ex3: ex3.o chkopts
 #---------------------------------------------------------------------------------
 runex2:
 	-@${MPIRUN} -np 1 ex2 -p 1 -snes_smonitor > ex2_1.tmp 2>&1;   \
-           if (diff output/ex2_1.out ex2_1.tmp) then true; \
+           if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            ${RM} -f ex2_1.tmp
 runex2_2:
 	-@${MPIRUN} -np 1 ex2 -p 1 -snes_smonitor -snes_type umls -ksp_gmres_irorthog > ex2_2.tmp 2>&1;\
-           if (diff output/ex2_2.out ex2_2.tmp) then true; \
+           if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
            else echo "Possible problem with ex2_2, diffs above"; fi; \
            ${RM} -f ex2_2.tmp
 runex2_3:
 	-@${MPIRUN} -np 1 ex2 -p 1 -snes_smonitor -snes_type umls -snes_mf -ksp_gmres_irorthog > ex2_3.tmp 2>&1;\
-           if (diff output/ex2_3.out ex2_3.tmp) then true; \
+           if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
            else echo "Possible problem with ex2_3, diffs above"; fi; \
            ${RM} -f ex2_3.tmp
 runex3:
 	-@${MPIRUN} -np 2 ex3 -snes_smonitor > ex3_1.tmp 2>&1;\
-           if (diff output/ex3_1.out ex3_1.tmp) then true; \
+           if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
            else echo "Possible problem with ex3_1, diffs above"; fi;\
 	   ${RM} -f ex3_1.tmp
 runex3_2:
 	-@${MPIRUN} -np 2 ex3 -Ny 2 -snes_type umls -snes_smonitor -ksp_gmres_irorthog > ex3_2.tmp 2>&1;\
-           if (diff output/ex3_2.out ex3_2.tmp) then true; \
+           if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
            else echo "Possible problem with ex3_2, diffs above"; fi;\
 	   ${RM} -f ex3_2.tmp
 runex3_3:
 	-@${MPIRUN} -np 4 ex3 -Nx 2 -Ny 2 -snes_fd -snes_smonitor > ex3_3.tmp 2>&1;\
-           if (diff output/ex3_3.out ex3_3.tmp) then true; \
+           if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
            else echo "Possible problem with ex3_3, diffs above"; fi;\
 	   ${RM} -f ex3_3.tmp
 

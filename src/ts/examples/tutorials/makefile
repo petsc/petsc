@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.27 2000/09/22 20:46:37 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.28 2001/03/29 15:39:45 bsmith Exp balay $ 
 
 CFLAGS	        =
 FFLAGS	        =
@@ -50,13 +50,13 @@ ex7: ex7.o  chkopts
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog  > ex1_1.tmp 2>&1;	  \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 
 runex1f:
 	-@${MPIRUN} -np 1 ex1f -ksp_gmres_irorthog > ex1f_1.tmp 2>&1;	  \
-	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
+	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.23 2001/01/04 21:59:14 balay Exp balay $ 
+# $Id: base_variables,v 1.24 2001/03/05 22:11:53 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -11,6 +11,7 @@ SHELL		   = /bin/sh
 SED		   = /bin/sed
 MKDIR              = mkdir -p
 LIB_SUFFIX         = a
+DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc    -KPIC -dalign -xtarget=native

@@ -1,9 +1,9 @@
-# $Id: base_variables,v 1.6 2001/03/22 04:38:05 balay Exp $ 
+# $Id: base_variables,v 1.1 2001/03/27 22:16:51 balay Exp balay $ 
 #
 # Regular petsc-makefile variables
 #
 WIN32FE          = ${PETSC_DIR}/bin/win32fe/win32fe.exe
-AR               = ${WIN32FE} lib -nologo
+AR               = ${WIN32FE} lib
 AR_FLAGS         = 
 LIB_SUFFIX       = lib
 RM               = rm -f
@@ -12,11 +12,12 @@ RANLIB           = true
 SHELL            = /bin/sh
 SED              = sed
 MKDIR            = mkdir -p
+DIFF             = diff -w
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = ${WIN32FE} cl
 ifeq (${BLASLAPACK_TYPE},FBLASLAPACK)
-C_FC           = ${WIN32FE} f90  -fpp:-m -iface:(cref,nomixed_str_len_arg)
+C_FC           = ${WIN32FE} f90  -fpp:-m -iface:'(cref,nomixed_str_len_arg)'
 else
 C_FC             = ${WIN32FE} f90 -fpp:-m
 endif

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.20 2001/01/04 21:59:26 balay Exp balay $ 
+# $Id: base_variables,v 1.21 2001/03/05 22:15:29 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,6 +12,7 @@ SED		   = /bin/sed
 LD                 = /home/alice/software/binutils/solaris/bin/ld
 MKDIR              = mkdir -p
 LIB_SUFFIX         = a
+DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = gcc -fPIC

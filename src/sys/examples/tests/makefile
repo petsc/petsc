@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.37 2000/08/17 04:50:56 bsmith Exp balay $ 
+# $Id: makefile,v 1.38 2000/08/17 19:57:52 balay Exp balay $ 
 
 
 
@@ -83,41 +83,41 @@ ex17f: ex17f.o chkopts
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
-	   if (diff output/ex1_1.out ex1_1.tmpz) then true; \
+	   if (${DIFF} output/ex1_1.out ex1_1.tmpz) then true; \
 	   else echo "This is a contrived error to test error handling."; fi; \
 	   ${RM} -f ex1_1.tmp ex1_1.tmpz
 runex2:
 	-@${MPIRUN} -np 1 ex2	 > ex2_1.tmp 2>&1;grep -v p0 ex2_1.tmp > ex2_1.tmpz ;\
-	   if (diff output/ex2_1.out ex2_1.tmpz) then true; \
+	   if (${DIFF} output/ex2_1.out ex2_1.tmpz) then true; \
 	   else echo "This is a contrived error to test error handling."; fi; \
 	   ${RM} -f ex2_1.tmp ex2_1.tmpz
 runex3:
 	-@${MPIRUN} -np 1 ex3 -fp_trap > ex3_1.tmp 2>&1;\
 	   grep -v p0 ex3_1.tmp > ex3_1.tmpz ;	 \
-	   if (diff output/ex3_1.out ex3_1.tmpz) then true; \
+	   if (${DIFF} output/ex3_1.out ex3_1.tmpz) then true; \
 	   else echo "This is a contrived error to test floating point traps."; fi; \
 	   ${RM} -f ex3_1.tmp ex3_1.tmpz
 runex4:
 	-@${MPIRUN} -np 1 ex4 > ex4_1.tmp 2>&1;\
 	   grep -v p0 ex4_1.tmp > ex4_1.tmpz ;	 \
-	   if (diff output/ex4_1.out ex4_1.tmpz) then true; \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmpz) then true; \
 	   else echo "Error in ex4. Problem with PetscStrtok()"; fi; \
 	   ${RM} -f ex4_1.tmp ex4_1.tmpz
 runex7:
 	-@${MPIRUN} -np 2 ex7
 runex10:
 	-@${MPIRUN} -np 1 ex10 > ex10_1.tmp 2>&1;\
-	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
+	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Error in PetscMemmove."; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp
 runex13:
 	-@${MPIRUN} -np 2 ex13 > ex13_1.tmp 2>&1;\
-	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
+	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Error in PetscSetCommWorld."; fi; \
 	   ${RM} -f ex13_1.tmp ex13_1.tmp
 runex13f:
 	-@${MPIRUN} -np 2 ex13f > ex13_1.tmp 2>&1;\
-	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
+	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem in ex13f"; fi; \
 	   ${RM} -f ex13_1.tmp ex13_1.tmp
 

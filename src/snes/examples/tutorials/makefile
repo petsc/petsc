@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.93 2001/03/22 20:32:01 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.94 2001/03/23 01:14:53 bsmith Exp balay $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  Examples of unconstrained minimization problems
@@ -122,169 +122,169 @@ ex30: ex30.o chkopts
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog -snes_smonitor > ex1_1.tmp 2>&1;   \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1f:
 	-@${MPIRUN} -np 1 ex1f -ksp_gmres_irorthog -snes_smonitor > ex1f_1.tmp 2>&1;   \
-	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
+	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 runex2:
 	-@${MPIRUN} -np 1 ex2 -nox -snes_cancelmonitors -snes_smonitor \
 		 -snes_view -pc_type jacobi -ksp_gmres_irorthog >ex2_1.tmp 2>&1;	\
-	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
+	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
 	-@${MPIRUN} -np 1 ex2 -nox -snes_cancelmonitors -snes_smonitor \
 		-snes_type tr -snes_view \
 		-pc_type jacobi -ksp_gmres_irorthog > ex2_2.tmp 2>&1; \
-	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
+	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
 	-@${MPIRUN} -np 1 ex2 -nox -snes_cancelmonitors -snes_smonitor -trmalloc_off \
 		 -snes_view -pc_type jacobi -ksp_gmres_irorthog >ex2_3.tmp 2>&1;	\
-	   if (diff output/ex2_1.out ex2_3.tmp) then true; \
+	   if (${DIFF} output/ex2_1.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   ${RM} -f ex2_3.tmp
 runex3:
 	-@${MPIRUN} -np 1 ex3 -nox -snes_cancelmonitors -snes_smonitor -ksp_gmres_irorthog > ex3_1.tmp 2>&1;	  \
-	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
+	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp
 runex3_2:
 	-@${MPIRUN} -np 3 ex3 -nox -pc_type asm -mat_type mpiaij -mat_aij_oneindex \
 	   -snes_cancelmonitors -snes_smonitor -ksp_gmres_irorthog > ex3_2.tmp 2>&1; \
-	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
+	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   ${RM} -f ex3_2.tmp
 runex3_3:
 	-@${MPIRUN} -np 2 ex3 -nox -snes_cancelmonitors -snes_smonitor -ksp_gmres_irorthog > ex3_3.tmp 2>&1; \
-	   if (diff output/ex3_3.out ex3_3.tmp) then true; \
+	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   ${RM} -f ex3_3.tmp
 runex5_11:
 	-@${MPIRUN} -np 4 ex5 -snes_mf -Nx 4 -Ny 1 -snes_smonitor -ksp_gmres_irorthog -matlab > ex5_11.tmp 2>&1; \
-	   if (diff output/ex5_1.out ex5_11.tmp) then true; \
+	   if (${DIFF} output/ex5_1.out ex5_11.tmp) then true; \
 	   else echo "Possible problem with ex5_11, diffs above"; fi; \
 	   ${RM} -f ex5_11.tmp
 runex5_12:
 	-@${MPIRUN} -np 4 ex5m -Nx 2 -Ny 2 -snes_smonitor -ksp_gmres_irorthog -matlab > ex5_12.tmp 2>&1; \
-	   if (diff output/ex5_2.out ex5_12.tmp) then true; \
+	   if (${DIFF} output/ex5_2.out ex5_12.tmp) then true; \
 	   else echo "Possible problem with ex5_12, diffs above"; fi; \
 	   ${RM} -f ex5_12.tmp
 runex5:
 	-@${MPIRUN} -np 4 ex5 -snes_mf -Nx 4 -Ny 1 -snes_smonitor -ksp_gmres_irorthog > ex5_1.tmp 2>&1; \
-	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
+	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5_2:
 	-@${MPIRUN} -np 4 ex5 -Nx 2 -Ny 2 -snes_smonitor -ksp_gmres_irorthog > ex5_2.tmp 2>&1; \
-	   if (diff output/ex5_2.out ex5_2.tmp) then true; \
+	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
 	   ${RM} -f ex5_2.tmp
 runex5_3:
 	-@${MPIRUN} -np 4 ex5 -snes_mf -Nx 2 -Ny 2 -snes_smonitor-ksp_gmres_irorthog > ex5_3.tmp 2>&1;\
-	   if (diff output/ex5_1.out ex5_3.tmp) then true; \
+	   if (${DIFF} output/ex5_1.out ex5_3.tmp) then true; \
 	   else echo "Possible problem with ex5_3, diffs above"; fi; \
 	   ${RM} -f ex5_3.tmp
 runex5_4:
 	-@${MPIRUN} -np 4 ex5 -Nx 2 -Ny 2 -snes_smonitor -pc_type asm \
 	   -pc_asm_blocks 4 -pc_asm_overlap 1 -ksp_gmres_irorthog > ex5_4.tmp 2>&1; \
-	   if (diff output/ex5_4.out ex5_4.tmp) then true; \
+	   if (${DIFF} output/ex5_4.out ex5_4.tmp) then true; \
 	   else echo "Possible problem with ex5_4, diffs above"; fi; \
 	   ${RM} -f ex5_4.tmp
 runex5_5:
 	-@${MPIRUN} -np 4 ex5 -Nx 2 -Ny 2 -snes_smonitor -pc_type bjacobi \
 	   -snes_view -ksp_gmres_irorthog > ex5_5.tmp 2>&1; \
-	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
+	   if (${DIFF} output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp
 runex5_6:
 	-@${MPIRUN} -np 4 ex5 -snes_fd -Nx 2 -Ny 2 -snes_smonitor -ksp_gmres_irorthog > ex5_6.tmp 2>&1; \
-	   if (diff output/ex5_6.out ex5_6.tmp) then true; \
+	   if (${DIFF} output/ex5_6.out ex5_6.tmp) then true; \
 	   else echo "Possible problem with ex5_6, diffs above"; fi; \
 	   ${RM} -f ex5_6.tmp
 runex5_7:
 	-@${MPIRUN} -np 3 ex5 -snes_fd  -snes_smonitor -ksp_gmres_irorthog > ex5_7.tmp 2>&1;\
-	   if (diff output/ex5_7.out ex5_7.tmp) then true; \
+	   if (${DIFF} output/ex5_7.out ex5_7.tmp) then true; \
 	   else echo "Possible problem with ex5_7, diffs above"; fi; \
 	   ${RM} -f ex5_7.tmp
 runex5_8:
 	-@${MPIRUN} -np 2 ex5 -snes_vecmonitor -ksp_gmres_irorthog > /dev/null 2>&1
 runex5_9:
 	-@${MPIRUN} -np 4 ex5 -snes_mf -snes_smonitor>ex5_9.tmp 2>&1;\
-	   if (diff output/ex5_9.out ex5_9.tmp) then true; \
+	   if (${DIFF} output/ex5_9.out ex5_9.tmp) then true; \
 	   else echo "Possible problem with ex5_9, diffs above"; fi; \
 	   ${RM} -f ex5_9.tmp
 runex5_10:
 	-@${MPIRUN} -np 2 ex5 -sles_diagonal_scale -ksp_smonitor -snes_smonitor -ksp_gmres_irorthog > ex5_10.tmp 2>&1;\
-	   if (diff output/ex5_10.out ex5_10.tmp) then true; \
+	   if (${DIFF} output/ex5_10.out ex5_10.tmp) then true; \
 	   else echo "Possible problem with ex5_10, diffs above"; fi; \
 	   ${RM} -f ex5_10.tmp
 runex5f:
 	-@${MPIRUN} -np 4 ex5f -snes_mf -Nx 4 -Ny 1 -snes_smonitor -ksp_gmres_irorthog > ex5f_1.tmp 2>&1; \
-	   if (diff output/ex5f_1.out ex5f_1.tmp) then true; \
+	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
 	   else echo "Possible problem with ex5f_1, diffs above"; fi; \
 	   ${RM} -f ex5f_1.tmp
 runex5f_2:
 	-@${MPIRUN} -np 4 ex5f  -Nx 2 -Ny 2 -snes_smonitor -ksp_gmres_irorthog > ex5f_2.tmp 2>&1; \
-	   if (diff output/ex5f_2.out ex5f_2.tmp) then true; \
+	   if (${DIFF} output/ex5f_2.out ex5f_2.tmp) then true; \
 	   else echo "Possible problem with ex5f_2, diffs above"; fi; \
 	   ${RM} -f ex5f_2.tmp
 runex5f_3:
 	-@${MPIRUN} -np 3 ex5f -snes_fd  -snes_smonitor -ksp_gmres_irorthog > ex5f_3.tmp 2>&1;\
-	   if (diff output/ex5f_3.out ex5f_3.tmp) then true; \
+	   if (${DIFF} output/ex5f_3.out ex5f_3.tmp) then true; \
 	   else echo "Possible problem with ex5f_3, diffs above"; fi; \
 	   ${RM} -f ex5f_3.tmp
 runex5f90:
 	-@${MPIRUN} -np 4 ex5f90 -snes_mf -Nx 4 -Ny 1 -snes_smonitor -ksp_gmres_irorthog > ex5f90_1.tmp 2>&1; \
-	   if (diff output/ex5f_1.out ex5f90_1.tmp) then true; \
+	   if (${DIFF} output/ex5f_1.out ex5f90_1.tmp) then true; \
 	   else echo "Possible problem with ex5f90_1, diffs above"; fi; \
 	   ${RM} -f ex5f90_1.tmp
 runex5f90_2:
 	-@${MPIRUN} -np 4 ex5f90 -Nx 2 -Ny 2 -snes_smonitor -ksp_gmres_irorthog > ex5f90_2.tmp 2>&1; \
-	   if (diff output/ex5f_2.out ex5f90_2.tmp) then true; \
+	   if (${DIFF} output/ex5f_2.out ex5f90_2.tmp) then true; \
 	   else echo "Possible problem with ex5f90_2, diffs above"; fi; \
 	   ${RM} -f ex5f90_2.tmp
 runex5f90_3:
 	-@${MPIRUN} -np 3 ex5f90 -snes_fd  -snes_smonitor -ksp_gmres_irorthog > ex5f90_3.tmp 2>&1;\
-	   if (diff output/ex5f_3.out ex5f90_3.tmp) then true; \
+	   if (${DIFF} output/ex5f_3.out ex5f90_3.tmp) then true; \
 	   else echo "Possible problem with ex5f90_3, diffs above"; fi; \
 	   ${RM} -f ex5f90_3.tmp
 runex6:
 	-@${MPIRUN} -np 1 ex6 -snes_smonitor -ksp_gmres_irorthog > ex6_1.tmp 2>&1;   \
-	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
+	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex6_2:
 	-@${MPIRUN} -np 1 ex6 -snes_mf -snes_smonitor -ksp_gmres_irorthog > ex6_2.tmp 2>&1;   \
-	   if (diff output/ex6_2.out ex6_2.tmp) then true; \
+	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   ${RM} -f ex6_2.tmp
 runex8:
 	-@${MPIRUN} -np 2 ex8  -mx 16 -my 16 -snes_smonitor -ksp_gmres_irorthog \
                     -lidvelocity 0. -grashof 1000. > ex8_1.tmp 2>&1; \
-           if (diff output/ex8_1.out ex8_1.tmp) then true; \
+           if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \
            ${RM} -f ex8_1.tmp
 runex8_2:
 	-@${MPIRUN} -np 2 ex8 -snes_vecmonitor -ksp_gmres_irorthog > /dev/null 2>&1 
 runex8_3:
 	-@${MPIRUN} -np 2 ex8 -is_coloring_view > ex8_3.tmp 2>&1;\
-           if (diff output/ex8_3.out ex8_3.tmp) then true; \
+           if (${DIFF} output/ex8_3.out ex8_3.tmp) then true; \
            else echo "Possible problem with ex8_3, diffs above"; fi; \
            ${RM} -f ex8_3.tmp
 runex14:
 	-@${MPIRUN} -np 4 ex14 -snes_smonitor -ksp_gmres_irorthog > ex14_1.tmp 2>&1; \
-	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
+	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
 runex14_2:
 	-@${MPIRUN} -np 4 ex14 -snes_smonitor -ksp_gmres_irorthog > ex14_2.tmp 2>&1; \
-	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
+	   if (${DIFF} output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \

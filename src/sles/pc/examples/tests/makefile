@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.67 2000/08/17 19:37:10 balay Exp bsmith $ 
+# $Id: makefile,v 1.68 2001/01/15 21:47:06 bsmith Exp balay $ 
 
 CFLAGS	        =
 FFLAGS          =
@@ -45,35 +45,35 @@ ex8f: ex8f.o   chkopts
 #------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1;   \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp 
 runex2:
 	-@${MPIRUN} -np 1 ex2 -ksp_type cg -ksp_smonitor > ex2_1.tmp 2>&1;	 \
-	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
+	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp 
 runex3:
 	-@${MPIRUN} -np 1 ex3 -ksp_type gmres -ksp_smonitor -pc_type sor\
 			     -pc_sor_symmetric > ex3_1.tmp 2>&1;   \
-	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
+	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp 
 runex4:
 	-@${MPIRUN} -np 1 ex4	 > ex4_1.tmp 2>&1;   \
-	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp 
 
 runex5:
 	-@${MPIRUN} -np 1 ex5 > ex5_1.tmp 2>&1;   \
-	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
+	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp 
 
 runex6:
 	-@${MPIRUN} -np 1  ex6 -m 7 > ex6_1.tmp   2>&1;   \
-	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
+	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.7 2001/03/13 17:20:06 balay Exp bsmith $ 
+# $Id: base_variables,v 1.8 2001/03/29 15:39:24 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,6 +12,7 @@ SED		   = /bin/sed
 SH_LD		   = gcc
 MKDIR              = mkdir -p
 LIB_SUFFIX         = a
+DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = gcc

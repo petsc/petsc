@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.342 2001/03/22 20:27:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.343 2001/03/26 04:17:00 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -363,9 +363,9 @@ countcfunctions:
 
 difffortranfunctions: countfortranfunctions countcfunctions
 	-@echo -------------- Functions missing in the fortran interface ---------------------
-	-@diff /tmp/countcfunctions /tmp/countfortranfunctions | grep "^<" | cut -d' ' -f2
+	-@${DIFF} /tmp/countcfunctions /tmp/countfortranfunctions | grep "^<" | cut -d' ' -f2
 	-@echo ----------------- Functions missing in the C interface ------------------------
-	-@diff /tmp/countcfunctions /tmp/countfortranfunctions | grep "^>" | cut -d' ' -f2
+	-@${DIFF} /tmp/countcfunctions /tmp/countfortranfunctions | grep "^>" | cut -d' ' -f2
 	-@${RM}  /tmp/countcfunctions /tmp/countfortranfunctions
 
 checkbadfortranstubs:

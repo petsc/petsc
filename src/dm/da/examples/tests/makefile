@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.62 2000/08/17 20:01:44 balay Exp bsmith $ 
+# $Id: makefile,v 1.63 2001/03/09 22:15:09 bsmith Exp balay $ 
 
 CFLAGS	        = 
 FFLAGS	        = 
@@ -85,19 +85,19 @@ ex18: ex18.o   chkopts
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
+	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex2:
 	-@${MPIRUN} -np 2 ex2 > ex2_1.tmp 2>&1;	  \
-	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
+	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 runex3:
 	-@${MPIRUN} -np 3 ex3 -time 50
 runex4:
 	-@${MPIRUN} -np 4 ex4  -nox > ex4_1.tmp 2>&1;	  \
-	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
 runex5:
@@ -105,7 +105,7 @@ runex5:
 runex6:
 	-@${MPIRUN} -np 6 ex6 -test_order
 runex12:
-	-@echo "path([getenv('PETSC_DIR') '/bin/matlab'],path); ex12(2) ; exit" | ${MATLABCOMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (diff output/ex12_1.out ex12_1.tmp2) then true; \
+	-@echo "path([getenv('PETSC_DIR') '/bin/matlab'],path); ex12(2) ; exit" | ${MATLABCOMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
 	   else echo "Possible problem with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp ex12_1.tmp2
 
