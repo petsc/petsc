@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.165 1997/08/13 22:27:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.166 1997/08/22 15:19:22 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1328,17 +1328,17 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
   PetscFPrintf(comm,fd,"\n                         Max       Max/Min      Avg      Total \n");
   if (mint) ratio = maxt/mint; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Time (sec):           %5.3e   %8.3f   %5.3e\n",maxt,ratio,avet);
+  PetscFPrintf(comm,fd,"Time (sec):           %5.3e   %10.5f   %5.3e\n",maxt,ratio,avet);
   if (mino) ratio = maxo/mino; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Objects:              %5.3e   %8.3f   %5.3e\n",maxo,ratio,aveo);
+  PetscFPrintf(comm,fd,"Objects:              %5.3e   %10.5f   %5.3e\n",maxo,ratio,aveo);
   if (minf) ratio = maxf/minf; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Flops:                %5.3e   %8.3f   %5.3e  %5.3e\n",maxf,ratio,avef,totf);
+  PetscFPrintf(comm,fd,"Flops:                %5.3e   %10.5f   %5.3e  %5.3e\n",maxf,ratio,avef,totf);
 
   if (mint) fmin = minf/mint; else fmin = 0;
   if (maxt) fmax = maxf/maxt; else fmax = 0;
   if (maxt) ftot = totf/maxt; else ftot = 0;
   if (fmin) ratio = fmax/fmin; else ratio = 0.0;
-  PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %8.3f              %5.3e\n",fmax,ratio,ftot);
+  PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %10.5f              %5.3e\n",fmax,ratio,ftot);
   PetscTrSpace(PETSC_NULL,PETSC_NULL,&mem);
   if (mem > 0.0) {
     MPI_Allreduce(&mem,&maxmem,1,MPIU_PLOGDOUBLE,MPI_MAX,comm);
