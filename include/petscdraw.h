@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.42 1997/05/07 01:45:06 balay Exp bsmith $ */
+/* $Id: draw.h,v 1.43 1997/05/20 03:21:47 bsmith Exp balay $ */
 /*
   Interface to the graphics
 */
@@ -13,7 +13,7 @@
 #define DRAW_NULLWINDOW 1
 #define DRAW_VRML       2
  
-typedef struct _Draw* Draw;
+typedef struct _p_Draw* Draw;
 
 #define DRAW_WHITE       0
 #define DRAW_BLACK       1

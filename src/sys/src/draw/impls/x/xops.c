@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.80 1997/05/16 19:33:23 balay Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.81 1997/05/23 16:27:27 balay Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -551,7 +551,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   }
 
   *inctx = 0;
-  PetscHeaderCreate(ctx,_Draw,DRAW_COOKIE,DRAW_XWINDOW,comm);
+  PetscHeaderCreate(ctx,_p_Draw,DRAW_COOKIE,DRAW_XWINDOW,comm);
   PLogObjectCreate(ctx);
   PetscMemcpy(&ctx->ops,&DvOps,sizeof(DvOps));
   ctx->destroy = DrawDestroy_X;
@@ -575,7 +575,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 
   /* actually create and open the window */
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);
-  PLogObjectMemory(ctx,sizeof(Draw_X)+sizeof(struct _Draw));
+  PLogObjectMemory(ctx,sizeof(Draw_X)+sizeof(struct _p_Draw));
   PetscMemzero(Xwin,sizeof(Draw_X));
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);

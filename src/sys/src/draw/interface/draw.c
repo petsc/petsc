@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.36 1997/01/06 20:26:34 balay Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.37 1997/02/22 02:27:05 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -161,7 +161,7 @@ int DrawOpenNull(MPI_Comm comm,Draw *win)
 {
   Draw draw;
   *win = 0;
-  PetscHeaderCreate(draw,_Draw,DRAW_COOKIE,DRAW_NULLWINDOW,comm);
+  PetscHeaderCreate(draw,_p_Draw,DRAW_COOKIE,DRAW_NULLWINDOW,comm);
   PLogObjectCreate(draw);
   PetscMemzero(&draw->ops,sizeof(struct _DrawOps));
   draw->destroy = DrawDestroy_Null;

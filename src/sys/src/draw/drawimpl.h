@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.17 1996/11/14 14:04:50 curfman Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.18 1997/03/26 01:36:43 bsmith Exp balay $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -35,7 +35,7 @@ struct _DrawOps {
   int (*checkresizedwindow)(Draw);
 };
 
-struct _Draw {
+struct _p_Draw {
   PETSCHEADER
   struct _DrawOps ops;
   int             pause;       /* sleep time after a sync flush */
