@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.2 1999/02/09 00:00:01 balay Exp balay $ 
+# $Id: base_variables,v 1.3 1999/02/17 16:25:23 balay Exp bsmith $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -11,9 +11,9 @@ SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = gcc   -D__USE_FIXED_PROTOTYPES__ -fPIC
-C_FC             = f90 -f77 -mismatch -free
+C_FC             = f90 -f77 -mismatch -free -dusty
 C_CLINKER        = gcc ${COPTFLAGS} 
-C_FLINKER        = f90 -f77 ${FOPTFLAGS}
+C_FLINKER        = f90 -f77 ${FOPTFLAGS} 
 C_CCV            = gcc   --version
 C_SYS_LIB        = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
@@ -28,7 +28,7 @@ O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = g++ -fPIC
-CXX_FC           = f90 -f77 ${FOPTFLAGS}
+CXX_FC           = f90 -f77 -mismatch -free -dusty ${FOPTFLAGS}
 CXX_CLINKER      = g++ ${COPTFLAGS} 
 CXX_FLINKER      = g++ ${COPTFLAGS}
 CXX_CCV          = g++   --version
