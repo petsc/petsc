@@ -1,10 +1,12 @@
-# $Id: makefile,v 1.9 1998/04/23 22:46:21 balay Exp bsmith $ 
+# $Id: makefile,v 1.10 1998/06/12 20:25:49 bsmith Exp balay $ 
 
 
 ALL: ex1
 
-CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-FFLAGS	        = 
+CFLAGS	        =
+FFLAGS	        =
+CPPFLAGS        =
+FPPFLAGS        = 
 LOCDIR          = src/draw/examples/tutorials/
 
 TESTEXAMPLES_2  = 
