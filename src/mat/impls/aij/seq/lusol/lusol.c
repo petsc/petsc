@@ -33,9 +33,7 @@ void PETSC_STDCALL M5SETX() {
 void PETSC_STDCALL M6RDEL() {
   ;
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 extern void PETSC_STDCALL LU1FAC (int *m, int *n, int *nnz, int *size, int *luparm,
                         double *parmlu, double *data, int *indc, int *indr,
                         int *rowperm, int *colperm, int *collen, int *rowlen,
@@ -47,6 +45,7 @@ extern void PETSC_STDCALL LU6SOL (int *mode, int *m, int *n, double *rhs, double
                         int *indc, int *indr, int *rowperm, int *colperm,
                         int *collen, int *rowlen, int *colstart, int *rowstart,
                         int *inform);
+EXTERN_C_END
 
 typedef struct 
 {
@@ -76,6 +75,7 @@ typedef struct
      int nnz;			/* Number of nonzeros allocated for factors  */
      int luparm[30];		/* Input/output to LUSOL                     */
 
+     int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
      int (*MatDestroy)(Mat);
      PetscTruth CleanUpLUSOL;
 
@@ -177,37 +177,59 @@ typedef struct
 #define Factorization_Pivot_Tolerance pow(2.2204460492503131E-16, 2.0 / 3.0) 
 #define Factorization_Small_Tolerance 1e-15 /* pow(DBL_EPSILON, 0.8) */
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_LUSOL_SeqAIJ"
+int MatConvert_LUSOL_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert an unfactored PETSc-LUSOL matrix */
+  /* to its base PETSc type, so we will ignore 'MatType type'. */
+  int               ierr;
+  Mat               B=*newmat;
+  Mat_SeqAIJ_LUSOL  *lusol=(Mat_SeqAIJ_LUSOL *)A->spptr;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    /* This routine was inherited from SeqAIJ. */
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  } else {
+    B->ops->lufactorsymbolic = lusol->MatLUFactorSymbolic;
+    B->ops->destroy          = lusol->MatDestroy;
+
+    ierr = PetscFree(lusol);CHKERRQ(ierr);
+    ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  }
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_LUSOL"
-int MatDestroy_SeqAIJ_LUSOL(Mat A)
-{
-     Mat_SeqAIJ_LUSOL *lusol;
-     int              ierr,(*destroy)(Mat);
+int MatDestroy_SeqAIJ_LUSOL(Mat A) {
+  int              ierr;
+  Mat_SeqAIJ_LUSOL *lusol=(Mat_SeqAIJ_LUSOL *)A->spptr;
 
-     PetscFunctionBegin;
-     lusol = (Mat_SeqAIJ_LUSOL *)A->spptr;
-     if (lusol->CleanUpLUSOL) {
-       ierr = PetscFree(lusol->ip);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->iq);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->lenc);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->lenr);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->locc);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->locr);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->iploc);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->iqloc);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->ipinv);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->iqinv);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->mnsw);CHKERRQ(ierr);
-       ierr = PetscFree(lusol->mnsv);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  if (lusol->CleanUpLUSOL) {
+    ierr = PetscFree(lusol->ip);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->iq);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->lenc);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->lenr);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->locc);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->locr);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->iploc);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->iqloc);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->ipinv);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->iqinv);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->mnsw);CHKERRQ(ierr);
+    ierr = PetscFree(lusol->mnsv);CHKERRQ(ierr);
+    
+    ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
+  }
 
-       ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
-     }
-
-     destroy = lusol->MatDestroy;
-     ierr = PetscFree(lusol);CHKERRQ(ierr);
-     ierr = (*destroy)(A);CHKERRQ(ierr);
-     PetscFunctionReturn(0);
+  ierr = MatConvert_LUSOL_SeqAIJ(A,MATSEQAIJ,&A);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -445,42 +467,75 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat 
      *F = B;
      PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseLUSOL_SeqAIJ"
-int MatUseLUSOL_SeqAIJ(Mat A)
-{
-  int        ierr, m, n;
-     
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_LUSOL"
+int MatConvert_SeqAIJ_LUSOL(Mat A,MatType type,Mat *newmat) {
+  int              ierr, m, n;
+  Mat_SeqAIJ_LUSOL *lusol;
+  Mat              B=*newmat;
+
   PetscFunctionBegin;
   ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);
   if (m != n) {
     SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square");
   }
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
 		
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_LUSOL;
+  ierr                       = PetscNew(Mat_SeqAIJ_LUSOL,&lusol);CHKERRQ(ierr);
+  lusol->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
+  lusol->MatDestroy          = A->ops->destroy;
+  lusol->CleanUpLUSOL        = PETSC_FALSE;
+
+  B->spptr                   = (void *)lusol;
+  B->ops->lufactorsymbolic   = MatLUFactorSymbolic_SeqAIJ_LUSOL;
+  B->ops->destroy            = MatDestroy_SeqAIJ_LUSOL;
+
   PetscLogInfo(0,"Using LUSOL for SeqAIJ LU factorization and solves.");
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_lusol_C",
+                                           "MatConvert_SeqAIJ_LUSOL",MatConvert_SeqAIJ_LUSOL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_lusol_seqaij_C",
+                                           "MatConvert_LUSOL_SeqAIJ",MatConvert_LUSOL_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+  *newmat = B;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
+
+/*MC
+  MATLUSOL - a matrix type providing direct solvers (LU) for sequential matrices 
+  via the external package LUSOL.
+
+  If LUSOL is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes LUSOL solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATLUSOL).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
+  supported for this matrix type.
+
+  Options Database Keys:
+. -mat_type lusol - sets the matrix type to lusol during a call to MatSetFromOptions()
+
+   Level: beginner
+
+.seealso: PCLU
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJ_LUSOL"
 int MatCreate_SeqAIJ_LUSOL(Mat A)
 {
-  int              ierr;
-  Mat_SeqAIJ_LUSOL *lusol;
+  int ierr;
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatUseLUSOL_SeqAIJ(A);CHKERRQ(ierr);
-
-  ierr                = PetscNew(Mat_SeqAIJ_LUSOL,&lusol);CHKERRQ(ierr);
-  lusol->CleanUpLUSOL = PETSC_FALSE;
-  lusol->MatDestroy   = A->ops->destroy;
-  A->ops->destroy     = MatDestroy_SeqAIJ_LUSOL;
-  A->spptr            = (void *)lusol;
+  ierr = MatConvert_SeqAIJ_LUSOL(A,MATLUSOL,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

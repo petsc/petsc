@@ -623,6 +623,29 @@ int MatConvert_MPIAIJ_Spooles(Mat A,MatType type,Mat *newmat) {
 }
 EXTERN_C_END
 
+/*MC
+  MATMPIAIJSPOOLES - a matrix type providing direct solvers (LU) for distributed matrices 
+  via the external package MPIAIJSPOOLES.
+
+  If MPIAIJSPOOLES is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes SPOOLES solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATMPIAIJSPOOLES).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATMPIAIJ.  As a result, MatMPIAIJSetPreallocation is 
+  supported for this matrix type.
+
+  Consult Spooles documentation for more information about the options database keys below.
+
+  Options Database Keys:
+. -mat_type mpiaijspooles - sets the matrix type to mpiaijspooles during a call to MatSetFromOptions()
+
+   Level: beginner
+
+.seealso: PCLU
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJ_Spooles"

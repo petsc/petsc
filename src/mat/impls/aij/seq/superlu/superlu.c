@@ -436,7 +436,7 @@ EXTERN_C_END
   supported for this matrix type.
 
   Options Database Keys:
-+ -mat_type superlu
++ -mat_type superlu - sets the matrix type to superlu during a call to MatSetFromOptions()
 - -mat_superlu_ordering <0,1,2,3> - 0: natural ordering, 
                                     1: MMD applied to A'*A, 
                                     2: MMD applied to A'+A, 

@@ -522,6 +522,41 @@ int MatConvert_SeqAIJ_Spooles(Mat A,MatType type,Mat *newmat) {
 }
 EXTERN_C_END
 
+/*MC
+  MATSEQAIJSPOOLES - a matrix type providing direct solvers (LU or Cholesky) for sequential matrices 
+  via the external package SEQAIJSPOOLES.
+
+  If SEQAIJSPOOLES is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes SPOOLES solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQAIJSPOOLES).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
+  supported for this matrix type.
+
+  Options Database Keys:
++ -mat_type seqaijspooles - sets the matrix type to seqaijspooles during a call to MatSetFromOptions()
+. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
+. -mat_spooles_seed <seed> - random number seed used for ordering
+. -mat_spooles_msglvl <msglvl> - message output level
+. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
+. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
+. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
+. -mat_spooles_maxsize <n> - maximum size of a supernode
+. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
+. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
+. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
+. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
+. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
+. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
+- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
+
+   Level: beginner
+
+.seealso: PCLU
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJ_Spooles"

@@ -335,6 +335,36 @@ int MatConvert_SeqAIJ_UMFPACK(Mat A,MatType type,Mat *newmat) {
 }
 EXTERN_C_END
 
+/*MC
+  MATUMFPACK - a matrix type providing direct solvers (LU) for sequential matrices 
+  via the external package UMFPACK.
+
+  If UMFPACK is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes UMFPACK solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,UMFPACK).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
+  supported for this matrix type.
+
+  Consult UMFPACK documentation for more information about the Control parameters
+  which correspond to the options database keys below.
+
+  Options Database Keys:
++ -mat_type umfpack - sets the matrix type to umfpack during a call to MatSetFromOptions()
+. -mat_umfpack_prl - UMFPACK print level: Control[UMFPACK_PRL]
+. -mat_umfpack_dense_col <alpha_c> - UMFPACK dense column threshold: Control[UMFPACK_DENSE_COL]
+. -mat_umfpack_block_size <bs> - UMFPACK block size for BLAS-Level 3 calls: Control[UMFPACK_BLOCK_SIZE]
+. -mat_umfpack_pivot_tolerance <delta> - UMFPACK partial pivot tolerance: Control[UMFPACK_PIVOT_TOLERANCE]
+. -mat_umfpack_alloc_init <delta> - UMFPACK factorized matrix allocation modifier: Control[UMFPACK_ALLOC_INIT]
+- -mat_umfpack_irstep <maxit> - UMFPACK maximum number of iterative refinement steps: Control[UMFPACK_IRSTEP]
+
+   Level: beginner
+
+.seealso: PCLU
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJ_UMFPACK"

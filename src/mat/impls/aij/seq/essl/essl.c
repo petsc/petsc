@@ -22,9 +22,8 @@ typedef struct {
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
   int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   int (*MatDestroy)(Mat);
+  PetscTruth CleanUpESSL;
 } Mat_SeqAIJ_Essl;
-
-EXTERN int MatLUFactorSymbolic_SeqAIJ_Essl(Mat,IS,IS,MatFactorInfo*,Mat*);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -38,8 +37,11 @@ int MatConvert_Essl_SeqAIJ(Mat A,MatType type,Mat *newmat) {
   if (B != A) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);
   } else {
+    B->ops->matassemblyend   = essl->MatAssemblyEnd;
+    B->ops->lufactorsymbolic = essl->MatLUFactorSymbolic;
+    B->ops->destroy          = essl->MatDestroy;
+
     /* free the Essl datastructures */
-    ierr = PetscFree(essl->a);CHKERRQ(ierr);
     ierr = PetscFree(essl);CHKERRQ(ierr);
     ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   }
@@ -54,26 +56,13 @@ int MatDestroy_SeqAIJ_Essl(Mat A)
 {
   int             ierr;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)A->spptr;
-  int             (*destroy)(Mat)=essl->MatDestroy;
 
   PetscFunctionBegin;
+  if (essl->CleanUpESSL) {
+    ierr = PetscFree(essl->a);CHKERRQ(ierr);
+  }
   ierr = MatConvert_Essl_SeqAIJ(A,MATSEQAIJ,&A);
-  ierr = (*destroy)(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_Essl"
-int MatAssemblyEnd_SeqAIJ_Essl(Mat A,MatAssemblyType mode) {
-  int             ierr;
-  Mat_SeqAIJ_Essl *essl=(Mat_SeqAIJ_Essl*)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*essl->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-
-  essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
-  A->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJ_Essl;
-  PetscLogInfo(0,"Using ESSL for SeqAIJ LU factorization and solves");
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -152,14 +141,30 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   essl->naux = 100 + 10*A->m;
 
   /* since malloc is slow on IBM we try a single malloc */
-  len        = essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar);
-  ierr       = PetscMalloc(len,&essl->a);CHKERRQ(ierr);
-  essl->aux  = essl->a + essl->lna;
-  essl->ia   = (int*)(essl->aux + essl->naux);
-  essl->ja   = essl->ia + essl->lna;
+  len               = essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar);
+  ierr              = PetscMalloc(len,&essl->a);CHKERRQ(ierr);
+  essl->aux         = essl->a + essl->lna;
+  essl->ia          = (int*)(essl->aux + essl->naux);
+  essl->ja          = essl->ia + essl->lna;
+  essl->CleanUpESSL = PETSC_TRUE;
 
   PetscLogObjectMemory(B,len+sizeof(Mat_SeqAIJ_Essl));
   *F = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_Essl"
+int MatAssemblyEnd_SeqAIJ_Essl(Mat A,MatAssemblyType mode) {
+  int             ierr;
+  Mat_SeqAIJ_Essl *essl=(Mat_SeqAIJ_Essl*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*essl->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+
+  essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
+  A->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJ_Essl;
+  PetscLogInfo(0,"Using ESSL for SeqAIJ LU factorization and solves");
   PetscFunctionReturn(0);
 }
 
@@ -181,8 +186,9 @@ int MatConvert_SeqAIJ_Essl(Mat A,MatType type,Mat *newmat) {
   essl->MatAssemblyEnd      = A->ops->assemblyend;
   essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
   essl->MatDestroy          = A->ops->destroy;
-  B->spptr                  = (void *)essl;
+  essl->CleanUpESSL         = PETSC_FALSE;
 
+  B->spptr                  = (void *)essl;
   B->ops->assemblyend       = MatAssemblyEnd_SeqAIJ_Essl;
   B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJ_Essl;
   B->ops->destroy           = MatDestroy_SeqAIJ_Essl;
@@ -196,6 +202,27 @@ int MatConvert_SeqAIJ_Essl(Mat A,MatType type,Mat *newmat) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/*MC
+  MATESSL - a matrix type providing direct solvers (LU) for sequential matrices 
+  via the external package ESSL.
+
+  If ESSL is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes ESSL solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATESSL).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
+  supported for this matrix type.
+
+  Options Database Keys:
+. -mat_type essl - sets the matrix type to essl during a call to MatSetFromOptions()
+
+   Level: beginner
+
+.seealso: PCLU
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
