@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.338 1999/06/08 22:55:30 balay Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.339 1999/06/30 23:50:49 balay Exp bsmith $";
 #endif
 
 /*
@@ -364,6 +364,11 @@ int MatDestroy(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (--mat->refct > 0) PetscFunctionReturn(0);
+
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(mat);CHKERRQ(ierr);
+
   ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1164,7 +1169,9 @@ int MatILUDTFactor(Mat mat,double dt,int maxnz,IS row,IS col,Mat *fact)
 
 .keywords: matrix, factor, LU, in-place
 
-.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
+.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(),
+          MatGetOrdering()
+
 @*/
 int MatLUFactor(Mat mat,IS row,IS col,double f)
 {
@@ -1371,6 +1378,8 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
 .keywords: matrix, factor, in-place, Cholesky
 
 .seealso: MatLUFactor(), MatCholeskyFactorSymbolic(), MatCholeskyFactorNumeric()
+          MatGetOrdering()
+
 @*/
 int MatCholeskyFactor(Mat mat,IS perm,double f)
 {
@@ -1418,6 +1427,8 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
 .keywords: matrix, factor, factorization, symbolic, Cholesky
 
 .seealso: MatLUFactorSymbolic(), MatCholeskyFactor(), MatCholeskyFactorNumeric()
+          MatGetOrdering()
+
 @*/
 int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
 {
@@ -2944,7 +2955,9 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 
 .keywords: matrix, factor, incomplete, ILU, symbolic, fill
 
-.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric()
+.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
+          MatGetOrdering()
+
 @*/
 int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 {
