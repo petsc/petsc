@@ -281,7 +281,6 @@ class BS (maker.Maker):
     try:
       if target is None:               target = argDB.target
       if not isinstance(target, list): target = [target]
-      print target
       map(self.executeTarget, target)
     except Exception, e:
       print str(e)
