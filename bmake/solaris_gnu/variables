@@ -23,7 +23,7 @@ C_CLINKER	   = gcc
 C_FLINKER	   = g77
 C_CCV		   = ${C_CC} --version
 C_FCV              = g77 --version | head -1
-C_SYS_LIB	   = ${CLINKER_SLFLAG}/home/petsc/soft/solaris-9-gnu/gcc-3.2/lib -lfrtbegin -lg2c -lm -lc
+C_SYS_LIB	   = ${CLINKER_SLFLAG}/home/petsc/soft/solaris-9-gnu/gcc-3.2.3/lib -lfrtbegin -lg2c -lm -lc
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g  -Wshadow  -fomit-frame-pointer
 G_FOPTFLAGS	   = -g
@@ -39,7 +39,7 @@ CXX_FLINKER_SLFLAG = -Wl,-R,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB	   = ${CLINKER_SLFLAG}/home/petsc/soft/solaris-9-gnu/gcc-3.2/lib -lfrtbegin -lg2c -lm -lc
+CXX_SYS_LIB	   = ${CLINKER_SLFLAG}/home/petsc/soft/solaris-9-gnu/gcc-3.2.3/lib -lfrtbegin -lg2c -lm -lc
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g

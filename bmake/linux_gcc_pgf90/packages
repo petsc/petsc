@@ -61,8 +61,8 @@ PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
 # Location where adifor is installed
 #
-ADIFOR_LIB        = /home/derivs/ADIFOR2.0D.lib/lib/libADIntrinsics-Linux86.a
-ADIFOR_FC         = /home/derivs/ADIFOR2.0D/bin/Adifor2.1  AD_PMAX=36 AD_IVARS=X AD_DVARS=F AD_PROG=silly.cmp AD_OUTPUT_DIR=. AD_EXCLUDE_PROCS=PETSCLOGFLOPS
+ADIFOR_LIB        = /home/derivs/ADIFOR2.0E.lib/lib/libADIntrinsics-Linux86.a
+ADIFOR_FC         = /home/derivs/ADIFOR2.0E/bin/Adifor2.1 AD_PMAX=36 AD_IVARS=X AD_DVARS=F AD_PROG=silly.cmp AD_OUTPUT_DIR=. AD_EXCLUDE_PROCS=PETSCLOGFLOPS
 PETSC_HAVE_ADIFOR = -DPETSC_HAVE_ADIFOR
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
