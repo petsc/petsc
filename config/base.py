@@ -24,7 +24,7 @@ class Configure:
     return
 
   def getAcCCFD(self):
-    return str(self.log.fileno())
+    return str(self.framework.log.fileno())
 
   def getRoot(self):
     import sys
