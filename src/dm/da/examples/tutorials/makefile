@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        = 
 LOCDIR          = src/dm/da/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
-EXAMPLESF       = 
+EXAMPLESF       = ex6f90.F
 MANSEC          = DA
 
 include ${PETSC_DIR}/bmake/common/base
@@ -33,6 +33,10 @@ ex5: ex5.o   chkopts
 ex6: ex6.o   chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_DM_LIB}
 	${RM} -f ex6.o
+
+ex6f90: ex6f90.o   chkopts
+	-${CLINKER} -o ex6f90 ex6f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_DM_LIB}
+	${RM} -f ex6f90.o
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ./ex1
@@ -56,6 +60,7 @@ runex3_3:
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex6.PETSc ex6.rm
 TESTEXAMPLES_C_X11	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc ex5.rm
 TESTEXAMPLES_FORTRAN	  = 
+TESTEXAMPLES_F90          = ex6f90.PETSc ex6f90.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_C_COMPLEX	  = 
 TESTEXAMPLES_13		  = 

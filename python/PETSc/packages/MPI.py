@@ -349,8 +349,10 @@ class Configure(PETSc.package.Package):
           os.chmod(os.path.join(os.getenv('HOME'),'.mpd.conf'),S_IRWXU)
 
         # start up MPICH's demon
-        output  = config.base.Configure.executeShellCommand('cd '+installDir+'; bin/mpdboot', timeout=25, log = self.framework.log)[0]
-        self.framework.logPrint('Output from trying to start up MPICH mpd demon needed for mpirun: '+output)
+        import commands
+        self.framework.logPrint('Starting up MPICH mpd demon needed for mpirun')
+        commands.getstatusoutput('cd '+installDir+'; bin/mpdboot')
+        self.framework.logPrint('Started up MPICH mpd demon needed for mpirun')
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
     return self.getDir()
 
