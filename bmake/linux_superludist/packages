@@ -1,0 +1,27 @@
+# $Id: packages,v 1.63 2001/10/10 18:50:03 balay Exp $ 
+#
+BLASLAPACK_LIB = /home/petsc/software/LAPACK/lapack_linux.a  \
+  -L/home/petsc/software/blaslapack/linux -lblas_INTEL
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
+
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# SuperLU-DIST
+#
+SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
+SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux.a /home/petsc/software/SuperLU/superlu_linux.a
+PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
