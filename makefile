@@ -132,9 +132,6 @@ ranlib:
 deletelibs:
 	-$(RM) -f $(PDIR)/*.a $(PDIR)/complex/* $(PDIR)/c++/*
 
-# Deletes man pages (xman version)
-deletemanpages:
-	$(RM) -f $(PETSC_DIR)/Keywords $(PETSC_DIR)/docs/man/man*/*
 
 # Deletes man pages (HTML version)
 deletewwwpages:
@@ -174,6 +171,9 @@ etags:
 	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
 	etags -a -f TAGS include/FINCLUDE/*.h 
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
+	etags -a -f TAGS src/gvec/impls/*/*/*/*/*.c
+	etags -a -f TAGS src/gvec/impls/*/*/*/*.c
+	etags -a -f TAGS src/gvec/impls/*/*/*/makefile src/gvec/impls/*/*/*/*/makefile
 	etags -a -f TAGS makefile src/*/src/makefile
 	etags -a -f TAGS src/*/interface/makefile src/makefile 
 	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
@@ -206,6 +206,9 @@ etags_complete:
 	etags -a -f TAGS_COMPLETE include/*.h include/pinclude/*.h bmake/common
 	etags -a -f TAGS_COMPLETE include/FINCLUDE/*.h 
 	etags -a -f TAGS_COMPLETE src/*/impls/*.c src/*/utils/*.c
+	etags -a -f TAGS_COMPLETE src/gvec/impls/*/*/*/*/*.c
+	etags -a -f TAGS_COMPLETE src/gvec/impls/*/*/*/*.c
+	etags -a -f TAGS_COMPLETE src/gvec/impls/*/*/*/makefile src/gvec/impls/*/*/*/*/makefile
 	etags -a -f TAGS_COMPLETE makefile src/*/src/makefile
 	etags -a -f TAGS_COMPLETE src/*/interface/makefile src/makefile 
 	etags -a -f TAGS_COMPLETE src/*/impls/makefile src/*/impls/*/makefile
@@ -246,6 +249,9 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES include/FINCLUDE/*.h
 	etags -a -f TAGS_NO_EXAMPLES bmake/common
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
+	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/*/*.c
+	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/*.c 
+	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/makefile src/gvec/impls/*/*/*/*/makefile
 	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/*/interface/makefile src/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
@@ -281,6 +287,8 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES src/*/examples/makefile 
 	etags -a -f TAGS_MAKEFILES src/*/examples/*/makefile
 	etags -a -f TAGS_MAKEFILES src/*/examples/*/*/makefile
+	etags -a -f TAGS_MAKEFILES src/gvec/impls/*/*/*/*/makefile
+	etags -a -f TAGS_MAKEFILES src/gvec/impls/*/*/*/makefile
 	etags -a -f TAGS_MAKEFILES src/fortran/makefile 
 	etags -a -f TAGS_MAKEFILES src/fortran/auto/makefile 
 	etags -a -f TAGS_MAKEFILES src/contrib/*/makefile 
@@ -300,11 +308,7 @@ etags_makefiles:
 #
 
 # Builds all versions of the man pages
-allmanpages: deletemanpages allwwwpages alllatexpages
-	-make ACTION=manpages tree
-	-cd src/fortran/custom; make manpages
-	-cd docs/man; catman -W .
-	-@chmod g+w docs/man/man*/*
+allmanpages: allwwwpages alllatexpages
 allwwwpages: deletewwwpages
 	-make ACTION=wwwpages_buildcite tree
 	-cd src/fortran/custom; make wwwpages_buildcite
@@ -325,5 +329,15 @@ allfortranstubs:
 	-make ACTION=fortranstubs tree
 	chmod g+w $(PETSC_DIR)/src/fortran/auto/*.c
 
-
+# 
+#  We no longer make Unix manpages
+#
+#allunixmanpages:
+#	-make ACTION=manpages tree
+#	-cd src/fortran/custom; make manpages
+#	-cd docs/man; catman -W .
+#	-@chmod g+w docs/man/man*/*
+# Deletes man pages (xman version)
+#deletemanpages:
+#	$(RM) -f $(PETSC_DIR)/Keywords $(PETSC_DIR)/docs/man/man*/*
 
