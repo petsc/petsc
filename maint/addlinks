@@ -23,7 +23,6 @@ set allfiles=$petscdir/*
 foreach file ($allfiles)
   set short=`echo $file | sed s%$petscdir/%$shadowdir/%` 
   if (! -e $short && -f $file ) then
-    set omit=0
     set dummy=`echo $file |egrep '(\.a|\.o|^PI|\.ln|l\.outa|mputil.mp_|core|\.map|\.log|gmon\.out|trashz|\.tmp|\.b|\~|\#)'`
     if ($dummy != $file) then
 #       echo "ln -s $file $short"

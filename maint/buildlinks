@@ -14,4 +14,4 @@ cd $petscdir
 #
 find . \(  -name man -prune -o -name www -prune \) \
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
-        >>& /dev/null \;
+         \; >>& /dev/null
