@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.58 1995/07/12 03:12:25 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.59 1995/07/13 15:15:39 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1053,7 +1053,7 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int ierr;
   if (aij->numtids == 1) {
-    ierr =  MatNorm_MPIAIJ(aij->A,type,norm); CHKERRQ(ierr);
+    ierr =  MatNorm(aij->A,type,norm); CHKERRQ(ierr);
   } else 
     SETERRQ(1,"MatNorm_MPIAIJ:  not yet supported in parallel.");
   return 0; 

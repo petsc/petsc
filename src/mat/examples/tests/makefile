@@ -171,7 +171,7 @@ runex6:
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
 runex7:
-	-@$(MPIRUN)  ex7 > ex7_1.tmp 2>&1;   \
+	-@$(MPIRUN)  ex7 -mpi_objects > ex7_1.tmp 2>&1;   \
            if (diff output/ex7_1.out ex7_1.tmp) then true; \
            else echo "Possible problem with ex7_1, diffs above"; fi; \
            $(RM) -f ex7_1.tmp
@@ -211,7 +211,7 @@ runex14:
            else echo "Possible problem with ex14_1, diffs above"; fi; \
            $(RM) -f ex14_1.tmp
 runex15:
-	-@$(MPIRUN)  ex15 > ex15_1.tmp 2>&1;   \
+	-@$(MPIRUN)  ex15 -mpi_objects > ex15_1.tmp 2>&1;   \
            if (diff output/ex15_1.out ex15_1.tmp) then true; \
            else echo "Possible problem with ex15_1, diffs above"; fi; \
            $(RM) -f ex15_1.tmp
