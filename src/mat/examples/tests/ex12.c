@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.7 1999/02/11 22:07:31 balay Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.8 1999/02/15 21:55:33 balay Exp balay $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
@@ -53,14 +53,14 @@ int main(int argc,char **args)
   ierr = MatDestroy(A); CHKERRA(ierr);
 
   /* Now Create a rectangular matrix with five point stencil (app) */
-  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*(n+1),&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*(n+size),&A); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
       if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
       if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
       if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( j<n+size-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
       v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }

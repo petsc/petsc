@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.147 1999/02/12 00:04:25 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.148 1999/02/15 21:55:36 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -2181,6 +2181,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   mat->ops->view       = MatView_MPIBAIJ;
   mat->factor          = matin->factor;
   mat->assembled       = PETSC_TRUE;
+  mat->insertmode      = NOT_SET_VALUES;
 
   a->m = mat->m   = oldmat->m;
   a->n = mat->n   = oldmat->n;
@@ -2200,7 +2201,9 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   a->cend         = oldmat->cend;
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
-  mat->insertmode = NOT_SET_VALUES;
+  a->donotstash   = oldmat->donotstash;
+  a->roworiented  = oldmat->roworiented;
+  a->rowindices   = 0;
   a->rowvalues    = 0;
   a->getrowactive = PETSC_FALSE;
   a->barray       = 0;
