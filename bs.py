@@ -126,6 +126,7 @@ class Maker:
       (checksum, mtime, timestamp, dependencies) = sourceDB[source]
     except KeyError:
       pass
+    self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
     sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
 
 class BS (Maker):

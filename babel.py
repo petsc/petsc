@@ -4,6 +4,7 @@ import compile
 import transform
 
 import os
+import string
 
 class TagSIDL (transform.GenericTag):
   def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, useAll = 1, extraExt = ''):
@@ -23,7 +24,12 @@ class CompileSIDL (compile.Process):
     compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, '--suppress-timestamp --suppress-metadata '+compilerFlags)
     self.outputDir      = 'generated'
     self.repositoryDirs = []
+    self.errorHandler   = self.handleBabelErrors
 
+  def handleBabelErrors(self, command, status, output):
+    if status or string.find(output, 'Error:') >= 0:
+      raise RuntimeError('Could not execute \''+command+'\': '+output)
+    
   def constructArgs(self):
     if self.outputDir:
       self.flags += ' --output-directory='+self.outputDir
