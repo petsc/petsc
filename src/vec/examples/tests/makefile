@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.90 1999/02/01 20:21:50 balay Exp bsmith $ 
+# $Id: makefile,v 1.91 1999/02/25 19:45:05 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -16,7 +16,7 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm\
 		  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
                   ex17.PETSc runex17 ex17.rm ex25.PETSc runex25 ex25.rm  \
-                  ex26.PETSc runex26 ex26.rm clean
+                  ex26.PETSc runex26 ex26.rm ex29.PETSc runex29 ex29.rm clean
 TESTEXAMPLES_2  = ex27.PETSc runex27 ex27.rm clean
 TESTEXAMPLES_3  = ex19.PETSc runex19 ex19.rm ex20.PETSc ex20.rm clean
 TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm 
@@ -36,7 +36,7 @@ BUILDEXAMPLES_9  = ex19.PETSc ex19.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex22.c \
-		  ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c
+		  ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c
 EXAMPLESF       = ex17f.F ex19.F ex20.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -156,6 +156,10 @@ ex27: ex27.o chkopts
 ex28: ex28.o chkopts
 	-${CLINKER} -o ex28 ex28.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex28.o 
+
+ex29: ex29.o chkopts
+	-${CLINKER} -o ex29 ex29.o  ${PETSC_VEC_LIB} 
+	${RM} -f ex29.o 
 
 runex1:
 	-@${MPIRUN} -np 1  ex1 ; \
@@ -293,4 +297,8 @@ runex27:
 	-@${MPIRUN} -np 1 ex27
 	-@${MPIRUN} -np 4 ex27
 
-
+runex29:
+	-@${MPIRUN} -np 3 ex29 -n 126 > ex29_1.tmp 2>&1;\
+	   if (diff output/ex29_1.out ex29_1.tmp) then true; \
+	   else echo "Possible problem with ex29_1, diffs above"; fi;\
+	   ${RM} -f ex29_1.tmp
