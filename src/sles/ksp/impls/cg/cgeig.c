@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.9 1995/06/08 03:07:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.10 1995/07/08 14:41:53 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -59,7 +59,7 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
 
   ccgtql1(&ii,dd,ee,&j);
   if (j != 0) SETERRQ(1,"Error return from tql1 in CG code");  
-  *emax = dd[0]; *emin = dd[ii-1];
+  *emin = dd[0]; *emax = dd[ii-1];
   return 0;
 }
 

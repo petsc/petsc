@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.18 1995/07/07 16:15:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.19 1995/07/07 19:03:16 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -49,7 +49,6 @@ int PCSetMethod(PC ctx,PCMethod method)
   ctx->printhelp   = ( int (*)(PC) ) 0;
   ctx->setup       = ( int (*)(PC) ) 0;
   ctx->destroy     = ( int (*)(PetscObject) ) 0;
-  ctx->methodview  = ( int (*)(PC,Viewer) ) 0;
   return (*r)(ctx);
 }
 
