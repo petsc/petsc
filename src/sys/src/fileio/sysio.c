@@ -136,9 +136,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
    Level: developer
 
    Notes: 
-   PetscBinaryRead() uses byte swapping to work on all machines.
-   Integers are stored on the file as 32 long, regardless of whether
-   they are stored in the machine as 32 or 64, this means the same
+   PetscBinaryRead() uses byte swapping to work on all machines; the files
+   are written to file ALWAYS using big-endian ordering. On small-endian machines the numbers
+   are converted to the small-endian format when they are read in from the file.
+   Integers are stored on the file as 32 bits long, regardless of whether
+   they are stored in the machine as 32 bits or 64 bits, this means the same
    binary file may be read on any machine.
 
    Concepts: files^reading binary
@@ -239,9 +241,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
    Level: advanced
 
    Notes: 
-   PetscBinaryWrite() uses byte swapping to work on all machines.
-   Integers are stored on the file as 32 long, regardless of whether
-   they are stored in the machine as 32 or 64, this means the same
+   PetscBinaryWrite() uses byte swapping to work on all machines; the files
+   are written using big-endian ordering to the file. On small-endian machines the numbers
+   are converted to the big-endian format when they are written to disk.
+   Integers are stored on the file as 32 bits long, regardless of whether
+   they are stored in the machine as 32 bits or 64 bits, this means the same
    binary file may be read on any machine.
 
    The Buffer p should be read-write buffer, and not static data.
@@ -359,6 +363,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
 
   Concepts: files^opening binary
   Concepts: binary files^opening
+
+   Notes: Files access with PetscBinaryRead() and PetscBinaryWrite() are ALWAYS written in
+   big-endian format. This means the file can be accessed using PetscBinaryOpen() and
+   PetscBinaryRead() and PetscBinaryWrite() on any machine.
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite()
 @*/
