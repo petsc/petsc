@@ -1,9 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.1 1995/08/17 21:33:58 curfman Exp curfman $";
+static char vcid[] = "$Id: ex20.c,v 1.2 1995/08/17 23:42:52 curfman Exp curfman $";
 #endif
 
 static char help[] = 
-"This example tests binary I/O of vectors.\n\n";
+"This example tests binary I/O of vectors and illustrates the use of\n\
+user-defined event logging.\n\n";
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -11,13 +12,17 @@ static char help[] =
 #include "vec.h"
 #include "plog.h"
 
+/* Note:  Most applications would not read and write a vector within
+  the same program.  This example is intended only to demonstrate
+  both input and output. */
+
 int main(int argc,char **args)
 {
-  Scalar  v;
   int     i, lm, m = 10, mytid, numtids, low, high, ldim, iglobal, ierr, fd;
+  Scalar  v;
   Vec     u;
   IS      ind;
-  char    filename[128];
+  char    filename[10];
   VecType vtype;
 
 #define VECTOR_GENERATE 76
@@ -46,7 +51,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(u); CHKERRA(ierr);
   ierr = VecView(u,STDOUT_VIEWER); CHKERRA(ierr);
 
-  MPIU_printf(MPI_COMM_WORLD,"writing binary vector to vector.dat ...\n"); 
+  MPIU_printf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
   sprintf(filename,"vector.dat");
   if ((fd = creat(filename, 0666)) == -1)
     SETERRA(1,"Cannot create filename for writing.");
@@ -60,16 +65,15 @@ int main(int argc,char **args)
   /* All processors wait until test vector has been dumped */
   MPI_Barrier(MPI_COMM_WORLD);
 
-  /* number of locally owned vector elements */
+  /* lm = number of locally owned vector elements */
   lm = m/numtids + ((m % numtids) > mytid);
   ierr = ISCreateStrideSequential(MPI_COMM_WORLD,lm,mytid,numtids,&ind);
   CHKERRA(ierr);
-  ierr = ISView(ind,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
 
   /* Read new vector in binary format */
   PLogEventRegister(VECTOR_READ,"Read Vector     ");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
-  MPIU_printf(MPI_COMM_WORLD,"reading binary vector from vector.dat ...\n"); 
+  MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
   sprintf(filename,"vector.dat");
   if ((fd = open(filename, O_RDONLY, 0)) == -1) {
     SETERRQ(1,"Cannot open filename for reading.");
