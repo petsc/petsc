@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.75 1996/03/07 19:37:01 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.76 1996/03/07 23:29:17 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -57,7 +57,7 @@ MPI_Datatype  MPIU_COMPLEX;
 */
 FILE *petsc_history = 0;
 
-static int PLogOpenHistoryFile(char *filename,FILE **fd)
+int PLogOpenHistoryFile(char *filename,FILE **fd)
 {
   int  ierr,rank,size;
   char pfile[256];
