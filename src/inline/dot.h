@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.7 1997/10/19 03:21:57 bsmith Exp balay $ */
+/* $Id: dot.h,v 1.8 1998/07/13 18:35:51 balay Exp balay $ */
 
 #ifndef DOT
 
@@ -65,7 +65,6 @@ extern void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
 extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #if defined(__cplusplus)
 }
-#endif
 #endif
 
 /* ------------------------------------------------------------------- */
