@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.14 2000/10/11 19:26:05 hzhang Exp bsmith $ */
+/* $Id: sbaij.h,v 1.15 2000/10/24 20:26:00 bsmith Exp hzhang $ */
 
 #include "src/mat/matimpl.h"
 
@@ -44,21 +44,28 @@ extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 
 extern int MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat,Mat*);
+extern int MatSolve_SeqSBAIJ_2(Mat,Vec,Vec);
 extern int MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
+
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
+
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
+
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
+
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
