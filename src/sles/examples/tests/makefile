@@ -328,12 +328,12 @@ runex24_4:
            else echo "Possible problem with ex24_4, diffs above"; fi; \
            ${RM} -f ex24_4.tmp
 runex25:
-	-@${MPIRUN} -np 1 ex25 -fload /home/petsc/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex25 -fload /home/petsc/datafiles/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
            if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
            else echo "Possible problem with ex25_1, diffs above"; fi; \
            ${RM} -f ex25_1.tmp
 runex25_2:
-	-@${MPIRUN} -np 1 ex25 -fload /home/petsc/matrices/indefinite/afiro \
+	-@${MPIRUN} -np 1 ex25 -fload /home/petsc/datafiles/matrices/indefinite/afiro \
 		-pc_type jacobi -pc_jacobi_rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else echo "Possible problem with ex25_2, diffs above"; fi; \

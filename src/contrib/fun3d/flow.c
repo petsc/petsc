@@ -226,7 +226,7 @@ int main(int argc,char **args)
     /* Add cells field */
     /* First read the cells*/
     if (!rank) {
-     ierr = PetscBinaryOpen("testgrid/cells.msh",PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+     ierr = PetscBinaryOpen("/home/petsc/datafiles/fun3dgrid/cells.msh",PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
     }
     ICALLOC(4*user.grid->ncell,&itmp);
     ICALLOC(4*user.grid->ncell,&user.grid->c2n);

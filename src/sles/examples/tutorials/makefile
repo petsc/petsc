@@ -328,17 +328,17 @@ runex10_11:
 	   else echo "Possible problem with ex10_11, diffs above"; fi; \
 	   ${RM} -f ex10_11.tmp
 runex10_12:
-	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_matlab -pc_type lu -f0 /home/petsc/matrices/arco1 > ex10_12.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_matlab -pc_type lu -f0 /home/petsc/datafiles/matrices/arco1 > ex10_12.tmp 2>&1;\
 	   if (${DIFF} output/ex10_12.out ex10_12.tmp) then true; \
 	   else echo "Possible problem with ex10_12, diffs above"; fi; \
 	   ${RM} -f ex10_12.tmp
 runex10_13:
-	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_lusol -pc_type lu -f0 /home/petsc/matrices/arco1 > ex10_13.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_lusol -pc_type lu -f0 /home/petsc/datafiles/matrices/arco1 > ex10_13.tmp 2>&1;\
 	   if (${DIFF} output/ex10_13.out ex10_13.tmp) then true; \
 	   else echo "Possible problem with ex10_13, diffs above"; fi; \
 	   ${RM} -f ex10_13.tmp
 runex10_14:
-	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type spai -f0 /home/petsc/matrices/medium; \
+	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type spai -f0 /home/petsc/datafiles/matrices/medium; \
 	echo "ex10_14: This program tested the SPAI preconditioner."
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \

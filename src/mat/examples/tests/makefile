@@ -728,7 +728,7 @@ runex67f:
 	   else echo "Possible problem with ex67f_1, diffs above"; fi; \
 	   ${RM} -f ex67f_1.tmp
 runex73:
-	-@${MPIRUN} -np 3  ex73  -nox -f /home/petsc/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info
+	-@${MPIRUN} -np 3  ex73  -nox -f /home/petsc/datafiles/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info
 
 MATBLOCKSIZE   = 1 2 3 4 5 6 7 8
 runex74:
