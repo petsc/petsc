@@ -441,7 +441,6 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
                           *dtype[] = {"DBLAS1","DBLAS2"}; 
 
   PetscFunctionBegin; 
-  ierr = PetscNew(Mat_MPIBAIJ_DSC,&lu);CHKERRQ(ierr); 
 
   /* Create the factorization matrix F */ 
   ierr = MatGetBlockSize(A,&bs);
@@ -686,14 +685,14 @@ int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_dscpack_C",
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_dscpack_C",
                                              "MatConvert_Base_DSCPACK",MatConvert_Base_DSCPACK);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_seqaij_C",
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_seqbaij_C",
                                              "MatConvert_DSCPACK_Base",MatConvert_DSCPACK_Base);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_dscpack_C",
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_dscpack_C",
                                              "MatConvert_Base_DSCPACK",MatConvert_Base_DSCPACK);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_mpiaij_C",
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_mpibaij_C",
                                              "MatConvert_DSCPACK_Base",MatConvert_DSCPACK_Base);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDSCPACK);CHKERRQ(ierr);
