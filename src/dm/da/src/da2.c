@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.43 1996/04/14 00:49:35 curfman Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.44 1996/04/14 02:49:09 curfman Exp curfman $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -215,13 +215,13 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* determine starting point of each processor */
   nn = x*y;
-  bases = (int *) PetscMalloc( (size+1)*sizeof(int) ); CHKPTRQ(bases);
-  ldims = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(ldims);
+  bases = (int *) PetscMalloc( (2*size+1)*sizeof(int) ); CHKPTRQ(bases);
+  ldims = (int *) (bases+size+1);
   MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);
+  bases[0] = 0;
   for ( i=1; i<=size; i++ ) {
     bases[i] = ldims[i-1];
   }
-  bases[0] = 0;
   for ( i=1; i<=size; i++ ) {
     bases[i] += bases[i-1];
   }
@@ -641,9 +641,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   /* Broadcast the orderings */
   MPI_Allgatherv(gA,ldim,MPI_INT,gAall,ldims,bases,MPI_INT,comm);
   MPI_Allgatherv(gB,ldim,MPI_INT,gBall,ldims,bases,MPI_INT,comm);
-  /*  MPI_Barrier(comm); */
   for (i=0; i<gdim; i++) da->gtog1[gAall[i]] = gBall[i];
-  PetscFree(gA); PetscFree(bases); PetscFree(ldims);
+  PetscFree(gA); PetscFree(bases);
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
   if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRA(ierr);}
