@@ -126,7 +126,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if not 'with-blocksolve95' in self.framework.argDB:
+    if not 'with-blocksolve95' in self.framework.argDB or self.framework.argDB['with-64-bit-int']:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)

@@ -78,6 +78,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
     help.addArgument('PETSc', '-prefix=<path>',              nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-gcov=<bool>',           nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
+    help.addArgument('PETSc', '-with-64-bit-int=<bool>',     nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))    
     return
 
   def defineAutoconfMacros(self):
@@ -531,6 +532,8 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.framework.argDB['PETSC_ARCH']+'/rules')
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
+    if self.framework.argDB['with-64-bit-int']:
+      self.addDefine('USE_64BIT_INT', 1)      
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureFortranCPP)
     self.executeTest(self.configureFortranCommandline)
