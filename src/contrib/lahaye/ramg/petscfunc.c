@@ -1,4 +1,4 @@
-/*$Id: petscfunc.c,v 1.11 2001/08/07 03:04:54 balay Exp balay $*/
+/*$Id: petscfunc.c,v 1.12 2001/08/22 18:02:49 balay Exp bsmith $*/
 
 #include "petscfunc.h"
 #include "ramgfunc.h"
@@ -242,7 +242,7 @@ int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
   samg_ctx = (SamgShellPC*) ctx; 
   ierr = MatGetSize(submat[0], &nnn, &nnn); CHKERRQ(ierr);
   printf("\n Dim submatrix = %d\n\n",nnn); 
-  ierr = SamgShellPCSetUp(samg_ctx,submat[0]); CHKERRQ(ierr); 
+  /*  ierr = SamgShellPCSetUp(samg_ctx,submat[0]); CHKERRQ(ierr);  */
 
   return 0;
 }
