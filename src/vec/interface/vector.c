@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.151 1998/09/25 03:13:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.152 1998/10/09 19:19:23 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1282,10 +1282,13 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 #undef __FUNC__  
 #define __FUNC__ "VecGetArray"
 /*@C
-   VecGetArray - Returns a pointer to vector data. For default PETSc
-   vectors, VecGetArray() returns a pointer to the local data array. Otherwise,
-   this routine is implementation dependent. You MUST call VecRestoreArray() 
-   when you no longer need access to the array.
+   VecGetArray - Returns a pointer to a contiguous array that contains this 
+     processor's portion of the vector data. For the standard PETSc
+     vectors, VecGetArray() returns a pointer to the local data array and
+     does not use any copies. If the underlying vector data is not stored
+     in a contiquous array this routine will copy the data to a contiquous
+     array and return a pointer to that. You MUST call VecRestoreArray() 
+     when you no longer need access to the array.
 
    Not Collective
 
@@ -1408,6 +1411,10 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 #define __FUNC__ "VecRestoreArray"
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
+        For regular PETSc vectors this routine does not do any copies. For
+        any special vectors that do not store the vector data in a contiquous
+        array this routine will copy the data back into the underlying 
+        vector data structure from the array obtained with VecGetArray().
 
    Not Collective
 
