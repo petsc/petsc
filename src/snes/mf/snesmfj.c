@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.67 1998/07/08 21:24:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.68 1998/10/26 01:03:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -13,6 +13,8 @@ typedef struct {  /* default context for matrix-free SNES */
   double      error_rel; /* square root of relative error in computing function */
   double      umin;      /* minimum allowable u'a value relative to |u|_1 */
   double      currenth;  /* last differencing parameter used */
+  double      *historyh; /* history of h */
+  int         ncurrenth,maxcurrenth; 
 } MFCtx_Private;
 
 #undef __FUNC__  
@@ -171,6 +173,9 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
   PLogInfo(mat,"Current differencing parameter: %g\n",h);
+  if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) {
+    ctx->historyh[ctx->ncurrenth++] = h;
+  }
 
   /* Evaluate function at F(u + ha) */
   ierr = VecWAXPY(&h,a,U,w); CHKERRQ(ierr);
@@ -239,10 +244,15 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   PetscFunctionBegin;
   mfctx = (MFCtx_Private *) PetscMalloc(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
   PLogObjectMemory(snes,sizeof(MFCtx_Private));
-  mfctx->sp   = 0;
-  mfctx->snes = snes;
-  mfctx->error_rel = 1.e-8; /* assumes double precision */
-  mfctx->umin      = 1.e-6;
+  mfctx->sp          = 0;
+  mfctx->snes        = snes;
+  mfctx->error_rel   = 1.e-8; /* assumes double precision */
+  mfctx->umin        = 1.e-6;
+  mfctx->currenth    = 0.0;
+  mfctx->historyh    = PETSC_NULL;
+  mfctx->ncurrenth   = 0;
+  mfctx->maxcurrenth = 0;
+
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
@@ -294,6 +304,37 @@ int SNESGetMatrixFreeH(SNES snes,double *h)
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   if (ctx) {
     *h = ctx->currenth;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESMatrixFreeKSPDefaultMonitor"
+/*
+   SNESMatrixFreeKSPDefaultMonitor - A KSP monitor for use with the default PETSc
+      SNES matrix free routines. Prints the h differencing parameter used at each
+      timestep.
+
+*/
+int SNESMatrixFreeKSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
+{
+  PC            pc;
+  MFCtx_Private *ctx;
+  int           ierr;
+  Mat           mat;
+  MPI_Comm      comm;
+  PetscTruth    nonzeroinitialguess;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
+  ierr = KSPGetInitialGuessNonzero(ksp,&nonzeroinitialguess);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  if (n > 0 || nonzeroinitialguess) {
+    PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth); 
+  } else {
+    PetscPrintf(comm,"%d KSP Residual norm %14.12e\n",n,rnorm); 
   }
   PetscFunctionReturn(0);
 }
