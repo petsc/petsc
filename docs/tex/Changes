@@ -10,6 +10,8 @@ add to it).
 
 
   MAT
+
+   Changed MatDiagonalShift(Mat,Vec) to MatDiagonalSet(Mat,Vec,InsertMode);
   
 
   KSP
