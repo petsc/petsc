@@ -78,8 +78,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('PETSc', '-with-scroll-output',         nargs.ArgBool(None, 0, 'Scroll configure output instead of keeping it on one line'))
-    help.addArgument('PETSc', '-with-no-output',             nargs.ArgBool(None, 0, 'Do not output progress to the screen'))    
     return
 
   def defineAutoconfMacros(self):
@@ -107,7 +105,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       languages.append('F77')
     for language in languages:
-      self.compilers.pushLanguage(language)
+      self.pushLanguage(language)
       for testFlag in ['-PIC', '-fPIC', '-KPIC']:
         try:
           self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
@@ -115,7 +113,7 @@ class Configure(config.base.Configure):
           break
         except RuntimeError:
           self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
-      self.compilers.popLanguage()
+      self.popLanguage()
     return
 
   def configureFortranCPP(self):
