@@ -12,6 +12,6 @@ cd $petscdir
 #
 make ACTION=clean tree >>& /dev/null
 #
-find . \( -name RCS -prune -o -name docs -prune \) \
+find . \( -name docs -prune \) \
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
         >>& /dev/null \;
