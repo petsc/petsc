@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.140 1998/07/14 02:38:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.141 1998/07/14 02:48:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1368,8 +1368,8 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
       break;
     }
   }
-  B->ops->destroy          = MatDestroy_SeqBAIJ;
-  B->ops->view             = MatView_SeqBAIJ;
+  B->ops->destroy     = MatDestroy_SeqBAIJ;
+  B->ops->view        = MatView_SeqBAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.93 1998/07/13 20:34:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.94 1998/07/14 02:34:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1025,6 +1025,11 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   if (M == PETSC_DECIDE) {ierr = MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);}
   if (m == PETSC_DECIDE) {m = M/a->size + ((M % a->size) > a->rank);}
 
+  /*
+     The computation of n is wrong below, n should represent the number of local 
+     rows in the right (column vector) 
+  */
+
   /* each row stores all columns */
   if (N == PETSC_DECIDE) N = n;
   if (n == PETSC_DECIDE) {n = N/a->size + ((N % a->size) > a->rank);}
@@ -1033,6 +1038,11 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   a->M = mat->M = M;
   a->m = mat->m = m;
   a->n = mat->n = n;
+
+  /* the information in the maps duplicates the information computed below, eventually 
+     we should remove the duplicate information that is not contained in the maps */
+  ierr = MapCreate(comm,m,M,mat->rmap);CHKERRQ(ierr);
+  ierr = MapCreate(comm,n,N,mat->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);

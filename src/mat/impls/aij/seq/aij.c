@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.275 1998/07/14 02:35:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.276 1998/07/14 02:47:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1848,9 +1848,9 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,&flg);CHKERRQ(ierr);
   b->ilu_preserve_row_sums = PETSC_FALSE;
-  ierr = OptionsHasName(PETSC_NULL,"-pc_ilu_preserve_row_sums",(int*) &b->ilu_preserve_row_sums);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-pc_ilu_preserve_row_sums",(int*)&b->ilu_preserve_row_sums);CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
   b->icol             = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.58 1998/07/13 20:36:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.59 1998/07/14 02:34:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,13 +24,13 @@ typedef struct {
 /*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
+    Not Collective
+
     Input Parameter:
 .   mat - the matrix, should have been created with MatCreateShell()
 
     Output Parameter:
 .   ctx - the user provided context
-
-    Not Collective
 
     Notes:
     This routine is intended for use within various shell matrix routines,
@@ -113,9 +113,6 @@ int MatGetOwnershipRange_Shell(Mat mat, int *rstart,int *rend)
   PetscFunctionReturn(0);
 }
 
-
-
-
 static struct _MatOps MatOps_Values = {0,
        0,
        0, 
@@ -189,18 +186,18 @@ static struct _MatOps MatOps_Values = {0,
    MatCreateShell - Creates a new matrix class for use with a user-defined
    private data storage format. 
 
+  Collective on MPI_Comm
+
    Input Parameters:
-.  comm - MPI communicator
-.  m - number of local rows
-.  n - number of local columns
-.  M - number of global rows
-.  N - number of global columns
-.  ctx - pointer to data needed by the shell matrix routines
++  comm - MPI communicator
+.  m - number of local rows (must be given)
+.  n - number of local columns (must be given)
+.  M - number of global rows (may be PETSC_DETERMINE)
+.  N - number of global columns (may be PETSC_DETERMINE)
+-  ctx - pointer to data needed by the shell matrix routines
 
    Output Parameter:
 .  A - the matrix
-
-  Collective on MPI_Comm
 
   Usage:
 $    MatCreateShell(comm,m,n,M,N,ctx,&mat);
@@ -230,7 +227,8 @@ $
 $     VecCreate(comm,PETSC_DECIDE,M,&y);
 $     VecCreate(comm,PETSC_DECIDE,N,&x);
 $     VecGetLocalSize(y,&m);
-$     MatCreateShell(comm,m,N,M,N,ctx,&A);
+$     VecGetLocalSize(x,&n);
+$     MatCreateShell(comm,m,n,M,N,ctx,&A);
 $     MatShellSetOperation(mat,MATOP_MULT,mult);
 $     MatMult(A,x,y);
 $     MatDestroy(A);
@@ -245,6 +243,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 {
   Mat       B;
   Mat_Shell *b;
+  int       ierr;
 
   PetscFunctionBegin;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSHELL,comm,MatDestroy,MatView);
@@ -258,12 +257,29 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   PLogObjectMemory(B,sizeof(struct _p_Mat)+sizeof(Mat_Shell));
   PetscMemzero(b,sizeof(Mat_Shell));
   B->data   = (void *) b;
+
+  if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
+    SETERRQ(1,1,"Must give local row and column count for matrix");
+  }
+
+  if (M == PETSC_DETERMINE || N == PETSC_DETERMINE) {
+    int work[2], sum[2];
+    
+    work[0] = m; work[1] = n;
+    ierr = MPI_Allreduce( work, sum,2,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    if (M == PETSC_DECIDE) M = sum[0];
+    if (N == PETSC_DECIDE) N = sum[1];
+  }
   b->M = M; B->M = M;
   b->N = N; B->N = N;
   b->m = m; B->m = m;
   b->n = n; B->n = n;
-  b->ctx     = ctx;
-  *A = B;
+
+  ierr = MapCreate(comm,m,M,B->rmap);CHKERRQ(ierr);
+  ierr = MapCreate(comm,n,N,B->cmap);CHKERRQ(ierr);
+
+  b->ctx = ctx;
+  *A     = B;
   PetscFunctionReturn(0);
 }
 
@@ -273,12 +289,12 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.
 
-    Input Parameters:
-.   mat - the shell matrix
-.   op - the name of the operation
-.   f - the function that provides the operation.
-
    Collective on Mat
+
+    Input Parameters:
++   mat - the shell matrix
+.   op - the name of the operation
+-   f - the function that provides the operation.
 
     Usage:
 $      extern int usermult(Mat,Vec,Vec);
@@ -328,14 +344,14 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 /*@C
     MatShellGetOperation - Gets a matrix function for a shell matrix.
 
+    Not Collective
+
     Input Parameters:
-.   mat - the shell matrix
-.   op - the name of the operation
++   mat - the shell matrix
+-   op - the name of the operation
 
     Output Parameter:
 .   f - the function that provides the operation.
-
-    Not Collective
 
     Notes:
     See the file petsc/include/mat.h for a complete list of matrix
@@ -364,13 +380,16 @@ int MatShellGetOperation(Mat mat,MatOperation op, void **f)
 
   if (op == MATOP_DESTROY) {
     if (mat->type == MATSHELL) {
-       Mat_Shell *shell = (Mat_Shell *) mat->data;
-       *f = (void *) shell->destroy;
-    } 
-    else *f = (void *) mat->ops->destroy;
-  } 
-  else if (op == MATOP_VIEW) *f = (void *) mat->ops->view;
-  else      *f = (((void**)&mat->ops)[op]);
+      Mat_Shell *shell = (Mat_Shell *) mat->data;
+      *f = (void *) shell->destroy;
+    } else {
+      *f = (void *) mat->ops->destroy;
+    }
+  } else if (op == MATOP_VIEW) {
+    *f = (void *) mat->ops->view;
+  } else {
+    *f = (((void**)&mat->ops)[op]);
+  }
 
   PetscFunctionReturn(0);
 }

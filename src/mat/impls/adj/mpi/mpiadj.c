@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.14 1998/06/18 15:15:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.15 1998/07/13 21:00:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -70,6 +70,12 @@ int MatDestroy_MPIAdj(Mat mat)
   }
   if (mat->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
+  if (mat->rmap) {
+    ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
+  }
+  if (mat->cmap) {
+    ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
   }
 
 #if defined(USE_PETSC_LOG)
@@ -348,6 +354,12 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   b->m = m; B->m = m; 
   ierr = MPI_Allreduce(&m,&B->M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   B->n = n; B->N = n;
+
+  /* the information in the maps duplicates the information computed below, eventually 
+     we should remove the duplicate information that is not contained in the maps */
+  ierr = MapCreate(comm,m,B->M,B->rmap);CHKERRQ(ierr);
+  /* we don't know the "local columns" so just use the row information :-( */
+  ierr = MapCreate(comm,m,B->M,B->cmap);CHKERRQ(ierr);
 
   b->rowners = (int *) PetscMalloc((size+1)*sizeof(int)); CHKPTRQ(b->rowners);
   PLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
