@@ -2696,7 +2696,7 @@ int MatTranspose(Mat mat,Mat *B)
   ierr = PetscLogEventBegin(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr); 
   ierr = (*mat->ops->transpose)(mat,B);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*B); CHKERRQ(ierr);
+  if (B) {ierr = PetscObjectIncreaseState((PetscObject)*B); CHKERRQ(ierr);}
   PetscFunctionReturn(0);  
 }
 
