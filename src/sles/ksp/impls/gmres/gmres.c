@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.153 2000/09/02 02:49:12 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.154 2000/09/22 20:45:28 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -165,7 +165,7 @@ int GMREScycle(int *itcount,KSP ksp)
 
   ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
   res    = res_norm;
-  *RS(0) = res_norm;
+  *GRS(0) = res_norm;
 
   /* check for the convergence */
   if (!res) {
@@ -201,7 +201,7 @@ int GMREScycle(int *itcount,KSP ksp)
     *HES(it+1,it)   = tt;
 
     /* check for the happy breakdown */
-    hapbnd  = PetscAbsScalar(tt / *RS(it));
+    hapbnd  = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt > hapbnd) {
       tmp = 1.0/tt; ierr = VecScale(&tmp,VEC_VV(it+1));CHKERRQ(ierr);
@@ -244,7 +244,7 @@ int GMREScycle(int *itcount,KSP ksp)
     preconditioning from the solution
    */
   /* Form the solution (or the solution so far) */
-  ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,it-1);CHKERRQ(ierr);
+  ierr = BuildGmresSoln(GRS(0),VEC_SOLN,VEC_SOLN,ksp,it-1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -357,15 +357,15 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
     }
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ1(1,1,"HH(it,it) is identically zero; RS(it) = %g",*RS(it));
+  if (*HH(it,it) == 0.0) SETERRQ1(1,1,"HH(it,it) is identically zero; GRS(it) = %g",*GRS(it));
   if (*HH(it,it) != 0.0) {
-    nrs[it] = *RS(it) / *HH(it,it);
+    nrs[it] = *GRS(it) / *HH(it,it);
   } else {
     nrs[it] = 0.0;
   }
   for (ii=1; ii<=it; ii++) {
     k   = it - ii;
-    tt  = *RS(k);
+    tt  = *GRS(k);
     for (j=k+1; j<=it; j++) tt  = tt - *HH(k,j) * nrs[j];
     nrs[k]   = tt / *HH(k,k);
   }
@@ -438,19 +438,19 @@ static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res
     if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Your matrix or preconditioner is the null operator");}
     *cc       = *hh / tt;
     *ss       = *(hh+1) / tt;
-    *RS(it+1) = - (*ss * *RS(it));
+    *GRS(it+1) = - (*ss * *GRS(it));
 #if defined(PETSC_USE_COMPLEX)
-    *RS(it)   = PetscConj(*cc) * *RS(it);
+    *GRS(it)   = PetscConj(*cc) * *GRS(it);
     *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
 #else
-    *RS(it)   = *cc * *RS(it);
+    *GRS(it)   = *cc * *GRS(it);
     *hh       = *cc * *hh + *ss * *(hh+1);
 #endif
-    *res      = PetscAbsScalar(*RS(it+1));
+    *res      = PetscAbsScalar(*GRS(it+1));
   } else {
     /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply 
             another rotation matrix (so RH doesn't change).  The new residual is 
-            always the new sine term times the residual from last time (RS(it)), 
+            always the new sine term times the residual from last time (GRS(it)), 
             but now the new sine rotation would be zero...so the residual should
             be zero...so we will multiply "zero" by the last residual.  This might
             not be exactly what we want to do here -could just return "zero". */

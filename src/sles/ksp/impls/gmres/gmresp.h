@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.14 2000/05/05 22:17:37 balay Exp bsmith $ */
+/* $Id: gmresp.h,v 1.15 2000/08/01 20:56:55 bsmith Exp bsmith $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -52,7 +52,7 @@ typedef struct {
 #define HES(a,b) (gmres->hes_origin + (b)*(gmres->max_k+1)+(a))
 #define CC(a)    (gmres->cc_origin + (a))
 #define SS(a)    (gmres->ss_origin + (a))
-#define RS(a)    (gmres->rs_origin + (a))
+#define GRS(a)    (gmres->rs_origin + (a))
 
 /* vector names */
 #define VEC_OFFSET     3
