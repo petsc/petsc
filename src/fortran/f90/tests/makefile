@@ -1,13 +1,11 @@
-# $Id: makefile,v 1.7 1998/06/15 16:22:54 balay Exp balay $ 
+# $Id: makefile,v 1.8 1998/11/05 17:22:26 balay Exp balay $ 
 
 ALL: lib
 
 CFLAGS     =
 FFLAGS     =
-SOURCEC    = test_IRIX.c
-SOURCEF    = test_IRIXf90.F
-SOURCEH    = 
-OBJSC      = test_IRIX.o test_IRIXf90.o
+EXAMPLESC  = test_IRIX.c
+EXAMPLESF  = test_IRIXf90.F
 OBJSF      = 
 LIBBASE    = libpetscfortran
 MANSEC     =
