@@ -16,11 +16,11 @@ See page 85, "Iterative Methods ..." by Saad. */
 int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
-  int         *rip,ierr,i,mbs = a->mbs,*ai,*aj;
-  int         *jutmp,bs = a->bs,bs2=a->bs2;
-  int         m,nzi,realloc = 0;
-  int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
-  PetscTruth  perm_identity;
+  int          *rip,ierr,i,mbs = a->mbs,*ai,*aj;
+  int          *jutmp,bs = a->bs,bs2=a->bs2;
+  int          m,nzi,realloc = 0;
+  int          *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
+  PetscTruth   perm_identity;
 
   PetscFunctionBegin;
 
@@ -159,6 +159,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   b->ilen = 0;
   b->imax = 0;
   b->row  = perm;
+  b->pivotinblocks = PETSC_FALSE; /* need to get from MatCholeskyInfo */
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);

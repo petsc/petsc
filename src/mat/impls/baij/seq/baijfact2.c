@@ -2690,6 +2690,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;
+    b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
     ierr          = PetscMalloc(((*fact)->m+1+b->bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   } else { /* general case perform the symbolic factorization */
     ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -2848,6 +2849,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
     b->imax       = 0;
     b->row        = isrow;
     b->col        = iscol;
+    b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
     ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;

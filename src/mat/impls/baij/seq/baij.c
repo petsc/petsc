@@ -438,7 +438,10 @@ static int MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
+    Mat aij;
+    ierr = MatConvert(A,MATSEQAIJ,&aij);CHKERRQ(ierr);
+    ierr = MatView(aij,viewer);CHKERRQ(ierr);
+    ierr = MatDestroy(aij);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
 #if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
      ierr = MatMPIBAIJFactorInfo_DSCPACK(A,viewer);CHKERRQ(ierr);

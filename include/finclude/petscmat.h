@@ -176,7 +176,7 @@
 !
       integer   MAT_ILUINFO_SIZE
 
-      parameter (MAT_ILUINFO_SIZE=9)
+      parameter (MAT_ILUINFO_SIZE=109)
 
       integer MAT_ILUINFO_LEVELS
       integer MAT_ILUINFO_FILL
@@ -187,6 +187,7 @@
       integer MAT_ILUINFO_DAMPING
       integer MAT_ILUINFO_DAMP
       integer MAT_ILUINFO_PIVOT_ZERO
+      integer MAT_ILUINFO_PIVOT_IN_BLOCKS
 
       parameter (MAT_ILUINFO_LEVELS = 1)
       parameter (MAT_ILUINFO_FILL = 2)
@@ -197,6 +198,7 @@
       parameter (MAT_ILUINFO_DAMPING = 7)
       parameter (MAT_ILUINFO_DAMP = 8)
       parameter (MAT_ILUINFO_PIVOT_ZERO = 9)
+      parameter (MAT_ILUINFO_PIVOT_IN_BLOCKS = 10)
 
 !
 !  Note: MAT_LUINFO_SIZE must equal # elements in MatLUInfo structure
@@ -204,19 +206,21 @@
 !
       integer   MAT_LUINFO_SIZE
 
-      parameter (MAT_LUINFO_SIZE = 5)
+      parameter (MAT_LUINFO_SIZE = 6)
 
       integer MAT_LUINFO_FILL
       integer MAT_LUINFO_DTCOL
       integer MAT_LUINFO_DAMPING
       integer MAT_LUINFO_DAMP
       integer MAT_LUINFO_PIVOT_ZERO
+      integer MAT_LUINFO_PIVOT_IN_BLOCKS
 
       parameter (MAT_LUINFO_FILL  = 1)
       parameter (MAT_LUINFO_DTCOL = 2)
       parameter (MAT_LUINFO_DAMPING = 3)
       parameter (MAT_LUINFO_DAMP = 4)
       parameter (MAT_LUINFO_PIVOT_ZERO = 5)
+      parameter (MAT_LUINFO_PIVOT_IN_BLOCKS = 6)
 
 
 !
@@ -225,15 +229,17 @@
 !
       integer   MAT_CHOLESKYINFO_SIZE
 
-      parameter (MAT_CHOLESKYINFO_SIZE = 3)
+      parameter (MAT_CHOLESKYINFO_SIZE = 4)
 
       integer MAT_CHOLESKYINFO_FILL
       integer MAT_CHOLESKYINFO_DAMPING
       integer MAT_CHOLESKYINFO_DAMP
+      integer MAT_CHOLESKYINFO_PIVOT_IN_BLOCKS
 
       parameter (MAT_CHOLESKYINFO_FILL  = 1)
       parameter (MAT_CHOLESKYINFO_DAMPING = 2)
       parameter (MAT_CHOLESKYINFO_DAMP = 3)
+      parameter (MAT_CHOLESKYINFO_PIVOT_IN_BLOCKS = 4)
 
 !
 !  Options for SOR and SSOR

@@ -14,6 +14,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat A,Mat *B)
   int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
+  PetscTruth         pivotinblocks = b->pivotinblocks;
 
   PetscFunctionBegin;
   /* initialization */
@@ -176,8 +177,13 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat A,Mat *B)
     /* invert diagonal block */
     diag = ba+k*16;
     ierr = PetscMemcpy(diag,dk,16*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = Kernel_A_gets_inverse_A_4(diag);CHKERRQ(ierr);
-    
+
+    if (pivotinblocks) {
+      ierr = Kernel_A_gets_inverse_A_4(diag);CHKERRQ(ierr);
+    } else {
+      ierr = Kernel_A_gets_inverse_A_4_nopivot(diag);CHKERRQ(ierr);
+    }
+
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {
       for (j=jmin; j<jmax; j++){

@@ -26,6 +26,7 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
   MatScalar   p10,p11,p12,p13,p14,p15,p16,m10,m11,m12;
   MatScalar   m13,m14,m15,m16;
   MatScalar   *ba = b->a,*aa = a->a;
+  PetscTruth  pivotinblocks = b->pivotinblocks;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -137,8 +138,12 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
       pv   += 16;
     }
     /* invert diagonal block */
-    w = ba + 16*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+    w    = ba + 16*diag_offset[i];
+    if (pivotinblocks) {
+      ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+    } else {
+      ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
+    }
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);

@@ -487,6 +487,8 @@ typedef struct {
   PetscReal     damping;        /* scaling of identity added to matrix to prevent zero pivots */
   PetscReal     damp;           /* if is 1.0 and factorization fails, damp until successful */
   PetscReal     zeropivot; /* pivot is called zero if less than this */
+  PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
+                                   factorization may be faster if do not pivot */
 } MatILUInfo;
 
 /*S 
@@ -508,6 +510,8 @@ typedef struct {
   PetscReal     damping; /* scaling of identity added to matrix to prevent zero pivots */
   PetscReal     damp;    /* if this is 1.0 and factorization fails, damp until successful */
   PetscReal     zeropivot; /* pivot is called zero if less than this */
+  PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
+                                   factorization may be faster if do not pivot */
 } MatLUInfo;
 
 /*S 
@@ -527,6 +531,8 @@ typedef struct {
   PetscReal     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
   PetscReal     damping; /* scaling of identity added to matrix to prevent zero pivots */
   PetscReal     damp;    /* if this is 1.0 and factorization fails, damp until successful */
+  PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
+                                   factorization may be faster if do not pivot */
 } MatCholeskyInfo;
 
 EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);

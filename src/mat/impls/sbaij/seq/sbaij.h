@@ -37,6 +37,7 @@ typedef struct {
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
   int              *a2anew;        /* map used for symm permutation */
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
+  PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */
 } Mat_SeqSBAIJ;
 
 extern int MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat *);
