@@ -1380,6 +1380,20 @@ libraries. You might also want to remove shared         libraries by
 invoking </p>
           <p>make BOPT=g deleteshared </p>
         </li>
+        <li><font color="#ff0000"><strong>Symptom</strong>:</font> 
+When running with -start_in_debugger one gets the error message
+          <p>PETSC: Attaching gdb to /opt/procast_mpich/procast051003/./procast of pid 31603 on display linux.:0.\
+0 on machine linux.
+: Can't get address for linux.
+ Xt error: Can't open display: linux.:0.0
+
+          <p><font color="#ff0000"><strong>Problem:</strong></font> The remote nodes
+do not know where to display the debugger window.
+
+          <p><font color="#ff0000"><strong>Cure: </strong></font>Run with the additional option
+-display displayname where displayname is something like mymachine.0.0
+
+        </li>
       </ol>
 <!--##end--> </td>
     </tr>
