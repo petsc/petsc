@@ -14,7 +14,7 @@ manual.dvi: manual.tex routines.red
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx findex.tex sindex.tex
 
-manual.ps: 
+manual.ps: manual.dvi
 	dvips manual
 	mv manual.ps ..
 	-@chmod g+w ../manual.ps
