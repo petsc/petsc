@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.128 1999/03/15 01:31:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.129 1999/03/15 01:50:34 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -286,15 +286,19 @@ int SNESNoLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, Vec w,
    Options Database Key:
 .  -snes_eq_ls basicnonorms - Activates SNESNoLineSearchNoNorms()
 
-   Level: advanced
-
    Notes:
-     You must run this with -snes_no_convergence_test or your own 
-     custom test and use -snes_max_it nk or the SNES solver will generate
-     an error.
+   SNESNoLineSearchNoNorms() must be used in conjunction with
+   either the options
+$     -snes_no_convergence_test -snes_max_it <its>
+   or alternatively a user-defined custom test set via
+   SNESSetConvergenceTest(); otherwise, the SNES solver will 
+   generate an error.
 
-     Residual norm output printed from -snes_monitor will not be correct,
-     since they are not computed.
+   The residual norms printed by monitoring routines such as
+   SNESDefaultMonitor() (as activated via -snes_monitor) will not be 
+   correct, since they are not computed.
+
+   Level: advanced
 
 .keywords: SNES, nonlinear, line search, cubic
 
@@ -762,19 +766,19 @@ EXTERN_C_END
 
    Notes:
    The user-defined line search checking routine is available for
-   use in conjunction with SNESNoLineSearch(), SNESNoLineSearchNoNorms(),
+   use in conjunction with SNESNoLineSearch() and SNESNoLineSearchNoNorms(),
    which (1) compute a candidate iterate u_{i+1}, (2) pass control to the
-   checking routine, and then (3) compute the corresponding function f(u_{i+1})
-   with the (possibly altered) iterate u_{i+1}.
+   checking routine, and then (3) compute the corresponding nonlinear
+   function f(u_{i+1}) with the (possibly altered) iterate u_{i+1}.
 
    The user-defined line search checking routine is also available for
    use in conjunction with SNESQuadraticLineSearch() and SNESCubicLineSearch().
    These routines (1) compute a candidate iterate u_{i+1} as well as a
-   candidate function f(u_{i+1}), (2) pass control to the checking routine,
-   and then (3) force a re-evaluation of f(u_{i+1}) if any changes were made
-   to the candidate iterate in the checking routine (as indicated by 
-   flag=PETSC_TRUE).  The overhead of this re-evaluation can be costly, so
-   this feature with caution.
+   candidate nonlinear function f(u_{i+1}), (2) pass control to the checking 
+   routine, and then (3) force a re-evaluation of f(u_{i+1}) if any changes 
+   were made to the candidate iterate in the checking routine (as indicated 
+   by flag=PETSC_TRUE).  The overhead of this function re-evaluation can be
+   very costly, so this feature with caution.
 
 .keywords: SNES, nonlinear, set, line search check, step check, routine
 
