@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.10 1999/01/27 19:46:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.11 1999/03/01 04:53:08 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -143,9 +143,11 @@ int PetscInitializeNoArguments(void)
 
    Options Database Keys:
 +  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
-+  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
+.  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
 .  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
+.  -stop_for_debugger - Print message on how to attach debugger manually to 
+                        process and wait (-debugger_pause) seconds for attachment
 .  -trmalloc - Indicates use of PETSc error-checking malloc
 .  -trmalloc_off - Indicates not to use error-checking malloc
 .  -fp_trap - Stops on floating point exceptions (Note that on the

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.31 1999/02/03 00:18:44 balay Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.32 1999/03/01 04:53:08 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -410,7 +410,8 @@ int OptionsCheckInitial_Alice(void)
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
   ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
-  if (flg1) {
+  ierr = OptionsGetString(PETSC_NULL,"-stop_for_debugger",string,64,&flg2);CHKERRQ(ierr);
+  if (flg1 || flg2) {
     char           *debugger = 0;
     int            xterm     = 1,size;
     MPI_Errhandler abort_handler;
@@ -451,7 +452,11 @@ int OptionsCheckInitial_Alice(void)
 
       ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
       ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
-      ierr = PetscAttachDebugger();CHKERRQ(ierr);
+      if (flg1) {
+        ierr = PetscAttachDebugger();CHKERRQ(ierr);
+      } else {
+        ierr = PetscStopForDebugger();CHKERRQ(ierr);
+      }
       ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_Abort_Function,&abort_handler);CHKERRQ(ierr);
       ierr = MPI_Errhandler_set(comm,abort_handler);CHKERRQ(ierr);
     }
@@ -544,6 +549,8 @@ int OptionsCheckInitial_Alice(void)
     (*PetscHelpPrintf)(comm,"       start all processes in the debugger\n");
     (*PetscHelpPrintf)(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");
     (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");
+    (*PetscHelpPrintf)(comm," -stop_for_debugger : prints message on how to attach debugger manually\n");
+    (*PetscHelpPrintf)(comm,"                      waits the delay for you to attach\n");
     (*PetscHelpPrintf)(comm," -display display: Location where graphics and debuggers are displayed\n");
     (*PetscHelpPrintf)(comm," -no_signal_handler: do not trap error signals\n");
     (*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.81 1998/10/01 14:43:47 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.82 1999/01/04 21:48:30 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -345,6 +345,104 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscStopForDebugger"
+/*@C
+   PetscStopForDebugger - Prints a message to the screen indicating how to
+         attach to the process with the debugger and then waits for the 
+         debugger to attach.
+
+   Not Collective
+
+.keywords: attach, debugger
+
+.seealso: PetscSetDebugger(), PetscAttachDebugger()
+@*/
+int PetscStopForDebugger(void)
+{
+  int   sleeptime=0,flg=0,ierr=0,ppid,rank;
+  char  program[256],hostname[256];
+
+  PetscFunctionBegin;
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
+  ierr = PetscGetProgramName(program,256);CHKERRQ(ierr);
+  
+  if (ierr) {
+    (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name; just continuing program\n");
+    PetscFunctionReturn(0);
+  }
+
+#if defined(CANNOT_START_DEBUGGER) 
+  (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
+  (*PetscErrorPrintf)("PETSC ERROR: On Cray run program in Totalview debugger\n");
+  (*PetscErrorPrintf)("PETSC ERROR: On Windows use Developer Studio(MSDEV)\n");
+  (*PetscErrorPrintf)("PETSC ERROR: Just continuing program\n");
+   PetscFunctionReturn(0);
+#else
+  if (!program[0]) {
+    (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name; just continuing program\n");
+    PetscFunctionReturn(0);
+  }
+
+  ppid = getpid();
+  if (!PetscStrcmp(Debugger,"xxgdb") || !PetscStrcmp(Debugger,"ups")) {
+    fprintf(stdout,"[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
+  }
+#if defined(PARCH_rs6000)
+  else if (!PetscStrcmp(Debugger,"xldb")) {
+    fprintf(stdout,"{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
+  }
+#endif
+#if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)  
+  else if (!PetscStrcmp(Debugger,"dbx")) {
+    fprintf(stdout,"[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
+  }
+#elif defined(PARCH_hpux)
+  else if (!PetscStrcmp(Debugger,"xdb")) {
+    fprintf(stdout,"[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
+  }
+#elif defined(PARCH_rs6000)
+  else if (!PetscStrcmp(Debugger,"dbx")) {
+    fprintf(stdout,"[%d]%s>>%s a %d\n",rank,hostname,Debugger,ppid);
+  }
+#elif defined(PARCH_alpha)
+  else if (!PetscStrcmp(Debugger,"dbx")) {
+    fprintf(stdout,"[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
+  }
+#else 
+  else {
+    fprintf(stdout,"[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
+  }
+#endif
+  fflush(stdout);
+
+  sleeptime = 25; /* default to sleep waiting for debugger */
+  ierr = OptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,&flg); CHKERRQ(ierr);
+  if (sleeptime < 0) sleeptime = -sleeptime;
+#if defined(PARCH_hpux)
+  /*
+      HP cannot attach process to sleeping debugger, hence count instead
+  */
+  { 
+    double x = 1.0;
+    int i=10000000;
+    while (i--) x++ ; /* cannot attach to sleeper */
+  }
+#elif defined(PARCH_rs6000)
+  /*
+      IBM sleep may return at anytime, hence must see if there is more time to sleep
+  */
+  {
+    int left = sleeptime;
+    while (left > 0) {left = sleep(left) - 1;}
+  }
+#else
+  sleep(sleeptime);
+#endif
+#endif
+  PetscFunctionReturn(0);
+}
 
 
 
