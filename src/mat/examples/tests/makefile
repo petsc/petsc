@@ -1,7 +1,7 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(INCLUDEDIRS) $(CONF) $(COPT)
+CFLAGS        = $(OPT) $(PETSC_INCLUDE) $(CONF) $(COPT)
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       =
@@ -140,6 +140,10 @@ ex29: ex29.o chkopts
 ex30: ex30.o chkopts
 	-$(CLINKER) -o ex30 ex30.o $(PETSC_LIB)
 	$(RM) ex30.o
+
+ex31: ex31.o chkopts
+	-$(CLINKER) -o ex31 ex31.o $(PETSC_LIB)
+	$(RM) ex31.o
 
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
