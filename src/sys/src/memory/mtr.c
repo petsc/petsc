@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.58 1996/07/02 18:05:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.59 1996/08/03 00:52:39 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -455,8 +455,9 @@ int PetscTrSummary( FILE *fp )
   TRFP = fp;
 /*
     On the IBM rs6000 runing OS 4.1 the prototype for the second argument
-  of twalk is changed to (void (*)(const void*,VISIT,int)) so change it 
-  below if it is not compiling correctly on your machine.
+  of twalk is changed to (void (*)(const void*,VISIT,int)) so change
+  "#if defined(PARCH_solaris)"  below to 
+  "#if defined(PARCH_solaris) || defined (PARCH_rs6000)"
 */
 /*
     On the Sun Solaris 5.3 (maybe 5.4) the twalk() prototype is 
