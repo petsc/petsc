@@ -20,7 +20,7 @@ Satish - Make sure one can run block Jacobi on several matrices with number of r
 
  X Test mpiuni on DEC alpha, document any changes needed for it to work.
 
-       Maybe, like, say, test one or two BDiag routines before making a release?
+ X     Maybe, like, say, test one or two BDiag routines before making a release?
        More test cases that involve, zero size vectors, matrices, IS's etc.
 
 Satish NT stuff
@@ -33,6 +33,8 @@ Lois - Add table of all preconditioners and options to PETSc manual.
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+
+  - Currently no support for MatGetSubMatrices_SeqBDIAG()  MAT_SAME_NON_ZERO_STRUCTURE. (Satish)
 
   - Make src/sys/src/cputime.c compile and run correctly on all machines.
 

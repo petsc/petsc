@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.131 1997/04/05 00:02:07 balay Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.132 1997/04/05 00:08:05 balay Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1969,9 +1969,9 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
   ierr = ISGetSize(isrow,&newr); CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&newc); CHKERRQ(ierr);
 
-  smap  = (int *) PetscMalloc(oldcols*sizeof(int)); CHKPTRQ(smap);
-  cwork = (int *) PetscMalloc(newc*sizeof(int)); CHKPTRQ(cwork);
-  vwork = (Scalar *) PetscMalloc(newc*sizeof(Scalar)); CHKPTRQ(vwork);
+  smap  = (int *) PetscMalloc((oldcols+1)*sizeof(int)); CHKPTRQ(smap);
+  cwork = (int *) PetscMalloc((newc+1)*sizeof(int)); CHKPTRQ(cwork);
+  vwork = (Scalar *) PetscMalloc((newc+1)*sizeof(Scalar)); CHKPTRQ(vwork);
   PetscMemzero((char*)smap,oldcols*sizeof(int));
   for ( i=0; i<newc; i++ ) smap[icol[i]] = i+1;
 
