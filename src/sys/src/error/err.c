@@ -447,7 +447,7 @@ int PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
       for (i=0; i<p; i++) { 
 #if defined (PETSC_USE_COMPLEX)
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)",
-                                 PetscRealPart(idx[i*3+j]),PetscImaginaryPart(idx[i*3+j]));CHKERRQ(ierr);
+                                 PetscRealPart(idx[n*3+i]),PetscImaginaryPart(idx[n*3+i]));CHKERRQ(ierr);
 #else
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[3*n+i]);CHKERRQ(ierr);
 #endif
