@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.123 2001/03/23 23:24:15 balay Exp curfman $*/
+/*$Id: tr.c,v 1.124 2001/06/15 21:55:13 curfman Exp curfman $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -100,6 +100,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
     ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetConvergenceTest(ksp,SNES_EQ_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
+    PetscLogInfo(snes,"SNESSolve_EQ_TR: Using Krylov convergence test SNES_EQ_TR_KSPConverged_Private\n");
   }
  
   for (i=0; i<maxits; i++) {
