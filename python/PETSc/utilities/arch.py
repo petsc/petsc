@@ -90,6 +90,7 @@ class Configure(config.base.Configure):
       else:
         self.arch = self.framework.host_os
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
+    self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
     self.addDefine('ARCH', self.archBase)
     self.addDefine('ARCH_NAME', '"'+self.arch+'"')
     self.framework.argDB['PETSC_ARCH']      = self.arch

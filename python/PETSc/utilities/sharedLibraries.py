@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
     if not self.arch.archBase.startswith('aix') and not self.arch.archBase.startswith('darwin'):
       self.useShared = self.framework.argDB['with-shared']
     if self.useShared:
-      self.addMakeRule('shared_arch','shared_'+self.arch.archBase)
+      self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
     else:
       self.addMakeRule('shared','')
 
