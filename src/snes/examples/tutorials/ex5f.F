@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.9 1996/09/25 20:50:27 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.10 1996/09/28 14:10:20 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -76,8 +76,11 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                   Variable declarations
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C
-C  In this example the application context is a Fortran integer array:
-C  Note that we can store (pointers to) PETSc objects within this array.
+C  The application context to contain data needed by the 
+C  application-provided call-back routines, FormJacobian() and
+C  FormFunction().  In this example the application context is
+C  a Fortran integer array.  Note that we can store (pointers to)
+C  PETSc objects within this array.
 C     user(1) = mx     - discretization in x-direction
 C          2  = my     - discretization in y-direction
 C          3  = da     - distributed array
