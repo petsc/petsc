@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.27 2001/04/10 19:37:18 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.28 2001/08/07 21:31:36 bsmith Exp bsmith $*/
 
 static char help[] = "Tests AOData.\n\n";
 
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
     gd[3*i+1] = -(start + i) - 10000;
     gd[3*i+2] = -(start + i) - 100000;
   }
-  ierr = AODataSegmentAdd(aodata,"key1","seg2",bs,n,keys,gd,PETSC_PETSCREAL);CHKERRQ(ierr); 
+  ierr = AODataSegmentAdd(aodata,"key1","seg2",bs,n,keys,gd,PETSC_REAL);CHKERRQ(ierr); 
 
   /*
       Allocate data for first key and third segment 
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
        Use same data for second key and first segment 
   */
   bs   = 3;
-  ierr = AODataSegmentAdd(aodata,"key2","seg1",bs,n,keys,gd,PETSC_PETSCREAL);CHKERRQ(ierr); 
+  ierr = AODataSegmentAdd(aodata,"key2","seg1",bs,n,keys,gd,PETSC_REAL);CHKERRQ(ierr); 
   ierr = PetscFree(gd);CHKERRQ(ierr);
   ierr = PetscFree(keys);CHKERRQ(ierr);
 

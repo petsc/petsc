@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.47 2001/08/07 03:04:24 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.48 2001/08/07 21:31:27 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -76,10 +76,10 @@ int main(int argc,char **argv)
 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
 
 
   /* make work array for evaluating right hand side function */

@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.171 2001/08/06 21:14:36 bsmith Exp balay $*/
+/*$Id: vscat.c,v 1.172 2001/08/07 03:02:17 balay Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -83,7 +83,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,xvt2,scat->count,range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-        ierr = MPI_Reduce(xv,xvt,2*xx_n,MPI_DOUBLE,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
+        ierr = MPI_Reduce(xv,xvt,2*xx_n,MPIU_REAL,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 #else
         ierr = MPI_Reduce(xv,xvt,xx_n,MPIU_SCALAR,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 #endif
@@ -104,7 +104,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,0, 0,0,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-        ierr = MPI_Reduce(xv,xvt,2*xx_n,MPI_DOUBLE,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
+        ierr = MPI_Reduce(xv,xvt,2*xx_n,MPIU_REAL,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 #else
         ierr = MPI_Reduce(xv,xvt,xx_n,MPIU_SCALAR,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 #endif

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.76 2001/08/06 21:18:56 bsmith Exp balay $";*/
+/* "$Id: flow.c,v 1.77 2001/08/07 03:04:53 balay Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver.\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -669,7 +669,7 @@ int Update(SNES snes,void *ctx)
   ierr = PetscGetTime(&time2);CHKERRQ(ierr);
   cpuloc = time2-time1;            
   cpuglo = 0.0;
-  ierr = MPI_Allreduce(&cpuloc,&cpuglo,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cpuloc,&cpuglo,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   c_info->tot = cpuglo;    /* Total CPU time used upto this time step */
   
   ierr = VecScatterBegin(grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);

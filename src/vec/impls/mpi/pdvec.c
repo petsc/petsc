@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.150 2001/08/06 21:14:47 bsmith Exp balay $*/
+/* $Id: pdvec.c,v 1.151 2001/08/07 03:02:22 balay Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -250,7 +250,7 @@ int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Gatherv(x->array,xin->n,MPI_DOUBLE,yy,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(x->array,xin->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
 #else
     {
       PetscReal *xr;
@@ -258,7 +258,7 @@ int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
       for (i=0; i<xin->n; i++) {
         xr[i] = PetscRealPart(x->array[i]);
       }
-      ierr = MPI_Gatherv(xr,xin->n,MPI_DOUBLE,yy,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(xr,xin->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
       ierr = PetscFree(xr);CHKERRQ(ierr);
     }
 #endif
@@ -267,7 +267,7 @@ int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
     ierr = PetscFree(xx);CHKERRQ(ierr);
   } else {
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Gatherv(x->array,xin->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(x->array,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
 #else
     {
       PetscReal *xr;
@@ -275,7 +275,7 @@ int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
       for (i=0; i<xin->n; i++) {
         xr[i] = PetscRealPart(x->array[i]);
       }
-      ierr = MPI_Gatherv(xr,xin->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(xr,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
       ierr = PetscFree(xr);CHKERRQ(ierr);
     }
 #endif
@@ -317,8 +317,8 @@ int VecView_MPI_Draw(Vec xin,PetscViewer viewer)
     xmin -= 1.e-5;
     xmax += 1.e-5;
   }
-  ierr = MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&xmin,&ymin,1,MPIU_REAL,MPI_MIN,0,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&xmax,&ymax,1,MPIU_REAL,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = PetscDrawAxisCreate(draw,&axis);CHKERRQ(ierr);
@@ -331,12 +331,12 @@ int VecView_MPI_Draw(Vec xin,PetscViewer viewer)
     ierr = PetscDrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
   }
   ierr = PetscDrawAxisDestroy(axis);CHKERRQ(ierr);
-  ierr = MPI_Bcast(coors,4,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(coors,4,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
   if (rank) {ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);}
   /* draw local part of vector */
   ierr = VecGetOwnershipRange(xin,&start,&end);CHKERRQ(ierr);
   if (rank < size-1) { /*send value to right */
-    ierr = MPI_Send(&x->array[xin->n-1],1,MPI_DOUBLE,rank+1,tag,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Send(&x->array[xin->n-1],1,MPIU_REAL,rank+1,tag,xin->comm);CHKERRQ(ierr);
   }
   for (i=1; i<xin->n; i++) {
 #if !defined(PETSC_USE_COMPLEX)
@@ -348,7 +348,7 @@ int VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 #endif
   }
   if (rank) { /* receive value from right */
-    ierr = MPI_Recv(&tmp,1,MPI_DOUBLE,rank-1,tag,xin->comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag,xin->comm,&status);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     ierr = PetscDrawLine(draw,(PetscReal)start-1,tmp,(PetscReal)start,x->array[0],PETSC_DRAW_RED);CHKERRQ(ierr);
 #else
@@ -383,7 +383,7 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
     ierr = PetscViewerSocketPutScalar(viewer,N,1,xx);CHKERRQ(ierr);
     ierr = PetscFree(xx);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Gatherv(x->array,xin->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(x->array,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

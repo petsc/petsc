@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.c,v 2.7 2001/08/06 21:15:29 bsmith Exp balay $*/
+/* $Id: mpirowbs.c,v 2.8 2001/08/07 03:02:51 balay Exp bsmith $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 #include "src/vec/vecimpl.h"
@@ -1117,7 +1117,7 @@ int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
 #endif
         }
       }
-      ierr  = MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,mat->comm);CHKERRQ(ierr);
+      ierr  = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
       *norm = sqrt(*norm);
     } else if (type == NORM_1) { /* max column norm */
       PetscReal *tmp,*tmp2;
@@ -1135,7 +1135,7 @@ int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
           xi++; xv++;
         }
       }
-      ierr = MPI_Allreduce(tmp,tmp2,mat->N,MPI_DOUBLE,MPI_SUM,mat->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(tmp,tmp2,mat->N,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
       for (j=0; j<mat->n; j++) {
         if (tmp2[j] > *norm) *norm = tmp2[j];
       }
@@ -1153,7 +1153,7 @@ int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
         }
         if (sum > ntemp) ntemp = sum;
       }
-      ierr = MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&ntemp,norm,1,MPIU_REAL,MPI_MAX,mat->comm);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"No support for two norm");
     }
@@ -1263,14 +1263,14 @@ int MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPI_Allreduce(isend,irecv,3,MPI_DOUBLE,MPI_MAX,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,3,MPIU_REAL,MPI_MAX,A->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPI_Allreduce(isend,irecv,3,MPI_DOUBLE,MPI_SUM,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,3,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];

@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.157 2001/08/06 21:15:13 bsmith Exp balay $*/
+/*$Id: mpidense.c,v 1.158 2001/08/07 03:02:46 balay Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -634,14 +634,14 @@ int MatGetInfo_MPIDense(Mat A,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPI_DOUBLE,MPI_MAX,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_MAX,A->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPI_DOUBLE,MPI_SUM,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
@@ -799,7 +799,7 @@ int MatNorm_MPIDense(Mat A,NormType type,PetscReal *norm)
         sum += (*v)*(*v); v++;
 #endif
       }
-      ierr = MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,A->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
       *norm = sqrt(*norm);
       PetscLogFlops(2*mdn->A->n*mdn->A->m);
     } else if (type == NORM_1) { 
@@ -814,7 +814,7 @@ int MatNorm_MPIDense(Mat A,NormType type,PetscReal *norm)
           tmp[j] += PetscAbsScalar(*v);  v++;
         }
       }
-      ierr = MPI_Allreduce(tmp,tmp2,A->N,MPI_DOUBLE,MPI_SUM,A->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(tmp,tmp2,A->N,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
       for (j=0; j<A->N; j++) {
         if (tmp2[j] > *norm) *norm = tmp2[j];
       }
@@ -823,7 +823,7 @@ int MatNorm_MPIDense(Mat A,NormType type,PetscReal *norm)
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp;
       ierr = MatNorm(mdn->A,type,&ntemp);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,A->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&ntemp,norm,1,MPIU_REAL,MPI_MAX,A->comm);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"No support for two norm");
     }

@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.68 2001/08/06 21:14:36 bsmith Exp balay $*/
+/*$Id: vinv.c,v 1.69 2001/08/07 03:02:17 balay Exp bsmith $*/
 /*
      Some useful vector utility functions.
 */
@@ -66,14 +66,14 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
       sum += x[i]*(PetscConj(x[i]));
     }
     tnorm  = PetscRealPart(sum);
-    ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&tnorm,norm,1,MPIU_REAL,MPI_SUM,comm);CHKERRQ(ierr);
     *norm = sqrt(*norm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
     for (i=0; i<n; i+=bs) {
       tnorm += PetscAbsScalar(x[i]);
     }
-    ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&tnorm,norm,1,MPIU_REAL,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     tnorm = 0.0;
@@ -83,7 +83,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
       /* check special case of tmp == NaN */
       if (tmp != tmp) {tnorm = tmp; break;}
     } 
-    ierr   = MPI_Allreduce(&tnorm,norm,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&tnorm,norm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
   } else {
     SETERRQ(1,"Unknown norm type");
   }
@@ -166,7 +166,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
 #endif
     }
   }
-  ierr   = MPI_Allreduce(&max,norm,1,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(&max,norm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -246,7 +246,7 @@ int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
 #endif
     }
   }
-  ierr   = MPI_Allreduce(&min,norm,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(&min,norm,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

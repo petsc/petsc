@@ -1,4 +1,4 @@
-/* $Id: petscdraw.h,v 1.76 2001/04/10 19:34:12 bsmith Exp bsmith $ */
+/* $Id: petscdraw.h,v 1.77 2001/08/06 21:13:34 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -136,7 +136,7 @@ EXTERN int PetscDrawGetTitle(PetscDraw,char **);
 EXTERN int PetscDrawSetPause(PetscDraw,int);
 EXTERN int PetscDrawGetPause(PetscDraw,int*);
 EXTERN int PetscDrawPause(PetscDraw);
-EXTERN int PetscDrawSetPetscRealBuffer(PetscDraw);
+EXTERN int PetscDrawSetDoubleBuffer(PetscDraw);
 EXTERN int PetscDrawFlush(PetscDraw);
 EXTERN int PetscDrawSynchronizedFlush(PetscDraw);
 EXTERN int PetscDrawClear(PetscDraw);

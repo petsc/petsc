@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.39 2001/08/07 03:04:27 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.40 2001/08/07 21:31:30 bsmith Exp bsmith $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -359,7 +359,7 @@ int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
      PetscReal buffering makes graphics look better.
   */
   ierr = PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_(appctx->comm),0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_DRAW_(appctx->comm));CHKERRQ(ierr);
 
   /*

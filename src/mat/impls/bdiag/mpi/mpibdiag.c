@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.203 2001/08/06 21:15:35 bsmith Exp balay $*/
+/*$Id: mpibdiag.c,v 1.204 2001/08/07 03:02:55 balay Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -391,14 +391,14 @@ int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPI_DOUBLE,MPI_MAX,matin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_MAX,matin->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPI_DOUBLE,MPI_SUM,matin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_SUM,matin->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
@@ -676,7 +676,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
 #endif
       }
     }
-    ierr = MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
     *norm = sqrt(*norm);
     PetscLogFlops(2*A->n*A->m);
   } else if (type == NORM_1) { /* max column norm */
@@ -686,7 +686,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
     ierr = PetscMalloc((mbd->A->n+1)*sizeof(PetscReal),&tmp2);CHKERRQ(ierr);
     ierr = MatNorm_SeqBDiag_Columns(mbd->A,tmp,mbd->A->n);CHKERRQ(ierr);
     *norm = 0.0;
-    ierr = MPI_Allreduce(tmp,tmp2,mbd->A->n,MPI_DOUBLE,MPI_SUM,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(tmp,tmp2,mbd->A->n,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
     for (j=0; j<mbd->A->n; j++) {
       if (tmp2[j] > *norm) *norm = tmp2[j];
     }
@@ -695,7 +695,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
   } else if (type == NORM_INFINITY) { /* max row norm */
     PetscReal normtemp;
     ierr = MatNorm(mbd->A,type,&normtemp);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&normtemp,norm,1,MPI_DOUBLE,MPI_MAX,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&normtemp,norm,1,MPIU_REAL,MPI_MAX,A->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

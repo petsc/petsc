@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.56 2001/08/06 21:14:10 bsmith Exp balay $*/
+/*$Id: pinit.c,v 1.57 2001/08/07 03:02:04 balay Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -366,7 +366,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
     PetscScalar ic(0.0,1.0);
     PETSC_i = ic; 
   }
-  ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);CHKERRQ(ierr);
 #endif

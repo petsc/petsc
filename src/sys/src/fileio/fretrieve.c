@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.40 2001/06/01 15:00:30 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.41 2001/06/21 21:15:25 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -359,7 +359,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 @*/
 int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
-  char              *par,buf[1024],tmpdir[256],urlget[256];
+  char              buf[1024],tmpdir[256],urlget[256],*par;
   FILE              *fp;
   int               i,rank,ierr,len = 0;
   PetscTruth        flg1,flg2,sharedtmp,exists;
@@ -386,14 +386,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank || !sharedtmp) {
   
-    /* Construct the Python script to get URL file */
-    ierr = PetscMalloc(1024*sizeof(char),&par);CHKERRQ(ierr);
-#if !defined(PETSC_PYTHON)
-#define PETSC_PYTHON "python"
-#endif
-    ierr = PetscStrcpy(par,PETSC_PYTHON);CHKERRQ(ierr);
-    ierr = PetscStrcat(par," ");CHKERRQ(ierr);
-
+    /* Construct the script to get URL file */
     ierr = PetscStrcpy(urlget,PETSC_DIR);CHKERRQ(ierr);
     ierr = PetscStrcat(urlget,"/bin/urlget");CHKERRQ(ierr);
     ierr = PetscTestFile(urlget,'r',&exists);CHKERRQ(ierr);
@@ -404,24 +397,23 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
       }
       ierr = PetscStrcpy(urlget,"urlget");CHKERRQ(ierr);
     }
-    ierr = PetscStrcat(par,urlget);CHKERRQ(ierr);
-    ierr = PetscStrcat(par," ");CHKERRQ(ierr);
+    ierr = PetscStrcat(urlget," ");CHKERRQ(ierr);
 
     /* are we using an alternative /tmp? */
     if (flg1) {
-      ierr = PetscStrcat(par,"-tmp ");CHKERRQ(ierr);
-      ierr = PetscStrcat(par,tmpdir);CHKERRQ(ierr);
-      ierr = PetscStrcat(par," ");CHKERRQ(ierr);
+      ierr = PetscStrcat(urlget,"-tmp ");CHKERRQ(ierr);
+      ierr = PetscStrcat(urlget,tmpdir);CHKERRQ(ierr);
+      ierr = PetscStrcat(urlget," ");CHKERRQ(ierr);
     }
 
-    ierr = PetscStrcat(par,libname);CHKERRQ(ierr);
-    ierr = PetscStrcat(par," 2>&1 ");CHKERRQ(ierr);
+    ierr = PetscStrcat(urlget,libname);CHKERRQ(ierr);
+    ierr = PetscStrcat(urlget," 2>&1 ");CHKERRQ(ierr);
 
-    ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
+    ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,urlget,"r",&fp);CHKERRQ(ierr);
     if (!fgets(buf,1024,fp)) {
       SETERRQ1(1,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
     }
-    PetscLogInfo(0,"PetscFileRetrieve:Message back from Python: %s\n",buf);
+    PetscLogInfo(0,"PetscFileRetrieve:Message back from urlget: %s\n",buf);
 
     ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
     ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);
@@ -440,7 +432,6 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
       }
       ierr = PetscStrncpy(llibname,buf,llen);CHKERRQ(ierr);
     }
-    ierr = PetscFree(par);CHKERRQ(ierr);
   }
   if (sharedtmp) { /* send library name to all processors */
     ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);

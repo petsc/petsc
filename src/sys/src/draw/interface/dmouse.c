@@ -1,4 +1,4 @@
-/*$Id: dmouse.c,v 1.34 2001/01/17 19:44:01 balay Exp balay $*/
+/*$Id: dmouse.c,v 1.35 2001/03/23 23:20:08 balay Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -80,7 +80,7 @@ int PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
   if (y_user) bcast[1] = *y_user;
   if (x_phys) bcast[2] = *x_phys;
   if (y_phys) bcast[3] = *y_phys;
-  ierr = MPI_Bcast(bcast,4,MPI_DOUBLE,0,draw->comm);CHKERRQ(ierr);  
+  ierr = MPI_Bcast(bcast,4,MPIU_REAL,0,draw->comm);CHKERRQ(ierr);  
   if (x_user) *x_user = bcast[0];
   if (y_user) *y_user = bcast[1];
   if (x_phys) *x_phys = bcast[2];

@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.37 2001/08/06 21:14:36 bsmith Exp balay $*/
+/*$Id: comb.c,v 1.38 2001/08/07 03:02:17 balay Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -87,8 +87,8 @@ void PetscSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatyp
   int    i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPI_DOUBLE) {
-    (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
+  if (*datatype != MPIU_REAL) {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
 #if defined(PETSC_USE_COMPLEX)
@@ -155,9 +155,9 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
         lvalues[numops+i] = reducetype[i];
       }
 #if defined(PETSC_USE_COMPLEX)
-      ierr = MPI_Allreduce(lvalues,gvalues,2*2*numops,MPI_DOUBLE,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,2*2*numops,MPIU_REAL,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
 #else
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
 #endif
     } else if (max_flg) {
 #if defined(PETSC_USE_COMPLEX)
@@ -165,9 +165,9 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
         complex case we max both the real and imaginary parts, the imaginary part
         is just ignored later
       */
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
 #else
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
 #endif
     } else if (min_flg) {
 #if defined(PETSC_USE_COMPLEX)
@@ -175,9 +175,9 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
         complex case we min both the real and imaginary parts, the imaginary part
         is just ignored later
       */
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
 #else
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
 #endif
     } else {
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);

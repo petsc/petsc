@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.75 2001/08/07 03:02:04 balay Exp bsmith $*/
+/*$Id: init.c,v 1.76 2001/08/07 21:28:54 bsmith Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -174,7 +174,7 @@ int PetscCompareDouble(double d)
   int    ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&work,1,MPIU_REAL,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!d && !work) PetscFunctionReturn(0);
   if (PetscAbsReal(work - d)/PetscMax(PetscAbsReal(d),PetscAbsReal(work)) > PetscCompareTolerance) {
     SETERRQ(PETSC_ERR_PLIB,"Inconsistent double");
@@ -206,7 +206,7 @@ int PetscCompareScalar(PetscScalar d)
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Bcast(&work,2,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&work,2,MPIU_REAL,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) PetscFunctionReturn(0);
   if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) >= PetscCompareTolerance) {
     SETERRQ(PETSC_ERR_PLIB,"Inconsistent scalar");

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.42 2001/08/07 03:04:36 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.43 2001/08/07 21:31:37 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a a simple unstructured grid from a file. Partitions it,\n\
 and distributes the grid data accordingly\n\n";
@@ -366,7 +366,7 @@ int DataRead(GridData *gdata)
 
     /* receive vertices */
     ierr = PetscMalloc(2*(mlocal_vert+1)*sizeof(PetscReal),&vert);CHKERRQ(ierr);
-    ierr = MPI_Recv(vert,2*mlocal_vert,MPI_DOUBLE,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(vert,2*mlocal_vert,MPIU_REAL,0,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
 
     /* receive total number of elements */
     ierr = MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);

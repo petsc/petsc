@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.21 2001/06/21 21:15:40 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.22 2001/08/09 18:09:58 bsmith Exp bsmith $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
 
@@ -29,7 +29,7 @@ TCLASSPATH    = ".:./AMSBean"
 PETSCBINPATH  = ${PETSC_DIR}
 
 PETScRun:
-	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScRun.java
+	-@${JAVAC} -deprecation  PETScRun.java
 	-@${JAR} cf PETScRun.jar PETScRun*.class
 	-@${RM} ${PETSCBINPATH}/bin/PETScRun.*
 	-@${MV} -f PETScRun.jar ${PETSCBINPATH}/bin
@@ -38,7 +38,7 @@ PETScRun:
 	-@chmod g+w ${PETSCBINPATH}/bin/PETScRun.*
 
 PETScView:
-	${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScView*.java 
+	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScView*.java 
 	-@${MV} PETScView*.class AMSBean
 	-@cd AMSBean; ${JAR} cf PETScView.jar *
 	-@${RM} ${PETSCBINPATH}/bin/PETScView.*

@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.64 2001/03/23 23:23:02 balay Exp bsmith $*/
+/*$Id: pcregis.c,v 1.65 2001/06/21 21:17:38 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
@@ -69,10 +69,10 @@ int PCRegisterAll(char *path)
   ierr = PCRegisterDynamic(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCNN           ,path,"PCCreate_NN",PCCreate_NN);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SPAI) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_SPAI) && !defined(__cplusplus) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_RAMG)
+#if defined(PETSC_HAVE_RAMG) && !defined(__cplusplus) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCRAMG         ,path,"PCCreate_RAMG",PCCreate_RAMG);CHKERRQ(ierr);
 #endif
   ierr = PCRegisterDynamic(PCMILU         ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);

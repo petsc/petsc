@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.36 2001/03/23 23:25:38 balay Exp balay $
+!  $Id: user.F,v 1.37 2001/08/07 03:04:53 balay Exp bsmith $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -675,10 +675,10 @@
      &                   MPIU_SCALAR, MPI_SUM,                           &
      &                   MPI_COMM_WORLD,ierr)
 !     call MPI_ALLREDUCE(cdloc,cdglo,icount,
-!    &                   MPI_DOUBLE_PRECISION, MPI_SUM,
+!    &                   MPIU_REAL_PRECISION, MPI_SUM,
 !    &                   MPI_COMM_WORLD,ierr)
 !     call MPI_ALLREDUCE(cmloc,cmglo,icount,
-!    &                   MPI_DOUBLE_PRECISION, MPI_SUM,
+!    &                   MPIU_REAL_PRECISION, MPI_SUM,
 !    &                   MPI_COMM_WORLD,ierr)
 !
        clw(ntt) = coef_glo(1)

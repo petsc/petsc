@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.26 2001/08/07 03:05:29 balay Exp bsmith $ */
+/* $Id: petscmath.h,v 1.27 2001/08/07 21:32:24 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -99,6 +99,12 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 #  else
   typedef double PetscScalar;
 #  endif
+#endif
+
+#if defined(PETSC_USE_SINGLE)
+#  define MPIU_REAL   MPI_FLOAT
+#else
+#  define MPIU_REAL   MPI_DOUBLE
 #endif
 
 /*

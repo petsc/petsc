@@ -1,4 +1,4 @@
-/*$Id: pvec2.c,v 1.53 2001/08/06 21:14:47 bsmith Exp balay $*/
+/*$Id: pvec2.c,v 1.54 2001/08/07 03:02:22 balay Exp bsmith $*/
 
 /*
      Code for some of the parallel vector primatives.
@@ -17,19 +17,19 @@ int Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (rank) {
-    ierr = MPI_Recv(out,n,MPI_DOUBLE,rank-1,837,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(out,n,MPIU_REAL,rank-1,837,comm,&status);CHKERRQ(ierr);
     for (i =0; i<n; i++) in[i] += out[i];
   }
   if (rank != size - 1) {
-    ierr = MPI_Send(in,n,MPI_DOUBLE,rank+1,837,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(in,n,MPIU_REAL,rank+1,837,comm);CHKERRQ(ierr);
   }
   if (rank == size-1) {
     for (i=0; i<n; i++) out[i] = in[i];    
   } else {
-    ierr = MPI_Recv(out,n,MPI_DOUBLE,rank+1,838,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(out,n,MPIU_REAL,rank+1,838,comm,&status);CHKERRQ(ierr);
   }
   if (rank) {
-    ierr = MPI_Send(out,n,MPI_DOUBLE,rank-1,838,comm);CHKERRQ(ierr);
+    ierr = MPI_Send(out,n,MPIU_REAL,rank-1,838,comm);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -122,25 +122,25 @@ int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
     } 
     */
 #endif
-    ierr = MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
     PetscLogFlops(2*xin->n);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_Seq(xin,NORM_1,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPI_Allreduce(&work,z,1,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     ierr = VecNorm_Seq(xin,NORM_INFINITY,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPI_Allreduce(&work,z,1,MPI_DOUBLE,MPI_MAX,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
     ierr = VecNorm_Seq(xin,NORM_1,temp);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,temp+1);CHKERRQ(ierr);
     temp[1] = temp[1]*temp[1];
-    ierr = MPI_Allreduce(temp,z,2,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
     z[1] = sqrt(z[1]);
   }
   PetscFunctionReturn(0);
@@ -162,8 +162,8 @@ void VecMax_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
 
   PetscFunctionBegin;
-  if (*datatype != MPI_DOUBLE) {
-    (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
+  if (*datatype != MPIU_REAL) {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
   if (xin[0] > xout[0]) {
@@ -183,8 +183,8 @@ void VecMin_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
 
   PetscFunctionBegin;
-  if (*datatype != MPI_DOUBLE) {
-    (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
+  if (*datatype != MPIU_REAL) {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL data types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
   if (xin[0] < xout[0]) {
@@ -209,7 +209,7 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 
   /* Find the global max */
   if (!idx) {
-    ierr = MPI_Allreduce(&work,z,1,MPI_DOUBLE,MPI_MAX,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
     int    rstart;
@@ -221,7 +221,7 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
     ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
-    ierr = MPI_Allreduce(work2,z2,2,MPI_DOUBLE,VecMax_Local_Op,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMax_Local_Op,xin->comm);CHKERRQ(ierr);
     *z   = z2[0];
     *idx = (int)z2[1];
 
@@ -242,7 +242,7 @@ int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
 
   /* Find the global Min */
   if (!idx) {
-    ierr = MPI_Allreduce(&work,z,1,MPI_DOUBLE,MPI_MIN,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MIN,xin->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
     int    rstart;
@@ -254,7 +254,7 @@ int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
     ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
-    ierr = MPI_Allreduce(work2,z2,2,MPI_DOUBLE,VecMin_Local_Op,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMin_Local_Op,xin->comm);CHKERRQ(ierr);
     *z   = z2[0];
     *idx = (int)z2[1];
 

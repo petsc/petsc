@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.59 2001/08/07 03:03:05 balay Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.60 2001/08/07 21:30:04 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -525,7 +525,7 @@ int MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
       PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], lnorm2=%g, %g\n",rank,lnorm2[0],lnorm2[1]);
       */
-      ierr = MPI_Allreduce(lnorm2,&sum,2,MPI_DOUBLE,MPI_SUM,mat->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lnorm2,&sum,2,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
       /*
       PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], sum=%g, %g\n",rank,sum[0],sum[1]);
       PetscSynchronizedFlush(PETSC_COMM_WORLD); */
@@ -1112,14 +1112,14 @@ int MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPI_DOUBLE,MPI_MAX,matin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_MAX,matin->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPI_DOUBLE,MPI_SUM,matin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_SUM,matin->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
@@ -2317,7 +2317,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     for (dest=rank+1; dest<size; dest++){
       svalues = work + rowners_bs[dest];
       count   = rowners_bs[dest+1]-rowners_bs[dest];
-      ierr    = MPI_Send(svalues,count,MPI_DOUBLE,dest,rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr    = MPI_Send(svalues,count,MPIU_REAL,dest,rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
       /*
       PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] sends %d values to [%d]: %g, %g, %g, %g\n",rank,count,dest,svalues[0],svalues[1],svalues[2],svalues[3]); 
       PetscSynchronizedFlush(PETSC_COMM_WORLD);
@@ -2330,7 +2330,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     rvalues = work;
     count   = rowners_bs[rank+1]-rowners_bs[rank];
     for (source=0; source<rank; source++){     
-      ierr = MPI_Recv(rvalues,count,MPI_DOUBLE,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&stat);CHKERRQ(ierr);
+      ierr = MPI_Recv(rvalues,count,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&stat);CHKERRQ(ierr);
       /* process values */     
       for (i=0; i<count; i++){
         if (PetscRealPart(va[i]) < rvalues[i]) va[i] = rvalues[i];

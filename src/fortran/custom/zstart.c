@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.82 2001/06/14 15:48:36 bsmith Exp balay $*/
+/*$Id: zstart.c,v 1.83 2001/08/07 03:05:11 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -234,7 +234,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
     PetscScalar ic(0.0,1.0);
     PETSC_i = ic;
   }
-  MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
+  MPI_Type_contiguous(2,MPIU_REAL,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
   *ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating MPI ops");return;}

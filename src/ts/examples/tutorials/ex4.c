@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.27 2001/08/07 03:04:27 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.28 2001/08/07 21:31:30 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -151,10 +151,10 @@ int main(int argc,char **argv)
 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetPetscRealBuffer(draw);CHKERRQ(ierr);   
+  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context

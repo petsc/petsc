@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.28 2001/08/06 21:18:33 bsmith Exp balay $*/
+/*$Id: gr1.c,v 1.29 2001/08/07 03:04:39 balay Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -147,8 +147,8 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   if (rank == size-1) {
     xmax = PetscRealPart(xg[n-1]);
   }
-  ierr = MPI_Bcast(&xmin,1,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&xmax,1,MPI_DOUBLE,size-1,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&xmin,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&xmax,1,MPIU_REAL,size-1,comm);CHKERRQ(ierr);
 
   for (j=0; j<step; j++) {
     ierr = PetscViewerDrawGetDraw(v,j,&draw);CHKERRQ(ierr);
@@ -171,8 +171,8 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       min -= 1.e-5;
       max += 1.e-5;
     }
-    ierr = MPI_Reduce(&min,&ymin,1,MPI_DOUBLE,MPI_MIN,0,comm);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&max,&ymax,1,MPI_DOUBLE,MPI_MAX,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&min,&ymin,1,MPIU_REAL,MPI_MIN,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&max,&ymax,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRQ(ierr);
 
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDrawAxis(v,j,&axis);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = DAGetFieldName(da,j,&title);CHKERRQ(ierr);
       if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
     }
-    ierr = MPI_Bcast(coors,4,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(coors,4,MPIU_REAL,0,comm);CHKERRQ(ierr);
     if (rank) {
       ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
     }
@@ -195,11 +195,11 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     PetscObjectGetNewTag((PetscObject)xin,&tag1);CHKERRQ(ierr);
     PetscObjectGetNewTag((PetscObject)xin,&tag2);CHKERRQ(ierr);
     if (rank < size-1) { /*send value to right */
-      ierr = MPI_Send(&array[j+(n-1)*step],1,MPI_DOUBLE,rank+1,tag1,comm);CHKERRQ(ierr);
-      ierr = MPI_Send(&xg[n-1],1,MPI_DOUBLE,rank+1,tag1,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(&array[j+(n-1)*step],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(&xg[n-1],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
     }
     if (!rank && periodic) { /* first processor sends first value to last */
-      ierr = MPI_Send(&array[j],1,MPI_DOUBLE,size-1,tag2,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(&array[j],1,MPIU_REAL,size-1,tag2,comm);CHKERRQ(ierr);
     }
 
     for (i=1; i<n; i++) {
@@ -212,8 +212,8 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 #endif
     }
     if (rank) { /* receive value from left */
-      ierr = MPI_Recv(&tmp,1,MPI_DOUBLE,rank-1,tag1,comm,&status);CHKERRQ(ierr);
-      ierr = MPI_Recv(&xgtmp,1,MPI_DOUBLE,rank-1,tag1,comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag1,comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(&xgtmp,1,MPIU_REAL,rank-1,tag1,comm,&status);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscDrawLine(draw,xgtmp,tmp,xg[0],array[j],PETSC_DRAW_RED);CHKERRQ(ierr);
 #else
@@ -222,7 +222,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 #endif
     }
     if (rank == size-1 && periodic) {
-      ierr = MPI_Recv(&tmp,1,MPI_DOUBLE,0,tag2,comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(&tmp,1,MPIU_REAL,0,tag2,comm,&status);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscDrawLine(draw,xg[n-2],array[j+step*(n-1)],xg[n-1],tmp,PETSC_DRAW_RED);CHKERRQ(ierr);
 #else

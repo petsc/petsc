@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.70 2001/08/07 03:04:15 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.71 2001/08/07 21:31:16 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained minimization problems in parallel.  This example is based on the\n\
 Elastic-Plastic Torsion (dept) problem from the MINPACK-2 test suite.\n\
@@ -370,7 +370,7 @@ int EvalFunctionGradient(SNES snes,Vec X,PetscReal *f,Vec gvec,FctGradFlag fg,Ap
 #else
     floc = PetscRealPart(area*(p5*fquad+flin));
 #endif
-    ierr = MPI_Allreduce((void*)&floc,(void*)f,1,MPI_PETSCREAL,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce((void*)&floc,(void*)f,1,MPIU_REAL,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec);CHKERRQ(ierr);

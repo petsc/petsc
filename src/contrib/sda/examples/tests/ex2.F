@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2.F,v 1.16 2001/01/15 21:49:19 bsmith Exp balay $"
+!    "$Id: ex2.F,v 1.17 2001/08/07 03:04:47 balay Exp bsmith $"
 !
       program main
 #include "include/finclude/petsc.h"
@@ -102,7 +102,7 @@
       mone = -1.0
       call VecAXPY(mone,local,local_copy,ierr)
       call VecNorm(local_copy,NORM_MAX,work,ierr)
-      call MPI_Allreduce(work, norm,1,MPI_DOUBLE_PRECISION,MPI_MAX,    &
+      call MPI_Allreduce(work, norm,1,MPIU_REAL_PRECISION,MPI_MAX,    &
      &                   PETSC_COMM_WORLD,ierr)
       print*,'Norm of difference ',norm,' should be zero'
    

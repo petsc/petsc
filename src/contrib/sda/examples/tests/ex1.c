@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.17 2001/08/07 03:04:47 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.18 2001/08/07 21:31:53 bsmith Exp bsmith $*/
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(&mone,local,local_copy);CHKERRQ(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRQ(ierr);
    
   ierr = DADestroy(da);CHKERRQ(ierr);
