@@ -257,7 +257,8 @@ int main(int argc,char **argv)
   */
   ierr = AOApplicationToPetsc(ao,user.Nvlocal,user.locInd);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,Nvneighborstotal,tmp);CHKERRQ(ierr);
- 
+  ierr = AODestroy(ao);CHKERRQ(ierr);
+
   fprintf(fptr1,"After AOApplicationToPetsc, local indices are : \n");
   for (i=0; i < user.Nvlocal; i++) {
    fprintf(fptr1," %d ",user.locInd[i]);
