@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.241 1997/04/04 01:39:42 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.242 1997/04/04 19:58:25 curfman Exp balay $";
 #endif
 
 /*
@@ -2130,8 +2130,8 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
 .  mat - the matrix
 
    Output Parameters:
-.  m - the first local row
-.  n - one more then the last local row
+.  m - the global index of the first local row
+.  n - one more then the global index of the last local row
 
 .keywords: matrix, get, range, ownership
 @*/
