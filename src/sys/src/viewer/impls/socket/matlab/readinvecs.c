@@ -30,7 +30,7 @@ int ReadInVecs(Matrix *plhs[],int t,int dim,int *dims)
   
   /* get size of matrix */
   if (PetscBinaryRead(t,&cookie,1,PETSC_INT))   return -1;  /* finished reading file */
-  if (cookie != VEC_COOKIE) ERROR("could not read vector cookie");
+  if (cookie != VEC_FILE_COOKIE) ERROR("could not read vector cookie");
   if (PetscBinaryRead(t,&M,1,PETSC_INT))        ERROR("reading number rows"); 
   
   if (dim == 1) {

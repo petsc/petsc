@@ -629,7 +629,7 @@ int MatLoad_SeqDense(PetscViewer viewer,MatType type,Mat *A)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"view must have one processor");
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Not matrix object");
+  if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
@@ -782,7 +782,7 @@ static int MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_BINARY_NATIVE) {
     /* store the matrix as a dense matrix */
     ierr = PetscMalloc(4*sizeof(int),&col_lens);CHKERRQ(ierr);
-    col_lens[0] = MAT_COOKIE;
+    col_lens[0] = MAT_FILE_COOKIE;
     col_lens[1] = m;
     col_lens[2] = n;
     col_lens[3] = MATRIX_BINARY_FORMAT_DENSE;
@@ -801,7 +801,7 @@ static int MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     ierr = PetscFree(vals);CHKERRQ(ierr);
   } else {
     ierr = PetscMalloc((4+nz)*sizeof(int),&col_lens);CHKERRQ(ierr);
-    col_lens[0] = MAT_COOKIE;
+    col_lens[0] = MAT_FILE_COOKIE;
     col_lens[1] = m;
     col_lens[2] = n;
     col_lens[3] = nz;

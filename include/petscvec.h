@@ -125,6 +125,7 @@ typedef char*  VecType;
 typedef char *VecSerializeType;
 
 /* Logging support */
+#define    VEC_FILE_COOKIE 1211214
 extern int VEC_COOKIE;
 extern int VEC_SCATTER_COOKIE;
 extern int VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot, VEC_NormBarrier;

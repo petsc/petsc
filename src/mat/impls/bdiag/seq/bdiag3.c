@@ -431,7 +431,7 @@ int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 
   /* For MATSEQBDIAG format,maxnz = nz */
   ierr        = PetscMalloc((4+A->m)*sizeof(int),&col_lens);CHKERRQ(ierr);
-  col_lens[0] = MAT_COOKIE;
+  col_lens[0] = MAT_FILE_COOKIE;
   col_lens[1] = A->m;
   col_lens[2] = A->n;
   col_lens[3] = a->maxnz;

@@ -36,7 +36,7 @@
   But for anyone who's interested, the standard binary matrix storage
   format is
 .vb
-     int    VEC_COOKIE
+     int    VEC_FILE_COOKIE
      int    number of rows
      PetscScalar *values of all nonzeros
 .ve
@@ -82,7 +82,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   if (!rank) {
     /* Read vector header. */
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);CHKERRQ(ierr);
-    if (type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
+    if (type != VEC_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
@@ -160,7 +160,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
   if (!rank) {
     /* Read vector header. */
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);CHKERRQ(ierr);
-    if (type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
+    if (type != VEC_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = VecGetSize(vec,&n);CHKERRQ(ierr);
     if (n != rows) SETERRQ(1,"Vector in file different length then input vector");

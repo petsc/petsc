@@ -704,7 +704,7 @@ int MatLoad_SeqBDiag(PetscViewer viewer,MatType type,Mat *A)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"view must have one processor");
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Not matrix object");
+  if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
   if (M != N) SETERRQ(PETSC_ERR_SUP,"Can only load square matrices");
   if (header[3] < 0) {

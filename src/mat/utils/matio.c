@@ -115,7 +115,7 @@ static int MatLoadPrintHelp_Private(Mat A)
    But for anyone who's interested, the standard binary matrix storage
    format is
 
-$    int    MAT_COOKIE
+$    int    MAT_FILE_COOKIE
 $    int    number of rows
 $    int    number of columns
 $    int    total number of nonzeros

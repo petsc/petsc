@@ -275,7 +275,7 @@ int MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionBegin;  
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscMalloc((4+A->m)*sizeof(int),&col_lens);CHKERRQ(ierr);
-  col_lens[0] = MAT_COOKIE;
+  col_lens[0] = MAT_FILE_COOKIE;
   col_lens[1] = A->m;
   col_lens[2] = A->n;
   col_lens[3] = a->nz;
@@ -2756,7 +2756,7 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"view must have one processor");
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object in file");
+  if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (nz < 0) {

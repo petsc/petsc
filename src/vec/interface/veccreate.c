@@ -110,7 +110,7 @@ int VecSerialize(MPI_Comm comm, Vec *v, PetscViewer viewer, PetscTruth store)
     ierr = (*serialize)(comm, v, viewer, store);                                                          CHKERRQ(ierr);
   } else {
     ierr = PetscBinaryRead(fd, &cookie, 1,   PETSC_INT);                                                  CHKERRQ(ierr);
-    if (cookie != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-vector object");
+    if (cookie != VEC_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-vector object");
     /* Dispatch to the correct routine */
     ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
     ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);

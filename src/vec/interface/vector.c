@@ -2490,7 +2490,7 @@ M*/
   But for anyone who's interested, the standard binary matrix storage
   format is
 .vb
-     int    VEC_COOKIE
+     int    VEC_FILE_COOKIE
      int    number of rows
      PetscScalar *values of all nonzeros
 .ve
