@@ -660,6 +660,7 @@ PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidPointer(s,2);
   PetscValidHeaderSpecific(*s,VEC_COOKIE,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -761,6 +762,7 @@ PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidPointer(s,2);
   PetscValidHeaderSpecific(*s,VEC_COOKIE,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -1135,8 +1137,8 @@ PetscErrorCode VecShift(const PetscScalar *shift,Vec v)
 PetscErrorCode VecAbs(Vec v)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n;
-  PetscScalar *x;
+  PetscInt       i,n;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -1217,10 +1219,10 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
 @*/
 PetscErrorCode VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
-  PetscScalar  *v1,*v2;
+  PetscScalar    *v1,*v2;
   PetscErrorCode ierr;
-  PetscInt          n1,n2;
-  PetscTruth   flg1;
+  PetscInt       n1,n2;
+  PetscTruth     flg1;
 
   PetscFunctionBegin;
   ierr = VecGetSize(vec1,&n1);CHKERRQ(ierr);
@@ -1239,8 +1241,6 @@ PetscErrorCode VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 
   /* combine results from all processors */
   ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);CHKERRQ(ierr);
-  
-
   PetscFunctionReturn(0);
 }
 
