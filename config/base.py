@@ -614,6 +614,7 @@ class Configure:
     (output, status)               = self.outputLink('', '')
     if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') and output.find(' option')):
       valid = 0
+      self.framework.log.write('Rejecting linker flag '+flag+' due to \n'+output)
     self.framework.argDB[flagsArg] = oldFlags
     return valid
 
