@@ -1,5 +1,5 @@
 #! /bin/csh -f
-# $Id: petscarch,v 1.22 2000/11/08 15:12:02 bsmith Exp bsmith $ 
+# $Id: petscarch,v 1.23 2000/12/15 15:04:13 bsmith Exp balay $ 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
@@ -41,9 +41,9 @@ else if ("$LARCH" == "HP-UX") then
     endif
 else if ("$LARCH" == "FreeBSD") then
     set LARCH = "freebsd"
-else if ("$LARCH" == "CRAY Y-MP" ) then 
+else if ("$MARCH" == "CRAY Y-MP" ) then  # Crays are funny - using MARCH
     set LARCH = "t3d"
-else if ("$LARCH" == "CRAY T3E" ) then
+else if ("$MARCH" == "CRAY T3E" ) then
     set LARCH = "t3e"
 else if ("$LARCH" == "i86pc" ) then
     set LARCH = "solaris_x86"
