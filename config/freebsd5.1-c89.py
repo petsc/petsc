@@ -2,6 +2,7 @@
   
 configure_options = [
   '--with-cc=gcc -std=c89',
+  '--with-fc=f77',
   '--download-mpich=1',
   '--download-hypre=1',
   '--download-spooles=1',
