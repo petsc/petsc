@@ -1,67 +1,20 @@
-function bscript(np,options)
+function localF = ex5m(localX,hx,hy,lambda)
+% $Id: launch.m,v 1.4 2000/02/02 20:07:58 bsmith Exp $
 %
-%  Matlab graphics routine that may be used with the main program.  This uses
-%  sockets for faster visualization than writing intermediate output to a file.
+%  Matlab routine that does the FormFunction() for ex5m.c
 %
-%     If you run this script with np <= 0, it will not launch the MPI program,
-%   it will assume it is already running and just attach to it.
+[m,n] = size(localX);
 %
-%  Usage Instructions:
-%  - Be sure to set the MATLABPATH environmental variable with a command such as
-%      setenv MATLABPATH $PETSC_DIR/src/sys/viewer/impls/socket/matlab
-%    (or append this to your existing Matlab path)
+sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 %
-%    Run bscript(np,'extra options')
-%      np - number of processors to run parallel program
-%      any extra options to the program as a single text string
+%  copy over any potential boundary values
 %
+localF = localX;
 %
-if (nargin < 2) options = ''; end;
-if (nargin < 1) np      = 1; end;
-
-% Start the parallel program
-if (np > 0)
-  launch(['main -show_solution ' options],np);
-end
-
-% Open the connection to the MPI program
-p = openport;        
-
-% Receive the vertex information (x,y) coordinates of vertices
-cell_coords = receive(p);
-
-% Receive list of cell vertices
-cell_df = receive(p);
-
-%  Extract the x and y coords
-N = length(cell_coords);
-cells_x = cell_coords(1:2:N);
-cells_y = cell_coords(2:2:N);
-
-nv = 4;
-
-% Put each nv into each row 
-N = N/(2*nv);
-cellx = zeros(nv,N);
-celly = zeros(nv,N);
-
-for i=1:N,
-  cellx(:,i) = cells_x(nv*(i-1)+1:nv*i);
-  celly(:,i) = cells_y(nv*(i-1)+1 :nv*i);
-end
-cell_df = cell_df + 1;
-
-% now extract the solution at each point
-cellz = zeros(nv,N);
-  
-% Receive the solution vector
-solution = receive(p);
-for i=1:N,	
-    cellz(:,i) = solution(cell_df( nv*(i-1)+1 :nv*i ));
-end
+%  compute interior u and derivatives
 %
-figure(1);
-fill3(cellx,celly,cellz,cellz);
+u   = localX(2:m-1,2:n-1);
+uxx = (2.0*u - localX(1:m-2,2:n-1) - localX(3:m,2:n-1))*hydhx;
+uyy = (2.0*u - localX(2:m-1,1:n-2) - localX(2:m-1,3:n))*hxdhy;
 
-% Close connection to MPI program
-closeport(p);
+localF(2:m-1,2:n-1) = uxx + uyy - sc*exp(u);
