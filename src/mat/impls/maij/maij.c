@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.15 2001/03/23 23:22:18 balay Exp bsmith $*/
+/*$Id: maij.c,v 1.16 2001/04/10 19:35:37 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -953,6 +953,212 @@ int MatMultTransposeAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqMAIJ_8"
+int MatMult_SeqMAIJ_8(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
+  Scalar      *x,*y,*v,sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
+  int         n,i,jrow,j;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  x    = x + shift;    /* shift for Fortran start by 1 indexing */
+  idx  = a->j;
+  v    = a->a;
+  ii   = a->i;
+
+  v    += shift; /* shift for Fortran start by 1 indexing */
+  idx  += shift;
+  for (i=0; i<m; i++) {
+    jrow = ii[i];
+    n    = ii[i+1] - jrow;
+    sum1  = 0.0;
+    sum2  = 0.0;
+    sum3  = 0.0;
+    sum4  = 0.0;
+    sum5  = 0.0;
+    sum6  = 0.0;
+    sum7  = 0.0;
+    sum8  = 0.0;
+    for (j=0; j<n; j++) {
+      sum1 += v[jrow]*x[8*idx[jrow]];
+      sum2 += v[jrow]*x[8*idx[jrow]+1];
+      sum3 += v[jrow]*x[8*idx[jrow]+2];
+      sum4 += v[jrow]*x[8*idx[jrow]+3];
+      sum5 += v[jrow]*x[8*idx[jrow]+4];
+      sum6 += v[jrow]*x[8*idx[jrow]+5];
+      sum7 += v[jrow]*x[8*idx[jrow]+6];
+      sum8 += v[jrow]*x[8*idx[jrow]+7];
+      jrow++;
+     }
+    y[8*i]   = sum1;
+    y[8*i+1] = sum2;
+    y[8*i+2] = sum3;
+    y[8*i+3] = sum4;
+    y[8*i+4] = sum5;
+    y[8*i+5] = sum6;
+    y[8*i+6] = sum7;
+    y[8*i+7] = sum8;
+  }
+
+  PetscLogFlops(16*a->nz - 8*m);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTranspose_SeqMAIJ_8"
+int MatMultTranspose_SeqMAIJ_8(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
+  Scalar      *x,*y,*v,alpha1,alpha2,alpha3,alpha4,alpha5,alpha6,alpha7,alpha8,zero = 0.0;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
+
+  PetscFunctionBegin; 
+  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  y = y + shift; /* shift for Fortran start by 1 indexing */
+  for (i=0; i<m; i++) {
+    idx    = a->j + a->i[i] + shift;
+    v      = a->a + a->i[i] + shift;
+    n      = a->i[i+1] - a->i[i];
+    alpha1 = x[8*i];
+    alpha2 = x[8*i+1];
+    alpha3 = x[8*i+2];
+    alpha4 = x[8*i+3];
+    alpha5 = x[8*i+4];
+    alpha6 = x[8*i+5];
+    alpha7 = x[8*i+6];
+    alpha8 = x[8*i+7];
+    while (n-->0) {
+      y[8*(*idx)]   += alpha1*(*v);
+      y[8*(*idx)+1] += alpha2*(*v);
+      y[8*(*idx)+2] += alpha3*(*v);
+      y[8*(*idx)+3] += alpha4*(*v);
+      y[8*(*idx)+4] += alpha5*(*v);
+      y[8*(*idx)+5] += alpha6*(*v);
+      y[8*(*idx)+6] += alpha7*(*v);
+      y[8*(*idx)+7] += alpha8*(*v);
+      idx++; v++;
+    }
+  }
+  PetscLogFlops(16*a->nz - 8*b->AIJ->n);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqMAIJ_8"
+int MatMultAdd_SeqMAIJ_8(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
+  Scalar      *x,*y,*v,sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
+  int         n,i,jrow,j;
+
+  PetscFunctionBegin;
+  if (yy != zz) {ierr = VecCopy(yy,zz);CHKERRQ(ierr);}
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&y);CHKERRQ(ierr);
+  x    = x + shift;    /* shift for Fortran start by 1 indexing */
+  idx  = a->j;
+  v    = a->a;
+  ii   = a->i;
+
+  v    += shift; /* shift for Fortran start by 1 indexing */
+  idx  += shift;
+  for (i=0; i<m; i++) {
+    jrow = ii[i];
+    n    = ii[i+1] - jrow;
+    sum1  = 0.0;
+    sum2  = 0.0;
+    sum3  = 0.0;
+    sum4  = 0.0;
+    sum5  = 0.0;
+    sum6  = 0.0;
+    sum7  = 0.0;
+    sum8  = 0.0;
+    for (j=0; j<n; j++) {
+      sum1 += v[jrow]*x[8*idx[jrow]];
+      sum2 += v[jrow]*x[8*idx[jrow]+1];
+      sum3 += v[jrow]*x[8*idx[jrow]+2];
+      sum4 += v[jrow]*x[8*idx[jrow]+3];
+      sum5 += v[jrow]*x[8*idx[jrow]+4];
+      sum6 += v[jrow]*x[8*idx[jrow]+5];
+      sum7 += v[jrow]*x[8*idx[jrow]+6];
+      sum8 += v[jrow]*x[8*idx[jrow]+7];
+      jrow++;
+     }
+    y[8*i]   += sum1;
+    y[8*i+1] += sum2;
+    y[8*i+2] += sum3;
+    y[8*i+3] += sum4;
+    y[8*i+4] += sum5;
+    y[8*i+5] += sum6;
+    y[8*i+6] += sum7;
+    y[8*i+7] += sum8;
+  }
+
+  PetscLogFlops(16*a->nz);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransposeAdd_SeqMAIJ_8"
+int MatMultTransposeAdd_SeqMAIJ_8(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
+  Scalar      *x,*y,*v,alpha1,alpha2,alpha3,alpha4,alpha5,alpha6,alpha7,alpha8;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
+
+  PetscFunctionBegin; 
+  if (yy != zz) {ierr = VecCopy(yy,zz);CHKERRQ(ierr);}
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&y);CHKERRQ(ierr);
+  y = y + shift; /* shift for Fortran start by 1 indexing */
+  for (i=0; i<m; i++) {
+    idx    = a->j + a->i[i] + shift;
+    v      = a->a + a->i[i] + shift;
+    n      = a->i[i+1] - a->i[i];
+    alpha1 = x[8*i];
+    alpha2 = x[8*i+1];
+    alpha3 = x[8*i+2];
+    alpha4 = x[8*i+3];
+    alpha5 = x[8*i+4];
+    alpha6 = x[8*i+5];
+    alpha7 = x[8*i+6];
+    alpha8 = x[8*i+7];
+    while (n-->0) {
+      y[8*(*idx)]   += alpha1*(*v);
+      y[8*(*idx)+1] += alpha2*(*v);
+      y[8*(*idx)+2] += alpha3*(*v);
+      y[8*(*idx)+3] += alpha4*(*v);
+      y[8*(*idx)+4] += alpha5*(*v);
+      y[8*(*idx)+5] += alpha6*(*v);
+      y[8*(*idx)+6] += alpha7*(*v);
+      y[8*(*idx)+7] += alpha8*(*v);
+      idx++; v++;
+    }
+  }
+  PetscLogFlops(16*a->nz);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*===================================================================================*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_MPIMAIJ_dof"
@@ -1064,8 +1270,13 @@ int MatCreateMAIJ(Mat A,int dof,Mat *maij)
         B->ops->multadd          = MatMultAdd_SeqMAIJ_6;
         B->ops->multtranspose    = MatMultTranspose_SeqMAIJ_6;
         B->ops->multtransposeadd = MatMultTransposeAdd_SeqMAIJ_6;
+      } else if (dof == 8) {
+        B->ops->mult             = MatMult_SeqMAIJ_8;
+        B->ops->multadd          = MatMultAdd_SeqMAIJ_8;
+        B->ops->multtranspose    = MatMultTranspose_SeqMAIJ_8;
+        B->ops->multtransposeadd = MatMultTransposeAdd_SeqMAIJ_8;
       } else {
-        SETERRQ1(1,"Cannot handle a dof of %d\n",dof);
+        SETERRQ1(1,"Cannot handle a dof of %d. Send request for code to petsc-maint@mcs.anl.gov\n",dof);
       }
     } else {
       Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)A->data;
