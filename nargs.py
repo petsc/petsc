@@ -54,14 +54,19 @@ class ArgDir(ArgEmpty):
         import GUI.FileBrowser
         import SIDL.Loader
         db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
+        if self.help: db.setTitle(self.help)
+        else:         db.setTitle('Select the directory for'+key)
+        db.setMustExist(self.exist)
+        self.value = db.getDirectory()
+        return (1,self.value)
       except:
         # default to getting directory as string
-        return ArgString(self.help).getValue(key)
-      if self.help: db.setTitle(self.help)
-      else:         db.setTitle('Select the directory for'+key)
-      db.setMustExist(self.exist)
-      self.value = db.getDirectory()
-      return (1,self.value)
+        if not hasattr(self,'value'):
+           if self.help: print self.help
+           try:                      self.value = parseArg(raw_input('Please enter value for '+key+':'))
+           except KeyboardInterrupt: sys.exit(1)
+           return (1,self.value)
+        else: return (0,self.value)
     else: return (0,self.value)
       
 #  Objects that are stored in the ArgDict that are strings
