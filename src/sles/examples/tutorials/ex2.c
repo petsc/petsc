@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.51 1996/08/28 19:34:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.52 1996/08/28 19:57:50 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -125,7 +125,8 @@ int main(int argc,char **args)
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,m*n); CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
+         PETSC_DEFAULT); CHKERRA(ierr);
 
   /* 
     Set runtime options, e.g.,
