@@ -35,9 +35,9 @@ class TagAllSIDL (transform.GenericTag):
 class CompileSIDL (compile.Process):
   def __init__(self, generatedSources, sources, compiler, compilerFlags, isRepository):
     if isRepository:
-      compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, '--suppress-timestamp --suppress-metadata '+compilerFlags, 1, 'deferred')
+      compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, compilerFlags, 1, 'deferred')
     else:
-      compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, '--suppress-timestamp --suppress-metadata '+compilerFlags, 0, 'deferred')
+      compile.Process.__init__(self, generatedSources, 'sidl', sources, compiler, compilerFlags, 0, 'deferred')
     self.outputDir      = 'generated'
     self.repositoryDirs = []
     self.errorHandler   = self.handleBabelErrors
@@ -65,6 +65,7 @@ class CompileSIDL (compile.Process):
     return baseFlags
 
   def constructFlags(self, source, baseFlags):
+    baseFlags = '--suppress-timestamp --suppress-metadata '+baseFlags
     baseFlags = self.constructAction(source, baseFlags)
     baseFlags = self.constructOutputDir(source, baseFlags)
     baseFlags = self.constructRepositoryDir(source, baseFlags)
@@ -95,6 +96,9 @@ class CompileSIDLServer (CompileSIDL):
       (base, ext) = os.path.splitext(os.path.split(source)[1])
       baseFlags  += ' --output-directory='+self.outputDir+'-'+base
     return baseFlags
+
+  def constructFlags(self, source, baseFlags):
+    return '--suppress-stubs '+CompileSIDL.constructFlags(self, source, baseFlags)
 
 class CompileSIDLClient (CompileSIDL):
   def __init__(self, generatedSources = None, sources = None, compiler = 'babel', compilerFlags = ''):

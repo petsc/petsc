@@ -10,6 +10,7 @@ import transform
 import os
 import re
 import string
+import types
 import UserDict
 import UserList
 
@@ -67,6 +68,20 @@ class Defaults:
     if self.clientRE.match(source): return 0
     return 1
 
+  def isNewSidl(self, sources):
+    if isinstance(sources, fileset.FileSet):
+      if sources.tag == 'sidl' and len(sources) > 0:
+        return 1
+      else:
+        return 0
+    elif type(sources) == types.ListType:
+      isNew = 0
+      for source in sources:
+        isNew = isNew or self.isNewSidl(source)
+      return isNew
+    else:
+      raise RuntimeError('Inalid type for sources: '+type(sources))
+
   def getPackages(self):
     return map(lambda file: os.path.splitext(os.path.split(file)[1])[0], self.sources)
 
@@ -78,10 +93,12 @@ class Defaults:
 
   def getServerSIDLTargets(self):
     if len(self.serverLanguages) > 1:
-      root = self.serverBaseDir+'-'+lang
+      root = self.serverBaseDir+'-'+self.serverLanguages[0]
     else:
       root = self.serverBaseDir
     serverSourceRoots = fileset.FileSet(map(lambda package, dirname = root: dirname+'-'+package, self.getPackages()))
+    for rootDir in serverSourceRoots:
+      if not os.path.isdir(rootDir): os.makedirs(rootDir)
     targets           = []
     for lang in self.serverLanguages:
       action = babel.CompileSIDLServer(fileset.ExtensionFileSet(serverSourceRoots, ['.h', '.c', '.hh', '.cc']))
@@ -89,21 +106,23 @@ class Defaults:
       action.outputDir = root
       action.repositoryDirs.append(self.repositoryDir)
       action.repositoryDirs.extend(self.repositoryDirs)
-      targets.append(target.Target(None,
-                                   [bk.TagBKOpen(roots = serverSourceRoots),
-                                    bk.BKOpen(),
-                                    babel.TagSIDL(),
-                                    action,
-                                    bk.TagBKClose(roots = serverSourceRoots),
-                                    transform.FileFilter(self.isImpl, tags = 'bkadd'),
-                                    bk.BKClose()]))
+
+      genActions = [bk.TagBKOpen(roots = serverSourceRoots),
+                    bk.BKOpen(),
+                    action,
+                    bk.TagBKClose(roots = serverSourceRoots),
+                    transform.FileFilter(self.isImpl, tags = 'bkadd'),
+                    bk.BKClose()]
+      defActions = transform.Transform(fileset.ExtensionFileSet(serverSourceRoots, ['.h', '.c', '.hh', '.cc']))
+
+      targets.append(target.Target(None, [babel.TagSIDL(), target.If(self.isNewSidl, genActions, defActions)]))
     return targets
 
   def getClientSIDLTargets(self):
     targets = []
     for lang in self.clientLanguages:
       root   = os.path.abspath(string.lower(lang))
-      action = babel.CompileSIDLClient(fileset.ExtensionFileSet(root, ['.h', '.c']))
+      action = babel.CompileSIDLClient(fileset.ExtensionFileSet(root, ['.h', '.c', '.cc', '.hh']))
       action.language  = lang
       action.outputDir = root
       action.repositoryDirs.append(self.repositoryDir)
@@ -132,14 +151,15 @@ class CompileDefaults (Defaults):
   def getServerCompileTargets(self):
     targets = []
     for lang in self.serverLanguages:
+      stubDir = os.path.abspath(string.lower(lang))
       for package in self.getPackages():
         if len(self.serverLanguages) > 1:
-          rootDir = self.serverBaseDir+'-'+lang+'-'+package
+          rootDir = self.serverBaseDir+'-'+string.lower(lang)+'-'+package
           library = fileset.FileSet([os.path.join(self.libDir, 'lib'+lang+'server-'+package+'.a')])
         else:
           rootDir = self.serverBaseDir+'-'+package
           library = fileset.FileSet([os.path.join(self.libDir, 'libserver-'+package+'.a')])
-        libraries = fileset.FileSet(children = [self.babelLib])
+        libraries = fileset.FileSet([os.path.join(self.libDir, 'lib'+string.lower(lang)+'client.a')], children = [self.babelLib])
 
         # For IOR source
         cAction = compile.CompileC(library)
@@ -151,6 +171,7 @@ class CompileDefaults (Defaults):
         cxxAction = compile.CompileCxx(library)
         cxxAction.defines.append('PIC')
         cxxAction.includeDirs.append(rootDir)
+        cxxAction.includeDirs.append(stubDir)
         cxxAction.includeDirs.append(self.babelIncludeDir)
 
         if self.includeDirs.has_key(package):
@@ -174,7 +195,15 @@ class CompileDefaults (Defaults):
       sourceDir = os.path.abspath(string.lower(lang))
       library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+string.lower(lang)+'client.a')])
 
-      action = compile.CompileC(library)
+      if lang in ['Python', 'F77', 'C']:
+        tagger = compile.TagC(root = sourceDir)
+        action = compile.CompileC(library)
+      elif lang == 'C++':
+        tagger = [compile.TagC(root = sourceDir), compile.TagCxx(root = sourceDir)]
+        action = compile.CompileCxx(library)
+      else:
+        raise RuntimeError('Unknown client language: '+lang)
+
       action.defines.append('PIC')
       action.includeDirs.append(sourceDir)
       action.includeDirs.append(self.babelIncludeDir)
@@ -185,7 +214,7 @@ class CompileDefaults (Defaults):
         action = (babel.PythonModuleFixup(library, sourceDir), action)
 
       targets.append(target.Target(None,
-                                   [compile.TagC(root = sourceDir),
+                                   [tagger,
                                     action,
                                     link.TagLibrary(),
                                     link.LinkSharedLibrary(extraLibraries = self.babelLib)]))
@@ -198,10 +227,10 @@ class CompileDefaults (Defaults):
   def getCompileTarget(self):
     if self.etagsFile:
       return target.Target(None, [self.getSIDLTarget(),
-                                  (self.getServerCompileTargets()+self.getClientCompileTargets(), self.getEmacsTagsTargets()),
+                                  (self.getClientCompileTargets()+self.getServerCompileTargets(), self.getEmacsTagsTargets()),
                                   transform.Update()])
     else:
-      return target.Target(None, [self.getSIDLTarget()]+self.getServerCompileTargets()+self.getClientCompileTargets())
+      return target.Target(None, [self.getSIDLTarget()]+self.getClientCompileTargets()+self.getServerCompileTargets())
 
   def getExecutableCompileTargets(self, executable):
     baseName  = os.path.splitext(os.path.split(executable[0])[1])[0] 

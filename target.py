@@ -64,3 +64,22 @@ class Target (transform.Transform):
 
   def execute(self):
     return self.executeTransform(self.sources, self.transforms)
+
+class If (Target):
+  def __init__(self, testFunc, trueBranch, falseBranch, sources = None):
+    Target.__init__(self, sources)
+    self.testFunc    = testFunc
+    self.trueBranch  = trueBranch
+    self.falseBranch = falseBranch
+
+  def execute(self):
+    if self.testFunc(self.sources):
+      if self.trueBranch:
+        return self.executeTransform(self.sources, self.trueBranch)
+      else:
+        return self.sources
+    else:
+      if self.falseBranch:
+        return self.executeTransform(self.sources, self.falseBranch)
+      else:
+        return self.sources
