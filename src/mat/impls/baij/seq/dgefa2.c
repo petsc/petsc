@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa2.c,v 1.13 1998/12/24 04:08:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgefa2.c,v 1.1 1999/03/16 22:23:56 bsmith Exp balay $";
 #endif
 /*
      Inverts 2 by 2 matrix using partial pivoting.
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: dgefa2.c,v 1.13 1998/12/24 04:08:41 bsmith Exp bsmith
 #define __FUNC__ "Kernel_A_gets_inverse_A_2"
 int Kernel_A_gets_inverse_A_2(MatScalar *a)
 {
-    int        i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[2],*ipvt = ipvt_l-1,kb,k3;
+    int        i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[2],*ipvt = ipvt_l-1,k3;
     int        k4,j3;
     MatScalar  *aa,*ax,*ay,work_l[4],*work = work_l-1,stmp;
     MatFloat   tmp,max;

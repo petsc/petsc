@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.68 1999/02/03 17:22:53 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.70 1999/03/17 23:23:13 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -2105,11 +2105,11 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS                 isrow = b->row, isicol = b->icol;
   int                *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
-  int                *ajtmpold, *ajtmp, nz, row, v_pivots[2];
-  int                *diag_offset=b->diag,bs = 2,idx,*ai=a->i,*aj=a->j;
+  int                *ajtmpold, *ajtmp, nz, row;
+  int                *diag_offset=b->diag,idx,*ai=a->i,*aj=a->j;
   register int       *pj;
   register MatScalar *pv,*v,*rtmp,m1,m2,m3,m4,*pc,*w,*x,x1,x2,x3,x4;
-  MatScalar          p1,p2,p3,p4,v_work[2];
+  MatScalar          p1,p2,p3,p4;
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
@@ -2193,11 +2193,11 @@ int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
   int                ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
-  int                *ajtmpold, *ajtmp, nz, row, v_pivots[2];
-  int                *diag_offset = b->diag, bs = 2,*ai=a->i,*aj=a->j;
+  int                *ajtmpold, *ajtmp, nz, row;
+  int                *diag_offset = b->diag,*ai=a->i,*aj=a->j;
   register int       *pj;
   register MatScalar *pv,*v,*rtmp,*pc,*w,*x;
-  MatScalar          p1,p2,p3,p4,m1,m2,m3,m4,x1,x2,x3,x4,v_work[2];
+  MatScalar          p1,p2,p3,p4,m1,m2,m3,m4,x1,x2,x3,x4;
   MatScalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
