@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.19 1998/05/14 00:41:04 curfman Exp bsmith $ */
+/* $Id: petscerror.h,v 1.20 1998/06/09 21:21:55 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -9,7 +9,10 @@
 
 /*
    Defines the directory where the compiled source is located; used
-   in printing error messages. __SDIR__ is usually defined in the makefile.
+   in printing error messages. Each makefile has an entry 
+   LOCDIR	  =  thedirectory
+   and bmake/common includes in CCPPFLAGS -D__SDIR__='"${LOCDIR}"'
+   which is a flag passed to the C/C++ compilers.
 */
 #if !defined(__SDIR__)
 #define __SDIR__ "unknowndirectory/"
