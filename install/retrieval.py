@@ -64,6 +64,8 @@ class Retriever(maker.Maker):
     if root is None: root = self.getRoot(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     try:
+      if self.argDB.has_key('retrievalCanExist') and int(self.argDB.['retrievalCanExist']):
+        canExist = 1
       return getattr(self, scheme+'Retrieve')(url, os.path.abspath(root), canExist)
     except AttributeError:
       raise RuntimeError('Invalid transport for retrieval: '+scheme)
