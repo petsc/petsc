@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.34 1998/12/03 03:57:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.35 1999/01/12 23:13:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -20,6 +20,8 @@ T*/
 */
 #include "vec.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int        i, istart, iend, n = 50, ierr, flg;
