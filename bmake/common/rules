@@ -114,8 +114,7 @@ C2f77lib:
 
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	doctext -jumpfile $(IPETSCDIR)/docs/routine.list \
-                -mpath $(PETSC_DIR)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
+	doctext -mpath $(PETSC_DIR)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
                 -keyword $(PETSC_DIR)/Keywords $(SOURCEC) $(SOURCEH); \
                 chmod g+w $(PETSC_DIR)/docs/man/man$(MANSEC)/*; fi 
 
