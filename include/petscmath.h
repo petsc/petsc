@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.22 2001/04/20 19:52:37 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.23 2001/06/21 21:20:02 bsmith Exp balay $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -65,11 +65,11 @@ extern  MPI_Datatype        MPIU_COMPLEX;
   compatible with all previous complex class libraries.
 */
 #if defined(PETSC_HAVE_STD_COMPLEX)
-#define Scalar             std::complex<double>
+  typedef std::complex<double> Scalar;
 #elif defined(PETSC_HAVE_TEMPLATED_COMPLEX)
-#define Scalar             complex<double>
+  typedef complex<double> Scalar;
 #else
-#define Scalar             complex
+  typedef complex Scalar;
 #endif
 
 /* Compiling for real numbers only */
@@ -91,9 +91,9 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 #  define PetscCosScalar(a)     cos(a)
 
 #  if defined(PETSC_USE_SINGLE)
-#    define Scalar            float
+  typedef float Scalar;
 #  else
-#    define Scalar            double
+  typedef double Scalar;
 #  endif
 #endif
 
@@ -107,25 +107,25 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 */
 #if defined(PETSC_USE_COMPLEX)
 
-#define MatScalar Scalar 
-#define MatReal   double
+typedef Scalar MatScalar;
+typedef double MatReal;
 
 #elif defined(PETSC_USE_MAT_SINGLE)
 
-#define MatScalar float
-#define MatReal   float
+typedef float MatScalar;
+typedef float MatReal;
 
 #else
 
-#define MatScalar Scalar
-#define MatReal   double
+typedef Scalar MatScalar;
+typedef double MatReal;
 
 #endif
 
 #if defined(PETSC_USE_SINGLE)
-#define PetscReal float
+  typedef float PetscReal;
 #else 
-#define PetscReal double
+  typedef double PetscReal;
 #endif
 
 /* --------------------------------------------------------------------------*/
