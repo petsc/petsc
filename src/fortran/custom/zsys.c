@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.62 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.63 1999/05/08 13:58:33 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -111,7 +111,7 @@ void petscbarrier_(PetscObject *A, int *__ierr )
   *__ierr = PetscBarrier(*A);
 }
 
-void petscstrncpy_(CHAR s1, CHAR s2, int *n,int len1, int len2,int *__ierr)
+void petscstrncpy_(CHAR s1, CHAR s2, int *n,int *__ierr,int len1, int len2)
 {
   char *t1,*t2;
   int  m;
@@ -186,9 +186,9 @@ void petscbinaryclose_(int *fd,int *__ierr)
 }
 
 /* ---------------------------------------------------------------------------------*/
-void petscmemzero_(void *a,int *n) 
+void petscmemzero_(void *a,int *n,int *__ierr) 
 {
-  PetscMemzero(a,*n);
+  *__ierr = PetscMemzero(a,*n);
 }
 
 void petsctrdump_(int *__ierr)
@@ -200,9 +200,9 @@ void petsctrlogdump_(int *__ierr)
   *__ierr = PetscTrLogDump(stdout);
 }
 
-void petscmemcpy_(int *out,int *in,int *length)
+void petscmemcpy_(int *out,int *in,int *length,int *__ierr)
 {
-  PetscMemcpy(out,in,*length);
+  *__ierr = PetscMemcpy(out,in,*length);
 }
 
 void petsctrlog_(int *__ierr)

@@ -28,6 +28,15 @@ add to it).
     in the Krylov space.
      
     
+  SLES
+ 
+    Added SLESSetDiagonalScale(), -sles_diagonal_scale to allow one to scale the system
+    before computing the preconditioner and solving. For certain systems this can improve the
+    convergence of the iterative method. But be careful because this CHANGES the right hand side
+    and the matrix unless you also use the options SLESSetDiagonalScaleFix(), -sles_diagonal_scale_fix
+   
+ 
+
   PC
 
   
@@ -54,6 +63,8 @@ extern int   PetscStrrchr(const char[],char,char **);
 extern int   PetscStrstr(const char[],const char[],char **);
 extern int   PetscStrtok(const char[],const char[],char **);    
 
+   The Fortran versions of the PetscStrxxx() and PetscMemxxx() routines also now 
+have the error flag as the final argument.
    
 
    
