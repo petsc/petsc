@@ -26,4 +26,8 @@ extern int   ISDestroy(IS);
 extern int   ISInvertPermutation(IS,IS*);
 extern int   ISView(IS,Viewer);
 
+#define ISGENERALSEQUENTIAL 0
+#define ISSTRIDESEQUENTIAL  2
+#define ISGENERALPARALLEL   1
+
 #endif

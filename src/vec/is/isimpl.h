@@ -27,9 +27,4 @@ struct _IS {
   void          *data;
 };
 
-
-
-#define ISGENERALSEQUENTIAL 0
-#define ISSTRIDESEQUENTIAL  2
-#define ISGENERALPARALLEL   1
 #endif
