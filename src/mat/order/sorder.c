@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.39 1997/02/04 21:24:50 bsmith Exp balay $";
+static char vcid[] = "$Id: sorder.c,v 1.40 1997/02/04 21:55:36 balay Exp balay $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -190,7 +190,7 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
   
   ierr = OptionsGetString(prefix,"-mat_order", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
-    if (!MatReorderingRegisterAll) {ierr = MatReorderingRegisterAll();CHKERRQ(ierr);}
+    if (!MatReorderingRegisterAllCalled) {ierr = MatReorderingRegisterAll();CHKERRQ(ierr);}
     *type = (MatReordering)NRFindID( __MatReorderingList, sbuf );
   }
   return 0;
