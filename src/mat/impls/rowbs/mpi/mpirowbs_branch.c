@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.97 1996/03/10 17:28:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.98 1996/03/10 23:35:39 curfman Exp balay $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -744,6 +744,189 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
   }
   return 0;
 }
+  
+static int MatAssemblyEnd_MPIRowbs_SymmMap(Mat mat)
+{
+  Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
+  BSspmat      *A = a->A;
+  BSsprow      *vs;
+  int          size,rank,M,rstart,tag,i,j,*rtable,*w1,*w2,*w3,*w4,len,proc,nrqs;
+  int          msz,*pa,bsz,nrqr,**rbuf1,**sbuf1,**ptr,*tmp,*ctr,col,index;
+  MPI_Comm     comm;
+  MPI_Request  *s_waits1,*r_waits1;
+  MPI_Status   *s_status,*r_status;
+
+  comm   = mat->comm;
+  tag    = mat->tag+5;
+  size   = a->size;
+  rank   = a->rank;
+  M      = a->M;
+  rstart = a->rstart;
+
+  rtable = (int *) PetscMalloc(M*sizeof(int)); CHKPTRQ(rtable);
+  /* Create hash table for the mapping :row -> proc*/
+  for (i=0, j=0; i<size; i++) {
+    len = a->rowners[i+1];  
+    for (; j<len; j++) {
+      rtable[j] = i;
+    }
+  }
+
+  /* evaluate communication - mesg to who, length of mesg, and buffer space
+     required. Based on this, buffers are allocated, and data copied into them*/
+  w1   = (int *) PetscMalloc(size*4*sizeof(int)); CHKPTRQ(w1);/*  mesg size */
+  w2   = w1 + size;       /* if w2[i] marked, then a message to proc i*/
+  w3   = w2 + size;       /* no of IS that needs to be sent to proc i */
+  w4   = w3 + size;       /* temp work space used in determining w1, w2, w3 */
+  PetscMemzero(w1,size*3*sizeof(int)); /* initialise work vector*/
+
+  for ( i=0;  i<a->m; i++ ) { 
+    PetscMemzero(w4,size*sizeof(int)); /* initialise work vector*/
+    vs = A->rows[i];
+    for ( j=0; j<vs->length; j++ ) {
+      proc = rtable[vs->col[j]];
+      w4[proc]++;
+    }
+    for ( j=0; j<size; j++ ) { 
+      if (w4[j]) { w1[j] += w4[j]; w3[j]++;} 
+    }
+  }
+  
+  nrqs     = 0;              /* no of outgoing messages */
+  msz      = 0;              /* total mesg length (for all proc */
+  w1[rank] = 0;              /* no mesg sent to intself */
+  w3[rank] = 0;
+  for (i=0; i<size; i++) {
+    if (w1[i])  {w2[i] = 1; nrqs++;} /* there exists a message to proc i */
+  }
+  /* pa - is list of processors to communicate with */
+  pa = (int *)PetscMalloc((nrqs+1)*sizeof(int));CHKPTRQ(pa);
+  for (i=0, j=0; i<size; i++) {
+    if (w1[i]) {pa[j] = i; j++;}
+  } 
+
+  /* Each message would have a header = 1 + 2*(no of ROWS) + data */
+  for (i=0; i<nrqs; i++) {
+    j     = pa[i];
+    w1[j] += w2[j] + 2*w3[j];   
+    msz   += w1[j];  
+  }
+  
+  
+  /* Do a global reduction to determine how many messages to expect*/
+  {
+    int *rw1, *rw2;
+    rw1   = (int *) PetscMalloc(2*size*sizeof(int)); CHKPTRQ(rw1);
+    rw2   = rw1+size;
+    MPI_Allreduce(w1, rw1, size, MPI_INT, MPI_MAX, comm);
+    bsz   = rw1[rank];
+    MPI_Allreduce(w2, rw2, size, MPI_INT, MPI_SUM, comm);
+    nrqr  = rw2[rank];
+    PetscFree(rw1);
+  }
+
+  /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */
+  len      = (nrqr+1)*sizeof(int*) + nrqr*bsz*sizeof(int);
+  rbuf1    = (int**) PetscMalloc(len);  CHKPTRQ(rbuf1);
+  rbuf1[0] = (int *) (rbuf1 + nrqr);
+  for ( i=1; i<nrqr; ++i ) rbuf1[i] = rbuf1[i-1] + bsz;
+
+  /* Post the receives */
+  r_waits1 = (MPI_Request *) PetscMalloc((nrqr+1)*sizeof(MPI_Request));
+  CHKPTRQ(r_waits1);
+  for ( i=0; i<nrqr; ++i ){
+    MPI_Irecv(rbuf1[i],bsz,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits1+i);
+  }
+  
+  /* Allocate Memory for outgoing messages */
+  len   = 2*size*sizeof(int*) + (size+msz)*sizeof(int);
+  sbuf1 = (int **)PetscMalloc(len); CHKPTRQ(sbuf1);
+  ptr   = sbuf1 + size;     /* Pointers to the data in outgoing buffers */
+  PetscMemzero(sbuf1,2*size*sizeof(int*));
+  tmp   = (int *) (sbuf1 + 2*size);
+  ctr   = tmp + msz;
+
+  {
+    int *iptr = tmp,ict  = 0;
+    for ( i=0; i<nrqs; i++ ) {
+      j        = pa[i];
+      iptr    += ict;
+      sbuf1[j] = iptr;
+      ict      = w1[j];
+    }
+  }
+
+  /* Form the outgoing messages */
+  /*Clean up the header space */
+  for ( i=0; i<nrqs; i++ ) {
+    j           = pa[i];
+    sbuf1[j][0] = 0;
+    PetscMemzero(sbuf1[j]+1,2*w3[j]*sizeof(int));
+    ptr[j]       = sbuf1[j] + 2*w3[j] + 1;
+  }
+
+  /* Parse the matrix and copy the data into sbuf1 */
+  for ( i=0; i<a->m; i++ ) {
+    vs = A->rows[i];
+    for ( j=0; j<vs->length; j++ ) {
+      col  = vs->col[j];
+      proc = rtable[col];
+      if (proc != rank) { /* copy to the outgoing buffer */
+        ctr[proc]++;
+          *ptr[proc] = col;
+          ptr[proc]++;
+      }
+      
+    }
+  }
+  
+  /*  Now  post the sends */
+  s_waits1 = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));
+  CHKPTRQ(s_waits1);
+  for ( i=0; i<nrqs; ++i ) {
+    j = pa[i];
+    MPI_Isend(sbuf1[j], w1[j], MPI_INT, j, tag, comm, s_waits1+i);
+  }
+   
+  /* Receive messages*/
+  r_status = (MPI_Status *) PetscMalloc( (nrqr+1)*sizeof(MPI_Status) );
+  CHKPTRQ(r_status);
+  for ( i=0; i<nrqr; ++i ) {
+    MPI_Waitany(nrqr, r_waits1, &index, r_status+i);
+    /* Process the Message */
+    {
+      int    row,*rbuf1_i,n_row,ct1,k;
+      Scalar val;
+
+      rbuf1_i = rbuf1[index];
+      n_row   = rbuf1_i[0];
+      ct1     = 2*n_row+1;
+      val     = 0.0;
+      /* Optimise this later */
+      for ( j=0; j<n_row; j++ ) {
+        col = rbuf1_i[2*j-1];
+        for ( k=0; k<rbuf1_i[2*i]; k++,ct1++ ) {
+          row = rbuf1_i[ct1];
+          MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,&val,ADD_VALUES);          
+        }
+      }
+    }
+  }
+  s_status = (MPI_Status *) PetscMalloc( (nrqs+1)*sizeof(MPI_Status) );
+  CHKPTRQ(s_status);
+  MPI_Waitall(nrqs,s_waits1,s_status);
+
+  PetscFree(rtable);
+  PetscFree(w1);
+  PetscFree(pa);
+  PetscFree(rbuf1);
+  PetscFree(sbuf1);
+  PetscFree(r_waits1);
+  PetscFree(s_waits1);
+  PetscFree(r_status);
+  PetscFree(s_status);
+  return 0;    
+}
 
 static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
@@ -782,6 +965,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     PetscFree(send_status);
   }
   PetscFree(a->send_waits); PetscFree(a->svalues);
+  ierr = MatAssemblyEnd_MPIRowbs_SymmMap(mat); CHKERRQ(ierr);
 
   a->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin_MPIRowbs_local(mat,mode); CHKERRQ(ierr);
