@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.61 1996/04/25 18:42:47 balay Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.62 1996/07/02 18:07:14 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -260,11 +260,23 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 
    Output Parameters:
 .  x - the approximate solution
-.  its - the number of iterations used
+.  its - the number of iterations until termination
 
+   Notes:
+   On return, the parameter "its" contains
+$   - the iteration number at which convergence
+$     was successfully reached, 
+$   - or the negative of the iteration at which
+$      divergence or breakdown was detected.
+
+   If using a direct method (e.g., via the KSP solver
+   KSPPREONLY and a preconditioner such as PCLU/PCILU),
+   its=1.  See KSPSetTolerances() and KSPDefaultConverged()
+   for more details.
+   
 .keywords: SLES, solve, linear system
 
-.seealso: SLESCreate(), SLESDestroy()
+.seealso: SLESCreate(), SLESDestroy(), KSPSetTolerances(), KSPDefaultConverged()
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.58 1996/07/02 16:15:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.59 1996/07/02 16:28:46 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -76,14 +76,20 @@ int KSPSetUp(KSP ksp)
 .  its - number of iterations required
 
    Notes:
-   If the number of iterations (its) is negative, the iterations were 
-   aborted by the convergence tester.  If the default convergence test 
-   is used, this happens when the residual grows to more than 10000 
-   times the initial residual.
+   On return, the parameter "its" contains
+$   - the iteration number at which convergence
+$     was successfully reached, 
+$   - or the negative of the iteration at which
+$      divergence or breakdown was detected.
+
+   If using a direct method (e.g., via the KSP solver
+   KSPPREONLY and a preconditioner such as PCLU/PCILU),
+   its=1.  See KSPSetTolerances() and KSPDefaultConverged()
+   for more details.
 
 .keywords: KSP, solve, linear system
 
-.seealso: KSPCreate(), KSPSetUp(), KSPDestroy()
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged()
 @*/
 int KSPSolve(KSP ksp, int *its) 
 {
