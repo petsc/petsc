@@ -2453,6 +2453,11 @@ int MatMPIAIJSetPreallocation(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
+   When calling this routine with a single process communicator, a matrix of
+   type SEQAIJ is returned.  If a matrix of type MPIAIJ is desired for this
+   type of communicator, use the construction mechanism:
+     MatCreate(...,&A); MatSetType(A,MPIAIJ); MatMPIAIJSetPreallocation(A,...);
+
    By default, this format uses inodes (identical nodes) when possible.
    We search for consecutive rows with the same nonzero structure, thereby
    reusing matrix information to achieve increased efficiency.
