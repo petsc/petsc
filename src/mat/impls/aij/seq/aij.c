@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.300 1999/03/02 19:39:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.301 1999/03/08 21:38:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1015,6 +1015,55 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
   }
   if (flag == SOR_APPLY_LOWER) {
     SETERRQ(PETSC_ERR_SUP,0,"SOR_APPLY_LOWER is not done");
+  } else if (0 && (flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
+    /* Let  A = L + U + D; where L is lower trianglar,
+    U is upper triangular, E is diagonal; This routine applies
+
+            (L + E)^{-1} A (U + E)^{-1}
+
+    to a vector efficiently using Eisenstat's trick. This is for
+    the case of SSOR preconditioner, so E is D/omega where omega
+    is the relaxation factor; but in this special case omega == 1
+    */
+    t = (Scalar *) PetscMalloc( m*sizeof(Scalar) ); CHKPTRQ(t);
+
+    /*  x = (E + U)^{-1} b */
+    for ( i=m-1; i>=0; i-- ) {
+      d    = a->a[diag[i]];
+      n    = a->i[i+1] - diag[i] - 1;
+      PLogFlops(2*n-1);
+      idx  = a->j + diag[i] + 1;
+      v    = a->a + diag[i] + 1;
+      sum  = b[i];
+      SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+      x[i] = sum/d;
+    }
+
+    /*  t = b - (2*E - D)x */
+    v = a->a;
+    for ( i=0; i<m; i++ ) { t[i] = b[i] - (v[*diag++])*x[i]; }
+    PLogFlops(2*m);
+
+
+    /*  t = (E + L)^{-1}t */
+    diag = a->diag;
+    for ( i=0; i<m; i++ ) {
+      d    = a->a[diag[i]];
+      n    = diag[i] - a->i[i];
+      PLogFlops(2*n-1);
+      idx  = a->j + a->i[i];
+      v    = a->a + a->i[i];
+      sum  = t[i];
+      SPARSEDENSEMDOT(sum,t,v,idx,n); 
+      t[i] = sum/d;
+    }
+
+    /*  x = x + t */
+    for ( i=0; i<m; i++ ) { x[i] += t[i]; }
+    PetscFree(t);
+    ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
+    PetscFunctionReturn(0);
   } else if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
     U is upper triangular, E is diagonal; This routine applies
@@ -1043,7 +1092,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     /*  t = b - (2*E - D)x */
     v = a->a;
     for ( i=0; i<m; i++ ) { t[i] = b[i] - scale*(v[*diag++ + shift])*x[i]; }
-    PLogFlops(2*m);
+    PLogFlops(3*m);
 
 
     /*  t = (E + L)^{-1}t */
