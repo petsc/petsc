@@ -29,19 +29,8 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   n = 2*numtids;
 
-  if (OptionsHasName(0,0,"-row_mat"))
-    ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                           m*n,m*n,5,0,5,0,&C); 
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
-  else if (OptionsHasName(0,0,"-rowbs_mat"))
-    ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m*n,5,0,0,&C); 
-#endif
-  else
-    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                           m*n,m*n,5,0,5,0,&C); 
-  CHKERRA(ierr);
-
   /* Generate matrix */
+  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
       v = -1.0;  I = j + n*i;
