@@ -126,6 +126,7 @@ acfindx:
       if not os.path.isdir(self.framework.argDB['with-x-include']):
         raise RuntimeError('Invalid X include directory specified by --with-x-include='+os.path.abspath(self.framework.argDB['with-x-include']))
       includeDir = self.framework.argDB['with-x-include']
+      foundInclude = 1
     else:
       testInclude  = 'X11/Intrinsic.h'
 
@@ -133,7 +134,7 @@ acfindx:
       if includeDirGuess and os.path.isfile(os.path.join(includeDirGuess, testInclude)):
         foundInclude = 1
         includeDir   = includeDirGuess
-      # Check default compiler paths
+        # Check default compiler paths
       if not foundInclude and self.checkPreprocess('#include <'+testInclude+'>\n'):
         foundInclude = 1
       # Check standard paths
@@ -186,9 +187,7 @@ acfindx:
         self.framework.argDB['LIBS'] = oldLibs
         self.popLanguage()
           
-    if not foundInclude or not foundLibrary:
-      self.emptySubstitutions()
-    else:
+    if foundInclude and foundLibrary:
       self.foundX11  = 1
       if includeDir:
         self.include = '-I'+includeDir

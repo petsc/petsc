@@ -8,8 +8,9 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers',       self)
-    self.functions    = self.framework.require('config.functions',         self)
+    self.compilers    = self.framework.require('config.compilers', self)
+    self.functions    = self.framework.require('config.functions', self)
+    self.libraries    = self.framework.require('config.libraries', self)
     return
 
   def __str__(self):
