@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.306 1999/02/03 16:15:00 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.307 1999/02/18 23:04:32 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -306,7 +306,7 @@ the \findex{VecNormEnd()} communication is delayed until the first call to {\tt 
 a single MPI reduction is used to communicate all the required values. It is required that the
 calls to the {\tt VecxxxEnd()} are performed in the same order as the calls to the 
 {\tt VecxxxBegin()}; however if you mistakenly make the calls in the wrong order PETSc will generate an error,
-informing you of this. 
+informing you of this. These routines where suggested by Victor Eijkhout.
 
 Note: these routines use only MPI 1 functionality; so they do not allow you to overlap 
 computation and communication. Once MPI 2 implementations are more common we'll improve these
