@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.150 2001/01/20 03:34:41 bsmith Exp balay $*/
+/*$Id: mpidense.c,v 1.151 2001/03/07 19:19:19 balay Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -674,8 +674,6 @@ int MatSetOption_MPIDense(Mat A,MatOption op)
         ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
   } else if (op == MAT_ROWS_SORTED || 
              op == MAT_ROWS_UNSORTED ||
-             op == MAT_SYMMETRIC ||
-             op == MAT_STRUCTURALLY_SYMMETRIC ||
              op == MAT_YES_NEW_DIAGONALS ||
              op == MAT_USE_HASH_TABLE) {
     PetscLogInfo(A,"MatSetOption_MPIDense:Option ignored\n");

@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.26 2001/02/25 04:38:29 bsmith Exp balay $ 
+# $Id: common_variables,v 1.27 2001/03/05 22:06:59 balay Exp bsmith $ 
 #
 # PDIR (defined from $PETSC_DIR) determines where the PETSc libraries are built.
 # LDIR defines location of libraries similar to PDIR. It can be reset by external packages like TAO.
@@ -72,10 +72,10 @@ PETSC_CONTRIB     = -L${PDIR} ${PETSC_CONTRIB_BASIC}
 PCONF         = ${PETSC_HAVE_MPE}  ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} ${PETSC_HAVE_PARMETIS} \
                 ${PETSC_HAVE_AMS}  ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB_ENGINE} \
                 ${PETSC_HAVE_ADIC} ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL} ${PETSC_HAVE_RAMG} \
-                ${PETSC_HAVE_XXT}  ${PETSC_HAVE_DSCPACK}    ${PETSC_HAVE_MATLAB}
+                ${PETSC_HAVE_TFS}  ${PETSC_HAVE_DSCPACK}    ${PETSC_HAVE_MATLAB}
 EXTERNAL_LIB  = ${MPE_LIB}         ${BLOCKSOLVE_LIB}      ${PVODE_LIB}        ${PARMETIS_LIB} \
                 ${AMS_LIB}         ${SPAI_LIB}            ${X11_LIB}          ${MATLAB_LIB}   \
-                ${ADIC_LIB}        ${LUSOL_LIB}           ${RAMG_LIB}         ${XXT_LIB} \
+                ${ADIC_LIB}        ${LUSOL_LIB}           ${RAMG_LIB}         ${TFS_LIB} \
                 ${DSCPACK_LIB}
 #
 # ----------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.47 2000/05/24 21:05:06 balay Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.48 2000/10/24 20:25:39 bsmith Exp bsmith $ */
 
 #if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
@@ -35,7 +35,6 @@ typedef struct {
   int         rmax;               /* maximum message length */
   PetscTruth  vecs_permscale;     /* flag indicating permuted and scaled vectors */
   int         factor;
-  int         mat_is_symmetric;   /* matrix is symmetric; hence use ICC */
   int         bs_color_single;    /* Indicates blocksolve should bypass cliques in coloring */
   int         reallocs;           /* number of mallocs during MatSetValues() */
 
@@ -55,9 +54,6 @@ typedef struct {
   double     alpha;             /* restart for failed factorization */
   int        ierr;              /* BS factorization error */
   int        failures;          /* number of BS factorization failures */
-
-  int        mat_is_structurally_symmetric; 
-
   int        blocksolveassembly;/* Indicates the matrix has been assembled 
                                    for block solve */
 } Mat_MPIRowbs;

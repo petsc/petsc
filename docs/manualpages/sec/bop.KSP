@@ -4,13 +4,13 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> Krylov Methods - KSP: : <A HREF="${PETSC_DIR}src/sles/examples/tutorials">Examples</A></H2> 
+<H2> Krylov Methods - KSP: : <A HREF="PETSC_DIRsrc/sles/examples/tutorials">Examples</A></H2> 
 
 The
-<A HREF="${PETSC_DIR}docs/manualpages/SLES/index.html">Scalable Linear Equations Solvers (SLES)</A>
+<A HREF="PETSC_DIRdocs/manualpages/SLES/index.html">Scalable Linear Equations Solvers (SLES)</A>
 component provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the KSP and
-<A HREF="${PETSC_DIR}docs/manualpages/PC/index.html">PC</A>
+<A HREF="PETSC_DIRdocs/manualpages/PC/index.html">PC</A>
 components, respectively) or a sequential direct solver.  SLES users can set various Krylov
 subspace options at runtime via the options database (e.g., 
 <font face ="Courier">
@@ -19,9 +19,9 @@ subspace options at runtime via the options database (e.g.,
 ).  
 SLES users can also set KSP options directly in application
 codes by first extracting the KSP context from the SLES context via
-<A HREF="${PETSC_DIR}docs/manualpages/SLES/SLESGetKSP.html">SLESGetKSP()</A>
+<A HREF="PETSC_DIRdocs/manualpages/SLES/SLESGetKSP.html">SLESGetKSP()</A>
 and then directly calling the KSP routines listed below (e.g., 
-<A HREF="${PETSC_DIR}docs/manualpages/KSP/KSPSetType.html">KSPSetType()</A>
+<A HREF="PETSC_DIRdocs/manualpages/KSP/KSPSetType.html">KSPSetType()</A>
 ).
 KSP components can be used directly to create and
 destroy solvers; this is not needed for users but

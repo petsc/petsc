@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.194 2001/01/20 03:34:39 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.195 2001/03/22 20:29:51 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -1116,8 +1116,6 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
            op == MAT_ROWS_UNSORTED ||
            op == MAT_COLUMNS_SORTED ||
            op == MAT_COLUMNS_UNSORTED ||
-           op == MAT_SYMMETRIC ||
-           op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_NO_NEW_NONZERO_LOCATIONS ||
            op == MAT_YES_NEW_NONZERO_LOCATIONS ||
            op == MAT_NEW_NONZERO_LOCATION_ERR ||

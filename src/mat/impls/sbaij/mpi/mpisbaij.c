@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.47 2001/03/09 21:38:35 balay Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.48 2001/03/22 20:30:33 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1159,8 +1159,6 @@ int MatSetOption_MPISBAIJ(Mat A,MatOption op)
         ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_ROWS_SORTED || 
              op == MAT_ROWS_UNSORTED ||
-             op == MAT_SYMMETRIC ||
-             op == MAT_STRUCTURALLY_SYMMETRIC ||
              op == MAT_YES_NEW_DIAGONALS ||
              op == MAT_USE_HASH_TABLE) {
     PetscLogInfo(A,"Info:MatSetOption_MPIBAIJ:Option ignored\n");

@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.41 2000/10/24 20:25:32 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.42 2001/01/15 21:45:34 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -53,8 +53,6 @@ typedef struct {
 
   PetscTruth       keepzeroedrows;   /* keeps matrix structure same in calls to MatZeroRows()*/
   PetscTruth       ignorezeroentries;
-
-  PetscTruth       symmetric,structurally_symmetric;
 } Mat_SeqAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);

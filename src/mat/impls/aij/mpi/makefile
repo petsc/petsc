@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.40 2000/08/17 04:51:30 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.41 2001/01/15 21:45:38 bsmith Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   = ${XXT_INCLUDE}
+CFLAGS   = ${TFS_INCLUDE}
 FFLAGS   =
-SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c xxt.c xyt.c
+SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c xxt.c
 SOURCEF	 =
 SOURCEH	 = mpiaij.h
-OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o xxt.o xyt.o
+OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o xxt.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 = 

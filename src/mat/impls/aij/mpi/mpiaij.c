@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.330 2001/03/22 20:29:56 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.331 2001/03/23 20:13:45 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1537,8 +1537,7 @@ EXTERN_C_BEGIN
 EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN_C_END
 
-EXTERN int MatUseXT_MPIAIJ(Mat);
-EXTERN int MatUseXYT_MPIAIJ(Mat);
+EXTERN int MatUseTFS_MPIAIJ(Mat);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -1607,10 +1606,8 @@ int MatCreate_MPIAIJ(Mat B)
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_mpiaij_xxt",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = MatUseXXT_MPIAIJ(B);CHKERRQ(ierr); }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_mpiaij_xyt",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = MatUseXYT_MPIAIJ(B);CHKERRQ(ierr); }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_mpiaij_tfs",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = MatUseTFS_MPIAIJ(B);CHKERRQ(ierr); }
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",

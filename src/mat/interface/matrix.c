@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.395 2001/03/14 19:26:04 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.396 2001/03/16 17:00:40 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3075,7 +3075,14 @@ int MatSetOption(Mat mat,MatOption op)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidType(mat);
   MatPreallocated(mat);
-  if (mat->ops->setoption) {ierr = (*mat->ops->setoption)(mat,op);CHKERRQ(ierr);}
+  if (op == MAT_SYMMETRIC) {
+    mat->symmetric              = PETSC_TRUE;
+    mat->structurally_symmetric = PETSC_TRUE;
+  } else if (op == MAT_STRUCTURALLY_SYMMETRIC) {
+    mat->structurally_symmetric = PETSC_TRUE;
+  } else {
+    if (mat->ops->setoption) {ierr = (*mat->ops->setoption)(mat,op);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
 

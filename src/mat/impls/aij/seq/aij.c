@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.366 2001/03/13 15:53:16 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.367 2001/03/22 20:29:53 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -25,7 +25,7 @@ int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
   *m     = A->m;
   if (!ia) PetscFunctionReturn(0);
   ishift = a->indexshift;
-  if (symmetric && !a->structurally_symmetric) {
+  if (symmetric && !A->structurally_symmetric) {
     ierr = MatToSymmetricIJ_SeqAIJ(A->m,a->i,a->j,ishift,oshift,ia,ja);CHKERRQ(ierr);
   } else if (oshift == 0 && ishift == -1) {
     int nz = a->i[A->m] - 1; 
@@ -56,7 +56,7 @@ int MatRestoreRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia
  
   PetscFunctionBegin;  
   if (!ia) PetscFunctionReturn(0);
-  if ((symmetric && !a->structurally_symmetric) || (oshift == 0 && ishift == -1) || (oshift == 1 && ishift == 0)) {
+  if ((symmetric && !A->structurally_symmetric) || (oshift == 0 && ishift == -1) || (oshift == 1 && ishift == 0)) {
     ierr = PetscFree(*ia);CHKERRQ(ierr);
     ierr = PetscFree(*ja);CHKERRQ(ierr);
   }
@@ -729,10 +729,6 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
   else if (op == MAT_IGNORE_ZERO_ENTRIES)          a->ignorezeroentries = PETSC_TRUE;
   else if (op == MAT_USE_INODES)                   a->inode.use         = PETSC_TRUE;
   else if (op == MAT_DO_NOT_USE_INODES)            a->inode.use         = PETSC_FALSE;
-  else if (op == MAT_SYMMETRIC){                   a->symmetric               = PETSC_TRUE;
-                                                   a->structurally_symmetric  = PETSC_TRUE;
-  } 
-  else if (op == MAT_STRUCTURALLY_SYMMETRIC)       a->structurally_symmetric  = PETSC_TRUE;
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_ROWS_UNSORTED ||
            op == MAT_YES_NEW_DIAGONALS ||

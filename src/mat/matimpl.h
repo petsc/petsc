@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.117 2001/01/15 21:45:26 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.118 2001/03/22 20:29:47 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -172,6 +172,7 @@ struct _p_Mat {
   MatNullSpace           nullsp;
   PetscTruth             preallocated;
   MatStencilInfo         stencil;          /* information for structured grid */
+  PetscTruth             symmetric,structurally_symmetric;
 };
 
 #define MatPreallocated(A) {int _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}

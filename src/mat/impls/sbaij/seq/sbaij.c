@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.51 2001/03/09 21:43:00 balay Exp bsmith $*/
+/*$Id: sbaij.c,v 1.52 2001/03/22 20:30:26 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -149,8 +149,6 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   else if (op == MAT_YES_NEW_NONZERO_LOCATIONS)    a->nonew          = 0;
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_ROWS_UNSORTED ||
-           op == MAT_SYMMETRIC ||
-           op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_YES_NEW_DIAGONALS ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES ||
            op == MAT_USE_HASH_TABLE) {

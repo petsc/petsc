@@ -1,4 +1,4 @@
-/*$Id: xxt.c,v 1.1 2000/11/30 03:57:22 bsmith Exp bsmith $*/
+/*$Id: xxt.c,v 1.2 2001/01/15 21:45:38 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
@@ -6,7 +6,7 @@
 */
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-#if defined(PETSC_HAVE_XXT) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_TFS) && !defined(__cplusplus)
 #include "xxt.h"
 
 typedef struct {
@@ -28,7 +28,7 @@ int MatDestroy_MPIAIJ_XXT(Mat A)
 
   PetscFunctionBegin;
   /* free the XXT datastructures */
-  XXT_free(xxt->xxt); 
+  ierr = XXT_free(xxt->xxt);CHKERRQ(ierr); 
   ierr = PetscFree(xxt);CHKERRQ(ierr);
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -46,7 +46,7 @@ int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
   PetscFunctionBegin;
   ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  XXT_solve(xxt->xxt,xx,bb);
+  ierr = XXT_solve(xxt->xxt,xx,bb);CHKERRQ(ierr);
   ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -62,7 +62,7 @@ int MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
 
 #undef __FUNC__  
 #define __FUNC__ "LocalMult"
-static int LocalMult(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
+static int LocalMult_XXT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
 {
   int            ierr;
   Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)a->spptr;
@@ -86,7 +86,7 @@ int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data,*b;
-  int            ierr,err,*localtoglobal,ncol,i;
+  int            ierr,*localtoglobal,ncol,i;
   Mat_MPIAIJ_XXT *xxt;
 
   PetscFunctionBegin;
@@ -122,8 +122,7 @@ int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   xxt->nd = a->A->n;
 
   /* factor the beast */
-  err = XXT_factor(xxt->xxt,localtoglobal,A->m,ncol,(void*)LocalMult,a);
-  if (!err) SETERRQ(1,"Error in XXT_factor()");
+  ierr = XXT_factor(xxt->xxt,localtoglobal,A->m,ncol,(void*)LocalMult_XXT,a);CHKERRQ(ierr);
 
   ierr = VecDestroy(xxt->b);CHKERRQ(ierr);
   ierr = VecDestroy(xxt->xd);CHKERRQ(ierr);
@@ -133,13 +132,154 @@ int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
+#include "xyt.h"
+
+typedef struct {
+  xyt_ADT xyt;
+  Vec     b,xd,xo;
+  int     nd;
+} Mat_MPIAIJ_XYT;
+
+
+EXTERN int MatDestroy_MPIAIJ(Mat);
+
 #undef __FUNC__  
-#define __FUNC__ "MatUseXXT_MPIAIJ"
-int MatUseXXT_MPIAIJ(Mat A)
+#define __FUNC__ "MatDestroy_MPIAIJ_XYT"
+int MatDestroy_MPIAIJ_XYT(Mat A)
+{
+  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)a->spptr;
+  int            ierr;
+
+  PetscFunctionBegin;
+  /* free the XYT datastructures */
+  ierr = XYT_free(xyt->xyt);CHKERRQ(ierr);
+  ierr = PetscFree(xyt);CHKERRQ(ierr);
+  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_MPIAIJ_XYT"
+int MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
+{
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)a->spptr;
+  Scalar         *bb,*xx;
+  int            ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = XYT_solve(xyt->xyt,xx,bb);CHKERRQ(ierr);
+  ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_MPIAIJ_XYT"
+int MatLUFactorNumeric_MPIAIJ_XYT(Mat A,Mat *F)
 {
   PetscFunctionBegin;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_XXT;
-  PetscLogInfo(0,"Using XXT for MPIAIJ LU factorization and solves");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "LocalMult"
+static int LocalMult_XYT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
+{
+  int            ierr;
+  Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)a->spptr;
+
+  PetscFunctionBegin;
+  ierr = VecPlaceArray(xyt->b,xout);CHKERRQ(ierr);
+  ierr = VecPlaceArray(xyt->xd,xin);CHKERRQ(ierr);
+  ierr = VecPlaceArray(xyt->xo,xin+xyt->nd);CHKERRQ(ierr);
+  ierr = MatMult(a->A,xyt->xd,xyt->b);CHKERRQ(ierr);
+  ierr = MatMultAdd(a->B,xyt->xo,xyt->b,xyt->b);CHKERRQ(ierr);
+  /*
+  PetscDoubleView(a->A->n+a->B->n,xin,PETSC_VIEWER_STDOUT_WORLD);
+  PetscDoubleView(a->A->m,xout,PETSC_VIEWER_STDOUT_WORLD);
+  */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorSymbolic_MPIAIJ_XYT"
+int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+{
+  Mat            B;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data,*b;
+  int            ierr,*localtoglobal,ncol,i;
+  Mat_MPIAIJ_XYT *xyt;
+
+  PetscFunctionBegin;
+  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  B                       = *F;
+  B->ops->solve           = MatSolve_MPIAIJ_XYT;
+  B->ops->destroy         = MatDestroy_MPIAIJ_XYT;
+  B->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_XYT;
+  B->factor               = FACTOR_LU;
+  b                       = (Mat_MPIAIJ*)B->data;
+  ierr                    = PetscNew(Mat_MPIAIJ_XYT,&xyt);CHKERRQ(ierr);
+  b->spptr = a->spptr     = (void*)xyt;
+
+  xyt->xyt = XYT_new();
+  /* generate the local to global mapping */
+  ncol = a->A->n + a->B->n;
+  ierr = PetscMalloc((ncol)*sizeof(int),&localtoglobal);CHKERRQ(ierr);
+  for (i=0; i<a->A->n; i++) {
+    localtoglobal[i] = a->cstart + i + 1;
+  }
+  for (i=0; i<a->B->n; i++) {
+    localtoglobal[i+a->A->n] = a->garray[i] + 1;
+  }
+  /*
+  PetscIntView(ncol,localtoglobal,PETSC_VIEWER_STDOUT_WORLD);
+  */
+
+  /* generate the vectors needed for the local solves */
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->m,PETSC_NULL,&xyt->b);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->n,PETSC_NULL,&xyt->xd);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->n,PETSC_NULL,&xyt->xo);CHKERRQ(ierr);
+  xyt->nd = a->A->n;
+
+  /* factor the beast */
+  ierr = XYT_factor(xyt->xyt,localtoglobal,A->m,ncol,(void*)LocalMult_XYT,a);CHKERRQ(ierr);
+
+  ierr = VecDestroy(xyt->b);CHKERRQ(ierr);
+  ierr = VecDestroy(xyt->xd);CHKERRQ(ierr);
+  ierr = VecDestroy(xyt->xo);CHKERRQ(ierr);
+  ierr = PetscFree(localtoglobal);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorSymbolic_MPIAIJ_TFS"
+int MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscLogInfo(0,"Using TFS for MPIAIJ LU factorization and solves");
+  if (A->symmetric) {
+    ierr = MatLUFactorSymbolic_MPIAIJ_XXT(A,r,c,info,F);CHKERRQ(ierr);
+  } else {
+    ierr = MatLUFactorSymbolic_MPIAIJ_XYT(A,r,c,info,F);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatUseTFS_MPIAIJ"
+int MatUseTFS_MPIAIJ(Mat A)
+{
+  PetscFunctionBegin;
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_TFS;
+  PetscLogInfo(0,"Using TFS for MPIAIJ LU factorization and solves");
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +287,7 @@ int MatUseXXT_MPIAIJ(Mat A)
 
 #undef __FUNC__  
 #define __FUNC__ "MatUseXXT_MPIAIJ"
-int MatUseXXT_MPIAIJ(Mat A)
+int MatUseTFS_MPIAIJ(Mat A)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

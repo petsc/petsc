@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.190 2000/10/24 20:25:42 bsmith Exp bsmith $*/
+/*$Id: bdiag.c,v 1.191 2001/01/15 21:45:45 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -119,9 +119,7 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
            op == MAT_ROWS_UNSORTED || 
            op == MAT_COLUMNS_SORTED || 
            op == MAT_COLUMNS_UNSORTED || 
-           op == MAT_SYMMETRIC ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES ||
-           op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_NEW_NONZERO_LOCATION_ERR ||
            op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
            op == MAT_USE_HASH_TABLE)
