@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.167 2001/02/03 03:54:35 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.168 2001/02/03 03:59:52 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -330,7 +330,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
   if (vdest != vs) {
     ierr = VecCopy(vs,vdest);CHKERRQ(ierr);
   }
-  ierr = VecAXPY(&one,VEC_TEMP_MATOP,vdest);CHKERRQ(ierr);
+  ierr = VecAXPY(&one,VEC_TEMP,vdest);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.47 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.48 2001/01/23 20:56:41 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -14,7 +14,6 @@ users manual for a discussion of preloading.  Input parameters include\n\
 
 /*T
    Concepts: SLES^solving a linear system
-   Concepts: PetscLog^profiling multiple stages of code;
    Processors: n
 T*/
 
@@ -32,17 +31,17 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  SLES       sles;             /* linear solver context */
-  Mat        A;                /* matrix */
-  Vec        x,b,u;          /* approx solution, RHS, exact solution */
-  PetscViewer     fd;               /* viewer */
-  char       file[2][128];     /* input file name */
-  PetscTruth table,flg,trans;
-  int        ierr,its;
-  double     norm;
+  SLES           sles;             /* linear solver context */
+  Mat            A;                /* matrix */
+  Vec            x,b,u;          /* approx solution, RHS, exact solution */
+  PetscViewer    fd;               /* viewer */
+  char           file[2][128];     /* input file name */
+  PetscTruth     table,flg,trans;
+  int            ierr,its;
+  double         norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
-  Scalar     zero = 0.0,none = -1.0;
-  PetscTruth preload = PETSC_TRUE;
+  Scalar         zero = 0.0,none = -1.0;
+  PetscTruth     preload = PETSC_TRUE,diagonalscale;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -162,6 +161,30 @@ int main(int argc,char **args)
     ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
     tsetup = tsetup2 - tsetup1;
 
+    /*
+       Tests "diagonal-scaling of preconditioned residual norm" as used 
+       by many ODE integrator codes including PVODE. Note this is different
+       than diagonally scaling the matrix before computing the preconditioner
+    */
+    ierr = PetscOptionsHasName(PETSC_NULL,"-diagonal_scale",&diagonalscale);CHKERRQ(ierr);
+    if (diagonalscale) {
+      PC     pc;
+      int    j,start,end,n;
+      Vec    scale;
+      
+      ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+      ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+      ierr = VecDuplicate(x,&scale);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(scale,&start,&end);CHKERRQ(ierr);
+      for (j=start; j<end; j++) {
+        VecSetValue(scale,j,((double)(j+1))/((double)n),INSERT_VALUES);
+      }
+      ierr = VecAssemblyBegin(scale);CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(scale);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleSet(pc,scale);CHKERRQ(ierr);
+      ierr = VecDestroy(scale);CHKERRQ(ierr);
+
+    }
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Solve system
@@ -211,7 +234,7 @@ int main(int argc,char **args)
         - SLESView() prints information about the linear solver.
     */
     if (table) {
-      char   *matrixname,slesinfo[120];
+      char        *matrixname,slesinfo[120];
       PetscViewer viewer;
 
       /*

@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.47 2000/08/24 22:42:42 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.48 2001/01/15 21:47:09 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -101,18 +101,17 @@ EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 EXTERN int KSPDefaultDestroy(KSP);
 EXTERN int KSPDefaultGetWork(KSP,int);
 EXTERN int KSPDefaultFreeWork(KSP);
-EXTERN int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
+EXTERN int KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
 EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 
 /*
        These allow the various Krylov methods to apply to either the linear system
     or its transpose.
 */
-#define KSP_MatMult(ksp,A,x,y) (!ksp->transpose_solve) ?  MatMult(A,x,y) : MatMultTranspose(A,x,y) 
-#define KSP_MatMultTranspose(ksp,A,x,y) (!ksp->transpose_solve) ?  MatMultTranspose(A,x,y) : MatMult(A,x,y) 
-#define KSP_PCApply(ksp,A,x,y) (!ksp->transpose_solve) ?  PCApply(A,x,y) : PCApplyTranspose(A,x,y) 
-#define KSP_PCApplyTranspose(ksp,A,x,y) (!ksp->transpose_solve) ?  PCApplyTranspose(A,x,y) : PCApply(A,x,y) 
-#define KSP_PCApplyBAorAB(ksp,pc,side,x,y,work) (!ksp->transpose_solve) ? \
-         PCApplyBAorAB(pc,side,x,y,work) : PCApplyBAorABTranspose(pc,side,x,y,work)
+#define KSP_MatMult(ksp,A,x,y)               (!ksp->transpose_solve) ?  MatMult(A,x,y)               : MatMultTranspose(A,x,y) 
+#define KSP_MatMultTranspose(ksp,A,x,y)      (!ksp->transpose_solve) ?  MatMultTranspose(A,x,y)      : MatMult(A,x,y) 
+#define KSP_PCApply(ksp,B,x,y)               (!ksp->transpose_solve) ?  PCApply(B,x,y)               : PCApplyTranspose(B,x,y) 
+#define KSP_PCApplyTranspose(ksp,B,x,y)      (!ksp->transpose_solve) ?  PCApplyTranspose(B,x,y)      : PCApply(B,x,y) 
+#define KSP_PCApplyBAorAB(ksp,pc,side,x,y,w) (!ksp->transpose_solve) ?  PCApplyBAorAB(pc,side,x,y,w) : PCApplyBAorABTranspose(pc,side,x,y,w)
 
 #endif
