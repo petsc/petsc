@@ -9,13 +9,12 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.updated  = 0
+    self.strmsg   = ''
     return
 
   def __str__(self):
-    if self.updated == 2: return 'Updated source code from PETSc website\n'
-    elif self.updated == 1: return 'Source is current with PETSc website\n'
-    return ''
-    
+    return self.strmsg
+     
   def configureHelp(self, help):
     import nargs
     help.addArgument('Matlab', '-enable-update',                nargs.ArgBool(None, 1, 'Update source code from PETSc website'))
@@ -43,8 +42,15 @@ class Configure(config.base.Configure):
     if not hasattr(self.framework, 'bk'):
       self.framework.log.write('Cannot find bk program.\nContinuing configure without update.\n')
       return
+
+    self.framework.log.write('Checking if can downloading latest source with bk\n')
+    (status1,output1) = commands.getstatusoutput('bk sfiles -lgpC')
+    (status2,output2) = commands.getstatusoutput('bk changes -L -v | grep -v "Pseudo-terminal"')
+    if output1 or output2:
+      self.framework.log.write('Cannot pull latest source code, you have changed files or bk change sets\n')
+      return
+
     self.framework.log.write('Downloading latest source with bk\n')
-    import commands
     (status1,output1) = commands.getstatusoutput('bk pull')
     (status2,output2) = commands.getstatusoutput('cd python/BuildSystem; bk pull')
     if status1 or output1.find('error') >= 0 or status2 or output2.find('error') >= 0:
@@ -52,8 +58,10 @@ class Configure(config.base.Configure):
       self.framework.log.write(output1+'\n')
       self.framework.log.write(output2+'\n')
       return
-    if output1.find('Nothing to pull') >= 0 and output2.find('Nothing to pull') >= 0:self.updated = 1
-    else: self.updated = 2
+    if output1.find('Nothing to pull') >= 0 and output2.find('Nothing to pull') >= 0:
+      self.strmsg = 'Source is current with PETSc BK website\n'
+    else: 
+      self.strmsg = 'Updated source code from PETSc BK website\n'
     return 
 
   # should only apply patch if it truly has something new in it. Keep checksum somewhere?
@@ -100,7 +108,7 @@ class Configure(config.base.Configure):
       self.framework.log.write(output1+'\n')
       self.framework.log.write(output2+'\n')
       return
-    self.updated = 1
+    self.strmsg = 'Updated source code from PETSc website (using latest patches)'
     return 
 
   def configure(self):

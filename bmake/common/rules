@@ -465,6 +465,7 @@ shared_irix6: shared_irix
 shared_osf5: shared_alpha
 shared_solaris2: shared_solaris
 shared_darwin6: 
+shared_darwin7: 
 
 shared_linux_intel:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
