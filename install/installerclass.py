@@ -12,7 +12,7 @@ class Installer(install.urlMapping.UrlMapping):
     install.urlMapping.UrlMapping.__init__(self, clArgs, argDB, stamp)
 
     if debugWriter:
-      argDB.setType('debugWriter', nargs.Arg(None, '', 'ugly hack'), forceLocal = 1)
+      self.argDB.setType('debugWriter', nargs.Arg(None, '', 'ugly hack'), forceLocal = 1)
       self.argDB['debugWriter'] = debugWriter
       
     self.retriever = install.retrieval.Retriever(stamp)
