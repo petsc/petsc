@@ -12,18 +12,25 @@
 #define __FUNCT__ "DMMGComputeJacobian_Multigrid"
 int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  DMMG       *dmmg = (DMMG*)ptr;
-  int        ierr,i,nlevels = dmmg[0]->nlevels;
-  SLES       sles,lsles;
-  PC         pc;
-  PetscTruth ismg;
-  Vec        W;
+  DMMG         *dmmg = (DMMG*)ptr;
+  int          ierr,i,nlevels = dmmg[0]->nlevels,it;
+  SLES         sles,lsles;
+  PC           pc;
+  PetscTruth   ismg;
+  Vec          W;
+  MatStructure flg;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as user context which should contain DMMG");
+  ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   /* compute Jacobian on finest grid */
-  ierr = (*DMMGGetFine(dmmg)->computejacobian)(snes,X,J,B,flag,DMMGGetFine(dmmg));CHKERRQ(ierr);
+  if (dmmg[nlevels-1]->updatejacobian && !(it % dmmg[nlevels-1]->updatejacobianperiod)) {
+    ierr = (*DMMGGetFine(dmmg)->computejacobian)(snes,X,J,B,flag,DMMGGetFine(dmmg));CHKERRQ(ierr);
+  } else {
+    PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %d frequence %d level %d\n",it,dmmg[nlevels-1]->updatejacobianperiod,nlevels-1);
+    *flag = SAME_PRECONDITIONER;
+  }
   ierr = MatSNESMFSetBase(DMMGGetFine(dmmg)->J,X);CHKERRQ(ierr);
 
   /* create coarser grid Jacobians for preconditioner if multigrid is the preconditioner */
@@ -53,10 +60,15 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
       ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
 
       /* compute Jacobian on coarse grid */
-      ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,flag,dmmg[i-1]);CHKERRQ(ierr);
+      if (dmmg[i-1]->updatejacobian && !(it % dmmg[i-1]->updatejacobianperiod)) {
+	ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
+      } else {
+        PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %d frequence %d level %d\n",it,dmmg[i-1]->updatejacobianperiod,i-1);
+        flg = SAME_PRECONDITIONER;
+      }
 
       ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,*flag);CHKERRQ(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,flg);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -370,7 +382,7 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 @*/
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
-  int         ierr,i,nlevels = dmmg[0]->nlevels;
+  int         ierr,i,nlevels = dmmg[0]->nlevels,period = 1;
   PetscTruth  snesmonitor,mffdoperator,mffd,fdjacobian;
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth  mfadoperator,mfad,adjacobian;
@@ -500,6 +512,12 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   /* Create interpolation scaling */
   for (i=1; i<nlevels; i++) {
     ierr = DMGetInterpolationScale(dmmg[i-1]->dm,dmmg[i]->dm,dmmg[i]->R,&dmmg[i]->Rscale);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_jacobian_period",&period,PETSC_NULL);CHKERRQ(ierr);
+  for (i=0; i<nlevels; i++) {
+    dmmg[i]->updatejacobian       = PETSC_TRUE;
+    dmmg[i]->updatejacobianperiod = period;
   }
 
   PetscFunctionReturn(0);

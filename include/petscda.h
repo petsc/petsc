@@ -293,6 +293,9 @@ struct _p_DMMG {
   int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
   int           (*computefunction)(SNES,Vec,Vec,void*);  
 
+  PetscTruth    updatejacobian;        /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
+  int           updatejacobianperiod;  /* how often, inside a SNES, the Jacobian is recomputed */
+
   MatFDColoring    fdcoloring;            /* only used with FD coloring for Jacobian */  
   SNES             snes;                  
   int              (*initialguess)(SNES,Vec,void*);
