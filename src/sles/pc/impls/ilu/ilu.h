@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.10 2000/01/11 21:01:47 bsmith Exp balay $ */
+/* $Id: ilu.h,v 1.11 2000/05/05 22:17:14 balay Exp bsmith $ */
 
 /* 
    Private data structure for ILU preconditioner.
@@ -13,8 +13,8 @@ typedef struct {
   MatOrderingType   ordering;         /* matrix reordering */
   IS                row,col;         /* row and column permutations for reordering */
   void              *implctx;         /* private implementation context */
-  int               inplace;          /* in-place ILU factorization */
-  int               reuseordering;    /* reuses previous reordering computed */
+  PetscTruth        inplace;          /* in-place ILU factorization */
+  PetscTruth        reuseordering;    /* reuses previous reordering computed */
 
   PetscTruth        usedt;            /* use drop tolerance form of ILU */
   PetscTruth        reusefill;        /* reuse fill from previous ILUDT */
