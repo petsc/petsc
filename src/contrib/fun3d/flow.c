@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.27 2000/04/26 02:34:54 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.28 2000/04/26 02:37:25 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -428,16 +428,12 @@ int Update(SNES snes,void *ctx)
   }
   ierr = VecCopy(grid->qnode,tsCtx->qold);CHKERRQ(ierr);
 
-/* For history file */
   c_info->ntt = i+1;
-/* Timing Info */
   ierr = PetscGetTime(&time2);CHKERRQ(ierr);
-  /*cpu_fin = PetscGetCPUTime();*/
   cpuloc = time2-time1;            
   cpuglo = 0.0;
   ierr = MPI_Allreduce(&cpuloc,&cpuglo,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  /*cpu_fin = PetscGetCPUTime();
   cpuloc = cpu_fin - cpu_ini;            
   cpu_time = 0.0;
   ierr = MPI_Allreduce(&cpuloc,&cpu_time,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);  */
@@ -529,9 +525,9 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
   /* first time through so compute initial function norm */
   if (tsCtx->fnorm_ini == 0.0) {
     tsCtx->fnorm_ini = tsCtx->fnorm;
-    tsCtx->cfl = tsCtx->cfl_ini;
+    tsCtx->cfl       = tsCtx->cfl_ini;
   } else {
-     newcfl = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/tsCtx->fnorm;
+     newcfl     = inc*tsCtx->cfl_ini*tsCtx->fnorm_ini/tsCtx->fnorm;
      tsCtx->cfl = PetscMin(newcfl,tsCtx->cfl_max);
   }
  
@@ -604,8 +600,7 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscFree(tmp);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"nnodes = %d,nedge = %d,nnfacet = %d,nsnode = %d,nfnode = %d\n",
               grid->nnodes,grid->nedge,grid->nnfacet,grid->nsnode,grid->nfnode);CHKERRQ(ierr);
-/* Until the above line,the equivalent I/O and other initialization
-  work of RDGPAR has been done */
+
   nnodes  = grid->nnodes;
   nedge   = grid->nedge;
   nnfacet = grid->nnfacet;
@@ -624,25 +619,24 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nnodes,&a2l);
   nnodesLoc = 0;
 
-  for (i = 0; i < nnodes; i++)  
-    a2l[i] = -1;
+  for (i = 0; i < nnodes; i++)  a2l[i] = -1;
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
 
   if (!rank) {
-   sprintf(part_name,"testgrid/part_vec.part.%d",size);
-   fptr = fopen(part_name,"r");
-   if (!fptr) SETERRQ1(1,1,"Cannot open file testgrid/part_vec.%d",size);
-   for (inode = 0; inode < nnodes; inode++) {
-    fscanf(fptr,"%d\n",&node1); 
-    v2p[inode] = node1;
-   }
-   fclose(fptr);
+    sprintf(part_name,"testgrid/part_vec.part.%d",size);
+    fptr = fopen(part_name,"r");
+    if (!fptr) SETERRQ1(1,1,"Cannot open file testgrid/part_vec.%d",size);
+    for (inode = 0; inode < nnodes; inode++) {
+      fscanf(fptr,"%d\n",&node1); 
+      v2p[inode] = node1;
+    }
+    fclose(fptr);
   }
   ierr = MPI_Bcast(v2p,nnodes,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   for (inode = 0; inode < nnodes; inode++) {
     if (v2p[inode] == rank) {
       l2a[nnodesLoc] = inode ; 
-      a2l[inode] = nnodesLoc ; 
+      a2l[inode]     = nnodesLoc ; 
       nnodesLoc++;
     } 
   }
@@ -662,7 +656,7 @@ int GetLocalOrdering(GRID *grid)
 
   /* Now count the local number of edges - including edges with 
    ghost nodes but edges between ghost nodes are NOT counted */
-  nedgeLoc = 0;
+  nedgeLoc  = 0;
   nvertices = nnodesLoc;
   /* Choose an estimated number of local edges. The choice
    nedgeLocEst = 1000000 looks reasonable as it will read
@@ -690,14 +684,14 @@ int GetLocalOrdering(GRID *grid)
      if ((v2p[node1] == rank) || (v2p[node2] == rank)) {
        nedgeLoc++;
        if (a2l[node1] == -1) {
-        l2a[nvertices] = node1;
-        a2l[node1] = nvertices;
-        nvertices++;
+         l2a[nvertices] = node1;
+         a2l[node1] = nvertices;
+         nvertices++;
        }
        if (a2l[node2] == -1) {
-        l2a[nvertices] = node2;
-        a2l[node2] = nvertices;
-        nvertices++;
+         l2a[nvertices] = node2;
+         a2l[node2] = nvertices;
+         nvertices++;
        }
      }
    }
@@ -724,10 +718,10 @@ int GetLocalOrdering(GRID *grid)
   while (remEdges > 0) {
    readEdges = PetscMin(remEdges,nedgeLocEst); 
    if (!rank) {
-    ierr = PetscBinaryRead(fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscBinarySeek(fdes,(nedge-readEdges)*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscBinarySeek(fdes,-nedge*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+     ierr = PetscBinaryRead(fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
+     ierr = PetscBinarySeek(fdes,(nedge-readEdges)*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+     ierr = PetscBinaryRead(fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
+     ierr = PetscBinarySeek(fdes,-nedge*BINARY_INT_SIZE,BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
    }
    ierr = MPI_Bcast(tmp,2*readEdges,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
    for (j = 0; j < readEdges; j++) {
@@ -768,27 +762,25 @@ int GetLocalOrdering(GRID *grid)
   k = 0;
   for (i = 0; i < nedgeLoc; i++) {
 #if defined(INTERLACING) 
-   grid->eptr[k++] = tmp[eperm[i]] + 1;
-   grid->eptr[k++] = tmp[nedgeLoc+eperm[i]] + 1;
+    grid->eptr[k++] = tmp[eperm[i]] + 1;
+    grid->eptr[k++] = tmp[nedgeLoc+eperm[i]] + 1;
 #else
-   grid->eptr[i] = tmp[eperm[i]] + 1;
-   grid->eptr[nedgeLoc+i] = tmp[nedgeLoc+eperm[i]] + 1;
+    grid->eptr[i] = tmp[eperm[i]] + 1;
+    grid->eptr[nedgeLoc+i] = tmp[nedgeLoc+eperm[i]] + 1;
 #endif
   }
   ierr = PetscFree(tmp);CHKERRQ(ierr);
 
   /* Now make the local 'ia' and 'ja' arrays */
-   ICALLOC(nnodesLoc+1,&grid->ia);
+  ICALLOC(nnodesLoc+1,&grid->ia);
   /* Use tmp for a work array */
-   ICALLOC(nnodesLoc,&tmp);
-   f77GETIA(&nnodesLoc,&nedgeLoc,grid->eptr,
-             grid->ia,tmp,&rank);
-   nnz = grid->ia[nnodesLoc] - 1;
-   ICALLOC(nnz,&grid->ja);
-   f77GETJA(&nnodesLoc,&nedgeLoc,grid->eptr,
-             grid->ia,     grid->ja,   tmp,&rank);
+  ICALLOC(nnodesLoc,&tmp);
+  f77GETIA(&nnodesLoc,&nedgeLoc,grid->eptr,grid->ia,tmp,&rank);
+  nnz = grid->ia[nnodesLoc] - 1;
+  ICALLOC(nnz,&grid->ja);
+  f77GETJA(&nnodesLoc,&nedgeLoc,grid->eptr,grid->ia,grid->ja,tmp,&rank);
 
-   ierr = PetscFree(tmp);CHKERRQ(ierr);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
 
   ICALLOC(nvertices,&grid->loc2glo);
   ierr = PetscMemcpy(grid->loc2glo,l2a,nvertices*sizeof(int));CHKERRQ(ierr);
@@ -801,8 +793,9 @@ int GetLocalOrdering(GRID *grid)
 
 /* Map the 'ja' array in petsc ordering */
   nnz = grid->ia[nnodesLoc] - 1;
-  for (i = 0; i < nnz; i++)
-   grid->ja[i] = l2a[grid->ja[i] - 1];
+  for (i = 0; i < nnz; i++){
+    grid->ja[i] = l2a[grid->ja[i] - 1];
+  }
   ierr = AOApplicationToPetsc(ao,nnz,grid->ja);CHKERRQ(ierr);
   ierr = AODestroy(ao);CHKERRQ(ierr);
 
@@ -842,7 +835,7 @@ int GetLocalOrdering(GRID *grid)
   remEdges = nedge;
   while (remEdges > 0) {
    readEdges = PetscMin(remEdges,nedgeLocEst); 
-   if (!rank) 
+   if (!rank) {
     ierr = PetscBinaryRead(fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
    ierr = MPI_Bcast(ftmp,readEdges,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
    for (j = 0; j < readEdges; j++) {
