@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.118 1997/01/25 20:30:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.119 1997/02/22 02:23:59 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -718,12 +718,16 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 #define __FUNC__ "PCSetOptionsPrefix" /* ADIC Ignore */
 /*@C
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
-   PC options in the database. You must NOT include the - at the beginning of 
-   the prefix name.
+   PC options in the database.
 
    Input Parameters:
 .  pc - the preconditioner context
 .  prefix - the prefix string to prepend to all PC option requests
+
+   Notes:
+   The first character of all runtime options is automatically the
+   hyphen (-);  thus, the hyphen must NOT be given at the beginning
+   of the prefix name.
 
 .keywords: PC, set, options, prefix, database
 @*/
@@ -737,12 +741,15 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 #define __FUNC__ "PCAppendOptionsPrefix" /* ADIC Ignore */
 /*@C
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
-   PC options in the database. You must NOT include the - at the beginning of 
-   the prefix name.
 
    Input Parameters:
 .  pc - the preconditioner context
 .  prefix - the prefix string to prepend to all PC option requests
+
+   Notes:
+   The first character of all runtime options is automatically the
+   hyphen (-);  thus, the hyphen must NOT be given at the beginning
+   of the prefix name.
 
 .keywords: PC, append, options, prefix, database
 @*/

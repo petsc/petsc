@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.116 1997/02/04 21:26:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.117 1997/02/22 02:28:38 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1894,12 +1894,16 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
 #define __FUNC__ "SNESSetOptionsPrefix" /* ADIC Ignore */
 /*@C
    SNESSetOptionsPrefix - Sets the prefix used for searching for all 
-   SNES options in the database. You must NOT include the - at the beginning of 
-   the prefix name.
+   SNES options in the database.
 
    Input Parameter:
 .  snes - the SNES context
 .  prefix - the prefix to prepend to all option names
+
+   Notes:
+   The first character of all runtime options is automatically the
+   hyphen (-);  thus, the hyphen must NOT be given at the beginning
+   of the prefix name.
 
 .keywords: SNES, set, options, prefix, database
 
@@ -1919,12 +1923,16 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
 #define __FUNC__ "SNESAppendOptionsPrefix" /* ADIC Ignore */
 /*@C
    SNESAppendOptionsPrefix - Appends to the prefix used for searching for all 
-   SNES options in the database. You must NOT include the - at the beginning of 
-   the prefix name.
+   SNES options in the database.
 
    Input Parameter:
 .  snes - the SNES context
 .  prefix - the prefix to prepend to all option names
+
+   Notes:
+   The first character of all runtime options is automatically the
+   hyphen (-);  thus, the hyphen must NOT be given at the beginning
+   of the prefix name.
 
 .keywords: SNES, append, options, prefix, database
 

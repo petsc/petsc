@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.203 1997/02/19 23:01:51 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.204 1997/03/14 20:53:40 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2849,13 +2849,13 @@ Other line search methods provided by PETSc are
 {\tt SNESNoLineSearch()} \findex{SNESNoLineSearch()}
 and {\tt SNESQuadraticLineSearch()}, \findex{SNESNoLineSearch()}
 which can be set with the option
-{\tt -snes\_line\_search [basic,quadratic,cubic]}. \findex{-snes_line_search}
+{\tt -snes\_eq\_ls [basic,quadratic,cubic]}. \findex{-snes_line_search}
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
 can override the defaults by using the options
-{\tt -snes\_line\_search\_alpha <alpha>}, \findex{-snes_line_search_alpha}
-{\tt -snes\_line\_search\_maxstep <max>}, and \findex{-snes_line_search_maxstep}
-{\tt -snes\_line\_search\_steptol <tol>}. \findex{-snes_line_search_steptol}
+{\tt -snes\_eq\_ls\_alpha <alpha>}, \findex{-snes_eq_ls_alpha}
+{\tt -snes\_eq\_ls\_maxstep <max>}, and \findex{-snes_eq_ls_maxstep}
+{\tt -snes\_eq\_ls\_steptol <tol>}. \findex{-snes_eq_ls_steptol}
 
 The method {\tt SNES\_UM\_NLS} ({\tt -snes\_type umls}) provides a line
 search Newton method for solving unconstrained minimization problems.
@@ -2877,7 +2877,7 @@ radius, computed by
   \Delta = \Delta_0 \| F_0 \|_2,
 \]
 by setting $ \Delta_0 $ via the option 
-{\tt -snes\_trust\_region\_delta0 <delta0>}.
+{\tt -snes\_eq\_tr\_delta0 <delta0>}.
 
 The default trust region method for unconstrained minimization, 
 {\tt SNES\_UM\_NTR} ({\tt -snes\_type umtr}), is based on the work of
