@@ -1,4 +1,4 @@
-/*$Id: signal.c,v 1.76 2001/03/23 23:20:26 balay Exp bsmith $*/
+/*$Id: signal.c,v 1.77 2001/04/23 15:40:49 bsmith Exp bsmith $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -119,7 +119,8 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
     PetscStackView(PETSC_VIEWER_STDOUT_WORLD);
     (*PetscErrorPrintf)("--------------------------------------------\n");
   }
-#else if !defined(PETSC_USE_BOPT_g)
+#endif
+#if !defined(PETSC_USE_BOPT_g)
   ierr = PetscStrcat(buf,"PETSC ERROR: compile, link, and run with BOPT=g or g_c++ or g_complex\n");CHKERRQ(ierr);
   ierr = PetscStrcat(buf,"PETSC ERROR: to get more information on the crash.\n");CHKERRQ(ierr);
 #endif
