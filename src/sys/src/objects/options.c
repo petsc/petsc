@@ -172,6 +172,8 @@ int PetscSetProgramName(const char name[])
 
   Level: intermediate
 
+  Contributed by Boyana Norris
+
 .seealso: PetscOptionsSetValue(), PetscOptionsPrint(), PetscOptionsHasName(), PetscOptionsGetInt(),
           PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
