@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpi.c,v 1.20 1996/07/24 18:45:25 balay Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.21 1996/08/08 14:47:35 bsmith Exp bsmith $";
 #endif
 
 #include <signal.h> 
@@ -19,8 +19,7 @@ int    MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
                               2*sizeof(double),sizeof(char)};
 double MPI_Wtime()
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
+  return PetscGetTime();
 }
 
 /*     Fortran versions of several routines */
@@ -128,26 +127,22 @@ double MPI_WTICK()
 /*******mpi_wtime******/
 double mpi_wtime()
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
+  return PetscGetTime();
 }
 
 double mpi_wtime_()
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
+  return PetscGetTime();
 }
 
 double mpi_wtime__()
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
+  return PetscGetTime();
 }
 
 double MPI_WTIME()
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
+  return PetscGetTime();
 }
 
 /*******mpi_abort******/
