@@ -1,6 +1,6 @@
 
 #include "matimpl.h"
-#include "math.h"
+#include <math.h>
 
 #if !defined(__BDIAG_H)
 #define __BDIAG_H

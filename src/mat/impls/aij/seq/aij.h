@@ -1,6 +1,6 @@
 
 #include "matimpl.h"
-#include "math.h"
+#include <math.h>
 
 #if !defined(__AIJ_H)
 #define __AIJ_H

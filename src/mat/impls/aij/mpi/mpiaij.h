@@ -1,6 +1,5 @@
 
 #include "aij.h"
-#include <math.h>
 
 typedef  struct {int nmax, n, *idx, *idy; Scalar *array;} Stash;
 
