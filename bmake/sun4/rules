@@ -1,4 +1,4 @@
-# $Id: base,v 1.38 1998/06/18 14:41:21 balay Exp balay $ 
+# $Id: base,v 1.39 1998/06/18 14:43:08 balay Exp balay $ 
 
 #
 #
@@ -13,7 +13,7 @@ CC       = gcc -D__USE_FIXED_PROTOTYPES__ -fPIC
 #
 CCV      = ${CC} --version
 #
-FC       = f77 -u
+FC       = f77 -PIC -u
 AR       = ar
 RM       = rm -f
 OMAKE    = make
