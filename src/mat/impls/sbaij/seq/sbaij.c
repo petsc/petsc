@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.1 2000/06/21 15:47:00 balay Exp balay $*/
+/*$Id: sbaij.c,v 1.2 2000/06/22 15:25:58 balay Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1023,7 +1023,6 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode
   int         *aj=a->j,nonew=a->nonew,bs=a->bs,brow,bcol;
   int         ridx,cidx,bs2=a->bs2,ierr;
   MatScalar   *ap,value,*aa=a->a,*bap;
-  int         ambs=a->mbs;
 
   PetscFunctionBegin;
 
@@ -1350,7 +1349,7 @@ int MatSeqSBAIJSetColumnIndices(Mat mat,int *indices)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJSetColumnIndices_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqSBAIJSetColumnIndices_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
   } else {
@@ -1432,7 +1431,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "MatStoreValues_SeqSBAIJ"
 int MatStoreValues_SeqSBAIJ(Mat mat)
 {
-  Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)mat->data;
+  Mat_SeqSBAIJ *aij = (Mat_SeqSBAIJ *)mat->data;
   int         nz = aij->i[aij->m]*aij->bs*aij->bs2;
   int         ierr;
 
@@ -1457,7 +1456,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "MatRetrieveValues_SeqSBAIJ"
 int MatRetrieveValues_SeqSBAIJ(Mat mat)
 {
-  Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)mat->data;
+  Mat_SeqSBAIJ *aij = (Mat_SeqSBAIJ *)mat->data;
   int         nz = aij->i[aij->m]*aij->bs*aij->bs2,ierr;
 
   PetscFunctionBegin;
@@ -1474,7 +1473,6 @@ int MatRetrieveValues_SeqSBAIJ(Mat mat)
 }
 EXTERN_C_END
 
-/*------------------------------------ New 1 -------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqSBAIJ"
 /*@C
@@ -1520,9 +1518,9 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
 {
   Mat         B;
   Mat_SeqSBAIJ *b;
-  int         i,len,ierr,mbs,nbs,bs2,size;
+  int         i,len,ierr,mbs,bs2,size;
   PetscTruth  flg;
-  int         s_nz,s_maxnz,*imax; 
+  int         s_nz; 
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -1530,7 +1528,6 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
 
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
   mbs  = m/bs;
-  /* nbs  = n/bs; */
   bs2  = bs*bs;
 
   if (mbs*bs!=m) {
@@ -1622,7 +1619,7 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   ierr = MapCreateMPI(comm,m,m,&B->cmap);CHKERRQ(ierr);
 
   b->mbs     = mbs;
-  /* b->nbs     = nbs; */
+  b->nbs     = mbs; 
   b->imax    = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(b->imax);
   if (!nnz) {
     if (nz == PETSC_DEFAULT) nz = 5;
