@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.123 1996/08/19 23:02:46 curfman Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.124 1996/08/20 21:56:37 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -949,7 +949,7 @@ int PLogEventRegister(int *e,char *string,char *color)
     if (color != PETSC_NULL) PLogEventColor[*e] = color;
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     if (!rank) {
-      MPE_Describe_state(MPEBEGIN+2*(*e),MPEBEGIN+2*(*e)+1,string,color);
+      MPE_Describe_state(MPEBEGIN+2*(*e),MPEBEGIN+2*(*e)+1,string,PLogEventColor[*e]);
     }
   }
 #endif
