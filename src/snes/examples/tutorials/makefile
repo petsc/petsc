@@ -120,9 +120,9 @@ ex28: ex28.o chkopts
 ex29: ex29.o chkopts
 	-${CLINKER} -o ex29 ex29.o ${PETSC_SNES_LIB}
 	${RM} ex29.o
-ex30: ex30.o erf.o chkopts
+ex30: ex30.o chkopts
 	-${CLINKER} -o ex30 ex30.o ${PETSC_SNES_LIB}
-	${RM} ex30.o erf.o
+	${RM} ex30.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog -snes_smonitor > ex1_1.tmp 2>&1;   \
