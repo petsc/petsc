@@ -288,7 +288,6 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
         }
       }
     }
-    fclose(fp);
   }
   return 0;
 }
