@@ -1,4 +1,4 @@
-# $Id: base,v 1.64 2000/02/02 22:28:01 balay Exp bsmith $ 
+# $Id: base,v 1.65 2000/02/02 22:35:27 bsmith Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -54,6 +54,6 @@ oshared:
 	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o libtmp.${SLSUFFIX} \
                ${NEEDED_A_LIBS} ${C_SYS_LIB} ; \
 	cd ../ ; \
-	mv tmp/libtmp.${SLSUFFIX} {LIBNAME}.${SLSUFFIX} ;\
+	mv tmp/libtmp.${SLSUFFIX} ${LIBNAME}.${SLSUFFIX} ;\
 	${RM} -rf tmp
 
