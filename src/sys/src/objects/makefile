@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 2000/01/11 20:59:32 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.10 2000/08/17 04:50:45 bsmith Exp balay $ 
 
 ALL: lib 
 
@@ -6,11 +6,13 @@ CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = -DPETSC_LDIR='"${LDIR}"'
 SOURCEC	  = cookie.c  gcomm.c   gtype.c   olist.c   pcomm.c  pname.c  tagm.c \
-            destroy.c gcookie.c inherit.c options.c pgname.c prefix.c init.c pinit.c
+            destroy.c gcookie.c inherit.c options.c pgname.c prefix.c init.c \
+	    pinit.c ptype.c
 SOURCEF	  =
 SOURCEH	  = 
 OBJSC	  = cookie.o  gcomm.o   gtype.o   olist.o   pcomm.o  pname.o  tagm.o \
-            destroy.o gcookie.o inherit.o options.o pgname.o prefix.o init.o pinit.o
+            destroy.o gcookie.o inherit.o options.o pgname.o prefix.o init.o \
+	    pinit.o ptype.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
