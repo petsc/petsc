@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.16 1999/06/30 22:48:03 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.17 1999/07/06 22:28:39 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -50,6 +50,5 @@
 #define PETSC_NEED_SETSOCKETOPT_PROTO
 #define PETSC_NEED_CONNECT_PROTO
 #define PETSC_NEED_SOCKET_PROTO
-#define PETSC_HAVE_FREE_RETURN_INT
 
 #endif
