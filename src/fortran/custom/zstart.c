@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.16 1996/10/12 17:17:36 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.17 1996/11/25 19:37:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -139,7 +139,8 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   i = 0;
 #if defined(PARCH_t3d)
   { int ilen;
-    PXFGETARG(&i, _cptofcd(name,256),&ilen,&ierr); CHKERRQ(ierr);
+    PXFGETARG(&i, _cptofcd(name,256),&ilen,__ierr); 
+    if (__ierr) return;
     name[ilen] = 0;
   }
 #else
