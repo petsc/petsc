@@ -375,12 +375,13 @@ class Configure(config.base.Configure):
       self.framework.log.write('Intel PEPCF90 library does not exist\n')
       self.framework.argDB['LIBS'] = oldLibs+' '+self.flibs
 
-    self.framework.log.write('Check that Fortran libraries can be used from C++\n')
     # check these monster libraries work from C++
     if 'CXX' in self.framework.argDB:
+      self.framework.log.write('Check that Fortran libraries can be used from C++\n')
       self.framework.argDB['LIBS'] = oldLibs+self.flibs
       try:
         self.setCompilers.checkCompiler('C++')
+        self.framework.log.write('Fortran libraries can be used from C++\n')
       except RuntimeError, e:
         self.framework.log.write(str(e)+'\n')
         # try removing this one causes grief with gnu g++ and Intel Fortran
