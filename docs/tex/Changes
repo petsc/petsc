@@ -46,6 +46,8 @@ add to it).
     The option -ksp_bsmonitor is not longer needed, use -ksp_truemonitor for the same 
     affect.
     
+    added an additional argument to KSPSetResidualHistory() see manual page. Suggested
+    by PETSc user Maria Murillo.
     
   PC
 
