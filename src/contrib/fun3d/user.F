@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.29 2000/09/20 15:11:09 kaushik Exp kaushik $
+!  $Id: user.F,v 1.30 2000/10/05 21:22:30 kaushik Exp kaushik $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -912,7 +912,19 @@
 #undef __FUNC__
 #define __FUNC__ "FLUX"
 #if defined(_OPENMP)
-#if defined(HAVE_REDUNDANT_WORK)     
+#if defined(HAVE_EDGE_COLORING)
+      subroutine FLUX(nnodes, ncell, nedge,                                     &
+     &                nsface, nvface, nfface, isface, ivface, ifface,           &
+     &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
+     &                nnfacet,f2ntn,nnbound,                                    &
+     &                nvfacet,f2ntv,nvbound,                                    &
+     &                nffacet,f2ntf,nfbound,                                    &
+     &                grad,evec,qvec,xyz,resvec,xyzn,                           &
+     &                sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
+     &                max_threads,                                              &
+     &                ncolor,ncount,                                            &
+     &                irank,nvertices)
+#elif defined(HAVE_REDUNDANT_WORK)     
       subroutine FLUX(nnodes, ncell, nedge,                                     &
      &                nsface, nvface, nfface, isface, ivface, ifface,           &
      &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
@@ -1049,7 +1061,9 @@
        integer my_thread_id,omp_get_thread_num,ierr,                        &
      &         max_threads,omp_get_num_threads,                             &
      &         first_node,last_node,chunk
-#if defined(HAVE_REDUNDANT_WORK)
+#if defined(HAVE_EDGE_COLORING)
+       integer ncolor,ncount(1)
+#elif defined(HAVE_REDUNDANT_WORK)
        Scalar resd(4,nnodes)
 #undef res(a,b)
 #define res(a,b) resd(a,b)
@@ -1069,32 +1083,57 @@
 #define ra(i) xyzn_thr(4,i)
 #endif
 #endif
-
-#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
-       call PetscMemzero(resd,8*4*nnodes,ierr)
-#endif
+!      logging variables
+       integer flux_event, flag, ierr
+       character * 16 flux_label 
+       data flag/-1/,flux_label/'FluxEvaluation  '/
+       save flux_event, flag, flux_label
+       if (flag .eq. -1) then
+          call PLogEventRegister(flux_event,flux_label,'blue:',ierr)         
+          flag = 1
+       endif
+       call PLogEventBegin(flux_event,0,0,0,0,ierr)
        flops = 0
        second = 1.0d0
 !      if(ntt.le.nitfo)second = 0.0
 !      print *, 'Second is' , second
+#if defined(_OPENMP)
+#if defined(HAVE_EDGE_COLORING)
+       first_edge = 1
+       do i = 1,ncolor
+             last_edge = first_edge + ncount(i) - 1
+#elif defined(HAVE_REDUNDANT_WORK)
+       call PetscMemzero(resd,8*4*nnodes,ierr)
+       first_edge = 1
+       last_edge = nedge
+#endif
+#else
+       first_edge = 1
+       last_edge = nedge
+#endif
 ! Loop over all the faces and calculate flux 
 !
-!$omp  parallel default(shared) private(n,node1,node2,xmean,ymean,
-!$omp1 zmean,xnorm,ynorm,znorm,rlen,dot,x1,y1,z1,size,x2,y2,z2,rx,
-!$omp2 ry,rz,pL,uL,vL,wL,ubarL,pR,uR,vR,wR,ubarR,p,u,v,w,ubar,phi1,
-!$omp3 phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9,c2,c,eig1,eig2,eig3,
-!$omp4 eig4,dp,du,dv,dw,ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4,r11,r21,
-!$omp5 r31,r41,r12,r22,r32,r42,r13,r23,r33,r43,r14,r24,r34,r44,t1,t2,
-!$omp6 t3,t4,fluxp1,fluxp2,fluxp3,fluxp4,fluxm1,fluxm2,fluxm3,fluxm4,
-!$omp7 res1,res2,res3,res4,c68,c18,inode) 
-!$omp8 private(x3,y3,z3,p1,p2,p3,ax,ay,az,bx,by,bz,pa,pb,pc,area,c20,
-!$omp9 c0,ubar0,t11,t21,t31,t41,t12,t22,t32,t42,t13,t23,t33,t43,t14,
-!$omp1 t24,t34,t44,pi,ui,vi,wi,unorm,rhs1,rhs2,rhs3,rhs4,ub,vb,wb,node3)
-!$omp8 private(my_thread_id,first_edge,last_edge,chunk)
-#if defined(HAVE_REDUNDANT_WORK)
-!$omp9 firstprivate(resd)
+!$omp  parallel default(shared) private(n,node1,node2,xmean,ymean,           &
+!$omp& zmean,xnorm,ynorm,znorm,rlen,dot,x1,y1,z1,size,x2,y2,z2,rx,           &
+!$omp& ry,rz,pL,uL,vL,wL,ubarL,pR,uR,vR,wR,ubarR,p,u,v,w,ubar,phi1,          &
+!$omp& phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9,c2,c,eig1,eig2,eig3,          &
+!$omp& eig4,dp,du,dv,dw,ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4,r11,r21,         &
+!$omp& r31,r41,r12,r22,r32,r42,r13,r23,r33,r43,r14,r24,r34,r44,t1,t2,        &
+!$omp& t3,t4,fluxp1,fluxp2,fluxp3,fluxp4,fluxm1,fluxm2,fluxm3,fluxm4,        &
+!$omp& res1,res2,res3,res4,c68,c18,inode)                                    &
+!$omp& private(x3,y3,z3,p1,p2,p3,ax,ay,az,bx,by,bz,pa,pb,pc,area,c20,        &
+!$omp& c0,ubar0,t11,t21,t31,t41,t12,t22,t32,t42,t13,t23,t33,t43,t14,         &
+!$omp& t24,t34,t44,pi,ui,vi,wi,unorm,rhs1,rhs2,rhs3,rhs4,ub,vb,wb,node3)     &
+!$omp& private(my_thread_id,chunk)                                           &
+!$omp& reduction(+:flops)                                                    &
+#if defined(_OPENMP)
+#if defined(HAVE_EDGE_COLORING)
+#elif defined(HAVE_REDUNDANT_WORK)
+!$omp& firstprivate(resd)
+#else
+!$omp& private(first_edge,last_edge)
 #endif
-!$omp2 reduction(+:flops)
+#endif
 !!$omp1 shared(evec,qvec,resvec,xyz,xyzn,grad,nedge,nnodes,second,flops,
 !!$omp2 title,beta,alpha,Re,dt,tot,res0,resc,ntt,mseq,ivisc,irest,icyc,
 !!$omp3 ihane,ntturb,gamma,gm1,gp1,gm1g,gp1g,ggm1,p0,rho0,c0,u0,v0,w0,
@@ -1104,11 +1143,11 @@
 !!$omp   critical
 !!$      print *, 'My thread id on processor ',irank,' is ',my_thread_id
 !!$omp   end critical
-       first_edge = 1
-       last_edge = nedge
 #if defined(_OPENMP)
-#if defined(HAVE_REDUNDANT_WORK)
-!$omp  do 
+#if defined(HAVE_EDGE_COLORING)
+!$omp do 
+#elif defined(HAVE_REDUNDANT_WORK)
+!$omp do 
 #else
 !     tot_threads = omp_get_num_threads()
       my_thread_id = omp_get_thread_num()
@@ -1124,13 +1163,14 @@
 
 !      print *, 'On thread ', my_thread_id,', first_edge = ',first_edge,        &
 !     &         ', last_edge = ',last_edge
+
 #endif
 #else
 #endif       
       do n = first_edge, last_edge
         node1 = eptr(n,1)
         node2 = eptr(n,2)
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
         if ((part_thr(node1) .eq. my_thread_id)                                 &
      &       .or.(part_thr(node2) .eq. my_thread_id)) then
 #endif
@@ -1324,7 +1364,7 @@
 	  flops = flops + 318
 
 !
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
           if ((part_thr(node1).eq.my_thread_id)                                 &
      &        .and.(node1.le.nnodes)) then
 #else         
@@ -1337,7 +1377,7 @@
            flops = flops + 4
           endif
 !
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
           if ((part_thr(node2).eq.my_thread_id)                                 &
      &        .and.(node2.le.nnodes)) then
 #else         
@@ -1349,14 +1389,38 @@
            res(4,node2) = res(4,node2) - res4
            flops = flops + 4
           endif
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)&& !defined(HAVE_EDGE_COLORING)
          endif
 #endif
 !
       enddo
-#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
+#if defined(_OPENMP) 
+#if defined(HAVE_EDGE_COLORING)
 !$omp enddo
+!$omp end parallel  
+       first_edge = first_edge + ncount(i)
+      enddo
+#elif defined(HAVE_REDUNDANT_WORK)
+!$omp enddo
+!$omp critical (residual_update)
+       do n = 1,nnodes
+          resvec(1,n)=resvec(1,n)+res(1,n)
+          resvec(2,n)=resvec(2,n)+res(2,n)
+          resvec(3,n)=resvec(3,n)+res(3,n)
+          resvec(4,n)=resvec(4,n)+res(4,n)
+       enddo
+       flops = flops + 4*nnodes
+!$omp end critical (residual_update)
+!$omp end parallel
+#undef res(a,b)
+#define res(a,b) resvec(a,b)
+#else
+!$omp end parallel
 #endif
+#else
+#endif
+      call PLogFlops(flops,ierr)
+      call PLogEventEnd(flux_event,0,0,0,0,ierr)
 !     c68 = 6./8.
 !     c18 = 1./8.
       c68 = 0.75d0
@@ -1365,9 +1429,6 @@
 ! Close contour over the boundaries 
 ! First do inviscid faces
 !
-#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
-!$omp do
-#endif
       do n = 1, nnfacet
                node1 = isnode(f2ntn(n,1))
                node2 = isnode(f2ntn(n,2))
@@ -1408,36 +1469,21 @@
                pc = c68*p3 + c18*(p1 + p2)
 !
                flops = flops + 35
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node1).eq.my_thread_id)                          &
-     &        .and.(node1.le.nnodes)) then
-#else         
           if (node1.le.nnodes) then
-#endif
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
 	        flops = flops + 6
           endif
 
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node2).eq.my_thread_id)                          &
-     &        .and.(node2.le.nnodes)) then
-#else         
           if (node2.le.nnodes) then
-#endif
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
 	        flops = flops + 6
           endif
 
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node3).eq.my_thread_id)                          &
-     &        .and.(node3.le.nnodes)) then
-#else         
           if (node3.le.nnodes) then
-#endif
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
@@ -1445,15 +1491,9 @@
           endif
 
       enddo
-#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
-!$omp enddo
-#endif
 !
 ! Now viscous faces
 !
-#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
-!$omp do
-#endif
       do n = 1, nvfacet
                node1 = ivnode(f2ntv(n,1))
                node2 = ivnode(f2ntv(n,2))
@@ -1495,12 +1535,7 @@
 !
 	       flops = flops + 35
 !
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node1).eq.my_thread_id)                              &
-     &        .and.(node1.le.nnodes)) then
-#else         
           if (node1.le.nnodes) then
-#endif
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
@@ -1508,24 +1543,14 @@
 
           endif
 
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node2).eq.my_thread_id)                              &
-     &        .and.(node2.le.nnodes)) then
-#else         
           if (node2.le.nnodes) then
-#endif
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
                 flops = flops + 6
           endif
 
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(node3).eq.my_thread_id)                              &
-     &        .and.(node3.le.nnodes)) then
-#else         
           if (node3.le.nnodes) then
-#endif
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
@@ -1533,9 +1558,6 @@
           endif
 
       enddo
-#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
-!$omp enddo
-#endif
 !
 ! The next section of code is for when you dont care about
 ! preserving linear data on boundary. Also, doing this 
@@ -1587,9 +1609,6 @@
 !
 ! Now do far-field
 !
-#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
-!$omp do
-#endif
        do i = 1,nfnode
          inode   = ifnode(i)
 !/*
@@ -1715,12 +1734,7 @@
          ubar = xnorm*ub + ynorm*vb + znorm*wb
          flops = flops + 180
 !
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-          if ((part_thr(inode).eq.my_thread_id)                               &
-     &        .and.(inode.le.nnodes)) then
-#else         
         if (inode.le.nnodes) then
-#endif
           res(1,inode) = res(1,inode)+area*beta*ubar
           res(2,inode) = res(2,inode)+area*(ub*ubar + xnorm*pb)
           res(3,inode) = res(3,inode)+area*(vb*ubar + ynorm*pb)
@@ -1729,20 +1743,6 @@
         endif
 !
        enddo
-#if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
-!$omp enddo
-!$omp critical (residual_update)
-       do n = 1,nnodes
-          resvec(1,n)=resvec(1,n)+res(1,n)
-          resvec(2,n)=resvec(2,n)+res(2,n)
-          resvec(3,n)=resvec(3,n)+res(3,n)
-          resvec(4,n)=resvec(4,n)+res(4,n)
-       enddo
-       flops = flops + 4*nnodes
-!      print *, 'For thread ', omp_get_thread_num(),', n is',n
-!$omp end critical (residual_update)
-#endif
-!$omp end parallel  
        call PLogFlops(flops,ierr)
 !
 ! End of subroutine FLUX
@@ -2280,7 +2280,20 @@
 #undef __FUNC__
 #define __FUNC__ "GETRES"
 #if defined(_OPENMP)
-#if defined(HAVE_REDUNDANT_WORK)     
+#if defined(HAVE_EDGE_COLORING)
+      subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,     &
+     &                  nsnode,nvnode,nfnode,isface,ivface,ifface,          &
+     &                  ileast,isnode,ivnode,ifnode,                        &
+     &                  nnfacet,f2ntn,nnbound,                              &
+     &                  nvfacet,f2ntv,nvbound,                              &
+     &                  nffacet,f2ntf,nfbound,                              &
+     &                  evec,sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,           &
+     &                  xyzn,qvec,cdt,xyz,area,grad,resvec,turbre,          &
+     &                  slen,c2n,c2e,us,vs,as,phi,amut,ires,                &
+     &                  max_threads,                                        &
+     &                  ncolor,ncount,                                      &
+     &                  LocalTS,irank, nvertices)
+#elif defined(HAVE_REDUNDANT_WORK)     
       subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,     &
      &                  nsnode,nvnode,nfnode,isface,ivface,ifface,          &
      &                  ileast,isnode,ivnode,ifnode,                        &
@@ -2372,11 +2385,14 @@
       common/gmcom/gtol,icycle,nsrch,ilu0,ifcn
       common/history/rms,clw,cdw,cmw,xres
 !     logging variables
-!     integer flux_event, delta2_event, flag
-!     character * 16 flux_label, delta2_label
-!     data flag/-1/,flux_label/'FLUX            '/
+!     integer flux_event, flag, ierr
+!     integer delta2_event
+!     character * 16 flux_label 
+!     character * 16 delta2_label
+!     data flag/-1/,flux_label/'FluxEvaluation  '/
 !     data delta2_label/'DELTA2          '/
-!     save flux_event,delta2_event,flag, flux_label,delta2_label
+!     save flux_event, flag, flux_label
+!     save delta2_event,delta2_label
 #if defined(INTERLACING)
        Scalar resvec(4,nnodes)
 #undef res(a,b)
@@ -2387,7 +2403,9 @@
 #endif
 #if defined(_OPENMP) 
        integer max_threads
-#if defined(HAVE_REDUNDANT_WORK)     
+#if defined(HAVE_EDGE_COLORING)
+       integer ncolor,ncount(1)
+#elif defined(HAVE_REDUNDANT_WORK)     
        Scalar resd(4,nnodes)       
 #else
        integer nedgeAllThr,part_thr(nnodes),nedge_thr(0:max_threads),         &
@@ -2470,7 +2488,19 @@
 !       call PLogEventBegin(flux_event,0,0,0,0,ierr)
 
 #if defined(_OPENMP)
-#if defined(HAVE_REDUNDANT_WORK)     
+#if defined(HAVE_EDGE_COLORING)
+      call FLUX(nnodes, ncell, nedge,                                     &
+     &          nsface, nvface, nfface, isface, ivface, ifface,           &
+     &          nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
+     &          nnfacet,f2ntn,nnbound,                                    &
+     &          nvfacet,f2ntv,nvbound,                                    &
+     &          nffacet,f2ntf,nfbound,                                    &
+     &          grad,evec,qvec,xyz,resvec,xyzn,                           &
+     &          sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
+     &          max_threads,                                              &
+     &          ncolor,ncount,                                            &
+     &          irank,nvertices)
+#elif defined(HAVE_REDUNDANT_WORK)     
       call FLUX(nnodes, ncell, nedge,                                     &
      &          nsface, nvface, nfface, isface, ivface, ifface,           &
      &          nsnode, nvnode, nfnode, isnode, ivnode, ifnode,           &
@@ -2506,8 +2536,8 @@
      &          sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,phi,                  &
      &          irank,nvertices)
 #endif  
-!/*        call PLogEventEnd(flux_event,0,0,0,0,ierr)
-!
+!          call PLogEventEnd(flux_event,0,0,0,0,ierr)
+!/*
 ! calculate viscous fluxes
 !
 !     if (ivisc.gt.0) then
@@ -2611,7 +2641,7 @@
       do 1010 i = 1,nedge
         node1 = eptr(i,1)
         node2 = eptr(i,2)
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
         ideg(node1) = ideg(node1) + 1
         ideg(node2) = ideg(node2) + 1
 #else
@@ -2667,7 +2697,7 @@
         node1 = eptr(i,1)
         node2 = eptr(i,2)
 !
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
         index1 = ia(node1) + iwork(node1) 
         iwork(node1) = iwork(node1) + 1
         ja(index1) = node2

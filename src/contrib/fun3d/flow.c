@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.60 2000/09/20 15:11:45 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.61 2000/10/05 21:22:02 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -42,9 +42,8 @@ extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
             ComputeTimeStep(SNES,int,void*),
             GetLocalOrdering(GRID *),
             SetPetscDS(GRID *,TstepCtx *);
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
-/*extern void METIS_PartGraphRecursive(int *, idxtype *, idxtype*,idxtype *, idxtype*,
-                            int*,int*,int*,int*,int*,idxtype*);*/
+#if defined (_OPENMP) && defined(HAVE_EDGE_COLORING)
+int EdgeColoring(int nnodes,int nedge,int *e2n,int *eperm,int *ncolor,int *ncount);
 #endif
 /* Global Variables */ 
 
@@ -102,7 +101,7 @@ int main(int argc,char **args)
   int           fdes,i, *itmp;
   Scalar        *qsc;
 #endif  
-  ierr = PetscInitialize(&argc,&args,PETSC_NULL,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
@@ -496,7 +495,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
               grid->amut,   &ires,
 #if defined(_OPENMP) 
               &max_threads,
-#if defined(HAVE_REDUNDANT_WORK)     
+#if defined(HAVE_EDGE_COLORING)
+              &grid->ncolor, grid->ncount,
+#elif defined(HAVE_REDUNDANT_WORK)     
               grid->resd,       
 #else
               &grid->nedgeAllThr,
@@ -806,7 +807,12 @@ int GetLocalOrdering(GRID *grid)
   /* Read the integer grid parameters */ 
   ICALLOC(grid_param,&tmp);
   if (!rank) {
+   PetscTruth exists;
    ierr = OptionsGetString(PETSC_NULL,"-mesh",mesh_file,256,&flg);CHKERRQ(ierr);
+   ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
+   if (!exists) { /* try uns3d.msh as the file name */
+      ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
+   }
    ierr = PetscBinaryOpen(mesh_file,BINARY_RDONLY,&fdes);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
@@ -858,7 +864,7 @@ int GetLocalOrdering(GRID *grid)
     ierr = OptionsGetString(PETSC_NULL,"-partition",spart_file,256,&flg);CHKERRQ(ierr);
     ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
     if (!exists) { /* try appending the number of processors */
-      sprintf(part_file,"%s.%d",spart_file,size);
+      sprintf(part_file,"part_vec.part.%d",size);
       ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
     }
     fptr = fopen(spart_file,"r");
@@ -978,6 +984,10 @@ int GetLocalOrdering(GRID *grid)
 
   ierr = PetscFree(tmp);CHKERRQ(ierr);
   ICALLOC(2*nedgeLoc,&tmp);
+  ierr = PetscMemcpy(tmp,grid->eptr,2*nedgeLoc*sizeof(int));CHKERRQ(ierr);
+#if defined (_OPENMP) && defined(HAVE_EDGE_COLORING)
+  ierr = EdgeColoring(nvertices,nedgeLoc,grid->eptr,eperm,&grid->ncolor,grid->ncount); 
+#else
   /* Now reorder the edges for better cache locality */     
   /*
   tmp[0]=7;tmp[1]=6;tmp[2]=3;tmp[3]=9;tmp[4]=2;tmp[5]=0;
@@ -985,11 +995,12 @@ int GetLocalOrdering(GRID *grid)
   for (i=0; i<6; i++)
    printf("%d %d %d\n",i,tmp[i],eperm[i]);
   */
-  ierr = PetscMemcpy(tmp,grid->eptr,2*nedgeLoc*sizeof(int));CHKERRQ(ierr);
   ierr = OptionsHasName(0,"-no_edge_reordering",&flg);CHKERRQ(ierr);
   if (!flg) {
    ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
+#endif
+  ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,0);CHKERRQ(ierr);
   k = 0;
   for (i = 0; i < nedgeLoc; i++) {
     int cross_node=nnodesLoc/2;
@@ -1011,7 +1022,7 @@ int GetLocalOrdering(GRID *grid)
   }
   ierr = PetscPrintf(comm,"Number of cross edges %d\n", cross_edges);CHKERRQ(ierr);
   ierr = PetscFree(tmp);CHKERRQ(ierr);
-#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)
+#if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
   /* Now make the local 'ia' and 'ja' arrays */
   ICALLOC(nvertices+1,&grid->ia);
   /* Use tmp for a work array */
@@ -1147,7 +1158,8 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin);CHKERRQ(ierr);
 #if defined(_OPENMP) 
   /*Arrange for the division of work among threads*/
-#if defined(HAVE_REDUNDANT_WORK)
+#if defined(HAVE_EDGE_COLORING)
+#elif defined(HAVE_REDUNDANT_WORK)
    FCALLOC(4*nnodesLoc,   &grid->resd);
 #else
   {
@@ -1173,10 +1185,12 @@ int GetLocalOrdering(GRID *grid)
      }
    }
    ICALLOC(nvertices,&grid->part_thr);
+   ierr = PetscMemzero(grid->part_thr,nvertices*sizeof(int));CHKERRQ(ierr);
    options[0] = 0;
    /* Call the pmetis library routine */
-   METIS_PartGraphRecursive(&nvertices,ia,ja,vwtg,adjwgt,
-                            &wgtflag,&numflag,&max_threads,options,&edgecut,grid->part_thr);
+   if (max_threads > 1 )
+       METIS_PartGraphRecursive(&nvertices,ia,ja,vwtg,adjwgt,
+                                &wgtflag,&numflag,&max_threads,options,&edgecut,grid->part_thr);
    PetscPrintf(MPI_COMM_WORLD,"The number of cut edges is %d\n", edgecut);
    k = 0;
    /* Divide the work among threads */
@@ -1194,7 +1208,7 @@ int GetLocalOrdering(GRID *grid)
      cross_edges++;
     }
    }
-   printf("The number of cross edges after Metis partitioning is %d\n",cross_edges);
+   PetscPrintf(MPI_COMM_WORLD,"The number of cross edges after Metis partitioning is %d\n",cross_edges);
    ned1 = grid->nedge_thr[0];
    grid->nedge_thr[0] = 1;
    for (i = 1; i <= max_threads; i++) {
@@ -2380,6 +2394,44 @@ int write_fine_grid(GRID *grid)
    PetscFunctionReturn(0);
 }
 
+#if defined (_OPENMP) && defined(HAVE_EDGE_COLORING)
+int EdgeColoring(int nnodes,int nedge,int *e2n,int *eperm,int *ncle,int *counte)
+{
+ int ncolore = *ncle = 0;
+ int iedg = 0,ib = 0,ie = nedge,tagcount; 
+ int i,n1,n2;
+ int *tag;
+ ICALLOC(nnodes,&tag);
+ while (ib < ie) {
+   for (i = 0; i < nnodes; i++)
+     tag[i] = 0;
+   counte[ncolore] = 0;
+   for (i = ib; i < ie; i++) { 
+     n1 = e2n[i];
+     n2 = e2n[i+nedge];
+     tagcount = tag[n1]+tag[n2];
+     /* If tagcount = 0 then this edge belongs in this color */
+     if (tagcount == 0) {
+       tag[n1] = 1;
+       tag[n2] = 1;
+       e2n[i] = e2n[iedg];
+       e2n[i+nedge] = e2n[iedg+nedge];
+       e2n[iedg] = n1;
+       e2n[iedg+nedge] = n2;
+       n1 = eperm[i];
+       eperm[i] = eperm[iedg];
+       eperm[iedg] = n1;
+       iedg++;
+       counte[ncolore]+= 1;
+     }
+   }
+   ib = iedg;
+   ncolore++;
+ }
+ *ncle = ncolore;
+ return 0;
+ }
+#endif
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
 int EventCountersBegin(int *gen_start,Scalar* time_start_counters)
 {

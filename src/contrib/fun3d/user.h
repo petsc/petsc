@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.14 2000/08/18 05:27:19 kaushik Exp kaushik $*/
+/*$Id: user.h,v 1.15 2000/09/15 20:08:12 kaushik Exp kaushik $*/
 #include "petsc.h" 
                   
 #define max_colors  200
@@ -301,7 +301,9 @@ extern void f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
 #if defined(_OPENMP) 
                       int*,
-#if defined(HAVE_REDUNDANT_WORK)     
+#if defined(HAVE_EDGE_COLORING)
+                      int*, int*,
+#elif defined(HAVE_REDUNDANT_WORK)     
                       Scalar*,       
 #else
                       int*,
