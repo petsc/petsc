@@ -223,7 +223,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
   if (!rank) {
     PetscScalar  *work;
     PetscReal    *realpart,*imagpart;
-    PetscBLASInt bn = (PetscBLASInt)n,idummy,lwork;
+    PetscBLASInt idummy,lwork;
     int          *perm;
 
     idummy   = n;
@@ -235,6 +235,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
     SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #else
     {
+      PetscBLASInt bn = (PetscBLASInt) n;
       PetscScalar sdummy;
       LAgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
     }

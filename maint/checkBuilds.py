@@ -25,6 +25,7 @@ class BuildChecker(script.Script):
                'cygwin':               ['gcc'],
                'cygwin-ms':            ['win32fe', 'ms'],
                'freebsd5.1':           ['gcc'],
+               'linux':                ['gcc'],
                'linux-gnu':            ['gcc'],
                'linux-gnu-gcc-absoft': ['gcc', 'absoftF90'],
                'linux-gnu-gcc-ifc':    ['gcc', 'intelF90'],
@@ -188,14 +189,14 @@ class BuildChecker(script.Script):
     if self.isLocal:
       files = os.listdir(self.argDB['logDirectory'])
     else:
-      (output, error, status) = self.executeShellCommand('ssh '+self.argDB['self.remoteMachine']+' ls -1 '+self.argDB['logDirectory'])
+      (output, error, status) = self.executeShellCommand('ssh '+self.argDB['remoteMachine']+' ls -1 '+self.argDB['logDirectory'])
       files = output.split('\n')
     print files
     return filter(lambda fname: buildRE.match(fname), files)
 
   def run(self):
     self.setup()
-    self.isLocal = os.path.isdir(baseDir)
+    self.isLocal = os.path.isdir(self.argDB['logDirectory'])
     map(lambda f: self.checkFile(os.path.join(self.argDB['logDirectory'], f)), self.getBuildFileNames())
     return
 

@@ -2889,7 +2889,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
   Mat               B_seq,B_mpi;
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)seqmat->data;
   PetscMPIInt       size,rank;
-  int               M=seqmat->m,N=seqmat->n,m,i,j,*owners,*ai=a->i,*aj=a->j,tag,taga,len,len_a,*len_s,*len_sa,proc,*len_r,*len_ra;
+  int               M=seqmat->m,N=seqmat->n,m,i,j,*owners,*ai=a->i,*aj=a->j,tag,taga,len,len_a = 0,*len_s,*len_sa,proc,*len_r,*len_ra;
   int               **ijbuf_r,*ijbuf_s,*nnz_ptr,k,anzi,*bj_i,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj;                  
   MPI_Request       *s_waits,*r_waits,*s_waitsa,*r_waitsa;
   MPI_Status        *status;
