@@ -5,11 +5,10 @@
   matrix storage format.
 */
 
+#include "src/mat/matimpl.h"   /*I "petscmat.h" I*/
 #include "petscsys.h"       
-#include "esi/ESI.h"
 #include "esi/petsc/vector.h"
 #include "esi/petsc/matrix.h"
-#include "src/mat/matimpl.h"   /*I "petscmat.h" I*/
 
 typedef struct { 
   int                                   rstart,rend; /* range of local rows */

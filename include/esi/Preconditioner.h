@@ -3,6 +3,11 @@
 
 namespace esi {
 
+/** ESI preconditioner side terms */
+typedef enum { PRECONDITIONER_LEFT,
+               PRECONDITIONER_RIGHT,
+               PRECONDITIONER_TWO_SIDED } PreconditionerSide;
+
 /** The ESI Preconditioner class.
 
     \verbatim

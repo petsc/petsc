@@ -45,8 +45,8 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode apply( esi::Vector<Scalar,Ordinal>& x, esi::Vector<Scalar,Ordinal>& y);
 
     //  Interface for esi::MatrixData  ---------------
-    virtual esi_int getGlobalSizes(Ordinal& rows, Ordinal& columns);
-    virtual esi_int getLocalSizes(Ordinal& rows, Ordinal& columns);
+    virtual esi::ErrorCode getGlobalSizes(Ordinal& rows, Ordinal& columns);
+    virtual esi::ErrorCode getLocalSizes(Ordinal& rows, Ordinal& columns);
 
     //  Interface for esi::MatrixRowAccess  --------
 

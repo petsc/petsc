@@ -9,48 +9,43 @@ template<class T>
 struct MPI_traits {};
 
 template<>
-struct MPI_traits<real4> {
-  static MPI_Datatype mpi_type() {return(ESI_MPI_REAL4);};
+struct MPI_traits<float> {
+  static MPI_Datatype mpi_type() {return(MPI_FLOAT);};
 };
 
 template<>
-struct MPI_traits<real8> {
-  static MPI_Datatype mpi_type() {return(ESI_MPI_REAL8);};
+struct MPI_traits<double> {
+  static MPI_Datatype mpi_type() {return(MPI_DOUBLE);};
 };
 
 template<>
-struct MPI_traits<int4> {
-  static MPI_Datatype mpi_type() {return(ESI_MPI_INT4);};
+struct MPI_traits<int> {
+  static MPI_Datatype mpi_type() {return(MPI_INT);};
 };
 
 template<>
-struct MPI_traits<int8> {
-  static MPI_Datatype mpi_type() {return(ESI_MPI_INT8);};
+struct MPI_traits<long> {
+  static MPI_Datatype mpi_type() {return(MPI_LONG);};
 };
 
-/*
-  If we're using a Sun compiler, version earlier than 5.0,
-  then complex isn't available.
-*/
-#if defined(__SUNPRO_CC) && __SUNPRO_CC < 0x500
-#define NO_COMPLEX
-#endif
-
-#ifndef NO_COMPLEX
-
+#ifndef ESI_NO_COMPLEX
+//temporarily close the esi namespace:
+};
 #include <complex>
+//reopen the esi namespace:
+namespace esi {
 
 template<>
-struct MPI_traits<complex<real4> > {
-  static MPI_Datatype mpi_type() {return(ESI_MPI_COMPLEX);};
+struct MPI_traits<std::complex<float> > {
+  static MPI_Datatype mpi_type() {return(MPI_COMPLEX);};
 };
 
 template<>
-struct MPI_traits<complex<real8> > {
-  static MPI_Datatype mpi_type() {return(ESI_MPI_DOUBLE_COMPLEX);};
+struct MPI_traits<std::complex<double> > {
+  static MPI_Datatype mpi_type() {return(MPI_DOUBLE_COMPLEX);};
 };
 
-#endif /* NO_COMPLEX */
+#endif /* ESI_NO_COMPLEX */
 
 };     // esi namespace
 

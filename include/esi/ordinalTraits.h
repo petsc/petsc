@@ -12,19 +12,19 @@ struct ordinalTraits {
 };
 
 template<>
-struct ordinalTraits<int4> {
-   typedef int4 ordinal_type;
-   static inline const char* name() { return("esi::int4"); };
+struct ordinalTraits<int> {
+   typedef int ordinal_type;
+   static inline const char* name() { return("int"); };
 };
 
 template<>
-struct ordinalTraits<int8> {
-   typedef int8 ordinal_type;
-   static inline const char* name() {return("esi::int8");};
+struct ordinalTraits<long> {
+   typedef long ordinal_type;
+   static inline const char* name() {return("int");};
 };
 
 
-#if defined(__SUNPRO_CC) && __SUNPRO_CC < 0x500
+#ifdef ESI_NO_TYPENAME_KEYWORD
 #define TYPENAME
 #else
 #define TYPENAME typename

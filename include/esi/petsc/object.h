@@ -2,15 +2,16 @@
 #define __PETSc_Object_h__
 
 #include "petsc.h"
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
 
-//#include "esi/ESI.h"
+// #include "esi/ESI.h"
 #include "esi/basicTypes.h"
 #include "esi/ordinalTraits.h"
 #include "esi/scalarTraits.h"
 #include "esi/Argv.h"
 #include "esi/Object.h"
-#include "esi/ESI-MPI.h"
-#include "esi/config.h"
 #include "esi/MPI_traits.h"
 
 #if defined(PETSC_HAVE_CCA)

@@ -4,7 +4,6 @@
 
 #include "src/vec/vecimpl.h"                 /*I "petscvec.h" I*/
 #include "src/vec/impls/dvecimpl.h" 
-#include "esi/ESI.h"
 #include "esi/petsc/vector.h"
 
 typedef struct { 
