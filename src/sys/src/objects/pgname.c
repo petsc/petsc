@@ -1,4 +1,4 @@
-/*$Id: pgname.c,v 1.23 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: pgname.c,v 1.24 2001/01/15 21:43:52 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -23,9 +23,14 @@
 @*/
 int PetscObjectGetName(PetscObject obj,char *name[])
 {
+  int ierr;
+
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
   if (!name) SETERRQ(PETSC_ERR_ARG_BADPTR,"Void location for name");
+  if (!obj->name) {
+    ierr = PetscObjectName(obj);CHKERRQ(ierr);
+  }
   *name = obj->name;
   PetscFunctionReturn(0);
 }

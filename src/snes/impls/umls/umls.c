@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.102 2001/01/15 21:47:59 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.103 2001/01/19 20:06:52 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -138,13 +138,37 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 #define __FUNC__ "SNESSetUp_UM_LS"
 static int SNESSetUp_UM_LS(SNES snes)
 {
-  int ierr;
+  int        ierr;
+  PetscTruth ilu,bjacobi;
+  SLES       sles,*subsles;
+  PC         pc,subpc;
 
   PetscFunctionBegin;
   snes->nwork = 4;
   ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
   PetscLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
+
+  /* 
+       If PC was set by default to ILU then change it to Jacobi
+  */
+  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCILU,&ilu);CHKERRQ(ierr);
+  if (ilu) {
+    ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+  } else {
+    ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&bjacobi);CHKERRQ(ierr);
+    if (bjacobi) {
+      ierr = PCBJacobiGetSubSLES(pc,0,0,&subsles);CHKERRQ(ierr);
+      ierr = SLESGetPC(*subsles,&subpc);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)subpc,PCILU,&ilu);CHKERRQ(ierr);
+      if (ilu) {
+        ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+      }
+    }
+  }
+
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
