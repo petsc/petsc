@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.86 1996/09/28 16:08:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.87 1996/11/07 15:08:54 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -25,6 +25,8 @@ static int (*setups[])(PC) = {0,
                               PCSetUp_BJacobi_BAIJ,
                               0};
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetUp_BJacobi"
 static int PCSetUp_BJacobi(PC pc)
 {
   Mat pmat = pc->pmat;
@@ -34,6 +36,8 @@ static int PCSetUp_BJacobi(PC pc)
 }
 
 /* Default destroy, if it has never been setup */
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCDestroy_BJacobi"
 static int PCDestroy_BJacobi(PetscObject obj)
 {
   PC         pc = (PC) obj;
@@ -45,6 +49,8 @@ static int PCDestroy_BJacobi(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetFromOptions_BJacobi"
 static int PCSetFromOptions_BJacobi(PC pc)
 {
   int        blocks,flg,ierr;
@@ -60,6 +66,8 @@ static int PCSetFromOptions_BJacobi(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetFromOptions_BGS"
 static int PCSetFromOptions_BGS(PC pc)
 {
   int        blocks,ierr,flg;
@@ -80,6 +88,8 @@ static int PCSetFromOptions_BGS(PC pc)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBGSSetSymmetric"
 /*@
    PCBGSSetSymmetric - Sets the BGS preconditioner to use symmetric, 
    backward, or forward relaxation. By default, forward relaxation is used.
@@ -107,6 +117,8 @@ int PCBGSSetSymmetric(PC pc, PCBGSType flag)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBJacobiSetUseTrueLocal"
 /*@
    PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block 
    problem is associated with the linear system matrix instead of the
@@ -139,6 +151,8 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBGSSetUseTrueLocal"
 /*@
    PCBGSSetUseTrueLocal - Sets a flag to indicate that the block 
    problem is associated with the linear system matrix instead of the
@@ -166,6 +180,8 @@ int PCBGSSetUseTrueLocal(PC pc)
   return PCBJacobiSetUseTrueLocal(pc);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBJacobiGetSubSLES"
 /*@C
    PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -207,6 +223,8 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBGSGetSubSLES"
 /*@C
    PCBGSGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -234,6 +252,8 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   return PCBJacobiGetSubSLES(pc, n_local, first_local, sles);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPrintHelp_BJacobi"
 static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCBJACOBI preconditioner:\n");
@@ -246,6 +266,8 @@ static int PCPrintHelp_BJacobi(PC pc,char *p)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPrintHelp_BGS"
 static int PCPrintHelp_BGS(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCBGS preconditioner:\n");
@@ -259,6 +281,8 @@ static int PCPrintHelp_BGS(PC pc,char *p)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCView_BJacobi"
 static int PCView_BJacobi(PetscObject obj,Viewer viewer)
 {
   PC               pc = (PC)obj;
@@ -308,6 +332,8 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCCreate_BJacobi"
 int PCCreate_BJacobi(PC pc)
 {
   int          rank,size;
@@ -336,6 +362,8 @@ int PCCreate_BJacobi(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCCreate_BGS"
 int PCCreate_BGS(PC pc)
 {
   int        ierr;
@@ -351,6 +379,8 @@ int PCCreate_BGS(PC pc)
   return 0;
 }
   
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBJacobiSetTotalBlocks"
 /*@
    PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
    Jacobi preconditioner.
@@ -390,6 +420,8 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
   return 0;
 }
   
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBGSSetTotalBlocks"
 /*@
    PCBGSSetTotalBlocks - Sets the global number of blocks for the block Gauss-Seidel
    (BGS) preconditioner.
@@ -415,6 +447,8 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
   return PCBJacobiSetTotalBlocks(pc, blocks, lens);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBJacobiSetLocalBlocks"
 /*@
    PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
    Jacobi preconditioner.
@@ -450,6 +484,8 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCBGSSetLocalBlocks"
 /*@
    PCBGSSetLocalBlocks - Sets the local number of blocks for the block
    Gauss-Seidel (BGS) preconditioner.

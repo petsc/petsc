@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.54 1996/07/22 17:35:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.55 1996/08/08 14:42:04 bsmith Exp balay $";
 #endif
 
 /*
@@ -14,6 +14,8 @@ typedef struct {
   double     omega;
 } PC_SOR;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCApply_SOR"
 static int PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR *jac = (PC_SOR *) pc->data;
@@ -22,6 +24,8 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCApplyRichardson_SOR"
 static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
 {
   PC_SOR *jac = (PC_SOR *) pc->data;
@@ -32,6 +36,8 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
 }
 
 /* parses arguments of the form -pc_sor [symmetric,forward,back][omega=...] */
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetFromOptions_SOR"
 static int PCSetFromOptions_SOR(PC pc)
 {
   int    its,ierr,flg;
@@ -54,6 +60,8 @@ static int PCSetFromOptions_SOR(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPrintHelp_SOR"
 static int PCPrintHelp_SOR(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCSOR preconditioner:\n");
@@ -67,6 +75,8 @@ static int PCPrintHelp_SOR(PC pc,char *p)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCView_SOR"
 static int PCView_SOR(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -101,6 +111,8 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCCreate_SOR"
 int PCCreate_SOR(PC pc)
 {
   PC_SOR *jac   = PetscNew(PC_SOR); CHKPTRQ(jac);
@@ -118,6 +130,8 @@ int PCCreate_SOR(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSORSetSymmetric"
 /*@
    PCSORSetSymmetric - Sets the SOR preconditioner to use symmetric (SSOR), 
    backward, or forward relaxation.  The local variants perform SOR on
@@ -158,6 +172,9 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
   jac->sym = flag;
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSORSetOmega"
 /*@
    PCSORSetOmega - Sets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
@@ -183,6 +200,9 @@ int PCSORSetOmega(PC pc, double omega)
   jac->omega = omega;
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSORSetIterations"
 /*@
    PCSORSetIterations - Sets the number of inner iterations to 
    be used by the SOR preconditioner. The default is 1.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sprcm.c,v 1.13 1996/08/08 14:43:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sprcm.c,v 1.14 1996/09/14 03:08:25 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -9,6 +9,8 @@ static char vcid[] = "$Id: sprcm.c,v 1.13 1996/08/08 14:43:21 bsmith Exp bsmith 
 /*
     MatOrder_RCM - Find the Reverse Cuthill-McGee ordering of a given matrix.
 */    
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatOrder_RCM"
 int MatOrder_RCM( Mat mat, MatReordering type, IS *row, IS *col)
 {
   int        ierr,i,   *mask, *xls, nrow,*ia,*ja,*perm;

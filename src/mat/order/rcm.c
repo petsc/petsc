@@ -36,6 +36,8 @@
 /*       DEGREE.                                                */
 /*                                                              */
 /****************************************************************/
+#undef __FUNCTION__  
+#define __FUNCTION__ "rcm"
 int rcm(int *root, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *ccsize, int *deg)
 {

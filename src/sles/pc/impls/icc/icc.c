@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.37 1996/05/16 23:05:15 balay Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.38 1996/08/08 14:42:23 bsmith Exp balay $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -28,6 +28,8 @@ static int (*setups[])(PC) = {0,
                               0,0,0,0,0};
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetup_ICC"
 static int PCSetup_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
@@ -54,6 +56,8 @@ static int PCSetup_ICC(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCDestroy_ICC"
 static int PCDestroy_ICC(PetscObject obj)
 {
   PC     pc = (PC) obj;
@@ -64,6 +68,8 @@ static int PCDestroy_ICC(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCApply_ICC"
 static int PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
@@ -73,18 +79,24 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
   return 0;  
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCApplySymmetricLeft_ICC"
 static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
   return MatForwardSolve(icc->fact,x,y);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCApplySymmetricRight_ICC"
 static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
   return MatBackwardSolve(icc->fact,x,y);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPrintHelp_ICC"
 static int PCPrintHelp_ICC(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCICC preconditioner:\n");
@@ -94,6 +106,8 @@ static int PCPrintHelp_ICC(PC pc,char *p)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCGetFactoredMatrix_ICC"
 static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
@@ -101,11 +115,15 @@ static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetFromOptions_ICC"
 static int PCSetFromOptions_ICC(PC pc)
 {
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCCreate_ICC"
 int PCCreate_ICC(PC pc)
 {
   PC_ICC      *icc = PetscNew(PC_ICC); CHKPTRQ(icc);

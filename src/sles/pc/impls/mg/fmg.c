@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fmg.c,v 1.6 1996/08/08 14:42:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fmg.c,v 1.7 1996/11/07 15:08:56 bsmith Exp balay $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
@@ -21,6 +21,8 @@ extern int MGMCycle_Private(MG *);
           initial guess for the next level. This provides an
           improved preconditioner but not a great improvement.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGFCycle_Private"
 int MGFCycle_Private(MG *mg)
 {
   int    i, l = mg[0]->levels,ierr;
@@ -51,6 +53,8 @@ int MGFCycle_Private(MG *mg)
 
     Note: This may not be what others call Kascadic MG.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGKCycle_Private"
 int MGKCycle_Private(MG *mg)
 {
   int    i, l = mg[0]->levels,its,ierr;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.53 1996/09/28 16:13:22 curfman Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.54 1996/09/28 22:42:30 curfman Exp balay $";
 #endif
 
 /*
@@ -18,6 +18,8 @@ typedef struct {
   int    usediag;    /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCEisenstatUseDiagonalScaling"
 /*@
    PCEisenstatUseDiagonalScaling - Causes the Eisenstat preconditioner
    to do an additional diagonal preconditioning. For matrices with very 
@@ -44,6 +46,8 @@ int PCEisenstatUseDiagonalScaling(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCMult_Eisenstat"
 static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
   PC           pc;
@@ -53,6 +57,8 @@ static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
   return MatRelax(eis->A,b,eis->omega,SOR_EISENSTAT,0.0,1,x);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCApply_Eisenstat"
 static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
@@ -66,6 +72,8 @@ static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 /* this cheats and looks inside KSP to determine if nonzero initial guess*/
 #include "src/ksp/kspimpl.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPre_Eisenstat"
 static int PCPre_Eisenstat(PC pc,KSP ksp)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
@@ -99,6 +107,8 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPost_Eisenstat"
 static int PCPost_Eisenstat(PC pc,KSP ksp)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
@@ -114,6 +124,8 @@ static int PCPost_Eisenstat(PC pc,KSP ksp)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCDestroy_Eisenstat"
 static int PCDestroy_Eisenstat(PetscObject obj)
 {
   PC           pc = (PC) obj;
@@ -125,6 +137,8 @@ static int PCDestroy_Eisenstat(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetFromOptions_Eisenstat"
 static int PCSetFromOptions_Eisenstat(PC pc)
 {
   double  omega;
@@ -141,6 +155,8 @@ static int PCSetFromOptions_Eisenstat(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPrintHelp_Eisenstat"
 static int PCPrintHelp_Eisenstat(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCEisenstat preconditioner:\n");
@@ -149,6 +165,8 @@ static int PCPrintHelp_Eisenstat(PC pc,char *p)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCView_Eisenstat"
 static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
 {
   PC            pc = (PC)obj;
@@ -165,6 +183,8 @@ static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetUp_Eisenstat"
 static int PCSetUp_Eisenstat(PC pc)
 {
   int          ierr, M, N, m, n;
@@ -193,6 +213,8 @@ static int PCSetUp_Eisenstat(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCCreate_Eisenstat"
 int PCCreate_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = PetscNew(PC_Eisenstat); CHKPTRQ(eis);
@@ -214,6 +236,8 @@ int PCCreate_Eisenstat(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCEisenstatSetOmega"
 /*@ 
    PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).

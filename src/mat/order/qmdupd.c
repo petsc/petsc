@@ -28,9 +28,9 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       QMDMRG.*/
 /******************************************************************/
-i#undef __FUNCTION__  
+#undef __FUNCTION__  
 #define __FUNCTION__ "qmdupd"
-nt qmdupd(int *xadj, int *adjncy, int *nlist, 
+int qmdupd(int *xadj, int *adjncy, int *nlist, 
 	int *list, int *deg, int *qsize, int *qlink, int *
 	marker, int *rchset, int *nbrhd)
 {

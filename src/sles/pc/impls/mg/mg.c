@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.57 1996/11/27 22:52:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.58 1996/12/08 23:53:40 bsmith Exp balay $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: mg.c,v 1.57 1996/11/27 22:52:28 bsmith Exp bsmith $";
     Input Parameter:
 .   mg - structure created with  MGCreate().
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGMCycle_Private"
 int MGMCycle_Private(MG *mglevels)
 {
   MG     mg = *mglevels, mgc = *(mglevels - 1);
@@ -44,6 +46,8 @@ int MGMCycle_Private(MG *mglevels)
                finest level is stored first in the array).
 
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGCreate_Private"
 static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 {
   MG   *mg;
@@ -70,6 +74,8 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCDestroy_MG"
 static int PCDestroy_MG(PetscObject obj)
 {
   PC  pc = (PC) obj;
@@ -88,6 +94,8 @@ static int PCDestroy_MG(PetscObject obj)
 }
 
 #include <stdio.h>
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGCheck"
 /*@
    MGCheck - Checks that all components of the MG structure have 
    been set.
@@ -136,6 +144,8 @@ int MGCheck(PC pc)
   return count;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGSetNumberSmoothDown"
 /*@
    MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels. Use MGSetSmootherDown() to set different 
@@ -169,6 +179,8 @@ int MGSetNumberSmoothDown(PC pc,int n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGSetNumberSmoothUp"
 /*@
    MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
    on all levels. Use MGSetSmootherUp() to set different numbers of 
@@ -202,6 +214,8 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGSetCycles"
 /*@
    MGSetCycles - Sets the number of cycles to use. 1 denotes a
    V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
@@ -244,6 +258,8 @@ extern int MGKCycle_Private(MG*);
   Note: 
   A simple wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
 */ 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGCycle"
 static int MGCycle(PC pc,Vec b,Vec x)
 {
   MG     *mg = (MG*) pc->data;
@@ -267,6 +283,8 @@ static int MGCycle(PC pc,Vec b,Vec x)
   }
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGCycleRichardson"
 static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
 {
   MG  *mg = (MG*) pc->data;
@@ -280,6 +298,8 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
   int    ierr, m,levels = 1,flg;
@@ -316,6 +336,8 @@ static int PCSetFromOptions_MG(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCPrintHelp_MG"
 static int PCPrintHelp_MG(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCMG preconditioner:\n");
@@ -327,6 +349,8 @@ static int PCPrintHelp_MG(PC pc,char *p)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCView_MG"
 static int PCView_MG(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -369,6 +393,8 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
 /*
     Calls setup for the SLES on each level
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetUp_MG"
 static int PCSetUp_MG(PC pc)
 {
   MG         *mg = (MG *) pc->data;
@@ -407,6 +433,8 @@ static int PCSetUp_MG(PC pc)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCCreate_MG"
 int PCCreate_MG(PC pc)
 {
   pc->apply     = MGCycle;
@@ -420,6 +448,8 @@ int PCCreate_MG(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGSetLevels"
 /*@
    MGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
@@ -446,6 +476,8 @@ int MGSetLevels(PC pc,int levels)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGGetLevels"
 /*@
    MGGetLevels - Gets the number of levels to use with MG.
 
@@ -470,6 +502,8 @@ int MGGetLevels(PC pc,int *levels)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MGSetType"
 /*@
    MGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
