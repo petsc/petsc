@@ -9,3 +9,15 @@ discovered).
    USES_CPTOFCD - Fortran charactor strings are passed using a FCD pointer.
                   For Cray T3D. Used in plapack.h fortran/custom/*
 
+   HAVE_GETDOMAINNAME - the system routine getdomainname exits. Found on 
+                        all machines except Cray T3d.
+
+   HAVE_FORTRAN_UNDERSCORE_UNDERSCORE - Fortran compiler appends __ for 
+                        and routine name that has an _ in it. This happens
+                        on Linux and Freebsd using f2c.
+
+   USES_VOID_VOID_VOID_VOID_TSEARCH - rs6000 (older), hpux, IRIX, and IRIX64
+
+   USES_VOID_VOID_CONST_VOID_CONST_VOID_TSEARCH - Prototyping for the 
+        arguments in the tsearch routine. Solaris and later versions of 
+        AIX, (4.1 for example).
