@@ -1,29 +1,7 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.1 1997/04/08 03:54:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3func.c,v 1.1 1997/04/08 03:56:46 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
-This example employs a user-defined monitoring routine.\n\n";
-
-/*T
-   Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
-   Concepts: SNES^Setting a user-defined monitoring routine
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESSolve();
-   Routines: SNESGetTolerances(); SNESSetFromOptions(); SNESSetMonitor();
-   Routines: SNESGetSolution(); ViewerDrawOpenX(); PetscObjectSetName();
-   Processors: 1
-T*/
-
-/* 
-   Include "draw.h" so that we can use PETSc drawing routines.
-   Include "snes.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
-     sles.h   - linear solvers
-*/
 
 #include "snes.h"
 #include <math.h>
@@ -43,24 +21,22 @@ typedef struct {
    Viewer viewer;
 } MonitorCtx;
 
-int main( int argc, char **argv )
+int Function(Vec F, Vec x)
 {
   SNES       snes;                   /* SNES context */
-  Vec        x, r, F, U;             /* vectors */
+  Vec        r;                      /* vectors */
   Mat        J;                      /* Jacobian matrix */
   MonitorCtx monP;                   /* monitoring context */
-  int        ierr, its, n = 5, i, flg, maxit, maxf, size;
-  Scalar     h, xp, v, none = -1.0;
-  double     atol, rtol, stol, norm;
+  int        ierr, its, n, maxit, maxf;
+  Scalar     h;
+  double     atol, rtol, stol;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = VecGetSize(x,&n); CHKERRQ(ierr);
+
   h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create nonlinear solver context
+     Create nonlinear solver contex, norm;t
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
@@ -69,12 +45,10 @@ int main( int argc, char **argv )
      Create vector data structures; set function evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-     Note that we form 1 vector from scratch and then duplicate as needed.
+     Duplicate vector as needed.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&F); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
+  ierr = VecDuplicate(F,&r); CHKERRA(ierr);
+
 
   /* 
      Set function evaluation routine and vector
@@ -108,14 +82,11 @@ int main( int argc, char **argv )
   /* 
      Set an optional user-defined monitoring routine
   */
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr); 
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
   */
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
-  PetscObjectSetName((PetscObject)U,"Exact Solution");
 
   /* 
      Set SNES/SLES/KSP/PC runtime options, e.g.,
@@ -132,19 +103,6 @@ int main( int argc, char **argv )
   PetscPrintf(MPI_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
      atol,rtol,stol,maxit,maxf);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Initialize application:
-     Store right-hand-side of PDE and exact solution
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  xp = 0.0;
-  for ( i=0; i<n; i++ ) {
-    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
-    v= xp*xp*xp;
-    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
-    xp += h;
-  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -163,25 +121,13 @@ int main( int argc, char **argv )
      Check solution and clean up
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
-     Check the error
-  */
-  ierr = VecAXPY(&none,U,x); CHKERRA(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
-  if (norm > 1.e-12) 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
-  else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = VecDestroy(U); CHKERRA(ierr);  ierr = VecDestroy(F); CHKERRA(ierr);
+  ierr = VecDestroy(r); CHKERRA(ierr);
   ierr = MatDestroy(J); CHKERRA(ierr);  ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = ViewerDestroy(monP.viewer); CHKERRA(ierr);
-  PetscFinalize();
 
   return 0;
 }
@@ -242,7 +188,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
    d = (double) (n - 1); d = d*d;
    ff[0]   = xx[0];
    for ( i=1; i<n-1; i++ ) {
-     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - gg[i];
+     /*     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - gg[i]; */
+     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1])  - gg[i];
    }
    ff[n-1] = xx[n-1] - 1.0;
 
@@ -292,7 +239,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   */
   for ( i=1; i<n-1; i++ ) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1; 
-    A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
+    /*    A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];  */
+    A[0] = A[2] = d; A[1] = -2.0*d;
     ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES); CHKERRQ(ierr);
   }
 
@@ -315,32 +263,5 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  return 0;
-}
-/* ------------------------------------------------------------------- */
-/*
-   Monitor - User-defined monitoring routine that views the
-   current iterate with an x-window plot.
-
-   Input Parameters:
-   snes - the SNES context
-   its - iteration number
-   norm - 2-norm function value (may be estimated)
-   ctx - optional user-defined context for private data for the 
-         monitor routine, as set by SNESSetMonitor()
-
-   Note:
-   See the manpage for ViewerDrawOpenX() for useful runtime options,
-   such as -nox to deactivate all x-window output.
- */
-int Monitor(SNES snes,int its,double fnorm,void *ctx)
-{
-  int        ierr;
-  MonitorCtx *monP = (MonitorCtx*) ctx;
-  Vec        x;
-
-  PetscPrintf(MPI_COMM_WORLD,"iter = %d, SNES Function norm %g\n",its,fnorm);
-  ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
-  ierr = VecView(x,monP->viewer); CHKERRQ(ierr);
   return 0;
 }
