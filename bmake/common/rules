@@ -351,8 +351,18 @@ fortranstubs:
 #
 #
 .c.o .cpp.o .cc.o .C.o .ad.o: 
-	-@complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
-	if [ "${PETSC_HAVE_ADIC}" != "" -a  "foo$${complex}" = "foo" ]; then \
+	complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
+        if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
+          egrep PETSC_HAVE_ADIC ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h ;\
+          if [ "$$?" = 0 ]; then \
+            haveadic=1; \
+          else \
+            haveadic=0;\
+          fi; \
+        else \
+          haveadic=1; \
+        fi; \
+	if [ "$${haveadic}" = "1" -a  "foo$${complex}" = "foo" ]; then \
 	   egrep "Process adiC" $< > /dev/null ; \
               if [ "$$?" = 0 ]; then \
                 c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\

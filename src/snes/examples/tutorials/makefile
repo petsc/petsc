@@ -328,14 +328,14 @@ testex19: ex19.PETSc
            ${MPIRUN} -np 1 ex19 -dmmg_nlevels 4  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully on 1 processor"; \
-	   else echo "Error running C/C++ src/snes/examples/tutorials/ex19 on 1 processor"; \
+	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 on 1 processor"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; \
 	if [ "${MPIRUN}" != "${PETSC_DIR}/src/sys/src/mpiuni/mpirun" ]; then \
            ${MPIRUN} -np 2 ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully on 2 processors"; \
-	   else echo "Error running C/C++ src/snes/examples/tutorials/ex19 on 2 processor"; \
+	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 on 2 processor"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; \
 	if [ "${PETSC_HAVE_X11}" != "" ]; then havex="1"; else havex="0"; fi;\
@@ -345,7 +345,7 @@ testex19: ex19.PETSc
            ${MPIRUN} -np 1 ex19 -dmmg_nlevels 4 -snes_xmonitor  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "Graphics example src/snes/examples/tutorials/ex19 run successfully on 1 processor"; \
-	   else echo "Error running Graphics examples src/snes/examples/tutorials/ex19 on 1 processor"; \
+	   else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 on 1 processor"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; fi
 	-@${RM} -f ex19_1.tmp ex19 ex19.o tmpfile
