@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.14 1996/12/15 17:23:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.15 1997/01/01 03:39:14 bsmith Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -88,6 +88,8 @@ T*/
        Reference: "Numerical Solution of Periodic Vortical Flows about
        a Thin Airfoil", J. Scott and H. Atassi, AIAA paper 89-1691,
        AIAA 24th Thermophysics Conference, June 12-14, 1989.
+
+       Coded by David Keyes and Lois Curfman McInnes.
 
        Relative to this reference, we set k_3 to zero (two-dimensional 
        problem).  Amplitude "amp" is a_2 of the paper.  Unlike the paper, 
