@@ -99,6 +99,10 @@ class Configure(config.base.Configure):
       yield ('User specified BLAS/LAPACK library', None, self.framework.argDB['with-blas-lapack-lib'])
       raise RuntimeError('You set a value for --with-blas-lapack-lib, but '+str(self.framework.argDB['with-blas-lapack-lib'])+' cannot be used\n')
     # Try specified BLAS and LAPACK libraries
+    if 'with-blas-lib' in self.framework.argDB and not 'with-lapack-lib' in self.framework.argDB:
+      raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
+    if not 'with-blas-lib' in self.framework.argDB and 'with-lapack-lib' in self.framework.argDB:
+      raise RuntimeError('If you use the --with-lapack-lib=<lib> you must also use --with-blas-lib=<lib> option')
     if 'with-blas-lib' in self.framework.argDB and 'with-lapack-lib' in self.framework.argDB:
       yield ('User specified BLAS and LAPACK libraries', self.framework.argDB['with-blas-lib'], self.framework.argDB['with-lapack-lib'])
       raise RuntimeError('You set a value for --with-blas-lib and --with-lapack-lib, but '+str(self.framework.argDB['with-blas-lib'])+' and '+str(self.framework.argDB['with-lapack-lib'])+' cannot be used\n')
