@@ -74,7 +74,12 @@ class Maker (logging.Logger):
     #output = self.executeShellCommand('md5sum --binary '+source, self.checkChecksumCall)
     #return string.split(output)[0]
     f = open(source, 'r')
-    m = md5.new(f.read())
+    m = md5.new()
+    size = 1024*1024
+    buf  = f.read(size)
+    while buf:
+      m.update(buf)
+      buf = f.read(size)
     f.close()
     return m.hexdigest()
 
