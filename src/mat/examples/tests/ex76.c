@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.8 2000/11/01 15:13:40 hzhang Exp hzhang $*/
+/*$Id: ex76.c,v 1.9 2000/11/03 18:43:31 hzhang Exp bsmith $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -8,7 +8,7 @@ static char help[] = "Tests matrix permutation for factorization and solve on ma
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,y,b,s1;      
+  Vec         x,y,b;
   Mat         A;           /* linear system matrix */ 
   Mat         sA,sC;       /* symmetric part of the matrices */ 
   int         n,mbs=16,bs=1,nz=3,prob=1;
@@ -148,7 +148,7 @@ int main(int argc,char **args)
   ierr = VecSetRandom(rand,x);CHKERRA(ierr);
 
   /* Test MatReordering() */
-  ip_ptr = (int*)PetscMalloc(mbs*sizeof(int)); CHKERRA(ierr);
+  ip_ptr = (int*)PetscMalloc(mbs*sizeof(int));CHKERRA(ierr);
   for (i=0; i<mbs; i++) ip_ptr[i] = i;
   if(reorder){
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 
@@ -188,7 +188,7 @@ int main(int argc,char **args)
   } 
 
   ierr = ISDestroy(perm);CHKERRA(ierr);
-  ierr = PetscFree(ip_ptr); CHKERRQ(ierr);
+  ierr = PetscFree(ip_ptr);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);

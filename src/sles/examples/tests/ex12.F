@@ -1,5 +1,5 @@
 !
-!      "$Id: ex12.F,v 1.32 2000/09/27 20:08:52 bsmith Exp bsmith $";
+!      "$Id: ex12.F,v 1.33 2000/10/24 20:26:51 bsmith Exp bsmith $";
 !
       program main
        implicit none
@@ -17,7 +17,7 @@
 !                          use the file petsc/src/mat/examples/matbinary.ex
 !
 
-      integer          ierr,its,flg,set
+      integer          ierr,its,flg
       Scalar           norm,none
       Vec              x,b,u
       Mat              A
