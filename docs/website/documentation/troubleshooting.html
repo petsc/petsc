@@ -137,22 +137,22 @@ of the other libraries. On Sun systems the         Fortran libraries
 are usually hidden in directories like /usr/lang/SC1.0.1 or        
 /usr/lang/SC3.0; also check /usr/lib. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font><font
  face="Terminal">alder&gt;make         BOPT=g <br>
 make: Warning: Can't find `../../bmake/.g': <br>
-No such file or directory make: Fatal error in reader: makefile, line
-33: Read of include         file `../../bmake/.g' failed</font>
+/Users/barrysmith/petsc-dev/bmake/common/variables:176:
+ /Users/barrysmith/petsc-dev/bmake//variables: No such file or directory</font>
           <p><font color="#ff0000"><strong>Problem: </strong></font>You
 have not set the variable PETSC_ARCH to the architecture of your
 machine (e.g., sun4,         rs6000). </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>Include
-in your .cshrc file some         code to determine the architecture and
-set it automatically. For instance, the utility        
-${PETSC_DIR}/bin/petscarch can be used as follows setenv PETSC_ARCH    
-`$PETSC_DIR/bin/petscarch` Or remember to include the PETSC_ARCH in the
+in your .cshrc file some         code to 
+set it automatically. Or remember to include the PETSC_ARCH in the
 command line every         time you use make. For instance, make BOPT=g
 PETSC_ARCH=sun4 example4 </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font><font
  face="Terminal">alder&gt;make         BOPT=g ex1 <br>
 make: Warning: Can't find `/home/joe/bmake/sun4.g': <br>
@@ -169,6 +169,7 @@ make         the path relative, rather than absolute. That is, use
 PETSC_DIR = ../../petsc rather than         PETSC_DIR =
 /c/cafa/username/petsc. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font><font
  face="Terminal">alder&gt;         make BOPT=g <br>
 ex1 f77 -g -o ex1 ex1.o affine2d.o \ ../../libs/libsg/sun4/domain.a    
@@ -182,6 +183,7 @@ different compiler. </p>
           <p><font color="#ff0000"><strong>Cure:</strong></font> Remove
 all .o files and recompile         from scatch. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom</strong>: </font><font
  face="Terminal">alder&gt;make         BOPT = g ex1<br>
 make: Fatal error: Don't know how to make target `BOPT</font>'
@@ -192,6 +194,7 @@ side of the ``='' signs. </p>
 following command (with no         extra spaces): alder&gt;make BOPT=g
 ex1 </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font><font
  face="Terminal">alder&gt;         make BOPT=g ex21 <br>
 cc -Dsun4 -g -o ex21 ex21.o affine3d.o ../../libs/libsg/sun4/domain.a  
@@ -204,34 +207,20 @@ code 2</font>
 are attempting to link a program         which uses Fortran libraries
 which are not being found by the linker. </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>See
-(1). Also, see         ${PETSC_DIR}/src/vec/examples/tutorials/ex7.c,
-where we demonstrate how to get around this         problem by using
-the Fortran linker and making a dummy C routine called __main(). </p>
+(1). 
         </li>
-        <li><font color="#ff0000"><strong>Symptom:</strong></font> a<font
- face="Terminal">lder&gt;         make BOPT=g <br>
-ex1 f77 -o ex1 -I../.. -g ex1.o \ ../../libs/libsg/sun4/tools.a        
-../../libs/libsg/sun4/tools.a ../../libs/libsg/sun4/tools.a
-../../libs/libsg/sun4/system.a         -lm<br>
-ld: Undefined symbol mcount Compilation failed *** Error code 2</font>
-          <p><font color="#ff0000"><strong>Problem:</strong></font> One
-of the .o files or libraries has some         code in it compiled with
-the BOPT=Opg option but the linking is being done without it. </p>
-          <p><font color="#ff0000"><strong>Cure:</strong></font> Either
-recompile the files without         the profiling option or link with
-the profiling option use <br>
-          <font face="Terminal">alder&gt; make BOPT=Opg ex1</font> </p>
-        </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong></font>
 cannot find include file:
           <p><font color="#ff0000"><strong>Problem:</strong></font> The
 standard X11 files are not in the         usual place, /usr/include. </p>
           <p><font color="#ff0000"><strong>Cure:</strong></font> Make
-sure the file         ${PETSC_DIR}/bmake/${PETSC_ARCH}/pakcages has the
+sure the file         ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages has the
 correct location of the X11 include         files and libraries; for
 instance it may have X11_INCLUDE = -I/usr/openwin/include X11_LIB      
 = /usr/openwin/lib/libX11.a </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font><font
  face="Terminal">f77 -g -o         ex1 ex1.o affine2d.o \
 ../../libs/libsg/sun4/domain.a ../../libs/libsg/sun4/Xtools.a        
@@ -248,6 +237,7 @@ correct location of the X11 include         files and libraries; for
 instance it may have X11_INCLUDE = -I/usr/openwin/include X11_LIB      
 = /usr/openwin/lib/libX11.a </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong></font> <font
  face="Terminal">ld:         Undefined symbol _dpotrs_</font>
           <p><font color="#ff0000"><strong>Problem:</strong></font> This
@@ -255,9 +245,10 @@ is a routine within LAPACK. Either you are not linking the LAPACK
 library, or your         LAPACK library is incomplete. </p>
           <p><font color="#ff0000"><strong>Cure:</strong></font> Install
 the entire LAPACK library,         available via netlib. See the file
-${PETSC_DIR}/docs/installation.html for information on        
+${PETSC_DIR}/docs/website/documentation/installation.html for information on        
 retrieving LAPACK. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom</strong></font>: <font
  face="Terminal">ld:         Undefined symbol ___s_stop ___ansi_fflush</font>
           <p><font color="#ff0000"><strong>Problem:</strong></font>
@@ -269,6 +260,7 @@ These are Fortran system calls. </p>
 you are using.         Include them in the variable FC_LIB in the file
 ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom</strong>: </font>On
 the IBM RS/6000 <br>
 0706-317 ERROR: Unresolved or undefined symbols detected: <br>
@@ -283,6 +275,7 @@ petsc/bmake/rs6000/rs6000 make         sure the line that defines
 CLINKER includes -bI:/usr/lpp/xlf/lib/lowsys.exp ... Also, see        
 (1). </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>On
 the Sun running Solaris <br>
 Undefined first referenced symbol in file __pow_di        
@@ -295,6 +288,7 @@ the file         ${PETSC_DIR}/bmake/solaris/solaris make sure the line
 that defines FC_LIB contains         /opt/SUNWspro/SC3.0/lib/libM77.a
 ... Also, see (1). </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom</strong>:</font> On
 the IBM RS6000 <br>
 0706-317 ERROR: Unresolved or undefined symbols detected: Symbols in
@@ -309,6 +303,7 @@ bmake/rs6000/packages on the         line that defines BLAS_LIB add at
 the end -lessl ... This will cause PETSc to always         search ESSL
 for these routines. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>[merlin]
 make BOPT=O ex1 gcc         -DPARCH_sun4 -pipe -c -DHAVE_STROPTS_H
 -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H         -DHAVE_MALLOC_H
@@ -325,6 +320,7 @@ the PETSc home directory, type         make BOPT=O all &gt;&amp;
 make_log to build the optimized version of the PETSc library.        
 Then recompile the example program. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>on
 DEC alpha or Paragon <br>
 Make: Cannot open ./bmake/alpha/./bmake/common. Stop. or <br>
@@ -348,6 +344,7 @@ line in the file             ${PETSC_DIR}/bmake/${PETSC_ARCH}/base that
 defines OMAKE to gnumake. </li>
           </ol>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>on
 DEC alpha or Paragon <br>
 /usr/lib/cmplrs/cc/cfe: Error: mal.c, line 16: 'free' undefined,
@@ -361,6 +358,7 @@ and remove entries from         petsc/pinclude/petscfix.h to avoid
 conflicts with prototypes in the system include files         and to
 define any functions that are missing in the include files. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>on
 DEC alpha <br>
 adebug.c: /usr/lib/cmplrs/cc/cfe: Error:
@@ -375,6 +373,7 @@ reporte\ d         (void*(*)(unsigned int,int,char*))malloc;
           <p><font color="#ff0000"><strong>Cure: </strong></font>See  
 (16) </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>on
 some IBM RS6000 <br>
 fp.c: "/usr/include/fpxcp.h", line 84.33: 1506-310 (W) The type "struct
@@ -391,6 +390,7 @@ sigcontext.</p>
 petsc/src/sys/src/fp.c and         locate the line #include <fpxcp
  .h=""> and make sure there is a line struct sigcontext; above it. </fpxcp></p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>on
 linux When compiling and         linking Fortran code we got the error
 message <br>
@@ -400,6 +400,7 @@ Unknown </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>The
 compile seems ok, so this         message can be safely ignored. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>using
 MPICH [0] Truncated message         (in CHK_MSGLEN) <br>
 [0] Aborting program! <br>
@@ -412,6 +413,7 @@ debugger, type "break p4_error" (or "stop in         p4_error" for
 dbx); then type "cont". When the program aborts, use debugger        
 commands such as "where" to track down the problem with the call.</p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong></font> on
 HP-UX <br>
 Make: Unknown flag argument -. Stop. <br>
@@ -421,9 +423,10 @@ Make: Unknown flag argument -. Stop.
 (vendor provided) make. </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>Install
 and use Gnu make. To force         PETSc to use an alternative make,
-edit the file petsc/bmake/PETSC_ARCH/base and change         OMAKE to
+edit the file petsc/bmake/$PETSC_ARCH/base and change         OMAKE to
 your alternative. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
 IBM SP<br>
 Could not load program
@@ -438,6 +441,7 @@ nodes. </p>
 your system administrator to         make sure the dynamic libraries on
 the nodes are IDENTICAL to those on the compiler         server. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>using
 Fortran While using         VecGetArray(), MatGetArray(), ISGetArray() <br>
 /usr/local/mpi/bin/mpirun.ch_p4: 17545 Breakpoint then program stops
@@ -449,6 +453,7 @@ all code making sure it         does not check for arrays out of bound.
 The use of VecGetArray(), etc. requires accessing         arrays out of
 bounds; this is done safely. -</p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>You
 create Draw windows or         ViewerDraw windows or use options
 -ksp_xmonitor or -snes_xmonitor and the program seems to         run OK
@@ -460,6 +465,7 @@ sure that the file         petsc/bmake/$PETSC_ARCH/base contains the
 -DHAVE_X11 in the definition of CONF. Also, make         sure that X11
 is installed on your machine. Then recompile the PETSc libraries. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>
           <p><font color="#ff0000"><strong>Problem:</strong> </font>PETSc
 cannot work on a machine where the length of C integers does not equal
@@ -469,6 +475,7 @@ your compilers so that you         use ones that have the same length
 for integers. Or check compiler flags to see if you can         change
 the default integer lengths to match. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>[merlin]
 make BOPT=g ex19 f77 -c         -I/tmp/petsc -I/tmp/petsc/include
 -I/usr/local/mpi/include -I/tmp/petsc/src         -DHAVE_BLOCKSOLVE
@@ -496,6 +503,7 @@ BOPT=O fortran for the optimized version). See the Fortran section
 within the file         ${PETSC_DIR}/docs/<a
  href="installation.html">installation.html </a>for details. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>under
 Linux <br>
 You use the -start_in_debugger option and it seems to start up gdb ok,
@@ -506,20 +514,7 @@ is confused about where         it is. Everything is fine. </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>Set
 some break points and continue. </p>
         </li>
-        <li><font color="#ff0000"><strong>Symptom:</strong> </font>under
-Cray T3D <br>
-mppldr-331 cf77: WARNING DEX expression 85 module '$MAIN' calculated a
-relative branch         target too distant.
-          <p><font color="#ff0000"><strong>Problem:</strong></font> Cray
- compilers for T3D used to try to use relative branches to generate more
-efficient code,         unfortunately relative branches only work for
-small codes, since they can be only a         limited distance. New
-Cray compilers for the T3D and T3E use absolute branches now by        
-default, so this flag is no necessary for new machines.</p>
-          <p><font color="#ff0000"><strong>Cure: </strong></font>Make
-sure all your .c, .f and .F         files have been compiled with the
-option -h jump </p>
-        </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>with
 recent versions of G++         compiler<br>
 libfast in: /tmp_mnt/home/schwarz/cai/petsc-2.0.14/src/is/interface <br>
@@ -531,10 +526,11 @@ parameter ../../../include/options.h:12: parse error before `*'
 completely changed the way it does complex numbers now. It uses a
 templated complex         class. </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>In
-petsc/bmake/PETS_ARCH/variables add -DUSES_TEMPLATED_COMPLEX to the
+petsc/bmake/$PETS_ARCH/variables add -DUSES_TEMPLATED_COMPLEX to the
 line defining         &nbsp; GCOMP_PETSCFLAGS and&nbsp;
 OCOMP_PETSCFLAGS. -</p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>In
 file included from        
 /home/petsc/BlockSolve95/include/BSsparse.h:25, from        
@@ -549,6 +545,7 @@ BlockSolve95 include file has a prototype it shouldn't have. </p>
 the file         BlockSolve95/include/BSdepend.h and remove the line(s)
 extern int exit(int); </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
 DEC <br>
 alpha g++ -g -o ex1f ex1f.o
@@ -568,6 +565,7 @@ after /usr/lib/libFutil.a<br>
 With later versions please send us email <a
  href="mailto:petsc-maint@mcs.anl.gov">petsc-maint@mcs.anl.gov</a></p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>On
 Sun4 running SunOS 4.1.3 with         G++ version 2.7.2, compiling with
 complex <br>
@@ -594,6 +592,7 @@ must list in sun4/packages for the variable FC_LIB
 /usr/lang/SC1.0.1/libF77.a         /usr/lang/SC1.0.1/libm.a See also
 the next two troubleshooting problems </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>On
 Sun4 running SunOS 4.1.3 with         G++ version 2.7.2, compiling with
 complex <br>
@@ -620,6 +619,7 @@ must include in packages for FC_SITE also the library
 /usr/lang/SC1.0.1/libm.a See also         the next troubleshooting
 problem. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>On
 Sun4 running SunOS 4.1.3 with         G++ version 2.7.2, compiling with
 complex C<br>
@@ -652,6 +652,7 @@ the variable in that file with ar d ~/libfm.a __fp_pi.o ranlib
 ~/libfm.a Now         in sun4/packages list ~/libfm.a instead of
 /usr/lang/SC1.0.1/libm.a </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>On
 DEDC alpha Unaligned access         pid=15199 va=140021674 pc=12001e8d8
 ra=12001e8c0 type=ldt
@@ -663,6 +664,7 @@ sure in Fortran that you         always write double precision numbers
 as 10.d0 etc not just as 10. cause then it will be         stored as a
 single precision number and may not be properly aligned. -</p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>PetscScalarAddressToFortran:C
 and         Fortran arrays are not commonly aligned <br>
 or are too far apart to be indexed by an integer. <br>
@@ -689,6 +691,7 @@ won't be a problem, if all complex are quad aligned then it is not a
 problem. If you determine how to do this for a particular machine,
 please let use know so         we can add it to PETSc. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>On
 rs6000 machines, the program         encounters a segmentation fault
 when initializing MPI. <br>
@@ -724,6 +727,7 @@ follows, making sure to list         "-lbsd -lc" BEFORE libxlf.a and
 any other Fortran libraries. FC_LIB = -lbsd -lc        
 /usr/lib/libxlf.a </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>make
 BOPT=g ex1 xlC         -DPARCH_rs6000 -D_POSIX_SOURCE -c
 -I/tmp_mnt/home/someone/current_petsc/petsc-2.0.15        
@@ -759,6 +763,7 @@ just the one library that needs             to be rebuilt. </p>
             </li>
           </ol>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>While
 Installing PETSc on rs6000,         using g++ libfast in:
 /tmp/petsc/src/sys/src <br>
@@ -782,6 +787,7 @@ add the following: <br>
 extern int setsockopt(...); <br>
 extern int gettimeofday(...); </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>On
 Linux and FreeBSD using older         versions of f2c/gcc (for example
 gcc 2.6.3) while compiling the BLAS libraries zrotg:         Error on
@@ -796,6 +802,7 @@ makefile in the blas1 directory. </li>
             <li>&nbsp;</li>
           </ol>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>On
 IBM rs6000 "send.c",         line 66.12: <br>
 1506-343 () Redeclaration of connect differs from previous declaration
@@ -809,6 +816,7 @@ added prototypes to these functions that did not use to have them. <font
 prototype for connect() and         sleep() in the file
 src/viewers/impls/matlab/send.c </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom: </strong></font>On
 SGI Origin 2000<br>
 make BOPT=g fortran rm -f -f        
@@ -851,6 +859,7 @@ the Fortran interface         "manually". cd to src/fortran/custom and
 run make BOPT=g (or O, etc) libfast         then cd to src/fortran/auto
 and run make BOPT=g (or O, etc) libfast </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>libfast
 in:        
 /usr/project/hsg/lemur/lemur_apps/petsc-2.0.15/src/is/interface In file
@@ -867,12 +876,13 @@ mpe.h: No such         file or directory
 are         installing PETSc with the HAVE_MPE option and MPE is not
 installed on your machine </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>Either
-edit the file         bmake/ARCH/packages and locate the line PCONF =
+edit the file         bmake/$PETSC_ARCH/packages and locate the line PCONF =
 remove the reference -DHAVE_MPE Or         install MPE on your system
-and make edit bmake/ARCH/packages to make sure that the        
+and make edit bmake/$PETSC_ARCH/packages to make sure that the        
 directory where mpe.h is located is listed on the line MPI_INCLUDE =
 -Istuff </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>under
 Solaris "vinv.c",         line 61: MPI_Allreduce: macro recursion
 gcreatev.c: &gt; vscat.c: &gt;         "vscat.c", line 535:
@@ -891,6 +901,7 @@ and locating the         line #if !defined(PETSC_USING_MPIUNI)
  !defined(PARCH_solaris) or in versions of PETSc greater then 2.0.15
 edit the file         include/petsclog.h </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>under
 Solaris &gt; testexamples_3         in:
 /vol/hsm/apps/petsc-2.0.15/src/is/examples/tests &gt; f77 -c        
@@ -903,10 +914,9 @@ assembler subset: .xstabs ".stab.index",
 -I/vol/hsm/apps/petsc-2.0.15 -I/vol/hsm/apps/petsc-2.0.15/includ e     
 -I/vol/hsm/apps/mpich/include -DPETSC_DEBUG -DPETSC_LOG -DPETSC_BOPT_g 
 -D__DIR__='\\"src/is/e xamples/tests/\\"' -g -xs -qoption f77pass1     
--p\\$XA0SD6NKcKFzi64. ex1f.F",0x34,0,0,0 &gt; *** Error code 1 &gt;
-make: Fatal         error: Command failed for target `ex1f.o' &gt;
-Current working directory        
-/vol/hsm/apps/petsc-2.0.15/src/is/examples/tests &gt; Missing: program
+-p\\$XA0SD6NKcKFzi64. ex1f.F,0x34,0,0,0 &gt; *** Error code 1 &gt;
+make: Fatal         error: Command failed for target ex1f.o &gt;
+Current working directory        /vol/hsm/apps/petsc-2.0.15/src/is/examples/tests &gt; Missing: program
 name Program ex1f         either does not exist, is not
           <p><font color="#ff0000"><strong>Problem:</strong></font> The
 Sun WorkShop Compiler FORTRAN 77 4.2 for .F files uses the symbol
@@ -916,6 +926,7 @@ the directory src/fortran/custom         remove from the makefile
 -D__DIR__='"${LOCDIR}"'. Also in every         examples/tutorials or
 tests directory with .F files remove the -D__DIR__=something. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>The
 program seems to use more and         more memory as it runs, even
 though you don't think you are allocating more memory.
@@ -960,6 +971,7 @@ remove all references to libraries with lmpi and pmpi in
 their names. </li>
           </ol>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>Under
 Windows NT When Installing         using g++ libfast in:
 /users/petsc/petsc_prj/petsc/src/sys/src str.c: In function `void      
@@ -975,31 +987,7 @@ petsc/src/sys/src/str.c replace string.h with         string_bak.h -
 Edit petsc/src/sys/src/memc.c replace memory.h with string_bak.h -     
 recompile. </p>
         </li>
-        <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
-Cray T3D/T3E libfast in:        
-/u3/bsmith/petsc/src/gvec/impls/rectangular/1d/dcimpls/linear sh-105
-/opt/ctl/bin/CC[9]:         cannot fork: too many processes.
-          <p><font color="#ff0000"><strong>Problem:</strong></font> This
-machine cannot handle many processes. </p>
-          <p><font color="#ff0000"><strong>Cure: </strong></font></p>
-          <ol>
-            <li>Rebuild PETSc in the dirs where it gave this error. You
-could do this as: <br>
-cd petsc/src/gvec/impls/ make BOPT=g ACTION=lib tree</li>
-            <li>Speak to your system administrator about increases the
-maximum number of allowable             processes to <br>
-30 from the default 20. </li>
-            <li>&nbsp;</li>
-          </ol>
-        </li>
-        <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
-Cray T3D/T3E libfast in:        
-/usr/tmp/nfs/bsmith/petsc/src/gvec/impls/rectangular/1d/dcimpls/linear
-/mpp/bin/CC[44]:         89544 Operand range error(coredump) sh-56
-/mpp/bin/CC[63]: /usr/bin/CC: not found. See
-          <p><font color="#ff0000"><strong>Problem: </strong></font>See
-#50 above</p>
-        </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
 SGI (or Origin) using SGI MPI         version 2.0 MPI Error, rank:0,
 function:MPI_ERRHANDLER_SET, Invalid communicator         MPI_Abort()
@@ -1010,6 +998,7 @@ SGI) </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>Upgrade
 to SGI's version 3.0 of         MPI. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
 SGI Powerchallenge running 6.2         ld64: WARNING 134: weak
 definition of __dcis in /usr/lib64/mips4/libftn.so preempts that       
@@ -1025,6 +1014,7 @@ ${LDIR}:${DYLIBPATH} <br>
 FLINKER = f77 -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 -rpath
 ${LDIR}:${DYLIBPATH}</p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
 HP running HP's version of         MPI. sl0934 222: mpirun -np 1 ./ex12
 -f        
@@ -1048,6 +1038,7 @@ MPI_Comm_C2F(a) #endif then rebuild the fortran interface library by
 running make BOPT=g         (or BOPT=O or g_c++ etc) fortran in the
 main PETSc directory </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
 Cray T3D/T3E mpirun -np 1 ex1         -log_info /bin/mpprun: exec of
 'ex1' failed: No such file or directory
@@ -1056,6 +1047,7 @@ is not in your path. </p>
           <p><font color="#ff0000"><strong>Cure:</strong></font> add ./
 to your PATH variable in         your .cshrc </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>With
 GMRES At restart the second         residual norm printed does not
 match the first <br>
@@ -1085,6 +1077,7 @@ preconditioner the drift will often be smaller and less
 noticeable. Of if you are running matrix-free you may need to tune the
 matrix-free         parameters.</p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>Error
 message while installing         compiling in
 src/mat/impls/rowbs/mpi/mpirowbs.c about ProcSet, for example,
@@ -1100,6 +1093,7 @@ changed BlockSolve95 incompletely. </p>
           <p><font color="#ff0000"><strong>Cure:</strong></font> Remove
 the (ProcSet*) from         mpirowbs.c </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>Error
 message when using         BlockSolve95 0 - Error in MPI object : Could
 not convert index -268437876(effff68c) into a         pointer. The
@@ -1113,6 +1107,7 @@ is due to changes in prototye of a BlockSolve95 function. </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>Install
 the latest version of         BlockSolve95 </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>Error
 When Installing PETSc with         BlockSolve95 mpirowbs.c: In function
 `int MatCreateMPIRowbs(struct MPIR_COMMUNICATOR *,         int, int,
@@ -1124,6 +1119,7 @@ is due to changes in         prototye of a BlockSolve95 function. </p>
           <p><font color="#ff0000"><strong>Cure:</strong></font> Install
 the latest version of         BlockSolve95 </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>on
 Cray T3E/T3D My mixed         Fortran/(C or C++) code works fine on
 other machines but does not link (or links but         crashes on) on
@@ -1155,6 +1151,7 @@ PETSc makefiles and macro FC to compile your Fortran code this will
 handle this             automatically. </li>
           </ol>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>Error
 when running petsc example <br>
           <strong>fire &gt;&gt;mpirun ex11<br>
@@ -1182,6 +1179,7 @@ as:&nbsp; <br>
           <p>On Solaris the library can often be found in <strong>/opt/SUNWspro/SC4.2/lib</strong>
 or <strong>/opt/SUNWspro/SC4.4/lib </strong>etc</p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>ld64:
 ERROR 33: Unresolved text         symbol "MPIR_ToPointer" -- 1st
 referenced by /d$ &gt; ld64: ERROR 33: Unresolved         text symbol
@@ -1195,6 +1193,7 @@ sure that the file bmake/$PETSC_ARCH/packages on the line MPI_INCLUDE
 has         -DUSES_INT_MPI_COMM if it is not there add it and rerun
 make BOPT=g (or O etc) fortran. </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>[0]
 PETSC ERROR:         MatAssemblyBegin() line 1858 in
 src/mat/interface/matrix.c Not for factored matrix
@@ -1206,6 +1205,7 @@ factorization and want to reuse the space. </p>
 MatSetUnfactored(Mat); before         calling the MatSetValues()
 routines.</p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>Error
 while running PETSc         examples on IBM SP using IBM's MPI
           <p>exec(): 0509-036 Cannot load program ex1 because of       
@@ -1227,6 +1227,7 @@ bmake/rs6000/packages and add         the following to the variable
 EXTERNAL_LIB <br>
 EXTERNAL_LIB = /usr/lpp/ppe.poe/lib/libc.a /usr/lpp/ppe.poe/lib/libc_r.a</p>
         </li>
+
         <li><strong><font color="#ff0000">Symptom:</font></strong> Error
 while compiling under Linux         (more recent versions of OS), with
 C++ compiler
@@ -1243,6 +1244,7 @@ src/sys/src/mem.c and         src/sys/src/cputime.c and remove the line
 beginning with<br>
 extern int getrusage(....)</p>
         </li>
+
         <li><strong><font color="#ff0000">Symptom:</font></strong> Error
 when building a fortran         example: <br>
           <br>
@@ -1251,6 +1253,7 @@ ld:open(): A file or directory in the path name does not exist.<br>
 make: 1254-004 The error code from the last command is 255.<br>
 make: 1254-005 Ignored error code 255 from last command.<br>
 rm -f ex4f.o</li>
+
         <p>....</p>
         <p><font color="#ff0000"><strong>Problem:</strong> </font>Fortran
 Libraries are not built</p>
@@ -1276,6 +1279,7 @@ without PETSC). Make sure you are using the correct version         of
 mpirun for the installed version of MPICH or reinstall MPICH<br>
 .<br>
         </li>
+
         <li><strong><font color="#ff0000">Symptom</font></strong>:
 Error when compiling PETSc         examples<br>
           <br>
@@ -1288,27 +1292,7 @@ fortran compiler is probably         using libf2c.a instead of libg2c.a<br>
 bmake/${PETSC_ARCH}/variables and replace -lg2c with -lf2c<br>
           <br>
         </li>
-        <li><font color="#ff0000"><strong>Symptom</strong>:</font> When
-using PetscCommSetWorld() <br>
-          <font face="Terminal"><br>
-&gt;
--------------------------------------------------------------------------<br>
-&gt; [0]PETSC ERROR: PetscCommFree_Private() line 198 in<br>
-&gt; src/sys/src/objectstagm.c<br>
-&gt; [0]PETSC ERROR: Null or corrupt argument!<br>
-&gt; [0]PETSC ERROR: Error freeing PETSc object, problem with corrupted<br>
-&gt; memory<br>
-&gt; [0]PETSC ERROR: PetscFinalize() line 663 in
-src/sys/src/objectsoptions.c</font>
-          <p><font color="#ff0000"><strong>Problem:</strong></font> A bug</p>
-          <p><font color="#ff0000"><strong>Cure:</strong></font> Edit
-src/sys/src/objects/options.c,         search for <br>
-          <br>
-if (!PETSC_COMM_WORLD_FromUser) { <br>
-ierr=PetscCommDup_Private(MPI_COMM_WORLD,&amp;PETSC_COMM_WORLD,&amp;dummy_tag);<br>
-} <br>
-and remove the if () {} portion, leaving just the function call.</p>
-        </li>
+
         <li>
           <p>&nbsp;<font color="#ff0000"><strong>Symptom</strong>:</font>
 Get the following errors when using PETSc graphics on windows/cygwin-X11 <br>
@@ -1326,6 +1310,7 @@ can be         fixed by changing the display settings on windows to 16
 bit colors or 24         bit colors.<br>
           </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom</strong>:</font> Some
 Krylov         methods seem to print two residual norms per iteration,
 for example <br>
@@ -1346,19 +1331,7 @@ there are two residual norms per iteration. You can also think of it as
 twice<br>
 as many iterations.</p>
         </li>
-        <li><font color="#ff0000"><strong>Symptom</strong>:</font>
-Unresolved symbols on macx (Mac OS X) when building the examples, but
-the library         build log file looks fine - without any errors.
-          <p><font color="#ff0000"><strong>Problem:</strong></font> This
-happens due to a buggy /bin/sh on most Mac OS X versions. This        
-causes the PETSc build-system to NOT compile sourcefiles in some random
- directories - thus causing unresolved symbols for functions defined in 
-these sourcefiles. </p>
-          <p><font color="#ff0000"><strong>Cure:</strong></font>&nbsp;
-Download         and install bash. Now change the build-system to use
-bash as the shell         by editing bmake/macx/variables - and
-updating the variable SHELL. Now         rebuild the libraries. </p>
-        </li>
+
         <li><font color="#ff0000"><strong>Symptom</strong>:</font> The
 example         compiles fine - but at runtime gives the following
 error:
@@ -1383,6 +1356,7 @@ libraries. You might also want to remove shared         libraries by
 invoking </p>
           <p>make BOPT=g deleteshared </p>
         </li>
+
         <li><font color="#ff0000"><strong>Symptom</strong>:</font> 
 When running with -start_in_debugger one gets the error message
           <p>PETSC: Attaching gdb to /opt/procast_mpich/procast051003/./procast of pid 31603 on display linux.:0.\
@@ -1397,6 +1371,7 @@ do not know where to display the debugger window.
 -display displayname where displayname is something like mymachine.0.0
 
         </li>
+
         <li><font color="#ff0000"><strong>Symptom</strong>:</font> 
 Too many communicators (2046) in MPI_Comm_dup
           <p><font color="#ff0000"><strong>Problem:</strong></font>If you create a PETSc object
