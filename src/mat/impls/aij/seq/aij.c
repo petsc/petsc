@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.155 1996/03/10 17:28:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.156 1996/03/14 22:26:33 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1032,7 +1032,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
 
   if (ISStrideGetInfo(iscol,&first,&step) && step == 1) { /* no need to sort */
     /* special case of contiguous rows */
-    lens   = (int *) PetscMalloc((2*ncols+1)*sizeof(int)); CHKPTRQ(lens);
+    lens   = (int *) PetscMalloc((ncols+nrows+1)*sizeof(int)); CHKPTRQ(lens);
     starts = lens + ncols;
     /* loop over new rows determining lens and starting points */
     for (i=0; i<nrows; i++) {
