@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.47 1998/03/20 22:52:39 bsmith Exp balay $";
+!    "$Id: ex12.F,v 1.48 1998/03/24 16:43:10 balay Exp balay $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -26,7 +26,8 @@
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/snes.h"
 
-      integer          ctx(8),ierr,N,start,end,nn,i,ii,its,flg
+      PetscFortranAddr ctx(6)
+      integer          rank,size,ierr,N,start,end,nn,i,ii,its,flg
       SNES             snes
       Mat              J
       Vec              x,r,u
@@ -40,8 +41,10 @@
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 
-      call MPI_Comm_rank(PETSC_COMM_WORLD,ctx(4),ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,ctx(5),ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
+      ctx(4) = rank
+      ctx(5) = size
 
 ! Set up data structures
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,
@@ -118,7 +121,7 @@
       implicit none
       SNES             snes
       Vec              x,f
-      integer          ctx(*)
+      PetscFortranAddr ctx(*)
       integer          rank, size, i, s, n, ierr
       PetscOffset      ixx, iff, iF2
       Scalar           h, d, vf2(1), vxx(1), vff(1)
@@ -227,7 +230,8 @@
       SNES             snes
       Vec              x
       Mat              jac,B
-      integer          flag, ctx(*), ii, istart
+      PetscFortranAddr ctx(*)
+      integer          flag, ii, istart
       PetscOffset      ixx
       integer          iend, i,j, n, rank, size, end, start, ierr
       Scalar           d, A, h, vxx(1)
