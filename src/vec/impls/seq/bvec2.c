@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.150 1999/02/19 19:40:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.151 1999/03/05 04:01:34 bsmith Exp curfman $";
 #endif
 /*
    Implements the sequential vectors.
@@ -465,6 +465,8 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
 
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().
    The user should not free the array until the vector is destroyed.
+
+   Level: intermediate
 
 .keywords: vector, sequential, create, BLAS
 
