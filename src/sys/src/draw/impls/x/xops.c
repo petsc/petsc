@@ -83,9 +83,9 @@ EXTERN PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X*,int,int,int,i
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawTriangle_X" 
 static PetscErrorCode PetscDrawTriangle_X(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
-                          PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
+                                          PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
-  PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
+  PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -117,11 +117,11 @@ static PetscErrorCode PetscDrawTriangle_X(PetscDraw draw,PetscReal X1,PetscReal 
 static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
   PetscErrorCode ierr;
-  int          xx,yy;
-  size_t       len;
-  PetscDraw_X  *XiWin = (PetscDraw_X*)draw->data;
-  char         *substr;
-  PetscToken   *token;
+  int            xx,yy;
+  size_t         len;
+  PetscDraw_X    *XiWin = (PetscDraw_X*)draw->data;
+  char           *substr;
+  PetscToken     *token;
 
   PetscFunctionBegin;
   xx = XTRANS(draw,XiWin,x);  yy = YTRANS(draw,XiWin,y);
@@ -149,9 +149,9 @@ EXTERN PetscErrorCode XiFontFixed(PetscDraw_X*,int,int,XiFont **);
 #define __FUNCT__ "PetscDrawStringSetSize_X" 
 static PetscErrorCode PetscDrawStringSetSize_X(PetscDraw draw,PetscReal x,PetscReal  y)
 {
-  PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
+  PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
   PetscErrorCode ierr;
-  int          w,h;
+  int            w,h;
 
   PetscFunctionBegin;
   w = (int)((XiWin->w)*x*(draw->port_xr - draw->port_xl)/(draw->coor_xr - draw->coor_xl));
@@ -180,11 +180,11 @@ PetscErrorCode PetscDrawStringGetSize_X(PetscDraw draw,PetscReal *x,PetscReal  *
 PetscErrorCode PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
   PetscErrorCode ierr;
-  int         xx,yy;
-  PetscDraw_X *XiWin = (PetscDraw_X*)draw->data;
-  char        tmp[2];
-  PetscReal   tw,th;
-  size_t      i,n;
+  int            xx,yy;
+  PetscDraw_X    *XiWin = (PetscDraw_X*)draw->data;
+  char           tmp[2];
+  PetscReal      tw,th;
+  size_t         i,n;
   
   PetscFunctionBegin;
   ierr   = PetscStrlen(chrs,&n);CHKERRQ(ierr);
@@ -220,8 +220,8 @@ static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
 static PetscErrorCode PetscDrawSynchronizedFlush_X(PetscDraw draw)
 {
   PetscErrorCode ierr;
-  int          rank;
-  PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
+  PetscMPIInt    rank;
+  PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
   XFlush(XiWin->disp);
@@ -280,8 +280,8 @@ static PetscErrorCode PetscDrawClear_X(PetscDraw draw)
 static PetscErrorCode PetscDrawSynchronizedClear_X(PetscDraw draw)
 {
   PetscErrorCode ierr;
-  int          rank;
-  PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
+  PetscMPIInt    rank;
+  PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
   ierr = MPI_Barrier(draw->comm);CHKERRQ(ierr);
@@ -300,9 +300,9 @@ static PetscErrorCode PetscDrawSynchronizedClear_X(PetscDraw draw)
 #define __FUNCT__ "PetscDrawSetDoubleBuffer_X" 
 static PetscErrorCode PetscDrawSetDoubleBuffer_X(PetscDraw draw)
 {
-  PetscDraw_X*  win = (PetscDraw_X*)draw->data;
+  PetscDraw_X*   win = (PetscDraw_X*)draw->data;
   PetscErrorCode ierr;
-  int           rank;
+  PetscMPIInt   rank;
 
   PetscFunctionBegin;
   if (win->drw) PetscFunctionReturn(0);
@@ -389,7 +389,7 @@ static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
   if (draw->pause > 0) PetscSleep(draw->pause);
   else if (draw->pause < 0) {
     PetscDrawButton button;
-    int        rank;
+    PetscMPIInt     rank;
     ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
 static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
 {
   PetscErrorCode ierr;
-  PetscDraw_X* win = (PetscDraw_X*)draw->data;
+  PetscDraw_X*   win = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
   ierr = PetscDrawOpenX(draw->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,150,220,popup);CHKERRQ(ierr);
@@ -417,10 +417,10 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
 #define __FUNCT__ "PetscDrawSetTitle_X" 
 static PetscErrorCode PetscDrawSetTitle_X(PetscDraw draw,const char title[])
 {
-  PetscDraw_X   *win = (PetscDraw_X*)draw->data;
-  XTextProperty prop;
+  PetscDraw_X    *win = (PetscDraw_X*)draw->data;
+  XTextProperty  prop;
   PetscErrorCode ierr;
-  size_t        len;
+  size_t         len;
 
   PetscFunctionBegin;
   XGetWMName(win->disp,win->win,&prop);
@@ -435,11 +435,11 @@ static PetscErrorCode PetscDrawSetTitle_X(PetscDraw draw,const char title[])
 #define __FUNCT__ "PetscDrawResizeWindow_X" 
 static PetscErrorCode PetscDrawResizeWindow_X(PetscDraw draw,int w,int h)
 {
-  PetscDraw_X  *win = (PetscDraw_X*)draw->data;
-  unsigned int ww,hh,border,depth;
-  int          x,y;
+  PetscDraw_X    *win = (PetscDraw_X*)draw->data;
+  unsigned int   ww,hh,border,depth;
+  int            x,y;
   PetscErrorCode ierr;
-  Window       root;
+  Window         root;
 
   PetscFunctionBegin;
   XResizeWindow(win->disp,win->win,w,h);
