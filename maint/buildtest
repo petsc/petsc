@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.126 1998/04/02 16:02:16 balay Exp balay $ 
+# $Id: buildtest,v 1.127 1998/04/02 23:19:53 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -42,7 +42,7 @@ if ($day == Mon) then
   set M =(snake  fire       alaska     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
   set B =(g      Opg_c++    O_c++      g             O           g           Opg          O           Opg_complex O_complex   O_c++        )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_nolog solaris      rs6000      sun4        IRIX64      freebsd_egcs )
-  set S =(shared noshared   shared     shared        noshared    shared      noshared     shared      shared      shared      nonshared    )
+  set S =(shared noshared   shared     shared        noshared    shared      noshared     shared      noshared    shared      nonshared    )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
   set J2=(1      2          2          2             2           2           2            2           2           2           2            )
   set J3=(0      8          3          3             3           6           3            3           3           3           3            )
