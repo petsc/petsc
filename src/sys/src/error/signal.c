@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.34 1997/02/03 15:15:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.35 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -102,27 +102,49 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGFPE,  (void (*)(...)) PetscSignalHandler );
     signal( SIGSEGV, (void (*)(...)) PetscSignalHandler );
     signal( SIGSYS,  (void (*)(...)) PetscSignalHandler );
-#else
-    signal( SIGQUIT, PetscSignalHandler );
+#elif defined(PARCH_nt)
     signal( SIGILL,  PetscSignalHandler );
     signal( SIGFPE,  PetscSignalHandler );
-    signal( SIGBUS,  PetscSignalHandler );
     signal( SIGSEGV, PetscSignalHandler );
-#if !defined(PARCH_linux) && !defined(PARCH_nt_gnu)
+#elif defined(PARCH_nt_gnu) || defined (PARCH_linux) 
+    signal( SIGILL,  PetscSignalHandler );
+    signal( SIGFPE,  PetscSignalHandler );
+    signal( SIGSEGV, PetscSignalHandler );
+    signal( SIGBUS,  PetscSignalHandler );
+    signal( SIGQUIT, PetscSignalHandler );
+#else
+    signal( SIGILL,  PetscSignalHandler );
+    signal( SIGFPE,  PetscSignalHandler );
+    signal( SIGSEGV, PetscSignalHandler );
+    signal( SIGBUS,  PetscSignalHandler );
+    signal( SIGQUIT, PetscSignalHandler );
     signal( SIGSYS,  PetscSignalHandler );
-#endif
 #endif
     SignalSet = 1;
   }
   if (!routine) {
-    signal( SIGQUIT, 0 );
+#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64)) && defined(__cplusplus)
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
-#if !defined(PARCH_IRIX) && !defined(PARCH_IRIX64) && !defined(__cplusplus)
-    signal( SIGBUS,  0 );
-#endif
+    signal( SIGQUIT, 0 );
     signal( SIGSEGV, 0 );
-#if !defined(PARCH_linux)  && !defined(PARCH_nt_gnu)
+    signal( SIGSYS,  0 );
+#elif defined(PARCH_nt)
+    signal( SIGILL,  0 );
+    signal( SIGFPE,  0 );
+    signal( SIGSEGV, 0 );
+#elif defined(PARCH_nt_gnu) || defined (PARCH_linux) 
+    signal( SIGILL,  0 );
+    signal( SIGFPE,  0 );
+    signal( SIGQUIT, 0 );
+    signal( SIGSEGV, 0 );
+    signal( SIGBUS,  0 );
+#else
+    signal( SIGILL,  0 );
+    signal( SIGFPE,  0 );
+    signal( SIGQUIT, 0 );
+    signal( SIGSEGV, 0 );
+    signal( SIGBUS,  0 );
     signal( SIGSYS,  0 );
 #endif
     SignalSet = 0;
@@ -146,14 +168,28 @@ int PetscPopSignalHandler()
   sh  = sh->previous;
   PetscFree(tmp);
   if (!sh || !sh->handler) {
-    signal( SIGQUIT, 0 );
+#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64)) && defined(__cplusplus)
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
-#if !defined(PARCH_IRIX)  && defined(PARCH_IRIX64) && !defined(__cplusplus)
-    signal( SIGBUS,  0 );
-#endif
+    signal( SIGQUIT, 0 );
     signal( SIGSEGV, 0 );
-#if !defined(PARCH_linux)  && !defined(PARCH_nt_gnu)
+    signal( SIGSYS,  0 );
+#elif defined(PARCH_nt)
+    signal( SIGILL,  0 );
+    signal( SIGFPE,  0 );
+    signal( SIGSEGV, 0 );
+#elif defined(PARCH_nt_gnu) || defined (PARCH_linux) 
+    signal( SIGILL,  0 );
+    signal( SIGFPE,  0 );
+    signal( SIGQUIT, 0 );
+    signal( SIGSEGV, 0 );
+    signal( SIGBUS,  0 );
+#else
+    signal( SIGILL,  0 );
+    signal( SIGFPE,  0 );
+    signal( SIGQUIT, 0 );
+    signal( SIGSEGV, 0 );
+    signal( SIGBUS,  0 );
     signal( SIGSYS,  0 );
 #endif
     SignalSet = 0;
