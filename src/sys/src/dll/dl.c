@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.28 1998/10/09 19:20:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.29 1998/10/15 18:20:23 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -305,7 +305,26 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
     }
   }
 
-  *handle = dlopen(par2,1);    
+  /*
+    Under linux open the executable itself in the hope it will
+    resolve some symbols; doesn't seem to matter.
+  */
+#if defined(PARCH_linux)
+  *handle = dlopen(0,RTLD_LAZY  |  RTLD_GLOBAL);
+#endif
+
+  /*
+      Mode indicates symbols required by symbol loaded with dlsym() 
+     are only loaded when required (not all together) also indicates
+     symbols required can be contained in other libraries also opened
+     with dlopen()
+  */
+#if defined(HAVE_RTLD_GLOBAL)
+  *handle = dlopen(par2,RTLD_LAZY  |  RTLD_GLOBAL); 
+#else
+  *handle = dlopen(par2,RTLD_LAZY); 
+#endif
+
   if (!*handle) {
     PetscErrorPrintf("Error message from dlopen() %s\n",dlerror());    
     PetscErrorPrintf("Library name %s\n  %s\n",libname,par2);
