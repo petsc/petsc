@@ -205,7 +205,8 @@ class Logger(args.ArgumentProcessor):
         if not forceScroll and not writeAll and self.linewidth > 0:
           global RemoveDirectory
           self.logBack()
-          f.write(msg.replace(RemoveDirectory,'')[0:self.linewidth])
+          msg = msg.replace(RemoveDirectory,'')
+          f.write(msg[0:self.linewidth])
           f.write(''.join([' '] * (self.linewidth - len(msg))))
         else:
           if not debugSection is None and not debugSection == 'screen' and len(msg):
