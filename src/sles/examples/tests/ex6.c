@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.11 1995/10/24 21:50:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.12 1995/10/25 22:13:23 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   OptionsGetString(0,"-f",file,127);
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   mtype = MATSEQAIJ; /* default matrix type */
-  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,&mtype,&set); CHKERRQ(ierr);
+  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.3 1995/10/09 21:58:54 bsmith Exp curfman $";
 #endif
 /*
     Fortran stub for PetscInitialize and Options routines. 
@@ -85,10 +85,10 @@ extern void getarg_(int*,char*,int);
 #endif
 int PETScParseFortranArgs_Private(int *argc,char ***argv)
 {
-  int  i, warg = 256,mytid;
+  int  i, warg = 256,rank;
   char *p;
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  if (!mytid) {
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  if (!rank) {
     *argc = 1 + iargc_();
   }
   MPI_Bcast(argc,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -97,7 +97,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   CHKPTRQ(*argv);
   (*argv)[0] = (char*) (*argv + *argc + 1);
 
-  if (!mytid) {
+  if (!rank) {
     PetscZero((*argv)[0],(*argc)*warg*sizeof(char));
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
@@ -111,7 +111,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
     }
   }
   MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,MPI_COMM_WORLD);  
-  if (mytid) {
+  if (rank) {
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
     }
@@ -145,10 +145,10 @@ int petscinitialize(int *err)
   s3 = MPIR_FromPointer(STDOUT_VIEWER_WORLD);
   petscsetcommonblock_(&s1,&s2,&s3);
   if (PetscBeganMPI) {
-    int mytid,numtid;
-    MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-    MPI_Comm_size(MPI_COMM_WORLD,&numtid);
-    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",mytid,numtid);
+    int rank,size;
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
   }
   *err = 0;
   return 0;

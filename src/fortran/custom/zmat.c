@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.4 1995/10/11 15:19:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.5 1995/10/26 22:01:47 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -8,6 +8,7 @@ static char vcid[] = "$Id: zmat.c,v 1.4 1995/10/11 15:19:13 bsmith Exp bsmith $"
 #include "pinclude/petscfix.h"
 
 #ifdef FORTRANCAPS
+#define matgetformatfromoptions_      MATGETFORMATFROMOPTIONS
 #define matgetreordering_             MATGETREORDERING
 #define matreorderingregisterall_     MATREORDERINGREGISTERALL
 #define matdestroy_                   MATDESTROY
@@ -32,6 +33,7 @@ static char vcid[] = "$Id: zmat.c,v 1.4 1995/10/11 15:19:13 bsmith Exp bsmith $"
 #define matload_                      MATLOAD
 #define mattranspose_                 MATTRANSPOSE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define matgetformatfromoptions_      matgetformatfromoptions
 #define matreorderingregisterall_     matreorderingregisterall
 #define matdestroy_                   matdestroy
 #define matcreatempiaij_              matcreatempiaij
@@ -56,6 +58,19 @@ static char vcid[] = "$Id: zmat.c,v 1.4 1995/10/11 15:19:13 bsmith Exp bsmith $"
 #define matload_                      matload
 #define mattranspose_                 mattranspose
 #endif
+
+void matgetformatfromoptions_(MPI_Comm comm,char *prefix,MatType *type,int *set,int *__ierr,int len){
+  char *t;
+  if (prefix[len] != 0) {
+    t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
+    PetscStrncpy(t,prefix,len);
+    t[len] = 0;
+  }
+  else t = prefix;
+  *__ierr = MatGetFormatFromOptions(
+	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),t,
+	(MatType* )MPIR_ToPointer( *(int*)(type) ),set);
+}
 
 void mattranspose_(Mat mat,Mat *B, int *__ierr )
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.17 1995/10/19 22:29:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.18 1995/10/24 21:53:41 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -50,7 +50,7 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,&mtype,&set); CHKERRA(ierr);
+  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRA(ierr);
   if (mtype == MATMPIROW) {
     ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
            0,0,&J); CHKERRA(ierr);
