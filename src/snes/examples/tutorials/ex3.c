@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.54 1999/03/14 22:31:21 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.55 1999/03/14 22:37:54 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -168,6 +168,12 @@ int main( int argc, char **argv )
   PetscObjectSetName((PetscObject)U,"Exact Solution");
 
   /* 
+     Set SNES/SLES/KSP/PC runtime options, e.g.,
+         -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
+  */
+  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+
+  /* 
      Set an optional user-defined routine to check the validity of candidate 
      iterates that are determined by line search methods
   */
@@ -180,11 +186,6 @@ int main( int argc, char **argv )
     ierr = OptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,&flg); CHKERRA(ierr);
   }
 
-  /* 
-     Set SNES/SLES/KSP/PC runtime options, e.g.,
-         -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
-  */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
   /* 
      Print parameters used for convergence testing (optional) ... just
@@ -523,7 +524,7 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
 
   if (iter > 1) {
-    ierr = SNESGetApplicationContext(snes,(void*)&user); CHKERRQ(ierr);
+    ierr = SNESGetApplicationContext(snes,(void**)&user); CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration = %d with tolerance %g\n",iter,check->tolerance);
 
     /* Access local array data */
