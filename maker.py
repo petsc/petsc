@@ -281,18 +281,22 @@ class SIDLMake(Make):
 
   def getSIDLClientDirectory(self, builder, sidlFile, language):
     baseName  = os.path.splitext(os.path.basename(sidlFile))[0]
+    clientDir = None
     builder.pushConfiguration('SIDL '+baseName)
     builder.pushLanguage('SIDL')
-    clientDir = builder.getCompilerObject().clientDirs[language]
+    if language in builder.getCompilerObject().clientDirs:
+      clientDir = builder.getCompilerObject().clientDirs[language]
     builder.popLanguage()
     builder.popConfiguration()
     return clientDir
 
   def getSIDLServerDirectory(self, builder, sidlFile, language):
     baseName  = os.path.splitext(os.path.basename(sidlFile))[0]
+    serverDir = None
     builder.pushConfiguration('SIDL '+baseName)
     builder.pushLanguage('SIDL')
-    serverDir = builder.getCompilerObject().serverDirs[language]
+    if language in builder.getCompilerObject().serverDirs:
+      serverDir = builder.getCompilerObject().serverDirs[language]
     builder.popLanguage()
     builder.popConfiguration()
     return serverDir
@@ -331,7 +335,9 @@ class SIDLMake(Make):
     compiler = builder.getCompilerObject()
     compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
     for depFile in builder.sourceDB.getDependencies(sidlFile):
-      compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, depFile, language))
+      dir = self.getSIDLServerDirectory(builder, depFile, language)
+      if not dir is None:
+        compiler.includeDirectories.add(dir)
     self.addDependencyIncludes(compiler, language)
     builder.popConfiguration()
     return
@@ -358,7 +364,9 @@ class SIDLMake(Make):
     compiler.includeDirectories.update(self.python.include)
     compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
     for depFile in builder.sourceDB.getDependencies(sidlFile):
-      compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, depFile, language))
+      dir = self.getSIDLServerDirectory(builder, depFile, language)
+      if not dir is None:
+        compiler.includeDirectories.add(dir)
     self.addDependencyIncludes(compiler, language)
     builder.popConfiguration()
     return
@@ -395,7 +403,9 @@ class SIDLMake(Make):
     compiler = builder.getCompilerObject()
     compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
     for depFile in builder.sourceDB.getDependencies(sidlFile):
-      compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, depFile, language))
+      dir = self.getSIDLServerDirectory(builder, depFile, language)
+      if not dir is None:
+        compiler.includeDirectories.add(dir)
     self.addDependencyIncludes(compiler, language)
     builder.popConfiguration()
     return
