@@ -1,4 +1,4 @@
-# $Id: base,v 1.34 1998/03/26 19:54:51 balay Exp balay $ 
+# $Id: base,v 1.35 1998/04/08 22:04:10 balay Exp balay $ 
 
 PARCH    = IRIX5
 CC       = cc -32 -DPARCH_IRIX5
@@ -30,10 +30,6 @@ SYS_LIB  = -lfpe -lsun
 #  For SGI 64 bit machines use the PETSC_ARCH IRIX64
 #
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE
-CONF     = -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_STROPTS_H \
-           -DHAVE_MALLOC_H -DHAVE_X11  ${FCONF} \
-           -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME \
-           -DHAVE_UNAME -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H
 
 SHELL    = /bin/sh
 

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.206 1998/04/09 04:19:44 bsmith Exp bsmith $ */
+/* $Id: petscconf.h,v 1.1 1998/04/09 20:26:47 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -22,5 +22,6 @@
 #define HAVE_FORTRAN_UNDERSCORE 
 
 #undef HAVE_READLINK
+#define NEEDS_GETTIMEOFDAY_PROTO
 
 #endif

@@ -1,4 +1,4 @@
-# $Id: base,v 1.36 1998/04/03 23:57:47 balay Exp balay $ 
+# $Id: base,v 1.37 1998/04/09 00:11:53 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
@@ -22,10 +22,6 @@ LD       = ld -64
 SYS_LIB  = 
 
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_64BITS  -DHAVE_IRIXF90
-CONF     = -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_STROPTS_H -DHAVE_MALLOC_H \
-           -DHAVE_64BITS -DHAVE_X11 ${FCONF} \
-           -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME \
-           -DHAVE_UNAME -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H -DUSE_SHARED_MEMORY
 
 SHELL    = /bin/sh
 
