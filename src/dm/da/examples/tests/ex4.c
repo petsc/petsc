@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.21 1996/03/23 00:34:05 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.22 1996/06/27 17:49:12 curfman Exp curfman $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -13,8 +13,8 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 int main(int argc,char **argv)
 {
   int            rank, M = 10, N = 8, m = PETSC_DECIDE, ierr, flg;
-  int            s=2, w=2, n = PETSC_DECIDE, nloc, l, i, j, kk, ict;
-  int            xs, xm, ys, ym, Xs, Xm, Ys, Ym, iloc, *iglobal, *ltog;
+  int            s=2, w=2, n = PETSC_DECIDE, nloc, l, i, j, kk;
+  int            Xs, Xm, Ys, Ym, iloc, *iglobal, *ltog, testorder = 0;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
   Viewer         viewer;
@@ -37,6 +37,7 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-ywrap",&flg); CHKERRA(ierr); if (flg)  wrap = DA_YPERIODIC;
   ierr = OptionsHasName(PETSC_NULL,"-xywrap",&flg); CHKERRA(ierr); if (flg) wrap = DA_XYPERIODIC;
   ierr = OptionsHasName(PETSC_NULL,"-star",&flg); CHKERRA(ierr); if (flg)   st = DA_STENCIL_STAR;
+  ierr = OptionsHasName(PETSC_NULL,"-testorder",&testorder); CHKERRA(ierr);
 
   /* Create distributed array and get vectors */
   ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); CHKERRA(ierr);
@@ -56,9 +57,11 @@ int main(int argc,char **argv)
   ierr = VecScale(&value,local); CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
-  PetscPrintf (MPI_COMM_WORLD,"\nGlobal Vectors:\n");
-  ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
-  PetscPrintf (MPI_COMM_WORLD,"\n\n");
+  if (!testorder) { /* turn off printing when testing ordering mappings */
+    PetscPrintf (MPI_COMM_WORLD,"\nGlobal Vectors:\n");
+    ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
+    PetscPrintf (MPI_COMM_WORLD,"\n\n");
+  }
 
   /* Send ghost points to local vectors */
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
@@ -74,42 +77,41 @@ int main(int argc,char **argv)
   }
 
   /* Tests mappings betweeen application/PETSc orderings */
-  ierr = OptionsHasName(PETSC_NULL,"-test_order",&flg); CHKERRA(ierr);
-  if (flg) {
-    ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRA(ierr);
+  if (testorder) {
     ierr = DAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRA(ierr);
     ierr = DAGetGlobalIndices(da,&nloc,&ltog); CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao); CHKERRA(ierr);
-    /* ierr = AOView(ao,STDOUT_VIEWER_WORLD); CHKERRA(ierr); */
+    ierr = AOView(ao,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
     iglobal = (int *) PetscMalloc( nloc*sizeof(int) ); CHKPTRA(iglobal);
+
+    /* Set iglobal to be global indices for each processor's local and ghost nodes,
+       using the DA ordering of grid points */
     kk = 0;
     for (j=Ys; j<Ys+Ym; j++) {
       for (i=Xs; i<Xs+Xm; i++) {
-        ict = w*(j*M + i);
         iloc = w*((j-Ys)*Xm + i-Xs); 
         for (l=0; l<w; l++) {
-          order_app[kk] = ict+l;
-          iglobal[kk] = ltog[iloc+l];
-            printf("[%d] : j=%d, i=%d, l=%d, app=%d, petsc=%d\n",
-             rank,j,i,l,order_app[kk],iglobal[kk]);
-
-          kk++;
+          iglobal[kk++] = ltog[iloc+l];
         }
       }
     } 
 
-    /* Map to application ordering, then map back to PETSc ordering */
+    /* Map this to the application ordering (which for DAs is just the natural ordering
+       that would be used for 1 processor, numbering most rapidly by x, then y) */
     ierr = AOPetscToApplication(ao,nloc,iglobal); CHKERRA(ierr); 
+
+    /* Then map the application ordering back to the PETSc DA ordering */
     ierr = AOApplicationToPetsc(ao,nloc,iglobal); CHKERRA(ierr); 
+
+    /* Verify the mappings */
     kk=0;
     for (j=Ys; j<Ys+Ym; j++) {
       for (i=Xs; i<Xs+Xm; i++) {
-        ict = w*(j*M + i);
         iloc = w*((j-Ys)*Xm + i-Xs); 
         for (l=0; l<w; l++) {
           if (iglobal[kk] != ltog[iloc+l]) {fprintf(stdout,
-            "[%d] Problem with mapping: j=%d, i=%d, l=%d, app=%d, petsc%d\n",
-             rank,j,i,l,order_app[kk],iglobal[kk]);}
+            "[%d] Problem with mapping: j=%d, i=%d, l=%d, petsc1=%d, petsc2=%d\n",
+             rank,j,i,l,ltog[iloc+l],iglobal[kk]);}
           kk++;
         }
       }
