@@ -1,41 +1,44 @@
 #PETSC_DIR = ../../../..
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
-FFLAGS	        = 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        = pargrid.h
-OBJSC	        =
-OBJSF	        =
-LIBBASE	        = libpetscsles
-LOCDIR          = src/sles/examples/tutorials/
-TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 \
-		  ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
-		  ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
-		  runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm clean
-TESTEXAMPLES_2  = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
-TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc clean
-TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
-TESTEXAMPLES_4  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
-		  runex2_3 runex2_5 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
-		  ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm clean
-TESTEXAMPLES_5  = ex12.PETSc runex12 runex12_2 runex12_3 ex12.rm clean
-TESTEXAMPLES_6  = 
-TESTEXAMPLES_7  = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
-TESTEXAMPLES_8  = 
+CFLAGS	         = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
+FFLAGS	         = 
+SOURCEC	         = 
+SOURCEF	         =
+SOURCEH	         = pargrid.h
+OBJSC	         =
+OBJSF	         =
+LIBBASE	         = libpetscsles
+LOCDIR           = src/sles/examples/tutorials/
+TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
+		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
+		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
+		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm clean
+TESTEXAMPLES_2   = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
+TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc clean
+TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
+TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
+		   runex2_3 runex2_5 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
+		   ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm clean
+TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
+		   runex12_2 runex12_3 ex12.rm clean
+TESTEXAMPLES_6   = 
+TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
+TESTEXAMPLES_8   = 
+TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
 
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
-		  ex5.PETSc ex5.rm ex9.PETSc ex9.rm clean
-BUILDEXAMPLES_2 = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
-BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
-		  ex5.PETSc ex5.rm ex4.PETSc ex4.rm ex9.PETSc ex9.rm clean
-BUILDEXAMPLES_5 = ex12.PETSc ex12.rm clean
-BUILDEXAMPLES_6 = ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_7 = ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_8 = 
-BUILDEXAMPLES_9 = ex1f.PETSc ex1f.rm ex20.PETSc ex20.rm clean
+BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
+		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm clean
+BUILDEXAMPLES_2  = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
+BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm clean
+BUILDEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
+		   ex5.PETSc ex5.rm ex4.PETSc ex4.rm ex9.PETSc ex9.rm clean
+BUILDEXAMPLES_5  = ex11.PETSc ex11.rm ex12.PETSc ex12.rm clean
+BUILDEXAMPLES_6  = ex5.PETSc ex5.rm clean
+BUILDEXAMPLES_7  = ex5.PETSc ex5.rm clean
+BUILDEXAMPLES_8  = 
+BUILDEXAMPLES_9  = ex1f.PETSc ex1f.rm ex20.PETSc ex20.rm clean
+BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex12.c
 EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F
