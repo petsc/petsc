@@ -61,8 +61,8 @@ class BabelPackageDict (UserDict.UserDict):
     self.data[key] = value
 
 class Defaults:
-  implRE   = re.compile(r'^(.*)_Impl$')
-  clientRE = re.compile(r'^(.*)lib(.*)client.so$')
+  implRE    = re.compile(r'^(.*)_Impl$')
+  libraryRE = re.compile(r'^(.*)lib(.*).so$')
 
   def __init__(self, sources = None, repositoryDir = None, serverBaseDir = None, compilerFlags = ''):
     self.sources         = sources
@@ -85,8 +85,8 @@ class Defaults:
     if self.implRE.match(os.path.dirname(source)): return 1
     return 0
 
-  def isNotClientLibrary(self, source):
-    if self.clientRE.match(source): return 0
+  def isNotLibrary(self, source):
+    if self.libraryRE.match(source): return 0
     return 1
 
   def isNewSidl(self, sources):
@@ -348,29 +348,43 @@ class CompileDefaults (Defaults):
     else:
       return target.Target(None, [self.getSIDLTarget()]+compileTargets)
 
-  def getExecutableCompileTargets(self, executable):
+  def getExecutableCompileTargets(self, lang, executable):
     baseName  = os.path.splitext(os.path.split(executable[0])[1])[0] 
     library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
+    libraries = fileset.FileSet()
+    tags      = []
+    actions   = []
 
-    action = compile.CompileCxx(library)
+    if lang == 'C':
+      tags.append(compile.TagC())
+      action = compile.CompileC(library)
+    elif lang == 'C++':
+      tags.append(compile.TagCxx())
+      action = compile.CompileCxx(library)
+
     self.addBabelInclude(action)
-    action.includeDirs.append(self.getClientRootDir('C++'))
+    action.includeDirs.append(self.getClientRootDir(lang))
     if self.includeDirs.has_key('executable'):
       action.includeDirs.extend(self.includeDirs['executable'])
+    actions.append(action)
+    libraries.extend(self.getClientLibrary(lang))
 
     return [target.Target(None,
-                         [compile.TagCxx(),
-                          action,
+                         [tags,
+                          actions,
                           link.TagLibrary(),
-                          link.LinkSharedLibrary(extraLibraries = self.addBabelLib(fileset.FileSet()))])]
+                          link.LinkSharedLibrary(extraLibraries = self.addBabelLib(libraries))])]
 
-  def getExecutableTarget(self, sources, executable):
+  def getExecutableTarget(self, lang, sources, executable):
     libraries = fileset.FileSet([])
     if self.extraLibraries.has_key('executable'):
       libraries.extend(self.extraLibraries['executable'])
+    # TODO: Of course this should be determined from configure
+    libraries.append('libdl.so')
 
     return target.Target(sources,
-                         [self.getCompileTarget()]+self.getExecutableCompileTargets(executable)+
-                         [transform.FileFilter(self.isNotClientLibrary),
-                          link.TagShared(),
+                         [self.getCompileTarget(),
+                          transform.FileFilter(self.isNotLibrary)]+
+                         self.getExecutableCompileTargets(lang, executable)+
+                         [link.TagShared(),
                           link.LinkExecutable(executable, extraLibraries = libraries)])
