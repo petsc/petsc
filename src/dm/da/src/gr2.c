@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.12 1999/03/03 22:27:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.13 1999/03/04 14:42:13 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -28,7 +28,7 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
 {
   ZoomCtx *zctx = (ZoomCtx *) ctx;
   int     ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
-  double  s,min,max;
+  double  s,min;
   double  x1, x2, x3, x4, y_1, y2, y3, y4;
   Scalar  *v,*xy;
 
@@ -41,7 +41,6 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
   xy   = zctx->xy;
   s    = zctx->scale;
   min  = zctx->min;
-  max  = zctx->max;
    
   /* Draw the contour plot patch */
   for ( j=0; j<n-1; j++ ) {
@@ -70,7 +69,7 @@ EXTERN_C_BEGIN
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 {
   DA             da,dac,dag;
-  int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,id,*lx,*ly,w;
+  int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
   double         coors[4],ymin,ymax,xmin,xmax;
   Draw           draw,popup;
   PetscTruth     isnull;
@@ -222,5 +221,46 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 EXTERN_C_END
 
 
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "VecView_MPI_Binary_DA"
+int VecView_MPI_Binary_DA(Vec xin,Viewer viewer)
+{
+  DA             da;
+  int            rank,ierr;
+  MPI_Comm       comm;
+  Vec            natural;
 
+  PetscFunctionBegin;
 
+  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
+  if (!da) SETERRQ(1,1,"Vector not generated from a DA");
+  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
+
+  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+  ierr = VecView(natural,viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(natural);
+
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
+    FILE *file;
+    int  bs;
+
+    ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+    ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
+    if (file && bs > 1) {
+      fprintf(file,"-vecload_block_size %d\n",bs);
+    } else if (file) {
+      int            dim,m,n,p,dof,swidth;
+      DAStencilType  stencil;
+      DAPeriodicType periodic;
+
+      ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+      fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
+    }
+  } 
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
