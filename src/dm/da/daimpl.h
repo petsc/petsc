@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.34 2000/07/08 03:02:06 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.35 2000/09/13 03:12:58 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -8,11 +8,17 @@
 #define _DAIMPL_H
 #include "petscda.h"
 
-struct _p_DA {
-  PETSCHEADER(int)
-  int            (*destroy)(DA);
-  int            (*view)(DA,Viewer);    
+typedef struct _DAOps *DAOps;
+struct _DAOps {
+  int  (*view)(DA,Viewer);
+  int  (*destroy)(DA);
+  int  (*createglobalvector)(DA,Vec*);
+  int  (*getcoloring)(DA,ISColoring*,Mat*);
+  int  (*getinterpolation)(DA,DA,Mat*,Vec*);
+};
 
+struct _p_DA {
+  PETSCHEADER(struct _DAOps)
   int            M,N,P;                 /* array dimensions */
   int            m,n,p;                 /* processor layout */
   int            w;                     /* degrees of freedom per node */
@@ -24,7 +30,7 @@ struct _p_DA {
   int            base;                  /* global number of 1st local node */
   DAPeriodicType wrap;                  /* indicates type of periodic boundaries */
   VecScatter     gtol,ltog,ltol;        /* scatters, see below for details */
-  Vec            global,local;         /* vectors that are discrete functions */
+  Vec            global,local;          /* vectors that are discrete functions */
   DAStencilType  stencil_type;          /* stencil, either box or star */
   int            dim;                   /* DA dimension (1,2, or 3) */
   int            *gtog1;                /* mapping from global ordering to
