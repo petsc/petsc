@@ -7,6 +7,7 @@
 #endif
 
 // #include "esi/ESI.h"
+#define ESI_NO_COMPLEX
 #include "esi/basicTypes.h"
 #include "esi/ordinalTraits.h"
 #include "esi/scalarTraits.h"

@@ -316,8 +316,8 @@ int InitialConditions(Vec u,AppCtx *appctx)
 */
 int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 {
-  PetscScalar *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2;
-  int    i,ierr;
+  PetscScalar *s_localptr,h = appctx->h,ex1,ex2,sc1,sc2,tc = t;
+  int         i,ierr;
 
   /*
      Get a pointer to vector data.
@@ -328,8 +328,8 @@ int ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
      Simply write the solution directly into the array locations.
      Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
-  ex1 = PetscExpScalar(-36.*PETSC_PI*PETSC_PI*t); 
-  ex2 = PetscExpScalar(-4.*PETSC_PI*PETSC_PI*t);
+  ex1 = PetscExpScalar(-36.*PETSC_PI*PETSC_PI*tc); 
+  ex2 = PetscExpScalar(-4.*PETSC_PI*PETSC_PI*tc);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=0; i<appctx->m; i++) {
     s_localptr[i] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
