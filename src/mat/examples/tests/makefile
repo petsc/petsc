@@ -466,15 +466,17 @@ runex47:
 	   if (diff /dev/null ex47_1.tmp) then true; \
 	   else echo "Possible problem with ex47_1, diffs above"; fi; \
 	   $(RM) -f ex47_1.tmp
-runex48:
-	-@$(MPIRUN)  ex48 -mat_block_size 1  > ex48_1.tmp 2>&1; \
-	  $(MPIRUN)  ex48 -mat_block_size 3  >> ex48_1.tmp 2>&1; \
-	  $(MPIRUN)  ex48 -mat_block_size 4  >> ex48_1.tmp 2>&1; \
-	  if (diff /dev/null ex48_1.tmp) then true; \
-	  else echo "Possible problem with ex48_1, diffs above"; fi; \
-	  $(RM) -f ex48_1.tmp
 
 MATBLOCKSIZE   = 1 2 3 4 5 6
+runex48:
+	-@touch ex51_1.tmp;\
+	for bs in $(MATBLOCKSIZE); do \
+	  $(MPIRUN)  ex48 -mat_block_size  $$bs > ex48_1.tmp 2>&1; \
+	done; \
+	if (diff /dev/null ex48_1.tmp) then true; \
+	else echo "Possible problem with ex48_1, diffs above"; fi; \
+	$(RM) -f ex48_1.tmp
+
 MATSIZE        = 11 47
 OVERLAP        = 1 3
 NODOMAINS      = 7
