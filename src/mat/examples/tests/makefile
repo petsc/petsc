@@ -389,7 +389,7 @@ runex40:
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   $(RM) -f ex40_1.tmp ex40_12.tmp
 runex41:
-	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3 -ov 1 > ex41_1.tmp 2>&1; 
+	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3 -ov 1 > ex41_1.tmp 2>&1; \
 	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \
 	   if (diff /dev/null ex41_12.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
