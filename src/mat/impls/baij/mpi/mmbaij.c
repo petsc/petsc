@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbaij.c,v 1.1 1996/06/17 22:34:33 balay Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.2 1996/06/18 16:10:55 balay Exp balay $";
 #endif
 
 
@@ -15,7 +15,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Mat_SeqBAIJ *B = (Mat_SeqBAIJ *) (baij->B->data);  
   int        Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
-  int        row,bs = baij->bs,mbs=B->mbs,*tmp;
+  int        col,bs = baij->bs,*tmp;
   IS         from,to;
   Vec        gvec;
 
@@ -53,8 +53,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   B->n   = ec*B->bs;
   PetscFree(indices);
   
-  for ( i=0,row=0; i<mbs; i++ ) {
-    for ( j=0; j<bs; j++,row++) tmp[row] = garray[i]+j;
+  for ( i=0,col=0; i<ec; i++ ) {
+    for ( j=0; j<bs; j++,col++) tmp[col] = garray[i]*bs+j;
   }
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(MPI_COMM_SELF,ec*bs,&baij->lvec); CHKERRQ(ierr);
@@ -129,7 +129,7 @@ int DisAssemble_MPIBAIJ(Mat A)
     rvals[0] = bs*i;
     for ( j=1; j<bs; j++ ) { rvals[j] = rvals[j-1] + 1; }
     for ( j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++ ) {
-      col = garray[Bbaij->j[i]]*bs;
+      col = garray[Bbaij->j[j]]*bs;
       for (k=0; k<bs; k++ ) {
         ierr = MatSetValues(Bnew,bs,rvals,1,&col,a+j*bs2,INSERT_VALUES);CHKERRQ(ierr);
         col++;
@@ -137,6 +137,7 @@ int DisAssemble_MPIBAIJ(Mat A)
     }
   }
   PetscFree(baij->garray); baij->garray = 0;
+  PetscFree(rvals);
   PLogObjectMemory(A,-ec*sizeof(int));
   ierr = MatDestroy(B); CHKERRQ(ierr);
   PLogObjectParent(A,Bnew);
