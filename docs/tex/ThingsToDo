@@ -216,6 +216,21 @@ Additional Capabilities that PETSc Needs:
    * Develop code to rebalance matrices (and vectors) for better 
      load balance during matrix vector multiplies.
 
+   - SNES suggestion from David Keyes:  Update Clipping
+     Update clipping...  I used to think I was neurotic for doing this
+     to Newton's method, but now I realize that "just about everyone" does
+     it (quietly) when facing problems with bounded feasibility, such as a
+     turbulent kinetic energy that cannot be permitted to go negative, or
+     a mass fraction that cannot be allowed to exceed one, etc.  Essentially,
+     the user would optionally provide bounds on unknowns.  The putative
+     Newton correction would then be tested against these bounds.  The
+     full update would be scaled back (or optionally some subset of its
+     components) to assure feasibility.  This screws up the trust-region
+     logic, of course.   It can be thought of us as introducing the most
+     elementary form of constraints into the package: decoupled, explicit,
+     and linear.
+
+
 ------------------------------------------------------------------------
          Web pages to read and possible software to interface to 
 ------------------------------------------------------------------------
