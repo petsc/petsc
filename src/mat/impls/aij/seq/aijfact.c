@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.28 1995/07/21 17:52:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.29 1995/08/16 18:21:01 bsmith Exp curfman $";
 #endif
 
 
@@ -132,7 +132,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   CHKPTRQ(aijnew->solve_work);
   /* In aijnew structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
-  aijnew->mem += (ainew[n]-1-n)*(sizeof(int) + sizeof(Scalar)) + sizeof(int);
+  PLogObjectMemory(*fact,(ainew[n]-1-n)*(sizeof(int)+sizeof(Scalar)));
   aijnew->maxnz = aijnew->nz = ainew[n] - 1;
 
   /* Cannot do this here because child is destroyed before parent created
@@ -568,7 +568,7 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
   CHKPTRQ(aijnew->solve_work);
   /* In aijnew structure:  Free imax, ilen, old a, old j.  
      Allocate dloc, solve_work, new a, new j */
-  aijnew->mem += (ainew[n]-1-n)*(sizeof(int) + sizeof(Scalar)) + sizeof(int);
+  PLogObjectMemory(*fact,(ainew[n]-1-n) * (sizeof(int)+sizeof(Scalar)));
   aijnew->maxnz = aijnew->nz = ainew[n] - 1;
   (*fact)->factor   = FACTOR_LU;
   return 0; 
