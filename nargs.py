@@ -31,7 +31,7 @@ def parseArgument(arg, ignoreDouble = 0):
     if arg[1] == '-' and not ignoreDouble:
       start = 2
     if arg.find('=') >= 0:
-      (key, value) = arg[start:].split('=')
+      (key, value) = arg[start:].split('=', maxsplit = 1)
     else:
       (key, value) = (arg[start:], '1')
     return (key, parseValue(value))
