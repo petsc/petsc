@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.23 1995/06/13 01:18:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.24 1995/06/13 02:24:27 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -29,7 +29,7 @@ static char vcid[] = "$Id: ls.c,v 1.23 1995/06/13 01:18:08 bsmith Exp curfman $"
 int SNESSolve_LS( SNES snes, int *outits )
 {
   SNES_LS      *neP = (SNES_LS *) snes->data;
-  int          maxits, i, history_len,ierr,lits;
+  int          maxits, i, history_len, ierr, lits, lsfail;
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   double       fnorm, gnorm, xnorm, ynorm, *history;
   Vec          Y, X, F, G, W, TMP;
@@ -60,7 +60,8 @@ int SNESSolve_LS( SNES snes, int *outits )
        ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
        ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERRQ(ierr);
        ierr = VecCopy(Y,snes->vec_sol_update_always); CHKERRQ(ierr);
-       ierr = (*neP->LineSearch)(snes, X, F, G, Y, W, fnorm, &ynorm, &gnorm );
+       ierr = (*neP->LineSearch)(snes,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);
+       if (lsfail) snes->nfailures++;
        CHKERRQ(ierr);
 
        TMP = F; F = G; snes->vec_func_always = F; G = TMP;
@@ -215,12 +216,10 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
+.  flag - set to 0, indicating a successful line search
 
    Options Database Key:
 $  -snes_line_search basic
-
-   Returns:
-   1, indicating success of the step.
 
 .keywords: SNES, nonlinear, line search, cubic
 
@@ -228,17 +227,18 @@ $  -snes_line_search basic
 .seealso: SNESSetLineSearchRoutine()
 @*/
 int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
-                             double fnorm, double *ynorm, double *gnorm )
+              double fnorm, double *ynorm, double *gnorm,int *flag )
 {
   int    ierr;
   Scalar one = 1.0;
+  *flag = 0;
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
   VecNorm(y, ynorm );	/* ynorm = || y ||    */
   VecAXPY(&one, x, y );	/* y <- x + y         */
   ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr);
   VecNorm( g, gnorm ); 	/* gnorm = || g ||    */
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
-  return 1;
+  return 0;
 }
 /* ------------------------------------------------------------------ */
 /*@
@@ -258,9 +258,7 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
-
-   Returns:
-   1 if the line search succeeds; 0 if the line search fails.
+.  flag - 0 if line search succeeds; -1 on failure.
 
    Options Database Key:
 $  -snes_line_search cubic
@@ -274,7 +272,7 @@ $  -snes_line_search cubic
 .seealso: SNESNoLineSearch(), SNESNoLineSearch(), SNESSetLineSearchRoutine()
 @*/
 int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
-                              double fnorm, double *ynorm, double *gnorm )
+                double fnorm, double *ynorm, double *gnorm,int *flag)
 {
   double  steptol, initslope;
   double  lambdaprev, gnormprev;
@@ -288,6 +286,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   double  maxstep,minlambda,alpha,lambda,lambdatemp;
 
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
+  *flag = 0;
   alpha   = neP->alpha;
   maxstep = neP->maxstep;
   steptol = neP->steptol;
@@ -355,7 +354,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
            PLogInfo((PetscObject)snes, "f %g fnew %g ynorm %g lambda %g \n",
                    fnorm,*gnorm, *ynorm,lambda);
            VecCopy(w, y );
-           break;
+           *flag = -1; break;
       }
       t1 = *gnorm - fnorm - lambda*initslope;
       t2 = gnormprev  - fnorm - lambdaprev*initslope;
@@ -390,7 +389,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough */
          VecCopy(w, y );
          PLogInfo((PetscObject)snes,"Cubically determined step, lambda %g\n",lambda);
-         break;
+         *flag = -1; break;
       }
       count++;
    }
@@ -413,9 +412,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
-
-   Returns:
-   1 if the line search succeeds; 0 if the line search fails.
+.  flag - 0 if line search succeeds; -1 on failure.
 
    Options Database Key:
 $  -snes_line_search quadratic
@@ -429,7 +426,7 @@ $  -snes_line_search quadratic
 .seealso: SNESCubicLineSearch(), SNESNoLineSearch(), SNESSetLineSearchRoutine()
 @*/
 int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
-                              double fnorm, double *ynorm, double *gnorm )
+                    double fnorm, double *ynorm, double *gnorm,int *flag)
 {
   double  steptol, initslope;
   double  lambdaprev, gnormprev;
@@ -442,6 +439,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   double  maxstep,minlambda,alpha,lambda,lambdatemp;
 
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
+  *flag = 0;
   alpha   = neP->alpha;
   maxstep = neP->maxstep;
   steptol = neP->steptol;
@@ -482,7 +480,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       PLogInfo((PetscObject)snes, "f %g fnew %g ynorm %g lambda %g \n",
                    fnorm,*gnorm, *ynorm,lambda);
       VecCopy(w, y );
-      break;
+      *flag = -1; break;
     }
     lambdatemp = -initslope/(2.0*(*gnorm - fnorm - initslope));
     lambdaprev = lambda;
@@ -528,7 +526,8 @@ $   -snes_line_search [basic,quadratic,cubic]
 
    Calling sequence of func:
    func (SNES snes, Vec x, Vec f, Vec g, Vec y,
-         Vec w, double fnorm, double *ynorm, double *gnorm)
+         Vec w, double fnorm, double *ynorm, 
+         double *gnorm, *flag)
 
     Input parameters for func:
 .   snes - nonlinear context
@@ -543,16 +542,15 @@ $   -snes_line_search [basic,quadratic,cubic]
 .   y - new iterate (contains search direction on input)
 .   gnorm - 2-norm of g
 .   ynorm - 2-norm of search length
-
-    Returned by func:
-    1 if the line search succeeds; 0 if the line search fails.
+.   flag - set to 0 if the line search succeeds; a nonzero integer 
+           on failure.
 
 .keywords: SNES, nonlinear, set, line search, routine
 
 .seealso: SNESNoLineSearch(), SNESQuadraticLineSearch(), SNESCubicLineSearch()
 @*/
 int SNESSetLineSearchRoutine(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
-                             double,double *,double*) )
+                             double,double *,double*,int*) )
 {
   if ((snes)->type == SNES_NLS)
     ((SNES_LS *)(snes->data))->LineSearch = func;

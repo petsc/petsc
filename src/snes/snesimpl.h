@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.12 1995/06/13 00:30:26 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.13 1995/06/13 02:24:39 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -72,6 +72,7 @@ struct _SNES {
   double   *conv_hist;         /* If !0, stores residual norm (NLE) or
 				  gradient norm (NLM) at each iteration */
   int      conv_hist_len;      /* Amount of convergence history space */
+  int      nfailures;          /* Number of unsuccessful step attempts */
 };
 
 #if !defined(MAX)

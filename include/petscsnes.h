@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.19 1995/06/13 01:23:08 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.20 1995/06/14 02:10:31 bsmith Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -30,9 +30,10 @@ extern int SNESSolve(SNES,int*);
 extern int SNESRegister(int, char*, int (*)(SNES));
 extern int SNESRegisterAll();
 extern int SNESGetSLES(SNES,SLES*);
-extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
-extern int SNESCubicLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
-extern int SNESQuadraticLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
+extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
+extern int SNESCubicLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
+extern int SNESQuadraticLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
+extern int SNESSetLineSearchRoutine(SNES,int(*)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 
 extern int SNESGetSolution(SNES,Vec*);
 extern int SNESGetSolutionUpdate(SNES,Vec*);

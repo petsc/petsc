@@ -57,7 +57,7 @@ int main( int argc, char **argv )
   SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r;
   Mat          J;
-  int          ierr, its, N; 
+  int          ierr, its, N, nfails; 
   AppCtx       user;
   DrawCtx      win;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
@@ -72,7 +72,7 @@ int main( int argc, char **argv )
   user.param = 6.0;
   OptionsGetInt(0,"-mx",&user.mx);
   OptionsGetInt(0,"-my",&user.my);
-  OptionsGetDouble(0,"-param",&user.param);
+  OptionsGetDouble(0,"-par",&user.param);
   if (!OptionsHasName(0,"-cavity") && 
       (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERRQ(1,"Lambda is out of range");
@@ -110,8 +110,10 @@ int main( int argc, char **argv )
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
+  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);  CHKERRA(ierr);
 
-  printf( "number of Newton iterations = %d\n\n", its );
+  printf("number of Newton iterations = %d, ",its);
+  printf("number of unsuccessful steps = %d\n\n",nfails);
   DrawTensorContour(win,user.mx,user.my,0,0,x);
   DrawSyncFlush(win);
 
