@@ -149,17 +149,7 @@ int  MatColoringRegister(MatColoring *name,char *sname,int (*color)(Mat,MatColor
 
   if (!__MatColoringList) {
     ierr = NRCreate(&__MatColoringList); CHKERRQ(ierr);
-    numberregistered = 0;
-  }
-
-  /*
-       This is tacky, it forces the standard coloringing routines to 
-     be registered before any user provided. This is so the predefined 
-     types like COLORING_NATURAL match their positions in the list of 
-     registered coloringings.
-  */
-  if (numberregistered == 0 && color != MatColoring_Natural) {
-    MatColoringRegisterAll();
+    ierr = MatColoringRegisterAll(); CHKERRQ(ierr);
   }
 
   *name = (MatColoring) numberregistered++;
@@ -295,6 +285,17 @@ extern int MatFDColoringSL_Minpack(Mat,MatColoring,int *,IS **);
 /*@C
   MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
 
+  Adding new methods:
+  To add a new method to the registry. Copy this routine and 
+  modify it to incorporate a call to MatColoringRegister() for 
+  the new method, after the current list.
+
+  Restricting the choices:
+  To prevent all of the methods from being registered and thus 
+  save memory, copy this routine and modify it to register a zero,
+  instead of the function name, for those methods you do not wish to
+  register. Make sure you keep the list of methods in the same order.
+  Make sure that the replacement routine is linked before libpetscmat.a.
 
 .keywords: matrix, coloring, register, all
 
@@ -308,8 +309,7 @@ int MatColoringRegisterAll()
   if (called) return 0; else called = 1;
 
   /*
-       Do not change the order of these unless similarly changing 
-    them in include/mat.h
+       Do not change the order of these, just add new ones to the end
   */
   ierr = MatColoringRegister(&name,"natural",MatColoring_Natural);CHKERRQ(ierr);
   ierr = MatColoringRegister(&name,"sl",MatFDColoringSL_Minpack);CHKERRQ(ierr);
