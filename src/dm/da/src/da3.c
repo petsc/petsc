@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.115 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: da3.c,v 1.116 2000/05/10 16:43:30 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -162,7 +162,7 @@ EXTERN int DAPublish_Petsc(PetscObject);
 .  lx, ly, lz - arrays containing the number of nodes in each cell along
           the x, y, and z coordinates, or PETSC_NULL. If non-null, these
           must be of length as m,n,p and the corresponding
-          m,n, or p cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum or
+          m,n, or p cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of
           the ly[] must n, sum of the lz[] must be P
 -  s - stencil width
 
@@ -317,18 +317,11 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (lx) { /* user decided distribution */
     x  = lx[rank % m];
     xs = 0;
-    for (i=0; i<(rank%m)-1; i++) { xs += lx[i];}
+    for (i=0; i<(rank%m); i++) { xs += lx[i];}
     if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
   } else if (flg1) { /* Block Comm type Distribution */
-    xs = (rank%m)*M/m;
-    x  = (rank%m + 1)*M/m - xs;
-    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
-    x = (M + rank%m)/m;
-    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
-    if (M/m == x) { xs = (rank % m)*x; }
-    else          { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
     x = M/m + ((M % m) > (rank % m));
@@ -341,20 +334,13 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     }
   }
   if (ly) { /* user decided distribution */
-    y  = ly[(rank % m*n)/m];
+    y  = ly[(rank % (m*n))/m];
     if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);      
     ys = 0;
-    for (i=0; i<(rank % m*n)/m-1; i++) { ys += ly[i];}
+    for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
   } else if (flg1) { /* Block Comm type Distribution */
-    ys = ((rank%(m*n))/m)*N/n;
-    y  = ((rank%(m*n))/m + 1)*N/n - ys;
-    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);      
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
-    y = (N + (rank%(m*n))/m)/n;
-    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);
-    if (N/n == y) { ys = ((rank%(m*n))/m)*y;  }
-    else          { ys = ((rank%(m*n))/m)*(y-1) + (N+((rank%(m*n))/m))%(y*n); }
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
     y = N/n + ((N % n) > ((rank % (m*n)) /m)); 
@@ -370,19 +356,11 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     z  = lz[rank/(m*n)];
     if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);      
     zs = 0;
-    for (i=0; i<(rank/(m*n))-1; i++) { zs += lz[i];}
-  }
-  if (flg1) { /* Block Comm type Distribution */
-    zs = (rank/(m*n))*P/p;
-    z  = (rank/(m*n) + 1)*P/p -zs;
-    if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);    
+    for (i=0; i<(rank/(m*n)); i++) { zs += lz[i];}
+  } else if (flg1) { /* Block Comm type Distribution */
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
-    z = (P + rank/(m*n))/p;
-    if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);
-    if (P/p == z) { zs = (rank/(m*n))*z; }
-    else          { zs = (rank/(m*n))*(z-1) + (P+(rank/(m*n)))%(z*p); }
-    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
+
   } else { /* Normal PETSc distribution */
     z = P/p + ((P % p) > (rank / (m*n)));
     if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);
