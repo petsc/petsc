@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.58 1997/10/12 18:33:48 keyes Exp $";
+static char vcid[] = "$Id: user1.c,v 1.59 1997/10/12 20:55:27 keyes Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -57,7 +57,7 @@ Runtime options include:\n\
   -jratio                    : Set ratio of fnorm decrease for detecting when to form Jacobian\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
   -eps_jac <eps>             : Choose differencing parameter for FD Jacobian approx\n\
-  -global_grid               : Retain global grid instead of just local part\n\
+  -jac_no_wake               : Don't use wake boundary conditions in the preconditioning Jacobian\n\
   -no_output                 : Do not print any output during SNES solve (intended for use\n\
                                during timing runs)\n\n";
 
