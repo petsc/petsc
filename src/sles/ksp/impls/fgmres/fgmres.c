@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.4 1999/12/10 23:00:21 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.5 1999/12/11 04:23:11 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -145,9 +145,6 @@ static int FGMRESResidual( KSP ksp )
 
     input parameters:
 .	 fgmres  - structure containing parameters and work areas
-.	 itsSoFar- total number of iterations so far (from previous
-                   cycles) - THIS IS CURRENTLY NOT USED by this function
-                   - ksp->its keeps track of this...
 
     output parameters:
 .        itcount - number of iterations used.  If null, ignored.
@@ -595,9 +592,9 @@ static int FGMRESGetNewVectors( KSP ksp, int it )
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (fgmres->vecs_allocated)*/
-  if (it + VEC_OFFSET + nalloc >= fgmres->vecs_allocated)
-      nalloc = fgmres->vecs_allocated - it - VEC_OFFSET;
-  /* CHKPTRQ(nalloc); */
+  if (it + VEC_OFFSET + nalloc >= fgmres->vecs_allocated){
+    nalloc = fgmres->vecs_allocated - it - VEC_OFFSET;
+  }
   if (!nalloc) PetscFunctionReturn(0);
 
   fgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
@@ -683,11 +680,11 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject) viewer, ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    if (fgmres->orthog == KSPFGMRESUnmodifiedGramSchmidtOrthogonalization) {
+    if (fgmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
       cstr = "Unmodified Gram-Schmidt Orthogonalization";
-    } else if (fgmres->orthog == KSPFGMRESModifiedGramSchmidtOrthogonalization) {
+    } else if (fgmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
       cstr = "Modified Gram-Schmidt Orthogonalization";
-    } else if (fgmres->orthog == KSPFGMRESIROrthogonalization) {
+    } else if (fgmres->orthog == KSPGMRESIROrthogonalization) {
       cstr = "Unmodified Gram-Schmidt + 1 step Iterative Refinement Orthogonalization";
     } else {
       cstr = "unknown orthogonalization";
@@ -712,9 +709,9 @@ static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
   PetscFunctionBegin;
   (*PetscHelpPrintf)(ksp->comm," Options for FGMRES method:\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: FGMRES restart, defaults to 30\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifiedgramschmidt: use alternative orthogonalization\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_mres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_modifiedgramschmidt: use alternative orthogonalization\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_preallocate: preallocate FGMRES work vectors\n",p);
   
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifypcnochange: (default) do not vary the preconditioner\n",p);
@@ -736,12 +733,12 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   if (flg) { ierr = KSPGMRESSetRestart( ksp, restart );CHKERRQ(ierr); }
   ierr = OptionsHasName( ksp->prefix, "-ksp_gmres_preallocate",  &flg ); CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp); CHKERRQ(ierr);}
-  ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_unmodifiedgramschmidt", &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetOrthogonalization( ksp, KSPFGMRESUnmodifiedGramSchmidtOrthogonalization ); CHKERRQ(ierr);}
-  ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifiedgramschmidt", &flg); CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetOrthogonalization( ksp, KSPFGMRESModifiedGramSchmidtOrthogonalization ); CHKERRQ(ierr);}
-  ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_irorthog", &flg ); CHKERRQ(ierr);
-  if (flg) {ierr = KSPFGMRESSetOrthogonalization( ksp, KSPFGMRESIROrthogonalization ); CHKERRQ(ierr);}
+  ierr = OptionsHasName( ksp->prefix, "-ksp_gmres_unmodifiedgramschmidt", &flg ); CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization( ksp, KSPGMRESUnmodifiedGramSchmidtOrthogonalization ); CHKERRQ(ierr);}
+  ierr = OptionsHasName( ksp->prefix, "-ksp_gmres_modifiedgramschmidt", &flg); CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization( ksp, KSPGMRESModifiedGramSchmidtOrthogonalization ); CHKERRQ(ierr);}
+  ierr = OptionsHasName( ksp->prefix, "-ksp_gmres_irorthog", &flg ); CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization( ksp, KSPGMRESIROrthogonalization ); CHKERRQ(ierr);}
   
   ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifypcnochange", &flg ); CHKERRQ(ierr);
   if (flg) {ierr = KSPFGMRESSetModifyPC( ksp, KSPFGMRESModifyPCNoChange); CHKERRQ(ierr);} 
@@ -755,18 +752,6 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
 
 extern int KSPComputeExtremeSingularValues_GMRES( KSP, double *, double * );
 extern int KSPComputeEigenvalues_GMRES( KSP, int, double *, double *, int * );
-
-EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPFGMRESSetOrthogonalization_FGMRES" 
-int KSPFGMRESSetOrthogonalization_FGMRES( KSP ksp,int (*fcn)(KSP,int) )
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ((KSP_FGMRES *)ksp->data)->orthog = fcn;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -812,9 +797,9 @@ int KSPCreate_FGMRES(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",
                                      (void*)KSPGMRESSetPreAllocateVectors_GMRES); CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetOrthogonalization_C",
-                                    "KSPFGMRESSetOrthogonalization_FGMRES",
-                                     (void*)KSPFGMRESSetOrthogonalization_FGMRES); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
+                                    "KSPGMRESSetOrthogonalization_GMRES",
+                                     (void*)KSPGMRESSetOrthogonalization_GMRES); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                      "KSPGMRESSetRestart_GMRES",
                                     (void*)KSPGMRESSetRestart_GMRES); CHKERRQ(ierr);
@@ -827,7 +812,7 @@ int KSPCreate_FGMRES(KSP ksp)
   fgmres->epsabs              = 1.0e-8;
   fgmres->q_preallocate       = 0;
   fgmres->delta_allocate      = FGMRES_DELTA_DIRECTIONS;
-  fgmres->orthog              = KSPFGMRESIROrthogonalization;
+  fgmres->orthog              = KSPGMRESIROrthogonalization;
   fgmres->nrs                 = 0;
   fgmres->sol_temp            = 0;
   fgmres->max_k               = FGMRES_DEFAULT_MAXK;

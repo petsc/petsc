@@ -1,25 +1,9 @@
-/*$Id: gmres.c,v 1.133 1999/11/24 21:54:52 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.134 1999/12/01 18:32:36 balay Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
     Reference:  Saad and Schultz, 1986.
 
-    The solver may be called recursively as long as all of the user-supplied
-    routines can. This routine is meant to be compatible with execution on a
-    parallel processor.  As such, it expects to be given routines for 
-    all operations as well as a user-defined pointer to a distributed
-    data structure.  THIS IS A DATA-STRUCTURE NEUTRAL IMPLEMENTATION.
-  
-    A context variable is used to hold internal data (the Hessenberg
-    matrix and various parameters).
-
-    Here are the routines that must be provided.  The generic parameters
-    are:
-	 ksp   - Iterative context.  See the generic iterative method
-	         information
-
-    The calling sequence is the same as for all of the iterative methods.
-    The special values (specific to GMRES) are:
 
     Some comments on left vs. right preconditioning, and restarts.
     Left and right preconditioning.
@@ -52,9 +36,7 @@ static int    GMRESGetNewVectors( KSP ,int );
 static int    GMRESUpdateHessenberg( KSP , int,double * );
 static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
 
-extern int KSPDefaultConverged_GMRES(KSP,int,double,KSPConvergedReason*,void*);
-
-#undef __FUNC__  
+#undef __FUNC__
 #define __FUNC__ "KSPSetUp_GMRES"
 int    KSPSetUp_GMRES(KSP ksp )
 {
@@ -119,12 +101,11 @@ int    KSPSetUp_GMRES(KSP ksp )
 }
 
 /* 
-    This routine computes the initial residual without making any assumptions
-    about the solution.
+    This routine computes the initial residual
  */
 #undef __FUNC__  
 #define __FUNC__ "GMRESResidual"
-static int GMRESResidual(  KSP ksp,int restart )
+static int GMRESResidual(KSP ksp)
 {
   KSP_GMRES    *gmres = (KSP_GMRES *)(ksp->data);
   Scalar       mone = -1.0;
@@ -135,28 +116,26 @@ static int GMRESResidual(  KSP ksp,int restart )
   PetscFunctionBegin;
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   /* compute initial residual: f - M*x */
-  /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
+  /* (inv(B)*A)*x or (A*inv(B)*B)*x into dest */
   if (ksp->pc_side == PC_RIGHT) {
-    /* we want a * binv * b * x, or just a * x for the first step */
+    /* we want A * inv(B) * B * x, or just a * x for the first step */
     /* a*x into temp */
     ierr = KSP_MatMult(ksp,Amat,VEC_SOLN,VEC_TEMP );CHKERRQ(ierr);
   } else {
-    /* else we do binv * a * x */
+    /* else we do inv(B) * A * x */
     ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
   }
   /* This is an extra copy for the right-inverse case */
   ierr = VecCopy( VEC_BINVF, VEC_VV(0) );CHKERRQ(ierr);
   ierr = VecAXPY( &mone, VEC_TEMP, VEC_VV(0) );CHKERRQ(ierr);
-      /* inv(b)(f - a*x) into dest */
   PetscFunctionReturn(0);
 }
 
 /*
     Run gmres, possibly with restart.  Return residual history if requested.
     input parameters:
-.        restart - 1 if restarting gmres, 0 otherwise
+
 .	gmres  - structure containing parameters and work areas
-.	itsSoFar- total number of iterations so far (from previous cycles)
 
     output parameters:
 .        nres    - residuals (from preconditioned system) at each step.
@@ -171,60 +150,33 @@ static int GMRESResidual(  KSP ksp,int restart )
  */
 #undef __FUNC__  
 #define __FUNC__ "GMREScycle"
-int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp)
+int GMREScycle(int *  itcount, KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   double    res_norm, res;
   double    hapbnd,tt;
   Scalar    tmp;
-  int       ierr, it;
+  int       ierr, it = 0;
   int       max_k = gmres->max_k, max_it = ksp->max_it;
 
   /* Note that hapend is ignored in the code */
 
   PetscFunctionBegin;
 
-  if (it > 0) {
-    /* orthogonalize input against previous directions and update Hessenberg matrix */
+  ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
+  res    = res_norm;
+  *RS(0) = res_norm;
 
-    /* update hessenberg matrix and do Gram-Schmidt */
-    ierr = (*gmres->orthog)(  ksp, it-1 );CHKERRQ(ierr);
-
-    /* vv(i) . vv(i) */
-    ierr = VecNorm(VEC_VV(it),NORM_2,&tt);CHKERRQ(ierr);
-    /* save the magnitude */
-    *HH(it,it-1)    = tt;
-    *HES(it,it-1)   = tt;
-
-    /* check for the convergence */
-    if (!tt) {
-      if (itcount) *itcount = 0;
-      ksp->reason = KSP_CONVERGED_RTOL;
-      PetscFunctionReturn(0);
-    }
-    tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it) );CHKERRQ(ierr);
-
-    ierr = GMRESUpdateHessenberg( ksp, it-1, &res );CHKERRQ(ierr);
-  } else {
-
-    ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
-    res    = res_norm;
-    *RS(0) = res_norm;
-
-    /* check for the convergence */
-    if (!res) {
-      if (itcount) *itcount = 0;
-      ksp->reason = KSP_CONVERGED_RTOL;
-      PetscFunctionReturn(0);
-    }
-
-    /* scale VEC_VV (the initial residual) */
-    tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) );CHKERRQ(ierr);
+  /* check for the convergence */
+  if (!res) {
+    if (itcount) *itcount = 0;
+    ksp->reason = KSP_CONVERGED_RTOL;
+    PetscFunctionReturn(0);
   }
 
-  if (!restart) {
-    ksp->ttol = PetscMax(ksp->rtol*res_norm,ksp->atol);
-  }
+  /* scale VEC_VV (the initial residual) */
+  tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) );CHKERRQ(ierr);
+
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
@@ -293,7 +245,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp)
 #define __FUNC__ "KSPSolve_GMRES"
 int KSPSolve_GMRES(KSP ksp,int *outits )
 {
-  int       ierr, restart, its, itcount;
+  int       ierr, its, itcount;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -306,7 +258,6 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   ksp->its = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
-  restart  = 0;
   itcount  = 0;
   /* Save binv*f */
   if (ksp->pc_side == PC_LEFT) {
@@ -317,20 +268,19 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   }
   /* Compute the initial (preconditioned) residual */
   if (!ksp->guess_zero) {
-    ierr = GMRESResidual(  ksp, restart );CHKERRQ(ierr);
+    ierr = GMRESResidual(  ksp );CHKERRQ(ierr);
   } else {
     ierr = VecCopy( VEC_BINVF, VEC_VV(0) );CHKERRQ(ierr);
   }
     
-  ierr    = GMREScycle(&its, itcount, restart, ksp);CHKERRQ(ierr);
+  ierr    = GMREScycle(&its, ksp);CHKERRQ(ierr);
   itcount += its;
   while (!ksp->reason) {
-    restart  = 1;
-    ierr     = GMRESResidual(  ksp, restart);CHKERRQ(ierr);
+    ierr     = GMRESResidual(  ksp);CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
     /* need another check to make sure that gmres breaks out 
        at precisely the number of iterations chosen */
-    ierr     = GMREScycle(&its, itcount, restart, ksp);CHKERRQ(ierr);
+    ierr     = GMREScycle(&its, ksp);CHKERRQ(ierr);
     itcount += its;  
   }
   /* mark lack of convergence  */
@@ -368,9 +318,6 @@ int KSPDestroy_GMRES(KSP ksp)
   if (gmres->Dsvd) {ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);}
   ierr = PetscFree( gmres ); CHKERRQ(ierr);
 
-  if (ksp->converged == KSPDefaultConverged_GMRES) {
-    ksp->converged = KSPDefaultConverged;
-  }
   PetscFunctionReturn(0);
 }
 /*
@@ -503,10 +450,10 @@ static int GMRESGetNewVectors( KSP ksp,int it )
   nalloc = gmres->delta_allocate;
   /* Adjust the number to allocate to make sure that we don't exceed the
     number of available slots */
-  if (it + VEC_OFFSET + nalloc >= gmres->vecs_allocated)
-      nalloc = gmres->vecs_allocated - it - VEC_OFFSET;
-  /*CHKPTRQ(nalloc); */
-  if (nalloc == 0) PetscFunctionReturn(0);
+  if (it + VEC_OFFSET + nalloc >= gmres->vecs_allocated){
+    nalloc = gmres->vecs_allocated - it - VEC_OFFSET;
+  }
+  if (!nalloc) PetscFunctionReturn(0);
 
   gmres->vv_allocated += nalloc;
   ierr = VecDuplicateVecs(ksp->vec_rhs, nalloc,&gmres->user_work[nwork] );CHKERRQ(ierr);
@@ -715,7 +662,6 @@ int KSPCreate_GMRES(KSP ksp)
   ierr  = PetscMemzero(gmres,sizeof(KSP_GMRES));CHKERRQ(ierr);
   PLogObjectMemory(ksp,sizeof(KSP_GMRES));
   ksp->data                              = (void *) gmres;
-  ksp->converged                         = KSPDefaultConverged_GMRES;
   ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
 
   ksp->ops->setup                        = KSPSetUp_GMRES;
@@ -746,7 +692,6 @@ int KSPCreate_GMRES(KSP ksp)
   gmres->sol_temp            = 0;
   gmres->max_k               = GMRES_DEFAULT_MAXK;
   gmres->Rsvd                = 0;
-  ksp->guess_zero            = PETSC_TRUE; 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
