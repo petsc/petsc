@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: options.h,v 1.9 1995/06/07 16:32:14 bsmith Exp bsmith $ */
 
 #if !defined(__OPTIONS_PACKAGE)
 #define __OPTIONS_PACKAGE
@@ -14,7 +14,6 @@ int OptionsGetDouble(char *,char *,double *);
 int OptionsGetIntArray(char*,char *,int *,int *nmax);
 int OptionsGetDoubleArray(char *,char *,double *,int *nmax);
 int OptionsGetString(char*,char *,char *,int);
-int OptionsGetScalar(char*,char *,Scalar *);
 int OptionsAllUsed();
 
 int OptionsSetValue(char*,char*);
