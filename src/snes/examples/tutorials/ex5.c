@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.90 1998/04/16 04:02:20 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.91 1998/04/21 22:10:46 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -67,7 +67,7 @@ T*/
 typedef struct {
    double      param;          /* test problem parameter */
    int         mx,my;          /* discretization in x, y directions */
-   Vec         localX, localF; /* ghosted local vector */
+   Vec         localX, localF; /* ghosted local vectors */
    DA          da;             /* distributed array data structure */
    int         rank;           /* processor rank */
 } AppCtx;
@@ -90,6 +90,10 @@ int main( int argc, char **argv )
   int      size;                /* number of processors */
   int      m, flg, N, ierr, nloc, *ltog;
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Initialize program
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);
@@ -506,9 +510,10 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
         feature with caution!
   */
   *flag = SAME_NONZERO_PATTERN;
+
   /*
-      Tell the matrix we will never add a new nonzero location to the
-    matrix. If we do it will generate an error.
+     Tell the matrix we will never add a new nonzero location to the
+     matrix. If we do, it will generate an error.
   */
   ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);
   return 0;
