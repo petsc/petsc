@@ -12,7 +12,7 @@ dW = defaultWriter()
 class Logger(object):
   debugLevel    = None
   debugSections = None
-  debugIndent   = '  '
+  debugIndent   = ' '
 
   def __init__(self, argDB = None, log = None):
     if Logger.debugLevel is None:
@@ -58,7 +58,7 @@ class Logger(object):
     import sys
 
     if not isinstance(level, int): raise RuntimeError('Debug level must be an integer')
-    indentLevel = len(traceback.extract_stack())-4
+    indentLevel = len(traceback.extract_stack())-5
     if not self.log is None:
       for i in range(indentLevel):
         self.log.write(self.debugIndent)

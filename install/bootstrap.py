@@ -162,25 +162,30 @@ class ScrollingWindow:
     curses.textpad.rectangle(stdscr,y,x,y+h,x+w)
     self.stdscr = stdscr
     self.stdscr.refresh()
-    self.xmin = x+1
-    self.ymin = y+1
-    self.xmax = x+w-1
-    self.ymax = y+h-1
-    self.write('hellow')
+    self.x  = x+1
+    self.y  = y+1
+    self.h  = h - 2
+    self.w  = w - 2
+    self.lines = []
+    for i in range(0,self.h):
+      self.lines.append('\n')
+    self.mess = ''
 
   def write(self,mess):
-    self.stdscr.addstr(self.ymin,self.xmin,mess)
-    self.stdscr.refresh()
+    import re
+    if not re.search('\n',mess):
+      self.mess = self.mess + mess
+    else:
+      nmess = self.mess + mess[0:-1]
+      for i in range(0,self.h-1):
+        self.lines[i] = self.lines[i+1]
+      self.lines[self.h-1] = nmess
+      for i in range(0,self.h):
+        amess = self.lines[i]+'                                                                                                          '
+        self.stdscr.addstr(self.y+i,self.x,amess[0:self.w])
+      self.stdscr.refresh()
+      self.mess = ''
        
-class cursesWriter:
-  def __init__(self,stdscr,y,x,h,w):
-    global SW
-    SW = ScrollingWindow(stdscr,y,x,h,w)
-
-  def write(self,mess):
-    global SW
-    SW.write(mess)
-
 #-----------------------------------------------------------------------------------------------------------------------
     
 class CursesInstall (BootstrapInstall):
@@ -488,11 +493,13 @@ class CursesInstall (BootstrapInstall):
     return 0
 
   def cursesRunInstaller(self,stdscr,args):
+    stdscr.clear()
+    CursesInstall.CenterAddStr(stdscr,2,'Installing the BuildSystem, Runtime and Compiler')
     import install.installer
     import logging
-    logging.dW = cursesWriter(stdscr,3,3,21,83)
+    (y,x) = stdscr.getmaxyx()
+    logging.dW = ScrollingWindow(stdscr,3,3,y-7,x-6)
     install.installer.runinstaller(args)
-
 
   def runInstaller(self,args):
     '''Display nice message while running installer'''
