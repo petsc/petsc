@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.10 1997/09/10 18:33:53 balay Exp balay $ 
+# $Id: base.site,v 1.11 1997/09/22 18:21:44 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -56,7 +56,7 @@ MPIRUN         =  /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 PCONF      = -DHAVE_BLOCKSOLVE
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/alpha/libBS95.a
 
 
 EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
