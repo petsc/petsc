@@ -103,7 +103,7 @@ int DADestroy(DA da)
   PetscLogObjectDestroy(da);
   ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);
+  if (da->ltol) {ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);}
   ierr = VecDestroy(da->global);CHKERRQ(ierr);
   ierr = VecDestroy(da->local);CHKERRQ(ierr);
   if (da->natural){

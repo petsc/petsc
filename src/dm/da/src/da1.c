@@ -111,8 +111,7 @@ EXTERN int DAPublish_Petsc(PetscObject);
 
    Options Database Key:
 +  -da_view - Calls DAView() at the conclusion of DACreate1d()
-.  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
--  -da_noao - do not compute natural to PETSc ordering object
+-  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
 
    Level: beginner
 
@@ -320,37 +319,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);
   PetscLogObjectParent(da,da->ltogmap);
 
-  /* construct the local to local scatter context */
-  /* 
-      We simply remap the values in the from part of 
-    global to local to read from an array with the ghost values 
-    rather then from the plain array.
-  */
-  ierr = VecScatterCopy(gtol,&da->ltol);CHKERRQ(ierr);
-  PetscLogObjectParent(da,da->ltol);
-  left = xs - Xs;
-  ierr = PetscMalloc((Xe-Xs)*sizeof(int),&idx);CHKERRQ(ierr);
-  for (j=0; j<Xe-Xs; j++) {
-    idx[j] = left + j;
-  }  
-  ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscFree(idx);CHKERRQ(ierr);
-
-  /* 
-     Build the natural ordering to PETSc ordering mappings.
-  */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_noao",&flg1);CHKERRQ(ierr);
-  if (!flg1) {
-    IS is;
-    
-    ierr = ISCreateStride(comm,da->xe-da->xs,da->base,1,&is);CHKERRQ(ierr);
-    ierr = AOCreateBasicIS(is,is,&da->ao);CHKERRQ(ierr);
-    PetscLogObjectParent(da,da->ao);
-    ierr = ISDestroy(is);CHKERRQ(ierr);
-  } else {
-    da->ao = PETSC_NULL;
-  }
-
+  da->ltol = PETSC_NULL;
+  da->ao   = PETSC_NULL;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}

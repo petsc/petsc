@@ -203,21 +203,20 @@ int DAGlobalToNatural_Create(DA da)
 {
   int ierr,m,start;
   IS  from,to;
+  AO  ao;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (!da->natural) {
     SETERRQ(1,"Natural layout vector not yet created; cannot scatter into it");
   }
-  if (!da->ao) {
-    SETERRQ(1,"Cannot use -da_noao with this function");
-  }
+  ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
   ierr = VecGetLocalSize(da->natural,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(da->natural,&start,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(da->comm,m,start,1,&to);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(da->ao,to);CHKERRQ(ierr);
+  ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
   ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(da->global,from,da->natural,to,&da->gton);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
