@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.61 2001/08/10 15:50:58 balay Exp balay $*/
+/*$Id: zsnes.c,v 1.62 2001/08/10 16:38:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -125,7 +125,7 @@
 
 EXTERN_C_BEGIN
 
-#if defined (PETSC_HAVE_ADIC)
+#if defined (PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
 void PETSC_STDCALL matregisterdaad_(int *ierr)
 {
   *ierr = MatRegisterDAAD();
