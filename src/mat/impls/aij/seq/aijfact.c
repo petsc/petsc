@@ -247,14 +247,13 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
 
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
 
-  /* check out for identical nodes. If found, use inode functions */
-  ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
-
   af = ((double)b->nz)/((double)a->nz) + .001;
   PetscLogInfo(A,"MatILUDTFactor_SeqAIJ:Fill ratio:given %g needed %g\n",info->fill,af);
   PetscLogInfo(A,"MatILUDTFactor_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
   PetscLogInfo(A,"MatILUDTFactor_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
   PetscLogInfo(A,"MatILUDTFactor_SeqAIJ:for best performance.\n");
+
+  /* Call parent MatILUDTFactor here */
 
   PetscFunctionReturn(0);
 #endif
@@ -403,20 +402,18 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   (*B)->factor                 =  FACTOR_LU;
   (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
-  ierr = Mat_AIJ_CheckInode(*B,PETSC_FALSE);CHKERRQ(ierr);
-  (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
   if (ai[n] != 0) {
     (*B)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
   } else {
     (*B)->info.fill_ratio_needed = 0.0;
   }
+  /* Call parent MatLUFactorSymbolic here */
+  (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   PetscFunctionReturn(0); 
 }
 
 /* ----------------------------------------------------------- */
-EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
@@ -1046,11 +1043,13 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = PetscLogObjectMemory(*fact,(bi[n]-n) * (sizeof(PetscInt)+sizeof(PetscScalar)));CHKERRQ(ierr);
   b->maxnz             = b->nz = bi[n] ;
   (*fact)->factor = FACTOR_LU;
-  ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
-  (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   (*fact)->info.factor_mallocs    = reallocs;
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
+
+  /* Call parent MatILUFactorSymbolic here */
+
+  (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   PetscFunctionReturn(0); 
 }
 
