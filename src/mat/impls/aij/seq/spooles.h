@@ -6,10 +6,10 @@
 #define __SPOOLES_H
 
 EXTERN_C_BEGIN
-#include "/sandbox/hzhang/spooles/misc.h"
-#include "/sandbox/hzhang/spooles/FrontMtx.h"
-#include "/sandbox/hzhang/spooles/SymbFac.h"
-#include "/sandbox/hzhang/spooles/MPI/spoolesMPI.h"
+#include "misc.h"
+#include "FrontMtx.h"
+#include "SymbFac.h"
+#include "MPI/spoolesMPI.h"
 EXTERN_C_END
 
 typedef struct {
