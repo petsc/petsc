@@ -1,0 +1,3 @@
+/*
+    Defines the configuration for this machine
+*/
