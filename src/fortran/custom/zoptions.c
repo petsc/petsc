@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.14 1996/01/30 00:40:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.15 1996/03/04 21:30:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -320,7 +320,8 @@ void petscsetfortranbasepointers_(void *fnull,char *fcnull)
     This is code for translating PETSc memory addresses to integer offsets 
     for Fortran.
 */
-void   *PETSC_NULL_Fortran, *PETSC_NULL_CHAR_Fortran;
+void   *PETSC_NULL_Fortran;
+char   *PETSC_NULL_CHAR_Fortran;
 
 int PetscIntAddressToFortran(int *base,int *addr)
 {
