@@ -119,15 +119,15 @@ int main(int argc,char **args)
     /* Check whether A is symmetric */
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
     if (flg) {
-      Mat trans;
-      ierr = MatTranspose(A, &trans);
-      ierr = MatEqual(A, trans, &isSymmetric);
+      Mat Atrans;
+      ierr = MatTranspose(A, &Atrans);
+      ierr = MatEqual(A, Atrans, &isSymmetric);
       if (isSymmetric) {
         PetscPrintf(PETSC_COMM_WORLD,"A is symmetric \n");CHKERRQ(ierr);
       } else {
         PetscPrintf(PETSC_COMM_WORLD,"A is non-symmetric \n");CHKERRQ(ierr);
       }
-      ierr = MatDestroy(trans);CHKERRQ(ierr);
+      ierr = MatDestroy(Atrans);CHKERRQ(ierr);
     }
 
     /* 

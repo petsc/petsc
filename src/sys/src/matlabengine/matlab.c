@@ -74,8 +74,6 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
 @*/
 int PetscMatlabEngineDestroy(PetscMatlabEngine v)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,MATLABENGINE_COOKIE);
   if (--v->refct > 0) PetscFunctionReturn(0);
@@ -311,22 +309,22 @@ PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Matlab_Engine_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); engine = 0;}
   }
   ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int*)&flg);
-  if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+  if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); engine = 0;}
   if (!flg) { /* viewer not yet created */
     char *machinename = 0,machine[64];
 
     ierr = PetscOptionsGetString(PETSC_NULL,"-matlab_engine_machine",machine,64,&flg);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); engine = 0;}
     if (flg) machinename = machine;
     ierr = PetscMatlabEngineCreate(comm,machinename,&engine);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); engine = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)engine);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); engine = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Matlab_Engine_keyval,engine);
-    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_MATLAB_ENGINE_",__FILE__,__SDIR__,1,1," "); engine = 0;}
   } 
   PetscFunctionReturn(engine);
 }

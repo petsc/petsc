@@ -2381,9 +2381,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatMatlabEnginePut_SeqAIJ"
 int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 {
-  int         ierr,i,*ai,*aj;
+  int         ierr,i;
   Mat         B = (Mat)obj;
-  PetscScalar *array;
   mxArray     *mat; 
   Mat_SeqAIJ  *aij = (Mat_SeqAIJ*)B->data;
 
