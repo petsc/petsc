@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.13 2000/07/17 18:55:42 hzhang Exp balay $*/
+/*$Id: ex74.c,v 1.14 2000/07/20 16:55:51 balay Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -32,8 +32,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&mbs,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
 
   n = mbs*bs;
   ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A); CHKERRA(ierr);
@@ -147,14 +147,13 @@ int main(int argc,char **args)
   ierr = MatNorm(sA,NORM_FROBENIUS,&norm2);CHKERRA(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n,norm1");
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);
   }
   ierr = MatNorm(A,NORM_INFINITY,&norm1); CHKERRA(ierr);
   ierr = MatNorm(sA,NORM_INFINITY,&norm2); CHKERRA(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-i  if (mbs*bs != n) SETERRA(1,0,"Number rows/cols must be divisible by bs");
-nf_norm2=%16.14e\n,norm1");
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);
   }
   
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
