@@ -1,3 +1,5 @@
+docs/manualpages/logfile.txt
+docs/manualpages/manualpages.cit
 petsc/bmake/common_win32
 petsc/bmake/win32
 petsc/bmake/win32_borland_old
