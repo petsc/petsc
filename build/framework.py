@@ -229,7 +229,6 @@ class Framework(base.Base):
       input        = {}
       self.builder = cPickle.loads(self.argDB['checkpoint'])
       compileGraph = self.builder.buildGraph
-      #del self.argDB['checkpoint']
       self.debugPrint('Loaded checkpoint for '+str(self.project), 2, 'build')
     else:
       import build.buildGraph
@@ -322,6 +321,9 @@ class Framework(base.Base):
 
     self.argDB['projectDependenceGraph'] = self.dependenceGraph
     self.debugPrint('Updated project dependence graph with project '+str(self.project), 2, 'install')
+    # Remove any build checkpoint
+    if 'checkpoint' in self.argDB:
+      del self.argDB['checkpoint']
     return self.project
 
   def t_uninstall(self):
