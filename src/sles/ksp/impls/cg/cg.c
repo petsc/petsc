@@ -173,7 +173,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
          b = beta/betaold;
 #if !defined(PETSC_USE_COMPLEX)
          if (b < 0.0) {
-           ksp->reason = KSP_DIVERGED_NONSYMMETRIC;
+           ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
 	   break;
          }
 #endif
