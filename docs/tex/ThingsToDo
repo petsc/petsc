@@ -10,6 +10,9 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - What to do for ASM, BJacobi PCs for -use_true_local and
+    PCModifySubmatrices()?
+    
   - Provide default color choices for PLogEventRegister() so
     user doesn't have to choose.  Provide documentation on the
     format and available options for colors.
@@ -25,7 +28,7 @@ Additional Capabilities that PETSc Needs:
          - complex numbers: -DUSES_TEMPLATED_COMPLEX
          - etc.
 
-  - Finish "Performance" section "System Related Problems"
+  - Finish "Performance" chapter: section "System Related Problems"
 
   - Finish users manual:
       - Add info about BAIJ matrix to Chapter 15
