@@ -177,7 +177,7 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'lib','mpich.lib'),'ws2_32.lib']
     else:
       yield ['']
-      yeild ['fmpich','mpich']
+      yield ['fmpich','mpich']
       yield ['mpich']
       yield ['mpi','mpi++']
       yield ['mpi']      
@@ -458,9 +458,7 @@ class Configure(config.base.Configure):
     return
 
   def configureMPIRUN(self):
-    '''Checking for mpirun
-       - If --can-execute=0, then no checking is done'''
-    if not self.framework.argDB['can-execute']: return
+    '''Checking for mpirun'''
     if self.isPOE:
       self.mpirun = os.path.join(self.framework.argDB['PETSC_DIR'], 'bin', 'mpirun.poe')
       sel.addSubstitution('MPIRUN', self.mpirun)

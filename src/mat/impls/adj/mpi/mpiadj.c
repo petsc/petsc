@@ -418,8 +418,8 @@ PetscErrorCode MatCreate_MPIAdj(Mat B)
   B->mapping          = 0;
   B->assembled        = PETSC_FALSE;
   
-  ierr = MPI_Allreduce(&B->m,&B->M,1,MPI_INT,MPI_SUM,B->comm);CHKERRQ(ierr);
-  B->n = B->N;
+  ierr = PetscSplitOwnership(B->comm,&B->m,&B->M);CHKERRQ(ierr);
+  B->n = B->N = PetscMax(B->N,B->n);CHKERRQ(ierr);
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */

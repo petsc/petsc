@@ -859,12 +859,12 @@ PetscErrorCode PetscADView(PetscInt N,PetscInt nc,double *ptr,PetscViewer viewer
 
   PetscFunctionBegin;
   for (i=0; i<N; i++) {
-    printf("Element %D value %g derivatives: ",i,*(double*)cptr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Element %D value %g derivatives: ",i,*(double*)cptr);CHKERRQ(ierr);
     values = PetscADGetGradArray(cptr);
     for (j=0; j<nc; j++) {
-      printf("%g ",*values++);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"%g ",*values++);CHKERRQ(ierr);
     }
-    printf("\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
     cptr += nlen;
   }
 
