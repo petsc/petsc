@@ -20,7 +20,9 @@ def setupRC(path):
   # Check that hostname returns something BitKeeper is happy with
   import socket
   hostname = socket.gethostname()
-  if hostname[-1] == '.':
+  if len(hostname) > 8 and hostname[0:9] == 'localhost':
+    contents = contents + 'os.putenv("BK_HOST","bkneedsname.org")\n'
+  elif hostname[-1] == '.':
     contents = contents + 'os.putenv("BK_HOST","'+hostname+'org")\n'
   elif hostname.find('.') == -1:
     contents = contents + 'os.putenv("BK_HOST","'+hostname+'.org")\n'

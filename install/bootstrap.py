@@ -40,7 +40,9 @@ class BootstrapInstall (object):
     # First check that hostname returns something BitKeeper is happy with
     import socket
     hostname = socket.gethostname()
-    if hostname[-1] == '.':
+    if len(hostname) > 8 and hostname[0:9] == 'localhost':
+      os.putenv('BK_HOST','bkneedsname.org')
+    elif hostname[-1] == '.':
       os.putenv('BK_HOST',hostname+'org')
     elif hostname.find('.') == -1:
       os.putenv('BK_HOST',hostname+'.org')
