@@ -7,4 +7,4 @@
 #
 30 23 * * * /home/bsmith/petsc/maint/buildtest /home/bsmith/petsc
 30 23 * * * /home/curfman/petsc/maint/buildtest /home/curfman/petsc
-00 23 * * * rsh bonnie /sphone/curfman/petsc/maint/buildtest /sphome/curfman/petsc
+00 23 * * * rsh bonnie /sphome/curfman/petsc/maint/buildtest /sphome/curfman/petsc
