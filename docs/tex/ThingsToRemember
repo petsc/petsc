@@ -63,11 +63,6 @@ ps -efMP - process status for application PEs
 
 performance analysis tool (pat): use "man pat" for info
 
-5/14/97: The add.nersc script has been written to clean up old module setup
-lines in your "dot" files for the NERSC Cray platforms and to add the
-correct setup.  This script is located in /usr/local/bin. To invoke it
-just type:
-        add.nersc
 ---------------
 
 
@@ -110,6 +105,7 @@ bqueues: List all the queues avilable
 bjobs  : list all the batch jobs started.
 bjobs -u all : list all the batch jobs started by all users
 bkill : kill a batch job
+usage : account usage info
 (and other b-commands and lsbatch commands)
 
 ---------
