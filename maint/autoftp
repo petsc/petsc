@@ -4,8 +4,9 @@
 # drops off a file
 # 
   set host     [lindex $argv 0]
-  set file_in  [lindex $argv 1]
-  set file_out [lindex $argv 2]
+  set user     [lindex $argv 1]
+  set file_in  [lindex $argv 2]
+  set file_out [lindex $argv 3]
 
      spawn ftp
      expect {ftp>*}
@@ -14,8 +15,7 @@
      set timeout 90
      send "open $host \r"
      expect {*Name*}
-     set timeout 15
-     send "\r"
+     send "$user\r"
      expect {*Password:}
      send "1953bz24\r"
      expect {*ftp>*}
