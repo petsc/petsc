@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.42 1995/07/10 04:51:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.43 1995/07/15 20:02:18 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1108,57 +1108,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   return 0;
 }
 /* --------------- extra BlockSolve-specific routines -------------- */
-int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
-{
-  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  Scalar       *ya;
-  int          ierr;
-
-  /* Apply diagonal scaling to vector, where D^{-1/2} is stored */
-  ierr = VecPMult(mrow->diag,x,y); CHKERRQ(ierr);
-  ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
-
-#ifdef DEBUG_ALL
-  MLOG_ELM(mrow->procinfo->procset);
-#endif
-  if (mrow->procinfo->single)
-    /* Use BlockSolve routine for no cliques/inodes */
-    BSfor_solve1( mrow->fpA, ya, mrow->comm_pA, mrow->procinfo );
-  else
-    BSfor_solve( mrow->fpA, ya, mrow->comm_pA, mrow->procinfo );
-  CHKERRBS(0);
-#ifdef DEBUG_ALL
-  MLOG_ACC(MS_FORWARD);
-#endif
-  return(0);
-}
-
-int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
-{
-  Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  Scalar       *ya;
-  int          ierr;
-
-  ierr = VecCopy(x,y); CHKERRQ(ierr);
-  ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
-#ifdef DEBUG_ALL
-  MLOG_ELM(mrow->procinfo->procset);
-#endif
-  if (mrow->procinfo->single)
-    /* Use BlockSolve routine for no cliques/inodes */
-    BSback_solve1( mrow->fpA, ya, mrow->comm_pA, mrow->procinfo );
-  else
-    BSback_solve( mrow->fpA, ya, mrow->comm_pA, mrow->procinfo );
-  CHKERRBS(0);
-#ifdef DEBUG_ALL
-  MLOG_ACC(MS_BACKWARD);
-#endif
-
-  /* Apply diagonal scaling to vector, where D^{-1/2} is stored */
-  ierr = VecPMult(y,mrow->diag,y); CHKERRQ(ierr);
-  return 0;
-}
-
 /* @
   MatGetBSProcinfo - Gets the BlockSolve BSprocinfo context, which the
   user can then manipulate to alter the default parameters.
