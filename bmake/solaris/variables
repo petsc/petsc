@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 1999/02/05 00:56:45 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/02/08 22:51:20 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -39,7 +39,7 @@ OCXX_FOPTFLAGS   = -fast -dalign
 GCOMP_COPTFLAGS  = -g -xs
 GCOMP_FOPTFLAGS  = -g -xs
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O4 -fast -fsimple=2
+OCOMP_COPTFLAGS  = -O2 -fsimple=2
 OCOMP_FOPTFLAGS  = -fast -dalign
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
