@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: zplog.c,v 1.4 1996/03/25 19:34:27 balay Exp bsmith $";
+static char vcid[] = "$Id: zplog.c,v 1.5 1996/06/12 03:39:01 bsmith Exp bsmith $";
 #endif
 
-#include "zpetsc.h"
+#include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
 #include "pinclude/petscfix.h"
 
@@ -75,14 +75,14 @@ void plogbegin_(int *__ierr){
 void plogeventbegin_(int e,int o1,int o2,int o3,int o4){
 #if defined(PETSC_LOG)
   PetscObject t1,t2,t3,t4;
-  if (o1) t1 = (PetscObject) MPIR_ToPointer(*(int*)(o1)); else t1 = 0;
-  if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
-  if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
-  if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
+  if (o1) t1 = (PetscObject) PetscToPointer(*(int*)(o1)); else t1 = 0;
+  if (o2) t2 = (PetscObject) PetscToPointer(*(int*)(o2)); else t2 = 0;
+  if (o3) t3 = (PetscObject) PetscToPointer(*(int*)(o3)); else t3 = 0;
+  if (o4) t4 = (PetscObject) PetscToPointer(*(int*)(o4)); else t4 = 0;
 
   if (_PLB) (*_PLB)(e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
-  if (UseMPE && PLogMPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e,0,"");
+  if (UseMPE && PLogEventMPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e,0,"");
 #endif
 #endif
 }
@@ -90,13 +90,13 @@ void plogeventbegin_(int e,int o1,int o2,int o3,int o4){
 void plogeventend_(int e,int o1,int o2,int o3,int o4){
 #if defined(PETSC_LOG)
   PetscObject t1,t2,t3,t4;
-  if (o1) t1 = (PetscObject) MPIR_ToPointer(*(int*)(o1)); else t1 = 0;
-  if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
-  if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
-  if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
+  if (o1) t1 = (PetscObject) PetscToPointer(*(int*)(o1)); else t1 = 0;
+  if (o2) t2 = (PetscObject) PetscToPointer(*(int*)(o2)); else t2 = 0;
+  if (o3) t3 = (PetscObject) PetscToPointer(*(int*)(o3)); else t3 = 0;
+  if (o4) t4 = (PetscObject) PetscToPointer(*(int*)(o4)); else t4 = 0;
   if (_PLE) (*_PLE)(e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
-  if (UseMPE && PLogMPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e+1,0,"");
+  if (UseMPE && PLogEventMPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e+1,0,"");
 #endif
 #endif
 }
