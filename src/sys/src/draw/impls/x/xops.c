@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.56 1996/09/12 16:27:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.57 1996/09/14 03:35:08 curfman Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -167,7 +167,7 @@ static int DrawSyncFlush_X(Draw Win )
     MPI_Barrier(Win->comm);
     if (!rank) {
       XCopyArea( XiWin->disp, XiWin->drw, XiWin->win, XiWin->gc.set, 0, 0, 
-		 XiWin->w, XiWin->h, XiWin->x, XiWin->y );
+		 XiWin->w, XiWin->h, 0,0 );
       XFlush( XiWin->disp );
     }
   }
