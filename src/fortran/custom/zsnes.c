@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.49 2000/08/01 20:58:32 bsmith Exp bsmith $*/
+/*$Id: zsnes.c,v 1.50 2000/08/17 04:53:40 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -11,6 +11,7 @@
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matsnesmfsetbase_            MATSNESMFSETBASE
 #define snesconverged_eq_tr_         SNESCONVERGED_EQ_TR
 #define snesconverged_eq_ls_         SNESCONVERGED_EQ_LS
 #define snesconverged_um_tr_         SNESCONVERGED_UM_TR
@@ -59,6 +60,7 @@
 #define snesnolinesearchnonorms_         SNESNOLINESEARCHNONORMS
 #define snesview_                        SNESVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsnesmfsetbase_            matsnesmfsetbase
 #define snescubiclinesearch_         snescubiclinesearch     
 #define snesquadraticlinesearch_     snesquadraticlinesearch    
 #define snesnolinesearch_            snesnolinesearch    
@@ -176,6 +178,11 @@ void PETSC_STDCALL snesappendoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_L
   FIXCHAR(prefix,len,t);
   *ierr = SNESAppendOptionsPrefix(*snes,t);
   FREECHAR(prefix,t);
+}
+
+void PETSC_STDCALL matsnesmfsetbase_(Mat *m,Vec *x,int *ierr)
+{
+  *ierr = MatSNESMFSetBase(*m,*x);
 }
 
 void PETSC_STDCALL matcreatesnesmf_(SNES *snes,Vec *x,Mat *J,int *ierr)
