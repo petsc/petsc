@@ -37,7 +37,7 @@ typedef struct {
 } Mat_DSC;
 
 EXTERN int MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
-EXTERN int MatConvert_Base_DSCPACK(Mat,MatType,Mat *);
+
 /* DSC function */
 #undef __FUNCT__  
 #define __FUNCT__ "isort2"

@@ -20,27 +20,24 @@ int MatGetInertia_SeqSBAIJ(Mat F,int *nneig,int *nzero,int *npos)
 { 
   Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;
   PetscScalar  *dd = fact_ptr->a;
-  int          m = F->m,i;
+  int          mbs=fact_ptr->mbs,bs=fact_ptr->bs,i,nneig_tmp,npos_tmp,
+               *fi = fact_ptr->i;
 
   PetscFunctionBegin;
-  if (nneig){
-    *nneig = 0;
-    for (i=0; i<m; i++){
-      if (PetscRealPart(dd[i]) < 0.0) (*nneig)++;
+  if (bs != 1) SETERRQ1(PETSC_ERR_SUP,"No support for bs: %d >1 yet",bs);
+  nneig_tmp = 0; npos_tmp = 0;
+  for (i=0; i<mbs; i++){
+    if (PetscRealPart(dd[*fi]) > 0.0){
+      npos_tmp++;
+    } else if (PetscRealPart(dd[*fi]) < 0.0){
+      nneig_tmp++;
     }
+    fi++;
   }
-  if (nzero){
-    *nzero = 0;
-    for (i=0; i<m; i++){
-      if (PetscRealPart(dd[i]) == 0.0) (*nzero)++;
-    }
-  }
-  if (npos){
-    *npos = 0;
-    for (i=0; i<m; i++){
-      if (PetscRealPart(dd[i]) > 0.0) (*npos)++;
-    }
-  }
+  if (nneig) *nneig = nneig_tmp;
+  if (npos)  *npos  = npos_tmp;
+  if (nzero) *nzero = mbs - nneig_tmp - npos_tmp;
+
   PetscFunctionReturn(0);
 }
 #endif /* !defined(PETSC_USE_COMPLEX) */
