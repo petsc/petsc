@@ -136,7 +136,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
     } 
     ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Unknown norm type");
+    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidDoublePointer(nrm,3);
   if (idex) {
-    SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+    SETERRQ(PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -197,7 +197,7 @@ int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -270,7 +270,7 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidDoublePointer(nrm,4);
   if (idex) {
-    SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+    SETERRQ(PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(1,"Start of stride subvector (%d) is too large for stride\n\
+    SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%d) is too large for stride\n\
             Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
@@ -401,7 +401,7 @@ int VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
-  if (bs > 128) SETERRQ(1,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (ntype == NORM_2) {
     PetscScalar sum[128];
@@ -443,7 +443,7 @@ int VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
     } 
     ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Unknown norm type");
+    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -492,14 +492,14 @@ int VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidDoublePointer(nrm,3);
   if (idex) {
-    SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+    SETERRQ(PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
-  if (bs > 128) SETERRQ(1,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
     for (j=0; j<bs; j++) {
@@ -571,14 +571,14 @@ int VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidDoublePointer(nrm,3);
   if (idex) {
-    SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+    SETERRQ(PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->bs;
-  if (bs > 128) SETERRQ(1,"Currently supports only blocksize up to 128");
+  if (bs > 128) SETERRQ(PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
     for (j=0; j<bs; j++) {
@@ -666,7 +666,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
     nvc  += bss[i];
     nv++;
-    if (nvc > bs)  SETERRQ(1,"Number of subvectors in subvectors > number of vectors in main vector");
+    if (nvc > bs)  SETERRQ(PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
     if (nvc == bs) break;
   }
 
@@ -703,7 +703,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
     }
 #endif
   } else {
-    SETERRQ(1,"Unknown insert type");
+    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -768,7 +768,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
     nvc  += bss[i];
     nv++;
-    if (nvc > bs)  SETERRQ(1,"Number of subvectors in subvectors > number of vectors in main vector");
+    if (nvc > bs)  SETERRQ(PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
     if (nvc == bs) break;
   }
 
@@ -805,7 +805,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
     }
 #endif
   } else {
-    SETERRQ(1,"Unknown insert type");
+    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -891,7 +891,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
     }
 #endif
   } else {
-    SETERRQ(1,"Unknown insert type");
+    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -970,7 +970,7 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
     }
 #endif
   } else {
-    SETERRQ(1,"Unknown insert type");
+    SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
   }
 
 

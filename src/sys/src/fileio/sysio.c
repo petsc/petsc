@@ -191,7 +191,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     if (longintfile) {
       m *= sizeof(int);
     } else {
-      SETERRQ(1,"Can only process data file generated on Cray vector machine;\n\
+      SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Can only process data file generated on Cray vector machine;\n\
       if this data WAS then run program with -binary_longints option");
     }
   }

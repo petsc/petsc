@@ -48,7 +48,7 @@ int ISStrideToGeneral(IS inis)
 
   PetscFunctionBegin;
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);
-  if (!stride) SETERRQ(1,"Can only convert stride index sets");
+  if (!stride) SETERRQ(PETSC_ERR_SUP,"Can only convert stride index sets");
 
   ierr = PetscNew(IS_General,&sub);CHKERRQ(ierr);
   PetscLogObjectMemory(inis,sizeof(IS_General));

@@ -2357,7 +2357,7 @@ int VecView(Vec vec,PetscViewer viewer)
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(vec->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(vec,1,viewer,2);
-  if (vec->stash.n || vec->bstash.n) SETERRQ(1,"Must call VecAssemblyBegin/End() before viewing this vector");
+  if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
   /*
      Check if default viewer has been overridden, but user request it anyways
@@ -2602,7 +2602,7 @@ int VecPlaceArray(Vec vec,const PetscScalar array[])
   if (vec->ops->placearray) {
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Cannot place array in this type of vector");
+    SETERRQ(PETSC_ERR_SUP,"Cannot place array in this type of vector");
   }
   ierr = PetscObjectIncreaseState((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2634,7 +2634,7 @@ int VecResetArray(Vec vec)
   if (vec->ops->resetarray) {
     ierr = (*vec->ops->resetarray)(vec);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Cannot reset array in this type of vector");
+    SETERRQ(PETSC_ERR_SUP,"Cannot reset array in this type of vector");
   }
   ierr = PetscObjectIncreaseState((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2677,7 +2677,7 @@ int VecReplaceArray(Vec vec,const PetscScalar array[])
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
  } else {
-    SETERRQ(1,"Cannot replace array in this type of vector");
+    SETERRQ(PETSC_ERR_SUP,"Cannot replace array in this type of vector");
   }
   ierr = PetscObjectIncreaseState((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2872,7 +2872,7 @@ int VecLoadIntoVector(PetscViewer viewer,Vec vec)
   PetscValidHeaderSpecific(vec,VEC_COOKIE,2);
   PetscValidType(vec,2);
   if (!vec->ops->loadintovector) {
-    SETERRQ(1,"Vector does not support load");
+    SETERRQ(PETSC_ERR_SUP,"Vector does not support load");
   }
   ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)vec);CHKERRQ(ierr);
@@ -2905,7 +2905,7 @@ int VecReciprocal(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
   PetscValidType(vec,1);
   if (!vec->ops->reciprocal) {
-    SETERRQ(1,"Vector does not support reciprocal operation");
+    SETERRQ(PETSC_ERR_SUP,"Vector does not support reciprocal operation");
   }
   ierr = (*vec->ops->reciprocal)(vec);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)vec);CHKERRQ(ierr);

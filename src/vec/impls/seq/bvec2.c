@@ -253,7 +253,7 @@ int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 #if !defined(PETSC_USE_COMPLEX)
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
-  if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
+  if (ncid < 0) SETERRQ(PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
   ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",n,&xdim);CHKERRQ(ierr);
   /* define variables */
@@ -617,7 +617,7 @@ int VecCreate_Seq(Vec V)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(V->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    SETERRQ(1,"Cannot create VECSEQ on more than one process");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   }
   ierr = PetscMalloc( ( n > 0 ? n : 1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscMemzero(array,( n > 0 ? n : 1)*sizeof(PetscScalar));CHKERRQ(ierr);

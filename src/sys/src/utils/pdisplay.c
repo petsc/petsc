@@ -112,6 +112,13 @@ int PetscSetDisplay(void)
   ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = MPI_Bcast(display,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   display[len] = 0;
+  if (rank) {
+    str = getenv("DISPLAY");
+    /* assume that ssh port forwarding is working */
+    if (str && (str[0] != ':')) {
+      ierr = PetscStrcpy(display,str);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscStrcpy(PetscDisplay,display);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }

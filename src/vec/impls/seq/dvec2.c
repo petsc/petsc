@@ -806,7 +806,7 @@ int VecGetArray_Seq(Vec vin,PetscScalar *a[])
 
   PetscFunctionBegin;
   if (vin->array_gotten) {
-    SETERRQ(1,"Array has already been gotten for this vector,you may\n\
+    SETERRQ(PETSC_ERR_ORDER,"Array has already been gotten for this vector,you may\n\
     have forgotten a call to VecRestoreArray()");
   }
   vin->array_gotten = PETSC_TRUE;
@@ -825,7 +825,7 @@ int VecRestoreArray_Seq(Vec vin,PetscScalar *a[])
   PetscFunctionBegin;
 
   if (!vin->array_gotten) {
-    SETERRQ(1,"Array has not been gotten for this vector, you may\n\
+    SETERRQ(PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\n\
     have forgotten a call to VecGetArray()");
   }
   vin->array_gotten = PETSC_FALSE;

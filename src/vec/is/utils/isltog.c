@@ -269,7 +269,7 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
   PetscValidPointer(mapping,1);
   if (--mapping->refct > 0) PetscFunctionReturn(0);
   if (mapping->refct < 0) {
-    SETERRQ(1,"Mapping already destroyed");
+    SETERRQ(PETSC_ERR_PLIB,"Mapping already destroyed");
   }
 
   ierr = PetscFree(mapping->indices);CHKERRQ(ierr);

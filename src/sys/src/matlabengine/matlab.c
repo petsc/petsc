@@ -263,7 +263,7 @@ int PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
   
   PetscFunctionBegin;  
   if (!obj->name) {
-    SETERRQ(1,"Cannot get object that has no name");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot get object that has no name");
   }
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",(void (**)(void))&get);CHKERRQ(ierr);
   if (!get) {

@@ -548,7 +548,7 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
     while (touch[e]>=owners[p+1]) {
       p++;
 #if defined(PETSC_DEBUG)
-      if (p>=size) SETERRQ(1,p,"Processor overflow");
+      if (p>=size) SETERRQ1(PETSC_ERR_PLIB,"Processor overflow %d",p);
 #endif
     }
     conn[base+p] = 1;

@@ -1657,7 +1657,7 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
   if (!row_identity || !col_identity) {
-    SETERRQ(1,"Row and column permutations must be identity for in-place ILU");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for in-place ILU");
   }
 
   outA          = inA; 
@@ -1854,7 +1854,7 @@ int MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
     Mat_SeqAIJ *b = (Mat_SeqAIJ*)B->data; 
 
     if (a->i[A->m] != b->i[B->m]) {
-      SETERRQ(1,"Number of nonzeros in two matrices are different");
+      SETERRQ(PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
     }
     ierr = PetscMemcpy(b->a,a->a,(a->i[A->m])*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
@@ -2007,7 +2007,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx            *= epsilon;
-      if (!PetscAbsScalar(dx)) SETERRQ(1,"Computed 0 differencing parameter");
+      if (!PetscAbsScalar(dx)) SETERRQ(PETSC_ERR_PLIB,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
     w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
@@ -2226,7 +2226,7 @@ int MatSeqAIJSetColumnIndices(Mat mat,int *indices)
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Wrong type of matrix to set column indices");
+    SETERRQ(PETSC_ERR_SUP,"Wrong type of matrix to set column indices");
   }
   PetscFunctionReturn(0);
 }
@@ -2243,7 +2243,7 @@ int MatStoreValues_SeqAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
   }
 
   /* allocate space for values if not already there */
@@ -2316,7 +2316,7 @@ int MatStoreValues(Mat mat)
   if (f) {
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Wrong type of matrix to store values");
+    SETERRQ(PETSC_ERR_SUP,"Wrong type of matrix to store values");
   }
   PetscFunctionReturn(0);
 }
@@ -2331,12 +2331,11 @@ int MatRetrieveValues_SeqAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
   }
   if (!aij->saved_values) {
-    SETERRQ(1,"Must call MatStoreValues(A);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
   }
-
   /* copy values over */
   ierr = PetscMemcpy(aij->a,aij->saved_values,nz*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2373,7 +2372,7 @@ int MatRetrieveValues(Mat mat)
   if (f) {
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Wrong type of matrix to retrieve values");
+    SETERRQ(PETSC_ERR_SUP,"Wrong type of matrix to retrieve values");
   }
   PetscFunctionReturn(0);
 }
@@ -2887,7 +2886,7 @@ int MatCreateSeqAIJWithArrays(MPI_Comm comm,int m,int n,int* i,int*j,PetscScalar
   aij  = (Mat_SeqAIJ*)(*mat)->data;
 
   if (i[0] != 0) {
-    SETERRQ(1,"i (row indices) must start with 0");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
   }
   aij->i = i;
   aij->j = j;

@@ -203,7 +203,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
         *shared = PETSC_TRUE;
         break;
       } else if (sum != 1) {
-        SETERRQ(1,"Subset of processes share /tmp ");
+        SETERRQ(PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
       }
     }
     *tagvalp = (int)*shared;
@@ -324,7 +324,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
         *shared = PETSC_TRUE;
         break;
       } else if (sum != 1) {
-        SETERRQ(1,"Subset of processes share working directory");
+        SETERRQ(PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
       }
     }
     *tagvalp = (int)*shared;

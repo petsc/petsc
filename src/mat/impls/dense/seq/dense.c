@@ -981,7 +981,7 @@ int MatView_SeqDense(Mat A,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
 
   if (issocket) {
-    if (a->lda>A->m) SETERRQ(1,"Case can not handle LDA");
+    if (a->lda>A->m) SETERRQ(PETSC_ERR_SUP,"Case can not handle LDA");
     ierr = PetscViewerSocketPutScalar(viewer,A->m,A->n,a->v);CHKERRQ(ierr);
   } else if (iascii) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
@@ -1024,7 +1024,7 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
   v = mat->v; m = A->m; M = mat->lda; n = A->n;
   if (!matout) { /* in place transpose */
     if (m != n) {
-      SETERRQ(1,"Can not transpose non-square matrix in place");
+      SETERRQ(PETSC_ERR_SUP,"Can not transpose non-square matrix in place");
     } else {
       for (j=0; j<m; j++) {
         for (k=0; k<j; k++) {
@@ -1620,7 +1620,7 @@ int MatSeqDenseSetLDA(Mat B,int lda)
 {
   Mat_SeqDense *b = (Mat_SeqDense*)B->data;
   PetscFunctionBegin;
-  if (lda<B->m) SETERRQ(1,"LDA must be at least matrix i dimension");
+  if (lda < B->m) SETERRQ2(PETSC_ERR_ARG_SIZ,"LDA %d must be at least matrix dimension %d",lda,B->m);
   b->lda = lda;
   PetscFunctionReturn(0);
 }

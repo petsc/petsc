@@ -110,7 +110,7 @@ int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"No inversion written yet for block IS");
+    SETERRQ(PETSC_ERR_SUP,"No inversion written yet for block IS");
   }
   PetscFunctionReturn(0);
 }
