@@ -63,7 +63,7 @@ int main( int argc, char **argv )
   user.param = 6.0;
   OptionsGetInt(0,"-mx",&user.mx);
   OptionsGetInt(0,"-my",&user.my);
-  OptionsGetDouble(0,"-param",&user.param);
+  OptionsGetDouble(0,"-par",&user.param);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(1,"Lambda is out of range");
   }
