@@ -117,7 +117,7 @@ class UsingPython (base.Base):
     linker        = build.buildGraph.BuildGraph()
     archiver      = build.processor.DirectoryArchiver(self.sourceDB, 'cp', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
     consolidator  = build.transform.Consolidator(archiveTag, archiveTag, 'old '+archiveTag)
-    sharedLinker  = build.processor.SharedLinker(self.sourceDB, compiler.processor, archiveTag, sharedTag, isSetwise = 1, library = library)
+    sharedLinker  = build.processor.SharedLinker(self.sourceDB, self.usingC.linker, archiveTag, sharedTag, isSetwise = 1, library = library)
     if not (self.project.getUrl() == 'bk://sidl.bkbits.net/Compiler' and package == 'pythonGenerator'):
       # Also need pythonGenerator library
       sharedLinker.extraLibraries.append(self.getServerLibrary('pythonGenerator', proj = self.getInstalledProject('bk://sidl.bkbits.net/Compiler')))
@@ -136,7 +136,7 @@ class UsingPython (base.Base):
     (target, compiler) = self.getGenericCompileTarget('client')
     sharedTag    = self.language.lower()+' client shared library'
     linker       = build.buildGraph.BuildGraph()
-    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag)
+    sharedLinker = build.processor.SharedLinker(self.sourceDB, self.usingC.linker, compiler.output.tag, sharedTag)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(sharedLinker)
     linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])

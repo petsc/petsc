@@ -20,6 +20,7 @@ class Configure(config.base.Configure):
     #help.addArgument('Compilers', '-with-f90=<prog>',       nargs.Arg(None, None, 'Specify the Fortran 90 compiler'))
     help.addArgument('Compilers', '-with-f90-header=<file>', nargs.Arg(None, None, 'Specify the C header for the F90 interface'))
     help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface'))
+    help.addArgument('Compilers', '-with-ld=<prog>',         nargs.Arg(None, None, 'Specify the linker'))
 
     help.addArgument('Compilers', '-CPP=<prog>',        nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the C preprocessor options'))
@@ -30,6 +31,8 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-CXXFLAGS=<string>', nargs.Arg(None, '',   'Specify the C++ compiler options'))
     help.addArgument('Compilers', '-FC=<prog>',         nargs.Arg(None, None, 'Specify the Fortran compiler'))
     help.addArgument('Compilers', '-FFLAGS=<string>',   nargs.Arg(None, '',   'Specify the Fortran compiler options'))
+
+    help.addArgument('Compilers', '-LD=<prog>',         nargs.Arg(None, None, 'Specify the linker'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',  nargs.Arg(None, '',   'Specify the linker options'))
     return
 
@@ -49,6 +52,11 @@ class Configure(config.base.Configure):
   def checkCCompiler(self):
     '''Determine the C compiler using --with-cc, then CC, then a search
     - Also determines the preprocessor from --with-cpp, then CPP, then the C compiler'''
+
+    # this is SO WRONG
+    import os
+    if os.environ['VENDOR'] == 'apple': self.framework.argDB['LD'] = 'ld'
+
     if self.framework.argDB.has_key('with-cc'):
       compilers = self.framework.argDB['with-cc']
     elif self.framework.argDB.has_key('CC'):
