@@ -61,7 +61,7 @@ proc main { } {
     # Now replace the tokens in the sourcefile with the new values
     # Note: This is done separately so that word boundary checks can be made
     foreach token $tokenlist {
-        regsub -all (\[\ \n\t\,\(\)\"\;\])($token)(\[\ \n\t\,\(\)\"\;\]) \
+        regsub -all (\[\ \n\t\,\(\)\"\;\*\])($token)(\[\ \n\t\,\(\)\"\;\*\]) \
                 $sourcefilebuff \\1\\2$suffix\\3 sourcefilebuff
     }
     # Now replace the replacelist
