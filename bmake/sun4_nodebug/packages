@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1998/12/04 23:22:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.10 1999/02/08 22:22:33 bsmith Exp balay $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -28,10 +28,12 @@ X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software  
 #
-MPI_LIB        = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpi
-MPI_INCLUDE    = -I/usr/local/mpi/include
-#MPIRUN        = /usr/local/mpi/bin/mpirun
-MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPI_HOME       = /home/petsc/mpich-1.1.2
+MPI_BUILD_HOME = ${MPI_HOME}/build/sun4/ch_p4
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich  \
+		-L/usr/local/gcc-2.7.2/lib/gcc-lib/sparc-sun-sunos4.1.4/2.7.2 -lgcc
+MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -40,8 +42,8 @@ MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint
 #
 # Optional location of MPE
 #
-MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
-MPE_INCLUDE   = -I/usr/local/mpi/include
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE   = -I${MPI_HOME}/mpe 
 #
 # Optional location of BlockSolve (MPI version)
 #
@@ -85,4 +87,3 @@ PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a
 #
 PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${SPAI_LIB} ${PARMETIS_LIB}
-

@@ -1,4 +1,4 @@
-# $Id: base,v 1.27 1999/02/05 00:51:03 balay Exp balay $ 
+# $Id: base,v 1.28 1999/02/08 23:59:45 balay Exp balay $ 
 
 include ${PETSC_DIR}/bmake/common
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
@@ -52,5 +52,14 @@ shared: chkopts_basic
 	    fi; \
 	  fi; \
 	done; \
+	cd ../ ; \
+	${RM} -rf tmp
+oshared: 
+	-@${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+        echo "building ${LIBNAME}.${SLSUFFIX}"; \
+	${AR} x ../${LIBNAME}.a ;\
+	gcc ${COPTFLAGS} -fPIC -shared *.o  -o ../${LIBNAME}.${SLSUFFIX}; \
 	cd ../ ; \
 	${RM} -rf tmp
