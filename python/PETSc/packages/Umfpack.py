@@ -53,7 +53,7 @@ class Configure(config.base.Configure):
         for i in 1,2:
           (incl,dummy) = os.path.split(incl)
           (incl_amd,dummy) = os.path.split(incl_amd)
-        yield('based on found library location',os.path.join(incl,'Include'),os.path.join(incl_amd,'Include'),)
+        yield('based on found library location',os.path.join(incl,'Include'),os.path.join(incl_amd,'Include'))
       elif 'with-'+package+'-dir' in self.framework.argDB:
         dir = self.framework.argDB['with-'+package+'-dir']
         (dir_amd,dummy) = os.path.split(dir)
@@ -88,7 +88,7 @@ class Configure(config.base.Configure):
         (dir_amd,dummy) = os.path.split(dir)
         dir_amd = os.path.join(dir_amd,'AMD/Lib')
         dir = os.path.join(dir,'Lib')
-        yield('User specified '+PACKAGE+'/Include',os.path.join(dir,'libumfpack.a'),os.path.join(dir_amd,'libamd.a'),)
+        yield('User specified '+PACKAGE+'/Include',os.path.join(dir,'libumfpack.a'),os.path.join(dir_amd,'libamd.a'))
       elif 'with-'+package+'-dir' in self.framework.argDB:
         dir = self.framework.argDB['with-'+package+'-dir']
         (dir_amd,dummy) = os.path.split(dir)
@@ -108,7 +108,7 @@ class Configure(config.base.Configure):
     return found
   
   def configureLibrary(self):
-    '''Find a '+self.name+' installation and check if it can work with PETSc'''
+    '''Find a installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
     found      = 0
     found_amd  = 0
