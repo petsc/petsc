@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.110 2000/07/18 16:02:18 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.111 2000/08/01 20:03:04 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -170,7 +170,7 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
   mg[levels-1]->b = b; 
   mg[levels-1]->x = x;
   while (its--) {
-    ierr = MGMCycle_Private(mg);CHKERRQ(ierr);
+    ierr = MGMCycle_Private(mg+levels-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
