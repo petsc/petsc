@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.20 1996/09/14 03:05:33 bsmith Exp balay $";
+static char vcid[] = "$Id: xmon.c,v 1.21 1996/12/16 19:46:08 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -63,7 +63,7 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
 } 
  
 #undef __FUNCTION__  
-#define __FUNCTION__ ""
+#define __FUNCTION__ "KSPLGMonitorDestroy"
 /*@C
    KSPLGMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGMonitorCreate().

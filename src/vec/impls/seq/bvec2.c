@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.79 1996/12/05 17:29:53 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.80 1996/12/17 18:01:48 balay Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -50,7 +50,7 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
 }
 
 #undef __FUNCTION__  
-#define __FUNCTION__ ""
+#define __FUNCTION__ "VecGetOwnershipRange_Seq"
 static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
