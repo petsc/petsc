@@ -366,7 +366,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
   PetscFunctionReturn(0);
 }
 
-extern int MatApplyPtAP_SeqAIJ_SeqAIJ(Mat,Mat,Mat*);
+extern int MatSeqAIJPtAP(Mat,Mat,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSLES"
@@ -403,7 +403,7 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
     ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATMPIAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->B);CHKERRQ(ierr);
     for (i=nlevels-2; i>-1; i--) {
-      ierr = MatApplyPtAP_SeqAIJ_SeqAIJ(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
+      ierr = MatSeqAIJPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
     }
   }
 
