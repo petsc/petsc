@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fuser.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: fuser.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -29,6 +29,14 @@ int PetscGetUserName( char *name, int nlen )
   pw = getpwuid( getuid() );
   if (!pw) PetscStrncpy( name, "Unknown",nlen );
   else     PetscStrncpy( name, pw->pw_name,nlen );
+  return 0;
+}
+#elif defined (PARCH_nt) || defined(PARCH_nt_gnu)
+#undef __FUNC__  
+#define __FUNC__ "PetscGetUserName" /* ADIC Ignore */
+int PetscGetUserName( char *name, int nlen )
+{
+  GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
   return 0;
 }
 #else
