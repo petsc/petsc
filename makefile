@@ -287,6 +287,4 @@ allfortranstubs:
 	chmod g+w $(PETSC_DIR)/src/fortran/auto/*.c
 
 
-SHAREDLIBS = libmpiuni.so libpetsccontrib.so  libpetscksp.so libpetscmat.so \
-	     libpetscsles.so libpetscsnes.so libpetscsys.so libpetscts.so libpetscvec.so
 
