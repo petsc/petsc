@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.31 1996/04/03 16:33:31 curfman Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.32 1996/04/07 22:47:23 curfman Exp curfman $";
 #endif
 
 /*
@@ -13,7 +13,8 @@ static char vcid[] = "$Id: shell.c,v 1.31 1996/04/03 16:33:31 curfman Exp curfma
 #include "vec/vecimpl.h"  
 
 typedef struct {
-  int  m, n;                       /* rows, columns */
+  int  M, N;                  /* number of global rows, columns */
+  int  m, n;                  /* number of local rows, columns */
   int  (*destroy)(Mat);
   void *ctx;
 } Mat_Shell;      
@@ -43,10 +44,17 @@ int MatShellGetContext(Mat mat,void **ctx)
   return 0;
 }
 
-static int MatGetSize_Shell(Mat mat,int *m,int *n)
+static int MatGetSize_Shell(Mat mat,int *M,int *N)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
-  *m = shell->m; *n = shell->n;
+  *M = shell->M; *N = shell->N;
+  return 0;
+}
+
+static int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
+{
+  Mat_Shell *shell = (Mat_Shell *) mat->data;
+  *m = shell->n; *n = shell->n;
   return 0;
 }
 
@@ -77,8 +85,8 @@ static struct _MatOps MatOps = {0,0,
        0,0,
        0,
        0,0,0,0,
-       0,0,MatGetSize_Shell,
-       0,0,0,0,
+       0,0,MatGetSize_Shell,MatGetLocalSize_Shell,
+       0,0,0,
        0,0,0,0 };
 
 /*@C
@@ -87,29 +95,53 @@ static struct _MatOps MatOps = {0,0,
 
    Input Parameters:
 .  comm - MPI communicator
-.  m - number of rows
-.  n - number of columns
+.  m - number of local rows
+.  n - number of local columns
+.  M - number of global rows
+.  N - number of global columns
 .  ctx - pointer to data needed by the shell matrix routines
 
    Output Parameter:
 .  A - the matrix
+
+   Usage:
+$   MatCreateShell(comm,m,n,M,N,ctx,&mat);
+$   MatShellSetOperation(mat,MAT_MULT,mult);
+$   [ Use matrix for operations that have been set ]
+$   MatDestroy(mat);
 
    Notes:
    The shell matrix type is intended to provide a simple class to use
    with KSP (such as, for use with matrix-free methods). You should not
    use the shell type if you plan to define a complete matrix class.
 
-   Usage:
-$   MatCreateShell(m,n,ctx,&mat);
-$   MatShellSetOperation(mat,MAT_MULT,mult);
-$   [ Use matrix for operations that have been set ]
-$   MatDestroy(mat);
+   PETSc requires that matrices and vectors being used for certain
+   operations are partitioned accordingly.  For example, when
+   creating a shell matrix that supports parallel matrix-vector
+   products using MatMult(), the user should set the number of local
+   matrix rows to be the same as the corresponding result vector
+   (even though the shell matrix may not actually be physically
+   partitioned or even stored at all).  For example,
+
+$  /* Create matrix and vectors to compute y = Ax */
+$
+$     Vec x, y
+$     Mat mat
+$
+$     VecCreate(comm,M,&y);
+$     VecCreate(comm,N,&x);
+$     VecGetLocalSize(y,&m);
+$     MatCreateShell(comm,m,N,M,N,ctx,&mat);
+$     MatShellSetOperation(mat,MAT_MULT,mult);
+$     MatMult(mat,x,y);
+$     MatDestroy(mat);
+$     VecDestroy(y); VecDestroy(x);
 
 .keywords: matrix, shell, create
 
 .seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext()
 @*/
-int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *A)
+int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 {
   Mat       B;
   Mat_Shell *b;
@@ -124,8 +156,10 @@ int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *A)
   b          = PetscNew(Mat_Shell); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_Shell));
   B->data   = (void *) b;
-  b->m = m;  B->m = 0; B->M = m;
-  b->n = n;  B->n = 0; B->N = n;
+  b->M = M; B->M = M;
+  b->N = N; B->N = N;
+  b->m = m; B->m = m;
+  b->n = n; B->n = n;
   b->ctx     = ctx;
   *A = B;
   return 0;
@@ -142,7 +176,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *A)
 
     Usage:
 $      extern int usermult(Mat,Vec,Vec);
-$      ierr = MatCreateShell(comm,m,m,ctx,&A);
+$      ierr = MatCreateShell(comm,m,n,M,N,ctx,&A);
 $      ierr = MatShellSetOperation(A,MAT_MULT,usermult);
 
     Notes:
