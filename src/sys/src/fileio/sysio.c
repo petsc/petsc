@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.20 1997/02/27 00:39:24 balay Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.21 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 
 /* 
@@ -8,7 +8,9 @@ static char vcid[] = "$Id: sysio.c,v 1.20 1997/02/27 00:39:24 balay Exp balay $"
 
 #include "petsc.h"
 #include "sys.h"
+#include "pinclude/pviewer.h"
 #include <errno.h>
+#include <fcntl.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
@@ -103,7 +105,7 @@ void PetscByteSwapScalar(Scalar *buff,int n)
 
 .keywords: binary, input, read
 
-.seealso: PetscBinaryWrite()
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
 int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 {
@@ -185,7 +187,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 
 .keywords: binary, output, write
 
-.seealso: PetscBinaryRead()
+.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose()
 @*/
 int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
 {
@@ -250,5 +252,76 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
   }
 #endif
 
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscBinaryOpen" 
+/*@C
+   PetscBinaryOpen - Opens a PETSc binary file.
+
+   Input Parameters:
+.  name - filename
+.  type - type of binary file, on of BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE
+
+   Output Parameter:
+.  fd - the file
+
+.keywords: binary, output, write
+
+.seealso: PetscBinaryRead(), PetscBinaryWrite()
+@*/
+int PetscBinaryOpen(char *name,int type,int *fd)
+{
+#if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
+  if (type == BINARY_CREATE) {
+    if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
+      SETERRQ(1,0,"Cannot create file for writing");
+    }
+  } 
+  else if (type == BINARY_RDONLY) {
+    if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
+    SETERRQ(1,0,"Cannot open file for reading");
+    }
+  }
+  else if (type == BINARY_WRONLY) {
+    if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
+      SETERRQ(1,0,"Cannot open file for writing");
+    }
+#else
+  if (type == BINARY_CREATE) {
+    if ((*fd = creat(name,0666)) == -1) {
+      SETERRQ(1,0,"Cannot create file for writing");
+    }
+  } 
+  else if (type == BINARY_RDONLY) {
+    if ((*fd = open(name,O_RDONLY,0)) == -1) {
+      SETERRQ(1,0,"Cannot open file for reading");
+    }
+  }
+  else if (type == BINARY_WRONLY) {
+    if ((*fd = open(name,O_WRONLY,0)) == -1) {
+      SETERRQ(1,0,"Cannot open file for writing");
+    }
+#endif
+  } else SETERRQ(1,0,"Unknown file type");
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscBinaryClose" 
+/*@C
+   PetscBinaryClose - Closes a PETSc binary file.
+
+   Output Parameter:
+.  fd - the file
+
+.keywords: binary, output, write
+
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+@*/
+int PetscBinaryClose(int fd)
+{
+  close(fd);
   return 0;
 }
