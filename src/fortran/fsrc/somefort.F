@@ -1,20 +1,22 @@
 !
-!  "$Id: somefort.F,v 1.13 1997/05/02 19:34:46 bsmith Exp balay $";
+!  "$Id: somefort.F,v 1.14 1998/03/25 17:13:21 balay Exp balay $";
 !
 !  Utility routine used to set some values into a Fortran common block
 
-      subroutine PetscSetCommonBlock(s1,s2,s3,s4,s5)
+      subroutine PetscSetCommonBlock(s1,s2,s3,c1,c2)
       implicit none
 
-      integer s1,s2,s3,s4,s5
-
 #include      "../../../include/FINCLUDE/petsc.h"
+
+      PetscFortranAddr s1,s2,s3
+      integer c1,c2
+
 
       VIEWER_STDOUT_SELF  = s1
       VIEWER_STDERR_SELF  = s2
       VIEWER_STDOUT_WORLD = s3
-      PETSC_COMM_WORLD    = s4
-      PETSC_COMM_SELF     = s5
+      PETSC_COMM_WORLD    = c1
+      PETSC_COMM_SELF     = c2
 
       call PetscSetFortranBasePointers(PETSC_NULL,PETSC_NULL_CHARACTER)
 

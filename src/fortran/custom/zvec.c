@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.30 1998/03/03 19:29:41 balay Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.31 1998/03/12 23:11:54 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -57,20 +57,20 @@ extern "C" {
 void vecsetvalue_(Vec v,int *i,Scalar *va,InsertMode *mode)
 {
   /* cannot use VecSetValue() here since that uses CHKERRQ() which has a return in it */
-  VecSetValues((Vec)PetscToPointer( *(int*)(v) ),1,i,va,*mode);
+  VecSetValues((Vec)PetscToPointer(v),1,i,va,*mode);
 }
 
 void vecview_(Vec v,Viewer viewer, int *__ierr )
 {
   PetscPatchDefaultViewers_Fortran(viewer);
-  *__ierr = VecView((Vec)PetscToPointer( *(int*)(v) ),viewer);
+  *__ierr = VecView((Vec)PetscToPointer(v),viewer);
 }
 
 void vecgettype_(Vec vv,VecType *type,CHAR name,int *__ierr,int len)
 {
   char *tname;
   if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = VecGetType((Vec)PetscToPointer(*(int*)vv),type,&tname);
+  *__ierr = VecGetType((Vec)PetscToPointer(vv),type,&tname);
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
@@ -85,14 +85,14 @@ void vecgettype_(Vec vv,VecType *type,CHAR name,int *__ierr,int len)
 void vecload_(Viewer viewer,Vec *newvec, int *__ierr )
 { 
   Vec vv;
-  *__ierr = VecLoad((Viewer)PetscToPointer( *(int*)(viewer) ),&vv);
-  *(int *) newvec = PetscFromPointer(vv);
+  *__ierr = VecLoad((Viewer)PetscToPointer(viewer),&vv);
+  *(PetscFortranAddr*) newvec = PetscFromPointer(vv);
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
 void vecrestorearray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 {
-  Vec    xin = (Vec)PetscToPointer( *(int*)(x) );
+  Vec    xin = (Vec)PetscToPointer(x);
   Scalar *lx = PetscScalarAddressFromFortran(fa,*ia);
 
   *__ierr = VecRestoreArray(xin,&lx);
@@ -100,7 +100,7 @@ void vecrestorearray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 
 void vecgetarray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 {
-  Vec    xin = (Vec)PetscToPointer( *(int*)(x) );
+  Vec    xin = (Vec)PetscToPointer(x);
   Scalar *lx;
 
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
@@ -109,103 +109,103 @@ void vecgetarray_(Vec x,Scalar *fa,long *ia,int *__ierr)
 
 void vecscatterdestroy_(VecScatter ctx, int *__ierr )
 {
-  *__ierr = VecScatterDestroy((VecScatter)PetscToPointer( *(int*)(ctx) ));
-   PetscRmPointer(*(int*)(ctx)); 
+  *__ierr = VecScatterDestroy((VecScatter)PetscToPointer(ctx));
+   PetscRmPointer(ctx); 
 }
 
 void vecdestroy_(Vec v, int *__ierr )
 {
-  *__ierr = VecDestroy((Vec)PetscToPointer( *(int*)(v) ));
-   PetscRmPointer(*(int*)(v)); 
+  *__ierr = VecDestroy((Vec)PetscToPointer(v));
+   PetscRmPointer(v); 
 }
 
 void vecscattercreate_(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx, int *__ierr )
 {
   VecScatter lV;
-  *__ierr = VecScatterCreate((Vec)PetscToPointer( *(int*)(xin) ),
-                             (IS)PetscToPointer( *(int*)(ix) ),
-                             (Vec)PetscToPointer( *(int*)(yin) ),
-                             (IS)PetscToPointer( *(int*)(iy) ),&lV);
-  *(int*) newctx = PetscFromPointer(lV);
+  *__ierr = VecScatterCreate((Vec)PetscToPointer(xin),
+                             (IS)PetscToPointer(ix),
+                             (Vec)PetscToPointer(yin),
+                             (IS)PetscToPointer(iy),&lV);
+  *(PetscFortranAddr*) newctx = PetscFromPointer(lV);
 }
 
 void vecscattercopy_(VecScatter sctx,VecScatter *ctx, int *__ierr )
 {
   VecScatter lV;
-  *__ierr = VecScatterCopy((VecScatter)PetscToPointer( *(int*)(sctx) ),&lV);
-   *(int*) ctx = PetscFromPointer(lV); 
+  *__ierr = VecScatterCopy((VecScatter)PetscToPointer(sctx),&lV);
+   *(PetscFortranAddr*) ctx = PetscFromPointer(lV); 
 }
 
 void veccreatempi_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
 {
   Vec lV;
   *__ierr = VecCreateMPI((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,&lV);
-  *(int*)vv = PetscFromPointer(lV);
+  *(PetscFortranAddr*)vv = PetscFromPointer(lV);
 }
 
 void veccreateshared_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
 {
   Vec lV;
   *__ierr = VecCreateShared((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,&lV);
-  *(int*)vv = PetscFromPointer(lV);
+  *(PetscFortranAddr*)vv = PetscFromPointer(lV);
 }
 
 void veccreateseq_(MPI_Comm *comm,int *n,Vec *V, int *__ierr )
 {
   Vec lV;
   *__ierr = VecCreateSeq((MPI_Comm)PetscToPointerComm( *comm),*n,&lV);
-  *(int*)V = PetscFromPointer(lV);
+  *(PetscFortranAddr*)V = PetscFromPointer(lV);
 }
 
 void veccreateseqwitharray_(MPI_Comm *comm,int *n,Scalar *s,Vec *V, int *__ierr )
 {
   Vec lV;
   *__ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm( *comm),*n,s,&lV);
-  *(int*)V = PetscFromPointer(lV);
+  *(PetscFortranAddr*)V = PetscFromPointer(lV);
 }
 
 void veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,Scalar *s,Vec *V, int *__ierr )
 {
   Vec lV;
   *__ierr = VecCreateMPIWithArray((MPI_Comm)PetscToPointerComm( *comm),*n,*N,s,&lV);
-  *(int*)V = PetscFromPointer(lV);
+  *(PetscFortranAddr*)V = PetscFromPointer(lV);
 }
 
 void veccreate_(MPI_Comm *comm,int *n,int *N,Vec *V, int *__ierr )
 {
   Vec lV;
   *__ierr = VecCreate((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,&lV);
-  *(int*)V = PetscFromPointer(lV);
+  *(PetscFortranAddr*)V = PetscFromPointer(lV);
 }
 
 void vecduplicate_(Vec v,Vec *newv, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecDuplicate((Vec)PetscToPointer( *(int*)(v) ),&lV);
-  *(int*)newv = PetscFromPointer(lV);
+  *__ierr = VecDuplicate((Vec)PetscToPointer(v),&lV);
+  *(PetscFortranAddr*)newv = PetscFromPointer(lV);
 }
 
-void vecduplicatevecs_(Vec v,int *m,int *newv, int *__ierr )
+void vecduplicatevecs_(Vec v,int *m,PetscFortranAddr *newv, int *__ierr )
 {
   Vec *lV;
   int i;
-  *__ierr = VecDuplicateVecs((Vec)PetscToPointer( *(int*)(v) ),*m,&lV);
+  *__ierr = VecDuplicateVecs((Vec)PetscToPointer(v),*m,&lV);
   for (i=0; i<*m; i++) {
     newv[i] = PetscFromPointer(lV[i]);
   }
   PetscFree(lV); 
 }
 
-void vecdestroyvecs_(int *vecs,int *m,int *__ierr )
+void vecdestroyvecs_(PetscFortranAddr *vecs,int *m,int *__ierr )
 {
   int i;
   for (i=0; i<*m; i++) {
-    *__ierr = VecDestroy((Vec)PetscToPointer(vecs[i]));
-    PetscRmPointer(vecs[i]); 
+    *__ierr = VecDestroy((Vec)PetscToPointer(&vecs[i]));
+    PetscRmPointer(&vecs[i]); 
   }
 }
 
-void vecmtdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr )
+void vecmtdot_(int *nv,Vec x,PetscFortranAddr *y,Scalar *val, int *__ierr )
 {
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
@@ -213,12 +213,12 @@ void vecmtdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr )
      *__ierr = PetscError(__LINE__,"VecMTDot_Fortran",__FILE__,__SDIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
-  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
-  *__ierr = VecMTDot(*nv,(Vec)PetscToPointer( *(int*)(x) ),yV,val);
+  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(&y[i]));
+  *__ierr = VecMTDot(*nv,(Vec)PetscToPointer(x),yV,val);
   PetscFree(yV);
 }
 
-void vecmdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr )
+void vecmdot_(int *nv,Vec x,PetscFortranAddr *y,Scalar *val, int *__ierr )
 {
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
@@ -226,12 +226,12 @@ void vecmdot_(int *nv,Vec x,int *y,Scalar *val, int *__ierr )
      *__ierr = PetscError(__LINE__,"VecMDot_Fortran",__FILE__,__SDIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
-  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
-  *__ierr = VecMDot(*nv,(Vec)PetscToPointer( *(int*)(x) ),yV,val);
+  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(&y[i]));
+  *__ierr = VecMDot(*nv,(Vec)PetscToPointer(x),yV,val);
   PetscFree(yV);
 }
 
-void vecmaxpy_(int *nv,Scalar *alpha,Vec x,int *y, int *__ierr )
+void vecmaxpy_(int *nv,Scalar *alpha,Vec x,PetscFortranAddr *y, int *__ierr )
 {
   int i;
   Vec *yV = (Vec *) PetscMalloc( *nv * sizeof(Vec *));
@@ -239,8 +239,8 @@ void vecmaxpy_(int *nv,Scalar *alpha,Vec x,int *y, int *__ierr )
      *__ierr = PetscError(__LINE__,"VecMAXPY_Fortran",__FILE__,__SDIR__,PETSC_ERR_MEM,0,(char*)0);
      return;
   }
-  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(y[i]));
-  *__ierr = VecMAXPY(*nv,alpha,(Vec)PetscToPointer( *(int*)(x) ),yV);
+  for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(&y[i]));
+  *__ierr = VecMAXPY(*nv,alpha,(Vec)PetscToPointer(x),yV);
   PetscFree(yV);
 }
 

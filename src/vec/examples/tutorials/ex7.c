@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.15 1997/10/19 03:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.16 1997/11/28 16:18:34 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
@@ -22,15 +22,17 @@ and from Fortran to C\n\n";
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern void ex7f_(int*,int*);
+extern void ex7f_(PetscFortranAddr*,int*);
 #if defined(__cplusplus)
 }
 #endif
 
 int main(int argc,char **args)
 {
-  int     ierr, m = 10,fvec,fcomm;
-  Vec     vec;
+  int              ierr, m = 10;
+  PetscFortranAddr fvec;
+  int              fcomm;
+  Vec              vec;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -63,7 +65,7 @@ int main(int argc,char **args)
 extern "C" {
 #endif
 
-int ex7c_(int *fvec, int *fcomm)
+int ex7c_(PetscFortranAddr *fvec, int *fcomm)
 {
   Vec vec;
   MPI_Comm comm;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.36 1998/01/14 02:34:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.37 1998/03/12 23:11:54 bsmith Exp balay $";
 #endif
 
 /*
@@ -271,7 +271,7 @@ Scalar *PetscScalarAddressFromFortran(Scalar *base,long addr)
 
 .seealso: PetscFortranObjectToCObject()
 @*/
-int PetscCObjectToFortranObject(void *cobj,int *fobj)
+int PetscCObjectToFortranObject(void *cobj,PetscFortranAddr *fobj)
 {
   PetscValidHeader(cobj);
   *fobj = PetscFromPointer(cobj);
@@ -290,15 +290,15 @@ int PetscCObjectToFortranObject(void *cobj,int *fobj)
 
     Notes:
     PetscCObjectToFortranObject() must be called in a C/C++ routine.
-    See examples petsc/src/vec/examples/ex24.c and ex24f.F
+    See examples petsc/src/vec/examples/tutorials/ex7.c and ex7f.F
 
 .keywords: Fortran, C, object, convert, interlanguage
 
 .seealso: PetscCObjectToFortranObject()
 @*/
-int PetscFortranObjectToCObject(int fobj,void *cobj)
+int PetscFortranObjectToCObject(PetscFortranAddr fobj,void *cobj)
 {
-  (*(void **) cobj) = (void *) PetscToPointer(fobj);
+  (*(void **) cobj) = (void *) PetscToPointer(&fobj); 
   PetscFunctionReturn(0);
 }
 

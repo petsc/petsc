@@ -15,7 +15,8 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern void petscsetcommonblock_(int*,int*,int*,int*,int*);
+extern void petscsetcommonblock_(PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,
+                                 int*,int*);
 #if defined(__cplusplus)
 }
 #endif
@@ -34,13 +35,15 @@ extern void petscsetcommonblock_(int*,int*,int*,int*,int*);
 
 void PetscInitializeFortran(void)
 {
-  int s1,s2,s3,s4,s5;
+  PetscFortranAddr s1,s2,s3;
+  int              c1,c2;
+
   s1 = PetscFromPointer(VIEWER_STDOUT_SELF);
   s2 = PetscFromPointer(VIEWER_STDERR_SELF);
   s3 = PetscFromPointer(VIEWER_STDOUT_WORLD);
-  s4 = PetscFromPointerComm(PETSC_COMM_WORLD);
-  s5 = PetscFromPointerComm(PETSC_COMM_SELF);
-  petscsetcommonblock_(&s1,&s2,&s3,&s4,&s5);
+  c1 = PetscFromPointerComm(PETSC_COMM_WORLD);
+  c2 = PetscFromPointerComm(PETSC_COMM_SELF);
+  petscsetcommonblock_(&s1,&s2,&s3,&c1,&c2);
 }
   
 #if defined(__cplusplus)

@@ -18,19 +18,26 @@ extern char   *PETSC_NULL_CHARACTER_Fortran;
        Fortran integer = PetscFromPointer(C pointer)
 
 */
+
+#if defined(USE_POINTER_CONVERSION)
+#define PetscFInt int
+#else
+#define PetscFInt long
+#endif
+
 #if defined(USE_POINTER_CONVERSION)
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern void *PetscToPointer(int);
-extern int  PetscFromPointer(void*);
-extern void PetscRmPointer(int);
+extern void *PetscToPointer(void *);
+extern int PetscFromPointer(void *);
+extern void PetscRmPointer(void *);
 #if defined(__cplusplus)
 }
 #endif
 #else
-#define PetscToPointer(a)             (a)
-#define PetscFromPointer(a)     (long)(a)
+#define PetscToPointer(a)     (*(long *)(a))
+#define PetscFromPointer(a)        (long)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -165,6 +172,6 @@ extern int   MPIR_FromPointer(void*);
     } else if ( (*(int*)v) == VIEWER_MATLAB_WORLD_FORTRAN) { \
       v = VIEWER_MATLAB_WORLD; \
     } else {\
-      v = (Viewer)PetscToPointer(*(int*)(v)); \
+      v = (Viewer)PetscToPointer(v); \
     } \
 }

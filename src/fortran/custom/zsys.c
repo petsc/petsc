@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.45 1998/03/25 03:42:50 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.46 1998/03/25 16:25:14 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -173,19 +173,19 @@ void petsctrvalid_(int *__ierr)
 
 void petscrandomgetvalue_(PetscRandom r,Scalar *val, int *__ierr )
 {
-  *__ierr = PetscRandomGetValue((PetscRandom)PetscToPointer(*(int*)(r)),val);
+  *__ierr = PetscRandomGetValue((PetscRandom)PetscToPointer(r),val);
 }
 
 void vecsetrandom_(PetscRandom r,Vec x, int *__ierr )
 {
-  *__ierr = VecSetRandom((PetscRandom)PetscToPointer(*(int*)(r)),
-                         (Vec)PetscToPointer( *(int*)(x) ));
+  *__ierr = VecSetRandom((PetscRandom)PetscToPointer(r),
+                         (Vec)PetscToPointer(x));
 }
 
 void petscobjectgetname(PetscObject obj, CHAR name, int *__ierr, int len)
 {
   char *tmp;
-  *__ierr = PetscObjectGetName((PetscObject)PetscToPointer(*(int*)(obj)),&tmp);
+  *__ierr = PetscObjectGetName((PetscObject)PetscToPointer(obj),&tmp);
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name);
@@ -199,14 +199,14 @@ void petscobjectgetname(PetscObject obj, CHAR name, int *__ierr, int len)
 
 void petscobjectdestroy_(PetscObject obj, int *__ierr )
 {
-  *__ierr = PetscObjectDestroy((PetscObject)PetscToPointer(*(int*)(obj)));
-  PetscRmPointer(*(int*)(obj));
+  *__ierr = PetscObjectDestroy((PetscObject)PetscToPointer(obj));
+  PetscRmPointer(obj);
 }
 
 void petscobjectgetcomm_(PetscObject obj,int *comm, int *__ierr )
 {
   MPI_Comm c;
-  *__ierr = PetscObjectGetComm((PetscObject)PetscToPointer(*(int*)(obj)),&c);
+  *__ierr = PetscObjectGetComm((PetscObject)PetscToPointer(obj),&c);
   *(int*)comm = PetscFromPointerComm(c);
 }
 
@@ -223,7 +223,7 @@ void petscobjectsetname_(PetscObject obj,CHAR name,int *__ierr,int len)
   char *t1;
 
   FIXCHAR(name,len,t1);
-  *__ierr = PetscObjectSetName((PetscObject)PetscToPointer(*(int*)(obj)),t1);
+  *__ierr = PetscObjectSetName((PetscObject)PetscToPointer(obj),t1);
 }
 
 void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
@@ -255,13 +255,13 @@ void petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,int 
 {
   PetscRandom rr;
   *__ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm( *comm ),*type,&rr);
-  *(int*)r = PetscFromPointer(rr);
+  *(PetscFortranAddr*)r = PetscFromPointer(rr);
 }
 
 void petscrandomdestroy_(PetscRandom r, int *__ierr )
 {
-  *__ierr = PetscRandomDestroy((PetscRandom )PetscToPointer( *(int*)(r) ));
-   PetscRmPointer(*(int*)(r)); 
+  *__ierr = PetscRandomDestroy((PetscRandom )PetscToPointer(r));
+   PetscRmPointer(r); 
 }
 
 void petscdoubleview_(int *n,double *d,int *viwer,int *__ierr)
@@ -285,7 +285,7 @@ void petscsequentialphaseend_(MPI_Comm *comm,int *ng, int *__ierr ){
 
 void petscreleasepointer_(int *index,int *__ierr) 
 {
-   PetscRmPointer(*index);
+   PetscRmPointer(index);
    *__ierr = 0;
 }
 
@@ -327,8 +327,10 @@ static void PetscInitPointer(void)
   avail   = PtrArray + 1;
 }
 
-void *PetscToPointer(int idx )
+void *PetscToPointer(void *vidx )
 {
+  int idx = *(int*)(vidx);
+
   if (DoInit) {
     DoInit = 0;
     PetscInitPointer();
@@ -373,8 +375,10 @@ int PetscFromPointer(void *ptr )
   return MPI_Abort(PETSC_COMM_WORLD,1);
 }
 
-void PetscRmPointer(int idx )
+void PetscRmPointer(void *vidx )
 {
+  int idx = *(int*)vidx;
+
   if (DoInit) {
     DoInit = 0;
     PetscInitPointer();

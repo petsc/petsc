@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildremotetest,v 1.39 1997/10/01 15:09:50 balay Exp balay $ 
+# $Id: buildremotetest,v 1.40 1998/03/30 22:17:17 balay Exp balay $ 
 
 # 
 # Builds and transports the petsc.tar.gz file for remote 
@@ -36,7 +36,7 @@ echo sleeping >> nightlylogs/ftp.log
 #autoftp ursula.cs.msstate.edu curfman get buildtest.log /home/bsmith/petsc/maint/nightlylogs/build_linux.log >>& nightlylogs/ftp.log
 #/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
 
-chmod -f g+rw /home/bsmith/petsc/maint/nightlylogs/solaris.log /home/bsmith/petsc/maint/nightlylogs/t3d.log /home/bsmith/petsc/maint/nightlylogs/linux.log >>& nightlylogs/ftp.log
+#chmod -f g+rw /home/bsmith/petsc/maint/nightlylogs/solaris.log /home/bsmith/petsc/maint/nightlylogs/t3d.log /home/bsmith/petsc/maint/nightlylogs/linux.log >>& nightlylogs/ftp.log
 echo "ftp logging complete: `date` " >> nightlylogs/ftp.log
 
 

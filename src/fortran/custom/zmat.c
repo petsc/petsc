@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.43 1998/03/12 23:11:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.44 1998/03/25 03:42:50 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -82,16 +82,16 @@ extern "C" {
 void matsetvalue_(Mat mat,int *i,int *j,Scalar *va,InsertMode *mode)
 {
   /* cannot use MatSetValue() here since that uses CHKERRQ() which has a return in it */
-  MatSetValues((Mat)PetscToPointer( *(int*)(mat) ),1,i,1,j,va,*mode);
+  MatSetValues((Mat)PetscToPointer(mat),1,i,1,j,va,*mode);
 }
 
 void matfdcoloringcreate_(Mat mat,ISColoring iscoloring,MatFDColoring *color,int *__ierr)
 {
   MatFDColoring col;
 
-  *__ierr = MatFDColoringCreate((Mat)PetscToPointer( *(int*)(mat) ),
-                                (ISColoring)PetscToPointer(*(int*)(iscoloring)),&col);
-  *(int*) color = PetscFromPointer(col);
+  *__ierr = MatFDColoringCreate((Mat)PetscToPointer(mat),
+                                (ISColoring)PetscToPointer(iscoloring),&col);
+  *(PetscFortranAddr*) color = PetscFromPointer(col);
 }
 
 /*
@@ -119,7 +119,7 @@ void matgetrow_(Mat mat,int *row,int *ncols,int *cols,Scalar *vals,int *ierr)
   if (FORTRANNULL(cols)) oocols = PETSC_NULL;
   if (FORTRANNULL(vals)) oovals = PETSC_NULL;
 
-  *ierr = MatGetRow((Mat)PetscToPointer( *(int*)(mat) ),*row,ncols,oocols,oovals); 
+  *ierr = MatGetRow((Mat)PetscToPointer(mat),*row,ncols,oocols,oovals); 
   if (*ierr) return;
 
   if (oocols) PetscMemcpy(cols,my_ocols,(*ncols)*sizeof(int));
@@ -139,19 +139,19 @@ void matrestorerow_(Mat mat,int *row,int *ncols,int *cols,Scalar *vals,int *ierr
   }
   if (FORTRANNULL(cols)) oocols = PETSC_NULL;
   if (FORTRANNULL(vals)) oovals = PETSC_NULL;
-  *ierr = MatRestoreRow((Mat)PetscToPointer( *(int*)(mat) ),*row,ncols,oocols,oovals); 
+  *ierr = MatRestoreRow((Mat)PetscToPointer(mat),*row,ncols,oocols,oovals); 
   matgetrowactive = 0;
 }
 
 void matview_(Mat mat,Viewer viewer, int *__ierr )
 {
   PetscPatchDefaultViewers_Fortran(viewer);
-  *__ierr = MatView((Mat)PetscToPointer( *(int*)(mat) ),viewer);
+  *__ierr = MatView((Mat)PetscToPointer(mat),viewer);
 }
 
 void matgetinfo_(Mat mat,MatInfoType *flag,double *finfo,int *__ierr ){
   MatInfo info;
-  *__ierr = MatGetInfo((Mat)PetscToPointer( *(int*)(mat) ),*flag,&info);
+  *__ierr = MatGetInfo((Mat)PetscToPointer(mat),*flag,&info);
   finfo[0]  = info.rows_global;
   finfo[1]  = info.columns_global;
   finfo[2]  = info.rows_local;
@@ -194,13 +194,13 @@ void matgetarray_(Mat mat,Scalar *fa,long *ia, int *__ierr)
 {
   Scalar *mm;
 
-  *__ierr = MatGetArray((Mat)PetscToPointer( *(int*)(mat) ),&mm);
+  *__ierr = MatGetArray((Mat)PetscToPointer(mat),&mm);
   *ia = PetscScalarAddressToFortran(fa,mm);
 }
 
 void matrestorearray_(Mat mat,Scalar *fa,long *ia,int *__ierr)
 {
-  Mat    min = (Mat)PetscToPointer( *(int*)(mat) );
+  Mat    min = (Mat)PetscToPointer(mat);
   Scalar *lx = PetscScalarAddressFromFortran(fa,*ia);
 
   *__ierr = MatRestoreArray(min,&lx);
@@ -210,22 +210,22 @@ void mattranspose_(Mat mat,Mat *B, int *__ierr )
 {
   Mat mm;
   if (FORTRANNULL(B)) B = PETSC_NULL;
-  *__ierr = MatTranspose((Mat)PetscToPointer( *(int*)(mat) ),&mm);
-  *(int*) B = PetscFromPointer(mm);
+  *__ierr = MatTranspose((Mat)PetscToPointer(mat),&mm);
+  *(PetscFortranAddr*) B = PetscFromPointer(mm);
 }
 
 void matload_(Viewer viewer,MatType *outtype,Mat *newmat, int *__ierr )
 {
   Mat mm;
-  *__ierr = MatLoad((Viewer)PetscToPointer( *(int*)(viewer) ),*outtype,&mm);
-  *(int*) newmat = PetscFromPointer(mm);
+  *__ierr = MatLoad((Viewer)PetscToPointer(viewer),*outtype,&mm);
+  *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
 
 void matconvert_(Mat mat,MatType *newtype,Mat *M, int *__ierr )
 {
   Mat mm;
-  *__ierr = MatConvert((Mat)PetscToPointer( *(int*)(mat) ),*newtype,&mm);
-  *(int*) M = PetscFromPointer(mm);
+  *__ierr = MatConvert((Mat)PetscToPointer(mat),*newtype,&mm);
+  *(PetscFortranAddr*) M = PetscFromPointer(mm);
 }
 
 void matcreateseqdense_(MPI_Comm *comm,int *m,int *n,Scalar *data,Mat *newmat,int *__ierr )
@@ -233,7 +233,7 @@ void matcreateseqdense_(MPI_Comm *comm,int *m,int *n,Scalar *data,Mat *newmat,in
   Mat mm;
   if (FORTRANNULL(data)) data = PETSC_NULL;
   *__ierr = MatCreateSeqDense((MPI_Comm)PetscToPointerComm(*comm),*m,*n,data,&mm);
-  *(int*) newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
 
 void matcreatempidense_(MPI_Comm *comm,int *m,int *n,int *M,int *N,Scalar *data,Mat *newmat,
@@ -241,7 +241,7 @@ void matcreatempidense_(MPI_Comm *comm,int *m,int *n,int *M,int *N,Scalar *data,
   Mat mm;
   if (FORTRANNULL(data)) data = PETSC_NULL;
   *__ierr = MatCreateMPIDense((MPI_Comm)PetscToPointerComm( *comm ),*m,*n,*M,*N,data,&mm);
-  *(int*) newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
 
 /* Fortran ignores diagv */
@@ -251,7 +251,7 @@ void matcreatempibdiag_(MPI_Comm *comm,int *m,int *M,int *N,int *nd,int *bs,
   Mat mm;
   *__ierr = MatCreateMPIBDiag((MPI_Comm)PetscToPointerComm( *comm ),
                               *m,*M,*N,*nd,*bs,diag,PETSC_NULL,&mm);
-  *(int*) newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
 
 /* Fortran ignores diagv */
@@ -261,7 +261,7 @@ void matcreateseqbdiag_(MPI_Comm *comm,int *m,int *n,int *nd,int *bs,
   Mat mm;
   *__ierr = MatCreateSeqBDiag((MPI_Comm)PetscToPointerComm( *comm ),*m,*n,*nd,*bs,diag,
                                PETSC_NULL,&mm);
-  *(int*) newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
 
 /*  Fortran cannot pass in procinfo, hence ignored */
@@ -272,16 +272,16 @@ void matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,
   if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
   *__ierr = MatCreateMPIRowbs((MPI_Comm)PetscToPointerComm( *comm ),
                                *m,*M,*nz,nnz,PETSC_NULL,&mm);
-  *(int*) newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
 
 void matgetreordering_(Mat mat,MatReorderingType *type,IS *rperm,IS *cperm, 
                        int *__ierr )
 {
   IS i1,i2;
-  *__ierr = MatGetReordering((Mat)PetscToPointer(*(int*)(mat)),*type,&i1,&i2);
-  *(int*) rperm = PetscFromPointer(i1);
-  *(int*) cperm = PetscFromPointer(i2);
+  *__ierr = MatGetReordering((Mat)PetscToPointer(mat),*type,&i1,&i2);
+  *(PetscFortranAddr*) rperm = PetscFromPointer(i1);
+  *(PetscFortranAddr*) cperm = PetscFromPointer(i2);
 }
 
 void matreorderingregisterdestroy_(int *__ierr)
@@ -294,7 +294,7 @@ void matgettype_(Mat mm,MatType *type,CHAR name,int *__ierr,int len)
   char *tname;
 
   if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = MatGetType((Mat)PetscToPointer(*(int*)mm),type,&tname);
+  *__ierr = MatGetType((Mat)PetscToPointer(mm),type,&tname);
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
@@ -309,7 +309,7 @@ void matcreate_(MPI_Comm *comm,int *m,int *n,Mat *V, int *__ierr )
 {
   Mat mm;
   *__ierr = MatCreate((MPI_Comm)PetscToPointerComm( *comm),*m,*n,&mm);
-  *(int*) V = PetscFromPointer(mm);
+  *(PetscFortranAddr*) V = PetscFromPointer(mm);
 }
 
 void matcreateseqaij_(MPI_Comm *comm,int *m,int *n,int *nz,
@@ -318,7 +318,7 @@ void matcreateseqaij_(MPI_Comm *comm,int *m,int *n,int *nz,
   Mat mm;
   if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
   *__ierr = MatCreateSeqAIJ((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*nz,nnz,&mm);
-  *(int*) newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
 
 void matcreateseqbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *nz,
@@ -327,19 +327,19 @@ void matcreateseqbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *nz,
   Mat mm;
   if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
   *__ierr = MatCreateSeqBAIJ((MPI_Comm)PetscToPointerComm(*comm),*bs,*m,*n,*nz,nnz,&mm);
-  *(int*) newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*) newmat = PetscFromPointer(mm);
 }
 
 void matfdcoloringdestroy_(MatFDColoring mat, int *__ierr )
 {
-  *__ierr = MatFDColoringDestroy((MatFDColoring)PetscToPointer( *(int*)(mat) ));
-   PetscRmPointer(*(int*)(mat)); 
+  *__ierr = MatFDColoringDestroy((MatFDColoring)PetscToPointer(mat));
+   PetscRmPointer(mat); 
 }
 
 void matdestroy_(Mat mat, int *__ierr )
 {
-  *__ierr = MatDestroy((Mat)PetscToPointer( *(int*)(mat) ));
-   PetscRmPointer(*(int*)(mat)); 
+  *__ierr = MatDestroy((Mat)PetscToPointer(mat));
+   PetscRmPointer(mat); 
 }
 
 void matreorderingregisterall_(int *__ierr)
@@ -355,7 +355,7 @@ void matcreatempiaij_(MPI_Comm *comm,int *m,int *n,int *M,int *N,
   if (FORTRANNULL(o_nnz)) o_nnz = PETSC_NULL;
   *__ierr = MatCreateMPIAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
-  *(int*)newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*)newmat = PetscFromPointer(mm);
 }
 void matcreatempibaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
@@ -365,7 +365,7 @@ void matcreatempibaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M,int *N,
   if (FORTRANNULL(o_nnz)) o_nnz = PETSC_NULL;
   *__ierr = MatCreateMPIBAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
-  *(int*)newmat = PetscFromPointer(mm);
+  *(PetscFortranAddr*)newmat = PetscFromPointer(mm);
 }
 
 /*
@@ -380,25 +380,28 @@ void matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,void *ctx,Mat *m
   if (*__ierr) return;
   ((PetscObject)mm)->fortran_func_pointers = (void **) PetscMalloc(sizeof(void *));
   if (!((PetscObject)mm)->fortran_func_pointers) {*__ierr = 1; return;}
-  *(int*) mat = PetscFromPointer(mm);
+  *(PetscFortranAddr*) mat = PetscFromPointer(mm);
 }
 
 static int ourmult(Mat mat, Vec x, Vec y)
 {
-  int ierr,s1,s2,s3;
+  int              ierr = 0;
+  PetscFortranAddr s1,s2,s3;
+
   s1 = PetscFromPointer(mat);
   s2 = PetscFromPointer(x);
   s3 = PetscFromPointer(y);
-  (*(int (*)(int *,int*,int*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&s1,&s2,&s3,&ierr);
-  PetscRmPointer(s3);
-  PetscRmPointer(s2);
-  PetscRmPointer(s1);
+  (*(int (*)(PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&s1,&s2,&s3,&ierr);
+  PetscRmPointer(&s3);
+  PetscRmPointer(&s2);
+  PetscRmPointer(&s1);
   return ierr;
 }
 
-void matshellsetoperation_(Mat mat,MatOperation *op,int (*f)(int*,int*,int*,int*), int *__ierr )
+void matshellsetoperation_(Mat mat,MatOperation *op,int (*f)(PetscFortranAddr*,PetscFortranAddr*,
+                    PetscFortranAddr*,int*), int *__ierr )
 {
-  Mat mm = (Mat)PetscToPointer(*(int*)(mat));
+  Mat mm = (Mat)PetscToPointer(mat);
   if (*op == MATOP_MULT) {
     *__ierr = MatShellSetOperation(mm,*op,(void*) ourmult);
     ((PetscObject)mm)->fortran_func_pointers[0] = (void *) f;
@@ -419,28 +422,31 @@ void matshellsetoperation_(Mat mat,MatOperation *op,int (*f)(int*,int*,int*,int*
    USER CAN HAVE ONLY ONE MatFDCOloring in code Because there is no place to hang f7!
 */
 
-static void (*f7)(int*,double*,int*,int*,void*,int*);
+static void (*f7)(PetscFortranAddr*,double*,PetscFortranAddr*,PetscFortranAddr*,void*,int*);
 
 static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y, void *ctx)
 {
-  int ierr,s1,s2,s3;
+  int              ierr = 0;
+  PetscFortranAddr s1,s2,s3;
+
   s1 = PetscFromPointer(ts);
   s2 = PetscFromPointer(x);
   s3 = PetscFromPointer(y);
   
   (*f7)(&s1,&t,&s2,&s3,ctx,&ierr);
 
-  PetscRmPointer(s3);
-  PetscRmPointer(s2);
-  PetscRmPointer(s1);
+  PetscRmPointer(&s3);
+  PetscRmPointer(&s2);
+  PetscRmPointer(&s1);
 
   return ierr;
 }
 
-void matfdcoloringsetfunction_(MatFDColoring fd,void (*f)(int*,double*,int*,int*,void*,int*),
+void matfdcoloringsetfunction_(MatFDColoring fd,void (*f)(PetscFortranAddr*,double*,
+                PetscFortranAddr*,PetscFortranAddr*,void*,int*),
                                void *ctx, int *__ierr )
 {
-  MatFDColoring mm = (MatFDColoring)PetscToPointer(*(int*)(fd));
+  MatFDColoring mm = (MatFDColoring)PetscToPointer(fd);
   f7 = f;
   *__ierr = MatFDColoringSetFunction(mm,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
 }

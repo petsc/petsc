@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.16 1997/07/09 20:55:52 balay Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.17 1998/03/06 00:06:09 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -52,78 +52,82 @@ void pcsettype_(PC pc,CHAR itmethod, int *__ierr,int len )
   char *t;
 
   FIXCHAR(itmethod,len,t);
-  *__ierr = PCSetType((PC)PetscToPointer( *(int*)(pc) ),t);
+  *__ierr = PCSetType((PC)PetscToPointer(pc),t);
   FREECHAR(itmethod,t);
 }
 
 
-static void (*f1)(void *,int*,int*,int*);
+static void (*f1)(void *,PetscFortranAddr*,PetscFortranAddr*,int*);
 static int ourshellapply(void *ctx,Vec x,Vec y)
 {
-  int ierr = 0, s1, s2;
+  int              ierr = 0;
+  PetscFortranAddr s1,s2;
+
   s1 = PetscFromPointer(x);
   s2 = PetscFromPointer(y);
   (*f1)(ctx,&s1,&s2,&ierr); CHKERRQ(ierr);
-  PetscRmPointer(s1);
-  PetscRmPointer(s2); 
+  PetscRmPointer(&s1);
+  PetscRmPointer(&s2); 
   return 0;
 }
-void pcshellsetapply_(PC pc,void (*apply)(void*,int*,int*,int*),void *ptr,
+void pcshellsetapply_(PC pc,void (*apply)(void*,PetscFortranAddr*,PetscFortranAddr*,int*),void *ptr,
                       int *__ierr ){
   f1 = apply;
   *__ierr = PCShellSetApply(
-	(PC)PetscToPointer( *(int*)(pc) ),ourshellapply,ptr);
+	(PC)PetscToPointer(pc),ourshellapply,ptr);
 }
 /* -----------------------------------------------------------------*/
-static void (*f2)(void*,int*,int*,int*,int*,int*);
+static void (*f2)(void*,PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,int*,int*);
 static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)
 {
-  int ierr = 0, s1,s2,s3;
+  int              ierr = 0;
+  PetscFortranAddr s1,s2,s3;
+
   s1 = PetscFromPointer(x);
   s2 = PetscFromPointer(y);
   s3 = PetscFromPointer(w);
   (*f2)(ctx,&s1,&s2,&s3,&m,&ierr); CHKERRQ(ierr);
-  PetscRmPointer(s1);
-  PetscRmPointer(s2); 
-  PetscRmPointer(s3); 
+  PetscRmPointer(&s1);
+  PetscRmPointer(&s2); 
+  PetscRmPointer(&s3); 
   return 0;
 }
 
 void pcshellsetapplyrichardson_(PC pc,
-                        void (*apply)(void*,int*,int*,int*,int*,int*),
-                              void *ptr, int *__ierr ){
+         void (*apply)(void*,PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,int*,int*),
+         void *ptr, int *__ierr ){
   f2 = apply;
   *__ierr = PCShellSetApplyRichardson(
-	(PC)PetscToPointer( *(int*)(pc) ),ourapplyrichardson,ptr);
+	(PC)PetscToPointer(pc),ourapplyrichardson,ptr);
 }
 
 void mggetcoarsesolve_(PC pc,SLES *sles, int *__ierr ){
   SLES asles;
-  *__ierr = MGGetCoarseSolve((PC)PetscToPointer( *(int*)(pc) ),&asles);
-  *(int*) sles = PetscFromPointer(asles);
+  *__ierr = MGGetCoarseSolve((PC)PetscToPointer(pc),&asles);
+  *(PetscFortranAddr*) sles = PetscFromPointer(asles);
 }
 void mggetsmoother_(PC pc,int *l,SLES *sles, int *__ierr ){
   SLES asles;
-  *__ierr = MGGetSmoother((PC)PetscToPointer( *(int*)(pc) ),*l,&asles);
-  *(int*) sles = PetscFromPointer(asles);
+  *__ierr = MGGetSmoother((PC)PetscToPointer(pc),*l,&asles);
+  *(PetscFortranAddr*) sles = PetscFromPointer(asles);
 }
 void mggetsmootherup_(PC pc,int *l,SLES *sles, int *__ierr ){
   SLES asles;
-  *__ierr = MGGetSmootherUp((PC)PetscToPointer( *(int*)(pc) ),*l,&asles);
-  *(int*) sles = PetscFromPointer(asles);
+  *__ierr = MGGetSmootherUp((PC)PetscToPointer(pc),*l,&asles);
+  *(PetscFortranAddr*) sles = PetscFromPointer(asles);
 }
 void mggetsmootherdown_(PC pc,int *l,SLES *sles, int *__ierr ){
   SLES asles;
-  *__ierr = MGGetSmootherDown((PC)PetscToPointer( *(int*)(pc) ),*l,&asles);
-  *(int*) sles = PetscFromPointer(asles);
+  *__ierr = MGGetSmootherDown((PC)PetscToPointer(pc),*l,&asles);
+  *(PetscFortranAddr*) sles = PetscFromPointer(asles);
 }
 
-void pcbjacobigetsubsles_(PC pc,int *n_local,int *first_local,int *sles, 
+void pcbjacobigetsubsles_(PC pc,int *n_local,int *first_local,PetscFortranAddr *sles, 
                           int *__ierr ){
   SLES *tsles;
   int  i;
   *__ierr = PCBJacobiGetSubSLES(
-	(PC)PetscToPointer( *(int*)(pc) ),n_local,first_local,&tsles);
+	(PC)PetscToPointer(pc),n_local,first_local,&tsles);
   for ( i=0; i<*n_local; i++ ){
     sles[i] = PetscFromPointer(tsles[i]);
   }
@@ -132,22 +136,22 @@ void pcbjacobigetsubsles_(PC pc,int *n_local,int *first_local,int *sles,
 void pcgetoperators_(PC pc,Mat *mat,Mat *pmat,MatStructure *flag, int *__ierr){
   Mat m,p;
   if ((void*)flag == PETSC_NULL_Fortran) flag = 0;
-  *__ierr = PCGetOperators((PC)PetscToPointer( *(int*)(pc) ),&m,&p,flag);
-  if (mat) *(int*) mat = PetscFromPointer(m);
-  if (pmat) *(int*) pmat = PetscFromPointer(p);
+  *__ierr = PCGetOperators((PC)PetscToPointer(pc),&m,&p,flag);
+  if (mat) *(PetscFortranAddr*) mat = PetscFromPointer(m);
+  if (pmat) *(PetscFortranAddr*) pmat = PetscFromPointer(p);
 }
 
 void pcgetfactoredmatrix_(PC pc,Mat *mat, int *__ierr ){
   Mat m;
-  *__ierr = PCGetFactoredMatrix((PC)PetscToPointer( *(int*)(pc) ),&m);
-  *(int*) mat = PetscFromPointer(m);
+  *__ierr = PCGetFactoredMatrix((PC)PetscToPointer(pc),&m);
+  *(PetscFortranAddr*) mat = PetscFromPointer(m);
 }
  
 void pcsetoptionsprefix_(PC pc,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = PCSetOptionsPrefix((PC)PetscToPointer( *(int*)(pc) ),t);
+  *__ierr = PCSetOptionsPrefix((PC)PetscToPointer(pc),t);
   FREECHAR(prefix,t);
 }
 
@@ -155,19 +159,19 @@ void pcappendoptionsprefix_(PC pc,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = PCAppendOptionsPrefix((PC)PetscToPointer( *(int*)(pc) ),t);
+  *__ierr = PCAppendOptionsPrefix((PC)PetscToPointer(pc),t);
   FREECHAR(prefix,t);
 }
 
 void pcdestroy_(PC pc, int *__ierr ){
-  *__ierr = PCDestroy((PC)PetscToPointer( *(int*)(pc) ));
-  PetscRmPointer( *(int*)(pc) );
+  *__ierr = PCDestroy((PC)PetscToPointer(pc));
+  PetscRmPointer(pc);
 }
 
 void pccreate_(MPI_Comm comm,PC *newpc, int *__ierr ){
   PC p;
   *__ierr = PCCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),&p);
-  *(int*) newpc = PetscFromPointer(p);
+  *(PetscFortranAddr*) newpc = PetscFromPointer(p);
 }
 
 void pcregisterdestroy_(int *__ierr){
@@ -178,7 +182,7 @@ void pcgettype_(PC pc,CHAR name,int *__ierr,int len)
 {
   char *tname;
 
-  *__ierr = PCGetType((PC)PetscToPointer(*(int*)pc),&tname);
+  *__ierr = PCGetType((PC)PetscToPointer(pc),&tname);
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsles.c,v 1.11 1997/07/01 19:32:56 bsmith Exp balay $";
+static char vcid[] = "$Id: zsles.c,v 1.12 1997/07/09 20:55:52 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -30,7 +30,7 @@ void slessetoptionsprefix_(SLES sles,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = SLESSetOptionsPrefix((SLES)PetscToPointer( *(int*)(sles) ),t);
+  *__ierr = SLESSetOptionsPrefix((SLES)PetscToPointer(sles),t);
   FREECHAR(prefix,t);
 }
 
@@ -38,33 +38,33 @@ void slesappendoptionsprefix_(SLES sles,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = SLESAppendOptionsPrefix((SLES)PetscToPointer( *(int*)(sles) ),t);
+  *__ierr = SLESAppendOptionsPrefix((SLES)PetscToPointer(sles),t);
   FREECHAR(prefix,t);
 }
 
 void slesgetksp_(SLES sles,KSP *ksp, int *__ierr ){
   KSP joe;
-  *__ierr = SLESGetKSP((SLES)PetscToPointer( *(int*)(sles) ),&joe);
-  *(int*) ksp = PetscFromPointer(joe);
+  *__ierr = SLESGetKSP((SLES)PetscToPointer(sles),&joe);
+  *(PetscFortranAddr*) ksp = PetscFromPointer(joe);
 }
 
 void slesgetpc_(SLES sles,PC *pc, int *__ierr ){
   PC joe;
-  *__ierr = SLESGetPC((SLES)PetscToPointer( *(int*)(sles) ),&joe);
-  *(int*) pc = PetscFromPointer(joe);
+  *__ierr = SLESGetPC((SLES)PetscToPointer(sles),&joe);
+  *(PetscFortranAddr*) pc = PetscFromPointer(joe);
 }
 
 void slesdestroy_(SLES sles, int *__ierr )
 {
-  *__ierr = SLESDestroy((SLES)PetscToPointer( *(int*)(sles) ));
-  PetscRmPointer( *(int*)(sles) );
+  *__ierr = SLESDestroy((SLES)PetscToPointer(sles));
+  PetscRmPointer(sles);
 }
 
 void slescreate_(MPI_Comm *comm,SLES *outsles, int *__ierr )
 {
   SLES sles;
   *__ierr = SLESCreate((MPI_Comm)PetscToPointerComm( *comm ),&sles);
-  *(int*) outsles = PetscFromPointer(sles);
+  *(PetscFortranAddr*) outsles = PetscFromPointer(sles);
 
 }
 

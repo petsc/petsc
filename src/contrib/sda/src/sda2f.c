@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2f.c,v 1.8 1997/06/30 17:34:51 gropp Exp balay $";
+static char vcid[] = "$Id: sda2f.c,v 1.9 1997/07/09 21:01:25 balay Exp balay $";
 #endif
 /*
      Fortran interface for SDA routines.
@@ -30,19 +30,19 @@ extern "C" {
 
 void sdadestroy_(SDA *sda, int *__ierr )
 {
-  *__ierr = SDADestroy((SDA)PetscToPointer(*(int*) sda));
-  PetscRmPointer(*(int*)(sda));
+  *__ierr = SDADestroy((SDA)PetscToPointer(sda));
+  PetscRmPointer(sda);
 }
 
 void sdalocaltolocalbegin_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l,
                            int *__ierr )
 {
-  *__ierr = SDALocalToLocalBegin((SDA)PetscToPointer(*(int*)sda),g,*mode,l);
+  *__ierr = SDALocalToLocalBegin((SDA)PetscToPointer(sda),g,*mode,l);
 }
 
 void sdalocaltolocalend_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l, 
                          int *__ierr ){
-  *__ierr = SDALocalToLocalEnd((SDA)PetscToPointer(*(int*)sda),g,*mode,l);
+  *__ierr = SDALocalToLocalEnd((SDA)PetscToPointer(sda),g,*mode,l);
 }
 
 void sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
@@ -53,7 +53,7 @@ void sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
   *__ierr = SDACreate2d(
 	    (MPI_Comm)PetscToPointerComm( *comm ),*wrap,
             *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
-  *(int*) inra = PetscFromPointer(da);
+  *(PetscFortranAddr*) inra = PetscFromPointer(da);
 }
 
 void sdacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
@@ -62,7 +62,7 @@ void sdacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
   SDA da;
   *__ierr = SDACreate1d(
 	   (MPI_Comm)PetscToPointerComm( *comm ),*wrap,*M,*w,*s,lc,&da);
-  *(int*) inra = PetscFromPointer(da);
+  *(PetscFortranAddr*) inra = PetscFromPointer(da);
 }
 
 void sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
@@ -73,7 +73,7 @@ void sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
   *__ierr = SDACreate3d(
 	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
-  *(int*) inra = PetscFromPointer(da);
+  *(PetscFortranAddr*) inra = PetscFromPointer(da);
 }
 
 #if defined(__cplusplus)
