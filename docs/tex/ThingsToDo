@@ -7,8 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
- - Changes OptionsGetProgramName to PetscGetProgramName() and change calling 
-sequence to match PetscGetHostName().
+  - Write a program in benchmarks that determines how much memory can be
+    malloced on a machine and how much memory you can use before it 
+    starts disk thrashing.
 
   - Where to put material that's currently in the file petsc/MatrixBlocking?
     Users manual?
@@ -899,3 +900,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
                      local index (or -1) for each global between
                      globalstart and globalend.
            Have these set only if user calls ISGlobalToLocal()
+
+ X Changes OptionsGetProgramName to PetscGetProgramName() and change calling 
+   sequence to match PetscGetHostName().

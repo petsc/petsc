@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.141 1997/09/26 02:18:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.142 1997/10/03 14:45:20 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -863,22 +863,28 @@ int OptionsCheckInitial_Private()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetProgramName"
+#define __FUNC__ "PetscGetProgramName"
 /*@
-    OptionsGetProgramName - Gets the name of the running program. 
+    PetscGetProgramName - Gets the name of the running program. 
+
+  Output Parameter:
+.   len - length of the string name
 
   Output Parameter:
 .   name - the name of the running program
 
+  Notes: The name of the program is copied into the charactor array you 
+         provide. In some machines the program name includes its entire
+         path so one should generally use a len of at least 256.
+
 @*/
-int  OptionsGetProgramName(char **name)
+int PetscGetProgramName(char *name,int len)
 {
   if (!options) SETERRQ(1,1,"Must call PetscInitialize() first");
   if (!options->namegiven) SETERRQ(1,1,"Unable to determine program name");
-  *name = options->programname;
+  PetscStrncpy(name,options->programname,len);
   return 0;
 }
-
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsInsertFile_Private"
