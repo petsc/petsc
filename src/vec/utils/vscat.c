@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.140 1999/07/22 04:14:26 balay Exp balay $";
+static char vcid[] = "$Id: vscat.c,v 1.141 1999/07/22 04:15:46 balay Exp balay $";
 #endif
 
 /*
@@ -1334,6 +1334,9 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
    The vectors x and y need not be the same vectors used in the call 
    to VecScatterCreate(), but they must have the same parallel data layout;
    for example, they could have been obtained from VecDuplicate().
+
+   You cannot change the values in the input vector between the calls to VecScatterBegin()
+   and VecScatterEnd().
 
    If you use SCATTER_REVERSE the first two arguments should be reversed, from 
    the SCATTER_FORWARD.
