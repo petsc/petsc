@@ -1021,9 +1021,9 @@ int PetscOptionsIntArray(char *opt,char *text,char *man,int *value,int *n,PetscT
 #endif
   ierr = PetscOptionsGetIntArray(amspub.prefix,opt,value,n,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%g",amspub.prefix?amspub.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%d",amspub.prefix?amspub.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
     for (i=1; i<*n; i++) {
-      ierr = (*PetscHelpPrintf)(amspub.comm,",%g",value[i]);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(amspub.comm,",%d",value[i]);CHKERRQ(ierr);
     }
     ierr = (*PetscHelpPrintf)(amspub.comm,">: %s (%s)\n",text,man);CHKERRQ(ierr);
   }
