@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.35 1996/01/12 03:55:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.36 1996/01/12 19:07:04 bsmith Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -10,26 +10,6 @@ static char vcid[] = "$Id: snes.c,v 1.35 1996/01/12 03:55:35 bsmith Exp bsmith $
 
 extern int SNESGetTypeFromOptions_Private(SNES,SNESType*);
 extern int SNESPrintTypes_Private(char*,char*);
-
-/*@C
-   SLESSetOptionsPrefix - Sets the prefix used for searching for all 
-   SLES options in the database.
-
-   Input Parameter:
-.  snes - the SNES context
-.  prefix - the prefix to prepend to all option names
-
-.keywords: SNES, set, options, prefix, database
-@*/
-int SNESSetOptionsPrefix(SNES snes,char *prefix)
-{
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
-
-  snes->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char));
-  CHKPTRQ(snes->prefix);
-  PetscStrcpy(snes->prefix,prefix);
-  return 0;
-}
 
 /*@ 
    SNESView - Prints the SNES data structure.
@@ -114,7 +94,8 @@ int SNESSetFromOptions(SNES snes)
   SNESType method;
   double   tmp;
   SLES     sles;
-  int      ierr,version   = PETSC_DEFAULT;
+  int      ierr, flg;
+  int      version   = PETSC_DEFAULT;
   double   rtol_0    = PETSC_DEFAULT;
   double   rtol_max  = PETSC_DEFAULT;
   double   gamma2    = PETSC_DEFAULT;
@@ -136,52 +117,46 @@ int SNESSetFromOptions(SNES snes)
     }
   }
 
-  if (OptionsHasName(PETSC_NULL,"-help"))  SNESPrintHelp(snes);
-  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp))) {
-    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
-    SNESSetSolutionTolerance(snes,tmp);
-  }
-  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_ttol",&tmp))) {
-    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
-    SNESSetTruncationTolerance(snes,tmp);
-  }
-  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_atol",&tmp))) {
-    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
-    SNESSetAbsoluteTolerance(snes,tmp);
-  }
-  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp))) {
-    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
-    SNESSetTrustRegionTolerance(snes,tmp);
-  }
-  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp))) {
-    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
-    SNESSetRelativeTolerance(snes,tmp);
-  }
-  if ((ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp))) {
-    if (ierr == -1) SETERRQ(1,"SNESSetFromOptions:");
-    SNESSetMinFunctionTolerance(snes,tmp);
-  }
-  OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its);
-  OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs);
-  if (OptionsHasName(snes->prefix,"-snes_ksp_ew_conv")) {
-    snes->ksp_ewconv = 1;
-  }
-  OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version);
-  OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0);
-  OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtolmax",&rtol_max);
-  OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2);
-  OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha);
-  OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2);
-  OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold);
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
+  if (flg) { SNESPrintHelp(snes); }
+  ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp, &flg); CHKERRQ(ierr);
+  if (flg) { SNESSetSolutionTolerance(snes,tmp); }
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ttol",&tmp, &flg); CHKERRQ(ierr);
+  if (flg) { SNESSetTruncationTolerance(snes,tmp); }
+  ierr = OptionsGetDouble(snes->prefix,"-snes_atol",&tmp, &flg); CHKERRQ(ierr);
+  if (flg) { SNESSetAbsoluteTolerance(snes,tmp); }
+  ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg);  CHKERRQ(ierr);
+  if (flg) { SNESSetTrustRegionTolerance(snes,tmp); }
+  ierr = OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp, &flg);  CHKERRQ(ierr);
+  if (flg) { SNESSetRelativeTolerance(snes,tmp); }
+  ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg);  CHKERRQ(ierr);
+  if (flg) { SNESSetMinFunctionTolerance(snes,tmp); }
+  ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, &flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg);  CHKERRQ(ierr);
+  if (flg) { snes->ksp_ewconv = 1; }
+  ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version, \
+                       &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0, \
+                          &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtolmax",&rtol_max, \
+                          &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2, \
+                          &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha, \
+                          &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2, \
+                          &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold, \
+                          &flg);  CHKERRQ(ierr);
   ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
-                            alpha2,threshold); CHKERRQ(ierr);
-  if (OptionsHasName(snes->prefix,"-snes_monitor")) {
-    SNESSetMonitor(snes,SNESDefaultMonitor,0);
-  }
-  if (OptionsHasName(snes->prefix,"-snes_smonitor")) {
-    SNESSetMonitor(snes,SNESDefaultSMonitor,0);
-  }
-  if (OptionsHasName(snes->prefix,"-snes_xmonitor")){
+                                  alpha2,threshold); CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_monitor", &flg);  CHKERRQ(ierr);
+  if (flg) { SNESSetMonitor(snes,SNESDefaultMonitor,0); }
+  ierr = OptionsHasName(snes->prefix,"-snes_smonitor", &flg);  CHKERRQ(ierr);
+   if (flg) { SNESSetMonitor(snes,SNESDefaultSMonitor,0); }
+  ierr = OptionsHasName(snes->prefix,"-snes_xmonitor", &flg);  CHKERRQ(ierr);
+  if (flg) {
     int       rank = 0;
     DrawLG lg;
     MPI_Initialized(&rank);
@@ -192,13 +167,13 @@ int SNESSetFromOptions(SNES snes)
       PLogObjectParent(snes,lg);
     }
   }
-  if (OptionsHasName(snes->prefix,"-snes_fd") && 
-    snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+  ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);  CHKERRQ(ierr);
+  if( flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,
-           SNESDefaultComputeJacobian,snes->funP); CHKERRQ(ierr);
+                 SNESDefaultComputeJacobian,snes->funP); CHKERRQ(ierr);
   }
-  if (OptionsHasName(snes->prefix,"-snes_mf") &&
-    snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+  ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
+  if( flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     Mat J;
     ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
@@ -1277,14 +1252,13 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
 @*/
 int SNESSolve(SNES snes,int *its)
 {
-  int ierr;
+  int ierr, flg;
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
-  if (OptionsHasName(PETSC_NULL,"-snes_view")) {
-    ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
-  }
+  ierr = OptionsHasName(PETSC_NULL,"-snes_view", &flg); CHKERRQ(ierr);
+  if (flg) { ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRQ(ierr); }
   return 0;
 }
 
@@ -1404,8 +1378,10 @@ $  -snes_type  method
 */
 int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method)
 {
+  int ierr, flg;
   char sbuf[50];
-  if (OptionsGetString(ctx->prefix,"-snes_type", sbuf, 50 )) {
+  ierr = OptionsGetString(ctx->prefix,"-snes_type", sbuf, 50, &flg); CHKERRQ(ierr);
+  if (flg) {
     if (!__SNESList) SNESRegisterAll();
     *method = (SNESType)NRFindID( __SNESList, sbuf );
     return 1;
@@ -1587,6 +1563,68 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
   *r = snes->fc;
   return 0;
 }  
+
+
+/*@C
+   SNESSetOptionsPrefix - Sets the prefix used for searching for all 
+   SNES options in the database.
+
+   Input Parameter:
+.  snes - the SNES context
+.  prefix - the prefix to prepend to all option names
+
+.keywords: SNES, set, options, prefix, database
+@*/
+int SNESSetOptionsPrefix(SNES snes,char *prefix)
+{
+  int ierr;
+
+  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  ierr = PetscObjectSetPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  ierr = SLESSetOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
+  return 0;
+}
+
+/*@C
+   SNESAppendOptionsPrefix - Append to the prefix used for searching for all 
+   SNES options in the database.
+
+   Input Parameter:
+.  snes - the SNES context
+.  prefix - the prefix to prepend to all option names
+
+.keywords: SNES, append, options, prefix, database
+@*/
+int SNESAppendOptionsPrefix(SNES snes,char *prefix)
+{
+  int ierr;
+  
+  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  ierr = PetscObjectAppendPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  ierr = SLESAppendOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
+  return 0;
+}
+
+/*@C
+   SNESGetOptionsPrefix - Sets the prefix used for searching for all 
+   SNES options in the database.
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
+.  prefix - pointer to the prefix string used
+
+.keywords: SNES, get, options, prefix, database
+@*/
+int SNESGetOptionsPrefix(SNES snes,char **prefix)
+{
+  int ierr;
+
+  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  ierr = PetscObjectGetPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
+  return 0;
+}
 
 
 
