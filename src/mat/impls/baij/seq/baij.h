@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.24 2000/05/04 16:25:36 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.25 2000/05/10 16:40:51 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -48,6 +48,7 @@ EXTERN int MatConvert_SeqBAIJ(Mat,MatType,Mat *);
 EXTERN int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatMarkDiagonal_SeqBAIJ(Mat);
 
+EXTERN int MatSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 EXTERN int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 EXTERN int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat*);
 EXTERN int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);

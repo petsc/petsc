@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.209 2000/05/10 16:40:51 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.210 2000/07/10 03:39:42 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1227,8 +1227,10 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   */
   switch (a->bs) {
   case 1:
-    inA->ops->solvetranspose   = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
-    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+    inA->ops->solve           = MatSolve_SeqBAIJ_1_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1_NaturalOrdering;
+    PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
   case 2:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
