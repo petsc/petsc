@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.27 2000/08/24 22:40:53 bsmith Exp balay $*/
+/*$Id: viewreg.c,v 1.28 2000/08/25 16:58:06 balay Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -197,7 +197,7 @@ int ViewerRegister(char *sname,char *path,char *name,int (*function)(Viewer))
 int ViewerSetFromOptions(Viewer viewer)
 {
   int        ierr;
-  char       vtype[256], *x;
+  char       vtype[256];
   PetscTruth flg;
 
   PetscFunctionBegin;
