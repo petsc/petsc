@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.8 1998/08/26 03:17:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsfd.c,v 1.9 1998/10/09 19:24:42 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -28,6 +28,8 @@ static char vcid[] = "$Id: tsfd.c,v 1.8 1998/08/26 03:17:20 bsmith Exp bsmith $"
 
    Options Database Keys:
 $  -mat_fd_coloring_freq <freq> 
+
+   Level: intermediate
 
 .keywords: TS, finite differences, Jacobian, coloring, sparse
 
@@ -65,21 +67,24 @@ int TSDefaultComputeJacobianWithColoring(TS ts,double t,Vec x1,Mat *J,Mat *B,Mat
 #undef __FUNC__  
 #define __FUNC__ "TSSetRHSJacobianDefault"
 /*@C
-      TSSetRHSJacobianDefault - Sets TS to use the default coloring
-                                            computation of the Jacobian.
+    TSSetRHSJacobianDefault - Sets TS to use the default coloring
+    computation of the Jacobian.
 
     Collective on TS, MatFDColoring and Mat
 
-   Input Parameters:
+    Input Parameters:
 +   ts - the time-step context
 .   fd - the matrix coloring object
 .   A  - the Jacobian matrix
 -   B  - the preconditioner matrix (often the same as A)
 
-    Note: This is equivalent to calling
+    Note: 
+    This is equivalent to calling
       TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianWithColoring,fd);
-      but may be called from Fortran code.
+    but may be called from Fortran code.
  
+    Level: intermediate
+
 .keywords: Jacobian, coloring
 
 .seealso: TSSetRHSJacobian(), TSDefaultComputeJacobianWithColoring()
@@ -100,14 +105,14 @@ int TSSetRHSJacobianDefault(TS ts,MatFDColoring fd,Mat A,Mat B)
    TSDefaultComputeJacobianSlow - Computes the Jacobian using finite differences.
 
    Input Parameters:
-.  ts - TS context
++  ts - TS context
 .  xx1 - compute Jacobian at this point
-.  ctx - application's function context, as set with SNESSetFunction()
+-  ctx - application's function context, as set with SNESSetFunction()
 
    Output Parameters:
-.  J - Jacobian
++  J - Jacobian
 .  B - preconditioner, same as Jacobian
-.  flag - matrix flag
+-  flag - matrix flag
 
    Notes:
    This routine is slow and expensive, and is not optimized.
@@ -115,8 +120,9 @@ int TSSetRHSJacobianDefault(TS ts,MatFDColoring fd,Mat A,Mat B)
    Sparse approximations using colorings are also available and
    would be a much better alternative!
 
-.seealso: TSDefaultComputeJacobianWithColoring()
+   Level: intermediate
 
+.seealso: TSDefaultComputeJacobianWithColoring()
 */
 int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {

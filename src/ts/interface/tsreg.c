@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.39 1998/12/17 22:11:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.40 1999/01/04 21:52:56 bsmith Exp curfman $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -25,10 +25,10 @@ int TSRegisterAllCalled = 0;
 
    Notes:
    See "petsc/include/ts.h" for available methods (for instance)
-.  TS_EULER - Euler
++  TS_EULER - Euler
 .  TS_PVODE - PVODE interface
 .  TS_BEULER - Backward Euler
-.  TS_PSEUDO - Pseudo-timestepping
+-  TS_PSEUDO - Pseudo-timestepping
 
    Normally, it is best to use the TSSetFromOptions() command and
    then set the TS type from the options database rather than by using
@@ -40,7 +40,9 @@ int TSRegisterAllCalled = 0;
    when the choice of solver changes during the execution of the
    program, and the user's application is taking responsibility for
    choosing the appropriate method.  In other words, this routine is
-   for the advanced user.
+   not for beginners.
+
+   Level: intermediate
 
 .keywords: TS, set, type
 @*/
@@ -80,6 +82,8 @@ int TSSetType(TS ts,TSType method)
 
    Not Collective
 
+   Level: advanced
+
 .keywords: TS, timestepper, register, destroy
 
 .seealso: TSRegisterAll()
@@ -110,6 +114,8 @@ int TSRegisterDestroy(void)
    Output Parameter:
 .  type - name of TS method
 
+   Level: intermediate
+
 .keywords: TS, timestepper, get, type, name
 @*/
 int TSGetType(TS ts, TSType *type)
@@ -135,6 +141,8 @@ int TSGetType(TS ts, TSType *type)
    Options Database Keys:
 +  -help - Prints KSP options
 -  -h - Prints KSP options
+
+   Level: beginner
 
 .keywords: TS, timestep, print, help
 
@@ -168,6 +176,8 @@ int TSPrintHelp(TS ts)
 
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
+
+   Level: beginner
 
 .keywords: TS, timestep, set, options, database
 
