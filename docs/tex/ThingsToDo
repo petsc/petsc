@@ -24,9 +24,6 @@ Satish/Lois  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes fro
 
 Satish NT stuff
 
-Lois  - Add SLES example showing multiple linear solves with same matrices but
-    difference RHS.
-
 Lois - Add table of all preconditioners and options to PETSc manual.
 
 Lois - Add info about which library components do what.  Mention SLES_LIB.
@@ -754,3 +751,7 @@ Satish - Subdivide html manpage sections, e.g. elementary, advanced and develope
 
  X Try debugger on HP (unset the EDITOR environmental variable)
         Document in Troubleshooting and Machines
+
+  X Add SLES example showing multiple linear solves with same matrices but
+    difference RHS (sles/examples/tutorials/ex16.c)
+

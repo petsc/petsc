@@ -16,7 +16,8 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
                    ex13.PETSc runex13 ex13.rm \
                    ex14.PETSc runex14 runex14_2 ex14.rm \
-                   ex15.PETSc runex15 ex15.rm clean
+                   ex15.PETSc runex15 ex15.rm \
+                   ex16.PETSc runex16 ex16.rm clean
 TESTEXAMPLES_2   = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
@@ -33,7 +34,7 @@ TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
 BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm \
 		   ex13.PETSc ex13.rm ex14.PETSc ex14.rm \
-                   ex15.PETSc ex15.rm clean
+                   ex15.PETSc ex15.rm ex16.PETSc ex16.rm clean
 BUILDEXAMPLES_2  = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm clean
 BUILDEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
@@ -123,6 +124,10 @@ ex14: ex14.o  chkopts
 ex15: ex15.o  chkopts
 	-$(CLINKER) -o ex15 ex15.o  $(PETSC_LIB)
 	$(RM) ex15.o
+
+ex16: ex16.o  chkopts
+	-$(CLINKER) -o ex16 ex16.o  $(PETSC_LIB)
+	$(RM) ex16.o
 
 runex1:
 	-@$(MPIRUN) -np 1 ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
@@ -288,5 +293,11 @@ runex15:
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   $(RM) -f ex15_1.tmp
+
+runex16:
+	-@$(MPIRUN) -np 2 ex16 -ntimes 4 > ex16_1.tmp 2>&1; \
+	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
+	   else echo "Possible problem with ex16_1, diffs above"; fi; \
+	   $(RM) -f ex16_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
