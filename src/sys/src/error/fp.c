@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.30 1997/01/01 13:48:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.31 1997/01/06 20:40:21 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -98,6 +98,66 @@ int PetscSetFPTrap(int flag)
   if (flag == PETSC_FP_TRAP_ON) {
      if (ieee_handler("set","common",SYsample_handler))
 		fprintf(stderr, "Can't set floatingpoint handler\n");
+  }
+  else {
+     if (ieee_handler("clear","common",SYsample_handler))
+		fprintf(stderr,"Can't clear floatingpoint handler\n");
+  }
+  return 0;
+}
+
+/* ------------------------ SOLARIS --------------------------------------*/
+#elif defined(PARCH_solaris) 
+#include <floatingpoint.h>
+#include <siginfo.h>
+#include <ucontext.h>
+
+struct { int code_no; char *name; } error_codes[] = {
+  {  FPE_FLTINV, "invalid operand"},
+  {  FPE_FLTRES, "inexact"},
+  {  FPE_FLTDIV, "division-by-zero"},
+  {  FPE_FLTUND, "underflow"},
+  {  FPE_FLTOVF, "overflow"},
+  {  0,"unknown error"}
+};
+#define SIGPC(scp) (scp->si_addr)
+
+#undef __FUNC__  
+#define __FUNC__ "sigfpe_handler_type SYsample_handler"
+void SYsample_handler(int sig, siginfo_t *scp,ucontext_t *uap)
+{
+  int err_ind, j,ierr;
+  int code = scp->si_code;
+  err_ind = -1 ;
+  for ( j = 0 ; error_codes[j].code_no ; j++ ) {
+    if ( error_codes[j].code_no == code ) err_ind = j ;
+  }
+
+  if ( err_ind >= 0 )
+    fprintf(stderr, "*** %s occurred at pc=%X ***\n",
+			error_codes[err_ind].name, SIGPC(scp));
+  else
+    fprintf(stderr,
+              "*** floating point error 0x%x occurred at pc=%X ***\n",
+              code, SIGPC(scp));
+  ierr = PetscError(PETSC_ERR_FP,0,"Unknown file",0,1,0,"floating point error");
+  MPI_Abort(PETSC_COMM_WORLD,0);
+}
+
+
+int PetscSetFPTrap(int flag)
+{
+  char *out; 
+  (void) ieee_flags( "clear", "exception", "all", &out );
+  if (flag == PETSC_FP_TRAP_ON) {
+    if (ieee_handler("set","common",SYsample_handler))
+      fprintf(stderr, "Can't set floatingpoint handler\n");
+  
+    /* sigfpe(FPE_FLTINV,SYsample_handler);
+    sigfpe(FPE_FLTRES,SYsample_handler);
+    sigfpe(FPE_FLTDIV,SYsample_handler);
+    sigfpe(FPE_FLTUND,SYsample_handler);
+    sigfpe(FPE_FLTOVF,SYsample_handler); */
   }
   else {
      if (ieee_handler("clear","common",SYsample_handler))
