@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.35 1995/05/03 13:18:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.36 1995/05/06 20:11:13 curfman Exp bsmith $";
 #endif
 
 /*
@@ -568,7 +568,7 @@ static int MatGetSubMatrix_Dense(Mat matin,IS isrow,IS iscol,Mat *submat)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int     nznew, *smap, i, j, ierr, oldcols = mat->n;
-  int     *irow, *icol, nrows, ncols, *cwork, jstart;
+  int     *irow, *icol, nrows, ncols, *cwork;
   Scalar  *vwork, *val;
   Mat     newmat;
 

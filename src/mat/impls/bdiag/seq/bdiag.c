@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.8 1995/05/03 04:06:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.9 1995/05/09 23:37:38 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -99,7 +99,7 @@ static int MatMult_BDiag_base(Mat matin,Vec xx,Vec yy)
 { 
   Mat_BDiag *mat= (Mat_BDiag *) matin->data;
   int             nd = mat->nd, nb = mat->nb, diag;
-  int             kshift, nbrows;
+  int             kshift;
   Scalar          *vin, *vout;
   register Scalar *pvin, *pvout, *dv;
   register int    d, i, j, k, len;
@@ -561,7 +561,7 @@ static int MatZero_BDiag(Mat A)
 
 static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
 {
-  Mat_BDiag *l = (Mat_BDiag *) A->data;
+  /*Mat_BDiag *l = (Mat_BDiag *) A->data; */
 
   return 0;
 }

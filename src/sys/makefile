@@ -3,10 +3,10 @@ IPETSCDIR = ../../
 ALL: lib 
 CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF) -D__DIR__='"sys/"' \
             -I$(IPETSCDIR)/pinclude
-SOURCEC   = tr.c arch.c txt.c file.c  nreg.c try.c comsort.c destroy.c
+SOURCEC   = tr.c arch.c  file.c  nreg.c try.c comsort.c destroy.c
 SOURCEF   =
 SOURCEH   = nreg.h
-OBJSC     = tr.o arch.o txt.o file.o  nreg.o try.o comsort.o destroy.o
+OBJSC     = tr.o arch.o file.o  nreg.o try.o comsort.o destroy.o
 OBJSF     =
 WSOURCEC  = archf.c   
 WOBJS     = archf.o  

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.18 1995/05/03 13:19:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.19 1995/05/05 20:14:40 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -65,16 +65,18 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     return MatCreateSequentialRow(comm,m,n,10,0,V);
   }
   if (OptionsHasName(0,0,"-mat_bdiag")) {
-    int nb = 1, ndiag = 0, ndiag2, i, *d, ierr;
+    int nb = 1, ndiag = 0, ndiag2,  *d, ierr;
     OptionsGetInt(0,0,"-mat_bdiag_bsize",&nb);
     OptionsGetInt(0,0,"-mat_bdiag_ndiag",&ndiag);
     if (ndiag) {
       d = (int *)MALLOC( ndiag * sizeof(int) ); CHKPTR(d);
       ndiag2 = ndiag;
       OptionsGetIntArray(0,0,"-mat_bdiag_dvals",d,&ndiag2);
-      if (ndiag2 != ndiag) 
+      if (ndiag2 != ndiag) { 
         SETERR(1,"Incompatible number of diagonals and diagonal values.");
-    } else SETERR(1,"Must set diagonals before creating matrix.");
+      }
+    } 
+    else SETERR(1,"Must set diagonals before creating matrix.");
     ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); 
     if (d) FREE(d);
     return ierr;
