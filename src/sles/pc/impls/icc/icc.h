@@ -9,7 +9,7 @@
 typedef struct {
   Mat             fact;
   MatOrderingType ordering;
-  MatICCInfo      info;
+  MatFactorInfo   info;
   void            *implctx;
 } PC_ICC;
 

@@ -1058,7 +1058,7 @@ int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
-int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatICCInfo *info,Mat *fact)
+int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ        *b;

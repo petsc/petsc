@@ -12,7 +12,7 @@
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPISBAIJ_Spooles"
-int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
+int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 {
   Mat_MPISBAIJ  *mat = (Mat_MPISBAIJ*)A->data;
   Mat_Spooles   *lu;   

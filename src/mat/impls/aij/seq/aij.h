@@ -58,7 +58,7 @@ typedef struct {
 } Mat_SeqAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
-EXTERN int MatICCFactorSymbolic_SeqAIJ(Mat,IS,MatICCInfo*,Mat *);
+EXTERN int MatICCFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat *);
 EXTERN int MatCholeskyFactorNumeric_SeqAIJ(Mat,Mat *);
 EXTERN int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatMarkDiagonal_SeqAIJ(Mat);

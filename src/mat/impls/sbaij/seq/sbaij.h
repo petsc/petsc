@@ -47,7 +47,7 @@ typedef struct {
   PetscReal        lu_zeropivot;
 } Mat_SeqSBAIJ;
 
-extern int MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,MatICCInfo*,Mat *);
+extern int MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat *);
 extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 

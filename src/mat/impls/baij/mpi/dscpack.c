@@ -398,7 +398,7 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 /* Note the Petsc permutation r is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK"
-int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,PetscReal f,Mat *F)
+int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F)
 {
   Mat_MPIBAIJ_DSC         *lu;   
   int                     ierr,size; 

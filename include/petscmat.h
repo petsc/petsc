@@ -489,10 +489,6 @@ extern PetscFList      MatOrderingList;
 
 EXTERN int MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
-EXTERN int MatCholeskyFactor(Mat,IS,PetscReal);
-EXTERN int MatCholeskyFactorSymbolic(Mat,IS,PetscReal,Mat*);
-EXTERN int MatCholeskyFactorNumeric(Mat,Mat*);
-
 /*S 
    MatILUInfo - Data based into the matrix ILU factorization routines
 
@@ -543,53 +539,39 @@ typedef struct {
 } MatLUInfo;
 
 /*S 
-   MatICCInfo - Data based into the matrix ICC factorization routines
+   MatFactorInfo - Data based into the matrix factorization routines
 
-   In Fortran these are simply double precision arrays of size MAT_ICCINFO_SIZE
+   In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE
 
-   Notes: These are not usually directly used by users, instead use the PC type of ICC
-          All entries are double precision.
+   Notes: These are not usually directly used by users, instead use PC type of LU, ILU, CHOLESKY or ICC.
 
    Level: developer
 
-.seealso: MatICCFactorSymbolic(), MatICCFactor(), MatILUInfo, MatLUInfo, MatCholeskyInfo
+.seealso: MatLUFactorSymbolic(), MatILUFactorSymbolic(), MatICCFactorSymbolic(), MatICCFactor()
 
 S*/
 typedef struct {
-  int           levels;         /* ICC(levels) */ 
-  PetscReal     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
-  PetscReal     dtcol;          /* tolerance for pivoting */
   PetscReal     damping;        /* scaling of identity added to matrix to prevent zero pivots */
-  PetscTruth    damp;           /* if is PETSC_TRUE, apply damping until successful */
-  PetscReal     zeropivot;      /* pivot is called zero if less than this */
-} MatICCInfo;
-
-/*S 
-   MatCholeskyInfo - Data based into the matrix Cholesky factorization routines
-
-   In Fortran these are simply double precision arrays of size MAT_CHOLESKYINFO_SIZE
-
-   Notes: These are not usually directly used by users, instead use the PC type of Cholesky
-          All entries are double precision.
-
-   Level: developer
-
-.seealso: MatCholeskyFactorSymbolic(), MatLUInfo, MatILUInfo
-
-S*/
-typedef struct {
-  PetscReal     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
-  PetscReal     damping; /* scaling of identity added to matrix to prevent zero pivots */
+  PetscReal     diagonal_fill;  /* force diagonal to fill in if initially not filled */
+  PetscReal     dt;             /* drop tolerance */
+  PetscReal     dtcol;          /* tolerance for pivoting */
+  PetscReal     dtcount;        /* maximum nonzeros to be allowed per row */
+  PetscReal     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  int           levels;         /* ICC(levels) */ 
   PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
                                    factorization may be faster if do not pivot */
-} MatCholeskyInfo;
+  PetscReal     zeropivot;      /* pivot is called zero if less than this */
+} MatFactorInfo;
 
+EXTERN int MatCholeskyFactor(Mat,IS,MatFactorInfo*);
+EXTERN int MatCholeskyFactorSymbolic(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN int MatCholeskyFactorNumeric(Mat,Mat*);
 EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
 EXTERN int MatILUFactor(Mat,IS,IS,MatILUInfo*);
 EXTERN int MatLUFactorSymbolic(Mat,IS,IS,MatLUInfo*,Mat*);
 EXTERN int MatILUFactorSymbolic(Mat,IS,IS,MatILUInfo*,Mat*);
-EXTERN int MatICCFactorSymbolic(Mat,IS,MatICCInfo*,Mat*);
-EXTERN int MatICCFactor(Mat,IS,MatICCInfo*);
+EXTERN int MatICCFactorSymbolic(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN int MatICCFactor(Mat,IS,MatFactorInfo*);
 EXTERN int MatLUFactorNumeric(Mat,Mat*);
 EXTERN int MatILUDTFactor(Mat,MatILUInfo*,IS,IS,Mat *);
 EXTERN int MatGetInertia(Mat,int*,int*,int*);

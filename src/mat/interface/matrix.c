@@ -1750,7 +1750,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
           MatGetOrdering()
 
 @*/
-int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
+int MatCholeskyFactor(Mat mat,IS perm,MatFactorInfo *info)
 {
   int ierr;
 
@@ -1765,7 +1765,7 @@ int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
   if (!mat->ops->choleskyfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->choleskyfactor)(mat,perm,f);CHKERRQ(ierr);
+  ierr = (*mat->ops->choleskyfactor)(mat,perm,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1802,7 +1802,7 @@ int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
           MatGetOrdering()
 
 @*/
-int MatCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,Mat *fact)
+int MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 {
   int ierr;
 
@@ -1817,7 +1817,7 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,Mat *fact)
   if (!mat->ops->choleskyfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->choleskyfactorsymbolic)(mat,perm,f,fact);CHKERRQ(ierr);
+  ierr = (*mat->ops->choleskyfactorsymbolic)(mat,perm,info,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3723,7 +3723,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatICCFactorSymbolic(Mat mat,IS perm,MatICCInfo *info,Mat *fact)
+int MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 {
   int ierr;
 
@@ -4739,7 +4739,7 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 
 .seealso: MatICCFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatICCFactor(Mat mat,IS row,MatICCInfo* info)
+int MatICCFactor(Mat mat,IS row,MatFactorInfo* info)
 {
   int ierr;
 

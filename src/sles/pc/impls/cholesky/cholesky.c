@@ -14,7 +14,7 @@ typedef struct {
   MatOrderingType ordering;         /* matrix ordering */
   PetscTruth      reuseordering;    /* reuses previous reordering computed */
   PetscTruth      reusefill;        /* reuse fill from previous Cholesky */
-  MatCholeskyInfo info;
+  MatFactorInfo   info;
 } PC_Cholesky;
 
 EXTERN_C_BEGIN
@@ -155,7 +155,7 @@ static int PCSetUp_Cholesky(PC pc)
       dir->col=0;
     }
     if (dir->row) {PetscLogObjectParent(pc,dir->row);}
-    ierr = MatCholeskyFactor(pc->pmat,dir->row,dir->info.fill);CHKERRQ(ierr);
+    ierr = MatCholeskyFactor(pc->pmat,dir->row,&dir->info);CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
     MatInfo info;
@@ -172,7 +172,7 @@ static int PCSetUp_Cholesky(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
       }
       if (dir->row) {PetscLogObjectParent(pc,dir->row);}
-      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->info.fill,&dir->fact);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PetscLogObjectParent(pc,dir->fact);
@@ -200,7 +200,7 @@ static int PCSetUp_Cholesky(PC pc)
         if (dir->row) {PetscLogObjectParent(pc,dir->row);}
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->info.fill,&dir->fact);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PetscLogObjectParent(pc,dir->fact);

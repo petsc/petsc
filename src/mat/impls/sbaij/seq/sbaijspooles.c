@@ -33,7 +33,7 @@ int MatGetInertia_SeqSBAIJ_Spooles(Mat F,int *nneg,int *nzero,int *npos)
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles"
-int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
+int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 { 
   Mat_Spooles          *lu;   
   int                  ierr,m=A->m,n=A->n;

@@ -137,7 +137,7 @@ int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
-int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,PetscReal f,Mat *fact)
+int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *info,Mat *fact)
 {
   int ierr;
 
@@ -148,7 +148,7 @@ int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,PetscReal f,Mat *fact)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactor_SeqDense"
-int MatCholeskyFactor_SeqDense(Mat A,IS perm,PetscReal f)
+int MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
 {
   Mat_SeqDense  *mat = (Mat_SeqDense*)A->data;
   int           info,ierr;
@@ -176,9 +176,11 @@ int MatCholeskyFactor_SeqDense(Mat A,IS perm,PetscReal f)
 int MatCholeskyFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
   int ierr;
+  MatFactorInfo info;
 
   PetscFunctionBegin;
-  ierr = MatCholeskyFactor_SeqDense(*fact,0,1.0);CHKERRQ(ierr);
+  info.fill = 1.0;
+  ierr = MatCholeskyFactor_SeqDense(*fact,0,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

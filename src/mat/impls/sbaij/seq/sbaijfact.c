@@ -53,7 +53,7 @@ See page 85, "Iterative Methods ..." by Saad. */
 /* Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
-int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
+int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   int          *rip,ierr,i,mbs = a->mbs,*ai,*aj;
@@ -61,6 +61,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   int          m,realloc = 0,prow;
   int          *jl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   int          *il,ili,nextprow;
+  PetscReal    f = info->fill;
   PetscTruth   perm_identity;
 
   PetscFunctionBegin;
@@ -212,7 +213,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   b->ilen = 0;
   b->imax = 0;
   b->row  = perm;
-  b->pivotinblocks = PETSC_FALSE; /* need to get from MatCholeskyInfo */
+  b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
@@ -372,7 +373,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   b->ilen = 0;
   b->imax = 0;
   b->row  = perm;
-  b->pivotinblocks = PETSC_FALSE; /* need to get from MatCholeskyInfo */
+  b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
@@ -1381,13 +1382,13 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactor_SeqSBAIJ"
-int MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,PetscReal f)
+int MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info)
 {
   int ierr;
   Mat C;
 
   PetscFunctionBegin;
-  ierr = MatCholeskyFactorSymbolic(A,perm,f,&C);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(A,perm,info,&C);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(A,&C);CHKERRQ(ierr);
   ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);

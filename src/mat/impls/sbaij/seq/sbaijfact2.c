@@ -1407,7 +1407,7 @@ int MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 /* Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ"
-int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatICCInfo *info,Mat *B) 
+int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B) 
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;  
   int         *rip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
@@ -1601,7 +1601,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatICCInfo *info,Mat *B)
   b->ilen = 0;
   b->imax = 0;
   b->row  = perm;
-  b->pivotinblocks = PETSC_FALSE; /* need to get from MatCholeskyInfo */
+  b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);

@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   PetscReal    norm;
   IS           perm;
   MatLUInfo    luinfo;
+  MatFactorInfo factinfo;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 
@@ -44,15 +45,16 @@ int main(int argc,char **argv)
     (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
 
   /* Cholesky factorization is not yet in place for this matrix format */
+  factinfo.fill = 1.0;
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
   ierr = MatConvert(mat,MATSAME,&fact);CHKERRQ(ierr);
-  ierr = MatCholeskyFactor(fact,perm,1.0);CHKERRQ(ierr);
+  ierr = MatCholeskyFactor(fact,perm,&factinfo);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
   ierr = MatDestroy(fact);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %A\n",norm);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorSymbolic(mat,perm,1.0,&fact);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(mat,perm,&factinfo,&fact);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(mat,&fact);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRQ(ierr);

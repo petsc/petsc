@@ -990,8 +990,8 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,Inser
   PetscFunctionReturn(0);
 } 
 
-extern int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,Mat*);
-extern int MatCholeskyFactor_SeqSBAIJ(Mat,IS,PetscReal);
+extern int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat*);
+extern int MatCholeskyFactor_SeqSBAIJ(Mat,IS,MatFactorInfo*);
 extern int MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS*,int);
 extern int MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 extern int MatGetSubMatrices_SeqSBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
@@ -1065,7 +1065,7 @@ extern int MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 /* modefied from MatILUFactor_SeqSBAIJ, needs further work!  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactor_SeqSBAIJ"
-int MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatICCInfo *info)
+int MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
   Mat         outA;
