@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 1998/06/15 15:42:13 balay Exp balay $ 
+# $Id: makefile,v 1.21 1999/02/01 20:38:19 balay Exp balay $ 
 
 ALL: lib
 
@@ -9,6 +9,7 @@ SOURCEF	 =
 SOURCEH	 = mpi.h mpif.h
 OBJSC	 = mpi.o
 OBJSF	 =
+SCRIPTS  = mpirun
 LIBBASE	 = libmpiuni
 LOCDIR   = src/sys/src/mpiuni/
 
