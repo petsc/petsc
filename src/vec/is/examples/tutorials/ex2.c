@@ -1,10 +1,12 @@
 
-/*      "$Id: ex2.c,v 1.12 2000/05/05 22:14:48 balay Exp bsmith $"; */
+/*      "$Id: ex2.c,v 1.13 2000/09/22 20:42:58 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
 /*T
-    Concepts: index sets^manipulating a stride index set;
+    Concepts: index sets^creating a stride index set;
+    Concepts: stride^creating a stride index set;
+    Concepts: IS^creating a stride index set;
     
     Comment: Creates an index set based on a stride. Views that index set
     and then destroys it.

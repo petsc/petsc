@@ -1,9 +1,11 @@
-/*$Id: ex1.c,v 1.19 2000/09/22 20:42:58 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.20 2000/09/27 03:31:23 bsmith Exp bsmith $*/
 
 static char help[] = "Creating a general index set.\n\n";
 
 /*T
     Concepts: index sets^manipulating a general index set;
+    Concepts: index sets^creating general;
+    Concepts: IS^creating a general index set;
     
     Comment: Creates an index set based on a set of integers. Views that index set
   and then destroys it.
