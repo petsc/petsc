@@ -72,10 +72,8 @@ bash as the working shell. <a href="#Aditional%20Windows%20Notes:">Microsoft Win
         <li>sh/bash shell <font color="#ff0000"><a href="#PETSC_DIR">PETSC_DIR</a>=`pwd`; export PETSC_DIR</font>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the backquote)</font><br>
           csh/tcsh shell <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_DIR</a> `pwd`</font></li>
-        <li> <font color="#ff0000">make PETSC_ARCH=solaris BOPT=g update</font></li>
         <li><font color="#ff0000">./config/configure.py (--help) ... </font></li>
         <li> <font color="#ff0000">make all</font></li>
-        <li><font color="#ff0000">make install</font> (optional; only if --prefix was set during configure.py above)</li>
         <li><font color="#ff0000">make test</font></li>
         <li>Encounter problems? 
           <ul> 
@@ -461,8 +459,8 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
   <ul>
      <li>apply the <a href="../download/petsc-patches.html">patches</a> (using GNU patch utility)<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">cd
-         petsc-2.2.0<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; patch -Np1 &lt; petsc_patches_all_2.2.0 </font></li>
+         petsc-2.2.1<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; patch -Np1 &lt; petsc_patches_all_2.2.1 </font></li>
         <li>sh/bash shell <font color="#ff0000"><a href="#PETSC_DIR">PETSC_DIR</a>=`pwd`; export PETSC_DIR</font>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the backquote)</font><br>
           csh/tcsh shell <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_DIR</a> `pwd`</font></li>
@@ -475,7 +473,7 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
           csh/tcsh shell<br>
           <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_ARCH</a> chosen name</font></li>
        <li> <font color="#ff0000">mkdir bmake/${PETSC_ARCH}</font></li>
-     <li> <font color="#ff0000">cp bmake/arch/* bmake/${PETSC_ARCH}</font> (ignore possible warning messages about not copying directories)</li>
+     <li> <font color="#ff0000">cp bmake/predefined/arch/* bmake/${PETSC_ARCH}</font> (ignore possible warning messages about not copying directories)</li>
      <li> Edit <a href="#bmake/$%7BPETSC_ARCH%7D/packages">bmake/${PETSC_ARCH}/packages</a> and
           specify the location of <a href="#BLAS/LAPACK">BLAS, LAPACK</a> and <a href="#MPI:">MPI</a>.
           I <a href="#I%20don%27t%20want%20to%20use%20MPI:">Don't want MPI</a> </li>
