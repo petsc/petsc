@@ -200,12 +200,14 @@ class Configure(config.base.Configure):
       if 'with-mpi-include' in self.framework.argDB:
         includes = [[self.framework.argDB['with-mpi-include']]]
       else:
-        includes = self.includeGuesses(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs))
+        includes = self.includeGuesses('\n'.join(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs)))
       yield ('User specified library and includes', [libs], includes)
       raise RuntimeError('You set a value for --with-mpi-lib, but '+str(self.framework.argDB['with-mpi-lib'])+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # Try specified installation root
     if 'with-mpi-dir' in self.framework.argDB:
-      dir = os.path.abspath(self.framework.argDB['with-mpi-dir'])
+      dir = self.framework.argDB['with-mpi-dir']
+      if not (len(dir) > 2 and dir[1] == ':'):
+        dir = os.path.abspath(dir)
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
       yield ('User specified installation root for cygwin', self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
       yield ('User specified installation root for MS Windows', self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])
