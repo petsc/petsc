@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.40 1996/01/04 15:56:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.41 1996/01/26 04:32:16 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -79,7 +79,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
   Scalar         *xv = x->array,*yv = y->array, *val, *rvalues,*svalues;
   MPI_Request    *rwaits, *swaits;
   int            tag = ctx->tag, i,j,*indices,*rstarts,*sstarts,*rprocs, *sprocs;
-  int            nrecvs, nsends,iend;
+  int            nrecvs, nsends,iend,jmax;
 
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI *) ctx->fromdata;
@@ -105,7 +105,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
   if (mode == SCATTER_ALL) {
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
-      MPI_Irecv((rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
+      MPI_Irecv(rvalues+rstarts[i],rstarts[i+1] - rstarts[i],
                  MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
@@ -116,7 +116,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
       for ( j=0; j<iend; j++ ) {
         val[j] = xv[*indices++];
       }
-      MPI_Isend((void*)val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
+      MPI_Isend(val,iend, MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
     /* take care of local scatters */
     if (gen_to->local.n && addv == INSERT_VALUES) {
@@ -135,17 +135,18 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
       SETERRQ(1,"PtoPScatterbegin:No SCATTER_UP to self");
     /* post receives:   */
     for ( i=gen_from->nbelow; i<nrecvs; i++ ) {
-      MPI_Irecv((rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
+      MPI_Irecv(rvalues+rstarts[i],rstarts[i+1] - rstarts[i],
                  MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
     /* do sends:  */
     for ( i=0; i<gen_to->nbelow; i++ ) {
-      val = svalues + sstarts[i];
-      for ( j=0; j<sstarts[i+1]-sstarts[i]; j++ ) {
+      val  = svalues + sstarts[i];
+      jmax = sstarts[i+1]-sstarts[i];
+      for ( j=0; j<jmax; j++ ) {
         val[j] = xv[*indices++];
       }
-      MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
+      MPI_Isend(val,sstarts[i+1] - sstarts[i],
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
   }
@@ -154,18 +155,19 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
       SETERRQ(1,"PtoPScatterbegin:No SCATTER_DOWN to self");
     /* post receives:   */
     for ( i=0; i<gen_from->nbelow; i++ ) {
-      MPI_Irecv((rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
+      MPI_Irecv(rvalues+rstarts[i],rstarts[i+1] - rstarts[i],
                  MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
     /* do sends:  */
     indices += sstarts[gen_to->nbelow]; 
     for ( i=gen_to->nbelow; i<nsends; i++ ) {
-      val = svalues + sstarts[i];
-      for ( j=0; j<sstarts[i+1]-sstarts[i]; j++ ) {
+      val  = svalues + sstarts[i];
+      jmax = sstarts[i+1]-sstarts[i];
+      for ( j=0; j<jmax; j++ ) {
         val[j] = xv[*indices++];
       }
-      MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
+      MPI_Isend(val,sstarts[i+1] - sstarts[i],
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
   }
@@ -178,6 +180,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
   Vec_MPI        *y = (Vec_MPI *)yin->data;
   Scalar         *rvalues, *yv = y->array,*val;
   int            nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
+  int            *indices_i;
   MPI_Request    *rwaits, *swaits;
   MPI_Status     rstatus,*sstatus;
 
@@ -206,7 +209,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"PtoPScatterend:Bad message");
+      if (n != rstarts[imdex+1]-rstarts[imdex]) SETERRQ(1,"PtoPScatterend:Bad message");
 
       lindices = indices + rstarts[imdex];
       if (addv == INSERT_VALUES) {
@@ -238,15 +241,16 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
-      if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"PtoPScatterend:Bad message");
+      if (n != rstarts[imdex+1]-rstarts[imdex]) SETERRQ(1,"PtoPScatterend:Bad message");
+      indices_i = indices + rstarts[imdex];
       if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
-          yv[indices[i+rstarts[imdex]]] = *val++;
+          yv[indices_i[i]] = *val++;
         }
       }
        else {
         for ( i=0; i<n; i++ ) {
-          yv[indices[i+rstarts[imdex]]] += *val++;
+          yv[indices_i[i]] += *val++;
         }
       }
       count--;
@@ -268,14 +272,15 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
       val = rvalues + rstarts[imdex];
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"PtoPScatterend:Bad message");
+      indices_i = indices + rstarts[imdex]; 
       if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
-          yv[indices[i+rstarts[imdex]]] = *val++;
+          yv[indices_i[i]] = *val++;
         }
       }
        else {
         for ( i=0; i<n; i++ ) {
-          yv[indices[i+rstarts[imdex]]] += *val++;
+          yv[indices_i[i]] += *val++;
         }
       }
       count--;
@@ -463,7 +468,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,InsertMode addv, PipelineMode mode,
       for ( j=0; j<sstarts[i+1]-sstarts[i]; j++ ) {
         val[j] = xv[*indices++];
       }
-      MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
+      MPI_Isend(val,sstarts[i+1] - sstarts[i],
                    MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
     /* wait on sends */
@@ -481,7 +486,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,InsertMode addv, PipelineMode mode,
       for ( j=0; j<sstarts[i+1]-sstarts[i]; j++ ) {
         val[j] = xv[*indices++];
       }
-      MPI_Isend((void*)val,sstarts[i+1]-sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
+      MPI_Isend(val,sstarts[i+1]-sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
     /* wait on sends */
     if (gen_to->nbelow>0) {
@@ -580,7 +585,7 @@ int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx
   count = 0;
   for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      MPI_Isend((void*)(svalues+starts[i]),nprocs[i],MPI_INT,i,tag,
+      MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,
                 comm,send_waits+count++);
     }
   }
