@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.54 1999/01/13 21:34:15 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.55 1999/04/06 18:14:07 balay Exp balay $";
 #endif
 
 /*
@@ -251,15 +251,6 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}
   *__ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
-#if defined (LAM_MPI)
-  {
-    int c1 = lam_F_typefind(MPI_COMM_SELF);
-    int c2 = lam_F_typefind(PETSC_COMM_WORLD);
-    lam_F_maketype(&c1, __ierr,PETSC_COMM_SELF);
-    lam_F_maketype(&c2, __ierr,PETSC_COMM_WORLD);
-  }
-#endif
-
   *__ierr = PetscInitialize_DynamicLibraries(); 
   if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
 

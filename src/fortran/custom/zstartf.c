@@ -45,10 +45,14 @@ EXTERN_C_END
 
 void PetscInitializeFortran(void)
 {
-  int c1,c2;
+  int c1=0,c2=0;
 
-  c1 = PetscFromPointerComm(PETSC_COMM_WORLD);
-  c2 = PetscFromPointerComm(PETSC_COMM_SELF);
+  if (PETSC_COMM_WORLD) {
+    c1 = PetscFromPointerComm(PETSC_COMM_WORLD);
+  }
+  if (PETSC_COMM_SELF) {
+    c2 = PetscFromPointerComm(PETSC_COMM_SELF);
+  }
   petscsetcommonblock_(&VIEWER_STDOUT_SELF,&VIEWER_STDERR_SELF,&VIEWER_STDOUT_WORLD,&c1,&c2);
 }
   
