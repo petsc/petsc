@@ -93,6 +93,11 @@ ICASE suns:
   A good idea is to look at mpich***/util/machines/machines.sun4 at icase.
   It lists the good sun4s at icase.
 
+SUN ULTRA account: 
+user :bsmith
+passwd:petsc-passwd
+eple.ii.uib.no ( also plomme, morell, rips)
+
 ----------------------------------------------------------------------
 
 To kill the running crontab remove bmake/common and bmake/RCS/common,v
