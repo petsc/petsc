@@ -113,6 +113,14 @@ class Configure(config.base.Configure):
         self.framework.log.write('MPI cannot link Fortran using MPI_Init((), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
         self.popLanguage()
         return 0
+      # Also do Satish check for broken mpif90 (MPICH)
+      # 1) bug.F
+      #       program main
+      # #include "include/main.h"
+      #       end
+      # 2) include/main.h
+      # #include "mpif.h"
+      # 3) compile bug.F
       self.popLanguage()
     return 1
 
