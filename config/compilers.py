@@ -87,7 +87,7 @@ class Configure(config.base.Configure):
       compilers = self.framework.argDB['with-cc']
     elif self.framework.argDB.has_key('CC'):
       compilers = self.framework.argDB['CC']
-    elif self.framework.argDB.has_key('with-mpi-dir'):
+    elif self.framework.argDB.has_key('with-mpi-dir') and self.framework.argDB['with-mpi-compilers']:
       compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpicc')]
     else:
       compilers = []
@@ -173,14 +173,12 @@ class Configure(config.base.Configure):
       compilers = self.framework.argDB['with-cxx']
     elif self.framework.argDB.has_key('CXX'):
       compilers = self.framework.argDB['CXX']
-    elif self.framework.argDB.has_key('with-mpi-dir'):
-      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpicxx')]
-      compilers.append(os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpiCC'))
+    elif self.framework.argDB.has_key('with-mpi-dir') and self.framework.argDB['with-mpi-compilers']:
+      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpicxx'), os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpiCC')]
     else:
       compilers = []
       if self.framework.argDB['with-mpi']:
-        compilers.append('mpicxx')
-        compilers.append('mpiCC')
+        compilers.extend(['mpicxx', 'mpiCC'])
       if self.framework.argDB['with-gnu-compilers']:
         compilers.append('g++')
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -249,14 +247,12 @@ class Configure(config.base.Configure):
       compilers = self.framework.argDB['with-fc']
     elif self.framework.argDB.has_key('FC'):
       compilers = self.framework.argDB['FC']
-    elif self.framework.argDB.has_key('with-mpi-dir'):
-      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpif90')]
-      compilers.append(os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpif77'))
+    elif self.framework.argDB.has_key('with-mpi-dir') and self.framework.argDB['with-mpi-compilers']:
+      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpif90'), os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpif77')]
     else:
       compilers = []
       if self.framework.argDB['with-mpi']:
-        compilers.append('mpif90')
-        compilers.append('mpif77')
+        compilers.extend(['mpif90', 'mpif77'])
       if self.framework.argDB['with-gnu-compilers']:
         compilers.append('g77')
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -264,15 +260,11 @@ class Configure(config.base.Configure):
         if not vendor:
           compilers.append('f90')
         if vendor == 'ibm' or not vendor:
-          compilers.extend('xlf90')
-        if vendor == 'ibm' or not vendor:
-          compilers.extend('xlf')
+          compilers.extend(['xlf90', 'xlf'])
         if vendor == 'intel' or not vendor:
           compilers.append('icf')
         if vendor == 'portland' or not vendor:
-          compilers.append('pgf90')
-        if vendor == 'portland' or not vendor:
-          compilers.append('pgf77')
+          compilers.extend(['pgf90', 'pgf77'])
         if not vendor:
           compilers.append('f77')
     if not isinstance(compilers, list): compilers = [compilers]
@@ -291,6 +283,16 @@ class Configure(config.base.Configure):
         self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS']+' '+flag
       self.popLanguage()
     self.addSubstitution('FFLAGS', self.framework.argDB['FFLAGS'])
+    return
+
+  def checkFortranLink(self):
+    '''See if Fortran can link at all'''
+    self.pushLanguage('F77')
+    if not self.checkCompile():
+      raise RuntimeError('Cannot compile Fortran. Check configure.log for more information.')
+    if not self.checkLink():
+      raise RuntimeError('Cannot link Fortran Check configure.log for more information.')
+    self.popLanguage()
     return
 
   def mangleFortranFunction(self, name):
@@ -330,7 +332,6 @@ class Configure(config.base.Configure):
 
     # Link each test object against F77 driver.  If successful, then mangling found.
     self.pushLanguage('F77')
-    self.sourceExtension = '.F'
     for i in numtest:
       self.framework.argDB['LIBS'] += ' '+cobj[i]
       if self.checkLink(None,'       call d1chk()\n'):
@@ -559,6 +560,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkFortranCompiler)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranFlags)
+      self.executeTest(self.checkFortranLink)
       self.executeTest(self.checkFortranNameMangling)
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Compiler)

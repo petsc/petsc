@@ -148,7 +148,7 @@ class Configure:
       self.sourceExtension = '.cc'
     elif language == 'F77':
       self.compilerDefines = 'confdefs.h'
-      self.sourceExtension = '.f'
+      self.sourceExtension = '.F'
     else:
       raise RuntimeError('Unknown language: '+language)
     return
