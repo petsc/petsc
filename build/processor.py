@@ -274,7 +274,7 @@ class Linker(Processor):
 
 class DirectoryArchiver(Linker):
   '''A DirectoryArchiver processes any FileSet with intermediate object files, and outputs a FileSet of those files moved to a storage directory.'''
-  def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'dir'):
+  def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = 'dir'):
     if not isinstance(inputTag, list): inputTag = [inputTag]
     if outputTag is None:
       outputTag = inputTag[0]+' library'
@@ -346,7 +346,7 @@ class Archiver(Linker):
 
 class SharedLinker(Linker):
   '''A SharedLinker processes any FileSet oflibraries, and outputs a FileSet of shared libraries.'''
-  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'so'):
+  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = 'so'):
     if not isinstance(inputTag, list): inputTag = [inputTag]
     if outputTag is None:
       outputTag = inputTag[0]+' shared library'

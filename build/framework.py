@@ -44,7 +44,9 @@ class Framework(base.Base):
 
   def setupSourceDB(self, proj):
     '''Load any existing source database for the given project, and register its save method'''
-    filename = os.path.join(self.proj.getRoot(), 'bsSource.db')
+    import project
+
+    filename = os.path.join(proj.getRoot(), 'bsSource.db')
     root     = project.ProjectPath('', proj.getUrl())
     self.debugPrint('Reading source database for '+proj.getUrl()+' from '+filename, 2, 'sourceDB')
     if os.path.exists(filename):

@@ -116,6 +116,8 @@ a ValueError is raised.'''
   projectRoot = property(getProjectRoot, setProjectRoot, doc = 'The project root for all files in the set')
 
   def getPath(self):
+    if not self._path:
+      return self.projectRoot
     path = self._path
     if not self.projectUrl is None:
       path = os.path.join(self.projectRoot, path)

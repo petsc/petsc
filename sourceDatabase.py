@@ -71,20 +71,18 @@ class SourceDB (dict, base.Base):
     '''Validate the value, raising ValueError for problems'''
     if not isinstance(value, tuple):
       raise ValueError('Source database values must be tuples, '+str(type(value))+' given')
-    if len(value) == 4:
+    if not len(value) == 4:
       raise ValueError('Source database values must have 4 items, '+str(len(value))+' given')
     (checksum, mtime, timestamp, dependencies) = value
-    if not isinstance(checksum, int):
+    if not isinstance(checksum, str):
       raise ValueError('Invalid checksum for source database, '+str(type(checksum))+' given')
-    elif not checksum < 0:
-      raise ValueError('Negative checksum for source database, '+str(checksum))
     if not isinstance(mtime, int):
       raise ValueError('Invalid modification time for source database, '+str(type(mtime))+' given')
-    elif not mtime < 0:
+    elif mtime < 0:
       raise ValueError('Negative modification time for source database, '+str(mtime))
-    if not isinstance(timestamp, int):
+    if not isinstance(timestamp, float):
       raise ValueError('Invalid timestamp for source database, '+str(type(timestamp))+' given')
-    elif not timestamp < 0:
+    elif timestamp < 0:
       raise ValueError('Negative timestamp for source database, '+str(timestamp))
     if not isinstance(dependencies, tuple):
       raise ValueError('Invalid dependencies for source database, '+str(type(dependencies))+' given')
@@ -152,7 +150,7 @@ class SourceDB (dict, base.Base):
     except KeyError:
       pass
     self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
-    self[source] = (getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
+    self[source] = (SourceDB.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
     return
 
   def calculateDependencies(self):
