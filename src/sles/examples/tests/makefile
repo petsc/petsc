@@ -262,18 +262,14 @@ runex8_2:
 	   if (diff output/ex8_2.out ex8_2.tmp) then true; \
 	   else echo "Possible problem with ex8_2, diffs above"; fi; \
 	   $(RM) -f ex8_2.tmp
+
+# Note: We test these BlockSolve95 examples differently from the usual
+# because the coloring heuristic is machine-dependent.
 runex8_3:
-	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs \
-	   -ksp_rtol .000001 -ksp_smonitor > ex8_3.tmp 2>&1; \
-	   if (diff output/ex8_3.out ex8_3.tmp) then true; \
-	   else echo "Possible problem with ex8_3, diffs above"; fi; \
-	   $(RM) -f ex8_3.tmp
+	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs -ksp_rtol .000001
 runex8_4:
 	-@$(MPIRUN) -np 2 ex8 -pc_type ilu -mat_nonsym -mat_mpirowbs \
-	   -ksp_smonitor -ksp_rtol .000001 > ex8_4.tmp 2>&1; \
-	   if (diff output/ex8_4.out ex8_4.tmp) then true; \
-	   else echo "Possible problem with ex8_4, diffs above"; fi; \
-	   $(RM) -f ex8_4.tmp
+	   -ksp_rtol .000001
 runex10:
 	-@$(MPIRUN) ex10 -mat_bdiag -ksp_smonitor > ex10_1.tmp 2>&1; \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
