@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.8 1996/10/24 15:30:16 curfman Exp balay $";
+C    "$Id: ex11f.F,v 1.9 1997/01/31 23:33:28 balay Exp curfman $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -91,6 +91,11 @@ C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+#if !defined(PETSC_COMPLEX)
+      write(6,*) "This example requires complex numbers."
+      goto 200
+#endif
+
       none   = -1.0
       n      = 6
       sigma1 = 100.0
@@ -243,6 +248,7 @@ C  are no longer needed.
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
 
+ 200  continue
       call PetscFinalize(ierr)
       stop
       end

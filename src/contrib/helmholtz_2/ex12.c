@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.17 1997/01/05 18:58:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.18 1997/02/05 22:02:09 bsmith Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -177,7 +177,7 @@ int main(int argc,char **args)
   */
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
+  SETERRA(1,0,"This example requires complex numbers");
 #endif
 
   /*

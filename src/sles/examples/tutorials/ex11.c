@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.9 1996/10/24 15:30:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.10 1996/10/29 19:12:46 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -56,6 +56,10 @@ int main(int argc,char **args)
   double      h2, sigma1 = 100.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
+#if !defined(PETSC_COMPLEX)
+  SETERRA(1,0,"This example requires complex numbers");
+#endif
+
   ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   dim = n*n;
