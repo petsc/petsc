@@ -1,4 +1,4 @@
-/*$Id: nt_time.c,v 1.22 2001/01/15 21:43:58 bsmith Exp balay $*/
+/*$Id: nt_time.c,v 1.23 2001/03/23 23:20:44 balay Exp bsmith $*/
 
 #include <petsc.h>
 #if defined (PARCH_win32_gnu) || defined (PARCH_win32)
@@ -9,15 +9,15 @@
 #define __FUNCT__ "nt_time"
 PetscLogDouble nt_time(void) 
 {
-  static PetscTruth flag = PETSC_TRUE;
-  int               ierr;
+  static PetscTruth     flag = PETSC_TRUE;
+  int                   ierr;
 
-  static LARGE_INTEGER StartTime,PerfFreq,CurTime; 
+  static LARGE_INTEGER  StartTime,PerfFreq,CurTime; 
   static PetscLogDouble SecInTick=0.0;
   
-  DWORD      dwStartHigh,dwCurHigh;
-  PetscLogDouble dTime,dHigh;
-  PetscLogDouble time;
+  DWORD                 dwStartHigh,dwCurHigh;
+  PetscLogDouble        dTime,dHigh;
+  PetscLogDouble        time;
   
   
   PetscFunctionBegin;
