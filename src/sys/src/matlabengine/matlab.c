@@ -1,23 +1,41 @@
-/* $Id: makefile,v 1.1 2000/04/02 04:46:38 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.2 2000/04/04 03:33:30 bsmith Exp bsmith $ #include "petsc.h" */
 
-#include "petsc.h"
-#include "engine.h"   /* Matlab include file  */
+#include "engine.h"   /* Matlab include file */
+#include "petsc.h" 
 
-/* Pointer to Matlab engine data structure */
-static Engine *ep = PETSC_NULL;
-static char   buffer[1024];
+typedef struct {
+  Engine   *ep;
+  char     buffer[1024];
+} PetscMatlabEngine;
+
+/*
+    The variable Petsc_Matlab_Engine_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a Matlab Engine.
+*/
+static int Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
 #define __FUNC__ "PetscMatlabEngineInitialize"
 int PetscMatlabEngineInitialize(MPI_Comm comm,char *machine)
 {
+  PetscMatlabEngine *engine;
+  PetscTruth        flg;
+  int               ierr;
 
   PetscFunctionBegin;
-  if (ep) PetscFunctionReturn(0);
-  if (!machine) machine = "\0";
-  ep = engOpen(machine);
-  if (!ep) SETERRQ1(1,1,"Unable to start Matlab engine on %s\n",machine);
-  engOutputBuffer(ep,buffer,1024);
+  if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Matlab_Engine_keyval,0);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  if (!flg) { /* engine not yet created */
+    engine = PetscNew(PetscMatlabEngine);CHKPTRQ(engine);
+    if (!machine) machine = "\0";
+    engine->ep = engOpen(machine);
+    if (!engine->ep) SETERRQ1(1,1,"Unable to start Matlab engine on %s\n",machine);
+    engOutputBuffer(engine->ep,engine->buffer,1024);
+    ierr = MPI_Attr_put(comm,Petsc_Matlab_Engine_keyval,(void *)&engine);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -25,10 +43,16 @@ int PetscMatlabEngineInitialize(MPI_Comm comm,char *machine)
 #define __FUNC__ "PetscMatlabEngineFinalize"
 int PetscMatlabEngineFinalize(MPI_Comm comm)
 {
+  PetscMatlabEngine *engine;
+  int               ierr;
+  PetscTruth        flg;
+  
   PetscFunctionBegin;
-  if (!ep) PetscFunctionReturn(0);
-  engClose(ep);
-  ep = PETSC_NULL;
+  if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) PetscFunctionReturn(0);
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+  engClose(engine->ep);
+  ierr = PetscFree(engine);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -36,8 +60,20 @@ int PetscMatlabEngineFinalize(MPI_Comm comm)
 #define __FUNC__ "PetscMatlabEngineEvaluate"
 int PetscMatlabEngineEvaluate(MPI_Comm comm,char *string)
 {
+  PetscMatlabEngine *engine;
+  int               ierr;
+  PetscTruth        flg;
+
   PetscFunctionBegin;  
-  engEvalString(ep, string);
+  if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  }
+  engEvalString(engine->ep, string);
   PetscFunctionReturn(0);
 }
 
@@ -45,91 +81,23 @@ int PetscMatlabEngineEvaluate(MPI_Comm comm,char *string)
 #define __FUNC__ "PetscMatlabEngineGetOutput"
 int PetscMatlabEngineGetOutput(MPI_Comm comm,char **string)
 {
+  PetscMatlabEngine *engine;
+  int               ierr;
+  PetscTruth        flg;
+
   PetscFunctionBegin;  
-  *string = buffer + 2;
+  if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  }
+  *string = engine->buffer + 2;
   PetscFunctionReturn(0);
 }
 
-#define  BUFSIZE 256
-int dummy()
-{
-	mxArray *T = NULL, *result = NULL;
-	char buffer[BUFSIZE];
-	double time[10] = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
-
-	/*
-	 * PART I
-	 *
-	 * For the first half of this demonstration, we will send data
-	 * to MATLAB, analyze the data, and plot the result.
-	 */
-
-	/* 
-	 * Create a variable for our data
-	 */
-	T = mxCreateDoubleMatrix(1, 10, mxREAL);
-	mxSetName(T, "T");
-	/* memcpy((void *)mxGetPr(T), (void *)time, sizeof(time)); */
-	/*
-	 * Place the variable T into the MATLAB workspace
-	 */
-	engPutArray(ep, T);
-
-	mxDestroyArray(T);
-
-
-
-	/*
-	 * PART II
-	 *
-	 * For the second half of this demonstration, we will request
-	 * a MATLAB string, which should define a variable X.  MATLAB
-	 * will evaluate the string and create the variable.  We
-	 * will then recover the variable, and determine its type.
-	 */
-	  
-	/*
-	 * Use engOutputBuffer to capture MATLAB output, so we can
-	 * echo it back.
-	 */
-
-	engOutputBuffer(ep, buffer, BUFSIZE);
-	while (result == NULL) {
-	    char str[BUFSIZE];
-	    /*
-	     * Get a string input from the user
-	     */
-	    printf("Enter a MATLAB command to evaluate.  This command should\n");
-	    printf("create a variable X.  This program will then determine\n");
-	    printf("what kind of variable you created.\n");
-	    printf("For example: X = 1:5\n");
-	    printf(">> ");
-
-	    fgets(str, BUFSIZE-1, stdin);
-	  
-	    /*
-	     * Evaluate input with engEvalString
-	     */
-	    engEvalString(ep, str);
-	    
-	    /*
-	     * Echo the output from the command.  First two characters are
-	     * always the double prompt (>>).
-	     */
-	    printf("%s", buffer+2);
-	    
-	    /*
-	     * Get result of computation
-	     */
-	    printf("\nRetrieving X...\n");
-	    if ((result = engGetArray(ep,"X")) == NULL)
-	      printf("Oops! You didn't create a variable X.\n\n");
-	    else {
-		printf("X is class %s\t\n", mxGetClassName(result));
-	    }
-	}
-return 0;
-}
 
 
 
