@@ -1,3 +1,5 @@
+#define PETSCSNES_DLL
+
 /*MC
      MATSNESMF_WP - Implements an alternative approach for computing the differencing parameter
         h used with the finite difference based matrix-free Jacobian.  This code
@@ -174,7 +176,7 @@ static PetscErrorCode MatSNESMFDestroy_WP(MatSNESMFCtx ctx)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFWPSetComputeNormA_P"
-PetscErrorCode MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFWP  *hctx;
@@ -209,7 +211,7 @@ EXTERN_C_END
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-PetscErrorCode MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscTruth);
 
@@ -225,7 +227,7 @@ PetscErrorCode MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFWPSetComputeNormU_P"
-PetscErrorCode MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFWP  *hctx;
@@ -260,7 +262,7 @@ EXTERN_C_END
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-PetscErrorCode MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscTruth);
 
@@ -284,7 +286,7 @@ EXTERN_C_BEGIN
 .  ctx - the matrix free context created by MatSNESMFCreate()
 
 */
-PetscErrorCode MatSNESMFCreate_WP(MatSNESMFCtx ctx)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_WP(MatSNESMFCtx ctx)
 {
   PetscErrorCode ierr;
   MatSNESMFWP    *hctx;

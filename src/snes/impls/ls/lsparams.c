@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -29,7 +30,7 @@
 
 .seealso: SNESGetLineSearchParams(), SNESSetLineSearch()
 @*/
-PetscErrorCode SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
 {
   SNES_LS *ls;
 
@@ -71,7 +72,7 @@ PetscErrorCode SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxst
 
 .seealso: SNESSetLineSearchParams(), SNESSetLineSearch()
 @*/
-PetscErrorCode SNESGetLineSearchParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLineSearchParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol)
 {
   SNES_LS *ls;
 

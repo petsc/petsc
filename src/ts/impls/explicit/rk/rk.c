@@ -1,3 +1,5 @@
+#define PETSCTS_DLL
+
 /*
  * Code for Timestepping with Runge Kutta
  *
@@ -26,7 +28,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSRKSetTolerance_RK"
-PetscErrorCode TSRKSetTolerance_RK(TS ts,PetscReal aabs)
+PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance_RK(TS ts,PetscReal aabs)
 {
   TS_Rk *rk = (TS_Rk*)ts->data;
   
@@ -55,7 +57,7 @@ EXTERN_C_END
 .seealso: TSPVodeSetTolerance()
 
 @*/
-PetscErrorCode TSRKSetTolerance(TS ts,PetscReal aabs)
+PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance(TS ts,PetscReal aabs)
 {
   PetscErrorCode ierr,(*f)(TS,PetscReal);  
   
@@ -470,7 +472,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Rk"
-PetscErrorCode TSCreate_Rk(TS ts)
+PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Rk(TS ts)
 {
   TS_Rk          *rk;
   PetscErrorCode ierr;

@@ -1,3 +1,5 @@
+#define PETSCTS_DLL
+
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -350,7 +352,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_CN"
-PetscErrorCode TSCreate_CN(TS ts)
+PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
 {
   TS_CN          *cn;
   PetscErrorCode ierr;

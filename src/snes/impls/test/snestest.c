@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
 
 #include "src/snes/snesimpl.h"
 
@@ -95,7 +96,7 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_Test"
-PetscErrorCode SNESCreate_Test(SNES  snes)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
 {
   SNES_Test      *neP;
   PetscErrorCode ierr;

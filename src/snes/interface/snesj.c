@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
 
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
@@ -38,7 +39,7 @@
 
 .seealso: SNESSetJacobian(), SNESDefaultComputeJacobianColor()
 @*/
-PetscErrorCode SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec            j1a,j2a,x2;
   PetscErrorCode ierr;

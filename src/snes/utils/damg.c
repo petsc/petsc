@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
  
 #include "petscda.h"            /*I "petscda.h"   I*/
 #include "petscksp.h"           /*I "petscksp.h"  I*/
@@ -34,7 +35,7 @@
 .seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser()
 
 @*/
-PetscErrorCode DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -76,7 +77,7 @@ PetscErrorCode DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg)
 .seealso DMMGCreate()
 
 @*/
-PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG* dmmg)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG* dmmg)
 {
   PetscInt  i,nlevels = dmmg[0]->nlevels;
 
@@ -104,7 +105,7 @@ PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG* dmmg)
 .seealso DMMGCreate()
 
 @*/
-PetscErrorCode DMMGDestroy(DMMG *dmmg)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -153,7 +154,7 @@ PetscErrorCode DMMGDestroy(DMMG *dmmg)
 .seealso DMMGCreate(), DMMGDestroy()
 
 @*/
-PetscErrorCode DMMGSetDM(DMMG *dmmg,DM dm)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg,DM dm)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -186,7 +187,7 @@ PetscErrorCode DMMGSetDM(DMMG *dmmg,DM dm)
 .seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSolve()
 
 @*/
-PetscErrorCode DMMGSetUp(DMMG *dmmg)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -231,7 +232,7 @@ PetscErrorCode DMMGSetUp(DMMG *dmmg)
 .seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSetUp()
 
 @*/
-PetscErrorCode DMMGSolve(DMMG *dmmg)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -280,7 +281,7 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveKSP"
-PetscErrorCode DMMGSolveKSP(DMMG *dmmg,PetscInt level)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 {
   PetscErrorCode ierr;
 
@@ -299,7 +300,7 @@ PetscErrorCode DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetUpLevel"
-PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -393,7 +394,7 @@ PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve()
 
 @*/
-PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat))
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat))
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -461,7 +462,7 @@ PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorC
 .seealso DMMGCreate(), DMMGDestroy
 
 @*/
-PetscErrorCode DMMGView(DMMG *dmmg,PetscViewer viewer)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -530,7 +531,7 @@ PetscErrorCode DMMGView(DMMG *dmmg,PetscViewer viewer)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), MatNullSpaceCreate(), KSPSetNullSpace()
 
 @*/
-PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscErrorCode (*func)(DMMG,Vec[]))
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscErrorCode (*func)(DMMG,Vec[]))
 {
   PetscErrorCode ierr;
   PetscInt       i,j,nlevels = dmmg[0]->nlevels;
@@ -600,7 +601,7 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess()
 
 @*/
-PetscErrorCode DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -633,7 +634,7 @@ PetscErrorCode DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGInitialGuessCurrent()
 
 @*/
-PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(DMMG,Vec))
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(DMMG,Vec))
 {
   PetscInt i,nlevels = dmmg[0]->nlevels;
 

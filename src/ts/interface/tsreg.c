@@ -1,3 +1,4 @@
+#define PETSCTS_DLL
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
@@ -42,7 +43,7 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
 .keywords: TS, set, type
 
 @*/
-PetscErrorCode TSSetType(TS ts, const TSType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts, const TSType type)
 {
   PetscErrorCode (*r)(TS);
   PetscTruth     match;
@@ -93,7 +94,7 @@ PetscErrorCode TSSetType(TS ts, const TSType type)
 .keywords: TS, timestepper, get, type, name
 .seealso TSSetType()
 @*/
-PetscErrorCode TSGetType(TS ts, TSType *type)
+PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, TSType *type)
 {
   PetscErrorCode ierr;
 
@@ -116,7 +117,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
 
   Level: advanced
 @*/
-PetscErrorCode TSRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(TS))
+PetscErrorCode PETSCTS_DLLEXPORT TSRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(TS))
 {
   char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -142,7 +143,7 @@ PetscErrorCode TSRegister(const char sname[], const char path[], const char name
 .keywords: TS, timestepper, register, destroy
 .seealso: TSRegister(), TSRegisterAll(), TSRegisterDynamic()
 @*/
-PetscErrorCode TSRegisterDestroy(void)
+PetscErrorCode PETSCTS_DLLEXPORT TSRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 

@@ -1,10 +1,11 @@
+#define PETSCSNES_DLL
 
 #include "src/snes/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode SNESCreate_LS(SNES);
-EXTERN PetscErrorCode SNESCreate_TR(SNES);
-EXTERN PetscErrorCode SNESCreate_Test(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES);
 EXTERN_C_END
   
 /*
@@ -27,7 +28,7 @@ extern PetscTruth SNESRegisterAllCalled;
 
 .seealso:  SNESRegisterDestroy()
 @*/
-PetscErrorCode SNESRegisterAll(const char path[])
+PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

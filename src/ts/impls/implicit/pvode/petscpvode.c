@@ -1,3 +1,4 @@
+#define PETSCTS_DLL
 
 /*
     Provides a PETSc interface to PVODE. Alan Hindmarsh's parallel ODE
@@ -36,7 +37,7 @@ g
           TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance()
 @*/
-PetscErrorCode TSPVodeGetParameters(TS ts,int *opt_size,long int *iopt[],double *ropt[])
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeGetParameters(TS ts,int *opt_size,long int *iopt[],double *ropt[])
 { 
   TS_PVode     *cvode = (TS_PVode*)ts->data;
 
@@ -435,7 +436,7 @@ PetscErrorCode TSView_PVode(TS ts,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetType_Pvode"
-PetscErrorCode TSPVodeSetType_PVode(TS ts,TSPVodeType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetType_PVode(TS ts,TSPVodeType type)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -448,7 +449,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetGMRESRestart_PVode"
-PetscErrorCode TSPVodeSetGMRESRestart_PVode(TS ts,int restart)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetGMRESRestart_PVode(TS ts,int restart)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -461,7 +462,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetLinearTolerance_PVode"
-PetscErrorCode TSPVodeSetLinearTolerance_PVode(TS ts,double tol)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetLinearTolerance_PVode(TS ts,double tol)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -474,7 +475,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetGramSchmidtType_PVode"
-PetscErrorCode TSPVodeSetGramSchmidtType_PVode(TS ts,TSPVodeGramSchmidtType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetGramSchmidtType_PVode(TS ts,TSPVodeGramSchmidtType type)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -488,7 +489,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPVodeSetTolerance_PVode"
-PetscErrorCode TSPVodeSetTolerance_PVode(TS ts,double aabs,double rel)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetTolerance_PVode(TS ts,double aabs,double rel)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -502,7 +503,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPVodeGetPC_PVode"
-PetscErrorCode TSPVodeGetPC_PVode(TS ts,PC *pc)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeGetPC_PVode(TS ts,PC *pc)
 { 
   TS_PVode *cvode = (TS_PVode*)ts->data;
 
@@ -516,7 +517,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPVodeGetIterations_PVode"
-PetscErrorCode TSPVodeGetIterations_PVode(TS ts,int *nonlin,int *lin)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeGetIterations_PVode(TS ts,int *nonlin,int *lin)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -530,7 +531,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPVodeSetExactFinalTime_PVode"
-PetscErrorCode TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
@@ -569,7 +570,7 @@ EXTERN_C_END
           TSPVodeSetExactFinalTime()
 
 @*/
-PetscErrorCode TSPVodeGetIterations(TS ts,int *nonlin,int *lin)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeGetIterations(TS ts,int *nonlin,int *lin)
 {
   PetscErrorCode ierr,(*f)(TS,int*,int*);
   
@@ -604,7 +605,7 @@ PetscErrorCode TSPVodeGetIterations(TS ts,int *nonlin,int *lin)
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC(),
           TSPVodeSetExactFinalTime()
 @*/
-PetscErrorCode TSPVodeSetType(TS ts,TSPVodeType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetType(TS ts,TSPVodeType type)
 {
   PetscErrorCode ierr,(*f)(TS,TSPVodeType);
   
@@ -640,7 +641,7 @@ PetscErrorCode TSPVodeSetType(TS ts,TSPVodeType type)
           TSPVodeSetExactFinalTime()
 
 @*/
-PetscErrorCode TSPVodeSetGMRESRestart(TS ts,int restart)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetGMRESRestart(TS ts,int restart)
 {
   PetscErrorCode ierr,(*f)(TS,int);  
 
@@ -677,7 +678,7 @@ PetscErrorCode TSPVodeSetGMRESRestart(TS ts,int restart)
           TSPVodeSetExactFinalTime()
 
 @*/
-PetscErrorCode TSPVodeSetLinearTolerance(TS ts,double tol)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetLinearTolerance(TS ts,double tol)
 {
   PetscErrorCode ierr,(*f)(TS,double);  
   
@@ -712,7 +713,7 @@ PetscErrorCode TSPVodeSetLinearTolerance(TS ts,double tol)
           TSPVodeSetExactFinalTime()
 
 @*/
-PetscErrorCode TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
 {
   PetscErrorCode ierr,(*f)(TS,TSPVodeGramSchmidtType);  
   
@@ -753,7 +754,7 @@ PetscErrorCode TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
           TSPVodeSetExactFinalTime()
 
 @*/
-PetscErrorCode TSPVodeSetTolerance(TS ts,double aabs,double rel)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetTolerance(TS ts,double aabs,double rel)
 {
   PetscErrorCode ierr,(*f)(TS,double,double);  
   
@@ -785,7 +786,7 @@ PetscErrorCode TSPVodeSetTolerance(TS ts,double aabs,double rel)
           TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance()
 @*/
-PetscErrorCode TSPVodeGetPC(TS ts,PC *pc)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeGetPC(TS ts,PC *pc)
 { 
   PetscErrorCode ierr,(*f)(TS,PC *);  
 
@@ -818,7 +819,7 @@ PetscErrorCode TSPVodeGetPC(TS ts,PC *pc)
           TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
           TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC() 
 @*/
-PetscErrorCode TSPVodeSetExactFinalTime(TS ts,PetscTruth ft)
+PetscErrorCode PETSCTS_DLLEXPORT TSPVodeSetExactFinalTime(TS ts,PetscTruth ft)
 { 
   PetscErrorCode ierr,(*f)(TS,PetscTruth);  
 
@@ -858,7 +859,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_PVode"
-PetscErrorCode TSCreate_PVode(TS ts)
+PetscErrorCode PETSCTS_DLLEXPORT TSCreate_PVode(TS ts)
 {
   TS_PVode *cvode;
   PetscErrorCode ierr;

@@ -31,7 +31,7 @@ def FixFile(filename):
   	  data = re.subn('\(MPI_Comm\)PetscToPointer\( \(comm\) \)','(MPI_Comm)MPI_Comm_f2c(*(MPI_Fint*)(comm))',data)[0]
   	  data = re.subn('\(PetscInt\* \)PetscToPointer','',data)[0]
           match = re.compile(r"""\b(PETSC)(_DLL|VEC_DLL|MAT_DLL|DM_DLL|KSP_DLL|SNES_DLL|TS_DLL|FORTRAN_DLL)(EXPORT)""")
-          data = match.sub(r'\1_DLL_\3',data)
+          data = match.sub(r'',data)
 
   	  ff = open(filename,'w')
 	  ff.write('#include "petsc.h"\n#include "petscfix.h"\n'+data)

@@ -1,12 +1,13 @@
+#define PETSCTS_DLL
 
 #include "src/ts/tsimpl.h"     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode TSCreate_Euler(TS);
-EXTERN PetscErrorCode TSCreate_BEuler(TS);
-EXTERN PetscErrorCode TSCreate_Pseudo(TS);
-EXTERN PetscErrorCode TSCreate_PVode(TS);
-EXTERN PetscErrorCode TSCreate_CN(TS);
-EXTERN PetscErrorCode TSCreate_Rk(TS);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Euler(TS);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_PVode(TS);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Rk(TS);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -24,7 +25,7 @@ EXTERN_C_END
 .keywords: TS, timestepper, register, all
 .seealso: TSCreate(), TSRegister(), TSRegisterDestroy(), TSRegisterDynamic()
 @*/
-PetscErrorCode TSRegisterAll(const char path[])
+PetscErrorCode PETSCTS_DLLEXPORT TSRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 

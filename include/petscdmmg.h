@@ -57,22 +57,22 @@ struct _p_DMMG {
   
 };
 
-EXTERN PetscErrorCode DMMGCreate(MPI_Comm,PetscInt,void*,DMMG**);
-EXTERN PetscErrorCode DMMGDestroy(DMMG*);
-EXTERN PetscErrorCode DMMGSetUp(DMMG*);
-EXTERN PetscErrorCode DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat));
-EXTERN PetscErrorCode DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
-EXTERN PetscErrorCode DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
-EXTERN PetscErrorCode DMMGInitialGuessCurrent(DMMG,Vec);
-EXTERN PetscErrorCode DMMGView(DMMG*,PetscViewer);
-EXTERN PetscErrorCode DMMGSolve(DMMG*);
-EXTERN PetscErrorCode DMMGSetUseMatrixFree(DMMG*);
-EXTERN PetscErrorCode DMMGSetDM(DMMG*,DM);
-EXTERN PetscErrorCode DMMGSetUpLevel(DMMG*,KSP,PetscInt);
-EXTERN PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG*);
-EXTERN PetscErrorCode DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm,PetscInt,void*,DMMG**);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG,Vec);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG*,PetscViewer);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseMatrixFree(DMMG*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG*,DM);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG*,KSP,PetscInt);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
 
-EXTERN PetscErrorCode DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) \
   DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)(ad_function),(DALocalFunction1)(admf_function))
@@ -80,7 +80,7 @@ EXTERN PetscErrorCode DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFun
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)0,(DALocalFunction1)0)
 #endif
 
-EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
 #else

@@ -1,3 +1,4 @@
+#define PETSCSNES_DLL
 
 #include "src/snes/snesimpl.h"
 
