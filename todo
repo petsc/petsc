@@ -35,8 +35,6 @@
      ------------------------------------------------------------
      + (Satish) Convert the Tufo-Fischer parallel direct solver to its own PC extend to other matrix types
 
-     Add support for ICC for BAIJ by converting to SBAIJ
-
      Add norms for BAIJ matrices
 
   -----------------

@@ -90,11 +90,16 @@ in PETSc 2.2.2 </font></p>
 
       <p><u><b>Mat:</b></u></p>
         <ul>
+        <li>Added Cholesky and ICC support to SeqBAIJ</li>
+        <li>Added the argument MatFactorInfo to MatLUFactorNumeric() and MatCholeskyFactorNumeric()</li>
         </ul>
       </p>
 
       <p><u><b>PC:</b></u>
-        <ul><li> added PCILUReorderForNonzeroDiagonal() and PCLUReorderForNonzeroDiagonal()</li>
+        <ul>
+        <li>Added PCILUReorderForNonzeroDiagonal() and PCLUReorderForNonzeroDiagonal()</li>
+        <li>Replace PCLUSetDamping(), PCILUSetDamping(), PCCholeskySetDamping() and PCICCSetDamping() by PCFactorSetShiftNonzero(). Change the option database keys -pc_lu_damping, -pc_ilu_damping, -pc_cholesky_damping and -pc_icc_damping to -pc_factor_shiftnonzero</li>
+        <li>Replace PCLUSetShift(), PCILUSetShift(), PCCholeskySetShift() and PCICCSetShift() by PCFactorSetShiftPd(). Change the option database keys -pc_lu_shift, -pc_ilu_shift, -pc_cholesky_shift and -pc_icc_shift to -pc_factor_shfitpd</li>
        </ul>
       </p>
 
