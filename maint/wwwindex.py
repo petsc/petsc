@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.31 2000/09/15 16:12:23 bsmith Exp balay $ 
+# $Id: wwwindex.py,v 1.32 2000/09/15 16:54:52 balay Exp balay $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -291,8 +291,8 @@ def main():
             dname,secname  = posixpath.split(dirname)
             headfilename = dname + '/sec/bop.' + secname
             table        = createtable(dirname,levels,secname)
-            singlelist   = addtolist(dirname,singlelist)
             if not table: continue
+            singlelist   = addtolist(dirname,singlelist)
             printindex(outfilename,headfilename,levels,titles,table)
 
       alphabet_dict = createdict(singlelist)
