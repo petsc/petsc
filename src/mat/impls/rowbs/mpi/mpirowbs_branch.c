@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.22 1995/05/18 19:26:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.23 1995/05/22 03:16:44 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -134,7 +134,7 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
         /* malloc new storage space */
 
         imax[row] += CHUNCKSIZE_LOCAL;
-        ierr = MatMallocRowPrivate(matin,imax[row],&itemp,&vtemp); CHKERR(ierr);
+        ierr = MatMallocRow_Private(matin,imax[row],&itemp,&vtemp); CHKERR(ierr);
         vout = vtemp; iout = itemp;
         for (ii=0; ii<i; ii++) {
           vout[ii] = vin[ii];
