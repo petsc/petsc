@@ -1947,6 +1947,7 @@ PetscErrorCode MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
       ierr = VecGetSize(mpiaij->lvec,&n);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF,n*dof,&b->w);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(b->w,dof);CHKERRQ(ierr);
 
       /* create two temporary Index sets for build scatter gather */
       ierr = PetscMalloc((n+1)*sizeof(PetscInt),&garray);CHKERRQ(ierr);
@@ -1957,6 +1958,7 @@ PetscErrorCode MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
       /* create temporary global vector to generate scatter context */
       ierr = VecCreateMPI(A->comm,dof*A->n,dof*A->N,&gvec);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(gvec,dof);CHKERRQ(ierr);
 
       /* generate the scatter context */
       ierr = VecScatterCreate(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);
