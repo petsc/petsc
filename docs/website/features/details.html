@@ -1,0 +1,73 @@
+<html>
+
+<head>
+<title>PETSc:&nbsp; Features:&nbsp; Component Details</title>
+</head>
+
+<body  alink="#FF0000">
+
+<table border="0" width="100%">
+  <tr>
+    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
+    <ul>
+      <li><a href="../index.html"><strong>Home</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%"><h1>Features:&nbsp; Component Details</h1>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+  <tr>
+    <td width="25%" valign="top"><ul>
+      <li><a href="../download/index.html"><strong>Download</strong></a></li>
+      <li><a href="index.html"><strong>Features</strong></a><ul>
+          <li><font color="#FF0000"><strong>Component Details</strong></font></li>
+          <li><a href="diagram.html"><strong>Diagram</strong></a></li>
+        </ul>
+      </li>
+      <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
+      <li><strong><a href="../publications/index.html">Publications</a></strong></li>
+      <li><a href="../presentations/index.html"><strong>Presentations</strong></a></li>
+      <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+    </ul>
+    </td>
+    <td width="75%" valign="top">PETSc components provide the functionality required for many
+    parallel solutions of PDEs.<dl>
+      <dt><tt>Vec</tt></dt>
+      <dd>Provides the vector operations required for setting up and solving large-scale linear
+        and nonlinear problems. Includes easy-to-use parallel scatter and gather operations, as
+        well as special-purpose code for handling ghost points for regular data structures. </dd>
+      <dt><tt>Mat</tt></dt>
+      <dd>A large suite of data structures and code for the manipulation of parallel sparse
+        matrices. Includes four different parallel matrix data structures, each appropriate for a
+        different class of problems. </dd>
+      <dt><tt>PC</tt></dt>
+      <dd>A collection of sequential and parallel preconditioners, including (sequential) ILU(k),
+        LU, and (both sequential and parallel) block Jacobi, overlapping additive Schwarz methods
+        and (through BlockSolve95) ILU(0) and ICC(0). </dd>
+      <dt><tt>KSP</tt></dt>
+      <dd>Parallel implementations of many popular Krylov subspace iterative methods, including
+        GMRES, CG, CGS, Bi-CG-Stab, two variants of TFQMR, CR, and LSQR. All are coded so that
+        they are immediately usable with any preconditioners and any matrix data structures,
+        including matrix-free methods. </dd>
+      <dt><tt>SNES</tt></dt>
+      <dd>Data-structure-neutral implementations of Newton-like methods for nonlinear systems.
+        Includes both line search and trust region techniques with a single interface. Employs by
+        default the above data structures and linear solvers. Users can set custom monitoring
+        routines, convergence criteria, etc. </dd>
+      <dt><tt>TS</tt></dt>
+      <dd>Code for the time evolution of solutions of PDEs. In addition, provides pseudo-transient
+        continuation techniques for computing steady-state solutions. </dd>
+    </dl>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+    </td>
+  </tr>
+</table>
+</body>
+</html>
