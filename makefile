@@ -159,7 +159,7 @@ etags:
 	etags -a -f TAGS bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
-	etags -a -f TAGS src/*/examples/*.F src/fortran/custom/*.F
+	etags -a -f TAGS src/benchmarks/*.c src/*/examples/*.F src/fortran/custom/*.F 
 	etags -a -f TAGS docs/tex/manual/routin.tex docs/tex/manual/manual.tex
 	etags -a -f TAGS docs/tex/manual/manual_tex.tex
 	etags -a -f TAGS docs/tex/manual/intro.tex docs/tex/manual/part1.tex

@@ -11,11 +11,12 @@ OBJSF	      =
 LIBBASE	      = libpetscsys
 EXAMPLES_1    = 
 RUNEXAMPLES_1 = 
-EXAMPLES_2    = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc
+EXAMPLES_2    = 
 RUNEXAMPLES_2 = 
 EXAMPLES_3    = 
 RUNEXAMPLES_3 = 
-EXAMPLES_4    = 
+EXAMPLES_4    = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
+		PetscMemcpy PetscMemzero PetscMemcmp
 RUNEXAMPLES_4 = 
 EXAMPLESC     = 
 EXAMPLESF     = 
@@ -40,7 +41,20 @@ PetscMalloc: PetscMalloc.o  chkopts
 	-$(CLINKER) -o PetscMalloc PetscMalloc.o $(PETSC_LIB)
 	$(RM) -f PetscMalloc.o
 
-test: $(EXAMPLES_2)
+PetscMemcpy: PetscMemcpy.o  chkopts 
+	-$(CLINKER) -o PetscMemcpy PetscMemcpy.o $(PETSC_LIB)
+	$(RM) -f PetscMemcpy.o
+
+PetscMemzero: PetscMemzero.o  chkopts 
+	-$(CLINKER) -o PetscMemzero PetscMemzero.o $(PETSC_LIB)
+	$(RM) -f PetscMemzero.o
+
+PetscMemcmp: PetscMemcmp.o  chkopts 
+	-$(CLINKER) -o PetscMemcmp PetscMemcmp.o $(PETSC_LIB)
+	$(RM) -f PetscMemcmp.o
+
+
+test: $(EXAMPLES_4)
 
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
@@ -60,9 +74,14 @@ runtest:
 	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) PetscMalloc                    > /dev/null
-	-@$(MPIRUN) PetscMalloc -trmalloc          > /dev/null
-
+	-@$(MPIRUN) PetscMalloc            > /dev/null
+	-@$(MPIRUN) PetscMalloc -trmalloc  > /dev/null
+	-@echo " "
+	-@echo "Memory Operations "
+	-@echo "------------------------------------------------"
+	-@$(MPIRUN) PetscMemcpy  > /dev/null
+	-@$(MPIRUN) PetscMemzero > /dev/null
+	-@$(MPIRUN) PetscMemcmp  > /dev/null
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
