@@ -282,7 +282,7 @@ class Configure(config.base.Configure):
     # This is really bad
     flag = '-L'
     if self.framework.archBase == 'linux':
-      flag = '-rdynamic -Wl,-rpath,'
+      flag = '-Wl,-rpath,'
     elif self.framework.archBase.startswith('irix'):
       flag = '-rpath '
     elif self.framework.archBase.startswith('osf'):
