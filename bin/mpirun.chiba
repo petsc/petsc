@@ -12,6 +12,8 @@ clear_bogus_head="no"
 shared="no"
 nolocal=""
 showtimes="yes"
+ctransin="nfs_in"
+ctransout="nfs_out"
 #
 # Process arguments
 while [ $# -gt 0 ] ; do
@@ -121,7 +123,7 @@ while [ $# -gt 0 ] ; do
 done
 if [ "$infiles" != "" ] ; then echo "Staging files: $infiles" ; fi
 #
-jobname="v.tmp"
+jobname="myjobs"
 jobdir=$HOME/$jobname
 if [ ! -d $jobdir ] ; then mkdir $jobdir ; fi
 rundir=$jobdir/$$
@@ -154,8 +156,8 @@ if [ $USE_MYRINET = "yes" ] ; then
 #PBS -S /bin/sh
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
-#ctrans in $rundir
-#ctrans out $rundir
+#ctrans $ctransin $rundir
+#ctrans $ctransout $rundir
 PATH=$PATH
 export PATH
 pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
@@ -184,8 +186,8 @@ else
 #PBS -S /bin/sh
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
-#ctrans in $rundir
-#ctrans out $rundir
+#ctrans $ctransin  $rundir
+#ctrans $ctransout $rundir
 #
 PATH=$PATH
 export PATH
@@ -206,7 +208,7 @@ if [ $shared = "yes" ] ; then
     echo -n "Staging files to shared nodes " 
     date
   fi
-  /my/bin/ctrans -t in -s $rundir -d $rundir -nf $PBS_NODEFILE >/dev/null 2>&1
+  /my/bin/ctrans -t $ctransin -s $rundir -d $jobdir -nf $PBS_NODEFILE >/dev/null 2>&1
   chmod u+x ./.mpirun$$
   if [ $showtimes = "yes" ] ; then
     echo -n "Starting mpi program "
@@ -217,7 +219,7 @@ if [ $shared = "yes" ] ; then
     echo -n "Bringing data files back "
     date
   fi
-  /my/bin/ctrans -t out -s $rundir -d $rundir -nf $PBS_NODEFILE >/dev/null 2>&1
+  /my/bin/ctrans -t $ctransout -s $rundir -d $rundir -nf $PBS_NODEFILE >/dev/null 2>&1
   if [ $showtimes = "yes" ] ; then
     echo -n "Done "
     date
@@ -321,18 +323,32 @@ fi
 fi
 
 rm -rf $rundir/$programbase $rundir/parseargs.py $rundir/urlget.py
-rm -rf $rundir/*/$programbase $rundir/*/parseargs.py $rundir/*/urlget.py $rundir/*/PI*
+ls $rundir
+rm -rf $rundir/*/$$/$programbase $rundir/*/$$/parseargs.py $rundir/*/$$/urlget.py $rundir/*/$$/PI*
+ls $rundir
+for x in $rundir/*
+do
+  pushd $x > /dev/null
+  if [ "`ls $$/`" != "" ] ; then
+    mv  -f $$/* . 
+  fi
+  rm -rf $$
+  popd
+done
 #
-# decide if we should make an output directoyr (was there output?)
+# decide if we should make an output directory (was there output?)
 #
 if [ "`ls $rundir/*`" != "" ] ; then
   cp -rf $rundir ./output.$$ 
   cd output.$$
-  mv */*.[0-9]* .
+  mv */*.[0-9]* . > /dev/null 2>&1
   if [ "`ls ./ccn[0-9]*`" = "" ] ; then
     rm -rf ccn[0-9]*
   fi
   cd
+  if [ $showtimes = "yes" ] ; then
+  echo "Output files placed into " output.$$
+  fi
 fi
 
 
@@ -341,3 +357,5 @@ if [ "$keeptmpfiles" != "yes" ] ; then
     rm -f .pbsnodefile*
     rm -rf $rundir
 fi
+
+
