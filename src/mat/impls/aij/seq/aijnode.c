@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.86 1998/04/03 23:14:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.87 1998/04/13 17:36:33 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1420,7 +1420,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc1 = rtmp1 + prow;
       pc2 = rtmp2 + prow;
       pc3 = rtmp3 + prow;
-      if (*pc2 != 0.0 || *pc3 != 0){
+      if (*pc2 != 0.0 || *pc3 != 0.0){
         pj   = nbj + bd[prow];
         if(*pc1 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
         mul2 = (*pc2)/(*pc1);
