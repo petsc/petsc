@@ -408,7 +408,7 @@ static int PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetTitle_X" 
-static int PetscDrawSetTitle_X(PetscDraw draw,char *title)
+static int PetscDrawSetTitle_X(PetscDraw draw,const char title[])
 {
   PetscDraw_X   *win = (PetscDraw_X*)draw->data;
   XTextProperty prop;

@@ -112,33 +112,3 @@ int PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectChangeSerializeName"
-/*@C
-  PetscObjectChangeSerializeName - Changes the serializer name.
-
-  Not Collective
-
-  Input Parameters:
-+ obj            - The PETSc object, for example a Vec, Mat or KSP.
-- serialize_name - The string containing a serializer name
-
-  Note:
-  This works for any PETSc object, and thus must be cast with a (PetscObject).
-
-  Level: intermediate
-
-.keywords: changing serializers
-.seealso: PetscObjectChangeTypeName()
-@*/
-int PetscObjectChangeSerializeName(PetscObject obj, char *serialize_name)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectTakeAccess(obj);                                                                      CHKERRQ(ierr);
-  ierr = PetscStrfree(obj->serialize_name);                                                               CHKERRQ(ierr);
-  ierr = PetscStrallocpy(serialize_name, &obj->serialize_name);                                           CHKERRQ(ierr);
-  ierr = PetscObjectGrantAccess(obj);                                                                     CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

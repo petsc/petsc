@@ -30,15 +30,11 @@ typedef struct _p_PetscMap*         PetscMap;
 #define MAP_MPI "mpi"
 #define PetscMapType char*
 
-#define MAP_SER_MPI_BINARY "mpi_binary"
-#define PetscMapSerializeType char*
-
 /* Logging support */
 extern int MAP_COOKIE;
 
 EXTERN int PetscMapCreate(MPI_Comm,PetscMap*);
 EXTERN int PetscMapCreateMPI(MPI_Comm,int,int,PetscMap*);
-EXTERN int PetscMapSerialize(MPI_Comm,PetscMap *,PetscViewer,PetscTruth);
 EXTERN int PetscMapSetFromOptions(PetscMap);
 EXTERN int PetscMapPrintHelp(PetscMap);
 EXTERN int PetscMapDestroy(PetscMap);
@@ -62,19 +58,6 @@ EXTERN int PetscMapRegisterDestroy(void);
 #define PetscMapRegisterDynamic(a,b,c,d) PetscMapRegister(a,b,c,0)
 #else
 #define PetscMapRegisterDynamic(a,b,c,d) PetscMapRegister(a,b,c,d)
-#endif
-
-extern PetscFList PetscMapSerializeList;
-extern PetscTruth PetscMapSerializeRegisterAllCalled;
-EXTERN int PetscMapSetSerializeType(PetscMap, PetscMapSerializeType);
-EXTERN int PetscMapGetSerializeType(PetscMap, PetscMapSerializeType *);
-EXTERN int PetscMapSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, PetscMap *, PetscViewer, PetscTruth));
-EXTERN int PetscMapSerializeRegisterAll(const char []);
-EXTERN int PetscMapSerializeRegisterDestroy(void);
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscMapSerializeRegisterDynamic(a,b,c,d) PetscMapSerializeRegister(a,b,c,0)
-#else
-#define PetscMapSerializeRegisterDynamic(a,b,c,d) PetscMapSerializeRegister(a,b,c,d)
 #endif
 
 /*S
@@ -117,10 +100,6 @@ E*/
 #define VECPETSCESI    "petscesi"
 #define VecType char*
 
-#define VEC_SER_SEQ_BINARY "seq_binary"
-#define VEC_SER_MPI_BINARY "mpi_binary"
-#define VecSerializeType char*
-
 /* Logging support */
 #define    VEC_FILE_COOKIE 1211214
 extern int VEC_COOKIE;
@@ -138,7 +117,6 @@ EXTERN int VecCreateMPI(MPI_Comm,int,int,Vec*);
 EXTERN int VecCreateSeqWithArray(MPI_Comm,int,const PetscScalar[],Vec*);
 EXTERN int VecCreateMPIWithArray(MPI_Comm,int,int,const PetscScalar[],Vec*);
 EXTERN int VecCreateShared(MPI_Comm,int,int,Vec*);
-EXTERN int VecSerialize(MPI_Comm,Vec *,PetscViewer,PetscTruth);
 EXTERN int VecSetFromOptions(Vec);
 EXTERN int VecPrintHelp(Vec);
 EXTERN int VecDestroy(Vec);
@@ -305,61 +283,6 @@ M*/
 #define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,d)
 #endif
 
-extern PetscFList VecSerializeList;
-extern PetscTruth VecSerializeRegisterAllCalled;
-EXTERN int VecSetSerializeType(Vec, VecSerializeType);
-EXTERN int VecGetSerializeType(Vec, VecSerializeType *);
-EXTERN int VecSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, Vec *, PetscViewer, PetscTruth));
-EXTERN int VecSerializeRegisterAll(const char []);
-EXTERN int VecSerializeRegisterDestroy(void);
-
-/*MC
-  VecSerializeRegisterDynamic - Adds a serialization method to the vec package.
-
-  Synopsis:
-
-  VecSerializeRegisterDynamic(char *name, char *path, char *func_name,
-                              int (*serialize_func)(MPI_Comm, Vec *, PetscViewer, PetscTruth))
-
-  Not Collective
-
-  Input Parameters:
-+ name           - The name of a new user-defined serialization routine
-. path           - The path (either absolute or relative) of the library containing this routine
-. func_name      - The name of the serialization routine
-- serialize_func - The serialization routine itself
-
-  Notes:
-  VecSerializeRegister() may be called multiple times to add several user-defined serializers.
-
-  If dynamic libraries are used, then the fourth input argument (serialize_func) is ignored.
-
-  Sample usage:
-.vb
-  VecSerializeRegisterDynamic("my_store", "/home/username/my_lib/lib/libO/solaris/libmy.a", "MyStoreFunc", MyStoreFunc);
-.ve
-
-  Then, your serialization can be chosen with the procedural interface via
-.vb
-    VecSetSerializeType(vec, "my_store")
-.ve
-  or at runtime via the option
-.vb
-    -vec_serialize_type my_store
-.ve
-
-  Note: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
-
-  Level: advanced
-
-.keywords: Vec, register
-.seealso: VecSerializeRegisterAll(), VecSerializeRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define VecSerializeRegisterDynamic(a,b,c,d) VecSerializeRegister(a,b,c,0)
-#else
-#define VecSerializeRegisterDynamic(a,b,c,d) VecSerializeRegister(a,b,c,d)
-#endif
 
 EXTERN int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 EXTERN int VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);

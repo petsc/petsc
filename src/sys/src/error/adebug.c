@@ -90,7 +90,7 @@ int PetscSetDefaultDebugger(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCheckDebugger_Private"
-static int PetscCheckDebugger_Private(char *defaultDbg, char *string, char **debugger)
+static int PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
 {
   PetscTruth exists;
   char      *f;
@@ -123,10 +123,10 @@ static int PetscCheckDebugger_Private(char *defaultDbg, char *string, char **deb
 @*/
 int PetscSetDebuggerFromString(char *string)
 {
-  char      *debugger = PETSC_NULL;
-  PetscTruth xterm    = PETSC_TRUE;
-  char      *f;
-  int        ierr;
+  const char *debugger = PETSC_NULL;
+  PetscTruth  xterm    = PETSC_TRUE;
+  char       *f;
+  int         ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrstr(string, "noxterm", &f);                                                              CHKERRQ(ierr);
@@ -198,7 +198,8 @@ int PetscAttachDebugger(void)
   else       { child = (int)getppid(); }
 
   if (child) { /* I am the parent, will run the debugger */
-    char       *args[10],pid[10];
+    const char *args[10];
+    char       pid[10];
     PetscTruth isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop;
 
     ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
@@ -222,7 +223,7 @@ int PetscAttachDebugger(void)
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = display; args[5] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
-      if (execvp(args[0],args)  < 0) {
+      if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }
@@ -230,7 +231,7 @@ int PetscAttachDebugger(void)
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
       args[0] = Debugger; args[5] = display; args[6] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
-      if (execvp(args[0],args)  < 0) {
+      if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }
@@ -238,7 +239,7 @@ int PetscAttachDebugger(void)
       args[1] = "-s"; args[2] = pid; args[3] = "-D"; args[4] = "-";
       args[0] = Debugger; args[5] = pid; args[6] = "-display"; args[7] = display; args[8] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s on %s\n",args[0],pid,hostname);
-      if (execvp(args[0],args)  < 0) {
+      if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }
@@ -283,7 +284,7 @@ int PetscAttachDebugger(void)
       }
 #endif
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on %s\n",Debugger,program,pid,hostname);
-      if (execvp(args[0],args)  < 0) {
+      if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }
@@ -371,7 +372,7 @@ int PetscAttachDebugger(void)
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",Debugger,program,pid,display,hostname);
       }
 
-      if (execvp("xterm",args)  < 0) {
+      if (execvp("xterm",(char**)args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
       }

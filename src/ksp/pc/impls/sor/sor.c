@@ -83,7 +83,7 @@ static int PCView_SOR(PC pc,PetscViewer viewer)
 {
   PC_SOR     *jac = (PC_SOR*)pc->data;
   MatSORType sym = jac->sym;
-  char       *sortype;
+  const char *sortype;
   int        ierr;
   PetscTruth isascii;
 

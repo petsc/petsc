@@ -113,7 +113,7 @@ int PetscTraceBackErrorHandler(int line,const char *fun,const char* file,const c
         (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
       }
     } else {
-        char *text;
+        const char *text;
         PetscErrorMessage(n,&text,PETSC_NULL);
         if (text) (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s!\n",rank,text);
     }

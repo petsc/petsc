@@ -100,7 +100,7 @@ int PetscDrawGetTitle(PetscDraw draw,char **title)
 
 .seealso: PetscDrawGetTitle(), PetscDrawAppendTitle()
 @*/
-int PetscDrawSetTitle(PetscDraw draw,char *title)
+int PetscDrawSetTitle(PetscDraw draw,const char title[])
 {
   int ierr;
   PetscFunctionBegin;
@@ -132,7 +132,7 @@ int PetscDrawSetTitle(PetscDraw draw,char *title)
 
 .seealso: PetscDrawSetTitle(), PetscDrawGetTitle()
 @*/
-int PetscDrawAppendTitle(PetscDraw draw,char *title)
+int PetscDrawAppendTitle(PetscDraw draw,const char title[])
 {
   int  ierr,len1,len2,len;
   char *newtitle;

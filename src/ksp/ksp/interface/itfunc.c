@@ -236,14 +236,14 @@ int KSPSetUp(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-static char *convergedreasons[] = {"preconditioner is indefinite",                  "matrix or preconditioner is nonsymmetric",
-                                   "breakdown in BICG",                             "breakdown",
-                                   "residual norm increased by dtol",               "reach maximum number of iterations",
-                                   "not used",                                      "not used",
-                                   "never reached",                                 "not used",
-                                   "residual norm decreased by relative tolerance", "residual norm decreased by absolute tolerance",
-                                   "only one iteration requested",                  "negative curvature obtained in QCG",
-                                   "constrained in QCG",                            "small step length reached"};
+static const char *convergedreasons[] = {"preconditioner is indefinite",                  "matrix or preconditioner is nonsymmetric",
+					 "breakdown in BICG",                             "breakdown",
+					 "residual norm increased by dtol",               "reach maximum number of iterations",
+					 "not used",                                      "not used",
+					 "never reached",                                 "not used",
+					 "residual norm decreased by relative tolerance", "residual norm decreased by absolute tolerance",
+					 "only one iteration requested",                  "negative curvature obtained in QCG",
+					 "constrained in QCG",                            "small step length reached"};
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve"

@@ -909,7 +909,7 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
 
 .seealso: DAGetMatrix(), DASetBlockFills()
 @*/
-int DASetGetMatrix(DA da,int (*f)(DA,MatType,Mat*))
+int DASetGetMatrix(DA da,int (*f)(DA,const MatType,Mat*))
 {
   PetscFunctionBegin;
   da->ops->getmatrix = f;

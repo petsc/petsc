@@ -67,7 +67,6 @@ int TSCreate(MPI_Comm comm, TS *ts) {
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));                                                     CHKERRQ(ierr);
   t->bops->publish    = TSPublish_Petsc;
   t->type_name        = PETSC_NULL;
-  t->serialize_name   = PETSC_NULL;
 
   t->ops->applymatrixbc = TSDefaultSystemMatrixBC;
   t->ops->applyrhsbc    = TSDefaultRhsBC;
@@ -109,77 +108,3 @@ int TSCreate(MPI_Comm comm, TS *ts) {
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "TSSerialize"
-/*@ 
-  TSSerialize - This function stores or recreates a timestepper using a viewer for a binary file.
-
-  Collective on MPI_Comm
-
-  Input Parameters:
-+ comm   - The communicator for the ts object
-. viewer - The viewer context
-- store  - This flag is PETSC_TRUE is data is being written, otherwise it will be read
-
-  Output Parameter:
-. ts     - The ts
-
-  Level: beginner
-
-.keywords: TS, serialize
-.seealso: PartitionSerialize(), TSSerialize()
-@*/
-int TSSerialize(MPI_Comm comm, TS *ts, PetscViewer viewer, PetscTruth store)
-{
-  int      (*serialize)(MPI_Comm, TS *, PetscViewer, PetscTruth);
-  int        fd, len;
-  char      *name;
-  PetscTruth match;
-  int        ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
-  PetscValidPointer(ts);
-
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_BINARY, &match);                             CHKERRQ(ierr);
-  if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, "Must be binary viewer");
-  ierr = PetscViewerBinaryGetDescriptor(viewer, &fd);                                                     CHKERRQ(ierr);
-
-  if (!TSSerializeRegisterAllCalled) {
-    ierr = TSSerializeRegisterAll(PETSC_NULL);                                                            CHKERRQ(ierr);
-  }
-  if (!TSSerializeList) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Could not find table of methods");
-
-  if (store) {
-    PetscValidHeaderSpecific(*ts, TS_COOKIE);
-    ierr = PetscStrlen((*ts)->class_name, &len);                                                          CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &len,                   1,   PETSC_INT,  0);                              CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  (*ts)->class_name,     len, PETSC_CHAR, 0);                              CHKERRQ(ierr);
-    ierr = PetscStrlen((*ts)->serialize_name, &len);                                                      CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &len,                   1,   PETSC_INT,  0);                              CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  (*ts)->serialize_name, len, PETSC_CHAR, 0);                              CHKERRQ(ierr);
-    ierr = PetscFListFind(comm, TSSerializeList, (*ts)->serialize_name, (void (**)(void)) &serialize);    CHKERRQ(ierr);
-    if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
-    ierr = (*serialize)(comm, ts, viewer, store);                                                         CHKERRQ(ierr);
-  } else {
-    ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
-    ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
-    name[len] = 0;
-    ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                 CHKERRQ(ierr);
-    ierr = PetscStrcmp(name, "TS", &match);                                                               CHKERRQ(ierr);
-    ierr = PetscFree(name);                                                                               CHKERRQ(ierr);
-    if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, "Non-ts object");
-    /* Dispatch to the correct routine */
-    ierr = PetscBinaryRead(fd, &len,    1,   PETSC_INT);                                                  CHKERRQ(ierr);
-    ierr = PetscMalloc((len+1) * sizeof(char), &name);                                                    CHKERRQ(ierr);
-    name[len] = 0;
-    ierr = PetscBinaryRead(fd,  name,   len, PETSC_CHAR);                                                 CHKERRQ(ierr);
-    ierr = PetscFListFind(comm, TSSerializeList, name, (void (**)(void)) &serialize);                     CHKERRQ(ierr);
-    if (!serialize) SETERRQ(PETSC_ERR_ARG_WRONG, "Type cannot be serialized");
-    ierr = (*serialize)(comm, ts, viewer, store);                                                         CHKERRQ(ierr);
-    ierr = PetscStrfree((*ts)->serialize_name);                                                           CHKERRQ(ierr);
-    (*ts)->serialize_name = name;
-  }
-
-  PetscFunctionReturn(0);
-}

@@ -183,7 +183,7 @@ EXTERN int PetscViewerASCIISetTab(PetscViewer,int);
 EXTERN int PetscViewerBinaryGetDescriptor(PetscViewer,int*);
 EXTERN int PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
 EXTERN int PetscViewerSetFileType(PetscViewer,PetscViewerFileType);
-EXTERN int PetscViewerStringSPrintf(PetscViewer,char *,...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN int PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN int PetscViewerStringSetString(PetscViewer,char[],int);
 EXTERN int PetscViewerDrawClear(PetscViewer);
 EXTERN int PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);

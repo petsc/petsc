@@ -23,7 +23,7 @@ int TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianE
 static int TSSetTypeFromOptions(TS ts)
 {
   PetscTruth opt;
-  char      *defaultType;
+  const char *defaultType;
   char       typeName[256];
   int        ierr;
 

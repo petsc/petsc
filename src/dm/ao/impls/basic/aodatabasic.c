@@ -113,7 +113,8 @@ int AODataView_Basic_Binary(AOData ao,PetscViewer viewer)
 int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
 {
   int               ierr,j,k,l,rank,size,nkeys,nsegs,i,N,bs,zero = 0;
-  char              *dt,**keynames,**segnames,*stype,*segvalue;
+  char              **keynames,**segnames,*segvalue;
+  const char        *stype,*dt;
   AODataSegment     *segment;
   AODataKey         *key = ao->keys;
   PetscDataType     dtype;
@@ -245,7 +246,7 @@ int AODataView_Basic(AOData ao,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataKeyRemove_Basic"
-int AODataKeyRemove_Basic(AOData aodata,char *name)
+int AODataKeyRemove_Basic(AOData aodata,const char name[])
 {
   AODataSegment    *segment,*iseg;
   AODataKey        *key,*ikey;
@@ -286,7 +287,7 @@ int AODataKeyRemove_Basic(AOData aodata,char *name)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentRemove_Basic"
-int AODataSegmentRemove_Basic(AOData aodata,char *name,char *segname)
+int AODataSegmentRemove_Basic(AOData aodata,const char name[],const char segname[])
 {
   AODataSegment    *segment,*iseg;
   AODataKey        *key;
@@ -320,7 +321,7 @@ int AODataSegmentRemove_Basic(AOData aodata,char *name,char *segname)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentAdd_Basic"
-int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,int *keys,void *data,PetscDataType dtype)
+int AODataSegmentAdd_Basic(AOData aodata,const char name[],const char segname[],int bs,int n,int *keys,void *data,PetscDataType dtype)
 {
   AODataSegment    *segment,*iseg;
   AODataKey        *key;
@@ -474,7 +475,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentExtrema_Basic"
-int AODataSegmentGetExtrema_Basic(AOData ao,char *name,char *segname,void *xmax,void *xmin)
+int AODataSegmentGetExtrema_Basic(AOData ao,const char name[],const char segname[],void *xmax,void *xmin)
 {
   AODataSegment    *segment; 
   AODataKey        *key;
@@ -518,7 +519,7 @@ int AODataSegmentGetExtrema_Basic(AOData ao,char *name,char *segname,void *xmax,
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentGet_Basic"
-int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,void **data)
+int AODataSegmentGet_Basic(AOData ao,const char name[],const char segname[],int n,int *keys,void **data)
 {
   AODataSegment    *segment; 
   AODataKey        *key;
@@ -545,7 +546,7 @@ int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,vo
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentRestore_Basic"
-int AODataSegmentRestore_Basic(AOData aodata,char *name,char *segname,int n,int *keys,void **data)
+int AODataSegmentRestore_Basic(AOData aodata,const char name[],const char segname[],int n,int *keys,void **data)
 {
   int ierr;
 
@@ -556,7 +557,7 @@ int AODataSegmentRestore_Basic(AOData aodata,char *name,char *segname,int n,int 
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentGetLocal_Basic"
-int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *keys,void **data)
+int AODataSegmentGetLocal_Basic(AOData ao,const char name[],const char segname[],int n,int *keys,void **data)
 {
   int           ierr,*globals,*locals,bs;
   PetscDataType dtype;
@@ -586,7 +587,7 @@ int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *ke
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentRestoreLocal_Basic"
-int AODataSegmentRestoreLocal_Basic(AOData aodata,char *name,char *segname,int n,int *keys,void **data)
+int AODataSegmentRestoreLocal_Basic(AOData aodata,const char name[],const char segname[],int n,int *keys,void **data)
 {
   int ierr;
 
@@ -599,7 +600,7 @@ EXTERN int AOBasicGetIndices_Private(AO,int **,int **);
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataKeyRemap_Basic"
-int AODataKeyRemap_Basic(AOData aodata,char *keyname,AO ao)
+int AODataKeyRemap_Basic(AOData aodata,const char keyname[],AO ao)
 {
   int           ierr,*inew,k,*ii,nk,dsize,bs,nkb;
   char          *data,*tmpdata;
@@ -656,7 +657,7 @@ int AODataKeyRemap_Basic(AOData aodata,char *keyname,AO ao)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataKeyGetAdjacency_Basic"
-int AODataKeyGetAdjacency_Basic(AOData aodata,char *keyname,Mat *adj)
+int AODataKeyGetAdjacency_Basic(AOData aodata,const char keyname[],Mat *adj)
 {
   int           ierr,cnt,i,j,*jj,*ii,nlocal,n,*nb,bs,ls;
   AODataKey     *key;
@@ -706,7 +707,7 @@ int AODataKeyGetAdjacency_Basic(AOData aodata,char *keyname,Mat *adj)
 
 #undef __FUNCT__
 #define __FUNCT__ "AODataSegmentPartition_Basic"
-int AODataSegmentPartition_Basic(AOData aodata,char *keyname,char *segname)
+int AODataSegmentPartition_Basic(AOData aodata,const char keyname[],const char segname[])
 {
   int             ierr,size,bs,i,j,*idx,nc,*isc;
   AO              ao;
@@ -750,7 +751,7 @@ int AODataSegmentPartition_Basic(AOData aodata,char *keyname,char *segname)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataKeyGetActive_Basic" 
-int AODataKeyGetActive_Basic(AOData aodata,char *name,char *segname,int n,int *keys,int wl,IS *is)
+int AODataKeyGetActive_Basic(AOData aodata,const char name[],const char segname[],int n,int *keys,int wl,IS *is)
 {
   int           ierr,i,cnt,*fnd,bs;
   AODataKey     *key;
@@ -790,7 +791,7 @@ int AODataKeyGetActive_Basic(AOData aodata,char *name,char *segname,int n,int *k
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataKeyGetActiveLocal_Basic" 
-int AODataKeyGetActiveLocal_Basic(AOData aodata,char *name,char *segname,int n,int *keys,int wl,IS *is)
+int AODataKeyGetActiveLocal_Basic(AOData aodata,const char name[],const char segname[],int n,int *keys,int wl,IS *is)
 {
   int           ierr,i,cnt,*fnd,bs,*locals;
   AODataKey     *key;
@@ -831,7 +832,7 @@ int AODataKeyGetActiveLocal_Basic(AOData aodata,char *name,char *segname,int n,i
   PetscFunctionReturn(0);
 }
 
-EXTERN int AODataSegmentGetReduced_Basic(AOData,char *,char *,int,int*,IS *);
+EXTERN int AODataSegmentGetReduced_Basic(AOData,const char[],const char[],int,int*,IS *);
 EXTERN int AODataPublish_Petsc(PetscObject);
 
 static struct _AODataOps myops = {AODataSegmentAdd_Basic,

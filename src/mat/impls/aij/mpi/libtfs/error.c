@@ -58,7 +58,7 @@ static int my_id=0;
 
 
 void 
-error_msg_fatal_ (char *msg)
+error_msg_fatal_ (const char msg[])
 {
   error_msg_fatal(msg);
 }
@@ -74,12 +74,13 @@ Return: na.
 Description: prints error message and terminates program.
 ***********************************error.c************************************/
 void 
-error_msg_fatal(char *msg, ...)
+error_msg_fatal(const char msg[], ...)
 {
-  va_list ap;
-  char *p, *sval, cval;
-  int ival;
-  REAL dval;
+  va_list    ap;
+  const char *p;
+  char       *sval, cval;
+  int        ival;
+  REAL       dval;
 
 
   /* print error message along w/node identifier */
@@ -161,7 +162,7 @@ Return: na.
 Description: prints error message.
 ***********************************error.c************************************/
 void 
-error_msg_warning(char *msg, ...)
+error_msg_warning(const char msg[], ...)
 {
   /* print error message along w/node identifier */
 #if   defined V

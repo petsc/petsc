@@ -4,8 +4,6 @@
 
 PetscFList TSList                       = PETSC_NULL;
 PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
-PetscFList TSSerializeList              = PETSC_NULL;
-PetscTruth TSSerializeRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetType"
@@ -43,7 +41,7 @@ PetscTruth TSSerializeRegisterAllCalled = PETSC_FALSE;
    Level: intermediate
 
 .keywords: TS, set, type
-.seealso TSSetSerializeType()
+
 @*/
 int TSSetType(TS ts, const TSType type)
 {
@@ -112,96 +110,6 @@ int TSGetType(TS ts, TSType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "TSSetSerializeType"
-/*@C
-  TSSetSerializeType - Sets the serialization method for the ts.
-
-  Collective on TS
-
-  Input Parameters:
-+ ts     - The TS context
-- method - A known method
-
-  Options Database Command:
-. -ts_serialize_type <method> - Sets the method; use -help for a list
-                                of available methods (for instance, gbeuler_binary)
-
-  Notes:
-  See "petsc/include/ts.h" for available methods (for instance)
-. GTS_SER_BEULER_BINARY - Grid Backwards Euler TS to binary file
-
-  Normally, it is best to use the TSSetFromOptions() command and
-  then set the TS type from the options database rather than by using
-  this routine.  Using the options database provides the user with
-  maximum flexibility in evaluating the many different solvers.
-  The TSSetSerializeType() routine is provided for those situations
-  where it is necessary to set the application ordering independently of the
-  command line or options database.  This might be the case, for example,
-  when the choice of solver changes during the execution of the
-  program, and the user's application is taking responsibility for
-  choosing the appropriate method.  In other words, this routine is
-  not for beginners.
-
-  Level: intermediate
-
-.keywords: TS, set, type, serialization
-.seealso TSSetType()
-@*/
-int TSSetSerializeType(TS ts, TSSerializeType method)
-{
-  int      (*r)(MPI_Comm, TS *, PetscViewer, PetscTruth);
-  PetscTruth match;
-  int        ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
-  ierr = PetscSerializeCompare((PetscObject) ts, method, &match);                                         CHKERRQ(ierr);
-  if (match == PETSC_TRUE) PetscFunctionReturn(0);
-
-  /* Get the function pointers for the method requested but do not call */
-  if (TSSerializeRegisterAllCalled == PETSC_FALSE) {
-    ierr = TSSerializeRegisterAll(PETSC_NULL);                                                            CHKERRQ(ierr);
-  }
-  ierr = PetscFListFind(ts->comm, TSSerializeList, method, (void (**)(void)) &r);                         CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown ts serialization type: %s", method);
-
-  ierr = PetscObjectChangeSerializeName((PetscObject) ts, method);                                        CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSGetSerializeType"
-/*@C
-  TSGetSerializeType - Gets the TS serialization method (as a string).
-
-  Not collective
-
-  Input Parameter:
-. ts   - The ts
-
-  Output Parameter:
-. type - The name of TS serialization method
-
-  Level: intermediate
-
-.keywords: TS, get, serialize, type, name
-.seealso TSSetType()
-@*/
-int TSGetSerializeType(TS ts, TSSerializeType *type)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
-  PetscValidPointer(type);
-  if (TSSerializeRegisterAllCalled == PETSC_FALSE) {
-    ierr = TSSerializeRegisterAll(PETSC_NULL);                                                            CHKERRQ(ierr);
-  }
-  *type = ts->serialize_name;
-  PetscFunctionReturn(0);
-}
-
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
@@ -224,64 +132,6 @@ int TSRegister(const char sname[], const char path[], const char name[], int (*f
   PetscFunctionReturn(0);
 }
 
-/*@C
-  TSSerializeRegister - Adds a serialization method to the ts package.
-
-  Synopsis:
-
-  TSSerializeRegister(char *name, char *path, char *func_name,
-                        int (*serialize_func)(MPI_Comm, TS *, PetscViewer, PetscTruth))
-
-  Not Collective
-
-  Input Parameters:
-+ name           - The name of a new user-defined serialization routine
-. path           - The path (either absolute or relative) of the library containing this routine
-. func_name      - The name of the serialization routine
-- serialize_func - The serialization routine itself
-
-  Notes:
-  TSSerializeRegister() may be called multiple times to add several user-defined serializers.
-
-  If dynamic libraries are used, then the fourth input argument (serialize_func) is ignored.
-
-  Sample usage:
-.vb
-  TSSerializeRegisterDynamic("my_store", "/home/username/my_lib/lib/libO/solaris/libmy.a", "MyStoreFunc", MyStoreFunc);
-.ve
-
-  Then, your serialization can be chosen with the procedural interface via
-.vb
-    TSSetSerializeType(ts, "my_store")
-.ve
-  or at runtime via the option
-.vb
-    -ts_serialize_type my_store
-.ve
-
-  Note: $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
-
-  Level: advanced
-
-.keywords: ts, register
-.seealso: TSSerializeRegisterAll(), TSSerializeRegisterDestroy()
-M*/
-#undef __FUNCT__  
-#define __FUNCT__ "TSSerializeRegister"
-int TSSerializeRegister(const char sname[], const char path[], const char name[],
-                          int (*function)(MPI_Comm, TS *, PetscViewer, PetscTruth))
-{
-  char fullname[256];
-  int  ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);                                                                     CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");                                                                      CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);                                                                     CHKERRQ(ierr);
-  ierr = PetscFListAdd(&TSSerializeList, sname, fullname, (void (*)(void)) function);                     CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*-------------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSRegisterDestroy"
@@ -293,7 +143,7 @@ int TSSerializeRegister(const char sname[], const char path[], const char name[]
    Level: advanced
 
 .keywords: TS, timestepper, register, destroy
-.seealso: TSRegister(), TSRegisterAll(), TSSerializeRegisterDestroy(), TSRegisterDynamic()
+.seealso: TSRegister(), TSRegisterAll(), TSRegisterDynamic()
 @*/
 int TSRegisterDestroy(void)
 {
@@ -308,28 +158,3 @@ int TSRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "TSSerializeRegisterDestroy"
-/*@C
-  TSSerializeRegisterDestroy - Frees the list of serialization routines for
-  timesteppers that were registered by FListAdd().
-
-  Not collective
-
-  Level: advanced
-
-.keywords: ts, serialization, register, destroy
-.seealso: TSSerializeRegisterAll(), TSRegisterDestroy()
-@*/
-int TSSerializeRegisterDestroy()
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if (TSSerializeList != PETSC_NULL) {
-    ierr = PetscFListDestroy(&TSSerializeList);                                                           CHKERRQ(ierr);
-    TSSerializeList = PETSC_NULL;
-  }
-  TSSerializeRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}

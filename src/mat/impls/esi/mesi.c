@@ -19,7 +19,7 @@ typedef struct {
   esi::MatrixRowWriteAccess<double,int> *wmat;
 } Mat_ESI;
 
-EXTERN int MatLoad_ESI(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad_ESI(PetscViewer,const MatType,Mat*);
 
 /*
     Wraps a PETSc matrix to look like an ESI matrix and stashes the wrapper inside the
@@ -391,7 +391,6 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
 /*80*/ 0,
-       0,
        0,
        0,
        0,

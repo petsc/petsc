@@ -39,7 +39,7 @@ int PetscInitializePackage(char *path)
   ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");                                     CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE, "Random Number Generator");                          CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DICT_COOKIE,         "Parameter Dictionary");                             CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
+  /* Register Constructors */
   ierr = PetscDrawRegisterAll(path);                                                                      CHKERRQ(ierr);
   ierr = PetscViewerRegisterAll(path);                                                                    CHKERRQ(ierr);
   /* Register Events */
@@ -92,8 +92,8 @@ int PetscDLLibraryRegister(char *path)
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Graphics and PetscViewer libraries. \n\
+static const char *contents = "PETSc Graphics and PetscViewer libraries. \n\
      ASCII, Binary, Sockets, X-windows, ...\n";
-static char *authors  = PETSC_AUTHOR_INFO;
+static const char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"

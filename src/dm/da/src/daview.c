@@ -24,7 +24,7 @@ int DAView_Matlab(DA da,PetscViewer viewer)
   DAStencilType  stencil;
   DAPeriodicType periodic;
   mxArray        *mx;
-  char           *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
+  const char     *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);

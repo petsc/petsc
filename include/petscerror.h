@@ -271,7 +271,7 @@ extern  int __gierr;
 
 #endif
 
-EXTERN int PetscErrorMessage(int,char**,char **);
+EXTERN int PetscErrorMessage(int,const char*[],char **);
 EXTERN int PetscTraceBackErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
 EXTERN int PetscIgnoreErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
 EXTERN int PetscEmacsClientErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);

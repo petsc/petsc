@@ -16,8 +16,13 @@ class Options(config.base.Configure):
       elif bopt == 'g':
         flags.append('-g3')
       elif bopt == 'O':
-        if 'USER' in os.environ and os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','balay','petsc']:
-          flags.append('-Wshadow')
+        if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','balay','petsc']:
+          self.pushLanguage('C')
+          for i in ['-Wshadow','-Wwrite-strings']:
+            try:
+              self.framework.checkCompilerFlag(i)
+              flags.append(i)
+            except: pass
         flags.extend(['-O', '-fomit-frame-pointer'])
     # Alpha
     elif re.match(r'alphaev[5-9]', self.framework.host_cpu):
@@ -52,8 +57,12 @@ class Options(config.base.Configure):
       elif bopt == 'g':
         flags.append('-g3')
       elif bopt == 'O':
-        if 'USER' in os.environ and os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','balay','petsc']:
-          flags.append('-Wshadow')
+        if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','petsc','balay']:
+          for i in ['-Wshadow','-Wwrite-strings']:
+            try:
+              self.framework.checkCompilerFlag(i)
+              flags.append(i)
+            except: pass
         flags.extend(['-O', '-fomit-frame-pointer'])
     # Alpha
     elif re.match(r'alphaev[0-9]', self.framework.host_cpu):

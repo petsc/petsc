@@ -482,7 +482,7 @@ EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat);
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate()
 
 @*/
-int DAGetMatrix(DA da,MatType mtype,Mat *J)
+int DAGetMatrix(DA da,const MatType mtype,Mat *J)
 {
   int      ierr,dim,dof,nx,ny,nz;
   Mat      A;

@@ -19,7 +19,7 @@ struct _DMOps {
   int  (*view)(DM,PetscViewer);
   int  (*createglobalvector)(DM,Vec*);
   int  (*getcoloring)(DM,ISColoringType,ISColoring*);
-  int  (*getmatrix)(DM,MatType,Mat*);
+  int  (*getmatrix)(DM,const MatType,Mat*);
   int  (*getinterpolation)(DM,DM,Mat*,Vec*);
   int  (*refine)(DM,MPI_Comm,DM*);
   int  (*getinjection)(DM,DM,VecScatter*);
@@ -34,7 +34,7 @@ struct _DAOps {
   int  (*view)(DA,PetscViewer);
   int  (*createglobalvector)(DA,Vec*);
   int  (*getcoloring)(DA,ISColoringType,ISColoring*);
-  int  (*getmatrix)(DA,MatType,Mat*);
+  int  (*getmatrix)(DA,const MatType,Mat*);
   int  (*getinterpolation)(DA,DA,Mat*,Vec*);
   int  (*refine)(DA,MPI_Comm,DA*);
   int  (*getinjection)(DA,DA,VecScatter*);

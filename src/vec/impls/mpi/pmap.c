@@ -48,48 +48,6 @@ int PetscMapCreate_MPI(PetscMap m)
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscMapSerialize_MPI"
-int PetscMapSerialize_MPI(MPI_Comm comm, PetscMap *map, PetscViewer viewer, PetscTruth store)
-{
-  PetscMap m;
-  int      fd;
-  int      n, N, checkN;
-  int      numProcs;
-  int      ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerBinaryGetDescriptor(viewer, &fd);                                                     CHKERRQ(ierr);
-  if (store) {
-    m    = *map;
-    ierr = MPI_Comm_size(m->comm, &numProcs);                                                             CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &m->n,      1,          PETSC_INT, 0);                                    CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &m->N,      1,          PETSC_INT, 0);                                    CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &m->rstart, 1,          PETSC_INT, 0);                                    CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd, &m->rend,   1,          PETSC_INT, 0);                                    CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,  m->range,  numProcs+1, PETSC_INT, 0);                                    CHKERRQ(ierr);
-  } else {
-    ierr = PetscBinaryRead(fd, &n,         1,          PETSC_INT);                                        CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd, &N,         1,          PETSC_INT);                                        CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&n, &checkN, 1, MPI_INT, MPI_SUM, comm);                                         CHKERRQ(ierr);
-    if (checkN != N) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Invalid partition");
-    ierr = PetscMapCreate(comm, &m);                                                                      CHKERRQ(ierr);
-    ierr = PetscMapSetLocalSize(m, n);                                                                    CHKERRQ(ierr);
-    ierr = PetscMapSetSize(m, N);                                                                         CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm, &numProcs);                                                                CHKERRQ(ierr);
-    ierr = PetscMalloc((numProcs+1) * sizeof(int), &m->range);                                            CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd, &m->rstart, 1,          PETSC_INT);                                        CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd, &m->rend,   1,          PETSC_INT);                                        CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,  m->range,  numProcs+1, PETSC_INT);                                        CHKERRQ(ierr);
-
-    *map = m;
-  }
-
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapCreateMPI"
 /*@C

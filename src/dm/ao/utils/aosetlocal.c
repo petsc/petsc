@@ -30,7 +30,7 @@
 
 .seealso: AODataKeyParition(), AODataSegmentPartition()
 @*/
-int AODataPartitionAndSetupLocal(AOData ao,char *keyname,char *segmentname,IS *iskey,IS *issegment,ISLocalToGlobalMapping *ltog)
+int AODataPartitionAndSetupLocal(AOData ao,const char keyname[],const char segmentname[],IS *iskey,IS *issegment,ISLocalToGlobalMapping *ltog)
 {
   ISLocalToGlobalMapping ltogkey;
   int                    ierr,rstart,rend;

@@ -359,7 +359,8 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 @*/
 int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
-  char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par,*pdir;
+  char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
+  const char        *pdir;
   FILE              *fp;
   int               i,rank,ierr,len = 0;
   PetscTruth        flg1,flg2,sharedtmp,exists;

@@ -8,8 +8,6 @@ EXTERN int TSCreate_Pseudo(TS);
 EXTERN int TSCreate_PVode(TS);
 EXTERN int TSCreate_CN(TS);
 EXTERN int TSCreate_Rk(TS);
-
-EXTERN int GTSSerialize_BEuler(MPI_Comm, TS *, PetscViewer, PetscTruth);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -45,24 +43,3 @@ int TSRegisterAll(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "TSSerializeRegisterAll"
-/*@C
-  TSSerializeRegisterAll - Registers all of the serialization routines in the TS package. 
-
-  Not Collective
-
-  Input parameter:
-. path - The dynamic library path
-
-  Level: advanced
-
-.keywords: ts, register, all, serialize
-.seealso: TSSerialize(), TSSerializeRegister(), TSSerializeRegisterDestroy()
-@*/
-int TSSerializeRegisterAll(const char path[])
-{
-  PetscFunctionBegin;
-  TSSerializeRegisterAllCalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}

@@ -481,7 +481,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        0,
        0,
        0,
-       0,
 /*85*/ MatLoad_SeqBDiag
 };
 

@@ -223,7 +223,6 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       0,
 /*85*/ 0
 };
 

@@ -147,7 +147,7 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
 .seealso: PetscFOpen(), PetscFClose(), PetscPClose()
 
 @*/
-int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE **fp)
+int PetscPOpen(MPI_Comm comm,const char machine[],const char program[],const char mode[],FILE **fp)
 {
   int  ierr,rank,i,len,cnt;
   char commandt[PETSC_MAX_PATH_LEN],command[PETSC_MAX_PATH_LEN];

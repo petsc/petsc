@@ -171,8 +171,8 @@ EXTERN int PetscDrawSplitViewPort(PetscDraw);
 EXTERN int PetscDrawSetCoordinates(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
 EXTERN int PetscDrawGetCoordinates(PetscDraw,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-EXTERN int PetscDrawSetTitle(PetscDraw,char *);
-EXTERN int PetscDrawAppendTitle(PetscDraw,char *);
+EXTERN int PetscDrawSetTitle(PetscDraw,const char[]);
+EXTERN int PetscDrawAppendTitle(PetscDraw,const char[]);
 EXTERN int PetscDrawGetTitle(PetscDraw,char **);
 
 EXTERN int PetscDrawSetPause(PetscDraw,int);

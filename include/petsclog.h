@@ -92,7 +92,7 @@ EXTERN int PetscLogTraceBegin(FILE *);
 EXTERN int PetscLogActions(PetscTruth);
 EXTERN int PetscLogObjects(PetscTruth);
 /* General functions */
-EXTERN int PetscLogGetRGBColor(char **);
+EXTERN int PetscLogGetRGBColor(const char*[]);
 EXTERN int PetscLogDestroy(void);
 EXTERN int PetscLogSet(int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
                    int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));

@@ -958,7 +958,7 @@ static int SNESPrintHelp_LS(SNES snes,char *p)
 static int SNESView_LS(SNES snes,PetscViewer viewer)
 {
   SNES_LS    *ls = (SNES_LS *)snes->data;
-  char       *cstr;
+  const char *cstr;
   int        ierr;
   PetscTruth isascii;
 

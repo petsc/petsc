@@ -179,7 +179,8 @@ int PCGetType(PC pc,PCType *meth)
 int PCSetFromOptions(PC pc)
 {
   int        ierr;
-  char       type[256],*def;
+  char       type[256];
+  const char *def;
   PetscTruth flg;
 
   PetscFunctionBegin;

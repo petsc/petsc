@@ -64,7 +64,8 @@ $     SETERRQ(number,p,mess)
 int PetscEmacsClientErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   int         ierr;
-  char        command[PETSC_MAX_PATH_LEN],*pdir;
+  char        command[PETSC_MAX_PATH_LEN];
+  const char  *pdir;
   FILE        *fp;
 
   PetscFunctionBegin;
@@ -156,7 +157,7 @@ int PetscPopErrorHandler(void)
 }
  
 static char PetscErrorBaseMessage[1024];
-static char *PetscErrorStrings[] = {
+static const char *PetscErrorStrings[] = {
   /*55 */ "Out of memory",
           "No support for this operation for this object type",
           "",
@@ -206,7 +207,7 @@ static char *PetscErrorStrings[] = {
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-int PetscErrorMessage(int errnum,char **text,char **specific)
+int PetscErrorMessage(int errnum,const char *text[],char **specific)
 {
   PetscFunctionBegin;
   if (text && errnum >= PETSC_ERR_MEM && errnum <= PETSC_ERR_MEM_MALLOC_0) {

@@ -31,7 +31,7 @@ int VEC_SetRandom = 0, VEC_ReduceArithmetic = 0, VEC_ReduceBarrier = 0, VEC_Redu
 static int VecSetTypeFromOptions_Private(Vec vec)
 {
   PetscTruth opt;
-  char      *defaultType;
+  const char *defaultType;
   char       typeName[256];
   int        numProcs;
   int        ierr;

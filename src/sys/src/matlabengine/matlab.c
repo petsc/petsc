@@ -32,7 +32,7 @@ int MATLABENGINE_COOKIE = -1;
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *mengine)
+int PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscMatlabEngine *mengine)
 {
   int               ierr,rank,size;
   char              buffer[128];
@@ -104,7 +104,7 @@ int PetscMatlabEngineDestroy(PetscMatlabEngine v)
           PetscMatlabEngineCreate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-int PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,char *string,...)
+int PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char string[],...)
 {
   va_list           Argp;
   char              buffer[1024];
@@ -356,7 +356,7 @@ PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray(), PetscMatlabEngine
 @*/
-int PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,char *name)
+int PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,const char name[])
 {
   int     ierr;
   mxArray *mat;
@@ -394,7 +394,7 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine mengine,int m,int n,PetscScalar 
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGet(), PetscMatlabEngine
 @*/
-int PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,char *name)
+int PetscMatlabEngineGetArray(PetscMatlabEngine mengine,int m,int n,PetscScalar *array,const char name[])
 {
   int     ierr;
   mxArray *mat;

@@ -111,7 +111,7 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDataTypeGetName"
-/*@
+/*@C
      PetscDataTypeGetName - Gets the string representation of a PETSc datatype
 
    Not collective
@@ -126,7 +126,7 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
    
 .seealso: PetscDataType, PetscDataTypeGetSize(), PetscDataTypeToMPIDataType()
 @*/
-int PetscDataTypeGetName(PetscDataType ptype,char *name[])
+int PetscDataTypeGetName(PetscDataType ptype,const char *name[])
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {

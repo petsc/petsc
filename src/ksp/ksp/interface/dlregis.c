@@ -29,7 +29,7 @@ int PCInitializePackage(const char path[]) {
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&PC_COOKIE,   "Preconditioner");                                           CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
+  /* Register Constructors */
   ierr = PCRegisterAll(path);                                                                             CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&PC_SetUp,                   "PCSetUp",          PC_COOKIE);               CHKERRQ(ierr);
@@ -86,7 +86,7 @@ int KSPInitializePackage(const char path[]) {
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&KSP_COOKIE,  "Krylov Solver");                                            CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
+  /* Register Constructors */
   ierr = KSPRegisterAll(path);                                                                            CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&KSP_GMRESOrthogonalization, "KSPGMRESOrthog",   KSP_COOKIE);              CHKERRQ(ierr);

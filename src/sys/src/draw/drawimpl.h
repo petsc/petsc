@@ -32,7 +32,7 @@ struct _PetscDrawOps {
   int (*beginpage)(PetscDraw);
   int (*endpage)(PetscDraw);
   int (*getpopup)(PetscDraw,PetscDraw*);
-  int (*settitle)(PetscDraw,char *);
+  int (*settitle)(PetscDraw,const char[]);
   int (*checkresizedwindow)(PetscDraw);
   int (*resizewindow)(PetscDraw,int,int);
   int (*destroy)(PetscDraw);

@@ -20,7 +20,7 @@ static char vcid[] = "$Id: dlregis.c,v 1.1 2000/01/10 06:34:46 knepley Exp $";
 .keywords: AO, DA, initialize, package
 .seealso: PetscInitialize()
 @*/
-int DMInitializePackage(char *path) {
+int DMInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;
@@ -34,8 +34,6 @@ int DMInitializePackage(char *path) {
   ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");                                      CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");                                       CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");                                      CHKERRQ(ierr);
-  /* Register Constructors and Serializers */
-  ierr = AOSerializeRegisterAll(path);                                                                    CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&AOEvents[AO_PetscToApplication], "AOPetscToApplication", AO_COOKIE);      CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", AO_COOKIE);      CHKERRQ(ierr);
