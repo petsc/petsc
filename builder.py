@@ -177,10 +177,16 @@ class Builder(logging.Logger):
     if loadName in self.argDB:
       import cPickle
 
-      cache = self.argDB[loadName]
-      self.configurations[configurationName]       = cPickle.loads(cache)
-      self.configurations[configurationName].argDB = self.argDB
-      self.logPrint('Loaded configuration '+configurationName+' from cache: size '+str(len(cache)))
+      try:
+        cache = self.argDB[loadName]
+        self.configurations[configurationName]       = cPickle.loads(cache)
+        self.configurations[configurationName].argDB = self.argDB
+        self.logPrint('Loaded configuration '+configurationName+' from cache: size '+str(len(cache)))
+      except ValueError, e:
+        if str(e) == 'insecure string pickle':
+          del self.argDB[loadName]
+        else:
+          raise e
     return self.getConfiguration(configurationName)
 
   def updateOutputFiles(self, outputFiles, newOutputFiles):

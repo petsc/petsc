@@ -143,13 +143,17 @@ class Logger(args.ArgumentProcessor):
       return True
     return False
 
-  def logIndent(self, debugLevel = -1, debugSection = None):
+  def logIndent(self, debugLevel = -1, debugSection = None, comm = None):
     '''Write the proper indentation to the log streams'''
     import traceback
 
     indentLevel = len(traceback.extract_stack())-5
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
+        if not comm is None:
+          f.write('[')
+          f.write(str(comm.rank()))
+          f.write(']')
         for i in range(indentLevel):
           f.write(self.debugIndent)
     return
@@ -177,10 +181,10 @@ class Logger(args.ArgumentProcessor):
           f.flush()
     return
 
-  def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1):
+  def logPrint(self, msg, debugLevel = -1, debugSection = None, indent = 1, comm = None):
     '''Write the message to the log streams with proper indentation and a newline'''
     if indent:
-      self.logIndent(debugLevel, debugSection)
+      self.logIndent(debugLevel, debugSection, comm)
     self.logWrite(msg, debugLevel, debugSection)
     for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
