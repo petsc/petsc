@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   if (flag) {
     edited = 1;
     printf("Enter keyname: (or return to end) ");
-    gets(string);
+    fgets(string, 256, stdin);
     while (string[0] != 0) {
       ierr = AODataKeyExists(aodata,string,&keyexists);CHKERRQ(ierr);
       if (!keyexists) {
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
       }
       ierr = PetscStrcpy(keyname,string);CHKERRQ(ierr);
       printf("Enter segmentname: value (or return to end) ");
-      gets(string);
+      fgets(string, 256, stdin);
       while (string[0] != 0) {
         PetscToken *token;
         ierr    = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
@@ -82,10 +82,10 @@ int main(int argc,char **argv)
         ierr    = PetscStrlen(value,&bs);CHKERRQ(ierr);
         ierr = AODataSegmentAdd(aodata,keyname,segname,bs,1,&zero,value,PETSC_CHAR);CHKERRQ(ierr);
         printf("Enter segmentname: value (or return to end) ");
-        gets(string);
+        fgets(string, 256, stdin);
       }
       printf("Enter keyname: (or return to end) ");
-      gets(string);
+      fgets(string, 256, stdin);
     } 
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr)
     ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -98,14 +98,14 @@ int main(int argc,char **argv)
   if (flag) {
     edited = 1;
     printf("Enter keyname to remove: (or return to end) ");
-    gets(string);
+    fgets(string, 256, stdin);
     while (string[0] != 0) {
       ierr = AODataKeyRemove(aodata,string);CHKERRQ(ierr);
       printf("Enter keyname to remove: (or return to end) ");
-      gets(string);
+      fgets(string, 256, stdin);
     }
     printf("Enter keyname segment name to remove: (or return to end) ");
-    gets(string);
+    fgets(string, 256, stdin);
     while (string[0] != 0) {
       PetscToken *token;
       ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ int main(int argc,char **argv)
       ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
       ierr = AODataSegmentRemove(aodata,ikeyname,segname);CHKERRQ(ierr);
       printf("Enter keyname segment name to remove: (or return to end) ");
-      gets(string);
+      fgets(string, 256, stdin);
     }
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr)
     ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

@@ -169,7 +169,15 @@ int PetscSharedInitialize(MPI_Comm comm)
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscStrcpy(filename,"/tmp/PETScArenaXXXXXX");CHKERRQ(ierr);
-      mktemp(filename);
+#ifdef PETSC_HAVE_MKSTEMP
+      if (mkstemp(filename) < 0) {
+        SETERRQ1(PETSC_ERR_FILE_OPEN, "Unable to open temporary file %s", filename);
+      }
+#else
+      if (mktemp(filename) == PETSC_NULL) {
+        SETERRQ1(PETSC_ERR_FILE_OPEN, "Unable to open temporary file %s", filename);
+      }
+#endif
       ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
     } 
     ierr     = MPI_Bcast(&len,1,MPI_INT,0,comm);CHKERRQ(ierr);
