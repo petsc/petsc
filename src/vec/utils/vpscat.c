@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.45 1996/03/19 21:22:50 bsmith Exp balay $";
+static char vcid[] = "$Id: vpscat.c,v 1.46 1996/04/25 23:31:05 balay Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -145,9 +145,32 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
     for ( i=0; i<gen_to->nbelow; i++ ) {
       val  = svalues + sstarts[i];
       jmax = sstarts[i+1]-sstarts[i];
+      /*
       for ( j=0; j<jmax; j++ ) {
         val[j] = xv[*indices++];
       }
+      */
+      /* unroll the above loop*/
+      {
+        Scalar *vv;
+        int j_rem;
+        vv = val;
+        switch ( j_rem = jmax& 0x3) {
+        case 3: vv[2] = xv[indices[2]];
+        case 2: vv[1] = xv[indices[1]];
+        case 1: vv[0] = xv[indices[0]]; 
+          j -= j_rem; vv += j_rem; indices += j_rem ;
+        case 0:break;
+        }
+        while (j>0) {
+          vv[0] = xv[indices[0]];
+          vv[1] = xv[indices[1]];
+          vv[2] = xv[indices[2]];
+          vv[3] = xv[indices[3]];
+          j -=4; vv +=4; indices +=4;
+        }
+      }
+
       MPI_Isend(val,sstarts[i+1] - sstarts[i],
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
@@ -215,16 +238,60 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
 
       lindices = indices + rstarts[imdex];
       if (addv == INSERT_VALUES) {
-        for ( i=0; i<n; i++ ) {
+        /* for ( i=0; i<n; i++ ) {
           yv[lindices[i]] = *val++;
+        } */
+        /* unroll the above loop*/
+        {
+          Scalar *vv;
+          int i_rem, *idx;
+          idx = lindices;
+          vv = val;
+          i = n;
+          switch ( i_rem = i& 0x3) {
+          case 3: yv[idx[2]] = vv[2];
+          case 2: yv[idx[1]] = vv[1];
+          case 1: yv[idx[0]] = vv[0];
+            i -= i_rem; vv += i_rem; idx += i_rem ;
+          case 0:break;
+          }
+          while (i>0) {
+            yv[idx[0]] = vv[0];
+            yv[idx[1]] = vv[1];
+            yv[idx[2]] = vv[2];
+            yv[idx[3]] = vv[3];
+            i -=4; vv +=4; idx +=4;
+          }
         }
       }
-       else {
-        for ( i=0; i<n; i++ ) {
-          yv[lindices[i]] += *val++;
+      else {
+        /* for ( i=0; i<n; i++ ) {
+           yv[lindices[i]] += *val++;
+           } */
+        /* unroll the above loop*/
+        {
+          Scalar *vv;
+          int i_rem, *idx;
+          idx = lindices;
+          vv = val;
+          i = n;
+          switch ( i_rem = i& 0x3) {
+          case 3: yv[idx[2]] += vv[2];
+          case 2: yv[idx[1]] += vv[1];
+          case 1: yv[idx[0]] += vv[0];
+            i -= i_rem; vv += i_rem; idx += i_rem ;
+          case 0:break;
+          }
+          while (i>0) {
+            yv[idx[0]] += vv[0];
+            yv[idx[1]] += vv[1];
+            yv[idx[2]] += vv[2];
+            yv[idx[3]] += vv[3];
+            i -=4; vv +=4; idx +=4;
+          }
         }
       }
-      count--;
+    count--;
     }
  
     /* wait on sends */
