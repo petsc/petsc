@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.78 1996/08/04 23:09:47 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.79 1996/08/05 04:02:09 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -208,8 +208,11 @@ extern double PetscGetFlops();
 /*
      This does not use for MPI-Uni because our src/mpiuni/mpi.h file
    uses macros to defined the MPI operations. 
+
+     It does not work correctly from HP-UX because it processes the 
+   macros in a way that sometimes it double counts.
 */
-#if !defined(PETSC_USING_MPIUNI)
+#if !defined(PETSC_USING_MPIUNI) && !defined(PARCH_hpux)
 /*
    Logging of MPI activities
 */
@@ -228,53 +231,29 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
   } \
 }
 
-#if defined(PARCH_hpux)
-/*
-    This is a tacky fix. The CPP on HP-UX scans the macros twice 
-  thus it double counted the send/receive operations.
-*/ 
-#define MPI_Irecv( buf, count,  datatype, source, tag, comm, request) \
-{ \
-  MPI_Irecv( buf, count,  datatype, source, tag, comm, request);\
-  irecv_ct += .5; TypeSize(irecv_len,.5*count,datatype); \
-}
-#define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
-{ \
-  MPI_Isend( buf, count,  datatype, dest, tag, comm, request); \
-  isend_ct += .5;   TypeSize(isend_len,.5*count,datatype); \
-}
-#define MPI_Recv( buf, count,  datatype, source, tag, comm, status) \
-{ \
-  MPI_Recv( buf, count,  datatype, source, tag, comm, status); \
-  recv_ct += .5; TypeSize(recv_len,.5*count,datatype); \
-}
-#define MPI_Send( buf, count,  datatype, dest, tag, comm) \
-{ \
-  MPI_Send( buf, count,  datatype, dest, tag, comm); \
-  send_ct += .5;  TypeSize(send_len,.5*count,datatype); \
-}
-#else
 #define MPI_Irecv( buf, count,  datatype, source, tag, comm, request) \
 { \
   MPI_Irecv( buf, count,  datatype, source, tag, comm, request);\
   irecv_ct++; TypeSize(irecv_len,count,datatype); \
 }
+
 #define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
 { \
   MPI_Isend( buf, count,  datatype, dest, tag, comm, request); \
   isend_ct++;   TypeSize(isend_len,count,datatype); \
 }
+
 #define MPI_Recv( buf, count,  datatype, source, tag, comm, status) \
 { \
   MPI_Recv( buf, count,  datatype, source, tag, comm, status); \
   recv_ct++; TypeSize(recv_len,count,datatype); \
 }
+
 #define MPI_Send( buf, count,  datatype, dest, tag, comm) \
 { \
   MPI_Send( buf, count,  datatype, dest, tag, comm); \
   send_ct++;  TypeSize(send_len,count,datatype); \
 }
-#endif
 
 #define MPI_Wait(request, status) \
 ( \
@@ -299,7 +278,7 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
   allreduce_ct++, \
   MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
 )
-#endif /* ! PETSC_USING_MPIUNI */
+#endif /* ! PETSC_USING_MPIUNI && ! PARCH_hpux */
 
 #else  /* ------------------------------------------------------------*/
 
