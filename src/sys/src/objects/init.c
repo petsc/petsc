@@ -29,7 +29,7 @@ MPI_Comm   PETSC_COMM_WORLD = 0;
 MPI_Comm   PETSC_COMM_SELF  = 0;
 
 #if defined(PETSC_USE_COMPLEX)
-template <> std::class complex<double>; /* instantiate complex template class */
+template <> class std::complex<double>; /* instantiate complex template class */
 MPI_Datatype  MPIU_COMPLEX;
 PetscScalar   PETSC_i; 
 #else
