@@ -116,7 +116,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* add C_seq into mpi C */
   ierr = MatMerge_SeqsToMPI(A->comm,C_seq,P->n,P->n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
-  /* ierr = MatDestroy(C_seq);CHKERRQ(ierr); */
   
   PetscFunctionReturn(0);
 }
@@ -125,13 +124,19 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
-  PetscErrorCode    ierr;
-  Mat               P_seq,A_loc,C_seq;
-  int               prstart,prend,m=P->m;
-  IS                isrowp,iscolp;
-  Mat_Merge_SeqsToMPI *merge=(Mat_Merge_SeqsToMPI*)C->spptr;
+  PetscErrorCode       ierr;
+  Mat                  P_seq,A_loc,C_seq;
+  int                  prstart,prend,m=P->m;
+  IS                   isrowp,iscolp;
+  Mat_Merge_SeqsToMPI  *merge; 
+  PetscObjectContainer container;
 
   PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)C,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
+  if (container) {
+    ierr  = PetscObjectContainerGetPointer(container,(void *)&merge);CHKERRQ(ierr); 
+  } 
+
   /* get P_seq = submatrix of P by taking rows of P that equal to nonzero col of A */
   ierr = MatGetBrowsOfAcols(A,P,MAT_INITIAL_MATRIX,&isrowp,&iscolp,&prstart,&P_seq);CHKERRQ(ierr);
   ierr = ISDestroy(iscolp);CHKERRQ(ierr);

@@ -2841,18 +2841,26 @@ EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 #define __FUNCT__ "MatDestroy_MPIAIJ_SeqsToMPI"
 PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 {
-  PetscErrorCode ierr;
-  Mat_Merge_SeqsToMPI *merge=(Mat_Merge_SeqsToMPI*)A->spptr; 
+  PetscErrorCode       ierr;
+  Mat_Merge_SeqsToMPI  *merge; 
+  PetscObjectContainer container;
 
   PetscFunctionBegin;
-  ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
-  ierr = PetscFree(merge->abuf_s);CHKERRQ(ierr);
-  ierr = PetscFree(merge->len_sra);CHKERRQ(ierr);
-  ierr = PetscFree(merge->bi);CHKERRQ(ierr);
-  ierr = PetscFree(merge->bj);CHKERRQ(ierr);
-  ierr = PetscFree(merge->ijbuf_r);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr); 
-  ierr = MatDestroy(merge->C_seq);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
+  if (container) {
+    ierr  = PetscObjectContainerGetPointer(container,(void *)&merge);CHKERRQ(ierr); 
+    ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
+    ierr = PetscFree(merge->abuf_s);CHKERRQ(ierr);
+    ierr = PetscFree(merge->len_sra);CHKERRQ(ierr);
+    ierr = PetscFree(merge->bi);CHKERRQ(ierr);
+    ierr = PetscFree(merge->bj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->ijbuf_r);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr); 
+    ierr = MatDestroy(merge->C_seq);CHKERRQ(ierr);
+    
+    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
+  }
   ierr = PetscFree(merge);CHKERRQ(ierr);
 
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
@@ -2899,7 +2907,8 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   MatScalar         *ba,*aa=a->a,**abuf_r,*abuf_i,*ba_i;
   FreeSpaceList     free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT           lnkbt;
-  Mat_Merge_SeqsToMPI *merge;
+  Mat_Merge_SeqsToMPI  *merge;
+  PetscObjectContainer container;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -2909,7 +2918,10 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
   } else if (scall == MAT_REUSE_MATRIX){
     B_mpi = *mpimat;
-    merge = (Mat_Merge_SeqsToMPI*)B_mpi->spptr;
+    ierr = PetscObjectQuery((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
+    if (container) {
+      ierr  = PetscObjectContainerGetPointer(container,(void *)&merge);CHKERRQ(ierr); 
+    }
     bi      = merge->bi;
     bj      = merge->bj;
     ijbuf_r = merge->ijbuf_r;
@@ -2958,12 +2970,11 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     /*--------------------------------------------------------*/
     ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&merge->nrecv);CHKERRQ(ierr);
     ierr = PetscGatherMessageLengths(comm,merge->nsend,merge->nrecv,len_s,&merge->id_r,&len_r);CHKERRQ(ierr);
-    /*
-    ierr = PetscPrintf(PETSC_COMM_SELF," [%d] nsend: %d, nrecv: %d\n",rank,merge->nsend,merge->nrecv);
+
+    ierr = PetscLogInfo((PetscObject)(seqmat),"MatMerge_SeqsToMPI: nsend: %d, nrecv: %d\n",merge->nsend,merge->nrecv);CHKERRQ(ierr);
     for (i=0; i<merge->nrecv; i++){
-      ierr = PetscPrintf(PETSC_COMM_SELF," [%d] expects recv len_r=%d from [%d]\n",rank,len_r[i],merge->id_r[i]);
+      ierr = PetscLogInfo((PetscObject)(seqmat),"MatMerge_SeqsToMPI:   expects recv len_r=%d from [%d]\n",len_r[i],merge->id_r[i]);CHKERRQ(ierr);
     }
-    */
 
     /* post the Irecvs corresponding to these messages */
     /*-------------------------------------------------*/
@@ -3163,13 +3174,16 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   /* attach the supporting struct to B_mpi for reuse */
   /*-------------------------------------------------*/
   if (scall == MAT_INITIAL_MATRIX){
-    B_mpi->spptr         = (void*)merge;
     B_mpi->ops->destroy  = MatDestroy_MPIAIJ_SeqsToMPI; 
     merge->bi            = bi;
     merge->bj            = bj;
     merge->ijbuf_r       = ijbuf_r;
     merge->C_seq         = seqmat;
-  
+
+    ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+    ierr = PetscObjectContainerSetPointer(container,merge);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject)container);CHKERRQ(ierr);
+    
     *mpimat = B_mpi;
   }
   PetscFunctionReturn(0);
