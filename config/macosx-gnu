@@ -2,17 +2,17 @@
 
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set BOPT=g_complex
+  set BOPT=g
 else if ($day == Mon) then
-  set BOPT=O_c++
+  set BOPT=O
 else if ($day == Tue) then
   set BOPT=g
 else if ($day == Wed) then
-  set BOPT=O_complex
+  set BOPT=O
 else if ($day == Thu) then
-  set BOPT=g_c++
+  set BOPT=g
 else if ($day == Fri) then
-  set BOPT=O_c++
+  set BOPT=O
 else if ($day == Sat) then
   set BOPT=O
 endif
