@@ -1,0 +1,40 @@
+# Note:  The commented decoding lines of this file denote the old
+#        mapping format, which should now be obselete.  The new format 
+#        requires the complete path (not just the relative path).
+
+# PETSc default:  
+default http://www.mcs.anl.gov/petsc/contents/petsc.html
+
+# PDE Solvers Module
+rect http://www.mcs.anl.gov/petsc/contents/domain.html 107 153 193 125  
+
+# SNES Module
+# decode-petsc rect 300 167 167 40 petsc/contents/snes.html
+rect http://www.mcs.anl.gov/petsc/contents/snes.html 300 167 467 207
+
+# SLES Module
+rect http://www.mcs.anl.gov/petsc/contents/sles.html 121 182 266 222
+
+# KSP Module
+rect http://www.mcs.anl.gov/petsc/contents/ksp.html 384 215 515 257
+
+# Draw Module
+rect http://www.mcs.anl.gov/petsc/contents/xtools.html 69 265 162 298
+
+# Vectors Module
+rect http://www.mcs.anl.gov/petsc/contents/vectors.html 205 265 298 298
+
+# Matrices Module
+rect http://www.mcs.anl.gov/petsc/contents/matrices.html 335 265 428 298
+
+# Index Sets Module
+rect http://www.mcs.anl.gov/petsc/contents/blockcomm.html 472 264 565 297
+
+# Preconditioners Module
+rect http://www.mcs.anl.gov/petsc/contents/system.html 134 305 309 334
+
+# MPI Module
+rect http://www.mcs.anl.gov/petsc/contents/chameleon.html 383 305 449 334
+
+# Applications
+rect http://www.mcs.anl.gov/petsc/contents/applications.html 210 77 350 117
