@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.100 1997/07/25 00:46:23 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.101 1997/08/22 15:10:36 bsmith Exp gropp $";
 #endif
 /*
    Implements the sequential vectors.
@@ -23,7 +23,7 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
     /*
       This is because the Fortran BLAS 1 Norm is very slow! 
     */
-#if defined(PARCH_sun4) && !defined(PETSC_COMPLEX)
+#if defined(HAVE_SLOW_NRM2) && !defined(PETSC_COMPLEX)
     *z = BLdot_( &x->n, x->array, &one, x->array, &one );
     *z = sqrt(*z);
 #else
