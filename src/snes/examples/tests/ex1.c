@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.84 2001/08/07 03:04:13 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.85 2001/08/07 21:31:12 bsmith Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -35,7 +35,6 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscdraw.h" so that we can use PETSc drawing routines.
    Include "petscsnes.h" so that we can use SNES solvers.  Note that
    this file automatically includes:
      petsc.h       - base PETSc routines   petscvec.h - vectors
@@ -73,7 +72,6 @@ int main(int argc,char **argv)
   Vec            x,r;                 /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
-  PetscDraw      draw;                 /* drawing context */
   int            i,ierr,its,N,size,hist_its[50]; 
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
@@ -221,16 +219,6 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr); 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRQ(ierr);
 
-  /*
-     PetscDraw contour plot of solution
-  */
-  /* ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr); */
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetType(draw,PETSC_DRAW_X);CHKERRQ(ierr);
-
-  ierr = VecGetArray(x,&array);CHKERRQ(ierr);
-  ierr = PetscDrawTensorContour(draw,user.mx,user.my,0,0,array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
 
   /* 
      Print the convergence history.  This is intended just to demonstrate
@@ -256,7 +244,6 @@ int main(int argc,char **argv)
   }
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.205 2001/08/06 21:15:12 bsmith Exp balay $*/
+/*$Id: dense.c,v 1.206 2001/08/07 03:02:45 balay Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -83,9 +83,9 @@ int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatLUInfo *minfo)
   SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavilable.");
 #else
   LAgetrf_(&A->m,&A->n,mat->v,&A->m,mat->pivots,&info);
-#endif
   if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
+#endif
   PetscLogFlops((2*A->n*A->n*A->n)/3);
   PetscFunctionReturn(0);
 }
@@ -164,8 +164,8 @@ int MatCholeskyFactor_SeqDense(Mat A,IS perm,PetscReal f)
   SETERRQ(PETSC_ERR_SUP,"POTRF - Lapack routine is unavilable.");
 #else
   LApotrf_("L",&A->n,mat->v,&A->m,&info);
-#endif
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
+#endif
   A->factor = FACTOR_CHOLESKY;
   PetscLogFlops((A->n*A->n*A->n)/3);
   PetscFunctionReturn(0);
@@ -197,19 +197,20 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = PetscMemcpy(y,x,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
   if (A->factor == FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
-  SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
 #else
     LAgetrs_("N",&A->m,&one,mat->v,&A->m,mat->pivots,y,&A->m,&info);
+    if (info) SETERRQ(PETSC_ERR_LIB,"MBad solve");
 #endif
   } else if (A->factor == FACTOR_CHOLESKY){
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
-  SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
 #else
     LApotrs_("L",&A->m,&one,mat->v,&A->m,y,&A->m,&info);
+    if (info) SETERRQ(PETSC_ERR_LIB,"MBad solve");
 #endif
   }
   else SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
-  if (info) SETERRQ(PETSC_ERR_LIB,"MBad solve");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->n*A->n - A->n);
@@ -232,18 +233,19 @@ int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
-  SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
 #else
     LAgetrs_("T",&A->m,&one,mat->v,&A->m,mat->pivots,y,&A->m,&info);
+    if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
-  SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
 #else
     LApotrs_("L",&A->m,&one,mat->v,&A->m,y,&A->m,&info);
+    if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   }
-  if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscLogFlops(2*A->n*A->n - A->n);
@@ -272,18 +274,19 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
-  SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
 #else
     LAgetrs_("N",&A->m,&one,mat->v,&A->m,mat->pivots,y,&A->m,&info);
+    if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
-  SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
 #else
     LApotrs_("L",&A->m,&one,mat->v,&A->m,y,&A->m,&info);
+    if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   }
-  if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
   if (tmp) {ierr = VecAXPY(&sone,tmp,yy);CHKERRQ(ierr); ierr = VecDestroy(tmp);CHKERRQ(ierr);}
   else     {ierr = VecAXPY(&sone,zz,yy);CHKERRQ(ierr);}
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
@@ -314,18 +317,19 @@ int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
-  SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavilable.");
 #else
     LAgetrs_("T",&A->m,&one,mat->v,&A->m,mat->pivots,y,&A->m,&info);
+    if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
-  SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
+    SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavilable.");
 #else
     LApotrs_("L",&A->m,&one,mat->v,&A->m,y,&A->m,&info);
+    if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
 #endif
   }
-  if (info) SETERRQ(PETSC_ERR_LIB,"Bad solve");
   if (tmp) {
     ierr = VecAXPY(&sone,tmp,yy);CHKERRQ(ierr);
     ierr = VecDestroy(tmp);CHKERRQ(ierr);
