@@ -75,6 +75,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-enable-log',                 nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-enable-stack',               nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
     help.addArgument('PETSc', '-enable-dynamic',             nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
+    help.addArgument('PETSc', '-enable-etags',               nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
     help.addArgument('PETSc', '-enable-fortran-kernels',     nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', 'optionsModule=<module name>', nargs.Arg(None, None, 'The Python module used to determine compiler options and versions'))
     help.addArgument('PETSc', 'C_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
@@ -812,7 +813,8 @@ acfindx:
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
-    self.executeTest(self.configureETags)
+    if self.framework.argDB['enable-etags']:                                    
+      self.executeTest(self.configureETags)
     self.executeTest(self.configureDocs)
     self.executeTest(self.configureScript)
     self.startLine()
