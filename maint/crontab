@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.108 1998/03/18 20:01:18 balay Exp balay $ 
+# $Id: crontab,v 1.109 1998/03/18 20:01:51 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -50,6 +50,4 @@
 #
 # Recreate the indices on the PETSc web site once every sunday
 #
-45 5 * * 0 rsh eagle "cd /nfs/www/wwwroot/petsc/petsc-index; /bin/rm -f index.log; \
-  build_index.cgi >& index.log; chmod g+w \*"
-
+45 5 * * 0 rsh eagle "cd /nfs/www/wwwroot/petsc/petsc-index; /bin/rm -f index.log; build_index.cgi >& index.log; chmod g+w *"
