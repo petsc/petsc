@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.10 1999/04/16 16:07:53 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.11 1999/05/04 20:33:38 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -21,7 +21,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Routines: PetscBarrier(); PetscGetTime();
    Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
    Routines: ViewerBinaryOpen(); ViewerDestroy();
-   Processors: n
+   Processors: 1
 T*/
 
 /* 
