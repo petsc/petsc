@@ -26,7 +26,7 @@ class TagAllSIDL (transform.GenericTag):
   def execute(self):
     self.genericExecute(self.sources)
     if len(self.changed):
-      # This is bad, should have a clear()
+      ## This is bad, should have a clear()
       self.changed.data   = []
       self.changed.extend(self.taggedFiles)
       self.unchanged.data = []
@@ -128,6 +128,7 @@ class PythonModuleFixup (transform.Transform):
     (dir, file) = os.path.split(source)
     (base, ext) = os.path.splitext(file)
     if not base[-7:] == '_Module': return
+    if not ext       == '.c':      return
     package     = base[:-7]
     moduleName  = os.path.join(dir, package+'module.so')
     self.debugPrint('Symlinking '+self.libName+' to '+moduleName, 3, 'compile')
