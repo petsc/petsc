@@ -213,8 +213,6 @@ class UsingPython(UsingCompiler):
   '''This class handles all interaction specific to the Python language'''
   def __init__(self, usingSIDL, argDB = None):
     UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
-    self.argDB.setType('PYTHON_INCLUDE', nargs.ArgDir(None, None, 'The directory containing Python.h', 1))
-    self.argDB.setType('PYTHON_LIB',     nargs.ArgLibrary(None, None, 'The library containing PyInitialize()', 1))
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return
