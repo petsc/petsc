@@ -243,9 +243,10 @@ class UsingPython(UsingCompiler):
     except: pass
 
     extraLibraries = [self.argDB['PYTHON_LIB']]
-    for lib in distutils.sysconfig.get_config_var('LIBS').split():
-      # Change -l<lib> to lib<lib>.so
-      extraLibraries.append('lib'+lib[2:]+'.so')
+    if not distutils.sysconfig.get_config_var('LIBS') is None:
+      for lib in distutils.sysconfig.get_config_var('LIBS').split():
+        # Change -l<lib> to lib<lib>.so
+        extraLibraries.append('lib'+lib[2:]+'.so')
     self.extraLibraries[self.getLanguage()].extend(extraLibraries)
     for package in self.usingSIDL.getPackages():
       self.extraLibraries[package].extend(extraLibraries)

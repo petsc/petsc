@@ -59,7 +59,8 @@ class Installer(install.base.Base):
 if __name__ == '__main__':
   installer   = Installer(sys.argv[1:])
   compilerUrl = 'bk://sidl.bkbits.net/Compiler'
-  for url in installer.argDB.target:
+  # Must copy list since target is reset by each make below
+  for url in installer.argDB.target[:]:
     if url == 'default':
       url = compilerUrl
     if installer.argDB['backup']:

@@ -292,12 +292,12 @@ class CompileCxx (Compile):
 
   def checkCompiler(self):
     # Make sure g++ is recent enough
-    (status,output) = commands.getstatusoutput("g++ -dumpversion")
+    (status,output) = commands.getstatusoutput('g++ -dumpversion')
     if not status == 0:
-      raise RuntimeError("g++ is not in your path; please make sure that you have a g++ of at least version 3 installed in your path. Get gcc/g++ at http://gcc.gnu.com")
-    version = re.split('\.',output)[0]
-    if not version == "3":
-      raise RuntimeError("The g++ in your path is not version "+version+"; please install a g++ of at least version 3 or fix your path. Get gcc/g++ at http://gcc.gnu.com")
+      raise RuntimeError('g++ is not in your path; please make sure that you have a g++ of at least version 3 installed in your path. Get gcc/g++ at http://gcc.gnu.com')
+    version = output.split('.')[0]
+    if not version == '3':
+      raise RuntimeError('The g++ in your path is version '+version+'; please install a g++ of at least version 3 or fix your path. Get gcc/g++ at http://gcc.gnu.com')
     return
 
   def handleCxxErrors(self, command, status, output):
