@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.23 1995/12/02 19:22:51 curfman Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.24 1996/01/01 01:03:39 bsmith Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -29,7 +29,6 @@ typedef struct {
   /*  The following variables are used in matrix assembly */
 
   int         assembled;          /* MatAssemble has been called */
-  int         reassemble_begun;   /* We're re-assembling */
   InsertMode  insertmode;         /* mode for MatSetValues */
   Stash       stash;              /* stash for non-local elements */
   MPI_Request *send_waits;        /* array of send requests */
@@ -51,7 +50,6 @@ typedef struct {
   BScomm     *comm_fpA;         /* communication info for factorization */
   Vec        diag;              /* diagonal scaling vector */
   Vec        xwork;             /* work space for mat-vec mult */
-  Scalar     *inv_diag;
 
   /* Cholesky factorization data */
   double     alpha;             /* restart for failed factorization */
