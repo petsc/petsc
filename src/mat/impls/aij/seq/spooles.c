@@ -25,7 +25,8 @@ int MatDestroy_SeqAIJ_Spooles(Mat A)
   InpMtx_free(lu->mtxA) ;             
   ETree_free(lu->frontETree) ;          
   IVL_free(lu->symbfacIVL) ;         
-  SubMtxManager_free(lu->mtxmanager) ;  
+  SubMtxManager_free(lu->mtxmanager) ; 
+  Graph_free(lu->graph);
   
   ierr = PetscFree(lu);CHKERRQ(ierr); 
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
@@ -41,22 +42,32 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
   PetscScalar      *array;
   DenseMtx         *mtxY, *mtxX ;
   double           *entX;
-  int              ierr,irow,neqns=A->m,*iv;
+  int              ierr,irow,neqns=A->n,nrow=A->m,*iv;
 
   PetscFunctionBegin;
-  /* copy permuted b to mtxY */
+ 
   mtxY = DenseMtx_new() ;
-  DenseMtx_init(mtxY, SPOOLES_REAL, 0, 0, neqns, 1, 1, neqns) ; /* column major */
-  iv = IV_entries(lu->oldToNewIV);
+  DenseMtx_init(mtxY, SPOOLES_REAL, 0, 0, nrow, 1, 1, nrow) ; /* column major */
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
-  for ( irow = 0 ; irow < neqns ; irow++ ) DenseMtx_setRealEntry(mtxY, *iv++, 0, *array++) ; 
+  if (lu->options.useQR) {   /* copy b to mtxY */
+    for ( irow = 0 ; irow < nrow; irow++ ) 
+      DenseMtx_setRealEntry(mtxY, irow, 0, *array++) ; 
+  } else {                   /* copy permuted b to mtxY */
+    iv = IV_entries(lu->oldToNewIV); 
+    for ( irow = 0 ; irow < nrow; irow++ ) 
+      DenseMtx_setRealEntry(mtxY, *iv++, 0, *array++) ; 
+  }
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);
 
   mtxX = DenseMtx_new() ;
   DenseMtx_init(mtxX, SPOOLES_REAL, 0, 0, neqns, 1, 1, neqns) ;
-  DenseMtx_zero(mtxX) ;
-  FrontMtx_solve(lu->frontmtx, mtxX, mtxY, lu->mtxmanager, 
+  if (lu->options.useQR) {
+    FrontMtx_QR_solve(lu->frontmtx, lu->mtxA, mtxX, mtxY, lu->mtxmanager,
+                  lu->cpus, lu->options.msglvl, lu->options.msgFile) ;
+  } else {
+    FrontMtx_solve(lu->frontmtx, mtxX, mtxY, lu->mtxmanager, 
                  lu->cpus, lu->options.msglvl, lu->options.msgFile) ;
+  }
   if ( lu->options.msglvl > 2 ) {
     fprintf(lu->options.msgFile, "\n\n right hand side matrix after permutation") ;
     DenseMtx_writeForHumanEye(mtxY, lu->options.msgFile) ; 
@@ -86,12 +97,11 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   Mat_Spooles        *lu = (Mat_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager ;
   Chv                *rootchv ;
-  Graph              *graph ;
   IVL                *adjIVL;
-  int                ierr,nz,m=A->m,irow,nedges,
+  int                ierr,nz,nrow=A->m,irow,nedges,neqns=A->n,
                      *ai,*aj,*ivec1, *ivec2, i;
   PetscScalar        *av;
-  double             *dvec,cputotal;
+  double             *dvec,cputotal,facops;
   
   PetscFunctionBegin;
   /* copy A to Spooles' InpMtx object */
@@ -105,11 +115,11 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     nz=mat->s_nz;
   }
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) lu->mtxA = InpMtx_new() ;
-  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, m) ;
+  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, 0) ;
   ivec1 = InpMtx_ivec1(lu->mtxA);  
   ivec2 = InpMtx_ivec2(lu->mtxA); 
   dvec  = InpMtx_dvec(lu->mtxA);
-  for (irow = 0; irow < m; irow++){
+  for (irow = 0; irow < nrow; irow++){
     for (i = ai[irow]; i<ai[irow+1]; i++) ivec1[i] = irow;
   }
   IVcopy(nz, ivec2, aj);
@@ -128,35 +138,43 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     /*---------------------------------------------------
     find a low-fill ordering
          (1) create the Graph object
-         (2) order the graph using multiple minimum degree
+         (2) order the graph 
     -------------------------------------------------------*/  
-    graph = Graph_new() ;
-    adjIVL = InpMtx_fullAdjacency(lu->mtxA) ;
+    if (lu->options.useQR){
+      adjIVL = InpMtx_adjForATA(lu->mtxA) ;
+    } else {
+      adjIVL = InpMtx_fullAdjacency(lu->mtxA) ;
+    }
     nedges = IVL_tsize(adjIVL) ;
-    Graph_init2(graph, 0, m, 0, nedges, m, nedges, adjIVL,NULL, NULL) ;
+
+    lu->graph = Graph_new() ;
+    Graph_init2(lu->graph, 0, neqns, 0, nedges, neqns, nedges, adjIVL, NULL, NULL) ;
     if ( lu->options.msglvl > 2 ) {
-      fprintf(lu->options.msgFile, "\n\n graph of the input matrix") ;
-      Graph_writeForHumanEye(graph, lu->options.msgFile) ;
+      if (lu->options.useQR){
+        fprintf(lu->options.msgFile, "\n\n graph of A^T A") ;
+      } else {
+        fprintf(lu->options.msgFile, "\n\n graph of the input matrix") ;
+      }
+      Graph_writeForHumanEye(lu->graph, lu->options.msgFile) ;
       fflush(lu->options.msgFile) ;
     }
 
     switch (lu->options.ordering) {
     case 0:
-      lu->frontETree = orderViaBestOfNDandMS(graph,
+      lu->frontETree = orderViaBestOfNDandMS(lu->graph,
                      lu->options.maxdomainsize, lu->options.maxzeros, lu->options.maxsize,
                      lu->options.seed, lu->options.msglvl, lu->options.msgFile); break;
     case 1:
-      lu->frontETree = orderViaMMD(graph,lu->options.seed,lu->options.msglvl,lu->options.msgFile); break;
+      lu->frontETree = orderViaMMD(lu->graph,lu->options.seed,lu->options.msglvl,lu->options.msgFile); break;
     case 2:
-      lu->frontETree = orderViaMS(graph, lu->options.maxdomainsize,
+      lu->frontETree = orderViaMS(lu->graph, lu->options.maxdomainsize,
                      lu->options.seed,lu->options.msglvl,lu->options.msgFile); break;
     case 3:
-      lu->frontETree = orderViaND(graph, lu->options.maxdomainsize, 
+      lu->frontETree = orderViaND(lu->graph, lu->options.maxdomainsize, 
                      lu->options.seed,lu->options.msglvl,lu->options.msgFile); break;
     default:
       SETERRQ(1,"Unknown Spooles's ordering");
     }
-    Graph_free(graph) ;
 
     if ( lu->options.msglvl > 0 ) {
       fprintf(lu->options.msgFile, "\n\n front tree from ordering") ;
@@ -164,22 +182,33 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
       fflush(lu->options.msgFile) ;
     }
   
-    /* get the permutation, permute the front tree, permute the matrix */
+    /* get the permutation, permute the front tree */
     lu->oldToNewIV = ETree_oldToNewVtxPerm(lu->frontETree) ;
     lu->oldToNew   = IV_entries(lu->oldToNewIV) ;
     lu->newToOldIV = ETree_newToOldVtxPerm(lu->frontETree) ;
-    ETree_permuteVertices(lu->frontETree, lu->oldToNewIV) ;
+    if (!lu->options.useQR) ETree_permuteVertices(lu->frontETree, lu->oldToNewIV) ;
 
-    InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
-    if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
-      InpMtx_mapToUpperTriangle(lu->mtxA) ; 
+    /* permute the matrix */
+    if (lu->options.useQR){
+      InpMtx_permute(lu->mtxA, NULL, lu->oldToNew) ;
+    } else {
+      InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
+      if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+        InpMtx_mapToUpperTriangle(lu->mtxA) ; 
+      }
+      InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     }
-    InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
 
     /* get symbolic factorization */
-    lu->symbfacIVL = SymbFac_initFromInpMtx(lu->frontETree, lu->mtxA) ;
-
+    if (lu->options.useQR){
+      lu->symbfacIVL = SymbFac_initFromGraph(lu->frontETree, lu->graph) ;
+      IVL_overwrite(lu->symbfacIVL, lu->oldToNewIV) ;
+      IVL_sortUp(lu->symbfacIVL) ;
+      ETree_permuteVertices(lu->frontETree, lu->oldToNewIV) ;
+    } else {
+      lu->symbfacIVL = SymbFac_initFromInpMtx(lu->frontETree, lu->mtxA) ;
+    }
     if ( lu->options.msglvl > 2 ) {
       fprintf(lu->options.msgFile, "\n\n old-to-new permutation vector") ;
       IV_writeForHumanEye(lu->oldToNewIV, lu->options.msgFile) ;
@@ -212,9 +241,15 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
 
     /* permute mtxA */
-    InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ;
-    if ( lu->options.symflag == SPOOLES_SYMMETRIC ) InpMtx_mapToUpperTriangle(lu->mtxA) ; 
-    InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
+    if (lu->options.useQR){
+      InpMtx_permute(lu->mtxA, NULL, lu->oldToNew) ;
+    } else {
+      InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
+      if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+        InpMtx_mapToUpperTriangle(lu->mtxA) ; 
+      }
+      InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
+    }
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
     if ( lu->options.msglvl > 2 ) {
       fprintf(lu->options.msgFile, "\n\n input matrix after permutation") ;
@@ -222,10 +257,16 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     } 
   } /* end of if( lu->flg == DIFFERENT_NONZERO_PATTERN) */
   
-  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->options.symflag, 
+  if (lu->options.useQR){
+    FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, 
+                 SPOOLES_SYMMETRIC, FRONTMTX_DENSE_FRONTS, 
+                 SPOOLES_NO_PIVOTING, NO_LOCK, 0, NULL,
+                 lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;
+  } else {
+    FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->options.symflag, 
                 FRONTMTX_DENSE_FRONTS, lu->options.pivotingflag, NO_LOCK, 0, NULL, 
                 lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;   
-  
+  }
 
   if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
     if ( lu->options.patchAndGoFlag == 1 ) {
@@ -243,19 +284,27 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   chvmanager = ChvManager_new() ;
   ChvManager_init(chvmanager, NO_LOCK, 1) ;
   DVfill(10, lu->cpus, 0.0) ;
-  IVfill(20, lu->stats, 0) ;
-  rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, 0.0, 
-            chvmanager, &ierr, lu->cpus, lu->stats, lu->options.msglvl, lu->options.msgFile) ; 
-  ChvManager_free(chvmanager) ;
-  if ( lu->options.symflag == SPOOLES_SYMMETRIC && lu->options.inertiaflag) {
-    FrontMtx_inertia(lu->frontmtx, &lu->inertia.nneg, &lu->inertia.nzero, &lu->inertia.npos) ;
-  }
-  if(lu->options.FrontMtxInfo){
-    PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",\
+  if (lu->options.useQR){
+    facops = 0.0 ; 
+    FrontMtx_QR_factor(lu->frontmtx, lu->mtxA, chvmanager, 
+                   lu->cpus, &facops, lu->options.msglvl, lu->options.msgFile) ;
+    if ( lu->options.msglvl > 1 ) {
+      fprintf(lu->options.msgFile, "\n\n factor matrix") ;
+      fprintf(lu->options.msgFile, "\n facops = %9.2f", facops) ;
+    }
+  } else {
+    IVfill(20, lu->stats, 0) ;
+    rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, 0.0, 
+            chvmanager, &ierr, lu->cpus,lu->stats,lu->options.msglvl,lu->options.msgFile) ; 
+    if ( rootchv != NULL ) SETERRQ(1,"\n matrix found to be singular");    
+    if ( ierr >= 0 ) SETERRQ1(1,"\n error encountered at front %d", ierr);
+    
+    if(lu->options.FrontMtxInfo){
+      PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",\
                lu->stats[0], lu->stats[1], lu->stats[2]);
-    cputotal = lu->cpus[8] ;
-    if ( cputotal > 0.0 ) {
-      PetscPrintf(PETSC_COMM_SELF,
+      cputotal = lu->cpus[8] ;
+      if ( cputotal > 0.0 ) {
+        PetscPrintf(PETSC_COMM_SELF,
            "\n                               cpus   cpus/totaltime"
            "\n    initialize fronts       %8.3f %6.2f"
            "\n    load original entries   %8.3f %6.2f"
@@ -274,8 +323,14 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
            lu->cpus[5], 100.*lu->cpus[5]/cputotal,
            lu->cpus[6], 100.*lu->cpus[6]/cputotal,
            lu->cpus[7], 100.*lu->cpus[7]/cputotal, cputotal) ;
+      }
     }
   }
+  ChvManager_free(chvmanager) ;
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC && lu->options.inertiaflag) {
+    FrontMtx_inertia(lu->frontmtx, &lu->inertia.nneg, &lu->inertia.nzero, &lu->inertia.npos) ;
+  }
+  
   if ( lu->options.msglvl > 0 ) {
     fprintf(lu->options.msgFile, "\n\n factor matrix") ;
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile) ;
@@ -306,9 +361,6 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     }
   }
 
-  if ( rootchv != NULL ) SETERRQ(1,"\n matrix found to be singular");    
-  if ( ierr >= 0 ) SETERRQ1(1,"\n error encountered at front %d", ierr);
-
   /* post-process the factorization */
   FrontMtx_postProcess(lu->frontmtx, lu->options.msglvl, lu->options.msgFile) ;
   if ( lu->options.msglvl > 2 ) {
@@ -317,7 +369,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     fflush(lu->options.msgFile) ;
   }
 
-  lu->flg         = SAME_NONZERO_PATTERN;
+  lu->flg = SAME_NONZERO_PATTERN;
  
   PetscFunctionReturn(0);
 }

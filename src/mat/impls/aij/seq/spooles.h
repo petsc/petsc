@@ -17,10 +17,10 @@ typedef struct {
 } Spooles_inertia;
 
 typedef struct {
-  int             msglvl,pivotingflag,symflag,seed,FrontMtxInfo;
+  int             msglvl,pivotingflag,symflag,seed,FrontMtxInfo,typeflag;
   int             ordering,maxdomainsize,maxzeros,maxsize,
                   patchAndGoFlag,storeids,storevalues;
-  PetscTruth      inertiaflag;
+  PetscTruth      inertiaflag,useQR;
   double          tau,toosmall,fudge;
   FILE            *msgFile ;
 } Spooles_options;
@@ -38,6 +38,7 @@ typedef struct {
   int             *oldToNew,stats[20];
   Spooles_options options;
   Spooles_inertia inertia;
+  Graph           *graph;
 
   /* Followings are used for MPI Spooles */
   IV              *ownersIV,*ownedColumnsIV,*vtxmapIV;
