@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
     '''Checks PETSC_DIR and sets if not set'''
     if not self.framework.argDB.has_key('PETSC_DIR'):
       self.framework.argDB['PETSC_DIR'] = os.getcwd()
-    elif os.path.realpath(self.framework.argDB['PETSC_DIR']) != os.path.realpath(os.getcwd()) :
+    elif not os.path.samefile(self.framework.argDB['PETSC_DIR'],os.getcwd()) :
       # Check if PETSC_DIR provided points to the wrong location
       try:
       # If you're using cygwin, realpath might not be properly implemented, so take the output from cygpath
