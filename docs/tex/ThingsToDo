@@ -31,8 +31,6 @@ movement of data stored in Vec objects.
 > >     An output array: []
 
 
-  - Put in Hysom's fixes for ilu preallocation in docs/tex/hysom
-
 
   - MatZeroRows() Add flag KEEP_ZEROS_AS_NONZERO ( petsc-maint 1565)
 
@@ -977,3 +975,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
   X This is why I said yesterday I dislike DAGetDistributedVector()
     and DAGetLocalVector() and would like to change it to
     DAGenerateGlobalVector() and  DAGenerateLocalVector()
+
+  X Put in Hysom's fixes for ilu preallocation in docs/tex/hysom
+
