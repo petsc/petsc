@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.9 1996/02/13 23:29:56 bsmith Exp curfman $";
+C      "$Id: ex36.F,v 1.10 1996/02/19 16:16:05 curfman Exp curfman $";
 C
 C   This program demonstrates use of PETSc dense matrices.
 C
@@ -77,9 +77,9 @@ C
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/viewer.h"
 
+      integer   n, m, err
       parameter (m=5, n=4)
       Mat       A
-      integer   n, m, err
       Scalar    aa(m,n)
 
 C  Create matrix

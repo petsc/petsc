@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.5 1996/02/18 00:40:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.6 1996/02/19 03:51:17 bsmith Exp curfman $";
 #endif
 
 /*
@@ -148,7 +148,17 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
         fprintf(fd,"row %d:",i*bs+j);
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
+#if defined(PETSC_COMPLEX)
+          if (imag(a->a[bs*bs*k + l*bs + j]) != 0.0) {
+            fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
+              real(a->a[bs*bs*k + l*bs + j]),imag(a->a[bs*bs*k + l*bs + j]));
+          }
+          else {
+            fprintf(fd," %d %g",bs*a->j[k]+l,real(a->a[bs*bs*k + l*bs + j]));
+          }
+#else
             fprintf(fd," %d %g",bs*a->j[k]+l,a->a[bs*bs*k + l*bs + j]);
+#endif
           }
         }
         fprintf(fd,"\n");
