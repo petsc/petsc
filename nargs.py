@@ -90,7 +90,7 @@ class ArgDir(ArgEmpty):
         # default to getting directory as string
         if not hasattr(self,'value'):
            if self.help: print self.help
-           try: self.value = parseValue(raw_input('Please enter value for '+key+':'))
+           try: self.value = parseValue(raw_input('Please enter value for '+key+': '))
            except KeyboardInterrupt: sys.exit(1)
            return (1,self.value)
         else: return (0,self.value)
@@ -118,7 +118,7 @@ class ArgLibrary(ArgEmpty):
         # default to getting library as string
         if not hasattr(self, 'value'):
            if self.help: print self.help
-           try: self.value = parseValue(raw_input('Please enter value for '+key+':'))
+           try: self.value = parseValue(raw_input('Please enter value for '+key+': '))
            except KeyboardInterrupt: sys.exit(1)
            return (1, self.value)
         else: return (0, self.value)
@@ -132,7 +132,7 @@ class ArgString(ArgEmpty):
   def getValue(self,key):
     if not hasattr(self,'value'):
       if self.help: print self.help
-      try:                      self.value = parseValue(raw_input('Please enter value for '+key+':'))
+      try:                      self.value = parseValue(raw_input('Please enter value for '+key+': '))
       except KeyboardInterrupt:	sys.exit(1)
       return (1,self.value)
     else: return (0,self.value)
@@ -140,9 +140,9 @@ class ArgString(ArgEmpty):
 #  Objects that are stored in the ArgDict that are integers
 class ArgInt(ArgEmpty):
   def __init__(self,help = None,min = -1000000, max = 1000000):
-    self.help  = help
-    self.min   = min
-    self.max   = max
+    self.help = help
+    self.min  = min
+    self.max  = max
 
   def convertValue(self, value):
     try:
@@ -155,7 +155,7 @@ class ArgInt(ArgEmpty):
     if not hasattr(self,'value'):
       if self.help: print self.help
       while 1:
-        try: self.value = parseValue(raw_input('Please enter integer value for '+key+':'))
+        try: self.value = parseValue(raw_input('Please enter integer value for '+key+': '))
         except KeyboardInterrupt: sys.exit(1)
         try: self.value = int(self.value)
         except: self.value = self.min
@@ -181,12 +181,37 @@ class ArgBool(ArgEmpty):
     if not hasattr(self, 'value'):
       if self.help: print self.help
       try:
-        self.value = parseValue(raw_input('Please enter boolean value for '+key+':'))
+        self.value = parseValue(raw_input('Please enter boolean value for '+key+': '))
       except KeyboardInterrupt:
         sys.exit(1)
       return (1, self.convertValue(self.value))
     else:
       return (0, self.value)
+
+#  Objects that are stored in the ArgDict that are floating point numbers
+class ArgReal(ArgEmpty):
+  def __init__(self, help = None, min = -1.7976931348623157e308, max = 1.7976931348623157e308):
+    self.help = help
+    self.min  = min
+    self.max  = max
+
+  def convertValue(self, value):
+    try:
+      value = float(value)
+    except:
+      value = self.min
+    return value
+    
+  def getValue(self,key):
+    if not hasattr(self,'value'):
+      if self.help: print self.help
+      while 1:
+        try: self.value = parseValue(raw_input('Please enter real value for '+key+': '))
+        except KeyboardInterrupt: sys.exit(1)
+        try: self.value = float(self.value)
+        except: self.value = self.min
+        if self.value > self.min and self.value < self.max: return (1,self.value)
+    else: return (0,self.value)
 
 #=======================================================================================================
 #   Dictionary of actual command line arguments, etc.
