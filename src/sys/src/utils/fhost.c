@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.7 1996/08/05 01:41:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.8 1996/08/08 14:41:26 bsmith Exp gropp $";
 #endif
 /*
       Code for manipulating files.
@@ -24,17 +24,24 @@ static char vcid[] = "$Id: fhost.c,v 1.7 1996/08/05 01:41:16 bsmith Exp bsmith $
 @*/
 int PetscGetHostName( char *name, int nlen )
 {
+/* The "1" in this test is for eventual elimination when all of the "base"
+   files specify HAVE_UNAME (if they should!) */
+#if 1 || defined(HAVE_UNAME)
   struct utsname utname;
   /* Note we do not use gethostname since that is not POSIX */
   uname(&utname); PetscStrncpy(name,utname.nodename,nlen);
-
+#elif defined(HAVE_GETHOSTNAME)
+    gethostname(name, nlen);
+#elif defined(HAVE_SYSINFO)
+    sysinfo(SI_HOSTNAME, name, nlen);
+#endif
   /* See if this name includes the domain */
   if (!PetscStrchr(name,'.')) {
     int  l;
     l = PetscStrlen(name);
     if (l == nlen) return 0;
     name[l++] = '.';
-#if defined(PARCH_solaris)
+#if defined(HAVE_SYSINFO)
     sysinfo( SI_SRPC_DOMAIN,name+l,nlen-l);
 #elif defined(HAVE_GETDOMAINNAME)
     getdomainname( name+l, nlen - l );
@@ -49,3 +56,4 @@ int PetscGetHostName( char *name, int nlen )
   }
   return 0;
 }
+
