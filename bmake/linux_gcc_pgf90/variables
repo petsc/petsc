@@ -22,7 +22,7 @@ C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = gcc
 C_FLINKER	   = pgf90
 C_CCV		   = ${C_CC} --version
-C_FCV              = pgf90 --version | head -1
+C_FCV              = pgf90 -V | head -1
 C_SYS_LIB          = -ldl -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lpgc -lgcc -lc -lgcc
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g
