@@ -78,6 +78,8 @@ $                            0, 1, 1}
      DASetGetMatrix() allows you to provide general code for those more complicated nonzero patterns then
      can be represented in the dfill, ofill format
 
+   Contributed by Glenn Hammond
+
 .seealso DAGetMatrix(), DASetGetMatrix()
 
 @*/
