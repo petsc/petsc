@@ -15,7 +15,7 @@ EXAMPLES_2    = ex1 ex2 ex3 ex4
 RUNEXAMPLES_3 = 
 EXAMPLES_3    = ex5
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
-EXAMPLESF     = ex5.f
+EXAMPLESF     = ex5.F
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
