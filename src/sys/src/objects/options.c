@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.19 1995/07/08 20:16:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.20 1995/07/11 14:24:45 curfman Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -104,12 +104,13 @@ $  -optionsleft : Prints unused options that remain in
 $     the database
 $  -no_signal_handler : Turns off the signal handler
 $  -trdump : Calls Trdump()
-$  -log_all : Prints log information (for code compiled
-$      with PETSC_LOG)
-$  -log : Prints log information (for code compiled 
-$      with PETSC_LOG)
-$  -log_summary : Prints summary of flop information 
-$      to screen (for code compiled with PETSC_LOG)
+$  -log_all : Prints extensive log information (for
+$      code compiled with PETSC_LOG)
+$  -log : Prints basic log information (for code 
+$      compiled with PETSC_LOG)
+$  -log_summary : Prints summary of flop and timing
+$      information to screen (for code compiled with 
+$      PETSC_LOG)
 $  -fp_trap : stops on floating point exceptions
 
 .keywords: finalize, exit, end
