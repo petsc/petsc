@@ -716,23 +716,23 @@ static int MatView_SeqBAIJ_Draw(Mat A,PetscViewer viewer)
 int MatView_SeqBAIJ(Mat A,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth issocket,isascii,isbinary,isdraw;
+  PetscTruth isascii,isbinary,isdraw;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  if (issocket) {
-    SETERRQ(PETSC_ERR_SUP,"Socket viewer not supported");
-  } else if (isascii){
+  if (isascii){
     ierr = MatView_SeqBAIJ_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_SeqBAIJ_Binary(A,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     ierr = MatView_SeqBAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported by SeqBAIJ matrices",((PetscObject)viewer)->type_name);
+    Mat B;
+    ierr = MatConvert(A,MATSEQAIJ,&B);CHKERRQ(ierr);
+    ierr = MatView(B,viewer);CHKERRQ(ierr);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

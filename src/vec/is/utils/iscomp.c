@@ -46,7 +46,11 @@ int ISEqual(IS is1,IS is2,PetscTruth *flg)
   PetscValidHeaderSpecific(is2,IS_COOKIE);
   PetscValidIntPointer(flg);
   PetscCheckSameComm(is1,is2);
-  
+
+  if (is1 == is2) {
+    *flg = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }  
   ierr = ISGetSize(is1,&sz1);CHKERRQ(ierr);
   ierr = ISGetSize(is2,&sz2);CHKERRQ(ierr);
   if (sz1 != sz2) { 
