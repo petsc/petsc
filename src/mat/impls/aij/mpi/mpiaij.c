@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.283 1999/02/17 21:37:02 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.284 1999/02/18 16:54:15 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -446,7 +446,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
       val = values[3*i+2];
       if (col >= aij->cstart && col < aij->cend) {
         col -= aij->cstart;
-        ierr = MatSetValues(aij->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
+        ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
       } else {
         if (mat->was_assembled || mat->assembled) {
           if (!aij->colmap) {
@@ -463,7 +463,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
             col = (int) PetscReal(values[3*i+1]);
           }
         }
-        ierr = MatSetValues(aij->B,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
+        ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
       }
     }
     count--;

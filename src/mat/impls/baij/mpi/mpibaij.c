@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.153 1999/02/18 17:08:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.154 1999/02/18 17:09:28 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -901,6 +901,8 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   PetscFunctionReturn(0);
 }
 
+extern int MatSetValues_SeqBAIJ(Mat,int,int *,int,int *,Scalar *,InsertMode);
+
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyEnd_MPIBAIJ"
 int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
@@ -926,7 +928,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
       val = values[3*i+2];
       if (col >= baij->cstart*bs && col < baij->cend*bs) {
         col -= baij->cstart*bs;
-        ierr = MatSetValues(baij->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr)
+        ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr)
       } else {
         if (mat->was_assembled) {
           if (!baij->colmap) {
@@ -943,7 +945,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
             col = (int) PetscReal(values[3*i+1]);
           }
         }
-        ierr = MatSetValues(baij->B,1,&row,1,&col,&val,addv); CHKERRQ(ierr)
+        ierr = MatSetValues_SeqBAIJ(baij->B,1,&row,1,&col,&val,addv); CHKERRQ(ierr)
       }
     }
     count--;
