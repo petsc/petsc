@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.58 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.59 2000/04/27 04:17:14 bsmith Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -341,7 +341,6 @@ int (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
 int PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
 {
   PetscFunctionBegin;
-  if (PetscInitializeCalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call before PetscInitialize()");
   PetscExternalHelpFunction    = help;
   PetscExternalVersionFunction = version;
   PetscFunctionReturn(0);

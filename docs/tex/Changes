@@ -35,6 +35,8 @@ add to it).
 
   General
 
+  added PetscSetHelpVersionFunctions() for developers of other libraries that use PETSc.
+
   added PetscPoUpSelect(), see src/sys/examples/tests/ex15.c
 
   added int PetscShowMemoryUsage(Viewer viewer,char *message)

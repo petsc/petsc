@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.268 2000/03/24 18:09:12 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.269 2000/04/16 04:14:37 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -19,7 +19,7 @@
 
    petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h it is 
    found automatically by the compiler due to the -I${PETSC_DIR}/bmake/${PETSC_ARCH}
-   in the bmake/common definition of PETSC_INCLUDE
+   in the bmake/common_variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
 
@@ -59,6 +59,7 @@ extern MPI_Comm   PETSC_COMM_WORLD;
 extern MPI_Comm   PETSC_COMM_SELF;
 extern PetscTruth PetscInitializeCalled;
 extern int        PetscSetCommWorld(MPI_Comm);
+extern int        PetscSetHelpVersionFunctions(int (*)(MPI_Comm),int (*)(MPI_Comm));
 
 /*
     Defines the malloc employed by PETSc. Users may use these routines as well. 
@@ -83,7 +84,6 @@ extern int   PetscTrDebugLevel(int);
 extern int   PetscTrLog(void);
 extern int   PetscTrLogDump(FILE *);
 extern int   PetscGetResidentSetSize(PLogDouble *);
-extern int   PetscShowMemoryUsage(Viewer);
 /*
      Constants and functions used for handling different basic data types.
      These are used, for example, in binary IO routines
@@ -167,6 +167,7 @@ typedef struct _FList *FList;
 #include "viewer.h"
 #include "options.h"
 
+extern int PetscShowMemoryUsage(Viewer,char*);
 extern int PetscGetTime(PLogDouble*);
 extern int PetscGetCPUTime(PLogDouble*);
 extern int PetscSleep(int);
@@ -352,6 +353,7 @@ extern int  PetscSynchronizedFlush(MPI_Comm);
 extern int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);
 extern int  PetscStartJava(MPI_Comm,char *,char*,FILE**);
 
+extern int  PetscPopUpSelect(MPI_Comm,char*,char*,int,char**,int*);
 /*
     Simple PETSc object that contains a pointer to any required data
 */
@@ -364,10 +366,10 @@ extern int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
 /*
    For incremental debugging
 */
-extern int PetscCompare;
-extern int PetscCompareDouble(double);
-extern int PetscCompareScalar(Scalar);
-extern int PetscCompareInt(int);
+extern PetscTruth PetscCompare;
+extern int        PetscCompareDouble(double);
+extern int        PetscCompareScalar(Scalar);
+extern int        PetscCompareInt(int);
 
 /*
    For use in debuggers 
@@ -376,6 +378,11 @@ extern int PetscGlobalRank,PetscGlobalSize;
 extern int PetscIntView(int,int[],Viewer);
 extern int PetscDoubleView(int,double[],Viewer);
 extern int PetscScalarView(int,Scalar[],Viewer);
+
+/*
+    Allows accessing Matlab Engine
+*/
+#include "petscengine.h"
 
 /*
     C code optimization is often enhanced by telling the compiler 
