@@ -1,4 +1,3 @@
-/*$Id: ex57.c,v 1.23 2001/04/10 19:35:44 bsmith Exp $*/
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another binary file.\n\
 Options:\n\

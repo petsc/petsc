@@ -1,4 +1,3 @@
-/* $Id: setval.h,v 1.4 1999/05/12 03:25:57 bsmith Exp $ */
 
 /* This file contains definitions for INLINING some popular operations
    All arguments should be simple and in register if possible.

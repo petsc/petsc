@@ -1,4 +1,3 @@
-/*$Id: zda.c,v 1.49 2001/08/06 21:19:11 bsmith Exp $*/
 
 #include "src/dm/da/daimpl.h"
 #include "src/fortran/custom/zpetsc.h"

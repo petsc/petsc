@@ -1,6 +1,4 @@
 !
-!      "$Id: ex3f90.F,v 1.16 2001/01/15 21:44:33 bsmith Exp $"; */
-!
 !    Description:  Creates an index set based on blocks of integers. Views that index set
 !    and then destroys it.
 !

@@ -1,4 +1,3 @@
-/* $Id: mathematica.h,v 1.2 1999/06/01 20:45:51 knepley Exp $ */
 /* 
    This is the definition of the Mathematica viewer structure.
 */

@@ -1,6 +1,4 @@
 !
-!    "$Id: ex15f.F,v 1.17 2001/08/07 03:04:00 balay Exp $";
-!
 !   Solves a linear system in parallel with KSP.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
 !      -user_defined_pc : Activate a user-defined preconditioner

@@ -1,5 +1,4 @@
 !
-!    "$Id: ex5.F,v 1.29 2001/08/07 03:01:54 balay Exp $";
 !
       program main
 #include "include/finclude/petsc.h"

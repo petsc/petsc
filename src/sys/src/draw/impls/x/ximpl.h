@@ -1,4 +1,3 @@
-/* $Id: ximpl.h,v 1.16 2001/01/15 21:43:29 bsmith Exp $ */
 
 /*
       Defines the internal data structures for the X-windows 

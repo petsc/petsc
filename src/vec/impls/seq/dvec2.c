@@ -1,6 +1,4 @@
 
-/*$Id: dvec2.c,v 1.91 2001/09/11 18:14:31 bsmith Exp $*/
-
 /* 
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.

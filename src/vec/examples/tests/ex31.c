@@ -1,5 +1,3 @@
-/*$Id: ex31.c,v 1.6 2001/03/23 23:21:30 balay Exp $*/
-
 /* 
    Demonstrates PetscMatlabEngineXXX()
 */

@@ -1,4 +1,3 @@
-/*$Id: cn.c,v 1.35 2001/09/11 16:34:19 bsmith Exp $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!

@@ -1,4 +1,3 @@
-/*$Id: ex2.c,v 1.46 2001/09/11 16:34:32 bsmith Exp $*/
 
 static char help[] = "Reads a a simple unstructured grid from a file. Partitions it,\n\
 and distributes the grid data accordingly\n\n";

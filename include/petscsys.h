@@ -1,4 +1,3 @@
-/* $Id: petscsys.h,v 1.63 2001/08/07 21:32:24 bsmith Exp $ */
 /*
     Provides access to system related and general utility routines.
 */

@@ -1,4 +1,3 @@
-/* $Id: pdvec.c,v 1.154 2001/09/11 16:32:01 bsmith Exp $*/
 /*
      Code for some of the parallel vector primatives.
 */

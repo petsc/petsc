@@ -1,4 +1,3 @@
-/*$Id: PetscGetTime.c,v 1.17 2001/03/23 23:25:45 balay Exp $*/
 
 #include "petsc.h"
 

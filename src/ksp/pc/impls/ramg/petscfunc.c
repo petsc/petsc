@@ -1,4 +1,3 @@
-/*$Id: petscfunc.c,v 1.13 2001/09/11 18:37:23 bsmith Exp $*/
 
 #include "petscfunc.h"
 #include "ramgfunc.h"

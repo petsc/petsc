@@ -1,4 +1,3 @@
-/* $Id: modpcf.c,v 1.14 2001/04/10 19:36:35 bsmith Exp $*/
 
 #include "petscksp.h" 
 #undef __FUNCT__  

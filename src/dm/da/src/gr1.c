@@ -1,5 +1,3 @@
-/*$Id: gr1.c,v 1.30 2001/08/10 03:34:34 bsmith Exp $*/
-
 /* 
    Plots vectors obtained with DACreate1d()
 */

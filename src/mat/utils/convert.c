@@ -1,4 +1,3 @@
-/*$Id: convert.c,v 1.76 2001/08/07 03:03:20 balay Exp $*/
 
 #include "src/mat/matimpl.h"
 

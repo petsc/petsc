@@ -1,4 +1,3 @@
-/*$Id: ex3.c,v 1.87 2001/08/07 21:31:17 bsmith Exp $*/
 
 static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\

@@ -1,6 +1,4 @@
 
-/*      "$Id: ex4.c,v 1.13 2001/03/23 23:21:14 balay Exp $"; */
-
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
 /*T

@@ -1,4 +1,3 @@
-/*$Id: vecstash.c,v 1.29 2001/09/07 20:08:55 bsmith Exp $*/
 
 #include "vecimpl.h"
 

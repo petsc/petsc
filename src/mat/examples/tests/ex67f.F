@@ -1,5 +1,3 @@
-
-!      "$Id: ex67f.F,v 1.9 2001/03/22 20:30:40 bsmith Exp $";
 !
 !   This program demonstrates use of MatGetSubMatrices() from Fortran
 !

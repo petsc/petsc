@@ -1,4 +1,3 @@
-/* $Id: petsc.h,v 1.297 2001/09/07 20:13:16 bsmith Exp $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.

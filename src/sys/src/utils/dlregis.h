@@ -1,4 +1,3 @@
-/* $Id: dlregis.h,v 1.8 2001/03/23 23:20:45 balay Exp $ */
 /*
    This file is included by all the dlregis.c files to provide common information
    on the PETSC team.

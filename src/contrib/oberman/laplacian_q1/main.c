@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.11 2001/04/10 19:37:34 bsmith Exp $*/
+
 static char help[] = "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
     -show_solution pipe solution to matlab (visualized with bscript.m).\n\

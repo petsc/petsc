@@ -1,4 +1,3 @@
-/* $Id: win32draw.c,v 1.15 2001/09/07 20:08:10 bsmith Exp $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"

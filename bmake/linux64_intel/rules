@@ -1,4 +1,3 @@
-# $Id: rules,v 1.1 2001/08/25 17:25:37 balay Exp $ 
 
 libc: ${LIBNAME}(${OBJSC})
 libf: ${OBJSF}

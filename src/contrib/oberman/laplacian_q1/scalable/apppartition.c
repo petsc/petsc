@@ -1,4 +1,4 @@
-/*$Id: apppartition.c,v 1.6 2001/03/23 23:25:31 balay Exp $*/
+
 #include "appctx.h"
 
 int AppPartitionGetOwnedSize(AppPartition *part, int *m);

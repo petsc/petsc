@@ -1,4 +1,3 @@
-/* $Id: matimpl.h,v 1.126 2001/08/21 21:02:01 bsmith Exp $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL

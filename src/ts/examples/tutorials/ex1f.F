@@ -1,6 +1,4 @@
 !
-! "$Id: ex1f.F,v 1.29 2001/08/10 15:44:18 balay Exp $"
-!
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
 !   Concepts: TS^pseudo-timestepping

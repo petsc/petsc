@@ -1,4 +1,3 @@
-/*$Id: signal.c,v 1.80 2001/04/23 15:47:54 bsmith Exp $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.

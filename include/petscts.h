@@ -1,4 +1,3 @@
-/* $Id: petscts.h,v 1.47 2001/08/06 15:42:42 bsmith Exp $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.

@@ -1,6 +1,4 @@
 !
-! "$Id: ex11f.F,v 1.11 2001/08/09 23:21:58 balay Exp $";
-!
 !
 ! Program usage:  mpirun ex1 [-help] [all PETSc options] 
 !

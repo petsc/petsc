@@ -1,5 +1,4 @@
 !
-!      "$Id: ex63.F,v 1.11 2001/08/07 03:03:07 balay Exp $";
 !
 !   This program tests storage of PETSc Dense matrix. 
 !   It Creates a Dense matrix, and stores it into a file,

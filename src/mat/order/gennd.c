@@ -1,4 +1,3 @@
-/*$Id: gennd.c,v 1.17 2001/03/23 23:22:51 balay Exp $*/
 /* gennd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"

@@ -1,5 +1,3 @@
-/*$Id: frame.c,v 1.30 2001/03/23 23:20:15 balay Exp $*/
-
 /*
    This file contains routines to draw a 3-d like frame about a given 
    box with a given width.  Note that we might like to use a high/low

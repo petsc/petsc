@@ -1,5 +1,3 @@
-/* $Id: petscpf.h,v 1.12 2001/08/06 21:19:07 bsmith Exp $ */
-
 /*
       mathematical function module. 
 */

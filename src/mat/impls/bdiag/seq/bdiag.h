@@ -1,4 +1,3 @@
-/* $Id: bdiag.h,v 1.31 2001/08/07 03:02:53 balay Exp $ */
 
 #if !defined(__BDIAG_H)
 #define __BDIAG_H

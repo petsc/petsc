@@ -1,4 +1,3 @@
-/*$Id: sbaij.c,v 1.62 2001/08/07 03:03:01 balay Exp $*/
 
 /*
     Defines the basic matrix operations for the SBAIJ (compressed row)

@@ -1,4 +1,3 @@
-/* $Id: petscviewer.h,v 1.85 2001/08/06 21:13:28 bsmith Exp $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */

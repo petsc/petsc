@@ -1,4 +1,3 @@
-/*$Id: cheby.c,v 1.94 2001/08/07 03:03:53 balay Exp $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.

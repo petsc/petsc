@@ -1,4 +1,3 @@
-/*$Id: PetscMalloc.c,v 1.28 2001/08/29 20:59:39 balay Exp $*/
 
 #include "petsc.h"
 #include "petscsys.h"

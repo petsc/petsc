@@ -1,4 +1,3 @@
-/*$Id: ex2.c,v 1.35 2001/08/07 21:28:44 bsmith Exp $*/
 
 static char help[] = "Demonstrates us of color map\n";
 

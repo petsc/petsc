@@ -1,4 +1,3 @@
-/*$Id: bvec1.c,v 1.43 2001/09/11 16:31:59 bsmith Exp $*/
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel

@@ -1,5 +1,3 @@
-/*$Id: pxxt.c,v 1.8 2001/08/07 03:02:49 balay Exp $*/
-
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
 

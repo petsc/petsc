@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.19 2001/08/10 03:34:58 bsmith Exp $*/
 
 static char help[] = "Tests VecView()/VecLoad() for DA vectors (this tests DAGlobalToNatural()).\n\n";
 

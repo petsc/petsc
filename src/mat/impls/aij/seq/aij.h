@@ -1,4 +1,3 @@
-/* $Id: aij.h,v 1.46 2001/08/07 03:02:47 balay Exp $ */
 
 #if !defined(__AIJ_H)
 #define __AIJ_H

@@ -1,4 +1,3 @@
-/*$Id: mgfunc.c,v 1.41 2001/08/07 03:03:36 balay Exp $*/
 
 #include "src/ksp/pc/impls/mg/mgimpl.h"       /*I "petscksp.h" I*/
                           /*I "petscmg.h"   I*/

@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.20 2001/08/07 03:05:08 balay Exp $*/
+
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNCT__  

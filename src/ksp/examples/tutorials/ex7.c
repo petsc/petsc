@@ -1,4 +1,3 @@
-/*$Id: ex7.c,v 1.58 2001/08/07 21:30:54 bsmith Exp $*/
 
 static char help[] = "Block Jacobi preconditioner for solving a linear system in parallel with KSP.\n\
 The code indicates the\n\

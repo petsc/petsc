@@ -1,4 +1,3 @@
-/*$Id: mpiaij.c,v 1.344 2001/08/10 03:30:48 bsmith Exp $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/inline/spops.h"

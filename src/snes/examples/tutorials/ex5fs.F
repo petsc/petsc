@@ -1,7 +1,4 @@
 !
-! "$Id: ex5fs.F,v 1.8 2001/08/07 03:04:16 balay Exp $";
-!
-
 ! ---------------------------------------------------------------------
 !
 !  Fortran version of the user function based on shared memory

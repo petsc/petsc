@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.4 2001/09/26 17:10:13 balay Exp $
 
 #requireslanguage  CPP
 #requiresscalar    real 

@@ -1,4 +1,3 @@
-/*$Id: spnd.c,v 1.41 2001/03/23 23:22:51 balay Exp $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"

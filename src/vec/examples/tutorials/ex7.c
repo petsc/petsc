@@ -1,4 +1,3 @@
-/*$Id: ex7.c,v 1.33 2001/03/23 23:21:37 balay Exp $*/
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\

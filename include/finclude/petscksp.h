@@ -1,5 +1,4 @@
 !
-!  "$Id: petscksp.h,v 1.32 2001/04/10 22:37:56 balay Exp $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !

@@ -1,4 +1,3 @@
-/*$Id: ex3.c,v 1.28 2001/08/10 03:34:17 bsmith Exp $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 

@@ -1,4 +1,3 @@
-/*$Id: ex9.c,v 1.53 2001/08/07 21:30:54 bsmith Exp $*/
 
 static char help[] = "The solution of 2 different linear systems with different linear solvers.\n\
 Also, this example illustrates the repeated\n\

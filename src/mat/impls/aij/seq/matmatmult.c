@@ -1,4 +1,3 @@
-/*$Id: matmatmult.c,v 1.15 2001/09/07 20:04:44 buschelm Exp $*/
 /*
   Defines matrix-matrix product routines for pairs of SeqAIJ matrices
           C = A * B

@@ -1,4 +1,3 @@
-/*$Id: ex4.c,v 1.64 2001/08/07 21:30:50 bsmith Exp $*/
 
 static char help[] = "Solves a linear system with KSP.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\

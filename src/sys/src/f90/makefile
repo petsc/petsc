@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.6 2001/08/22 17:59:43 balay Exp $ 
 
 #requirespackage 'PETSC_HAVE_F90_H'
 ALL: lib

@@ -1,5 +1,3 @@
-/*$Id: zerodiag.c,v 1.44 2001/08/06 21:16:10 bsmith Exp $*/
-
 /*
     This file contains routines to reorder a matrix so that the diagonal
     elements are nonzero.

@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.36 2001/03/23 23:23:25 balay Exp $*/
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 

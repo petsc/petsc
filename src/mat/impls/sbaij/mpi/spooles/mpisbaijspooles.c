@@ -1,4 +1,3 @@
-/*$Id: mpisbaijspooles.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 /* 
    Provides an interface to the Spooles parallel sparse solver (MPI SPOOLES)
 */

@@ -1,4 +1,3 @@
-/*$Id: petscfix.h,v 1.1 2000/12/15 15:57:44 bsmith Exp $*/
 
 /*
     This fixes various things in system files that are incomplete, for 

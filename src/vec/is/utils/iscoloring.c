@@ -1,4 +1,3 @@
-/*$Id: iscoloring.c,v 1.70 2001/06/21 21:15:55 bsmith Exp $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/

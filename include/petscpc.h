@@ -1,5 +1,3 @@
-/* $Id: petscpc.h,v 1.122 2001/08/21 21:03:12 bsmith Exp $ */
-
 /*
       Preconditioner module. 
 */

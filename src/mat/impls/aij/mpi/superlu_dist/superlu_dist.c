@@ -1,4 +1,3 @@
-/*$Id: superlu_DIST.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 /* 
         Provides an interface to the SuperLU_DIST_2.0 sparse solver
 */

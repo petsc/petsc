@@ -1,4 +1,3 @@
-/*$Id: ex14.c,v 1.49 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
 This does the tricky case.\n\n";

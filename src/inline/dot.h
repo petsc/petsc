@@ -1,4 +1,3 @@
-/* $Id: dot.h,v 1.21 2001/09/07 20:07:42 bsmith Exp $ */
 
 #ifndef DOT
 #include "petsc.h"

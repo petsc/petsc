@@ -1,5 +1,3 @@
-/*$Id: pipeline.c,v 1.29 2001/09/07 20:08:55 bsmith Exp $*/
-
 /*
        Vector pipeline routines. These routines have all been contributed
     by Victor Eijkhout while working at UCLA and UTK. 

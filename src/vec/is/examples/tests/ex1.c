@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.41 2001/04/10 19:34:49 bsmith Exp $*/
 /*
        Formatted test for ISGeneral routines.
 */

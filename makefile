@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.353 2001/08/28 19:43:38 balay Exp $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/website/documentation/installation.html for directions on installing PETSc.
@@ -392,11 +391,13 @@ alldocclean: deletemanualpages allcleanhtml
 
 # Deletes man pages (HTML version)
 deletemanualpages: chk_loc
-	find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \;
-	${RM} ${LOC}/docs/tex/exampleconcepts
-	${RM} ${LOC}/docs/tex/manconcepts
-	${RM} ${LOC}/docs/manualpages/manualpages.cit
-	-maint/update-docs.py ${LOC} clean
+	-@if [ -d ${LOC} -a -d ${LOC}/docs/manualpages ]; then \
+          find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \; ;\
+          ${RM} ${LOC}/docs/tex/exampleconcepts ;\
+          ${RM} ${LOC}/docs/tex/manconcepts ;\
+          ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
+          -maint/update-docs.py ${LOC} clean;\
+        fi
 
 allcleanhtml: 
 	-${RM} include/adic/*.h.html include/esi/petsc/*.h.html

@@ -1,4 +1,3 @@
-/*$Id: symmlq.c,v 1.16 2001/08/07 03:03:56 balay Exp $*/
 
 #include "src/ksp/ksp/kspimpl.h"
 

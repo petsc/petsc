@@ -1,4 +1,3 @@
-/* $Id: petscsnes.h,v 1.111 2001/08/06 21:17:05 bsmith Exp $ */
 /*
     User interface for the nonlinear solvers package.
 */

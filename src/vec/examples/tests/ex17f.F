@@ -1,6 +1,4 @@
 !
-! "$Id: ex17f.F,v 1.8 2001/08/07 03:02:26 balay Exp $";
-!
 !
 !   "Scatters from a parallel vector to a sequential vector.  In
 !  this case each local vector is as long as the entire parallel vector.

@@ -1,4 +1,3 @@
-/*$Id: dgefa7.c,v 1.10 2001/04/07 15:51:54 bsmith Exp $*/
 /*
       Inverts 7 by 7 matrix using partial pivoting.
 

@@ -1,4 +1,3 @@
-/*$Id: rk.c,v 0.1 2003/06/03 Asbjorn Hoiland Aarrestad$*/
 /*
  * Code for Timestepping with Runge Kutta
  *

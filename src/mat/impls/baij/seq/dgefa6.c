@@ -1,4 +1,3 @@
-/*$Id: dgefa6.c,v 1.10 2001/04/07 15:52:12 bsmith Exp $*/
 /*
       Inverts 6 by 6 matrix using partial pivoting.
 

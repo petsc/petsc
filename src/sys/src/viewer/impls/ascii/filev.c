@@ -1,4 +1,3 @@
-/* $Id: filev.c,v 1.118 2001/04/10 19:34:05 bsmith Exp $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"

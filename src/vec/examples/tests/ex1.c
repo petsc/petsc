@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.13 2001/08/07 03:02:26 balay Exp $*/
 
 static char help[] = "Tests repeated VecSetType().\n\n";
 

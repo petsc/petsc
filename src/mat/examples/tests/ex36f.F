@@ -1,5 +1,4 @@
 !
-!      "$Id: ex36.F,v 1.30 2001/08/07 03:03:07 balay Exp $";
 !
 !   This program demonstrates use of PETSc dense matrices.
 !

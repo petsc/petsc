@@ -1,4 +1,3 @@
-/*$Id: test_IRIXf90.F,v 1.3 2000/01/11 21:03:59 bsmith Exp $*/
 
       program main
  

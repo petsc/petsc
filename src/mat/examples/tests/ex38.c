@@ -1,4 +1,3 @@
-/*$Id: ex38.c,v 1.18 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests MatSetValues() for column oriented storage.\n\n"; 
 

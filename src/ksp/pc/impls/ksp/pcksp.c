@@ -1,5 +1,3 @@
-/*$Id: pcsles.c,v 1.39 2001/04/10 19:36:17 bsmith Exp $*/
-
 
 #include "src/ksp/pc/pcimpl.h"   /*I "petscpc.h" I*/
 #include "petscksp.h"            /*I "petscksp.h" I*/

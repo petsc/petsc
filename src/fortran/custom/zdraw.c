@@ -1,4 +1,3 @@
-/*$Id: zdraw.c,v 1.39 2001/01/17 19:47:04 balay Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 

@@ -1,4 +1,3 @@
-/*$Id: sbaijfact2.c,v 1.2.1.41 2001/08/07 03:03:01 balay Exp $*/
 /*
     Factorization code for SBAIJ format. 
 */

@@ -1,4 +1,3 @@
-/*$Id: baijfact8.c,v 1.4 2001/03/23 23:22:07 balay Exp $*/
 /*
     Factorization code for BAIJ format. 
 */

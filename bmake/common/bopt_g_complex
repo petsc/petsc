@@ -1,4 +1,3 @@
-# $Id: bopt_g_complex,v 1.2 2001/08/28 20:00:45 bsmith Exp $ 
 
 CC	       = ${CXX_CC}
 FC	       = ${CXX_FC}

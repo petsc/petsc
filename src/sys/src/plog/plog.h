@@ -1,4 +1,3 @@
-/* $Id: plog.h,v 1.1 2000/01/10 03:28:57 knepley Exp $ */
 
 /* The class naming scheme procedes as follows:
 

@@ -1,6 +1,4 @@
 !
-!  "$Id: ex16f90.F,v 1.17 2001/08/07 03:03:07 balay Exp $";
-!
 !
 !  Tests MatGetArray() on a dense matrix
 !

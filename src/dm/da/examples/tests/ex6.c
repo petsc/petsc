@@ -1,4 +1,3 @@
-/*$Id: ex6.c,v 1.48 2001/08/07 03:04:42 balay Exp $*/
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 

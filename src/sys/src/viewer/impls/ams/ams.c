@@ -1,4 +1,3 @@
-/*$Id: ams.c,v 1.47 2001/04/10 19:34:07 bsmith Exp $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"
 #include "petscsys.h"

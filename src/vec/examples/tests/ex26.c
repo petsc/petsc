@@ -1,4 +1,3 @@
-/*$Id: ex26.c,v 1.13 2001/09/11 16:32:10 bsmith Exp $*/
 /*
 
 Test program follows. Writing it I realised that 

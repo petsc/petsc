@@ -1,4 +1,3 @@
-/*$Id: receivesparse.c,v 1.16 2001/03/23 23:19:53 balay Exp $*/
 /*
     Part of the MatlabSockettool Package. Receive a sparse matrix
   at a socket address, called by the receive.mex4 Matlab program.

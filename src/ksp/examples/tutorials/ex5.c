@@ -1,4 +1,3 @@
-/*$Id: ex5.c,v 1.93 2001/09/11 16:33:29 bsmith Exp $*/
 
 static char help[] = "Solves two linear systems in parallel with KSP.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\

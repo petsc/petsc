@@ -1,4 +1,3 @@
-/*$Id: gen1wd.c,v 1.16 2001/03/23 23:22:51 balay Exp $*/
 /* gen1wd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"

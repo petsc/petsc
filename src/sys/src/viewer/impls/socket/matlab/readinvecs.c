@@ -1,4 +1,3 @@
-/*$Id: readinvecs.c,v 1.8 2001/03/23 23:19:53 balay Exp $*/
 
 /*    Reads in PETSc vectors from a PETSc binary file into matlab
 

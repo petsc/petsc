@@ -1,4 +1,3 @@
-/*$Id: ex5s.c,v 1.29 2001/08/07 21:31:17 bsmith Exp $*/
 
 static char help[] = "2d Bratu problem in shared memory parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\

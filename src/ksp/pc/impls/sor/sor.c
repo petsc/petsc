@@ -1,5 +1,3 @@
-/*$Id: sor.c,v 1.103 2001/08/21 21:03:17 bsmith Exp $*/
-
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */

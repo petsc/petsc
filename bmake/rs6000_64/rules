@@ -1,4 +1,3 @@
-# $Id: rules,v 1.5 2001/08/22 17:57:34 balay Exp $ 
 
 libc:
 	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} LIBNAME=${LIBNAME} libmember LIBMEMBER=$$i ; done

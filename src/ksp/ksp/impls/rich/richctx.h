@@ -1,4 +1,3 @@
-/*$Id: richctx.h,v 1.5 2001/08/06 21:16:46 bsmith Exp $*/
 /*
       Private data structure for Richardson Iteration 
 */

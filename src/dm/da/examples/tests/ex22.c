@@ -1,4 +1,3 @@
-/*$Id: ex9.c,v 1.21 2001/06/21 21:19:28 bsmith Exp $*/
       
 static char help[] = "Tests MatSetValuesBlockedStencil() in 3d.\n\n";
 

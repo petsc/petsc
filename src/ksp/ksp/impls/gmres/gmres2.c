@@ -1,4 +1,3 @@
-/*$Id: gmres2.c,v 1.35 2001/08/06 21:16:44 bsmith Exp $*/
 #include "src/ksp/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNCT__  

@@ -1,4 +1,3 @@
-!    "$Id: ex6.F,v 1.12 2001/08/07 03:02:12 balay Exp $";
 !
 !  Progran to test random number generation routines from fortran.
 !

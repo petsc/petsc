@@ -1,6 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tscreate.c,v 1.7 2000/01/10 03:54:25 knepley Exp $";
-#endif
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 

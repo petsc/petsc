@@ -1,5 +1,3 @@
-/*$Id: color.c,v 1.60 2001/06/21 21:17:33 bsmith Exp $*/
- 
 /*
      Routines that call the kernel minpack coloring subroutines
 */

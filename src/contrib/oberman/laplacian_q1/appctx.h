@@ -1,4 +1,3 @@
-/*$Id: appctx.h,v 1.10 2000/01/17 00:06:13 bsmith Exp bsmith $*/
 /*
        Defines data structures for writing a simple cell (element) based PDE code
     for solving scalar PDE problems like the Laplacian.

@@ -1,4 +1,3 @@
-/*$Id: qcg.c,v 1.86 2001/08/07 03:03:55 balay Exp curfman $*/
 
 #include "src/ksp/ksp/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/qcg/qcg.h"

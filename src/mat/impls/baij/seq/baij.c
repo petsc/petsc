@@ -1,5 +1,3 @@
-/*$Id: baij.c,v 1.245 2001/08/07 03:02:55 balay Exp bsmith $*/
-
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.

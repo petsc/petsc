@@ -1,4 +1,3 @@
-/*$Id: shellcnv.c,v 1.20 2001/08/07 03:02:51 balay Exp $*/
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "vecimpl.h"  

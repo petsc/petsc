@@ -1,6 +1,4 @@
 
-/* $Id: vecimpl.h,v 1.89 2001/09/19 16:07:46 bsmith Exp $ */
-
 /* 
    This private file should not be included in users' code.
    Defines the fields shared by all vector implementations.

@@ -1,4 +1,3 @@
-/*$Id: pack.c,v 1.19 2001/08/07 03:04:45 balay Exp $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/

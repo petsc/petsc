@@ -1,4 +1,3 @@
-/*$Id: mpibaij.c,v 1.234 2001/09/25 22:56:49 balay Exp $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 

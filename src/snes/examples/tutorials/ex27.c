@@ -1,4 +1,3 @@
-/*$Id: ex19.c,v 1.30 2001/08/07 21:31:17 bsmith Exp $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid and pusedo timestepping 2d.\n\
   \n\

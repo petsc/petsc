@@ -1,4 +1,3 @@
-/*$Id: ex4.c,v 1.64 2001/08/07 21:31:12 bsmith Exp $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 

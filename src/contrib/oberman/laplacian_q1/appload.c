@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.13 2001/08/07 21:31:55 bsmith Exp $*/
+
 #include "appctx.h"
 
 /*

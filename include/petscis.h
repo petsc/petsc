@@ -1,5 +1,3 @@
-/* $Id: petscis.h,v 1.63 2001/06/21 21:15:49 bsmith Exp $ */
-
 /*
    An index set is a generalization of a subset of integers.  Index sets
    are used for defining scatters and gathers.

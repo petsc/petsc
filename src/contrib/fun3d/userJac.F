@@ -1,4 +1,3 @@
-!  $Id: userJac.F,v 1.14 2001/08/07 03:04:53 balay Exp $
 !---------------------------------------------------------------
 ! The following subroutines are from node6t.f in the original
 ! code.

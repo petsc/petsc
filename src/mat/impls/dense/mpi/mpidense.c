@@ -1,5 +1,3 @@
-/*$Id: mpidense.c,v 1.159 2001/08/10 03:30:41 bsmith Exp $*/
-
 /*
    Basic functions for basic parallel dense matrices.
 */

@@ -1,4 +1,3 @@
-/*$Id: bdfact.c,v 1.65 2001/08/07 03:02:53 balay Exp $*/
 
 /* Block diagonal matrix format - factorization and triangular solves */
 

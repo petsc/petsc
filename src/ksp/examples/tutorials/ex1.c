@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.90 2001/08/07 21:30:54 bsmith Exp $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 

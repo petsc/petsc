@@ -1,5 +1,3 @@
-/*$Id: tcqmr.c,v 1.59 2001/08/07 03:03:54 balay Exp $*/
-
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
 

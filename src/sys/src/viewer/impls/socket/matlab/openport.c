@@ -1,4 +1,3 @@
-/*$Id: openport.c,v 1.24 2001/03/23 23:19:53 balay Exp $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  

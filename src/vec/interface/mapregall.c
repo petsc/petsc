@@ -1,6 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mapregall.c,v 1.1 1999/06/21 02:03:51 knepley Exp $";
-#endif
 
 #include "vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN

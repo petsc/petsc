@@ -1,5 +1,3 @@
-/*$Id: vmpicr.c,v 1.14 2001/03/23 23:21:26 balay Exp $*/
-
 /*
    This file contains routines for Parallel vector operations.
  */

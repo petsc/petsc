@@ -1,4 +1,3 @@
-/* $Id: f90_nag.h,v 1.2 2000/09/22 18:54:10 balay Exp $ */
 
 #if !defined(__F90_NAG_H)
 #define __F90_NAG_H

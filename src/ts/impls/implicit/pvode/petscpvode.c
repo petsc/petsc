@@ -1,4 +1,3 @@
-/*$Id: petscpvode.c,v 1.71 2001/08/07 03:04:23 balay Exp $*/
 
 /*
     Provides a PETSc interface to PVODE. Alan Hindmarsh's parallel ODE

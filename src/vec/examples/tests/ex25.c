@@ -1,4 +1,3 @@
-/*$Id: ex25.c,v 1.17 2001/09/11 16:32:10 bsmith Exp $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case processor zero is as long as the entire parallel vector; rest are zero length.\n\n";

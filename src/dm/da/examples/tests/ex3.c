@@ -1,4 +1,3 @@
-/*$Id: ex3.c,v 1.49 2001/08/07 21:31:49 bsmith Exp $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 

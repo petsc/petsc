@@ -1,4 +1,3 @@
-/*$Id: util2.c,v 1.19 2001/08/07 21:31:30 bsmith Exp $*/
 
 /*
    This file contains utility routines for finite difference

@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.13 2001/08/07 03:03:06 balay Exp $*/
+
 /*
     ADIC based nonlinear operator object that can be used with FAS
 

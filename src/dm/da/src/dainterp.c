@@ -1,5 +1,3 @@
-/*$Id: dainterp.c,v 1.25 2001/08/07 03:04:39 balay Exp $*/
- 
 /*
   Code for interpolating between grids represented by DAs
 */

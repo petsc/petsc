@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.34 2001/03/23 23:20:21 balay Exp $*/
 
 static char help[] = "Demonstrates opening and drawing a window\n";
 

@@ -1,4 +1,3 @@
-/*$Id: zvec.c,v 1.76 2001/09/24 21:02:04 balay Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"

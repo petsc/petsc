@@ -1,4 +1,3 @@
-/*$Id: ex12.c,v 1.18 2001/08/07 03:02:12 balay Exp $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 

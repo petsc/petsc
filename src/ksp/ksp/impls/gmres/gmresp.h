@@ -1,4 +1,3 @@
-/* $Id: gmresp.h,v 1.18 2001/08/07 03:03:51 balay Exp $ */
 /*
    Private data structure used by the GMRES method. This data structure
   must be identical to the beginning of the KSP_FGMRES data structure

@@ -1,4 +1,3 @@
-/*$Id: zksp.c,v 1.52 2001/08/07 21:32:16 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscksp.h"

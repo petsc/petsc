@@ -1,4 +1,3 @@
-/*$Id: zf90mat.c,v 1.13 2001/09/06 14:49:32 bsmith Exp $*/
 
 #include "petscmat.h"
 #include "petscf90.h"

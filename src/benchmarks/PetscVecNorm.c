@@ -1,4 +1,3 @@
-/*$Id: PetscVecNorm.c,v 1.16 2001/08/29 20:59:36 balay Exp $*/
 
 #include "petscvec.h"
 

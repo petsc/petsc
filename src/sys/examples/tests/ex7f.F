@@ -1,6 +1,4 @@
 !
-! "$Id: ex7f.F,v 1.7 2000/09/27 20:04:43 bsmith Exp $";
-!
 !
 !     Formatted test for PetscSetCommWorld()
 !

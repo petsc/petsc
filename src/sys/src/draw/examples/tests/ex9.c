@@ -1,4 +1,3 @@
-/*$Id: ex9.c,v 1.15 2001/08/07 21:28:44 bsmith Exp $*/
 
 static char help[] = "Makes a simple histogram.\n";
 

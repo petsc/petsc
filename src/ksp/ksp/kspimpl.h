@@ -1,4 +1,3 @@
-/* $Id: kspimpl.h,v 1.50 2001/08/06 18:04:29 bsmith Exp $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL

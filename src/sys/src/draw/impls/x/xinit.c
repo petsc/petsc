@@ -1,5 +1,3 @@
-/*$Id: xinit.c,v 1.72 2001/03/23 23:20:15 balay Exp $*/
-
 /* 
    This file contains routines to open an X window display and window
    This consists of a number of routines that set the various

@@ -1,4 +1,3 @@
-/* $Id: matlab.c,v 1.17 2001/08/06 21:14:26 bsmith Exp $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 

@@ -1,4 +1,3 @@
-/*$Id: aodata.c,v 1.55 2001/05/17 15:14:27 bsmith Exp $*/
 /*  
    Defines the abstract operations on AOData
 */

@@ -1,5 +1,3 @@
-/*$Id: fdmatrix.c,v 1.92 2001/08/21 21:03:06 bsmith Exp $*/
-
 /*
    This is where the abstract matrix operations are defined that are
   used for finite difference computations of Jacobians using coloring.

@@ -1,4 +1,3 @@
-/*$Id: ploginfo.c,v 1.22 2001/03/23 23:20:50 balay Exp $*/
 /*
       PetscLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.

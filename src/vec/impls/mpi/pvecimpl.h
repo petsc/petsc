@@ -1,6 +1,3 @@
-/* $Id: pvecimpl.h,v 1.37 2001/09/07 20:09:01 bsmith Exp $ */
-/* 
- */
 
 #ifndef __PVECIMPL
 #define __PVECIMPL

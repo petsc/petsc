@@ -1,4 +1,3 @@
-/*$Id: dense.c,v 1.208 2001/09/07 20:09:16 bsmith Exp $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */

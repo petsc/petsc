@@ -1,4 +1,3 @@
-/*$Id: getcolv.c,v 1.23 2001/08/08 15:47:19 bsmith Exp $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 

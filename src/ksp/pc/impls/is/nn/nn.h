@@ -1,4 +1,4 @@
-/*$Id: nn.h,v 1.3 2001/08/07 03:03:41 balay Exp $*/
+
 #if !defined(__pcnn_h)
 #define __pcnn_h
 

@@ -1,4 +1,3 @@
-/*$Id: itcl.c,v 1.121 2001/03/23 23:23:29 balay Exp $*/
 /*
     Code for setting KSP options from the options database.
 */

@@ -1,5 +1,3 @@
-/* $Id: fgmres.c,v 1.29 2001/08/07 21:30:49 bsmith Exp $ */
-
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
     Reference:  Saad, 1993.

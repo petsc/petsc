@@ -1,4 +1,3 @@
-/*$Id: ftest.c,v 1.39 2001/04/04 21:18:39 bsmith Exp $*/
 
 #include "petsc.h"
 #include "petscsys.h"

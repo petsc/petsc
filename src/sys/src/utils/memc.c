@@ -1,4 +1,3 @@
-/*$Id: memc.c,v 1.69 2001/09/07 20:08:33 bsmith Exp $*/
 
 /*
     We define the memory operations here. The reason we just do not use 

@@ -1,4 +1,3 @@
-/* $Id: pops.c,v 1.11 2001/04/10 19:34:15 bsmith Exp $*/
 
 /*
     Defines the operations for the Postscript PetscDraw implementation.

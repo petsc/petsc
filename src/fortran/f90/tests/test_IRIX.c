@@ -1,4 +1,3 @@
-/*$Id: test_IRIX.c,v 1.3 2000/01/11 21:03:59 bsmith Exp $*/
 
 #include <stdio.h>
 #include "../f90_IRIX.h"

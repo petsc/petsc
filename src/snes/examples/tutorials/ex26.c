@@ -1,4 +1,3 @@
-/*$Id: gs-cylinder.c, xtang Exp $*/
 
 static char help[] = "Grad-Shafranov solver for one dimensional CHI equilibrium.\n\
 The command line options include:\n\

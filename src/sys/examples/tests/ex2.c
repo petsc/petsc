@@ -1,5 +1,3 @@
-/*$Id: ex2.c,v 1.19 2001/08/07 21:29:12 bsmith Exp $*/
-
 /*
       Tests the signal handler.
 */

@@ -1,7 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vsilo.c,v 1.4 2000/01/10 03:27:03 knepley Exp $";
-#endif
-
 /* 
         Written by Matt Dorbin, mrdorbin@cs.purdue.edu 3/1/99
         For database format and API from LLNL

@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.26 2001/08/07 03:04:16 balay Exp $*/
 
 static char help[] = "Newton's method to solve a two-variable system, sequentially.\n\n";
 

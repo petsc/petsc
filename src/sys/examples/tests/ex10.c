@@ -1,5 +1,3 @@
-/*$Id: ex10.c,v 1.13 2001/03/23 23:20:59 balay Exp $*/
-
 /* 
    Tests PetscMemmove()
 */

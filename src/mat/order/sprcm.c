@@ -1,4 +1,3 @@
-/*$Id: sprcm.c,v 1.40 2001/03/23 23:22:51 balay Exp $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"

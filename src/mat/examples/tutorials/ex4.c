@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.28 2001/04/10 19:35:58 bsmith Exp $*/
 
 static char help[] = "Reads U and V matrices from a file and performs y = V*U'*x.\n\
   -f <input_file> : file to load \n\n";

@@ -1,4 +1,4 @@
-/*$Id: arch.c,v 1.44 2001/03/23 23:20:45 balay Exp $*/
+
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 

@@ -1,4 +1,3 @@
-/*$Id: mprint.h,v 1.2 2000/05/10 16:39:17 bsmith Exp $*/
 
 #if !defined(__MPRINT_H)
 #define __PRINT_H

@@ -1,4 +1,3 @@
-/*$Id: composite.c,v 1.45 2001/08/07 03:03:39 balay Exp $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */

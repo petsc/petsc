@@ -1,5 +1,3 @@
-/*$Id: vscat.c,v 1.173 2001/08/10 03:29:59 bsmith Exp $*/
-
 /*
      Code for creating scatters between vectors. This file 
   includes the code for scattering between sequential vectors and

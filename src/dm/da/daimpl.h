@@ -1,5 +1,3 @@
-/* $Id: daimpl.h,v 1.44 2001/08/06 21:18:31 bsmith Exp $ */
-
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
 */

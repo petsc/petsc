@@ -298,19 +298,19 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
 these packages provide some basic numeric kernels used by PETSc.</p>
       <ul>
         <li>If  <font color="##ff0000">./config/configure.py</font> cannot locate BLAS and LAPACK you can use the options
-             <font color="##ff0000">--with-blas-lapack_dir=directory</font> or <font color="##ff0000">--with-blas-lib=library</font>
+             <font color="##ff0000">--with-blas-lapack-dir=directory</font> or <font color="##ff0000">--with-blas-lib=library</font>
              and <font color="##ff0000">--with-lapack-lib=library</font> or <font color="##ff0000">--with-blas-lapack-lib=library</font>
              to indicate the location of the libraries.
         <ul>
           <li>on Microsoft Windows and Linux, one can use Intel MKL</li>
           <li>On AIX (IBM) ESSL, on OSF (Compaq/alpha) DXML, on Solaris Sunperf, on SGI libcomplib.sgimath.</li>
-          <li>On some Linux boxes, regular blas/lapack is installed
+          <li>On some Linux boxes, blas/lapack is installed
               [/usr/lib/liblapack.a   /usr/lib/libblas.a ]</li>
           <li>Alternatively download the source distribution fblaslapack
                or cblaslapack   from <a href="http://www.mcs.anl.gov/petsc/petsc-2/download">PETSc download</a>page</li>
         </ul>
         <li>Use the <font color="##ff0000">./config/configure.py</font> options <font color="##ff0000">--download-c-blas-lapack=yes</font>,
-         <font color="##ff0000">--download-f-blas-lapack</font>,
+         <font color="##ff0000">--download-f-blas-lapack=yes</font>,
          <font color="##ff0000">--download-c-blas-lapack=ifneeded</font> or <font color="##ff0000">--download-f-blas-lapack=ifneeded</font> 
          then PETSc will download and install a BLAS and LAPACK for you. Note that the c and f versions of BLAS and LAPACK will, in general,
          be much slower than any installed system BLAS and LAPACK.

@@ -1,4 +1,3 @@
-/*$Id: mg.c,v 1.128 2001/10/03 22:12:40 balay Exp $*/
 /*
     Defines the multigrid preconditioner interface.
 */

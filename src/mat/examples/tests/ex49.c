@@ -1,4 +1,3 @@
-/*$Id: ex49.c,v 1.24 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 

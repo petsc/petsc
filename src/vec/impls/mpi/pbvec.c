@@ -1,5 +1,3 @@
-/*$Id: pbvec.c,v 1.173 2001/09/12 03:26:59 bsmith Exp $*/
-
 /*
    This file contains routines for Parallel vector operations.
  */

@@ -1,4 +1,3 @@
-/*$Id: dpause.c,v 1.28 2001/03/23 23:20:08 balay Exp $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */

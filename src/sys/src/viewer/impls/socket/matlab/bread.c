@@ -1,4 +1,3 @@
-/*$Id: bread.c,v 1.8 2001/08/06 21:13:30 bsmith Exp $*/
 
 #include <stdio.h>
 #include "petscsys.h"

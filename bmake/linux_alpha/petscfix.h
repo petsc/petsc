@@ -1,4 +1,3 @@
-/*$Id: petscfix.h,v 1.1 2000/07/17 19:03:26 balay Exp $*/
 
 /*
     This fixes various things in system files that are incomplete, for 

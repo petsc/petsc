@@ -1,5 +1,4 @@
 !
-!  $Id: petscda.h90,v 1.3 1998/03/30 21:14:27 balay Exp $;
 !
 !  Additional DA include file for use of PETSc with Fortran 90/HPF
 !

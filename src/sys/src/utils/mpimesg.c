@@ -1,4 +1,3 @@
-/*$Id: mpimesg.c,v 1.14 2001/08/07 03:02:06 balay Exp $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 

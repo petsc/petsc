@@ -1,4 +1,3 @@
-/*$Id: ex14.c,v 1.17 2001/08/07 03:04:42 balay Exp $*/
 
 static char help[] = "Tests saving DA vectors to files.\n\n";
 

@@ -1,4 +1,3 @@
-/*$Id: ex8.c,v 1.46 2001/08/07 03:02:26 balay Exp $*/
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 

@@ -1,5 +1,4 @@
 
-/*$Id: ex22.c,v 1.19 2001/08/07 21:30:54 bsmith Exp $*/
 /*
  Partial differential equation
 

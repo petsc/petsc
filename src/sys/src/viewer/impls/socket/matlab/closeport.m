@@ -1,5 +1,4 @@
 function closeport(port)
-% $Id: closeport.m,v 1.7 2001/02/09 19:30:22 bsmith Exp $
 %
 %   closeport(port)
 %   Closes a PETSc port opened with openport()

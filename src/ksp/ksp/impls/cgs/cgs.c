@@ -1,5 +1,3 @@
-/*$Id: cgs.c,v 1.64 2001/08/07 03:03:51 balay Exp $*/
-
 /*                       
 
     Note that for the complex numbers version, the VecDot() arguments

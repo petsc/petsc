@@ -1,4 +1,4 @@
-/* $Id: petscfunc.h,v 1.4 2001/09/07 20:13:00 bsmith Exp $ */
+
 #ifndef PETSCFUNC_H
 #define PETSCFUNC_H
 

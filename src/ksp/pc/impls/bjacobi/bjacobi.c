@@ -1,4 +1,3 @@
-/*$Id: bjacobi.c,v 1.160 2001/08/07 03:03:35 balay Exp $*/
 /*
    Defines a block Jacobi preconditioner.
 */

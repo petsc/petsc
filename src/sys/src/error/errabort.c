@@ -1,4 +1,3 @@
-/*$Id: errabort.c,v 1.12 2001/03/23 23:20:26 balay Exp $*/
 /*
        The default error handlers and code that allows one to change
    error handlers.

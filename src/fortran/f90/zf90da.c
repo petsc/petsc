@@ -1,4 +1,3 @@
-/*$Id: zf90da.c,v 1.14 2001/09/06 14:49:18 bsmith Exp $*/
 
 #include "petscda.h"
 #include "petscf90.h"

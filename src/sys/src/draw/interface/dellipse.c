@@ -1,6 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dellipse.c,v 1.3 2000/01/10 03:26:52 knepley Exp $";
-#endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */

@@ -1,5 +1,3 @@
-/*$Id: vecio.c,v 1.74 2001/08/07 03:02:17 balay Exp $*/
-
 /* 
    This file contains simple binary input routines for vectors.  The
    analogous output routines are within each vector implementation's 

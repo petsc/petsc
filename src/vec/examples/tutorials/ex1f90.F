@@ -1,5 +1,4 @@
 !
-!    "$Id: ex1f90.F,v 1.27 2001/08/07 03:02:34 balay Exp $"
 !
 !/*T
 !   Concepts: vectors^using basic vector routines;

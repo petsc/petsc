@@ -1,4 +1,3 @@
-/*$Id: ex30.c,v 1.27 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing of matrix sparsity structure with MatView().\n\
   Input parameters are:\n\

@@ -1,5 +1,4 @@
 !
-!  "$Id: fmult.F,v 1.11 2001/09/07 20:13:15 bsmith Exp $";
 !
 !    Fortran kernel for sparse matrix-vector product in the AIJ matrix format
 !

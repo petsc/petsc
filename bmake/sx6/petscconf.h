@@ -1,10 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.34 2000/11/28 17:26:31 bsmith Exp $"
-"Defines the configuration for this machine"
-#endif
-
-#if !defined(INCLUDED_PETSCCONF_H)
-#define INCLUDED_PETSCCONF_H
  
 #define PARCH_SX6
 #define PETSC_ARCH_NAME "SX6"

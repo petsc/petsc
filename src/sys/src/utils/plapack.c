@@ -1,4 +1,3 @@
-/*$Id: dlregispetsc.c,v 1.14 2001/03/23 23:20:05 balay Exp $*/
 
 #include "petsc.h"
 #ifdef PETSC_HAVE_PLAPACK

@@ -1,5 +1,3 @@
-/*$Id: gmres.c,v 1.176 2001/08/07 03:03:51 balay Exp $*/
-
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
     Reference:  Saad and Schultz, 1986.

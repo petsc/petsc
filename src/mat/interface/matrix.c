@@ -1,4 +1,3 @@
-/*$Id: matrix.c,v 1.414 2001/09/28 18:57:28 balay Exp $*/
 
 /*
    This is where the abstract matrix operations are defined

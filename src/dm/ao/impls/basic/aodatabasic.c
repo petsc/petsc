@@ -1,5 +1,3 @@
-/*$Id: aodatabasic.c,v 1.64 2001/08/07 03:04:35 balay Exp $*/
-
 /*
   The most basic AOData routines. These store the entire database on each processor.
   These routines are very simple; note that we do not even use a private data structure

@@ -1,4 +1,3 @@
-/* "$Id: flow.c,v 1.78 2001/08/10 03:35:11 bsmith Exp $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver.\n\
 originally written by W. K. Anderson of NASA Langley, \n\

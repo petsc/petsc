@@ -1,4 +1,3 @@
-/*$Id: da2.c,v 1.180 2001/09/07 20:12:17 bsmith Exp $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 

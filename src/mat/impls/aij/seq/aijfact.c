@@ -1,4 +1,3 @@
-/*$Id: aijfact.c,v 1.167 2001/09/11 16:32:26 bsmith Exp $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/inline/dot.h"

@@ -1,5 +1,3 @@
-/*$Id: mhas.c,v 1.24 2001/03/23 23:21:44 balay Exp $*/
-
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
        

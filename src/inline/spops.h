@@ -1,4 +1,3 @@
-/* $Id: spops.h,v 1.5 2000/01/11 20:58:48 bsmith Exp $ */
 
 #ifndef SPARSEDENSESMAXPY
 

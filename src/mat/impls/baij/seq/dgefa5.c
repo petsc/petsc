@@ -1,4 +1,3 @@
-/*$Id: dgefa5.c,v 1.15 2001/04/07 15:44:07 bsmith Exp $*/
 /*
       Inverts 5 by 5 matrix using partial pivoting.
 

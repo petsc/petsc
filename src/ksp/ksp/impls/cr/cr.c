@@ -1,4 +1,3 @@
-/*$Id: cr.c,v 1.64 2001/08/07 03:03:49 balay Exp $*/
 
 #include "src/ksp/ksp/kspimpl.h"
 

@@ -1,5 +1,4 @@
 !
-!    "$Id: ex1f90.F,v 1.2 2000/08/23 18:38:41 balay Exp $"
 !
       module junk
       type abc

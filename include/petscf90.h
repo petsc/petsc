@@ -1,4 +1,3 @@
-/* $Id: petscf90.h,v 1.3 2000/09/22 18:54:06 balay Exp $ */
 
 #if !defined(__PETSCF90_H)
 #define __PETSCF90_H

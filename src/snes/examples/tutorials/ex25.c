@@ -1,5 +1,3 @@
-/* $Id: ex18.c,v 1.23 2001/08/07 21:31:17 bsmith Exp $ */
-
 
 static char help[] ="Minimum surface problem\n\
 Uses 2-dimensional distributed arrays.\n\

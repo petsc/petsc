@@ -1,4 +1,3 @@
-/* $Id: xops.c,v 1.156 2001/09/07 20:08:05 bsmith Exp $*/
 
 /*
     Defines the operations for the X PetscDraw implementation.

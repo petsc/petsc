@@ -1,4 +1,3 @@
-/*$Id: sbaijfact.c,v 1.61 2001/08/06 21:15:47 bsmith Exp $*/
 
 #include "src/mat/impls/baij/seq/baij.h" 
 #include "src/mat/impls/sbaij/seq/sbaij.h"

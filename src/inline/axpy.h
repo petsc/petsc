@@ -1,4 +1,3 @@
-/* $Id: axpy.h,v 1.19 2001/08/07 03:01:46 balay Exp $ */
 
 /* 
    These are macros for daxpy like operations.  The format is

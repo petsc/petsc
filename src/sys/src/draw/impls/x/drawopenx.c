@@ -1,4 +1,3 @@
-/*$Id: drawopenx.c,v 1.19 2001/03/23 23:20:15 balay Exp $*/
 /*
     Defines the operations for the X PetscDraw implementation.
 */

@@ -1,5 +1,4 @@
 function error = launch(program,np)
-% $Id: launch.m,v 1.5 2001/02/09 19:29:55 bsmith Exp $
 %
 %  error = launch(program,np)
 %  Starts up PETSc program

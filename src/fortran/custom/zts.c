@@ -1,4 +1,3 @@
-/*$Id: zts.c,v 1.39 2001/09/25 14:32:39 balay Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscts.h"

@@ -1,4 +1,3 @@
-/*$Id: sbaij2.c,v 1.32 2001/08/07 03:03:01 balay Exp $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/inline/spops.h"

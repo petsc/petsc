@@ -1,4 +1,3 @@
-/*$Id: vinv.c,v 1.71 2001/09/11 16:31:37 bsmith Exp $*/
 /*
      Some useful vector utility functions.
 */

@@ -1,5 +1,3 @@
-/*$Id: dadestroy.c,v 1.44 2001/06/21 21:19:09 bsmith Exp $*/
- 
 /*
   Code for manipulating distributed regular arrays in parallel.
 */

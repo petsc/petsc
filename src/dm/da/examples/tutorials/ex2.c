@@ -1,4 +1,3 @@
-/*$Id: ex2.c,v 1.15 2001/08/07 03:04:45 balay Exp $*/
 
 static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting for 2d DAs.\n\n";
 

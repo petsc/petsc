@@ -1,4 +1,3 @@
-/*$Id: ex19.c,v 1.30 2001/08/07 21:30:08 bsmith Exp $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\

@@ -1,5 +1,3 @@
-/*$Id: pbjacobi.c,v 1.4 2001/08/07 03:03:42 balay Exp $*/
-
 /* 
    Include files needed for the PBJacobi preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners 

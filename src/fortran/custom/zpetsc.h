@@ -1,4 +1,3 @@
-/*$Id: zpetsc.h,v 1.67 2001/09/10 03:41:06 bsmith Exp $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 

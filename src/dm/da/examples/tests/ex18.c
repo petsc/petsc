@@ -1,4 +1,3 @@
-/*$Id: ex18.c,v 1.5 2001/08/07 03:04:42 balay Exp $*/
 
 static char help[] = "Tests DAGetISLocalToGlobalMappingBlck().\n\n";
 

@@ -1,4 +1,3 @@
-/*$Id: mpibdiag.c,v 1.205 2001/08/10 03:31:02 bsmith Exp $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.

@@ -1,4 +1,3 @@
-/*$Id: ls.c,v 1.172 2001/08/07 03:04:11 balay Exp $*/
 
 #include "src/snes/impls/ls/ls.h"
 

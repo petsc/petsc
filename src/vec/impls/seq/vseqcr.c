@@ -1,4 +1,3 @@
-/*$Id: vseqcr.c,v 1.18 2001/03/23 23:21:25 balay Exp $*/
 /*
    Implements the sequential vectors.
 */

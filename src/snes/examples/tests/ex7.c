@@ -1,4 +1,3 @@
-/*$Id: ex7.c,v 1.59 2001/08/07 21:31:12 bsmith Exp $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";

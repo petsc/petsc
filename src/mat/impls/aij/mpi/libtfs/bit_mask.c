@@ -1,4 +1,3 @@
-/*$Id: bit_mask.c,v 1.3 2001/04/10 19:37:38 bsmith Exp $*/
 
 /********************************bit_mask.c************************************
 SPARSE GATHER-SCATTER PACKAGE: bit_mask bss_malloc ivec error comm gs queue

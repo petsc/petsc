@@ -1,4 +1,3 @@
-/*$Id: ex7.c,v 1.20 2001/09/11 16:33:24 bsmith Exp $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
  Tests inplace factorization for SeqBAIJ. Input parameters include\n\

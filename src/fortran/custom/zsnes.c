@@ -1,4 +1,3 @@
-/*$Id: zsnes.c,v 1.63 2001/08/31 16:15:30 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"

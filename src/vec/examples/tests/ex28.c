@@ -1,4 +1,3 @@
-/*$Id: ex28.c,v 1.19 2001/08/07 21:29:25 bsmith Exp $*/
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 

@@ -1,5 +1,3 @@
-/* $Id: mgimpl.h,v 1.14 2001/08/21 21:03:20 bsmith Exp $ */
-
 /*
       Data structure used for Multigrid preconditioner.
 */

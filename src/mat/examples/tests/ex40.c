@@ -1,4 +1,3 @@
-/*$Id: ex40.c,v 1.25 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\

@@ -1,4 +1,3 @@
-/*$Id: ffpath.c,v 1.36 2001/03/23 23:20:30 balay Exp $*/
 
 #include "petsc.h"
 #include "petscsys.h"

@@ -1,5 +1,4 @@
 !
-!  $Id: petscvec.h90,v 1.5 2001/08/07 03:05:33 balay Exp $;
 !
 !  Additional Vec include file for use of PETSc with Fortran 90/HPF
 !

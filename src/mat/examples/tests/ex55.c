@@ -1,4 +1,3 @@
-/*$Id: ex55.c,v 1.18 2001/04/10 19:35:44 bsmith Exp $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 

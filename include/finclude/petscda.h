@@ -1,5 +1,4 @@
 !
-!  $Id: petscda.h,v 1.20 2001/06/21 21:20:08 bsmith Exp $;
 !
 !  Include file for Fortran use of the DA (distributed array) package in PETSc
 !

@@ -1,4 +1,3 @@
-/* $Id: ctable.h,v 1.8 2000/05/10 16:38:35 bsmith Exp $ */
 /* Contributed by - Mark Adams */
 
 #if !defined(__CTABLE_H)

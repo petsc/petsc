@@ -1,4 +1,3 @@
-/* $Id: f90_IRIX.h,v 1.9 2000/09/22 18:54:10 balay Exp $ */
 
 #if !defined(__F90_IRIX_H)
 #define __F90_IRIX_H

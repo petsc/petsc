@@ -1,4 +1,3 @@
-/*$Id: umfpack.c,v 1.10 2001/08/15 15:56:50 bsmith Exp $*/
 
 /* 
         Provides an interface to the UMFPACKv4.3 sparse solver

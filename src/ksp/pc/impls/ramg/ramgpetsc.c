@@ -1,4 +1,3 @@
-/*$Id: ramgpetsc.c,v 1.20 2001/08/24 16:04:09 bsmith Exp $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "ramgfunc.h"

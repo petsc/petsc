@@ -1,4 +1,3 @@
-/*$Id: ex44.c,v 1.15 2001/04/10 19:35:44 bsmith Exp $*/
 
 static char help[] = "Loads matrix dumped by ex43.\n\n";
 

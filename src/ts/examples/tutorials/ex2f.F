@@ -1,5 +1,4 @@
 !
-! "$Id: ex2f.F,v 1.35 2001/10/03 03:11:29 balay Exp $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Processors: n

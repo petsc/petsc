@@ -1,4 +1,3 @@
-/*$Id: ex2.c,v 1.26 2001/08/07 21:30:50 bsmith Exp $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 

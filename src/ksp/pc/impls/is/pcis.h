@@ -1,4 +1,4 @@
-/*$Id: is.h,v 1.4 2001/08/07 03:03:41 balay Exp $*/
+
 #if !defined(__pcis_h)
 #define __pcis_h
 

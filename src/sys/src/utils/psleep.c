@@ -1,4 +1,3 @@
-/*$Id: psleep.c,v 1.30 2001/03/23 23:20:45 balay Exp $*/
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)

@@ -1,4 +1,3 @@
-/*$Id: ex16.c,v 1.25 2001/08/07 21:30:54 bsmith Exp $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 

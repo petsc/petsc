@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.41 2001/08/10 03:34:17 bsmith Exp $*/
+
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\

@@ -1,4 +1,3 @@
-# $Id: makefile,v 1.7 2001/08/22 17:59:05 balay Exp $
 
 #requirespackage 'PETSC_HAVE_WIN32'
 

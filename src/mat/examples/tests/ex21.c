@@ -1,4 +1,3 @@
-/*$Id: ex21.c,v 1.22 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the parallel Row format.\n\
  This also tests MatGetRow() and MatRestoreRow() for the parallel case.\n\n";

@@ -1,4 +1,3 @@
-/* $Id: petschead.h,v 1.86 2001/09/07 20:13:16 bsmith Exp $ */
 
 /*
     Defines the basic header of all PETSc objects.

@@ -1,5 +1,3 @@
-/*$Id: zstart.c,v 1.84 2001/08/10 03:35:41 bsmith Exp $*/
-
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
 */

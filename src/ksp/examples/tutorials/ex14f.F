@@ -1,5 +1,4 @@
 !
-!    "$Id: ex14f.F,v 1.24 2001/08/07 03:04:00 balay Exp $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses KSP to solve the linearized Newton sytems.  This solver

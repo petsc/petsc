@@ -1,4 +1,3 @@
-/*$Id: launch.c,v 1.15 2001/03/23 23:19:53 balay Exp $*/
 /* 
   Usage: A = launch(programname,number processors); 
   Modified Sept 28, 2003 RFK: updated obsolete mx functions.

@@ -1,4 +1,3 @@
-/*$Id: ex31.c,v 1.27 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
 

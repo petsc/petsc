@@ -1,5 +1,3 @@
-/*$Id: cgne.c,v 1.117 2001/08/07 03:03:50 balay Exp $*/
-
 /*
        cgctx.h defines the simple data structured used to store information
     related to the type of matrix (e.g. complex symmetric) being solved and

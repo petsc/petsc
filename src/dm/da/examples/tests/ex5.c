@@ -1,4 +1,3 @@
-/*$Id: ex5.c,v 1.44 2001/08/07 21:31:49 bsmith Exp $*/
 
 /* This file created by Peter Mell   6/30/95 */ 
 

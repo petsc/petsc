@@ -1,4 +1,3 @@
-/*$Id: ex3.c,v 1.10 2001/04/10 19:34:10 bsmith Exp $*/
 
 static char help[] = "Tests dynamic loading of viewer.\n\n";
 

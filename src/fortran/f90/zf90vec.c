@@ -1,4 +1,3 @@
-/*$Id: zf90vec.c,v 1.19 2001/08/07 03:05:21 balay Exp $*/
 
 #include "petscis.h"
 #include "petscvec.h"

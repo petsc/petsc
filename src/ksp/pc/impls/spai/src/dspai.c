@@ -1,4 +1,3 @@
-/* $Id: dspai.c,v 1.7 2001/08/07 03:03:40 balay Exp $*/
 
 #include "petscmat.h"
 

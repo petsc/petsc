@@ -1,4 +1,3 @@
-/*$Id: ex1.c,v 1.27 2001/03/23 23:21:14 balay Exp $*/
 
 static char help[] = "Creating a general index set.\n\n";
 

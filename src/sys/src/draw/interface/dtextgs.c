@@ -1,4 +1,3 @@
-/*$Id: dtextgs.c,v 1.36 2001/04/18 20:48:33 balay Exp $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */

@@ -1,4 +1,4 @@
-/* $Id: icc.h,v 1.11 2001/08/07 21:30:30 bsmith Exp $ */
+
 #include "src/ksp/pc/pcimpl.h"          
 
 #if !defined(__ICC_H)

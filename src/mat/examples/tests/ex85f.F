@@ -1,6 +1,4 @@
 !
-!      "$Id: ex85f.F,v 1.2 2001/06/21 21:17:18 bsmith Exp $";
-!
 !   This program tests MatGetDiagonal()
 !
       program main

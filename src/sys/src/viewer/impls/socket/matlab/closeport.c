@@ -1,4 +1,3 @@
-/*$Id: closeport.c,v 1.17 2001/03/23 23:19:53 balay Exp $*/
 /* This was part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92

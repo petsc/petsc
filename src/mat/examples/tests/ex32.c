@@ -1,4 +1,3 @@
-/*$Id: ex32.c,v 1.30 2001/09/11 16:32:50 bsmith Exp $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format. Writes\n\
 them using the PETSc sparse format. Input parameters are:\n\

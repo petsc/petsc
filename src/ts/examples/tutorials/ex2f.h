@@ -1,4 +1,3 @@
-! "$Id: ex2f.h,v 1.9 2000/05/05 22:19:01 balay Exp $"
 !  This file contains include statements and a user-defined
 !  common block for application-specific data.  This file is
 !  included in each routine within the program ex2f. 

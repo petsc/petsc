@@ -1,4 +1,3 @@
-/*$Id: fdaij.c,v 1.40 2001/06/21 21:16:21 bsmith Exp $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 

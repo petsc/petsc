@@ -1,4 +1,3 @@
-/*$Id: gcreatev.c,v 1.89 2001/08/07 03:02:17 balay Exp $*/
 
 #include "petscvec.h"    /*I "petscvec.h" I*/
 

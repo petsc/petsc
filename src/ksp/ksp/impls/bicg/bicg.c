@@ -1,4 +1,3 @@
-/*$Id: bicg.c,v 1.28 2001/08/07 03:03:55 balay Exp $*/
 
 #include "src/ksp/ksp/kspimpl.h"
 

@@ -1,6 +1,3 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghost.c,v 1.3 2000/01/10 03:27:01 knepley Exp $";
-#endif
 
 #include "petscsys.h"
 

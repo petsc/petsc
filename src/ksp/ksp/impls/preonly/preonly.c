@@ -1,4 +1,3 @@
-/*$Id: preonly.c,v 1.42 2001/05/14 21:07:54 bsmith Exp $*/
 
 #include "src/ksp/ksp/kspimpl.h"
 

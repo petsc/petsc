@@ -1,6 +1,4 @@
 !
-! "$Id: ex17f.F,v 1.3 2000/09/27 20:05:06 bsmith Exp $";
-!
 !
 !     Test for PetscFOpen() from Fortran
 !

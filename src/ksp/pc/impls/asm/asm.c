@@ -1,4 +1,3 @@
-/*$Id: asm.c,v 1.131 2001/08/07 03:03:38 balay Exp $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 

@@ -1,8 +1,4 @@
 
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.2 1999/04/06 21:27:41 bsmith Exp $";
-#endif
-
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and saves in an ASCII file that\n\
   can be read by the SPAI test program.  Input parameters include\n\

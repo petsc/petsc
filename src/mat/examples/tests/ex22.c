@@ -1,4 +1,3 @@
-/*$Id: ex22.c,v 1.17 2001/08/07 03:03:07 balay Exp $*/
 
 static char help[] = "Tests matrix ordering routines.\n\n";
 
