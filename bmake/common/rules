@@ -510,7 +510,7 @@ shared_hpux:
 
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
-#${CLINKER} -fPIC -shared *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}; \
+#${CLINKER} -fPIC -shared *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX};
 shared_linux:
 	cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
