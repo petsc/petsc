@@ -36,6 +36,24 @@ static int VecNorm_MPI(  Vec xin, double *z )
 }
 
 
+static int VecAMax_MPI( Vec xin, int *idx, double *z )
+{
+  Vec_MPI *x = (Vec_MPI *) xin->data;
+  double work;
+  /* Find the local max */
+  VecAMax_Seq( xin, idx, &work );
+
+  /* Find the global max */
+  if (!idx) {
+    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MAX,x->comm );
+  }
+  else {
+    /* Need to use special linked max */
+    SETERR( 1, "Parallel max with index not yet supported" );
+  }
+  return 0;
+}
+
 static int VecMax_MPI( Vec xin, int *idx, double *z )
 {
   Vec_MPI *x = (Vec_MPI *) xin->data;
@@ -54,3 +72,20 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
   return 0;
 }
 
+static int VecMin_MPI( Vec xin, int *idx, double *z )
+{
+  Vec_MPI *x = (Vec_MPI *) xin->data;
+  double work;
+  /* Find the local Min */
+  VecMin_Seq( xin, idx, &work );
+
+  /* Find the global Min */
+  if (!idx) {
+    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MIN,x->comm );
+  }
+  else {
+    /* Need to use special linked Min */
+    SETERR( 1, "Parallel Min with index not yet supported" );
+  }
+  return 0;
+}
