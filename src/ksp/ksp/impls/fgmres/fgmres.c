@@ -179,6 +179,12 @@ PetscErrorCode FGMREScycle(int *itcount,KSP ksp)
      of prestart directions */
   loc_it = 0;
 
+  /* note: (fgmres->it) is always set one less than (loc_it) It is used in 
+     KSPBUILDSolution_FGMRES, where it is passed to BuildFGmresSoln.  
+     Note that when BuildFGmresSoln is called from this function, 
+     (loc_it -1) is passed, so the two are equivalent */
+  fgmres->it = (loc_it - 1);
+
   /* initial residual is in VEC_VV(0)  - compute its norm*/ 
   ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
 
@@ -204,11 +210,6 @@ PetscErrorCode FGMREScycle(int *itcount,KSP ksp)
 
 
 
-  /* note: (fgmres->it) is always set one less than (loc_it) It is used in 
-     KSPBUILDSolution_FGMRES, where it is passed to BuildFGmresSoln.  
-     Note that when BuildFGmresSoln is called from this function, 
-     (loc_it -1) is passed, so the two are equivalent */
-  fgmres->it = (loc_it - 1);
    
   /* MAIN ITERATION LOOP BEGINNING*/
   /* keep iterating until we have converged OR generated the max number
@@ -339,10 +340,9 @@ PetscErrorCode FGMREScycle(int *itcount,KSP ksp)
 PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  int        cycle_its; /* iterations done in a call to FGMREScycle */
-  int        itcount;   /* running total of iterations, incl. those in restarts */
-  KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
-  PetscTruth diagonalscale;
+  int            cycle_its = 0; /* iterations done in a call to FGMREScycle */
+  KSP_FGMRES     *fgmres = (KSP_FGMRES *)ksp->data;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -351,9 +351,6 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-
-  /* initialize */
-  itcount  = 0;
 
   /* Compute the initial (NOT preconditioned) residual */
   if (!ksp->guess_zero) {
@@ -365,15 +362,13 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
      FGMREScycle expects... */
   
   ierr    = FGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
-  itcount += cycle_its;
   while (!ksp->reason) {
     ierr     = FGMRESResidual(ksp);CHKERRQ(ierr);
-    if (itcount >= ksp->max_it) break;
+    if (ksp->its >= ksp->max_it) break;
     ierr     = FGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
-    itcount += cycle_its;  
   }
   /* mark lack of convergence */
-  if (itcount >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
   PetscFunctionReturn(0);
 }
@@ -750,27 +745,62 @@ PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrix */
-  if (gmres->hh_origin) {ierr = PetscFree(gmres->hh_origin);CHKERRQ(ierr);}
+  if (gmres->hh_origin) {
+    ierr = PetscFree(gmres->hh_origin);CHKERRQ(ierr);
+    gmres->hh_origin = 0;
+  }
 
   /* Free the pointer to user variables */
-  if (gmres->vecs) {ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);}
+  if (gmres->vecs) {
+    ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
+    gmres->vecs = 0;
+  }
+  if (gmres->prevecs) {
+    ierr = PetscFree (gmres->prevecs);CHKERRQ(ierr);
+    gmres->prevecs = 0;
+  }
 
   /* free work vectors */
   for (i=0; i<gmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(gmres->prevecs_user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
-  if (gmres->user_work)  {ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);}
-  if (gmres->mwork_alloc) {ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);}
-  if (gmres->nrs) {ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);}
-  if (gmres->sol_temp) {ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);}
-  if (gmres->Rsvd) {ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);}
-  if (gmres->Dsvd) {ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);}
+  if (gmres->user_work)  {
+    ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);
+    gmres->user_work = 0;
+  }
+  if (gmres->prevecs_user_work) {
+    ierr = PetscFree(gmres->prevecs_user_work);CHKERRQ(ierr);
+    gmres->prevecs_user_work = 0;
+  }
+  if (gmres->mwork_alloc) {
+    ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);
+    gmres->mwork_alloc = 0;
+  }
+  if (gmres->nrs) {
+    ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);
+    gmres->nrs = 0;
+  }
+  if (gmres->sol_temp) {
+    ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);
+    gmres->sol_temp = 0;
+  }
+  if (gmres->Rsvd) {
+    ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);
+    gmres->Rsvd = 0;
+  }
+  if (gmres->Dsvd) {
+    ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);
+    gmres->Dsvd = 0;
+  }
+  if (gmres->modifydestroy) {
+    ierr = (*gmres->modifydestroy)(gmres->modifyctx);CHKERRQ(ierr);
+  }
 
   gmres->vv_allocated   = 0;
   gmres->vecs_allocated = 0;
-  gmres->nrs            = 0;
   gmres->sol_temp       = 0;
-  gmres->Rsvd           = 0;
+  gmres->nwork_alloc    = 0;
   PetscFunctionReturn(0);
 }
 
