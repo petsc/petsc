@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.26 1995/07/23 18:25:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.27 1995/08/22 19:36:59 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -91,7 +91,7 @@ int main(int argc,char **args)
   else 
     MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
-  ierr = MatView(C,STDOUT_VIEWER_COMM); CHKERRA(ierr);
+  ierr = MatView(C,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
   ierr = MatSetOption(C,NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);

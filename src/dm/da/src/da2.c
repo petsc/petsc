@@ -677,7 +677,7 @@ int   DAGetLocalVector(DA da,Vec* l)
    Notes:
    The available visualization contexts include
 $     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_COMM - synchronized standard
+$     STDOUT_VIEWER_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 

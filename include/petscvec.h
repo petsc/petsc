@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.28 1995/08/21 18:14:36 bsmith Exp curfman $ */
+/* $Id: vec.h,v 1.29 1995/08/22 21:26:30 curfman Exp curfman $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -83,7 +83,7 @@ extern int VecGetArrays(Vec*,int,Scalar***);
 extern int VecRestoreArrays(Vec*,int,Scalar***);
 extern int VecValidVector(Vec);
 extern int VecView(Vec,Viewer);
-extern int VecLoad(MPI_Comm,int,VecType,IS,Vec*);
+extern int VecLoad(MPI_Comm,Viewer,VecType,IS,Vec*);
 
 extern int VecGetSize(Vec,int *);
 extern int VecGetLocalSize(Vec,int *);

@@ -1,7 +1,6 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.17 1995/08/18 16:03:25 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.18 1995/08/22 19:38:14 curfman Exp curfman $";
 #endif
-
 
 #include "petsc.h"
 #if defined(HAVE_STRING_H)
@@ -16,13 +15,13 @@ struct _Viewer {
   char        *outputname;
 };
 
-Viewer STDOUT_VIEWER_SELF, STDERR_VIEWER_SELF, STDOUT_VIEWER_COMM;
+Viewer STDOUT_VIEWER_SELF, STDERR_VIEWER_SELF, STDOUT_VIEWER_WORLD;
 
 int ViewerInitialize_Private()
 {
   ViewerFileOpen(MPI_COMM_SELF,"stderr",&STDERR_VIEWER_SELF);
   ViewerFileOpen(MPI_COMM_SELF,"stdout",&STDOUT_VIEWER_SELF);
-  ViewerFileOpen(MPI_COMM_WORLD,"stdout",&STDOUT_VIEWER_COMM);
+  ViewerFileOpen(MPI_COMM_WORLD,"stdout",&STDOUT_VIEWER_WORLD);
   return 0;
 }
 
@@ -41,7 +40,7 @@ int ViewerDestroy_Private()
 {
   ViewerDestroy_File((PetscObject)STDERR_VIEWER_SELF);
   ViewerDestroy_File((PetscObject)STDOUT_VIEWER_SELF);
-  ViewerDestroy_File((PetscObject)STDOUT_VIEWER_COMM);
+  ViewerDestroy_File((PetscObject)STDOUT_VIEWER_WORLD);
   return 0;
 }
 
@@ -49,6 +48,7 @@ FILE *ViewerFileGetPointer_Private(Viewer viewer)
 {
   return viewer->fd;
 }
+
 
 char *ViewerFileGetOutputname_Private(Viewer viewer)
 {
@@ -81,17 +81,23 @@ int ViewerFileGetFormat_Private(Viewer viewer)
    As shown below, ViewerFileOpen() is useful in conjunction with 
    MatView() and VecView()
 $
-$    ViewerFileOpenSync("mat.output",MPI_COMM_WORLD,&viewer);
+$    ViewerFileOpen("mat.output",MPI_COMM_WORLD,&viewer);
 $    MatView(matrix,viewer);
+
+   This viewer can be destroyed with ViewerDestroy().
 
 .keywords: Viewer, file, open
 
-.seealso: MatView(), VecView()
+.seealso: MatView(), VecView(), ViewerDestroy()
 @*/
 int ViewerFileOpen(MPI_Comm comm,char *name,Viewer *lab)
 {
   Viewer v;
-  PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,FILES_VIEWER,comm);
+  if (comm == MPI_COMM_SELF) {
+    PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,FILE_VIEWER,comm);
+  } else {
+    PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,FILES_VIEWER,comm);
+  }
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_File;
 

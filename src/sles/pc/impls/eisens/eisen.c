@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.28 1995/08/07 18:52:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.29 1995/08/15 20:27:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -20,13 +20,19 @@ typedef struct {
 } PC_Eisenstat;
 
 /*@
-    PCEisenstatUseDiagonalScaling - Cause the Eisenstat preconditioner
-         to do an additional diagonal preconditioning. For matrices
-         with very different values along the diagonal this may 
-         improve convergence.
+   PCEisenstatUseDiagonalScaling - Causes the Eisenstat preconditioner
+   to do an additional diagonal preconditioning. For matrices with very 
+   different values along the diagonal this may improve convergence.
 
-  Input Parameter:
+   Input Parameter:
 .  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_eisenstat_diagonal_scaling
+
+.keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
+
+.seealso: PCEisenstatSetOmega()
 @*/
 int PCEisenstatUseDiagonalScaling(PC ptr)
 {
@@ -119,7 +125,7 @@ static int PCSetFrom_Eisenstat(PC pc)
 {
   double  omega;
 
-  if (OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega)) {
+  if (OptionsGetDouble(pc->prefix,"-pc_eisenstat_omega",&omega)) {
     PCEisenstatSetOmega(pc,omega);
   }
   if (OptionsHasName(pc->prefix,"-pc_eisenstat_diagonal_scaling")) {
@@ -133,7 +139,7 @@ static int PCPrintHelp_Eisenstat(PC pc)
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCEisenstat preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
+  MPIU_printf(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0 < omega < 2)\n",p);
   MPIU_printf(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);
   return 0;
 }
@@ -201,7 +207,7 @@ int PCCreate_Eisenstat(PC pc)
 .  omega - relaxation coefficient (0 < omega < 2)
 
    Options Database Key:
-$  -pc_sor_omega  omega
+$  -pc_eisenstat_omega  omega
 
    Notes: 
    The Eisenstat trick implementation of SSOR requires about 50% of the

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.35 1995/08/22 19:36:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.36 1995/08/22 20:37:42 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -18,7 +18,7 @@ $  -sles_view : calls SLESView() at end of SLESSolve()
    Note:
    The available visualization contexts include
 $     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_COMM - synchronized standard
+$     STDOUT_VIEWER_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
@@ -238,7 +238,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
   PLogEventEnd(SLES_Solve,sles,b,x,0);
   if (OptionsHasName(0,"-sles_view")) {
-    ierr = SLESView(sles,STDOUT_VIEWER_COMM); CHKERRQ(ierr);
+    ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   }
   return 0;
 }

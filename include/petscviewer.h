@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.11 1995/08/17 01:29:52 curfman Exp curfman $ */
+/* $Id: viewer.h,v 1.12 1995/08/22 19:40:11 curfman Exp curfman $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -10,11 +10,16 @@ typedef struct _Viewer*      Viewer;
 #define MATLAB_VIEWER        0
 #define FILE_VIEWER          1
 #define FILES_VIEWER         2
+#define BIN_FILE_VIEWER      3
+#define BIN_FILES_VIEWER     4
 
 #define FILE_FORMAT_DEFAULT  0
 #define FILE_FORMAT_MATLAB   1
 #define FILE_FORMAT_IMPL     2
 #define FILE_FORMAT_INFO     3
+
+/* file types */
+typedef enum { BIN_RDONLY, BIN_WRONLY, BIN_CREAT } ViewerBinaryType;
 
 extern int ViewerFileOpen(MPI_Comm,char*,Viewer *);
 extern int ViewerFileOpenBinary(MPI_Comm,char*,ViewerBinaryType,Viewer *);
@@ -24,6 +29,6 @@ extern int ViewerDestroy(Viewer);
 
 extern Viewer STDOUT_VIEWER_SELF;  
 extern Viewer STDERR_VIEWER_SELF;
-extern Viewer STDOUT_VIEWER_COMM;
+extern Viewer STDOUT_VIEWER_WORLD;
 
 #endif

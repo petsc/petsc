@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.42 1995/08/22 16:28:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.43 1995/08/22 17:32:03 curfman Exp curfman $";
 #endif
 
 /* 
@@ -727,7 +727,7 @@ int VecRestoreArray(Vec x,Scalar **a)
    Notes:
    The available visualization contexts include
 $     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_COMM - synchronized standard
+$     STDOUT_VIEWER_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 

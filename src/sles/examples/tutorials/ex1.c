@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.28 1995/07/23 18:25:37 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.29 1995/08/22 19:36:59 curfman Exp curfman $";
 #endif
 
 static char help[] = "This example solves a tridiagonal linear system with SLES.\n\n";
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  ierr = SLESView(sles,STDOUT_VIEWER_COMM); CHKERRA(ierr);
+  ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);   /* check error */
   ierr  = VecNorm(x,&norm); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.21 1995/07/28 04:22:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.22 1995/08/07 18:53:19 bsmith Exp curfman $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -177,9 +177,8 @@ int MatConvert_MPIAIJ(Mat mat, MatType newtype, Mat *newmat)
 
   switch (newtype) {
     case MATMPIROW:
-      for (i=0; i<m; i++)
-        {ierr = MatCreateMPIRow(mat->comm,m,aij->n,aij->M,aij->N,0,Ad->ilen,
-			0,Bd->ilen,newmat); CHKERRQ(ierr); }
+      ierr = MatCreateMPIRow(mat->comm,m,aij->n,aij->M,aij->N,0,Ad->ilen,
+			0,Bd->ilen,newmat); CHKERRQ(ierr);
       break;
     default:
       SETERRQ(1,"MatConvert_MPIAIJ:Only MATMPIROW is currently suported");

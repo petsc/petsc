@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.3 1995/07/29 03:16:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.4 1995/08/22 19:36:59 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -70,7 +70,6 @@ int main(int argc,char **args)
     ierr = PCBJacobiGetSubSLES(pc,&nlocal,&first,&subsles); CHKERRA(ierr);
     ierr = SLESGetPC(subsles[0],&subpc); CHKERRA(ierr);
     ierr = SLESGetKSP(subsles[0],&subksp); CHKERRA(ierr);
-    ierr = KSPSetMethod(subksp,KSPCG); CHKERRA(ierr);
     if (mytid == 0) {
       ierr = PCSetMethod(subpc,PCILU); CHKERRA(ierr);
       ierr = KSPSetTolerances(subksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,
@@ -83,7 +82,7 @@ int main(int argc,char **args)
   }
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   if (!OptionsHasName(0,"-noslesview")) {
-    ierr = SLESView(sles,STDOUT_VIEWER_COMM); CHKERRA(ierr);
+    ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   }
 
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);   /* check the error */

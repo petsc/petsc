@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.2 1995/08/17 23:42:48 curfman Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.3 1995/08/22 19:29:10 curfman Exp curfman $";
 #endif
 
 /* 
@@ -9,14 +9,15 @@ static char vcid[] = "$Id: vecio.c,v 1.2 1995/08/17 23:42:48 curfman Exp curfman
 #include "petsc.h"
 #include "vec/vecimpl.h"
 #include "sysio.h"
+#include "pviewer.h"
 
 /*@ 
-  VecLoadBinary - Loads a vector that has been stored in binary format
-  with VecViewBinary().
+  VecLoad - Loads a vector that has been stored in binary format
+  with VecView().
 
   Input Parameters:
 . comm - MPI communicator
-.  fd - file descriptor (not FILE pointer).  Use open() for this.
+. viewer - binary file viewer, obtained from ViewerFileOpenBinary()
 . outtype - type of output vector
 . ind - optional index set of local vector indices (or 0 for loading
   the entire vector on each processor)
@@ -26,15 +27,21 @@ static char vcid[] = "$Id: vecio.c,v 1.2 1995/08/17 23:42:48 curfman Exp curfman
 
   Notes:
   Currently, the input file must contain the full global vector, as
-  written by the routine VecViewBinary().  Only those vector indices that
+  written by the routine VecView().  Only those vector indices that
   are specified by the index set "ind" are read into the local vector
   segment on a given processor. 
 @*/  
-int VecLoadBinary(MPI_Comm comm,int fd,VecType outtype,IS ind,Vec *newvec)
+int VecLoad(MPI_Comm comm,Viewer bview,VecType outtype,IS ind,Vec *newvec)
 {
-  int         i, rows, ierr, lsize, gsize, *pind, low, high, iglobal, type;
-  Vec         vec, tempvec;
-  Scalar      *avec;
+  int    i, rows, ierr, lsize, gsize, *pind, low, high, iglobal, type, fd;
+  Vec    vec, tempvec;
+  Scalar *avec;
+  PetscObject vobj = (PetscObject) bview;
+
+  PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
+  if (vobj->type != BIN_FILES_VIEWER && vobj->type != BIN_FILES_VIEWER)
+   SETERRQ(1,"VecLoad: Invalid viewer; open viewer with ViewerFileOpenBinary().");
+  fd = ViewerFileGetDescriptor_Private(bview);
 
   /* Read vector header.  Should this really be the full header? */
   ierr = SYRead(fd,(char *)&type,sizeof(int),SYINT); CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.40 1995/08/22 16:28:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.41 1995/08/22 19:29:27 curfman Exp curfman $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -42,6 +42,7 @@ static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
   return 0;
 }
 #include "viewer.h"
+#include "sysio.h"
 
 static int VecView_Seq(PetscObject obj,Viewer ptr)
 {
@@ -98,6 +99,17 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
   }
   else if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
     return ViewerMatlabPutArray_Private(ptr,x->n,1,x->array); 
+  }
+  else if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == BIN_FILE_VIEWER) ||
+                                       (vobj->type == BIN_FILES_VIEWER)))  {
+    Scalar *va;
+    int fdes = ViewerFileGetDescriptor_Private(ptr);
+    /* Write vector header */
+    ierr = SYWrite(fdes,(char *)&xin->type,sizeof(int),SYINT,0); CHKERRQ(ierr);
+    ierr = SYWrite(fdes,(char *)&n,sizeof(int),SYINT,0); CHKERRQ(ierr);
+
+    /* Write vector contents */
+    ierr = SYWrite(fdes,(char *)x->array,n*sizeof(Scalar),SYINT,0); CHKERRQ(ierr);
   }
 #endif
   return 0;

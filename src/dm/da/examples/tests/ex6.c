@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.3 1995/08/22 02:35:32 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.4 1995/08/22 19:39:56 curfman Exp curfman $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   if (M*N*P<40)
   {
     if (mytid == 0) printf ("\nGlobal Vectors:\n");
-    ierr = VecView(global,STDOUT_VIEWER_COMM); CHKERRA(ierr); 
+    ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
     if (mytid == 0) printf ("\n\n");
   }
 
@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   if (M*N*P<40)
   {
     printf ("\nView Local Array - Processor [%d]\n",mytid);
-    ierr = VecView(local,STDOUT_VIEWER_COMM); CHKERRA(ierr); 
+    ierr = VecView(local,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
   }
  
   ierr = DAView(da,(Viewer) win); CHKERRA(ierr);

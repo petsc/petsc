@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.53 1995/08/22 16:29:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.54 1995/08/22 19:30:09 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.53 1995/08/22 16:29:17 bsmith Exp curf
    Note:
    The available visualization contexts include
 $     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_COMM - synchronized standard
+$     STDOUT_VIEWER_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 

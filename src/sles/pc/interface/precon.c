@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.42 1995/08/20 18:12:42 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.43 1995/08/22 19:32:04 curfman Exp curfman $";
 #endif
 
 /*  
@@ -445,7 +445,7 @@ int PCPostSolve(PC pc,KSP ksp)
    Note:
    The available visualization contexts include
 $     STDOUT_VIEWER_SELF - standard output (default)
-$     STDOUT_VIEWER_COMM - synchronized standard
+$     STDOUT_VIEWER_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 

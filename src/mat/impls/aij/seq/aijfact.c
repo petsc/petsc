@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.29 1995/08/16 18:21:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.30 1995/08/16 21:50:39 curfman Exp curfman $";
 #endif
 
 
@@ -110,6 +110,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
     "Info:MatLUFactorSymbolic_AIJ:Reallocs %d Fill ratio:given %g needed %g\n",
                              realloc,f,((double)ainew[n])/((double)ai[i]));
 
+  ISRestoreIndices(isrow,&r); ISRestoreIndices(isicol,&ic);
   ISDestroy(isicol); PETSCFREE(fill);
 
   /* put together the new matrix */
