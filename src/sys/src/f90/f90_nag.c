@@ -1,14 +1,6 @@
-/*$Id: f90_nag.c,v 1.12 2000/01/11 21:03:54 bsmith Exp balay $*/
+/*$Id: f90_nag.c,v 1.13 2000/09/06 22:57:36 balay Exp balay $*/
 
-#include "petscf90.h"
-
-#if defined(PETSC_HAVE_NAGF90)
-
-#include "/usr/local/lib/f90/f90.h"
-#define _p_F90Array1d Dope1
-#define _p_F90Array2d Dope2
-#define _p_F90Array3d Dope3
-
+/*-------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
@@ -50,20 +42,4 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   PetscFunctionReturn(0);
 }
 
-#include "src/sys/src/f90/f90_common.c"
-
-
-#else
-/*
-     Dummy function so that compilers won't complain about 
-  empty files.
-*/
-int F90_Nag_Dummy(int dummy)
-{
-  return 0;
-}
-
-#endif
-
-
-
+/*-------------------------------------------------------------*/

@@ -1,10 +1,6 @@
-/*$Id: f90_win32.c,v 1.3 2000/07/18 19:48:04 balay Exp balay $*/
+/*$Id: f90_win32.c,v 1.4 2000/09/06 22:57:36 balay Exp balay $*/
 
-#include "petscf90.h"
-#include "src/sys/src/f90/f90_win32.h"
-
-#if defined(PETSC_HAVE_WIN32F90)
-
+/*-------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90GetID"
 int F90GetID(PetscDataType type,int *id)
@@ -76,17 +72,4 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
 
   PetscFunctionReturn(0);
 }
-
-#include "src/sys/src/f90/f90_common.c"
-
-#else
-/*
-     Dummy function so that compilers won't complain about 
-  empty files.
-*/
-int F90_win32_Dummy(int dummy)
-{
-  return 0;
-}
-
-#endif
+/*-------------------------------------------------------------*/

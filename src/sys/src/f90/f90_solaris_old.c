@@ -1,8 +1,6 @@
-/*$Id: f90_solaris_old.c,v 1.6 2000/07/25 16:43:00 balay Exp balay $*/
+/*$Id: f90_solaris_old.c,v 1.7 2000/09/06 22:57:36 balay Exp balay $*/
 
-#include "petscf90.h"
-#include "src/sys/src/f90/f90_solaris_old.h"
-#if defined(PETSC_HAVE_SOLARISF90_OLD)
+/*-------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90GetID"
@@ -78,17 +76,4 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
 
   PetscFunctionReturn(0);
 }
-
-#include "src/sys/src/f90/f90_common.c"
-
-#else
-/*
-     Dummy function so that compilers won't complain about 
-  empty files.
-*/
-int F90_solaris_old_Dummy(int dummy)
-{
-  return 0;
-}
-
-#endif
+/*-------------------------------------------------------------*/

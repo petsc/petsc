@@ -1,9 +1,6 @@
-/*$Id: f90_rs6000.c,v 1.11 2000/01/11 21:03:54 bsmith Exp balay $*/
+/*$Id: f90_rs6000.c,v 1.12 2000/09/06 22:57:36 balay Exp balay $*/
 
-#include "petscf90.h"
-#include "src/sys/src/f90/f90_rs6000.h"
-
-#if defined(PETSC_HAVE_XLF90)
+/*-------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90GetID"
@@ -80,17 +77,4 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
 
   PetscFunctionReturn(0);
 }
-
-#include "src/sys/src/f90/f90_common.c"
-
-#else
-/*
-     Dummy function so that compilers won't complain about 
-  empty files.
-*/
-int F90_rs600_Dummy(int dummy)
-{
-  return 0;
-}
-
-#endif
+/*-------------------------------------------------------------*/

@@ -1,8 +1,6 @@
-/*$Id: f90_alpha.c,v 1.4 2000/07/25 16:56:46 balay Exp balay $*/
+/*$Id: f90_alpha.c,v 1.5 2000/09/06 22:57:36 balay Exp balay $*/
 
-#include "petscf90.h"
-#include "src/sys/src/f90/f90_alpha.h"
-#if defined(PETSC_HAVE_DECF90)
+/*-------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"F90GetID"
@@ -80,13 +78,5 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   PetscFunctionReturn(0);
 }
 
-#include "src/sys/src/f90/f90_common.c"
+/*-------------------------------------------------------------*/
 
-#else
-
-int F90_alpha_Dummy(int dummy)
-{
-  return 0;
-}
-
-#endif

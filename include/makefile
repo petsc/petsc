@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.52 2000/08/23 20:53:08 balay Exp bsmith $ 
+# $Id: makefile,v 1.53 2000/08/23 21:04:08 bsmith Exp balay $ 
 
 CFLAGS   =
 FFLAGS   =
@@ -11,7 +11,7 @@ SOURCEH  = petscdraw.h petscis.h petscksp.h petscmat.h petscoptions.h petscpc.h 
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = finclude
+DIRS     = finclude f90impl
 LOCDIR   = include/
 MANSEC   = Profiling
 

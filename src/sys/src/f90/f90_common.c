@@ -1,4 +1,8 @@
-/*$Id: f90_common.c,v 1.1 2000/08/29 14:20:11 balay Exp balay $*/
+/*$Id: f90_common.c,v 1.2 2000/09/06 22:57:36 balay Exp balay $*/
+
+#include "petscf90.h"
+#if defined (PETSC_HAVE_F90_C)
+#include PETSC_HAVE_F90_C
 
 /*-------------------------------------------------------------*/
 #undef __FUNC__  
@@ -63,3 +67,16 @@ int F90Array2dGetNextRecord(F90Array2d ptr,void **next)
   PetscFunctionReturn(0);
 }
 /*-------------------------------------------------------------*/
+
+#else
+
+/*
+     Dummy function so that compilers won't complain about 
+  empty files.
+*/
+int F90_Dummy(int dummy)
+{
+  return 0;
+}
+
+#endif
