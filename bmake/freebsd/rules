@@ -1,4 +1,4 @@
-# $Id: base,v 1.43 1998/04/25 23:35:11 balay Exp balay $ 
+# $Id: base,v 1.44 1998/04/26 00:51:28 balay Exp balay $ 
 
 PARCH    = freebsd
 CC       = /usr/local/gcc-2.7.2/bin/gcc
@@ -94,3 +94,5 @@ libf: ${LIBNAME}(${OBJSF})
 #  It is because of 6 that we don't automatically use shared libraries
 # under freebsd. Since that path has be changed depending on what 
 # version of the libraries, g, O, g_c++ etc you are using.
+
+shared:
