@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.215 2000/09/07 15:17:21 balay Exp bsmith $*/
+/*$Id: vector.c,v 1.216 2000/09/22 20:43:08 bsmith Exp buschelm $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -2682,7 +2682,7 @@ int VecRestoreArray1d(Vec x,int m,int mstart,Scalar *a[])
    Input Parameters:
 +  x - the vector
 
-   Level: beginner
+   Level: intermediate
 
 .keywords: vector, conjugate, complex
 @*/
