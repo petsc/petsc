@@ -228,12 +228,18 @@ class Configure(config.base.Configure):
     return
 
   def checkF77CompilerOption(self, option):
+    self.pushLanguage('F77')
     oldFlags = self.framework.argDB['FFLAGS']
     success  = 0
+
+    (output, returnCode) = self.outputCompile('', '')
+    if returnCode: raise RuntimeError('Could not compile anything with F77 compiler:\n'+output)
+
     self.framework.argDB['FFLAGS'] = option
-    self.pushLanguage('F77')
-    if self.checkCompile('', ''):
+    (newOutput, returnCode) = self.outputCompile('', '')
+    if not returnCode and output == newOutput:
       success = 1
+
     self.framework.argDB['FFLAGS'] = oldFlags
     self.popLanguage()
     return success

@@ -76,7 +76,9 @@ class Configure(config.base.Configure):
       if os.path.dirname(fullLib[0]):
         self.include = os.path.join(os.path.dirname(os.path.dirname(fullLib[0])), 'include')
     else:
-      fullLib = 'libmpich.a'
+      fullLib = ''
+    if self.checkLib(fullLib): return 1
+    fullLib = 'libmpich.a'
     if self.checkLib(fullLib): return 1
     fullLib = 'libmpi.a'
     if self.checkLib(fullLib): return 1
