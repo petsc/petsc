@@ -23,4 +23,6 @@ PETSc names that should be changed.
  - MPIU_* inconsistant for eg: MPIU_Comm_dup , MPIU_printf
    MPIU_printf ->? MPIU_Printf;
 
+ - SY -> Petsc? or PetscMem* ->? SYMem*
         
+
