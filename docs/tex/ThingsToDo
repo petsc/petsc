@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  MatZeroRows() use MatSetOption() to zero the entries rather than remove them.
+allows reusing with different boundary conditions.
+
   Change AO routines to allow different ranges for two orderings. Maybe something
  like AOCreateBasic( napp,appindices[],petscindices[]) where max petscindices[]
 has a different max than appindices[] and one or both of them have "holes" or 
