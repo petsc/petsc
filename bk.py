@@ -6,6 +6,14 @@ import transform
 
 import os
 import string
+import distutils.sysconfig
+
+def cygwinFix(file):
+  #  bad check for using cygwin!!
+  if distutils.sysconfig.get_config_var('SO') == '.so': return file
+  else:
+    if not file[0:6] == '/cygwin': return '/cygwin'+file
+    else:                          return file
 
 class TagBK (transform.Transform):
   def __init__(self, mode, sources = None, roots = None):
@@ -59,6 +67,7 @@ class TagBK (transform.Transform):
 class TagBKOpen (TagBK):
   def __init__(self, sources = None, roots = None):
     TagBK.__init__(self, 'open', sources, roots)
+      print 'Opening '+file
 
 class TagBKClose (TagBK):
   def __init__(self, sources = None, roots = None):
@@ -66,8 +75,19 @@ class TagBKClose (TagBK):
 
 class BKOpen (action.Action):
   def __init__(self):
-    action.Action.__init__(self, 'bk', None, 'edit', 1, self.checkEdit)
+    action.Action.__init__(self, self.open, None, 1)
     self.buildProducts = 0
+
+  def open(self, set):
+    self.debugPrint('Opening files', 2, 'bk')
+    if not len(set): return ''
+    command = 'bk edit '
+    for file in set.getFiles():
+      self.debugPrint('Opening '+file, 4, 'bk')
+      file = cygwinFix(file)
+      command += ' '+file
+    output = self.executeShellCommand(command, self.errorHandler)
+    return output
 
   def checkEdit(self, command, status, output):
     if (status):
@@ -98,10 +118,13 @@ class BKClose (action.Action):
     command = 'bk add '
     for file in set.getFiles():
       self.debugPrint('Adding '+file+' to version control', 3, 'bk')
+      file = cygwinFix(file)
       command += ' '+file
     output = self.executeShellCommand(command, self.errorHandler)
     command = 'bk co -q '
-    for file in set.getFiles(): command += ' '+file
+    for file in set.getFiles(): 
+      file = cygwinFix(file)
+      command += ' '+file
     output = self.executeShellCommand(command, self.errorHandler)
     return output
 
@@ -111,10 +134,13 @@ class BKClose (action.Action):
     command = 'bk unedit '
     for file in set.getFiles():
       self.debugPrint('Reverting '+file, 4, 'bk')
+      file = cygwinFix(file)
       command += ' '+file
     output = self.executeShellCommand(command, self.errorHandler)
     command = 'bk co -q '
-    for file in set.getFiles(): command += ' '+file
+    for file in set.getFiles(): 
+      file = cygwinFix(file)
+      command += ' '+file
     output = self.executeShellCommand(command, self.errorHandler)
     return output
 
