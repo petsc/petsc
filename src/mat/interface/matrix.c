@@ -2477,30 +2477,43 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   if ((sametype || issame) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    int (*conv)(Mat,MatType,Mat*);
-    if (!MatConvertRegisterAllCalled) {
-      ierr = MatConvertRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-    }
-    ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)(void))&conv);CHKERRQ(ierr);
-    if (conv) {
-      ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
-    } else {
-      ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
-      if (conv) {
-        ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
-      } else {
-        if (mat->ops->convert) {
-          ierr = (*mat->ops->convert)(mat,newtype,M);CHKERRQ(ierr);
-        } else {
-          ierr = MatConvert_Basic(mat,newtype,M);CHKERRQ(ierr);
+    int (*conv)(Mat,MatType,Mat*)=PETSC_NULL;
+    /* 
+       Order of precedence:
+       1) See if a specialized converter is known to the current matrix.
+       2) See if a specialized converter is known to the desired matrix class.
+       3) See if a good general converter is registered for the desired class
+          (as of 6/27/03 only MATMPIADJ falls into this category).
+       4) See if a good general converter is known for the current matrix.
+       5) Use a really basic converter.
+    */
+    ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    if (!conv) {
+      Mat B;
+      ierr = MatCreate(mat->comm,0,0,0,0,&B);CHKERRQ(ierr);
+      ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+      ierr = MatDestroy(B);CHKERRQ(ierr);
+      if (!conv) {
+        if (!MatConvertRegisterAllCalled) {
+          ierr = MatConvertRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+        }
+        ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)(void))&conv);CHKERRQ(ierr);
+        if (!conv) {
+          if (mat->ops->convert) {
+            conv = mat->ops->convert;
+          } else {
+            conv = MatConvert_Basic;
+          }
         }
       }
     }
+    ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

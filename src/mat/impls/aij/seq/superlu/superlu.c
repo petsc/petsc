@@ -27,6 +27,7 @@ typedef struct {
   /* A few function pointers for inheritance */
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   int (*MatDestroy)(Mat);
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
@@ -35,37 +36,25 @@ typedef struct {
 
 
 EXTERN int MatSeqAIJFactorInfo_SuperLU(Mat,PetscViewer);
+EXTERN int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat,IS,IS,MatFactorInfo*,Mat*);
+
+EXTERN_C_BEGIN
+EXTERN int MatConvert_SuperLU_SeqAIJ(Mat,MatType,Mat*);
+EXTERN int MatConvert_SeqAIJ_SuperLU(Mat,MatType,Mat*);
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_SuperLU"
 int MatDestroy_SeqAIJ_SuperLU(Mat A)
 {
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
-  
   int                ierr,(*destroy)(Mat);
 
   PetscFunctionBegin;
   /* It looks like this is decreasing the reference count a second time during MatDestroy?! */
-  if (--A->refct > 0)PetscFunctionReturn(0);
-  /* We have to free the global data or SuperLU crashes (sucky design)*/
-  /* Since we don't know if more solves on other matrices may be done
-     we cannot free the yucky SuperLU global data
-    StatFree(); 
-  */
-
-  /* Free the SuperLU datastructures */
-  if (lu->CleanUpSuperLU) {
-    Destroy_CompCol_Permuted(&lu->AC);
-    Destroy_SuperNode_Matrix(&lu->L);
-    Destroy_CompCol_Matrix(&lu->U);
-    ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
-    ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
-    ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
-    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
-  }
-
+ /*  if (--A->refct > 0)PetscFunctionReturn(0); */
   destroy = lu->MatDestroy;
-  ierr = PetscFree(lu);CHKERRQ(ierr);
+  ierr = MatConvert_SuperLU_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
   ierr = (*destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -100,7 +89,9 @@ int MatAssemblyEnd_SeqAIJ_SuperLU(Mat A,MatAssemblyType mode) {
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatUseSuperLU_SeqAIJ(A);CHKERRQ(ierr);
+
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
   PetscFunctionReturn(0);
 }
 
@@ -308,9 +299,8 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_SuperLU;
   B->ops->solve           = MatSolve_SeqAIJ_SuperLU;
-  B->ops->destroy         = MatDestroy_SeqAIJ_SuperLU;
   B->factor               = FACTOR_LU;
-  B->assembled         = PETSC_TRUE;  /* required by -sles_view */
+  B->assembled            = PETSC_TRUE;  /* required by -sles_view */
   
   lu = (Mat_SeqAIJ_SuperLU*)(B->spptr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SeqAIJ_SuperLU",
@@ -336,23 +326,6 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseSuperLU_SeqAIJ"
-int MatUseSuperLU_SeqAIJ(Mat A)
-{
-  PetscTruth flg;
-  int        ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE);  
-  ierr = PetscTypeCompare((PetscObject)A,MATSUPERLU,&flg);
-  if (!flg) PetscFunctionReturn(0);
-
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
-
-  PetscFunctionReturn(0);
-}
-
 /* used by -sles_view */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJFactorInfo_SuperLU"
@@ -361,8 +334,6 @@ int MatSeqAIJFactorInfo_SuperLU(Mat A,PetscViewer viewer)
   Mat_SeqAIJ_SuperLU      *lu= (Mat_SeqAIJ_SuperLU*)A->spptr;
   int                     ierr;
   PetscFunctionBegin;
-  /* check if matrix is SuperLU type */
-  if (A->ops->solve != MatSolve_SeqAIJ_SuperLU) PetscFunctionReturn(0);
 
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
   if(lu->SuperluMatOdering) ierr = PetscViewerASCIIPrintf(viewer,"  SuperLU mat ordering: %d\n",lu->ispec);CHKERRQ(ierr);
@@ -372,24 +343,92 @@ int MatSeqAIJFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJ_SuperLU"
-int MatCreate_SeqAIJ_SuperLU(Mat A) {
+#define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
+int MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+  int                  ierr;
+  Mat                  B=*newmat;
+  Mat_SeqAIJ_SuperLU   *lu=(Mat_SeqAIJ_SuperLU *)A->spptr;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    /* This routine was inherited from SeqAIJ. */
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  } else {
+    if (lu->CleanUpSuperLU) {
+      /* We have to free the global data or SuperLU crashes (sucky design)*/
+      /* Since we don't know if more solves on other matrices may be done
+         we cannot free the yucky SuperLU global data
+         StatFree(); 
+      */
+  
+      /* Free the SuperLU datastructures */
+      Destroy_CompCol_Permuted(&lu->AC);
+      Destroy_SuperNode_Matrix(&lu->L);
+      Destroy_CompCol_Matrix(&lu->U);
+      ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
+      ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
+      ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
+      ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+    }
+    /* Reset the original function pointers */
+    B->ops->view             = lu->MatView;
+    B->ops->assemblyend      = lu->MatAssemblyEnd;
+    B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+    B->ops->destroy          = lu->MatDestroy;
+    /* lu is only a function pointer stash unless we've factored the matrix, which we haven't! */
+    ierr = PetscFree(lu);CHKERRQ(ierr);
+    ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  }
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
+int MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,Mat *newmat) {
   int                ierr;
+  Mat                B=*newmat;
   Mat_SeqAIJ_SuperLU *lu;
 
   PetscFunctionBegin;
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatUseSuperLU_SeqAIJ(A);CHKERRQ(ierr);
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
 
-  ierr                = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
-  lu->MatView         = A->ops->view;
-  lu->MatAssemblyEnd  = A->ops->assemblyend;
-  lu->MatDestroy      = A->ops->destroy;
-  lu->CleanUpSuperLU  = PETSC_FALSE;
-  A->spptr            = (void*)lu;
-  A->ops->view        = MatView_SeqAIJ_SuperLU;
-  A->ops->assemblyend = MatAssemblyEnd_SeqAIJ_SuperLU;
-  A->ops->destroy     = MatDestroy_SeqAIJ_SuperLU;
+  ierr = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
+  lu->MatView              = A->ops->view;
+  lu->MatAssemblyEnd       = A->ops->assemblyend;
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+  lu->MatDestroy           = A->ops->destroy;
+  lu->CleanUpSuperLU       = PETSC_FALSE;
+
+  B->spptr                 = (void*)lu;
+  B->ops->view             = MatView_SeqAIJ_SuperLU;
+  B->ops->assemblyend      = MatAssemblyEnd_SeqAIJ_SuperLU;
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
+  B->ops->destroy          = MatDestroy_SeqAIJ_SuperLU;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_C",
+                                           "MatConvert_SeqAIJ_SuperLU",MatConvert_SeqAIJ_SuperLU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
+                                           "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+ *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SeqAIJ_SuperLU"
+int MatCreate_SeqAIJ_SuperLU(Mat A) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SuperLU(A,MATSUPERLU,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
