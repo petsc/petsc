@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.64 1999/05/12 03:24:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.65 1999/06/30 22:48:03 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,9 +14,9 @@
 # can use -lsunperf or /opt/SUNWspro/SC*/lib/libsunperf.a below instead of
 # installing BLAS and LAPACK yourself.
 #
-BLAS_LIB       =  /home/petsc/software/blaslapack/blas_solaris.a  ${FC_LIB}
-LAPACK_LIB     =  /home/petsc/software/blaslapack/lapack_solaris.a
-#BLAS_LIB       =  -lsunperf ${FC_LIB} -lSUNWPro_lic
+#BLAS_LIB       =  /home/petsc/software/blaslapack/blas_solaris.a  ${FC_LIB}
+#LAPACK_LIB     =  /home/petsc/software/blaslapack/lapack_solaris.a
+BLAS_LIB       =  -lsunperf ${FC_LIB} -lSUNWPro_lic
 
 #
 # Location of X-windows software
@@ -26,20 +26,9 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-#                    !!!!!! WARNING !!!!!!!! 
-# run 'mpich/lib/solaris/ch_p4/mpicc -show' to find the list of 
-# libs required by MPI, and use them in the SAME order!
-# If using ch_shmem, run 'mpich/lib/solaris/ch_shmem/mpicc -show'
-#
-#MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lsocket -lnsl
-#MPI_INCLUDE    = -I/home/petsc/mpich/include 
-#MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
-MPI_HOME       = /home/petsc/software/mpich-1.1.2
-MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_p4
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lsocket -lnsl
-MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
-
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 #
 # ----------------------------------------------------------------------------------------  
@@ -63,9 +52,9 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 #
 # Optional Matlab location
 #
-CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/mex
-MCC             = cc
-MATLABCOMMAND   = matlab
+#CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/mex
+#MCC             = cc
+#MATLABCOMMAND   = matlab
 #
 # Option location where adiC is installed
 #
@@ -85,8 +74,8 @@ MATLABCOMMAND   = matlab
 #
 #  Optional location for ALICE Memory Snooper
 #
-AMS_INCLUDE = -I/home/alice/ams/include
-AMS_LIB     =  -L/home/alice/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil -lthread
+#AMS_INCLUDE = -I/home/alice/ams/include
+#AMS_LIB     =  -L/home/alice/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil -lthread
 #
 # Optional location of SPAI;
 #
@@ -101,7 +90,7 @@ AMS_LIB     =  -L/home/alice/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil 
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DPETSC_HAVE_AMS
+PCONF         =
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE 
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
                 ${SPAI_LIB} ${AMS_LIB}
@@ -111,4 +100,4 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /opt/SUNWspro/SC5.0/lib:/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH}
+DYLIBPATH     =
