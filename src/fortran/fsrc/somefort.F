@@ -1,5 +1,5 @@
 C
-C  $Id: zoptions.c,v 1.1 1995/08/21 19:56:20 bsmith Exp bsmith $";
+C  "$Id: somefort.F,v 1.2 1995/09/03 14:36:10 bsmith Exp bsmith $";
 C
 C    Utility routine used to set some values into a Fortran
 C  common block
