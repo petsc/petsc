@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.23 1996/08/24 19:28:12 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.24 1996/08/25 20:45:00 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -11,6 +11,9 @@ linear solvers on the individual blocks.\n\n";
    Note:  This example focuses on ways to customize the block Jacobi
    preconditioner. See ex1.c and ex2.c for more detailed comments on
    the basic usage of SLES (including working with matrices and vectors).
+
+   Recall: The block Jacobi method is equivalent to the ASM preconditioner
+   with zero overlap.
  */
 
 /*T
@@ -55,6 +58,10 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   n = m+2;
 
+  /* -------------------------------------------------------------------
+                    Phase 1: Set up the linear system
+     ------------------------------------------------------------------- */
+
   /* 
      Create and assemble parallel matrix
   */
@@ -89,13 +96,24 @@ int main(int argc,char **args)
   */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
 
+  /* 
+     Set operators. Here the matrix that defines the linear system
+     also serves as the preconditioning matrix.
+  */
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+
   /*
-     Set default preconditioner for thie program to be block Jacobi.
+     Set default preconditioner for this program to be block Jacobi.
      This choice can be overridden at runtime with the option
         -pc_type <type>
   */
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCBJACOBI); CHKERRA(ierr);
+
+
+  /* -------------------------------------------------------------------
+            Phase 2:  Define the problem decomposition
+     ------------------------------------------------------------------- */
 
   /* 
      Call PCBJacobiSetTotalBlocks() to set individually the size of
@@ -104,29 +122,38 @@ int main(int argc,char **args)
          -pc_bjacobi_blocks <blocks>
      Also, see the command PCBJacobiSetLocalBlocks() to set the
      local blocks.
+
+      Note: The default decomposition is 1 block per processor.
   */
   blks = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRA(blks);
   for ( i=0; i<m; i++ ) blks[i] = n;
   ierr = PCBJacobiSetTotalBlocks(pc,m,blks);
   PetscFree(blks); 
 
-  /* 
-     Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix.
-  */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);
-         CHKERRA(ierr);
 
-  /* 
-    Set runtime options
-  */
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  /* -------------------------------------------------------------------
+            Phase 3: Set the linear solvers for the subblocks
+     ------------------------------------------------------------------- */
 
-  /* 
-     Set local solvers for the block Jacobi method.  This code is intended
-     to be a simple illustration of setting different linear solvers for
-     the individual blocks.  These choices are obviously not recommended
-     for solving this particular problem.
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+       Basic method, should be sufficient for the needs of most users.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+     By default, the block Jacobi method uses the same solver on each block of
+     the problem.  To set the same solver options on all blocks, use the prefix
+      -sub before the usual PC and KSP options, e.g.,
+          -sub_pc_type <pc> -sub_ksp_type <ksp> -sub_ksp_rtol 1.e-4
+  */
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        Advanced method, setting different solvers for various blocks.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+     Note that each block's SLES context is completely independent of the others,
+     and the full range of uniprocessor SLES options is available for each block.
+     The following section of code is intended to be a simple illustration of 
+     setting different linear solvers for the individual blocks.  These choices
+     are obviously not recommended for solving this particular problem.
   */
   ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRA(ierr);
   if (pctype == PCBJACOBI) {
@@ -145,14 +172,7 @@ int main(int argc,char **args)
 
     /*
        Loop over the local blocks, setting various SLES options
-       for each block.  Note each block's SLES context is completely
-       independent of the others, and the full range of uniprocessor
-       SLES options is available for each block.
-
-       Related runtime options:
-       To set the same solver options on all blocks, use the prefix
-       -sub before the usual PC and KSP options, e.g.,
-          -sub_pc_type <pc> -sub_ksp_type <ksp> -sub_ksp_rtol 1.e-4
+       for each block.  
     */
     for (i=0; i<nlocal; i++) {
       ierr = SLESGetPC(subsles[i],&subpc); CHKERRA(ierr);
@@ -174,6 +194,15 @@ int main(int argc,char **args)
       }
     }
   }
+
+  /* -------------------------------------------------------------------
+            Phase 3: Solve the linear system
+     ------------------------------------------------------------------- */
+
+  /* 
+    Set runtime options
+  */
+  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
   /*
      Solve the linear system
