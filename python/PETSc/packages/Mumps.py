@@ -228,6 +228,10 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     try:
+      output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make clean', timeout=2500, log = self.framework.log)[0]
+    except RuntimeError, e:
+      pass
+    try:
       output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error running make on SCALAPACK: '+str(e))

@@ -453,7 +453,6 @@ int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,
    GRID         *grid = user->grid;
    TstepCtx     *tsCtx = user->tsCtx;
    Mat          jac = *B;
-   VecScatter   scatter = grid->scatter;
    Vec          localX = grid->qnodeLoc;
    PetscScalar  *qnode;
    int          ierr;
@@ -2354,7 +2353,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
   int		*loc2pet, *svertices;
   int           status;
   char          fileName[256],command[256];
-  PetscScalar        gamma = 1.4,mach;
+  PetscScalar        pgamma = 1.4,mach;
   PetscScalar 	*qnode;
   Vec  		qnodeLoc;
   IS 		islocal, isglobal;
@@ -2425,9 +2424,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
    ierr = PetscBinaryOpen(fileName,PETSC_FILE_CREATE,&fdes); CHKERRQ(ierr);
    ierr = MPI_Barrier(MPI_COMM_WORLD);
    ierr = PetscBinarySeek(fdes,bs*rstart*PETSC_BINARY_SCALAR_SIZE,PETSC_BINARY_SEEK_SET,&startPos);CHKERRQ(ierr);
-   printf("On Processor %d, startPos = %d, length = %d\n",
-           rank,startPos,bs*nnodesLoc*sizeof(PetscScalar));
-   ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,0);CHKERRQ(ierr);
+   ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
    /*write(fdes,qnode,bs*nnodesLoc*sizeof(REAL));*/
    ierr = MPI_Barrier(MPI_COMM_WORLD);
    PetscPrintf(MPI_COMM_WORLD,"Restart file written to %s\n", fileName); 
@@ -2449,7 +2446,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
      sprintf(fileName,"flow%d.bin",timeStep);
    printf("Restart file name is %s\n", fileName); 
    ierr = PetscBinaryOpen(fileName,PETSC_FILE_CREATE,&fdes); CHKERRQ(ierr);   
-   ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,0);CHKERRQ(ierr);
+   ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
    /* Write the solution vector in vtk (Visualization Toolkit) format*/
    ierr = PetscOptionsHasName(PETSC_NULL,"-vtk",&flg_vtk); CHKERRQ(ierr);
    if (flg_vtk) {
@@ -2477,7 +2474,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
       in = bs*j;
       mach = sqrt((qnode[in+1]*qnode[in+1]+qnode[in+2]*qnode[in+2]+
                    qnode[in+3]*qnode[in+3])/
-		   ((gamma*qnode[in+4])/qnode[in]));
+		   ((pgamma*qnode[in+4])/qnode[in]));
       fprintf(fptr,"%g\n",mach);
     }
     /* Write Velocity Vector */
@@ -2499,20 +2496,20 @@ int WriteRestartFile(GRID *grid, int timeStep)
     }
     if (rank == 0) {
       int nnodesLocIpr;
-      MPI_Status status;
-      ierr = MPI_Recv(&nnodesLocIpr,1,MPI_INT,i,0,MPI_COMM_WORLD,&status);
+      MPI_Status mstatus;
+      ierr = MPI_Recv(&nnodesLocIpr,1,MPI_INT,i,0,MPI_COMM_WORLD,&mstatus);
       CHKERRQ(ierr);
       FCALLOC(bs*nnodesLocIpr, &qnode);
-      ierr = MPI_Recv(qnode,bs*nnodesLocIpr,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&status);
+      ierr = MPI_Recv(qnode,bs*nnodesLocIpr,MPI_DOUBLE,i,1,MPI_COMM_WORLD,&mstatus);
       CHKERRQ(ierr);
-      ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLocIpr,PETSC_SCALAR,0);CHKERRQ(ierr);
+      ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLocIpr,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
       /* Write the solution vector in vtk (Visualization Toolkit) format*/
       if (flg_vtk != 0) {
        /* Write the Mach Number */
        for (j = 0; j < nnodesLocIpr; j++) {
         in = bs*j;
         mach = sqrt((qnode[in+1]*qnode[in+1]+qnode[in+2]*qnode[in+2]+qnode[in+3]*qnode[in+3])/
-                    ((gamma*qnode[in+4])/qnode[in]));
+                    ((pgamma*qnode[in+4])/qnode[in]));
         fprintf(fptr,"%g\n",mach);
        }
        /* Write Velocity Vector */

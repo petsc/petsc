@@ -394,7 +394,9 @@ PetscErrorCode Initialize(DMMG *dmmg)
   */
   {
     PetscReal eps = lx/ly;
+#if defined(PETSC_HAVE_ERF)
     PetscReal pert = 1e-4;
+#endif
     PetscReal k = 1.*eps;
     PetscReal gam; 
 
