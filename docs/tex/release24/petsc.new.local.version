@@ -5,9 +5,9 @@ Subject: new local PETSc installation
 
 
 We have installed a new local version of PETSc (version 2.0.15)
-in /usr/local/petsc/petsc.  Please see the file
-/usr/local/petsc/petsc/Changes for new features and changes in 
-the software.
+in /home/petsc/petsc.solid.  Please see the file
+/home/petsc/petsc.solid/Changes for new features and changes 
+in the software.
 
 The previous two versions (PETSc 2.0.13 and 2.0.14) are located in
 /home/petsc/petsc-2.0.13 and /home/petsc/petsc-2.0.14.  Please try 
