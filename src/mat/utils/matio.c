@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.26 1996/05/03 19:27:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.27 1996/06/11 20:34:48 curfman Exp balay $";
 #endif
 
 /* 
@@ -113,6 +113,9 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   }
   else if (type == MATSEQBAIJ) {
     ierr = MatLoad_SeqBAIJ(viewer,type,newmat); CHKERRQ(ierr);
+  }
+  else if (type == MATMPIBAIJ) {
+    ierr = MatLoad_MPIBAIJ(viewer,type,newmat); CHKERRQ(ierr);
   }
   else {
     SETERRQ(1,"MatLoad: cannot load with that matrix type yet");
