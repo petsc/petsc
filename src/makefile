@@ -13,7 +13,7 @@ LINCLUDE = $(SOURCEH)
 DIRS     = inline is vec ksp sys pc mat sles options draw grid stencil \
            viewer plog snes
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
 runexamples:
 

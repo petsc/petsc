@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.28 1995/04/16 16:19:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.29 1995/04/19 03:46:26 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -537,7 +537,7 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
   PETSCHEADERDESTROY(mat);
   return 0;
 }
-
+#include "draw.h"
 static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {
   Mat        mat = (Mat) obj;
@@ -549,70 +549,69 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
   if (!aij->assembled) SETERR(1,"MatView_MPIAIJ: must assemble matrix first");
-  if (vobj->cookie == VIEWER_COOKIE) {
+  if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
     FILE *fd = ViewerFileGetPointer(viewer);
-    if (vobj->type == FILE_VIEWER) {
-      MPE_Seq_begin(mat->comm,1);
-      fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
+    MPE_Seq_begin(mat->comm,1);
+    fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
              aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
              aij->cend);
+    ierr = MatView(aij->A,viewer); CHKERR(ierr);
+    ierr = MatView(aij->B,viewer); CHKERR(ierr);
+    fflush(fd);
+    MPE_Seq_end(mat->comm,1);
+  }
+  else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == FILES_VIEWER) || 
+            vobj->cookie == DRAW_COOKIE) {
+    int numtids = aij->numtids, mytid = aij->mytid;
+    if (numtids == 1) {
       ierr = MatView(aij->A,viewer); CHKERR(ierr);
-      ierr = MatView(aij->B,viewer); CHKERR(ierr);
-      fflush(fd);
-      MPE_Seq_end(mat->comm,1);
     }
-    else if (vobj->type == FILES_VIEWER || vobj->cookie == DRAW_COOKIE) {
-      int numtids = aij->numtids, mytid = aij->mytid;
-      if (numtids == 1) {
-        ierr = MatView(aij->A,viewer); CHKERR(ierr);
+    else {
+      /* assemble the entire matrix onto first processor. */
+      Mat     A;
+      Mat_AIJ *Aloc;
+      int     M = aij->M, N = aij->N,m,*ai,*aj,row,*cols,i,*ct;
+      Scalar  *a;
+
+      if (!mytid) {
+        ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,0,0,0,&A);
       }
       else {
-        /* assemble the entire matrix onto first processor. */
-        Mat     A;
-        Mat_AIJ *Aloc;
-        int     M = aij->M, N = aij->N,m,*ai,*aj,row,*cols,i,*ct;
-        Scalar  *a;
-
-        if (!mytid) {
-          ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,0,0,0,&A);
-        }
-        else {
-          ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,0,0,0,&A);
-        }
-        CHKERR(ierr);
-
-        /* copy over the A part */
-        Aloc = (Mat_AIJ*) aij->A->data;
-        m = Aloc->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-        row = aij->rstart;
-        for ( i=0; i<ai[m]; i++ ) {aj[i] += aij->cstart - 1;}
-        for ( i=0; i<m; i++ ) {
-          ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],aj,a,InsertValues);
-          CHKERR(ierr);
-          row++; a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
-        } 
-        aj = Aloc->j;
-        for ( i=0; i<ai[m]; i++ ) {aj[i] -= aij->cstart - 1;}
-
-        /* copy over the B part */
-        Aloc = (Mat_AIJ*) aij->B->data;
-        m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-        row = aij->rstart;
-        ct = cols = (int *) MALLOC( (ai[m]+1)*sizeof(int) ); CHKPTR(cols);
-        for ( i=0; i<ai[m]; i++ ) {cols[i] = aij->garray[aj[i]-1];}
-        for ( i=0; i<m; i++ ) {
-          ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],cols,a,InsertValues);
-          CHKERR(ierr);
-          row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
-        } 
-        FREE(ct);
-        ierr = MatBeginAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
-        ierr = MatEndAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
-        if (!mytid) {
-          ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERR(ierr);
-        }
-        ierr = MatDestroy(A); CHKERR(ierr);
+        ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,0,0,0,&A);
       }
+      CHKERR(ierr);
+
+      /* copy over the A part */
+      Aloc = (Mat_AIJ*) aij->A->data;
+      m = Aloc->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+      row = aij->rstart;
+      for ( i=0; i<ai[m]; i++ ) {aj[i] += aij->cstart - 1;}
+      for ( i=0; i<m; i++ ) {
+        ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],aj,a,InsertValues);
+        CHKERR(ierr);
+        row++; a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
+      } 
+      aj = Aloc->j;
+      for ( i=0; i<ai[m]; i++ ) {aj[i] -= aij->cstart - 1;}
+
+      /* copy over the B part */
+      Aloc = (Mat_AIJ*) aij->B->data;
+      m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+      row = aij->rstart;
+      ct = cols = (int *) MALLOC( (ai[m]+1)*sizeof(int) ); CHKPTR(cols);
+      for ( i=0; i<ai[m]; i++ ) {cols[i] = aij->garray[aj[i]-1];}
+      for ( i=0; i<m; i++ ) {
+        ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],cols,a,InsertValues);
+        CHKERR(ierr);
+        row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
+      } 
+      FREE(ct);
+      ierr = MatBeginAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
+      ierr = MatEndAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
+      if (!mytid) {
+        ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERR(ierr);
+      }
+      ierr = MatDestroy(A); CHKERR(ierr);
     }
   }
   return 0;

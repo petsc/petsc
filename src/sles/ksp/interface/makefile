@@ -19,4 +19,4 @@ MANSEC   = 5
 
 runexamples:
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

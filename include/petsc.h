@@ -126,4 +126,12 @@ extern int  Trdump(FILE *);
 
 #include <stdio.h> /* I don't like this, but? */
 
+/* Global flop counter */
+extern double _TotalFlops;
+#if defined(PETSC_LOG)
+#define PLogFlops(n) {_TotalFlops += n;}
+#else
+#define PLogFlops(n)
+#endif 
+
 #endif

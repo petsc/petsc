@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.17 1995/04/15 03:28:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.18 1995/04/16 03:47:17 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"
@@ -131,6 +131,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   KSP ksp;
   PC  pc;
   VALIDHEADER(sles,SLES_COOKIE);
+  PLogEventBegin(SLES_Solve,sles,b,x,0);
   ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);
@@ -144,6 +145,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   ierr = PCPreSolve(pc,ksp); CHKERR(ierr);
   ierr = KSPSolve(ksp,its); CHKERR(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERR(ierr);
+  PLogEventEnd(SLES_Solve,sles,b,x,0);
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.13 1995/04/15 03:26:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.14 1995/04/19 20:00:42 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -31,7 +31,6 @@ static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
   *z = sum;
   return 0;
 }
-
 
 static int VecAsum_MPIBlas(  Vec xin, double *z )
 {

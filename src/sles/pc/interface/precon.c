@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.17 1995/04/15 03:27:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.18 1995/04/16 03:43:42 curfman Exp bsmith $";
 #endif
 
 /*  
@@ -251,10 +251,12 @@ int PCSetUp(PC pc)
 {
   int ierr;
   if (pc->setupcalled > 1) return 0;
+  PLogEventBegin(PC_SetUp,pc,0,0,0);
   if (!pc->vec) {SETERR(1,"Vector must be set before calling PCSetUp");}
   if (!pc->mat) {SETERR(1,"Matrix must be set before calling PCSetUp");}
   if (pc->setup) { ierr = (*pc->setup)(pc); CHKERR(ierr);}
   pc->setupcalled = 2;
+  PLogEventEnd(PC_SetUp,pc,0,0,0);
   return 0;
 }
 

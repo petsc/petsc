@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.21 1995/04/19 19:38:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.22 1995/04/24 18:41:09 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -37,9 +37,9 @@ int VecDot(Vec x, Vec y, Scalar *val)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  PLogEventBegin(VECTOR_DOT,x,y,0,0);
+  PLogEventBegin(VEC_Dot,x,y,0,0);
   ierr = (*x->ops->dot)(x,y,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_DOT,x,y,0,0);
+  PLogEventEnd(VEC_Dot,x,y,0,0);
   return 0;
 }
 
@@ -58,9 +58,9 @@ int VecNorm(Vec x,double *val)
 {
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  PLogEventBegin(VECTOR_DOT,x,0,0,0);
+  PLogEventBegin(VEC_Norm,x,0,0,0);
   ierr = (*x->ops->norm)(x,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_DOT,x,0,0,0);
+  PLogEventEnd(VEC_Norm,x,0,0,0);
   return 0;
 }
 /*@
@@ -78,9 +78,9 @@ int VecASum(Vec x,double *val)
 {
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  PLogEventBegin(VECTOR_ASUM,x,0,0,0);
+  PLogEventBegin(VEC_ASum,x,0,0,0);
   ierr = (*x->ops->asum)(x,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_ASUM,x,0,0,0);
+  PLogEventEnd(VEC_ASum,x,0,0,0);
   return 0;
 }
 
@@ -100,9 +100,9 @@ int VecAMax(Vec x,int *p,double *val)
 {
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  PLogEventBegin(VECTOR_MAX,x,0,0,0);
+  PLogEventBegin(VEC_AMax,x,0,0,0);
   ierr = (*x->ops->amax)(x,p,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_MAX,x,0,0,0);
+  PLogEventEnd(VEC_AMax,x,0,0,0);
   return 0;
 }
 
@@ -122,9 +122,9 @@ int VecMax(Vec x,int *p,double *val)
 {
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  PLogEventBegin(VECTOR_MAX,x,0,0,0);
+  PLogEventBegin(VEC_Max,x,0,0,0);
   ierr = (*x->ops->max)(x,p,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_MAX,x,0,0,0);
+  PLogEventEnd(VEC_Max,x,0,0,0);
   return 0;
 }
 
@@ -144,9 +144,9 @@ int VecMin(Vec x,int *p,double *val)
 {
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  PLogEventBegin(VECTOR_MIN,x,0,0,0);
+  PLogEventBegin(VEC_Min,x,0,0,0);
   ierr = (*x->ops->min)(x,p,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_MIN,x,0,0,0);
+  PLogEventEnd(VEC_Min,x,0,0,0);
   return 0;
 }
 
@@ -167,9 +167,9 @@ int VecTDot(Vec x,Vec y,Scalar *val)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  PLogEventBegin(VECTOR_TDOT,x,y,0,0);
+  PLogEventBegin(VEC_TDot,x,y,0,0);
   ierr = (*x->ops->tdot)(x,y,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_TDOT,x,y,0,0);
+  PLogEventEnd(VEC_TDot,x,y,0,0);
   return 0;
 }
 
@@ -186,9 +186,9 @@ int VecScale(Scalar *alpha,Vec x)
 {
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  PLogEventBegin(VECTOR_SCALE,x,0,0,0);
+  PLogEventBegin(VEC_Scale,x,0,0,0);
   ierr = (*x->ops->scal)(alpha,x); CHKERR(ierr);
-  PLogEventEnd(VECTOR_SCALE,x,0,0,0);
+  PLogEventEnd(VEC_Scale,x,0,0,0);
   return 0;
 }
 
@@ -207,9 +207,9 @@ int VecCopy(Vec x,Vec y)
 {
   int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  PLogEventBegin(VECTOR_COPY,x,y,0,0);
+  PLogEventBegin(VEC_Copy,x,y,0,0);
   ierr = (*x->ops->copy)(x,y); CHKERR(ierr);
-  PLogEventEnd(VECTOR_COPY,x,y,0,0);
+  PLogEventEnd(VEC_Copy,x,y,0,0);
   return 0;
 }
  
@@ -228,9 +228,9 @@ int VecSet(Scalar *alpha,Vec x)
 {
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  PLogEventBegin(VECTOR_SET,x,0,0,0);
+  PLogEventBegin(VEC_Set,x,0,0,0);
   ierr = (*x->ops->set)(alpha,x); CHKERR(ierr);
-  PLogEventEnd(VECTOR_SET,x,0,0,0);
+  PLogEventEnd(VEC_Set,x,0,0,0);
   return 0;
 } 
 
@@ -248,9 +248,9 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE); 
   VALIDHEADER(y,VEC_COOKIE);
-  PLogEventBegin(VECTOR_AXPY,x,y,0,0);
+  PLogEventBegin(VEC_AXPY,x,y,0,0);
   ierr = (*x->ops->axpy)(alpha,x,y); CHKERR(ierr);
-  PLogEventEnd(VECTOR_AXPY,x,y,0,0);
+  PLogEventEnd(VEC_AXPY,x,y,0,0);
   return 0;
 } 
 /*@
@@ -266,9 +266,9 @@ int VecAYPX(Scalar *alpha,Vec x,Vec y)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  PLogEventBegin(VECTOR_AYPX,x,y,0,0);
+  PLogEventBegin(VEC_AYPX,x,y,0,0);
   ierr =  (*x->ops->aypx)(alpha,x,y); CHKERR(ierr);
-  PLogEventEnd(VECTOR_AYPX,x,y,0,0);
+  PLogEventEnd(VEC_AYPX,x,y,0,0);
   return 0;
 } 
 /*@
@@ -282,9 +282,9 @@ int VecSwap(Vec x,Vec y)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE);  VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  PLogEventBegin(VECTOR_SWAP,x,y,0,0);
+  PLogEventBegin(VEC_Swap,x,y,0,0);
   ierr = (*x->ops->swap)(x,y); CHKERR(ierr);
-  PLogEventEnd(VECTOR_SWAP,x,y,0,0);
+  PLogEventEnd(VEC_Swap,x,y,0,0);
   return 0;
 }
 /*@
@@ -303,9 +303,9 @@ int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
   CHKSAME(x,y); CHKSAME(y,w);
-  PLogEventBegin(VECTOR_WAXPY,x,y,w,0);
+  PLogEventBegin(VEC_WAXPY,x,y,w,0);
   ierr =  (*x->ops->waxpy)(alpha,x,y,w); CHKERR(ierr);
-  PLogEventEnd(VECTOR_WAXPY,x,y,w,0);
+  PLogEventEnd(VEC_WAXPY,x,y,w,0);
   return 0;
 }
 /*@
@@ -441,9 +441,9 @@ int VecBeginAssembly(Vec vec)
 {
   int ierr;
   VALIDHEADER(vec,VEC_COOKIE);
-  PLogEventBegin(VECTOR_ASSEMBLY_BEGIN,vec,0,0,0);
+  PLogEventBegin(VEC_BeginAssembly,vec,0,0,0);
   if (vec->ops->beginassm) {ierr = (*vec->ops->beginassm)(vec); CHKERR(ierr);}
-  PLogEventEnd(VECTOR_ASSEMBLY_BEGIN,vec,0,0,0);
+  PLogEventEnd(VEC_BeginAssembly,vec,0,0,0);
   return 0;
 }
 
@@ -458,9 +458,9 @@ int VecEndAssembly(Vec vec)
 {
   int ierr;
   VALIDHEADER(vec,VEC_COOKIE);
-  PLogEventBegin(VECTOR_ASSEMBLY_END,vec,0,0,0);
+  PLogEventBegin(VEC_EndAssembly,vec,0,0,0);
   if (vec->ops->endassm) {ierr = (*vec->ops->endassm)(vec); CHKERR(ierr);}
-  PLogEventEnd(VECTOR_ASSEMBLY_END,vec,0,0,0);
+  PLogEventEnd(VEC_EndAssembly,vec,0,0,0);
   return 0;
 }
 
@@ -481,9 +481,9 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  PLogEventBegin(VECTOR_MTDOT,x,*y,0,0);
+  PLogEventBegin(VEC_MTDot,x,*y,0,0);
   ierr = (*x->ops->mtdot)(nv,x,y,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_MTDOT,x,*y,0,0);
+  PLogEventEnd(VEC_MTDot,x,*y,0,0);
   return 0;
 }
 /*@
@@ -502,9 +502,9 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  PLogEventBegin(VECTOR_MDOT,x,*y,0,0);
+  PLogEventBegin(VEC_MDot,x,*y,0,0);
   ierr = (*x->ops->mdot)(nv,x,y,val); CHKERR(ierr);
-  PLogEventEnd(VECTOR_MDOT,x,*y,0,0);
+  PLogEventEnd(VEC_MDot,x,*y,0,0);
   return 0;
 }
 
@@ -522,9 +522,9 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
   int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  PLogEventBegin(VECTOR_MAXPY,x,*y,0,0);
+  PLogEventBegin(VEC_MAXPY,x,*y,0,0);
   ierr = (*x->ops->maxpy)(nv,alpha,x,y); CHKERR(ierr);
-  PLogEventEnd(VECTOR_MAXPY,x,*y,0,0);
+  PLogEventEnd(VEC_MAXPY,x,*y,0,0);
   return 0;
 } 
 

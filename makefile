@@ -12,13 +12,13 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = src include pinclude
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
-all: chkpetsclib
+all: chkpetsc_dir
 	-@if [ ! -d $(LDIR) ]; then \
           echo $(LDIR) ; mkdir -p $(LDIR) ; fi
 	-$(RM) -f $(LDIR)/*.a
-	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PARCH) COMPLEX=$(COMPLEX) \
+	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PETSC_ARCH) COMPLEX=$(COMPLEX) \
            ACTION=libfast  tree 
 	$(RANLIB) $(LDIR)/*.a
 
@@ -29,13 +29,13 @@ deletelibs:
 	-$(RM) -f $(LDIR)/*.a $(LDIR)/complex/*
 
 deletemanpages:
-	$(RM) -f $(PETSCLIB)/Keywords $(PETSCLIB)/docs/man/man*/*
+	$(RM) -f $(PETSC_DIR)/Keywords $(PETSC_DIR)/docs/man/man*/*
 
 deletewwwpages:
-	$(RM) -f $(PETSCLIB)/docs/www/man*/* $(PETSCLIB)/docs/www/www.cit
+	$(RM) -f $(PETSC_DIR)/docs/www/man*/* $(PETSC_DIR)/docs/www/www.cit
 
 deletelatexpages:
-	$(RM) -f $(PETSCLIB)/docs/tex/rsum/*sum*.tex
+	$(RM) -f $(PETSC_DIR)/docs/tex/rsum/*sum*.tex
 
 #  to access the tags in emacs type esc-x visit-tags-table 
 #  then esc . to find a function

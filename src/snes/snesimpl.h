@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.2 1995/04/17 03:16:20 bsmith Exp curfman $ */
+/* $Id: snesimpl.h,v 1.3 1995/04/17 03:33:03 curfman Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -35,7 +35,7 @@ struct _SNES {
   void  *scaP;
 
   /* ---------------- Petsc (or user) Provided stuff ---------------------*/
-  int   (*Monitor)(SNES,int,Vec,Vec,double,void*);   
+  int   (*Monitor)(SNES,int,double,void*);   
   void  *monP;		
   int   (*Converged)(SNES,double,double,double,void*);     
   void  *cnvP;		
@@ -79,6 +79,6 @@ struct _SNES {
 #endif
 
 extern int SNESComputeInitialGuess(SNES,Vec);
-extern int SNESComputeResidual(SNES,Vec, Vec);
+extern int SNESComputeFunction(SNES,Vec, Vec);
 
 #endif

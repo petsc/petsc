@@ -15,7 +15,7 @@ LIBBASE  = libpetscsnes
 LINCLUDE = $(SOURCEH)
 MANSEC   = n
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
 runexamples:
 

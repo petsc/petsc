@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.9 1995/04/18 16:26:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.10 1995/04/19 03:01:24 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -210,10 +210,12 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 {
   int    ierr;
   Scalar one = 1.0;
+  PLogEventBegin(SNES_LineSearch,snes,x,f,g);
   VecNorm(y, ynorm );	/* ynorm = || y ||    */
   VecAXPY(&one, x, y );	/* y <- x + y         */
   ierr = SNESComputeFunction(snes,y,g); CHKERR(ierr);
   VecNorm( g, gnorm ); 	/* gnorm = || g ||    */
+  PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 1;
 }
 /* ------------------------------------------------------------------ */
@@ -260,6 +262,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   Scalar  one = 1.0,scale;
   double  maxstep,minlambda,alpha,lambda,lambdatemp;
 
+  PLogEventBegin(SNES_LineSearch,snes,x,f,g);
   alpha   = neP->alpha;
   maxstep = neP->maxstep;
   steptol = neP->steptol;
@@ -292,6 +295,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Using full step\n");
+      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
       return 0;
   }
 
@@ -314,6 +318,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Quadratically determined step, lambda %g\n",lambda);
+      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
       return 0;
   }
 
@@ -325,6 +330,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
            PLogInfo((PetscObject)snes, "f %g fnew %g ynorm %g lambda %g \n",
                    fnorm,*gnorm, *ynorm,lambda);
            VecCopy(w, y );
+           PLogEventEnd(SNES_LineSearch,snes,x,f,g);
            return 0;
       }
       t1 = *gnorm - fnorm - lambda*initslope;
@@ -360,10 +366,12 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough */
          VecCopy(w, y );
          PLogInfo((PetscObject)snes,"Cubically determined step, lambda %g\n",lambda);
+         PLogEventEnd(SNES_LineSearch,snes,x,f,g);
          return 0;
       }
       count++;
    }
+  PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }
 /*@
@@ -407,6 +415,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   Scalar  one = 1.0,scale;
   double  maxstep,minlambda,alpha,lambda,lambdatemp;
 
+  PLogEventBegin(SNES_LineSearch,snes,x,f,g);
   alpha   = neP->alpha;
   maxstep = neP->maxstep;
   steptol = neP->steptol;
@@ -434,6 +443,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Using full step\n");
+      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
       return 0;
   }
 
@@ -446,6 +456,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       PLogInfo((PetscObject)snes, "f %g fnew %g ynorm %g lambda %g \n",
                    fnorm,*gnorm, *ynorm,lambda);
       VecCopy(w, y );
+      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
       return 0;
     }
     lambdatemp = -initslope/(2.0*(*gnorm - fnorm - initslope));
@@ -465,11 +476,13 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Quadratically determined step, lambda %g\n",lambda);
+      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
       return 0;
     }
     count++;
   }
 
+  PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }
 /* ------------------------------------------------------------ */
