@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.30 1998/10/19 21:58:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.31 1998/10/20 17:43:00 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -281,6 +281,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
     if (par2 == PetscStrrchr(par2,'.')) { /* no period in name, so append prefix */
       PetscStrcat(par2,".");
       PetscStrcat(par2,PETSC_SLSUFFIX);
+      /* does have . in it, now check if name ends with .PETSC_SLSUFFIX */ 
     } else if (par2[0] != 's' || par2[1] != 'o') {
       PetscStrcat(par2,".");
       PetscStrcat(par2,PETSC_SLSUFFIX);
