@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.5 2000/04/12 04:27:00 bsmith Exp balay $*/
+/*$Id: cstring.c,v 1.6 2000/05/05 22:20:12 balay Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -38,9 +38,9 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   int        ierr;
-  char       task[1024],tmp[256],lib[256];
+  char       task[1024],tmp[256],lib[256],username[64];
   FILE       *fd;
-  PetscTruth tmpshared,wdshared;
+  PetscTruth tmpshared,wdshared,keeptmpfiles = PETSC_FALSE;
   MPI_Comm   comm;
 #endif
 
@@ -61,15 +61,21 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
   } else { /* do it in current directory */
     ierr = PetscStrcpy(tmp,".");CHKERRQ(ierr);
     comm = pf->comm;
+  } 
+  ierr = OptionsHasName(PETSC_NULL,"-pf_string_keep_files",&keeptmpfiles);CHKERRQ(ierr);
+  if (keeptmpfiles) {
+    sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./petscmakefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f petscmakefile petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,pf->dimin,pf->dimout,string);
+  } else {
+    sprintf(task,"cd %s ; mkdir petsctmp ;cd petsctmp; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./petscmakefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f petscmakefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f petscmakefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,pf->dimin,pf->dimout,string);
   }
-  sprintf(task,"cd %s ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./petscmakefile ; make BOPT=${BOPT} MIN=%d NOUT=%d -f petscmakefile petscdlib STRINGFUNCTION=\"%s\" ; \\rm -f petscmakefile petscdlib.c libpetscdlib.a ;  sync\n",tmp,pf->dimin,pf->dimout,string);
   ierr = PetscPOpen(comm,PETSC_NULL,task,"r",&fd);CHKERRQ(ierr);
   ierr = PetscPClose(comm,fd);CHKERRQ(ierr);
 
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 
   /* load the apply function from the dynamic library */
-  sprintf(lib,"%s/libpetscdlib",tmp);
+  ierr = PetscGetUserName(username,64);CHKERRQ(ierr);
+  sprintf(lib,"%s/%s/libpetscdlib",tmp,username);
   ierr = DLLibrarySym(comm,PETSC_NULL,lib,"PFApply_String",f);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);    
