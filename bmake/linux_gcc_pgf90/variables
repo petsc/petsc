@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.20 2000/03/25 00:14:11 balay Exp $ 
+# $Id: base_variables,v 1.1 2000/06/19 17:17:41 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -13,47 +13,42 @@ SH_LD		   = gcc
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = gcc
-C_FC		   = pgf90 -Wno-globals
+C_FC		   = pgf90
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = gcc
 C_FLINKER	   = pgf90
 C_CCV		   = ${C_CC} --version
 C_FCV              = pgf90 --version | head -1
-#C_SYS_LIB          = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl -lpgf90 -lpgc
 C_SYS_LIB          = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lpgc -lgcc -lc -lgcc
-#C_SYS_LIB	   = -ldl -lc -lf2c -lm
-#C_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm  #Use /usr/lib/libf2c.a if that's what your f77 uses.
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O6 -Wall -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops
+O_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops
 O_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = g++ -fPIC
-CXX_FC		   = g77 -Wno-globals
+CXX_FC		   = pgf90
 CXX_CLINKER_SLFLAG = -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
-CXX_FLINKER	   = g++
+CXX_FLINKER	   = pgf90
 CXX_CCV		   = ${CXX_CC} --version
-#CXX_SYS_LIB	   = -ldl -lc -lf2c -lm
-CXX_SYS_LIB	   = -ldl -lc -lg2c -lm
-#CXX_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm
+CXX_SYS_LIB        = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lpgc -lgcc -lc -lgcc
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
-OCXX_COPTFLAGS	   = -O 
-OCXX_FOPTFLAGS	   = -O
+OCXX_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops 
+OCXX_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -O
-OCOMP_FOPTFLAGS	   = -O
+OCOMP_COPTFLAGS	   = -O6 -Wall -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops 
+OCOMP_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 # ########################### PETSc install options ###########################
 #
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
