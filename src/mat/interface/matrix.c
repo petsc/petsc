@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.393 2001/03/09 18:59:14 balay Exp balay $*/
+/*$Id: matrix.c,v 1.394 2001/03/09 18:59:52 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -508,6 +508,97 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   if (!mat->ops->setvalues) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSetValuesStencil"
+/*@ 
+   MatSetValuesStencil - Inserts or adds a block of values into a matrix.
+     Using structured grid indexing
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+.  v - a logically two-dimensional array of values
+.  m - number of rows being entered
+.  idxm - see below 
+.  n - number of columns being entered
+.  idxn -  see below
+-  addv - either ADD_VALUES or INSERT_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
+
+   Notes:
+   Format of idxm and idxn:
+$    If dof > 1 let dim = dimension of the grid (1,2, or 3)+1;
+$     then idxm[dim*i+dim-1] = component number
+$        idxm[dim*i+dim-2]   = logical coordinate in x
+$        idxm[dim*i+dim-3]   = logical coordinate in y (if it exists)
+$        idxm[dim*i+dim-4]   = logical coordinate in z (if it exists)
+$     else let dim = dimension of the grid (1,2, or 3);
+$        idxm[dim*i+dim-1]   = logical coordinate in x
+$        idxm[dim*i+dim-2]   = logical coordinate in y (if it exists)
+$        idxm[dim*i+dim-3]   = logical coordinate in z (if it exists)
+
+
+   By default the values, v, are row-oriented and unsorted.
+   See MatSetOption() for other options.
+
+   Calls to MatSetValuesStencil() with the INSERT_VALUES and ADD_VALUES 
+   options cannot be mixed without intervening calls to the assembly
+   routines.
+
+   MatSetValuesStencil() uses 0-based row and column numbers in Fortran 
+   as well as in C.
+
+   Negative indices may be passed in idxm and idxn, these rows and columns are 
+   simply ignored. This allows easily inserting element stiffness matrices
+   with homogeneous Dirchlet boundary conditions that you don't want represented
+   in the matrix.
+
+   Inspired by the structured grid interface to the HYPRE package
+   (www.llnl.gov/CASC/hyper)
+
+   Efficiency Alert:
+   The routine MatSetValuesBlockedStencil() may offer much better efficiency
+   for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
+
+   Level: beginner
+
+   Concepts: matrices^putting entries in
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
+          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil()
+@*/
+int MatSetValuesStencil(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
+{
+  int j,i,ierr,jdxm[128],jdxn[128],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+
+  PetscFunctionBegin;
+  if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  PetscValidIntPointer(idxm);
+  PetscValidIntPointer(idxn);
+  PetscValidScalarPointer(v);
+
+  for (i=0; i<m; i++) {
+    tmp = idxm[dim*i];
+    for (j=0; j<dim-1; j++) {
+      tmp = tmp*dims[j] + idxm[dim*i+j+1];
+    }
+    jdxm[i] = tmp;
+  }
+  for (i=0; i<n; i++) {
+    tmp = idxn[dim*i];
+    for (j=0; j<dim-1; j++) {
+      tmp = tmp*dims[j] + idxn[dim*i+j+1];
+    }
+    jdxn[i] = tmp;
+  }
+  ierr = MatSetValues(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
