@@ -23,14 +23,8 @@ BLASLAPACK_LIB  =  -lsunperf
 # libs required by MPI, and use them in the SAME order!
 # If using ch_shmem, run 'mpich/lib/solaris/ch_shmem/mpicc -show'
 #
-#MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lsocket -lnsl
-#MPI_INCLUDE    = -I/home/petsc/mpich/include 
-#MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
-MPI_HOME       = /home/petsc/software/mpich-1.1.2
-#MPI_HOME       = /home/MPI/releases/mpich/
-MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_p4
-
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lsocket -lnsl
+MPI_HOME       = /home/petsc/soft/solaris-9/mpich-1.2.5
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lmpich -lsocket -lnsl -lrt -lnsl -laio
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
 MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 #
@@ -48,24 +42,23 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
-MPE_INCLUDE    = -I${MPI_HOME}/mpe -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
-MPE_LIB        = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE    = 
+MPE_LIB        = -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)
 #
-BLOCKSOLVE_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
-BLOCKSOLVE_LIB        = ${CLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/solaris -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+BLOCKSOLVE_INCLUDE    = -I/home/petsc/soft/solaris-9/BlockSolve95/include
+BLOCKSOLVE_LIB        = -L/home/petsc/soft/solaris-9/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 # Matlab location
 #
-MATLAB_ROOT       = /software/solaris-2/com/packages/matlab-6.1
-CMEX              = ${MATLAB_ROOT}/bin/mex
-#CMEX             = mex
-MCC               = cc
-MATLABCOMMAND     = matlab
-PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
+#MATLAB_ROOT       = /software/solaris-2/com/packages/matlab-6.1
+#CMEX              = ${MATLAB_ROOT}/bin/mex
+#MCC               = cc
+#MATLABCOMMAND     = matlab
+#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #  The Matlab include file have some bugs in them with C++,  they have a 
 # #include <stdlib.h> INSIDE an extern "C" {} :-(. You can fix this by moving the 
@@ -73,10 +66,9 @@ PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 # and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
 # in matrix.h (sigh)
 #
-#MATLAB_ENGINE_INCLUDE    = -I${MATLAB_ROOT}/extern/include
-MATLAB_ENGINE_INCLUDE    = -I/home/petsc/software/matlab/include
-MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lut
-PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
+#MATLAB_ENGINE_INCLUDE    = -I/home/petsc/software/matlab/include
+#MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lut
+#PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed
 #
@@ -92,22 +84,22 @@ PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location of ParMetis
 #
-PARMETIS_INCLUDE    = -I/home/petsc/software/ParMetis-2.0
-PARMETIS_LIB        = -L/home/petsc/software/ParMetis-2.0/lib/solaris -lparmetis -lmetis
+PARMETIS_INCLUDE    = -I/home/petsc/soft/solaris-9/ParMetis-3.0
+PARMETIS_LIB        = -L/home/petsc/soft/solaris-9/ParMetis-3.0/lib/solaris -lparmetis -lmetis
 PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #  Location for ALICE Memory Snooper
 #
-AMS_HOME       = /home/alice/ams
-AMS_INCLUDE    = -I${AMS_HOME}/include
-AMS_LIBDIR     = ${AMS_HOME}/lib/lib/solaris
-AMS_LIB        = -L${AMS_LIBDIR} -lamspub -lamsutilmt -lamsutil -lthread -lldap
-PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
+#AMS_HOME       = /home/alice/ams
+#AMS_INCLUDE    = -I${AMS_HOME}/include
+#AMS_LIBDIR     = ${AMS_HOME}/lib/lib/solaris
+#AMS_LIB        = -L${AMS_LIBDIR} -lamspub -lamsutilmt -lamsutil -lthread -lldap
+#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 #
 # Location of SPAI;
 #
-SPAI_INCLUDE    = -I/home/petsc/software/spai_3.0/lib
-SPAI_LIB        = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
+SPAI_INCLUDE    = -I/home/petsc/soft/solaris-9/spai_3.0/lib
+SPAI_LIB        = /home/petsc/soft/solaris-9/spai_3.0/lib/libspai.a
 PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 # Location of JAVA requires at least java 1.3
@@ -119,7 +111,7 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 # Location/name of Python
 #
-PETSC_PYTHON    = -DPETSC_PYTHON="python1.5"
+PETSC_PYTHON    = -DPETSC_PYTHON="/home/petsc/soft/solaris-9/python-2.2.2/bin/python2.2"
 #
 # Location of the LUSOL sparse LU factorization code (part of MINOS)
 # developed by Michael Saunders, saunders@stanford.edu at the
@@ -134,10 +126,10 @@ PETSC_PYTHON    = -DPETSC_PYTHON="python1.5"
 #
 # Location of DSCPACKS
 #
-DSCPACK_INCLUDE     = -I/home/petsc/software/DSCPACK-S/DSC_LIB -DDBL_R_NUM
-DSCPACK_LIB         = /home/petsc/software/DSCPACK-S/DSC_LIB/dsclibdbl.a
+DSCPACK_INCLUDE     = -I/home/petsc/soft/solaris-9/DSCPACK-S/DSC_LIB -DDBL_R_NUM
+DSCPACK_LIB         = /home/petsc/soft/solaris-9/DSCPACK-S/DSC_LIB/dsclibdbl.a
 PETSC_HAVE_DSCPACKS  = -DPETSC_HAVE_DSCPACKS
 
 
-RAMG_LIB        = /home/petsc/software/ramg/libramg_solaris.a
+RAMG_LIB        = /home/petsc/soft/solaris-9/ramg/libramg_solaris.a
 PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
