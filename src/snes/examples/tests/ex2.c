@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.11 1995/05/02 23:39:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.12 1995/05/03 13:21:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve a two variable system\n";
@@ -22,6 +22,7 @@ int main( int argc, char **argv )
 
   PetscInitialize( &argc, &argv, 0,0 );
 
+  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   ierr = VecCreateSequential(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = MatCreateSequentialDense(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
