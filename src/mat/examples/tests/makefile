@@ -27,7 +27,7 @@ TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		  ex43.PETSc ex43.rm ex48.PETSc runex48 \
 		  ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
 		  ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
-		  runex56_2 ex56.rm clean 
+		  runex56_2  runex56_3  runex56_4 ex56.rm clean 
 TESTEXAMPLES_3  = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_9  = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
@@ -577,6 +577,18 @@ runex56_2:
 	   if (diff output/ex56_2.out ex56_2.tmp) then true; \
 	   else echo "Possible problem with ex56_2, diffs above"; fi; \
 	   $(RM) -f ex56_2.tmp
+
+runex56_3:
+	-@$(MPIRUN) -np 3  ex56 -mat_view  -column_oriented > ex56_3.tmp 2>&1;   \
+	   if (diff output/ex56_3.out ex56_3.tmp) then true; \
+	   else echo "Possible problem with ex56_3, diffs above"; fi; \
+	   $(RM) -f ex56_3.tmp
+
+runex56_4:
+	-@$(MPIRUN) -np 3  ex56 -mat_view  -ass_extern > ex56_4.tmp 2>&1;   \
+	   if (diff output/ex56_4.out ex56_4.tmp) then true; \
+	   else echo "Possible problem with ex56_4, diffs above"; fi; \
+	   $(RM) -f ex56_4.tmp
 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
