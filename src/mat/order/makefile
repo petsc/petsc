@@ -1,10 +1,12 @@
 IPETSCDIR = ../../../../../../
 #
 #  All the Sparspak routines have been converted to C with the F2C 
-# converter. We include in the distribution the original Fortran 77 
-# code as well. To link with that instead of the C versions, uncomment
-# SOURCEF and OBJSF and comment the appropriate parts of the corresponding 
-# C lines.
+# converter. We do not include in the distribution the original Fortran 77 
+# code in the interest of saving disk space. To link with that instead of
+# the C versions, uncomment SOURCEF and OBJSF and comment the appropriate 
+# parts of the corresponding C lines. The Fortran 77 Sparsepack source 
+# may be obtained from Netlib or petsc-maint@mcs.anl.gov, ask for 
+# petsc/surplus/sparsepak.tar.Z
 #
 ALL: lib
 
