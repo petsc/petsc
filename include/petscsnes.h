@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.90 1999/06/08 22:47:18 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.91 1999/06/08 23:00:00 bsmith Exp curfman $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -125,6 +125,7 @@ extern int SNESGetLineSearchParams(SNES, double*, double*, double*);
 extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESGetHessian(SNES,Mat*,Mat*,void **);
 extern int SNESDefaultComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int SNESDefaultComputeHessianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
 extern int SNESGetGradient(SNES,Vec*);
 extern int SNESGetGradientNorm(SNES,Scalar*);
