@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.124 1999/01/31 21:32:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.125 1999/02/18 23:39:40 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -106,27 +106,23 @@ static int PCSetUp_BJacobi(PC pc)
     pmat = pc->pmat;
   } else {
     PetscTruth iscopy;
-    MatReuse   scall = MAT_INITIAL_MATRIX;
+    MatReuse   scall;
     int        (*f)(Mat,PetscTruth*,MatReuse,Mat*);
 
-    if (pc->setupcalled) {
-      if (pc->flag == SAME_NONZERO_PATTERN) {
-        if (jac->tp_mat) {
-          scall = MAT_REUSE_MATRIX;
-          mat   = jac->tp_mat;
-          if (jac->tp_pmat) {
-            pmat = jac->tp_pmat;
-          } else {
-            pmat = mat;
+    if (jac->use_true_local) {
+      scall = MAT_INITIAL_MATRIX;
+      if (pc->setupcalled) {
+        if (pc->flag == SAME_NONZERO_PATTERN) {
+          if (jac->tp_mat) {
+            scall = MAT_REUSE_MATRIX;
+            mat   = jac->tp_mat;
+          }
+        } else {
+          if (jac->tp_mat)  {
+            ierr = MatDestroy(jac->tp_mat);CHKERRQ(ierr);
           }
         }
-      } else {
-        if (jac->tp_mat)  {ierr = MatDestroy(jac->tp_mat);CHKERRQ(ierr);}
-        if (jac->tp_pmat) {ierr = MatDestroy(jac->tp_pmat);CHKERRQ(ierr);}
       }
-    }
-
-    if (jac->use_true_local) {
       ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
       if (!f) {
         SETERRQ(PETSC_ERR_SUP,0,"This matrix does not support getting diagonal block");
@@ -137,6 +133,19 @@ static int PCSetUp_BJacobi(PC pc)
       }
     }
     if (pc->pmat != pc->mat || !jac->use_true_local) {
+      scall = MAT_INITIAL_MATRIX;
+      if (pc->setupcalled) {
+        if (pc->flag == SAME_NONZERO_PATTERN) {
+          if (jac->tp_pmat) {
+            scall = MAT_REUSE_MATRIX;
+            pmat   = jac->tp_pmat;
+          }
+        } else {
+          if (jac->tp_pmat)  {
+            ierr = MatDestroy(jac->tp_pmat);CHKERRQ(ierr);
+          }
+        }
+      }
       ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
       if (!f) {
         SETERRQ(PETSC_ERR_SUP,0,"This matrix does not support getting diagonal block");
