@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.221 1998/04/09 00:06:37 balay Exp bsmith $ 
+# $Id: makefile,v 1.222 1998/04/09 04:04:17 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -278,47 +278,47 @@ alletags:
 
 # Builds the basic etags file.	This should be employed by most users.
 etags:
-	${RM} TAGS
-	etags -f TAGS ${TAGS_INCLUDE_FILES} 
-	etags -a -f TAGS ${TAGS_SRC_FILES} 
-	etags -a -f TAGS ${TAGS_EXAMPLE_FILES} 
-	etags -a -f TAGS ${TAGS_MAKEFILE_FILES} 
-	etags -a -f TAGS ${TAGS_BMAKE_FILES} 
-	chmod g+w TAGS
+	-${RM} TAGS
+	-etags -f TAGS ${TAGS_INCLUDE_FILES} 
+	-etags -a -f TAGS ${TAGS_SRC_FILES} 
+	-etags -a -f TAGS ${TAGS_EXAMPLE_FILES} 
+	-etags -a -f TAGS ${TAGS_MAKEFILE_FILES} 
+	-etags -a -f TAGS ${TAGS_BMAKE_FILES} 
+	-chmod g+w TAGS
 
 # Builds complete etags list; only for PETSc developers.
 etags_complete:
-	${RM} TAGS_COMPLETE
-	etags -f TAGS_COMPLETE ${TAGS_SRC_FILES} 
-	etags -a -f TAGS_COMPLETE ${TAGS_INCLUDE_FILES} 
-	etags -a -f TAGS_COMPLETE ${TAGS_EXAMPLE_FILES}
-	etags -a -f TAGS_COMPLETE ${TAGS_MAKEFILE_FILES} 
-	etags -a -f TAGS_COMPLETE ${TAGS_BMAKE_FILES} 
-	etags -a -f TAGS_COMPLETE ${TAGS_DOC_FILES}
-	chmod g+w TAGS_COMPLETE
+	-${RM} TAGS_COMPLETE
+	-etags -f TAGS_COMPLETE ${TAGS_SRC_FILES} 
+	-etags -a -f TAGS_COMPLETE ${TAGS_INCLUDE_FILES} 
+	-etags -a -f TAGS_COMPLETE ${TAGS_EXAMPLE_FILES}
+	-etags -a -f TAGS_COMPLETE ${TAGS_MAKEFILE_FILES} 
+	-etags -a -f TAGS_COMPLETE ${TAGS_BMAKE_FILES} 
+	-etags -a -f TAGS_COMPLETE ${TAGS_DOC_FILES}
+	-chmod g+w TAGS_COMPLETE
 
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
-	${RM} TAGS_NO_EXAMPLES
-	etags -f TAGS_NO_EXAMPLES ${TAGS_SRC_FILES}
-	etags -a -f TAGS_NO_EXAMPLES ${TAGS_INCLUDE_FILES} 
-	etags -a -f TAGS_NO_EXAMPLES ${TAGS_MAKEFILE_FILES} 
-	etags -a -f TAGS_NO_EXAMPLES ${TAGS_BMAKE_FILES} 
-	etags -a -f TAGS_NO_EXAMPLES ${TAGS_DOC_FILES}
-	chmod g+w TAGS_NO_EXAMPLES
+	-${RM} TAGS_NO_EXAMPLES
+	-etags -f TAGS_NO_EXAMPLES ${TAGS_SRC_FILES}
+	-etags -a -f TAGS_NO_EXAMPLES ${TAGS_INCLUDE_FILES} 
+	-etags -a -f TAGS_NO_EXAMPLES ${TAGS_MAKEFILE_FILES} 
+	-etags -a -f TAGS_NO_EXAMPLES ${TAGS_BMAKE_FILES} 
+	-etags -a -f TAGS_NO_EXAMPLES ${TAGS_DOC_FILES}
+	-chmod g+w TAGS_NO_EXAMPLES
 
 # Builds the etags file for makefiles
 etags_makefiles: 
-	${RM} TAGS_MAKEFILES
-	etags -f TAGS_MAKEFILES ${TAGS_MAKEFILE_FILES} 
-	etags -a -f TAGS_MAKEFILES ${TAGS_BMAKE_FILES} 
-	chmod g+w TAGS_MAKEFILES
+	-${RM} TAGS_MAKEFILES
+	-etags -f TAGS_MAKEFILES ${TAGS_MAKEFILE_FILES} 
+	-etags -a -f TAGS_MAKEFILES ${TAGS_BMAKE_FILES} 
+	-chmod g+w TAGS_MAKEFILES
 
 # Builds the etags file for examples
 etags_examples: 
-	${RM} TAGS_EXAMPLES
-	etags -f TAGS_EXAMPLES ${TAGS_EXAMPLE_FILES} 
-	chmod g+w TAGS_EXAMPLES
+	-${RM} TAGS_EXAMPLES
+	-etags -f TAGS_EXAMPLES ${TAGS_EXAMPLE_FILES} 
+	-chmod g+w TAGS_EXAMPLES
 
 #
 # To use the tags file from VI do the following:
@@ -327,13 +327,13 @@ etags_examples:
 # 2. now to go to a tag do - :tag TAGNAME for eg - :tag MatCreate
 # 
 ctags:  
-	${RM} tags
-	ctags -w -f tags ${TAGS_INCLUDE_FILES} 
-	ctags -w -a -f tags ${TAGS_SRC_FILES} 
-	ctags -w -a -f tags ${TAGS_EXAMPLE_FILES}
-	ctags -w -a -f tags ${TAGS_MAKEFILE_FILES} 
-	ctags -w -a -f tags ${TAGS_BMAKE_FILES}
-	chmod g+w tags
+	-${RM} tags
+	-ctags -w -f tags ${TAGS_INCLUDE_FILES} 
+	-ctags -w -a -f tags ${TAGS_SRC_FILES} 
+	-ctags -w -a -f tags ${TAGS_EXAMPLE_FILES}
+	-ctags -w -a -f tags ${TAGS_MAKEFILE_FILES} 
+	-ctags -w -a -f tags ${TAGS_BMAKE_FILES}
+	-chmod g+w tags
 
 # ------------------------------------------------------------------
 #
