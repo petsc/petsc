@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.37 1996/01/23 00:20:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.38 1996/02/08 18:27:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  To test the\n\
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
   Vec       x, u, b;                       Mat       A; 
   SLES      sles;                          double    norm;
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);  n = 2*size;
@@ -54,9 +54,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12)
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
+    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
   else 
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
   /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

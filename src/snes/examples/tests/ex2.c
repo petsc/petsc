@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.40 1996/01/30 00:43:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.41 1996/02/08 18:28:30 bsmith Exp bsmith $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -18,7 +18,7 @@ int main( int argc, char **argv )
   Mat          J;                  /* Jacobian matrix */
   int          ierr, its;
 
-  PetscInitialize( &argc, &argv, 0,0,help );
+  PetscInitialize( &argc, &argv,(char *)0,help );
 
   /* Set up data structures */
   ierr = VecCreateSeq(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
@@ -37,7 +37,7 @@ int main( int argc, char **argv )
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its);
+  PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its);
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);
@@ -88,13 +88,13 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
 
   PetscObjectGetComm((PetscObject)snes,&comm);
   if (fnorm > 1.e-9 || fnorm == 0.0) {
-    MPIU_printf(comm, "iter = %d, Function norm %g \n",its,fnorm);
+    PetscPrintf(comm, "iter = %d, Function norm %g \n",its,fnorm);
   }
   else if (fnorm > 1.e-11){
-    MPIU_printf(comm, "iter = %d, Function norm %5.3e \n",its,fnorm);
+    PetscPrintf(comm, "iter = %d, Function norm %5.3e \n",its,fnorm);
   }
   else {
-    MPIU_printf(comm, "iter = %d, Function norm < 1.e-11\n",its);
+    PetscPrintf(comm, "iter = %d, Function norm < 1.e-11\n",its);
   }
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRQ(ierr);

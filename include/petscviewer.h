@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.24 1996/03/14 21:46:42 curfman Exp bsmith $ */
+/* $Id: viewer.h,v 1.25 1996/03/18 00:43:55 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -33,7 +33,7 @@ extern int ViewerSetFormat(Viewer,int,char *);
 extern int ViewerGetFormat(Viewer,int*);
 
 extern int ViewerFlush(Viewer);
-extern int ViewerStringsprintf(Viewer,char *,...);
+extern int ViewerStringSPrintf(Viewer,char *,...);
 
 extern Viewer STDOUT_VIEWER_SELF;  
 extern Viewer STDERR_VIEWER_SELF;

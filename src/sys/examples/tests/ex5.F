@@ -1,11 +1,11 @@
-C    "$Id: ex5.F,v 1.4 1995/10/19 22:19:59 curfman Exp bsmith $";
+C    "$Id: ex5.F,v 1.5 1996/02/13 23:28:56 bsmith Exp bsmith $";
 C
 C  Simple PETSc Program written in Fortran 77.
 C
 #include "include/FINCLUDE/petsc.h"
        integer ierr, rank
 
-       call PetscInitialize(ierr)
+       call PetscInitialize(PETSC_NULL_CHAR,ierr)
 
        if (ierr .ne. 0) then 
          print*, "Unable to begin PETSc program"

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.10 1996/01/23 19:15:03 balay Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.11 1996/01/24 05:47:18 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -28,9 +28,9 @@ static char vcid[] = "$Id: snesut.c,v 1.10 1996/01/23 19:15:03 balay Exp bsmith 
 int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS)
-    MPIU_printf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
+    PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
-    MPIU_printf(snes->comm,
+    PetscPrintf(snes->comm,
      "iter = %d, Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
   else SETERRQ(1,"SNESDefaultMonitor:Unknown method class");
   return 0;
@@ -40,27 +40,27 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 {
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     if (fgnorm > 1.e-9 || fgnorm == 0.0) {
-      MPIU_printf(snes->comm, "iter = %d, Function norm %g \n",its,fgnorm);
+      PetscPrintf(snes->comm, "iter = %d, Function norm %g \n",its,fgnorm);
     }
     else if (fgnorm > 1.e-11){
-      MPIU_printf(snes->comm, "iter = %d, Function norm %5.3e \n",its,fgnorm);
+      PetscPrintf(snes->comm, "iter = %d, Function norm %5.3e \n",its,fgnorm);
     }
     else {
-      MPIU_printf(snes->comm, "iter = %d, Function norm < 1.e-11\n",its);
+      PetscPrintf(snes->comm, "iter = %d, Function norm < 1.e-11\n",its);
     }
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     if (fgnorm > 1.e-9 || fgnorm == 0.0) {
-      MPIU_printf(snes->comm,
+      PetscPrintf(snes->comm,
        "iter = %d, Function value %g, Gradient norm %g \n",
        its,snes->fc,fgnorm);
     }
     else if (fgnorm > 1.e-11) {
-      MPIU_printf(snes->comm,
+      PetscPrintf(snes->comm,
         "iter = %d, Function value %g, Gradient norm %5.3e \n",
         its,snes->fc,fgnorm);
     }
     else {
-      MPIU_printf(snes->comm,
+      PetscPrintf(snes->comm,
         "iter = %d, Function value %g, Gradient norm < 1.e-11\n",
         its,snes->fc);
     }

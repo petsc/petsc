@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortd.c,v 1.3 1996/02/01 15:16:47 balay Exp bsmith $";
+static char vcid[] = "$Id: sortd.c,v 1.4 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: sortd.c,v 1.3 1996/02/01 15:16:47 balay Exp bsmith $"
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
    
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
-static int SYiDqsort(double *v,int right)
+static int PetsciDqsort(double *v,int right)
 {
   register int    i,last;
   register double vl;
@@ -37,19 +37,19 @@ static int SYiDqsort(double *v,int right)
     if (v[i] < vl ) {last++; SWAP(v[last],v[i],tmp);}
   }
   SWAP(v[0],v[last],tmp);
-  SYiDqsort(v,last-1);
-  SYiDqsort(v+last+1,right-(last+1));
+  PetsciDqsort(v,last-1);
+  PetsciDqsort(v+last+1,right-(last+1));
   return 0;
 }
 
 /*@
-  SYDsort - Sort an array of doubles inplace in increasing order
+  PetscSortDouble - Sort an array of doubles inplace in increasing order
 
   Input Parameters:
 . n  - number of values
 . v  - array of doubles
 @*/
-int SYDsort(int n, double *v )
+int PetscSortDouble(int n, double *v )
 {
   register int    j, k;
   register double tmp, vk;
@@ -66,7 +66,7 @@ int SYDsort(int n, double *v )
     }
   }
   else
-    SYiDqsort( v, n-1 );
+    PetsciDqsort( v, n-1 );
   return 0;
 }
 

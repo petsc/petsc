@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.22 1996/03/14 21:45:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.23 1996/03/18 00:37:32 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: vecio.c,v 1.22 1996/03/14 21:45:49 curfman Exp bsmith
 
 #include "petsc.h"
 #include "vec/impls/mpi/pvecimpl.h"
-#include "sysio.h"
+#include "sys.h"
 #include "pinclude/pviewer.h"
 
 /*@C 
@@ -43,7 +43,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   MPI_Status  status,*statuses;
   ViewerType  vtype;
 
-  PETSCVALIDHEADERSPECIFIC(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype != BINARY_FILE_VIEWER) SETERRQ(1,"VecLoad:Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,0,0,0);
@@ -55,14 +55,14 @@ int VecLoad(Viewer viewer,Vec *newvec)
 
   if (!rank) {
     /* Read vector header. */
-    ierr = SYRead(fd,&type,1,SYINT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,&type,1,BINARY_INT); CHKERRQ(ierr);
     if ((VecType)type != VEC_COOKIE) SETERRQ(1,"VecLoadBinary: Non-vector object");
-    ierr = SYRead(fd,&rows,1,SYINT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,&rows,1,BINARY_INT); CHKERRQ(ierr);
     MPI_Bcast(&rows,1,MPI_INT,0,comm);
     ierr = VecCreate(comm,rows,&vec); CHKERRQ(ierr);
     v = (Vec_MPI*) vec->data;
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
-    ierr = SYRead(fd,avec,v->n,SYSCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,avec,v->n,BINARY_SCALAR);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
 
     if (size > 1) {
@@ -77,7 +77,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
       statuses = (MPI_Status *) PetscMalloc((size-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
       for ( i=1; i<size; i++ ) {
         n = v->ownership[i+1]-v->ownership[i];
-        ierr = SYRead(fd,avec,n,SYSCALAR);CHKERRQ(ierr);
+        ierr = PetscBinaryRead(fd,avec,n,BINARY_SCALAR);CHKERRQ(ierr);
         MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);
       }
       MPI_Waitall(size-1,requests,statuses);

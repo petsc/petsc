@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.44 1996/03/10 17:27:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.45 1996/03/18 00:39:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -53,7 +53,7 @@ static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
   int          ierr;
 
-  if (eis->usediag)  {ierr = VecPMult(x,eis->diag,y); CHKERRQ(ierr);}
+  if (eis->usediag)  {ierr = VecPointwiseMult(x,eis->diag,y);CHKERRQ(ierr);}
   else               {ierr = VecCopy(x,y);  CHKERRQ(ierr);}
   return 0; 
 }
@@ -138,9 +138,9 @@ static int PCSetFromOptions_Eisenstat(PC pc)
 
 static int PCPrintHelp_Eisenstat(PC pc,char *p)
 {
-  MPIU_printf(pc->comm," Options for PCEisenstat preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
-  MPIU_printf(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);
+  PetscPrintf(pc->comm," Options for PCEisenstat preconditioner:\n");
+  PetscPrintf(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
+  PetscPrintf(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);
   return 0;
 }
 
@@ -155,7 +155,7 @@ static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    MPIU_fprintf(pc->comm,fd,"    Eisenstat: omega = %g\n",eis->omega);
+    PetscFPrintf(pc->comm,fd,"    Eisenstat: omega = %g\n",eis->omega);
   }
   return 0;
 }
@@ -233,7 +233,7 @@ $    -pc_type  sor  -pc_sor_symmetric
 int PCEisenstatSetOmega(PC pc,double omega)
 {
   PC_Eisenstat  *eis;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCEISENSTAT) return 0;
   if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"PCEisenstatSetOmega:Relaxation out of range");
   eis = (PC_Eisenstat *) pc->data;

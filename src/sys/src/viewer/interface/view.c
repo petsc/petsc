@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: view.c,v 1.9 1996/03/08 05:48:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.10 1996/03/10 17:29:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -22,7 +22,7 @@ struct _Viewer {
 int ViewerDestroy(Viewer v)
 {
   PetscObject o = (PetscObject) v;
-  PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   return (*o->destroy)(o);
 }
 
@@ -39,7 +39,7 @@ int ViewerDestroy(Viewer v)
 @*/
 int ViewerGetType(Viewer v,ViewerType *type)
 {
-  PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   *type = (ViewerType) v->type;
   return 0;
 }

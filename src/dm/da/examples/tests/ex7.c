@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.3 1996/02/08 18:28:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.4 1996/03/18 00:43:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -9,7 +9,6 @@ static char help[] = "Tests DALocalToLocal().\n\n";
 #include "sys.h"
 #include "draw.h"
 #include <math.h>
-#include "sysio.h"
 
 int main(int argc,char **argv)
 {
@@ -26,7 +25,7 @@ int main(int argc,char **argv)
   FILE           *file;
 
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
@@ -88,7 +87,7 @@ int main(int argc,char **argv)
   ierr = VecAXPY(&mone,local,local_copy); CHKERRA(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work); CHKERRA(ierr);
   MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD );
-  MPIU_printf(MPI_COMM_WORLD,"Norm of difference %g should be zero\n",norm);
+  PetscPrintf(MPI_COMM_WORLD,"Norm of difference %g should be zero\n",norm);
    
 
   ierr = DADestroy(da); CHKERRA(ierr);

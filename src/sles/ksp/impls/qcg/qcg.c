@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.19 1996/03/10 17:27:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.20 1996/03/10 22:59:29 curfman Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -96,7 +96,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
 
   /* Compute:  BS = D^{-1} B */
-  ierr = PCApplySymmLeft(pc,B,BS); CHKERRQ(ierr);
+  ierr = PCApplySymmetricLeft(pc,B,BS); CHKERRQ(ierr);
 
   ierr = VecNorm(BS,NORM_2,&bsnrm); CHKERRQ(ierr);
   MONITOR(ksp,bsnrm,0);
@@ -117,9 +117,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
   for (i=0; i<=maxit; i++) {
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
-    ierr = PCApplySymmRight(pc,P,WA); CHKERRQ(ierr);
+    ierr = PCApplySymmetricRight(pc,P,WA); CHKERRQ(ierr);
     ierr = MatMult(Amat,WA,WA2); CHKERRQ(ierr);
-    ierr = PCApplySymmLeft(pc,WA2,ASP); CHKERRQ(ierr);
+    ierr = PCApplySymmetricLeft(pc,WA2,ASP); CHKERRQ(ierr);
 
     /* Check for negative curvature */
 #if defined(PETSC_COMPLEX)
@@ -252,7 +252,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   }
   /* Unscale x */
   ierr = VecCopy(X,WA2); CHKERRQ(ierr);
-  ierr = PCApplySymmRight(pc,WA2,X); CHKERRQ(ierr);
+  ierr = PCApplySymmetricRight(pc,WA2,X); CHKERRQ(ierr);
 
   ierr = MatMult(Amat,X,WA); CHKERRQ(ierr);
   ierr = VecDot(B,X,&btx); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: PetscMemcmp.c,v 1.3 1996/03/08 17:16:14 balay Exp balay $";
+static char vcid[] = "$Id: PetscMemcmp.c,v 1.4 1996/03/08 23:31:01 balay Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -11,7 +11,7 @@ int main( int argc, char **argv)
   Scalar A[10000], B[10000];
   int    i;
 
-  PetscInitialize(&argc, &argv,0,0,0);
+  PetscInitialize(&argc, &argv,0,0);
 
   for (i=0; i<10000; i++) {
     A[i] = i%61897;

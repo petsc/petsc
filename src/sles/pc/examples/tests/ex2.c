@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.35 1996/01/03 14:42:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.36 1996/02/08 18:26:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -21,7 +21,7 @@ int main(int argc,char **args)
   char   *kspname, *pcname;
   double norm;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Create and initialize vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&b); CHKERRA(ierr);
@@ -62,13 +62,13 @@ int main(int argc,char **args)
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = KSPSetBinv(ksp,pc); CHKERRA(ierr);
+  ierr = KSPSetPC(ksp,pc); CHKERRA(ierr);
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
   /* Solve the problem */
   ierr = KSPGetType(ksp,PETSC_NULL,&kspname); CHKERRA(ierr);
   ierr = PCGetType(pc,PETSC_NULL,&pcname); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
+  PetscPrintf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm);

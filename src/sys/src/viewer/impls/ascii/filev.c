@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.36 1996/03/08 05:48:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.37 1996/03/18 00:42:25 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -169,7 +169,7 @@ $      as dense.
 @*/
 int ViewerSetFormat(Viewer v,int format,char *name)
 {
-  PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
     v->format     = format;
     v->outputname = name;

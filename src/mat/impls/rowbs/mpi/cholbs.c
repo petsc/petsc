@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.25 1996/01/19 14:24:18 curfman Exp balay $";
+static char vcid[] = "$Id: cholbs.c,v 1.26 1996/03/11 20:38:09 balay Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -21,7 +21,7 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mbs->mat_is_symmetric) 
     SETERRQ(1,"MatIncompleteCholeskySymbolic_MPIRowbs:To use incomplete Cholesky \n\
         preconditioning with MatCreateMPIRowbs() matrix you must declare it to be \n\
@@ -48,7 +48,7 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS perm,IS cperm,
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mbs->mat_is_symmetric) 
     SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:To use ILU preconditioner with \n\
         MatCreateMPIRowbs() matrix you CANNOT declare it to be a symmetric matrix\n\
@@ -75,7 +75,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 #if defined(PETSC_LOG)
   double flop1 = BSlocal_flops();
 #endif
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat != *factp) SETERRQ(1,
     "MatCholeskyFactorNumeric_MPIRowbs:factored matrix must be same context as mat");
 
@@ -110,7 +110,7 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat != *factp) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:factored\
                                  matrix must be same context as mat");
 
@@ -151,7 +151,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
-    ierr = VecPMult(mbs->diag,mbs->xwork,y); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y); CHKERRQ(ierr);
   } else {
     ierr = VecCopy(x,y); CHKERRQ(ierr);
   }
@@ -173,7 +173,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
-    ierr = VecPMult(y,mbs->diag,mbs->xwork);  CHKERRQ(ierr);
+    ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);  CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
     ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
@@ -199,7 +199,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
-    ierr = VecPMult(mbs->diag,mbs->xwork,y); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y); CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
   } else {
@@ -243,7 +243,7 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
-    ierr = VecPMult(y,mbs->diag,mbs->xwork);  CHKERRQ(ierr);
+    ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);  CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
   }
   ierr = VecRestoreArray(y,&ya);   CHKERRQ(ierr);

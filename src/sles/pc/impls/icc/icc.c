@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.32 1996/02/19 03:50:47 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.33 1996/03/04 05:15:38 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -73,13 +73,13 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
   return 0;  
 }
 
-static int PCApplySymmLeft_ICC(PC pc,Vec x,Vec y)
+static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
   return MatForwardSolve(icc->fact,x,y);
 }
 
-static int PCApplySymmRight_ICC(PC pc,Vec x,Vec y)
+static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
   return MatBackwardSolve(icc->fact,x,y);
@@ -87,8 +87,8 @@ static int PCApplySymmRight_ICC(PC pc,Vec x,Vec y)
 
 static int PCPrintHelp_ICC(PC pc,char *p)
 {
-  MPIU_printf(pc->comm," Options for PCICC preconditioner:\n");
-  MPIU_printf(pc->comm,"%spc_icc_bsiter:  use BlockSolve iterative solver instead\
+  PetscPrintf(pc->comm," Options for PCICC preconditioner:\n");
+  PetscPrintf(pc->comm,"%spc_icc_bsiter:  use BlockSolve iterative solver instead\
                   of KSP routines\n",p);
   return 0;
 }
@@ -102,13 +102,6 @@ static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 
 static int PCSetFromOptions_ICC(PC pc)
 {
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-  int ierr, flg;
-  ierr = OptionsHasName(pc->prefix,"-pc_icc_bsiter",&flg); CHKERRQ(ierr);
-  if (flg) {
-    PCBSIterSetBlockSolve(pc);
-  }
-#endif
   return 0;
 }
 
@@ -129,8 +122,8 @@ int PCCreate_ICC(PC pc)
   pc->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
   pc->type	   = PCICC;
   pc->data	   = (void *) icc;
-  pc->applysymmleft  = PCApplySymmLeft_ICC;
-  pc->applysymmright = PCApplySymmRight_ICC;
+  pc->applysymmetricleft  = PCApplySymmetricLeft_ICC;
+  pc->applysymmetricright = PCApplySymmetricRight_ICC;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.17 1995/11/09 22:31:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.18 1995/12/01 14:49:28 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates us of color map\n";
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   Draw draw;
   int     ierr, x = 0, y = 0, width = 256, height = 256,i; 
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = DrawOpenX(MPI_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
   for ( i=0; i<256; i++) {

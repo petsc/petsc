@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: senddense.c,v 1.13 1995/07/20 04:00:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: senddense.c,v 1.14 1995/10/01 02:27:24 bsmith Exp bsmith $";
 #endif
 /*
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
@@ -30,16 +30,16 @@ $     VecView(Vec vector,Viewer viewer)
 int ViewerMatlabPutArray_Private(Viewer viewer,int m,int n,Scalar *array)
 {
   int ierr,t = viewer->port,type = DENSEREAL,value;
-  ierr = SYWrite(t,&type,1,SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,&m,1,SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,&n,1,SYINT,0); CHKERRQ(ierr); 
+  ierr = PetscBinaryWrite(t,&type,1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&m,1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&n,1,BINARY_INT,0); CHKERRQ(ierr); 
 #if !defined(PETSC_COMPLEX)
   value = 0;
 #else
   value = 1;
 #endif
-  ierr = SYWrite(t,&value,1,SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,array,m*n,SYSCALAR,0);
+  ierr = PetscBinaryWrite(t,&value,1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,array,m*n,BINARY_SCALAR,0);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.54 1996/02/08 19:37:51 curfman Exp bsmith $ */
+/* $Id: pc.h,v 1.55 1996/03/04 05:17:33 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -24,13 +24,13 @@ extern int    PCSetType(PC,PCType);
 extern int    PCSetUp(PC);
 extern int    PCSetUpOnBlocks(PC);
 extern int    PCApply(PC,Vec,Vec);
-extern int    PCApplySymmLeft(PC,Vec,Vec);
-extern int    PCApplySymmRight(PC,Vec,Vec);
+extern int    PCApplySymmetricLeft(PC,Vec,Vec);
+extern int    PCApplySymmetricRight(PC,Vec,Vec);
 extern int    PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
 extern int    PCApplyTrans(PC,Vec,Vec);
 extern int    PCApplyBAorABTrans(PC,PCSide,Vec,Vec,Vec);
 extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);
-extern int    PCApplyRichardsonExists(PC);
+extern int    PCApplyRichardsonExists(PC,PetscTruth*);
 extern int    PCRegisterAll();
 extern int    PCRegisterDestroy();
 extern int    PCRegister(PCType,char *,int (*)(PC));
@@ -65,9 +65,6 @@ extern int PCSORSetIterations(PC, int);
 typedef enum {BGS_FORWARD_SWEEP=1,BGS_SYMMETRIC_SWEEP=2} PCBGSType;
 extern int PCBGSSetSymmetric(PC, PCBGSType);
 
-#define USE_PRECONDITIONER_MATRIX 0
-#define USE_TRUE_MATRIX           1
-
 extern int PCBJacobiSetUseTrueLocal(PC);
 extern int PCBJacobiSetTotalBlocks(PC, int, int*,int*);
 extern int PCBJacobiSetLocalBlocks(PC, int, int*,int*);
@@ -76,10 +73,6 @@ extern int PCBGSSetUseTrueLocal(PC);
 extern int PCBGSSetTotalBlocks(PC, int, int*,int*);
 extern int PCBGSSetLocalBlocks(PC, int, int*,int*);
 extern int PCBGSSetSymmetric(PC, PCBGSType);
-
-extern int PCBSIterSetBlockSolve(PC);
-extern int PCBSIterSetFromOptions(PC);
-extern int PCBSIterSolve(PC,Vec,Vec,int*);
 
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
@@ -91,9 +84,10 @@ extern int PCILUSetUseInPlace(PC);
 extern int PCILUSetLevels(PC,int);
 extern int PCEisenstatUseDiagonalScaling(PC);
 
-extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 extern int PCASMSetLocalSubdomains(PC, int, IS *);
 extern int PCASMSetTotalSubdomains(PC, int, IS *);
 extern int PCASMSetOverlap(PC, int);
+
+extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 #endif
 

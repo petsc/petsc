@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.16 1996/02/08 18:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.17 1996/02/13 23:30:12 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the SLES solvers\n\n";
@@ -15,9 +15,9 @@ int main(int argc,char **args)
   Scalar   v,  one = 1.0,scale = 0.0;
   Vec      u,b,x,tmp;
   SLES     sles;
-  SYRandom rctx;
+  PetscRandom rctx;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
@@ -43,9 +43,9 @@ int main(int argc,char **args)
   /* make solution be 1 to random noise */
   ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&tmp); CHKERRA(ierr);
-  ierr = SYRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+  ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
   ierr = VecSetRandom(rctx,tmp); CHKERRA(ierr);
-  ierr = SYRandomDestroy(rctx); CHKERRA(ierr);
+  ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);
   ierr = VecAXPY(&scale,tmp,u); CHKERRA(ierr);
   ierr = VecDestroy(tmp); CHKERRA(ierr);
   ierr = MatMult(C,u,b); CHKERRA(ierr);

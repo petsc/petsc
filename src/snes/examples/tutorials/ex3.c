@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.31 1996/01/29 21:46:50 curfman Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.32 1996/03/05 16:27:35 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -32,7 +32,7 @@ int main( int argc, char **argv )
   int            ierr, its, N = 5, i, start, end, n, set,flg;
   MatType        mtype=MATMPIAIJ;
 
-  PetscInitialize( &argc, &argv, 0,0,help );
+  PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&N,&flg); CHKERRA(ierr);
   ctx.h = 1.0/(N-1);
 
@@ -49,7 +49,7 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRA(ierr);
+  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRA(ierr);
   if (mtype == MATMPIBDIAG) {
     int diag[3]; diag[0] = -1; diag[1] = 0; diag[2] = 1;
     ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,diag,
@@ -86,7 +86,7 @@ int main( int argc, char **argv )
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );
+  PetscPrintf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);

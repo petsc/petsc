@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.35 1996/03/10 17:27:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.36 1996/03/18 00:38:21 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -38,7 +38,7 @@ int KSPSetUp_Richardson(KSP ksp)
 int KSPRichardsonSetScale(KSP ksp,double scale)
 {
   KSP_Richardson *richardsonP;
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->type != KSPRICHARDSON) return 0;
   richardsonP = (KSP_Richardson *) ksp->data;
   richardsonP->scale = scale;
@@ -54,6 +54,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   Vec                x,b,r,z;
   Mat                Amat, Pmat;
   KSP_Richardson     *richardsonP = (KSP_Richardson *) ksp->data;
+  PetscTruth         exists;
 
   ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   x       = ksp->vec_sol;
@@ -62,7 +63,8 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   maxit   = ksp->max_it;
 
   /* if user has provided fast Richardson code use that */
-  if (PCApplyRichardsonExists(ksp->B)) {
+  ierr = PCApplyRichardsonExists(ksp->B,&exists); CHKERRQ(ierr);
+  if (exists) {
     *its = maxit;
     return PCApplyRichardson(ksp->B,b,x,r,maxit);
   }
@@ -129,7 +131,7 @@ static int KSPView_Richardson(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    MPIU_fprintf(ksp->comm,fd,"    Richardson: damping factor=%g\n",richardsonP->scale);
+    PetscFPrintf(ksp->comm,fd,"    Richardson: damping factor=%g\n",richardsonP->scale);
   }
   return 0;
 }

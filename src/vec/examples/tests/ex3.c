@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.31 1995/12/21 18:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.32 1996/01/12 22:05:06 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
@@ -9,7 +9,6 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "sysio.h"
 #include <math.h>
 
 int main(int argc,char **argv)
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   Vec          x,y;
   int          idx;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg); if (n < 5) n = 5;
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank); 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.72 1996/03/10 17:27:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.73 1996/03/18 00:39:16 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -97,7 +97,7 @@ $  -pc_gs_symmetric
 int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCBGS) return 0;
   jac->gstype = flag;
   return 0;
@@ -128,7 +128,7 @@ $  -pc_bjacobi_truelocal
 int PCBJacobiSetUseTrueLocal(PC pc)
 {
   PC_BJacobi   *jac;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
   jac = (PC_BJacobi *) pc->data;
   jac->use_true_local = 1;
@@ -187,7 +187,7 @@ int PCBGSSetUseTrueLocal(PC pc)
 int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 {
   PC_BJacobi   *jac;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
   if (!pc->setupcalled) SETERRQ(1,"PCBJacobiGetSubSLES:Must call SLESSetUp first");
   jac = (PC_BJacobi *) pc->data;
@@ -229,11 +229,11 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 
 static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
-  MPIU_printf(pc->comm," Options for PCBJACOBI preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_bjacobi_blocks blks: blocks in preconditioner\n",p);
-  MPIU_printf(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
+  PetscPrintf(pc->comm," Options for PCBJACOBI preconditioner:\n");
+  PetscPrintf(pc->comm," %spc_bjacobi_blocks blks: blocks in preconditioner\n",p);
+  PetscPrintf(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
-  MPIU_printf(pc->comm," %ssub : prefix to control options for individual blocks.\
+  PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (i.e., %ssub_ksp_type\
  <meth>)\n",p,p);
   return 0;
@@ -241,12 +241,12 @@ static int PCPrintHelp_BJacobi(PC pc,char *p)
 
 static int PCPrintHelp_BGS(PC pc,char *p)
 {
-  MPIU_printf(pc->comm," Options for PCBGS preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_bgs_blocks blks: blocks in preconditioner\n",p);
-  MPIU_printf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
+  PetscPrintf(pc->comm," Options for PCBGS preconditioner:\n");
+  PetscPrintf(pc->comm," %spc_bgs_blocks blks: blocks in preconditioner\n",p);
+  PetscPrintf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
-  MPIU_printf(pc->comm, " %spc_bgs_symmetric: use both, a forward and backward sweep\n",p);
-  MPIU_printf(pc->comm," %ssub : prefix to control options for individual blocks.\
+  PetscPrintf(pc->comm, " %spc_bgs_symmetric: use both, a forward and backward sweep\n",p);
+  PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (i.e., %ssub_ksp_type\
  <meth>)\n",p,p);
   return 0;
@@ -266,29 +266,29 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->use_true_local) {
-      MPIU_fprintf(pc->comm,fd,
+      PetscFPrintf(pc->comm,fd,
          "    %s: using true local matrix, number of blocks = %d\n", c, jac->n);
     }
-    MPIU_fprintf(pc->comm,fd,"    %s: number of blocks = %d\n", c, jac->n);
+    PetscFPrintf(pc->comm,fd,"    %s: number of blocks = %d\n", c, jac->n);
     MPI_Comm_rank(pc->comm,&rank);
     if (jac->same_local_solves) {
-      MPIU_fprintf(pc->comm,fd,
+      PetscFPrintf(pc->comm,fd,
       "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
       if (!rank) {
         ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
       }           /* now only 1 block per proc */
                 /* This shouldn't really be STDOUT */
     } else {
-      MPIU_fprintf(pc->comm,fd,
+      PetscFPrintf(pc->comm,fd,
        "    Local solve info for each block is in the following KSP and PC objects:\n");
-      MPIU_Seq_begin(pc->comm,1);
+      PetscSequentialPhaseBegin(pc->comm,1);
       fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
       rank,jac->n_local,jac->first_local);
       ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
            /* now only 1 block per proc */
            /* This shouldn't really be STDOUT */
       fflush(fd);
-      MPIU_Seq_end(pc->comm,1);
+      PetscSequentialPhaseEnd(pc->comm,1);
     }
   }
   return 0;
@@ -364,7 +364,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks <= 0) SETERRQ(1,"PCBJacobiSetTotalBlocks:Must have positive blocks");
   if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
 
@@ -435,7 +435,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(1,"PCBJacobiSetLocalBlocks:Must have nonegative blocks");
   if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.28 1996/03/18 00:43:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.29 1996/03/18 17:08:18 curfman Exp bsmith $";
 #endif
 
 /*
@@ -17,7 +17,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
   DA          da = (DA) dain;
   int         rank, ierr;
   ViewerType  vtype;
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&rank); 
 
@@ -31,13 +31,13 @@ int DAView_3d(PetscObject dain,Viewer viewer)
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
-    MPIU_Seq_begin(da->comm,1);
+    PetscSequentialPhaseBegin(da->comm,1);
     fprintf(fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
                rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);
     fprintf(fd,"X range: %d %d, Y: range %d %d, Z range: %d %d\n",
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);
     fflush(fd);
-    MPIU_Seq_end(da->comm,1);
+    PetscSequentialPhaseEnd(da->comm,1);
   }
   else if (vtype == DRAW_VIEWER) {
     Draw       draw;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.6 1996/02/01 16:33:33 balay Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.7 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: random.c,v 1.6 1996/02/01 16:33:33 balay Exp bsmith $
 #include "stdlib.h"
 
 /* Private data */
-struct _SYRandom {
+struct _PetscRandom {
   PETSCHEADER                         /* general PETSc header */
   unsigned long seed;
   Scalar        low, high;
@@ -43,7 +43,7 @@ extern void   srand48();
 #endif
 
 /*@C
-   SYRandomCreate - Creates a context for generating random numbers and
+   PetscRandomCreate - Creates a context for generating random numbers and
    initializes the random-number generator.
 
    Input Parameters:
@@ -60,24 +60,24 @@ extern void   srand48();
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    Example of Usage:
-$    SYRandomCreate(RANDOM_DEFAULT,&r);
-$    SYRandomGetValue(r,&value1);
-$    SYRandomGetValue(r,&value2);
-$    SYRandomGetValue(r,&value3);
-$    SYRandomDestroy(r);
+$    PetscRandomCreate(RANDOM_DEFAULT,&r);
+$    PetscRandomGetValue(r,&value1);
+$    PetscRandomGetValue(r,&value2);
+$    PetscRandomGetValue(r,&value3);
+$    PetscRandomDestroy(r);
 
 .keywords: system, random, create
 
-.seealso: SYRandomGetValue(), SYRandomDestroy(), VecSetRandom()
+.seealso: PetscRandomGetValue(), PetscRandomDestroy(), VecSetRandom()
 @*/
-int SYRandomCreate(MPI_Comm comm,SYRandomType type,SYRandom *r)
+int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
-  SYRandom rr;
+  PetscRandom rr;
   int      rank;
   *r = 0;
   if (type != RANDOM_DEFAULT)
-    SETERRQ(PETSC_ERR_SUP,"SyRandomCreate:Not for this random number type");
-  PetscHeaderCreate(rr,_SYRandom,SYRANDOM_COOKIE,type,comm);
+    SETERRQ(PETSC_ERR_SUP,"PetscRandomCreate:Not for this random number type");
+  PetscHeaderCreate(rr,_PetscRandom,RANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
   MPI_Comm_rank(comm,&rank);
   srand48(0x12345678+rank);
@@ -86,27 +86,27 @@ int SYRandomCreate(MPI_Comm comm,SYRandomType type,SYRandom *r)
 }
 
 /*@C
-   SYRandomDestroy - Destroys a context that has been formed by 
-   SYRandomCreate().
+   PetscRandomDestroy - Destroys a context that has been formed by 
+   PetscRandomCreate().
 
    Intput Parameter:
 .  r  - the random number generator context
 
 .keywords: system, random, destroy
 
-.seealso: SYRandomGetValue(), SYRandomCreate(), VecSetRandom()
+.seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
 @*/
-int SYRandomDestroy(SYRandom r)
+int PetscRandomDestroy(PetscRandom r)
 {
-  PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
   PLogObjectDestroy((PetscObject)r);
   PetscHeaderDestroy((PetscObject)r);
   return 0;
 }
 
 /*@
-   SYRandomGetValue - Generates a random number.  Call this after first calling
-   SYRandomCreate().
+   PetscRandomGetValue - Generates a random number.  Call this after first calling
+   PetscRandomCreate().
 
    Intput Parameter:
 .  r  - the random number generator context
@@ -115,19 +115,19 @@ int SYRandomDestroy(SYRandom r)
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    Example of Usage:
-$    SYRandomCreate(RANDOM_DEFAULT,&r);
-$    SYRandomGetValue(r,&value1);
-$    SYRandomGetValue(r,&value2);
-$    SYRandomGetValue(r,&value3);
-$    SYRandomDestroy(r);
+$    PetscRandomCreate(RANDOM_DEFAULT,&r);
+$    PetscRandomGetValue(r,&value1);
+$    PetscRandomGetValue(r,&value2);
+$    PetscRandomGetValue(r,&value3);
+$    PetscRandomDestroy(r);
 
 .keywords: system, random, get, value
 
-.seealso: SYRandomCreate(), SYRandomDestroy(), VecSetRandom()
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
 @*/
-int SYRandomGetValue(SYRandom r,Scalar *val)
+int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
-  PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
 #if defined(PETSC_COMPLEX)
   complex tmp(drand48(),drand48());
   *val = tmp;
@@ -141,29 +141,29 @@ int SYRandomGetValue(SYRandom r,Scalar *val)
 /* Should put a simple, portable random number generator here */
 
 extern double drand48();
-int SYRandomCreate(MPI_Comm comm,SYRandomType type,SYRandom *r)
+int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
-  SYRandom rr;
+  PetscRandom rr;
   *r = 0;
   if (type != RANDOM_DEFAULT)
-    SETERRQ(PETSC_ERR_SUP,"SyRandomCreate:Not for this random number type");
-  PetscHeaderCreate(rr,_SYRandom,SYRANDOM_COOKIE,type,comm);
+    SETERRQ(PETSC_ERR_SUP,"PetscRandomCreate:Not for this random number type");
+  PetscHeaderCreate(rr,_PetscRandom,RANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
   *r = rr;
   return 0;
 }
 
-int SYRandomDestroy(SYRandom r)
+int PetscRandomDestroy(PetscRandom r)
 {
-  PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
   PLogObjectDestroy((PetscObject)r);
   PetscHeaderDestroy((PetscObject)r);
   return 0;
 }
 
-int SYRandomGetValue(SYRandom r,Scalar *val)
+int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
-  PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
 #if defined(PETSC_COMPLEX)
   *val = (0.5,0.5);
 #else

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rpath.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rpath.c,v 1.3 1996/03/08 05:46:26 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: rpath.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $
 
 
 /*@C
-   SYGetRelativePath - Given a filename, returns the relative path (removes
+   PetscGetRelativePath - Given a filename, returns the relative path (removes
    all directory specifiers).
 
    Input parameters:
@@ -18,9 +18,9 @@ static char vcid[] = "$Id: rpath.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $
 
 .keywords: system, get, relative, path
 
-.seealso: SYGetFullPath()
+.seealso: PetscGetFullPath()
 @*/
-int SYGetRelativePath( char *fullpath, char *path, int flen )
+int PetscGetRelativePath( char *fullpath, char *path, int flen )
 {
   char  *p;
 

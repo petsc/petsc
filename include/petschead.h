@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.27 1996/01/12 17:25:10 balay Exp bsmith $ */
+/* $Id: phead.h,v 1.28 1996/02/09 01:56:42 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -8,6 +8,9 @@
 #define _PHEAD_H
 #include "petsc.h"  
 
+extern int  PetscCommDup_Private(MPI_Comm,MPI_Comm*,int*);
+extern int  PetscCommFree_Private(MPI_Comm*);
+
 extern int PetscRegisterCookie(int *);
 
 /*
@@ -16,7 +19,7 @@ extern int PetscRegisterCookie(int *);
 
      PetscHeaderCreate should be used whenever you create a PETSc structure.
 
-     CHKSAME checks if your PETSc structures are of same type.
+     PetscCheckSameType checks if your PETSc structures are of same type.
 */
 
 #define PETSCHEADER                        \
@@ -45,9 +48,9 @@ extern int PetscRegisterCookie(int *);
        (h)->cookie = cook;                                         \
        (h)->type   = t;                                            \
        (h)->prefix = 0;                                            \
-       MPIU_Comm_dup(com,&(h)->comm,&(h)->tag);}
+       PetscCommDup_Private(com,&(h)->comm,&(h)->tag);}
 #define PetscHeaderDestroy(h)                                      \
-       {MPIU_Comm_free(&(h)->comm);                                \
+       {PetscCommFree_Private(&(h)->comm);                         \
         (h)->cookie = PETSCFREEDHEADER;                            \
         if ((h)->prefix) PetscFree((h)->prefix);                   \
         PetscFree(h);          }
@@ -59,7 +62,7 @@ extern int PetscRegisterCookie(int *);
 extern void *PetscLow,*PetscHigh;
 
 #if defined(PETSC_BOPT_g) && !defined(PETSC_INSIGHT)
-#define PETSCVALIDHEADERSPECIFIC(h,ck)                             \
+#define PetscValidHeaderSpecific(h,ck)                             \
   {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Object");}                 \
   if (PetscLow > (void *) h || PetscHigh < (void *)h){             \
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");            \
@@ -72,7 +75,7 @@ extern void *PetscLow,*PetscHigh;
       SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
     }                                                              \
   }}
-#define PETSCVALIDHEADER(h)                                        \
+#define PetscValidHeader(h)                                        \
   {if (!h) {SETERRQ(1,"Null Object");}                             \
   else if (PetscLow > (void *) h || PetscHigh < (void *)h){        \
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");            \
@@ -85,7 +88,7 @@ extern void *PetscLow,*PetscHigh;
       SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
   }}
 #else
-#define PETSCVALIDHEADERSPECIFIC(h,ck)                             \
+#define PetscValidHeaderSpecific(h,ck)                             \
   {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Object");}                 \
   if (((PetscObject)(h))->cookie != ck) {                          \
     if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {          \
@@ -95,7 +98,7 @@ extern void *PetscLow,*PetscHigh;
       SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
     }                                                              \
   }}
-#define PETSCVALIDHEADER(h)                                        \
+#define PetscValidHeader(h)                                        \
   {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Object");}                 \
   else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {       \
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
@@ -106,7 +109,7 @@ extern void *PetscLow,*PetscHigh;
   }}
 #endif
 
-#define CHKSAME(a,b) \
+#define PetscCheckSameType(a,b) \
   if ((a)->type != (b)->type) SETERRQ(3,"Objects not of same type");
 
 /*

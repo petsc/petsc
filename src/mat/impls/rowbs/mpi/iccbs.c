@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.7 1996/02/15 00:56:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.8 1996/03/10 17:28:20 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
@@ -38,9 +38,9 @@ int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
   ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
   ierr = VecGetArray(v,&va); CHKERRQ(ierr);
   BSperm_dvec(xa,va,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecPDiv(v,bsif->diag,x); CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(v,bsif->diag,x); CHKERRQ(ierr);
   BSperm_dvec(rhsa,va,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecPMult(v,bsif->diag,rhs); CHKERRQ(ierr);
+  ierr = VecPointwiseMult(v,bsif->diag,rhs); CHKERRQ(ierr);
   ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
@@ -61,9 +61,9 @@ int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
   ierr = VecGetArray(v,&va); CHKERRQ(ierr);
   ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
   ierr = VecGetArray(rhs,&rhsa); CHKERRQ(ierr);
-  ierr = VecPMult(x,bsif->diag,v); CHKERRQ(ierr);
+  ierr = VecPointwiseMult(x,bsif->diag,v); CHKERRQ(ierr);
   BSiperm_dvec(va,xa,bsif->pA->perm); CHKERRBS(0);
-  ierr = VecPDiv(rhs,bsif->diag,v); CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(rhs,bsif->diag,v); CHKERRQ(ierr);
   BSiperm_dvec(va,rhsa,bsif->pA->perm); CHKERRBS(0);
   ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
@@ -115,9 +115,9 @@ int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,Mat mat)
   double       scnorm;
 
   ierr = KSPBuildResidual(ksp,0,bsif->xwork,&resid); CHKERRQ(ierr);
-  ierr = VecPMult(resid,bsif->diag,resid); CHKERRQ(ierr);
+  ierr = VecPointwiseMult(resid,bsif->diag,resid); CHKERRQ(ierr);
   ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
-  MPIU_printf(ksp->comm,"%d %14.12e \n",n,scnorm); 
+  PetscPrintf(ksp->comm,"%d %14.12e \n",n,scnorm); 
   return 0;
 }
   
@@ -153,7 +153,7 @@ int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
   *its = BSpar_solve(iccbs->blocksize,amat->pA,amat->fpA,amat->comm_pA,ba,xa,
              iccbs->pre_option,iccbs->rtol,iccbs->max_it,&(iccbs->rnorm),
              iccbs->guess_zero,amat->procinfo); CHKERRQ(0);  
-  MPIU_printf(pc->mat->comm,"method=%d, final residual = %e\n",
+  PetscPrintf(pc->mat->comm,"method=%d, final residual = %e\n",
               iccbs->pre_option,iccbs->rnorm); 
   VecRestoreArray(b,&ba); VecRestoreArray(x,&xa);
   return 0;
@@ -178,7 +178,7 @@ int PCBSIterSetFromOptions(PC pc)
   PCiBS  *iccbs;
   int    ierr,flg;
 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->pmat->type != MATMPIROWBS) return 0;
   iccbs = (PCiBS *) icc->implctx;
   ierr = OptionsGetInt(pc->prefix,"-pc_bs_max_it",&iccbs->max_it,&flg);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ int PCBSIterSetFromOptions(PC pc)
   return 0;
 }
 
-/*@
+/*
    PCBSIterSetBlockSolve - Sets flag so that BlockSolve iterative solver is
    used instead of default KSP routines.  This routine should be called
    before PCSetUp().
@@ -202,13 +202,13 @@ int PCBSIterSetFromOptions(PC pc)
    Note:
    This option is valid only when the MATMPIROWBS data structure
    is used for the preconditioning matrix.
-@*/
+*/
 int PCBSIterSetBlockSolve(PC pc)
 {
   SETERRQ(1,"PCBSIterSetBlockSolve: Not currently supported.");
 /*
   PC_ICC *icc = (PC_ICC *) pc->data;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->setupcalled) SETERRQ(1,"PCBSIterSetBlockSolve:Must call before PCSetUp");
   if (pc->type != PCICC) return 0;
   icc->bs_iter = 1;

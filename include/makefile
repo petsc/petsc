@@ -4,14 +4,14 @@ CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR) $(CONF) $(PCONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
-           sysio.h vec.h sles.h mg.h viewer.h snes.h \
+           vec.h sles.h mg.h viewer.h snes.h \
            da.h mpiu.h plog.h phead.h ts.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = pinclude FINCLUDE 
 LOCDIR   = include/
-MANSEC   = 7
+MANSEC   = p
 
 runexamples:
 

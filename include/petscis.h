@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.21 1996/02/15 14:58:23 balay Exp balay $ */
+/* $Id: is.h,v 1.22 1996/02/16 20:04:25 balay Exp bsmith $ */
 
 /*
       An index set is essentially a subset of the integers. They are used
@@ -22,17 +22,16 @@ extern int   ISDestroy(IS);
 extern int   ISStrideGetInfo(IS,int *,int*);
 
 extern int   ISSetPermutation(IS);
-extern int   ISIsPermutation(IS); 
+extern int   ISPermutation(IS,PetscTruth*); 
 extern int   ISSetIdentity(IS);
-extern int   ISIsIdentity(IS);
+extern int   ISIdentity(IS,PetscTruth*);
 
 extern int   ISGetIndices(IS,int **);
 extern int   ISRestoreIndices(IS,int **);
 extern int   ISGetSize(IS,int *);
-extern int   ISGetLocalSize(IS,int *);
 extern int   ISInvertPermutation(IS,IS*);
 extern int   ISView(IS,Viewer);
-extern int   ISEqual(IS , IS , int *);
+extern int   ISEqual(IS, IS, PetscTruth *);
 extern int   ISSort(IS);
-extern int   ISSorted(IS, int*);
+extern int   ISSorted(IS, PetscTruth *);
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.48 1996/03/10 17:27:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.49 1996/03/18 00:39:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -70,14 +70,14 @@ static int PCSetFromOptions_SOR(PC pc)
 
 static int PCPrintHelp_SOR(PC pc,char *p)
 {
-  MPIU_printf(pc->comm," Options for PCSOR preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
-  MPIU_printf(pc->comm," %spc_sor_symmetric: use SSOR\n",p);
-  MPIU_printf(pc->comm," %spc_sor_backward: use backward sweep instead of forward\n",p);
-  MPIU_printf(pc->comm," %spc_sor_local_symmetric: use SSOR on each processor\n",p);
-  MPIU_printf(pc->comm," %spc_sor_local_backward: use backward sweep locally\n",p);
-  MPIU_printf(pc->comm," %spc_sor_local_forward: use forward sweep locally\n",p);
-  MPIU_printf(pc->comm," %spc_sor_its its: number of inner SOR iterations to use\n",p);
+  PetscPrintf(pc->comm," Options for PCSOR preconditioner:\n");
+  PetscPrintf(pc->comm," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
+  PetscPrintf(pc->comm," %spc_sor_symmetric: use SSOR\n",p);
+  PetscPrintf(pc->comm," %spc_sor_backward: use backward sweep instead of forward\n",p);
+  PetscPrintf(pc->comm," %spc_sor_local_symmetric: use SSOR on each processor\n",p);
+  PetscPrintf(pc->comm," %spc_sor_local_backward: use backward sweep locally\n",p);
+  PetscPrintf(pc->comm," %spc_sor_local_forward: use forward sweep locally\n",p);
+  PetscPrintf(pc->comm," %spc_sor_its its: number of inner SOR iterations to use\n",p);
   return 0;
 }
 
@@ -95,7 +95,7 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (sym & SOR_ZERO_INITIAL_GUESS) 
-      MPIU_fprintf(pc->comm,fd,"    SOR:  zero initial guess\n");
+      PetscFPrintf(pc->comm,fd,"    SOR:  zero initial guess\n");
     if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
     else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";
     else if (sym & SOR_EISENSTAT)            sortype = "Eisenstat";
@@ -108,7 +108,7 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward"; 
     else                                     sortype = "unknown";
-    MPIU_fprintf(pc->comm,fd,
+    PetscFPrintf(pc->comm,fd,
        "    SOR: type = %s, iterations = %d, omega = %g\n",
        sortype,jac->its,jac->omega);
   }
@@ -166,7 +166,7 @@ $     -pc_type  eisenstat
 int PCSORSetSymmetric(PC pc, MatSORType flag)
 {
   PC_SOR *jac = (PC_SOR *) pc->data; 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCSOR) return 0;
   jac->sym = flag;
   return 0;
@@ -189,7 +189,7 @@ $  -pc_sor_omega  omega
 int PCSORSetOmega(PC pc, double omega)
 {
   PC_SOR *jac = (PC_SOR *) pc->data; 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCSOR) return 0;
   if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"PCSORSetOmega:Relaxation out of range");
   jac->omega = omega;
@@ -213,7 +213,7 @@ $  -pc_sor_its  its
 int PCSORSetIterations(PC pc, int its)
 {
   PC_SOR *jac = (PC_SOR *) pc->data; 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCSOR) return 0;
   jac->its = its;
   return 0;

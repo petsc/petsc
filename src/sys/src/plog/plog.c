@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.84 1996/03/11 23:39:20 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.85 1996/03/11 23:40:34 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -142,7 +142,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "VecMTDot        ",
                          "VecMDot         ",
                          "VecMAXPY        ",
-                         "VecPMult        ",
+                         "VecPointwiseMult",
                          "VecSetValues    ",
                          "VecLoad         ",
                          "VecView         ",
@@ -281,7 +281,7 @@ int PLogStageRegister(int stage, char *sname)
    following code, then 3 sets of summary data will be printed during
    PetscFinalize().
 $
-$     PetscInitialize(int *argc,char ***args,0,0,0);
+$     PetscInitialize(int *argc,char ***args,0,0);
 $     [stage 0 of code]   
 $     for (i=0; i<ntimes; i++) {
 $        PLogStagePush(1);
@@ -327,7 +327,7 @@ int PLogStagePush(int stage)
    following code, then 2 sets of summary data will be printed during
    PetscFinalize().
 $
-$     PetscInitialize(int *argc,char ***args,0,0,0);
+$     PetscInitialize(int *argc,char ***args,0,0);
 $     [stage 0 of code]   
 $     PLogStagePush(1);
 $     [stage 1 of code]
@@ -394,7 +394,7 @@ int phc(PetscObject obj)
   events[nevents].id2     = -1;
   events[nevents].id3     = -1;
   events[nevents].flops   = _TotalFlops;
-  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].event = CREATE;
   objects[nobjects].parent= -1;
   objects[nobjects].obj   = obj;
@@ -427,7 +427,7 @@ int phd(PetscObject obj)
   events[nevents].id1       = obj->id;
   events[nevents].id2       = -1;
   events[nevents].flops   = _TotalFlops;
-  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].id3     = -1;
   if (obj->parent) {objects[obj->id].parent   = obj->parent->id;}
   else {objects[obj->id].parent   = -1;}
@@ -474,7 +474,7 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   events[nevents].type   = event;
   events[nevents].cookie = 0;
   events[nevents].flops   = _TotalFlops;
-  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].event= ACTIONBEGIN;
   if (t != 1) return 0;
   EventsType[EventsStage][event][COUNT]++;
@@ -506,7 +506,7 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   events[nevents].type   = event;
   events[nevents].cookie = 0;
   events[nevents].flops   = _TotalFlops;
-  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  PetscTrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
   events[nevents++].event= ACTIONEND;
   if (t != 1) return 0;
   EventsType[EventsStage][event][TIME] += ltime;
@@ -819,31 +819,31 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   MPI_Reduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,0,comm);
   avet = (tott)/((double) size);
 
-  MPIU_fprintf(comm,fd,
+  PetscFPrintf(comm,fd,
    "\nPerformance Summary:----------------------------------------------------------\n");
-  SYGetArchType(arch,10);
+  PetscGetArchType(arch,10);
   if (size == 1)
-    MPIU_fprintf(comm,fd,"Machine: %s with %d processor, run on %s",arch,size,SYGetDate());
+    PetscFPrintf(comm,fd,"Machine: %s with %d processor, run on %s",arch,size,PetscGetDate());
   else
-    MPIU_fprintf(comm,fd,"Machine: %s with %d processors, run on %s",arch,size,SYGetDate());
+    PetscFPrintf(comm,fd,"Machine: %s with %d processors, run on %s",arch,size,PetscGetDate());
 
-  MPIU_fprintf(comm,fd,"\n                Max         Min        Avg        Total \n");
-  MPIU_fprintf(comm,fd,"Time (sec):  %5.3e   %5.3e   %5.3e\n",maxt,mint,avet);
-  MPIU_fprintf(comm,fd,"Objects:     %5.3e   %5.3e   %5.3e\n",maxo,mino,aveo);
-  MPIU_fprintf(comm,fd,"Flops:       %5.3e   %5.3e   %5.3e  %5.3e\n",
+  PetscFPrintf(comm,fd,"\n                Max         Min        Avg        Total \n");
+  PetscFPrintf(comm,fd,"Time (sec):  %5.3e   %5.3e   %5.3e\n",maxt,mint,avet);
+  PetscFPrintf(comm,fd,"Objects:     %5.3e   %5.3e   %5.3e\n",maxo,mino,aveo);
+  PetscFPrintf(comm,fd,"Flops:       %5.3e   %5.3e   %5.3e  %5.3e\n",
                                                  maxf,minf,avef,totf);
 
   if (mint) fmin = minf/mint; else fmin = 0;
   if (maxt) fmax = maxf/maxt; else fmax = 0;
   if (maxt) ftot = totf/maxt; else ftot = 0;
-  MPIU_fprintf(comm,fd,"Flops/sec:   %5.3e   %5.3e              %5.3e\n",
+  PetscFPrintf(comm,fd,"Flops/sec:   %5.3e   %5.3e              %5.3e\n",
                                                fmin,fmax,ftot);
-  TrSpace(PETSC_NULL,PETSC_NULL,&mem);
+  PetscTrSpace(PETSC_NULL,PETSC_NULL,&mem);
   if (mem > 0.0) {
     MPI_Reduce(&mem,&maxmem,1,MPI_DOUBLE,MPI_MAX,0,comm);
     MPI_Reduce(&mem,&minmem,1,MPI_DOUBLE,MPI_MIN,0,comm);
     MPI_Reduce(&mem,&totmem,1,MPI_DOUBLE,MPI_SUM,0,comm);
-    MPIU_fprintf(comm,fd,"Memory:      %5.3e   %5.3e              %5.3e\n",
+    PetscFPrintf(comm,fd,"Memory:      %5.3e   %5.3e              %5.3e\n",
                                                minmem,maxmem,totmem);
  
   }
@@ -851,51 +851,51 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   if (!tott) tott = 1.e-5;
 
   if (EventsStageMax) {
-    MPIU_fprintf(comm,fd,"\nSummary of Stages:     Avg Time  %%Total  Avg Flops/sec  %%Total\n");
+    PetscFPrintf(comm,fd,"\nSummary of Stages:     Avg Time  %%Total  Avg Flops/sec  %%Total\n");
     for ( j=0; j<=EventsStageMax; j++ ) {
       MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
       MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
       if (EventsStageName[j]) {
-        MPIU_fprintf(comm,fd," %d: %15s:  %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
+        PetscFPrintf(comm,fd," %d: %15s:  %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
                      j,EventsStageName[j],stime/size,100.0*stime/tott,sflops/size,
                      100.*sflops/totf);
       } else {
-        MPIU_fprintf(comm,fd," %d:          %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
+        PetscFPrintf(comm,fd," %d:          %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
                     j,stime/size,100.0*stime/tott,(size*sflops)/stime,100.*sflops/totf);
       }
     }
   }
 
-  MPIU_fprintf(comm,fd,  
+  PetscFPrintf(comm,fd,  
     "\n------------------------------------------------------------------------------\n"); 
-  MPIU_fprintf(comm,fd,"Phase summary info:\n");
-  MPIU_fprintf(comm,fd,"   Count: number of times phase was executed\n");
-  MPIU_fprintf(comm,fd,"   Time and Flops/sec:\n");
-  MPIU_fprintf(comm,fd,"      Max - maximum over all processors\n");
-  MPIU_fprintf(comm,fd,"      Ratio - ratio of maximum to minimum over all processors\n");
-  MPIU_fprintf(comm,fd,"   Global: entire computation\n");
-  MPIU_fprintf(comm,fd,"   Stage: optional user-defined stages of a computation\n");
-  MPIU_fprintf(comm,fd,"          Set stages with PLogStagePush() and PLogStagePop().\n");
-  MPIU_fprintf(comm,fd,"      %%T - percent time in this phase\n");
-  MPIU_fprintf(comm,fd,"      %%F - percent flops in this phase\n");
-  MPIU_fprintf(comm,fd,
+  PetscFPrintf(comm,fd,"Phase summary info:\n");
+  PetscFPrintf(comm,fd,"   Count: number of times phase was executed\n");
+  PetscFPrintf(comm,fd,"   Time and Flops/sec:\n");
+  PetscFPrintf(comm,fd,"      Max - maximum over all processors\n");
+  PetscFPrintf(comm,fd,"      Ratio - ratio of maximum to minimum over all processors\n");
+  PetscFPrintf(comm,fd,"   Global: entire computation\n");
+  PetscFPrintf(comm,fd,"   Stage: optional user-defined stages of a computation\n");
+  PetscFPrintf(comm,fd,"          Set stages with PLogStagePush() and PLogStagePop().\n");
+  PetscFPrintf(comm,fd,"      %%T - percent time in this phase\n");
+  PetscFPrintf(comm,fd,"      %%F - percent flops in this phase\n");
+  PetscFPrintf(comm,fd,
     "------------------------------------------------------------------------------\n"); 
 
   /* loop over operations looking for interesting ones */
-  MPIU_fprintf(comm,fd,"Phase            Count    Time (sec)      Flops/sec\
+  PetscFPrintf(comm,fd,"Phase            Count    Time (sec)      Flops/sec\
       Global       Stage\n");
-  MPIU_fprintf(comm,fd,"                        Max    Ratio     Max    Ratio\
+  PetscFPrintf(comm,fd,"                        Max    Ratio     Max    Ratio\
      %%T %%F       %%T %%F\n");
-  MPIU_fprintf(comm,fd,
+  PetscFPrintf(comm,fd,
     "------------------------------------------------------------------------------\n"); 
   for ( j=0; j<=EventsStageMax; j++ ) {
     MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
     MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
     if (EventsStageMax) {
       if (EventsStageName[j]) {
-        MPIU_fprintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);
+        PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);
       } else {
-        MPIU_fprintf(comm,fd,"\n--- Event Stage %d:\n\n",j);
+        PetscFPrintf(comm,fd,"\n--- Event Stage %d:\n\n",j);
       }
     }
     /* This loop assumes that PLOG_USER_EVENT_HIGH is the max event number */
@@ -915,29 +915,29 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
       if (EventsType[j][i][COUNT]) {
         if (mint > 0.0) rat = maxt/mint; else rat = 0.0;
         if (minf > 0.0) ratf = maxf/minf; else ratf = 0.0;
-        MPIU_fprintf(comm,fd,"%s %4d  %2.1e %6.1f  %2.1e %6.1f   %4.1f %4.1f   %4.1f %4.1f\n",
+        PetscFPrintf(comm,fd,"%s %4d  %2.1e %6.1f  %2.1e %6.1f   %4.1f %4.1f   %4.1f %4.1f\n",
                     PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
                     100.*totts/tott,100.*totff/totf,100.*totts/stime,100.*totff/sflops);
       }
     }
   }
 
-  MPIU_fprintf(comm,fd,
+  PetscFPrintf(comm,fd,
     "------------------------------------------------------------------------------\n"); 
-  MPIU_fprintf(comm,fd,"\n"); 
-  MPIU_fprintf(comm,fd,"Memory usage is given in bytes:\n\n");
+  PetscFPrintf(comm,fd,"\n"); 
+  PetscFPrintf(comm,fd,"Memory usage is given in bytes:\n\n");
 
   /* loop over objects looking for interesting ones */
-  MPIU_fprintf(comm,fd,"Object Type      Creations   Destructions   Memory  Descendants' Mem.\n");
+  PetscFPrintf(comm,fd,"Object Type      Creations   Destructions   Memory  Descendants' Mem.\n");
   for ( i=0; i<18; i++ ) {
     if (ObjectsType[i][0]) {
-      MPIU_fprintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
+      PetscFPrintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
           ObjectsType[i][0],(int)ObjectsType[i][1],(int)ObjectsType[i][2],
           ObjectsType[i][3]);
     }
 
   }
-  MPIU_fprintf(comm,fd,"\n");
+  PetscFPrintf(comm,fd,"\n");
   return 0;
 }
 
@@ -1002,4 +1002,3 @@ double PetscGetTime()
   return t;
 }
   
-

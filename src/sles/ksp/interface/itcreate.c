@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.78 1996/03/10 17:26:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.79 1996/03/18 00:38:01 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -44,20 +44,20 @@ int KSPView(KSP ksp,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    MPIU_fprintf(ksp->comm,fd,"KSP Object:\n");
+    PetscFPrintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetType(ksp,PETSC_NULL,&method);
-    MPIU_fprintf(ksp->comm,fd,"  method: %s\n",method);
+    PetscFPrintf(ksp->comm,fd,"  method: %s\n",method);
     if (ksp->view) (*ksp->view)((PetscObject)ksp,viewer);
-    if (ksp->guess_zero) MPIU_fprintf(ksp->comm,fd,
+    if (ksp->guess_zero) PetscFPrintf(ksp->comm,fd,
       "  maximum iterations=%d, initial guess is zero\n",ksp->max_it);
-    else MPIU_fprintf(ksp->comm,fd,"  maximum iterations=%d\n", ksp->max_it);
-    MPIU_fprintf(ksp->comm,fd,
+    else PetscFPrintf(ksp->comm,fd,"  maximum iterations=%d\n", ksp->max_it);
+    PetscFPrintf(ksp->comm,fd,
       "  tolerances:  relative=%g, absolute=%g, divergence=%g\n",
       ksp->rtol, ksp->atol, ksp->divtol);
-    if (ksp->pc_side == PC_RIGHT) MPIU_fprintf(ksp->comm,fd,"  right preconditioning\n");
+    if (ksp->pc_side == PC_RIGHT) PetscFPrintf(ksp->comm,fd,"  right preconditioning\n");
     else if (ksp->pc_side == PC_SYMMETRIC) 
-      MPIU_fprintf(ksp->comm,fd,"  symmetric preconditioning\n");
-    else MPIU_fprintf(ksp->comm,fd,"  left preconditioning\n");
+      PetscFPrintf(ksp->comm,fd,"  symmetric preconditioning\n");
+    else PetscFPrintf(ksp->comm,fd,"  left preconditioning\n");
   }
   return 0;
 }
@@ -150,7 +150,7 @@ int KSPSetType(KSP ctx,KSPType itmethod)
 {
   int ierr,(*r)(KSP);
 
-  PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ctx,KSP_COOKIE);
   if (ctx->setupcalled) {
     /* destroy the old private KSP context */
     ierr = (*(ctx)->destroy)((PetscObject)ctx); CHKERRQ(ierr);
@@ -268,11 +268,11 @@ int KSPPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
   FuncList *entry;
   if (!__KSPList) {KSPRegisterAll();}
   entry = __KSPList->head;
-  MPIU_printf(comm," %s%s (one of)",prefix,name);
+  PetscPrintf(comm," %s%s (one of)",prefix,name);
   while (entry) {
-    MPIU_printf(comm," %s",entry->name);
+    PetscPrintf(comm," %s",entry->name);
     entry = entry->next;
   }
-  MPIU_printf(comm,"\n");
+  PetscPrintf(comm,"\n");
   return 1;
 }

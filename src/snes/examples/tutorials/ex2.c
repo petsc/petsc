@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.46 1996/02/08 18:28:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.47 1996/03/10 17:29:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -26,7 +26,7 @@ int main( int argc, char **argv )
   Scalar       h,xp = 0.0,v;
   MonitorCtx   monP;               /* monitoring context */
 
-  PetscInitialize( &argc, &argv, 0,0,help );
+  PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   h = 1.0/(n-1);
 
@@ -61,7 +61,7 @@ int main( int argc, char **argv )
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
+  PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.23 1996/03/10 17:27:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.24 1996/03/18 00:39:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -50,7 +50,7 @@ static int PCView_Shell(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (jac->name) MPIU_fprintf(pc->comm,fd,"    Shell: %s\n", jac->name);
+    if (jac->name) PetscFPrintf(pc->comm,fd,"    Shell: %s\n", jac->name);
   }
   return 0;
 }
@@ -107,7 +107,7 @@ int PCCreate_Shell(PC pc)
 int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 {
   PC_Shell *shell;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   shell        = (PC_Shell *) pc->data;
   shell->apply = apply;
   shell->ctx   = ptr;
@@ -129,7 +129,7 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 int PCShellSetName(PC pc,char *name)
 {
   PC_Shell *shell;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   shell       = (PC_Shell *) pc->data;
   shell->name = name;
   return 0;
@@ -152,7 +152,7 @@ int PCShellSetName(PC pc,char *name)
 int PCShellGetName(PC pc,char **name)
 {
   PC_Shell *shell;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   shell = (PC_Shell *) pc->data;
   *name  = shell->name;
   return 0;
@@ -183,7 +183,7 @@ int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),
                               void *ptr)
 {
   PC_Shell *shell;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   shell            = (PC_Shell *) pc->data;
   pc->applyrich    = PCApplyRichardson_Shell;
   shell->applyrich = apply;

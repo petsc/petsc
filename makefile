@@ -84,7 +84,8 @@ testfortran: chkpetsc_dir
 fortran: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscfortran.a
 	-@echo "Beginning to compile Fortran interface library"
-	-@echo "Using compiler: $(FC) $(BASEOPTF)"
+	-@echo "Using C/C++ compiler: $(CC) $(PETSC_INCLUDE) $(PCONF) $(BASEOPT)"
+	-@echo "Using Fortran compiler: $(FC) $(BASEOPTF)"
 	-@echo "------------------------------------------"
 	-@cd src/fortran/custom; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \

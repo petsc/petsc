@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.58 1996/03/07 20:09:52 balay Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.59 1996/03/10 17:26:57 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -27,7 +27,7 @@ int KSPSetFromOptions(KSP ctx)
 {
   KSPType   method;
   int       restart, flg, ierr;
-  PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ctx,KSP_COOKIE);
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg);  CHKERRQ(ierr);
   if (flg) { KSPPrintHelp(ctx);  }
@@ -88,10 +88,10 @@ int KSPSetFromOptions(KSP ctx)
   ierr = OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart, &flg); CHKERRQ(ierr);
   if (flg) { KSPGMRESSetRestart(ctx,restart); }
   ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
-  if (flg) { KSPGMRESSetOrthogRoutine(ctx, 
+  if (flg) { KSPGMRESSetOrthogonalization(ctx, 
              KSPGMRESUnmodifiedGramSchmidtOrthogonalization ); }
   ierr = OptionsHasName(ctx->prefix,"-ksp_gmres_irorthog", &flg);CHKERRQ(ierr);
-  if(flg) { KSPGMRESSetOrthogRoutine(ctx, KSPGMRESIROrthogonalization);}
+  if(flg) { KSPGMRESSetOrthogonalization(ctx, KSPGMRESIROrthogonalization);}
   ierr = OptionsHasName(ctx->prefix,"-ksp_eigen", &flg); CHKERRQ(ierr);
   if (flg) { KSPSetCalculateEigenvalues(ctx); }
   return 0;
@@ -122,24 +122,24 @@ int KSPPrintHelp(KSP ctx)
   if (!rank) {
     PetscStrcpy(p,"-");
     if (ctx->prefix)  PetscStrcat(p,ctx->prefix);
-    PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
-    MPIU_printf(ctx->comm,"KSP Options -------------------------------------\n");
+    PetscValidHeaderSpecific(ctx,KSP_COOKIE);
+    PetscPrintf(ctx->comm,"KSP Options -------------------------------------\n");
     KSPPrintTypes_Private(ctx->comm,p,"ksp_type");
-    MPIU_printf(ctx->comm," %sksp_rtol tol: relative tolerance, defaults to %g\n",
+    PetscPrintf(ctx->comm," %sksp_rtol tol: relative tolerance, defaults to %g\n",
                      p,ctx->rtol);
-    MPIU_printf(ctx->comm," %sksp_atol tol: absolute tolerance, defaults to %g\n",
+    PetscPrintf(ctx->comm," %sksp_atol tol: absolute tolerance, defaults to %g\n",
                      p,ctx->atol);
-    MPIU_printf(ctx->comm," %sksp_divtol tol: divergence tolerance, defaults to %g\n",
+    PetscPrintf(ctx->comm," %sksp_divtol tol: divergence tolerance, defaults to %g\n",
                      p,ctx->divtol);
-    MPIU_printf(ctx->comm," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
+    PetscPrintf(ctx->comm," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
                      p,ctx->max_it);
-    MPIU_printf(ctx->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
-    MPIU_printf(ctx->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
-    MPIU_printf(ctx->comm," %sksp_monitor: at each iteration print residual norm to stdout\n",p);
-    MPIU_printf(ctx->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
-    MPIU_printf(ctx->comm," %sksp_gmres_restart num: gmres restart, defaults to 30\n",p);
-    MPIU_printf(ctx->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
-    MPIU_printf(ctx->comm," %sksp_gmres_unmodifiedgramschmidt\n",p);
+    PetscPrintf(ctx->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
+    PetscPrintf(ctx->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
+    PetscPrintf(ctx->comm," %sksp_monitor: at each iteration print residual norm to stdout\n",p);
+    PetscPrintf(ctx->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
+    PetscPrintf(ctx->comm," %sksp_gmres_restart num: gmres restart, defaults to 30\n",p);
+    PetscPrintf(ctx->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
+    PetscPrintf(ctx->comm," %sksp_gmres_unmodifiedgramschmidt\n",p);
   }
   return 1;
 }
@@ -156,7 +156,7 @@ int KSPPrintHelp(KSP ctx)
 @*/
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   return PetscObjectSetPrefix((PetscObject)ksp, prefix);
 }
 
@@ -173,7 +173,7 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 @*/
 int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 {
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   return PetscObjectAppendPrefix((PetscObject)ksp, prefix);
 }
 
@@ -193,7 +193,7 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 @*/
 int KSPGetOptionsPrefix(KSP ksp,char **prefix)
 {
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   return PetscObjectGetPrefix((PetscObject)ksp, prefix);
 }
 

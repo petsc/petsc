@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.6 1996/02/20 23:26:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.7 1996/03/10 17:29:52 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -47,7 +47,7 @@ $             DACreate2d(), and DACreate3d()
 @*/
 int DAView(DA da, Viewer v)
 {
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   return (*da->view)((PetscObject)da,v);
 }  
 
@@ -73,7 +73,7 @@ int DAView(DA da, Viewer v)
 @*/
 int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s)
 {
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   if (dim != PETSC_NULL) *dim = da->dim;
   if (M != PETSC_NULL)   *M   = da->M;
   if (N != PETSC_NULL)   *N   = da->N;

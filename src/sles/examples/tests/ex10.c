@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.53 1996/02/08 18:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.54 1996/03/18 00:41:33 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   KSP     ksp;
   double  norm;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
@@ -74,10 +74,10 @@ int main(int argc,char **args)
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
 
   if (norm > 1.e-12) 
-    MPIU_printf(MPI_COMM_WORLD,
+    PetscPrintf(MPI_COMM_WORLD,
       "Norm of error %g, Number of iterations %d\n",norm,its);
   else 
-    MPIU_printf(MPI_COMM_WORLD,
+    PetscPrintf(MPI_COMM_WORLD,
       "Norm of error < 1.e-12, Number of iterations %d\n",its);
 
   /* Free work space */
@@ -105,7 +105,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  MPIU_printf(MPI_COMM_SELF,"m = %d, N=%d\n", m, N );
+  PetscPrintf(MPI_COMM_SELF,"m = %d, N=%d\n", m, N );
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,80,PETSC_NULL,&mat); CHKERRQ(ierr); 
 
   /* Form stiffness for element */
@@ -170,14 +170,14 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
-  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&type,&set); CHKERRQ(ierr);
   ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
   ierr = MatDestroy(submat); CHKERRQ(ierr);
 
   ierr = ViewerSetFormat(STDOUT_VIEWER_WORLD,ASCII_FORMAT_INFO,0); CHKERRQ(ierr);
   ierr = MatView(*newmat,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm); CHKERRQ(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"matrix 1 norm = %g\n",norm);
+  PetscPrintf(MPI_COMM_WORLD,"matrix 1 norm = %g\n",norm);
 
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.44 1996/03/10 17:29:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.45 1996/03/18 00:42:50 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -219,14 +219,14 @@ static int SNESPrintHelp_TR(SNES snes,char *p)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
 
-  MPIU_fprintf(snes->comm,stdout," method tr (system of nonlinear equations):\n");
-  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_mu mu (default %g)\n",p,ctx->mu);
-  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_eta eta (default %g)\n",p,ctx->eta);
-  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_sigma sigma (default %g)\n",p,ctx->sigma);
-  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_delta0 delta0 (default %g)\n",p,ctx->delta0);
-  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_delta1 delta1 (default %g)\n",p,ctx->delta1);
-  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_delta2 delta2 (default %g)\n",p,ctx->delta2);
-  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_delta3 delta3 (default %g)\n",p,ctx->delta3);
+  PetscFPrintf(snes->comm,stdout," method tr (system of nonlinear equations):\n");
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_mu mu (default %g)\n",p,ctx->mu);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_eta eta (default %g)\n",p,ctx->eta);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_sigma sigma (default %g)\n",p,ctx->sigma);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta0 delta0 (default %g)\n",p,ctx->delta0);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta1 delta1 (default %g)\n",p,ctx->delta1);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta2 delta2 (default %g)\n",p,ctx->delta2);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta3 delta3 (default %g)\n",p,ctx->delta3);
   return 0;
 }
 
@@ -241,8 +241,8 @@ static int SNESView_TR(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    MPIU_fprintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
-    MPIU_fprintf(snes->comm,fd,"    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
+    PetscFPrintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
+    PetscFPrintf(snes->comm,fd,"    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
                  tr->delta0,tr->delta1,tr->delta2,tr->delta3);
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fpath.c,v 1.1 1996/01/30 18:29:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: fpath.c,v 1.1 1996/01/30 18:29:10 bsmith Exp bsmith $
 
 #if defined(HAVE_PWD_H)
 /*@C
-   SYGetFullPath - Given a filename, returns the fully qualified file name.
+   PetscGetFullPath - Given a filename, returns the fully qualified file name.
 
    Input Parameters:
 .  path     - pathname to qualify
@@ -17,9 +17,9 @@ static char vcid[] = "$Id: fpath.c,v 1.1 1996/01/30 18:29:10 bsmith Exp bsmith $
 
 .keywords: system, get, full, path
 
-.seealso: SYGetRelativePath()
+.seealso: PetscGetRelativePath()
 @*/
-int SYGetFullPath( char *path, char *fullpath, int flen )
+int PetscGetFullPath( char *path, char *fullpath, int flen )
 {
   struct passwd *pwde;
   int           ln;
@@ -29,7 +29,7 @@ int SYGetFullPath( char *path, char *fullpath, int flen )
     else PetscStrncpy( fullpath, path, flen); 
     return 0;
   }
-  SYGetwd( fullpath, flen );
+  PetscGetWorkingDirectory( fullpath, flen );
   PetscStrncat( fullpath,"/",flen - PetscStrlen(fullpath) );
   if ( path[0] == '.' && path[1] == '/' ) 
     PetscStrncat( fullpath, path+2, flen - PetscStrlen(fullpath) - 1 );
@@ -76,7 +76,7 @@ int SYGetFullPath( char *path, char *fullpath, int flen )
   return 0;
 }
 #else
-int SYGetFullPath( char *path, char *fullpath, int flen )
+int PetscGetFullPath( char *path, char *fullpath, int flen )
 {
   PetscStrcpy( fullpath, path );
   return 0;

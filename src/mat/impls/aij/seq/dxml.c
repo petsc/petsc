@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: dxml.c,v 1.2 1995/09/30 19:28:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dxml.c,v 1.3 1995/11/02 04:30:50 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -27,7 +27,7 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 
 int MatUseDXML_SeqAIJ(Mat A)
 {
-  PETSCVALIDHEADERSPECIFIC(A,MAT_COOKIE);  
+  PetscValidHeaderSpecific(A,MAT_COOKIE);  
   if (A->type != MATSEQAIJ) return 0;
   A->ops.mult    = MatMult_SeqAIJ_DXML;
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.13 1996/01/23 00:19:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.14 1996/03/04 05:16:31 bsmith Exp bsmith $";
 #endif
 
 #include "matimpl.h"  /*I   "mat.h"  I*/
@@ -18,7 +18,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   int    m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
   Scalar *val,*vals;
 
-  PETSCVALIDHEADERSPECIFIC(X,MAT_COOKIE);  PETSCVALIDHEADERSPECIFIC(Y,MAT_COOKIE);
+  PetscValidHeaderSpecific(X,MAT_COOKIE);  PetscValidHeaderSpecific(Y,MAT_COOKIE);
   MatGetSize(X,&m1,&n1);  MatGetSize(X,&m2,&n2);
   if (m1 != m2 || n1 != n2) SETERRQ(1,"MatAXPY:Non conforming matrix add");
 
@@ -58,7 +58,7 @@ int MatShift(Scalar *a,Mat Y)
 {
   int    i,start,end,ierr;
 
-  PETSCVALIDHEADERSPECIFIC(Y,MAT_COOKIE);
+  PetscValidHeaderSpecific(Y,MAT_COOKIE);
   if (Y->ops.shift) {
     ierr = (*Y->ops.shift)(a,Y); CHKERRQ(ierr);
   }
@@ -89,7 +89,7 @@ int MatDiagonalShift(Mat Y,Vec D)
 {
   int    i,start,end,ierr;
 
-  PETSCVALIDHEADERSPECIFIC(Y,MAT_COOKIE);
+  PetscValidHeaderSpecific(Y,MAT_COOKIE);
   if (Y->ops.shift) {
     ierr = (*Y->ops.diagonalshift)(D,Y); CHKERRQ(ierr);
   }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.42 1996/03/10 17:26:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.43 1996/03/18 00:37:24 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -81,15 +81,15 @@ static int ISSort_General(IS is)
   int        ierr;
 
   if (sub->sorted) return 0;
-  ierr = SYIsort(sub->n, sub->idx); CHKERRQ(ierr);
+  ierr = PetscSortInt(sub->n, sub->idx); CHKERRQ(ierr);
   sub->sorted = 1;
   return 0;
 }
 
-static int ISSorted_General(IS is, int* flg)
+static int ISSorted_General(IS is, PetscTruth *flg)
 {
   IS_General *sub = (IS_General *)is->data;
-  *flg = sub->sorted;
+  *flg = (PetscTruth) sub->sorted;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex18.c,v 1.10 1995/12/21 18:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.11 1996/01/12 22:05:06 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Compares BLAS dots on different machines. Input\n\
@@ -9,7 +9,6 @@ arguments are\n\
 #include "petsc.h"
 #include "vec.h"
 #include "sys.h"
-#include "sysio.h"
 #include <math.h>
 
 int main(int argc,char **argv)
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   Vec          x,y;
   int          idx;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg); if (n < 5) n = 5;
 
 

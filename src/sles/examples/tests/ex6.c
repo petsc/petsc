@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.32 1996/03/02 04:55:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.33 1996/03/08 05:48:03 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -28,7 +28,7 @@ int main(int argc,char **args)
   Viewer     fd;
   PetscTruth table = PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
 
   ierr = OptionsHasName(PETSC_NULL,"-table",&flg);
   if (flg) table = PETSC_TRUE;
@@ -40,7 +40,7 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
@@ -81,15 +81,15 @@ int main(int argc,char **args)
     SLESGetPC(sles,&pc); PCGetType(pc,PETSC_NULL,&pcname);
     PCView(pc,viewer);
     matrixname = PetscStrrchr(file,'/');
-    MPIU_printf(MPI_COMM_WORLD,"%-8.8s %-7.7s %-7.7s %-20.20s %3d %2.2e %2.2e %2.2e\n",
+    PetscPrintf(MPI_COMM_WORLD,"%-8.8s %-7.7s %-7.7s %-20.20s %3d %2.2e %2.2e %2.2e\n",
                 matrixname,kspname,pcname,pcinfo,its,norm,tsetup,tsolve);
     ViewerDestroy(viewer);
   } else {
-    MPIU_printf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
+    PetscPrintf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
     if (norm < 1.e-10) {
-      MPIU_printf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
+      PetscPrintf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
     } else {
-      MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+      PetscPrintf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
     }
   }
 

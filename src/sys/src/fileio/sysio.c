@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.9 1996/01/30 04:51:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.10 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: sysio.c,v 1.9 1996/01/30 04:51:07 bsmith Exp bsmith $
  */
 
 #include "petsc.h"
-#include "sysio.h"
+#include "sys.h"
 #include <sys/errno.h>
 #include <unistd.h>
 /*
@@ -21,9 +21,9 @@ extern int errno;
 
 #if defined(HAVE_SWAPPED_BYTES)
 /*
-  SYByteSwapInt - Swap bytes in an integer
+  PetscByteSwapInt - Swap bytes in an integer
 */
-void SYByteSwapInt(int *buff,int n)
+void PetscByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp =0;
   int  *tptr = &tmp;          /* Need to access tmp indirectly to get */
@@ -40,9 +40,9 @@ void SYByteSwapInt(int *buff,int n)
 }
 /* --------------------------------------------------------- */
 /*
-  SYByteSwapShort - Swap bytes in a short
+  PetscByteSwapShort - Swap bytes in a short
 */
-void SYByteSwapShort(short *buff,int n)
+void PetscByteSwapShort(short *buff,int n)
 {
   int   i,j;
   short tmp;
@@ -58,10 +58,10 @@ void SYByteSwapShort(short *buff,int n)
 }
 /* --------------------------------------------------------- */
 /*
-  SYByteSwapScalar - Swap bytes in a double
+  PetscByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-void SYByteSwapScalar(Scalar *buff,int n)
+void PetscByteSwapScalar(Scalar *buff,int n)
 {
   int    i,j;
   double tmp,*buff1 = (double *) buff;
@@ -81,26 +81,26 @@ void SYByteSwapScalar(Scalar *buff,int n)
 #endif
 /* --------------------------------------------------------- */
 /*@C
-   SYRead - Reads from a binary file.
+   PetscBinaryRead - Reads from a binary file.
 
    Input Parameters:
 .  fd - the file
 .  n  - the number of items to read 
-.  type - the type of items to read (SYINT or SYSCALAR)
+.  type - the type of items to read (BINARY_INT or BINARY_SCALAR)
 
    Output Parameters:
 .  p - the buffer
 
    Notes: 
-   SYRead() uses byte swapping to work on all machines.
+   PetscBinaryRead() uses byte swapping to work on all machines.
 
-   SYRead() is not supported in Fortran.
+   PetscBinaryRead() is not supported in Fortran.
 
 .keywords: binary, input, read
 
-.seealso: SYWrite()
+.seealso: PetscBinaryWrite()
 @*/
-int SYRead(int fd,void *p,int n,SYIOType type)
+int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 {
 
   int  maxblock, wsize, err, m = n;
@@ -111,7 +111,7 @@ int SYRead(int fd,void *p,int n,SYIOType type)
 
   maxblock = 65536;
 #if defined(HAVE_64BIT_INT)
-  if (type == SYINT){
+  if (type == BINARY_INT){
     /* 
        integers on the Cray T#d are 64 bits so we read the 
        32 bits from the file and then extend them into 
@@ -122,33 +122,32 @@ int SYRead(int fd,void *p,int n,SYIOType type)
     ptmp = (void*) pp;
   }
 #else
-  if (type == SYINT)         m *= sizeof(int);
+  if (type == BINARY_INT)         m *= sizeof(int);
 #endif
-  else if (type == SYSCALAR) m *= sizeof(Scalar);
-  else if (type == SYSHORT)  m *= sizeof(short);
-  else SETERRQ(1,"SYRead:Unknown type");
+  else if (type == BINARY_SCALAR) m *= sizeof(Scalar);
+  else if (type == BINARY_SHORT)  m *= sizeof(short);
+  else SETERRQ(1,"PetscBinaryRead:Unknown type");
   
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err = read( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
     if (err == 0 && wsize > 0) return 1;
-    if (err < 0) SETERRQ(1,"SYRead:Error reading from file");
+    if (err < 0) SETERRQ(1,"PetscBinaryRead:Error reading from file");
     m  -= err;
     pp += err;
   }
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == SYINT) SYByteSwapInt((int*)ptmp,n);
-  else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,n);
-  else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,n);
+  if (type == BINARY_INT) PetscByteSwapInt((int*)ptmp,n);
+  else if (type == BINARY_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
+  else if (type == BINARY_SHORT) PetscByteSwapShort((short*)ptmp,n);
 #endif
 
 #if defined(HAVE_64BIT_INT)
-  if (type == SYINT){
+  if (type == BINARY_INT){
     /* 
        integers on the Cray T#d are 64 bits so we read the 
-       32 bits from the file and then extend them into 
-       ints
+       32 bits from the file and then extend them into ints
     */
     int   *p_int = (int *) p,i;
     short *p_short = (short *)ptmp;
@@ -163,24 +162,24 @@ int SYRead(int fd,void *p,int n,SYIOType type)
 }
 /* --------------------------------------------------------- */
 /*@C
-   SYWrite - Writes to a binary file.
+   PetscBinaryWrite - Writes to a binary file.
 
    Input Parameters:
 .  fd - the file
 .  p - the buffer
 .  n  - the number of items to read 
-.  type - the type of items to read (SYINT or SYSCALAR)
+.  type - the type of items to read (BINARY_INT or BINARY_SCALAR)
 
    Notes: 
-   SYWrite() uses byte swapping to work on all machines.
+   PetscBinaryWrite() uses byte swapping to work on all machines.
 
-   SYWrite() is not supported in Fortran.
+   PetscBinaryWrite() is not supported in Fortran.
 
 .keywords: binary, output, write
 
-.seealso: SYRead()
+.seealso: PetscBinaryRead()
 @*/
-int SYWrite(int fd,void *p,int n,SYIOType type,int istemp)
+int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
 {
   int  err, maxblock, wsize,m = n;
   char *pp = (char *) p;
@@ -191,13 +190,13 @@ int SYWrite(int fd,void *p,int n,SYIOType type,int istemp)
   maxblock = 65536;
 
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == SYINT) SYByteSwapInt((int*)ptmp,n);
-  else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,n);
-  else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,n);
+  if (type == BINARY_INT) PetscByteSwapInt((int*)ptmp,n);
+  else if (type == BINARY_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
+  else if (type == BINARY_SHORT) PetscByteSwapShort((short*)ptmp,n);
 #endif
 
 #if defined(HAVE_64BIT_INT)
-  if (type == SYINT){
+  if (type == BINARY_INT){
     /* 
        integers on the Cray T#d are 64 bits so we copy the big
       integers into a short array and write those out.
@@ -214,31 +213,31 @@ int SYWrite(int fd,void *p,int n,SYIOType type,int istemp)
     }
   }
 #else
-  if (type == SYINT)         m *= sizeof(int);
+  if (type == BINARY_INT)         m *= sizeof(int);
 #endif
-  else if (type == SYSCALAR) m *= sizeof(Scalar);
-  else if (type == SYSHORT)  m *= sizeof(short);
-  else SETERRQ(1,"SYWrite:Unknown type");
+  else if (type == BINARY_SCALAR) m *= sizeof(Scalar);
+  else if (type == BINARY_SHORT)  m *= sizeof(short);
+  else SETERRQ(1,"PetscBinaryWrite:Unknown type");
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err = write( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
-    if (err != wsize) SETERRQ(n,"SYWrite:Error writing to file.");
+    if (err != wsize) SETERRQ(n,"PetscBinaryWrite:Error writing to file.");
     m -= wsize;
     pp += wsize;
   }
 
 #if defined(HAVE_SWAPPED_BYTES)
   if (!istemp) {
-    if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,n);
-    else if (type == SYSHORT) SYByteSwapShort((short*)ptmp,n);
-    else if (type == SYINT) SYByteSwapInt((int*)ptmp,n);
+    if (type == BINARY_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
+    else if (type == BINARY_SHORT) PetscByteSwapShort((short*)ptmp,n);
+    else if (type == BINARY_INT) PetscByteSwapInt((int*)ptmp,n);
   }
 #endif
 
 #if defined(HAVE_64BIT_INT)
-  if (type == SYINT){
+  if (type == BINARY_INT){
     PetscFree(ptmp);
   }
 #endif

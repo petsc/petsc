@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.43 1996/03/10 17:26:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.44 1996/03/18 00:37:32 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -30,7 +30,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 
   MPI_Comm_rank(ctx->comm,&rank);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  MPIU_Seq_begin(ctx->comm,1);
+  PetscSequentialPhaseBegin(ctx->comm,1);
   fprintf(fd,"[%d] Number sends %d below %d self %d\n",rank,to->n,to->nbelow,to->nself);
   for ( i=0; i<to->n; i++ ){
     fprintf(fd,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],
@@ -55,7 +55,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   }
   */
   fflush(fd);
-  MPIU_Seq_end(ctx->comm,1);
+  PetscSequentialPhaseEnd(ctx->comm,1);
   return 0;
 }  
 /*
@@ -632,7 +632,7 @@ int PtoSScatterCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,VecScatter ctx
   if (nrecvs) {
     indx = (int *) PetscMalloc( nrecvs*sizeof(int) ); CHKPTRQ(indx);
     for ( i=0; i<nrecvs; i++ ) indx[i] = i;
-    SYIsortperm(nrecvs,source,indx);
+    PetscSortIntWithPermutation(nrecvs,source,indx);
 
     /* move the data into the send scatter */
     for ( i=0; i<nrecvs; i++ ) {

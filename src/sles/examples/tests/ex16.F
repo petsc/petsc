@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.6 1996/02/13 23:30:12 bsmith Exp curfman $";
+C      "$Id: ex16.F,v 1.7 1996/02/24 17:25:45 curfman Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -32,7 +32,7 @@ C                       use the file petsc/src/mat/examples/mat.ex.binary
 
       none = -1.0
       five = 5.0
-      call PetscInitialize(ierr)
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
 
 C Read in matrix and RHS
       call OptionsGetString(PETSC_NULL_CHAR,'-f',f,flg,ierr)

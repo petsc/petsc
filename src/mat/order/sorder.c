@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.18 1996/01/12 22:07:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.19 1996/03/08 05:47:37 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -73,7 +73,7 @@ int MatOrder_RowLength(int *N,int *ia,int* ja, int* permr, int* permc)
     permr[i] = i;
   }
 
-  ierr = SYIsortperm(n, lens, permr); CHKERRQ(ierr);
+  ierr = PetscSortIntWithPermutation(n, lens, permr); CHKERRQ(ierr);
   PetscFree(lens);
 
   /* column permutations get same as row */

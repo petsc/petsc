@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.24 1996/01/23 00:18:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.25 1996/01/26 04:33:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -34,7 +34,7 @@ typedef struct {
 @*/
 int MatShellGetContext(Mat mat,void **ctx)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE); 
+  PetscValidHeaderSpecific(mat,MAT_COOKIE); 
   if (mat->type != MATSHELL) *ctx = 0; 
   else                       *ctx = ((Mat_Shell *) (mat->data))->ctx; 
   return 0;
@@ -162,7 +162,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 {
   Mat_Shell *shell;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   shell = (Mat_Shell *) mat->data;
   shell->mult = mult;
   return 0;
@@ -188,7 +188,7 @@ int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 {
   Mat_Shell *shell;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   shell               = (Mat_Shell *) mat->data;
   shell->multtransadd = mult;
   return 0;
@@ -213,7 +213,7 @@ int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 int MatShellSetDestroy(Mat mat,int (*destroy)(void*))
 {
   Mat_Shell *shell;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   shell = (Mat_Shell *) mat->data;
   shell->destroy = destroy;
   return 0;

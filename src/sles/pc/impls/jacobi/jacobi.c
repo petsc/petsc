@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.22 1996/02/08 18:26:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.23 1996/03/04 05:15:22 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -56,14 +56,14 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   int       ierr;
-  ierr = VecPMult(x,jac->diag,y); CHKERRQ(ierr);
+  ierr = VecPointwiseMult(x,jac->diag,y); CHKERRQ(ierr);
   return 0;
 }
 
-static int PCApplySymmLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
+static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
-  VecPMult(x,jac->diagsqrt,y);
+  VecPointwiseMult(x,jac->diagsqrt,y);
   return 0;
 }
 
@@ -87,8 +87,8 @@ int PCCreate_Jacobi(PC pc)
   pc->type           = PCJACOBI;
   pc->data           = (void *) jac;
   pc->view           = 0;
-  pc->applysymmleft  = PCApplySymmLeftOrRight_Jacobi;
-  pc->applysymmright = PCApplySymmLeftOrRight_Jacobi;
+  pc->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
+  pc->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.32 1996/01/27 04:56:41 bsmith Exp $";
+static char vcid[] = "$Id: dagtol.c,v 1.1 1996/01/30 04:28:03 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -28,7 +28,7 @@ static char vcid[] = "$Id: da2.c,v 1.32 1996/01/27 04:56:41 bsmith Exp $";
 int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   ierr = VecScatterBegin(g,l,mode,SCATTER_ALL,da->gtol); CHKERRQ(ierr);
   return 0;
 }
@@ -53,7 +53,7 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   ierr = VecScatterEnd(g,l,mode,SCATTER_ALL,da->gtol); CHKERRQ(ierr);
   return 0;
 }

@@ -1,5 +1,5 @@
 
-C    "$Id: ex5.F,v 1.11 1996/02/08 18:28:05 bsmith Exp bsmith $";
+C    "$Id: ex5.F,v 1.12 1996/02/13 23:30:23 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/draw.h"
@@ -19,7 +19,7 @@ C
       width  = 300
       height = 300
 
-      call PetscInitialize(ierr)
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
 
       call OptionsGetInt(PETSC_NULL_CHAR,'-width',width,flg,ierr) 
       call OptionsGetInt(PETSC_NULL_CHAR,'-height',height,flg,ierr)

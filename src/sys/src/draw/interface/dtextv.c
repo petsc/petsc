@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dtextv.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtextv.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: dtextv.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith 
 @*/
 int DrawTextVertical(Draw draw,double xl,double yl,int cl,char *text)
 {
-  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == NULLWINDOW) return 0;
   return (*draw->ops.textvertical)(draw,xl,yl,cl,text);
 }

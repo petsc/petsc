@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.153 1996/03/04 05:15:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: MPI_Wtime.c,v 1.3 1996/03/06 17:40:32 balay Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -9,7 +9,7 @@ int main( int argc, char **argv)
 {
   double x, y;
   
-  PetscInitialize(&argc, &argv,0,0,0);
+  PetscInitialize(&argc, &argv,0,0);
  /* To take care of paging effects */
   y = MPI_Wtime();
 

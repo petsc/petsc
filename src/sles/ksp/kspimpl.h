@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.16 1996/01/12 03:51:34 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.17 1996/03/10 17:26:56 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -89,6 +89,6 @@ extern int KSPCheckDef(KSP);
 extern int KSPiDefaultGetWork(KSP,int);
 extern int KSPiDefaultFreeWork(KSP);
 extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
-extern int KSPUnwindPre(KSP,Vec,Vec);
+extern int KSPUnwindPreconditioner(KSP,Vec,Vec);
 
 #endif

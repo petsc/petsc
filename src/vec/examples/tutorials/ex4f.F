@@ -1,5 +1,5 @@
 
-C      "$Id: ex21.F,v 1.9 1996/02/13 23:28:24 bsmith Exp bsmith $";
+C      "$Id: ex21.F,v 1.10 1996/03/07 17:54:00 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -12,6 +12,8 @@ C  multiple values at once.  This also demonstrates VecGetArray().
        integer          i, n, ierr, loc(6), ixx, iyy
        Vec              x, y
 
+       call PetscInitialize(PETSC_NULL_CHAR,ierr)
+
 #define xx(ib)  vxx(ixx + (ib))
 #define yy(ib)  vyy(iyy + (ib))
 
@@ -22,7 +24,6 @@ C  and C vectors)
           loc(i) = i-1
           xwork(i) = 10.0*i
   10   continue
-       call PetscInitialize(ierr)
 
 C Create initial vector and set values
        call VecCreateSeq(MPI_COMM_SELF,n,x,ierr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: PetscTime.c,v 1.4 1996/03/06 17:42:38 balay Exp bsmith $";
+static char vcid[] = "$Id: PetscTime.c,v 1.5 1996/03/12 23:09:14 bsmith Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -9,24 +9,27 @@ static char vcid[] = "$Id: PetscTime.c,v 1.4 1996/03/06 17:42:38 balay Exp bsmit
 int main( int argc, char **argv)
 {
   double x, y;
-  
-  PetscInitialize(&argc, &argv,0,0,0);
- /* To take care of paging effects */
-   PetscTime(y);
+  int    i;
 
-   PetscTime(x);
-   PetscTime(y); 
-   PetscTime(y);
-   PetscTime(y);
-   PetscTime(y);
-   PetscTime(y);
-   PetscTime(y); 
-   PetscTime(y);
-   PetscTime(y);
-   PetscTime(y);
-   PetscTime(y);
+  PetscInitialize(&argc, &argv,0,0);
+  /* To take care of paging effects */
+  PetscTime(y);
 
-  fprintf(stderr,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
+  for ( i=0; i<2; i++ ) { 
+    PetscTime(x);
+    PetscTime(y); 
+    PetscTime(y);
+    PetscTime(y);
+    PetscTime(y);
+    PetscTime(y);
+    PetscTime(y); 
+    PetscTime(y);
+    PetscTime(y);
+    PetscTime(y);
+    PetscTime(y);
+
+    fprintf(stderr,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
+  }
   PetscFinalize();
   return 0;
 }

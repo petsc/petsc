@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dacorn.c,v 1.2 1996/02/08 18:28:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: dacorn.c,v 1.3 1996/02/23 02:44:22 curfman Exp bsmith $";
 #endif
  
 /*
@@ -32,7 +32,7 @@ int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
   int w;
 
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   /* since the xs, xe ... have all been multiplied by the number of degrees 
      of freedom per cell, w = da->w, we divide that out before returning.*/
   w = da->w;  

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex18.c,v 1.1 1996/02/14 00:25:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.2 1996/02/19 03:51:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -26,7 +26,7 @@ int main(int argc,char **args)
   char       file[128]; 
   Viewer     fd;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
 
 #if defined(PETSC_COMPLEX)
   SETERRA(1,"This example does not work with complex numbers");
@@ -35,7 +35,7 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
-  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
@@ -77,13 +77,13 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
+  PetscPrintf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
   if (norm < 1.e-10) {
-    MPIU_printf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
+    PetscPrintf(MPI_COMM_WORLD,"Residual norm < 1.e-10\n");
   } else {
-    MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+    PetscPrintf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
   }
-  MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); 
+  PetscPrintf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); 
 
   /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ghome.c,v 1.1 1996/01/30 18:34:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ghome.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: ghome.c,v 1.1 1996/01/30 18:34:59 bsmith Exp bsmith $
 #include "files.h"
 
 /*@C
-   SYGetHomeDirectory - Returns user's home directory name.
+   PetscGetHomeDirectory - Returns user's home directory name.
 
    Input Parameter:
 .  maxlen - maximum lengh allowed
@@ -17,9 +17,9 @@ static char vcid[] = "$Id: ghome.c,v 1.1 1996/01/30 18:34:59 bsmith Exp bsmith $
 
 .keywords: system, get, real, path
 
-.seealso: SYRemoveHomeDirectory()
+.seealso: PetscRemoveHomeDirectory()
 @*/
-int SYGetHomeDirectory(int maxlen,char *dir)
+int PetscGetHomeDirectory(int maxlen,char *dir)
 {
   struct passwd *pw = 0;
   pw = getpwuid( getuid() );

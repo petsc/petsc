@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.49 1996/02/17 00:40:40 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.50 1996/02/19 03:50:24 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -26,8 +26,8 @@ static char vcid[] = "$Id: mtr.c,v 1.49 1996/02/17 00:40:40 balay Exp bsmith $";
 #endif
 #include "pinclude/petscfix.h"
 
-void *TrMalloc(unsigned int, int, char *);
-int  TrFree( void *, int, char * );
+void *PetscTrMalloc(unsigned int, int, char *);
+int  PetscTrFree( void *, int, char * );
 
 /*
   Code for checking if a pointer is out of the range 
@@ -42,25 +42,25 @@ int PetscSetUseTrMalloc_Private()
   int ierr;
   PetscLow  = (void *) 0xEEEEEEEE;
   PetscHigh = (void *) 0x0;
-  ierr = PetscSetMalloc(TrMalloc,TrFree); CHKERRQ(ierr);
+  ierr = PetscSetMalloc(PetscTrMalloc,PetscTrFree); CHKERRQ(ierr);
   TrMallocUsed = 1;
   return 0;
 }
 
 /*
-    TrSpace - Routines for tracing space usage.
+    PetscTrSpace - Routines for tracing space usage.
 
     Description:
-    TrMalloc replaces malloc and TrFree replaces free.  These routines
+    PetscTrMalloc replaces malloc and PetscTrFree replaces free.  These routines
     have the same syntax and semantics as the routines that they replace,
     In addition, there are routines to report statistics on the memory
     usage, and to report the currently allocated space.  These routines
     are built on top of malloc and free, and can be used together with
-    them as long as any space allocated with TrMalloc is only freed with
-    TrFree.
+    them as long as any space allocated with PetscTrMalloc is only freed with
+    PetscTrFree.
  */
 
-/* HEADER_DOUBLES is the number of doubles in a trSPACE header */
+/* HEADER_DOUBLES is the number of doubles in a PetscTrSpace header */
 /* We have to be careful about alignment rules here */
 #if defined(HAVE_64BITS)
 #define TR_ALIGN_BYTES 8
@@ -111,7 +111,7 @@ extern "C" {
 #endif
 
 /*
-   TrValid - Test the allocated blocks for validity.  This can be used to
+   PetscTrValid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
 
    Input Parameter:
@@ -137,7 +137,7 @@ $   Block at address %lx is corrupted
 
    No output is generated if there are no problems detected.
 */
-int TrValid(int line,char *file )
+int PetscTrValid(int line,char *file )
 {
   TRSPACE *head;
   char    *a;
@@ -149,7 +149,7 @@ int TrValid(int line,char *file )
     if (head->cookie != COOKIE_VALUE) {
       if (!errs) fprintf( stderr, "called from %s line %d \n",file,line );
       fprintf( stderr, "Block at address %p is corrupted\n", head );
-      SETERRQ(1,"TrValid");
+      SETERRQ(1,"PetscTrValid");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
@@ -162,7 +162,7 @@ int TrValid(int line,char *file )
 	     head->id, head->size, a );
       fprintf( stderr, 
 		"Block allocated in %s[%d]\n", head->fname, head->lineno );
-      SETERRQ(1,"TrValid");
+      SETERRQ(1,"PetscTrValid");
     }
     head = head->next;
   }
@@ -174,7 +174,7 @@ int TrValid(int line,char *file )
 }
 
 /*
-    TrMalloc - Malloc with tracing.
+    PetscTrMalloc - Malloc with tracing.
 
     Input Parameters:
 .   a   - number of bytes to allocate
@@ -185,7 +185,7 @@ int TrValid(int line,char *file )
     double aligned pointer to requested storage, or null if not
     available.
  */
-void *TrMalloc(unsigned int a, int lineno, char *fname )
+void *PetscTrMalloc(unsigned int a, int lineno, char *fname )
 {
   TRSPACE          *head;
   char             *inew;
@@ -194,11 +194,11 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
   int              l;
 
   if (TRdebugLevel > 0) {
-    if (TrValid(lineno,fname )) return 0;
+    if (PetscTrValid(lineno,fname )) return 0;
   }
 
   if (a == 0) {
-    fprintf(stderr,"PETSC ERROR: TrMalloc: malloc zero length, this is illegal!\n");
+    fprintf(stderr,"PETSC ERROR: PetscTrMalloc: malloc zero length, this is illegal!\n");
     return 0;
   }
   nsize = a;
@@ -244,14 +244,14 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
 
 
 /*
-   TrFree - Free with tracing.
+   PetscTrFree - Free with tracing.
 
    Input Parameters:
-.  a    - pointer to a block allocated with TrMalloc
+.  a    - pointer to a block allocated with PetscTrMalloc
 .  line - line in file where called
 .  file - Name of file where called
  */
-int TrFree( void *aa, int line, char *file )
+int PetscTrFree( void *aa, int line, char *file )
 {
   char     *a = (char *) aa;
   TRSPACE  *head;
@@ -261,17 +261,17 @@ int TrFree( void *aa, int line, char *file )
 
   /* Don't try to handle empty blocks */
   if (!a) {
-    fprintf(stderr,"TrFree called from line %d in %s\n",line,file);
-    SETERRQ(1,"TrFree:Trying to free null block");
+    fprintf(stderr,"PetscTrFree called from line %d in %s\n",line,file);
+    SETERRQ(1,"PetscTrFree:Trying to free null block");
   }
 
   if (TRdebugLevel > 0) {
-    if ((ierr = TrValid(line,file))) return ierr;
+    if ((ierr = PetscTrValid(line,file))) return ierr;
   }
 
   if (PetscLow > aa || PetscHigh < aa){
-    fprintf(stderr,"TrFree called with address not allocated by TrMalloc\n");
-    SETERRQ(1,"TrFree:Invalid Address");
+    fprintf(stderr,"PetscTrFree called with address not allocated by PetscTrMalloc\n");
+    SETERRQ(1,"PetscTrFree:Invalid Address");
   } 
   ahead = a;
   a     = a - sizeof(TrSPACE);
@@ -279,8 +279,8 @@ int TrFree( void *aa, int line, char *file )
   if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %p is corrupted; cannot free;\n\
-may be block not allocated with TrMalloc or MALLOC\n", a );
-    SETERRQ(1,"TrFree:Bad location or corrupted memory");
+may be block not allocated with PetscTrMalloc or MALLOC\n", a );
+    SETERRQ(1,"PetscTrFree:Bad location or corrupted memory");
   }
   nend = (unsigned long *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
@@ -293,7 +293,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 	  fprintf( stderr, "Block freed in %s[%d]\n", head->fname, head->lineno );
 	else
 	  fprintf( stderr, "Block allocated at %s[%d]\n",head->fname,-head->lineno);
-	  SETERRQ(1,"TrFree:Memory already freed");
+	  SETERRQ(1,"PetscTrFree:Memory already freed");
     }
     else {
 	/* Damaged tail */
@@ -302,7 +302,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 		head->id, head->size, a );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	fprintf( stderr, "Block allocated in %s[%d]\n", head->fname, head->lineno );
-	SETERRQ(1,"TrFree:Corrupted memory");
+	SETERRQ(1,"PetscTrFree:Corrupted memory");
     }
   }
   /* Mark the location freed */
@@ -328,7 +328,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 }
 
 /*@
-    TrSpace - Returns space statistics.
+    PetscTrSpace - Returns space statistics.
    
     Output Parameters:
 .   space - number of bytes currently allocated
@@ -337,9 +337,9 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 
 .keywords: memory, allocation, tracing, space, statistics
 
-.seealso: TrDump()
+.seealso: PetscTrDump()
  @*/
-int TrSpace( double *space, double *fr, double *maxs )
+int PetscTrSpace( double *space, double *fr, double *maxs )
 {
   if (space) *space = (double) allocated;
   if (fr)    *fr    = (double) frags;
@@ -348,7 +348,7 @@ int TrSpace( double *space, double *fr, double *maxs )
 }
 
 /*@C
-   TrDump - Dumps the allocated memory blocks to a file. The information 
+   PetscTrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
    file in which space was allocated, and line number at which it was 
    allocated.
@@ -361,9 +361,9 @@ $  -trdump : dumps unfreed memory during call to PetscFinalize()
 
 .keywords: memory, allocation, tracing, space, statistics
 
-.seealso:  TrSpace()
+.seealso:  PetscTrSpace()
  @*/
-int TrDump( FILE *fp )
+int PetscTrDump( FILE *fp )
 {
   TRSPACE *head;
   int     id,rank;
@@ -394,13 +394,12 @@ int TrDump( FILE *fp )
 typedef struct { int id, size, lineno; char *fname; } TRINFO;
 static FILE *TRFP;
 
-static int IntCompare( TRINFO *a, TRINFO * b )
+static int PetscTrIntCompare( TRINFO *a, TRINFO * b )
 {
   return a->id - b->id;
 }
 
-/*ARGSUSED*/
-static int  PrintSum(TRINFO ** a, VISIT order, int level )
+static int  PetscTrPrintSum(TRINFO ** a, VISIT order, int level )
 { 
   if (order == postorder || order == leaf) 
     fprintf( TRFP, "[%d]%s[%d] has %d\n",(*a)->id,(*a)->fname,(*a)->lineno,(*a)->size);
@@ -408,20 +407,20 @@ static int  PrintSum(TRINFO ** a, VISIT order, int level )
 }
 
 /*@C
-  TrSummary - Summarize the allocate memory blocks by id.
+  PetscTrSummary - Summarize the allocate memory blocks by id.
 
   Input Parameter:
 .  fp  - file pointer
 
   Note:
-  This routine is the same as TrDump() on those systems that do not 
+  This routine is the same as PetscTrDump() on those systems that do not 
   include /usr/include/search.h .
 
 .keywords: memory, allocation, tracing, space, statistics
 
-.seealso: TrDump()
+.seealso: PetscTrDump()
  @*/
-int TrSummary( FILE *fp )
+int PetscTrSummary( FILE *fp )
 {
   TRSPACE *head;
   TRINFO  *root, *key, **fnd,nspace[1000];
@@ -436,11 +435,13 @@ int TrSummary( FILE *fp )
     key->fname  = head->fname;
 #if defined(PARCH_solaris)
     fnd=(TRINFO **)tsearch((void *)key,(void **)&root, 
-                                         (int (*)(const void*,const void*))IntCompare);
+                          (int (*)(const void*,const void*))PetscTrIntCompare);
 #elif !defined(PARCH_IRIX) && !defined(PARCH_hpux) && !defined(PARCH_rs6000)
-    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,(int (*)(void*,void*))IntCompare);
+    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,
+                          (int (*)(void*,void*))PetscTrIntCompare);
 #else
-    fnd=(TRINFO **)tsearch((void *)key,(void **)&root,(int (*)(void*,void*))IntCompare);
+    fnd=(TRINFO **)tsearch((void *)key,(void **)&root,
+                          (int (*)(void*,void*))PetscTrIntCompare);
 #endif
     if (*fnd == key) {
 	key->size = 0;
@@ -457,12 +458,12 @@ int TrSummary( FILE *fp )
   of twalk is changed to (void (*)(const void*,VISIT,int)) so change it 
   below if it is not compiling correctly on your machine.
 */
-  twalk( (char *)root, (void (*)(void*,VISIT,int))PrintSum );
+  twalk( (char *)root, (void (*)(void*,VISIT,int))PetscTrPrintSum );
   fprintf(fp,"The maximum space allocated was %lx bytes [%lx]\n",TRMaxMem,TRMaxMemId);
   return 0;
 }
 #else
-int TrSummary(FILE* fp )
+int PetscTrSummary(FILE* fp )
 {
   fprintf(fp,"The maximum space allocated was %ld bytes [%ld]\n",TRMaxMem,TRMaxMemId);
   return 0;
@@ -470,14 +471,14 @@ int TrSummary(FILE* fp )
 #endif
 
 /*
-    TrDebugLevel - Set the level of debugging for the space management 
+    PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.
 
     Input Parameter:
 .   level - level of debugging.  Currently, either 0 (no checking) or 1
-    (use TrValid at each TrMalloc or TrFree).
+    (use PetscTrValid at each PetscTrMalloc or PetscTrFree).
 */
-int  TrDebugLevel(int level )
+int  PetscTrDebugLevel(int level )
 {
   TRdebugLevel = level;
   return 0;
@@ -504,7 +505,7 @@ int  TrDebugLevel(int level )
  */
 
 /* Merge two lists, returning the head of the merged list */
-TRSPACE *TrImerge(TRSPACE * l1,TRSPACE * l2 )
+TRSPACE *PetscTrImerge(TRSPACE * l1,TRSPACE * l2 )
 {
   TRSPACE *head = 0, *tail = 0;
   int     sign;
@@ -531,7 +532,7 @@ TRSPACE *TrImerge(TRSPACE * l1,TRSPACE * l2 )
 }
 
 /* Sort head with n elements, returning the head */
-TRSPACE *TrIsort( TRSPACE * head,int n )
+TRSPACE *PetscTrIsort( TRSPACE * head,int n )
 {
   TRSPACE *p, *l1, *l2;
   int     m, i;
@@ -545,12 +546,12 @@ TRSPACE *TrIsort( TRSPACE * head,int n )
   /* p now points to the END of the first list */
   l2 = p->next;
   p->next = 0;
-  l1 = TrIsort( head, m );
-  l2 = TrIsort( l2,   n - m );
-  return TrImerge( l1, l2 );
+  l1 = PetscTrIsort( head, m );
+  l2 = PetscTrIsort( l2,   n - m );
+  return PetscTrImerge( l1, l2 );
 }
 
-int TrSortBlocks()
+int PetscTrSortBlocks()
 {
   TRSPACE *head;
   int     cnt;
@@ -561,12 +562,12 @@ int TrSortBlocks()
     cnt ++;
     head = head->next;
   }
-  TRhead = TrIsort( TRhead, cnt );
+  TRhead = PetscTrIsort( TRhead, cnt );
   return 0;
 }
 
 /* Takes sorted input and dumps as an aggregate */
-int TrDumpGrouped(FILE *fp )
+int PetscTrDumpGrouped(FILE *fp )
 {
   TRSPACE       *head, *cur;
   int           nblocks;
@@ -574,7 +575,7 @@ int TrDumpGrouped(FILE *fp )
 
   if (fp == 0) fp = stderr;
 
-  TrSortBlocks();
+  PetscTrSortBlocks();
   head = TRhead;
   cur  = 0;
   while (head) {
@@ -593,4 +594,8 @@ int TrDumpGrouped(FILE *fp )
   fflush( fp );
   return 0;
 }
+
+
+
+
 

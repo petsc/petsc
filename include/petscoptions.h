@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.14 1996/01/01 01:05:46 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.15 1996/01/12 22:10:35 bsmith Exp bsmith $ */
 /*
    Application callable routines to determine options set in the options database.
 */
@@ -6,7 +6,6 @@
 #define __OPTIONS_PACKAGE
 #include "petsc.h"
 
-/* returns -1 on error, 0 on not found and 1 on found */
 int OptionsHasName(char*,char *,int*);
 int OptionsGetInt(char*,char *,int *,int*);
 int OptionsGetDouble(char *,char *,double *,int*);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.15 1995/11/09 22:31:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.16 1995/12/01 14:49:24 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates opening and drawing a window\n";
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   Draw draw;
   int  ierr, x = 0, y = 0, width = 300, height = 300;
  
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"Title",x,y,width,height,&draw); CHKERRA(ierr);
   ierr = DrawSetViewPort(draw,.25,.25,.75,.75); CHKERRA(ierr);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.67 1996/03/15 03:20:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.68 1996/03/18 00:37:44 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -55,7 +55,7 @@ static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
   return 0;
 }
 #include "viewer.h"
-#include "sysio.h"
+#include "sys.h"
 
 static int VecView_Seq_File(Vec xin,Viewer viewer)
 {
@@ -137,11 +137,11 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 
   ierr  = ViewerBinaryGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
   /* Write vector header */
-  ierr = SYWrite(fdes,&xin->cookie,1,SYINT,0);CHKERRQ(ierr);
-  ierr = SYWrite(fdes,&n,1,SYINT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,&xin->cookie,1,BINARY_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,&n,1,BINARY_INT,0); CHKERRQ(ierr);
 
   /* Write vector contents */
-  ierr = SYWrite(fdes,x->array,n,SYSCALAR,0);
+  ierr = PetscBinaryWrite(fdes,x->array,n,BINARY_SCALAR,0);
   CHKERRQ(ierr);
   return 0;
 }
@@ -219,10 +219,10 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
             Veiobtain_vectors, Veirelease_vectors, VecDot_Seq, VecMDot_Seq,
             VecNorm_Seq,  VecDot_Seq, VecMDot_Seq,
             VecScale_Seq, VecCopy_Seq,
-            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXBY_Seq,
+            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXPBY_Seq,
             VecMAXPY_Seq, VecAYPX_Seq,
-            VecWAXPY_Seq, VecPMult_Seq,
-            VecPDiv_Seq,  
+            VecWAXPY_Seq, VecPointwiseMult_Seq,
+            VecPointwiseDivide_Seq,  
             VecSetValues_Seq,0,0,
             VecGetArray_Seq, VecGetSize_Seq,VecGetSize_Seq,
             VecGetOwnershipRange_Seq,0,VecMax_Seq,VecMin_Seq,

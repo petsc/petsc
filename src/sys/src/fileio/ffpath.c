@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ffpath.c,v 1.1 1996/01/30 18:32:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: ffpath.c,v 1.1 1996/01/30 18:32:25 bsmith Exp bsmith 
 extern int SYiTestFile(char *,char,uid_t,gid_t);
 
 /*@C
-   SYGetFileFromPath - Finds a file from a name and a path string.  A 
+   PetscGetFileFromPath - Finds a file from a name and a path string.  A 
    default can be provided.
 
    Input Parameters:
@@ -32,7 +32,7 @@ extern int SYiTestFile(char *,char,uid_t,gid_t);
 
 .seealso:
 @*/
-int SYGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode)
+int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode)
 {
   char   *p, *cdir, trial[MAXPATHLEN],*senv, *env;
   int    ln;
@@ -40,7 +40,7 @@ int SYGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode
   gid_t  gid;
 
   /* Setup default */
-  SYGetFullPath(defname,fname,MAXPATHLEN);
+  PetscGetFullPath(defname,fname,MAXPATHLEN);
 
   /* Get the (effective) user and group of the caller */
   uid = geteuid();
@@ -75,8 +75,8 @@ int SYGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode
       PetscStrcpy( trial + ln, name );
 
       if (SYiTestFile( trial, mode, uid, gid )) {
-        /* need SYGetFullPath rather then copy in case path has . in it */
-	SYGetFullPath( trial,  fname, MAXPATHLEN );
+        /* need PetscGetFullPath rather then copy in case path has . in it */
+	PetscGetFullPath( trial,  fname, MAXPATHLEN );
 	PetscFree( senv );
 	return 1;
       }

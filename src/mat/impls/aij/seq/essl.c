@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.8 1995/12/12 22:54:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.9 1995/12/21 18:31:37 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -130,7 +130,7 @@ static int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 
 int MatUseEssl_SeqAIJ(Mat A)
 {
-  PETSCVALIDHEADERSPECIFIC(A,MAT_COOKIE);  
+  PetscValidHeaderSpecific(A,MAT_COOKIE);  
   if (A->type != MATSEQAIJ) return 0;
 
   A->ops.lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;

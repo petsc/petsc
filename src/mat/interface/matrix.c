@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.152 1996/03/17 22:11:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.153 1996/03/18 00:39:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -51,7 +51,7 @@ $    -mat_order rcm, -mat_order qmd
 int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 {
   int         ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatGetReordering:Not for unassembled matrix");
 
   if (!mat->ops.getreordering) {*rperm = 0; *cperm = 0; return 0;}
@@ -95,7 +95,7 @@ int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 {
   int   ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatGetRow:Not for unassembled matrix");
   PLogEventBegin(MAT_GetRow,mat,0,0,0);
   ierr = (*mat->ops.getrow)(mat,row,ncols,cols,vals); CHKERRQ(ierr);
@@ -118,7 +118,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 @*/
 int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatRestoreRow:Not for unassembled matrix");
   if (!mat->ops.restorerow) return 0;
   return (*mat->ops.restorerow)(mat,row,ncols,cols,vals);
@@ -173,7 +173,7 @@ int MatView(Mat mat,Viewer viewer)
   ViewerType   vtype;
   MPI_Comm     comm = mat->comm;
 
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatView:Not for unassembled matrix");
 
   if (!viewer) {
@@ -185,13 +185,13 @@ int MatView(Mat mat,Viewer viewer)
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);  
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
-      MPIU_fprintf(comm,fd,"Matrix Object:\n");
+      PetscFPrintf(comm,fd,"Matrix Object:\n");
       ierr = MatGetType(mat,PETSC_NULL,&cstr); CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
-      MPIU_fprintf(comm,fd,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);
+      PetscFPrintf(comm,fd,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);
       if (mat->ops.getinfo) {
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&nz,&nzalloc,&mem); CHKERRQ(ierr);
-        MPIU_fprintf(comm,fd,"  total: nonzeros=%d, allocated nonzeros=%d\n",nz,
+        PetscFPrintf(comm,fd,"  total: nonzeros=%d, allocated nonzeros=%d\n",nz,
                      nzalloc);
       }
     }
@@ -210,27 +210,27 @@ int MatView(Mat mat,Viewer viewer)
 @*/
 int MatDestroy(Mat mat)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   return (*mat->destroy)((PetscObject)mat);
 }
 /*@
-   MatValidMatrix - Checks whether a matrix object is valid.
+   MatValid - Checks whether a matrix object is valid.
 
    Input Parameter:
 .  m - the matrix to check 
 
    Output Parameter:
    flg - flag indicating matrix status, either
-$     1 if matrix is valid;
-$     0 otherwise.
+$     PETSC_TRUE if matrix is valid;
+$     PETSC_FALSE otherwise.
 
 .keywords: matrix, valid
 @*/
-int MatValidMatrix(Mat m,int *flg)
+int MatValid(Mat m,PetscTruth *flg)
 {
-  if (!m)                           *flg = 0;
-  else if (m->cookie != MAT_COOKIE) *flg = 0;
-  else                              *flg = 1;
+  if (!m)                           *flg = PETSC_FALSE;
+  else if (m->cookie != MAT_COOKIE) *flg = PETSC_FALSE;
+  else                              *flg = PETSC_TRUE;
   return 0;
 }
 
@@ -264,7 +264,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,
                                                         InsertMode addv)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
@@ -300,7 +300,7 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
   int ierr;
 
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatGetValues:Not for unassembled matrix");
 
   PLogEventBegin(MAT_GetValues,mat,0,0,0);
@@ -327,8 +327,8 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 int MatMult(Mat mat,Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE); 
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE); 
   if (!mat->assembled) SETERRQ(1,"MatMult:Not for unassembled matrix");
   if (x == y) SETERRQ(1,"MatMult:x and y must be different vectors");
 
@@ -354,8 +354,8 @@ int MatMult(Mat mat,Vec x,Vec y)
 int MatMultTrans(Mat mat,Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatMultTrans:Not for unassembled matrix");
   if (x == y) SETERRQ(1,"MatMultTrans:x and y must be different vectors");
 
@@ -381,8 +381,8 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
 int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);PETSCVALIDHEADERSPECIFIC(v1,VEC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(v2,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(v3,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v1,VEC_COOKIE);
+  PetscValidHeaderSpecific(v2,VEC_COOKIE); PetscValidHeaderSpecific(v3,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatMultAdd:Not for unassembled matrix");
 
   PLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);
@@ -408,8 +408,8 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE); PETSCVALIDHEADERSPECIFIC(v1,VEC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(v2,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(v3,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE); PetscValidHeaderSpecific(v1,VEC_COOKIE);
+  PetscValidHeaderSpecific(v2,VEC_COOKIE); PetscValidHeaderSpecific(v3,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatMultTransAdd:Not for unassembled matrix");
   if (!mat->ops.multtransadd) SETERRQ(PETSC_ERR_SUP,"MatMultTransAdd");
   if (v1 == v3) SETERRQ(1,"MatMultTransAdd:v1 and v2 must be different vectors");
@@ -440,7 +440,7 @@ $    flag = MAT_GLOBAL_SUM: sum over all processors
 @*/
 int MatGetInfo(Mat mat,MatInfoType flag,int *nz,int *nzalloc,int *mem)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.getinfo) SETERRQ(PETSC_ERR_SUP,"MatGetInfo");
   return  (*mat->ops.getinfo)(mat,flag,nz,nzalloc,mem);
 }   
@@ -461,7 +461,7 @@ int MatGetInfo(Mat mat,MatInfoType flag,int *nz,int *nzalloc,int *mem)
 int MatLUFactor(Mat mat,IS row,IS col,double f)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.lufactor) SETERRQ(PETSC_ERR_SUP,"MatLUFactor");
   if (!mat->assembled) SETERRQ(1,"MatLUFactor:Not for unassembled matrix");
 
@@ -488,7 +488,7 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.ilufactor) SETERRQ(PETSC_ERR_SUP,"MatILUFactor");
   if (!mat->assembled) SETERRQ(1,"MatILUFactor:Not for unassembled matrix");
 
@@ -526,7 +526,7 @@ $     -mat_lu_fill <f>, where f is the fill ratio
 int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
 {
   int ierr,flg;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!fact) SETERRQ(1,"MatLUFactorSymbolic:Missing factor matrix argument");
   if (!mat->ops.lufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"MatLUFactorSymbolic");
   if (!mat->assembled) SETERRQ(1,"MatLUFactorSymbolic:Not for unassembled matrix");
@@ -561,7 +561,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
 {
   int ierr,flg;
 
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!fact) SETERRQ(1,"MatLUFactorNumeric:Missing factor matrix argument");
   if (!mat->ops.lufactornumeric) SETERRQ(PETSC_ERR_SUP,"MatLUFactorNumeric");
   if (!mat->assembled) SETERRQ(1,"MatLUFactorNumeric:Not for unassembled matrix");
@@ -599,7 +599,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
 int MatCholeskyFactor(Mat mat,IS perm,double f)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.choleskyfactor) SETERRQ(PETSC_ERR_SUP,"MatCholeskyFactor");
   if (!mat->assembled) SETERRQ(1,"MatCholeskyFactor:Not for unassembled matrix");
 
@@ -631,7 +631,7 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
 int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!fact) SETERRQ(1,"MatCholeskyFactorSymbolic:Missing factor matrix argument");
   if (!mat->ops.choleskyfactorsymbolic)SETERRQ(PETSC_ERR_SUP,"MatCholeskyFactorSymbolic");
   if (!mat->assembled) SETERRQ(1,"MatCholeskyFactorSymbolic:Not for unassembled matrix");
@@ -659,7 +659,7 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
 int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!fact) SETERRQ(1,"MatCholeskyFactorNumeric:Missing factor matrix argument");
   if (!mat->ops.choleskyfactornumeric) SETERRQ(PETSC_ERR_SUP,"MatCholeskyFactorNumeric");
   if (!mat->assembled) SETERRQ(1,"MatCholeskyFactorNumeric:Not for unassembled matrix");
@@ -687,8 +687,8 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 int MatSolve(Mat mat,Vec b,Vec x)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (x == b) SETERRQ(1,"MatSolve:x and y must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatSolve:Unfactored matrix");
 
@@ -720,8 +720,8 @@ int MatSolve(Mat mat,Vec b,Vec x)
 int MatForwardSolve(Mat mat,Vec b,Vec x)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (x == b) SETERRQ(1,"MatForwardSolve:x and y must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatForwardSolve:Unfactored matrix");
   if (!mat->ops.forwardsolve) SETERRQ(PETSC_ERR_SUP,"MatForwardSolve");
@@ -753,8 +753,8 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
 int MatBackwardSolve(Mat mat,Vec b,Vec x)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (x == b) SETERRQ(1,"MatBackwardSolve:x and b must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatBackwardSolve:Unfactored matrix");
   if (!mat->ops.backwardsolve) SETERRQ(PETSC_ERR_SUP,"MatBackwardSolve");
@@ -785,8 +785,8 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
   Scalar one = 1.0;
   Vec    tmp;
   int    ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (x == b) SETERRQ(1,"MatSolveAdd:x and b must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatSolveAdd:Unfactored matrix");
 
@@ -829,8 +829,8 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 int MatSolveTrans(Mat mat,Vec b,Vec x)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (!mat->factor) SETERRQ(1,"MatSolveTrans:Unfactored matrix");
   if (x == b) SETERRQ(1,"MatSolveTrans:x and b must be different vectors");
   if (!mat->ops.solvetrans) SETERRQ(PETSC_ERR_SUP,"MatSolveTrans");
@@ -861,8 +861,8 @@ int MatSolveTransAdd(Mat mat,Vec b,Vec y,Vec x)
   Scalar one = 1.0;
   int    ierr;
   Vec    tmp;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (x == b) SETERRQ(1,"MatSolveTransAdd:x and b must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatSolveTransAdd:Unfactored matrix");
 
@@ -933,8 +933,8 @@ int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,
              int its,Vec x)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (!mat->ops.relax) SETERRQ(PETSC_ERR_SUP,"MatRelax");
   if (!mat->assembled) SETERRQ(1,"MatRelax:Not for unassembled matrix");
 
@@ -985,7 +985,7 @@ int MatCopy_Basic(Mat A,Mat B)
 int MatCopy(Mat A,Mat B)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(A,MAT_COOKIE);PETSCVALIDHEADERSPECIFIC(B,MAT_COOKIE);
+  PetscValidHeaderSpecific(A,MAT_COOKIE);PetscValidHeaderSpecific(B,MAT_COOKIE);
   if (!A->assembled) SETERRQ(1,"MatCopy:Not for unassembled matrix");
 
   PLogEventBegin(MAT_Copy,A,B,0,0); 
@@ -1023,7 +1023,7 @@ int MatCopy(Mat A,Mat B)
 int MatConvert(Mat mat,MatType newtype,Mat *M)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!M) SETERRQ(1,"MatConvert:Bad new matrix address");
   if (!mat->assembled) SETERRQ(1,"MatConvert:Not for unassembled matrix");
 
@@ -1056,7 +1056,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 @*/
 int MatGetDiagonal(Mat mat,Vec v)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);PetscValidHeaderSpecific(v,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatGetDiagonal:Not for unassembled matrix");
   if (mat->ops.getdiagonal) return (*mat->ops.getdiagonal)(mat,v);
   SETERRQ(PETSC_ERR_SUP,"MatGetDiagonal");
@@ -1075,28 +1075,28 @@ int MatGetDiagonal(Mat mat,Vec v)
 @*/
 int MatTranspose(Mat mat,Mat *B)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatTranspose:Not for unassembled matrix");
   if (mat->ops.transpose) return (*mat->ops.transpose)(mat,B);
   SETERRQ(PETSC_ERR_SUP,"MatTranspose");
 }
 
 /*@
-   MatEqual - Compares two matrices.  Returns 1 if two matrices are equal.
+   MatEqual - Compares two matrices.
 
    Input Parameters:
 .  mat1 - the first matrix
 .  mat2 - the second matrix
 
    Output Parameter:
-.  flg : 1 if the matrices are equal;
-         0 otherwise.
+.  flg : PETSC_TRUE if the matrices are equal;
+         PETSC_FALSE otherwise.
 
 .keywords: matrix, equal, equivalent
 @*/
-int MatEqual(Mat mat1,Mat mat2,int *flg)
+int MatEqual(Mat mat1,Mat mat2,PetscTruth *flg)
 {
-  PETSCVALIDHEADERSPECIFIC(mat1,MAT_COOKIE); PETSCVALIDHEADERSPECIFIC(mat2,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat1,MAT_COOKIE); PetscValidHeaderSpecific(mat2,MAT_COOKIE);
   if (!mat1->assembled) SETERRQ(1,"MatEqual:Not for unassembled matrix");
   if (!mat2->assembled) SETERRQ(1,"MatEqual:Not for unassembled matrix");
   if (mat1->ops.equal) return (*mat1->ops.equal)(mat1,mat2, flg);
@@ -1118,10 +1118,10 @@ int MatEqual(Mat mat1,Mat mat2,int *flg)
 int MatDiagonalScale(Mat mat,Vec l,Vec r)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.scale) SETERRQ(PETSC_ERR_SUP,"MatDiagonalScale");
-  if (l) PETSCVALIDHEADERSPECIFIC(l,VEC_COOKIE); 
-  if (r) PETSCVALIDHEADERSPECIFIC(r,VEC_COOKIE);
+  if (l) PetscValidHeaderSpecific(l,VEC_COOKIE); 
+  if (r) PetscValidHeaderSpecific(r,VEC_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatDiagonalScale:Not for unassembled matrix");
 
   PLogEventBegin(MAT_Scale,mat,0,0,0);
@@ -1143,7 +1143,7 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 int MatScale(Scalar *a,Mat mat)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.scale) SETERRQ(PETSC_ERR_SUP,"MatScale");
   if (!mat->assembled) SETERRQ(1,"MatScale:Not for unassembled matrix");
 
@@ -1167,7 +1167,7 @@ int MatScale(Scalar *a,Mat mat)
 @*/
 int MatNorm(Mat mat,NormType type,double *norm)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!norm) SETERRQ(1,"MatNorm:bad addess for value");
   if (!mat->assembled) SETERRQ(1,"MatNorm:Not for unassembled matrix");
   if (mat->ops.norm) return (*mat->ops.norm)(mat,type,norm);
@@ -1195,7 +1195,7 @@ int MatNorm(Mat mat,NormType type,double *norm)
 int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PLogEventBegin(MAT_AssemblyBegin,mat,0,0,0);
   if (mat->ops.assemblybegin){ierr = (*mat->ops.assemblybegin)(mat,type);CHKERRQ(ierr);}
   PLogEventEnd(MAT_AssemblyBegin,mat,0,0,0);
@@ -1235,7 +1235,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   int        ierr,flg;
   static int inassm = 0;
 
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   inassm++;
   PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
   if (mat->ops.assemblyend) {ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);}
@@ -1299,7 +1299,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 @*/
 int MatCompress(Mat mat)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->ops.compress) return (*mat->ops.compress)(mat);
   return 0;
 }
@@ -1344,7 +1344,7 @@ $    and possibly others.
 @*/
 int MatSetOption(Mat mat,MatOption op)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->ops.setoption) return (*mat->ops.setoption)(mat,op);
   return 0;
 }
@@ -1363,7 +1363,7 @@ int MatSetOption(Mat mat,MatOption op)
 int MatZeroEntries(Mat mat)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.zeroentries) SETERRQ(PETSC_ERR_SUP,"MatZeroEntries");
 
   PLogEventBegin(MAT_ZeroEntries,mat,0,0,0);
@@ -1399,7 +1399,7 @@ int MatZeroEntries(Mat mat)
 @*/
 int MatZeroRows(Mat mat,IS is, Scalar *diag)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatZeroRows:Not for unassembled matrix");
   if (mat->ops.zerorows) return (*mat->ops.zerorows)(mat,is,diag);
   SETERRQ(PETSC_ERR_SUP,"MatZeroRows");
@@ -1421,7 +1421,7 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
 @*/
 int MatGetSize(Mat mat,int *m,int* n)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!m || !n) SETERRQ(1,"MatGetSize:Bad address for result");
   return (*mat->ops.getsize)(mat,m,n);
 }
@@ -1444,7 +1444,7 @@ int MatGetSize(Mat mat,int *m,int* n)
 @*/
 int MatGetLocalSize(Mat mat,int *m,int* n)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!m || !n) SETERRQ(1,"MatGetLocalSize:Bad address for result");
   return (*mat->ops.getlocalsize)(mat,m,n);
 }
@@ -1466,7 +1466,7 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
 @*/
 int MatGetOwnershipRange(Mat mat,int *m,int* n)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!m || !n) SETERRQ(1,"MatGetOwnershipRange:Bad address for result");
   if (mat->ops.getownershiprange) return (*mat->ops.getownershiprange)(mat,m,n);
   SETERRQ(PETSC_ERR_SUP,"MatGetOwnershipRange");
@@ -1504,7 +1504,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
 {
   int ierr,flg;
 
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (fill < 0) SETERRQ(1,"MatILUFactorSymbolic:Levels of fill negative");
   if (!fact) SETERRQ(1,"MatILUFactorSymbolic:Fact argument is missing");
   if (!mat->ops.ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"MatILUFactorSymbolic");
@@ -1541,7 +1541,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
                                         Mat *fact)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (fill < 0) SETERRQ(1,"MatIncompleteCholeskyFactorSymbolic:Fill negative");
   if (!fact) SETERRQ(1,"MatIncompleteCholeskyFactorSymbolic:Missing fact argument");
   if (!mat->ops.incompletecholeskyfactorsymbolic) 
@@ -1577,7 +1577,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
 @*/
 int MatGetArray(Mat mat,Scalar **v)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!v) SETERRQ(1,"MatGetArray:Bad input, array pointer location");
   if (!mat->ops.getarray) SETERRQ(PETSC_ERR_SUP,"MatGetArray");
   return (*mat->ops.getarray)(mat,v);
@@ -1600,7 +1600,7 @@ int MatGetArray(Mat mat,Scalar **v)
 @*/
 int MatRestoreArray(Mat mat,Scalar **v)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!v) SETERRQ(1,"MatRestoreArray:Bad input, array pointer location");
   if (!mat->ops.restorearray) SETERRQ(PETSC_ERR_SUP,"MatResroreArray");
   return (*mat->ops.restorearray)(mat,v);
@@ -1630,9 +1630,9 @@ int MatRestoreArray(Mat mat,Scalar **v)
 int MatGetSubMatrix(Mat mat,IS irow,IS icol,MatGetSubMatrixCall scall,Mat *submat)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (scall == MAT_REUSE_MATRIX) {
-    PETSCVALIDHEADERSPECIFIC(*submat,MAT_COOKIE); 
+    PetscValidHeaderSpecific(*submat,MAT_COOKIE); 
   }   
   if (!mat->ops.getsubmatrix) SETERRQ(PETSC_ERR_SUP,"MatGetSubMatrix");
   if (!mat->assembled) SETERRQ(1,"MatGetSubMatrix:Not for unassembled matrix");
@@ -1665,7 +1665,7 @@ int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall
                       Mat **submat)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.getsubmatrices) SETERRQ(PETSC_ERR_SUP,"MatGetSubMatrices");
   if (!mat->assembled) SETERRQ(1,"MatGetSubMatrices:Not for unassembled matrix");
 
@@ -1689,7 +1689,7 @@ int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall
 @*/
 int MatGetSubMatrixInPlace(Mat mat,IS irow,IS icol)
 {
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatGetSubMatrixInPlace:Not for unassembled matrix");
 
   if (!mat->ops.getsubmatrixinplace) SETERRQ(PETSC_ERR_SUP,"MatGetSubmatrixInPlace");
@@ -1714,7 +1714,7 @@ int MatGetSubMatrixInPlace(Mat mat,IS irow,IS icol)
 int MatIncreaseOverlap(Mat mat,int n, IS *is, int ov)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatIncreaseOverlap:Not for unassembled matrix");
 
   if (ov == 0) return 0;
@@ -1744,12 +1744,12 @@ int MatPrintHelp(Mat mat)
   MPI_Comm   comm = mat->comm;
 
   if (!called) {
-    MPIU_printf(comm,"General matrix options:\n");
-    MPIU_printf(comm,"  -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"  -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"  -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
-    MPIU_printf(comm,"      -draw_pause <sec> : set seconds of display pause\n");
-    MPIU_printf(comm,"      -display <name> : set alternate display\n");
+    PetscPrintf(comm,"General matrix options:\n");
+    PetscPrintf(comm,"  -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
+    PetscPrintf(comm,"  -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
+    PetscPrintf(comm,"  -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
+    PetscPrintf(comm,"      -draw_pause <sec> : set seconds of display pause\n");
+    PetscPrintf(comm,"      -display <name> : set alternate display\n");
     called = 1;
   }
   if (mat->ops.printhelp) (*mat->ops.printhelp)(mat);

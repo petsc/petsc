@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: flush.c,v 1.1 1996/01/25 04:26:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: flush.c,v 1.2 1996/03/10 17:29:29 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -22,7 +22,7 @@ struct _Viewer {
 @*/
 int ViewerFlush(Viewer v)
 {
-  PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (v->flush) return (*v->flush)(v);
   return 0;
 }

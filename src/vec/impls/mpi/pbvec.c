@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.57 1996/03/08 05:45:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.58 1996/03/15 03:20:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,10 +40,10 @@ static struct _VeOps DvOps = { VecDuplicate_MPI,
             VecNorm_MPI, VecDot_MPI, 
             VecMDot_MPI,
             VecScale_Seq, VecCopy_Seq,
-            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXBY_Seq,
+            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXPBY_Seq,
             VecMAXPY_Seq, VecAYPX_Seq,
-            VecWAXPY_Seq, VecPMult_Seq,
-            VecPDiv_Seq, 
+            VecWAXPY_Seq, VecPointwiseMult_Seq,
+            VecPointwiseDivide_Seq, 
             VecSetValues_MPI,
             VecAssemblyBegin_MPI,VecAssemblyEnd_MPI,
             VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.6 1996/02/20 18:52:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.7 1996/03/04 05:16:18 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -1147,13 +1147,15 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   int         *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
   int         *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0;
   int         incrlev,nnz,i,bs = a->bs;
+  PetscTruth  col_identity, row_identity;
  
   if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBAIJ:Matrix must be square");
   if (!isrow) SETERRQ(1,"MatILUFactorSymbolic_SeqBAIJ:Must have row permutation");
   if (!iscol) SETERRQ(1,"MatILUFactorSymbolic_SeqBAIJ:Must have column permutation");
 
   /* special case that simply copies fill pattern */
-  if (levels == 0 && ISIsIdentity(isrow) && ISIsIdentity(iscol)) {
+  ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);
+  if (levels == 0 && row_identity && col_identity) {
     ierr = MatConvertSameType_SeqBAIJ(A,fact,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqBAIJ *) (*fact)->data;

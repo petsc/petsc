@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.24 1996/01/13 04:04:05 balay Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.25 1996/03/10 17:26:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
@@ -8,7 +8,6 @@ static char help[] = "Displays a vector visually.\n\n";
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "sysio.h"
 #include "draw.h"
 #include <math.h>
 
@@ -20,7 +19,7 @@ int main(int argc,char **argv)
   Draw       draw;
   DrawLG     lg;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   /* create vector */

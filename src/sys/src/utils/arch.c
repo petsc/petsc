@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: arch.c,v 1.9 1995/09/04 17:24:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.10 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
 
 /*@
-     SYGetArchType - Return a standardized architecture type for the machine
+     PetscGetArchType - Return a standardized architecture type for the machine
      that is executing this routine.  This uses uname where possible,
      but may modify the name (for example, sun4 is returned for all
      sun4 types).
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: arch.c,v 1.9 1995/09/04 17:24:00 bsmith Exp bsmith $"
 .    str - string area to contain architecture name.  Should be at least 
            10 characters long.
   @*/
-int SYGetArchType( char *str, int slen )
+int PetscGetArchType( char *str, int slen )
 {
 #if defined(PARCH_solaris)
   PetscStrncpy(str,"solaris",slen);

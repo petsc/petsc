@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.157 1996/03/17 18:49:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.158 1996/03/18 00:39:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -203,7 +203,7 @@ static int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 
 #include "draw.h"
 #include "pinclude/pviewer.h"
-#include "sysio.h"
+#include "sys.h"
 
 static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 {
@@ -221,20 +221,20 @@ static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
   for ( i=0; i<a->m; i++ ) {
     col_lens[4+i] = a->i[i+1] - a->i[i];
   }
-  ierr = SYWrite(fd,col_lens,4+a->m,SYINT,1); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,BINARY_INT,1); CHKERRQ(ierr);
   PetscFree(col_lens);
 
   /* store column indices (zero start index) */
   if (a->indexshift) {
     for ( i=0; i<a->nz; i++ ) a->j[i]--;
   }
-  ierr = SYWrite(fd,a->j,a->nz,SYINT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,a->j,a->nz,BINARY_INT,0); CHKERRQ(ierr);
   if (a->indexshift) {
     for ( i=0; i<a->nz; i++ ) a->j[i]++;
   }
 
   /* store nonzero values */
-  ierr = SYWrite(fd,a->a,a->nz,SYSCALAR,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,a->a,a->nz,BINARY_SCALAR,0); CHKERRQ(ierr);
   return 0;
 }
 
@@ -824,7 +824,7 @@ static int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int         i,ierr,N, *rows,m = a->m - 1,shift = a->indexshift;
 
-  ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
+  ierr = ISGetSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   if (diag) {
     for ( i=0; i<N; i++ ) {
@@ -1084,7 +1084,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
   }
   else {
     ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
-    ierr = SYIsort(ncols,icol); CHKERRQ(ierr);
+    ierr = PetscSortInt(ncols,icol); CHKERRQ(ierr);
     smap  = (int *) PetscMalloc((1+oldcols)*sizeof(int)); CHKPTRQ(smap);
     ssmap = smap + shift;
     cwork = (int *) PetscMalloc((1+nrows+ncols)*sizeof(int)); CHKPTRQ(cwork);
@@ -1212,7 +1212,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
                  
                 /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is[i],&n);  CHKERRQ(ierr);
+    ierr = ISGetSize(is[i],&n);  CHKERRQ(ierr);
     
     /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
@@ -1247,17 +1247,17 @@ int MatPrintHelp_SeqAIJ(Mat A)
   MPI_Comm   comm = A->comm;
 
   if (called) return 0; else called = 1;
-  MPIU_printf(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");
-  MPIU_printf(comm,"  -mat_lu_pivotthreshold <threshold>\n");
-  MPIU_printf(comm,"  -mat_aij_oneindex - internal indices begin at 1 instead of the default 0.\n");
-  MPIU_printf(comm,"  -mat_aij_no_inode  - Do not use inodes\n");
-  MPIU_printf(comm,"  -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)\n");
+  PetscPrintf(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");
+  PetscPrintf(comm,"  -mat_lu_pivotthreshold <threshold>\n");
+  PetscPrintf(comm,"  -mat_aij_oneindex - internal indices begin at 1 instead of the default 0.\n");
+  PetscPrintf(comm,"  -mat_aij_no_inode  - Do not use inodes\n");
+  PetscPrintf(comm,"  -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)\n");
 #if defined(HAVE_ESSL)
-  MPIU_printf(comm,"  -mat_aij_essl  - Use IBM sparse LU factorization and solve.\n");
+  PetscPrintf(comm,"  -mat_aij_essl  - Use IBM sparse LU factorization and solve.\n");
 #endif
   return 0;
 }
-int MatEqual_SeqAIJ(Mat A,Mat B, int* flg);
+int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,MatRestoreRow_SeqAIJ,
@@ -1510,13 +1510,13 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqAIJ:view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-  ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqAIJ:not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
   /* read in row lengths */
   rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
-  ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
 
   /* create our matrix */
   ierr = MatCreateSeqAIJ(comm,M,N,0,rowlengths,A); CHKERRQ(ierr);
@@ -1525,7 +1525,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   shift = a->indexshift;
 
   /* read in column indices and adjust for Fortran indexing*/
-  ierr = SYRead(fd,a->j,nz,SYINT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,a->j,nz,BINARY_INT); CHKERRQ(ierr);
   if (shift) {
     for ( i=0; i<nz; i++ ) {
       a->j[i] += 1;
@@ -1533,7 +1533,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   }
 
   /* read in nonzero values */
-  ierr = SYRead(fd,a->a,nz,SYSCALAR); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,a->a,nz,BINARY_SCALAR); CHKERRQ(ierr);
 
   /* set matrix "i" values */
   a->i[0] = -shift;
@@ -1548,7 +1548,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   return 0;
 }
 
-int MatEqual_SeqAIJ(Mat A,Mat B, int* flg)
+int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
 
@@ -1557,24 +1557,24 @@ int MatEqual_SeqAIJ(Mat A,Mat B, int* flg)
   /* If the  matrix dimensions are not equal, or no of nonzeros or shift */
   if ((a->m != b->m ) || (a->n !=b->n) ||( a->nz != b->nz)|| 
       (a->indexshift != b->indexshift)) {
-    *flg = 0 ; return 0; 
+    *flg = PETSC_FALSE; return 0; 
   }
   
   /* if the a->i are the same */
-  if(PetscMemcmp(a->i,b->i, (a->n+1)*sizeof(int))) { 
-    *flg = 0 ; return 0;
+  if (PetscMemcmp(a->i,b->i, (a->n+1)*sizeof(int))) { 
+    *flg = PETSC_FALSE; return 0;
   }
   
   /* if a->j are the same */
-  if(PetscMemcmp(a->j, b->j, (a->nz)*sizeof(int))) { 
-    *flg = 0 ; return 0;
+  if (PetscMemcmp(a->j, b->j, (a->nz)*sizeof(int))) { 
+    *flg = PETSC_FALSE; return 0;
   }
   
   /* if a->a are the same */
-  if(PetscMemcmp(a->a, b->a, (a->nz)*sizeof(Scalar))) {
-    *flg = 0 ; return 0;
+  if (PetscMemcmp(a->a, b->a, (a->nz)*sizeof(Scalar))) {
+    *flg = PETSC_FALSE; return 0;
   }
-  *flg =1 ; 
+  *flg = PETSC_TRUE; 
   return 0;
   
 }

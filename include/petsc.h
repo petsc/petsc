@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.101 1996/03/01 01:53:04 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.102 1996/03/04 05:17:33 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -45,9 +45,10 @@ extern int  (*PetscFree)(void *,int,char*);
 #define PetscFree(a)         (*PetscFree)(a,__LINE__,__FILE__)
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
 
-extern int  TrDump(FILE *);
-extern int  TrSpace( double *, double *,double *);
-extern int  TrValid();
+extern int  PetscTrDump(FILE *);
+extern int  PetscTrSpace( double *, double *,double *);
+extern int  PetscTrValid();
+extern int  PetscTrDebugLevel(int);
 
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemzero(void *,int);
@@ -124,7 +125,7 @@ extern double PetscGetTime();
 extern double PetscGetFlops();
 extern void PetscSleep(int);
 
-extern int PetscInitialize(int*,char***,char*,char*,char*);
+extern int PetscInitialize(int*,char***,char*,char*);
 extern int PetscFinalize();
 
 typedef struct _PetscObject* PetscObject;
@@ -162,7 +163,7 @@ extern int PetscSetFPTrap(int);
 #include "plog.h"
 
 #define PetscBarrier(A) \
-  {PETSCVALIDHEADER(A); \
+  {PetscValidHeader(A); \
    PLogEventBegin(Petsc_Barrier,A,0,0,0); \
    MPI_Barrier(((PetscObject)A)->comm); \
    PLogEventEnd(Petsc_Barrier,A,0,0,0);}

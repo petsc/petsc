@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.45 1996/02/13 15:32:57 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.46 1996/03/10 21:04:06 curfman Exp bsmith $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -38,7 +38,7 @@ extern int SNESGetSLES(SNES,SLES*);
 extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESCubicLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESQuadraticLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
-extern int SNESSetLineSearchRoutine(SNES,int(*)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
+extern int SNESSetLineSearch(SNES,int(*)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 
 extern int SNESGetSolution(SNES,Vec*);
 extern int SNESGetSolutionUpdate(SNES,Vec*);
@@ -60,7 +60,6 @@ extern int SNESTrustRegionDefaultConverged(SNES,double,double,double,void*);
 extern int SNESSetSolutionTolerance(SNES,double);
 extern int SNESSetAbsoluteTolerance(SNES,double);
 extern int SNESSetRelativeTolerance(SNES,double);
-extern int SNESSetTruncationTolerance(SNES,double);
 extern int SNESSetTrustRegionTolerance(SNES,double);
 extern int SNESSetMaxIterations(SNES,int);
 extern int SNESSetMaxFunctionEvaluations(SNES,int);
@@ -97,7 +96,7 @@ extern int SNESComputeGradient(SNES,Vec,Vec);
 extern int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,double*,void*),void*);
 extern int SNESComputeMinimizationFunction(SNES,Vec,double*);
 extern int SNESGetMinimizationFunction(SNES,double*);
-extern int SNESSetMinFunctionTolerance(SNES,double);
+extern int SNESSetMinimizationFunctionTolerance(SNES,double);
 extern int SNESGetLineSearchDampingParameter(SNES,Scalar*);
 extern int SNESConverged_UMLS(SNES,double,double,double,void*);
 extern int SNESConverged_UMTR(SNES,double,double,double,void*);

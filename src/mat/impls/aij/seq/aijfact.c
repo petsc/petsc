@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.57 1996/02/13 23:29:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.58 1996/02/14 14:06:17 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -492,13 +492,15 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   int        *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
   int        *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0;
   int        incrlev,nnz,i,shift = a->indexshift;
+  PetscTruth col_identity, row_identity;
  
   if (n != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:Matrix must be square");
   if (!isrow) SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:Must have row permutation");
   if (!iscol) SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:Must have column permutation");
 
   /* special case that simply copies fill pattern */
-  if (levels == 0 && ISIsIdentity(isrow) && ISIsIdentity(iscol)) {
+  ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);
+  if (levels == 0 && row_identity && col_identity) {
     ierr = MatConvertSameType_SeqAIJ(A,fact,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqAIJ *) (*fact)->data;

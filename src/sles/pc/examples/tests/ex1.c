@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.22 1996/01/01 01:02:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.23 1996/02/08 18:26:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the creation of a PC context.\n\n";
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Vec u;
   Mat mat;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
 

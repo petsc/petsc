@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.18 1996/01/09 14:31:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.19 1996/03/10 17:27:24 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -116,7 +116,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   if (i == maxit) i--;
   if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-  ierr = KSPUnwindPre(ksp,X,T); CHKERRQ(ierr);
+  ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
   return 0;

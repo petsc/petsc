@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.34 1996/03/10 17:27:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.35 1996/03/18 00:38:20 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -33,7 +33,7 @@ int KSPSetUp_Chebychev(KSP ksp)
 int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev *) ksp->data;
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->type != KSPCHEBYCHEV) return 0;
   chebychevP->emax = emax;
   chebychevP->emin = emin;
@@ -155,7 +155,7 @@ static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
-    MPIU_fprintf(comm,fd,"    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",
+    PetscFPrintf(comm,fd,"    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",
                cheb->emin,cheb->emax);
   }
   return 0;

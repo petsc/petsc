@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.44 1996/03/10 17:27:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.45 1996/03/18 00:39:19 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -305,12 +305,12 @@ static int PCSetFromOptions_MG(PC pc)
 
 static int PCPrintHelp_MG(PC pc,char *p)
 {
-  MPIU_printf(pc->comm," Options for PCMG preconditioner:\n");
-  MPIU_fprintf(pc->comm,stdout," %spc_mg_method [additive,multiplicative,fullmultigrid,kaskade\
+  PetscPrintf(pc->comm," Options for PCMG preconditioner:\n");
+  PetscFPrintf(pc->comm,stdout," %spc_mg_method [additive,multiplicative,fullmultigrid,kaskade\
                   : type of multigrid method\n",p);
-  MPIU_fprintf(pc->comm,stdout," %spc_mg_smoothdown m: number of pre-smooths\n",p);
-  MPIU_fprintf(pc->comm,stdout," %spc_mg_smoothup m: number of post-smooths\n",p);
-  MPIU_fprintf(pc->comm,stdout," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
+  PetscFPrintf(pc->comm,stdout," %spc_mg_smoothdown m: number of pre-smooths\n",p);
+  PetscFPrintf(pc->comm,stdout," %spc_mg_smoothup m: number of post-smooths\n",p);
+  PetscFPrintf(pc->comm,stdout," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
   return 0;
 }
 
@@ -337,7 +337,7 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
-    MPIU_fprintf(pc->comm,fd,
+    PetscFPrintf(pc->comm,fd,
       "   MG: method is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
       cstring,mg[0]->cycles,itu,itd); 
   }

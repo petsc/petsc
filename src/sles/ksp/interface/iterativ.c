@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.38 1996/01/22 17:22:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.39 1996/03/10 17:26:57 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: iterativ.c,v 1.38 1996/01/22 17:22:23 bsmith Exp bsmi
  */
 int KSPiDefaultFreeWork( KSP ksp )
 {
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->work)  return VecDestroyVecs(ksp->work,ksp->nwork);
   return 0;
 }
@@ -38,7 +38,7 @@ int KSPiDefaultFreeWork( KSP ksp )
  */
 int KSPCheckDef( KSP ksp )
 {
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!ksp->vec_sol) {
     SETERRQ(1,"KSPCheckDef:Solution vector not specified"); 
   }
@@ -68,19 +68,19 @@ int KSPCheckDef( KSP ksp )
 @*/
 int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
-  MPIU_printf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
+  PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
 }
 
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
   if (fnorm > 1.e-9 || fnorm == 0.0) {
-    MPIU_printf(ksp->comm, "iter = %d, Residual norm %g \n",its,fnorm);
+    PetscPrintf(ksp->comm, "iter = %d, Residual norm %g \n",its,fnorm);
   }
   else if (fnorm > 1.e-11){
-    MPIU_printf(ksp->comm, "iter = %d, Residual norm %5.3e \n",its,fnorm);
+    PetscPrintf(ksp->comm, "iter = %d, Residual norm %5.3e \n",its,fnorm);
   }
   else {
-    MPIU_printf(ksp->comm, "iter = %d, Residual norm < 1.e-11\n",its);
+    PetscPrintf(ksp->comm, "iter = %d, Residual norm < 1.e-11\n",its);
   }
   return 0;
 }
@@ -120,7 +120,7 @@ $        rnorm_0 = initial residual norm
 @*/
 int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
 {
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if ( n == 0 ) {
     ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->atol);
     ksp->rnorm0 = rnorm;
@@ -159,7 +159,7 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
   }
   else if (ksp->pc_side == PC_SYMMETRIC) {
     if (ksp->B) {
-      if (v) {ierr = PCApplySymmRight(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
+      if (v) {ierr = PCApplySymmetricRight(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
       else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with symmetric preconditioner");}
     }
     else        {
@@ -248,7 +248,7 @@ Input Parameters:
 int KSPiDefaultDestroy(PetscObject obj)
 {
   KSP ksp = (KSP) obj;
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->data) PetscFree(ksp->data);
 
   /* free work vectors */

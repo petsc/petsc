@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.24 1996/01/26 04:32:14 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.25 1996/03/15 03:13:30 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -22,12 +22,12 @@ struct _VeOps {
        (*set)(Scalar*,Vec),              /* y = alpha  */
        (*swap)(Vec,Vec),                 /* exchange x and y */
        (*axpy)(Scalar*,Vec,Vec),         /* y = y + alpha * x */
-       (*axby)(Scalar*,Scalar*,Vec,Vec), /* y = y + alpha * x + beta * y*/
+       (*axpby)(Scalar*,Scalar*,Vec,Vec),/* y = y + alpha * x + beta * y*/
        (*maxpy)(int,Scalar*,Vec,Vec*),   /* y = y + alpha[j] x[j] */
        (*aypx)(Scalar*,Vec,Vec),         /* y = x + alpha * y */
        (*waxpy)(Scalar*,Vec,Vec,Vec),    /* w = y + alpha * x */
-       (*pmult)(Vec,Vec,Vec),            /* w = x .* y */
-       (*pdiv)(Vec,Vec,Vec),             /* w = x ./ y */
+       (*pointwisemult)(Vec,Vec,Vec),    /* w = x .* y */
+       (*pointwisedivide)(Vec,Vec,Vec),  /* w = x ./ y */
        (*setvalues)(Vec,int,int*,Scalar*,InsertMode),
        (*assemblybegin)(Vec),            /* start global assembly */
        (*assemblyend)(Vec),              /* end global assembly */
@@ -37,7 +37,7 @@ struct _VeOps {
        (*restorearray)(Vec,Scalar**),    /* restore data array */
        (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */
        (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */
-       (*setrandom)(SYRandom,Vec);       /* set y[j] = random numbers */
+       (*setrandom)(PetscRandom,Vec);       /* set y[j] = random numbers */
 };
 
 struct _Vec {

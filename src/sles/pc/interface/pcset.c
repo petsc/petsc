@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.38 1996/03/07 20:09:26 balay Exp balay $";
+static char vcid[] = "$Id: pcset.c,v 1.39 1996/03/07 20:41:11 balay Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -37,7 +37,7 @@ $      (for instance, jacobi or bjacobi)
 int PCSetType(PC ctx,PCType type)
 {
   int ierr,(*r)(PC);
-  PETSCVALIDHEADERSPECIFIC(ctx,PC_COOKIE);
+  PetscValidHeaderSpecific(ctx,PC_COOKIE);
   if (ctx->setupcalled) {
     if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
     else {if (ctx->data) PetscFree(ctx->data);}
@@ -161,12 +161,12 @@ int PCPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
   int      ierr;
   if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
   entry = __PCList->head;
-  MPIU_printf(comm," %s%s (one of)",prefix,name);
+  PetscPrintf(comm," %s%s (one of)",prefix,name);
   while (entry) {
-    MPIU_printf(comm," %s",entry->name);
+    PetscPrintf(comm," %s",entry->name);
     entry = entry->next;
   }
-  MPIU_printf(comm,"\n");
+  PetscPrintf(comm,"\n");
   return 0;
 }
 
@@ -187,7 +187,7 @@ int PCSetFromOptions(PC pc)
   PCType method;
   int    ierr,flg;
 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
 
   if (PCGetTypeFromOptions_Private(pc,&method)) {
     PCSetType(pc,method);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.44 1996/01/29 21:46:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.45 1996/02/08 18:28:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -62,7 +62,7 @@ int main( int argc, char **argv )
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE,size,flg1,flg2; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
-  PetscInitialize( &argc, &argv, 0,0,help );
+  PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsHasName(PETSC_NULL,"-star",&flg1); CHKERRA(ierr);
   if (flg1) stencil = DA_STENCIL_STAR;
 
@@ -121,7 +121,7 @@ int main( int argc, char **argv )
   }
   ierr = FormInitialGuess1(&user,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  PetscPrintf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */
   ierr = MatDestroy(J); CHKERRA(ierr);

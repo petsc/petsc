@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.23 1996/01/12 22:10:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.24 1996/03/10 17:29:57 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -9,7 +9,6 @@ static char help[] = "Tests various DA routines.\n\n";
 #include "sys.h"
 #include "draw.h"
 #include <math.h>
-#include "sysio.h"
 
 int main(int argc,char **argv)
 {
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   Vec      local, global;
   Scalar   value;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&viewer); CHKERRA(ierr);
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);

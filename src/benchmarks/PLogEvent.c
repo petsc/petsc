@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: PLogEvent.c,v 1.4 1996/03/06 17:40:56 balay Exp balay $";
+static char vcid[] = "$Id: PLogEvent.c,v 1.5 1996/03/11 23:46:34 balay Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -10,7 +10,7 @@ int main( int argc, char **argv)
   double x, y;
   int e1, flg;
 
-  PetscInitialize(&argc, &argv,0,0,0);
+  PetscInitialize(&argc, &argv,0,0);
   PLogEventRegister(&e1,"*DummyEvent     ", "red:");
   /* To take care of the paging effects */
   PLogEventBegin(e1,&x,0,0,0);

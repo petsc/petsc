@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.12 1996/02/08 18:27:31 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.13 1996/02/13 23:30:12 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -20,7 +20,7 @@ C
       zero = 0.0
       one  = 1.0
       none = -1.0
-      call PetscInitialize(ierr)
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
       m = 3
       n = 3
       call OptionsGetInt(PETSC_NULL_CHAR,'-m',m,flg,ierr)

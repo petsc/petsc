@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.33 1996/03/10 17:29:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.34 1996/03/18 00:42:55 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -224,7 +224,7 @@ $    delta    - trust region paramenter
 $    deltatol - trust region size tolerance,
 $    epsmch   - machine epsilon
 $    fmin     - lower bound on function value,
-$               set with SNESSetMinFunctionTolerance()
+$               set with SNESSetMinimizationFunctionTolerance()
 $    nfunc    - number of function evaluations
 $    maxfunc  - maximum number of function evaluations, 
 $               set with SNESSetMaxFunctionEvaluations()
@@ -297,20 +297,20 @@ static int SNESPrintHelp_UMTR(SNES snes,char *p)
 {
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
 
-  MPIU_printf(snes->comm," method umtr (unconstrained minimization):\n");
-  MPIU_printf(snes->comm,"   %ssnes_trust_region_eta1 eta1 (default %g)\n",p,ctx->eta1);
-  MPIU_printf(snes->comm,"   %ssnes_trust_region_eta2 eta2 (default %g)\n",p,ctx->eta2);
-  MPIU_printf(snes->comm,"   %ssnes_trust_region_eta3 eta3 (default %g)\n",p,ctx->eta3);
-  MPIU_printf(snes->comm,"   %ssnes_trust_region_eta4 eta4 (default %g)\n",p,ctx->eta4);
-  MPIU_printf(snes->comm,"   %ssnes_trust_region_delta0 delta0 (default %g)\n",p,ctx->delta0);
-  MPIU_printf(snes->comm,"   %ssnes_trust_region_factor1 factor1 (default %g)\n",p,ctx->factor1);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm," method umtr (unconstrained minimization):\n");
+  PetscPrintf(snes->comm,"   %ssnes_trust_region_eta1 eta1 (default %g)\n",p,ctx->eta1);
+  PetscPrintf(snes->comm,"   %ssnes_trust_region_eta2 eta2 (default %g)\n",p,ctx->eta2);
+  PetscPrintf(snes->comm,"   %ssnes_trust_region_eta3 eta3 (default %g)\n",p,ctx->eta3);
+  PetscPrintf(snes->comm,"   %ssnes_trust_region_eta4 eta4 (default %g)\n",p,ctx->eta4);
+  PetscPrintf(snes->comm,"   %ssnes_trust_region_delta0 delta0 (default %g)\n",p,ctx->delta0);
+  PetscPrintf(snes->comm,"   %ssnes_trust_region_factor1 factor1 (default %g)\n",p,ctx->factor1);
+  PetscPrintf(snes->comm,
     "   delta0, factor1: used to initialize trust region parameter\n");
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
     "   eta2, eta3, eta4: used to compute trust region parameter\n");
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
     "   eta1: step is unsuccessful if actred < eta1 * prered, where\n"); 
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
     "         pred = predicted reduction, actred = actual reduction\n");
   return 0;
 }
@@ -326,9 +326,9 @@ static int SNESView_UMTR(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    MPIU_fprintf(snes->comm,fd,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",
+    PetscFPrintf(snes->comm,fd,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",
                  tr->eta1,tr->eta2,tr->eta3,tr->eta4);
-    MPIU_fprintf(snes->comm,fd,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
+    PetscFPrintf(snes->comm,fd,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
   }
   return 0;
 }

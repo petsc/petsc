@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: MPI_Wtime.c,v 1.3 1996/03/06 17:40:32 balay Exp $";
+static char vcid[] = "$Id: PetscMalloc.c,v 1.6 1996/03/06 17:41:32 balay Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -11,15 +11,15 @@ int main( int argc, char **argv)
   double   x, y, value;
   void     *arr[1000], *dummy;
   int      ierr, i, flg, rand1[1000], rand2[1000];
-  SYRandom r;
+  PetscRandom r;
   
-  PetscInitialize(&argc, &argv,0,0,0);
+  PetscInitialize(&argc, &argv,0,0);
   
-  ierr = SYRandomCreate( MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
+  ierr = PetscRandomCreate( MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
   for (i=0; i<1000; i++) {
-    ierr    = SYRandomGetValue(r, &value); CHKERRQ(ierr);
+    ierr    = PetscRandomGetValue(r, &value); CHKERRQ(ierr);
     rand1[i] = (int ) (value* 144327);
-    ierr    = SYRandomGetValue(r, &value); CHKERRQ(ierr);
+    ierr    = PetscRandomGetValue(r, &value); CHKERRQ(ierr);
     rand2[i] = (int ) (value* 144327);
   }
   
@@ -54,7 +54,7 @@ int main( int argc, char **argv)
   if(OptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stderr,"-trmalloc ");
   fprintf(stderr,"\n"); 
   
-  SYRandomDestroy(r);
+  PetscRandomDestroy(r);
   PetscFinalize();
   return 0;
 }

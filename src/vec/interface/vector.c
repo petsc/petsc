@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.70 1996/03/10 17:26:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.71 1996/03/18 00:37:41 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -10,23 +10,23 @@ static char vcid[] = "$Id: vector.c,v 1.70 1996/03/10 17:26:44 bsmith Exp bsmith
 #include "vecimpl.h"    /*I "vec.h" I*/
 
 /*@
-   VecValidVector - Checks whether a vector object is valid.
+   VecValid - Checks whether a vector object is valid.
 
    Input Parameter:
 .  v - the object to check
 
    Output Parameter:
    flg - flag indicating vector status, either
-$     1 if vector is valid;
-$     0 otherwise.
+$     PETSC_TRUE if vector is valid;
+$     PETSC_FALSE otherwise.
 
 .keywords: vector, valid
 @*/
-int VecValidVector(Vec v,int *flg)
+int VecValid(Vec v,PetscTruth *flg)
 {
-  if (!v)                           *flg = 0;
-  else if (v->cookie != VEC_COOKIE) *flg = 0;
-  else                              *flg = 1;
+  if (!v)                           *flg = PETSC_FALSE;
+  else if (v->cookie != VEC_COOKIE) *flg = PETSC_FALSE;
+  else                              *flg = PETSC_TRUE;
   return 0;
 }
 /*@
@@ -45,8 +45,8 @@ int VecValidVector(Vec v,int *flg)
 int VecDot(Vec x, Vec y, Scalar *val)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  CHKSAME(x,y);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscCheckSameType(x,y);
   PLogEventBegin(VEC_Dot,x,y,0,0);
   ierr = (*x->ops.dot)(x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Dot,x,y,0,0);
@@ -70,7 +70,7 @@ int VecDot(Vec x, Vec y, Scalar *val)
 int VecNorm(Vec x,NormType type,double *val)  
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   PLogEventBegin(VEC_Norm,x,0,0,0);
   ierr = (*x->ops.norm)(x,type,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Norm,x,0,0,0);
@@ -94,7 +94,7 @@ int VecNorm(Vec x,NormType type,double *val)
 int VecMax(Vec x,int *p,double *val)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   PLogEventBegin(VEC_Max,x,0,0,0);
   ierr = (*x->ops.max)(x,p,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Max,x,0,0,0);
@@ -118,7 +118,7 @@ int VecMax(Vec x,int *p,double *val)
 int VecMin(Vec x,int *p,double *val)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   PLogEventBegin(VEC_Min,x,0,0,0);
   ierr = (*x->ops.min)(x,p,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Min,x,0,0,0);
@@ -142,8 +142,8 @@ int VecMin(Vec x,int *p,double *val)
 int VecTDot(Vec x,Vec y,Scalar *val) 
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  CHKSAME(x,y);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscCheckSameType(x,y);
   PLogEventBegin(VEC_TDot,x,y,0,0);
   ierr = (*x->ops.tdot)(x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_TDot,x,y,0,0);
@@ -169,7 +169,7 @@ $      x[i] = alpha * x[i], for i=1,...,n.
 int VecScale(Scalar *alpha,Vec x)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   PLogEventBegin(VEC_Scale,x,0,0,0);
   ierr = (*x->ops.scale)(alpha,x); CHKERRQ(ierr);
   PLogEventEnd(VEC_Scale,x,0,0,0);
@@ -192,7 +192,7 @@ int VecScale(Scalar *alpha,Vec x)
 int VecCopy(Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PLogEventBegin(VEC_Copy,x,y,0,0);
   ierr = (*x->ops.copy)(x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_Copy,x,y,0,0);
@@ -218,7 +218,7 @@ $      x[i] = alpha, for i=1,...,n.
 int VecSet(Scalar *alpha,Vec x) 
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   PLogEventBegin(VEC_Set,x,0,0,0);
   ierr = (*x->ops.set)(alpha,x); CHKERRQ(ierr);
   PLogEventEnd(VEC_Set,x,0,0,0);
@@ -236,19 +236,19 @@ int VecSet(Scalar *alpha,Vec x)
 .  x  - the vector
 
    Example of Usage:
-$    SYRandomCreate(RANDOM_DEFAULT,&rctx);
+$    PetscRandomCreate(RANDOM_DEFAULT,&rctx);
 $    VecSetRandom(rctx,x);
-$    SYRandomDestroy(&rctx);
+$    PetscRandomDestroy(&rctx);
 
 .keywords: vector, set, random
 
-.seealso: VecSet(), VecSetValues(), SYRandomCreate(), SYRandomDestroy()
+.seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
-int VecSetRandom(SYRandom rctx,Vec x) 
+int VecSetRandom(PetscRandom rctx,Vec x) 
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(rctx,SYRANDOM_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(rctx,RANDOM_COOKIE);
   PLogEventBegin(VEC_SetRandom,x,rctx,0,0);
   ierr = (*x->ops.setrandom)(rctx,x); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetRandom,x,rctx,0,0);
@@ -272,7 +272,7 @@ int VecSetRandom(SYRandom rctx,Vec x)
 int VecAXPY(Scalar *alpha,Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE);
   PLogEventBegin(VEC_AXPY,x,y,0,0);
   ierr = (*x->ops.axpy)(alpha,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_AXPY,x,y,0,0);
@@ -280,7 +280,7 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
 } 
 
 /*@
-   VecAXBY - Computes y = alpha x + beta y. 
+   VecAXPBY - Computes y = alpha x + beta y. 
 
    Input Parameters:
 .  alpha,beta - the scalars
@@ -293,12 +293,12 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY()
 @*/
-int VecAXBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
+int VecAXPBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);PetscValidHeaderSpecific(y,VEC_COOKIE);
   PLogEventBegin(VEC_AXPY,x,y,0,0);
-  ierr = (*x->ops.axby)(alpha,beta,x,y); CHKERRQ(ierr);
+  ierr = (*x->ops.axpby)(alpha,beta,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_AXPY,x,y,0,0);
   return 0;
 } 
@@ -320,8 +320,8 @@ int VecAXBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
 int VecAYPX(Scalar *alpha,Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  CHKSAME(x,y);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscCheckSameType(x,y);
   PLogEventBegin(VEC_AYPX,x,y,0,0);
   ierr =  (*x->ops.aypx)(alpha,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_AYPX,x,y,0,0);
@@ -338,8 +338,8 @@ int VecAYPX(Scalar *alpha,Vec x,Vec y)
 int VecSwap(Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  CHKSAME(x,y);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscCheckSameType(x,y);
   PLogEventBegin(VEC_Swap,x,y,0,0);
   ierr = (*x->ops.swap)(x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_Swap,x,y,0,0);
@@ -362,16 +362,16 @@ int VecSwap(Vec x,Vec y)
 int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(w,VEC_COOKIE);
-  CHKSAME(x,y); CHKSAME(y,w);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(w,VEC_COOKIE);
+  PetscCheckSameType(x,y); PetscCheckSameType(y,w);
   PLogEventBegin(VEC_WAXPY,x,y,w,0);
   ierr =  (*x->ops.waxpy)(alpha,x,y,w); CHKERRQ(ierr);
   PLogEventEnd(VEC_WAXPY,x,y,w,0);
   return 0;
 }
 /*@
-   VecPMult - Computes the componentwise multiplication w = x*y.
+   VecPointwiseMult - Computes the componentwise multiplication w = x*y.
 
    Input Parameters:
 .  x, y  - the vectors
@@ -381,20 +381,20 @@ int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
 
 .keywords: vector, multiply, componentwise
 
-.seealso: VecPDiv()
+.seealso: VecPointwiseDivide()
 @*/
-int VecPMult(Vec x,Vec y,Vec w)
+int VecPointwiseMult(Vec x,Vec y,Vec w)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(w,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(w,VEC_COOKIE);
   PLogEventBegin(VEC_PMult,x,y,w,0);
-  ierr = (*x->ops.pmult)(x,y,w); CHKERRQ(ierr);
+  ierr = (*x->ops.pointwisemult)(x,y,w); CHKERRQ(ierr);
   PLogEventEnd(VEC_PMult,x,y,w,0);
   return 0;
 } 
 /*@
-   VecPDiv - Computes the componentwise division w = x/y.
+   VecPointwiseDivide - Computes the componentwise division w = x/y.
 
    Input Parameters:
 .  x, y  - the vectors
@@ -404,13 +404,13 @@ int VecPMult(Vec x,Vec y,Vec w)
 
 .keywords: vector, divide, componentwise
 
-.seealso: VecPMult()
+.seealso: VecPointwiseMult()
 @*/
-int VecPDiv(Vec x,Vec y,Vec w)
+int VecPointwiseDivide(Vec x,Vec y,Vec w)
 {
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(w,VEC_COOKIE);
-  return (*x->ops.pdiv)(x,y,w);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(w,VEC_COOKIE);
+  return (*x->ops.pointwisedivide)(x,y,w);
 }
 /*@C
    VecDuplicate - Creates a new vector of the same type as an existing vector.
@@ -434,7 +434,7 @@ int VecPDiv(Vec x,Vec y,Vec w)
 @*/
 int VecDuplicate(Vec v,Vec *newv) 
 {
-  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
   return   (*v->ops.duplicate)(v,newv);
 }
 /*@C
@@ -449,7 +449,7 @@ int VecDuplicate(Vec v,Vec *newv)
 @*/
 int VecDestroy(Vec v)
 {
-  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
   return (*v->destroy)((PetscObject )v);
 }
 
@@ -473,7 +473,7 @@ int VecDestroy(Vec v)
 @*/
 int VecDuplicateVecs(Vec v,int m,Vec **V)  
 {
-  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
   return (*v->ops.getvecs)( v, m,V );
 }
 
@@ -491,7 +491,7 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 int VecDestroyVecs(Vec *vv,int m)
 {
   if (!vv) SETERRQ(1,"VecDestroyVecs:Null vectors");
-  PETSCVALIDHEADERSPECIFIC(*vv,VEC_COOKIE);
+  PetscValidHeaderSpecific(*vv,VEC_COOKIE);
   return (*(*vv)->ops.destroyvecs)( vv, m );
 }
 
@@ -521,7 +521,7 @@ int VecDestroyVecs(Vec *vv,int m)
 int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ierr = (*x->ops.setvalues)( x, ni,ix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
@@ -542,7 +542,7 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 int VecAssemblyBegin(Vec vec)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(vec,VEC_COOKIE);
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);
   if (vec->ops.assemblybegin) {
     ierr = (*vec->ops.assemblybegin)(vec); CHKERRQ(ierr);
@@ -565,7 +565,7 @@ int VecAssemblyBegin(Vec vec)
 int VecAssemblyEnd(Vec vec)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(vec,VEC_COOKIE);
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PLogEventBegin(VEC_AssemblyEnd,vec,0,0,0);
   if (vec->ops.assemblyend) {
     ierr = (*vec->ops.assemblyend)(vec); CHKERRQ(ierr);
@@ -593,8 +593,8 @@ int VecAssemblyEnd(Vec vec)
 int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(*y,VEC_COOKIE);
-  CHKSAME(x,*y);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(*y,VEC_COOKIE);
+  PetscCheckSameType(x,*y);
   PLogEventBegin(VEC_MTDot,x,*y,0,0);
   ierr = (*x->ops.mtdot)(nv,x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_MTDot,x,*y,0,0);
@@ -618,8 +618,8 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(*y,VEC_COOKIE);
-  CHKSAME(x,*y);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(*y,VEC_COOKIE);
+  PetscCheckSameType(x,*y);
   PLogEventBegin(VEC_MDot,x,*y,0,0);
   ierr = (*x->ops.mdot)(nv,x,y,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_MDot,x,*y,0,0);
@@ -645,8 +645,8 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(*y,VEC_COOKIE);
-  CHKSAME(x,*y);
+  PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(*y,VEC_COOKIE);
+  PetscCheckSameType(x,*y);
   PLogEventBegin(VEC_MAXPY,x,*y,0,0);
   ierr = (*x->ops.maxpy)(nv,alpha,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_MAXPY,x,*y,0,0);
@@ -675,7 +675,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 @*/
 int VecGetArray(Vec x,Scalar **a)
 {
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   return (*x->ops.getarray)(x,a);
 }
 
@@ -702,7 +702,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 {
   int    i,ierr;
   Scalar **q;
-  PETSCVALIDHEADERSPECIFIC(*x,VEC_COOKIE);
+  PetscValidHeaderSpecific(*x,VEC_COOKIE);
   q = (Scalar **)PetscMalloc(n*sizeof(Scalar*)); CHKPTRQ(q);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]); CHKERRQ(ierr);
@@ -731,7 +731,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 {
   int    i,ierr;
   Scalar **q = *a;
-  PETSCVALIDHEADERSPECIFIC(*x,VEC_COOKIE);
+  PetscValidHeaderSpecific(*x,VEC_COOKIE);
   for(i=0;i<n;++i) {
     ierr = VecRestoreArray(x[i],&q[i]); CHKERRQ(ierr);
   }
@@ -756,7 +756,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 @*/
 int VecRestoreArray(Vec x,Scalar **a)
 {
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (x->ops.restorearray) return (*x->ops.getarray)(x,a);
   else return 0;
 }
@@ -792,7 +792,7 @@ $    ViewerMatlabOpen() - output vector to Matlab viewer
 @*/
 int VecView(Vec v,Viewer viewer)
 {
-  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
   return (*v->view)((PetscObject)v,viewer);
 }
 
@@ -811,7 +811,7 @@ int VecView(Vec v,Viewer viewer)
 @*/
 int VecGetSize(Vec x,int *size)
 {
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   return (*x->ops.getsize)(x,size);
 }
 
@@ -832,7 +832,7 @@ int VecGetSize(Vec x,int *size)
 @*/
 int VecGetLocalSize(Vec x,int *size)
 {
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   return (*x->ops.getlocalsize)(x,size);
 }
 
@@ -856,7 +856,7 @@ int VecGetLocalSize(Vec x,int *size)
 @*/
 int VecGetOwnershipRange(Vec x,int *low,int *high)
 {
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   return (*x->ops.getownershiprange)(x,low,high);
 }
 

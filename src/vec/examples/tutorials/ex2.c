@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.20 1995/10/12 04:13:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.21 1995/10/19 22:16:36 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
@@ -10,7 +10,6 @@ elements except the last rank.\n\n";
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "sysio.h"
 #include <math.h>
 
 int main(int argc,char **argv)
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   Scalar       one = 1.0;
   Vec          x;
 
-  PetscInitialize(&argc,&argv,0,0,help);
+  PetscInitialize(&argc,&argv,(char *)0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
 

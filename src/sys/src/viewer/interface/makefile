@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    = view.o 
 OBJSF    =
 LIBBASE  = libpetscsys
-MANSEC   = 7
+MANSEC   = v
 LOCDIR   = src/viewer/interface/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

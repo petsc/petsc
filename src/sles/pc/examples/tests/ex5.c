@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.39 1996/01/26 02:21:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.40 1996/02/08 18:26:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -49,7 +49,7 @@ int main(int Argc, char **Args)
   KSP         ksp,kspmg;
   PC          pcmg,pc;
 
-  PetscInitialize(&Argc,&Args,0,0,help);
+  PetscInitialize(&Argc,&Args,(char *)0,help);
 
   OptionsGetInt(PETSC_NULL,"-x",&x_mesh,&flg);  
   OptionsGetInt(PETSC_NULL,"-l",&levels,&flg);  
@@ -103,7 +103,7 @@ int main(int Argc, char **Args)
     ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
     ierr = PCShellSetName(pc,"user_precond"); CHKERRA(ierr);
     ierr = PCShellGetName(pc,&shellname); CHKERRA(ierr);
-    MPIU_printf(MPI_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);
+    PetscPrintf(MPI_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);
 
     /* this is a dummy! */
     ierr = SLESSetOperators(sles[i],mat[i],mat[i],
@@ -150,12 +150,12 @@ int main(int Argc, char **Args)
      
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
+  PetscPrintf(MPI_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
 
   ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its); CHKERRA(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
+  PetscPrintf(MPI_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
 
   PetscFree(N);
   ierr = VecDestroy(solution); CHKERRA(ierr);

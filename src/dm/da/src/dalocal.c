@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dalocal.c,v 1.1 1996/01/30 04:28:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: dalocal.c,v 1.2 1996/02/22 00:31:35 curfman Exp bsmith $";
 #endif
  
 /*
@@ -25,7 +25,7 @@ static char vcid[] = "$Id: dalocal.c,v 1.1 1996/01/30 04:28:04 bsmith Exp curfma
 @*/
 int   DAGetLocalVector(DA da,Vec* l)
 {
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   *l = da->local;
   return 0;
 }

@@ -1,5 +1,7 @@
-/* $Id: sles.h,v 1.18 1996/03/01 00:01:56 balay Exp bsmith $ */
-
+/* $Id: sles.h,v 1.19 1996/03/01 00:03:44 bsmith Exp bsmith $ */
+/*
+   Defines simple interface to the linear solvers.
+*/
 #if !defined(__SLES_PACKAGE)
 #define __SLES_PACKAGE
 #include "pc.h"
@@ -28,5 +30,6 @@ extern int SLESGetOptionsPrefix(SLES,char**);
 
 extern int PCBJacobiGetSubSLES(PC,int*,int*,SLES**);
 extern int PCBGSGetSubSLES(PC,int*,int*,SLES**);
+extern int PCASMGetSubSLES(PC,int*,int*,SLES**);
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.40 1996/03/18 00:43:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.41 1996/03/18 17:05:07 curfman Exp bsmith $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -13,7 +13,7 @@ static int DAView_2d(PetscObject dain,Viewer viewer)
   int         rank, ierr;
   ViewerType  vtype;
 
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
   
   MPI_Comm_rank(da->comm,&rank); 
 
@@ -26,12 +26,12 @@ static int DAView_2d(PetscObject dain,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd);  CHKERRQ(ierr);
-    MPIU_Seq_begin(da->comm,1);
+    PetscSequentialPhaseBegin(da->comm,1);
     fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
                  da->N,da->m,da->n,da->w,da->s);
     fprintf(fd,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);
     fflush(fd);
-    MPIU_Seq_end(da->comm,1);
+    PetscSequentialPhaseEnd(da->comm,1);
   }
   else if (vtype == DRAW_VIEWER) {
     Draw       draw;
@@ -634,7 +634,7 @@ int DARefine(DA da, DA *daref)
   int M, N, P, ierr;
   DA  da2;
 
-  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE);
 
   M = 2*da->M - 1; N = 2*da->N - 1; P = 2*da->P - 1;
   if (da->dim == 1) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.93 1996/03/14 21:47:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.94 1996/03/18 00:40:26 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -939,7 +939,7 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 
 #include "draw.h"
 #include "pinclude/pviewer.h"
-#include "sysio.h"
+#include "sys.h"
 
 static int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
 {
@@ -972,14 +972,14 @@ static int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
   if (ict != a->maxnz) SETERRQ(1,"MatView_SeqBDiag_Binary:Error in nonzero count");
 
   /* Store lengths of each row and write (including header) to file */
-  ierr = SYWrite(fd,col_lens,4+a->m,SYINT,1); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,BINARY_INT,1); CHKERRQ(ierr);
   PetscFree(col_lens);
 
   /* Store column indices (zero start index) */
-  ierr = SYWrite(fd,cval,a->maxnz,SYINT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,cval,a->maxnz,BINARY_INT,0); CHKERRQ(ierr);
 
   /* Store nonzero values */
-  ierr = SYWrite(fd,anonz,a->maxnz,SYSCALAR,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,anonz,a->maxnz,BINARY_SCALAR,0); CHKERRQ(ierr);
   return 0;
 }
 
@@ -1283,11 +1283,11 @@ int MatPrintHelp_SeqBDiag(Mat A)
   MPI_Comm   comm = A->comm;
 
   if (called) return 0; else called = 1;
-  MPIU_printf(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
-  MPIU_printf(comm,"  -mat_block_size <block_size>\n");
-  MPIU_printf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
-  MPIU_printf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
-  MPIU_printf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
+  PetscPrintf(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
+  PetscPrintf(comm,"  -mat_block_size <block_size>\n");
+  PetscPrintf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
+  PetscPrintf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
+  PetscPrintf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
   return 0;
 }
 
@@ -1332,7 +1332,7 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
   int          i, ierr, N, *rows, m = a->m - 1, nz, *col;
   Scalar       *dd, *val;
 
-  ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
+  ierr = ISGetSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
     if (rows[i]<0 || rows[i]>m) SETERRQ(1,"MatZeroRows_SeqBDiag:row out of range");
@@ -1610,13 +1610,13 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqBDiag: view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-  ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBDiag:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
 
   /* read row lengths */
   rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
-  ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
 
   /* create our matrix */
   nb = 1;
@@ -1627,9 +1627,9 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 
   /* read column indices and nonzeros */
   cols = scols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cols);
-  ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
   vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
-  ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
   /* insert into matrix */
   for ( i=0; i<M; i++ ) {
     ierr = MatSetValues(B,1,&i,rowlengths[i],scols,svals,INSERT_VALUES);

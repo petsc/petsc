@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: none.c,v 1.9 1996/01/09 00:46:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: none.c,v 1.10 1996/03/04 05:15:23 bsmith Exp bsmith $";
 #endif
 /*
     Identity preconditioner, simply copies vector x to y.
@@ -23,7 +23,7 @@ int PCCreate_None(PC pc)
   pc->setup          = 0;
   pc->data           = 0;
   pc->view           = 0;
-  pc->applysymmleft  = PCApply_None;
-  pc->applysymmright = PCApply_None;
+  pc->applysymmetricleft  = PCApply_None;
+  pc->applysymmetricright = PCApply_None;
   return 0;
 }

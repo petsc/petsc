@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.59 1996/03/08 05:46:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.60 1996/03/18 00:39:12 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -40,7 +40,7 @@ $  -pc_lu_in_place
 int PCLUSetUseInPlace(PC pc)
 {
   PC_LU *dir;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   dir = (PC_LU *) pc->data;
   if (pc->type != PCLU) return 0;
   dir->inplace = 1;
@@ -60,10 +60,10 @@ static int PCSetFromOptions_LU(PC pc)
 
 static int PCPrintHelp_LU(PC pc,char *p)
 {
-  MPIU_printf(pc->comm," Options for PCLU preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
-  MPIU_printf(pc->comm," -mat_order name: ordering to reduce fill",p);
-  MPIU_printf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
+  PetscPrintf(pc->comm," Options for PCLU preconditioner:\n");
+  PetscPrintf(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
+  PetscPrintf(pc->comm," -mat_order name: ordering to reduce fill",p);
+  PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   return 0;
 }
 
@@ -80,14 +80,14 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
   ViewerGetType(viewer,&vtype);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (lu->inplace) MPIU_fprintf(pc->comm,fd,"  LU: in-place factorization\n");
-    else MPIU_fprintf(pc->comm,fd,"  LU: out-of-place factorization\n");
-    MPIU_fprintf(pc->comm,fd,"      matrix ordering: %s\n",order);
+    if (lu->inplace) PetscFPrintf(pc->comm,fd,"  LU: in-place factorization\n");
+    else PetscFPrintf(pc->comm,fd,"  LU: out-of-place factorization\n");
+    PetscFPrintf(pc->comm,fd,"      matrix ordering: %s\n",order);
     ierr = MatGetInfo(lu->fact,MAT_LOCAL,&nzlu,PETSC_NULL,PETSC_NULL);
-    MPIU_fprintf(pc->comm,fd,"      LU nonzeros %d\n",nzlu);
+    PetscFPrintf(pc->comm,fd,"      LU nonzeros %d\n",nzlu);
   }
   else if (vtype == STRING_VIEWER) {
-    ViewerStringsprintf(viewer,"ordering=%s",order);
+    ViewerStringSPrintf(viewer,"ordering=%s",order);
   }
   return 0;
 }

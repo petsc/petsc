@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sendsparse.c,v 1.11 1995/07/20 04:00:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sendsparse.c,v 1.12 1995/10/01 02:27:24 bsmith Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a sparse matrix to Matlab.
@@ -38,19 +38,19 @@ $     MatView(Mat matrix,Viewer viewer)
 int ViewerMatlabPutSparse_Private(Viewer vw,int m,int n,int nnz,Scalar *v,int *r,int *c)
 {
   int ierr,t = vw->port,type = SPARSEREAL,value;
-  ierr = SYWrite(t,&type,1,SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,&m,1,SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,&n,1,SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,&nnz,1,SYINT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&type,1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&m,1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&n,1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&nnz,1,BINARY_INT,0); CHKERRQ(ierr);
 #if !defined(PETSC_COMPLEX)
   value = 0;
 #else
   value = 1;
 #endif
-  ierr = SYWrite(t,&value,1,SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,v,nnz,SYDOUBLE,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,r,m+1,SYINT,0); CHKERRQ(ierr);
-  ierr = SYWrite(t,c,nnz,SYINT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,&value,1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,v,nnz,BINARY_DOUBLE,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,r,m+1,BINARY_INT,0); CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(t,c,nnz,BINARY_INT,0); CHKERRQ(ierr);
   return 0;
 }
 

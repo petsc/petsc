@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.32 1995/12/21 18:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.33 1996/01/12 22:05:06 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
@@ -8,7 +8,6 @@ static char help[] = "Scatters from a parallel vector into seqential vectors.\n\
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "sysio.h"
 #include <math.h>
 
 int main(int argc,char **argv)
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatter    ctx = 0;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 

@@ -17,7 +17,8 @@ EXAMPLES_3    =
 RUNEXAMPLES_3 = 
 EXAMPLES_4    = 
 RUNEXAMPLES_4 = 
-EXAMPLESC     = 
+EXAMPLESC     = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c \
+		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c 
 EXAMPLESF     = 
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscMemcpy PetscMemzero PetscMemcmp Index

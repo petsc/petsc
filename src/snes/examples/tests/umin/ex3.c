@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.28 1996/02/20 21:47:45 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.29 1996/03/10 23:36:20 curfman Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   SLES       sles;
   PC         pc;
 
-  PetscInitialize(&argc,&argv,0,0,help);
+  PetscInitialize(&argc,&argv,(char *)0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
@@ -118,8 +118,8 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);
-  MPIU_printf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
+  PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);
+  PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
   ierr = DADestroy(user.da); CHKERRA(ierr);
@@ -205,9 +205,9 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   if (method == SNES_UM_NLS) {
     ierr = SNESGetLineSearchDampingParameter(snes,&gamma1); CHKERRQ(ierr);
 #if !defined(PETSC_COMPLEX)
-    MPIU_printf(MPI_COMM_WORLD,"  gamma1 = %g\n",gamma1);
+    PetscPrintf(MPI_COMM_WORLD,"  gamma1 = %g\n",gamma1);
 #else
-    MPIU_printf(MPI_COMM_WORLD,"  gamma1 = %g\n",real(gamma1));
+    PetscPrintf(MPI_COMM_WORLD,"  gamma1 = %g\n",real(gamma1));
 #endif
     for (i=rstart; i<rend; i++) {
       ierr = MatSetValues(*H,1,&i,1,&i,&gamma1,ADD_VALUES); CHKERRQ(ierr);

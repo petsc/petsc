@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.10 1996/02/08 18:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.11 1996/02/28 22:04:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the preconditioner ASM\n\n";
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PC      pc;
   IS      *is;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr); /* mesh lines in x */
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr); /* mesh lines in y */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr); /* subdomains in x */

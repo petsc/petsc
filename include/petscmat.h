@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.98 1996/03/07 18:21:44 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.99 1996/03/18 00:43:55 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -49,12 +49,12 @@ typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
               INODE_LIMIT_3,INODE_LIMIT_4,INODE_LIMIT_5} MatOption;
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
-extern int MatGetFormatFromOptions(MPI_Comm,char*,MatType*,int*);
+extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,int*);
 extern int MatGetValues(Mat,int,int*,int,int*,Scalar*);
 extern int MatGetRow(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreRow(Mat,int,int *,int **,Scalar**);
-extern int MatGetCol(Mat,int,int *,int **,Scalar**);
-extern int MatRestoreCol(Mat,int,int *,int **,Scalar**);
+extern int MatGetColumn(Mat,int,int *,int **,Scalar**);
+extern int MatRestoreColumn(Mat,int,int *,int **,Scalar**);
 extern int MatGetArray(Mat,Scalar **);
 extern int MatRestoreArray(Mat,Scalar **);
 
@@ -70,12 +70,12 @@ extern int MatLoad(Viewer,MatType,Mat*);
 
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
 extern int MatGetInfo(Mat,MatInfoType,int*,int*,int*);
-extern int MatValidMatrix(Mat,int*);
+extern int MatValid(Mat,PetscTruth*);
 extern int MatGetDiagonal(Mat,Vec);
 extern int MatTranspose(Mat,Mat*);
 extern int MatDiagonalScale(Mat,Vec,Vec);
 extern int MatDiagonalShift(Mat,Vec);
-extern int MatEqual(Mat,Mat, int*);
+extern int MatEqual(Mat,Mat, PetscTruth*);
 
 extern int MatNorm(Mat,NormType,double *);
 extern int MatZeroEntries(Mat);

@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: fdate.c,v 1.1 1996/01/30 18:27:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 
 #include "files.h"
 
-char *SYGetDate()
+char *PetscGetDate()
 {
   struct timeval tp;
   gettimeofday( &tp, (struct timezone *)0 );

@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.12 1996/02/13 23:30:12 bsmith Exp bsmith $";
+C      "$Id: ex12.F,v 1.13 1996/03/06 03:30:21 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -24,7 +24,7 @@ C
 
 
       none = -1.0
-      call PetscInitialize(ierr)
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
 
 C Read in matrix and RHS
       call OptionsGetString(PETSC_NULL_CHAR,'-f',f,flg,ierr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.33 1995/12/21 18:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.34 1996/01/12 22:05:06 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
@@ -9,7 +9,6 @@ static char help[] = "Tests vector scatter-gather operations.  Input arguments a
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "sysio.h"
 #include <math.h>
 
 int main(int argc,char **argv)
@@ -20,7 +19,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatter    ctx = 0;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   /* create two vector */
@@ -43,7 +42,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
 
-  MPIU_printf(MPI_COMM_SELF,"-------\n");
+  PetscPrintf(MPI_COMM_SELF,"-------\n");
   ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);
 
   ierr = ISDestroy(is1); CHKERRA(ierr);

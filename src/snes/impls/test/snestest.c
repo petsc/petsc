@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.22 1996/01/12 22:09:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.23 1996/01/23 00:20:03 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -29,11 +29,11 @@ int SNESSolve_Test(SNES snes,int *its)
   if (A != snes->jacobian_pre) 
     SETERRQ(1,"SNESSolve_Test:Cannot test with alternative preconditioner");
 
-  MPIU_printf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");
-  MPIU_printf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");
+  PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");
+  PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");
   if (!neP->complete_print) {
-    MPIU_printf(snes->comm,"Run with -snes_test_display to show difference\n");
-    MPIU_printf(snes->comm,"of hand-coded and finite difference Jacobian.\n");
+    PetscPrintf(snes->comm,"Run with -snes_test_display to show difference\n");
+    PetscPrintf(snes->comm,"of hand-coded and finite difference Jacobian.\n");
   }
 
   for ( i=0; i<3; i++ ) {
@@ -45,7 +45,7 @@ int SNESSolve_Test(SNES snes,int *its)
     if (i == 0) {ierr = MatConvert(A,MATSAME,&B); CHKERRQ(ierr);}
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
-      MPIU_printf(snes->comm,"Finite difference Jacobian\n");
+      PetscPrintf(snes->comm,"Finite difference Jacobian\n");
       ierr = MatView(B,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
     }
     /* compare */
@@ -53,10 +53,10 @@ int SNESSolve_Test(SNES snes,int *its)
     ierr = MatNorm(B,NORM_FROBENIUS,&norm); CHKERRQ(ierr);
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm); CHKERRQ(ierr);
     if (neP->complete_print) {
-      MPIU_printf(snes->comm,"Hand-coded Jacobian\n");
+      PetscPrintf(snes->comm,"Hand-coded Jacobian\n");
       ierr = MatView(A,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
     }
-    MPIU_printf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);
+    PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);
   }
   ierr = MatDestroy(B); CHKERRQ(ierr);
   return 0;
@@ -69,8 +69,8 @@ int SNESDestroy_Test(PetscObject obj)
 
 static int SNESPrintHelp_Test(SNES snes,char *p)
 {
-  MPIU_printf(snes->comm,"Test code to compute Jacobian\n");
-  MPIU_printf(snes->comm,"-snes_test_display - display difference between\n");
+  PetscPrintf(snes->comm,"Test code to compute Jacobian\n");
+  PetscPrintf(snes->comm,"-snes_test_display - display difference between\n");
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.19 1996/02/26 15:30:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.20 1996/03/07 14:48:13 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   double    norm;
   PCType    pcmethod;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);  n = 2*size;
@@ -93,9 +93,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12)
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
+    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
   else 
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
   /* Destroy work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex23.c,v 1.2 1996/03/15 14:18:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex23.c,v 1.3 1996/03/18 00:37:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -7,7 +7,6 @@ a file, then forms a vector.\n\n";
 
 #include <stdio.h>
 #include "vec.h"
-#include "sysio.h"
 #include "pinclude/pviewer.h"
 
 int main(int argc,char **args)
@@ -17,7 +16,7 @@ int main(int argc,char **args)
   Vec     vec;
   Viewer  view_out, view_in;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
 
   /* ---------------------------------------------------------------------- */
@@ -36,8 +35,8 @@ int main(int argc,char **args)
   ierr = ViewerBinaryGetDescriptor(view_out,&fd); CHKERRA(ierr);
 
   /* Write binary output */
-  ierr = SYWrite(fd,&m,1,SYINT,0); CHKERRA(ierr);
-  ierr = SYWrite(fd,array,m,SYSCALAR,0); CHKERRA(ierr);
+  ierr = PetscBinaryWrite(fd,&m,1,BINARY_INT,0); CHKERRA(ierr);
+  ierr = PetscBinaryWrite(fd,array,m,BINARY_SCALAR,0); CHKERRA(ierr);
 
   /* Destroy the output viewer and work array */
   ierr = ViewerDestroy(view_out); CHKERRA(ierr);
@@ -57,11 +56,11 @@ int main(int argc,char **args)
   ierr = VecGetArray(vec,&avec); CHKERRA(ierr);
 
   /* Read data into vector */
-  ierr = SYRead(fd,&size,1,SYINT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,&size,1,BINARY_INT); CHKERRQ(ierr);
   if (size <=0) SETERRA(1,"Error: Must have array length > 0");
 
   printf("reading data in binary from input.dat, size =%d ...\n",size); 
-  ierr = SYRead(fd,avec,size,SYSCALAR); CHKERRA(ierr);
+  ierr = PetscBinaryRead(fd,avec,size,BINARY_SCALAR); CHKERRA(ierr);
 
   /* View vector */
   ierr = VecRestoreArray(vec,&avec); CHKERRA(ierr);

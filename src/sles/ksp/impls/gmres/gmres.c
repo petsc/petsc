@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.57 1996/03/10 17:27:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.58 1996/03/18 00:38:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -493,7 +493,7 @@ $   -ksp_gmres_restart  max_k
 int KSPGMRESSetRestart(KSP ksp,int max_k )
 {
   KSP_GMRES *gmres;
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   gmres = (KSP_GMRES *)ksp->data;
   if (ksp->type != KSPGMRES) return 0;
   gmres->max_k = max_k;
@@ -529,7 +529,7 @@ static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 }
 
 /*@C
-  KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by GMRES.
+  KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
 
   Input Parameters:
 .   ksp   - iterative context obtained from KSPCreate
@@ -547,9 +547,9 @@ static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
   version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization. It may be
   more numerically stable.
 @*/
-int KSPGMRESSetOrthogRoutine( KSP ksp,int (*fcn)(KSP,int) )
+int KSPGMRESSetOrthogonalization( KSP ksp,int (*fcn)(KSP,int) )
 {
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->type == KSPGMRES) {
     ((KSP_GMRES *)ksp->data)->orthog = fcn;
   }
@@ -577,7 +577,7 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
       cstr = "Unmodified Gram-Schmidt + Iterative Refinement Orthogonalization";
     else 
       cstr = "unknown orthogonalization";
-    MPIU_fprintf(ksp->comm,fd,"    GMRES: restart=%d, using %s\n",
+    PetscFPrintf(ksp->comm,fd,"    GMRES: restart=%d, using %s\n",
                gmres->max_k,cstr);
   }
   return 0;

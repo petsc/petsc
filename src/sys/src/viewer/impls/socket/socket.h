@@ -1,4 +1,4 @@
-/* $Id: matlab.h,v 1.8 1996/03/10 17:29:22 bsmith Exp bsmith $ */
+/* $Id: matlab.h,v 1.9 1996/03/18 00:42:21 bsmith Exp bsmith $ */
 /* 
      This is the definition of the Matlab viewer structure. Note: 
   each viewer has a different data structure.
@@ -6,7 +6,7 @@
 
 #include "petsc.h"
 #include "pinclude/pviewer.h"
-#include "sysio.h"
+#include "sys.h"
 
 struct _Viewer {
   VIEWERHEADER

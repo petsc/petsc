@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.4 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.8 1995/10/12 04:14:40 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -20,7 +20,7 @@ int CreateError(int n)
 int main(int argc,char **argv)
 {
   int ierr;
-  PetscInitialize(&argc,&argv,0,0,0);
+  PetscInitialize(&argc,&argv,(char *)0,0);
   fprintf(stdout,"Demonstrates Petsc Error Handlers\n");
   fprintf(stdout,"The error below is a contrived error to test the code\n");
   ierr = CreateError(5); CHKERRA(ierr);

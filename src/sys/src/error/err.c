@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.38 1996/01/24 05:45:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.39 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -110,7 +110,7 @@ int PetscTraceBackErrorHandler(int line,char *dir,char *file,int number,
     fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",tid);
     OptionsHasName(PETSC_NULL,"-trdump",&flg);
     if (flg) {
-      TrDump(stderr);
+      PetscTrDump(stderr);
     }
     else {
       fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",tid);
@@ -187,7 +187,7 @@ int PetscStopErrorHandler(int line,char *dir,char *file,int number,
     fprintf(stderr,"[%d]PETSC ERROR: unneeded objects.\n",tid);
     OptionsHasName(PETSC_NULL,"-trdump",&flg);
     if (flg) {
-      TrDump(stderr);
+      PetscTrDump(stderr);
     }
     else {
       fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",tid);
@@ -303,16 +303,16 @@ int IntView(int N,int* idx,Viewer viewer)
   int j,i,n = N/20, p = N % 20;
 
   for ( i=0; i<n; i++ ) {
-    MPIU_printf(MPI_COMM_SELF,"%d:",20*i);
+    PetscPrintf(MPI_COMM_SELF,"%d:",20*i);
     for ( j=0; j<20; j++ ) {
-       MPIU_printf(MPI_COMM_SELF," %d",idx[i*20+j]);
+       PetscPrintf(MPI_COMM_SELF," %d",idx[i*20+j]);
     }
-    MPIU_printf(MPI_COMM_SELF,"\n");
+    PetscPrintf(MPI_COMM_SELF,"\n");
   }
   if (p) {
-    MPIU_printf(MPI_COMM_SELF,"%d:",20*n);
-    for ( i=0; i<p; i++ ) { MPIU_printf(MPI_COMM_SELF," %d",idx[20*n+i]);}
-    MPIU_printf(MPI_COMM_SELF,"\n");
+    PetscPrintf(MPI_COMM_SELF,"%d:",20*n);
+    for ( i=0; i<p; i++ ) { PetscPrintf(MPI_COMM_SELF," %d",idx[20*n+i]);}
+    PetscPrintf(MPI_COMM_SELF,"\n");
   }
   return 0;
 }
@@ -321,16 +321,16 @@ int DoubleView(int N,double* idx,Viewer viewer)
   int j,i,n = N/5, p = N % 5;
 
   for ( i=0; i<n; i++ ) {
-    MPIU_printf(MPI_COMM_SELF,"%d:",5*i);
+    PetscPrintf(MPI_COMM_SELF,"%d:",5*i);
     for ( j=0; j<5; j++ ) {
-       MPIU_printf(MPI_COMM_SELF," %6.4e",idx[i*5+j]);
+       PetscPrintf(MPI_COMM_SELF," %6.4e",idx[i*5+j]);
     }
-    MPIU_printf(MPI_COMM_SELF,"\n");
+    PetscPrintf(MPI_COMM_SELF,"\n");
   }
   if (p) {
-    MPIU_printf(MPI_COMM_SELF,"%d:",5*n);
-    for ( i=0; i<p; i++ ) { MPIU_printf(MPI_COMM_SELF," %6.4e",idx[5*n+i]);}
-    MPIU_printf(MPI_COMM_SELF,"\n");
+    PetscPrintf(MPI_COMM_SELF,"%d:",5*n);
+    for ( i=0; i<p; i++ ) { PetscPrintf(MPI_COMM_SELF," %6.4e",idx[5*n+i]);}
+    PetscPrintf(MPI_COMM_SELF,"\n");
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.39 1996/03/10 17:26:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.40 1996/03/18 00:37:26 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -109,11 +109,11 @@ static int ISSort_Stride(IS is)
   return 0;
 }
 
-static int ISSorted_Stride(IS is, int* flg)
+static int ISSorted_Stride(IS is, PetscTruth* flg)
 {
   IS_Stride *sub = (IS_Stride *) is->data;
-  if (sub->step >=0) *flg = 1;
-  else *flg = 0;
+  if (sub->step >= 0) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
   return 0;
 }
 

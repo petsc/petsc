@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiuopen.c,v 1.1 1996/01/30 18:59:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiuopen.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: mpiuopen.c,v 1.1 1996/01/30 18:59:12 bsmith Exp bsmit
 #include "pinclude/petscfix.h"
 
 /*@C
-    MPIU_fopen - The first process in the communicator opens a file,
+    PetscFOpen - The first process in the communicator opens a file,
                 all others do nothing.
 
   Input Parameters:
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: mpiuopen.c,v 1.1 1996/01/30 18:59:12 bsmith Exp bsmit
 .  name - the filename
 .  mode - usually "w"
 @*/
-FILE *MPIU_fopen(MPI_Comm comm,char *name,char *mode)
+FILE *PetscFOpen(MPI_Comm comm,char *name,char *mode)
 {
   int  rank;
   FILE *fd;
@@ -33,15 +33,15 @@ FILE *MPIU_fopen(MPI_Comm comm,char *name,char *mode)
   return fd;
 }
 /*@C
-     MPIU_fclose - The first processor in the communicator closes a 
+     PetscFClose - The first processor in the communicator closes a 
                   file, all others do nothing.
 
   Input Parameters:
 .  comm - the communicator
-.  fd - the file, opened with MPIU_fopen()
+.  fd - the file, opened with PetscFOpen()
 
 @*/
-int MPIU_fclose(MPI_Comm comm,FILE *fd)
+int PetscFClose(MPI_Comm comm,FILE *fd)
 {
   int  rank;
   MPI_Comm_rank(comm,&rank);

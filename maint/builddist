@@ -42,6 +42,8 @@ tar cf ~/petsc.tar petsc
 # PETSC_DIR in .cshrc to  point to petsc.solid
 #
 # For local distribution, remember to make etags in petsc.solid
+#
+# Put a .gz and .Z file in the ftp site.
 
 
 

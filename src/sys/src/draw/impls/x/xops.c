@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.45 1996/03/15 21:27:46 curfman Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.46 1996/03/18 20:28:28 curfman Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -369,7 +369,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
     }
     if (!display) {
       display = (char *) PetscMalloc( 128*sizeof(char) ); CHKPTRQ(display);
-      MPIU_Set_display(comm,display,128);
+      PetscSetDisplay(comm,display,128);
     }
     if (x < 0 || y < 0) SETERRQ(1,"DrawOpenX:Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(1,"DrawOpenX:Negative width or hight of window");
@@ -385,7 +385,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
     }
     if (!display) {
       display = (char *) PetscMalloc( 128*sizeof(char) ); CHKPTRQ(display);
-      MPIU_Set_display(comm,display,128);
+      PetscSetDisplay(comm,display,128);
     }
     MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
     ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);

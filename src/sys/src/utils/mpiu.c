@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.36 1996/03/04 05:15:10 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.37 1996/03/07 17:58:55 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: mpiu.c,v 1.36 1996/03/04 05:15:10 bsmith Exp balay $"
 extern FILE *petsc_history;
 
 /*@C
-      MPIU_fprintf - Single print to a file only from the first
+      PetscFPrintf - Single print to a file only from the first
                     processor in the communicator.
 
   Input Parameters:
@@ -29,7 +29,7 @@ extern FILE *petsc_history;
 .  fd - the file pointer
 .  format - the usual printf() format string 
 @*/
-int MPIU_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
+int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 {
   int rank;
   MPI_Comm_rank(comm,&rank);
@@ -47,14 +47,14 @@ int MPIU_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
   return 0;
 }
 /*@C
-      MPIU_printf - Single print to standard out, only from the first
+      PetscPrintf - Single print to standard out, only from the first
                     processor in the communicator.
 
   Input Parameters:
 .  comm - the communicator
 .  format - the usual printf() format string 
 @*/
-int MPIU_printf(MPI_Comm comm,char *format,...)
+int PetscPrintf(MPI_Comm comm,char *format,...)
 {
   int rank;
   MPI_Comm_rank(comm,&rank);
@@ -73,7 +73,7 @@ int MPIU_printf(MPI_Comm comm,char *format,...)
 }
 
 /*
-     MPIU_Set_display - Tries to set the display variable for all processors.
+     PetscSetDisplay - Tries to set the display variable for all processors.
 
   Input Parameters:
 .   comm - the communicatior, probably MPI_COMM_WORLD
@@ -83,7 +83,7 @@ int MPIU_printf(MPI_Comm comm,char *format,...)
 .   display - the display string, may (and should) be freed.
 
 */
-int MPIU_Set_display(MPI_Comm comm,char *display,int n)
+int PetscSetDisplay(MPI_Comm comm,char *display,int n)
 {
   int  size,rank,len;
   char *string,*str;
@@ -117,7 +117,7 @@ int MPIU_Set_display(MPI_Comm comm,char *display,int n)
 static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
-   MPIU_Seq_begin - Begins a sequential section of code.  
+   PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
    Input Parameters:
 .  comm - Communicator to sequentialize.  
@@ -125,21 +125,21 @@ static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
    at the same time.  Usually one.  
 
    Notes:
-   MPIU_Seq_begin and MPIU_Seq_end provide a way to force a section of 
-   code to be executed by the processes in rank order.  Typically, this 
-   is done with
-$  MPIU_Seq_begin( comm, 1 );
+   PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd() provide a
+   way to force a section of code to be executed by the processes in
+   rank order.  Typically, this is done with
+$  PetscSequentialPhaseBegin( comm, 1 );
 $  <code to be executed sequentially>
-$  MPIU_Seq_end( comm, 1 );
+$  PetscSequentialPhaseEnd( comm, 1 );
 $
    Often, the sequential code contains output statements (e.g., printf) to
    be executed.  Note that you may need to flush the I/O buffers before
-   calling MPIU_Seq_end; also note that some systems do not propagate
-   I/O in any  order to the controling terminal (in other words, 
+   calling PetscSequentialPhaseEnd(); also note that some systems do
+   not propagate I/O in any  order to the controling terminal (in other words, 
    even if you flush the output, you may not get the data in the order
    that you want).
 @*/
-int MPIU_Seq_begin(MPI_Comm comm,int ng )
+int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 {
   int        lidx, np;
   int        flag;
@@ -171,7 +171,7 @@ int MPIU_Seq_begin(MPI_Comm comm,int ng )
 }
 
 /*@C
-   MPIU_Seq_end - Ends a sequential section of code.
+   PetscSequentialPhaseEnd - Ends a sequential section of code.
 
    Input Parameters:
 .  comm - Communicator to sequentialize.  
@@ -179,9 +179,9 @@ int MPIU_Seq_begin(MPI_Comm comm,int ng )
    at the same time.  Usually one.  
 
    Notes:
-   See MPIU_Seq_begin for more details.
+   See PetscSequentialPhaseBegin for more details.
 @*/
-int MPIU_Seq_end(MPI_Comm comm,int ng )
+int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
 {
   int        lidx, np, flag;
   MPI_Status status;
@@ -230,7 +230,8 @@ static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
 }
 
 /*
-  MPIU_Comm_dup - Duplicates only if communicator is not a PETSc communicator.
+  PetscCommDup_Private - Duplicates only if communicator is not a PETSc 
+                         communicator.
 
 
   Input Parameters:
@@ -247,7 +248,7 @@ static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
   This routine returns one tag number.
   Call MPIU_Comm_free() when finished with the communicator.
 */
-int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
+int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
   int ierr = MPI_SUCCESS, *tagvalp, *maxval, flag;
 
@@ -287,12 +288,13 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 }
 
 /*
-  MPIU_Comm_free - Frees communicator.  Use in conjunction with MPIU_Comm_dup().
+  PetscCommFree_Private - Frees communicator.  Use in conjunction with 
+      PetscCommDup_Private().
 */
-int MPIU_Comm_free(MPI_Comm *comm)
+int PetscCommFree_Private(MPI_Comm *comm)
 {
   int ierr,*tagvalp,flag;
-  ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag); CHKERRQ(ierr);
+  ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   tagvalp[1]--;
   if (!tagvalp[1]) {MPI_Comm_free(comm);}
   return 0;

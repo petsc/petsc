@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.76 1996/03/07 23:29:17 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.77 1996/03/07 23:31:58 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -14,7 +14,6 @@ static char vcid[] = "$Id: options.c,v 1.76 1996/03/07 23:29:17 balay Exp balay 
 #include <stdio.h>
 #include <math.h>
 #include "sys.h"
-#include "sysio.h"
 #include "sys/nreg.h"
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -44,7 +43,7 @@ static OptionsTable *options = 0;
        int          PetscBeganMPI = 0;
 
 int        OptionsCheckInitial_Private(),
-           OptionsCreate_Private(int*,char***,char*,char*),
+           OptionsCreate_Private(int*,char***,char*),
            OptionsSetAlias_Private(char *,char *);
 static int OptionsDestroy_Private();
 
@@ -65,16 +64,16 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
   MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
   if (!rank) {
     char arch[10];
-    SYGetArchType(arch,10);
+    PetscGetArchType(arch,10);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
     if (!filename) {
-      ierr = SYGetHomeDirectory(240,pfile); CHKERRQ(ierr);
+      ierr = PetscGetHomeDirectory(240,pfile); CHKERRQ(ierr);
       PetscStrcat(pfile,"/.petschistory");
       filename = pfile;
     }
     *fd = fopen(filename,"a"); if (!fd) SETERRQ(1,"PLogOpenHistoryFile:");
     fprintf(*fd,"---------------------------------------------------------\n");
-    fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,SYGetDate());
+    fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,PetscGetDate());
     fprintf(*fd,"%s on a %s, %d proc. with options:\n",
             options->programname,arch,size);
     OptionsPrint(*fd);
@@ -91,7 +90,7 @@ static int PLogCloseHistoryFile(FILE **fd)
   MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
   if (rank) return 0;
   fprintf(*fd,"---------------------------------------------------------\n");
-  fprintf(*fd,"Finished at %s",SYGetDate());
+  fprintf(*fd,"Finished at %s",PetscGetDate());
   fprintf(*fd,"---------------------------------------------------------\n");
   fflush(*fd);
   fclose(*fd);
@@ -110,8 +109,6 @@ int PetscInitializedCalled = 0;
 .  argc - count of number of command line arguments
 .  args - the command line arguments
 .  file - [optional] PETSc database file, defaults to ~username/.petscrc
-.  env  - [optional] PETSc database environmental variable, defaults to 
-          PETSC_OPTIONS
 .  help - [optional] Help message to print.
 
    Notes:
@@ -125,7 +122,7 @@ $       call PetscInitialize(ierr)
 
 .seealso: PetscFinalize()
 @*/
-int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
+int PetscInitialize(int *argc,char ***args,char *file,char *help)
 {
   int        ierr,flag,flg;
 
@@ -141,7 +138,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
 #endif
-  ierr = OptionsCreate_Private(argc,args,file,env); CHKERRQ(ierr);
+  ierr = OptionsCreate_Private(argc,args,file); CHKERRQ(ierr);
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
@@ -152,7 +149,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (help && flg) {
-    MPIU_printf(MPI_COMM_WORLD,help);
+    PetscPrintf(MPI_COMM_WORLD,help);
   }
   return 0;
 }
@@ -166,7 +163,7 @@ $  -optionstable : Calls OptionsPrint()
 $  -optionsleft : Prints unused options that remain in 
 $     the database
 $  -no_signal_handler : Turns off the signal handler
-$  -trdump : Calls TrDump()
+$  -trdump : Calls PetscTrDump()
 $  -trinfo : Prints total memory usage
 $  -log_all : Prints extensive log information (for
 $      code compiled with PETSC_LOG)
@@ -181,7 +178,7 @@ $            at least a factor of 10.
 
 .keywords: finalize, exit, end
 
-.seealso: PetscInitialize(), OptionsPrint(), TrDump()
+.seealso: PetscInitialize(), OptionsPrint(), PetscTrDump()
 @*/
 int PetscFinalize()
 {
@@ -249,19 +246,19 @@ int PetscFinalize()
   if (flg1) {
     OptionsDestroy_Private();
     NRDestroyAll();
-    MPIU_Seq_begin(MPI_COMM_WORLD,1);
-      ierr = TrDump(stderr); CHKERRQ(ierr);
-    MPIU_Seq_end(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
+      ierr = PetscTrDump(stderr); CHKERRQ(ierr);
+    PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
   }
   else if (flg2) {
     double maxm;
     OptionsDestroy_Private();
     NRDestroyAll();
-    ierr = TrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
-    MPIU_Seq_begin(MPI_COMM_WORLD,1);
+    ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
+    PetscSequentialPhaseBegin(MPI_COMM_WORLD,1);
       fprintf(stdout,"[%d] Maximum memory used %g\n",rank,maxm);
       fflush(stdout);
-    MPIU_Seq_end(MPI_COMM_WORLD,1);
+    PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
   }
   else {
     OptionsDestroy_Private();
@@ -316,7 +313,7 @@ int OptionsCheckInitial_Private()
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-malloc_debug",&flg1); CHKERRQ(ierr);
   if (flg1) { 
-    ierr = TrDebugLevel(1);CHKERRQ(ierr);
+    ierr = PetscTrDebugLevel(1);CHKERRQ(ierr);
 #if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
     malloc_debug(2);
 #endif
@@ -325,15 +322,15 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-version",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg3); CHKERRQ(ierr);
   if (flg1 || flg2 || flg3 ){
-    MPIU_printf(comm,"--------------------------------------------\
+    PetscPrintf(comm,"--------------------------------------------\
 ------------------------------\n");
-    MPIU_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
-    MPIU_printf(comm,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
-    MPIU_printf(comm,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
-    MPIU_printf(comm,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
-    MPIU_printf(comm,"See petsc/COPYRIGHT for copyright information,\
+    PetscPrintf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
+    PetscPrintf(comm,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
+    PetscPrintf(comm,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
+    PetscPrintf(comm,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
+    PetscPrintf(comm,"See petsc/COPYRIGHT for copyright information,\
  petsc/Changes for recent updates.\n");
-    MPIU_printf(comm,"--------------------------------------------\
+    PetscPrintf(comm,"--------------------------------------------\
 ---------------------------\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-fp_trap",&flg1); CHKERRQ(ierr);
@@ -364,7 +361,7 @@ int OptionsCheckInitial_Private()
     }
     if (!display) {
       display = (char *) malloc( 128*sizeof(char)); CHKPTRQ(display);
-      MPIU_Set_display(comm,display,128); sfree = 1;
+      PetscSetDisplay(comm,display,128); sfree = 1;
     } 
     PetscSetDebugger(debugger,xterm,display);
     if (sfree) free(display);
@@ -409,7 +406,7 @@ int OptionsCheckInitial_Private()
     }
     if (!display) {
       display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
-      MPIU_Set_display(comm,display,128);
+      PetscSetDisplay(comm,display,128);
       sfree = 1;
     } 
     PetscSetDebugger(debugger,xterm,display);
@@ -449,30 +446,30 @@ int OptionsCheckInitial_Private()
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {
-    MPIU_printf(comm,"Options for all PETSc programs:\n");
-    MPIU_printf(comm," -on_error_abort: cause an abort when an error is");
-    MPIU_printf(comm," detected. Useful \n       only when run in the debugger\n");
-    MPIU_printf(comm," -on_error_attach_debugger [dbx,xxgdb,ups,noxterm]"); 
-    MPIU_printf(comm," [-display display]:\n");
-    MPIU_printf(comm,"       start the debugger (gdb by default) in new xterm\n");
-    MPIU_printf(comm,"       unless noxterm is given\n");
-    MPIU_printf(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]");
-    MPIU_printf(comm," [-display display]:\n");
-    MPIU_printf(comm,"       start all processes in the debugger\n");
-    MPIU_printf(comm," -no_signal_handler: do not trap error signals\n");
-    MPIU_printf(comm," -fp_trap: stop on floating point exceptions\n");
-    MPIU_printf(comm,"           note on IBM RS6000 this slows run greatly\n");
-    MPIU_printf(comm," -trdump: dump list of unfreed memory at conclusion\n");
-    MPIU_printf(comm," -trmalloc: use our error checking malloc\n");
-    MPIU_printf(comm," -notrmalloc: don't use error checking malloc\n");
-    MPIU_printf(comm," -optionstable: dump list of options inputted\n");
-    MPIU_printf(comm," -optionsleft: dump list of unused options\n");
-    MPIU_printf(comm," -log[_all _summary]: logging objects and events\n");
+    PetscPrintf(comm,"Options for all PETSc programs:\n");
+    PetscPrintf(comm," -on_error_abort: cause an abort when an error is");
+    PetscPrintf(comm," detected. Useful \n       only when run in the debugger\n");
+    PetscPrintf(comm," -on_error_attach_debugger [dbx,xxgdb,ups,noxterm]"); 
+    PetscPrintf(comm," [-display display]:\n");
+    PetscPrintf(comm,"       start the debugger (gdb by default) in new xterm\n");
+    PetscPrintf(comm,"       unless noxterm is given\n");
+    PetscPrintf(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]");
+    PetscPrintf(comm," [-display display]:\n");
+    PetscPrintf(comm,"       start all processes in the debugger\n");
+    PetscPrintf(comm," -no_signal_handler: do not trap error signals\n");
+    PetscPrintf(comm," -fp_trap: stop on floating point exceptions\n");
+    PetscPrintf(comm,"           note on IBM RS6000 this slows run greatly\n");
+    PetscPrintf(comm," -trdump: dump list of unfreed memory at conclusion\n");
+    PetscPrintf(comm," -trmalloc: use our error checking malloc\n");
+    PetscPrintf(comm," -notrmalloc: don't use error checking malloc\n");
+    PetscPrintf(comm," -optionstable: dump list of options inputted\n");
+    PetscPrintf(comm," -optionsleft: dump list of unused options\n");
+    PetscPrintf(comm," -log[_all _summary]: logging objects and events\n");
 #if defined (HAVE_MPE)
-    MPIU_printf(comm," -log_mpe: Also create logfile viewable through upshot\n");
+    PetscPrintf(comm," -log_mpe: Also create logfile viewable through upshot\n");
 #endif
-    MPIU_printf(comm," -v: prints PETSc version number and release date\n");
-    MPIU_printf(comm,"-----------------------------------------------\n");
+    PetscPrintf(comm," -v: prints PETSc version number and release date\n");
+    PetscPrintf(comm,"-----------------------------------------------\n");
   }
   return 0;
 }
@@ -491,7 +488,6 @@ char *OptionsGetProgramName()
 .  argc - count of number of command line arguments
 .  args - the command line arguments
 .  file - optional filename, defaults to ~username/.petscrc
-.  env  - environmental variable, defaults to PETSC_OPTIONS
 
    Note:
    Since OptionsCreate_Private() is automatically called by PetscInitialize(),
@@ -502,18 +498,18 @@ char *OptionsGetProgramName()
 
 .seealso: OptionsDestroy_Private(), OptionsPrint()
 */
-int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
+int OptionsCreate_Private(int *argc,char ***args,char* file)
 {
   int  ierr;
-  char pfile[128];
+  char pfile[128],*env;
 
   if (!options) {
     options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
     PetscMemzero(options->used,MAXOPTIONS*sizeof(int));
   }
-  if (!env) env = "PETSC_OPTIONS";
+  env = "PETSC_OPTIONS";
   if (!file) {
-    if ((ierr = SYGetHomeDirectory(120,pfile))) return ierr;
+    if ((ierr = PetscGetHomeDirectory(120,pfile))) return ierr;
     PetscStrcat(pfile,"/.petscrc");
     file = pfile;
   }
@@ -618,7 +614,7 @@ int OptionsPrint(FILE *fd)
 {
   int i;
   if (!fd) fd = stdout;
-  if (!options) OptionsCreate_Private(0,0,0,0);
+  if (!options) OptionsCreate_Private(0,0,0);
   for ( i=0; i<options->N; i++ ) {
     if (options->values[i]) {
       fprintf(fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);
@@ -679,7 +675,7 @@ int OptionsSetValue(char *name,char *value)
 {
   int  len, N, n, i;
   char **names;
-  if (!options) OptionsCreate_Private(0,0,0,0);
+  if (!options) OptionsCreate_Private(0,0,0);
 
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
   if (!PetscStrcmp(name,"-h")) name = "-help";
@@ -763,7 +759,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
   int  i, N,ierr;
   char **names,tmp[128];
 
-  if (!options) {ierr = OptionsCreate_Private(0,0,0,0); CHKERRQ(ierr);}
+  if (!options) {ierr = OptionsCreate_Private(0,0,0); CHKERRQ(ierr);}
   N = options->N;
   names = options->names;
 

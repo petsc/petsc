@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.25 1996/01/22 18:58:44 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.26 1996/01/26 04:32:22 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -82,14 +82,14 @@ static int VecSet_Seq(Scalar* alpha,Vec xin)
   return 0;
 }
 
-static int VecSetRandom_Seq(SYRandom r,Vec xin)
+static int VecSetRandom_Seq(PetscRandom r,Vec xin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
   register int n = x->n;
   int          i, ierr;
   Scalar       *xx = x->array;
 
-  for (i=0; i<n; i++) {ierr = SYRandomGetValue(r,&xx[i]); CHKERRQ(ierr);}
+  for (i=0; i<n; i++) {ierr = PetscRandomGetValue(r,&xx[i]); CHKERRQ(ierr);}
   return 0;
 }
 
@@ -162,7 +162,7 @@ static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
   return 0;
 }
 
-static int VecPMult_Seq( Vec xin, Vec yin, Vec win )
+static int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
   Vec_Seq      *y = (Vec_Seq *)yin->data;
@@ -174,7 +174,7 @@ static int VecPMult_Seq( Vec xin, Vec yin, Vec win )
   return 0;
 }
 
-static int VecPDiv_Seq(Vec xin,Vec yin,Vec win )
+static int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
   Vec_Seq      *y = (Vec_Seq *)yin->data;

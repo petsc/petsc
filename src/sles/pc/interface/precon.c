@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.76 1996/03/08 05:46:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.77 1996/03/18 00:39:04 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -26,10 +26,10 @@ int PCPrintHelp(PC pc)
   char p[64]; 
   PetscStrcpy(p,"-");
   if (pc->prefix) PetscStrcat(p,pc->prefix);
-  MPIU_printf(pc->comm,"PC options ----------------------------------------\n");
+  PetscPrintf(pc->comm,"PC options ----------------------------------------\n");
   PCPrintTypes_Private(pc->comm,p,"pc_type");
-  MPIU_printf(pc->comm,"Run program with %spc_type method -help for help on ",p);
-  MPIU_printf(pc->comm,"a particular method\n");
+  PetscPrintf(pc->comm,"Run program with %spc_type method -help for help on ",p);
+  PetscPrintf(pc->comm,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc,p);
   return 0;
 }
@@ -47,7 +47,7 @@ int PCPrintHelp(PC pc)
 int PCDestroy(PC pc)
 {
   int ierr = 0;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->destroy) ierr =  (*pc->destroy)((PetscObject)pc);
   else {if (pc->data) PetscFree(pc->data);}
   PLogObjectDestroy(pc);
@@ -111,7 +111,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 int PCApply(PC pc,Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_Apply,pc,x,y,0);
@@ -119,7 +119,7 @@ int PCApply(PC pc,Vec x,Vec y)
 }
 
 /*@
-   PCApplySymmLeft - Applies the left part of a symmetric preconditioner to a vector.
+   PCApplySymmetricLeft - Applies the left part of a symmetric preconditioner to a vector.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -133,20 +133,20 @@ int PCApply(PC pc,Vec x,Vec y)
 
 .keywords: PC, apply
 
-.seealso: PCApply(), PCApplySymmRight()
+.seealso: PCApply(), PCApplySymmetricRight()
 @*/
-int PCApplySymmLeft(PC pc,Vec x,Vec y)
+int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   PLogEventBegin(PC_ApplySymmLeft,pc,x,y,0);
-  ierr = (*pc->applysymmleft)(pc,x,y); CHKERRQ(ierr);
+  ierr = (*pc->applysymmetricleft)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_ApplySymmLeft,pc,x,y,0);
   return 0;
 }
 
 /*@
-   PCApplySymmRight - Applies the right part of a symmetric preconditioner to a vector.
+   PCApplySymmetricRight - Applies the right part of a symmetric preconditioner to a vector.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -160,14 +160,14 @@ int PCApplySymmLeft(PC pc,Vec x,Vec y)
 
 .keywords: PC, apply
 
-.seealso: PCApply(), PCApplySymmLeft()
+.seealso: PCApply(), PCApplySymmetricLeft()
 @*/
-int PCApplySymmRight(PC pc,Vec x,Vec y)
+int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   PLogEventBegin(PC_ApplySymmRight,pc,x,y,0);
-  ierr = (*pc->applysymmright)(pc,x,y); CHKERRQ(ierr);
+  ierr = (*pc->applysymmetricright)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_ApplySymmRight,pc,x,y,0);
   return 0;
 }
@@ -188,7 +188,7 @@ int PCApplySymmRight(PC pc,Vec x,Vec y)
 @*/
 int PCApplyTrans(PC pc,Vec x,Vec y)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->applytrans) return (*pc->applytrans)(pc,x,y);
   SETERRQ(PETSC_ERR_SUP,"PCApplyTrans");
 }
@@ -213,7 +213,7 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->applyBA)  return (*pc->applyBA)(pc,side,x,y,work);
   if (side == PC_RIGHT) {
     ierr = PCApply(pc,x,work); CHKERRQ(ierr);
@@ -225,10 +225,10 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
   }
   else if (side == PC_SYMMETRIC) {
     /* There's an extra copy here; maybe should provide 2 work vectors instead? */
-    ierr = PCApplySymmRight(pc,x,work); CHKERRQ(ierr);
+    ierr = PCApplySymmetricRight(pc,x,work); CHKERRQ(ierr);
     ierr = MatMult(pc->mat,work,y); CHKERRQ(ierr);
     ierr = VecCopy(y,work); CHKERRQ(ierr);
-    return PCApplySymmLeft(pc,work,y);
+    return PCApplySymmetricLeft(pc,work,y);
   }
   else SETERRQ(1,"PCApplyBAorAB: Preconditioner side must be right, left, or symmetric");
 }
@@ -253,7 +253,7 @@ $   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,side,x,y,work);
   if (side == PC_RIGHT) {
     ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
@@ -275,13 +275,18 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
    Input Parameter:
 .  pc - the preconditioner
 
+   Output Parameter:
+.  exists - PETSC_TRUE or PETSC_FALSE
+
 .keywords: PC, apply, Richardson, exists
 
 .seealso: PCApplyRichardson()
 @*/
-int PCApplyRichardsonExists(PC pc)
+int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
 {
-  if (pc->applyrich) return 1; else return 0;
+  if (pc->applyrich) *exists = PETSC_TRUE; 
+  else               *exists = PETSC_FALSE;
+  return 0;
 }
 
 /*@
@@ -308,7 +313,7 @@ int PCApplyRichardsonExists(PC pc)
 @*/
 int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->applyrich) SETERRQ(PETSC_ERR_SUP,"PCApplyRichardson");
   return (*pc->applyrich)(pc,x,y,w,its);
 }
@@ -413,9 +418,9 @@ $      Pmat does not have the same nonzero structure.
  @*/
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(Amat,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(Pmat,MAT_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(Amat,MAT_COOKIE);
+  PetscValidHeaderSpecific(Pmat,MAT_COOKIE);
 
   pc->mat  = Amat;
   pc->pmat = Pmat;
@@ -446,7 +451,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 @*/
 int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (mat) *mat  = pc->mat;
   if (pmat) *pmat = pc->pmat;
   if (flag) *flag = pc->flag;
@@ -468,7 +473,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 @*/
 int PCSetVector(PC pc,Vec vec)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   pc->vec = vec;
   return 0;
 }
@@ -488,7 +493,7 @@ int PCSetVector(PC pc,Vec vec)
 @*/
 int PCGetFactoredMatrix(PC pc,Mat *mat)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->getfactoredmatrix) return (*pc->getfactoredmatrix)(pc,mat);
   return 0;
 }
@@ -505,7 +510,7 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 @*/
 int PCSetOptionsPrefix(PC pc,char *prefix)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   return PetscObjectSetPrefix((PetscObject)pc, prefix);
 }
 /*@C
@@ -520,7 +525,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 @*/
 int PCAppendOptionsPrefix(PC pc,char *prefix)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   return PetscObjectAppendPrefix((PetscObject)pc, prefix);
 }
 
@@ -538,7 +543,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 @*/
 int PCGetOptionsPrefix(PC pc,char **prefix)
 {
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   return PetscObjectGetPrefix((PetscObject)pc, prefix);
 }
 
@@ -584,14 +589,14 @@ int PCView(PC pc,Viewer viewer)
   int         fmt, ierr, mat_exists;
   ViewerType  vtype;
 
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   ViewerGetType(viewer,&vtype);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&fmt); CHKERRQ(ierr);
-    MPIU_fprintf(pc->comm,fd,"PC Object:\n");
+    PetscFPrintf(pc->comm,fd,"PC Object:\n");
     PCGetType(pc,PETSC_NULL,&cstring);
-    MPIU_fprintf(pc->comm,fd,"  method: %s\n",cstring);
+    PetscFPrintf(pc->comm,fd,"  method: %s\n",cstring);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
     PetscObjectExists((PetscObject)pc->mat,&mat_exists);
     if (mat_exists) {
@@ -599,14 +604,14 @@ int PCView(PC pc,Viewer viewer)
       ierr = ViewerGetFormat(viewer,&viewer_format);
       ViewerSetFormat(viewer,ASCII_FORMAT_INFO,0);
       if (pc->pmat == pc->mat) {
-        MPIU_fprintf(pc->comm,fd,"  linear system matrix = precond matrix:\n");
+        PetscFPrintf(pc->comm,fd,"  linear system matrix = precond matrix:\n");
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
       } else {
-        MPIU_fprintf(pc->comm,fd,"  linear system matrix:\n");
+        PetscFPrintf(pc->comm,fd,"  linear system matrix:\n");
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
         PetscObjectExists((PetscObject)pc->pmat,&mat_exists);
         if (mat_exists) {
-          MPIU_fprintf(pc->comm,fd,"  preconditioner matrix:\n");
+          PetscFPrintf(pc->comm,fd,"  preconditioner matrix:\n");
           ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
         }
       }

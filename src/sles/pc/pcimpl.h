@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.12 1996/02/15 17:23:38 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.13 1996/03/04 05:15:17 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -24,7 +24,7 @@ struct _PC {
   void         *data;
   int          (*getfactoredmatrix)(PC,Mat*);
   PCNullSpace  nullsp;
-  int          (*applysymmleft)(PC,Vec,Vec),(*applysymmright)(PC,Vec,Vec);
+  int          (*applysymmetricleft)(PC,Vec,Vec),(*applysymmetricright)(PC,Vec,Vec);
   int          (*setuponblocks)(PC);
 };
 
@@ -34,5 +34,8 @@ struct _PCNullSpace {
   int         n;
   Vec*        vecs;
 };
+
+#define USE_PRECONDITIONER_MATRIX 0
+#define USE_TRUE_MATRIX           1
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.60 1996/03/10 17:29:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.61 1996/03/18 00:42:41 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -48,28 +48,28 @@ int SNESView(SNES snes,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    MPIU_fprintf(snes->comm,fd,"SNES Object:\n");
+    PetscFPrintf(snes->comm,fd,"SNES Object:\n");
     SNESGetType(snes,PETSC_NULL,&method);
-    MPIU_fprintf(snes->comm,fd,"  method: %s\n",method);
+    PetscFPrintf(snes->comm,fd,"  method: %s\n",method);
     if (snes->view) (*snes->view)((PetscObject)snes,viewer);
-    MPIU_fprintf(snes->comm,fd,
+    PetscFPrintf(snes->comm,fd,
       "  maximum iterations=%d, maximum function evaluations=%d\n",
       snes->max_its,snes->max_funcs);
-    MPIU_fprintf(snes->comm,fd,
+    PetscFPrintf(snes->comm,fd,
     "  tolerances: relative=%g, absolute=%g, truncation=%g, solution=%g\n",
       snes->rtol, snes->atol, snes->trunctol, snes->xtol);
     if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
-      MPIU_fprintf(snes->comm,fd,"  min function tolerance=%g\n",snes->fmin);
+      PetscFPrintf(snes->comm,fd,"  min function tolerance=%g\n",snes->fmin);
     if (snes->ksp_ewconv) {
       kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
       if (kctx) {
-        MPIU_fprintf(snes->comm,fd,
+        PetscFPrintf(snes->comm,fd,
      "  Eisenstat-Walker computation of KSP relative tolerance (version %d)\n",
         kctx->version);
-        MPIU_fprintf(snes->comm,fd,
+        PetscFPrintf(snes->comm,fd,
           "    rtol_0=%g, rtol_max=%g, threshold=%g\n",kctx->rtol_0,
           kctx->rtol_max,kctx->threshold);
-        MPIU_fprintf(snes->comm,fd,"    gamma=%g, alpha=%g, alpha2=%g\n",
+        PetscFPrintf(snes->comm,fd,"    gamma=%g, alpha=%g, alpha2=%g\n",
           kctx->gamma,kctx->alpha,kctx->alpha2);
       }
     }
@@ -103,7 +103,7 @@ int SNESSetFromOptions(SNES snes)
   double   alpha2    = PETSC_DEFAULT;
   double   threshold = PETSC_DEFAULT;
 
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->setup_called)SETERRQ(1,"SNESSetFromOptions:Must call prior to SNESSetUp!");
   ierr = SNESGetTypeFromOptions_Private(snes,&method,&flg); CHKERRQ(ierr);
   if (flg) {
@@ -122,8 +122,6 @@ int SNESSetFromOptions(SNES snes)
   if (flg) { SNESPrintHelp(snes); }
   ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) { SNESSetSolutionTolerance(snes,tmp); }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ttol",&tmp, &flg); CHKERRQ(ierr);
-  if (flg) { SNESSetTruncationTolerance(snes,tmp); }
   ierr = OptionsGetDouble(snes->prefix,"-snes_atol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) { SNESSetAbsoluteTolerance(snes,tmp); }
   ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg);  CHKERRQ(ierr);
@@ -131,7 +129,7 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp, &flg);  CHKERRQ(ierr);
   if (flg) { SNESSetRelativeTolerance(snes,tmp); }
   ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg);  CHKERRQ(ierr);
-  if (flg) { SNESSetMinFunctionTolerance(snes,tmp); }
+  if (flg) { SNESSetMinimizationFunctionTolerance(snes,tmp); }
   ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, &flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, &flg);CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg);  CHKERRQ(ierr);
@@ -205,55 +203,55 @@ int SNESPrintHelp(SNES snes)
   char                p[64];
   SNES_KSP_EW_ConvCtx *kctx;
 
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
   PetscStrcpy(p,"-");
   if (snes->prefix) PetscStrcat(p, snes->prefix);
 
   kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
 
-  MPIU_printf(snes->comm,"SNES options ----------------------------\n");
+  PetscPrintf(snes->comm,"SNES options ----------------------------\n");
   SNESPrintTypes_Private(snes->comm,p,"snes_type");
-  MPIU_printf(snes->comm," %ssnes_monitor: use default SNES monitor\n",p);
-  MPIU_printf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
-  MPIU_printf(snes->comm," %ssnes_max_it its (default %d)\n",p,snes->max_its);
-  MPIU_printf(snes->comm," %ssnes_stol tol (default %g)\n",p,snes->xtol);
-  MPIU_printf(snes->comm," %ssnes_atol tol (default %g)\n",p,snes->atol);
-  MPIU_printf(snes->comm," %ssnes_rtol tol (default %g)\n",p,snes->rtol);
-  MPIU_printf(snes->comm," %ssnes_ttol tol (default %g)\n",p,snes->trunctol);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm," %ssnes_monitor: use default SNES monitor\n",p);
+  PetscPrintf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
+  PetscPrintf(snes->comm," %ssnes_max_it its (default %d)\n",p,snes->max_its);
+  PetscPrintf(snes->comm," %ssnes_stol tol (default %g)\n",p,snes->xtol);
+  PetscPrintf(snes->comm," %ssnes_atol tol (default %g)\n",p,snes->atol);
+  PetscPrintf(snes->comm," %ssnes_rtol tol (default %g)\n",p,snes->rtol);
+  PetscPrintf(snes->comm," %ssnes_ttol tol (default %g)\n",p,snes->trunctol);
+  PetscPrintf(snes->comm,
    " options for solving systems of nonlinear equations only:\n");
-  MPIU_printf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
-  MPIU_printf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
-  MPIU_printf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
+  PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
+  PetscPrintf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
+  PetscPrintf(snes->comm,
    "     %ssnes_ksp_ew_version version (1 or 2, default is %d)\n",
    p,kctx->version);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
    "     %ssnes_ksp_ew_rtol0 rtol0 (0 <= rtol0 < 1, default %g)\n",
    p,kctx->rtol_0);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
    "     %ssnes_ksp_ew_rtolmax rtolmax (0 <= rtolmax < 1, default %g)\n",
    p,kctx->rtol_max);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
    "     %ssnes_ksp_ew_gamma gamma (0 <= gamma <= 1, default %g)\n",
    p,kctx->gamma);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
    "     %ssnes_ksp_ew_alpha alpha (1 < alpha <= 2, default %g)\n",
    p,kctx->alpha);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
    "     %ssnes_ksp_ew_alpha2 alpha2 (default %g)\n",
    p,kctx->alpha2);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
    "     %ssnes_ksp_ew_threshold threshold (0 < threshold < 1, default %g)\n",
    p,kctx->threshold);
-  MPIU_printf(snes->comm,
+  PetscPrintf(snes->comm,
    " options for solving unconstrained minimization problems only:\n");
-  MPIU_printf(snes->comm,"   %ssnes_fmin tol (default %g)\n",p,snes->fmin);
-  MPIU_printf(snes->comm," Run program with %ssnes_type method -help for help on ",p);
-  MPIU_printf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
-  MPIU_printf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
-  MPIU_printf(snes->comm,"a particular method\n");
+  PetscPrintf(snes->comm,"   %ssnes_fmin tol (default %g)\n",p,snes->fmin);
+  PetscPrintf(snes->comm," Run program with %ssnes_type method -help for help on ",p);
+  PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
+  PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
+  PetscPrintf(snes->comm,"a particular method\n");
   if (snes->printhelp) (*snes->printhelp)(snes,p);
   return 0;
 }
@@ -271,7 +269,7 @@ int SNESPrintHelp(SNES snes)
 @*/
 int SNESSetApplicationContext(SNES snes,void *usrP)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->user		= usrP;
   return 0;
 }
@@ -291,7 +289,7 @@ int SNESSetApplicationContext(SNES snes,void *usrP)
 @*/
 int SNESGetApplicationContext( SNES snes,  void **usrP )
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   *usrP = snes->user;
   return 0;
 }
@@ -309,7 +307,7 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
 @*/
 int SNESGetIterationNumber(SNES snes,int* iter)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   *iter = snes->iter;
   return 0;
 }
@@ -334,7 +332,7 @@ int SNESGetIterationNumber(SNES snes,int* iter)
 @*/
 int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
     "SNESGetFunctionNorm:For SNES_NONLINEAR_EQUATIONS only");
   *fnorm = snes->norm;
@@ -361,7 +359,7 @@ int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
 @*/
 int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
     "SNESGetGradientNorm:For SNES_UNCONSTRAINED_MINIMIZATION only");
   *gnorm = snes->norm;
@@ -381,7 +379,7 @@ int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
 @*/
 int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   *nfails = snes->nfailures;
   return 0;
 }
@@ -405,7 +403,7 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
 @*/
 int SNESGetSLES(SNES snes,SLES *sles)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   *sles = snes->sles;
   return 0;
 }
@@ -525,7 +523,7 @@ $  where f'(x) denotes the Jacobian matrix and f(x) is the function.
 @*/
 int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
     "SNESSetFunction:For SNES_NONLINEAR_EQUATIONS only");
   snes->computefunction     = func; 
@@ -596,7 +594,7 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
 int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
                       void *ctx)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
     "SNESSetMinimizationFunction:Only for SNES_UNCONSTRAINED_MINIMIZATION");
   snes->computeumfunction   = func; 
@@ -667,7 +665,7 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),
                      void *ctx)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
     "SNESSetGradient:For SNES_UNCONSTRAINED_MINIMIZATION only");
   snes->computefunction     = func;
@@ -746,8 +744,8 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP); CHKERRQ(ierr);
   PLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);
   /* make sure user returned a correct Jacobian and preconditioner */
-  PETSCVALIDHEADERSPECIFIC(*A,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(*B,MAT_COOKIE);  
+  PetscValidHeaderSpecific(*A,MAT_COOKIE);
+  PetscValidHeaderSpecific(*B,MAT_COOKIE);  
   return 0;
 }
 
@@ -790,8 +788,8 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
   ierr = (*snes->computejacobian)(snes,x,A,B,flag,snes->jacP); CHKERRQ(ierr);
   PLogEventEnd(SNES_HessianEval,snes,x,*A,*B);
   /* make sure user returned a correct Jacobian and preconditioner */
-  PETSCVALIDHEADERSPECIFIC(*A,MAT_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(*B,MAT_COOKIE);  
+  PetscValidHeaderSpecific(*A,MAT_COOKIE);
+  PetscValidHeaderSpecific(*B,MAT_COOKIE);  
   return 0;
 }
 
@@ -834,7 +832,7 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
                     MatStructure*,void*),void *ctx)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
     "SNESSetJacobian:For SNES_NONLINEAR_EQUATIONS only");
   snes->computejacobian = func;
@@ -907,7 +905,7 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
                     MatStructure*,void*),void *ctx)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
     "SNESSetHessian:For SNES_UNCONSTRAINED_MINIMIZATION only");
   snes->computejacobian = func;
@@ -965,8 +963,8 @@ int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
 int SNESSetUp(SNES snes,Vec x)
 {
   int ierr, flg;
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   snes->vec_sol = snes->vec_sol_always = x;
 
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
@@ -1021,7 +1019,7 @@ int SNESSetUp(SNES snes,Vec x)
 int SNESDestroy(SNES snes)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   ierr = (*(snes)->destroy)((PetscObject)snes); CHKERRQ(ierr);
   if (snes->kspconvctx) PetscFree(snes->kspconvctx);
   if (snes->mfshell) MatDestroy(snes->mfshell);
@@ -1052,7 +1050,7 @@ $  -snes_max_it  maxits
 @*/
 int SNESSetMaxIterations(SNES snes,int maxits)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->max_its = maxits;
   return 0;
 }
@@ -1077,7 +1075,7 @@ $  -snes_max_funcs maxf
 @*/
 int SNESSetMaxFunctionEvaluations(SNES snes,int maxf)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->max_funcs = maxf;
   return 0;
 }
@@ -1094,12 +1092,12 @@ $    -snes_rtol tol
 
 .keywords: SNES, nonlinear, set, relative, convergence, tolerance
  
-.seealso: SNESSetAbsoluteTolerance(), SNESSetSolutionTolerance(),
-           SNESSetTruncationTolerance()
+.seealso: SNESSetAbsoluteTolerance(), SNESSetSolutionTolerance()
+
 @*/
 int SNESSetRelativeTolerance(SNES snes,double rtol)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->rtol = rtol;
   return 0;
 }
@@ -1116,12 +1114,11 @@ $    -snes_trtol tol
 
 .keywords: SNES, nonlinear, set, trust region, tolerance
  
-.seealso: SNESSetAbsoluteTolerance(), SNESSetSolutionTolerance(),
-           SNESSetTruncationTolerance()
+.seealso: SNESSetAbsoluteTolerance(), SNESSetSolutionTolerance()
 @*/
 int SNESSetTrustRegionTolerance(SNES snes,double tol)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->deltatol = tol;
   return 0;
 }
@@ -1138,41 +1135,12 @@ $    -snes_atol tol
 
 .keywords: SNES, nonlinear, set, absolute, convergence, tolerance
 
-.seealso: SNESSetRelativeTolerance(), SNESSetSolutionTolerance(),
-           SNESSetTruncationTolerance()
+.seealso: SNESSetRelativeTolerance(), SNESSetSolutionTolerance()
 @*/
 int SNESSetAbsoluteTolerance(SNES snes,double atol)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->atol = atol;
-  return 0;
-}
-
-/*@
-   SNESSetTruncationTolerance - Sets the tolerance that may be used by the
-   step routines to control the accuracy of the step computation.
-
-   Input Parameters:
-.  snes - the SNES context
-.  tol - tolerance
-
-   Options Database Key: 
-$    -snes_ttol tol
-
-   Notes:
-   If the step computation involves an application of the inverse
-   Jacobian (or Hessian), this parameter may be used to control the 
-   accuracy of that application. 
-
-.keywords: SNES, nonlinear, set, truncation, tolerance
-
-.seealso: SNESSetRelativeTolerance(), SNESSetSolutionTolerance(),
-          SNESSetAbsoluteTolerance()
-@*/
-int SNESSetTruncationTolerance(SNES snes,double tol)
-{
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
-  snes->trunctol = tol;
   return 0;
 }
 
@@ -1189,18 +1157,17 @@ $    -snes_stol tol
 
 .keywords: SNES, nonlinear, set, solution, tolerance
 
-.seealso: SNESSetTruncationTolerance(), SNESSetRelativeTolerance(),
-          SNESSetAbsoluteTolerance()
+.seealso: SNESSetTruncationTolerance(), SNESSetRelativeTolerance()
 @*/
 int SNESSetSolutionTolerance( SNES snes, double tol )
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->xtol = tol;
   return 0;
 }
 
 /*@
-   SNESSetMinFunctionTolerance - Sets the minimum allowable function tolerance
+   SNESSetMinimizationFunctionTolerance - Sets the minimum allowable function tolerance
    for unconstrained minimization solvers.
    
    Input Parameters:
@@ -1211,17 +1178,16 @@ int SNESSetSolutionTolerance( SNES snes, double tol )
 $    -snes_fmin ftol
 
    Note:
-   SNESSetMinFunctionTolerance() is valid for SNES_UNCONSTRAINED_MINIMIZATION
+   SNESSetMinimizationFunctionTolerance() is valid for SNES_UNCONSTRAINED_MINIMIZATION
    methods only.
 
 .keywords: SNES, nonlinear, set, minimum, convergence, function, tolerance
 
-.seealso: SNESSetRelativeTolerance(), SNESSetSolutionTolerance(),
-           SNESSetTruncationTolerance()
+.seealso: SNESSetRelativeTolerance(), SNESSetSolutionTolerance()
 @*/
-int SNESSetMinFunctionTolerance(SNES snes,double ftol)
+int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->fmin = ftol;
   return 0;
 }
@@ -1368,7 +1334,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
 {
   int ierr, flg;
 
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (!snes->setup_called) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
   PLogEventBegin(SNES_Solve,snes,0,0,0);
@@ -1408,7 +1374,7 @@ $    (for instance, ls or tr)
 int SNESSetType(SNES snes,SNESType method)
 {
   int (*r)(SNES);
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   /* Get the function pointers for the iterative method requested */
   if (!__SNESList) {SNESRegisterAll();}
   if (!__SNESList) {SETERRQ(1,"SNESSetType:Could not get methods");}
@@ -1522,12 +1488,12 @@ int SNESPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
   FuncList *entry;
   if (!__SNESList) {SNESRegisterAll();}
   entry = __SNESList->head;
-  MPIU_printf(comm," %s%s (one of)",prefix,name);
+  PetscPrintf(comm," %s%s (one of)",prefix,name);
   while (entry) {
-    MPIU_printf(comm," %s",entry->name);
+    PetscPrintf(comm," %s",entry->name);
     entry = entry->next;
   }
-  MPIU_printf(comm,"\n");
+  PetscPrintf(comm,"\n");
   return 0;
 }
 
@@ -1547,7 +1513,7 @@ int SNESPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 @*/
 int SNESGetSolution(SNES snes,Vec *x)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   *x = snes->vec_sol_always;
   return 0;
 }  
@@ -1571,7 +1537,7 @@ int SNESGetSolution(SNES snes,Vec *x)
 @*/
 int SNESGetSolutionUpdate(SNES snes,Vec *x)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   *x = snes->vec_sol_update_always;
   return 0;
 }
@@ -1597,7 +1563,7 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 @*/
 int SNESGetFunction(SNES snes,Vec *r)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
     "SNESGetFunction:For SNES_NONLINEAR_EQUATIONS only");
   *r = snes->vec_func_always;
@@ -1624,7 +1590,7 @@ int SNESGetFunction(SNES snes,Vec *r)
 @*/
 int SNESGetGradient(SNES snes,Vec *r)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
     "SNESGetGradient:For SNES_UNCONSTRAINED_MINIMIZATION only");
   *r = snes->vec_func_always;
@@ -1652,7 +1618,7 @@ int SNESGetGradient(SNES snes,Vec *r)
 @*/
 int SNESGetMinimizationFunction(SNES snes,double *r)
 {
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
     "SNESGetMinimizationFunction:For SNES_UNCONSTRAINED_MINIMIZATION only");
   *r = snes->fc;
@@ -1675,7 +1641,7 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
 {
   int ierr;
 
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   ierr = PetscObjectSetPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
   ierr = SLESSetOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
   return 0;
@@ -1697,7 +1663,7 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
 {
   int ierr;
   
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   ierr = PetscObjectAppendPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
   ierr = SLESAppendOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
   return 0;
@@ -1721,7 +1687,7 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
 {
   int ierr;
 
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   ierr = PetscObjectGetPrefix((PetscObject)snes, prefix); CHKERRQ(ierr);
   return 0;
 }

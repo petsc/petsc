@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.17 1996/01/12 22:10:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.18 1996/03/10 17:29:57 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -11,7 +11,6 @@ static char help[] = "Creates a 1-dimensional wave equation.\n\n";
 #include "sys.h"
 #include "draw.h"
 #include <math.h>
-#include "sysio.h"
 
 #define PI 3.14159265
 
@@ -26,7 +25,7 @@ int main(int argc,char **argv)
   double    a, h, k;
   int       localsize, j, i, mybase, myend;
  
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.61 1996/03/10 17:29:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.62 1996/03/18 00:42:47 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -136,7 +136,7 @@ $  -snes_line_search basic
 .keywords: SNES, nonlinear, line search, cubic
 
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
-          SNESSetLineSearchRoutine()
+          SNESSetLineSearch()
 @*/
 int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                      double fnorm, double *ynorm, double *gnorm,int *flag )
@@ -182,7 +182,7 @@ $  -snes_line_search cubic
 
 .keywords: SNES, nonlinear, line search, cubic
 
-.seealso: SNESNoLineSearch(), SNESNoLineSearch(), SNESSetLineSearchRoutine()
+.seealso: SNESNoLineSearch(), SNESNoLineSearch(), SNESSetLineSearch()
 @*/
 int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                         double fnorm, double *ynorm, double *gnorm,int *flag)
@@ -334,12 +334,12 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 $  -snes_line_search quadratic
 
    Notes:
-   Use SNESSetLineSearchRoutine()
+   Use SNESSetLineSearch()
    to set this routine within the SNES_EQ_NLS method.  
 
 .keywords: SNES, nonlinear, quadratic, line search
 
-.seealso: SNESCubicLineSearch(), SNESNoLineSearch(), SNESSetLineSearchRoutine()
+.seealso: SNESCubicLineSearch(), SNESNoLineSearch(), SNESSetLineSearch()
 @*/
 int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                            double fnorm, double *ynorm, double *gnorm,int *flag)
@@ -426,7 +426,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 }
 /* ------------------------------------------------------------ */
 /*@C
-   SNESSetLineSearchRoutine - Sets the line search routine to be used
+   SNESSetLineSearch - Sets the line search routine to be used
    by the method SNES_LS.
 
    Input Parameters:
@@ -466,7 +466,7 @@ $   -snes_line_search [basic,quadratic,cubic]
 
 .seealso: SNESNoLineSearch(), SNESQuadraticLineSearch(), SNESCubicLineSearch()
 @*/
-int SNESSetLineSearchRoutine(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
+int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
                              double,double*,double*,int*))
 {
   if ((snes)->type == SNES_EQ_NLS) ((SNES_LS *)(snes->data))->LineSearch = func;
@@ -477,11 +477,11 @@ static int SNESPrintHelp_LS(SNES snes,char *p)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
 
-  MPIU_printf(snes->comm," method ls (system of nonlinear equations):\n");
-  MPIU_printf(snes->comm,"   %ssnes_line_search [basic,quadratic,cubic]\n",p);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_alpha alpha (default %g)\n",p,ls->alpha);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_maxstep max (default %g)\n",p,ls->maxstep);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_steptol tol (default %g)\n",p,ls->steptol);
+  PetscPrintf(snes->comm," method ls (system of nonlinear equations):\n");
+  PetscPrintf(snes->comm,"   %ssnes_line_search [basic,quadratic,cubic]\n",p);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_alpha alpha (default %g)\n",p,ls->alpha);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_maxstep max (default %g)\n",p,ls->maxstep);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_steptol tol (default %g)\n",p,ls->steptol);
   return 0;
 }
 /* ------------------------------------------------------------------ */
@@ -501,8 +501,8 @@ static int SNESView_LS(PetscObject obj,Viewer viewer)
     else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";
     else if (ls->LineSearch == SNESCubicLineSearch) cstr = "SNESCubicLineSearch";
     else cstr = "unknown";
-    MPIU_fprintf(snes->comm,fd,"    line search variant: %s\n",cstr);
-    MPIU_fprintf(snes->comm,fd,"    alpha=%g, maxstep=%g, steptol=%g\n",
+    PetscFPrintf(snes->comm,fd,"    line search variant: %s\n",cstr);
+    PetscFPrintf(snes->comm,fd,"    alpha=%g, maxstep=%g, steptol=%g\n",
                  ls->alpha,ls->maxstep,ls->steptol);
   }
   return 0;
@@ -530,13 +530,13 @@ static int SNESSetFromOptions_LS(SNES snes)
   ierr = OptionsGetString(snes->prefix,"-snes_line_search",ver,16, &flg); CHKERRQ(ierr);
   if (flg) {
     if (!PetscStrcmp(ver,"basic")) {
-      SNESSetLineSearchRoutine(snes,SNESNoLineSearch);
+      SNESSetLineSearch(snes,SNESNoLineSearch);
     }
     else if (!PetscStrcmp(ver,"quadratic")) {
-      SNESSetLineSearchRoutine(snes,SNESQuadraticLineSearch);
+      SNESSetLineSearch(snes,SNESQuadraticLineSearch);
     }
     else if (!PetscStrcmp(ver,"cubic")) {
-      SNESSetLineSearchRoutine(snes,SNESCubicLineSearch);
+      SNESSetLineSearch(snes,SNESCubicLineSearch);
     }
     else {SETERRQ(1,"SNESSetFromOptions_LS:Unknown line search");}
   }

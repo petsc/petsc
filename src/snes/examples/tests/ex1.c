@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.35 1996/02/08 18:28:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.36 1996/03/10 17:29:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -63,7 +63,7 @@ int main( int argc, char **argv )
   Draw         draw;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
-  PetscInitialize( &argc, &argv, 0,0,help );
+  PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
 
   user.mx    = 4;
@@ -105,8 +105,8 @@ int main( int argc, char **argv )
   ierr = SNESSolve(snes,x,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);  CHKERRA(ierr);
 
-  MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
-  MPIU_printf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
+  PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
+  PetscPrintf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
   DrawTensorContour(draw,user.mx,user.my,0,0,x);
   DrawSyncFlush(draw);
   DrawPause(draw);

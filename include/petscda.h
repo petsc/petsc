@@ -1,7 +1,7 @@
-/* $Id: da.h,v 1.20 1996/02/24 19:05:09 balay Exp balay $ */
+/* $Id: da.h,v 1.21 1996/02/24 19:07:45 balay Exp bsmith $ */
 
 /*
-      Regular array object, for easy parallism of simple grid 
+      Regular array object, for easy parallelism of simple grid 
    problems on regular distributed arrays.
 */
 #if !defined(__DA_PACKAGE)

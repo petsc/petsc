@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fuser.c,v 1.1 1996/01/30 18:30:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fuser.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: fuser.c,v 1.1 1996/01/30 18:30:43 bsmith Exp bsmith $
 
 #if defined(HAVE_PWD_H)
 /*@C
-    SYGetUserName - Returns the name of the user.
+    PetscGetUserName - Returns the name of the user.
 
     Input Parameter:
     nlen - length of name
@@ -18,9 +18,9 @@ static char vcid[] = "$Id: fuser.c,v 1.1 1996/01/30 18:30:43 bsmith Exp bsmith $
 
 .keywords: system, get, user, name
 
-.seealso: SYGetHostName()
+.seealso: PetscGetHostName()
 @*/
-int SYGetUserName( char *name, int nlen )
+int PetscGetUserName( char *name, int nlen )
 {
   struct passwd *pw;
 
@@ -30,7 +30,7 @@ int SYGetUserName( char *name, int nlen )
   return 0;
 }
 #else
-int SYGetUserName( char *name, int nlen )
+int PetscGetUserName( char *name, int nlen )
 {
   PetscStrncpy( name, "Unknown", nlen );
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stringv.c,v 1.2 1996/03/08 05:48:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.3 1996/03/18 00:42:32 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -25,17 +25,17 @@ static int ViewerDestroy_String(PetscObject obj)
 }
 
 /*@C
-      ViewerStringsprintf - Prints information to a viewer string
+      ViewerStringSPrintf - Prints information to a viewer string
 
   Input Parameters:
 .   v - the viewer
 .   format - the format of the input
 
 @*/
-int ViewerStringsprintf(Viewer v,char *format,...)
+int ViewerStringSPrintf(Viewer v,char *format,...)
 {
   va_list Argp;
-  PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
   if (v->type != STRING_VIEWER) return 0;
   va_start( Argp, format );
   vsprintf(v->head,format,Argp);

@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.27 1996/03/08 05:49:06 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.28 1996/03/10 17:30:09 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -58,13 +58,13 @@ extern int DrawSetCoordinates(Draw,double,double,double,double);
 extern int DrawGetCoordinates(Draw,double*,double*,double*,double*);
 
 extern int DrawSetPause(Draw,int);
+extern int DrawGetPause(Draw,int*);
+extern int DrawPause(Draw);
 extern int DrawSetDoubleBuffer(Draw);
 extern int DrawFlush(Draw);
 extern int DrawSyncFlush(Draw);
 extern int DrawClear(Draw);
 extern int DrawSyncClear(Draw);
-extern int DrawPause(Draw);
-extern int DrawGetPause(Draw,int*);
 
 typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton;
 extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: grpath.c,v 1.1 1996/01/30 18:34:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: grpath.c,v 1.1 1996/01/30 18:34:25 bsmith Exp bsmith 
 
 
 /*@C
-   SYGetRealPath - Get the path without symbolic links etc. and in absolute
+   PetscGetRealPath - Get the path without symbolic links etc. and in absolute
    form.
 
    Input Parameter:
@@ -28,9 +28,9 @@ static char vcid[] = "$Id: grpath.c,v 1.1 1996/01/30 18:34:25 bsmith Exp bsmith 
 
 .keywords, system, get, real, path
 
-.seealso: SYGetFullPath()
+.seealso: PetscGetFullPath()
 @*/
-int SYGetRealPath(char * path, char *rpath )
+int PetscGetRealPath(char * path, char *rpath )
 {
   char tmp3[MAXPATHLEN];
 #if defined(PARCH_sun4)
@@ -55,12 +55,12 @@ int SYGetRealPath(char * path, char *rpath )
         PetscStrncpy(tmp4,tmp1,m); tmp4[m] = 0;
         PetscStrncat(tmp4,"/",MAXPATHLEN - PetscStrlen(tmp4));
         PetscStrncat(tmp4,tmp3,MAXPATHLEN - PetscStrlen(tmp4));
-        SYGetRealPath(tmp4,rpath);
+        PetscGetRealPath(tmp4,rpath);
         PetscStrncat(rpath,path+N,MAXPATHLEN - PetscStrlen(rpath));
         return 0;
       }
       else {
-        SYGetRealPath(tmp3,tmp1);
+        PetscGetRealPath(tmp3,tmp1);
         PetscStrncpy(rpath,tmp1,MAXPATHLEN);
         PetscStrncat(rpath,path+N,MAXPATHLEN - PetscStrlen(rpath));
         return 0;

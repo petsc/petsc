@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.22 1996/02/13 23:30:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.23 1996/03/10 17:28:48 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: matio.c,v 1.22 1996/02/13 23:30:02 bsmith Exp bsmith 
 #include "petsc.h"
 #include "vec/vecimpl.h"
 #include "../matimpl.h"
-#include "sysio.h"
+#include "sys.h"
 #include "pinclude/pviewer.h"
 
 extern int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
@@ -70,13 +70,13 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   MPI_Comm    comm;
   *newmat = 0;
 
-  PETSCVALIDHEADERSPECIFIC(viewer,VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype != BINARY_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
   PetscObjectGetComm((PetscObject)viewer,&comm);
-  ierr = MatGetFormatFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (!set) type = outtype;
   PLogEventBegin(MAT_Load,viewer,0,0,0);
 

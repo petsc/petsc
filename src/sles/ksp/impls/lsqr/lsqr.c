@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.20 1996/01/09 14:31:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.21 1996/03/10 17:27:19 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -106,7 +106,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   if (i == maxit) i--;
   if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-  ierr = KSPUnwindPre(ksp,X,W); CHKERRQ(ierr);
+  ierr = KSPUnwindPreconditioner(ksp,X,W); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
   return 0;

@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.29 1996/02/24 17:12:28 curfman Exp curfman $";
+C    "$Id: ex12.F,v 1.30 1996/03/07 18:19:07 curfman Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -27,7 +27,7 @@ C
       character*(10)   matrixname
       external         FormJacobian,FormFunction,FormInitialGuess
 
-      call PetscInitialize(ierr)
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
       N = 10
       call OptionsGetInt(PETSC_NULL_CHAR,'-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)

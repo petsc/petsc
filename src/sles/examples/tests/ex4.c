@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.38 1996/01/23 00:20:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.39 1996/02/08 18:27:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   KSP         ksp;
   IS          is;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
@@ -127,9 +127,9 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   if (norm*h > 1.e-12)
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
+    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
   else
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(ustar); CHKERRA(ierr);

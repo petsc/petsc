@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.1 1996/01/30 18:31:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: fhost.c,v 1.1 1996/01/30 18:31:10 bsmith Exp bsmith $
 #include "files.h"
 
 /*@C
-    SYGetHostName - Returns the name of the host.
+    PetscGetHostName - Returns the name of the host.
 
     Input Parameter:
     nlen - length of name
@@ -18,9 +18,9 @@ static char vcid[] = "$Id: fhost.c,v 1.1 1996/01/30 18:31:10 bsmith Exp bsmith $
 
 .keywords: syetem, get, host, name
 
-.seealso: SYGetUserName()
+.seealso: PetscGetUserName()
 @*/
-int SYGetHostName( char *name, int nlen )
+int PetscGetHostName( char *name, int nlen )
 {
 #if defined(PARCH_solaris)
   struct utsname utname;

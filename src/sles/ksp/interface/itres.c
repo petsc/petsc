@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.17 1996/01/09 15:09:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.18 1996/03/10 17:26:57 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"   /*I "ksp.h" I*/
@@ -30,7 +30,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   Mat           Amat, Pmat;
   int           ierr;
 
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
   if (ksp->pc_side == PC_RIGHT) {
     if (vbinvf) {ierr = VecCopy(vb,vbinvf); CHKERRQ(ierr);}
@@ -66,7 +66,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 }
 
 /*@
-   KSPUnwindPre - Unwinds the preconditioning in the solution.
+   KSPUnwindPreconditioner - Unwinds the preconditioning in the solution.
 
    Input Parameters:
 .  ksp  - iterative context
@@ -85,16 +85,16 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 
 .seealso: KSPSetPreconditionerSide()
 @*/
-int KSPUnwindPre(KSP ksp,Vec vsoln,Vec vt1)
+int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
 {
   int ierr;
-  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->pc_side == PC_RIGHT) {
     ierr = PCApply(ksp->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
   else if (ksp->pc_side == PC_SYMMETRIC) {
-    ierr = PCApplySymmRight(ksp->B,vsoln,vt1); CHKERRQ(ierr);
+    ierr = PCApplySymmetricRight(ksp->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
   return 0;

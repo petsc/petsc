@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.22 1995/12/21 18:33:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.23 1996/01/12 22:09:01 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Plots a simple line graph\n";
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-width",&width,&flg); 
   OptionsGetInt(0,"-height",&height,&flg);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);

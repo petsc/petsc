@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.59 1996/03/08 05:46:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.60 1996/03/18 00:39:28 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -42,7 +42,7 @@ $  -pc_ilu_levels  levels
 int PCILUSetLevels(PC pc,int levels)
 {
   PC_ILU *ilu;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCILU) return 0;
   if (levels < 0) SETERRQ(1,"PCILUSetLevels:negative levels");
   ilu = (PC_ILU *) pc->data;
@@ -74,7 +74,7 @@ $  -pc_ilu_in_place
 int PCILUSetUseInPlace(PC pc)
 {
   PC_ILU *dir;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   dir = (PC_ILU *) pc->data;
   if (pc->type != PCILU) return 0;
   dir->inplace = 1;
@@ -97,14 +97,14 @@ static int PCSetFromOptions_ILU(PC pc)
 
 static int PCPrintHelp_ILU(PC pc,char *p)
 {
-  MPIU_printf(pc->comm," Options for PCILU preconditioner:\n");
-  MPIU_printf(pc->comm," -mat_order name: ordering to reduce fill",p);
-  MPIU_printf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
-  MPIU_printf(pc->comm," %spc_ilu_levels levels: levels of fill\n",p);
-  MPIU_printf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
-  MPIU_printf(pc->comm," %spc_ilu_factorpointwise: DO NOT use block factorization\n",p);
-  MPIU_printf(pc->comm,"    (note this only applies to MatCreateMPIRowBS, all others\n");
-  MPIU_printf(pc->comm,"    currently only support point factorization.\n");
+  PetscPrintf(pc->comm," Options for PCILU preconditioner:\n");
+  PetscPrintf(pc->comm," -mat_order name: ordering to reduce fill",p);
+  PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
+  PetscPrintf(pc->comm," %spc_ilu_levels levels: levels of fill\n",p);
+  PetscPrintf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
+  PetscPrintf(pc->comm," %spc_ilu_factorpointwise: DO NOT use block factorization\n",p);
+  PetscPrintf(pc->comm,"    (note this only applies to MatCreateMPIRowBS, all others\n");
+  PetscPrintf(pc->comm,"    currently only support point factorization.\n");
   return 0;
 }
 
@@ -122,15 +122,15 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (ilu->levels == 1)
-      MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",ilu->levels);
+      PetscFPrintf(pc->comm,fd,"    ILU: %d level of fill\n",ilu->levels);
     else
-      MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",ilu->levels);
-    if (ilu->inplace) MPIU_fprintf(pc->comm,fd,"         in-place factorization\n");
-    else MPIU_fprintf(pc->comm,fd,"         out-of-place factorization\n");
-    MPIU_fprintf(pc->comm,fd,"         matrix ordering: %s\n",order);
+      PetscFPrintf(pc->comm,fd,"    ILU: %d levels of fill\n",ilu->levels);
+    if (ilu->inplace) PetscFPrintf(pc->comm,fd,"         in-place factorization\n");
+    else PetscFPrintf(pc->comm,fd,"         out-of-place factorization\n");
+    PetscFPrintf(pc->comm,fd,"         matrix ordering: %s\n",order);
   }
   else if (vtype == STRING_VIEWER) {
-    ViewerStringsprintf(viewer,"levels=%d ordering=%s",ilu->levels,order);
+    ViewerStringSPrintf(viewer,"levels=%d ordering=%s",ilu->levels,order);
   }
   return 0;
 }

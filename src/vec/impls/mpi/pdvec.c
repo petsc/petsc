@@ -1,10 +1,10 @@
-/* $Id: pdvec.c,v 1.46 1996/03/14 22:26:54 curfman Exp bsmith $ */
+/* $Id: pdvec.c,v 1.47 1996/03/18 00:37:46 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
 */
 #include "pinclude/pviewer.h"
-#include "sysio.h"
+#include "sys.h"
 
 static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
@@ -38,7 +38,7 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
   ierr = ViewerASCIIGetPointer(ptr,&fd); CHKERRQ(ierr);
 
   MPI_Comm_rank(xin->comm,&rank); 
-  MPIU_Seq_begin(xin->comm,1);
+  PetscSequentialPhaseBegin(xin->comm,1);
   fprintf(fd,"Processor [%d] \n",rank);
   for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -53,7 +53,7 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
 #endif
   }
   fflush(fd);
-  MPIU_Seq_end(xin->comm,1);
+  PetscSequentialPhaseEnd(xin->comm,1);
   return 0;
 }
 
@@ -130,9 +130,9 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
   MPI_Comm_size(xin->comm,&size);
 
   if (!rank) {
-    ierr = SYWrite(fdes,&xin->cookie,1,SYINT,0); CHKERRQ(ierr);
-    ierr = SYWrite(fdes,&x->N,1,SYINT,0); CHKERRQ(ierr);
-    ierr = SYWrite(fdes,x->array,x->n,SYSCALAR,0); 
+    ierr = PetscBinaryWrite(fdes,&xin->cookie,1,BINARY_INT,0); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,&x->N,1,BINARY_INT,0); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,x->array,x->n,BINARY_SCALAR,0); 
     CHKERRQ(ierr);
 
     values = (Scalar *) PetscMalloc( len*sizeof(Scalar) ); CHKPTRQ(values);
@@ -140,7 +140,7 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
     for ( j=1; j<size; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&n);          
-      ierr = SYWrite(fdes,values,n,SYSCALAR,0); 
+      ierr = PetscBinaryWrite(fdes,values,n,BINARY_SCALAR,0); 
     }
     PetscFree(values);
   }

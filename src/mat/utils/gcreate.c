@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.70 1996/02/13 23:30:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.71 1996/02/19 15:31:47 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
 /*@C
-   MatGetFormatFromOptions - Determines from the options database what matrix
+   MatGetTypeFromOptions - Determines from the options database what matrix
    format the user has specified.
 
    Input Parameter:
@@ -25,7 +25,7 @@ static char vcid[] = "$Id: gcreate.c,v 1.70 1996/02/13 23:30:02 bsmith Exp curfm
 .seealso: MatCreate()
 @*/
 
-int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
+int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
   int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr,flg11;
   char p[64];
@@ -36,10 +36,10 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   MPI_Comm_size(comm,&size);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {
-    MPIU_printf(comm,"Matrix format options:\n");
-    MPIU_printf(comm,"  %smat_aij, %smat_seqaij, %smat_mpiaij\n",p,p,p);
-    MPIU_printf(comm,"  %smat_dense, %smat_seqdense, %smat_mpidense\n",p,p,p);
-    MPIU_printf(comm,"  %smat_mpirowbs, %smat_bdiag, %smat_seqbdiag, %smat_mpibdiag\n",p,p,p,p); 
+    PetscPrintf(comm,"Matrix format options:\n");
+    PetscPrintf(comm,"  %smat_aij, %smat_seqaij, %smat_mpiaij\n",p,p,p);
+    PetscPrintf(comm,"  %smat_dense, %smat_seqdense, %smat_mpidense\n",p,p,p);
+    PetscPrintf(comm,"  %smat_mpirowbs, %smat_bdiag, %smat_seqbdiag, %smat_mpibdiag\n",p,p,p,p); 
   }
   ierr = OptionsHasName(pre,"-mat_seqdense",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpidense",&flg2); CHKERRQ(ierr);
@@ -145,14 +145,14 @@ $  -mat_mpidense : dense type, uses MatCreateMPIDense()
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatConvert()
-          MatGetFormatFromOptions()
+          MatGetTypeFromOptions()
  @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
   MatType type;
   int     set,ierr;
 
-  ierr = MatGetFormatFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (type == MATSEQDENSE)
     return MatCreateSeqDense(comm,m,n,PETSC_NULL,V);
   if (type == MATMPIBDIAG)

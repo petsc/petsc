@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.4 1996/01/23 18:38:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.5 1996/02/08 18:27:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -18,9 +18,9 @@ int main(int argc,char **args)
   int      ierr, n = 10, kind=0, its, flg;
   Scalar   none = -1.0;
   double   norm;
-  SYRandom rctx;
+  PetscRandom rctx;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-kind",&kind,&flg); CHKERRA(ierr);
 
@@ -28,7 +28,7 @@ int main(int argc,char **args)
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
-  ierr = SYRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+  ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
   ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
@@ -54,14 +54,14 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
+    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /* Free work space */
   ierr = VecDestroy(x); CHKERRA(ierr); ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr); ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = SYRandomDestroy(rctx); CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   PetscFinalize();
   return 0;

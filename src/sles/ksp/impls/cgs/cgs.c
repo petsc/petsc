@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.22 1996/01/22 03:06:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.23 1996/03/10 17:27:08 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -92,7 +92,7 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   if (i == maxit) i--;
   if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-  ierr = KSPUnwindPre(ksp,X,T); CHKERRQ(ierr);
+  ierr = KSPUnwindPreconditioner(ksp,X,T); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1); 
   else           *its = i+1;
   return 0;

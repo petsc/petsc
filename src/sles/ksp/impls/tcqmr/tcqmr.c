@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.20 1996/01/09 14:31:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.21 1996/03/10 17:27:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -137,7 +137,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
   }
 
   /* Need to undo preconditioning here  */
-  ierr = KSPUnwindPre(ksp,x,vtmp); CHKERRQ(ierr);
+  ierr = KSPUnwindPreconditioner(ksp,x,vtmp); CHKERRQ(ierr);
 
   if (cerr <= 0) *its = -it;
   else           *its = it;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.26 1995/10/12 04:13:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.27 1995/10/22 04:17:25 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
@@ -8,7 +8,6 @@ static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "sysio.h"
 #include <math.h>
 
 int main(int argc,char **argv)
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatter    ctx = 0;
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* create two vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
@@ -30,7 +29,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,3,1,2,&is2); CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES); CHKERRA(ierr);
-  VecView(x,STDOUT_VIEWER_SELF); MPIU_printf(MPI_COMM_SELF,"----\n");
+  VecView(x,STDOUT_VIEWER_SELF); PetscPrintf(MPI_COMM_SELF,"----\n");
   ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);CHKERRA(ierr);

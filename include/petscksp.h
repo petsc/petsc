@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.35 1996/01/12 17:25:24 balay Exp bsmith $ */
+/* $Id: ksp.h,v 1.36 1996/03/08 05:49:06 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -41,8 +41,8 @@ extern int KSPGetRhs(KSP,Vec *);
 extern int KSPSetSolution(KSP,Vec);
 extern int KSPGetSolution(KSP,Vec *);
 
-extern int KSPSetBinv(KSP,PC);
-extern int KSPGetBinv(KSP,PC*);
+extern int KSPSetPC(KSP,PC);
+extern int KSPGetPC(KSP,PC*);
 
 extern int KSPSetMonitor(KSP,int (*)(KSP,int,double, void*), void *);
 extern int KSPGetMonitorContext(KSP,void **);
@@ -60,7 +60,7 @@ extern int KSPCGGetEigenvalues(KSP, int n,Scalar*,Scalar*);
 
 extern int KSPGMRESSetRestart(KSP, int);
 extern int KSPGMRESSetPreAllocateVectors(KSP);
-extern int KSPGMRESSetOrthogRoutine(KSP,int (*)(KSP,int));
+extern int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
 extern int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP,int);
 extern int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
 extern int KSPGMRESIROrthogonalization(KSP,int);
@@ -74,7 +74,7 @@ extern int KSPDefaultSMonitor(KSP,int,double, void *);
 extern int KSPDefaultConverged(KSP,int,double, void *);
 
 extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
-extern int KSPUnwindPre(KSP,Vec,Vec);
+extern int KSPUnwindPreconditioner(KSP,Vec,Vec);
 extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 

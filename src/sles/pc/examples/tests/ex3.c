@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.32 1996/01/12 22:06:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.33 1996/02/08 18:26:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -21,7 +21,7 @@ int main(int argc,char **args)
   Scalar value[3], one = 1.0, zero = 0.0;
   char   *kspname, *pcname;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   /* Create and initialize vectors */
@@ -63,13 +63,13 @@ int main(int argc,char **args)
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-  ierr = KSPSetBinv(ksp,pc); CHKERRA(ierr);
+  ierr = KSPSetPC(ksp,pc); CHKERRA(ierr);
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
   /* Solve the problem */
   ierr = KSPGetType(ksp,PETSC_NULL,&kspname); CHKERRA(ierr);
   ierr = PCGetType(pc,PETSC_NULL,&pcname); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
+  PetscPrintf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   fprintf(stdout,"Number of iterations %d\n",its);
 

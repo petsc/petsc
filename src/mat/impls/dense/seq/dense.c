@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.95 1996/03/14 21:46:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.96 1996/03/18 00:39:46 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -372,7 +372,7 @@ static int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
   return 0;
 }
 
-#include "sysio.h"
+#include "sys.h"
 
 int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
 {
@@ -386,7 +386,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqDense: view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-  ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
+  ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqDense:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
 
@@ -396,7 +396,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     a = (Mat_SeqDense *) B->data;
 
     /* read in nonzero values */
-    ierr = SYRead(fd,a->v,M*N,SYSCALAR); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,a->v,M*N,BINARY_SCALAR); CHKERRQ(ierr);
 
     ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -404,7 +404,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
   } else {
     /* read row lengths */
     rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
-    ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
 
     /* create our matrix */
     ierr = MatCreateSeqDense(comm,M,N,PETSC_NULL,A); CHKERRQ(ierr);
@@ -414,9 +414,9 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
 
     /* read column indices and nonzeros */
     cols = scols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cols);
-    ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,cols,nz,BINARY_INT); CHKERRQ(ierr);
     vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
-    ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,vals,nz,BINARY_SCALAR); CHKERRQ(ierr);
 
     /* insert into matrix */  
     for ( i=0; i<M; i++ ) {
@@ -432,7 +432,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
 }
 
 #include "pinclude/pviewer.h"
-#include "sysio.h"
+#include "sys.h"
 
 static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
 {
@@ -482,7 +482,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     col_lens[1] = m;
     col_lens[2] = n;
     col_lens[3] = MATRIX_BINARY_FORMAT_DENSE;
-    ierr = SYWrite(fd,col_lens,4,SYINT,1); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,4,BINARY_INT,1); CHKERRQ(ierr);
     PetscFree(col_lens);
 
     /* write out matrix, by rows */
@@ -493,7 +493,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
         vals[i + j*m] = *v++;
       }
     }
-    ierr = SYWrite(fd,vals,n*m,SYSCALAR,0); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,vals,n*m,BINARY_SCALAR,0); CHKERRQ(ierr);
     PetscFree(vals);
   } else {
     col_lens = (int *) PetscMalloc( (4+nz)*sizeof(int) ); CHKPTRQ(col_lens);
@@ -504,7 +504,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
 
     /* store lengths of each row and write (including header) to file */
     for ( i=0; i<m; i++ ) col_lens[4+i] = n;
-    ierr = SYWrite(fd,col_lens,4+m,SYINT,1); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,4+m,BINARY_INT,1); CHKERRQ(ierr);
 
     /* Possibly should write in smaller increments, not whole matrix at once? */
     /* store column indices (zero start index) */
@@ -512,7 +512,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     for ( i=0; i<m; i++ ) {
       for ( j=0; j<n; j++ ) col_lens[ict++] = j;
     }
-    ierr = SYWrite(fd,col_lens,nz,SYINT,0); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,col_lens,nz,BINARY_INT,0); CHKERRQ(ierr);
     PetscFree(col_lens);
 
     /* store nonzero values */
@@ -524,7 +524,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
         anonz[ict++] = *v; v += a->m;
       }
     }
-    ierr = SYWrite(fd,anonz,nz,SYSCALAR,0); CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,anonz,nz,BINARY_SCALAR,0); CHKERRQ(ierr);
     PetscFree(anonz);
   }
   return 0;
@@ -604,7 +604,7 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
   return 0;
 }
 
-static int MatEqual_SeqDense(Mat A1,Mat A2, int *flg)
+static int MatEqual_SeqDense(Mat A1,Mat A2, PetscTruth *flg)
 {
   Mat_SeqDense *mat1 = (Mat_SeqDense *) A1->data;
   Mat_SeqDense *mat2 = (Mat_SeqDense *) A2->data;
@@ -612,13 +612,13 @@ static int MatEqual_SeqDense(Mat A1,Mat A2, int *flg)
   Scalar       *v1 = mat1->v, *v2 = mat2->v;
 
   if (A2->type != MATSEQDENSE) SETERRQ(1,"MatEqual_SeqDense:Both matrices should be of type  MATSEQDENSE");
-  if (mat1->m != mat2->m) { *flg = 0; return 0;}
-  if (mat1->n != mat2->n) {*flg =0; return 0;}
+  if (mat1->m != mat2->m) {*flg = PETSC_FALSE; return 0;}
+  if (mat1->n != mat2->n) {*flg = PETSC_FALSE; return 0;}
   for ( i=0; i<mat1->m*mat1->n; i++ ) {
-    if (*v1 != *v2) {*flg =0; return 0;}
+    if (*v1 != *v2) {*flg = PETSC_FALSE; return 0;}
     v1++; v2++;
   }
-  *flg = 1;
+  *flg = PETSC_TRUE;
   return 0;
 }
 
@@ -744,7 +744,7 @@ static int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
   int          n = l->n, i, j,ierr,N, *rows;
   Scalar       *slot;
 
-  ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
+  ierr = ISGetSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
     slot = l->v + rows[i];

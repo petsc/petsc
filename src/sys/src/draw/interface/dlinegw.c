@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dlinegw.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlinegw.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: dlinegw.c,v 1.2 1996/02/08 18:27:49 bsmith Exp bsmith
 @*/
 int DrawLineGetWidth(Draw draw,double *width)
 {
-  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == NULLWINDOW) return 0;
   return (*draw->ops.linegetwidth)(draw,width);
 }
