@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.37 2001/05/01 16:22:38 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.38 2001/05/10 03:21:41 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -37,7 +37,7 @@ int DMMGComputeJacobian_MF(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   if (ismg) {
 
     ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRQ(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
 
     for (i=nlevels-1; i>0; i--) {
 
@@ -130,7 +130,7 @@ int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   if (ismg) {
 
     ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->J,*flag);CHKERRQ(ierr);
+    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
 
     for (i=nlevels-1; i>0; i--) {
 
@@ -365,11 +365,13 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 +  snes - the SNES context
 .  X - input vector
 .  F - function vector
--  ptr - optional user-defined context, as set by SNESSetFunction()
+-  ptr - pointer to a structure that must have a DA as its first entry. For example this 
+         could be a DMMG
 
    Level: intermediate
 
-.seealso: DASetLocalFunction(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DASetLocalFunction(), DASetLocalJacobian(), DASetLocalAdicFunction(), DASetLocalAdicMFFunction(),
+          SNESSetFunction(), SNESSetJacobian()
 
 @*/
 int SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
@@ -411,6 +413,7 @@ int DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAComputeJacobian1WithAdic(da,localX,*B,dmmg->user);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
     ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -426,7 +429,7 @@ int DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag
 /*@
     SNESDAComputeJacobianWithAdic - This is a universal form function that may be used with 
      SNESSetJacobian() so long as the user context has a DA as the first record
-     and has called DASetLocalFunction()
+     and has called DASetLocalAdicFunction()
 
    Collective on SNES
 
@@ -440,7 +443,7 @@ int DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag
 
    Level: intermediate
 
-.seealso: DASetLocalFunction(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DASetLocalFunction(), DASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 @*/
 int SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
@@ -454,6 +457,7 @@ int SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAComputeJacobian1WithAdic(da,localX,*B,ptr);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
     ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -482,7 +486,7 @@ int SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
 
    Level: intermediate
 
-.seealso: DASetLocalFunction(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DASetLocalFunction(), DASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 */
 int SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
@@ -496,6 +500,7 @@ int SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAComputeJacobian1WithAdifor(da,localX,*B,ptr);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
     ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -523,7 +528,7 @@ int SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *
 
    Level: intermediate
 
-.seealso: DASetLocalFunction(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DASetLocalFunction(), DASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 
 */
 int SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
@@ -555,24 +560,26 @@ int SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void 
     Collective on DMMG
 
    Synopsis:
-   int DMMGSetSNESLocal(DMMG *dmmg,int (*function)(void*,void*,DALocalInfo*,void*),
-                        int (*jacobian)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),
-                        int (*ad_function)(void*,void*,DALocalInfo*,void*))
+   int DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
+                        DALocalFunction1 ad_function, DALocalFunction1 admf_function);
 
     Input Parameter:
 +   dmmg - the context
 .   function - the function that defines the nonlinear system
 .   jacobian - function defines the local part of the Jacobian (not currently supported)
--   ad_function - the name of the function with an ad_ prefix. This is ignored if adiC is
+.   ad_function - the name of the function with an ad_ prefix. This is ignored if ADIC is
+                  not installed
+-   admf_function - the name of the function with an ad_ prefix. This is ignored if ADIC is
                   not installed
 
     Level: intermediate
 
-    Notes: If adiC is installed this can use adiC to compute the derivative, however the 
-       function and this call must be in the same file and the function cannot call other
+    Notes: If ADIC or ADIFOR are installed this can use ADIC/ADIFOR to compute the derivative, however the 
+       the function cannot call other
        functions except those in standard C math libraries.
 
-       If adiC is not installed this used finite differencing to approximate the Jacobian
+       If ADIC/ADIFOR are not installed and jacobian is not provided, this used finite differencing to approximate
+       the Jacobian
 
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES(), DMMGSetSNES()
 
@@ -580,7 +587,8 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
-int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function)
+int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,
+                             DALocalFunction1 admf_function)
 {
   int ierr,i,nlevels = dmmg[0]->nlevels;
 
@@ -591,7 +599,10 @@ int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunctio
   ierr = DMMGSetSNES(dmmg,DMMGFormFunction,0);CHKERRQ(ierr);
 #endif
   for (i=0; i<nlevels; i++) {
-    ierr = DASetLocalFunction((DA)dmmg[i]->dm,function,jacobian,ad_function);CHKERRQ(ierr);
+    ierr = DASetLocalFunction((DA)dmmg[i]->dm,function);CHKERRQ(ierr);
+    ierr = DASetLocalJacobian((DA)dmmg[i]->dm,jacobian);CHKERRQ(ierr);
+    ierr = DASetLocalAdicFunction((DA)dmmg[i]->dm,ad_function);CHKERRQ(ierr);
+    ierr = DASetLocalAdicMFFunction((DA)dmmg[i]->dm,admf_function);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
