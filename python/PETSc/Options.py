@@ -18,7 +18,7 @@ class Options(config.base.Configure):
       elif bopt == 'g':
         flags.append('-g3')
       elif bopt == 'O':
-        if os.environ.has_key('USER')
+        if os.environ.has_key('USER'):
           if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','balay','petsc']:
             flags.extend(['-Wshadow', '-Wwrite-strings'])
           flags.extend(['-O', '-fomit-frame-pointer', '-Wno-strict-aliasing'])
@@ -75,9 +75,10 @@ class Options(config.base.Configure):
       elif bopt in ['g', 'g_complex']:
         flags.append('-g3')
       elif bopt in ['O', 'O_complex']:
-        if os.environ['USER'] in ['barrysmith', 'bsmith', 'knepley', 'buschelm', 'petsc', 'balay']:
-          flags.extend(['-Wshadow', '-Wwrite-strings', '-Wno-strict-aliasing'])
-        flags.extend(['-O', '-fomit-frame-pointer'])
+        if os.environ.has_key('USER'):
+          if os.environ['USER'] in ['barrysmith', 'bsmith', 'knepley', 'buschelm', 'petsc', 'balay']:
+            flags.extend(['-Wshadow', '-Wwrite-strings', '-Wno-strict-aliasing'])
+          flags.extend(['-O', '-fomit-frame-pointer'])
     # Alpha
     elif re.match(r'alphaev[0-9]', self.framework.host_cpu):
       # Compaq C++
