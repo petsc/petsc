@@ -152,7 +152,6 @@ class Configure(config.base.Configure):
         print "You must register to use hypre at http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html"
         print "       Once you have registered, configure will download and install hypre for you                 "
         print "**************************************************************************************************"
-        import time
         fd = open(os.path.expanduser(os.path.join('~','.hypre_license')),'w')
         fd.close()
       
