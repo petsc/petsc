@@ -20,14 +20,13 @@
   use the higher level TS component of PETSc to handle the time stepping,
   although it certainly could and it will soon be modified to do so.
 
-  This code supports two variants for treating boundary conditions:
-    - explicitly - only interior grid points are part of Newton systems;
-                   boundary conditions are applied explicitly after
-                   each Newton update
-    - implicitly - both interior and boundary grid points contribute to
-                   the Newton systems
-  The code can also interface to the original (uniprocessor) Julianne solver
-  that uses explicit boundary conditions.
+  This program supports only implicit treatment of boundary conditions, where
+  both interior and boundary grid points contribute to the Newton systems.
+  Another version of code also supports explicit boundary conditions (via
+  the PETSc solvers) and provides an interface to the original (uniprocessor) 
+  Julianne solver that also uses explicit boundary conditions.  We eliminated
+  support for the explicit boundary conditions to reduce complexity of this
+  code.
 
  ***************************************************************************/
 
@@ -38,6 +37,8 @@ Runtime options include:\n\
   -problem <1,2,3,4>         : 1(50x10x10 grid), 2(98x18x18 grid), 3(194x34x34 grid),\n\
                                4(data structure test)\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
+    -pc_ilu_in_place         : When using matrix-free KSP with ILU(0), do so in-place\n\
+    -sub_pc_ilu_in_place     : When using matrix-free KSP with ILU(0) for subblocks, do so in-place\n\
   -snes_mf_err <err>         : Choose differencing parameter for SNES matrix-free method\n\
   -use_jratio                : Use ratio of fnorm decrease for detecting when to form Jacobian\n\
   -jratio                    : Set ratio of fnorm decrease for detecting when to form Jacobian\n\
@@ -45,7 +46,6 @@ Runtime options include:\n\
   -post                      : Print post-processing info\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
-  -explicit                  : use explicit formulation of boundary conditions\n\
   -cfl_advance               : use advancing CFL number\n\
   -cfl_max_incr              : maximum ratio for advancing CFL number at any given step\n\
   -cfl_max_decr              : maximum ratio for decreasing CFL number at any given step\n\
@@ -174,23 +174,27 @@ int main(int argc,char **argv)
   ierr = PLogEventRegister(&(app->event_localf),"Local fct eval  ","Red:"); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                Read mesh and convert to parallel version
+                Read the mesh
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PLogEventBegin(init2,0,0,0,0);
   ierr = UserSetGrid(app); CHKERRA(ierr); 
   PLogEventEnd(init2,0,0,0,0);
 
+  /* for dummy logging stage 1, form the Jacobian every 2 iterations */
+  if (logging && stage==0) app->jfreq = 2;
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      If desired, use original (uniprocessor) solver in Julianne code
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* for dummy logging stage 1, form the Jacobian every 2 iterations */
-  if (logging && stage==0) app->jfreq = 2;
-
   if (solve_with_julianne) {
     if (app->size != 1) SETERRA(1,1,"Original code runs on 1 processor only.");
     ierr = OptionsGetDouble(PETSC_NULL,"-julianne_rtol",&rtol,&flg); CHKERRA(ierr);
+
+    ierr = PackWork(app,app->X,app->localX,&app->xx); CHKERRQ(ierr);
+    ierr = PackWork(app,app->F,app->localDX,&app->dxx); CHKERRQ(ierr);
+
     PLogEventBegin(init3,0,0,0,0);
     time1 = PetscGetTime();
     ierr = julianne_(&time1,&solve_with_julianne,0,&app->cfl,
@@ -206,7 +210,6 @@ int main(int argc,char **argv)
     tsolve = PetscGetTime() - time1;
     PLogEventEnd(init3,0,0,0,0);
     PetscPrintf(comm,"Julianne solution time = %g seconds\n",tsolve);
-    if (app->dump_general) {ierr = MonitorDumpGeneralJulianne(app); CHKERRA(ierr);}
     PetscFinalize();
     return 0;
   } 
@@ -220,6 +223,7 @@ int main(int argc,char **argv)
   *(int*) (&fort_app) = PetscFromPointer(app);
   time1 = PetscGetTime();
 
+  solve_with_julianne = 0;
   ierr = julianne_(&time1,&solve_with_julianne,&fort_app,&app->cfl,
          &rtol,&app->eps_jac,app->b1,
          app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
@@ -275,35 +279,6 @@ int main(int argc,char **argv)
   /* Set runtime options (e.g. -snes_rtol <rtol> -ksp_type <type>) */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
-  /* If using ILU(0) preconditioner and matrix-free version, then use in-place 
-     factorization.  Note:  All of this section could be replaced by the options
-     -pc_ilu_in_place and -sub_pc_ilu_in_place (we code it here so that this is
-     the application's default). */
-/*
-  if (app->matrix_free) {
-    PCType pctype;
-    SLES   *subsles;
-    PC     subpc;
-    int    i, nl, fl;
-    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
-    if (pctype == PCILU) {
-      ierr = PCILUSetUseInPlace(pc); CHKERRA(ierr);
-    }
-    else if (pctype == PCASM || pctype == PCBJACOBI) {
-      if (pctype == PCASM) {
-        ierr = PCASMGetSubSLES(pc,&nl,&fl,&subsles); CHKERRQ(ierr);
-      } else {  
-      ierr = PCBJacobiGetSubSLES(pc,&nl,&fl,&subsles); CHKERRQ(ierr);
-      }
-      for (i=0; i<nl; i++)  {
-        ierr = SLESGetPC(subsles[i],&subpc); CHKERRA(ierr);
-        ierr = PCILUSetUseInPlace(subpc); CHKERRA(ierr);
-      }
-    }
-  }
- */
-
   /* We use just a few iterations if doing the "dummy" logging phase.  We
      call this after SNESSetFromOptions() to override any runtime options */
   if (logging && stage==0) {ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,
@@ -357,11 +332,6 @@ int main(int argc,char **argv)
      Do post-processing
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-  /* Dump field variables for viewing with TECPLOT */
-  ierr = OptionsHasName(PETSC_NULL,"-tecplot",&flg); CHKERRA(ierr);
-  if (flg) {ierr = TECPLOTMonitor(snes,app->X,app); CHKERRA(ierr);}
-
   /* Print convergence stats.  Note that we save this data in arrays for
      printing only after the completion of SNESSolve(), so that the timings
      are not distorted by output during the solve. */
@@ -385,8 +355,7 @@ int main(int argc,char **argv)
   if (app->post_process) {
 
     /* First pack local vector; then compute pressure and dump to file */
-    ierr = PackWork(app,app->X,app->localX,
-                    app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRA(ierr);
+    ierr = PackWork(app,app->X,app->localX,&app->xx); CHKERRA(ierr);
     ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
 
     /* Calculate physical quantities of interest */
@@ -606,7 +575,6 @@ int UserDestroyEuler(Euler *app)
 
   /* Free misc work space for Fortran arrays */
   if (app->farray)  PetscFree(app->farray);
-  if (app->dr)      PetscFree(app->dr);
   if (app->dt)      PetscFree(app->dt);
   if (app->diag)    PetscFree(app->diag);
   if (app->b1)      PetscFree(app->b1);
@@ -653,10 +621,9 @@ int UserDestroyEuler(Euler *app)
 	 as a demonstration of how to quickly revise an existing code that
 	 uses the Eagle format.
 
-   This routine supports two modes of handling boundary conditions:
-     (1) explicitly - only interior grid points are part of Newton systems
-     (2) implicitly - both interior and boundary grid points contribute to
-		      the Newton systems
+   This routine supports only the implicit mode of handling boundary
+   conditions.    Another version of code also supports explicit boundary
+   conditions; we omit this capability here to reduce code complexity.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
  */
 int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *ptr)
@@ -716,10 +683,8 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     }
   }
 
-  /* Convert vector.  If using explicit boundary conditions, this passes along
-     any changes in X due to their application to the component arrays in the
-     Julianne code */
-  ierr = UnpackWork(app,app->r,app->ru,app->rv,app->rw,app->e,app->xx,app->localX,X); CHKERRQ(ierr);
+  /* Convert vector */
+  ierr = UnpackWork(app,app->xx,app->localX,X); CHKERRQ(ierr);
 
   /* Form Fortran matrix object */
   ierr = PetscCObjectToFortranObject(*pjac,&fortmat); CHKERRQ(ierr);
@@ -968,10 +933,9 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
    We pack/unpack these work arrays with the routines PackWork()
    and UnpackWork().
 
-   This routine supports two modes of handling boundary conditions:
-     (1) explicitly - only interior grid points are part of Newton systems
-     (2) implicitly - both interior and boundary grid points contribute to
-                      the Newton systems
+   This routine supports only the implicit mode of handling boundary
+   conditions.    Another version of code also supports explicit boundary
+   conditions; we omit this capability here to reduce code complexity.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
  */
 int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
@@ -989,20 +953,13 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     app->first_time_resid = 0;
   } else { 
     /* Convert current iterate to Julianne format */
-    ierr = PackWork(app,X,app->localX,
-                    app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRQ(ierr);
+    ierr = PackWork(app,X,app->localX,&app->xx); CHKERRQ(ierr);
 
     /* Compute pressures */
     ierr = jpressure_(app->xx,app->p); CHKERRQ(ierr);
-    /* ierr = jpressure_(app->xx,app->r,app->ru,app->rv,app->rw,app->e,app->p); CHKERRQ(ierr); */
 
-    /* Apply boundary conditions for explicit case, or do the scatters needed
-       for the implicit formulation */
-    if (app->bctype != IMPLICIT) {
-      ierr = BoundaryConditionsExplicit(app,X); CHKERRQ(ierr);
-    } else {
-      ierr = BoundaryConditionsImplicit(app,X); CHKERRQ(ierr);
-    }
+    /* Do scatters for implict BCs */
+    ierr = BoundaryConditionsImplicit(app,X); CHKERRQ(ierr);
   }
 
   /* Not quite right because we should be timing the jpressure call too */
@@ -1086,9 +1043,8 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     /* Scale if necessary; then build Function */
     if (app->sctype == DT_MULT) {
       ierr = rscale_(app->dt,app->dxx); CHKERRQ(ierr);
-      /* ierr = rscale_(app->dt,app->dr,app->dru,app->drv,app->drw,app->de); CHKERRQ(ierr); */
     }
-    ierr = UnpackWork(app,app->dr,app->dru,app->drv,app->drw,app->de,app->dxx,app->localDX,Fvec); CHKERRQ(ierr);
+    ierr = UnpackWork(app,app->dxx,app->localDX,Fvec); CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1112,9 +1068,9 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     /* Print Fortran arrays (debugging) */
     if (app->print_debug) {
       base_unit = 60;
-      printgjul_(app->dr,app->dru,app->drv,app->drw,app->de,app->p,&base_unit);
+      printgjul_(app->dxx,app->p,&base_unit);
       base_unit = 70;
-      printgjul_(app->r,app->ru,app->rv,app->rw,app->e,app->p,&base_unit);
+      printgjul_(app->xx,app->p,&base_unit);
     }
   }
 
@@ -1138,14 +1094,13 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
   int ierr;
 
   /* Convert Fortran work arrays to vector X */
-  ierr = UnpackWork(app,app->r,app->ru,app->rv,app->rw,app->e,app->xx,app->localX,X); CHKERRQ(ierr);
+  ierr = UnpackWork(app,app->xx,app->localX,X); CHKERRQ(ierr);
 
   /* If testing scatters for boundary conditions, then replace actual
      initial values with a test vector. */
   if (app->bc_test) {
     ierr = GridTest(app); CHKERRQ(ierr);
-    ierr = PackWork(app,X,app->localX,
-                    app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRQ(ierr);
+    ierr = PackWork(app,X,app->localX,&app->xx); CHKERRQ(ierr);
   }
 
   /* Apply boundary conditions */
@@ -1176,7 +1131,7 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 
    Input Parameters:
    comm - MPI communicator
-   solve_with_julianne
+   solve_with_julianne - are we using the Julianne solver?
    log_stage_0 - are we doing the initial dummy setup for log_summary?
 
    Output Parameter:
@@ -1348,7 +1303,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->J                = 0;
   app->Jmf              = 0;
   app->Fvrml            = 0;
-  app->reorder          = 0;
   nc = app->nc;
 
   if (app->dump_vrml) dump_angle_vrml(app->angle);
@@ -1363,12 +1317,14 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     app->sctype = DT_DIV;
   }
   ierr = OptionsHasName(PETSC_NULL,"-explicit",&flg); CHKERRQ(ierr);
+  if (flg) SETERRQ(1,0,"This code no longer suports explicit boundary conditions!");
   if (!flg) {
     app->bctype = IMPLICIT;
     app->ktip++; app->itl++; app->itu++; app->ile++;
     app->mx = app->ni1, app->my = app->nj1, app->mz = app->nk1;
     PetscPrintf(comm,"Using fully implicit formulation: mx=%d, my=%d, mz=%d\n",
       app->mx,app->my,app->mz);
+    PetscPrintf(comm,"Not reording variables for internal computation\n");
   } else { /* interior grid points only */
     ierr = OptionsHasName(PETSC_NULL,"-implicit_size",&flg); CHKERRQ(ierr);
     if (flg == 1) {
@@ -1385,22 +1341,13 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     }
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-reorder",&app->reorder); CHKERRQ(ierr);
-  if (app->reorder) {
-    PetscPrintf(comm,"Reording variables for internal computation\n");
-  } else {
-    if (app->bctype != IMPLICIT) SETERRQ(1,0,"Must use implicit BCs for no reordering!")
-    PetscPrintf(comm,"Not reording variables for internal computation\n");
-  }
-
   /* Monitoring information */
   app->label = (char **) PetscMalloc(nc*sizeof(char*)); CHKPTRQ(app->label);
-/*  app->label[0] = "Density";
+  app->label[0] = "Density";
   app->label[1] = "Velocity: x-component";
   app->label[2] = "Velocity: y-component";
   app->label[3] = "Velocity: z-component";
   app->label[4] = "Internal Energy";
-*/
 
   /* Set various debugging flags */
   ierr = OptionsHasName(PETSC_NULL,"-printv",&flg); CHKERRQ(ierr);
@@ -1607,30 +1554,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->rv_bc = app->ru_bc + llen;
   app->rw_bc = app->rv_bc + llen;
   app->e_bc  = app->rw_bc + llen;
-
-  if (app->reorder) {
-    app->dr = (Scalar *)PetscMalloc(17*llen*sizeof(Scalar)); CHKPTRQ(app->dr);
-    app->dru   = app->dr    + llen; /* components of F vector */
-    app->drv   = app->dru   + llen;
-    app->drw   = app->drv   + llen;
-    app->de    = app->drw   + llen;
-    app->r     = app->de    + llen; /* components of X vector */
-    app->ru    = app->r     + llen;
-    app->rv    = app->ru    + llen;
-    app->rw    = app->rv    + llen;
-    app->e     = app->rw    + llen;
-  } else {
-    app->dr    = 0;
-    app->dru   = 0;
-    app->drv   = 0;
-    app->drw   = 0;
-    app->de    = 0;
-    app->r     = 0;
-    app->ru    = 0;
-    app->rv    = 0;
-    app->rw    = 0;
-    app->e     = 0;
-  }
 
   /* Fortran work arrays for matrix (diagonal) blocks */
   llen = (app->xefp1 - app->gxsf1 + 1) * (app->yefp1 - app->gysf1 + 1) 

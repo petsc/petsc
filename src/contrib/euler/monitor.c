@@ -154,8 +154,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     /* Extract solution and update vectors; convert to Julianne format */
     ierr = SNESGetSolutionUpdate(snes,&DX); CHKERRQ(ierr);
     ierr = VecScale(&negone,DX); CHKERRQ(ierr);
-    ierr = PackWork(app,DX,app->localDX,
-                app->dr,app->dru,app->drv,app->drw,app->de,&app->dxx); CHKERRQ(ierr);
+    ierr = PackWork(app,DX,app->localDX,&app->dxx); CHKERRQ(ierr);
 
     /* Call Julianne monitoring routine and update CFL number */
     ierr = jmonitor_(&app->flog[its],&app->cfl,
@@ -225,8 +224,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   /* Since we call MonitorDumpGeneral() from the routine ComputeFunction(), packing and
      computing the pressure have already been done. */
   /*
-  ierr = PackWork(app,app->X,app->localX,
-                  app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRA(ierr);
+  ierr = PackWork(app,app->X,app->localX,&app->xx); CHKERRA(ierr);
   ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
   */
 
@@ -235,7 +233,6 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
      optimize such manipulations and hide them in the viewer routines */
   if (app->size != 1) {
     /* Pack pressure and field vectors */
-    if (app->reorder) SETERRQ(1,0,"Reordering not supported");
     ierr = UnpackWorkComponent(app,app->p,app->P); CHKERRQ(ierr);
     ierr = DFVecFormUniVec_MPIRegular_Private(app->P,&P_uni); CHKERRQ(ierr);
     ierr = DFVecFormUniVec_MPIRegular_Private(app->X,&X_uni); CHKERRQ(ierr);
@@ -258,29 +255,15 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
     fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p\n");
     ni  = app->ni;  nj  = app->nj;  nk = app->nk;
     ni1 = app->ni1; nj1 = app->nj1; nk1 = app->nk1;
-    if (app->reorder) {
-      for (k=0; k<nk; k++) {
-        for (j=0; j<nj; j++) {
-          for (i=0; i<ni; i++) {
-            ijkx  = k*nj1*ni1 + j*ni1 + i;
-            ijkcx = k*nj*ni + j*ni + i;
-            fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
-              app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],app->ru[ijkx],app->rv[ijkx],
-              app->rw[ijkx],app->r[ijkx],app->e[ijkx],pp[ijkx]);
-          }
-        }
-      }
-    } else {
-      for (k=0; k<nk; k++) {
-        for (j=0; j<nj; j++) {
-          for (i=0; i<ni; i++) {
-            ijkx  = k*nj1*ni1 + j*ni1 + i;
-            ijkxi = ijkx * 5;
-            ijkcx = k*nj*ni + j*ni + i;
-            fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
-              app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],xx[ijkxi+1],xx[ijkxi+2],
-              xx[ijkxi+3],xx[ijkxi],xx[ijkxi+4],pp[ijkx]);
-          }
+    for (k=0; k<nk; k++) {
+      for (j=0; j<nj; j++) {
+        for (i=0; i<ni; i++) {
+          ijkx  = k*nj1*ni1 + j*ni1 + i;
+          ijkxi = ijkx * 5;
+          ijkcx = k*nj*ni + j*ni + i;
+          fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
+            app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],xx[ijkxi+1],xx[ijkxi+2],
+            xx[ijkxi+3],xx[ijkxi],xx[ijkxi+4],pp[ijkx]);
         }
       }
     }
@@ -288,43 +271,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   }
   return 0;
 }
-#undef __FUNC__
-#define __FUNC__ "MonitorDumpGeneralJulianne"
 /* --------------------------------------------------------------- */
-/* 
-   MonitorDumpGeneralJulianne - Dumps solution fields for later use in viewers;
-   intended for use with original Julianne solver.
-
-   Input Parameter:
-   app - user-defined application context
- */
-int MonitorDumpGeneralJulianne(Euler *app)
-{
-  FILE     *fp;
-  int      i, j, k, ijkx, ijkcx, ni, nj, nk, ni1, nj1, nk1;
-  char     filename[64];
-
-  sprintf(filename,"julianne.out");
-  fp = fopen(filename,"w"); 
-  fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p\n");
-  ni  = app->ni;  nj  = app->nj;  nk = app->nk;
-  ni1 = app->ni1; nj1 = app->nj1; nk1 = app->nk1;
-  for (k=0; k<nk; k++) {
-    for (j=0; j<nj; j++) {
-      for (i=0; i<ni; i++) {
-        ijkx  = k*nj1*ni1 + j*ni1 + i;
-        ijkcx = k*nj*ni + j*ni + i;
-        fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
-          app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],app->ru[ijkx],app->rv[ijkx],
-          app->rw[ijkx],app->r[ijkx],app->e[ijkx],app->p[ijkx]);
-      }
-    }
-  }
-  fclose(fp);
-  return 0;
-}
-/* --------------------------------------------------------------------------- */
-
 /*
    ComputeMach - Computes the mach contour on the wing surface.
 
@@ -340,9 +287,6 @@ int ComputeMach(Euler *app,Scalar *x,Scalar *smach)
   int    i, j, k, ijkx, ijkxi, ni1 = app->ni1, nj1 = app->nj1;
   int    kstart = 0, kend = app->ktip+1, istart = app->itl, iend = app->itu+1;
   Scalar sfluid, ssound, r, ru, rw, gm1, gamma1;
-
-  if (app->reorder) SETERRQ(1,0,"Reordering not currently supported");
-  if (app->bctype == EXPLICIT) SETERRQ(1,0,"Explicit BC not currently supported");
 
   kstart = 0;
   kend   = app->ktip+1;
@@ -413,8 +357,7 @@ int MonitorDumpVRML(SNES snes,Vec X,Vec F,Euler *app)
 
     /* Since we call MonitorDumpVRML() from the routine ComputeFunction(), we've already
        computed the pressure ... so there's no need for the following 2 statements.
-    ierr = PackWork(app,app->X,app->localX,
-                    app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRA(ierr);
+    ierr = PackWork(app,app->X,app->localX,&app->xx); CHKERRA(ierr);
     ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
     */
 
@@ -649,48 +592,6 @@ int ComputeNodalResiduals(Euler *app,Vec X,Vec Xsum)
   }
   ierr = VecRestoreArray(X,&xa); CHKERRQ(ierr);
   ierr = VecRestoreArray(Xsum,&xasum); CHKERRQ(ierr);
-  return 0;
-}
-#undef __FUNC__
-#define __FUNC__ "TECPLOTMonitor"
-/* ------------------------------------------------------------------------------ */
-/* 
-   TECPLOTMonitor - Monitoring routine for nonlinear solver.
- */
-int TECPLOTMonitor(SNES snes,Vec X,Euler *app)
-{
-  MPI_Comm comm;
-  FILE     *fp;
-  int      ierr, i, j, k, ik, ijkx, ikc, ijkcx;
-  int      gxs = app->gxs, gys = app->gys, gzs = app->gzs;
-  int      gxm = app->gxm, gym = app->gym;
-  char     filename[64];
-
-  PetscObjectGetComm((PetscObject)snes,&comm);
-  ierr = PackWork(app,X,app->localX,
-                  app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRQ(ierr);
-  /* Compute pressures */
-  ierr = jpressure_(app->xx,app->p); CHKERRQ(ierr);
-  /* ierr = jpressure_(app->r,app->ru,app->rv,app->rw,app->e,app->p); CHKERRQ(ierr); */
-
-  for (k=0; k<app->nk; k++) {
-    sprintf(filename,"plot.%d.out",k);
-    fp = fopen(filename,"w"); 
-    fprintf(fp,"VARIABLES=x,y,r,ru,rv,p\n");
-    fprintf(fp,"ZONE T=onr, I=%d, J=%d, F=POINT\n",app->nj,app->ni);
-    for (i=0; i<app->ni; i++) {
-      ik  = (k-gzs)*gxm*gym + i-gxs;
-      ikc = k*app->nj*app->ni + i;
-      for (j=0; j<app->nj; j++) {
-        ijkx  = ik + (j-gys)*gxm;
-        ijkcx = ikc + j*app->ni;
-        fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
-          app->xc[ijkcx],app->yc[ijkcx],app->r[ijkx],app->ru[ijkx],app->rv[ijkx],app->p[ijkx]);
-      }
-    }
-    fclose(fp);
-  }
-  
   return 0;
 }
 /* ------------------------------------------------------------------------------ */
