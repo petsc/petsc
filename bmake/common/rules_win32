@@ -1,4 +1,4 @@
-# $Id: common_win32,v 1.2 2000/09/05 19:58:19 balay Exp balay $ 
+# $Id: common_win32,v 1.3 2000/09/13 15:18:48 balay Exp balay $ 
 #
 #  Sets the rule used to remove collections of libraries (different under NT and 95!)
 #
@@ -97,13 +97,13 @@ $(DIRS): $(ACTION)
 # Targets for checking opts/libdir etc..
 #
 !IF "$(BOPT)" == "none"
-chkpetsc_dir:
+chklib_dir:
 	@echo You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]
 	@echo Remove all .obj files and rerun make with appropriate BOPT
 	@return
-chkopts:chkpetsc_dir
+chkopts:chklib_dir
 !ELSE
-chkpetsc_dir: $(LDIR) 
+chklib_dir: $(LDIR) 
 $(LDIR) :
 	@echo checking $(LDIR)
 	@if not exist "$(PETSC_DIR)\lib\$(NULL)" \
@@ -122,7 +122,7 @@ chkopts:
 #
 # Targets required for libfast
 #
-libfast: chkpetsc_dir libfast_c libfast_f libfast_lib
+libfast: chklib_dir libfast_c libfast_f libfast_lib
 !IF "$(SOURCEC)" == ""
 libfast_c:
 !ELSE

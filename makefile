@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.327 2000/11/28 17:26:31 bsmith Exp balay $ 
+# $Id: makefile,v 1.328 2001/01/04 22:01:09 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -14,7 +14,7 @@ include ${PETSC_DIR}/bmake/common_test
 #
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran, and f90 libraries
-all       : info info_h chkpetsc_dir deletelibs build_c build_fortran shared
+all       : info info_h chklib_dir deletelibs build_c build_fortran shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -125,7 +125,7 @@ build_fortran:
 	-@echo "Completed compiling Fortran source"
 	-@echo "========================================="
 
-petscblas: info chkpetsc_dir
+petscblas: info chklib_dir
 	-${RM} -f ${LDIR}/libpetscblas.*
 	-@echo "BEGINNING TO COMPILE C VERSION OF BLAS AND LAPACK"
 	-@echo "========================================="
@@ -414,7 +414,7 @@ checkbadfortranstubs:
 # Builds noise routines (not yet publically available)
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
-noise: info chkpetsc_dir
+noise: info chklib_dir
 	-@echo "Beginning to compile noise routines"
 	-@echo "========================================="
 	-@cd src/snes/interface/noise; \
