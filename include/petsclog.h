@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.1 1995/07/12 16:28:35 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.2 1995/07/12 18:53:11 curfman Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -68,6 +68,9 @@
 #define SNES_LineSearch                         61
 #define SNES_FunctionEval                       62
 #define SNES_JacobianEval                       63
+#define SNES_UMFunctionEval                     64
+#define SNES_GradientEval                       65
+#define SNES_HessianEval                        66
 
 /* event numbers 70 to 89 are reserved for applications */
 
