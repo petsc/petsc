@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.25 2000/10/10 19:50:21 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.26 2000/10/10 20:46:03 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2203,7 +2203,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   /* if (a->M != a->N) SETERRQ(PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block"); */
-  ierr = MatGetDiagonal(a->A,v);CHKERRQ(ierr); 
+  ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
   /* printf("GetRowMax is called\n"); */
   PetscFunctionReturn(0);
 }
