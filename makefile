@@ -70,11 +70,12 @@ $(CONFIGURE_OPTIONS_FILE):
 
 # We allow substring matching so that new configure architectures can be created
 $(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE) $(BMAKE_TEMPLATE_FILES)
-	@if test `${CONFIGURE_ARCH_PROG} | sed -e 's/^\(${PETSC_ARCH}\).*/\1/'` = "${PETSC_ARCH}"; then \
-	    $(MAKE) configure_petsc; \
-    else \
-        echo "Petsc is preconfigured for architecture ${PETSC_ARCH}" > $(CONFIGURE_LOG_FILE); \
-    fi
+	@carch=`${CONFIGURE_ARCH_PROG}`; \
+	if test `echo ${PETSC_ARCH} | sed -e 's/^\($$carch\).*/\1/'` = "$$carch"; then \
+	    ${MAKE} configure_petsc; \
+	else \
+	    echo "Petsc is preconfigured for architecture ${PETSC_ARCH}" > ${CONFIGURE_LOG_FILE}; \
+	fi
 
 configure_clean:
 	-@$(RM) aclocal.m4
