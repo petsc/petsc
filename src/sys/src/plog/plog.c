@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.133 1996/11/07 15:12:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.134 1996/11/19 16:33:33 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: plog.c,v 1.133 1996/11/07 15:12:13 bsmith Exp bsmith 
 #include "pinclude/petscfix.h"
 #include "pinclude/ptime.h"
 
-static int PrintInfo = 0;
+int PLogPrintInfo = 0;
 static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1};
@@ -43,7 +43,7 @@ $    -log_info
 @*/
 int PLogInfoAllow(PetscTruth flag)
 {
-  PrintInfo = (int) flag;
+  PLogPrintInfo = (int) flag;
   return 0;
 }
 
@@ -120,7 +120,7 @@ int PLogInfo(void *vobj,char *message,...)
   char        string[256];
 
   if (obj) PetscValidHeader(obj);
-  if (!PrintInfo) return 0;
+  if (!PLogPrintInfo) return 0;
   if (obj && !PLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) return 0;
   if (!obj) rank = 0;
   else      {MPI_Comm_rank(obj->comm,&rank);} 
@@ -1618,9 +1618,6 @@ int PLogObjectState(PetscObject obj,char *format,...)
 
    Output Parameter:
 .  v - time counter
-
-   Synopsis:
-   double PetscGetTime()
 
    Usage: 
 $     double v;

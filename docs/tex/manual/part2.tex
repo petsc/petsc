@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.168 1996/11/13 15:55:32 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.169 1996/11/16 00:45:57 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -512,6 +512,44 @@ Although we refer to the two orderings as ``PETSc'' and
 ``application'' orderings, the user is free to use them both for
 application orderings and to maintain relationships among a variety of
 orderings by employing several {\tt AO} contexts.
+
+\section{Local to Global Mappings}
+\label{sec:islocaltoglobalmapping}
+\sindex{orderings} \findex{ISLocalToGlobalMapping}
+
+In many applications one works with a global representation of a vector
+(usually on a vector obtained with {\tt VecCreateMPI()} \findex{VecCreateMPI()}
+and a local representation of the same vector that includes ghost points 
+required for local computation. \sindex{ghost points} \sindex{global representation}
+\sindex{local representation} \sindex{local to global mapping}
+PETSc provides routines to help map indices from a local numbering scheme to 
+the PETSc global numbering scheme. This is done via the following routines
+\begin{verbatim}
+   ierr = ISLocalToGlobalMappingCreate(int N, int* globalnumbers, ISLocalToGlobalMapping* ctx);
+   ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);
+   ierr = ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);
+   ierr = ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
+\end{verbatim}
+\findex{ISLocalToGlobalMappingCreate()} \findex{ISLocalToGlobalMappingApply()}
+\findex{ISLocalToGlobalMappingApplyIS()} \findex{ISLocalToGlobalMappingDestroy()}
+Here {\tt N} denotes the number of local indices, {\tt globalnumbers} represents the
+global number of each local number and {\tt ISLocalToGlobalMapping} is the 
+resulting PETSc object that contains the information needed to apply the mapping with 
+either the routine {\tt ISLocalToGlobalMappingApply()} or 
+{\tt ISLocalToGlobalMappingApplyIS()}.  \findex{ISLocalToGlobalMapping}
+
+Note that the {\tt ISLocalToGlobalMapping} routines serve a different purpose
+the the {\tt AO} \findex{AO} routines. In the former case they provide a mapping 
+from  a local numbering scheme (including ghost points) to a global numbering scheme;
+while in the latter they provide a mapping between two global numbering schemes.
+In fact many applications may use both {\tt AO} and {\tt ISLocalToGlobalMapping} routines.
+The {\tt AO} routines are first used to map from an application global ordering 
+(that has no relationship to parallel processing etc.) to the PETSc ordering scheme
+(where each processor has a contiguous set of indices in the numbering). Then in order
+to perform function or Jacobian evaluations locally on each processor the one works
+with a local numbering scheme that includes ghost points, the mapping from this local
+numbering scheme back to the global PETSc numbering can be handled with the 
+{\tt ISLocalToGlobalMapping} routines.
 
 % ------------------------------------------------------
 \section{Distributed Arrays}
