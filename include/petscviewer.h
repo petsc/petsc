@@ -142,7 +142,7 @@ EXTERN int PetscViewerSetFilename(PetscViewer,const char[]);
 EXTERN int PetscViewerGetFilename(PetscViewer,char**);
 
 EXTERN int PetscPLAPACKInitializePackage(char *);
-EXTERN int PetscPLAPACKFinalizePackage();
+EXTERN int PetscPLAPACKFinalizePackage(void);
 
 EXTERN int PetscViewerVUGetPointer(PetscViewer, FILE**);
 EXTERN int PetscViewerVUSetMode(PetscViewer, PetscFileMode);

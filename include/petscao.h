@@ -48,7 +48,7 @@ EXTERN int AODestroy(AO);
 
 EXTERN PetscFList AOSerializeList;
 EXTERN int AOSerializeRegisterAll(const char []);
-EXTERN int AOSerializeRegisterDestroy();
+EXTERN int AOSerializeRegisterDestroy(void);
 EXTERN int AOSerializeRegisterAllCalled;
 EXTERN int AOSerialize(MPI_Comm, AO *, PetscViewer, PetscTruth);
 EXTERN int AOSetSerializeType(AO, AOSerializeType);

@@ -50,7 +50,7 @@ int PetscPLAPACKInitializePackage(char *path) {
 .keywords: Petsc, destroy, package, PLAPACK
 .seealso: PetscFinalize()
 @*/
-int PetscPLAPACKFinalizePackage() {
+int PetscPLAPACKFinalizePackage(void) {
 #ifdef PETSC_HAVE_PLAPACK
   int ierr;
 

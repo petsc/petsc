@@ -89,7 +89,7 @@ extern PetscFList MatList;
 
 EXTERN PetscFList MatSerializeList;
 EXTERN int MatSerializeRegisterAll(const char []);
-EXTERN int MatSerializeRegisterDestroy();
+EXTERN int MatSerializeRegisterDestroy(void);
 EXTERN int MatSerializeRegisterAllCalled;
 EXTERN int MatSerialize(MPI_Comm, Mat *, PetscViewer, PetscTruth);
 EXTERN int MatSetSerializeType(Mat, MatSerializeType);

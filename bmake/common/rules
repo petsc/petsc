@@ -391,6 +391,7 @@ fortranstubs:
           grep -v "Cannot cast" | \
           grep -v "WARNING 134: weak definition of" | \
           grep -v "Warning(s) detected" | \
+          grep -v "object file assumed" | \
           grep -v "consider using mkstemp"  |\
           grep -v EXTERNAL  |\
           grep -v volatile  |\
@@ -412,6 +413,7 @@ fortranstubs:
           grep -v "ignoring symbol version info" | \
 	  grep -v "At least one PA 2.0" | \
 	  grep -v "Inconsistent structure" | \
+          grep -v "object file assumed" | \
 	  grep -v "ex20.F:30:" | \
 	  grep -v "f90 continuing despite warning messages" | \
           grep -v "is an array from" | \
