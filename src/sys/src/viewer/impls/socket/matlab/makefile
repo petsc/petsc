@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 1999/05/12 17:34:53 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1999/06/30 22:48:50 bsmith Exp bsmith $ 
 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
@@ -31,18 +31,21 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 receive:  
 	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} receive.c receivesparse.c  receivedense.c 
 	${RM} -f receive.o receivesparse.o  receivedense.o 
+	if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f receive.mexsg64 receive.mexsg ; fi 
 
 openport: 
 	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} openport.c 
 	${RM} -f  openport.o 
+	if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f openport.mexsg64 openport.mexsg ; fi 
 
 closeport:
 	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} closeport.c
 	${RM} -f  closeport.o 
+	if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f closeport.mexsg64 closeport.mexsg ; fi 
 
 launch: 
 	${CMEX} -V4 -g CC=${MCC}  ${CFLAGS} ${CCPPFLAGS} launch.c
 	${RM} -f  launch.o 
-
+	if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f launch.mexsg64 launch.mexsg ; fi 
 
 
