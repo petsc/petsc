@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.16 2000/08/30 20:48:25 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.17 2000/09/06 19:45:38 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -78,10 +78,6 @@ EXTERN_C_END
 #define __FUNC__ /*<a name="CreateColmap_MPISBAIJ_Private"></a>*/"CreateColmap_MPISBAIJ_Private"
 static int CreateColmap_MPISBAIJ_Private(Mat mat)
 {
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
-  Mat_SeqBAIJ *B = (Mat_SeqBAIJ*)baij->B->data;
-  int         nbs = B->nbs,i,bs=B->bs,ierr;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
@@ -431,13 +427,6 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
 #define __FUNC__ /*<a name="MatSetValuesBlocked_MPISBAIJ"></a>*/"MatSetValuesBlocked_MPISBAIJ"
 int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
-  MatScalar   *value,*barray=baij->barray;
-  int         ierr,i,j,ii,jj,row,col;
-  int         roworiented = baij->roworiented,rstart=baij->rstart ;
-  int         rend=baij->rend,cstart=baij->cstart,stepval;
-  int         cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
-  
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
@@ -451,17 +440,6 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,M
 #define __FUNC__ /*<a name="MatSetValues_MPISBAIJ_HT_MatScalar"></a>*/"MatSetValues_MPISBAIJ_HT_MatScalar"
 int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
-  int         ierr,i,j,row,col;
-  int         roworiented = baij->roworiented,rstart_orig=baij->rstart_bs ;
-  int         rend_orig=baij->rend_bs,Nbs=baij->Nbs;
-  int         h1,key,size=baij->ht_size,bs=baij->bs,*HT=baij->ht,idx;
-  PetscReal   tmp;
-  MatScalar   **HD = baij->hd,value;
-#if defined(PETSC_USE_BOPT_g)
-  int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
-#endif
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
@@ -470,19 +448,7 @@ int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatSc
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatSetValuesBlocked_MPISBAIJ_HT_MatScalar"
 int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
-{
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
-  int         ierr,i,j,ii,jj,row,col;
-  int         roworiented = baij->roworiented,rstart=baij->rstart ;
-  int         rend=baij->rend,stepval,bs=baij->bs,bs2=baij->bs2;
-  int         h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
-  PetscReal   tmp;
-  MatScalar   **HD = baij->hd,*baij_a;
-  MatScalar   *v_t,*value;
-#if defined(PETSC_USE_BOPT_g)
-  int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
-#endif
- 
+{ 
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
@@ -581,19 +547,6 @@ int MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
 #define __FUNC__ /*<a name=""></a>*/"MatCreateHashTable_MPISBAIJ_Private"
 int MatCreateHashTable_MPISBAIJ_Private(Mat mat,PetscReal factor)
 {
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
-  Mat         A = baij->A,B=baij->B;
-  Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data,*b=(Mat_SeqBAIJ *)B->data;
-  int         i,j,k,nz=a->nz+b->nz,h1,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  int         size,bs2=baij->bs2,rstart=baij->rstart,ierr;
-  int         cstart=baij->cstart,*garray=baij->garray,row,col,Nbs=baij->Nbs;
-  int         *HT,key;
-  MatScalar   **HD;
-  PetscReal   tmp;
-#if defined(PETSC_USE_BOPT_g)
-  int         ct=0,max=0;
-#endif
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
@@ -970,9 +923,6 @@ int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNC__ /*<a name=""></a>*/"MatMultTranspose_MPISBAIJ"
 int MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
-  Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
-  int         ierr;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. Call MatMult().");
   PetscFunctionReturn(0);
@@ -982,9 +932,6 @@ int MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
 #define __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd_MPISBAIJ"
 int MatMultTransposeAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
-  int         ierr;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. Call MatMultAdd().");
   PetscFunctionReturn(0);
@@ -1272,14 +1219,7 @@ int MatSetOption_MPISBAIJ(Mat A,MatOption op)
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatTranspose_MPISBAIJ("
 int MatTranspose_MPISBAIJ(Mat A,Mat *matout)
-{ 
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)A->data;
-  Mat_SeqBAIJ *Aloc;
-  Mat         B;
-  int         ierr,M=baij->M,N=baij->N,*ai,*aj,i,*rvals,j,k,col;
-  int         bs=baij->bs,mbs=baij->mbs;
-  MatScalar   *a;
-  
+{
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. MatTranspose() should not be called");
   PetscFunctionReturn(0);
@@ -2240,8 +2180,6 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
 @*/
 int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 {
-  Mat_MPIBAIJ *baij;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
