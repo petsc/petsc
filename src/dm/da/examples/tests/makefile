@@ -114,7 +114,7 @@ runex13:
 	-@${MPIRUN} -np 3 ex13
 	-@${RM} -f daoutput daoutput.info 
 runex14:
-	-@${MPIRUN} -np 4 ex14 
+	-@${MPIRUN} -np 4 ex14 ; sleep 1
 
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\

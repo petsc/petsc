@@ -94,7 +94,7 @@ ex19: ex19.o  chkopts
 	${RM} ex19.o
 
 ex20: ex20.o  chkopts
-	-${FLINKER} -o ex20 ex20.o  ${PETSC_SLES_LIB}
+	-${CLINKER} -o ex20 ex20.o  ${PETSC_SLES_LIB}
 	${RM} ex20.o
 
 ex21: ex21.o  chkopts
@@ -354,6 +354,6 @@ TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
 		  ex6.rm
 TESTEXAMPLES_BLOCKSOLVE  = ex6.PETSc runex6_6 ex6.rm
 TESTEXAMPLES_8  = ex16.PETSc ex16.rm
-TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc ex20.rm ex5f.PETSc ex5f.rm
+TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 
 include ${PETSC_DIR}/bmake/common/test
