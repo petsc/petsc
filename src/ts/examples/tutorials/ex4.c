@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.2 1998/06/20 23:33:43 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.3 1998/06/21 00:43:14 curfman Exp curfman $";
 #endif
 
-/* Program usage:  mpirun -np <procs> ex3 [-help] [all PETSc options] */
+/* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
 static char help[] ="Solves a simple time-dependent linear PDE (the heat equation).\n\
 Input parameters include:\n\
@@ -47,6 +47,8 @@ Input parameters include:\n\
    linear problems, u_t = f(u,t), namely
      - time-dependent f:   f(u,t) is a function of t
      - time-independent f: f(u,t) is simply just f(u)
+
+    The uniprocessor version of this code is ts/examples/tutorials/ex3.c
 
   ------------------------------------------------------------------------- */
 
