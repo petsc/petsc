@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.98 1996/08/20 03:38:03 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.99 1996/08/20 03:57:54 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -426,9 +426,9 @@ int PCSetUpOnBlocks(PC pc)
 
 /*@
    PCSetModifySubMatrices - Sets a user-defined routine for modifying the
-   submatrices that arise within block preconditioners.  The basic
-   submatrices are extracted from the preconditioner matrix as usual;
-   the user can then alter these (for example, to set different boundary
+   submatrices that arise within certain subdomain-based preconditioners.
+   The basic submatrices are extracted from the preconditioner matrix as
+   usual; the user can then alter these (for example, to set different boundary
    conditions for each submatrix) before they are used for the local solves.
 
    Input Parameters:
