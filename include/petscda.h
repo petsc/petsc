@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.65 2001/03/28 03:46:37 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.66 2001/04/10 19:37:22 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -118,15 +118,23 @@ typedef struct {
   DAPeriodicType pt;
   DAStencilType  st;
   int            mx,my,mz;    /* global number of grid points in each direction */
-  int            xs,ys,zs;    /* starting point of this processor */
-  int            xm,ym,zm;    /* number of grid points on this processor */
+  int            xs,ys,zs;    /* starting point of this processor, excluding ghosts */
+  int            xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
+  int            gxs,gys,gzs;    /* starting point of this processor including ghosts */
+  int            gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
 } DALocalInfo;
 
 EXTERN int DAGetLocalInfo(DA,DALocalInfo*);
+typedef int (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
+EXTERN int DAFormFunction1(DA,DALocalFunction1,Vec,Vec,void*);
+EXTERN int DAFormJacobian1(DA,ISColoring,DALocalFunction1,Vec,Mat,void*);
 
 #include "petscmat.h"
-EXTERN int   DAGetColoring(DA,ISColoringType,MatType,ISColoring *,Mat *);
-EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
+EXTERN int DAGetColoring(DA,ISColoringType,MatType,ISColoring *,Mat *);
+EXTERN int DAGetInterpolation(DA,DA,Mat*,Vec*);
+
+EXTERN int DAGetADArray(DA,PetscTruth,void**,void**,int*);
+EXTERN int DARestoreADArray(DA,PetscTruth,void**,void**,int*);
 
 #include "petscpf.h"
 EXTERN int DACreatePF(DA,PF*);
@@ -215,8 +223,9 @@ struct _p_DMMG {
   Vec           Rscale;                /* scaling to restriction before computing Jacobian */
   int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
   int           (*computefunction)(SNES,Vec,Vec,void*);  
-  int           (*computefunctionlocal)(Scalar**,Scalar**,DALocalInfo*,void*);  
-  int           (*ad_computefunctionlocal)(Scalar**,Scalar**,DALocalInfo*,void*);  
+
+  int           (*computefunctionlocal)(void*,void*,DALocalInfo*,void*);  
+  int           (*ad_computefunctionlocal)(void*,void*,DALocalInfo*,void*);  
   ISColoring    iscoloring;            /* used with AD or FD coloring for Jacobian */
   MatFDColoring fdcoloring;            /* only used with FD coloring for Jacobian */  
   SNES          snes;                  
@@ -229,25 +238,33 @@ EXTERN int DMMGDestroy(DMMG*);
 EXTERN int DMMGSetUp(DMMG*);
 EXTERN int DMMGSetSLES(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
 EXTERN int DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
-EXTERN int DMMGSetSNESLocal(DMMG*,int(*)(Scalar**,Scalar**,DALocalInfo*,void*),int(*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 EXTERN int DMMGSetInitialGuess(DMMG*,int (*)(SNES,Vec,void*));
 EXTERN int DMMGView(DMMG*,PetscViewer);
 EXTERN int DMMGSolve(DMMG*);
 EXTERN int DMMGSetUseMatrixFree(DMMG*);
 EXTERN int DMMGSetDM(DMMG*,DM);
 
-#define DMMGGetb(ctx)    (ctx)[(ctx)[0]->nlevels-1]->b
-#define DMMGGetr(ctx)    (ctx)[(ctx)[0]->nlevels-1]->r
-#define DMMGGetx(ctx)    (ctx)[(ctx)[0]->nlevels-1]->x
-#define DMMGGetJ(ctx)    (ctx)[(ctx)[0]->nlevels-1]->J
-#define DMMGGetB(ctx)    (ctx)[(ctx)[0]->nlevels-1]->B
-#define DMMGGetFine(ctx) (ctx)[(ctx)[0]->nlevels-1]
-#define DMMGGetSLES(ctx) (ctx)[(ctx)[0]->nlevels-1]->sles
-#define DMMGGetSNES(ctx) (ctx)[(ctx)[0]->nlevels-1]->snes
-#define DMMGGetDA(ctx)   (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
-#define DMMGGetVecPack(ctx)   (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
-#define DMMGGetUser(ctx)      (VecPack)((ctx)[(ctx)[0]->nlevels-1]->user)
-#define DMMGGetLevels(ctx)  (ctx)[0]->nlevels
+EXTERN int DMMGSetSNESLocal_Private(DMMG*,int (*)(void*,void*,DALocalInfo*,void*),int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),int (*)(void*,void*,DALocalInfo*,void*));
+#if defined(PETSC_HAVE_ADIC)
+#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function) \
+  DMMGSetSNESLocal_Private(dmmg,(int (*)(void*,void*,DALocalInfo*,void*))function,(int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*))jacobian,(int (*)(void*,void*,DALocalInfo*,void*))(ad_function))
+#else
+#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function) DMMGSetSNESLocal_Private(dmmg,(int (*)(void*,void*,DALocalInfo*,void*))function,(int (*)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*))jacobian,(int (*)(void*,void*,DALocalInfo*,void*))0)
+#endif
+
+#define DMMGGetb(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b
+#define DMMGGetr(ctx)              (ctx)[(ctx)[0]->nlevels-1]->r
+#define DMMGGetx(ctx)              (ctx)[(ctx)[0]->nlevels-1]->x
+#define DMMGGetJ(ctx)              (ctx)[(ctx)[0]->nlevels-1]->J
+#define DMMGGetB(ctx)              (ctx)[(ctx)[0]->nlevels-1]->B
+#define DMMGGetFine(ctx)           (ctx)[(ctx)[0]->nlevels-1]
+#define DMMGGetSLES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->sles
+#define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
+#define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
+#define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
+#define DMMGGetUser(ctx,level)     ((ctx)[levels]->user)
+#define DMMGSetUser(ctx,level,usr) 0,(ctx)[levels]->user = usr
+#define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
 
 #endif
 

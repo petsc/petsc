@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.33 2001/04/26 03:22:20 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.34 2001/04/30 03:49:39 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -313,6 +313,109 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
   PetscFunctionReturn(0);
 }
 
+/* ---------------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "DAFormFunction1"
+/*@
+    DAFormFunction1 - Evaluates a user provided function on each processor that 
+        share a DA
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    lf - the user provided local function
+.    vu - input vector
+.    vfu - output vector 
+-    w - any user data
+
+    Calling sequence of lf
+$     int (*lf)(DALocalInfo*,void *in,void *out,void *w)
+ 
+    Notes: Does NOT do ghost updates on vu upon entry
+
+.seealso: DAFormJacobian1()
+
+@*/
+int DAFormFunction1(DA da,DALocalFunction1 lf,Vec vu,Vec vfu,void *w)
+{
+  int         ierr;
+  void        *u,*fu;
+  DALocalInfo info;
+
+  PetscFunctionBegin;
+
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
+
+  ierr = (*lf)(&info,u,fu,w);CHKERRQ(ierr);
+
+  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_HAVE_ADIC)
+
+#include "adic_utils.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "DAFormJacobian1"
+/*@
+    DAFormJacobian1 - Evaluates a adiC provided Jacobian function on each processor that 
+        share a DA
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    iscoloring - obtained with DAGetColoring()
+.    lf - the user provided local function
+.    vu - input vector
+.    J - output matrix
+-    w - any user data
+
+    Calling sequence of lf
+$     int (*lf)(DALocalInfo*,void *in,Mat J,void *w)
+ 
+    Notes: Does NOT do ghost updates on vu upon entry
+
+.seealso: DAFormFunction1()
+
+@*/
+int DAFormJacobian1(DA da,ISColoring iscoloring,DALocalFunction1 lf,Vec vu,Mat J,void *w)
+{
+  int         ierr,gtdof,tdof;
+  Scalar      *u,*ustart;
+  DALocalInfo info;
+  void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
+
+  PetscFunctionBegin;
+
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+
+  /* get space for derivative objects.  */
+  ierr = DAGetADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
+  my_AD_SetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
+  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
+
+  my_AD_ResetIndep();
+  my_AD_SetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors);
+  my_AD_IncrementTotalGradSize(iscoloring->n);
+  my_AD_SetIndepDone();
+
+  ierr = (*lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
+
+  /* stick the values into the matrix */
+  ierr = MatSetValuesAD(J,(Scalar**)ad_fstart);CHKERRQ(ierr);
+
+  /* return space for derivative objects.  */
+  ierr = DARestoreADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormFunction"
 /* 
@@ -373,8 +476,6 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 /* ---------------------------------------------------------------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_ADIC)
-
-#include "adic_utils.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormJacobianWithAD"
