@@ -207,8 +207,10 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
               &ecg2, &ewt2, &nwt, &ntr, &ierr);
    if (ierr) {
-     if (ierr == 2 || ierr == 1) {
+     if (ierr > 0 && ierr <= 6) {
+       char *name[] = {"A","JA","IA","U","F","IG"};
        (*PetscErrorPrintf)("Error from RAMG setup, not enough array work space provided\n");
+       (*PetscErrorPrintf)("Increase the one for \n",name[ierr-1]);
        (*PetscErrorPrintf)("A provided %d\n",nda);
        (*PetscErrorPrintf)("JA provided %d\n",ndja);
        (*PetscErrorPrintf)("IA provided %d\n",ndia);

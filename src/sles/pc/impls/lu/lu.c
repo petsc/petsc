@@ -20,6 +20,20 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCLUSetSetZeroPivot"
+int PCLUSetZeroPivot_LU(PC pc,PetscReal z)
+{
+  PC_LU *lu;
+
+  PetscFunctionBegin;
+  lu                 = (PC_LU*)pc->data;
+  lu->info.zeropivot = z;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCLUSetReuseOrdering_LU"
 int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
 {
@@ -337,6 +351,39 @@ int PCLUSetPivotInBlocks_LU(PC pc,PetscTruth pivot)
 EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetZeroPivot"
+/*@
+   PCLUSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  zero - all pivots smaller than this will be considered zero
+
+   Options Database Key:
+.  -pc_ilu_zeropivot <zero> - Sets the zero pivot size
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCLUSetFill(), PCLUSetDamp(), PCILUSetZeroPivot()
+@*/
+int PCLUSetZeroPivot(PC pc,PetscReal zero)
+{
+  int ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetZeroPivot_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,zero);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetReuseOrdering"
@@ -714,6 +761,8 @@ int PCCreate_LU(PC pc)
                     PCLUSetPivoting_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetPivotInBlocks_C","PCLUSetPivotInBlocks_LU",
                     PCLUSetPivotInBlocks_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetZeroPivot_C","PCLUSetZeroPivot_LU",
+                    PCLUSetZeroPivot_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

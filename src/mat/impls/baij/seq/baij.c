@@ -18,6 +18,7 @@
 #define matsetvaluesblocked4_ matsetvaluesblocked4
 #endif
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "matsetvaluesblocked4_"
 void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v)
@@ -81,6 +82,7 @@ void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *
     ailen[row] = nrow;
   }
 } 
+EXTERN_C_END
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvalues4_ MATSETVALUES4
@@ -88,6 +90,7 @@ void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *
 #define matsetvalues4_ matsetvalues4
 #endif
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues4_"
 void matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v)
@@ -142,6 +145,7 @@ void matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v)
     ailen[brow] = nrow;
   }
 } 
+EXTERN_C_END
 
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_SeqBAIJ_MatScalar() does 

@@ -44,7 +44,7 @@ FILE      *PetscLogInfoFile      = PETSC_NULL;
 -   filename - optional name of file to write output to (defaults to stdout)
 
     Options Database Key:
-.   -log_info - Activates PetscLogInfoAllow()
+.   -log_info [optional filename] - Activates PetscLogInfoAllow()
 
     Level: advanced
 
@@ -60,18 +60,18 @@ int PetscLogInfoAllow(PetscTruth flag, char *filename)
   int  ierr;
 
   PetscFunctionBegin;
-  PetscLogPrintInfo     = flag;
-  PetscLogPrintInfoNull = flag;
   if (flag && filename) {
     ierr = PetscFixFilename(filename, fname);                                                             CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);                                                        CHKERRQ(ierr);
     sprintf(tname, ".%d", rank);
     ierr = PetscStrcat(fname, tname);                                                                     CHKERRQ(ierr);
-    ierr = PetscFOpen(PETSC_COMM_SELF, fname, "w", &PetscLogInfoFile);                                    CHKERRQ(ierr);
+    ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscLogInfoFile);                                    CHKERRQ(ierr);
     if (PetscLogInfoFile == PETSC_NULL) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
   } else if (flag) {
     PetscLogInfoFile = stdout;
   }
+  PetscLogPrintInfo     = flag;
+  PetscLogPrintInfoNull = flag;
   PetscFunctionReturn(0);
 }
 
