@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.43 1999/03/16 16:43:38 balay Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.44 1999/05/06 17:59:06 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -12,16 +12,16 @@ static char vcid[] = "$Id: dl.c,v 1.43 1999/03/16 16:43:38 balay Exp bsmith $";
 #include "petsc.h"
 #include "sys.h"
 #include "pinclude/ptime.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -37,7 +37,7 @@ static char vcid[] = "$Id: dl.c,v 1.43 1999/03/16 16:43:38 balay Exp bsmith $";
 #endif
 #include <fcntl.h>
 #include <time.h>  
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -50,7 +50,7 @@ static char vcid[] = "$Id: dl.c,v 1.43 1999/03/16 16:43:38 balay Exp bsmith $";
 /*
       Code to maintain a list of opened dynamic libraries and load symbols
 */
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #include <dlfcn.h>
 
 struct _DLLibraryList {
@@ -233,7 +233,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
     SETERRQ1(1,1,"Unable to locate dynamic library:\n  %s\n",libname);
   }
 
-#if !defined(USE_NONEXECUTABLE_SO)
+#if !defined(PETSC_USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
     SETERRQ2(1,1,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
@@ -255,7 +255,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
      with dlopen()
   */
   PLogInfo(0,"DLLibraryOpen:Opening %s\n",libname);
-#if defined(HAVE_RTLD_GLOBAL)
+#if defined(PETSC_HAVE_RTLD_GLOBAL)
   *handle = dlopen(par2,RTLD_LAZY  |  RTLD_GLOBAL); 
 #else
   *handle = dlopen(par2,RTLD_LAZY); 

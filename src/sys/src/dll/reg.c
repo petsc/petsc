@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.36 1999/05/04 20:28:58 balay Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.37 1999/05/06 17:59:06 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -29,7 +29,7 @@ int FListGetPathAndFunction(const char name[],char *path[],char *function[])
   PetscFunctionReturn(0);
 }
 
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
 /*
     This is the list used by the DLRegister routines
@@ -355,7 +355,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
   /*
         If path then append it to search libraries
   */
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   if (path) {
     ierr = DLLibraryAppend(comm,&DLLibrariesLoaded,path);CHKERRQ(ierr);
   }
@@ -375,7 +375,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
       }
 
       /* it is not yet in memory so load from dynamic library */
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
       ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,entry->rname,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
@@ -392,7 +392,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
     entry = entry->next;
   }
 
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   /* Function never registered; try for it anyway */
   ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
   if (path) PetscFree(path);

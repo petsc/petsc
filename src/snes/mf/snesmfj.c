@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.85 1999/04/19 22:15:35 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.86 1999/05/04 20:35:51 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -255,7 +255,7 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   PLogInfo(mat,"Current differencing parameter: %g + %g i\n",PetscReal(h),PetscImaginary(h));
 #else
   PLogInfo(mat,"Current differencing parameter: %g\n",h);
@@ -497,7 +497,7 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
     SETERRQ(1,1,"Matrix is not a matrix free shell matrix");
   }
   if (n > 0 || nonzeroinitialguess) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
                 PetscReal(ctx->currenth),PetscImaginary(ctx->currenth));CHKERRQ(ierr);
 #else

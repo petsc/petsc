@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.6 1999/04/20 15:07:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.7 1999/05/04 20:36:35 balay Exp bsmith $";
 #endif
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
 */
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
 
 static char help[] = "An Unstructured Grid Example\n\
 This example demonstrates how to solve a nonlinear system in parallel\n\

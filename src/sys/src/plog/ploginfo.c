@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.10 1999/03/17 23:22:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ploginfo.c,v 1.11 1999/04/19 22:10:08 bsmith Exp bsmith $";
 #endif
 /*
       PLogInfo() is contained in a different file from the other profiling to 
@@ -9,10 +9,10 @@ static char vcid[] = "$Id: ploginfo.c,v 1.10 1999/03/17 23:22:00 bsmith Exp bsmi
 #include <stdarg.h>
 #include <sys/types.h>
 #include "sys.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -78,7 +78,7 @@ int PLogInfo(void *vobj,const char message[],...)
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&urank);CHKERRQ(ierr);
   va_start( Argp, message );
   sprintf(string,"[%d]",urank); len = PetscStrlen(string);
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(string+len,message,(char *)Argp);
 #else
   vsprintf(string+len,message,Argp);
@@ -86,7 +86,7 @@ int PLogInfo(void *vobj,const char message[],...)
   fprintf(PLogInfoFile,"%s",string);
   fflush(PLogInfoFile);
   if (petsc_history) {
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(petsc_history,message,(char *)Argp);
 #else
     vfprintf(petsc_history,message,Argp);

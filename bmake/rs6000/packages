@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.30 1999/04/23 19:44:25 balay Exp balay $ 
+# $Id: base.site,v 1.31 1999/04/24 00:21:12 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -39,14 +39,14 @@ X11_INCLUDE    =
 X11_LIB        = -lX11
 #
 # Optional location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
+# BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
 # below if it is there.
 #
 #BS_INCLUDE = -I/home/petsc/BlockSolve95/include
 #BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # MPE Libraries
-# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_INCLUDE  = -I/home/petsc/mpich-1.1.1/mpe
 #MPE_LIB      = -lmpe -lpmpich
@@ -60,17 +60,17 @@ MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 #CMEX           = /usr/local/matlab/bin/cmex 
 #
 # Optional location of SuperLU, if you do not have
-# SuperLU, then remove -DHAVE_SUPERLU from the PCONF definition
+# SuperLU, then remove -DPETSC_HAVE_SUPERLU from the PCONF definition
 # below if it is there.
 #
 #SUPERLU_LIB     = /home/bsmith/SuperLU/superlu${PETSC_ARCH}${BOPT}.a
 #SUPERLU_INCLUDE = -I/home/bsmith/SuperLU/SRC
 # 
 # PCONF - indicates which external packages are available at your site
-#    Make sure that -DHAVE_BLOCKSOLVE and -DHAVE_SUPERLU are not listed below
+#    Make sure that -DPETSC_HAVE_BLOCKSOLVE and -DPETSC_HAVE_SUPERLU are not listed below
 # 
-#PCONF          =    -DHAVE_ESSL -DHAVE_BLOCKSOLVE -DHAVE_MPE
-PCONF          =    -DHAVE_ESSL -DHAVE_MPE
+#PCONF          =    -DPETSC_HAVE_ESSL -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE
+PCONF          =    -DPETSC_HAVE_ESSL -DPETSC_HAVE_MPE
 #
 EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.2 1999/04/01 22:34:31 balay Exp balay $"
+"$Id: petscconf.h,v 1.3 1999/04/02 00:11:51 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -8,35 +8,33 @@
 
 #define PARCH_ascired
 
-#define HAVE_SYS_WAIT_H
-#define HAVE_VPRINTF
+#define PETSC_HAVE_SYS_WAIT_H
+#define PETSC_HAVE_VPRINTF
 #define STDC_HEADERS
-#define TIME_WITH_SYS_TIME
-#define HAVE_FORTRAN_UNDERSCORE
-#define HAVE_DRAND48
-#define HAVE_GETCWD
-#define HAVE_GETHOSTNAME
-#define HAVE_GETTIMEOFDAY
-#define HAVE_GETWD
-#define HAVE_MEMMOVE
-#define HAVE_SIGACTION
-#define HAVE_SIGNAL
-#define HAVE_STRSTR
-#define HAVE_UNAME
-#define HAVE_FCNTL_H
-#define HAVE_LIMITS_H
-#define HAVE_MALLOC_H
-#define HAVE_PWD_H
-#define HAVE_SEARCH_H
-#define HAVE_STDLIB_H
-#define HAVE_STRING_H
-#define HAVE_STRINGS_H
-#define HAVE_STROPTS_H
-#define HAVE_SYS_TIME_H
-#define HAVE_UNISTD_H
-#define HAVE_SWAPPED_BYTES
-#define HAVE_SYS_RESOURCE_H
+#define PETSC_HAVE_FORTRAN_UNDERSCORE
+#define PETSC_HAVE_DRAND48
+#define PETSC_HAVE_GETCWD
+#define PETSC_HAVE_GETHOSTNAME
+#define PETSC_HAVE_GETWD
+#define PETSC_HAVE_MEMMOVE
+#define PETSC_HAVE_SIGACTION
+#define PETSC_HAVE_SIGNAL
+#define PETSC_HAVE_STRSTR
+#define PETSC_HAVE_UNAME
+#define PETSC_HAVE_FCNTL_H
+#define PETSC_HAVE_LIMITS_H
+#define PETSC_HAVE_MALLOC_H
+#define PETSC_HAVE_PWD_H
+#define PETSC_HAVE_SEARCH_H
+#define PETSC_HAVE_STDLIB_H
+#define PETSC_HAVE_STRING_H
+#define PETSC_HAVE_STRINGS_H
+#define PETSC_HAVE_STROPTS_H
+#define PETSC_HAVE_SYS_TIME_H
+#define PETSC_HAVE_UNISTD_H
+#define PETSC_HAVE_SWAPPED_BYTES
+#define PETSC_HAVE_SYS_RESOURCE_H
 
-#define HAVE_SLOW_NRM2
-#define USE_DCLOCK
+#define PETSC_HAVE_SLOW_NRM2
+#define PETSC_USE_DCLOCK
 #endif

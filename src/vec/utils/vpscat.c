@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.115 1999/05/04 20:30:27 balay Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.116 1999/05/06 14:42:32 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -336,7 +336,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     int n = gen_to->local.n;
     if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[tslots[i]];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[tslots[i]]);}
 #endif
@@ -396,7 +396,7 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
       for ( i=0; i<n; i++ ) {
         yv[lindices[i]] += *val++;
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         yv[lindices[i]] = PetscMax(yv[lindices[i]],*val); val++;
@@ -762,7 +762,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
         yv[il+10] += xv[ir+10];
         yv[il+11] += xv[ir+11];
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     }  else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
@@ -864,7 +864,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
         yv[idx+11] += val[11];
         val        += 12;
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx        = lindices[i];
@@ -1013,7 +1013,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+3] += xv[ir+3];
         yv[il+4] += xv[ir+4];
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     }  else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
@@ -1094,7 +1094,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+4] += val[4];
         val       += 5;
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx       = lindices[i];
@@ -1232,7 +1232,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+2] += xv[ir+2];
         yv[il+3] += xv[ir+3];
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     }  else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
@@ -1310,7 +1310,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+3] += val[3];
         val       += 4;
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx       = lindices[i];
@@ -1444,7 +1444,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+2] += xv[ir+2];
         yv[il+3] += xv[ir+3];
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     }  else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
@@ -1520,7 +1520,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+2] += val[2];
         val       += 3;
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx       = lindices[i];
@@ -1645,7 +1645,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il]   += xv[ir];
         yv[il+1] += xv[ir+1];
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     }  else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
@@ -1717,7 +1717,7 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         yv[idx+1] += val[1];
         val       += 2;
       }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {
         idx       = lindices[i];
@@ -1768,7 +1768,7 @@ int VecScatterDestroy_PtoP_X(VecScatter ctx)
      IBM's PE version of MPI has a bug where freeing these guys will screw up later
      message passing.
   */
-#if !defined(HAVE_BROKEN_REQUEST_FREE)
+#if !defined(PETSC_HAVE_BROKEN_REQUEST_FREE)
   for (i=0; i<gen_to->n; i++) {
     ierr = MPI_Request_free(gen_to->requests + i);CHKERRQ(ierr);
     ierr = MPI_Request_free(gen_to->rev_requests + i);CHKERRQ(ierr);

@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiuopen.c,v 1.18 1999/03/17 23:21:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiuopen.c,v 1.19 1999/04/19 22:09:39 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
 #include "petsc.h"
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"

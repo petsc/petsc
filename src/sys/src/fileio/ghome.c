@@ -1,21 +1,21 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghome.c,v 1.25 1999/03/17 23:21:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ghome.c,v 1.26 1999/04/21 20:43:17 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "petsc.h"
 #include "sys.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -29,7 +29,7 @@ static char vcid[] = "$Id: ghome.c,v 1.25 1999/03/17 23:21:32 bsmith Exp bsmith 
 #if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.163 1999/05/08 16:58:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.164 1999/05/08 17:03:37 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -111,7 +111,7 @@ int KSPSetAvoidNorms(KSP ksp)
 #define __FUNC__ "KSPPublish_Petsc"
 static int KSPPublish_Petsc(PetscObject object)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   KSP          v = (KSP) object;
   int          ierr;
   

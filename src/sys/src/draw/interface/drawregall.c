@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawregall.c,v 1.5 1999/02/03 04:27:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawregall.c,v 1.6 1999/03/17 23:21:11 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -30,7 +30,7 @@ int DrawRegisterAll(char *path)
 
   PetscFunctionBegin;
   
-#if defined(HAVE_X11)
+#if defined(PETSC_HAVE_X11)
   ierr = DrawRegister(DRAW_X,     path,"DrawCreate_X",     DrawCreate_X);CHKERRQ(ierr);
 #endif
   ierr = DrawRegister(DRAW_NULL,  path,"DrawCreate_Null",  DrawCreate_Null);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.26 1999/05/04 20:29:32 balay Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.27 1999/05/06 17:59:20 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -8,10 +8,10 @@ static char vcid[] = "$Id: str.c,v 1.26 1999/05/04 20:29:32 balay Exp bsmith $";
 
 */
 #include "petsc.h"                   /*I  "petsc.h"   I*/
-#if defined(HAVE_STRING_H)
+#if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
-#if defined(HAVE_STRINGS_H)
+#if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
 #include "pinclude/petscfix.h"

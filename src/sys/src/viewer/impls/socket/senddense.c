@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.32 1999/01/31 16:04:29 bsmith Exp balay $";
+static char vcid[] = "$Id: senddense.c,v 1.33 1999/05/04 20:27:46 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
@@ -36,7 +36,7 @@ int ViewerSocketPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&m,1,PETSC_INT,0);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(t,&n,1,PETSC_INT,0);CHKERRQ(ierr); 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   value = 0;
 #else
   value = 1;

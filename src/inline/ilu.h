@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.13 1999/05/04 20:27:38 balay Exp bsmith $ */
+/* $Id: ilu.h,v 1.14 1999/05/06 14:44:04 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -31,14 +31,14 @@ extern int  Kernel_A_gets_inverse_A_7(MatScalar *);
    that for important block sizes (currently 3,4,5) custom inlined 
    code is used.
 */
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define msgemv_  MSGEMV
 #define msgemvp_ MSGEMVP
 #define msgemvm_ MSGEMVM
 #define msgemvt_ MSGEMVT
 #define msgemmi_ MSGEMMI
 #define msgemm_  MSGEMM
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define msgemv_  msgemv
 #define msgemvp_ msgemvp
 #define msgemvm_ msgemvm
@@ -70,7 +70,7 @@ EXTERN_C_END
 
 /* -----------------------------------------------------------------------*/
 
-#if !defined(USE_MAT_SINGLE)
+#if !defined(PETSC_USE_MAT_SINGLE)
 /*
         Version that calls the BLAS directly
 */

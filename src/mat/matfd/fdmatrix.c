@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.45 1999/04/19 22:13:48 bsmith Exp balay $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.46 1999/05/04 20:33:47 balay Exp bsmith $";
 #endif
 
 /*
@@ -562,7 +562,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col-start];
       if (dx == 0.0) dx = 1.0;
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
@@ -580,7 +580,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
     ierr = MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
@@ -681,7 +681,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col-start];
       if (dx == 0.0) dx = 1.0;
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
@@ -698,7 +698,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
     ierr = (*f)(sctx,t,w3,w2,fctx);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
     ierr = MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);

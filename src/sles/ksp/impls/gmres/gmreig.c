@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmreig.c,v 1.11 1999/01/31 16:08:49 bsmith Exp balay $";
+static char vcid[] = "$Id: gmreig.c,v 1.12 1999/05/04 20:34:52 balay Exp bsmith $";
 #endif
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
@@ -33,10 +33,10 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
   /*
       The Cray math libraries do not seem to have the DGESVD() lapack routines
   */
-#if defined(HAVE_MISSING_DGESVD) 
+#if defined(PETSC_HAVE_MISSING_DGESVD) 
   SETERRQ(PETSC_ERR_SUP,0,"DGESVD not found on Cray T3D\nNot able to provide singular value estimates.");
 #else
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
 #else
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&ierr);
@@ -51,7 +51,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 }
 /* ------------------------------------------------------------------------ */
 /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
-#if defined(HAVE_ESSL)
+#if defined(PETSC_HAVE_ESSL)
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
@@ -88,7 +88,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
      components of evalues separately.  But is this what we really want? */
   perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   for ( i=0; i<n; i++ ) {
     realpart[i] = cwork[2*i];
     perm[i]     = i;
@@ -112,7 +112,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)
   PetscFree(perm);
   PetscFunctionReturn(0);
 }
-#elif !defined(USE_PETSC_COMPLEX)
+#elif !defined(PETSC_USE_COMPLEX)
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c,int *neig)

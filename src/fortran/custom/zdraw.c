@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.27 1999/04/06 18:13:32 balay Exp balay $";
+static char vcid[] = "$Id: zdraw.c,v 1.28 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define drawaxisdestroy_     DRAWAXISDESTROY
 #define drawaxiscreate_      DRAWAXISCREATE
 #define drawaxissetlabels_   DRAWAXISSETLABELS
@@ -22,7 +22,7 @@ static char vcid[] = "$Id: zdraw.c,v 1.27 1999/04/06 18:13:32 balay Exp balay $"
 #define drawsettitle_        DRAWSETTITLE
 #define drawappendtitle_     DRAWAPPENDTITLE
 #define drawgetpopup_        DRAWGETPOPUP
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define drawaxisdestroy_     drawaxisdestroy
 #define drawaxiscreate_      drawaxiscreate
 #define drawaxissetlabels_   drawaxissetlabels

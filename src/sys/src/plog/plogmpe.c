@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.42 1999/04/19 22:10:08 bsmith Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.43 1999/05/04 20:29:40 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#if defined(USE_PETSC_LOG) && defined (HAVE_MPE)
+#if defined(PETSC_USE_LOG) && defined (PETSC_HAVE_MPE)
 #include "sys.h"
 #include "mpe.h"
 
@@ -299,7 +299,7 @@ extern char *PLogEventName[];
 
    Options Database Keys:
 . -log_mpe - Prints extensive log information (for code compiled
-             with USE_PETSC_LOG)
+             with PETSC_USE_LOG)
 
    Notes:
    A related routine is PLogBegin (with the options key -log), which is 
@@ -319,7 +319,7 @@ int PLogMPEBegin(void)
     
   PetscFunctionBegin;
   /* Do MPE initialization */
-#if defined (HAVE_MPE_INITIALIZED_LOGGING)
+#if defined (PETSC_HAVE_MPE_INITIALIZED_LOGGING)
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
     PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
     MPE_Init_log();

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.42 1999/04/24 00:21:23 balay Exp balay $ 
+# $Id: base.site,v 1.43 1999/05/10 16:25:26 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -58,7 +58,7 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
-# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_INCLUDE   = -I/usr/local/mpi/include
 #MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
@@ -94,12 +94,12 @@ BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site
 #
-# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_BLOCKSOLVE
-#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
+PCONF         = -DPETSC_HAVE_BLOCKSOLVE
+#PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.10 1999/04/21 20:42:40 bsmith Exp balay $";
+static char vcid[] = "$Id: drawreg.c,v 1.11 1999/05/04 20:28:14 balay Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -267,7 +267,7 @@ int DrawSetFromOptions(Draw draw)
 
   /* type has not been set? */
   if (!draw->type_name) {
-#if defined(HAVE_X11)
+#if defined(PETSC_HAVE_X11)
     ierr = DrawSetType(draw,DRAW_X);CHKERRQ(ierr);
 #else
     ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);

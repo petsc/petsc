@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.59 1999/04/19 22:12:35 bsmith Exp balay $";
+static char vcid[] = "$Id: sorder.c,v 1.60 1999/05/04 20:32:17 balay Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -25,7 +25,7 @@ int MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
     PetscFunctionReturn(0);
   }
   SETERRQ(PETSC_ERR_SUP,0,"Cannot do default flow ordering for matrix type");
-#if !defined(USE_PETSC_DEBUG)
+#if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);
 #endif
 }

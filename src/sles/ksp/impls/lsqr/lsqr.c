@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.51 1999/05/04 20:35:02 balay Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.52 1999/05/11 19:15:55 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -138,7 +138,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     tmp  = -theta/rho; 
     ierr = VecAYPX(&tmp,V1,W);CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     rnorm = PetscReal(phibar);
 #else
     rnorm = phibar;

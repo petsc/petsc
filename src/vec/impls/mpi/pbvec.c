@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.132 1999/04/19 22:11:18 bsmith Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.133 1999/05/04 20:30:48 balay Exp bsmith $";
 #endif
 
 /*
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: pbvec.c,v 1.132 1999/04/19 22:11:18 bsmith Exp balay 
 #define __FUNC__ "VecPublish_MPI"
 static int VecPublish_MPI(PetscObject object)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   Vec          v = (Vec) object;
   Vec_MPI      *s = (Vec_MPI *) v->data;
   int          ierr;
@@ -59,7 +59,7 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
    This is a ugly hack. But to do it right is kind of silly.
 */
   PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = MPI_Allreduce(&work,&sum,2,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
 #else
   ierr = MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ int VecTDot_MPI( Vec xin, Vec yin, Scalar *z )
    This is a ugly hack. But to do it right is kind of silly.
 */
   PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = MPI_Allreduce(&work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #else
   ierr = MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
@@ -597,7 +597,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   int     ierr;
   Vec_MPI *vw, *w = (Vec_MPI *)win->data;
   Scalar  *array;
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   int     (*f)(AMS_Memory,char *,Vec);
 #endif
 
@@ -631,7 +631,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   }
   (*v)->bs = win->bs;
 
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   /*
      If the vector knows its "layout" let it set it, otherwise it defaults
      to correct 1d distribution

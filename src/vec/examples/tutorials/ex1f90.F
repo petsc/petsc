@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.13 1999/01/12 23:13:48 bsmith Exp balay $"
+!    "$Id: ex1f90.F,v 1.14 1999/03/01 15:59:19 balay Exp bsmith $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
@@ -101,11 +101,11 @@
       call VecMDot(3,x,z,dots,ierr)
 
 !  Note: If using a complex numbers version of PETSc, then
-!  USE_PETSC_COMPLEX is defined in the makefiles; otherwise,
+!  PETSC_USE_COMPLEX is defined in the makefiles; otherwise,
 !  (when using real numbers) it is undefined.
 
       if (rank .eq. 0) then
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
          write(6,100) int(PetscReal(dot))
          write(6,110) int(PetscReal(dots(1))),int(PetscReal(dots(2))),            &
      &                int(PetscReal(dots(3)))

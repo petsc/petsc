@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.25 1999/03/17 23:21:53 bsmith Exp balay $";
+static char vcid[] = "$Id: cputime.c,v 1.26 1999/05/04 20:29:29 balay Exp bsmith $";
 #endif
 
 /*
@@ -10,16 +10,16 @@ static char vcid[] = "$Id: cputime.c,v 1.25 1999/03/17 23:21:53 bsmith Exp balay
 #include "petsc.h"                     /*I "petsc.h" I*/
 #include "sys.h"
 #include "pinclude/ptime.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -35,7 +35,7 @@ static char vcid[] = "$Id: cputime.c,v 1.25 1999/03/17 23:21:53 bsmith Exp balay
 #endif
 #include <fcntl.h>
 #include <time.h>  
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -57,7 +57,7 @@ int PetscGetCPUTime(PLogDouble *t)
   PetscFunctionReturn(0);
 }
 
-#elif defined(HAVE_CLOCK)
+#elif defined(PETSC_HAVE_CLOCK)
 
 #include <time.h>
 #include <sys/types.h>

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.157 1999/03/19 01:05:31 balay Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.158 1999/05/04 20:30:44 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: bvec2.c,v 1.157 1999/03/19 01:05:31 balay Exp balay $
 #include "src/vec/vecimpl.h"          /*I  "vec.h"   I*/
 #include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/blaslapack.h"
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 extern int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
 #endif
 
@@ -24,7 +24,7 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
     /*
       This is because the Fortran BLAS 1 Norm is very slow! 
     */
-#if defined(HAVE_SLOW_NRM2)
+#if defined(PETSC_HAVE_SLOW_NRM2)
     {
       int i;
       Scalar sum=0.0;
@@ -89,7 +89,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
     ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
     fprintf(fd,"%s = [\n",outputname);
     for (i=0; i<n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       if (PetscImaginary(x->array[i]) > 0.0) {
         fprintf(fd,"%18.16e + %18.16e i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
       } else if (PetscImaginary(x->array[i]) < 0.0) {
@@ -104,7 +104,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
     fprintf(fd,"];\n");
   } else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
     for (i=0; i<n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       fprintf(fd,"%18.16e %18.16e\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
 #else
       fprintf(fd,"%18.16e\n",x->array[i]);
@@ -115,7 +115,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
       if (format == VIEWER_FORMAT_ASCII_INDEX) {
         fprintf(fd,"%d: ",i);
       }
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       if (PetscImaginary(x->array[i]) > 0.0) {
         fprintf(fd,"%g + %g i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
       } else if (PetscImaginary(x->array[i]) < 0.0) {
@@ -151,7 +151,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
   for ( i=0; i<n; i++ ) {
     xx[i] = (double) i;
   }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   DrawLGAddPoints(lg,n,&xx,&x->array);
 #else 
   {
@@ -259,7 +259,7 @@ int VecSetValues_Seq(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
   if (m == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
       if (ix[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
       if (ix[i] >= x->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->n);
 #endif
       xx[ix[i]] = y[i];
@@ -267,7 +267,7 @@ int VecSetValues_Seq(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
   } else {
     for ( i=0; i<ni; i++ ) {
       if (ix[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
       if (ix[i] >= x->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->n);
 #endif
       xx[ix[i]] += y[i];
@@ -292,7 +292,7 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar y[],Inse
     for ( i=0; i<ni; i++ ) {
       start = bs*ix[i];
       if (start < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
       if (start >= x->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",start,x->n);
 #endif
       for (j=0; j<bs; j++) {
@@ -304,7 +304,7 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni,const int ix[],const Scalar y[],Inse
     for ( i=0; i<ni; i++ ) {
       start = bs*ix[i];
       if (start < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
       if (start >= x->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",start,x->n);
 #endif
       for (j=0; j<bs; j++) {
@@ -324,14 +324,14 @@ int VecDestroy_Seq(Vec v)
 
   PetscFunctionBegin;
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
   if (vs->array_allocated) PetscFree(vs->array_allocated);
   PetscFree(vs);
 
   /* if memory was published with AMS then destroy it */
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   if (v->amem >= 0) {
     int     ierr;
     ierr = AMS_Memory_destroy(v->amem);CHKERRQ(ierr);
@@ -345,7 +345,7 @@ int VecDestroy_Seq(Vec v)
 #define __FUNC__ "VecPublish_Seq"
 static int VecPublish_Seq(PetscObject object)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   Vec          v = (Vec) object;
   Vec_Seq      *s = (Vec_Seq *) v->data;
   int          ierr;

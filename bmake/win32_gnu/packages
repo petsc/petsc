@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.21 1998/12/04 21:13:30 balay Exp bsmith $ 
+# $Id: base.site,v 1.22 1998/12/16 15:21:07 bsmith Exp bsmith $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -15,7 +15,7 @@ LAPACK_LIB     = c:/home/blaslapack/lapack.a
 # Location of X-windows software
 # http://dao.gsfc.nasa.gov/software/grads/win32/X11R6.3/
 # You can also install PETSc without X, just comment out the 
-# two lines below and remove the #define HAVE_X11 from the file
+# two lines below and remove the #define PETSC_HAVE_X11 from the file
 # ../petscconf.h
 #
 X11_INCLUDE	= -I/usr/X11r6.3/include
@@ -28,7 +28,7 @@ MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
 # Optional location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
+# BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
 # below if it is there.
 #
 BS_INCLUDE =
@@ -41,7 +41,7 @@ BS_LIB     =
 #CMEX           = /usr/local/bin/cmex 
 #  
 # PCONF - indicates which external packages are available at your site
-#  Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you have
+#  Make sure that -DPETSC_HAVE_BLOCKSOLVE is not listed below unless you have
 #  installed it.
 #
 PCONF         =

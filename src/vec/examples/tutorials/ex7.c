@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.22 1999/03/19 21:18:23 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.23 1999/05/04 20:31:12 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
@@ -12,10 +12,10 @@ and from Fortran to C\n\n";
   Ugly stuff to insure the function names match between Fortran 
   and C. Sorry, but this is out of our PETSc hands to cleanup.
 */
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define ex7f_ EX7F
 #define ex7c_ EX7C
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define ex7f_ ex7f
 #define ex7c_ ex7c
 #endif

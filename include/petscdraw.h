@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.63 1999/01/13 22:37:19 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.64 1999/03/07 17:17:40 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -20,7 +20,7 @@ extern int DrawRegisterAll(char *);
 extern int DrawRegisterDestroy(void);
 
 extern int DrawRegister_Private(char*,char*,char*,int(*)(Draw));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define DrawRegister(a,b,c,d) DrawRegister_Private(a,b,c,0)
 #else
 #define DrawRegister(a,b,c,d) DrawRegister_Private(a,b,c,d)

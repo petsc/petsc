@@ -1,14 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.40 1999/02/18 15:51:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.41 1999/03/17 23:21:40 bsmith Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
 #include "petsc.h"             /*I   "petsc.h"   I*/
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -26,9 +26,9 @@ static char vcid[] = "$Id: mal.c,v 1.40 1999/02/18 15:51:12 bsmith Exp bsmith $"
 
 void *PetscMallocAlign(int mem)
 {
-#if defined(HAVE_DOUBLE_ALIGN_MALLOC) && !defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && !defined(PETSC_USE_COMPLEX)
   return malloc(mem);
-#elif defined(HAVE_MEMALIGN)
+#elif defined(PETSC_HAVE_MEMALIGN)
   return memalign(sizeof(Scalar),mem);
 #else
   {
@@ -49,10 +49,10 @@ void *PetscMallocAlign(int mem)
 
 int PetscFreeAlign(void *ptr)
 {
-#if defined(HAVE_DOUBLE_ALIGN_MALLOC) && !defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && !defined(PETSC_USE_COMPLEX)
   free(ptr);
   return 0;
-#elif defined(HAVE_MEMALIGN)
+#elif defined(PETSC_HAVE_MEMALIGN)
   free(ptr);
   return 0;
 #else
@@ -72,7 +72,7 @@ int PetscFreeAlign(void *ptr)
 /*
     Set the default malloc and free to be the usual system versions unless using complex
 */
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 void *(*PetscTrMalloc)(int,int,char*,char*,char*) = 
      (void*(*)(int,int,char*,char*,char*)) PetscMallocAlign;
 int  (*PetscTrFree)(void *,int,char*,char *,char*)         = 
@@ -135,7 +135,7 @@ int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
 int PetscClearMalloc(void)
 {
   PetscFunctionBegin;
-#if defined(HAVE_MEMALIGN) && defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_HAVE_MEMALIGN) && defined(PETSC_USE_COMPLEX)
   PetscTrMalloc               = (void*(*)(int,int,char*,char*,char*))PetscMallocAlign;
   PetscTrFree                 = (int (*)(void*,int,char*,char*,char*))PetscFreeAlign;
 #else

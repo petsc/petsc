@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.99 1999/04/19 22:09:27 bsmith Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.100 1999/05/04 20:28:50 balay Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
 */
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
@@ -353,7 +353,7 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
     for ( i=0; i<n; i++ ) {
       ierr = PetscSynchronizedFPrintf(comm,file,"%2d:",3*i);CHKERRQ(ierr);
       for ( j=0; j<3; j++ ) {
-#if defined (USE_PETSC_COMPLEX)
+#if defined (PETSC_USE_COMPLEX)
         ierr = PetscSynchronizedFPrintf(comm,file," (%12.4e,%12.4e)",
                                  PetscReal(idx[i*3+j]),PetscImaginary(idx[i*3+j]));CHKERRQ(ierr);
 #else       
@@ -365,7 +365,7 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
     if (p) {
       ierr = PetscSynchronizedFPrintf(comm,file,"%2d:",3*n);CHKERRQ(ierr);
       for ( i=0; i<p; i++ ) { 
-#if defined (USE_PETSC_COMPLEX)
+#if defined (PETSC_USE_COMPLEX)
         ierr = PetscSynchronizedFPrintf(comm,file," (%12.4e,%12.4e)",
                                  PetscReal(idx[i*3+j]),PetscImaginary(idx[i*3+j]));CHKERRQ(ierr);
 #else

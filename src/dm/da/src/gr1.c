@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.10 1999/04/19 22:17:13 bsmith Exp balay $";
+static char vcid[] = "$Id: gr1.c,v 1.11 1999/05/04 20:37:25 balay Exp bsmith $";
 #endif
 
 /* 
@@ -120,7 +120,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
     */
     min = 1.e20; max = -1.e20;
     for ( i=0; i<n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       if (PetscReal(array[j+i*step]) < min) min = PetscReal(array[j+i*step]);
       if (PetscReal(array[j+i*step]) > max) max = PetscReal(array[j+i*step]);
 #else
@@ -164,7 +164,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
     }
 
     for ( i=1; i<n; i++ ) {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       ierr = DrawLine(draw,xg[i-1],array[j+step*(i-1)],xg[i],array[j+step*i],
                       DRAW_RED);CHKERRQ(ierr);
 #else
@@ -175,7 +175,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
     if (rank) { /* receive value from left */
       ierr = MPI_Recv(&tmp,1,MPI_DOUBLE,rank-1,tag1,comm,&status);CHKERRQ(ierr);
       ierr = MPI_Recv(&xgtmp,1,MPI_DOUBLE,rank-1,tag1,comm,&status);CHKERRQ(ierr);
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       ierr = DrawLine(draw,xgtmp,tmp,xg[0],array[j],DRAW_RED);CHKERRQ(ierr);
 #else
       ierr = DrawLine(draw,xgtmp,tmp,PetscReal(xg[0]),PetscReal(array[j]),
@@ -184,7 +184,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
     }
     if (rank == size-1 && periodic) {
       ierr = MPI_Recv(&tmp,1,MPI_DOUBLE,0,tag2,comm,&status);CHKERRQ(ierr);
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       ierr = DrawLine(draw,xg[n-2],array[j+step*(n-1)],xg[n-1],tmp,DRAW_RED);CHKERRQ(ierr);
 #else
       ierr = DrawLine(draw,PetscReal(xg[n-2]),PetscReal(array[j+step*(n-1)]),

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tone.c,v 1.24 1999/03/02 00:09:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.25 1999/03/07 17:26:51 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: tone.c,v 1.24 1999/03/02 00:09:13 bsmith Exp bsmith $
 /*
     Code for drawing color interpolated triangles using X-windows.
 */
-#if defined(HAVE_X11)
+#if defined(PETSC_HAVE_X11)
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 #define SHIFT_VAL 6

@@ -1,5 +1,5 @@
 !
-!  $Id: sys.h,v 1.15 1999/03/24 18:11:04 balay Exp balay $;
+!  $Id: sys.h,v 1.16 1999/04/01 19:34:23 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the System package in PETSc
 !
@@ -29,7 +29,7 @@
       parameter (BINARY_INT_SIZE = 32, BINARY_FLOAT_SIZE = 32)
       parameter (BINARY_CHAR_SIZE = 8, BINARY_SHORT_SIZE = 16)
       parameter (BINARY_DOUBLE_SIZE = 64)
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       parameter ( BINARY_SCALAR_SIZE = 128)
 #else
       parameter ( BINARY_SCALAR_SIZE = 64)

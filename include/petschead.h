@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.71 1998/12/17 22:13:20 bsmith Exp balay $ */
+/* $Id: petschead.h,v 1.72 1999/05/04 20:38:34 balay Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -119,7 +119,7 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
 
-#if !defined(HAVE_CRAY90_POINTER)
+#if !defined(PETSC_HAVE_CRAY90_POINTER)
 /* 
     Macros to test if a PETSc object is valid and if pointers are
 valid
@@ -161,7 +161,7 @@ valid
     SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Invalid Pointer");              \
   }}
 
-#if !defined(HAVE_DOUBLE_ALIGN)
+#if !defined(PETSC_HAVE_DOUBLE_ALIGN)
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
   if ((unsigned long)h & (unsigned long)3) {                        \
@@ -206,7 +206,7 @@ valid
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
   }
 
-#if !defined(HAVE_DOUBLE_ALIGN)
+#if !defined(PETSC_HAVE_DOUBLE_ALIGN)
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null Pointer");}        \
   }

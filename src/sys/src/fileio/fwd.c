@@ -1,21 +1,21 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fwd.c,v 1.22 1999/03/17 23:21:32 bsmith Exp balay $";
+static char vcid[] = "$Id: fwd.c,v 1.23 1999/04/02 19:33:31 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "petsc.h"
 #include "sys.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -29,14 +29,10 @@ static char vcid[] = "$Id: fwd.c,v 1.22 1999/03/17 23:21:32 bsmith Exp balay $";
 #if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"
-
-#if defined (PARCH_ascired)
-extern char *getwd(char *_name);
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetWorkingDirectory"
@@ -59,7 +55,7 @@ extern char *getwd(char *_name);
 int PetscGetWorkingDirectory( char path[],int len )
 {
   PetscFunctionBegin;
-#if defined(HAVE_GETWD)
+#if defined(PETSC_HAVE_GETWD)
   getwd( path );
 #elif defined(PARCH_win32)
   _getcwd( path, len );

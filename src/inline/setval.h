@@ -1,4 +1,4 @@
-/* $Id: setval.h,v 1.2 1995/05/03 15:56:22 bsmith Exp bsmith $ */
+/* $Id: setval.h,v 1.3 1997/09/15 16:23:05 bsmith Exp bsmith $ */
 
 /* This file contains definitions for INLINING some popular operations
    All arguments should be simple and in register if possible.
@@ -6,7 +6,7 @@
 
 #ifndef SET
 
-#ifdef USE_UNROLL_KERNELS
+#ifdef PETSC_USE_UNROLL_KERNELS
 #define SET(v,n,val) \
 switch (n&0x3) { \
 case 3: *v++ = val;\
@@ -14,7 +14,7 @@ case 2: *v++ = val;\
 case 1: *v++ = val;n-=4;\
 case 0: while (n>0) {v[0]=val;v[1]=val;v[2]=val;v[3]=val;v+=4;n-=4;}}
 
-#elif defined(USE_WHILE_KERNELS)
+#elif defined(PETSC_USE_WHILE_KERNELS)
 #define SET(v,n,val) while (n--) *v++ = val;
 
 #else

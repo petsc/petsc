@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: errabort.c,v 1.2 1998/07/02 14:34:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: errabort.c,v 1.3 1999/03/17 23:21:27 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
    error handlers.
 */
 #include "petsc.h"           /*I "petsc.h" I*/
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"

@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.30 1999/04/21 20:42:30 bsmith Exp balay $";
+static char vcid[] = "$Id: stringv.c,v 1.31 1999/05/04 20:27:55 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -57,7 +57,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   if (!vstr->string) SETERRQ(1,1,"Must call ViewerStringSetString() before using");
 
   va_start( Argp, format );
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(tmp,format,(char *)Argp);
 #else
   vsprintf(tmp,format,Argp);

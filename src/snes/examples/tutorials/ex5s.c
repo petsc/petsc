@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5s.c,v 1.7 1999/03/19 21:23:07 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5s.c,v 1.8 1999/05/04 20:36:19 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -426,9 +426,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0; 
 } 
 
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define applicationfunctionfortran_ APPLICATIONFUNCTIONFORTRAN
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define applicationfunctionfortran_ applicationfunctionfortran
 #endif
 

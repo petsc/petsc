@@ -1,9 +1,9 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex18.c,v 1.10 1999/03/30 16:22:46 balay Exp balay $";
+static char vcid[] = "$Id: ex18.c,v 1.11 1999/05/04 20:35:14 balay Exp bsmith $";
 #endif
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\

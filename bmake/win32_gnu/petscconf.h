@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.17 1999/02/08 22:22:33 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.18 1999/04/01 22:39:13 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -8,35 +8,36 @@
 
 #define PARCH_win32_gnu
 
-#define HAVE_SLOW_NRM2
-#define HAVE_SEARCH_H 
-#define HAVE_PWD_H 
-#define HAVE_STRING_H
-#define HAVE_X11 
-#define HAVE_GETDOMAINNAME  
-#define HAVE_UNISTD_H
-#define HAVE_SYS_TIME_H 
-#define HAVE_UNAME
-#define HAVE_MALLOC_H
-#define HAVE_STDLIB_H
-#define HAVE_UNISTD_H
-#define HAVE_SYS_TIME_H
+#define PETSC_HAVE_SLOW_NRM2
+#define PETSC_HAVE_SEARCH_H 
+#define PETSC_HAVE_PWD_H 
+#define PETSC_HAVE_STRING_H
+#define PETSC_HAVE_X11 
+#define PETSC_HAVE_GETDOMAINNAME  
+#define PETSC_HAVE_UNISTD_H
+#define PETSC_HAVE_SYS_TIME_H 
+#define PETSC_HAVE_UNAME
+#define PETSC_HAVE_MALLOC_H
+#define PETSC_HAVE_STDLIB_H
+#define PETSC_HAVE_UNISTD_H
+#define PETSC_HAVE_SYS_TIME_H
+#define PETSC_NEEDS_GETTIMEOFDAY_PROTO
 
-#define HAVE_FORTRAN_UNDERSCORE 
-#define HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
+#define PETSC_HAVE_FORTRAN_UNDERSCORE 
+#define PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 
-#define HAVE_READLINK
-#define HAVE_MEMMOVE
-#define HAVE_RAND
-#define HAVE_DOUBLE_ALIGN_MALLOC
+#define PETSC_HAVE_READLINK
+#define PETSC_HAVE_MEMMOVE
+#define PETSC_HAVE_RAND
+#define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
 
 #define CANNOT_START_DEBUGGER
-#define HAVE_SYS_RESOURCE_H
+#define PETSC_HAVE_SYS_RESOURCE_H
 
-#define HAVE_GET_USER_NAME
-#define SIZEOF_VOIDP 4
-#define SIZEOF_INT 4
-#define SIZEOF_DOUBLE 8
+#define PETSC_HAVE_GET_USER_NAME
+#define PETSC_SIZEOF_VOIDP 4
+#define PETSC_SIZEOF_INT 4
+#define PETSC_SIZEOF_DOUBLE 8
 
-#define USE_NT_TIME
+#define PETSC_USE_NT_TIME
 #endif

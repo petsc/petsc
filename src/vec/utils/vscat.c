@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.136 1999/04/19 22:10:59 bsmith Exp balay $";
+static char vcid[] = "$Id: vscat.c,v 1.137 1999/05/04 20:30:27 balay Exp bsmith $";
 #endif
 
 /*
@@ -65,7 +65,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         ierr = VecGetMap(y,&map);CHKERRQ(ierr);
         ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,xvt2,scat->count,range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         ierr = MPI_Reduce(xv, xvt, 2*xx_n, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
 #else
         ierr = MPI_Reduce(xv, xvt, xx_n, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
           for ( i=0; i<xx_n; i++ ) {
 	    xvt[i] += xvt2[i];
 	  }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
         } else if (addv == MAX_VALUES) {
           for ( i=0; i<xx_n; i++ ) {
 	    xvt[i] = PetscMax(xvt[i],xvt2[i]);
@@ -86,7 +86,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         ierr = VecGetMap(y,&map);CHKERRQ(ierr);
         ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
         ierr = MPI_Gatherv(yv, yy_n, MPIU_SCALAR, 0,  0, 0, MPIU_SCALAR, 0, ctx->comm);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         ierr = MPI_Reduce(xv, xvt, 2*xx_n, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
 #else
         ierr = MPI_Reduce(xv, xvt, xx_n, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);CHKERRQ(ierr);
@@ -114,7 +114,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         for ( i=0; i<yy_n; i++ ) {
 	  yv[i] += yvt[i];
         }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       } else if (addv == MAX_VALUES) {
         for ( i=0; i<yy_n; i++ ) {
           yv[i] = PetscMax(yv[i],yvt[i]);
@@ -172,7 +172,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
         for ( i=0; i<yy_n; i++ ) {
 	  yv[i] += yvt[i];
         }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       } else if (addv == MAX_VALUES) {
         for ( i=0; i<yy_n; i++ ) {
           yv[i] = PetscMax(yv[i],yvt[i]);
@@ -204,7 +204,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
           for ( i=0; i<yy_n; i++ ) {
 	    yv[i] += yvt[i];
           }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
         } else if (addv == MAX_VALUES) {
           for ( i=0; i<yy_n; i++ ) {
             yv[i] = PetscMax(yv[i],yvt[i]);
@@ -296,7 +296,7 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
   } else if (addv == ADD_VALUES) {
     for ( i=0; i<n; i++ ) {yv[tslots[i]] += xv[fslots[i]];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   } else  if (addv == MAX_VALUES) {
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[fslots[i]]);}
 #endif
@@ -328,7 +328,7 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
     } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[i];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else  if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[i]);}
 #endif
@@ -339,7 +339,7 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
       for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
     } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] += xv[fslots[i]];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] = PetscMax(yv[i],xv[fslots[i]]);}
 #endif
@@ -372,7 +372,7 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
     } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[first + i*step]);}
 #endif
@@ -382,7 +382,7 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
       for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
     } else if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] = PetscMax(yv[first + i*step],xv[fslots[i]]);}
 #endif
@@ -416,7 +416,7 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
       for ( i=0; i<n; i++ ) {yv[i] = xv[fslots[i]];}
     } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] += xv[fslots[i]];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else  if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[i] = PetscMax(yv[i],xv[fslots[i]]);}
 #endif
@@ -427,7 +427,7 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[i];}
     } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[i];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else  if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[i]);}
 #endif
@@ -460,7 +460,7 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
       for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
     } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] += xv[fslots[i]];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else  if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[first + i*step] = PetscMax(yv[first + i*step],xv[fslots[i]]);}
 #endif
@@ -470,7 +470,7 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
     } else  if (addv == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[first + i*step];}
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     } else  if (addv == MAX_VALUES) {
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[first + i*step]);}
 #endif
@@ -524,7 +524,7 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
         yv[to_first + i*to_step] += xv[from_first+i*from_step];
       }
     }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     if (to_step == 1 && from_step == 1) {
       yv += to_first; xv += from_first;
@@ -1351,7 +1351,7 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
 int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
   int ierr;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   int to_n,from_n;
 #endif
 
@@ -1359,7 +1359,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0," Scatter ctx already in use");
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   /*
      Error checking to make sure these vectors match the vectors used
    to create the vector scatter context. -1 in the from_n and to_n indicate the
@@ -1386,7 +1386,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
       Put a barrier in front of the scatter to determine how much of the scatter time
     is spent on syncronization
   */
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   /* Wrap this in ifdef to allow access to PLogEventFlags array */
   if (_PLogPLB && PLogEventFlags[VEC_ScatterBarrier]) {                           
     PLogEventBegin(VEC_ScatterBarrier,0,0,0,0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.31 1999/04/20 14:58:49 bsmith Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.32 1999/05/04 20:29:01 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: mprint.c,v 1.31 1999/04/20 14:58:49 bsmith Exp balay 
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -62,14 +62,14 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if defined(HAVE_VFPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
     vfprintf(stdout,format,(char*)Argp);
 #else
     vfprintf(stdout,format,Argp);
 #endif
     fflush(stdout);
     if (petsc_history) {
-#if defined(HAVE_VFPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -85,7 +85,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start( Argp, format );
-#if defined(HAVE_VFPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
     vsprintf(next->string,format,(char *)Argp);
 #else
     vsprintf(next->string,format,Argp);
@@ -136,7 +136,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(fp,format,(char*)Argp);
 #else
     vfprintf(fp,format,Argp);
@@ -144,7 +144,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     fflush(fp);
     queuefile = fp;
     if (petsc_history) {
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -160,7 +160,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start( Argp, format );
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
     vsprintf(next->string,format,(char *)Argp);
 #else
     vsprintf(next->string,format,Argp);
@@ -272,14 +272,14 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(fd,format,(char*)Argp);
 #else
     vfprintf(fd,format,Argp);
 #endif
     fflush(fd);
     if (petsc_history) {
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -322,14 +322,14 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(stdout,format,(char *)Argp);
 #else
     vfprintf(stdout,format,Argp);
 #endif
     fflush(stdout);
     if (petsc_history) {
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -373,14 +373,14 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(stdout,format,(char *)Argp);
 #else
     vfprintf(stdout,format,Argp);
 #endif
     fflush(stdout);
     if (petsc_history) {
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -433,7 +433,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     */
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (rank > 8) rank = 8;
-#if defined(CAN_SLEEP_AFTER_ERROR)
+#if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
     PetscSleep(rank);
 #endif
 
@@ -465,7 +465,7 @@ int PetscErrorPrintfDefault(const char format[],...)
   }
 
   va_start( Argp, format );
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
   vfprintf(stderr,format,(char *)Argp);
 #else
   vfprintf(stderr,format,Argp);

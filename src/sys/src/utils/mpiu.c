@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.88 1999/04/19 22:10:01 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.89 1999/05/04 20:29:32 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"

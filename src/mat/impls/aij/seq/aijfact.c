@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.117 1999/03/11 16:18:58 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.118 1999/05/04 20:31:42 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -13,7 +13,7 @@ int MatOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   PetscFunctionBegin;
 
   SETERRQ(PETSC_ERR_SUP,0,"Code not written");
-#if !defined(USE_PETSC_DEBUG)
+#if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);
 #endif
 }
@@ -394,7 +394,7 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        n = a->m, *ai = a->i, *aj = a->j, *adiag = a->diag,ierr;
   Scalar     *x,*b, *aa = a->a, sum;
-#if !defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
+#if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   int        adiag_i,i,*vi,nz,ai_i;
   Scalar     *v;
 #endif
@@ -409,7 +409,7 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
-#if defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
+#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   fortransolveaij_(&n,x,ai,aj,adiag,aa,b);
 #else
   /* forward solve the lower triangular */

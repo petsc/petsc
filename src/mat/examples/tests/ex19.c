@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.11 1999/04/19 22:13:14 bsmith Exp balay $";
+static char vcid[] = "$Id: ex19.c,v 1.12 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -102,7 +102,7 @@ int main(int argc,char **args)
             rank,start,end,mystart,myend);
     for (i=0; i<nrsub; i++) {
       for (j=0; j<ncsub; j++) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
          if (PetscImaginary(vals[i*ncsub+j]) != 0.0)
            printf("  C[%d, %d] = %g + %g i\n",rsub[i],csub[j],PetscReal(vals[i*ncsub+j]),
                                        PetscImaginary(vals[i*ncsub+j]));

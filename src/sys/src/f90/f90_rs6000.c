@@ -1,9 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_rs6000.c,v 1.7 1998/04/24 14:09:28 balay Exp balay $";
+static char vcid[] = "$Id: f90_rs6000.c,v 1.8 1998/04/25 20:28:42 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/f90/zf90.h"
-#if defined(HAVE_XLF90)
+#if defined(PETSC_HAVE_XLF90)
 
 /* --------------------------------------------------------*/
 /*

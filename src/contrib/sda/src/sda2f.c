@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2f.c,v 1.10 1998/03/30 22:28:14 balay Exp bsmith $";
+static char vcid[] = "$Id: sda2f.c,v 1.11 1998/10/19 22:20:21 bsmith Exp bsmith $";
 #endif
 /*
      Fortran interface for SDA routines.
@@ -8,14 +8,14 @@ static char vcid[] = "$Id: sda2f.c,v 1.10 1998/03/30 22:28:14 balay Exp bsmith $
 
 #include "src/contrib/sda/src/sda.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define sdadestroy_           SDADESTROY
 #define sdalocaltolocalbegin_ SDALOCALTOLOCALBEGIN
 #define sdalocaltolocalend_   SDALOCALTOLOCALEND
 #define sdacreate1d_          SDACREATE1D
 #define sdacreate2d_          SDACREATE2D
 #define sdacreate3d_          SDACREATE3D
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define sdadestroy_           sdadestroy
 #define sdalocaltolocalbegin_ sdalocaltolocalbegin
 #define sdalocaltolocalend_   sdalocaltolocalend

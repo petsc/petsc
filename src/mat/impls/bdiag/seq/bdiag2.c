@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag2.c,v 1.5 1999/01/27 19:47:36 bsmith Exp balay $";
+static char vcid[] = "$Id: bdiag2.c,v 1.6 1999/05/04 20:32:08 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -44,7 +44,7 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
       }
       if (!dfound) {
         if (a->nonew || a->nonew_diag) {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
           if (a->user_alloc && value) {
 #else
           if (a->user_alloc && PetscReal(value) || PetscImaginary(value)) {
@@ -131,7 +131,7 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,
       }
       if (!dfound) {
         if (a->nonew || a->nonew_diag) {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
           if (a->user_alloc && value) {
 #else
           if (a->user_alloc && PetscReal(value) || PetscImaginary(value)) {

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.21 1999/01/12 23:16:17 bsmith Exp bsmith $";
+!    "$Id: ex11f.F,v 1.22 1999/04/16 16:09:25 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -86,7 +86,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       write(6,*) "This example requires complex numbers."
       goto 200
 #endif

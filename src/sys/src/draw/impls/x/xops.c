@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.131 1999/05/04 20:28:34 balay Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.132 1999/05/06 17:58:58 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: xops.c,v 1.131 1999/05/04 20:28:34 balay Exp bsmith $
 
 #include "src/sys/src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
 
-#if defined(HAVE_X11)
+#if defined(PETSC_HAVE_X11)
 
 /*
      These macros transform from the users coordinates to the 

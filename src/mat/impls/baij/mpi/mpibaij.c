@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.169 1999/05/05 15:57:39 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.170 1999/05/06 13:23:41 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -61,7 +61,7 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
   int         nbs = B->nbs,i,bs=B->bs,ierr;
 
   PetscFunctionBegin;
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
   ierr = TableCreate(baij->nbs/5,&baij->colmap);CHKERRQ(ierr); 
   for ( i=0; i<nbs; i++ ){
     ierr = TableAdd(baij->colmap,baij->garray[i]+1,i*bs+1);CHKERRQ(ierr);
@@ -256,7 +256,7 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
     if (im[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
     if (im[i] >= baij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     if (im[i] >= rstart_orig && im[i] < rend_orig) {
@@ -268,7 +268,7 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
           MatSetValues_SeqBAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         else if (in[j] >= baij->N) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Col too large");}
 #endif
         else {
@@ -276,7 +276,7 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
             if (!baij->colmap) {
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
             ierr = TableFind(baij->colmap, in[j]/bs + 1,&col);CHKERRQ(ierr);
             col  = col - 1 + in[j]%bs;
 #else
@@ -332,7 +332,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   }
   for ( i=0; i<m; i++ ) {
     if (im[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
     if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large, row %d max %d",im[i],baij->Mbs);
 #endif
     if (im[i] >= rstart && im[i] < rend) {
@@ -362,7 +362,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
           ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
         else if (in[j] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large, col %d max %d",in[j],baij->Nbs);}
 #endif
         else {
@@ -371,8 +371,8 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 
-#if defined(USE_PETSC_BOPT_g)
-#if defined (USE_CTABLE)
+#if defined(PETSC_USE_BOPT_g)
+#if defined (PETSC_USE_CTABLE)
             { int data;
             ierr = TableFind(baij->colmap,in[j]+1,&data);CHKERRQ(ierr);
             if((data - 1) % bs)
@@ -382,7 +382,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
             if ((baij->colmap[in[j]] - 1) % bs) {SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");}
 #endif
 #endif
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
 	    ierr = TableFind(baij->colmap,in[j]+1,&col);CHKERRQ(ierr);
             col  = (col - 1)/bs;
 #else
@@ -424,14 +424,14 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
   int         h1,key,size=baij->ht_size,bs=baij->bs,*HT=baij->ht,idx;
   double      tmp;
   Scalar      ** HD = baij->hd,value;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
 #endif
 
   PetscFunctionBegin;
 
   for ( i=0; i<m; i++ ) {
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (im[i] >= baij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
@@ -446,7 +446,7 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
 
         
         idx = h1;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         insert_ct++;
         total_ct++;
         if (HT[idx] != key) {
@@ -483,7 +483,7 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
       }
     }
   }
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   baij->ht_total_ct = total_ct;
   baij->ht_insert_ct = insert_ct;
 #endif
@@ -501,7 +501,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
   int         h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
   double      tmp;
   Scalar      ** HD = baij->hd,*value,*v_t,*baij_a;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
 #endif
  
@@ -513,7 +513,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
     stepval = (m-1)*bs;
   }
   for ( i=0; i<m; i++ ) {
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (im[i] >= baij->Mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
@@ -528,7 +528,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
         h1  = HASH(size,key,tmp);
       
         idx = h1;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         total_ct++;
         insert_ct++;
        if (HT[idx] != key) {
@@ -597,7 +597,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
       }
     }
   }
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   baij->ht_total_ct = total_ct;
   baij->ht_insert_ct = insert_ct;
 #endif
@@ -628,7 +628,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
           if (!baij->colmap) {
             ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
           } 
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
           ierr = TableFind(baij->colmap,idxn[j]/bs+1,&data);CHKERRQ(ierr);
           data --;
 #else
@@ -665,7 +665,7 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
     if (type == NORM_FROBENIUS) {
       v = amat->a;
       for (i=0; i<amat->nz*bs2; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
@@ -673,7 +673,7 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
       }
       v = bmat->a;
       for (i=0; i<bmat->nz*bs2; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
@@ -709,7 +709,7 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   int         *HT,key;
   Scalar      **HD;
   double      tmp;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   int         ct=0,max=0;
 #endif
 
@@ -744,13 +744,13 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = a->a + j*bs2;
           break;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         } else {
           ct++;
 #endif
         }
       }
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
       if (k> max) max = k;
 #endif
     }
@@ -767,20 +767,20 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = b->a + j*bs2;
           break;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         } else {
           ct++;
 #endif
         }
       }
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
       if (k> max) max = k;
 #endif
     }
   }
   
   /* Print Summary */
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   for ( i=0,j=0; i<size; i++) 
     if (HT[i]) {j++;}
   PLogInfo(0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %d\n",
@@ -896,7 +896,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
     PLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",
              ((double)baij->ht_total_ct)/baij->ht_insert_ct);
@@ -1077,7 +1077,7 @@ int MatDestroy_MPIBAIJ(Mat mat)
   if (mat->cmap) {
     ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
   }
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",baij->M,baij->N);
 #endif
 
@@ -1087,7 +1087,7 @@ int MatDestroy_MPIBAIJ(Mat mat)
   PetscFree(baij->rowners); 
   ierr = MatDestroy(baij->A);CHKERRQ(ierr);
   ierr = MatDestroy(baij->B);CHKERRQ(ierr);
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
   if (baij->colmap) TableDelete(baij->colmap);
 #else
   if (baij->colmap) PetscFree(baij->colmap);
@@ -1521,7 +1521,7 @@ CHKERRQ(ierr);
     PetscFree(baij->rowners); 
     ierr = MatDestroy(baij->A);CHKERRQ(ierr);
     ierr = MatDestroy(baij->B);CHKERRQ(ierr);
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
     if (baij->colmap) TableDelete(baij->colmap);
 #else
     if (baij->colmap) PetscFree(baij->colmap);
@@ -2191,7 +2191,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   ierr = MatStashCreate_Private(matin->comm,1,&mat->stash);CHKERRQ(ierr);
   ierr = MatStashCreate_Private(matin->comm,oldmat->bs,&mat->bstash);CHKERRQ(ierr);
   if (oldmat->colmap) {
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
   ierr = TableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr); 
 #else
     a->colmap = (int *) PetscMalloc((a->Nbs)*sizeof(int));CHKPTRQ(a->colmap);

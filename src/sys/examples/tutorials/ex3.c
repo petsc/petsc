@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.26 1999/03/19 21:17:21 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.27 1999/05/04 20:29:57 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
@@ -7,7 +7,7 @@ inserting their own event logging.  Run this program with one of the\n\
 following options to generate logging information:  -log, -log_summary,\n\
 -log_all.  The PETSc routines automatically log event times and flops,\n\
 so this monitoring is intended solely for users to employ in application\n\
-codes.  Note that the code must be compiled with the flag -DUSE_PETSC_LOG\n\
+codes.  Note that the code must be compiled with the flag -DPETSC_USE_LOG\n\
 (the default) to activate logging.\n\n";
 
 /*T

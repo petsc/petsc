@@ -1,14 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.66 1999/05/04 20:27:54 balay Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.67 1999/05/06 17:58:38 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include <fcntl.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined (HAVE_IO_H)
+#if defined (PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
 
@@ -217,7 +217,7 @@ int ViewerBinaryLoadInfo(Viewer viewer)
       /*
          Check for -mat_complex or -mat_double
       */
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       if (!PetscStrncmp(first,"-mat_double",11)) {
         SETERRQ(1,1,"Loading double number matrix with complex number code");
       }
@@ -335,7 +335,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
     }
   }
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)viewer,"File: %s",name);
 #endif
   PetscFunctionReturn(0);

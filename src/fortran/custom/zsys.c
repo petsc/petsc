@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.63 1999/05/08 13:58:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.64 1999/05/08 14:00:39 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscattachdebugger_       PETSCATTACHDEBUGGER
 #define petscobjectsetname_        PETSCOBJECTSETNAME
 #define petscobjectdestroy_        PETSCOBJECTDESTROY
@@ -41,7 +41,7 @@ static char vcid[] = "$Id: zsys.c,v 1.63 1999/05/08 13:58:33 bsmith Exp bsmith $
 #define petscobjectrestorenewtag_  PETSCOBJECTRESTORENEWTAG
 #define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
 #define petsccommrestorenewtag_    PETSCCOMMRESTORENEWTAG
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscobjectgetnewtag_      petscobjectgetnewtag
 #define petscobjectrestorenewtag_  petscobjectrestorenewtag
 #define petsccommgetnewtag_        petsccommgetnewtag
@@ -272,7 +272,7 @@ void petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
 
 void petscgetflops_(PLogDouble *d,int *__ierr)
 {
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   *__ierr = PetscGetFlops(d);
 #else
   __ierr = 0;

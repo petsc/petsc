@@ -6,7 +6,7 @@
   if the compiler reports a conflict between a prototye in a system file
   and this file then the prototype in this file should be removed.
 
-    This is included by files in src/sys/src and src/viewer/impls/.
+    This is included by files in src/sys/src
 */
 
 #if !defined(_PETSCFIX_H)
@@ -21,6 +21,7 @@
 typedef struct rusage* s_rusage;
 
 
+
 /* -------------------------Sun Sparc Adjustments  ----------------------*/
 #if defined(PARCH_sun4)
 #if defined(__cplusplus)
@@ -31,8 +32,6 @@ extern int    getrusage(int,s_rusage);
 extern char   *mktemp(char *);
 extern char   *realpath(char *,char *);
 extern void   *memalign(int,int);
-#include <sys/time.h>
-extern int    gettimeofday(struct timeval *,struct timezone *);
 extern int    getpagesize();
 /*
    On some machines with older versions of the gnu compiler and 
@@ -60,8 +59,6 @@ extern char   *realpath(char *,char *);
 extern int    getrusage(int,s_rusage);
 extern int    vfprintf (FILE *, const char *, char * );
 extern int    getpagesize();
-#include <sys/time.h>
-extern int    gettimeofday(struct timeval *,struct timezone *);
 /*
    On some machines with older versions of the gnu compiler and 
    system libraries these prototypes may be needed
@@ -221,6 +218,18 @@ extern int          close(int);
 #endif
 #endif
 
+/* ------------------ Cray t3d --------------------------------*/
+#if defined(PARCH_ascired)
+
+#if defined(__cplusplus)
+extern "C" {
+extern char *getwd(char *_name);
+}
+#else
+extern char *getwd(char *_name);
+#endif
+#endif
+
 /* -------------------------------------------------------------------------*/
 #if defined(PARCH_paragon)
 
@@ -254,9 +263,7 @@ extern void* memalign (int,int);
 
 #if defined(__cplusplus)
 extern "C" {
-#include <sys/time.h>
 #include <unistd.h>
-extern int    gettimeofday(struct timeval *,struct timezone *);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
 extern int    getdomainname(char *,int);
@@ -266,9 +273,8 @@ extern int    getdomainname(char *,int);
 }
 
 #else
-#include <sys/time.h>
+
 #include <unistd.h>
-extern int    gettimeofday(struct timeval *,struct timezone *);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
 extern int    getdomainname(char *,int);

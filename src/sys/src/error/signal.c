@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.58 1999/04/21 20:43:10 bsmith Exp balay $";
+static char vcid[] = "$Id: signal.c,v 1.59 1999/05/04 20:28:50 balay Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -55,7 +55,7 @@ static char *SIGNAME[] = {
 .    addr - ??
 
 */
-#if defined(PARCH_IRIX)  || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)|| defined(PARCH_sun4)
+#if defined(PETSC_HAVE_4ARG_SIGNAL_HANDLER)
 static void PetscSignalHandler( int sig, int code,struct sigcontext * scp,char *addr)
 #else
 static void PetscSignalHandler( int sig )
@@ -103,7 +103,7 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   ierr = PetscStrcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");CHKERRQ(ierr);
   ierr = PetscStrcat(buf,"-on_error_attach_debugger ");CHKERRQ(ierr);
   ierr = PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs\n");CHKERRQ(ierr);
-#if defined(USE_PETSC_STACK)
+#if defined(PETSC_USE_STACK)
   if (!PetscStackActive) {
     ierr = PetscStrcat(buf,"PETSC ERROR: or try option -log_stack\n");CHKERRQ(ierr);
   } else {

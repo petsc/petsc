@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.37 1999/04/19 22:11:18 bsmith Exp balay $"
+static char vcid[] = "$Id: pvec2.c,v 1.38 1999/05/04 20:30:48 balay Exp bsmith $"
 #endif
 
 /*
@@ -50,9 +50,9 @@ int VecMDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
   }
   ierr = VecMDot_Seq(  nv, xin, y, work );CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-#elif defined(use_ethernet)
+#elif defined(PETSC_USE_ethernet)
   ierr = Ethernet_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #else
   ierr = MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
@@ -77,7 +77,7 @@ int VecMTDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
   }
   ierr = VecMTDot_Seq(  nv, xin, y, work );CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #else
   ierr = MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
@@ -101,7 +101,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
   PetscFunctionBegin;
   if (type == NORM_2) {
 
-#if defined(USE_FORTRAN_KERNEL_NORMSQR)
+#if defined(PETSC_USE_FORTRAN_KERNEL_NORMSQR)
     fortrannormsqr_(xx,&n,&work);
 #else
     /* int i; for ( i=0; i<n; i++ ) work += xx[i]*xx[i];   */

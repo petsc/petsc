@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.10 1999/03/24 16:35:07 balay Exp balay $;
+!  $Id: petscdef.h,v 1.11 1999/03/24 18:28:25 balay Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -24,10 +24,10 @@
 ! ???? All integers should also be changed to PetscFortranInt ?????
 !
 
-#if (SIZEOF_VOIDP == 8)
+#if (PETSC_SIZEOF_VOIDP == 8)
 #define PetscOffset        integer*8
 #define PetscFortranAddr   integer*8
-#elif defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
+#elif defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90)
 #define PetscOffset        integer
 #define PetscFortranAddr   integer
 #else
@@ -35,15 +35,15 @@
 #define PetscFortranAddr   integer*4
 #endif
 
-#if (SIZEOF_INT == 8)
+#if (PETSC_SIZEOF_INT == 8)
 #define PetscFortranInt integer*8
-#elif defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
+#elif defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90)
 #define PetscFortranInt integer
 #else
 #define PetscFortranInt integer*4
 #endif
 
-#if defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
+#if defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_SOLARISF90)
 #define PetscFortranDouble  double precision
 #define PetscFortranComplex complex (KIND=SELECTED_REAL_KIND(14))
 #else
@@ -51,7 +51,7 @@
 #define PetscFortranComplex complex*16
 #endif
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
@@ -59,12 +59,12 @@
 !
 !     Macro for templating between real and complex
 !
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 #define Scalar       PetscFortranComplex
 !
 ! F90 uses real(), conjg() when KIND parameter is used.
 !
-#if defined (HAVE_NAGF90) || defined (HAVE_IRIXF90) || defined (PARCH_freebsd)
+#if defined (PETSC_HAVE_NAGF90) || defined (PETSC_HAVE_IRIXF90) || defined (PARCH_freebsd)
 #define PetscReal(a) real(a)
 #define PetscConj(a) conjg(a)
 #else
@@ -82,9 +82,9 @@
 !    Allows the matrix Fortran Kernels to work with single precision
 !    matrix data structures
 !
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 #define MatScalar Scalar 
-#elif defined(USE_MAT_SINGLE)
+#elif defined(PETSC_USE_MAT_SINGLE)
 #define MatScalar real*4
 #else
 #define MatScalar Scalar
@@ -103,7 +103,7 @@
 !
 !     Macros for error checking
 !
-#if defined(USE_PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
 #define SETERRA(n,p,s) call MPI_Abort(PETSC_COMM_WORLD,n)
 #define CHKERRA(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
 #else

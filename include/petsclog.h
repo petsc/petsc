@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.127 1999/03/11 16:24:44 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.128 1999/03/17 23:25:44 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -139,7 +139,7 @@ extern int PLogInfoDeactivateClass(int);
 extern int PLogInfoActivateClass(int);
 extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 
-#if defined(USE_PETSC_LOG)  /* --- Logging is turned on --------------------------------*/
+#if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
 
 /* 
    Flop counting:  We count each arithmetic operation (e.g., addition, multiplication) separately.
@@ -154,13 +154,13 @@ extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
    among the various arithmetic operations.
  */
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 #define PLogFlops(n) {_TotalFlops += (4*n);}
 #else
 #define PLogFlops(n) {_TotalFlops += (n);}
 #endif
 
-#if defined (HAVE_MPE)
+#if defined (PETSC_HAVE_MPE)
 #include "mpe.h"
 #define MPEBEGIN    1000 
 extern int PLogMPEBegin(void);
@@ -185,7 +185,7 @@ extern int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PLogPHC)(PetscObject);
 extern int (*_PLogPHD)(PetscObject);
 
-#if defined(HAVE_MPE)
+#if defined(PETSC_HAVE_MPE)
 #define PLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
   { \
     if (_PLogPLB && PLogEventFlags[e]) {                           \
@@ -225,7 +225,7 @@ extern int (*_PLogPHD)(PetscObject);
   }
 #endif
 
-#if defined(HAVE_MPE)
+#if defined(PETSC_HAVE_MPE)
 #define PLogEventBarrierEnd(e,o1,o2,o3,o4,cm) {\
   if (_PLogPLE && PLogEventFlags[(e)+1]) \
     (*_PLogPLE)((e)+1,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
@@ -286,11 +286,11 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
      It does not work correctly from HP-UX because it processes the 
    macros in a way that sometimes it double counts, hence 
-   HAVE_BROKEN_RECURSIVE_MACRO
+   PETSC_HAVE_BROKEN_RECURSIVE_MACRO
 
      It does not work with Windows NT because winmpich lacks MPI_Type_size()
 */
-#if !defined(USING_MPIUNI) && !defined(HAVE_BROKEN_RECURSIVE_MACRO)
+#if !defined(USING_MPIUNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
 /*
    Logging of MPI activities
 */
@@ -380,7 +380,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
   MPI_Start( requests)                   \
 )
 
-#endif /* !USING_MPIUNI && ! HAVE_BROKEN_RECURSIVE_MACRO */
+#endif /* !USING_MPIUNI && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 
@@ -430,14 +430,14 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define PLogMPEDump(a)
 extern int PLogObjectState(PetscObject,const char[],...);
 
-/* If USE_PETSC_LOG is NOT defined, these still need to be! */
+/* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv( count,number,requests) MPI_Startall( number, requests)
 
 #define MPI_Startall_isend( count,number,requests) MPI_Startall( number, requests)
 
 #define MPI_Start_isend(count,  requests) MPI_Start( requests)
 
-#endif   /* USE_PETSC_LOG */
+#endif   /* PETSC_USE_LOG */
 
 
 #endif

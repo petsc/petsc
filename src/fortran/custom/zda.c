@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.29 1999/04/05 18:06:29 balay Exp balay $";
+static char vcid[] = "$Id: zda.c,v 1.30 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
 #include "da.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dacreate1d_                  DACREATE1D
 #define dacreate3d_                  DACREATE3D
 #define dacreate2d_                  DACREATE2D
@@ -22,7 +22,7 @@ static char vcid[] = "$Id: zda.c,v 1.29 1999/04/05 18:06:29 balay Exp balay $";
 #define daload_                      DALOAD
 #define dasetfieldname_              DASETFIELDNAME
 #define dagetfieldname_              DAGETFIELDNAME
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define daload_                      daload
 #define dacreateglobalvector_        dacreateglobalvector
 #define dacreatelocalvector_         dacreatelocalvector

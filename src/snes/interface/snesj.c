@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.57 1999/03/17 23:24:18 bsmith Exp balay $";
+static char vcid[] = "$Id: snesj.c,v 1.58 1999/05/04 20:35:43 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -77,7 +77,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
       ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
       dx = xx[i-start];
       ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
@@ -93,7 +93,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     ierr = eval_fct(snes,x2,j2a);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,j1a,j2a);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
     ierr = MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);

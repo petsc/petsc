@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.13 1998/12/17 22:13:20 bsmith Exp balay $ */
+/* $Id: petscmath.h,v 1.14 1998/12/17 22:48:51 balay Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -21,12 +21,12 @@
    Scalar which is either always a double or a complex.
 
 */
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 
 #if defined (PARCH_win32)
 #include <complex>
-#elif defined(HAVE_NONSTANDARD_COMPLEX_H)
-#include HAVE_NONSTANDARD_COMPLEX_H
+#elif defined(PETSC_HAVE_NONSTANDARD_COMPLEX_H)
+#include PETSC_HAVE_NONSTANDARD_COMPLEX_H
 #else
 #include <complex.h>
 #endif
@@ -52,7 +52,7 @@ extern  MPI_Datatype       MPIU_COMPLEX;
 */
 #if defined(PARCH_win32)
 #define Scalar            std::complex<double>
-#elif defined(USES_TEMPLATED_COMPLEX)
+#elif defined(PETSC_HAVE_TEMPLATED_COMPLEX)
 #define Scalar            complex<double>
 #else
 #define Scalar            complex
@@ -77,12 +77,12 @@ extern  MPI_Datatype       MPIU_COMPLEX;
 
           EXPERIMENTAL! NOT YET COMPLETELY WORKING
 */
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 
 #define MatScalar Scalar 
 #define MatFloat  double
 
-#elif defined(USE_MAT_SINGLE)
+#elif defined(PETSC_USE_MAT_SINGLE)
 
 #define MatScalar float
 #define MatFloat  float

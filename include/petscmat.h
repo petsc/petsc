@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.177 1999/04/16 16:12:20 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.178 1999/05/04 18:48:06 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -199,7 +199,7 @@ typedef char* MatOrderingType;
 
 extern int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 extern int MatOrderingRegister_Private(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,IS*));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatOrderingRegister(a,b,c,d) MatOrderingRegister_Private(a,b,c,0)
 #else
 #define MatOrderingRegister(a,b,c,d) MatOrderingRegister_Private(a,b,c,d)
@@ -265,7 +265,7 @@ typedef char* MatColoringType;
 
 extern int MatGetColoring(Mat,MatColoringType,ISColoring*);
 extern int MatColoringRegister_Private(char*,char*,char*,int(*)(Mat,MatColoringType,ISColoring *));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatColoringRegister(a,b,c,d) MatColoringRegister_Private(a,b,c,0)
 #else
 #define MatColoringRegister(a,b,c,d) MatColoringRegister_Private(a,b,c,d)
@@ -314,7 +314,7 @@ extern int MatPartitioningApply(MatPartitioning,IS*);
 extern int MatPartitioningDestroy(MatPartitioning);
 
 extern int MatPartitioningRegister_Private(char*,char*,char*,int(*)(MatPartitioning));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatPartitioningRegister(a,b,c,d) MatPartitioningRegister_Private(a,b,c,0)
 #else
 #define MatPartitioningRegister(a,b,c,d) MatPartitioningRegister_Private(a,b,c,d)

@@ -1,6 +1,6 @@
 #
 FCONF    = @FORTRAN_NAMING@
-CONF     = -DHAVE_PETSCCONF_H $(FCONF) 
+CONF     = -DPETSC_HAVE_PETSCCONF_H $(FCONF) 
 
 include $(PETSC_DIR)/bmake/${PETSC_ARCH}/base_variables
 include $(PETSC_DIR)/bmake/common

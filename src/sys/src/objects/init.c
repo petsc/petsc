@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.39 1999/05/04 20:29:12 balay Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.40 1999/05/06 17:59:13 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -11,10 +11,10 @@ static char vcid[] = "$Id: init.c,v 1.39 1999/05/04 20:29:12 balay Exp bsmith $"
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "sys.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -30,7 +30,7 @@ int      PetscGlobalRank = -1, PetscGlobalSize = -1;
 MPI_Comm PETSC_COMM_WORLD = 0;
 MPI_Comm PETSC_COMM_SELF  = 0;
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
 Scalar        PETSC_i; 
 #else
@@ -46,7 +46,7 @@ int  _BT_idx;
 /*
      Determines if all PETSc objects are published to the AMS
 */
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 PetscTruth PetscAMSPublishAll = PETSC_FALSE;
 #endif
 
@@ -305,7 +305,7 @@ void Petsc_MPI_Abort_Function(MPI_Comm *comm,int *flag)
   abort();
 }
 
-#if defined(HAVE_MALLOC_VERIFY)
+#if defined(PETSC_HAVE_MALLOC_VERIFY)
 EXTERN_C_BEGIN
 extern int malloc_debug(int);
 EXTERN_C_END
@@ -329,7 +329,7 @@ int OptionsCheckInitial_Alice(void)
       Setup the memory management; support for tracing malloc() usage 
   */
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3);CHKERRQ(ierr);
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   /* always does trmalloc with BOPT=g, just check so does not reported never checked */
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1);CHKERRQ(ierr);
@@ -345,7 +345,7 @@ int OptionsCheckInitial_Alice(void)
   ierr = OptionsHasName(PETSC_NULL,"-trdebug",&flg1);CHKERRQ(ierr);
   if (flg1) { 
     ierr = PetscTrDebugLevel(1);CHKERRQ(ierr);
-#if defined(HAVE_MALLOC_VERIFY) && defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_HAVE_MALLOC_VERIFY) && defined(PETSC_USE_BOPT_g)
     malloc_debug(2);
 #endif
   }
@@ -396,9 +396,9 @@ int OptionsCheckInitial_Alice(void)
   /*
       Setup debugger information
   */
-#if defined(USE_DBX_DEBUGGER)
+#if defined(PETSC_USE_DBX_DEBUGGER)
   ierr = PetscSetDebugger("dbx",1);CHKERRQ(ierr);
-#elif defined(USE_XDB_DEBUGGER) 
+#elif defined(PETSC_USE_XDB_DEBUGGER) 
   ierr = PetscSetDebugger("xdb",1);CHKERRQ(ierr);
 #else  /* Default is gdb */
   ierr = PetscSetDebugger("gdb",1);CHKERRQ(ierr);
@@ -491,7 +491,7 @@ int OptionsCheckInitial_Alice(void)
   /*
         Setup profiling and logging
   */
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   {
     char mname[256];
     {
@@ -515,7 +515,7 @@ int OptionsCheckInitial_Alice(void)
         PLogInfoAllow(PETSC_TRUE,PETSC_NULL); 
       }
     }
-#if defined (HAVE_MPE)
+#if defined (PETSC_HAVE_MPE)
     ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1);CHKERRQ(ierr);
     if (flg1) PLogMPEBegin();
 #endif
@@ -547,8 +547,8 @@ int OptionsCheckInitial_Alice(void)
   /*
       Setup building of stack frames for all function calls
   */
-#if defined(USE_PETSC_STACK)
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_STACK)
+#if defined(PETSC_USE_BOPT_g)
   ierr = PetscStackCreate(256);CHKERRQ(ierr);
 #else
   ierr = OptionsHasName(PETSC_NULL,"-log_stack", &flg1);CHKERRQ(ierr);
@@ -589,17 +589,17 @@ int OptionsCheckInitial_Alice(void)
     ierr = (*PetscHelpPrintf)(comm," -optionstable: dump list of options inputted\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -optionsleft: dump list of unused options\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -get_resident_set_size: print memory usage at end of run\n");CHKERRQ(ierr);
-#if defined (USE_PETSC_LOG)
+#if defined (PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");CHKERRQ(ierr);
-#if defined (HAVE_MPE)
+#if defined (PETSC_HAVE_MPE)
     ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm," -log_info <optional filename>: print informative messages about the calculations\n");CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
     ierr = (*PetscHelpPrintf)(comm," -ams_publish_objects: \n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -ams_publish_stack: \n");CHKERRQ(ierr);
 #endif
@@ -752,7 +752,7 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);CHKERRQ(ierr);
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   /* 
      Initialized the global complex variable; this is because with 
      shared libraries the constructors for global variables
@@ -830,11 +830,11 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
 +  -log_summary [filename] - Prints summary of flop and timing
         information to screen. If the filename is specified the
         summary is written to the file. (for code compiled with 
-        USE_PETSC_LOG).  See PLogPrintSummary().
+        PETSC_USE_LOG).  See PLogPrintSummary().
 .  -log_all [filename] - Logs extensive profiling information
-        (for code compiled with USE_PETSC_LOG). See PLogDump(). 
+        (for code compiled with PETSC_USE_LOG). See PLogDump(). 
 .  -log [filename] - Logs basic profiline information (for
-        code compiled with USE_PETSC_LOG).  See PLogDump().
+        code compiled with PETSC_USE_LOG).  See PLogDump().
 .  -log_sync - Log the synchronization in scatters, inner products
         and norms
 -  -log_mpe [filename] - Creates a logfile viewable by the 
@@ -868,7 +868,7 @@ int AliceFinalize(void)
   ierr = ViewerDestroyASCII_Private();CHKERRQ(ierr);
   ierr = ViewerDestroyDraw_Private();CHKERRQ(ierr);
   ierr = ViewerDestroySocket_Private();CHKERRQ(ierr);
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   ierr = PetscStackDepublish();CHKERRQ(ierr);
   ierr = ViewerDestroyAMS_Private();CHKERRQ(ierr);
 #endif
@@ -880,16 +880,16 @@ int AliceFinalize(void)
     ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
   }
 
-#if defined(USE_PETSC_STACK)
+#if defined(PETSC_USE_STACK)
   if (PetscStackActive) {
     ierr = PetscStackDestroy();CHKERRQ(ierr);
   }
 #endif
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   {
     char mname[64];
-#if defined (HAVE_MPE)
+#if defined (PETSC_HAVE_MPE)
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_mpe",mname,64,&flg1);CHKERRQ(ierr);
     if (flg1){
@@ -940,7 +940,7 @@ int AliceFinalize(void)
     }
   }
 
-#if (USE_PETSC_BOPT_g)
+#if (PETSC_USE_BOPT_g)
   flg2 = 0;
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft_off",&flg2);CHKERRQ(ierr);
   if (nopt && !flg1 && !flg2) {
@@ -967,7 +967,7 @@ int AliceFinalize(void)
   ierr = PetscCommDestroy_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
   ierr = PetscCommDestroy_Private(&PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   ierr = PLogEventRegisterDestroy_Private();CHKERRQ(ierr);
   ierr = PLogStageDestroy_Private();CHKERRQ(ierr);
 #endif
@@ -1039,7 +1039,7 @@ int AliceFinalize(void)
 
      Note: In certain cases PETSC_COMM_WORLD is never MPI_Comm_free()ed because 
    the communicator has some outstanding requests on it. Specifically if the 
-   flag HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
+   flag PETSC_HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
    src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDuplicate_Private()
    is never freed as it should be. Thus one may obtain messages of the form
    [ 1] 8 bytes PetscCommDuplicate_Private() line 645 in src/sys/src/mpiu.c indicating the

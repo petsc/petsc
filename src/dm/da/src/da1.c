@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.97 1999/04/19 22:17:13 bsmith Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.98 1999/05/04 20:37:25 balay Exp bsmith $";
 #endif
 
 /* 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: da1.c,v 1.97 1999/04/19 22:17:13 bsmith Exp balay $";
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
 
-#if defined (HAVE_AMS)
+#if defined (PETSC_HAVE_AMS)
 EXTERN_C_BEGIN
 extern int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
 EXTERN_C_END
@@ -362,7 +362,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
   *inra = da;
   PetscPublishAll(da);  
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",

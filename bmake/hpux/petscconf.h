@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.12 1998/11/10 20:52:07 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.13 1999/02/08 22:22:33 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -8,35 +8,35 @@
 
 #define PARCH_hpux 
 
-#define HAVE_STDLIB_H 
-#define HAVE_PWD_H 
-#define HAVE_MALLOC_H 
-#define HAVE_STRING_H 
-#define HAVE_X11 
+#define PETSC_HAVE_STDLIB_H 
+#define PETSC_HAVE_PWD_H 
+#define PETSC_HAVE_MALLOC_H 
+#define PETSC_HAVE_STRING_H 
+#define PETSC_HAVE_X11 
 #define _POSIX_SOURCE 
 #define _INCLUDE_POSIX_SOURCE
-#define HAVE_DRAND48 
+#define PETSC_HAVE_DRAND48 
 #define _INCLUDE_XOPEN_SOURCE 
 #define _INCLUDE_XOPEN_SOURCE_EXTENDED 
 #define _INCLUDE_HPUX_SOURCE 
-#define HAVE_GETDOMAINNAME 
-#define HAVE_SYS_TIME_H
-#define HAVE_UNISTD_H 
-#define HAVE_UNAME
+#define PETSC_HAVE_GETDOMAINNAME 
+#define PETSC_HAVE_SYS_TIME_H
+#define PETSC_HAVE_UNISTD_H 
+#define PETSC_HAVE_UNAME
 
-#define HAVE_READLINK
-#define HAVE_MEMMOVE
+#define PETSC_HAVE_READLINK
+#define PETSC_HAVE_MEMMOVE
 
-#define USE_XDB_DEBUGGER
+#define PETSC_USE_XDB_DEBUGGER
 
-#define HAVE_SYS_RESOURCE_H
+#define PETSC_HAVE_SYS_RESOURCE_H
 
-#define HAVE_CLOCK
-#define SIZEOF_VOIDP 4
-#define SIZEOF_INT 4
-#define SIZEOF_DOUBLE 8
+#define PETSC_HAVE_CLOCK
+#define PETSC_SIZEOF_VOIDP 4
+#define PETSC_SIZEOF_INT 4
+#define PETSC_SIZEOF_DOUBLE 8
 
-#define WORDS_BIGENDIAN 1
-#define HAVE_HPUXF90
+#define PETSC_WORDS_BIGENDIAN 1
+#define PETSC_HAVE_HPUXF90
 
 #endif

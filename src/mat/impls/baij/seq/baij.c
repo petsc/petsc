@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.175 1999/05/06 13:21:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.176 1999/05/06 13:25:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -138,7 +138,7 @@ int MatDestroy_SeqBAIJ(Mat A)
   if (A->cmap) {
     ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
   }
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject) A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
   PetscFree(a->a); 
@@ -430,7 +430,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
         fprintf(fd,"row %d:",i*bs+j);
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
             if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0) {
               fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
                       PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
@@ -456,7 +456,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
         fprintf(fd,"row %d:",i*bs+j);
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
             if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0) {
               fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
                 PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
@@ -666,7 +666,7 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; 
     if (row < 0) continue;
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
     if (row >= a->mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     rp   = aj + ai[row]; 
@@ -676,7 +676,7 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
     low  = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
       if (in[l] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
       if (in[l] >= a->nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
       col = in[l]; 
@@ -942,7 +942,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
         baij->ilen[row/bs] = 0;
       } /* end (!diag) */
     } else { /* (sizes[i] != bs) */
-#if defined (USE_PETSC_DEBUG)
+#if defined (PETSC_USE_DEBUG)
       if (sizes[i] != 1) SETERRQ(1,0,"Internal Error. Value should be 1");
 #endif
       for ( k=0; k<count; k++ ) { 
@@ -975,7 +975,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; brow = row/bs;  
     if (row < 0) continue;
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
     if (row >= a->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large: row %d max %d",row,a->m);
 #endif
     rp   = aj + ai[brow]; 
@@ -985,7 +985,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
     low  = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
       if (in[l] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
       if (in[l] >= a->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large: col %d max %d",in[l],a->n);
 #endif
       col = in[l]; bcol = col/bs;

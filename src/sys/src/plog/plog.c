@@ -1,21 +1,22 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.214 1999/04/20 15:01:44 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.215 1999/05/04 20:29:40 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "ts.h"      /* This include is to define all the PETSc cookies */
-#if defined(HAVE_MPE)
+#if defined(PETSC_HAVE_MPE)
 #include "mpe.h"
 #endif
 #include <stdarg.h>
 #include <sys/types.h>
 #include "sys.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -141,7 +142,7 @@ int PLogInfoActivateClass(int objclass)
 
 
 /* -------------------------------------------------------------------*/
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
 static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
 
 /* 
@@ -893,7 +894,7 @@ int PLogObjectState(PetscObject obj,const char format[],...)
   PetscFunctionBegin;
   if (!objects) PetscFunctionReturn(0);
   va_start( Argp, format );
-#if defined(HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(objects[obj->id].string,format,(char *)Argp);
 #else
   vsprintf(objects[obj->id].string,format,Argp);
@@ -937,7 +938,7 @@ int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
    Not Collective
 
    Options Database Keys:
-.  -log_all - Prints extensive log information (for code compiled with USE_PETSC_LOG)
+.  -log_all - Prints extensive log information (for code compiled with PETSC_USE_LOG)
 
    Usage:
 .vb
@@ -1024,8 +1025,8 @@ int PLogDestroy(void)
 
     Options Database Keys:
 +   -log_summary - Prints summary of flop and timing information to the 
-                   screen (for code compiled with USE_PETSC_LOG)
--   -log - Prints detailed log information (for code compiled with USE_PETSC_LOG)
+                   screen (for code compiled with PETSC_USE_LOG)
+-   -log - Prints detailed log information (for code compiled with PETSC_USE_LOG)
 
     Usage:
 .vb
@@ -1111,8 +1112,8 @@ int PLogTraceBegin(FILE *file)
 .  name - an optional file name
 
    Options Database Keys:
-+  -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
--  -log_all - Prints extensive log information (for code compiled with USE_PETSC_LOG)
++  -log - Prints basic log information (for code compiled with PETSC_USE_LOG)
+-  -log_all - Prints extensive log information (for code compiled with PETSC_USE_LOG)
    
    Usage:
 .vb
@@ -1215,14 +1216,14 @@ extern int  PLogEventColorMalloced[];
 
     Notes: 
     PETSc automatically logs library events if the code has been
-    compiled with -DUSE_PETSC_LOG (which is the default) and -log,
+    compiled with -DPETSC_USE_LOG (which is the default) and -log,
     -log_summary, or -log_all are specified.  PLogEventRegister() is
     intended for logging user events to supplement this PETSc
     information. 
 
     PETSc can gather data for use with the utilities Upshot/Nupshot
     (part of the MPICH distribution).  If PETSc has been compiled
-    with flag -DHAVE_MPE (MPE is an additional utility within
+    with flag -DPETSC_HAVE_MPE (MPE is an additional utility within
     MPICH), the user can employ another command line option, -log_mpe,
     to create a logfile, "mpe.log", which can be visualized
     Upshot/Nupshot. The color argument is used by this utility
@@ -1251,7 +1252,7 @@ int PLogEventRegister(int *e,const char string[],const char color[])
   cstring = (char *) PetscMalloc( PetscStrlen(string)+1 );CHKPTRQ(cstring);
   ierr = PetscStrcpy(cstring,string);CHKERRQ(ierr);
   PLogEventName[*e] = cstring;
-#if defined(HAVE_MPE)
+#if defined(PETSC_HAVE_MPE)
   if (UseMPE) {
     int   rank;
     char* ccolor;
@@ -1286,7 +1287,7 @@ int PLogEventRegisterDestroy_Private(void)
   PetscFunctionBegin;
   for (i=PLOG_USER_EVENT_LOW-1; i>=PLOG_USER_EVENT_LOW_STATIC; i--) {
     PetscFree(PLogEventName[i]);
-#if defined(HAVE_MPE)
+#if defined(PETSC_HAVE_MPE)
     if (PLogEventColorMalloced[i]) PetscFree(PLogEventColor[i]);
 #endif
   }
@@ -1372,7 +1373,7 @@ int PLogEventActivate(int event)
 
    Options Database Keys:
 .  -log_summary - Prints summary of log information (for code
-   compiled with USE_PETSC_LOG)
+   compiled with PETSC_USE_LOG)
 
    Usage:
 .vb
@@ -1554,7 +1555,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,
     "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
 
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   ierr = PetscFPrintf(comm,fd,"\n\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      ##########################################################\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
@@ -1568,7 +1569,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
 #endif
-#if defined(USE_PETSC_COMPLEX) && !defined(USE_FORTRAN_KERNELS)
+#if defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_FORTRAN_KERNELS)
   ierr = PetscFPrintf(comm,fd,"\n\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      ##########################################################\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
@@ -1697,7 +1698,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
    application code.  
 
    PETSc automatically logs library events if the code has been
-   compiled with -DUSE_PETSC_LOG (which is the default), and -log,
+   compiled with -DPETSC_USE_LOG (which is the default), and -log,
    -log_summary, or -log_all are specified.  PLogFlops() is
    intended for logging user flops to supplement this PETSc
    information.
@@ -1923,7 +1924,7 @@ int PLogEventDeactivateClass(int cookie)
 
 
 
-/* end of -DUSE_PETSC_LOG section */
+/* end of -DPETSC_USE_LOG section */
 #else  /* -------------------------------------------------------------*/
 
 #undef __FUNC__  
@@ -2001,7 +2002,7 @@ int PetscGetTime(PLogDouble *t)
    application code.  
 
    PETSc automatically logs library events if the code has been
-   compiled with -DUSE_PETSC_LOG (which is the default), and -log,
+   compiled with -DPETSC_USE_LOG (which is the default), and -log,
    -log_summary, or -log_all are specified.  PLogFlops() is
    intended for logging user flops to supplement this PETSc
    information.
@@ -2039,10 +2040,10 @@ M*/
    Notes:
    You should also register each integer event with the command 
    PLogEventRegister().  The source code must be compiled with 
-   -DUSE_PETSC_LOG, which is the default.
+   -DPETSC_USE_LOG, which is the default.
 
    PETSc automatically logs library events if the code has been
-   compiled with -DUSE_PETSC_LOG, and -log, -log_summary, or -log_all are
+   compiled with -DPETSC_USE_LOG, and -log, -log_summary, or -log_all are
    specified.  PLogEventBegin() is intended for logging user events
    to supplement this PETSc information.
 
@@ -2078,10 +2079,10 @@ M*/
    Notes:
    You should also register each additional integer event with the command 
    PLogEventRegister(). Source code must be compiled with 
-   -DUSE_PETSC_LOG, which is the default.
+   -DPETSC_USE_LOG, which is the default.
 
    PETSc automatically logs library events if the code has been
-   compiled with -DUSE_PETSC_LOG, and -log, -log_summary, or -log_all are
+   compiled with -DPETSC_USE_LOG, and -log, -log_summary, or -log_all are
    specified.  PLogEventEnd() is intended for logging user events
    to supplement this PETSc information.
 

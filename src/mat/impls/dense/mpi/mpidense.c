@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.112 1999/04/19 22:11:55 bsmith Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.113 1999/05/04 20:31:35 balay Exp bsmith $";
 #endif
 
 /*
@@ -400,7 +400,7 @@ int MatDestroy_MPIDense(Mat mat)
   if (mat->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->bmapping);CHKERRQ(ierr);
   }
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mdn->M,mdn->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
@@ -684,7 +684,7 @@ int MatNorm_MPIDense(Mat A,NormType type,double *norm)
   } else {
     if (type == NORM_FROBENIUS) {
       for (i=0; i<mat->n*mat->m; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;

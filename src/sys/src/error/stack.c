@@ -1,17 +1,17 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.17 1999/01/04 03:24:56 bsmith Exp balay $";
+static char vcid[] = "$Id: stack.c,v 1.18 1999/05/04 20:28:50 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "sys.h"
 
-#if defined(USE_PETSC_STACK)
+#if defined(PETSC_USE_STACK)
 
 int         petscstacksize = 0;   /* current size of stack */
 int         petscstacksize_max;   /* maximum size we've allocated for */
 PetscStack *petscstack = 0;
 
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 /* AMS Variables */
 AMS_Memory stack_mem = -1;
 AMS_Comm   Petsc_AMS_Comm = -1;
@@ -21,7 +21,7 @@ char       *msg;
 
 int PetscStackPublish(void)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   /*
         Publishes the stack to AMS
   */
@@ -47,7 +47,7 @@ int PetscStackPublish(void)
 
 int PetscStackDepublish(void)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   int ierr;
 
   PetscFunctionBegin;
@@ -125,7 +125,7 @@ int PetscStackView(Viewer viewer)
 
 int PetscStackDestroy(void) 
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   int ierr;
   ierr = PetscStackDepublish();CHKERRQ(ierr);
 #endif

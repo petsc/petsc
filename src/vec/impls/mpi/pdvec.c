@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.118 1999/04/19 22:11:18 bsmith Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.119 1999/05/04 20:30:48 balay Exp bsmith $ 
 #endif
 
 /*
@@ -26,7 +26,7 @@ int VecDestroy_MPI(Vec v)
 
   PetscFunctionBegin;
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",x->N);
 #endif  
   if (x->array_allocated) PetscFree(x->array_allocated);
@@ -73,7 +73,7 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
       ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
       fprintf(fd,"%s = [\n",outputname);
       for ( i=0; i<x->n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         if (PetscImaginary(x->array[i]) > 0.0) {
           fprintf(fd,"%18.16e + %18.16e i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
         } else if (PetscImaginary(x->array[i]) < 0.0) {
@@ -90,7 +90,7 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
         ierr = MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
         for ( i=0; i<n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
           if (PetscImaginary(values[i]) > 0.0) {
             fprintf(fd,"%18.16e + %18.16e i\n",PetscReal(values[i]),PetscImaginary(values[i]));
           } else if (PetscImaginary(values[i]) < 0.0) {
@@ -107,7 +107,7 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
 
     } else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
       for (i=0; i<x->n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         fprintf(fd,"%18.16e %18.16e\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
 #else
         fprintf(fd,"%18.16e\n",x->array[i]);
@@ -118,7 +118,7 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
         ierr = MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
         for ( i=0; i<n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
           fprintf(fd,"%18.16e %18.16e\n",PetscReal(values[i]),PetscImaginary(values[i]));
 #else
           fprintf(fd,"%18.16e\n",values[i]);
@@ -133,7 +133,7 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
         if (format == VIEWER_FORMAT_ASCII_INDEX) {
           fprintf(fd,"%d: ",cnt++);
         }
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         if (PetscImaginary(x->array[i]) > 0.0) {
           fprintf(fd,"%g + %g i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
         } else if (PetscImaginary(x->array[i]) < 0.0) {
@@ -156,7 +156,7 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
           if (format == VIEWER_FORMAT_ASCII_INDEX) {
             fprintf(fd,"%d: ",cnt++);
           }
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
           if (PetscImaginary(values[i]) > 0.0) {
             fprintf(fd,"%g + %g i\n",PetscReal(values[i]),PetscImaginary(values[i]));
           } else if (PetscImaginary(values[i]) < 0.0) {
@@ -251,7 +251,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
     for (i=0; i<size; i++ ) {
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
 #else
     {
@@ -269,7 +269,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
     PetscFree(xx);
     ierr = DrawLGDraw(lg);CHKERRQ(ierr);
   } else {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
 #else
     {
@@ -309,7 +309,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
   xmin = 1.e20; xmax = -1.e20;
   for ( i=0; i<x->n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     if (PetscReal(x->array[i]) < xmin) xmin = PetscReal(x->array[i]);
     if (PetscReal(x->array[i]) > xmax) xmax = PetscReal(x->array[i]);
 #else
@@ -343,7 +343,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
     ierr = MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,rank+1,xin->tag,xin->comm);CHKERRQ(ierr);
   }
   for ( i=1; i<x->n; i++ ) {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     ierr = DrawLine(draw,(double)(i-1+start),x->array[i-1],(double)(i+start),
                    x->array[i],DRAW_RED);CHKERRQ(ierr);
 #else
@@ -353,7 +353,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   }
   if (rank) { /* receive value from right */
     ierr = MPI_Recv(&tmp,1,MPI_DOUBLE,rank-1,xin->tag,xin->comm,&status);CHKERRQ(ierr);
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     ierr = DrawLine(draw,(double)start-1,tmp,(double)start,x->array[0],DRAW_RED);CHKERRQ(ierr);
 #else
     ierr = DrawLine(draw,(double)start-1,tmp,(double)start,PetscReal(x->array[0]),DRAW_RED);CHKERRQ(ierr);
@@ -369,14 +369,14 @@ EXTERN_C_END
 #define __FUNC__ "VecView_MPI_Socket"
 int VecView_MPI_Socket(Vec xin, Viewer viewer )
 {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size, N = x->N,*lens,ierr;
   double      *xx;
 #endif
 
   PetscFunctionBegin;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_ERR_SUP,0,"Complex not done");
 #else
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
@@ -468,7 +468,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
   Scalar   *xx = x->array;
 
   PetscFunctionBegin;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already inserted values; you cannot now add");
   } else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
@@ -483,7 +483,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
         xx[row-start] = y[i];
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif
         VecStashValue_Private(&xin->stash,row,y[i]);
@@ -495,7 +495,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
         xx[row-start] += y[i];
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif        
         VecStashValue_Private(&xin->stash,row,y[i]);
@@ -515,7 +515,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
   Scalar   *xx = x->array;
 
   PetscFunctionBegin;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already inserted values; you cannot now add");
   }
@@ -533,7 +533,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
         }
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
@@ -548,7 +548,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
         }
       } else if (!x->donotstash) {
         if (ix[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);

@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.93 1999/04/21 20:42:14 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.94 1999/05/04 20:27:46 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "sys.h"
 
-#if defined(NEED_UTYPE_TYPEDEFS)
+#if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't
    ensure that the following definitions are made */
 typedef unsigned char   u_char;
@@ -15,17 +15,17 @@ typedef unsigned int    u_int;
 typedef unsigned long   u_long;
 #endif
 
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include <sys/types.h>
-#if defined(PARCH_rs6000)
+#if defined(PETSC_HAVE_CTYPE_H)
 #include <ctype.h>
 #endif
 #if defined(PARCH_alpha)
 #include <machine/endian.h>
 #endif
-#if defined (PARCH_ascired)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #if !defined(PARCH_win32)
@@ -34,7 +34,7 @@ typedef unsigned long   u_long;
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
-#if defined(HAVE_STROPTS_H)
+#if defined(PETSC_HAVE_STROPTS_H)
 #include <stropts.h>
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsregall.c,v 1.21 1998/10/19 22:19:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: tsregall.c,v 1.22 1999/02/01 03:42:09 curfman Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
@@ -33,7 +33,7 @@ int TSRegisterAll(char *path)
   TSRegister(TS_BEULER,              path,"TSCreate_BEuler",TSCreate_BEuler);
   TSRegister(TS_CRANK_NICHOLSON,     path,"TSCreate_CN",TSCreate_CN);
   TSRegister(TS_PSEUDO,              path,"TSCreate_Pseudo",TSCreate_Pseudo);
-#if defined(HAVE_PVODE) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
   TSRegister(TS_PVODE,               path,"TSCreate_PVode", TSCreate_PVode); 
 #endif
   PetscFunctionReturn(0);

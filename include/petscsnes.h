@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.86 1999/04/19 22:18:08 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.87 1999/04/21 18:19:32 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -34,7 +34,7 @@ extern int SNESRegisterDestroy(void);
 extern int SNESRegisterAll(char *);
 
 extern int SNESRegister_Private(char*,char*,char*,int(*)(SNES));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define SNESRegister(a,b,c,d) SNESRegister_Private(a,b,c,0)
 #else
 #define SNESRegister(a,b,c,d) SNESRegister_Private(a,b,c,d)
@@ -65,7 +65,7 @@ extern int MatSNESMFSetFromOptions(Mat);
 typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
 extern int MatSNESMFSetType(Mat,char*);
 extern int MatSNESMFRegister_Private(char *,char *,char *,int (*)(MatSNESMFCtx));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatSNESMFRegister(a,b,c,d) MatSNESMFRegister_Private(a,b,c,0)
 #else
 #define MatSNESMFRegister(a,b,c,d) MatSNESMFRegister_Private(a,b,c,d)

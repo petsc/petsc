@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.11 1999/05/04 20:29:01 balay Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.12 1999/05/06 17:59:08 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -8,16 +8,16 @@ static char vcid[] = "$Id: fretrieve.c,v 1.11 1999/05/04 20:29:01 balay Exp bsmi
 #include "petsc.h"
 #include "sys.h"
 #include "pinclude/ptime.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -33,7 +33,7 @@ static char vcid[] = "$Id: fretrieve.c,v 1.11 1999/05/04 20:29:01 balay Exp bsmi
 #endif
 #include <fcntl.h>
 #include <time.h>  
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"

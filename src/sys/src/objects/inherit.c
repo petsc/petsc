@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.48 1999/03/17 23:21:46 bsmith Exp balay $";
+static char vcid[] = "$Id: inherit.c,v 1.49 1999/05/04 20:29:12 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -448,7 +448,7 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
     *mtype = MPI_DOUBLE;
   } else if (ptype == PETSC_SCALAR) {
     *mtype = MPIU_SCALAR;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   } else if (ptype == PETSC_COMPLEX) {
     *mtype = MPIU_COMPLEX;
 #endif
@@ -473,7 +473,7 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
     *size = PETSC_DOUBLE_SIZE;
   } else if (ptype == PETSC_SCALAR) {
     *size = PETSC_SCALAR_SIZE;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   } else if (ptype == PETSC_COMPLEX) {
     *size = PETSC_COMPLEX_SIZE;
 #endif
@@ -498,7 +498,7 @@ int PetscDataTypeGetName(PetscDataType ptype,char *name[])
     *name = "double";
   } else if (ptype == PETSC_SCALAR) {
     *name = "Scalar";
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   } else if (ptype == PETSC_COMPLEX) {
     *name = "complex";
 #endif
@@ -638,7 +638,7 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
    Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
 
    The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to
-   work in C++/complex with dynamic link libraries (USE_DYNAMIC_LIBRARIES)
+   work in C++/complex with dynamic link libraries (PETSC_USE_DYNAMIC_LIBRARIES)
    enabled.
 
 .keywords: object, composition

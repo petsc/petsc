@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.27 1999/05/10 16:26:34 balay Exp balay $ 
+# $Id: base.site,v 1.28 1999/05/11 19:27:23 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,7 +13,7 @@
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-#  If you list -lessl or -lesslp2 below you must have -DHAVE_ESSL listed in the 
+#  If you list -lessl or -lesslp2 below you must have -DPETSC_HAVE_ESSL listed in the 
 # PCONF line at the bottom of this file.
 #
 BLAS_LIB       = -lblas ${FC_LIB}
@@ -36,7 +36,7 @@ X11_LIB        = -lX11
 # ----------------------------------------------------------------------------------------  
 #
 # Optional ocation of MPE software 
-# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 
 #
 MPE_INCLUDE    = 
@@ -73,12 +73,12 @@ CMEX           =
 #
 # PCONF - indicates which external packages are available at your site
 #
-#    Only list -DHAVE_ESSL below if you have IBM's library essl
+#    Only list -DPETSC_HAVE_ESSL below if you have IBM's library essl
 #    installed on your machine (in /usr/lib/libessl.a) and 
 #    have it listed above in the LAPACK_LIB line above.
 #
-#PCONF         =  -DHAVE_ESSL -DHAVE_MPE -DHAVE_PVODE
-#PCONF         =  -DHAVE_ESSL -DHAVE_BLOCKSOLVE  -DHAVE_AMS
-PCONF         =  -DHAVE_ESSL -DHAVE_BLOCKSOLVE
+#PCONF         =  -DPETSC_HAVE_ESSL -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
+#PCONF         =  -DPETSC_HAVE_ESSL -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_AMS
+PCONF         =  -DPETSC_HAVE_ESSL -DPETSC_HAVE_BLOCKSOLVE
 #
 EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${ADIC_LIB} ${AMS_LIB}

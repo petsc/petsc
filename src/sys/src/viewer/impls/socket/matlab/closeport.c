@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: closeport.c,v 1.10 1998/12/03 04:04:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: closeport.c,v 1.11 1999/01/12 23:17:16 bsmith Exp bsmith $";
 #endif
 /* This was part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
 
-#if defined(NEED_UTYPE_TYPEDEFS)
+#if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;
 typedef unsigned short  ushort;

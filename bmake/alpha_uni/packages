@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 1999/02/08 22:22:33 bsmith Exp balay $ 
+# $Id: base.site,v 1.17 1999/04/24 00:21:18 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -38,11 +38,11 @@ MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # PCONF - indicates which external packages are available at your site
-# Make sure that the next line below does not have -DHAVE_BLOCKSOLVE
+# Make sure that the next line below does not have -DPETSC_HAVE_BLOCKSOLVE
 # unless you have BlockSolve installed.
 # Make sure that you have the DEC alpha dxml library installed on your 
 # machine and -ldxml in the BLAS_LIB line above if you define 
-# HAVE_DXML below.
+# PETSC_HAVE_DXML below.
 #
 PCONF      =  
 #

@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.13 1998/07/13 18:44:23 balay Exp bsmith $ */
+/* $Id: axpy.h,v 1.14 1998/10/19 22:16:03 bsmith Exp bsmith $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -15,13 +15,13 @@
 
 #include "include/pinclude/blaslapack.h"
 
-#if defined(USE_FORTRAN_KERNEL_MAXPY)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
 
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranmaxpy4_ FORTRANMAXPY4
 #define fortranmaxpy3_ FORTRANMAXPY3
 #define fortranmaxpy2_ FORTRANMAXPY2
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmaxpy4_ fortranmaxpy4
 #define fortranmaxpy3_ fortranmaxpy3
 #define fortranmaxpy2_ fortranmaxpy2
@@ -42,7 +42,7 @@ EXTERN_C_END
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){ \
   fortranmaxpy4_(U,&a1,&a2,&a3,&a4,p1,p2,p3,p4,&n);}
 
-#elif defined(USE_UNROLL_KERNELS)
+#elif defined(PETSC_USE_UNROLL_KERNELS)
 
 #define APXY(U,Alpha,P,n) {\
   switch (n & 0x3) {\
@@ -79,7 +79,7 @@ EXTERN_C_END
   U[2]+=a1*p1[2]+a2*p2[2]+a3*p3[2]+a4*p4[2];\
   U[3]+=a1*p1[3]+a2*p2[3]+a3*p3[3]+a4*p4[3];U+=4;p1+=4;p2+=4;p3+=4;p4+=4;n-=4;}}
 
-#elif defined(USE_WHILE_KERNELS)
+#elif defined(PETSC_USE_WHILE_KERNELS)
 
 #define APXY(U,a1,p1,n)  {\
   while (n--) *U++ += a1 * *p1++;}
@@ -90,7 +90,7 @@ EXTERN_C_END
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n) {\
   while (n--) *U++ += a1 * *p1++ + a2 * *p2++ + a3 * *p3++ + a4 * *p4++;}
 
-#elif defined(USE_BLAS_KERNELS)
+#elif defined(PETSC_USE_BLAS_KERNELS)
 
 #define APXY(U,a1,p1,n)  {int one=1;\
   daxpy_(&n,&a1,p1,&one,U,&one);}
@@ -103,7 +103,7 @@ aa[0]=a1;aa[1]=a2;\
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){APXY2(U,a1,a2,p1,p2,n);\
   APXY2(U,a3,a4,p3,p4,n);}
 
-#elif defined(USE_FOR_KERNELS)
+#elif defined(PETSC_USE_FOR_KERNELS)
 
 #define APXY(U,a1,p1,n)  {int __i;Scalar __s1, __s2; \
   for(__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\
@@ -133,7 +133,7 @@ aa[0]=a1;aa[1]=a2;\
 /* ----------------------------------------------------------------------------
       axpy() but for increments of inc in both U and P 
    ---------------------------------------------------------------------------*/
-#ifdef USE_UNROLL_KERNELS
+#ifdef PETSC_USE_UNROLL_KERNELS
 #define APXYINC(U,Alpha,P,n,inc) {\
 if (n & 0x1) {\
 *U    += Alpha * *P; U += inc; P += inc; n--;}\
@@ -159,7 +159,7 @@ while (n>0) {U[0] += a1*p1[0]+a2*p2[0]+a3*p3[0]+a4*p4[0];\
 U[inc]+=a1*p1[inc]+a2*p2[inc]+a3*p3[inc]+a4*p4[inc];\
 U += 2*inc;p1 += 2*inc;p2+=2*inc;p3+=2*inc;p4+=2*inc; n -= 2;}}
 
-#elif defined(USE_WHILE_KERNELS)
+#elif defined(PETSC_USE_WHILE_KERNELS)
 #define APXYINC(U,a1,p1,n,inc) {\
 while (n--){*U += a1 * *p1; U += inc; p1 += inc;}}
 #define APXY2INC(U,a1,a2,p1,p2,n,inc)  {\
@@ -190,7 +190,7 @@ p2+=inc;p3+=inc;p4+=inc;}}
     for (i=0; i<n; i++) 
        y[i] = x[i] + alpha * y[i];
   ---------------------------------------------------------------------*/
-#if defined(USE_UNROLL_KERNELS)
+#if defined(PETSC_USE_UNROLL_KERNELS)
 #define AYPX(U,Alpha,P,n) {\
 switch (n & 0x3) {\
 case 3: *U    = *P++ + Alpha * *U;U++;\
@@ -201,11 +201,11 @@ U[1] = P[1] + Alpha * U[1];\
 U[2] = P[2] + Alpha * U[2]; U[3] = P[3] + Alpha * U[3]; \
 U += 4; P += 4; n -= 4;}}
 
-#elif defined(USE_WHILE_KERNELS)
+#elif defined(PETSC_USE_WHILE_KERNELS)
 #define AYPX(U,a1,p1,n)  {\
 while (n--) {*U = *p1++ + a1 * *U;U++;}
 
-#elif defined(USE_FOR_KERNELS)
+#elif defined(PETSC_USE_FOR_KERNELS)
 #define AYPX(U,a1,p1,n)  {int __i;Scalar __s1, __s2; \
 for(__i=0;__i<n-1;__i+=2){__s1=p1[__i];__s2=p1[__i+1];\
 __s1+=a1*U[__i];__s2+=a1*U[__i+1];\

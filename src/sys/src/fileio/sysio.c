@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.52 1999/04/19 22:09:39 bsmith Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.53 1999/05/04 20:29:01 balay Exp bsmith $";
 #endif
 
 /* 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: sysio.c,v 1.52 1999/04/19 22:09:39 bsmith Exp balay $
 #include "petsc.h"     /*I          "petsc.h"    I*/
 #include "sys.h"
 #include <fcntl.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #if defined (PARCH_win32)
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: sysio.c,v 1.52 1999/04/19 22:09:39 bsmith Exp balay $
 #include "bitarray.h"
 
 
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
 #undef __FUNC__  
 #define __FUNC__ "PetscByteSwapInt"
 /*
@@ -79,7 +79,7 @@ int PetscByteSwapScalar(Scalar *buff,int n)
   char   *ptr1,*ptr2 = (char *) &tmp;
 
   PetscFunctionBegin;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   n *= 2;
 #endif
   for ( j=0; j<n; j++ ) {
@@ -158,7 +158,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   int        maxblock = 65536, wsize, err, m = n, ierr,flag;
   static int longintfile = -1;
   char       *pp = (char *) p;
-#if (SIZEOF_SHORT != 8)
+#if (PETSC_SIZEOF_SHORT != 8)
   void       *ptmp = p; 
 #endif
 
@@ -174,7 +174,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     }
   }
 
-#if (SIZEOF_INT == 8 && SIZEOF_SHORT == 4)
+#if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
   if (type == PETSC_INT){
     if (longintfile) {
       m *= sizeof(int);
@@ -185,7 +185,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
       ptmp = (void*) pp;
     }
   }
-#elif (SIZEOF_INT == 8 && SIZEOF_SHORT == 8)
+#elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
   if (type == PETSC_INT){
     if (longintfile) {
       m *= sizeof(int);
@@ -222,14 +222,14 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     m  -= err;
     pp += err;
   }
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
   else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
   else if (type == PETSC_DOUBLE) PetscByteSwapDouble((double*)ptmp,n);
   else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
 #endif
 
-#if (SIZEOF_INT == 8 && SIZEOF_SHORT == 4)
+#if (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 4)
   if (type == PETSC_INT){
     if (!longintfile) {
       int   *p_int = (int *) p,i;
@@ -240,7 +240,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
       PetscFree(ptmp);
     }
   }
-#elif (SIZEOF_INT == 8 && SIZEOF_SHORT == 8)
+#elif (PETSC_SIZEOF_INT == 8 && PETSC_SIZEOF_SHORT == 8)
 #else
   if (type == PETSC_INT)
     if (longintfile) {
@@ -299,7 +299,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 {
   int  err, maxblock, wsize,m = n;
   char *pp = (char *) p;
-#if !defined(WORDS_BIGENDIAN) || (SIZEOF_INT == 8)
+#if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8)
   void *ptmp = p; 
 #endif
 
@@ -308,14 +308,14 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
   maxblock = 65536;
 
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
   else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
   else if (type == PETSC_DOUBLE) PetscByteSwapDouble((double*)ptmp,n);
   else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
 #endif
 
-#if (SIZEOF_INT == 8)
+#if (PETSC_SIZEOF_INT == 8)
   if (type == PETSC_INT){
     /* 
       integers on the Cray T3d/e are 64 bits so we copy the big
@@ -351,7 +351,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
     pp += wsize;
   }
 
-#if !defined(WORDS_BIGENDIAN)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
     if      (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
     else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
@@ -359,7 +359,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   }
 #endif
 
-#if (SIZEOF_INT == 8)
+#if (PETSC_SIZEOF_INT == 8)
   if (type == PETSC_INT){
     PetscFree(ptmp);
   }

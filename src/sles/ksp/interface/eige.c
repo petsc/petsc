@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.16 1999/04/19 22:14:29 bsmith Exp balay $";
+static char vcid[] = "$Id: eige.c,v 1.17 1999/05/04 20:34:35 balay Exp bsmith $";
 #endif
 
 #include "src/sles/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -161,14 +161,14 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     ierr = MatGetArray(BA,&array);CHKERRQ(ierr);
   }
 
-#if defined(HAVE_ESSL)
+#if defined(PETSC_HAVE_ESSL)
   /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
   if (!rank) {
     Scalar sdummy, *cwork;
     double *work, *realpart;
     int    clen, idummy, lwork, *perm, zero;
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     clen = n;
 #else
     clen = 2*n;
@@ -186,7 +186,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
        components of evalues separately.  But is this what we really want? */
     perm = (int *) PetscMalloc( n*sizeof(int) );CHKPTRQ(perm);
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     for ( i=0; i<n; i++ ) {
       realpart[i] = cwork[2*i];
       perm[i]     = i;
@@ -209,7 +209,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
 #endif
     PetscFree(perm); PetscFree(realpart); PetscFree(cwork);
   }
-#elif !defined(USE_PETSC_COMPLEX)
+#elif !defined(PETSC_USE_COMPLEX)
   if (!rank) {
     Scalar *work,sdummy;
     double *realpart,*imagpart;

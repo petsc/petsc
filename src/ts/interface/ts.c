@@ -534,7 +534,7 @@ int TSGetSolution(TS ts,Vec *v)
 #define __FUNC__ "TSPublish_Petsc"
 static int TSPublish_Petsc(PetscObject object)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   TS   v = (TS) object;
   int  ierr;
   

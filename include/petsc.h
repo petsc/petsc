@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.246 1999/04/02 16:39:48 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.247 1999/05/11 19:17:17 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -78,7 +78,7 @@ extern int   PetscGetResidentSetSize(PLogDouble *);
 */
 typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
               PETSC_COMPLEX = 4, PETSC_CHAR = 5, PETSC_LOGICAL = 6} PetscDataType;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
@@ -179,7 +179,7 @@ extern int PetscObjectView(PetscObject,Viewer);
 extern int PetscObjectCompose(PetscObject,const char[],PetscObject);
 extern int PetscObjectQuery(PetscObject,const char[],PetscObject *);
 extern int PetscObjectComposeFunction_Private(PetscObject,const char[],const char[],void *);
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,0)
 #else
 #define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,d)
@@ -215,7 +215,7 @@ extern int FListAdd_Private(FList*,const char[],const char[],int (*)(void *));
 extern int FListDestroy(FList);
 extern int FListFind(MPI_Comm,FList,const char[],int (**)(void*));
 extern int FListPrintTypes(MPI_Comm,FILE*,const char[],const char[],FList);
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define    FListAdd(a,b,p,c) FListAdd_Private(a,b,p,0)
 #else
 #define    FListAdd(a,b,p,c) FListAdd_Private(a,b,p,(int (*)(void *))c)
@@ -226,7 +226,7 @@ extern int FListView(FList,Viewer);
 /*
    Routines for handling dynamic libraries. PETSc uses dynamic libraries
   by default on most machines (except IBM). This is controlled by the
-  flag USE_DYNAMIC_LIBRARIES in petscconf.h
+  flag PETSC_USE_DYNAMIC_LIBRARIES in petscconf.h
 */
 typedef struct _DLLibraryList *DLLibraryList;
 extern DLLibraryList DLLibrariesLoaded;
@@ -272,7 +272,7 @@ extern int  PetscMPIDump(FILE*);
 */
 #include "petsclog.h"
 
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 extern PetscTruth PetscAMSPublishAll;
 #define PetscPublishAll(v)\
   { if (PetscAMSPublishAll) { \
@@ -339,7 +339,7 @@ extern int PetscScalarView(int,Scalar[],Viewer);
   the macro "restrict" to indicate that the variable is not aliased 
   to any other argument.
 */
-#if defined(HAVE_RESTRICT) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_RESTRICT) && !defined(__cplusplus)
 #define restrict _Restrict
 #else
 #define restrict
@@ -349,41 +349,41 @@ extern int PetscScalarView(int,Scalar[],Viewer);
       Determine if some of the kernel computation routines use
    Fortran (rather than C) for the numerical calculations. On some machines
    and compilers (like complex numbers) the Fortran version of the routines
-   is faster than the C/C++ versions. The flag USE_FORTRAN_KERNELS  
+   is faster than the C/C++ versions. The flag PETSC_USE_FORTRAN_KERNELS  
    would be set in the petscconf.h file
 */
-#if defined(USE_FORTRAN_KERNELS)
+#if defined(PETSC_USE_FORTRAN_KERNELS)
 
-#if !defined(USE_FORTRAN_KERNEL_MULTAIJ)
-#define USE_FORTRAN_KERNEL_MULTAIJ
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+#define PETSC_USE_FORTRAN_KERNEL_MULTAIJ
 #endif
 
-#if !defined(USE_FORTRAN_KERNEL_NORMSQR)
-#define USE_FORTRAN_KERNEL_NORMSQR
+#if !defined(PETSC_USE_FORTRAN_KERNEL_NORMSQR)
+#define PETSC_USE_FORTRAN_KERNEL_NORMSQR
 #endif
 
-#if !defined(USE_FORTRAN_KERNEL_MAXPY)
-#define USE_FORTRAN_KERNEL_MAXPY
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MAXPY)
+#define PETSC_USE_FORTRAN_KERNEL_MAXPY
 #endif
 
-#if !defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
-#define USE_FORTRAN_KERNEL_SOLVEAIJ
+#if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
+#define PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ
 #endif
 
-#if !defined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
-#define USE_FORTRAN_KERNEL_SOLVEBAIJ
+#if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
+#define PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ
 #endif
 
-#if !defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
-#define USE_FORTRAN_KERNEL_MULTADDAIJ
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
+#define PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ
 #endif
 
-#if !defined(USE_FORTRAN_KERNEL_MDOT)
-#define USE_FORTRAN_KERNEL_MDOT
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
+#define PETSC_USE_FORTRAN_KERNEL_MDOT
 #endif
 
-#if !defined(USE_FORTRAN_KERNEL_XTIMESY)
-#define USE_FORTRAN_KERNEL_XTIMESY
+#if !defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
+#define PETSC_USE_FORTRAN_KERNEL_XTIMESY
 #endif
 
 #endif

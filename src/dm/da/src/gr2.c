@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.21 1999/04/19 22:17:13 bsmith Exp balay $";
+static char vcid[] = "$Id: gr2.c,v 1.22 1999/05/04 20:37:25 balay Exp bsmith $";
 #endif
 
 /* 
@@ -46,7 +46,7 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
   /* Draw the contour plot patch */
   for ( j=0; j<n-1; j++ ) {
     for ( i=0; i<m-1; i++ ) {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];c1 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
       id = i+j*m+1;  x2 = xy[2*id];y2  = y_1;       c2 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
       id = i+j*m+1+m;x3 = x2;      y3  = xy[2*id+1];c3 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));

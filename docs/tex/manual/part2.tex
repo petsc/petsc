@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.324 1999/04/21 18:19:43 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.325 1999/05/04 20:38:59 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4697,14 +4697,14 @@ change all the letters in Fortran routine names to capitals.
 
 PETSc provides two macros (defined in C/C++) to help write 
 portable code that mixes C/C++ and Fortran. They are 
-{\tt HAVE\_FORTRAN\_UNDERSCORE} and {\tt HAVE\_FORTRAN\_CAPS}
-\findex{HAVE_FORTRAN_UNDERSCORE} \findex{HAVE_FORTRAN_CAPS},
+{\tt PETSC\_HAVE\_FORTRAN\_UNDERSCORE} and {\tt PETSC\_HAVE\_FORTRAN\_CAPS}
+\findex{PETSC_HAVE_FORTRAN_UNDERSCORE} \findex{PETSC_HAVE_FORTRAN_CAPS},
 which are defined in the file {\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/petscconf.h}.
 The macros are used, for example, as follows:
 \begin{verbatim}
-   #if defined(HAVE_FORTRAN_CAPS)
+   #if defined(PETSC_HAVE_FORTRAN_CAPS)
    #define dabsc_ DABSC
-   #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+   #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
    #define dabsc_ dabsc
    #endif
    .....
@@ -4927,7 +4927,7 @@ application codes and tips for accurate profiling.
 If an application code and the PETSc libraries have been compiled with
 the {\tt -DPETSC\_LOG} flag (which is the default for all versions),
 then various kinds of profiling of code between calls to {\tt
-PetscInitialize()} and {\tt PetscFinalize()} can be \findex{USE_PETSC_LOG}
+PetscInitialize()} and {\tt PetscFinalize()} can be \findex{PETSC_USE_LOG}
 activated at runtime.  Note that the flag {\tt -DPETSC\_LOG} can be
 specified for an installation of PETSc in the file {\tt
 \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.\$\{BOPT\}}, as discussed in
@@ -6321,12 +6321,12 @@ the variable {\tt PETSCFLAGS} within the base files of {\tt
 \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}}, discussed in Section
 ~\ref{sec:custom}.  The flags include
 \begin{itemize}
-\item USE\_PETSC\_DEBUG - The PETSc debugging options are activated. We 
-      recommend always using this. \findex{USE_PETSC_DEBUG}
-\item USE\_PETSC\_COMPLEX - The version with scalars represented 
-      as complex numbers is used. \findex{USE_PETSC_COMPLEX}
-\item USE\_PETSC\_LOG - Various monitoring statistics on floating-point operations,
-      and message-passing activity are kept. \findex{USE_PETSC_LOG}
+\item PETSC\_USE\_DEBUG - The PETSc debugging options are activated. We 
+      recommend always using this. \findex{PETSC_USE_DEBUG}
+\item PETSC\_USE\_COMPLEX - The version with scalars represented 
+      as complex numbers is used. \findex{PETSC_USE_COMPLEX}
+\item PETSC\_USE\_LOG - Various monitoring statistics on floating-point operations,
+      and message-passing activity are kept. \findex{PETSC_USE_LOG}
 \end{itemize}
 
 \subsection{Sample Makefiles}

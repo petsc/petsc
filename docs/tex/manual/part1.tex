@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.128 1999/04/16 16:03:36 curfman Exp balay $ 
+% $Id: part1.tex,v 1.129 1999/05/04 20:38:59 balay Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -543,8 +543,8 @@ given in the file {\tt \$\{PETSC\_DIR\}/docs/troubleshooting.html}.
    eagle> make BOPT=g ex2
    gcc -DPETSC_ARCH_sun4 -pipe -c  -I../../../  -I../../..//include   
        -I/usr/local/mpi/include  -I../../..//src -g 
-       -DUSE_PETSC_DEBUG -DPETSC_MALLOC -DUSE_PETSC_LOG ex1.c
-   gcc -g -DUSE_PETSC_DEBUG -DPETSC_MALLOC -DUSE_PETSC_LOG -o ex1 ex1.o 
+       -DPETSC_USE_DEBUG -DPETSC_MALLOC -DPETSC_USE_LOG ex1.c
+   gcc -g -DPETSC_USE_DEBUG -DPETSC_MALLOC -DPETSC_USE_LOG -o ex1 ex1.o 
       /home/bsmith/petsc/lib/libg/sun4/libpetscsles.a 
       -L/home/bsmith/petsc/lib/libg/sun4 -lpetscstencil -lpetscgrid  -lpetscsles 
       -lpetscmat  -lpetscvec -lpetscsys -lpetscdraw  

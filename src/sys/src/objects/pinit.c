@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.17 1999/05/04 20:29:12 balay Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.18 1999/05/06 17:59:13 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -35,7 +35,7 @@ int OptionsCheckInitial_Components(void)
   /*
      Publishing to the AMS
   */
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   ierr = OptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscAMSPublishAll = PETSC_TRUE;
@@ -105,7 +105,7 @@ int OptionsCheckInitial_Components(void)
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1);CHKERRQ(ierr);
   if (flg1) {
-#if defined (USE_PETSC_LOG)
+#if defined (PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,sles,snes>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_info_exclude: <null,vec,mat,sles,snes,ts>\n");CHKERRQ(ierr);
@@ -237,11 +237,11 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 +  -log_summary [filename] - Prints summary of flop and timing
         information to screen. If the filename is specified the
         summary is written to the file. (for code compiled with 
-        USE_PETSC_LOG).  See PLogPrintSummary().
+        PETSC_USE_LOG).  See PLogPrintSummary().
 .  -log_all [filename] - Logs extensive profiling information
-        (for code compiled with USE_PETSC_LOG). See PLogDump(). 
+        (for code compiled with PETSC_USE_LOG). See PLogDump(). 
 .  -log [filename] - Logs basic profiline information (for
-        code compiled with USE_PETSC_LOG).  See PLogDump().
+        code compiled with PETSC_USE_LOG).  See PLogDump().
 .  -log_sync - Log the synchronization in scatters, inner products
         and norms
 -  -log_mpe [filename] - Creates a logfile viewable by the 

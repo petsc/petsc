@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.29 1999/04/19 22:08:51 bsmith Exp balay $";
+static char vcid[] = "$Id: dtri.c,v 1.30 1999/05/04 20:28:14 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -242,7 +242,7 @@ int DrawTensorContourPatch(Draw win,int m,int n,double *x,double *y,double max,
   /* Draw the contour plot patch */
   for ( j=0; j<n-1; j++ ) {
     for ( i=0; i<m-1; i++ ) {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       x1 = x[i];  y_1 = y[j];  c1 = (int) (DRAW_BASIC_COLORS + scale*(v[i+j*m] - min));
       x2 = x[i+1];y2 = y_1;    c2 = (int) (DRAW_BASIC_COLORS + scale*(v[i+j*m+1]-min));
       x3 = x2;    y3 = y[j+1];c3 = (int) (DRAW_BASIC_COLORS + scale*(v[i+j*m+1+m]-min));

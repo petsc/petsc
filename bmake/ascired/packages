@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.48 1999/03/24 19:18:12 balay Exp $ 
+# $Id: base.site,v 1.1 1999/04/01 22:31:16 balay Exp bsmith $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -37,7 +37,7 @@ MPI_LIB        = /usr/local/intel/tflop/current/tflops/cougar/lib/puma/libmpi.a
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
-# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_INCLUDE   = -I${MPI_HOME}/mpe 
 #MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
@@ -71,11 +71,11 @@ MPI_LIB        = /usr/local/intel/tflop/current/tflops/cougar/lib/puma/libmpi.a
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site
 #
-# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-#PCONF         = -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS -DHAVE_BLOCKSOLVE
+#PCONF         = -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE -DPETSC_HAVE_SPAI -DPETSC_HAVE_PARMETIS -DPETSC_HAVE_BLOCKSOLVE
 PCONF         = 
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${SPAI_LIB} ${PARMETIS_LIB}
 

@@ -1,13 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.19 1999/04/21 20:42:31 bsmith Exp balay $";
+static char vcid[] = "$Id: ams.c,v 1.20 1999/05/04 20:27:57 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 
 #include "ams.h"
 typedef struct {

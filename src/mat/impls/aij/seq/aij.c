@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.320 1999/04/21 18:16:23 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.321 1999/05/04 20:31:42 balay Exp bsmith $";
 #endif
 
 /*
@@ -25,7 +25,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
 
   PetscFunctionBegin;  
   SETERRQ(1,0,"Not implemented");
-#if !defined(USE_PETSC_DEBUG)
+#if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);
 #endif
 }
@@ -157,7 +157,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; 
     if (row < 0) continue;
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
     if (row >= a->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large: row %d max %d",row,a->m);
 #endif
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift;
@@ -165,7 +165,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
     low = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
       if (in[l] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
       if (in[l] >= a->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large: col %d max %d",in[l],a->n);
 #endif
       col = in[l] - shift;
@@ -348,7 +348,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 
     for (i=0; i<m; i++) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         fprintf(fd,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
 #else
         fprintf(fd,"%d %d  %18.16e\n", i+1, a->j[j]+!shift, a->a[j]);
@@ -364,7 +364,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for ( i=0; i<m; i++ ) {
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         if (PetscImaginary(a->a[j]) > 0.0 && PetscReal(a->a[j]) != 0.0)
           fprintf(fd," %d %g + %g i",a->j[j]+shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
         else if (PetscImaginary(a->a[j]) < 0.0 && PetscReal(a->a[j]) != 0.0)
@@ -384,7 +384,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       sptr[i] = nzd+1;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         if (a->j[j] >= i) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
           if (PetscImaginary(a->a[j]) != 0.0 || PetscReal(a->a[j]) != 0.0) nzd++;
 #else
           if (a->a[j] != 0.0) nzd++;
@@ -414,7 +414,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for ( i=0; i<m; i++ ) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         if (a->j[j] >= i) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
           if (PetscImaginary(a->a[j]) != 0.0 || PetscReal(a->a[j]) != 0.0)
             fprintf(fd," %18.16e %18.16e ",PetscReal(a->a[j]),PetscImaginary(a->a[j]));
 #else
@@ -437,7 +437,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
         } else {
           value = 0.0;
         }
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         fprintf(fd," %7.5e+%7.5e i ",PetscReal(value),PetscImaginary(value));
 #else
         fprintf(fd," %7.5e ",value);
@@ -449,7 +449,7 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for ( i=0; i<m; i++ ) {
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         if (PetscImaginary(a->a[j]) > 0.0) {
           fprintf(fd," %d %g + %g i",a->j[j]+shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
         } else if (PetscImaginary(a->a[j]) < 0.0) {
@@ -503,7 +503,7 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         if (PetscReal(a->a[j]) >=  0.) continue;
 #else
         if (a->a[j] >=  0.) continue;
@@ -525,7 +525,7 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
       y_l = m - i - 1.0; y_r = y_l + 1.0;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         if (PetscReal(a->a[j]) <=  0.) continue;
 #else
         if (a->a[j] <=  0.) continue;
@@ -700,7 +700,7 @@ int MatDestroy_SeqAIJ(Mat A)
     ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
   }
   if (a->idiag) PetscFree(a->idiag);
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
   PetscFree(a->a); 
@@ -848,11 +848,11 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, sum;
   int        ierr,m = a->m, *idx, shift = a->indexshift,*ii;
-#if !defined(USE_FORTRAN_KERNEL_MULTAIJ)
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
   int        n, i, jrow,j;
 #endif
 
-#if defined(HAVE_PRAGMA_DISJOINT)
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*v)
 #endif
 
@@ -863,7 +863,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   idx  = a->j;
   v    = a->a;
   ii   = a->i;
-#if defined(USE_FORTRAN_KERNEL_MULTAIJ)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
   fortranmultaij_(&m,x,ii,idx+shift,v+shift,y);
 #else
   v    += shift; /* shift for Fortran start by 1 indexing */
@@ -891,7 +891,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *z, *v, sum;
   int        ierr,m = a->m, *idx, shift = a->indexshift,*ii;
-#if !defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
   int        n,i,jrow,j;
 #endif
 
@@ -907,7 +907,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   idx  = a->j;
   v    = a->a;
   ii   = a->i;
-#if defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
   fortranmultaddaij_(&m,x,ii,idx+shift,v+shift,y,z);
 #else
   v   += shift; /* shift for Fortran start by 1 indexing */
@@ -1326,7 +1326,7 @@ int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
     for (i=0; i<a->nz; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
       sum += (*v)*(*v); v++;
@@ -1799,7 +1799,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
-#if defined(HAVE_ESSL)
+#if defined(PETSC_HAVE_ESSL)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -2250,7 +2250,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   *A = B;
 
   /*  SuperLU is not currently supported through PETSc */
-#if defined(HAVE_SUPERLU)
+#if defined(PETSC_HAVE_SUPERLU)
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_superlu", &flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseSuperLU_SeqAIJ(B);CHKERRQ(ierr); }
 #endif

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorti.c,v 1.18 1998/08/26 22:01:52 balay Exp bsmith $";
+static char vcid[] = "$Id: sorti.c,v 1.19 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: sorti.c,v 1.18 1998/08/26 22:01:52 balay Exp bsmith $
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-#if defined(USE_KNUTH_QUICKSORT)
+#if defined(PETSC_USE_KNUTH_QUICKSORT)
 
 /* 
    This quick-sort is from George Karypis's METIS, and he says it
@@ -186,7 +186,7 @@ static int PetsciIqsort(int *base, int right)
 
    Tests on the IBM 590 show this performing about 10% better then the 
    Knuth quicksort above. Thus this is the default. With the compile flag
-   USE_KNUTH_QUICKSORT the above sort will be used.
+   PETSC_USE_KNUTH_QUICKSORT the above sort will be used.
 
 */
 static int PetsciIqsort(int *v,int right)

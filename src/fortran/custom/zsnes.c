@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.30 1999/04/21 18:19:20 bsmith Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.31 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "snes.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define snesregisterdestroy_         SNESREGISTERDESTROY
 #define snessetjacobian_             SNESSETJACOBIAN
 #define snescreate_                  SNESCREATE
@@ -32,7 +32,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.30 1999/04/21 18:19:20 bsmith Exp balay $
 #define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
 #define matsnesmfsettype_                MATSNESMFSETTYPE
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
 #define snescreate_                  snescreate

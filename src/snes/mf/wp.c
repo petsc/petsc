@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.9 1999/04/19 22:15:35 bsmith Exp balay $";
+static char vcid[] = "$Id: wp.c,v 1.10 1999/05/04 20:35:51 balay Exp bsmith $";
 #endif
 /*
   Implements an alternative approach for computing the differencing parameter
@@ -73,7 +73,7 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
     ovalues[0] = normU*normU;
     ovalues[1] = norma*norma;
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Allreduce(ovalues,values,2,MPI_DOUBLE,MPI_SUM,comm );CHKERRQ(ierr);
 #else
     ierr = MPI_Allreduce(ovalues,values,4,MPI_DOUBLE,MPI_SUM,comm );CHKERRQ(ierr);

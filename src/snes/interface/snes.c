@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.184 1999/04/21 18:18:16 bsmith Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.185 1999/05/04 20:35:43 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -591,7 +591,7 @@ int SNESGetSLES(SNES snes,SLES *sles)
 #define __FUNC__ "SNESPublish_Petsc"
 static int SNESPublish_Petsc(PetscObject object)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   SNES          v = (SNES) object;
   int          ierr;
   

@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex72.c,v 1.3 1999/03/30 16:48:25 balay Exp balay $";
+static char vcid[] = "$Id: ex72.c,v 1.4 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
 
 static char help[] = "Reads in a Symmetric matrix in MatrixMarket format and writes\n\
 it using the PETSc sparse format. It also adds a Vector set to random values to the\n\

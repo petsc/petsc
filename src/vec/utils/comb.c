@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.17 1999/05/03 01:14:32 bsmith Exp balay $";
+static char vcid[] = "$Id: comb.c,v 1.18 1999/05/04 20:30:27 balay Exp bsmith $";
 #endif
 
 /*
@@ -90,7 +90,7 @@ void VecSplitReduction_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype
     (*PetscErrorPrintf)("Can only handle MPI_DOUBLE data types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   count = count/2;
 #endif
   count = count/2; 
@@ -148,13 +148,13 @@ int VecSplitReductionApply(VecSplitReduction *sr)
       for ( i=0; i<numops; i++ ) {
         lvalues[numops+i] = reducetype[i];
       }
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       ierr = MPI_Allreduce(lvalues,gvalues,2*2*numops,MPI_DOUBLE,VecSplitReduction_Op,comm);CHKERRQ(ierr);
 #else
       ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,VecSplitReduction_Op,comm);CHKERRQ(ierr);
 #endif
     } else if (max_flg) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       /* 
         complex case we max both the real and imaginary parts, the imaginary part
         is just ignored later
@@ -164,7 +164,7 @@ int VecSplitReductionApply(VecSplitReduction *sr)
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
 #endif
     } else {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);

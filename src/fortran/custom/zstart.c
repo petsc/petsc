@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.57 1999/04/19 22:17:49 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.58 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 /*
@@ -20,12 +20,12 @@ static char vcid[] = "$Id: zstart.c,v 1.57 1999/04/19 22:17:49 bsmith Exp balay 
 
 extern int          PetscBeganMPI;
 
-#if defined(HAVE_NAGF90)
+#if defined(PETSC_HAVE_NAGF90)
 #define iargc_  f90_unix_MP_iargc
 #define getarg_ f90_unix_MP_getarg
 #endif
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitialize_              PETSCINITIALIZE
 #define petscfinalize_                PETSCFINALIZE
 #define aliceinitialize_              ALICEINITIALIZE
@@ -38,7 +38,7 @@ extern int          PetscBeganMPI;
 #define IARGC                         NARGS
 #endif
 
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
 #define petscfinalize_                petscfinalize
 #define aliceinitialize_              aliceinitialize
@@ -61,7 +61,7 @@ extern int          PetscBeganMPI;
   extra _ at the end if the original routine name 
   contained any _.
 */
-#if defined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
 #define mpi_init_             mpi_init__
 #endif
 
@@ -85,7 +85,7 @@ extern void getarg_(int*,char*,int);
 /*
       The Cray T3D/T3E use the PXFGETARG() function
 */
-#if defined(HAVE_PXFGETARG)
+#if defined(PETSC_HAVE_PXFGETARG)
 extern void PXFGETARG(int *,_fcd,int*,int*);
 #endif
 #endif
@@ -124,7 +124,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
     ierr = PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));CHKERRQ(ierr);
     for ( i=0; i<*argc; i++ ) {
       (*argv)[i+1] = (*argv)[i] + warg;
-#if defined(HAVE_PXFGETARG)
+#if defined(PETSC_HAVE_PXFGETARG)
       {char *tmp = (*argv)[i]; 
        int  ierr,ilen;
        PXFGETARG(&i, _cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
@@ -180,7 +180,7 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
   *__ierr = OptionsCreate(); 
   if (*__ierr) return;
   i = 0;
-#if defined(HAVE_PXFGETARG)
+#if defined(PETSC_HAVE_PXFGETARG)
   { int ilen;
     PXFGETARG(&i, _cptofcd(name,256),&ilen,__ierr); 
     if (*__ierr) return;
@@ -212,7 +212,7 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
     PETSC_COMM_WORLD          = MPI_COMM_WORLD;
   }
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   /* 
      Initialized the global variable; this is because with 
      shared libraries the constructors for global variables
@@ -271,7 +271,7 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
 
 void alicefinalize_(int *__ierr)
 {
-#if defined(HAVE_SUNMATHPRO)
+#if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
   standard_arithmetic();
 #endif
@@ -307,7 +307,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 
 void petscfinalize_(int *__ierr)
 {
-#if defined(HAVE_SUNMATHPRO)
+#if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
   standard_arithmetic();
 #endif

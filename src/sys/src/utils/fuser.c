@@ -1,18 +1,18 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fuser.c,v 1.21 1999/03/17 23:21:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fuser.c,v 1.22 1999/04/21 20:43:38 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "petsc.h"
 #include "sys.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -26,16 +26,16 @@ static char vcid[] = "$Id: fuser.c,v 1.21 1999/03/17 23:21:54 bsmith Exp bsmith 
 #if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #include "pinclude/petscfix.h"
 
 
-#if defined(HAVE_GET_USER_NAME)
+#if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNC__  
 #define __FUNC__ "PetscGetUserName"
 int PetscGetUserName( char name[], int nlen )
@@ -45,7 +45,7 @@ int PetscGetUserName( char name[], int nlen )
   PetscFunctionReturn(0);
 }
 
-#elif defined(HAVE_PWD_H)
+#elif defined(PETSC_HAVE_PWD_H)
 #undef __FUNC__  
 #define __FUNC__ "PetscGetUserName"
 /*@C
@@ -89,5 +89,5 @@ int PetscGetUserName( char *name, int nlen )
   ierr = PetscStrncpy( name, "Unknown", nlen );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif /* !HAVE_PWD_H */
+#endif /* !PETSC_HAVE_PWD_H */
 

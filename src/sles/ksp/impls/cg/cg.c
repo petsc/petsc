@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.88 1999/05/04 20:34:47 balay Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.89 1999/05/11 19:15:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -129,7 +129,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
   Z       = ksp->work[1];
   P       = ksp->work[2];
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
 #define VecXDot(x,y,a) {ierr = VecDot(x,y,a);CHKERRQ(ierr)}
 #else
 #define VecXDot(x,y,a) \
@@ -169,7 +169,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
        ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
      } else {
          b = beta/betaold;
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
          if (b < 0.0) SETERRQ( PETSC_ERR_KSP_BRKDWN,0,"Nonsymmetric/bad preconditioner");
 #endif
          if (eigs) {
@@ -244,7 +244,7 @@ int KSPDestroy_CG(KSP ksp)
 #define __FUNC__ "KSPView_CG" 
 int KSPView_CG(KSP ksp,Viewer viewer)
 {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   KSP_CG      *cg = (KSP_CG *)ksp->data; 
   int         ierr;
   ViewerType  vtype;
@@ -274,12 +274,12 @@ int KSPView_CG(KSP ksp,Viewer viewer)
 #define __FUNC__ "KSPPrintHelp_CG"
 static int KSPPrintHelp_CG(KSP ksp,char *p)
 {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   int ierr;
 #endif
 
   PetscFunctionBegin;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = (*PetscHelpPrintf)(ksp->comm," Options for CG method:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);CHKERRQ(ierr);
@@ -346,7 +346,7 @@ int KSPCreate_CG(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscMemzero(cg,sizeof(KSP_CG));CHKERRQ(ierr);
   PLogObjectMemory(ksp,sizeof(KSP_CG));
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   cg->type                       = KSP_CG_SYMMETRIC;
 #else
   cg->type                       = KSP_CG_HERMITIAN;

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.67 1999/03/19 21:25:01 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.68 1999/04/19 22:18:08 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -29,7 +29,7 @@ extern int ViewerRegisterAll(char *);
 extern int ViewerRegisterDestroy(void);
 
 extern int ViewerRegister_Private(char*,char*,char*,int(*)(Viewer));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define ViewerRegister(a,b,c,d) ViewerRegister_Private(a,b,c,0)
 #else
 #define ViewerRegister(a,b,c,d) ViewerRegister_Private(a,b,c,d)
@@ -140,7 +140,7 @@ extern int    VIEWER_SOCKET_Destroy(MPI_Comm);
 /*
     Viewer based on the ALICE Memory Snooper
 */
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 #include "ams.h"
 extern int    ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
 extern int    ViewerAMSOpen(MPI_Comm,const char[],Viewer*);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.28 1999/04/21 20:43:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.29 1999/05/06 17:59:18 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,10 +8,10 @@ static char vcid[] = "$Id: fdate.c,v 1.28 1999/04/21 20:43:36 bsmith Exp bsmith 
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -27,40 +27,12 @@ static char vcid[] = "$Id: fdate.c,v 1.28 1999/04/21 20:43:36 bsmith Exp bsmith 
 #endif
 #include <fcntl.h>
 #include <time.h>  
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
-#endif
-#include "pinclude/petscfix.h"
-#if defined (PARCH_ascired)
-#include "sys/time.h"
 #endif
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
 #endif
-
-#if defined (NEEDS_GETTIMEOFDAY_PROTO)
-#include <sys/resource.h>
-#if defined(__cplusplus)
-extern "C" {
-#if (defined (PARCH_IRIX64) ||  defined (PARCH_IRIX) || defined (PARCH_IRIX5))
-extern int gettimeofday(struct timeval *,...);
-#else
-extern int gettimeofday(struct timeval *, struct timezone *);
-#endif
-}
-#endif
-#endif
-/*
-     Some versions of the Gnu g++ compiler require a prototype for gettimeofday()
-  on the IBM rs6000. Also CC on some IRIX64 machines
-
-#if defined(__cplusplus)
-extern "C" {
-extern int gettimeofday(struct timeval *, struct timezone *);
-}
-#endif
-
-*/
 
 static char starttime[64];
    

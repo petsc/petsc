@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.59 1999/05/05 15:59:09 balay Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.60 1999/05/11 19:16:03 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -66,7 +66,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   int          i, cerr,  maxit, ierr;
   PC           pc = ksp->B;
   PCSide       side;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   Scalar       cstep1, cstep2, ctasp, cbstp, crtr, cwtasp, cptasp;
 #endif
 
@@ -111,7 +111,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = VecCopy(BS,R);CHKERRQ(ierr);
   ierr = VecScale(&negone,R);CHKERRQ(ierr);
   ierr = VecCopy(R,P);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = VecDot(R,R,&crtr);CHKERRQ(ierr); rtr = PetscReal(crtr);
 #else
   ierr = VecDot(R,R,&rtr);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
     ierr = PCApplySymmetricLeft(pc,WA2,ASP);CHKERRQ(ierr);
 
     /* Check for negative curvature */
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     ierr = VecDot(P,ASP,&cptasp);CHKERRQ(ierr);
     ptasp = PetscReal(cptasp);
 #else
@@ -147,7 +147,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
        } else {
          /* Compute roots of quadratic */
          ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
          ierr = VecDot(W,ASP,&cwtasp);CHKERRQ(ierr); wtasp = PetscReal(cwtasp);
          ierr = VecDot(BS,P,&cbstp);CHKERRQ(ierr);   bstp  = PetscReal(cbstp);
 #else
@@ -157,7 +157,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          ierr = VecCopy(W,X);CHKERRQ(ierr);
          q1 = step1*(bstp + wtasp + p5*step1*ptasp);
          q2 = step2*(bstp + wtasp + p5*step2*ptasp);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
          if (q1 <= q2) {
            cstep1 = step1; ierr = VecAXPY(&cstep1,P,X);CHKERRQ(ierr);
          } else {
@@ -199,7 +199,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
            /* Compute roots of quadratic */
            ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);CHKERRQ(ierr);
            ierr = VecCopy(W,X);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
            cstep1 = step1; ierr = VecAXPY(&cstep1,P,X);CHKERRQ(ierr);
 #else
            ierr = VecAXPY(&step1,P,X);CHKERRQ(ierr);  /*  x <- step1*p + x  */
@@ -230,7 +230,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          cerr = (*ksp->converged)(ksp,i+1,rnrm,ksp->cnvP);
          if (cerr) {                 /* convergence for */
            pcgP->info = 3;          /* truncated step */
-#if defined(USE_PETSC_COMPLEX)               
+#if defined(PETSC_USE_COMPLEX)               
            PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",PetscReal(step),rnrm,pcgP->delta);
 #else
            PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",step,rnrm,pcgP->delta);
@@ -243,7 +243,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
       ierr = VecDot(R,R,&rntrn);CHKERRQ(ierr);
       beta = rntrn/rtr;
       ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);	/*  p <- r + beta*p  */
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       rtr = PetscReal(rntrn);
 #else
       rtr = rntrn;
@@ -257,7 +257,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = MatMult(Amat,X,WA);CHKERRQ(ierr);
   ierr = VecDot(B,X,&btx);CHKERRQ(ierr);
   ierr = VecDot(X,WA,&xtax);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   pcgP->quadratic = PetscReal(btx) + p5* PetscReal(xtax);
 #else
   pcgP->quadratic = btx + p5*xtax;              /* Compute q(x) */
@@ -351,7 +351,7 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double
   double zero = 0.0, dsq, ptp, pts, rad, sts;
   int    ierr;
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   Scalar cptp, cpts, csts;
   PetscFunctionBegin;
   ierr = VecDot(p,s,&cpts);CHKERRQ(ierr); pts = PetscReal(cpts);

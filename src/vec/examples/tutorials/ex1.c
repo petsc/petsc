@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.53 1999/03/19 21:18:23 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.54 1999/05/04 20:31:12 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -90,10 +90,10 @@ int main(int argc,char **argv)
 
   /* 
      Note: If using a complex numbers version of PETSc, then
-     USE_PETSC_COMPLEX is defined in the makefiles; otherwise,
+     PETSC_USE_COMPLEX is defined in the makefiles; otherwise,
      (when using real numbers) it is undefined.
   */
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (PetscReal(dot)));
   PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)PetscReal(dots[0]),
                              (int)PetscReal(dots[1]),(int)PetscReal(dots[2]));

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.19 1999/04/19 20:30:26 bsmith Exp balay $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.20 1999/05/04 20:31:51 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -111,7 +111,7 @@ for ( j=0; j<nctot; j++ ) {
           rows = A_cj + A_ci[col-cstart]; 
           m    = A_ci[col-cstart+1] - A_ci[col-cstart];
         } else {
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
           ierr = TableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr)
 	  colb --;
 #else
@@ -165,7 +165,7 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
           rows = A_cj + A_ci[col-cstart]; 
           m    = A_ci[col-cstart+1] - A_ci[col-cstart];
         } else {
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
 	  ierr = TableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
           colb --;
 #else

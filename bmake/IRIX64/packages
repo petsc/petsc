@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.50 1999/05/07 15:55:11 balay Exp balay $ 
+# $Id: base.site,v 1.51 1999/05/10 16:24:34 balay Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -52,7 +52,7 @@ MPIRUN         = /usr/bin/nice -20 /bin/mpirun
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
-# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_INCLUDE   = -I/usr/local/mpi/include
 #MPE_LIB       = -L/usr/local/mpi/lib/IRIX64/ch_shmem -lmpe -lpmpi
@@ -95,13 +95,13 @@ AMS_LIB     = -L/home/alice/ams/lib/libg/irix64 -lamspub -lamsutilmt -lamsutil
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site
 #
-# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-#PCONF         = -DHAVE_BLOCKSOLVE 
-PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_PVODE  -DHAVE_AMS
-#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_PVODE
+#PCONF         = -DPETSC_HAVE_BLOCKSOLVE 
+PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_PVODE  -DPETSC_HAVE_AMS
+#PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}  ${AMS_LIB}
 #
 # ---------------------------------------------------------------------------------------

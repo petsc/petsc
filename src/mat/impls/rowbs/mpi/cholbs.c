@@ -1,13 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cholbs.c,v 1.52 1999/03/17 23:22:59 bsmith Exp balay $";
+static char vcid[] = "$Id: cholbs.c,v 1.53 1999/05/04 20:32:01 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
 
 /* We must define MLOG for BlockSolve logging */ 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
 #define MLOG
 #endif
 
@@ -19,7 +19,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   double flop1 = BSlocal_flops();
 #endif
 
@@ -41,7 +41,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     PLogInfo(mat,"MatCholeskyFactorNumeric_MPIRowbs:BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                  mbs->failures,mbs->ierr,mbs->alpha); 
   }
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
 
@@ -55,7 +55,7 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   double flop1 = BSlocal_flops();
 #endif
 
@@ -79,7 +79,7 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   }
   mbs->factor = FACTOR_LU;
   (*factp)->assembled = PETSC_TRUE;
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
   PetscFunctionReturn(0);
@@ -94,7 +94,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xa, *xworka;
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   double flop1 = BSlocal_flops();
 #endif
 
@@ -131,7 +131,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
   }
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
   PetscFunctionReturn(0);
@@ -147,7 +147,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xa, *xworka;
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   double flop1 = BSlocal_flops();
 #endif
 
@@ -173,7 +173,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   }
   ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
 
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
 
@@ -190,7 +190,7 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xworka;
 
-#if defined (USE_PETSC_LOG)
+#if defined (PETSC_USE_LOG)
   double flop1 = BSlocal_flops();
 #endif
 
@@ -215,7 +215,7 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
   }
-#if defined (USE_PETSC_LOG)
+#if defined (PETSC_USE_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
   PetscFunctionReturn(0);

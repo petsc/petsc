@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.122 1999/04/19 22:17:13 bsmith Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.123 1999/05/04 20:37:25 balay Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -114,7 +114,7 @@ int DAView_2d(DA da,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 /*
       This function tells the AMS the layout of the vectors, it is called
    in the VecPublish_xx routines.
@@ -174,7 +174,7 @@ EXTERN_C_END
 #define __FUNC__ "DAPublish_Petsc"
 int DAPublish_Petsc(PetscObject object)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   DA          v = (DA) object;
   int         ierr;
   
@@ -977,7 +977,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
 
   PetscPublishAll(da);  
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
          "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.55 1999/05/04 20:35:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.56 1999/05/11 19:16:08 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = OptionsHasName(PETSC_NULL,"-table",&flg);
   if (flg) table = PETSC_TRUE;
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   SETERRA(1,0,"This example does not work with complex numbers");
 #else
 

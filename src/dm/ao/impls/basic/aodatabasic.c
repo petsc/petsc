@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.36 1999/04/19 22:16:59 bsmith Exp balay $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.37 1999/05/04 20:37:10 balay Exp bsmith $";
 #endif
 
 /*
@@ -180,7 +180,7 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
         for ( k=0; k<key->N; k++ ) {
           fprintf(fd," %d: ",k);
           for ( l=0; l<segment->bs; l++ ) {
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
             fprintf(fd,"   %18.16e ",mdata[k*segment->bs + l]);
 #else
             Scalar x = mdata[k*segment->bs + l];

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.10 1999/04/19 22:09:48 bsmith Exp balay $";
+static char vcid[] = "$Id: tagm.c,v 1.11 1999/05/04 20:29:12 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: tagm.c,v 1.10 1999/04/19 22:09:48 bsmith Exp balay $"
 #include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
 #include <stdarg.h>
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -247,7 +247,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
   if (*tagvalp < 1) SETERRQ1(PETSC_ERR_PLIB,0,"Out of tags for object.Number tags issued %d",tagvalp[1]);
   *first_tag = tagvalp[0]--;
   tagvalp[1]++;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   if (*comm_out == comm_in) {
     int size;
     ierr = MPI_Comm_size(*comm_out,&size);CHKERRQ(ierr);

@@ -1,16 +1,16 @@
-/* $Id: dot.h,v 1.14 1998/12/21 21:18:54 balay Exp balay $ */
+/* $Id: dot.h,v 1.15 1999/03/12 00:21:48 balay Exp bsmith $ */
 
 #ifndef DOT
 
 EXTERN_C_BEGIN
 
-#if defined(USE_FORTRAN_KERNEL_MDOT)
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranmdot4_      FORTRANMDOT4
 #define fortranmdot3_      FORTRANMDOT3
 #define fortranmdot2_      FORTRANMDOT2
 #define fortranmdot1_      FORTRANMDOT1
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmdot4_      fortranmdot4
 #define fortranmdot3_      fortranmdot3
 #define fortranmdot2_      fortranmdot2
@@ -26,73 +26,73 @@ extern void fortranmdot1_(void *,void *,int *,
                            void *);
 #endif
 
-#if defined(USE_FORTRAN_KERNEL_NORMSQR)
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_USE_FORTRAN_KERNEL_NORMSQR)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortrannormsqr_    FORTRANNORMSQR
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortrannormsqr_    fortrannormsqr
 #endif
 extern void fortrannormsqr_(void *,int *,void *);
 #endif
 
-#if defined(USE_FORTRAN_KERNEL_MULTAIJ)
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranmultaij_    FORTRANMULTAIJ
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaij_    fortranmultaij
 #endif
 extern void fortranmultaij_(int *,void*,int *,int *,void *,void*);
 #endif
 
-#if defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranmultaddaij_ FORTRANMULTADDAIJ
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaddaij_ fortranmultaddaij
 #endif
 extern void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
 #endif
 
-#if defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortransolveaij_   FORTRANSOLVEAIJ
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolveaij_   fortransolveaij
 #endif
 extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #endif
 
-#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortransolvebaij4_         FORTRANSOLVEBAIJ4
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4_          fortransolvebaij4
 #endif
 extern void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *);
 #endif
 
-#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortransolvebaij4unroll_   FORTRANSOLVEBAIJ4UNROLL
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #endif
 extern void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
 #endif
 
-#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
-#if defined(HAVE_FORTRAN_CAPS)
+#if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortransolvebaij4blas_     FORTRANSOLVEBAIJ4BLAS
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4blas_      fortransolvebaij4blas
 #endif
 extern void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
 #endif
 
-#if defined(USE_FORTRAN_KERNEL_XTIMESY)
-#ifdef HAVE_FORTRAN_CAPS
+#if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define fortranxtimesy_ FORTRANXTIMESY
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranxtimesy_ fortranxtimesy
 #endif
 extern void fortranxtimesy_(void *,void *,void *,int *);
@@ -103,9 +103,9 @@ EXTERN_C_END
 /* ------------------------------------------------------------------- */
 
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
 
-#ifdef USE_UNROLL_KERNELS
+#ifdef PETSC_USE_UNROLL_KERNELS
 #define DOT(sum,x,y,n) {\
 switch (n & 0x3) {\
 case 3: sum += *x++ * *y++;\
@@ -127,7 +127,7 @@ n -= 4;case 0:break;}\
 while (n>0) {sum += x[0]*x[0]+x[1]*x[1]+x[2]*x[2]+x[3]*x[3];x+=4;\
 n -= 4;}}
 
-#elif defined(USE_WHILE_KERNELS)
+#elif defined(PETSC_USE_WHILE_KERNELS)
 #define DOT(sum,x,y,n) {
 while(n--) sum+= *x++ * *y++;}
 #define DOT2(sum1,sum2,x,y1,y2,n) {\
@@ -135,7 +135,7 @@ while(n--){sum1+= *x**y1++;sum2+=*x++**y2++;}}
 #define SQR(sum,x,n)   {\
 while(n--) {sum+= *x * *x; x++;}}
 
-#elif defined(USE_BLAS_KERNELS)
+#elif defined(PETSC_USE_BLAS_KERNELS)
 extern double ddot_();
 #define DOT(sum,x,y,n) {int one=1;\
 sum=ddot_(&n,x,&one,y,&one);}
@@ -155,7 +155,7 @@ for(__i=0;__i<n;__i++)sum+=x[__i]*x[__i];}
 
 #else
 
-#ifdef USE_UNROLL_KERNELS
+#ifdef PETSC_USE_UNROLL_KERNELS
 #define DOT(sum,x,y,n) {\
 switch (n & 0x3) {\
 case 3: sum += *x * conj(*y); x++; y++;\
@@ -177,7 +177,7 @@ n -= 4;case 0:break;}\
 while (n>0) {sum += x[0]*conj(x[0])+x[1]*conj(x[1])+x[2]*conj(x[2])+x[3]*conj(x[3]);x+=4;\
 n -= 4;}}
 
-#elif defined(USE_WHILE_KERNELS)
+#elif defined(PETSC_USE_WHILE_KERNELS)
 #define DOT(sum,x,y,n) {
 while(n--) sum+= *x++ * conj(*y++);}
 #define DOT2(sum1,sum2,x,y1,y2,n) {\

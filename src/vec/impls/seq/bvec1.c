@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec1.c,v 1.27 1998/12/03 03:56:57 bsmith Exp balay $"
+static char vcid[] = "$Id: bvec1.c,v 1.28 1999/01/27 21:21:48 balay Exp bsmith $"
 #endif
 
 /*
@@ -16,12 +16,12 @@ static char vcid[] = "$Id: bvec1.c,v 1.27 1998/12/03 03:56:57 bsmith Exp balay $
 int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   int     one = 1;
 #endif
 
   PetscFunctionBegin;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   {
@@ -44,12 +44,12 @@ int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
 int VecTDot_Seq(Vec xin, Vec yin,Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
  int     one = 1;
 #endif
 
   PetscFunctionBegin;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   int    i;

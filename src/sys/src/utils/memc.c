@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.49 1998/10/26 16:20:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.50 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -13,13 +13,13 @@ static char vcid[] = "$Id: memc.c,v 1.49 1998/10/26 16:20:13 bsmith Exp bsmith $
   <string.h> instead of <memory.h> 
 */
 #include <memory.h>
-#if defined(HAVE_STRINGS_H)
+#if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
-#if defined(HAVE_STRING_H)
+#if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -57,7 +57,7 @@ int PetscMemcpy(void *a,const void *b,int n)
   unsigned long nl = (unsigned long) n;
 
   PetscFunctionBegin;
-#if !defined(HAVE_CRAY90_POINTER)
+#if !defined(PETSC_HAVE_CRAY90_POINTER)
   if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
     SETERRQ(PETSC_ERR_ARG_INCOMP,1,"Memory regions overlap: either use PetscMemmov()\n\
             or make sure your copy regions and lengths are correct");
@@ -135,7 +135,7 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 int PetscMemzero(void *a,int n)
 {
   PetscFunctionBegin;
-#if defined(PREFER_BZERO)
+#if defined(PETSC_PREFER_BZERO)
   bzero((char *)a,n);
 #else
   memset((char*)a,0,n);
@@ -205,7 +205,7 @@ int PetscMemcmp(const void *str1,const void *str2, int len)
 int PetscMemmove(void *a,void *b,int n)
 {
   PetscFunctionBegin;
-#if !defined(HAVE_MEMMOVE)
+#if !defined(PETSC_HAVE_MEMMOVE)
   if (a < b) {
     if (a <= b - n) {
       memcpy(a, b, n);

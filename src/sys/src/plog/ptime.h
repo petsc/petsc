@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.63 1999/04/13 20:48:15 balay Exp bsmith $ */
+/* $Id: ptime.h,v 1.64 1999/05/11 19:10:50 bsmith Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -8,7 +8,15 @@
 #define __PTIME_H
 
 #include "petsc.h"
+#if defined(PETSC_HAVE_SYS_TIME_H)
+#include <sys/types.h>
+#include <sys/time.h>
+#endif
+#if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
+extern int gettimeofday(struct timeval *,struct timezone *);
+#endif
 #include "pinclude/petscfix.h"
+
 /*
    PetscTime - Returns the current time of day in seconds.  
 
@@ -85,7 +93,7 @@
 /* ------------------------------------------------------------------
     Some machines have very fast MPI_Wtime()
 */
-#if (defined(HAVE_FAST_MPI_WTIME) && !defined(USING_MPIUNI))
+#if (defined(PETSC_HAVE_FAST_MPI_WTIME) && !defined(USING_MPIUNI))
 #define PetscTime(v)         (v)=MPI_Wtime();
 
 #define PetscTimeSubtract(v) (v)-=MPI_Wtime();
@@ -95,8 +103,8 @@
 /* ------------------------------------------------------------------
    Power1,2,3,PC machines have a fast clock read_real_time()
 */ 
-#elif defined(USE_READ_REAL_TIME)
-extern PLogDouble rs6000_time();
+#elif defined(PETSC_USE_READ_REAL_TIME)
+extern PLogDouble rs6000_time(void);
 #define PetscTime(v)         (v)=rs6000_time();
 
 #define PetscTimeSubtract(v) (v)-=rs6000_time();
@@ -108,7 +116,7 @@ extern PLogDouble rs6000_time();
     Defines the interface to the IBM rs6000 high accuracy clock. The 
   routine used is defined in petsc/src/sys/src/time/rs6000_time.s
 */ 
-#elif defined(USE_IBM_ASM_CLOCK)
+#elif defined(PETSC_USE_IBM_ASM_CLOCK)
 #include <sys/time.h>
 struct my_timestruc_t {
   unsigned long tv_sec;/* seconds*/
@@ -133,9 +141,7 @@ EXTERN_C_END
     Dec Alpha has a very fast system clock accessible through getclock()
     getclock() doesn't seem to have a prototype for C++
 */
-#elif defined(USE_GETCLOCK)
-#include <sys/types.h>
-#include <sys/time.h>
+#elif defined(PETSC_USE_GETCLOCK)
 EXTERN_C_BEGIN
 extern int getclock(int clock_type, struct timespec *tp);
 EXTERN_C_END
@@ -156,7 +162,7 @@ EXTERN_C_END
 /* ------------------------------------------------------------------
    ASCI RED machine has a fast clock accessiable through dclock() 
 */
-#elif defined (USE_DCLOCK)
+#elif defined (PETSC_USE_DCLOCK)
 EXTERN_C_BEGIN
 extern PLogDouble dclock();
 EXTERN_C_BEGIN
@@ -171,7 +177,7 @@ EXTERN_C_BEGIN
 /* ------------------------------------------------------------------
    NT uses a special time code
 */
-#elif defined (USE_NT_TIME)
+#elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
 extern PLogDouble nt_time();
 #define PetscTime(v)         (v)=nt_time();
@@ -183,11 +189,7 @@ extern PLogDouble nt_time();
 /* ------------------------------------------------------------------
     The usual Unix time routines.
 */
-#elif defined(HAVE_SYS_TIME_H)
-
-#include <sys/types.h>
-#include <sys/time.h>
-
+#else
 #define PetscTime(v)         {static struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)=((PLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}

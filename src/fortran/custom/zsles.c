@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsles.c,v 1.17 1999/04/06 18:14:02 balay Exp balay $";
+static char vcid[] = "$Id: zsles.c,v 1.18 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define slesdestroy_             SLESDESTROY
 #define slescreate_              SLESCREATE
 #define slesgetpc_               SLESGETPC
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: zsles.c,v 1.17 1999/04/06 18:14:02 balay Exp balay $"
 #define slesappendoptionsprefix_ SLESAPPENDOPTIONSPREFIX
 #define slesgetksp_              SLESGETKSP
 #define slesgetoptionsprefix_    SLESGETOPTIONSPREFIX
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define slessetoptionsprefix_    slessetoptionsprefix
 #define slesappendoptionsprefix_ slesappendoptionsprefix
 #define slesdestroy_             slesdestroy

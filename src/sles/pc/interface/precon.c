@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.172 1999/04/21 18:17:09 bsmith Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.173 1999/05/04 20:33:53 balay Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -40,7 +40,7 @@ int PCDestroy(PC pc)
 #define __FUNC__ "PCPublish_Petsc"
 static int PCPublish_Petsc(PetscObject object)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   PC          v = (PC) object;
   int         ierr;
   
@@ -349,7 +349,7 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
     PetscFunctionReturn(0);
   }
   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid preconditioner side");
-#if !defined(USE_PETSC_DEBUG)
+#if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);   /* so we get no warning message about no return code */
 #endif
 }

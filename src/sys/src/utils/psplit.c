@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: psplit.c,v 1.4 1999/04/04 00:17:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: psplit.c,v 1.5 1999/04/19 22:10:01 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I    "petsc.h" I*/
@@ -40,7 +40,7 @@ int PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
     *n = *N/size + ((*N % size) > rank);
   }
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   else {
     int tmp;
     ierr = MPI_Allreduce( n, &tmp,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.56 1999/03/01 20:43:29 bsmith Exp balay $";
+static char vcid[] = "$Id: xinit.c,v 1.57 1999/05/04 20:28:34 balay Exp bsmith $";
 #endif
 
 /* 
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: xinit.c,v 1.56 1999/03/01 20:43:29 bsmith Exp balay $
 
 #include "petsc.h"
 
-#if defined(HAVE_X11)
+#if defined(PETSC_HAVE_X11)
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 extern int XiUniformHues(Draw_X *,int);

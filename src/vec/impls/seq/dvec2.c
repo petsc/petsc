@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.66 1999/04/19 22:11:15 bsmith Exp balay $"
+static char vcid[] =  "$Id: dvec2.c,v 1.67 1999/05/04 20:30:44 balay Exp bsmith $"
 #endif
 
 /* 
@@ -13,7 +13,7 @@ static char vcid[] =  "$Id: dvec2.c,v 1.66 1999/04/19 22:11:15 bsmith Exp balay 
 
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"
-#if defined(USE_FORTRAN_KERNEL_MDOT)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
@@ -492,13 +492,13 @@ int VecMax_Seq(Vec xin,int* idx,double * z )
     max = PETSC_MIN;
     j   = -1;
   } else {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       max = PetscReal(*xx++); j = 0;
 #else
       max = *xx++; j = 0;
 #endif
     for (i=1; i<n; i++) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscReal(*xx++)) > max) { j = i; max = tmp;}
 #else
       if ((tmp = *xx++) > max) { j = i; max = tmp; } 
@@ -524,13 +524,13 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
     min = PETSC_MAX;
     j   = -1;
   } else {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     min = PetscReal(*xx++); j = 0;
 #else
     min = *xx++; j = 0;
 #endif
     for ( i=1; i<n; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscReal(*xx++)) < min) { j = i; min = tmp;}
 #else
       if ((tmp = *xx++) < min) { j = i; min = tmp; } 
@@ -608,7 +608,7 @@ int VecMAXPY_Seq(int nv,const Scalar *alpha, Vec xin, Vec *y)
   int          j,j_rem;
   Scalar       *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
 
-#if defined(HAVE_PRAGMA_DISJOINT)
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*xx,*yy0,*yy1,*yy2,*yy3,*alpha)
 #endif
 
@@ -729,7 +729,7 @@ int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
           double * __restrict xxx = xx;
           for (i=0; i<n; i++) www[i] = xxx[i] * yyy[i];
     */
-#if defined(USE_FORTRAN_KERNEL_XTIMESY)
+#if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
     fortranxtimesy_(xx,yy,ww,&n);
 #else
     for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];

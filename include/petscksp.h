@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.79 1999/04/20 20:48:14 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.80 1999/04/21 18:19:32 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -40,7 +40,7 @@ extern int KSPRegisterAll(char *);
 extern int KSPRegisterDestroy(void);
 
 extern int KSPRegister_Private(char*,char*,char*,int(*)(KSP));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define KSPRegister(a,b,c,d) KSPRegister_Private(a,b,c,0)
 #else
 #define KSPRegister(a,b,c,d) KSPRegister_Private(a,b,c,d)

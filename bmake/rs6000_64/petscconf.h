@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.15 1999/03/31 23:56:59 balay Exp $"
+"$Id: petscconf.h,v 1.1 1999/04/02 22:05:52 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -8,42 +8,43 @@
 
 #define PARCH_rs6000
 
-#define HAVE_STROPTS_H 
-#define HAVE_SEARCH_H 
-#define HAVE_PWD_H 
-#define HAVE_STDLIB_H
-#define HAVE_STRING_H 
-#define HAVE_STRINGS_H 
-#define HAVE_MALLOC_H 
+#define PETSC_HAVE_STROPTS_H 
+#define PETSC_HAVE_SEARCH_H 
+#define PETSC_HAVE_PWD_H 
+#define PETSC_HAVE_STDLIB_H
+#define PETSC_HAVE_STRING_H 
+#define PETSC_HAVE_STRINGS_H 
+#define PETSC_HAVE_MALLOC_H 
 #define _POSIX_SOURCE
-#define HAVE_DRAND48  
-#define HAVE_GETDOMAINNAME  
+#define PETSC_HAVE_DRAND48  
+#define PETSC_HAVE_GETDOMAINNAME  
 #if !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE 
 #endif
-#define HAVE_X11
-#define HAVE_UNISTD_H 
-#define HAVE_SYS_TIME_H 
-#define HAVE_UNAME 
+#define PETSC_HAVE_X11
+#define PETSC_HAVE_UNISTD_H 
+#define PETSC_HAVE_SYS_TIME_H 
+#define PETSC_HAVE_UNAME 
 #if !defined(_XOPEN_SOURCE_EXTENDED)
 #define _XOPEN_SOURCE_EXTENDED 1
 #endif
 #define _ALL_SOURCE
-#define HAVE_DOUBLE_ALIGN_MALLOC
+#define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
 
-#define HAVE_XLF90
+#define PETSC_HAVE_XLF90
 
-#define PREFER_BZERO
+#define PETSC_PREFER_BZERO
 
-#define HAVE_READLINK
-#define HAVE_MEMMOVE
+#define PETSC_HAVE_READLINK
+#define PETSC_HAVE_MEMMOVE
 
-#define USE_DBX_DEBUGGER
-#define HAVE_SYS_RESOURCE_H
-#define SIZEOF_VOIDP 8
-#define SIZEOF_INT 4
-#define SIZEOF_DOUBLE 8
+#define PETSC_USE_DBX_DEBUGGER
+#define PETSC_HAVE_SYS_RESOURCE_H
+#define PETSC_SIZEOF_VOIDP 8
+#define PETSC_SIZEOF_INT 4
+#define PETSC_SIZEOF_DOUBLE 8
 
-#define WORDS_BIGENDIAN 1
+#define PETSC_WORDS_BIGENDIAN 1
+#define PETSC_HAVE_CTYPE_H 
 
 #endif

@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.25 1999/04/06 18:13:54 balay Exp balay $";
+static char vcid[] = "$Id: zpc.c,v 1.26 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
 #include "mg.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define pcregisterdestroy_         PCREGISTERDESTROY
 #define pcdestroy_                 PCDESTROY
 #define pccreate_                  PCCREATE
@@ -25,7 +25,7 @@ static char vcid[] = "$Id: zpc.c,v 1.25 1999/04/06 18:13:54 balay Exp balay $";
 #define pcgettype_                 PCGETTYPE
 #define pcsettype_                 PCSETTYPE
 #define pcgetoptionsprefix_        PCGETOPTIONSPREFIX
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcregisterdestroy_         pcregisterdestroy
 #define pcdestroy_                 pcdestroy
 #define pccreate_                  pccreate

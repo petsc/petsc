@@ -1,15 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zf90da.c,v 1.1 1999/02/01 02:44:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zf90da.c,v 1.2 1999/02/01 02:59:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/f90/zf90.h"
 #include "da.h"
 
-#if !defined (HAVE_NOF90)
+#if !defined (PETSC_HAVE_NOF90)
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dagetglobalindicesf90_     DAGETGLOBALINDICESF90
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dagetglobalindicesf90_     dagetglobalindicesf90
 #endif
 
@@ -23,7 +23,7 @@ void dagetglobalindicesf90_(DA da,int *n, array1d *indices, int *__ierr )
 }
 EXTERN_C_END
 
-#else  /* !defined (HAVE_NOF90) */
+#else  /* !defined (PETSC_HAVE_NOF90) */
 
 /*
      Dummy function so that compilers won't complain about 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.45 1999/03/17 23:21:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.46 1999/04/19 22:10:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -88,7 +88,7 @@ int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   if (PetscReal(low) >= PetscReal(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
   if (PetscImaginary(low) >= PetscImaginary(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
 #else
@@ -105,7 +105,7 @@ int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
    with other variants of random number generators. We should also add
    a routine to enable restarts [seed48()] 
 */
-#if defined(HAVE_DRAND48)
+#if defined(PETSC_HAVE_DRAND48)
 EXTERN_C_BEGIN
 extern double drand48();
 extern void   srand48(long);
@@ -212,7 +212,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE) {
          *val = PetscReal(r->width)*drand48() + PetscReal(r->low) +
@@ -235,7 +235,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
   PetscFunctionReturn(0);
 }
 
-#elif defined(HAVE_RAND)
+#elif defined(PETSC_HAVE_RAND)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscRandomCreate" 
@@ -268,7 +268,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE)
          *val = PetscReal(r->width)*rand()/(double)RAND_MAX + PetscReal(r->low) +
@@ -318,7 +318,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   *val = (0.5,0.5);
 #else
   *val = 0.5;

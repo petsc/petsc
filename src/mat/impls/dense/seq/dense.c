@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.168 1999/05/04 20:31:33 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.169 1999/05/06 14:42:59 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -308,7 +308,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *x, *b, *v = mat->v, zero = 0.0, xt;
   int          ierr, m = mat->m, i;
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   int          o = 1;
 #endif
 
@@ -322,7 +322,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP){
       for ( i=0; i<m; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         /* cannot use BLAS dot for complex because compiler/linker is 
            not happy about returning a double complex */
         int    _i;
@@ -339,7 +339,7 @@ int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
     }
     if (flag & SOR_BACKWARD_SWEEP) {
       for ( i=m-1; i>=0; i-- ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         /* cannot use BLAS dot for complex because compiler/linker is 
            not happy about returning a double complex */
         int    _i;
@@ -485,12 +485,12 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
     if (addv == INSERT_VALUES) {
       for ( j=0; j<n; j++ ) {
         if (indexn[j] < 0) {v += m; continue;}
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
         if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
         for ( i=0; i<m; i++ ) {
           if (indexm[i] < 0) {v++; continue;}
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
           if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
@@ -499,12 +499,12 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
     } else {
       for ( j=0; j<n; j++ ) {
         if (indexn[j] < 0) {v += m; continue;}
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
         if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
         for ( i=0; i<m; i++ ) {
           if (indexm[i] < 0) {v++; continue;}
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
           if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
@@ -515,12 +515,12 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
     if (addv == INSERT_VALUES) {
       for ( i=0; i<m; i++ ) {
         if (indexm[i] < 0) { v += n; continue;}
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
         if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
         for ( j=0; j<n; j++ ) {
           if (indexn[j] < 0) { v++; continue;}
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
           if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
@@ -529,12 +529,12 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
     } else {
       for ( i=0; i<m; i++ ) {
         if (indexm[i] < 0) { v += n; continue;}
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
         if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
         for ( j=0; j<n; j++ ) {
           if (indexn[j] < 0) { v++; continue;}
-#if defined(USE_PETSC_BOPT_g)  
+#if defined(PETSC_USE_BOPT_g)  
           if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
@@ -659,7 +659,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       v = a->v + i;
       fprintf(fd,"row %d:",i);
       for ( j=0; j<a->n; j++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         if (PetscReal(*v) != 0.0 && PetscImaginary(*v) != 0.0) fprintf(fd," %d %g + %g i",j,PetscReal(*v),PetscImaginary(*v));
         else if (PetscReal(*v)) fprintf(fd," %d %g ",j,PetscReal(*v));
 #else
@@ -670,7 +670,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"\n");
     }
   } else {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     int allreal = 1;
     /* determine if matrix has all real values */
     v = a->v;
@@ -681,7 +681,7 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
     for ( i=0; i<a->m; i++ ) {
       v = a->v + i;
       for ( j=0; j<a->n; j++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         if (allreal) {
           fprintf(fd,"%6.4e ",PetscReal(*v)); v += a->m;
         } else {
@@ -805,7 +805,7 @@ int MatDestroy_SeqDense(Mat mat)
   if (mat->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->bmapping);CHKERRQ(ierr);
   }
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)mat,"Rows %d Cols %d",l->m,l->n);
 #endif
   if (l->pivots) PetscFree(l->pivots);
@@ -958,7 +958,7 @@ int MatNorm_SeqDense(Mat A,NormType type,double *norm)
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
     for (i=0; i<mat->n*mat->m; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
       sum += (*v)*(*v); v++;

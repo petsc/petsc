@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.18 1999/03/17 19:29:27 balay Exp balay $ */
+/* $Id: mpibaij.h,v 1.19 1999/03/18 00:37:02 balay Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -29,7 +29,7 @@ typedef struct {
   int           nsends, nrecvs;         /* numbers of sends and receives */
   Scalar        *svalues, *rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
   Table         colmap;
 #else
   int           *colmap;                /* local col number of off-diag col */

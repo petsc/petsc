@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.34 1999/01/31 16:06:40 bsmith Exp balay $";
+static char vcid[] = "$Id: iccbs.c,v 1.35 1999/05/04 20:32:01 balay Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: iccbs.c,v 1.34 1999/01/31 16:06:40 bsmith Exp balay $
 
 #include "petsc.h"
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
 #undef __FUNC__  

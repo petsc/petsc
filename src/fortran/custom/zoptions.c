@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.57 1999/04/06 18:13:50 balay Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.58 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 /*
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: zoptions.c,v 1.57 1999/04/06 18:13:50 balay Exp balay
 #include "sys.h"
 extern int          PetscBeganMPI;
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscgetarchtype_             PETSCGETARCHTYPE
 #define optionsgetintarray_           OPTIONSGETINTARRAY
 #define optionssetvalue_              OPTIONSSETVALUE
@@ -24,7 +24,7 @@ extern int          PetscBeganMPI;
 #define optionsgetstring_             OPTIONSGETSTRING
 #define petscgetprogramname           PETSCGETPROGRAMNAME
 #define optionsinsertfile_            OPTIONSINSERTFILE
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscgetarchtype_             petscgetarchtype
 #define optionssetvalue_              optionssetvalue
 #define optionsclearvalue_            optionsclearvalue
@@ -188,7 +188,7 @@ long PetscIntAddressToFortran(int *base,int *addr)
   unsigned long tmp3 = (unsigned long) addr;
   long          itmp2;
 
-#if !defined(HAVE_CRAY90_POINTER)
+#if !defined(PETSC_HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1)/sizeof(int);
     itmp2 = (long) tmp2;
@@ -234,7 +234,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
   long          itmp2;
   int           shift;
 
-#if !defined(HAVE_CRAY90_POINTER)
+#if !defined(PETSC_HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
     itmp2 = (long) tmp2;

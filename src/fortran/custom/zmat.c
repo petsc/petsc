@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.68 1999/05/03 19:08:50 balay Exp balay $";
+static char vcid[] = "$Id: zmat.c,v 1.69 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define matsetvalue_                     MATSETVALUE
 #define matgetrow_                       MATGETROW
 #define matrestorerow_                   MATRESTOREROW
@@ -42,7 +42,7 @@ static char vcid[] = "$Id: zmat.c,v 1.68 1999/05/03 19:08:50 balay Exp balay $";
 #define matgetcoloring_                  MATGETCOLORING
 #define matpartitioningsettype_          MATPARTITIONINGSETTYPE
 #define matduplicate_                    MATDUPLICATE
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
 #define matgetrow_                       matgetrow

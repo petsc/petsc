@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.30 1998/12/10 22:58:04 balay Exp bsmith $ */
+/* $Id: petscerror.h,v 1.31 1998/12/11 16:40:57 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -7,7 +7,7 @@
 
 #include "petsc.h"
 
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 #include "ams.h"
 #endif
 
@@ -71,7 +71,7 @@
 #define PETSC_ERR_MAT_LU_ZRPVT    71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT    71   /* detected a zero pivot during Cholesky factorization */
 
-#if defined(USE_PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
 #define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define SETERRQ(n,p,s)              {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
@@ -117,7 +117,7 @@ extern int PetscInitializeLargeInts(int *,int);
 /*
       Allows the code to build a stack frame as it runs
 */
-#if defined(USE_PETSC_STACK)
+#if defined(PETSC_USE_STACK)
 
 typedef struct  {
   char **function;
@@ -130,7 +130,7 @@ extern int        petscstacksize_max;
 extern int        petscstacksize;
 extern PetscStack *petscstack;
 
-#if !defined(HAVE_AMS)
+#if !defined(PETSC_HAVE_AMS)
 
 #define PetscFunctionBegin \
   {\
@@ -171,7 +171,7 @@ extern PetscStack *petscstack;
 
 /*
     Duplicate Code for when the ALICE Memory Snooper (AMS)
-  is being used. When HAVE_AMS is defined.
+  is being used. When PETSC_HAVE_AMS is defined.
 
      stack_mem is the AMS memory that contains fields for the 
                number of stack frames and names of the stack frames
@@ -244,7 +244,7 @@ extern int PetscStackDepublish(void);
     PETSc objects
 */
 
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
 #define PetscAMSTakeAccess(obj)   \
     ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem));
 #define PetscAMSGrantAccess(obj)  \

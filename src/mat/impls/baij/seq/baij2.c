@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.44 1999/05/07 22:35:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.45 1999/05/08 13:55:43 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -296,7 +296,7 @@ int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   MatScalar    *v;
   int          ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
-#if defined(HAVE_PRAGMA_DISJOINT)
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*v,*z,*xb)
 #endif
 
@@ -1175,7 +1175,7 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
     for (i=0; i< bs2*nz; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
       sum += (*v)*(*v); v++;

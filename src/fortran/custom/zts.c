@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.16 1999/04/05 18:16:45 balay Exp balay $";
+static char vcid[] = "$Id: zts.c,v 1.17 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ts.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define tssetrhsfunction_                    TSSETRHSFUNCTION
 #define tssetrhsmatrix_                      TSSETRHSMATRIX
 #define tssetrhsjacobian_                    TSSETRHSJACOBIAN
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: zts.c,v 1.16 1999/04/05 18:16:45 balay Exp balay $";
 #define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
 #define tspvodegetiterations_                tspvodegetiterations
@@ -155,7 +155,7 @@ void tsgettype_(TS *ts,CHAR name,int *__ierr,int len)
 #endif
 }
 
-#if defined(HAVE_PVODE)  && !defined(__cplusplus)
+#if defined(PETSC_HAVE_PVODE)  && !defined(__cplusplus)
 void tspvodegetiterations_(TS *ts,int *nonlin, int *lin, int *__ierr)
 {
   if (FORTRANNULLINTEGER(nonlin)) nonlin = PETSC_NULL;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.25 1999/04/22 20:21:45 bsmith Exp balay $";
+static char vcid[] = "$Id: shvec.c,v 1.26 1999/05/04 20:30:54 balay Exp bsmith $";
 #endif
 
 /*
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: shvec.c,v 1.25 1999/04/22 20:21:45 bsmith Exp balay $
      Could not get the include files to work properly on the SGI with 
   the C++ compiler.
 */
-#if defined(USE_SHARED_MEMORY) && !defined(__cplusplus)
+#if defined(PETSC_USE_SHARED_MEMORY) && !defined(__cplusplus)
 
 extern void *PetscSharedMalloc(int,int,MPI_Comm);
 
@@ -77,16 +77,16 @@ EXTERN_C_END
 */
 #include "sys.h"
 #include "pinclude/ptime.h"
-#if defined(HAVE_PWD_H)
+#if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -103,7 +103,7 @@ EXTERN_C_END
 #endif
 #include <fcntl.h>
 #include <time.h>  
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.20 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex11.c,v 1.21 1999/05/04 20:35:25 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   double      h2, sigma1 = 100.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   SETERRA(1,0,"This example requires complex numbers");
 #endif
 

@@ -1,16 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zf90mat.c,v 1.1 1999/02/01 02:44:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zf90mat.c,v 1.2 1999/02/01 02:59:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/f90/zf90.h"
 #include "mat.h"
 
-#if !defined (HAVE_NOF90)
+#if !defined (PETSC_HAVE_NOF90)
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define matgetarrayf90_            MATGETARRAYF90
 #define matrestorearrayf90_        MATRESTOREARRAYF90
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matgetarrayf90_            matgetarrayf90
 #define matrestorearrayf90_        matrestorearrayf90
 #endif
@@ -35,7 +35,7 @@ void matrestorearrayf90_(Vec x,array2d *ptr,int *__ierr)
 }
 EXTERN_C_END
 
-#else  /* !defined (HAVE_NOF90) */
+#else  /* !defined (PETSC_HAVE_NOF90) */
 
 /*
      Dummy function so that compilers won't complain about 

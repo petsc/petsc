@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dxml.c,v 1.13 1998/03/12 23:18:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dxml.c,v 1.14 1998/04/03 23:14:54 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dxml.c,v 1.13 1998/03/12 23:18:23 bsmith Exp bsmith $
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 
-#if defined(HAVE_DXML) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_DXML) && !defined(__cplusplus)
 
 #undef __FUNC__  
 #define __FUNC__ "MatMult_SeqAIJ_DXML"

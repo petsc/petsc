@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.50 1999/03/18 15:31:46 bsmith Exp balay $";
+static char vcid[] = "$Id: vinv.c,v 1.51 1999/05/04 20:30:27 balay Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -152,13 +152,13 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
   if (!n) {
     max = PETSC_MIN;
   } else {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     max = PetscReal(x[0]);
 #else
     max = x[0];
 #endif
     for ( i=bs; i<n; i+=bs ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscReal(x[i])) > max) { max = tmp;}
 #else
       if ((tmp = x[i]) > max) { max = tmp; } 
@@ -230,13 +230,13 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
   if (!n) {
     min = PETSC_MAX;
   } else {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     min = PetscReal(x[0]);
 #else
     min = x[0];
 #endif
     for ( i=bs; i<n; i+=bs ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscReal(x[i])) < min) { min = tmp;}
 #else
       if ((tmp = x[i]) < min) { min = tmp; } 
@@ -313,7 +313,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
     for ( i=0; i<n; i++ ) {
       y[i] += x[bs*i];
     }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     for ( i=0; i<n; i++ ) {
       y[i] = PetscMax(y[i],x[bs*i]);
@@ -389,7 +389,7 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
     for ( i=0; i<n; i++ ) {
       x[bs*i] += y[i];
     }
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
     for ( i=0; i<n; i++ ) {
       x[bs*i] = PetscMax(y[i],x[bs*i]);
@@ -453,7 +453,7 @@ int VecSum(Vec v,Scalar *sum)
   for ( i=0; i<n; i++ ) {
     lsum += x[i];
   }
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = MPI_Allreduce(&lsum,sum,2,MPI_DOUBLE,MPI_SUM,v->comm);CHKERRQ(ierr);
 #else
   ierr = MPI_Allreduce(&lsum,sum,1,MPI_DOUBLE,MPI_SUM,v->comm);CHKERRQ(ierr);

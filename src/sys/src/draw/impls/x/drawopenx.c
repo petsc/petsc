@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawopenx.c,v 1.5 1999/03/17 23:21:22 bsmith Exp balay $";
+static char vcid[] = "$Id: drawopenx.c,v 1.6 1999/05/04 20:28:34 balay Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -68,7 +68,7 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,
   if (flg) {
     ierr = DrawSetType(*inctx,DRAW_NULL);CHKERRQ(ierr);
   } else {
-#if !defined(HAVE_X11)
+#if !defined(PETSC_HAVE_X11)
     (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
     ierr = DrawSetType(*inctx,DRAW_NULL);CHKERRQ(ierr);
 #else

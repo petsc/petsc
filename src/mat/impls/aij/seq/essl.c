@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.30 1998/12/03 03:59:57 bsmith Exp balay $";
+static char vcid[] = "$Id: essl.c,v 1.31 1999/05/04 20:31:42 balay Exp bsmith $";
 #endif
 
 /* 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: essl.c,v 1.30 1998/12/03 03:59:57 bsmith Exp balay $"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 
-#if defined(HAVE_ESSL) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
 /* #include <essl.h> This doesn't work!  */
 
 typedef struct {

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.91 1999/03/31 03:45:39 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.92 1999/04/12 18:51:28 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -61,7 +61,7 @@ extern int PCRegisterAll(char*);
 extern int PCRegisterAllCalled;
 
 extern int PCRegister_Private(char*,char*,char*,int(*)(PC));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,0)
 #else
 #define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,d)

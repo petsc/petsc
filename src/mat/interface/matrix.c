@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.335 1999/05/03 15:23:13 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.336 1999/05/04 20:31:24 balay Exp bsmith $";
 #endif
 
 /*
@@ -453,7 +453,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
   else if (mat->insertmode != addv) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
@@ -533,7 +533,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
-#if defined(USE_PETSC_BOPT_g) 
+#if defined(PETSC_USE_BOPT_g) 
   else if (mat->insertmode != addv) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
@@ -747,7 +747,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
-#if defined(USE_PETSC_BOPT_g) 
+#if defined(PETSC_USE_BOPT_g) 
   else if (mat->insertmode != addv) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
@@ -819,7 +819,7 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
-#if defined(USE_PETSC_BOPT_g) 
+#if defined(PETSC_USE_BOPT_g) 
   else if (mat->insertmode != addv) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }

@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: text.c,v 1.28 1999/01/31 16:05:02 bsmith Exp balay $";
+static char vcid[] = "$Id: text.c,v 1.29 1999/05/04 20:28:34 balay Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
 #include "petsc.h"
 
-#if defined(HAVE_X11)
+#if defined(PETSC_HAVE_X11)
 /*
    This file contains simple code to manage access to fonts, insuring that
    library routines access/load fonts only once

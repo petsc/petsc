@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.134 1999/04/19 22:15:39 bsmith Exp balay $";
+static char vcid[] = "$Id: ls.c,v 1.135 1999/05/04 20:35:55 balay Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -373,7 +373,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
         
   double     steptol, initslope, lambdaprev, gnormprev, a, b, d, t1, t2;
   double     maxstep, minlambda, alpha, lambda, lambdatemp, lambdaneg;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   Scalar     cinitslope, clambda;
 #endif
   int        ierr, count;
@@ -398,7 +398,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g\n",PetscReal(scale));
 #else
     PLogInfo(snes,"SNESCubicLineSearch: Scaling step by %g\n",scale);
@@ -408,7 +408,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   }
   minlambda = steptol/(*ynorm);
   ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
   initslope = PetscReal(cinitslope);
 #else
@@ -436,7 +436,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   else lambda = lambdatemp;
   ierr   = VecCopy(x,w);CHKERRQ(ierr);
   lambdaneg = -lambda;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   clambda = lambdaneg; ierr = VecAXPY(&clambda,y,w);CHKERRQ(ierr);
 #else
   ierr = VecAXPY(&lambdaneg,y,w);CHKERRQ(ierr);
@@ -481,7 +481,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
     else lambda = lambdatemp;
     ierr = VecCopy( x, w );CHKERRQ(ierr);
     lambdaneg = -lambda;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     clambda = lambdaneg;
     ierr = VecAXPY(&clambda,y,w);CHKERRQ(ierr);
 #else
@@ -559,7 +559,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
    */
   double     steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   Scalar     cinitslope,clambda;
 #endif
   int        ierr, count;
@@ -589,7 +589,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
   }
   minlambda = steptol/(*ynorm);
   ierr = MatMult(snes->jacobian,y,w);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = VecDot(f,w,&cinitslope);CHKERRQ(ierr);
   initslope = PetscReal(cinitslope);
 #else
@@ -625,7 +625,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
     } else lambda = lambdatemp;
     ierr = VecCopy(x,w);CHKERRQ(ierr);
     lambda = -lambda;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     clambda = lambda; ierr = VecAXPY(&clambda,y,w);CHKERRQ(ierr);
 #else
     ierr = VecAXPY(&lambda,y,w);CHKERRQ(ierr);

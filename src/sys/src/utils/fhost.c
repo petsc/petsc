@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.33 1999/05/06 17:59:20 bsmith Exp balay $";
+static char vcid[] = "$Id: fhost.c,v 1.34 1999/05/07 03:03:05 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "petsc.h"
 #include "sys.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #if !defined(PARCH_win32)
@@ -20,10 +20,10 @@ static char vcid[] = "$Id: fhost.c,v 1.33 1999/05/06 17:59:20 bsmith Exp balay $
 #if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -58,16 +58,16 @@ int PetscGetHostName( char name[], int nlen )
 #if defined(PARCH_win32) || defined(PARCH_win32_gnu)
   PetscFunctionBegin;
   GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
-#elif defined(HAVE_UNAME)
+#elif defined(PETSC_HAVE_UNAME)
   struct utsname utname;
 
   PetscFunctionBegin;
   uname(&utname); 
   ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
-#elif defined(HAVE_GETHOSTNAME)
+#elif defined(PETSC_HAVE_GETHOSTNAME)
   PetscFunctionBegin;
   gethostname(name, nlen);
-#elif defined(HAVE_SYSINFO)
+#elif defined(PETSC_HAVE_SYSINFO)
   PetscFunctionBegin;
   sysinfo(SI_HOSTNAME, name, nlen);
 #endif
@@ -78,9 +78,9 @@ int PetscGetHostName( char name[], int nlen )
     l = PetscStrlen(name);
     if (l == nlen) PetscFunctionReturn(0);
     name[l++] = '.';
-#if defined(HAVE_SYSINFO)
+#if defined(PETSC_HAVE_SYSINFO)
     sysinfo( SI_SRPC_DOMAIN,name+l,nlen-l);
-#elif defined(HAVE_GETDOMAINNAME)
+#elif defined(PETSC_HAVE_GETDOMAINNAME)
     getdomainname( name+l, nlen - l );
     /* change domain name if it is an ANL crap one */
     if (!PetscStrcmp(name+l,"qazwsxedc")) {

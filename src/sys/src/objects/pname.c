@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.24 1999/04/21 20:43:25 bsmith Exp balay $";
+static char vcid[] = "$Id: pname.c,v 1.25 1999/05/04 20:29:12 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -74,7 +74,7 @@ int PetscObjectPublish(PetscObject obj)
 #define __FUNC__ "PetscObjectPublishBaseBegin"
 int PetscObjectPublishBaseBegin(PetscObject obj)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   AMS_Memory amem;
   AMS_Comm   acomm;
   int        ierr;
@@ -113,7 +113,7 @@ int PetscObjectPublishBaseBegin(PetscObject obj)
 #define __FUNC__ "PetscObjectPublishBaseEnd"
 int PetscObjectPublishBaseEnd(PetscObject obj)
 {
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   AMS_Memory amem = (AMS_Memory) obj->amem;
   int        ierr;
 

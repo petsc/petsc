@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.22 1999/02/17 21:37:32 balay Exp balay $";
+static char vcid[] = "$Id: mmbaij.c,v 1.23 1999/05/04 20:32:41 balay Exp bsmith $";
 #endif
 
 
@@ -19,7 +19,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   int        col,bs = baij->bs,*tmp,*stmp;
   IS         from,to;
   Vec        gvec;
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
   Table      gid1_lid1;
   CTablePos  tpos;
   int        gid, lid; 
@@ -27,7 +27,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 
   PetscFunctionBegin;
 
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
   TableCreate(B->mbs,&gid1_lid1); 
   for ( i=0; i<B->mbs; i++ ) {
@@ -185,7 +185,7 @@ int DisAssemble_MPIBAIJ(Mat A)
   ierr = VecDestroy(baij->lvec);CHKERRQ(ierr); baij->lvec = 0;
   ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr); baij->Mvctx = 0;
   if (baij->colmap) {
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
     TableDelete(baij->colmap); baij->colmap = 0;
 #else
     PetscFree(baij->colmap); baij->colmap = 0;

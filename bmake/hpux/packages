@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1999/04/24 00:21:16 balay Exp balay $ 
+# $Id: base.site,v 1.24 1999/05/10 16:25:59 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -19,11 +19,11 @@ X11_INCLUDE    =
 X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software
-# If using HP's MPI, then add the flag -DHAVE_MPI_COMM_F2C
+# If using HP's MPI, then add the flag -DPETSC_HAVE_MPI_COMM_F2C
 # to MPI_INCLUDE variable
 #
 #MPI_LIB        = -L/opt/mpi/lib/pa1.1 -lmpi
-#MPI_INCLUDE    = -I/opt/mpi/include -DHAVE_MPI_COMM_F2C
+#MPI_INCLUDE    = -I/opt/mpi/include -DPETSC_HAVE_MPI_COMM_F2C
 #MPIRUN         = /opt/mpi/bin/mpirun
 #
 MPI_LIB        = /usr/local/mpi/lib/hpux/ch_p4/libmpi.a
@@ -36,7 +36,7 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE#
-# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 #MPE_INCLUDE   = -I/usr/local/mpi/include
 #MPE_LIB       = -L/usr/local/mpi/lib/hpux/ch_p4 -lmpe -lpmpi
@@ -72,11 +72,11 @@ BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site
 #
-# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         =  -DHAVE_BLOCKSOLVE
-#PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
+PCONF         =  -DPETSC_HAVE_BLOCKSOLVE
+#PCONF         = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 

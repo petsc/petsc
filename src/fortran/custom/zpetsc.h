@@ -64,11 +64,11 @@ Fortran.
 #define PetscToPointerComm(a)        (a)
 #define PetscFromPointerComm(a) (int)(a)
 
-#elif defined (HAVE_MPI_COMM_F2C)
+#elif defined (PETSC_HAVE_MPI_COMM_F2C)
 #define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
 #define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
 
-#elif (SIZEOF_VOIDP == 8)
+#elif (PETSC_SIZEOF_VOIDP == 8)
 /*
     Here we assume that only MPICH uses pointers for 
   MPI_Comms on 64 bit machines.

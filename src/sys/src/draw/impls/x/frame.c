@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: frame.c,v 1.17 1998/03/24 21:00:15 balay Exp bsmith $";
+static char vcid[] = "$Id: frame.c,v 1.18 1999/01/31 16:05:02 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
 #include "petsc.h"
 
-#if defined(HAVE_X11)
+#if defined(PETSC_HAVE_X11)
 /*
    This file contains routines to draw a 3-d like frame about a given 
    box with a given width.  Note that we might like to use a high/low

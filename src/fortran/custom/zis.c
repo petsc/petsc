@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.26 1998/10/05 20:42:50 balay Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.27 1998/10/19 22:15:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "is.h"
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define isdestroy_             ISDESTROY
 #define iscreatestride_        ISCREATESTRIDE
 #define iscreategeneral_       ISCREATEGENERAL
@@ -26,7 +26,7 @@ static char vcid[] = "$Id: zis.c,v 1.26 1998/10/05 20:42:50 balay Exp bsmith $";
 #define isallgather_                  ISALLGATHER
 #define iscoloringdestroy_            ISCOLORINGDESTROY
 #define iscoloringview_               ISCOLORINGVIEW
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define iscoloringview_        iscoloringview
 #define iscoloringdestroy_     iscoloringdestroy
 #define isview_                isview

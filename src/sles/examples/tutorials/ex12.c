@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.7 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.8 1999/05/04 20:35:25 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
@@ -24,7 +24,7 @@ T*/
 
    To register a PC type whose code is linked into the executable,
    put the line below in your code BEFORE any PETSc include files. 
-   #undef USE_DYNAMIC_LIBRARIES
+   #undef PETSC_USE_DYNAMIC_LIBRARIES
 
    Also provide the prototype for your PCCreate_XXX() function. In 
    this example we use the PETSc implementation of the Jacobi method,
@@ -35,7 +35,7 @@ T*/
 
    See the manual page PCRegister() for details on how to register a method.
 */
-#undef USE_DYNAMIC_LIBRARIES
+#undef PETSC_USE_DYNAMIC_LIBRARIES
 
 /* 
   Include "sles.h" so that we can use SLES solvers.  Note that this file

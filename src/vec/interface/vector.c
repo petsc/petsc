@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.177 1999/03/31 03:42:57 bsmith Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.178 1999/05/04 20:30:38 balay Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1308,7 +1308,7 @@ int VecAssemblyEnd(Vec vec)
     ierr = VecView(vec,VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
     ierr = ViewerFlush(VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
   }
-#if defined(HAVE_AMS)
+#if defined(PETSC_HAVE_AMS)
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_ams",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = VecView(vec,VIEWER_AMS_(vec->comm));CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.80 1999/04/19 22:15:46 bsmith Exp balay $";
+static char vcid[] = "$Id: umls.c,v 1.81 1999/05/04 20:36:04 balay Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -74,7 +74,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
       if ((iters < 0) || (iters >= kspmaxit)) { /* Modify diagonal of Hessian */
         neP->gamma_factor *= two; 
         neP->gamma = neP->gamma_factor*(*gnorm); 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
         PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",
                  neP->gamma_factor,neP->gamma);
 #else
@@ -353,7 +353,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   double    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1;
   int       ierr, i, stage1;
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   Scalar    cdginit, cdg, cstep = 0.0;
 #endif
 
@@ -392,7 +392,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   }
 
   /* Check that search direction is a descent direction */
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   ierr = VecDot(G,S,&cdginit);CHKERRQ(ierr); dginit = PetscReal(cdginit);
 #else
   ierr = VecDot(G,S,&dginit);CHKERRQ(ierr);  /* dginit = G^T S */
@@ -446,7 +446,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
         (neP->nfev >= neP->maxfev - 1) || (neP->infoc == 0)) 
       *step = stx;
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     cstep = *step;
     ierr = VecWAXPY(&cstep,S,W,X);CHKERRQ(ierr);
 #else
@@ -455,7 +455,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     ierr = SNESComputeMinimizationFunction(snes,X,f);CHKERRQ(ierr);
     neP->nfev++;
     ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     ierr = VecDot(G,S,&cdg);CHKERRQ(ierr); dg = PetscReal(cdg);
 #else
     ierr = VecDot(G,S,&dg);CHKERRQ(ierr);	        /* dg = G^T S */

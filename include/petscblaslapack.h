@@ -1,4 +1,4 @@
-/* $Id: blaslapack.h,v 1.34 1998/12/09 19:37:51 bsmith Exp bsmith $ */
+/* $Id: blaslapack.h,v 1.35 1998/12/09 19:59:31 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -22,7 +22,7 @@ Cray T3D/T3E.
 #include <fortran.h>
 #endif
 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
 
 /*
     These are real case with no character string arguments
@@ -55,7 +55,7 @@ Cray T3D/T3E.
 #define DTRSL    STRSL
 #endif
 
-#if defined(HAVE_FORTRAN_UNDERSCORE) || defined(USE_CBLASLAPACK)
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_USE_CBLASLAPACK)
 #define LAgeqrf_ dgeqrf_
 #define LAgetrf_ dgetrf_
 #define LAgetf2_ dgetf2_
@@ -66,7 +66,7 @@ Cray T3D/T3E.
 #define BLswap_  dswap_
 #define BLaxpy_  daxpy_
 #define BLasum_  dasum_
-#elif defined(HAVE_FORTRAN_CAPS)
+#elif defined(PETSC_HAVE_FORTRAN_CAPS)
 #define LAgeqrf_ DGEQRF
 #define LAgetrf_ DGETRF
 #define LAgetf2_ DGETF2
@@ -96,7 +96,7 @@ Cray T3D/T3E.
 #if defined(USES_CPTOFCD)
 /*
    Note that this assumes that machines which use cptofcd() use 
-  the HAVE_FORTRAN_CAPS option. This is true on the Cray T3D/T3E.
+  the PETSC_HAVE_FORTRAN_CAPS option. This is true on the Cray T3D/T3E.
 */
 #define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)  DORMQR(_cptofcd((a),1),\
              _cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
@@ -123,7 +123,7 @@ Cray T3D/T3E.
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #define LAgetrf_ DGETRF
-#elif defined(HAVE_FORTRAN_UNDERSCORE) || defined(USE_CBLASLAPACK)
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_USE_CBLASLAPACK)
 #define LAormqr_ dormqr_
 #define LAtrtrs_ dtrtrs_
 #define LApotrf_ dpotrf_
@@ -135,7 +135,7 @@ Cray T3D/T3E.
 #define BLgemm_  dgemm_
 #define LAgesvd_ dgesvd_
 #define LAgeev_  dgeev_
-#elif defined(HAVE_FORTRAN_CAPS)
+#elif defined(PETSC_HAVE_FORTRAN_CAPS)
 #define LAormqr_ DORMQR
 #define LAtrtrs_ DTRTRS
 #define LApotrf_ DPOTRF
@@ -186,7 +186,7 @@ Cray T3D/T3E.
 #define ZGEEV   CGEEV
 #endif
 
-#if defined(HAVE_FORTRAN_UNDERSCORE) || defined(USE_CBLASLAPACK)
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_USE_CBLASLAPACK)
 #define LAgeqrf_ zgeqrf_
 #define LAgetrf_ zgetrf_
 #define LAgetf2_ zgetf2_
@@ -197,7 +197,7 @@ Cray T3D/T3E.
 #define BLswap_  zswap_
 #define BLaxpy_  zaxpy_
 #define BLasum_  dzasum_
-#elif defined(HAVE_FORTRAN_CAPS)
+#elif defined(PETSC_HAVE_FORTRAN_CAPS)
 #define LAgeqrf_ ZGEQRF
 #define BLdot_   ZDOTC
 #define BLnrm2_  DZNRM2
@@ -241,7 +241,7 @@ Cray T3D/T3E.
                                         (f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
-#elif defined(HAVE_FORTRAN_UNDERSCORE) || defined(USE_CBLASLAPACK)
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_USE_CBLASLAPACK)
 #define LAtrtrs_ ztrtrs_
 #define LApotrf_ zpotrf_
 #define LApotrs_ zpotrs_
@@ -252,7 +252,7 @@ Cray T3D/T3E.
 #define BLgemm_  zgemm_
 #define LAgesvd_ zgesvd_
 #define LAgeev_  zgeev_
-#elif defined(HAVE_FORTRAN_CAPS)
+#elif defined(PETSC_HAVE_FORTRAN_CAPS)
 #define LAtrtrs_ ZTRTRS
 #define LApotrf_ ZPOTRF
 #define LApotrs_ ZPOTRS
@@ -280,7 +280,7 @@ Cray T3D/T3E.
 
 #endif
 
-#if !defined(USE_CBLASLAPACK)
+#if !defined(PETSC_USE_CBLASLAPACK)
 EXTERN_C_BEGIN
 #endif
 
@@ -300,7 +300,7 @@ extern void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 
 #if defined(USES_CPTOFCD)
 
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
 extern void   ZPOTRF(_fcd,int*,Scalar*,int*,int*);
 extern void   ZGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
@@ -340,15 +340,15 @@ extern void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
 
 /* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
-#if defined(HAVE_ESSL) && defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_HAVE_ESSL) && defined(PETSC_USE_COMPLEX)
 extern void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
 extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,double*,int*);
-#elif defined(HAVE_ESSL)
+#elif defined(PETSC_HAVE_ESSL)
 extern void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
 extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
-#elif !defined(USE_PETSC_COMPLEX)
+#elif !defined(PETSC_USE_COMPLEX)
 extern void   LAgeev_(char *,char *,int *, Scalar *,int*,double*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
@@ -361,7 +361,7 @@ extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
 #endif
 #endif
 
-#if !defined(USE_CBLASLAPACK)
+#if !defined(PETSC_USE_CBLASLAPACK)
 EXTERN_C_END
 #endif
 

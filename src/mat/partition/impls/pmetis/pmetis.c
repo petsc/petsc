@@ -1,10 +1,10 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.18 1999/04/19 22:13:11 bsmith Exp balay $";
+static char vcid[] = "$Id: pmetis.c,v 1.19 1999/05/04 20:32:57 balay Exp bsmith $";
 #endif
  
 #include "petsc.h"
-#if defined(HAVE_PARMETIS)
+#if defined(PETSC_HAVE_PARMETIS)
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
 EXTERN_C_BEGIN
 #include "par_kmetis.h"

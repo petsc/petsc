@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wmap.c,v 1.20 1998/03/24 21:00:08 balay Exp bsmith $";
+static char vcid[] = "$Id: wmap.c,v 1.21 1999/01/31 16:05:02 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
 #include "petsc.h"
 
-#if defined(HAVE_X11)
+#if defined(PETSC_HAVE_X11)
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
 /*

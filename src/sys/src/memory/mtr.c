@@ -1,15 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.124 1999/04/19 22:09:45 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.125 1999/05/04 20:29:08 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
 */
 #include "petsc.h"           /*I "petsc.h" I*/
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -29,7 +29,7 @@ extern int  PetscTrFreeDefault( void *, int, char *,char *,char *);
   of malloced memory. This will only work on flat memory models and 
   even then is suspicious.
 */
-#if (SIZEOF_VOIDP == 8)
+#if (PETSC_SIZEOF_VOIDP == 8)
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEEEEEEEEEE;
 #else
 void *PetscLow  = (void *) 0x0, *PetscHigh = (void *) 0xEEEEEEEE;  
@@ -42,7 +42,7 @@ int PetscSetUseTrMalloc_Private(void)
   int ierr;
 
   PetscFunctionBegin;
-#if (SIZEOF_VOIDP == 8)
+#if (PETSC_SIZEOF_VOIDP == 8)
   PetscLow     = (void *) 0xEEEEEEEEEEEEEEEE;
 #else
   PetscLow     = (void *) 0xEEEEEEEE; 
@@ -70,7 +70,7 @@ int PetscSetUseTrMalloc_Private(void)
 
 #define HEADER_DOUBLES      8
 
-#if (SIZEOF_VOIDP == 8)
+#if (PETSC_SIZEOF_VOIDP == 8)
 #define TR_ALIGN_BYTES      8
 #define TR_ALIGN_MASK       0x7
 #else
@@ -113,7 +113,7 @@ static long    TRMaxMem     = 0;
 static int  PetscLogMallocMax = 10000, PetscLogMalloc = -1, *PetscLogMallocLength;
 static char **PetscLogMallocDirectory, **PetscLogMallocFile,**PetscLogMallocFunction;
 
-#if defined(HAVE_MALLOC_VERIFY)
+#if defined(PETSC_HAVE_MALLOC_VERIFY)
 EXTERN_C_BEGIN
 extern int malloc_verify();
 EXTERN_C_END
@@ -175,7 +175,7 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
     }
     head = head->next;
   }
-#if defined(HAVE_MALLOC_VERIFY) && defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_HAVE_MALLOC_VERIFY) && defined(PETSC_USE_BOPT_g)
   malloc_verify();
 #endif
 

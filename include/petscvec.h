@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.94 1999/04/08 15:50:37 balay Exp balay $ */
+/* $Id: vec.h,v 1.95 1999/04/08 23:12:46 balay Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -94,7 +94,7 @@ extern int VecSetValuesBlocked(Vec,int,const int[],const Scalar[],InsertMode);
 extern int VecRegisterAllCalled;
 extern int VecRegisterAll(const char []);
 extern int VecRegister_Private(const char[],const char[],const char[],int(*)(Vec));
-#if defined(USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define VecRegister(a,b,c,d) VecRegister_Private(a,b,c,0)
 #else
 #define VecRegister(a,b,c,d) VecRegister_Private(a,b,c,d)

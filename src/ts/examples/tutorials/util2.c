@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.9 1999/03/07 17:29:08 bsmith Exp balay $";
+static char vcid[] = "$Id: util2.c,v 1.10 1999/05/04 20:36:56 balay Exp bsmith $";
 #endif
 
 /*
@@ -18,9 +18,9 @@ int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 /* -------------------------------------------------------------------*/
 
 /* Temporary interface routine; this will be eliminated soon! */
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define setcroutinefromfortran_ SETCROUTINEFROMFORTRAN
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define setcroutinefromfortran_ setcroutinefromfortran
 #endif
 
@@ -86,7 +86,7 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     ierr = VecCopy(xx1,xx2);CHKERRQ(ierr);
     if ( i>= start && i<end) {
       dx = xx[i-start];
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
@@ -103,7 +103,7 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,jj1,jj2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
     MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);
 #else
 #endif

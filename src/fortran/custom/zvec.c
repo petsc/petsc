@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.51 1999/03/23 21:54:19 balay Exp balay $";
+static char vcid[] = "$Id: zvec.c,v 1.52 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "vec.h"
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define vecsetfromoptions_        VECSETFROMOPTIONS
 #define vecsettype_               VECSETTYPE
 #define vecsetvalue_              VECSETVALUE
@@ -43,7 +43,7 @@ static char vcid[] = "$Id: zvec.c,v 1.51 1999/03/23 21:54:19 balay Exp balay $";
 #define vecmax_                   VECMAX
 #define drawtensorcontour_        DRAWTENSORCONTOUR
 #define vecsetrandom_              VECSETRANDOM
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define drawtensorcontour_        drawtensorcontour
 #define vecsetfromoptions_        vecsetfromoptions
 #define vecsettype_               vecsettype

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.32 1999/05/07 15:51:31 balay Exp balay $ 
+# $Id: base.site,v 1.33 1999/05/10 16:24:20 balay Exp bsmith $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -39,7 +39,7 @@ MPIRUN         = /home/petsc/mpich/lib/IRIX5/ch_shmem/mpirun.ch_shmem
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
-# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
 MPE_INCLUDE   = -I/home/petsc/mpich/mpe 
 MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
@@ -76,12 +76,12 @@ BS_LIB        = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site
 #
-# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         =   -DHAVE_BLOCKSOLVE -DHAVE_MPE
-#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
+PCONF         =   -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE
+#PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------

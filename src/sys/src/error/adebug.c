@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.88 1999/04/21 20:43:10 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.89 1999/05/04 20:28:50 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -8,10 +8,10 @@ static char vcid[] = "$Id: adebug.c,v 1.88 1999/04/21 20:43:10 bsmith Exp balay 
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <signal.h> 
 #include "sys.h"
-#if defined(HAVE_UNISTD_H)
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif 
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.211 1999/05/04 20:29:12 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.212 1999/05/06 17:59:13 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -11,10 +11,10 @@ static char vcid[] = "$Id: options.c,v 1.211 1999/05/04 20:29:12 balay Exp bsmit
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "sys.h"
-#if defined(HAVE_STDLIB_H)
+#if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
 #include "pinclude/petscfix.h"
@@ -801,7 +801,7 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
     if (!value) {
       if (flg) *flg = 0; *dvalue = 0.0;
     } else { 
-#if !defined(USE_PETSC_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX)
       *dvalue = atof(value);
 #else
       double re=0.0,im=0.0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfjdef.c,v 1.1 1999/05/03 01:28:27 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfjdef.c,v 1.2 1999/05/04 20:35:51 balay Exp bsmith $";
 #endif
 /*
   Implements the default PETSc approach for computing the h 
@@ -93,7 +93,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
      Safeguard for step sizes that are "too small"
   */
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   else if (PetscAbsScalar(dot) < umin*sum && PetscReal(dot) >= 0.0) dot = umin*sum;
   else if (PetscAbsScalar(dot) < 0.0 && PetscReal(dot) > -umin*sum) dot = -umin*sum;
 #else

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex40.c,v 1.9 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex40.c,v 1.10 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PetscRandom r;
   Scalar      rand;
   PetscInitialize(&argc,&args,(char *)0,help);
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   SETERRA(1,0,"This example does not work with complex numbers");
 #else
   

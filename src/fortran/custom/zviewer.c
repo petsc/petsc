@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zviewer.c,v 1.17 1999/02/03 04:33:05 bsmith Exp balay $";
+static char vcid[] = "$Id: zviewer.c,v 1.18 1999/03/23 21:54:16 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define viewerdestroy_        VIEWERDESTROY
 #define viewerasciiopen_      VIEWERASCIIOPEN
 #define viewersetformat_      VIEWERSETFORMAT
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: zviewer.c,v 1.17 1999/02/03 04:33:05 bsmith Exp balay
 #define viewerdrawopen_       VIEWERDRAWOPEN
 #define viewerbinarysettype_  VIEWERBINARYSETTYPE
 #define viewersetfilename_    VIEWERSETFILENAME
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define viewerdestroy_        viewerdestroy
 #define viewerasciiopen_      viewerasciiopen
 #define viewersetformat_      viewersetformat

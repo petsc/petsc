@@ -1,14 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zf90vec.c,v 1.1 1999/02/01 02:44:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zf90vec.c,v 1.2 1999/02/01 02:59:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/f90/zf90.h"
 #include "is.h"
 #include "vec.h"
 
-#if !defined (HAVE_NOF90)
+#if !defined (PETSC_HAVE_NOF90)
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define vecgetarrayf90_            VECGETARRAYF90
 #define vecrestorearrayf90_        VECRESTOREARRAYF90
 #define isgetindicesf90_           ISGETINDICESF90
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: zf90vec.c,v 1.1 1999/02/01 02:44:28 bsmith Exp bsmith
 #define isblockrestoreindicesf90_  ISBLOCKRESTOREINDICESF90
 #define vecduplicatevecsf90_       VECDUPLICATEVECSF90
 #define vecdestroyvecsf90_         VECDESTROYVECSF90
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecgetarrayf90_            vecgetarrayf90
 #define vecrestorearrayf90_        vecrestorearrayf90
 #define isgetindicesf90_           isgetindicesf90
@@ -122,7 +122,7 @@ void vecdestroyvecsf90_(array1d *ptr,int *m,int *__ierr )
 
 EXTERN_C_END
 
-#else  /* !defined (HAVE_NOF90) */
+#else  /* !defined (PETSC_HAVE_NOF90) */
 
 
 /*

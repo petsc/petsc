@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_t3e.c,v 1.1 1998/04/25 21:09:23 balay Exp balay $";
+static char vcid[] = "$Id: f90_t3e.c,v 1.2 1998/06/25 21:39:13 balay Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: f90_t3e.c,v 1.1 1998/04/25 21:09:23 balay Exp balay $
   pointers and traditional C pointers for the NAG F90 compiler.
 */
 #include "src/fortran/f90/zf90.h"
-#if defined(HAVE_T3EF90)
+#if defined(PETSC_HAVE_T3EF90)
 
 /* --------------------------------------------------------*/
 /*

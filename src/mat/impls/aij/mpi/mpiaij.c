@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.292 1999/05/04 20:31:51 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.293 1999/05/05 15:56:51 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -27,7 +27,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
   int        n = B->n,i,ierr;
 
   PetscFunctionBegin;
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
   ierr = TableCreate(aij->n/5,&aij->colmap);CHKERRQ(ierr); 
   for ( i=0; i<n; i++ ){
     ierr = TableAdd(aij->colmap,aij->garray[i]+1,i+1);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
     if (im[i] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
     if (im[i] >= aij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     if (im[i] >= rstart && im[i] < rend) {
@@ -225,7 +225,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
         else if (in[j] < 0) continue;
-#if defined(USE_PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
         else if (in[j] >= aij->N) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");}
 #endif
         else {
@@ -233,7 +233,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
             if (!aij->colmap) {
               ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
             }
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
             ierr = TableFind(aij->colmap,in[j]+1,&col);CHKERRQ(ierr);
 	    col--;
 #else
@@ -291,7 +291,7 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
           if (!aij->colmap) {
             ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
           }
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
           ierr = TableFind(aij->colmap,idxn[j]+1,&col);CHKERRQ(ierr);
           col --;
 #else
@@ -685,14 +685,14 @@ int MatDestroy_MPIAIJ(Mat mat)
   if (mat->cmap) {
     ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
   }
-#if defined(USE_PETSC_LOG)
+#if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",aij->M,aij->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   PetscFree(aij->rowners); 
   ierr = MatDestroy(aij->A);CHKERRQ(ierr);
   ierr = MatDestroy(aij->B);CHKERRQ(ierr);
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
   if (aij->colmap) TableDelete(aij->colmap);
 #else
   if (aij->colmap) PetscFree(aij->colmap);
@@ -1205,7 +1205,7 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
     if (type == NORM_FROBENIUS) {
       v = amat->a;
       for (i=0; i<amat->nz; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
@@ -1213,7 +1213,7 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
       }
       v = bmat->a;
       for (i=0; i<bmat->nz; i++ ) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
         sum += PetscReal(PetscConj(*v)*(*v)); v++;
 #else
         sum += (*v)*(*v); v++;
@@ -1316,7 +1316,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     PetscFree(a->rowners); 
     ierr = MatDestroy(a->A);CHKERRQ(ierr);
     ierr = MatDestroy(a->B);CHKERRQ(ierr);
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
     if (a->colmap) TableDelete(a->colmap);
 #else
     if (a->colmap) PetscFree(a->colmap);
@@ -1872,7 +1872,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   ierr       = PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));CHKERRQ(ierr);
   ierr       = MatStashCreate_Private(matin->comm,1,&mat->stash);CHKERRQ(ierr);
   if (oldmat->colmap) {
-#if defined (USE_CTABLE)
+#if defined (PETSC_USE_CTABLE)
     ierr = TableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr);
 #else
     a->colmap = (int *) PetscMalloc((a->N)*sizeof(int));CHKPTRQ(a->colmap);

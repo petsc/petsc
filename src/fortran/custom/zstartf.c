@@ -2,19 +2,19 @@
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
 
-#ifdef HAVE_FORTRAN_CAPS
+#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
 #define petscsetcommonblock_          PETSCSETCOMMONBLOCK
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define petsc_null_function_          PETSC_NULL_FUNCTION
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitializefortran_       petscinitializefortran
 #define petscsetcommonblock_          petscsetcommonblock
 #define petscsetfortranbasepointers_  petscsetfortranbasepointers
 #define petsc_null_function_          petsc_null_function
 #endif
 
-#if defined(HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
 #define petsc_null_function_  petsc_null_function__
 #endif
 
