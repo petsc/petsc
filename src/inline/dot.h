@@ -27,7 +27,7 @@ EXTERN void fortranmdot1_(void *,void *,int *,
                            void *);
 #endif
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_NORMSQR)
+#if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortrannormsqr_    FORTRANNORMSQR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
