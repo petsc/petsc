@@ -101,7 +101,7 @@ int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEIsEnabled"
 /*@C
-     PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions to the x86 instruction 
+     PetscSSEIsEnabled - Determines if Intel Streaming SIMD Extensions (SSE) to the x86 instruction 
      set can be used.  Some operating systems do not allow the use of these instructions despite
      hardware availability.
 
@@ -114,18 +114,37 @@ int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
 .    lflag - Local Flag:  PETSC_TRUE if enabled in this process
 .    gflag - Global Flag: PETSC_TRUE if enabled for all processes in comm
 
+     Notes:
+     PETSC_NULL can be specified for lflag or gflag if either of these values are not desired.
+
+     Options Database Keys:
+.    -disable_sse - Disable use of SSE hardware
+
      Level: developer
 @*/
 int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   int ierr;
+  PetscTruth disabled,local_flag,global_flag;
+
   PetscFunctionBegin;
-  *lflag = PETSC_FALSE;
-  *gflag = PETSC_FALSE;
-  ierr = PetscSSEHardwareTest(lflag);CHKERRQ(ierr);
-  if (*lflag) {
-    ierr = PetscSSEOSEnabledTest(lflag);CHKERRQ(ierr);
+  local_flag  = PETSC_FALSE;
+  global_flag = PETSC_FALSE;
+  ierr = PetscOptionsName("-disable_sse","Disable use of Intel SSE instructions.","PetscSSEIsEnabled",&disabled);CHKERRQ(ierr);
+  if (!disabled) {
+    ierr = PetscSSEHardwareTest(local_flag);CHKERRQ(ierr);
+    if (local_flag) {
+      ierr = PetscSSEOSEnabledTest(local_flag);CHKERRQ(ierr);
+    }
+    if (!gflag) {
+      ierr = MPI_Allreduce(&local_flag,&global_flag,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
+    }
   }
-  ierr = MPI_Allreduce(lflag,gflag,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
+  if (!lflag) {
+    *lflag = local_flag;
+  }
+  if (!gflag) {
+    *gflag = global_flag;
+  }
   PetscFunctionReturn(0);
 }
 
