@@ -31,7 +31,7 @@ class Configure(config.base.Configure):
       self.pushLanguage('F77')
       desc.append('  Fortran Compiler:       '+self.getCompiler())
 #     desc.append('  Fortran Compiler Flags: '+self.compilerFlags)
-      if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:         '+self.getLinker())
+      if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:     '+self.getLinker())
 #     desc.append('  Fortran Linker Flags:   '+self.linkerFlags)
       self.popLanguage()
     return '\n'.join(desc)+'\n'
