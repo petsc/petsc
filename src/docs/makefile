@@ -35,3 +35,9 @@ include ${PETSC_DIR}/bmake/common/test
 # petscapps* get built with 'builddist' and 'rsync'ed over to www-fp via the crontab
 bib2html: clean
 	${BIB2HTML} -group tex/doctext/petsc.group -listfile website/publications/petscapps.html -listconfig tex/doctext/petscapp.cfg tex/petscapp.bib -nospecials > website/publications/petscapps-bib.html
+
+years:
+	for i in 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004; do\
+          echo -n $${i};\
+          grep $${i} tex/petscapp.bib | grep -i year | wc -l;\
+        done
