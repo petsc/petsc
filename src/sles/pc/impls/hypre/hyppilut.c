@@ -21,7 +21,6 @@ typedef struct {
   HYPRE_Solver       hsolver;
   HYPRE_IJMatrix     ij;
   HYPRE_IJVector     b,x;
-  PetscTruth         zeroinitialsolution;
 
   int (*destroy)(HYPRE_Solver);
   int (*solve)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
@@ -109,13 +108,9 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
   HYPRE_ParCSRMatrix hmat;
   PetscScalar        *bv,*xv;
   HYPRE_ParVector    jbv,jxv;
-  PetscScalar        *sbv,*sxv; 
+  PetscScalar        *sbv,*sxv, zero = 0.0; 
 
   PetscFunctionBegin;
-  if (jac->zeroinitialsolution) { 
-    PetscScalar zero = 0.0;                                                                                          
-    ierr = VecSet(&zero, x);CHKERRQ(ierr);                                                                      
-  }       
   ierr = VecGetArray(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   HYPREReplacePointer(jac->b,bv,sbv);
@@ -345,7 +340,6 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       CHKMEMQ;
     } 
 
-    ierr = PetscOptionsLogical("-pc_hypre_boomeramg_preconditioner","Use BoomerAMG as preconditioner","None",jac->zeroinitialsolution,&jac->zeroinitialsolution,0);CHKERRQ(ierr);
     /*
          Suggested by QUANDALLE Philippe <Philippe.QUANDALLE@ifp.fr>
 
@@ -710,7 +704,6 @@ int PCCreate_HYPRE(PC pc)
   ierr                     = PetscNew(PC_HYPRE,&jac);CHKERRQ(ierr);
   ierr                     = PetscMemzero(jac,sizeof(PC_HYPRE));CHKERRQ(ierr);
   pc->data                 = jac;
-  jac->zeroinitialsolution = PETSC_FALSE;
   pc->ops->setfromoptions  = PCSetFromOptions_HYPRE;
   PetscFunctionReturn(0);
 }
