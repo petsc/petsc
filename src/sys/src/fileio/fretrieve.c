@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.31 2000/05/10 16:39:17 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.32 2000/06/30 14:53:58 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -354,7 +354,7 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 
     Output Parameter:
 +   llibname - name of local copy of library
--   found - if found and retrieve the file
+-   found - if found and retrieved the file
 
     Level: developer
 
@@ -429,23 +429,27 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);
     ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
     if (flg1 || flg2) {
-      SETERRQ1(1,1,"PetscFileRetrieve:Did not find file %s",libname);
+      *found = PETSC_FALSE;
     } else {
       *found = PETSC_TRUE;
-    }
-    /* Check for \n and make it 0 */
-    for (i=0; i<1024; i++) {
-      if (buf[i] == '\n') {
-        buf[i] = 0;
-        break;
+  
+      /* Check for \n and make it 0 */
+      for (i=0; i<1024; i++) {
+        if (buf[i] == '\n') {
+          buf[i] = 0;
+          break;
+        }
       }
+      ierr = PetscStrncpy(llibname,buf,llen);CHKERRQ(ierr);
+      ierr = PetscFree(par);CHKERRQ(ierr);
     }
-    ierr = PetscStrncpy(llibname,buf,llen);CHKERRQ(ierr);
-    ierr = PetscFree(par);CHKERRQ(ierr);
   }
   if (sharedtmp) { /* send library name to all processors */
-    ierr = MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);CHKERRQ(ierr);
     ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    if (*found) {
+      ierr = MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    }
   }
 
   PetscFunctionReturn(0);
