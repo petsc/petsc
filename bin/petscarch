@@ -1,5 +1,5 @@
 #! /bin/sh -f
-# $Id: petscarch,v 1.24 2001/05/23 15:58:51 balay Exp balay $ 
+# $Id: petscarch,v 1.25 2001/06/14 20:49:22 balay Exp balay $ 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
@@ -29,51 +29,51 @@ VARCH=`echo $VARCH | sed 's/[A-Z,.]*//'`
 # grab 10 from 10.01
 MajorVersion=`expr "$VARCH" : "\([0-9]*\)"`
 
-if [ "$LARCH" == "AIX" ]; then
+if [ "$LARCH" = "AIX" ]; then
     LARCH="rs6000"
-elif [ "$LARCH" == "RIOS" ]; then
+elif [ "$LARCH" = "RIOS" ]; then
     LARCH="rs6000"
-elif [ "$LARCH" == "HP-UX" ]; then
-    if [ "$MajorVersion" ==  11 ]; then
+elif [ "$LARCH" = "HP-UX" ]; then
+    if [ "$MajorVersion" =  11 ]; then
         LARCH="hpux64"
     else
         LARCH="hpux"
     fi
-elif [ "$LARCH" == "FreeBSD" ]; then
+elif [ "$LARCH" = "FreeBSD" ]; then
     LARCH="freebsd"
-elif [ "$MARCH" == "CRAY Y-MP" ]; then  # Crays are funny - using MARCH
+elif [ "$MARCH" = "CRAY Y-MP" ]; then  # Crays are funny - using MARCH
     LARCH="t3d"
-elif [ "$MARCH" == "CRAY T3E" ]; then
+elif [ "$MARCH" = "CRAY T3E" ]; then
     LARCH="t3e"
-elif [ "$LARCH" == "i86pc" ]; then
+elif [ "$LARCH" = "i86pc" ]; then
     LARCH="solaris_x86"
-elif [[ "$LARCH" == "iris4d" || "$LARCH" == "IRIX" ]]; then
-    if [ "$MajorVersion" ==  5 ]; then
+elif [ "$LARCH" = "iris4d" ] || [ "$LARCH" = "IRIX" ]; then
+    if [ "$MajorVersion" =  5 ]; then
         LARCH="IRIX5"
     else
         LARCH="IRIX"
     fi
-elif [ "$LARCH" == "SunOS" ]; then
-    if [ "$MajorVersion" ==  4 ]; then
+elif [ "$LARCH" = "SunOS" ]; then
+    if [ "$MajorVersion" =  4 ]; then
         LARCH="sun4"
     else
         LARCH="solaris"
     fi
-elif [ "$LARCH" == "Linux" ]; then
-    if [ "$MARCH" == "alpha" ]; then
+elif [ "$LARCH" = "Linux" ]; then
+    if [ "$MARCH" = "alpha" ]; then
         setLARCH="linux_alpha"
-    elif [ "$MARCH" == "ppc" ]; then
+    elif [ "$MARCH" = "ppc" ]; then
         LARCH="linux_ppc"
     else
         LARCH="linux"
     fi
-elif [ "$LARCH" == "OSF1" ]; then
+elif [ "$LARCH" = "OSF1" ]; then
     LARCH="alpha"
-elif [ "$LARCH" == "Hurd" ]; then
+elif [ "$LARCH" = "Hurd" ]; then
         LARCH="hurd"
-elif [ "$LARCH" == "Rhapsody" ]; then
+elif [ "$LARCH" = "Rhapsody" ]; then
         LARCH="macx"
-elif [ "$LARCH" == "5000" ]; then
+elif [ "$LARCH" = "5000" ]; then
         LARCH="UXPV"
 fi
 
