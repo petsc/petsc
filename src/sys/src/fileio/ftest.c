@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ftest.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ftest.c,v 1.10 1997/08/22 15:11:48 bsmith Exp gropp $";
 #endif
 /*
       Code for manipulating files.
@@ -45,14 +45,9 @@ int PetscTestFile( char *fname, char mode,uid_t uid, gid_t gid )
 
   /* At least the file exists ... */
   stmode = statbuf.st_mode;
-#if defined(PARCH_rs6000) || defined(PARCH_hpux)
-#define S_IFREG _S_IFREG
-#endif
-#if defined(PARCH_alpha) || defined(PARCH_paragon)
+  /* Except for systems that have this broken stat macros (rare), this
+     is the correct way to check for a (not) regular file */
   if (!S_ISREG(stmode)) return 0;
-#else
-  if (!(S_IFREG & stmode)) return 0;
-#endif
 /* Test for accessible. */
   if (statbuf.st_uid == uid) {
     rbit = S_IRUSR;
