@@ -1,6 +1,10 @@
-/* $Id: dot.h,v 1.8 1998/07/13 18:35:51 balay Exp balay $ */
+/* $Id: dot.h,v 1.9 1998/07/13 19:07:51 balay Exp balay $ */
 
 #ifndef DOT
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #if defined(USE_FORTRAN_KERNEL_MDOT)
 #if defined(HAVE_FORTRAN_CAPS)
@@ -14,43 +18,6 @@
 #define fortranmdot2_      fortranmdot2
 #define fortranmdot1_      fortranmdot1
 #endif
-#endif
-
-#if defined(USE_FORTRAN_KERNEL_NORMSQR)
-#if defined(HAVE_FORTRAN_CAPS)
-#define fortrannormsqr_    FORTRANNORMSQR
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define fortrannormsqr_    fortrannormsqr
-#endif
-#endif
-
-#if defined(USE_FORTRAN_KERNEL_MULTAIJ)
-#if defined(HAVE_FORTRAN_CAPS)
-#define fortranmultaij_    FORTRANMULTAIJ
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define fortranmultaij_    fortranmultaij
-#endif
-#endif
-
-#if defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
-#if defined(HAVE_FORTRAN_CAPS)
-#define fortranmultaddaij_ FORTRANMULTADDAIJ
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define fortranmultaddaij_ fortranmultaddaij
-#endif
-#endif
-
-#if defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
-#if defined(HAVE_FORTRAN_CAPS)
-#define fortransolveaij_   FORTRANSOLVEAIJ
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define fortransolveaij_   fortransolveaij
-#endif
-#endif
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
 extern void fortranmdot4_(void *, void *,void *,void *,void *,int *,
                            void *, void *,void *,void *);
 extern void fortranmdot3_(void *,void *,void *,void *,int *,
@@ -59,10 +26,44 @@ extern void fortranmdot2_(void *,void *,void *,int *,
                            void *, void *);
 extern void fortranmdot1_(void *,void *,int *,
                            void *);
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_NORMSQR)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortrannormsqr_    FORTRANNORMSQR
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortrannormsqr_    fortrannormsqr
+#endif
 extern void fortrannormsqr_(void *,int *,void *);
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_MULTAIJ)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortranmultaij_    FORTRANMULTAIJ
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortranmultaij_    fortranmultaij
+#endif
 extern void fortranmultaij_(int *,void*,int *,int *,void *,void*);
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortranmultaddaij_ FORTRANMULTADDAIJ
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortranmultaddaij_ fortranmultaddaij
+#endif
 extern void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortransolveaij_   FORTRANSOLVEAIJ
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortransolveaij_   fortransolveaij
+#endif
 extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
+#endif
+
 #if defined(__cplusplus)
 }
 #endif
