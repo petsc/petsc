@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.2 1994/08/21 23:56:49 bsmith Exp $";
+static char vcid[] = "$Id: cgs.c,v 1.1 1994/10/02 02:03:05 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,26 +10,7 @@ static char vcid[] = "$Id: cgs.c,v 1.2 1994/08/21 23:56:49 bsmith Exp $";
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int  KSPiCGSSolve();
-static int KSPiCGSSetUp();
-
-int KSPiCGSCreate(itP)
-KSP    itP;
-{
-itP->MethodPrivate        = (void *) 0;
-itP->method               = KSPCGS;
-itP->right_pre            = 0;
-itP->calc_res             = 1;
-itP->setup                = KSPiCGSSetUp;
-itP->solver               = KSPiCGSSolve;
-itP->adjustwork           = KSPiDefaultAdjustWork;
-itP->destroy              = KSPiDefaultDestroy;
-return 0;
-}
-
-
-static int KSPiCGSSetUp(itP)
-KSP itP;
+static int KSPiCGSSetUp(KSP itP)
 {
   int ierr;
   if (ierr = KSPCheckDef( itP )) return ierr;
@@ -38,13 +19,12 @@ KSP itP;
 }
 
 
-static int  KSPiCGSSolve(itP,its)
-KSP itP;
-int *its;
+static int  KSPiCGSSolve(KSP itP,int *its)
 {
 int       i = 0, maxit, res, pres, hist_len, cerr;
-double    rho, rhoold, a, s, b, *history, dp, tmp, one = 1.0; 
+Scalar    rho, rhoold, a, s, b, tmp, one = 1.0; 
 Vec       X,B,V,P,R,RP,T,Q,U, BINVF, AUQ;
+double    *history, dp;
 
 res     = itP->calc_res;
 pres    = itP->use_pres;
@@ -110,4 +90,16 @@ if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
 KSPUnwindPre(  itP, X, T );
 *its =  RCONV(itP,i+1); return 0;
+}
+int KSPiCGSCreate(KSP itP)
+{
+itP->MethodPrivate        = (void *) 0;
+itP->method               = KSPCGS;
+itP->right_pre            = 0;
+itP->calc_res             = 1;
+itP->setup                = KSPiCGSSetUp;
+itP->solver               = KSPiCGSSolve;
+itP->adjustwork           = KSPiDefaultAdjustWork;
+itP->destroy              = KSPiDefaultDestroy;
+return 0;
 }

@@ -1,13 +1,15 @@
 ALL: lib 
 ITOOLSDIR = ../../../
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include -I../../
+CFLAGS   = $(OPT) $(CONF) -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include \
+           -I$(ITOOLSDIR)/pinclude -I../../
 SOURCEC  = cheby.c 
 SOURCEF  =
-WSOURCEC =  
+WSOURCEC = chebyf.c
 OBJSC    = cheby.o 
 OBJSF    =
-WOBJS    =  
+WOBJS    = chebyf.o
 LIBBASE  = libpetscksp
-LOCAL_INCLUDE = 
+LINCLUDE = 
 
+include $(ITOOLSDIR)/bmake/$(PARCH)

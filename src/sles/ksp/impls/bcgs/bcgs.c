@@ -7,40 +7,21 @@
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int KSPiBCGSSetUp();
-static int  KSPiBCGSSolve();
-
-int KSPiBCGSCreate(itP)
-KSP itP;
-{
-itP->MethodPrivate = (void *) 0;
-itP->method               = KSPBCGS;
-itP->right_pre            = 0;
-itP->calc_res             = 1;
-itP->setup                = KSPiBCGSSetUp;
-itP->solver               = KSPiBCGSSolve;
-itP->adjustwork           = KSPiDefaultAdjustWork;
-itP->destroy            = KSPiDefaultDestroy;
-return 0;
-}
-
-static int KSPiBCGSSetUp(itP)
-KSP itP;
+static int KSPiBCGSSetUp(KSP itP)
 {
   int ierr;
-if (ierr = KSPCheckDef( itP )) return ierr;
+  if (ierr = KSPCheckDef( itP )) return ierr;
   if (KSPiDefaultGetWork( itP, 7 )) return ierr;
   return 0;;
 }
 
-static int  KSPiBCGSSolve(itP,its)
-KSP itP;
-int *its;
+static int  KSPiBCGSSolve(KSP itP,int *its)
 {
 int       i = 0, maxit, res, pres, hist_len, cerr;
-double    rho, rhoold, alpha, beta, omega, omegaold, *history, dp, d1, d2;
-double    zero = 0.0, tmp;
+Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2;
+Scalar    zero = 0.0, tmp;
 Vec       X,B,V,P,R,RP,T,S, BINVF;
+double    dp, *history;
 
 res     = itP->calc_res;
 pres    = itP->use_pres;
@@ -121,4 +102,17 @@ itP->nvectors += (i) * 24;
 
 KSPUnwindPre( itP, X, T );
 *its = RCONV(itP,i+1); return 0;
+}
+
+int KSPiBCGSCreate(KSP itP)
+{
+itP->MethodPrivate = (void *) 0;
+itP->method               = KSPBCGS;
+itP->right_pre            = 0;
+itP->calc_res             = 1;
+itP->setup                = KSPiBCGSSetUp;
+itP->solver               = KSPiBCGSSolve;
+itP->adjustwork           = KSPiDefaultAdjustWork;
+itP->destroy              = KSPiDefaultDestroy;
+return 0;
 }

@@ -1,7 +1,8 @@
 ALL: lib 
 ITOOLSDIR = ../../../
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include -I../../ 
+CFLAGS   = $(OPT) $(CONF) -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include \
+           -I$(ITOOLSDIR)/pinclude -I../../ 
 SOURCEC  = cgs.c
 WSOURCEC = 
 SOURCEF  =
@@ -9,5 +10,6 @@ OBJSC    = cgs.o
 WOBJS    = 
 OBJSF    = 
 LIBBASE  = libpetscksp
-LOCAL_INCLUDE = 
+LINCLUDE = 
 
+include $(ITOOLSDIR)/bmake/$(PARCH)

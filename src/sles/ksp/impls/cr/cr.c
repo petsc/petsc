@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.3 1994/08/21 23:56:49 bsmith Exp $";
+static char vcid[] = "$Id: cr.c,v 1.1 1994/10/02 02:03:32 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,41 +10,23 @@ static char vcid[] = "$Id: cr.c,v 1.3 1994/08/21 23:56:49 bsmith Exp $";
 #include "petsc.h"
 #include "kspimpl.h"
 
-static int  KSPiCRSolve();
-static int KSPiCRSetUp();
-
-int KSPiCRCreate(itP)
-KSP itP;
-{
-  itP->method               = KSPCR;
-  itP->right_pre            = 0;
-  itP->calc_res             = 1;
-  itP->setup                = KSPiCRSetUp;
-  itP->solver               = KSPiCRSolve;
-  itP->adjustwork           = KSPiDefaultAdjustWork;
-  itP->destroy              = KSPiDefaultDestroy;
-  return 0;
-}
-
-static int KSPiCRSetUp(itP)
-KSP itP;
+static int KSPiCRSetUp(KSP itP)
 {
   int    ierr;
   if ( itP->right_pre ) {
       SETERR(2,"Right-inverse preconditioning not supported for CR");
   }
   if (ierr = KSPCheckDef( itP )) return ierr;
-  ierr =KSPiDefaultGetWork( itP, 9  );
+  ierr = KSPiDefaultGetWork( itP, 9  );
   return ierr;
 }
 
-static int  KSPiCRSolve(itP,its)
-KSP itP;
-int *its;
+static int  KSPiCRSolve(KSP itP,int *its)
 {
   int       i = 0,maxit,res,pres, hist_len, cerr;
-  double    *history, dp, lambda, alpha0, alpha1; 
-  double    btop, bbot, bbotold, tmp, zero = 0.0, one = 1.0, mone = -1.0;
+  double    *history, dp;
+  Scalar    lambda, alpha0, alpha1; 
+  Scalar    btop, bbot, bbotold, tmp, zero = 0.0, one = 1.0, mone = -1.0;
   Vec       X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
 
   res     = itP->calc_res;
@@ -129,3 +111,14 @@ int *its;
   *its = RCONV(itP,i+1); return 0;
 }
 
+int KSPiCRCreate(KSP itP)
+{
+  itP->method               = KSPCR;
+  itP->right_pre            = 0;
+  itP->calc_res             = 1;
+  itP->setup                = KSPiCRSetUp;
+  itP->solver               = KSPiCRSolve;
+  itP->adjustwork           = KSPiDefaultAdjustWork;
+  itP->destroy              = KSPiDefaultDestroy;
+  return 0;
+}

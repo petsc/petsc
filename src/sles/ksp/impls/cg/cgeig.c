@@ -1,12 +1,9 @@
-#ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.3 1994/08/19 02:08:19 bsmith Exp $";
-#endif
 /*                       
 
 */
 #include <stdio.h>
 #include <math.h>
-#include "kspimpl.h"
+#include "kspimpl.h"  /*I "ksp.h" I*/
 #include "cgctx.h"
 
 /* ------------------------------------------------------------------
@@ -14,10 +11,10 @@ static char vcid[] = "$Id: cgeig.c,v 1.3 1994/08/19 02:08:19 bsmith Exp $";
 *    matrix stored in vectors d and e. i gives size of system
 *    Uses f2c version of Eispack routine tql1
 * -----------------------------------------------------------------*/
+#if !defined(PETSC_COMPLEX)
 
-static int eig(i,d,e,dd,ee,maxe,mine)
-int    i;
-double *d,*e,*maxe,*mine,*dd,*ee;
+static int eig(int i,Scalar *d,Scalar *e,Scalar *dd,Scalar *ee,
+               Scalar *maxe,Scalar *mine)
 {
    int j, 
        ii;      /* ii lets us take the address of i; there have been some
@@ -51,10 +48,8 @@ double *d,*e,*maxe,*mine,*dd,*ee;
     KSPSetCalculateEigenvalues() before calling KSPSetUp in order for this 
     to work.  
 @*/
-int KSPCGGetEigenvalues(itP,n,emax,emin)
-KSP itP;
-double *emax,*emin;
-int    n;
+int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
+
 {
   CGCntx *cgP;
 
@@ -66,7 +61,7 @@ int    n;
   cgP = (CGCntx *) itP->MethodPrivate;
   if (n == 0) {
       *emax = *emin = 1.0;
-      return;
+      return 0;
       }
 
   eig(n,cgP->d,cgP->e,cgP->dd,cgP->ee,emax,emin); 
@@ -85,10 +80,7 @@ int    n;
 .   n  - the iteration
 .   rnorm - the two norm of the residual
 @*/
-int KSPCGDefaultMonitor(itP,n,rnorm)
-KSP itP;
-int    n;
-double rnorm;
+int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
   CGCntx *cgP;
   double    c;
@@ -100,8 +92,14 @@ double rnorm;
   else {
     cgP = (CGCntx *) itP->MethodPrivate;
     ierr = KSPCGGetEigenvalues(itP,n,&cgP->emax,&cgP->emin); CHKERR(ierr);
+#if defined(PETSC_COMPLEX)
+    c = real(cgP->emax)/real(cgP->emin);
+    printf("%d %14.12e %% %g %g %g \n",n,rnorm,real(cgP->emax),
+                                       real(cgP->emin),c);
+#else
     c = cgP->emax/cgP->emin;
     printf("%d %14.12e %% %g %g %g \n",n,rnorm,cgP->emax,cgP->emin,c);
+#endif
   }
 }
 
@@ -118,10 +116,7 @@ double rnorm;
 static double c_b10 = 1.;
 static double cgpthy();
 
-int ccgtql1(n, d, e, ierr)
-int    *n;
-double *d, *e;
-int    *ierr;
+int ccgtql1(int *n, Scalar *d, Scalar *e, int *ierr)
 {
     /* System generated locals */
     int i__1, i__2;
@@ -359,3 +354,4 @@ L20:
     return ret_val;
 } /* cgpthy_ */
 
+#endif

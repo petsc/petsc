@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.4 1994/08/21 23:56:49 bsmith Exp $";
+static char vcid[] = "$Id: cg.c,v 1.1 1994/10/02 02:02:55 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,26 +10,7 @@ static char vcid[] = "$Id: cg.c,v 1.4 1994/08/21 23:56:49 bsmith Exp $";
 #include "kspimpl.h"
 #include "cgctx.h"
 
-int  KSPiCGSolve();
-int  KSPiCGSetUp(), KSPiCGDestroy();
-
-int KSPiCGCreate(itP)
-KSP    itP;
-{
-  CGCntx *cgP;
-  cgP = NEW(CGCntx);  CHKPTR(cgP);
-  itP->MethodPrivate = (void *) cgP;
-  itP->method               = KSPCG;
-  itP->right_pre            = 0;
-  itP->calc_res             = 1;
-  itP->setup                = KSPiCGSetUp;
-  itP->solver               = KSPiCGSolve;
-  itP->adjustwork           = KSPiDefaultAdjustWork;
-  itP->destroy              = KSPiCGDestroy;
-}
-
-int KSPiCGSetUp(itP)
-KSP itP;
+int KSPiCGSetUp(KSP itP)
 {
   CGCntx *cgP;
   int    maxit,ierr;
@@ -49,7 +30,7 @@ KSP itP;
 
   if (itP->calc_eigs) {
     /* get space to store tridiagonal matrix for Lanczo */
-    cgP->e = (double *) MALLOC(4*(maxit+1)*sizeof(double)); CHKPTR(cgP->e);
+    cgP->e = (Scalar *) MALLOC(4*(maxit+1)*sizeof(Scalar)); CHKPTR(cgP->e);
     cgP->d  = cgP->e + maxit + 1; 
     cgP->ee = cgP->d + maxit + 1;
     cgP->dd = cgP->ee + maxit + 1;
@@ -57,12 +38,11 @@ KSP itP;
   return 0;
 }
 
-int  KSPiCGSolve(itP,its)
-KSP itP;
-int *its;
+int  KSPiCGSolve(KSP itP,int *its)
 {
   int       ierr, i = 0,maxit,eigs,res,pres, hist_len, cerr;
-  double    a,beta,betaold,b,*e,*d,*history, dp, mone = -1.0, ma; 
+  Scalar    dpi, a,beta,betaold,b,*e,*d, mone = -1.0, ma; 
+  double   *history, dp;
   Vec       X,B,Z,R,P;
   CGCntx    *cgP;
   cgP = (CGCntx *) itP->MethodPrivate;
@@ -114,8 +94,8 @@ int *its;
      }
      betaold = beta;
      MM(itP,P,Z);                             /*     z <- Kp         */
-     VecDot(P,Z,&dp);
-     a = beta/dp;                             /*     a = beta/p'z    */
+     VecDot(P,Z,&dpi);
+     a = beta/dpi;                             /*     a = beta/p'z    */
      if (eigs)  d[i] = sqrt(b)*e[i] + 1.0/a;
      VecAXPY(&a,P,X);                           /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                 /*     r <- r - az     */
@@ -142,9 +122,9 @@ int *its;
   *its = RCONV(itP,i+1); return 0;
 }
 
-int KSPiCGDestroy(itP)
-KSP itP;
+int KSPiCGDestroy(PetscObject obj)
 {
+  KSP itP = (KSP) obj;
   CGCntx *cgP;
   cgP = (CGCntx *) itP->MethodPrivate;
 
@@ -160,3 +140,16 @@ KSP itP;
   return 0;
 }
 
+int KSPiCGCreate(KSP itP)
+{
+  CGCntx *cgP;
+  cgP = NEW(CGCntx);  CHKPTR(cgP);
+  itP->MethodPrivate = (void *) cgP;
+  itP->method               = KSPCG;
+  itP->right_pre            = 0;
+  itP->calc_res             = 1;
+  itP->setup                = KSPiCGSetUp;
+  itP->solver               = KSPiCGSolve;
+  itP->adjustwork           = KSPiDefaultAdjustWork;
+  itP->destroy              = KSPiCGDestroy;
+}

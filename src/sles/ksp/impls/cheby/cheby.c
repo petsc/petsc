@@ -1,7 +1,3 @@
-#ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.3 1994/08/21 23:56:49 bsmith Exp $";
-#endif
-
 /*
     This is a first attempt at a Chebychev Routine, it is not 
     necessarily well optimized.
@@ -9,36 +5,11 @@ static char vcid[] = "$Id: cheby.c,v 1.3 1994/08/21 23:56:49 bsmith Exp $";
 #include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "kspimpl.h"
+#include "kspimpl.h"    /*I "ksp.h" I*/
 #include "chebctx.h"
 
-int KSPiChebychevSetUp();
-int  KSPiChebychevSolve();
 
-int KSPiChebychevCreate(itP)
-KSP  itP;
-{
-  ChebychevCntx *chebychevP;
-
-  chebychevP = NEW(ChebychevCntx); CHKPTR(chebychevP);
-  itP->MethodPrivate = (void *) chebychevP;
-
-  itP->method               = KSPCHEBYCHEV;
-  itP->right_pre            = 0;
-  itP->calc_res             = 1;
-
-  chebychevP->emin          = 1.e-2;
-  chebychevP->emax          = 1.e+2;
-
-  itP->setup      = KSPiChebychevSetUp;
-  itP->solver     = KSPiChebychevSolve;
-  itP->adjustwork = KSPiDefaultAdjustWork;
-  itP->destroy    = KSPiDefaultDestroy;
-  return 0;
-}
-
-int KSPiChebychevSetUp(itP)
-KSP itP;
+int KSPiChebychevSetUp(KSP itP)
 {
   int ierr;
   if (itP->method != KSPCHEBYCHEV) {
@@ -47,10 +18,15 @@ KSP itP;
   if (ierr = KSPCheckDef(itP)) return ierr;
   return KSPiDefaultGetWork( itP, 3 );
 }
+/*@
+     KSPChebychevSetEigenvalues - sets estimates for the extreme eigenvalues
+              of the preconditioned problem.
 
-int KSPChebychevSetEigenvalues(itP,emax,emin)
-KSP itP;
-double emax,emin;
+  Input Parameters:
+.  itP - the Krylov space context
+.  emax, emin - the eigenvalue estimates
+@*/
+int KSPChebychevSetEigenvalues(KSP itP,Scalar emax,Scalar emin)
 {
   ChebychevCntx *chebychevP = (ChebychevCntx *) itP->MethodPrivate;
   VALIDHEADER(itP,KSP_COOKIE);
@@ -60,16 +36,15 @@ double emax,emin;
   return 0;
 }
 
-int  KSPiChebychevSolve(itP,its)
-KSP itP;
-int *its;
+int  KSPiChebychevSolve(KSP itP,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i = 0,pres,brokeout = 0, hist_len,cerr;
-  double           alpha,rnorm,omegaprod;
-  double           mu,omega,Gamma,c[3],scale,*history;
+  Scalar           alpha,omegaprod;
+  Scalar           mu,omega,Gamma,c[3],scale;
+  double           rnorm,*history;
   Vec              x,b,p[3],r;
   ChebychevCntx    *chebychevP = (ChebychevCntx *) itP->MethodPrivate;
-  double           mone = -1.0, tmp;
+  Scalar           mone = -1.0, tmp;
 
   history = itP->residual_history;
   hist_len= itP->res_hist_size;
@@ -165,3 +140,23 @@ if (history) itP->res_act_size = (hist_len < i) ? hist_len : i;
   *its = RCONV(itP,i+1); return 0;
 }
 
+int KSPiChebychevCreate(KSP itP)
+{
+  ChebychevCntx *chebychevP;
+
+  chebychevP = NEW(ChebychevCntx); CHKPTR(chebychevP);
+  itP->MethodPrivate = (void *) chebychevP;
+
+  itP->method               = KSPCHEBYCHEV;
+  itP->right_pre            = 0;
+  itP->calc_res             = 1;
+
+  chebychevP->emin          = 1.e-2;
+  chebychevP->emax          = 1.e+2;
+
+  itP->setup      = KSPiChebychevSetUp;
+  itP->solver     = KSPiChebychevSolve;
+  itP->adjustwork = KSPiDefaultAdjustWork;
+  itP->destroy    = KSPiDefaultDestroy;
+  return 0;
+}

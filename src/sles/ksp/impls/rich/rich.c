@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.3 1994/08/21 23:56:49 bsmith Exp $";
+static char vcid[] = "$Id: rich.c,v 1.1 1994/10/02 02:04:20 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: rich.c,v 1.3 1994/08/21 23:56:49 bsmith Exp $";
 #include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "kspimpl.h"
+#include "kspimpl.h"         /*I "ksp.h" I*/
 #include "richctx.h"
 
 int  KSPiRichardsonSetUp();
@@ -22,6 +22,7 @@ KSP  itP;
   itP->MethodPrivate = (void *) richardsonP;
   itP->method               = KSPRICHARDSON;
   richardsonP->scale        = 1.0;
+  richardsonP->applyrich    = 0;
   itP->setup      = KSPiRichardsonSetUp;
   itP->solver     = KSPiRichardsonSolve;
   itP->adjustwork = KSPiDefaultAdjustWork;
@@ -63,11 +64,39 @@ double scale;
 {
   KSPRichardsonCntx *richardsonP;
   VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->method != KSPRICHARDSON) return;
+  if (itP->method != KSPRICHARDSON) return 0;
   richardsonP = (KSPRichardsonCntx *) itP->MethodPrivate;
   richardsonP->scale = scale;
   return 0;
 }
+/*@
+     KSPRichardsonSetFast - use this to provide a routine that 
+         applies Richardson fast for your particular preconditioner. 
+         This is mainly intended to be used for SOR (Gauss-Seidel)
+         type smoothers. 
+
+  Input Parameters:
+.   itP - the iterative context
+.   apply - the routine to use
+.   ctx - optional context for the routine
+
+  Calling Sequence of apply:
+.   apply(void *ctx,Vec x,Vec b, Vec work,int its);
+
+@*/
+int KSPRichardsonSetFast(itP,apply,ctx)
+KSP  itP;
+int  (*apply)();
+void *ctx;
+{
+  KSPRichardsonCntx *richardsonP;
+  VALIDHEADER(itP,KSP_COOKIE);
+  if (itP->method != KSPRICHARDSON) return 0;
+  richardsonP = (KSPRichardsonCntx *) itP->MethodPrivate;
+  richardsonP->applyrich = apply;
+  richardsonP->ctx       = ctx;
+  return 0;
+}   
 
 int  KSPiRichardsonSolve(itP,its)
 KSP itP;
@@ -82,11 +111,18 @@ int *its;
   x       = itP->vec_sol;
   b       = itP->vec_rhs;
   r       = itP->work[0];
+  maxit   = itP->max_it;
+
+  /* if user has provided fast Richardson code use that */
+  if (richardsonP->applyrich){
+    *its = maxit;
+    return (*richardsonP->applyrich)(richardsonP->ctx,x,b,r,maxit);
+  }
+
   z       = itP->work[1];
   history = itP->residual_history;
   hist_len= itP->res_hist_size;
   scale   = richardsonP->scale;
-  maxit   = itP->max_it;
   pres    = itP->use_pres;
 
   if (!itP->guess_zero) {                       /*   r <- b - A x     */
