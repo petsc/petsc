@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.80 1997/04/02 21:00:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: mtr.c,v 1.81 1997/04/02 21:21:53 curfman Exp curfman $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -484,9 +484,9 @@ int PetscTrDump( FILE *fp )
 #undef __FUNC__  
 #define __FUNC__ "PetscTrLog" /* ADIC Ignore */
 /*@C
-    PetscTrLog - Indicates that you wish all calls to malloc to be logged.
+    PetscTrLog - Activates logging of all calls to malloc.
 
-     Options Database:
+    Options Database Key:
 .     -trmalloc_log
 
 .seealso: PetscTrLogDump()
@@ -507,7 +507,7 @@ int PetscTrLog()
 .   fp - file pointer; or PETSC_NULL
 
     Options Database Key:
-.   -trmalloc_log
+$   -trmalloc_log
 
 .seealso: PetscTrLog()
 @*/
