@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.15 1997/09/19 19:26:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.16 1997/09/25 22:39:43 curfman Exp curfman $";
 #endif
 
 /*
@@ -29,7 +29,6 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
-
 
   /* loop over colors  */
   for (i=0; i<fd->ncolors; i++ ) {
@@ -164,12 +163,21 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringSetFrequency"
 /*@
-   MatFDColoringSetFrequency - Sets the frequency at which new Jacobian
-   matrices are computed.
+   MatFDColoringSetFrequency - Sets the frequency for computing new Jacobian
+   matrices. 
 
    Input Parameters:
 .  coloring - the coloring context
-.  freq - frequency
+.  freq - frequency (default is 1)
+
+   Notes:
+   Using a modified Newton strategy, where the Jacobian remains fixed for several
+   iterations, can be cost effective in terms of overall nonlinear solution 
+   efficiency.  This parameter indicates that a new Jacobian will be computed every
+   <freq> nonlinear iterations.  
+
+   Options Database Keys:
+$  -mat_fd_coloring_freq <freq> 
 
 .keywords: Mat, finite differences, coloring, set, frequency
 @*/
@@ -222,9 +230,9 @@ $   dx_{i} = (0, ... 1, .... 0)
    Options Database Keys:
 $  -mat_fd_coloring_error <err>, where <err> is the square root
 $           of relative error in the function
-$  -mat_fd_coloring_freq <freq> where <freq> is the frequency at
-$           which Jacobian is computed
 $  -mat_fd_coloring_umin  <umin>, where umin is described above
+$  -mat_fd_coloring_freq <freq> where <freq> is the frequency of
+$           computing a new Jacobian
 
 .keywords: Mat, finite differences, parameters
 @*/
@@ -261,9 +269,9 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
 {
   PetscValidHeaderSpecific(fd,MAT_FDCOLORING_COOKIE);
 
-  PetscPrintf(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to 1.e-8\n");
-  PetscPrintf(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to 1.e-8\n");
-  PetscPrintf(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults 1\n");
+  PetscPrintf(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to %g\n",fd->error_rel);
+  PetscPrintf(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to %d\n",fd->umin);
+  PetscPrintf(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults to %d\n",fd->freq);
   PetscPrintf(fd->comm,"-mat_fd_coloring_view\n");
   PetscPrintf(fd->comm,"-mat_fd_coloring_view_draw\n");
   PetscPrintf(fd->comm,"-mat_fd_coloring_view_info\n");
@@ -408,8 +416,8 @@ int MatFDColoringDestroy(MatFDColoring c)
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringApply"
 /*@
-    MatFDColoringApply - Given a matrix for which a MatFDColoring has been created,
-    computes the Jacobian for a function via finite differences.
+    MatFDColoringApply - Given a matrix for which a MatFDColoring context 
+    has been created, computes the Jacobian for a function via finite differences.
 
     Input Parameters:
 .   mat - location to store Jacobian
@@ -423,13 +431,17 @@ int MatFDColoringDestroy(MatFDColoring c)
 @*/
 int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           k, ierr,N,start,end,l,row,col,srow;
+  int           k,fg,ierr,N,start,end,l,row,col,srow;
   Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
   double        epsilon = coloring->error_rel, umin = coloring->umin; 
   MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
   int           (*f)(void *,Vec,Vec,void *) = coloring->f;
   void          *fctx = coloring->fctx;
+
+  PetscValidHeaderSpecific(J,MAT_COOKIE);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
+  PetscValidHeaderSpecific(x1,VEC_COOKIE);
 
   /*
   ierr = SNESGetIterationNumber((SNES)sctx,&it); CHKERRQ(ierr);
@@ -452,7 +464,12 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
-  ierr = MatZeroEntries(J); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&fg); CHKERRQ(ierr);
+  if (fg) {
+    PLogInfo(coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n");
+  } else {
+    ierr = MatZeroEntries(J); CHKERRQ(ierr);
+  }
 
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
@@ -487,7 +504,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     } 
     VecRestoreArray(x1,&xx);
     /*
-       Evaluate function at x1 + dx (here dx is a vector, of perturbations)
+       Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
     ierr = (*f)(sctx,w3,w2,fctx); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
@@ -498,7 +515,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);
 #endif
     /*
-       Loop over rows of vector putting results into Jacobian matrix
+       Loop over rows of vector, putting results into Jacobian matrix
     */
     VecGetArray(w2,&y);
     for (l=0; l<coloring->nrows[k]; l++) {
