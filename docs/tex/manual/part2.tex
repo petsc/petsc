@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.228 1997/07/18 19:09:45 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.229 1997/08/01 19:30:19 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -9,19 +9,27 @@
 %    \tt mode from running of the page)
 %
 
-\chapter{Vectors} 
+\chapter{Vectors and Distributing Parallel Data} 
 \label{chapter:vectors}
 \sindex{vectors}
 
-The vector (denoted by {\tt Vec}) is one of the simplest PETSc objects.
-We discuss the basic usage of vectors in Sections~\ref{sec:veccreate}
-through \ref{sec:vecinternal}.  Sections~\ref{sec:indexset} and
-\ref{sec:scatter} focus on index sets and their use in scatters and
-gathers.  Section~\ref{sec:ao} describes the use of
-application-defined orderings with vectors, and Section~\ref{sec:da}
-discusses the use of PETSc distributed arrays for the manipulation of
-vectors associated with regular grids.
+The vector (denoted by {\tt Vec}) is one of the simplest PETSc
+objects.  Vectors are used to store discrete PDE solutions, right hand
+sides for linear systems, etc. This chapter is organized as follows
 
+\begin{itemize}
+\item Sections~\ref{sec:veccreate} and \ref{sec:vecbasic}, basic usage of vectors.
+\item Section \ref{sec:indexingandordering}, management of the various numberings of
+               degrees of freedom, vertices, cells, etc.
+  \begin{itemize} 
+  \item Mapping between different global numbering. 
+  \item Mapping between local and global numbering.
+  \end{itemize}
+\item Section \ref{sec:struct}, management of structured grids.
+\item Section \ref{sec:unstruct}, Management of unstructured grids.
+\end{itemize}
+
+% --------------------------------------------------------------------------------------
 \section{Creating and Assembling Vectors}
 \label{sec:veccreate}
 
@@ -163,7 +171,23 @@ To destroy an array of vectors, one should use the command \findex{VecDestroyVec
 Note that the Fortran interface for {\tt VecDestroyVecs()} differs slightly,
 as described in Section~\ref{sec:fortvecd}.
 
-\section{Basic Vector Operations}
+It is also possible to create vectors that use an array provided by the user, 
+rather then allocating internally the array space. \sindex{providing arrays for vectors}
+\sindex{vectors, providing your own array} These are done using the routines
+\begin{verbatim}
+   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,int m,Scalar *array,Vec *x);
+\end{verbatim}
+and  \findex{VecCreateMPIWithArray()} \findex{VecCreateSeqWithArray()}
+\begin{verbatim}
+   ierr = VecCreateMPIWithArray(MPI_Comm comm,int m,int M,,Scalar *array,Vec *x);
+\end{verbatim}
+Note that here one must provide the value {\tt m}, it cannot be {\tt PETSC\_DECIDE} and
+the user is responsible for providing enough space in the array; {\tt n*sizeof(Scalar)}.
+
+
+% --------------------------------------------------------------------------------------
+\section{Basic Vector Operations}  
+\label{sec:vecbasic}
 
 \begin{table}[tb]
 \begin{center}
@@ -222,9 +246,6 @@ processor, while {\tt high} specifies {\em one more than} the
 last owned by the local processor.
 This command is useful, for instance, in assembling parallel vectors.
 
-\section{Vector Internals}
-\label{sec:vecinternal}
-
 On occasion, the user needs to access the actual elements of the vector. 
 The routine {\tt VecGetArray()} \findex{VecGetArray()}
 returns a pointer to the elements local to the processor:
@@ -252,200 +273,37 @@ The global vector length can be determined by \findex{VecGetSize()}
 \begin{verbatim}
    ierr = VecGetSize(Vec v,int *size);
 \end{verbatim}
- 
-\section{Index Sets} \sindex{index sets}
-\label{sec:indexset}
 
-To facilitate general vector scatters and gathers, PETSc employs the 
-concept of an index set.  An index set, which is a generalization of a 
-set of integer indices, is used to define scatters, gathers, and similar 
-operations on vectors and matrices. 
+% ----------------------------------------------------------------------------------
+\section{Indexing and Ordering}
+\label{sec:indexingandordering}
 
-The following command creates a sequential index set based on a list 
-of integers: \findex{ISCreateGeneral()}
-\begin{verbatim}
-   ierr = ISCreateGeneral(MPI_Comm comm,int n,int *indices, IS *is);
-\end{verbatim}
-This routine essentially copies the {\tt n} indices passed 
-to it by the integer array {\tt indices}.  
-Thus, the user should be sure to free the integer array {\tt indices} 
-when it is no longer needed, perhaps directly after the call to 
-{\tt ISCreateGeneral()}. The communicator, {\tt comm}, should consist of only
-one processor (often {\tt comm=MPI\_COMM\_SELF}).
+  When writing parallel PDE codes there is extra complexity caused by
+having multiple ways of indexing (numbering) and ordering objects such
+as vertices, degrees of freedom etc. For example, the grid generator
+or partitioner may renumber the nodes, requiring one to adjust the
+other data structures that refer to these objects; see Figure
+\ref{fig:daao}.  In addition, local (on a single processor) numbering
+of objects may be different than the global (cross processor)
+numbering. PETSc provides a variety of objects that help to manage the
+mapping between the various numbering systems. The two most basic are
+the {\tt AO}, application ordering, that allows one to map between
+different global (cross processor) numbering schemes and the {\tt
+ISLocalToGlobalMapping} that allows one to map between local (on
+processor) and global (cross processor) numbering.
 
-Another standard index set is defined by a starting point ({\tt first}) and a
-stride ({\tt step}), \sindex{stride} and can be created with the command
-\begin{verbatim}
-   ierr = ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is);
-\end{verbatim}
-Again, the {\tt comm} argument should always consist of
-a communicator with one processor, often {\tt MPI\_COMM\_SELF}.
-
-There is no parallel general index set. Instead, one should create a sequential
-index set on each processor that needs one.
-Index sets can be destroyed with the command \findex{ISDestroy()}
-\begin{verbatim}
-   ierr = ISDestroy(IS is); 
-\end{verbatim}
-
-On rare occasions the user may have to access information directly 
-from an index set. \findex{ISGetSize()} 
-Several commands \findex{ISStrideGetInfo()} \findex{ISGetIndices()}
-assist in this process:
-\begin{verbatim}
-   ierr = ISGetSize(IS is,int *size);
-   ierr = ISStrideGetInfo(IS is,int *first,int *stride);
-   ierr = ISGetIndices(IS is,int **indices);
-\end{verbatim}
-The function {\tt ISGetIndices()} returns a pointer to a list of the 
-indices in the index set. 
-For certain index sets, this may be a 
-temporary array of indices created specifically for a given routine. 
-Thus, once the user finishes using the array of indices, 
-the routine \findex{ISRestoreIndices()}
-\begin{verbatim}
-   ierr = ISRestoreIndices(IS is, int **indices); 
-\end{verbatim}
-should be called to ensure that the system can free the space it 
-may have used to generate the list of indices.
-
-A blocked version of the index sets can be created with the command
-\findex{ISCreateBlock}
-\begin{verbatim}
-   ierr = ISCreateBlock(MPI_Comm comm,int bs,int n,int *indices, IS *is);
-\end{verbatim}
-This version is used for defining operations in which each element of the index
-set refers to a block of {\tt bs} vector entries.  Related routines analogous
-to those described above exist as well, including
-{\tt ISBlockGetIndices()}, {\tt ISBlockGetSize()}, {\tt ISBlockGetBlockSize()},
-and {\tt ISBlock()}. See the man pages for details.
-\findex{ISBlockGetIndices()} \findex{ISBlockGetSize()} \findex{ISBlockGetBlockSize()}
-\findex{ISBlock()}
-
-One may reasonably ask why the scatter routines are based on 
-using index sets while the vector assembly routines simply use 
-arrays of integers. The reason for using index sets is to allow certain 
-implementations to deal with strides and dense blocks of elements 
-efficiently. In vector assembly, we are assuming that in the majority of 
-cases the gain from using index sets is more than lost by requiring 
-the users to build index sets for each insertion. 
-
-\section{Scatters and Gathers} \sindex{scatter} \sindex{gather}
-\label{sec:scatter}
-
-PETSc vectors have full support for general scatters and 
-gathers. One can select any subset of the components of a vector to
-insert or add to any subset of the components of another vector.
-We refer to these operations as generalized scatters, though they are 
-actually a combination of scatters and gathers. 
-
-\findex{VecScatterCreate()} \findex{VecScatterBegin()}
-\findex{VecScatterEnd()} \findex{VecScatterDestroy()}
-\findex{INSERT_VALUES} \findex{SCATTER_FORWARD}
-To copy selected components from one vector 
-to another, one uses the following set of commands:
-\begin{verbatim}
-   ierr = VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
-   ierr = VecScatterBegin(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
-   ierr = VecScatterEnd(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
-   ierr = VecScatterDestroy(VecScatter ctx);
-\end{verbatim} 
-Here {\tt ix} denotes the index set of the first vector, while {\tt
-iy} indicates the index set of the destination vector.  The vectors
-can be parallel or sequential. The only requirements are that the
-number of entries in the index set of the first vector, {\tt ix},
-equal the number in the destination index set, {\tt iy}, and that the
-vectors be long enough to contain all the indices referred to in the
-index sets.  The argument {\tt INSERT\_VALUES} specifies that the
-vector elements will be inserted into the specified locations of the
-destination vector, overwriting any existing values.  To add the
-components, rather than insert them, the user should select the option
-{\tt ADD\_VALUES} \findex{ADD_VALUES} instead of {\tt INSERT\_VALUES}.
-
-To perform a conventional gather operation, the user simply makes
- the destination index set, 
-{\tt iy}, be a stride index set with a stride of one.  Similarly, a 
-conventional scatter can be done with an initial (sending) index set 
-consisting of a stride.  For parallel vectors, all processors that own 
-the vector {\em must} call the scatter routines. When scattering from a 
-parallel vector to sequential vectors, each processor has its own sequential 
-vector that receives values from locations as indicated in its own 
-index set. Similarly, in scattering
-from sequential vectors to a parallel vector, each processor has its
-own sequential vector that makes contributions to the parallel vector.
-
-{\em Caution}: When {\tt INSERT\_VALUES} is used, if two different
-processors contribute different values to the same component in a
-parallel vector, either value may end up being inserted. When {\tt
-ADD\_VALUES} is used, the correct sum is added to the correct
-location.
-
-In some cases one may wish to ``undo'' a scatter, that is perform the 
-scatter backwards switching the roles of the sender and receiver. This is 
-done by using 
-\begin{verbatim}
-   ierr = VecScatterBegin(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
-   ierr = VecScatterEnd(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
-\end{verbatim} 
-\findex{SCATTER_REVERSE}. Note that you must swap the roles of the first 
-two arguments to these routines, whenever you use the {\tt SCATTER\_REVERSE}
-option.
-
-\sindex{vector values, getting} \findex{VecGetValues()}
-There is no PETSc routine that is the opposite of {\tt VecSetValues()}
-\findex{VecSetValues()}, that is, {\tt VecGetValues()}. \findex{VecGetValues()}
-Instead, the user should create a new vector where
-the components are to be stored and perform the appropriate vector 
-scatter. For example, if one desires to obtain the values of the 
-100th and 200th entries of a parallel vector, {\tt p}, one could use 
-a code such as that within Figure~\ref{fig:vecscatter}.
-In this example, the values of the 100th and 200th components are
-placed in the array 
-{\tt values}. In this example each processor now has the 100th and 
-200th component, but obviously each processor could gather any 
-elements it needed, or none by creating an index set with no entries.
-
-\begin{figure}[tb]
-\begin{verbatim}
-   Vec        p, x;         /* initial vector, destination vector */
-   VecScatter scatter;      /* scatter context */
-   IS         from, to;     /* index sets that define the scatter */
-   Scalar     *values;
-   int        idx_from[] = {100,200}, idx_to[] = {0,1};
-
-   VecCreateSeq(PETSC_COMM_SELF,2,&x);
-   ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,&from);
-   ISCreateGeneral(PETSC_COMM_SELF,2,idx_to,&to);
-   VecScatterCreate(p,from,x,to,&scatter);
-   VecScatterBegin(p,x,INSERT_VALUES,SCATTER_FORWARD,scatter);
-   VecScatterEnd(p,x,INSERT_VALUES,SCATTER_FORWARD,scatter);
-   VecGetArray(x,&values);
-   ISDestroy(from);
-   ISDestroy(to); 
-   VecScatterDestroy(scatter);
-\end{verbatim}
-\caption{Example Code for Vector Scatters}
-\label{fig:vecscatter}
-\end{figure}
-
-The scatter comprises two stages, in order to allow overlap of 
-communication and computation. The introduction of the 
-{\tt VecScatter} context allows the communication patterns for the scatter
-to be computed once and then reused repeatedly. Generally, even 
-setting up the communication for a scatter requires communication; 
-hence, it is best to reuse such information when possible.
-
-% ------------------------------------------------------
-\section{Application Orderings}
+% ----------------------------------------------------------------------------------
+\subsection{Application Orderings}
 \label{sec:ao}
 \sindex{orderings} \findex{AO}
 
-In many applications it is desirable to work with one or more ``orderings''
-of degrees of freedom, cells, nodes, etc.  Doing so in a parallel environment is
-complicated by the fact that each processor cannot keep 
-complete lists of the mappings between different orderings. In addition, 
-the orderings used in the PETSc linear algebra routines may not correspond to the 
-``natural'' orderings for the application.
+In many applications it is desirable to work with one or more
+``orderings'' (or numberings) of degrees of freedom, cells, nodes,
+etc.  \sindex{global numbering} Doing so in a parallel environment is
+complicated by the fact that each processor cannot keep complete lists
+of the mappings between different orderings. In addition, the
+orderings used in the PETSc linear algebra routines may not correspond
+to the ``natural'' orderings for the application.
 
 PETSc provides certain utility routines that allow one to deal cleanly
 and efficiently with the various orderings. To define a new application ordering
@@ -468,11 +326,11 @@ We can write this correspondence as \{ 0, 1, 2, 3, 4 \} $ \rightarrow $ \{ 3, 2,
 The user can create the PETSc-AO mappings in a number of ways.  For example,
 if using two processors, one could call
 \begin{verbatim}
-   ierr = AOCreateDebug(MPI_COMM_WORLD,2,{0,3},{3,4},&ao);
+   ierr = AOCreateDebug(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);
 \end{verbatim}
 on the first processor and 
 \begin{verbatim}
-   ierr = AOCreateDebug(MPI_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);
+   ierr = AOCreateDebug(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);
 \end{verbatim}
 on the other processor.
 
@@ -518,7 +376,8 @@ integer array. These entries are not mapped, they are just left the same.
 This is to allow one to map, for example, neighbor lists that use negative
 numbers to indicate nonexistent neighbors due to boundary conditions, etc.
 
-\section{Local to Global Mappings}
+%-------------------------------------------------------------------------
+\subsection{Local to Global Mappings}
 \label{sec:islocaltoglobalmapping}
 \sindex{orderings} \findex{ISLocalToGlobalMapping}
 
@@ -531,7 +390,7 @@ PETSc provides routines to help map indices from a local numbering scheme to
 the PETSc global numbering scheme. This is done via the following routines
 \begin{verbatim}
    ierr = ISLocalToGlobalMappingCreate(int N,int* globalnumbers,ISLocalToGlobalMapping* ctx);
-   ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);
+   ierr = ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);
    ierr = ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);
    ierr = ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
 \end{verbatim}
@@ -544,7 +403,7 @@ either the routine {\tt ISLocalToGlobalMappingApply()} or
 {\tt ISLocalToGlobalMappingApplyIS()}.  \findex{ISLocalToGlobalMapping}
 
 Note that the {\tt ISLocalToGlobalMapping} routines serve a different purpose
-the the {\tt AO} \findex{AO} routines. In the former case they provide a mapping 
+than the {\tt AO} \findex{AO} routines. In the former case they provide a mapping 
 from  a local numbering scheme (including ghost points) to a global numbering scheme;
 while in the latter they provide a mapping between two global numbering schemes.
 In fact many applications may use both {\tt AO} and {\tt ISLocalToGlobalMapping} routines.
@@ -556,9 +415,45 @@ with a local numbering scheme that includes ghost points, the mapping from this 
 numbering scheme back to the global PETSc numbering can be handled with the 
 {\tt ISLocalToGlobalMapping} routines.
 
+If one is given a list of indices in the global numbering the routine
+\begin{verbatim}
+   ierr = ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingType
+                                      type,int nin,int *idxin,int *nout,int *idxout);
+
+\end{verbatim}
+\findex{ISGlobalToLocalMappingApply} will 
+provide \sindex{global to local mapping}
+a new list of indices in the local numbering. Again negative values in 
+{\tt idxin} are left unmapped; but, in addition, if {\tt type} is set to {\tt IS\_GTOLM\_MASK}
+\findex{IS_GTOLM_MASK} then {\tt nout} is set to {\tt nin} and all global values
+in {\tt idxin} that are not represented in the local to global mapping
+are replaced by -1. When {\tt type} is set to {\tt IS\_GTOLM\_DROP}
+\findex{IS_GTOLM_DROP} the values in {\tt idxin} that are not
+represented locally in the mapping are not included in {\tt idxout}
+and thus potentially {\tt nout} is smaller then {\tt nin}.  One must
+pass in an array long enough to hold all the indices. You can call
+{\tt ISGlobalToLocalMappingApply()} with {\tt idxout} equal to {\tt
+PETSC\_NULL} to determine the required length (returned in {\tt nout})
+and then allocate the required space and call {\tt
+ISGlobalToLocalMappingApply()} a second time to set the values.
+
+Often it is convenient to set elements into a vector using the local node 
+numbering rather then the global node numbering; for example, if each processor
+maintains its own sublist of vertices and elements and numbers them locally.
+To set values into a vector with the local numbering you must first call
+\begin{verbatim}
+   ierr = VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
+\end{verbatim}
+\findex{VecSetLocalToGlobalMapping} \sindex{vectors, setting values with local numbering}
+and then one can call \findex{VecSetValuesLocal}
+\begin{verbatim}
+   ierr = VecSetValuesLocal(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
+\end{verbatim}
+Now the {\tt indices} are in the local numbering, rather then the global.
+
 % ------------------------------------------------------
-\section{Distributed Arrays}
-\label{sec:da}
+\section{Structured Grids using Distributed Arrays}
+\label{sec:da} \label{sec:struct}
 
 In this section we consider a distributed array ({\tt DA}) to be,
 not a matrix, but a one-, two- or three-dimensional array of numbers
@@ -781,7 +676,7 @@ array, divided among four processors.
 \label{fig:daao}
 \end{figure}
 
-Figure \ref{fig:daexample}, which corresponds to
+The example
 {\tt \$(PETSC\_DIR)/src/snes/examples/tutorials/ex5.c},
 illustrates the use of a distributed array in the solution of
 a nonlinear problem.  The analogous Fortran program is
@@ -789,68 +684,305 @@ a nonlinear problem.  The analogous Fortran program is
 See Chapter \ref{chapter:snes} for a discussion of the nonlinear
 solvers.
 
-\begin{figure}[H]
-{\small
-\fileinclude{../../../src/snes/examples/tutorials/ex5.c}
-}
-\caption{Use of Distributed Arrays}
-\label{fig:daexample}
+%\begin{figure}[H]
+%{\small
+%\fileinclude{../../../src/snes/examples/tutorials/ex5.c}
+%}
+%\caption{Use of Distributed Arrays}
+%\label{fig:daexample}
+%\end{figure}
+
+% -------------------------------------------------------------------------------------- 
+\section{Software for Managing Unstructured Grids}
+\label{sec:unstruct}
+
+% -------------------------------------------------------------------------------------- 
+\subsection{Index Sets} \sindex{index sets}
+\label{sec:indexset}
+
+To facilitate general vector scatters and gathers, PETSc employs the 
+concept of an index set.  An index set, which is a generalization of a 
+set of integer indices, is used to define scatters, gathers, and similar 
+operations on vectors and matrices. 
+
+The following command creates a sequential index set based on a list 
+of integers: \findex{ISCreateGeneral()}
+\begin{verbatim}
+   ierr = ISCreateGeneral(MPI_Comm comm,int n,int *indices, IS *is);
+\end{verbatim}
+This routine essentially copies the {\tt n} indices passed 
+to it by the integer array {\tt indices}.  
+Thus, the user should be sure to free the integer array {\tt indices} 
+when it is no longer needed, perhaps directly after the call to 
+{\tt ISCreateGeneral()}. The communicator, {\tt comm}, should consist of only
+one processor (often {\tt comm=MPI\_COMM\_SELF}).
+
+Another standard index set is defined by a starting point ({\tt first}) and a
+stride ({\tt step}), \sindex{stride} and can be created with the command
+\begin{verbatim}
+   ierr = ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is);
+\end{verbatim}
+Again, the {\tt comm} argument should always consist of
+a communicator with one processor, often {\tt MPI\_COMM\_SELF}.
+
+There is no parallel general index set. Instead, one should create a sequential
+index set on each processor that needs one.
+Index sets can be destroyed with the command \findex{ISDestroy()}
+\begin{verbatim}
+   ierr = ISDestroy(IS is); 
+\end{verbatim}
+
+On rare occasions the user may have to access information directly 
+from an index set. \findex{ISGetSize()} 
+Several commands \findex{ISStrideGetInfo()} \findex{ISGetIndices()}
+assist in this process:
+\begin{verbatim}
+   ierr = ISGetSize(IS is,int *size);
+   ierr = ISStrideGetInfo(IS is,int *first,int *stride);
+   ierr = ISGetIndices(IS is,int **indices);
+\end{verbatim}
+The function {\tt ISGetIndices()} returns a pointer to a list of the 
+indices in the index set. 
+For certain index sets, this may be a 
+temporary array of indices created specifically for a given routine. 
+Thus, once the user finishes using the array of indices, 
+the routine \findex{ISRestoreIndices()}
+\begin{verbatim}
+   ierr = ISRestoreIndices(IS is, int **indices); 
+\end{verbatim}
+should be called to ensure that the system can free the space it 
+may have used to generate the list of indices.
+
+A blocked version of the index sets can be created with the command
+\findex{ISCreateBlock}
+\begin{verbatim}
+   ierr = ISCreateBlock(MPI_Comm comm,int bs,int n,int *indices, IS *is);
+\end{verbatim}
+This version is used for defining operations in which each element of the index
+set refers to a block of {\tt bs} vector entries.  Related routines analogous
+to those described above exist as well, including
+{\tt ISBlockGetIndices()}, {\tt ISBlockGetSize()}, {\tt ISBlockGetBlockSize()},
+and {\tt ISBlock()}. See the man pages for details.
+\findex{ISBlockGetIndices()} \findex{ISBlockGetSize()} \findex{ISBlockGetBlockSize()}
+\findex{ISBlock()}
+
+One may reasonably ask why the scatter routines are based on 
+using index sets while the vector assembly routines simply use 
+arrays of integers. The reason for using index sets is to allow certain 
+implementations to deal with strides and dense blocks of elements 
+efficiently. In vector assembly, we are assuming that in the majority of 
+cases the gain from using index sets is more than lost by requiring 
+the users to build index sets for each insertion. 
+
+% -------------------------------------------------------------------------------------- 
+\subsection{Scatters and Gathers} \sindex{scatter} \sindex{gather}
+\label{sec:scatter}
+
+PETSc vectors have full support for general scatters and 
+gathers. One can select any subset of the components of a vector to
+insert or add to any subset of the components of another vector.
+We refer to these operations as generalized scatters, though they are 
+actually a combination of scatters and gathers. 
+
+\findex{VecScatterCreate()} \findex{VecScatterBegin()}
+\findex{VecScatterEnd()} \findex{VecScatterDestroy()}
+\findex{INSERT_VALUES} \findex{SCATTER_FORWARD}
+To copy selected components from one vector 
+to another, one uses the following set of commands:
+\begin{verbatim}
+   ierr = VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
+   ierr = VecScatterBegin(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
+   ierr = VecScatterEnd(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
+   ierr = VecScatterDestroy(VecScatter ctx);
+\end{verbatim} 
+Here {\tt ix} denotes the index set of the first vector, while {\tt
+iy} indicates the index set of the destination vector.  The vectors
+can be parallel or sequential. The only requirements are that the
+number of entries in the index set of the first vector, {\tt ix},
+equal the number in the destination index set, {\tt iy}, and that the
+vectors be long enough to contain all the indices referred to in the
+index sets.  The argument {\tt INSERT\_VALUES} specifies that the
+vector elements will be inserted into the specified locations of the
+destination vector, overwriting any existing values.  To add the
+components, rather than insert them, the user should select the option
+{\tt ADD\_VALUES} \findex{ADD_VALUES} instead of {\tt INSERT\_VALUES}.
+
+To perform a conventional gather operation, the user simply makes
+ the destination index set, 
+{\tt iy}, be a stride index set with a stride of one.  Similarly, a 
+conventional scatter can be done with an initial (sending) index set 
+consisting of a stride.  For parallel vectors, all processors that own 
+the vector {\em must} call the scatter routines. When scattering from a 
+parallel vector to sequential vectors, each processor has its own sequential 
+vector that receives values from locations as indicated in its own 
+index set. Similarly, in scattering
+from sequential vectors to a parallel vector, each processor has its
+own sequential vector that makes contributions to the parallel vector.
+
+{\em Caution}: When {\tt INSERT\_VALUES} is used, if two different
+processors contribute different values to the same component in a
+parallel vector, either value may end up being inserted. When {\tt
+ADD\_VALUES} is used, the correct sum is added to the correct
+location.
+
+In some cases one may wish to ``undo'' a scatter, that is perform the 
+scatter backwards switching the roles of the sender and receiver. This is 
+done by using 
+\begin{verbatim}
+   ierr = VecScatterBegin(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
+   ierr = VecScatterEnd(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
+\end{verbatim} 
+\findex{SCATTER_REVERSE} Note that you must swap the roles of the first 
+two arguments to these routines, whenever you use the {\tt SCATTER\_REVERSE}
+option.
+
+\sindex{vector values, getting} \findex{VecGetValues()}
+There is no PETSc routine that is the opposite of {\tt VecSetValues()}
+\findex{VecSetValues()}, that is, {\tt VecGetValues()}. \findex{VecGetValues()}
+Instead, the user should create a new vector where
+the components are to be stored and perform the appropriate vector 
+scatter. For example, if one desires to obtain the values of the 
+100th and 200th entries of a parallel vector, {\tt p}, one could use 
+a code such as that within Figure~\ref{fig:vecscatter}.
+In this example, the values of the 100th and 200th components are
+placed in the array 
+{\tt values}. In this example each processor now has the 100th and 
+200th component, but obviously each processor could gather any 
+elements it needed, or none by creating an index set with no entries.
+
+\begin{figure}[tb]
+\begin{verbatim}
+   Vec        p, x;         /* initial vector, destination vector */
+   VecScatter scatter;      /* scatter context */
+   IS         from, to;     /* index sets that define the scatter */
+   Scalar     *values;
+   int        idx_from[] = {100,200}, idx_to[] = {0,1};
+
+   VecCreateSeq(PETSC_COMM_SELF,2,&x);
+   ISCreateGeneral(PETSC_COMM_SELF,2,idx_from,&from);
+   ISCreateGeneral(PETSC_COMM_SELF,2,idx_to,&to);
+   VecScatterCreate(p,from,x,to,&scatter);
+   VecScatterBegin(p,x,INSERT_VALUES,SCATTER_FORWARD,scatter);
+   VecScatterEnd(p,x,INSERT_VALUES,SCATTER_FORWARD,scatter);
+   VecGetArray(x,&values);
+   ISDestroy(from);
+   ISDestroy(to); 
+   VecScatterDestroy(scatter);
+\end{verbatim}
+\caption{Example Code for Vector Scatters}
+\label{fig:vecscatter}
 \end{figure}
 
-\section{Discrete Functions}
+The scatter comprises two stages, in order to allow overlap of 
+communication and computation. The introduction of the 
+{\tt VecScatter} context allows the communication patterns for the scatter
+to be computed once and then reused repeatedly. Generally, even 
+setting up the communication for a scatter requires communication; 
+hence, it is best to reuse such information when possible.
 
-The discrete function component of PETSc will be replaced in a future 
-PETSc release.
+\subsection{Vectors with Locations for Ghost Values}
 
-\medskip \medskip
+We recommend that application developers skip this section on a first reading.
+It contains information about more advanced use of PETSc vectors to improve 
+efficiency slightly. Once your application code is fully debugged and optimized
+you can try to use these techniques to slightly decrease memory use and improve 
+computation speed slightly.
 
-In mathematical terms, vectors are linear algebraic objects that do
-not incorporate any concept of geometry, grid, or ordering.  But often
-users want to work with numerical values (stored as a vector or
-matrix) in relation to where they lie on a grid or graph. PETSc thus
-provides an enhanced vector object, known as a {\em discrete function
-vector} or {\tt DFVec}, that is a vector of values and its associated
-geometry or grid.  Thus, any vector action that requires the
-geometric information (e.g., contour plotting) can be performed {\em only} on
-discrete function vectors and not on basic vectors.
-
-The vectors created by PETSc distributed arrays (as discussed in
-Section~\ref{sec:da}) automatically are {\tt DFVec}'s, as they 
-are associated with a regular grid in one, two, or three dimensions.  Thus,
-any vector obtained from {\tt DAGetDistributedVector()} or
-{\tt DAGetLocalVector()} (or copied from such vectors via {\tt VecDuplicate()}
-or {\tt VecDuplicateVecs()}) can immediately be used with the {\tt DFVec}
-routines.
-
-In addition to all of the conventional vector operations, the support
-for discrete function vectors includes viewing, contour plotting,
-interpolating, and extracting various components for problems with multiple
-degrees of freedom for each node of a grid.  One useful
-routine for viewing discrete function vectors is \findex{DFVecView}
+Above we discussed a very general method for managing the communication of 
+required ghost values for unstructured grid computations. One scatters
+the global vector into the local ``ghosted'' work vector and performs the computation
+on the local work vectors and then scatters back into the global solution 
+vector. In the simplest case this may be written as
 \begin{verbatim}
-  ierr = DFVecView(DFVec dfv,Viewer viewer);
-\end{verbatim}
-which views the components in the same ordering that
-would be used for the single processor case, independent of the number
-of processors, layout, etc.  This routine supports all of the standard
-vector viewers; the only difference is that in the parallel case, the
-display {\em always} employs the standard uniprocessor ordering.
-{\tt DFVecView()} is particularly useful for checking correctness of
-parallel vector computations for different processor configurations and
-for restarting calculations on different numbers of processors.
-One routine for visualization of vector fields is \findex{DFVecDrawTensorContoursX}
-\begin{verbatim}
-  ierr = DFVecDrawTensorContoursX(DFVec dfv,int width,int height);
-\end{verbatim}
-which draws in an X-window a contour plot for each component within a multicomponent
-vector.
-Another routine for viewing vector fields is \findex{DFVecDrawTensorSurfaceContoursVRML}
-\begin{verbatim}
-  ierr = DFVecDrawTensorSurfaceContoursVRML(DFVec dfv);
-\end{verbatim}
-which generates surface contour data view use with a VRML reader.  See the
-man page for details.
+   Function: (Input Vec globalin, Output Vec globalout)
 
+   ierr = VecScatterBegin(Vec globalin,Vec localin,InsertMode INSERT_VALUES,ScatterMode
+                          SCATTER_FORWARD,VecScatter scatter);
+   ierr = VecScatterBegin(Vec globalin,Vec localin,InsertMode INSERT_VALUES,ScatterMode
+                          SCATTER_FORWARD,VecScatter scatter);
+   /*
+        For example,  do local calculations from localin to localout and call
+   */
+   ierr = VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD_VALUES,ScatterMode
+                          SCATTER_REVERSE,VecScatter scatter);
+   ierr = VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD_VALUES,ScatterMode
+                          SCATTER_REVERSE,VecScatter scatter);
+\end{verbatim}
+
+There are two minor (IMHO) drawbacks to this approach:
+\begin{itemize}
+\item the extra memory requirement for the local work vector, {\tt localin} that
+      duplicates the memory in {\tt globalin},
+\item the extra time required to copy the local values from {\tt localin} to 
+      {\tt globalin}.
+\end{itemize}
+
+An alternative approach is to allocate global vectors with space preallocated for 
+the ghost values; this may be done with either 
+\begin{verbatim}
+   ierr = VecCreateGhost(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Vec *vv)
+\end{verbatim}
+or
+\begin{verbatim}
+   ierr = VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,
+                                  Scalar *array,Vec *vv)
+\end{verbatim}
+Here \findex{VecCreateGhost()} \findex{VecCreateGhostWithArray()} {\tt n} is the 
+number of local vector entries, {\tt N} is the number of \sindex{vectors, with ghost values}
+global entries (or {\tt PETSC\_NULL}) and {\tt nghost} is the number of 
+ghost entries. The array {\tt ghosts} is of size {\tt nghost} and contains the 
+global vector location for each local ghost location. Using {\tt VecDuplicate()}
+or {\tt VecDuplicateVecs()} on a ghosted vector will generate additional ghosted vectors.
+
+In many ways a ghosted vector behaves just like any other {\tt MPI} vector created 
+by {\tt VecCreateMPI()}, the difference is that the ghosted vector has an additional 
+``local'' representation that allows one to access the ghost locations. This is done
+through the call to \findex{VecGhostGetLocalRepresentation()} 
+\begin{verbatim}
+  ierr = VecGhostGetLocalRepresentation(Vec g,Vec *l);
+\end{verbatim}
+The vector {\tt l} is a \findex{VecGhostRestoreLocalRepresentation()}
+sequential representation of the parallel vector {\tt g} 
+that shares the same array space (and hence numerical values); but allows one to 
+access the ``ghost'' values past ``the end of the'' array. Note that one access the 
+entries in {\tt l} using the local numbering of elements and ghosts, while they 
+access in {\tt g} using the global numbering.
+
+A common usage of a ghosted
+vector could be given by \findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEnd()}
+\begin{verbatim}
+   ierr = VecGhostUpdateBegin(Vec globalin,InsertMode INSERT_VALUES,ScatterMode
+                          SCATTER_FORWARD);
+   ierr = VecGhostUpdateEnd(Vec globalin,InsertMode INSERT_VALUES,ScatterMode
+                          SCATTER_FORWARD);
+   ierr = VecGhostGetLocalRepresentation(Vec globalin,Vec *localin);
+   ierr = VecGhostGetLocalRepresentation(Vec globalout,Vec *localout);
+   /*
+      Do local calculations from localin to localout 
+   */
+   ierr = VecGhostRestoreLocalRepresentation(Vec globalin,Vec *localin);
+   ierr = VecGhostRestoreLocalRepresentation(Vec globalout,Vec *localout);
+   ierr = VecGhostUpdateBegin(Vec globalout,InsertMode ADD_VALUES,ScatterMode
+                          SCATTER_REVERSE);
+   ierr = VecGhostUpdateEnd(Vec globalout,InsertMode ADD_VALUES,ScatterMode
+                          SCATTER_REVERSE);
+\end{verbatim}
+      
+The routines {\tt VecGhostUpdateBegin/End()} are equivalent to {\tt VecScatterBegin/End()}
+above except that since they are scattering into the ghost locations they do not need
+to copy the local vector values (they are already their). In addition the user does not
+have to allocate the local work vector, since the ghosted vector already has allocated 
+slots to contain the ghost values.
+
+The use of the arguments {\tt INSERT\_VALUES} and {\tt SCATTER\_FORWARD } causes the 
+ghost values to be correctly updated from the appropriate processor. The arguments
+{\tt ADD\_VALUES} and {\tt SCATTER\_REVERSE } update the ``local'' portions of the vector 
+from all the other processors ghost values; this would be appropriate, for example, for
+finite element assembly of the load vector. 
+
+
+
+%-------------------------------------------------------------
 %-------------------------------------------------------------
 \chapter{Matrices}
 \label{chapter:matrices}
