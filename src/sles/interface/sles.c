@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.74 1997/01/01 03:39:02 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.75 1997/01/06 20:26:11 balay Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -230,7 +230,6 @@ int SLESDestroy(SLES sles)
   return 0;
 }
 
-extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);
 #undef __FUNC__  
 #define __FUNC__ "SLESSetUp"
 /*@

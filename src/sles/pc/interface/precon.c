@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.113 1997/01/06 20:23:25 balay Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.114 1997/01/12 02:38:59 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -766,9 +766,29 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
   return PetscObjectGetOptionsPrefix((PetscObject)pc, prefix);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "PCPreSolve"
+/*@
+   PCPreSolve - Optional pre-solve phase, intended for any
+   preconditioner-specific actions that must be performed before 
+   the iterative solve itself.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  ksp - the Krylov subspace context
+
+   Sample of Usage:
+$    PCPreSolve(pc,ksp);
+$    KSPSolve(ksp,its);
+$    PCPostSolve(pc,ksp);
+
+   Note:
+   The pre-solve phase is distinct from the PCSetUp() phase.
+
+.keywords: PC, pre-solve
+
+.seealso: PCPostSolve()
+@*/
 int PCPreSolve(PC pc,KSP ksp)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -778,6 +798,24 @@ int PCPreSolve(PC pc,KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ "PCPostSolve"
+/*@
+   PCPostSolve - Optional post-solve phase, intended for any
+   preconditioner-specific actions that must be performed after
+   the iterative solve itself.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  ksp - the Krylov subspace context
+
+   Sample of Usage:
+$    PCPreSolve(pc,ksp);
+$    KSPSolve(ksp,its);
+$    PCPostSolve(pc,ksp);
+
+.keywords: PC, post-solve
+
+.seealso: PCPreSolve()
+@*/
 int PCPostSolve(PC pc,KSP ksp)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
