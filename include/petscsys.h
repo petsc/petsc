@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.13 1996/01/23 01:09:51 curfman Exp bsmith $ */
+/* $Id: sys.h,v 1.14 1996/03/19 21:30:28 bsmith Exp curfman $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -17,7 +17,7 @@ extern int  PetscSortDouble(int,double*);
 
 #define RANDOM_COOKIE PETSC_COOKIE+19
 
-typedef enum { RANDOM_DEFAULT } PetscRandomType;
+typedef enum { RANDOM_DEFAULT, RANDOM_REAL, RANDOM_IMAGINARY } PetscRandomType;
 
 typedef struct _PetscRandom*   PetscRandom;
 
