@@ -1351,7 +1351,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
     ierr = MPI_Allreduce(&localNumEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);                         CHKERRQ(ierr);
     for(event = 0; event < numEvents; event++) {
       if ((localStageUsed[stage] == PETSC_TRUE) && (event < stageLog->stageInfo[stage].eventLog->numEvents)) {
-        if (eventInfo[event].count > 0) {
+        if ((eventInfo[event].count > 0) && (eventInfo[event].time > 0.0)) {
           flopr = eventInfo[event].flops/eventInfo[event].time;
         } else {
           flopr = 0.0;
