@@ -270,7 +270,7 @@ int main(int argc,char **args)
 
     /* Create nonlinear solver */
     ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
-    ierr = SNESCreate(comm,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+    ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
     ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
 
 #ifdef PETSC_HAVE_AMS

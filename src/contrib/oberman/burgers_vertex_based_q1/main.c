@@ -86,7 +86,7 @@ int AppCtxSolve(AppCtx* appctx)
   if(0){ ierr = MatView(algebra->A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
 
   /*     Create the nonlinear solver context  */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /*      Set function evaluation rountine and vector */
   f = algebra->f;
