@@ -10,7 +10,7 @@ chkpetsc_dir:
         if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
           echo "*********************Warning*************************" ; \
           echo "Your PETSC_DIR may not match the directory you are in";\
-          echo "PETSC_DIR " ${true_PETSC_DIR} "Current directory" ${mypwd};\ 
+          echo "PETSC_DIR " ${true_PETSC_DIR} "Current directory" ${mypwd};\
           echo "******************************************************" ; \
         fi
 
