@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.187 1996/09/23 16:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.188 1996/10/15 23:17:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -85,7 +85,7 @@ static int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,i
   if (symmetric) {
     ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
   } else {
-    collengths = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(collengths);
+    collengths = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(collengths);
     PetscMemzero(collengths,n*sizeof(int));
     cia        = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(cia);
     cja        = (int *) PetscMalloc( (nz+1)*sizeof(int) ); CHKPTRQ(cja);
@@ -126,8 +126,7 @@ static int MatRestoreColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *
 
 #define CHUNKSIZE   15
 
-/* This version has row oriented v  */
-static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
+int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax, N, sorted = a->sorted;
