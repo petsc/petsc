@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.16 1995/06/08 03:07:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.17 1995/06/18 16:23:22 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -135,7 +135,8 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   if (k != 0) {
     VecCopy(p[k],x);
   }
-  *its = RCONV(itP,i+1); return 0;
+  *its = RCONV(itP,i+1); 
+  return 0;
 }
 
 int KSPCreate_Chebychev(KSP itP)
