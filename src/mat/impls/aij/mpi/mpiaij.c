@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.135 1996/03/19 21:26:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.136 1996/03/23 20:42:35 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1463,7 +1463,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   MPI_Comm_size(comm,&a->size);
 
   if (m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) 
-    SETERRQ(1,"MatCreateMPIAIJ:Cannot have PETSc decide rows but set d_nnz or o_nnz");
+    SETERRQ(1,"MatCreateMPIAIJ:Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
 
   if (M == PETSC_DECIDE || N == PETSC_DECIDE) {
     work[0] = m; work[1] = n;
