@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.84 1996/01/11 20:10:50 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.85 1996/01/12 03:56:30 bsmith Exp balay $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -42,6 +42,7 @@ extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,
 
 extern int  TrDump(FILE *);
 extern int  TrGetMaximumAllocated(double*);
+extern int  TrSpace( int *, int *)
 
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemzero(void *,int);
