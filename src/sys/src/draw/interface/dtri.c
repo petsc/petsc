@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.51 2001/08/07 03:01:52 balay Exp bsmith $*/
+/*$Id: dtri.c,v 1.52 2001/08/07 21:28:42 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -138,11 +138,11 @@ static int PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 .seealso: PetscDrawTensorContourPatch()
 
 @*/
-int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscScalar *v)
+int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
 {
   int           N = m*n,ierr;
   PetscTruth    isnull;
-  PetscDraw          popup;
+  PetscDraw     popup;
   MPI_Comm      comm;
   int           xin=1,yin=1,i,size;
   PetscReal     h;
@@ -165,10 +165,10 @@ int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const 
   ctx.v   = v;
   ctx.m   = m;
   ctx.n   = n;
-  ctx.max = ctx.min = PetscRealPart(v[0]);
+  ctx.max = ctx.min = v[0];
   for (i=0; i<N; i++) {
-    if (ctx.max < PetscRealPart(ctx.v[i])) ctx.max = PetscRealPart(ctx.v[i]);
-    if (ctx.min > PetscRealPart(ctx.v[i])) ctx.min = PetscRealPart(ctx.v[i]);
+    if (ctx.max < ctx.v[i]) ctx.max = ctx.v[i];
+    if (ctx.min > ctx.v[i]) ctx.min = ctx.v[i];
   }
   if (ctx.max - ctx.min < 1.e-7) {ctx.min -= 5.e-8; ctx.max += 5.e-8;}
 
@@ -234,7 +234,7 @@ int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const 
 .seealso: PetscDrawTensorContour()
 
 @*/
-int PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscScalar *v)
+int PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscReal *v)
 {
   int           c1,c2,c3,c4,i,j,ierr;
   PetscReal     x1,x2,x3,x4,y_1,y2,y3,y4,scale;
@@ -245,17 +245,10 @@ int PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscRea
   /* PetscDraw the contour plot patch */
   for (j=0; j<n-1; j++) {
     for (i=0; i<m-1; i++) {
-#if !defined(PETSC_USE_COMPLEX)
       x1 = x[i];  y_1 = y[j];  c1 = (int)(PETSC_DRAW_BASIC_COLORS + scale*(v[i+j*m] - min));
       x2 = x[i+1];y2 = y_1;    c2 = (int)(PETSC_DRAW_BASIC_COLORS + scale*(v[i+j*m+1]-min));
       x3 = x2;    y3 = y[j+1];c3 = (int)(PETSC_DRAW_BASIC_COLORS + scale*(v[i+j*m+1+m]-min));
       x4 = x1;    y4 = y3;    c4 = (int)(PETSC_DRAW_BASIC_COLORS + scale*(v[i+j*m+m]-min));
-#else
-      x1 = x[i];  y_1 = y[j];  c1 = (int)(PETSC_DRAW_BASIC_COLORS + scale*PetscRealPart(v[i+j*m]-min));
-      x2 = x[i+1];y2 = y_1;    c2 = (int)(PETSC_DRAW_BASIC_COLORS + scale*PetscRealPart(v[i+j*m+1]-min));
-      x3 = x2;    y3 = y[j+1];c3 = (int)(PETSC_DRAW_BASIC_COLORS + scale*PetscRealPart(v[i+j*m+1+m]-min));
-      x4 = x1;    y4 = y3;    c4 = (int)(PETSC_DRAW_BASIC_COLORS + scale*PetscRealPart(v[i+j*m+m]-min));
-#endif
       ierr = PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
       ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
     }
