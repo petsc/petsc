@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.18 1996/03/04 05:14:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.19 1996/03/19 21:22:50 bsmith Exp balay $";
 #endif
 /*
      Some useful vector utility functions.
@@ -137,3 +137,38 @@ int VecPlaceArray(Vec vec,Scalar *array)
   return 0;
 }
 
+
+/*@
+   VecEqual - Compares two vectors.
+
+   Input Parameters:
+.  vec1 - the first matrix
+.  vec2 - the second matrix
+
+   Output Parameter:
+.  flg : PETSC_TRUE if the vectors are equal;
+         PETSC_FALSE otherwise.
+
+.keywords: vec, equal, equivalent
+@*/
+
+int VecEqual( Vec vec1, Vec vec2, PetscTruth *flg)
+{
+  Scalar *v1,*v2;
+  int    n1,n2,ierr;
+
+  ierr = VecGetSize(vec1,&n1); CHKERRQ(ierr);
+  ierr = VecGetSize(vec2,&n2); CHKERRQ(ierr);
+  if (n1 != n2) { *flg = PETSC_FALSE; return 0;}
+
+  ierr = VecGetArray(vec1,&v1); CHKERRQ(ierr);
+  ierr = VecGetArray(vec2,&v2); CHKERRQ(ierr);
+
+  if (PetscMemcmp(v1,v2,n1*sizeof(Scalar))) *flg = PETSC_FALSE;
+  else  *flg = PETSC_TRUE;
+  
+  ierr = VecRestoreArray(vec1,&v1); CHKERRQ(ierr);
+  ierr = VecRestoreArray(vec2,&v2); CHKERRQ(ierr);
+
+  return 0;
+}
