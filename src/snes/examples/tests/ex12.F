@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.40 1997/02/05 22:04:27 bsmith Exp balay $";
+C    "$Id: ex12.F,v 1.41 1997/07/10 15:47:56 balay Exp bsmith $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -153,7 +153,23 @@ C The element xx(ib) is the ibth element in the vector indicated by ctx(3)
 
       d = h*h
 
-      if (rank .eq. 0) then 
+C
+C  Note that the array vxx() was obtained from a ghosted local vector 
+C  ctx(3) while the array vff() was obtained from the non-ghosted parallel 
+C  vector F. This is why there is a need for shift variable s. Since vff()
+C  does not have locations for the ghost variables we need to index in it 
+C  slightly different then indexing into vxx(). For example on processor 
+C  1 (the second processor) 
+C
+C        xx(1)        xx(2)             xx(3)             .....
+C      ^^^^^^^        ^^^^^             ^^^^^
+C      ghost value   1st local value   2nd local value 
+C
+C                      ff(1)             ff(2)
+C                     ^^^^^^^           ^^^^^^^
+C                    1st local value   2nd local value
+C
+       if (rank .eq. 0) then 
         s = 0
         ff(1) = xx(1)
       else
