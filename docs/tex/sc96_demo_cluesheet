@@ -43,8 +43,15 @@ How:  Running the PETSc demo:
  and distort the overall demo appearance; there's probably a way to fix
  this but I don't know what it is now).  
 
- Regardless of the display, however, the demo should be run on a sun4
- machine (since rs6000 machines are giving various ugly error messages).
+ Regardless of the display, however, THE DEMO SHOULD BE RUN ON A SUN4
+ machine (since rs6000 machines are giving various Netscape error messages).
+
+ Note:  The Tcl/Tk path used in all demo files is:
+    /home/petsc/bin/sun4/wish4.1
+ which is a link to the appropriate sun4 version.  Alternatively,
+ if running on a rs6000 machine (which is not recommended due to
+ the Netscape problems), this path MUST be changed to 
+    /usr/local/bin/wish4.1
 
       1.  Set the following environmental variable:
               setenv PETSC_DIR /home/petsc/petsc
