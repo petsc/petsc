@@ -1,10 +1,10 @@
 c ----------------------------------------------------------------
-c  Full potential physics code
+c  Full potential physics code initial condition
 c ----------------------------------------------------------------
 
-      SUBROUTINE IC_FP(xx,p)
+      SUBROUTINE IC_FP(xx,p,x,y,z)
 
-c IC - Reads case data and initializes the flow field to plug flow
+c IC - Initializes the full potential component of the field to plug flow
 
 #include "param.h"
 #include "varbls.h"
@@ -13,6 +13,7 @@ c IC - Reads case data and initializes the flow field to plug flow
 #include "ang.h"
 #include "init.h"
 #include "condi.h"
+#include "coord.h"
 
 c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
@@ -24,7 +25,15 @@ c      COMMON /CONDI/ ORDER,PSI,LIMIT
 c      COMMON /FREQ/ IFREQ,ISGS
       double precision  conv, beta_dummy
       integer i,j,k,ifreq_dummy
-
+c
+c Reading would be redundant with IC for Euler if both models are 
+c in use, but is necessary when running only the FP model.  This
+c section MUST be skipped if already performed in the IC for Euler,
+c or the angle "conversion" will be done twice!
+c Many of the input parameters are not relevant for FP, but are
+c kept as dummies for input file items.
+c
+      if (model .gt. MMFP) goto 40
       READ (15,100) CFL,FSMACH,ALPHA,BETA_dummy,PHI
       read (15,200) limit,psi,order,isgs,ifreq_dummy
 c LIMIT chooses the limiter (see below)
@@ -55,26 +64,27 @@ c      CONV=ACOS(PetscDoubleExp(-1.0,0))/180.
       ALPHA=ALPHA*CONV
       BETA=BETA*CONV
       PHI=PHI*CONV
-      RINIT=one
+c
+   40 continue
+c
+c Input and angle conversion to radians is done.
+c Define plug flow initial condition for potential, with zero circulation
+c and constant of integration equal to zero (so PHI is zero at the origin
+c of coordinates and along the line normal to the freestream flow through
+c the origin).
+c
       RUINIT=FSMACH*COS(ALPHA)*COS(BETA)
       RVINIT=FSMACH*(SIN(PHI)*SIN(ALPHA)*COS(BETA)
      1   -COS(PHI)*SIN(BETA))
       RWINIT=FSMACH*(SIN(ALPHA)*COS(BETA)
      1  +SIN(PHI)*COS(ALPHA)*SIN(BETA))
-       EINIT=one/(GAM*GM1)+p5*FSMACH**2
-      PINIT=GM1*(EINIT-p5*FSMACH**2)
       do 2 k=gzsf1,gzefp1
       do 2 j=gysf1,gyefp1
       do 2 i=gxsf1,gxefp1
 c      DO 2 K=1,NK1
 c      DO 2 J=1,NJ1
 c      DO 2 I=1,NI1
-       R(I,J,K)=one
-      RU(I,J,K)=RUINIT
-      RV(I,J,K)=RVINIT
-      RW(I,J,K)=RWINIT
-       E(I,J,K)= EINIT
-       P(I,J,K)= PINIT
+      FP(I,J,K)= x(i,j,k)*RUINIT + y(i,j,k)*RVINIT + z(i,j,k)*RWINIT 
     2 CONTINUE
       RETURN
       END
