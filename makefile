@@ -54,6 +54,9 @@ configure: configure.in config/acsite.m4 aclocal.m4 bmake/config/petscconf.h.in 
 	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
 	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
 	@autoconf -l config >> $(CONFIGURE_LOG_FILE)
+	@cat configure | sed -e 's/\[A-Za-z_\]\[A-Za-z0-9_\]/\[A-Za-z_\]\[A-Za-z0-9_(),\]/' -e 's/\[a-zA-Z_\]\[a-zA-Z_0-9\]/\[a-zA-Z_\]\[a-zA-Z_0-9(),\]/' > configure.alter
+	@mv configure.alter configure
+	@chmod 755 configure
 
 start_configure:
 	-@$(RM) $(CONFIGURE_LOG_FILE)
