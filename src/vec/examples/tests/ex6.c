@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
-  OptionsCreate(argc,argv,(char*)0,(char*)0);
+  OptionsCreate(&argc,&argv,(char*)0,(char*)0);
 
   /* create two vector */
   ierr = VecCreateSequential(n,&x); CHKERR(ierr);

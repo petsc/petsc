@@ -1,5 +1,5 @@
 ALL: lib 
-ITOOLSDIR = ../../../
+ITOOLSDIR = ../../../../
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF)  \
            -I$(ITOOLSDIR)/pinclude -I../..

@@ -35,6 +35,7 @@ extern int    PCPrintHelp(PC);
 
 extern int PCSORSetSymmetric(PC, int);
 extern int PCSORSetOmega(PC, double);
+extern int PCSORSetIterations(PC, int);
 
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 

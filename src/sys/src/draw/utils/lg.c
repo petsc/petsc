@@ -5,130 +5,76 @@
     the end of the X axis.
 */
 
-#ifndef _XLG
-#define _XLG
+#include "petsc.h"
+#include "draw.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
-#include "xtools/basex11.h"
-#include "xtools/baseclr.h"
-#include "xtools/base3d.h"
-#include "xtools/lines/lines.h"
-#include "xtools/axis/axis.h"
-
-typedef struct XBiLineGraph *XBLineGraph;
-
-/* Routines */
-#ifdef ANSI_ARG
-#undef ANSI_ARG
-#endif
-#ifdef __STDC__
-#define ANSI_ARGS(a) a
-#else
-#define ANSI_ARGS(a) ()
-#endif
-
-XBLineGraph XBLineGraphCreate ANSI_ARGS((XBWindow, int));
-void        XBLineGraphDestroy ANSI_ARGS((XBLineGraph));
-void        XBLineGraphReset ANSI_ARGS((XBLineGraph));
-void        XBLineGraphDraw ANSI_ARGS((XBLineGraph));
-void        XBLineGraphAddPoint ANSI_ARGS((XBLineGraph, double *, double *));
-void        XBLineGraphSetLimits ANSI_ARGS((XBLineGraph, double, double, 
-					    double, double ));
-XBWindow    XBLineGraphGetWindow ANSI_ARGS((XBLineGraph));
-
-#ifdef _ITCONTEXT
-XBLineGraph ITLineGraphMonitorCreate ANSI_ARGS((char *, char*, 
-						 int, int, int, int));
-void        ITLineGraphMonitor ANSI_ARGS((ITCntx *, int, double));
-void        ITLineGraphMonitorDestroy ANSI_ARGS((XBLineGraph));
-void        ITLineGraphMonitorReset ANSI_ARGS((XBLineGraph));
-#endif
-
-#endif
-/*
-        Routines for manipulating line graphs
-*/
-#include "tools.h"
-#include "xtools/xlg/xlg.h"
-#include "xtools/basex11.h"
-
-struct XBiLineGraph {
-  XBWindow   win;
-  int        winw, winh;
-  XBAxisData axis;
-  Lines      *lines;
-  double     xmin, xmax, ymin, ymax;
-  int        nopts, dim;
+struct _DrawLGCtx {
+  int         len,loc;
+  DrawCtx     win;
+  DrawAxisCtx axis;
+  double      xmin, xmax, ymin, ymax, *x, *y;
+  int         nopts, dim;
 };
+#define CHUNCKSIZE 100
 
 /*@
-     XBLineGraphCreate - Creates a XBLineGraph data structure
+     DrawLGCreate - Creates a Line Graph data structure
 
   Input Parameters:
 .   win - the window where the graph will be made.
 .   dim - the number of line cures which will be drawn
 
+  Output Parameters:
+.   outctx - the line graph context
 @*/
-XBLineGraph XBLineGraphCreate(win, dim)
-XBWindow win;
-int      dim;
+int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
 {
-  int         i;
-  XBLineGraph lg = NEW(struct XBiLineGraph); CHKPTRN(lg);
+  int         i,ierr;
+  DrawLGCtx   lg = (DrawLGCtx) MALLOC(sizeof(struct _DrawLGCtx));CHKPTR(lg);
 
   lg->nopts = 0;
   lg->win   = win;
-  lg->winw  = XBWinWidth( win );
-  lg->winh  = XBWinHeight( win );
   lg->dim   = dim;
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
   lg->xmax  = -1.e20;
   lg->ymax  = -1.e20;
-  lg->axis  = XBAInitAxis(win,XBFontFixed(win, 7, 13)); CHKERRN(1);
-  lg->lines = (Lines *) MALLOC(dim*sizeof(Lines)); 
-  CHKPTRN(lg->lines);
-  for ( i=0; i<dim; i++ ) {lg->lines[i] = XBLinesInit(); CHKERRN(1); }
-  return lg;
+  lg->x     = (double *) MALLOC(2*dim*CHUNCKSIZE*sizeof(double));CHKPTR(lg->x);
+  lg->y     = lg->x + dim*CHUNCKSIZE;
+  lg->len   = dim*CHUNCKSIZE;
+  lg->loc   = 0;
+  ierr = DrawAxisCreate(win,&lg->axis); CHKERR(ierr);
+  *outctx = lg;
+  return 0;
 }
 
 /*@
-    XBLineGraphReset - Clears line graph to allow for reuse with new data.
+    DrawLGReset - Clears line graph to allow for reuse with new data.
 
 @*/
-void XBLineGraphReset(lg)
-XBLineGraph lg;
+int DrawLGReset(DrawLGCtx lg)
 {
-  XBWindow win = lg->win; 
-  int      i;
-  for ( i=0; i<lg->dim; i++ ) {XBLinesFree(lg->lines[i]);}
-  for ( i=0; i<lg->dim; i++ ) {lg->lines[i] = XBLinesInit(); CHKERR(1); }
-  lg->nopts = 0;
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
   lg->xmax  = -1.e20;
   lg->ymax  = -1.e20;
-  /* XBClearWindow(win,win->x,win->y,win->w,win->h);   */
 }
 
 /*@
-    XBLineGraphDestroy - Frees all space taken up by LineGraph 
+    DrawLGDestroy - Frees all space taken up by LineGraph 
                          data structure.
 @*/
-void XBLineGraphDestroy(lg)
-XBLineGraph lg;
+int DrawLGDestroy(DrawLGCtx lg)
 {
   int i;
-  for ( i=0; i<lg->dim; i++ ) {XBLinesFree(lg->lines[i]);}
-  FREE(lg->lines);
-  XBADestroyAxis(lg->axis);
+  DrawAxisDestroy(lg->axis);
   FREE(lg);
+  return 0;
 }
 
 /*@
-    XBLineGraphAddPoint - Adds another point to each of the 
+    DrawLGAddPoint - Adds another point to each of the 
                           line graphs. The new point must have a
                           X coordinate larger than the old points.
 
@@ -138,50 +84,51 @@ XBLineGraph lg;
            point for each curve.
 
 @*/
-void XBLineGraphAddPoint(lg,x,y)
-XBLineGraph lg;
-double      *x, *y;
+int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
 {
-  int i, j, nc = XBGetNumcolors( lg->win ) - 1;
+  int i, j;
+  if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
+    ;
+  }
   for (i=0; i<lg->dim; i++) {
     if (x[i] > lg->xmax) lg->xmax = x[i]; 
     if (x[i] < lg->xmin) lg->xmin = x[i];
     if (y[i] > lg->ymax) lg->ymax = y[i]; 
     if (y[i] < lg->ymin) lg->ymin = y[i];
-    j = 1 + (i % nc);
-    XBLinesAddLines(lg->lines[i],x+i,y+i,1,XBGetPixvalByIndex( lg->win, j ) );
-    CHKERR(1);
+
+    lg->x[lg->loc]   = x[i];
+    lg->y[lg->loc++] = y[i];
   }
   lg->nopts++;
+  return 0;
 }
 
 /*@
-   XBLineGraphDraw - Redraws a line graph
+   DrawLG - Redraws a line graph
 @*/
-void XBLineGraphDraw(lg)
-XBLineGraph lg;
+int DrawLG(DrawLGCtx lg)
 {
   double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
-  int      i, dim = lg->dim;
-  XBWindow win = lg->win;
+  int      i, j, dim = lg->dim,nopts = lg->nopts;
+  DrawCtx  win = lg->win;
 
-  if (xmin >= xmax || ymin >= ymax) return;
-  xmax = xmax + .1*(xmax-xmin);
-  XBClearWindow(win, 0, 0, lg->winw, lg->winh);
-  XBSetToForeground( win );
-  XBASetLimits(lg->axis, xmin, xmax, ymin, ymax);
-  XBADrawAxis(lg->axis);
+  if (xmin >= xmax || ymin >= ymax) return 0;
+  DrawClear(win);
+  DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);
+  DrawAxis(lg->axis);
   for ( i=0; i<dim; i++ ) {
-    XBLinesSetScale(lg->lines[i],xmin,xmax,ymin,ymax);
-    XBLinesRescale(win, lg->lines[i]);
-    XBLinesDraw(win,lg->lines[i]);
+    for ( j=1; j<nopts; j++ ) {
+      DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
+                   lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK,DRAW_BLACK);
+    }
   }
-  XBFlush(lg->win);
+  DrawFlush(lg->win);
+  return 0;
 } 
  
 
 /*@
-     XBLineGraphSetLimits - Sets the axis limits for a line graph. If 
+     DrawLGSetLimits - Sets the axis limits for a line graph. If 
                             more points are added after this call the
                             limits will be adjusted to include those 
                             additional points.
@@ -191,24 +138,31 @@ XBLineGraph lg;
 .   x_min,x_max,y_min,y_max - the limits
 
 @*/
-void XBLineGraphSetLimits( lg,x_min,x_max,y_min,y_max) 
-XBLineGraph lg;
-double      x_min,x_max,y_min,y_max;
+int DrawLGSetLimits( DrawLGCtx lg,double x_min,double x_max,double y_min,
+                                  double y_max) 
 {
-(lg)->xmin = x_min; 
-(lg)->xmax = x_max; 
-(lg)->ymin = y_min; 
-(lg)->ymax = y_max;
+  (lg)->xmin = x_min; 
+  (lg)->xmax = x_max; 
+  (lg)->ymin = y_min; 
+  (lg)->ymax = y_max;
+  return 0;
 }
  
 /*@
-     XBLineGraphGetWindow - Returns the XBWindow of a XBLineGraph
+    DrawLGGetAxisCtx - Gets the axis context associated with a line graph.
+           This is useful if one wants to change some axis property, like
+           labels, color, etc. The axis context should not be destroyed
+           by the application code.
 
-     Input Parameters:
-.    lg - XBLineGraph to return window of
+  Input Parameter:
+.  lg - the line graph context
+
+  Output Parameter:
+.  axis - the axis context
+
 @*/
-XBWindow XBLineGraphGetWindow( lg )
-XBLineGraph lg;
+int DrawLGGetAxisCtx(DrawLGCtx lg,DrawAxisCtx *axis)
 {
-return lg->win;
+  *axis = lg->axis;
+  return 0;
 }

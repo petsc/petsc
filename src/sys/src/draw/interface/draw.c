@@ -17,6 +17,115 @@ int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,
 }
 
 /*@
+     DrawLineSetWidth - Sets the line width for future draws.
+                     The width is relative to the user coordinates of 
+                     the window. 0.0 denotes the natural width,
+                     1.0 denotes the interior viewport. 
+
+  Input Parameters:
+.   ctx - the drawing context
+.   width - the width in user coordinates
+@*/
+int DrawLineSetWidth(DrawCtx ctx,double width)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->drawlinewidth)(ctx,width);
+}
+
+/*@
+     DrawText - Draws text onto a drawable.
+
+  Input Parameters:
+.   ctx - the drawing context
+.   xl,yl - the coordinates of lower left corner of text
+.   cl - the color of the text
+.   text - the text to draw
+@*/
+int DrawText(DrawCtx ctx,double xl,double yl,int cl,char *text)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->drawtext)(ctx,xl,yl,cl,text);
+}
+
+/*@
+     DrawTextVertical - Draws text onto a drawable.
+
+  Input Parameters:
+.   ctx - the drawing context
+.   xl,yl - the coordinates of upper left corner of text
+.   cl - the color of the text
+.   text - the text to draw
+@*/
+int DrawTextVertical(DrawCtx ctx,double xl,double yl,int cl,char *text)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->drawtextvert)(ctx,xl,yl,cl,text);
+}
+
+/*@
+     DrawTextSetSize - Sets the size for charactor text.
+                     The width is relative to the user coordinates of 
+                     the window. 0.0 denotes the natural width,
+                     1.0 denotes the interior viewport. 
+
+  Input Parameters:
+.   ctx - the drawing context
+.   width - the width in user coordinates
+.   height - the charactor height
+@*/
+int DrawTextSetSize(DrawCtx ctx,double width,double height)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->drawtextsize)(ctx,width,height);
+}
+/*@
+     DrawTextGetSize - Gets the size for charactor text.
+                     The width is relative to the user coordinates of 
+                     the window. 0.0 denotes the natural width,
+                     1.0 denotes the interior viewport. 
+
+  Input Parameters:
+.   ctx - the drawing context
+.   width - the width in user coordinates
+.   height - the charactor height
+@*/
+int DrawTextGetSize(DrawCtx ctx,double *width,double *height)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->drawtextgetsize)(ctx,width,height);
+}
+
+/*@
+     DrawPoint - Draws a point onto a drawable.
+
+  Input Parameters:
+.   ctx - the drawing context
+.   xl,yl - the coordinates of the point
+.   cl - the color of the point
+@*/
+int DrawPoint(DrawCtx ctx,double xl,double yl,int cl)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->drawpoint)(ctx,xl,yl,cl);
+}
+
+/*@
+     DrawPointSetSize - Sets the point size for future draws.
+                     The size is relative to the user coordinates of 
+                     the window. 0.0 denotes the natural width,
+                     1.0 denotes the interior viewport. 
+
+  Input Parameters:
+.   ctx - the drawing context
+.   width - the width in user coordinates
+@*/
+int DrawPointSetSize(DrawCtx ctx,double width)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->drawpointsize)(ctx,width);
+}
+
+/*@
 
    DrawSetViewPort - Sets the portion of the window(page) that 
       draw routines will write to. 
@@ -32,6 +141,7 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
   VALIDHEADER(ctx,DRAW_COOKIE);
   ctx->port_xl = xl; ctx->port_yl = yl;
   ctx->port_xr = xr; ctx->port_yr = yr;
+  if (ctx->ops->viewport) return (*ctx->ops->viewport)(ctx,xl,yl,xr,yr);
   return 0;
 }
 
@@ -73,5 +183,17 @@ int DrawFlush(DrawCtx ctx)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
   if (ctx->ops->flush) return (*ctx->ops->flush)(ctx);
+  return 0;
+}
+/*@
+   DrawClear - Clears graphical output.
+
+  Input Parameters:
+.  ctx - the drawing context
+@*/
+int DrawClear(DrawCtx ctx)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->ops->clear) return (*ctx->ops->clear)(ctx);
   return 0;
 }

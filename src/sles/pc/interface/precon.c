@@ -115,11 +115,33 @@ int PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work)
   return MatMultTrans(pc->mat,work,y); 
 }
 
+/*@
+      PCApplyRichardson - Determines if a particular preconditioner has a 
+                          built in fast application of Richardson's method.
+
+  Input Parameters:
+.   pc - the preconditioner
+@*/
 int PCApplyRichardsonExists(PC pc)
 {
   if (pc->applyrich) return 1; else return 0;
 }
 
+/*@
+     PCApplyRichardson - Applies several steps of Richardson iteration with 
+                         the particular preconditioner. This routine is 
+                         usually used by the Krylov solvers and not the 
+                         application code directly.
+
+  Input Parameters:
+.   pc - the preconditioner context
+.   x, y - the initial guess and the solution
+.   w    - one work vector
+.   its - the number of iterations to apply.
+
+   Note: most preconditioners do not support this function. Use the command
+         PCApplyRichardsonExists() to determine if one does.
+@*/
 int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 {
   VALIDHEADER(pc,PC_COOKIE);

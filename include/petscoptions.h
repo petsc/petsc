@@ -3,7 +3,7 @@
 #define _OPTIONS_H
 #include "petsc.h"
 
-int OptionsCreate(int ,char **,char *,char*);
+int OptionsCreate(int* ,char ***,char *,char*);
 int OptionsDestroy();
 #include <stdio.h>
 int OptionsPrint(FILE *);
@@ -14,6 +14,7 @@ int OptionsGetInt(int, char *,int *);
 int OptionsGetDouble(int, char *,double *);
 int OptionsGetString(int, char *,char *,int);
 int OptionsGetScalar(int,char *,Scalar *);
+int OptionsAllUsed();
 
 int OptionsSetValue(char*,char*);
 

@@ -2,7 +2,7 @@ ITOOLSDIR = ../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) $(CONF)
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(ITOOLSDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
@@ -12,6 +12,6 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = utils src impls tests examples
+DIRS     = 
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -1,4 +1,4 @@
-ITOOLSDIR = ../..
+ITOOLSDIR = ../../../
 
 ALL: lib 
 CFLAGS    = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude $(CONF)

@@ -1,8 +1,10 @@
-/*
-   Tests MPI parallel AIJ  solve with SLES. This examples intentionally 
-  lays the matrix out across processors differently then the way it 
-  is assembled, this is to test parallel matrix assembly.
-*/
+
+static char help[] = "Tests MPI parallel AIJ  solve with SLES.\n\
+  This examples intentionally\
+  lays the matrix out across processors differently then the way it\
+  is assembled, this is to test parallel matrix assembly.\
+  Uses simple bilinear elements on the unit square,\n";
+
 #include "comm.h"
 #include "vec.h"
 #include "mat.h"
@@ -10,58 +12,133 @@
 #include  <stdio.h>
 #include "sles.h"
 
+
+int FormElementStiffness(double H,Scalar *Ke)
+{
+  Ke[0]= H/6.0;Ke[1]= -.125*H;      Ke[2] = H/12.0;      Ke[3] = -.125*H;
+  Ke[4]= -.125*H;      Ke[5]= H/6.0;Ke[6] = -.125*H;      Ke[7] = H/12.0;
+  Ke[8]= H/12.0;      Ke[9]= -.125*H;   Ke[10]=H/6.0;Ke[11] = -.125*H;
+  Ke[12]= -.125*H;     Ke[13]= H/12.0;     Ke[14] = -.125*H;  Ke[15] = H/6.0;
+  return 0;
+}
+int FormElementRhs(double x, double y, double H,Scalar *r)
+{
+  r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
+  return 0;
+}
+
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 3, n = 2, mytid,numtids;
-  Scalar      v, zero = 0.0,norm, one = 1.0, none = -1.0;
-  int         I, J, ierr;
-  Vec         x,u,b;
+  int         i,j, m = 2, mytid,numtids, N, start,end,M;
+  Scalar      val, zero = 0.0,norm, one = 1.0, none = -1.0,Ke[16],r[4];
+  double      x,y,h;
+  int         I, J, ierr,idx[4],count,*rows;
+  Vec         u,ustar,b;
   SLES        sles;
+  IS          is;
 
   PetscInitialize(&argc,&args,0,0);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,"-m",&m);
+  N = (m+1)*(m+1); /* dimension of matrix */
+  M = m*m; /* number of elements */
+  h = 1.0/m;       /* mesh width */
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  n = 2*numtids;
 
-  /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateSequentialAIJMPI(MPI_COMM_WORLD,-1,-1,m*n,m*n,5,0,5,0,&C); 
+  /* create stiffness matrix */
+  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,-1,-1,N,N,9,0,9,0,&C); 
   CHKERR(ierr);
 
-  for ( i=0; i<m; i++ ) { 
-    for ( j=2*mytid; j<2*mytid+2; j++ ) {
-      v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
-    }
+  start = mytid*(M/numtids) + ((M%numtids) < mytid ? (M%numtids) : mytid);
+  end   = start + M/numtids + ((M%numtids) > mytid); 
+  /* forms the element stiffness for the Laplacian */
+  ierr = FormElementStiffness(h*h,Ke);
+  for ( i=start; i<end; i++ ) {
+     /* location of lower left corner of element */
+     x = h*(i % m); y = h*(i/m); 
+     /* node numbers for the four corners of element */
+     idx[0] = (m+1)*(i/m) + ( i % m);
+     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
+     MatSetValues(C,4,idx,4,idx,Ke,AddValues); 
   }
   ierr = MatBeginAssembly(C); CHKERR(ierr);
   ierr = MatEndAssembly(C); CHKERR(ierr);
 
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,m*n,&u); CHKERR(ierr);
+  /* create right hand side and solution */
+
+  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&u); CHKERR(ierr); 
   ierr = VecCreate(u,&b); CHKERR(ierr);
-  ierr = VecCreate(b,&x); CHKERR(ierr);
-  VecSet(&one,u); VecSet(&zero,x);
+  ierr = VecCreate(b,&ustar); CHKERR(ierr);
+  VecSet(&zero,u); VecSet(&zero,b);
 
-  /* compute right hand side */
-  ierr = MatMult(C,u,b); CHKERR(ierr);
+  for ( i=start; i<end; i++ ) {
+     /* location of lower left corner of element */
+     x = h*(i % m); y = h*(i/m); 
+     /* node numbers for the four corners of element */
+     idx[0] = (m+1)*(i/m) + ( i % m);
+     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
+     FormElementRhs(x,y,h*h,r);
+     VecSetValues(b,4,idx,r,AddValues);
+  }
+  ierr = VecBeginAssembly(b);
+  ierr = VecEndAssembly(b);
 
+  /* modify matrix and rhs for Dirichlet boundary conditions */
+  rows = (int *) MALLOC( 4*m*sizeof(int) ); CHKPTR(rows);
+  for ( i=0; i<m+1; i++ ) {
+    rows[i] = i; /* bottom */
+    rows[3*m - 1 +i] = m*(m+1) + i; /* top */
+  }
+  count = m+1; /* left side */
+  for ( i=m+1; i<m*(m+1); i+= m+1 ) {
+    rows[count++] = i;
+  }
+  count = 2*m; /* left side */
+  for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
+    rows[count++] = i;
+  }
+  ierr = ISCreateSequential(4*m,rows,&is); CHKERR(ierr);
+  for ( i=0; i<4*m; i++ ) {
+     x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
+     val = y;
+     VecSetValues(u,1,&rows[i],&val,InsertValues); 
+     VecSetValues(b,1,&rows[i],&val,InsertValues); 
+  }    
+  FREE(rows);
+  VecBeginAssembly(u); VecEndAssembly(u);
+  VecBeginAssembly(b); VecEndAssembly(b);
+
+  ierr = MatZeroRows(C,is,&one); CHKERR(ierr);
+  ISDestroy(is);
+
+/* MatView(C,0); VecView(b,0); */
+
+  /* solve linear system */
   if (ierr = SLESCreate(&sles)) SETERR(ierr,0);
   if (ierr = SLESSetMat(sles,C)) SETERR(ierr,0);
   if (ierr = SLESSetFromOptions(sles)) SETERR(ierr,0);
-  if (ierr = SLESSolve(sles,b,x)) SETERR(ierr,0);
+  if (ierr = SLESSolve(sles,b,u)) SETERR(ierr,0);
 
   /* check error */
-  if (ierr = VecAXPY(&none,u,x)) SETERR(ierr,0);
-  if (ierr = VecNorm(x,&norm)) SETERR(ierr,0);
-  printf("Norm of error %g\n",norm);
+  start = mytid*(N/numtids) + ((N%numtids) < mytid ? (N%numtids) : mytid);
+  end   = start + N/numtids + ((N%numtids) > mytid); 
+  for ( i=start; i<end; i++ ) {
+     x = h*(i % (m+1)); y = h*(i/(m+1)); 
+     val = y;
+     VecSetValues(ustar,1,&i,&val,InsertValues); 
+  }
+  VecBeginAssembly(ustar); VecEndAssembly(ustar);
+/*VecView(u,0); */
+/*VecView(ustar,0); */
+  if (ierr = VecAXPY(&none,ustar,u)) SETERR(ierr,0);
+  if (ierr = VecNorm(u,&norm)) SETERR(ierr,0);
+  printf("Norm of error %g\n",norm*h);
 
   ierr = SLESDestroy(sles); CHKERR(ierr);
+  ierr = VecDestroy(ustar); CHKERR(ierr);
   ierr = VecDestroy(u); CHKERR(ierr);
-  ierr = VecDestroy(x); CHKERR(ierr);
   ierr = VecDestroy(b); CHKERR(ierr);
   ierr = MatDestroy(C); CHKERR(ierr);
   PetscFinalize();

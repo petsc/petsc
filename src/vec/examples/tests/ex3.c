@@ -20,8 +20,7 @@ int main(int argc,char **argv)
   Vec          x,y,w,*z;
   int          idx;
 
-  MPI_Init(&argc,&argv);
-  OptionsCreate(argc,argv,(char*)0,(char*)0);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   OptionsGetInt(0,"-n",&n); if (n < 5) n = 5;
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid); 
@@ -48,7 +47,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);
 
-  MPI_Finalize();
+  PetscFinalize();
   return 0;
 }
  

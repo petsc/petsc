@@ -105,14 +105,16 @@ int MatiAIJLUFactorSymbolic(Mat mat,IS isrow,IS iscol,Mat *fact)
   aijnew->i         = ainew;
   aijnew->diag      = idnew;
   aijnew->ilen      = 0;
+  aijnew->imax      = 0;
   (*fact)->row      = isrow;
   (*fact)->col      = iscol;
   (*fact)->factor   = FACTOR_LU;
   return 0; 
 }
 
-int MatiAIJLUFactorNumeric(Mat mat,Mat fact)
+int MatiAIJLUFactorNumeric(Mat mat,Mat *infact)
 {
+  Mat     fact = *infact;
   Matiaij *aij = (Matiaij *) mat->data, *aijnew = (Matiaij *)fact->data;
   IS      iscol = fact->col, isrow = fact->row, isicol;
   int     *r,*ic, ierr, i, j, n = aij->m, *ai = aijnew->i, *aj = aijnew->j;

@@ -3,13 +3,13 @@
 #include "ximpl.h"
 
 #define XTRANS(win,xwin,x) \
-   ((xwin)->w)*((win)->port_xl + (((x - (win)->coor_xl)*\
+   (int)(((xwin)->w)*((win)->port_xl + (((x - (win)->coor_xl)*\
                                    ((win)->port_xr - (win)->port_xl))/\
-                                   ((win)->coor_xr - (win)->coor_xl)));
+                                   ((win)->coor_xr - (win)->coor_xl))));
 #define YTRANS(win,xwin,y) \
-   ((xwin)->h)*(1.0-(win)->port_yl - (((y - (win)->coor_yl)*\
+   (int)(((xwin)->h)*(1.0-(win)->port_yl - (((y - (win)->coor_yl)*\
                                        ((win)->port_yr - (win)->port_yl))/\
-                                       ((win)->coor_yr - (win)->coor_yl)));
+                                       ((win)->coor_yr - (win)->coor_yl))));
 
 /*
     Defines the operations for the X Draw implementation.
@@ -23,8 +23,63 @@ int XiDrawLine(DrawCtx Win, double xl, double yl, double xr, double yr,
   XiSetColor( XiWin, c );
   x1 = XTRANS(Win,XiWin,xl);   x2  = XTRANS(Win,XiWin,xr); 
   y1 = YTRANS(Win,XiWin,yl);   y2  = YTRANS(Win,XiWin,yr); 
-  printf("line %g %g %g %g %d %d %d %d\n",xl,yl,xr,yr,x1,y1,x2,y2);
   XDrawLine( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y1, x2, y2);
+  return 0;
+}
+
+int XiDrawText(DrawCtx Win,double x,double  y,int c,char *chrs )
+{
+  int    xx,yy;
+  XiWindow* XiWin = (XiWindow*) Win->data;
+  xx = XTRANS(Win,XiWin,x);  yy = YTRANS(Win,XiWin,y);
+  XiSetColor( XiWin, c );
+  XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
+               xx, yy - XiWin->font->font_descent, chrs, strlen(chrs) );
+  return 0;
+}
+
+int XiFontFixed( XiWindow*,int, int,XiFont **);
+int XiDrawTextSize(DrawCtx Win,double x,double  y)
+{
+  XiWindow* XiWin = (XiWindow*) Win->data;
+  int       w,h;
+  w = (int)((XiWin->w)*x*(Win->port_xr - Win->port_xl)/
+                                   (Win->coor_xr - Win->coor_xl));
+  h = (int)((XiWin->h)*y*(Win->port_yr - Win->port_yl)/
+                                   (Win->coor_yr - Win->coor_yl));
+  return XiFontFixed( XiWin,w, h, &XiWin->font);
+}
+
+int XiDrawTextVertical(DrawCtx Win,double x,double  y,int c,char *chrs )
+{
+  int       xx,yy,n = strlen(chrs),i;
+  XiWindow* XiWin = (XiWindow*) Win->data;
+  char      tmp[2];
+  double    tw,th;
+  
+  tmp[1] = 0;
+  XiSetColor( XiWin, c );
+  XiDrawTextGetSize(Win,&tw,&th);
+  xx = XTRANS(Win,XiWin,x);
+  for ( i=0; i<n; i++ ) {
+    tmp[0] = chrs[i];
+    yy = YTRANS(Win,XiWin,y-th*i);
+    XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
+               xx, yy - XiWin->font->font_descent, tmp, 1 );
+  }
+  return 0;
+}
+
+
+int XiDrawTextGetSize(DrawCtx Win,double *x,double  *y)
+{
+  XiWindow* XiWin = (XiWindow*) Win->data;
+  double    w,h;
+  w = XiWin->font->font_w; h = XiWin->font->font_h;
+  *x = w*(Win->coor_xr - Win->coor_xl)/
+         (XiWin->w)*(Win->port_xr - Win->port_xl);
+  *y = h*(Win->coor_yr - Win->coor_yl)/
+         (XiWin->h)*(Win->port_yr - Win->port_yl);
   return 0;
 }
 
@@ -43,8 +98,8 @@ int Xiviewport(DrawCtx Win,double xl,double yl,double xr,double yr)
 {
   XiWindow*  XiWin = (XiWindow*) Win->data;
   XRectangle box;
-  box.x = xl*XiWin->w;   box.y = (1.0-yr)*XiWin->h;
-  box.width = (xr-xl)*XiWin->w;   box.height = (yr-yl)*XiWin->h;
+  box.x = (int) (xl*XiWin->w);   box.y = (int) ((1.0-yr)*XiWin->h);
+  box.width = (int) ((xr-xl)*XiWin->w);box.height = (int) ((yr-yl)*XiWin->h);
   XSetClipRectangles(XiWin->disp,XiWin->gc.set,0,0,&box,1,Unsorted);
   return 0;
 }
@@ -53,17 +108,22 @@ int XiClearWindow(DrawCtx Win)
 {
   XiWindow*  XiWin = (XiWindow*) Win->data;
   int        x,  y,  w,  h;
-  x = Win->port_xl*XiWin->w;
-  w = (Win->port_xr - Win->port_xl)*XiWin->w;
-  y = Win->port_yr*XiWin->h;
-  h = (Win->port_yr - Win->port_yl)*XiWin->h;
+  x = (int) (Win->port_xl*XiWin->w);
+  w = (int) ((Win->port_xr - Win->port_xl)*XiWin->w);
+  y = (int) ((1.0-Win->port_yr)*XiWin->h);
+  h = (int) ((Win->port_yr - Win->port_yl)*XiWin->h);
   XiSetPixVal(XiWin, XiWin->background );
   XFillRectangle(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set, x, y, w, h);
   return 0;
 }
 
-static struct _DrawOps DvOps = { 0,XiFlush,XiDrawLine,0,0,0,0,0,
+extern int XiQuickWindow(XiWindow*,char*,char*,int,int,int,int,int);
+
+static struct _DrawOps DvOps = { 0,XiFlush,XiDrawLine,0,0,0,
+                                 XiDrawText,XiDrawTextVertical,
+                                 XiDrawTextSize,XiDrawTextGetSize,
                                  Xiviewport,XiClearWindow};
+
 
 /*@
     DrawOpenX - Opens an X window for use with the Draw routines.

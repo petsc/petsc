@@ -1,4 +1,4 @@
-ITOOLSDIR = ../
+ITOOLSDIR = ../../
 
 ALL: lib
 
@@ -12,6 +12,6 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscdraw
 LINCLUDE = $(SOURCEH)
-DIRS     = src impls tests examples
+DIRS     = src impls tests examples utils
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

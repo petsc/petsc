@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../
+ITOOLSDIR = ../../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I../.. \
-           -I$(ITOOLSDIR)/pinclude -I$(ITOOLSDIR)/is $(CONF)
+           -I$(ITOOLSDIR)/pinclude -I$(ITOOLSDIR)/src/is $(CONF)
 SOURCEC  = dvec3.c bvec2.c 
 SOURCEF  =
 WSOURCEC = 

@@ -7,23 +7,23 @@
 
 #include "ximpl.h"
 
-extern XiFont *XiFontCreate();
-static XiFont *curfont = 0,*font;
-static int    fw = 0, fh = 0;
-
-/*@
-    XiFontFixed - Return a pointer to the selected font; loading it if 
-                  necessary 
+int XiInitFonts(XiWindow *);
+int XiMatchFontSize(XiFont*,int,int);
+int XiLoadFont(XiWindow*,XiFont*);
+/*
+    XiFontFixed - Return a pointer to the selected font.
 
     Input Parameters:
 .   XBWin - window
 .   w,h   - requested width and height of a character
-@*/
-XiFont *XiFontFixed( XiWindow *XBWin,int w, int h )
+*/
+int XiFontFixed( XiWindow *XBWin,int w, int h,XiFont **outfont )
 {
-  if (!curfont) { XBInitFonts( XBWin );}
+  static XiFont *curfont = 0,*font;
+  static int    fw = 0, fh = 0;
+  if (!curfont) { XiInitFonts( XBWin );}
   if (w != fw || h != fh) {
-    if (!font)	font = XiFontCreate();
+    if (!font)	font = NEW(XiFont); CHKPTR(font);
     XiMatchFontSize( font, w, h );
     fw = w;
     fh = h;
@@ -31,7 +31,8 @@ XiFont *XiFontFixed( XiWindow *XBWin,int w, int h )
     XiLoadFont( XBWin, font );
   }
   curfont = font;
-  return curfont;
+  *outfont = curfont;
+  return 0;
 }
 
 /*
@@ -40,26 +41,21 @@ XiFont *XiFontFixed( XiWindow *XBWin,int w, int h )
 
    A set of default, fixed-width fonts is provided.
 
-   The ability to load an arbitrary, variable-width font (not yet available)
-
    The approach is:
 
-   XBInitFonts( XBWin ) - acquires info on (some of) the available fixed
+   XiInitFonts( XBWin ) - acquires info on (some of) the available fixed
                           width fonts.
-   XBMatchFontSize( font, w, h ) - find a font that matches the width and
+   XiMatchFontSize( font, w, h ) - find a font that matches the width and
                                    height
-   XBLoadFont( XBWin, font ) - loads a particular font
-   XBDrawText( XBWin, font, x, y, chrs ) - write text
+   XiLoadFont( XBWin, font ) - loads a particular font
  */
 
 /* this is set by XListFonts at startup */
 #define NFONTS 20
 static struct {
     int w, h, descent;
-    } nfonts[NFONTS];
+} nfonts[NFONTS];
 static int act_nfonts = 0;
-
-
 
 /*
  * These routines determine the font to be used based on the requested size,
@@ -93,9 +89,8 @@ int XiLoadFont( XiWindow *XBWin, XiFont *font )
   return 0;
 }
 
-
 /* Code to find fonts and their characteristics */
-int XBInitFonts( XiWindow *XBWin )
+int XiInitFonts( XiWindow *XBWin )
 {
   char         **names;
   int          cnt, i, j;
@@ -154,9 +149,11 @@ int XBInitFonts( XiWindow *XBWin )
   return 0;
 }
 
+#define ABS(a)             ((a) < 0.0 ? -(a) : (a))
+#define MAX(a,b)           ((a) > (b) ? (a) : (b))
 int XiMatchFontSize( XiFont *font, int w, int h )
 {
-  int i;
+  int i,max,imax,tmp;
 
   for (i=0; i<act_nfonts; i++) {
     if (nfonts[i].w == w && nfonts[i].h == h) {
@@ -167,46 +164,21 @@ int XiMatchFontSize( XiFont *font, int w, int h )
     }
   }
 
-  fprintf( stderr, "Warning could not match to font of %d fonts\n", act_nfonts );
-  fprintf( stderr, "Wanted Size %d %d Using %d %d \n", w, h, nfonts[0].w,
-                                                           nfonts[0].h);
+  /* determine closest fit, per max. norm */
+  imax = 0;
+  max  = MAX(ABS(nfonts[0].w - w),ABS(nfonts[0].h - h));
+  for (i=1; i<act_nfonts; i++) {
+    tmp = MAX(ABS(nfonts[i].w - w),ABS(nfonts[i].h - h));
+    if (tmp < max) {max = tmp; imax = i;}
+  }
+
+  fprintf(stderr,"Warning could not match to font of %d fonts\n",act_nfonts);
+  fprintf(stderr,"Wanted Size %d %d Using %d %d \n",w,h, nfonts[imax].w,
+                                                         nfonts[imax].h);
   /* should use font with closest match */
-  font->font_w        = nfonts[0].w;
-  font->font_h        = nfonts[0].h;
-  font->font_descent  = nfonts[0].descent;
+  font->font_w        = nfonts[imax].w;
+  font->font_h        = nfonts[imax].h;
+  font->font_descent  = nfonts[imax].descent;
   return 0;
 }
 
-/*@
-   XiFontWidth - Returns the width of the selected font
-@*/
-int XiFontWidth(XiFont *font )
-{
-  return font->font_w;
-}
-
-/*@
-   XiFontHeight - Returns the height of the selected font
-@*/
-int XiFontHeight( XiFont *font )
-{
-  return font->font_h;
-}
-
-/*@
-   XiFontDescent - Returns the descent of the selected font
-@*/
-int XiFontDescent( XiFont *font )
-{
-  return font->font_descent;
-}
-
-/*@
-    XiFontCreate - Creates a new font structure
-@*/
-XiFont *XiFontCreate()
-{
-  XiFont *font;
-  font = NEW(XiFont);  CHKPTR(font);
-  return font;
-}

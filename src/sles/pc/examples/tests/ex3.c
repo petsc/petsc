@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PCMETHOD  pcmethod;
   char      *kspname, *pcname;
 
-  OptionsCreate(argc,args,0,0);
+  OptionsCreate(&argc,&args,0,0);
   ierr = VecCreateSequential(n,&b);     CHKERR(ierr);
   ierr = VecCreateSequential(n,&ustar); CHKERR(ierr);
   ierr = VecCreateSequential(n,&u);     CHKERR(ierr);

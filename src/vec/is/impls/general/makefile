@@ -1,4 +1,4 @@
-ITOOLSDIR = ../../../../
+ITOOLSDIR = ../../../../../
 
 ALL: lib
 

@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatterCtx ctx = 0;
 
-  OptionsCreate(argc,argv,(char*)0,(char*)0);
+  OptionsCreate(&argc,&argv,(char*)0,(char*)0);
   OptionsGetInt(0,"-n",&n);
 
   /* create two vector */

@@ -24,17 +24,16 @@ extern int MatShellSetMultTrans(Mat,int (*)(void*,Vec,Vec));
 /* ------------------------------------------------------------*/
 extern int  MatValidMatrix(Mat);
 
-extern int MatInsertValues(Mat,Scalar*,int,int*,int,int*);
-extern int MatAddValues(Mat,Scalar*,int,int*,int,int*);
+extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
 extern int MatBeginAssembly(Mat);
 extern int MatEndAssembly(Mat);
-extern int MatSetInsertOption(Mat,int);
+extern int MatSetOption(Mat,int);
 #define ROW_ORIENTED              1 
 #define COLUMN_ORIENTED           2
-#define ROWS_SORTED               3
-#define COLUMNS_SORTED            4
-#define NO_NEW_NONZERO_LOCATIONS  5
-#define YES_NEW_NONZERO_LOCATIONS 6
+#define ROWS_SORTED               4
+#define COLUMNS_SORTED            8
+#define NO_NEW_NONZERO_LOCATIONS  16
+#define YES_NEW_NONZERO_LOCATIONS 32
 
 extern int MatGetValues(Mat,Scalar*,int,int*,int,int*);
 extern int MatGetRow(Mat,int,int *,int **,Scalar**);
@@ -58,8 +57,8 @@ extern int MatLUFactor(Mat,IS,IS);
 extern int MatCholeskyFactor(Mat,IS);
 extern int MatLUFactorSymbolic(Mat,IS,IS,Mat*);
 extern int MatCholeskyFactorSymbolic(Mat,IS,Mat*);
-extern int MatLUFactorNumeric(Mat,Mat);
-extern int MatCholeskyFactorNumeric(Mat,Mat);
+extern int MatLUFactorNumeric(Mat,Mat*);
+extern int MatCholeskyFactorNumeric(Mat,Mat*);
 
 extern int MatSolve(Mat,Vec,Vec);
 extern int MatSolveAdd(Mat,Vec,Vec,Vec);
@@ -76,17 +75,15 @@ extern int MatCopy(Mat,Mat*);
 extern int MatView(Mat,Viewer);
 #include <stdio.h>
 extern int MatPrintMatlab(Mat,FILE*,char *);
-extern int  MatNonZeros(Mat,int*);
-extern int  MatMemoryUsed(Mat,int*);
+extern int MatNonZeros(Mat,int*);
+extern int MatMemoryUsed(Mat,int*);
 extern int MatGetDiagonal(Mat,Vec);
 extern int MatTranspose(Mat);
 extern int MatScale(Mat,Vec,Vec);
 extern int MatShrink(Mat,int,int*,int,int*);
-extern int  MatEqual(Mat,Mat);
-extern int  MatScatterBegin(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
-extern int  MatScatterEnd(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
-extern int  MatScatterAddBegin(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
-extern int  MatScatterAddEnd(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
+extern int MatEqual(Mat,Mat);
+extern int MatScatterBegin(Mat,IS,IS,Mat,IS,IS,InsertMode,MatScatterCtx*);
+extern int MatScatterEnd(Mat,IS,IS,Mat,IS,IS,InsertMode,MatScatterCtx*);
 extern int MatReOrder(Mat,IS,IS);
 
 #define NORM_1         1
@@ -96,7 +93,8 @@ extern int MatReOrder(Mat,IS,IS);
 extern int MatNorm(Mat,int,double *);
 
 extern int MatZeroEntries(Mat);
-extern int MatZeroRows(Mat);
+extern int MatZeroRows(Mat,IS,Scalar*);
+extern int MatZeroColumns(Mat,IS,Scalar*);
 
 extern int MatCompress(Mat);
 extern int MatDestroy(Mat);

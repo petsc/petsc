@@ -340,7 +340,7 @@ int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,
   int           ierr;
   VecScatterCtx ctx;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  VALIDHEADER(ix,IS_COOKIE); VALIDHEADER(iy,IS_COOKIE);
+  if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
 
   if (!*inctx) {
     ierr = VecScatterCtxCreate(x,ix,y,iy,inctx); CHKERR(ierr);
@@ -368,7 +368,7 @@ int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,
 int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,VecScatterCtx *ctx)
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  VALIDHEADER(ix,IS_COOKIE); VALIDHEADER(iy,IS_COOKIE);
+  if (ix) VALIDHEADER(ix,IS_COOKIE); if (iy) VALIDHEADER(iy,IS_COOKIE);
   VALIDHEADER(*ctx,VEC_SCATTER_COOKIE);
   if ((*ctx)->end) return (*(*ctx)->end)(x,y,*ctx,addv);
   else return 0;

@@ -52,9 +52,9 @@ static int MatiSDlufactorsymbolic(Mat matin,IS row,IS col,Mat *fact)
   if (ierr = MatCopy(matin,fact)) SETERR(ierr,0);
   return 0;
 }
-static int MatiSDlufactornumeric(Mat matin,Mat fact)
+static int MatiSDlufactornumeric(Mat matin,Mat *fact)
 {
-  return MatLUFactor(fact,0,0);
+  return MatLUFactor(*fact,0,0);
 }
 static int MatiSDchfactorsymbolic(Mat matin,IS row,Mat *fact)
 {
@@ -62,9 +62,9 @@ static int MatiSDchfactorsymbolic(Mat matin,IS row,Mat *fact)
   if (ierr = MatCopy(matin,fact)) SETERR(ierr,0);
   return 0;
 }
-static int MatiSDchfactornumeric(Mat matin,Mat fact)
+static int MatiSDchfactornumeric(Mat matin,Mat *fact)
 {
-  return MatCholeskyFactor(fact,0);
+  return MatCholeskyFactor(*fact,0);
 }
 static int MatiSDchfactor(Mat matin,IS perm)
 {
@@ -445,7 +445,19 @@ static struct _MatOps MatOps = {MatiSDinsert,
        MatiSDlufactorsymbolic,MatiSDlufactornumeric,
        MatiSDchfactorsymbolic,MatiSDchfactornumeric
 };
+/*@
+    MatCreateSequentialDense - Creates a sequential dense matrix that 
+        is stored in the usual Fortran 77 manner. Many of the matrix
+        operations use the BLAS and LAPACK routines.
 
+  Input Parameters:
+.   m, n - the number of rows and columns in the matrix.
+
+  Output Parameter:
+.  newmat - the matrix created.
+
+  Keywords: dense matrix, lapack, blas
+@*/
 int MatCreateSequentialDense(int m,int n,Mat *newmat)
 {
   int       size = sizeof(MatiSD) + m*n*sizeof(Scalar);

@@ -1,4 +1,4 @@
-ITOOLSDIR = ../..
+ITOOLSDIR = ../../../
 ALL: ex1
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS)$(CONF) $(COPT)
@@ -10,8 +10,8 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
-EXAMPLES = ex1 ex2 ex4 ex5 ex6 ex7 ex8 ex9
-EXAMPLESC= ex1.c ex2.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c
+EXAMPLES = ex1 ex2 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12
+EXAMPLESC= ex1.c ex2.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c
 SYSLIB   = $(LDIR)/libpetscvec.a $(LDIR)/libpetscsys.a \
            $(LAPACK) $(BLAS) \
            $(CLIB) $(SLIB) $(FCLIB) -lm 
@@ -52,5 +52,17 @@ ex8: ex8.o
 ex9: ex9.o
 	-$(CLINKER) -o ex9 ex9.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex9.o
+
+ex10: ex10.o
+	-$(CLINKER) -o ex10 ex10.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex10.o
+
+ex11: ex11.o
+	-$(CLINKER) -o ex11 ex11.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex11.o
+
+ex12: ex12.o
+	-$(CLINKER) -o ex12 ex12.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex12.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

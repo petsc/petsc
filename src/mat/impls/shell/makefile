@@ -1,15 +1,15 @@
-ITOOLSDIR = ../../
+ITOOLSDIR = ../../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
-           -I..   $(CONF)
-SOURCEC  = matrix.c 
+           -I../..   $(CONF)
+SOURCEC  = shell.c 
 SOURCEF  =
-WSOURCEC = matrixf.c
+WSOURCEC = shellf.c
 SOURCEH  = 
-OBJSC    = matrix.o 
-WOBJS    = matrixf.o
+OBJSC    = shell.o 
+WOBJS    = shellf.o
 OBJSF    =
 LIBBASE  = libpetscmat
 LINCLUDE = $(SOURCEH)

@@ -27,16 +27,20 @@ static int ISiIndices(IS in,int **idx)
 {
   IndexiStride *sub = (IndexiStride *) in->data;
   int          i;
-  *idx = (int *) MALLOC(sub->n*sizeof(int)); CHKPTR(idx);
-  (*idx)[0] = sub->first;
-  for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
+
+  if (sub->n) {
+    *idx = (int *) MALLOC(sub->n*sizeof(int)); CHKPTR(idx);
+    (*idx)[0] = sub->first;
+    for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
+  }
+  else *idx = 0;
   return 0;
 }
 
 static int ISiRestoreIndices(IS in,int **idx)
 {
   IndexiStride *sub = (IndexiStride *) in->data;
-  FREE(*idx);
+  if (*idx) FREE(*idx);
   return 0;
 }
 
@@ -88,7 +92,7 @@ int ISCreateStrideSequential(int n,int first,int step,IS *is)
 
   *is = 0;
  
-  if (n <= 0) SETERR(1,"Number of indices must be positive");
+  if (n < 0) SETERR(1,"Number of indices must be non-negative");
   if (step == 0) SETERR(1,"Step must be nonzero");
 
   CREATEHEADER(Nindex, _IS); 

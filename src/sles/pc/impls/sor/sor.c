@@ -6,7 +6,7 @@
 #include "options.h"
 
 typedef struct {
-  int    sym;
+  int    its,sym;
   double omega;
 } PCiSOR;
 
@@ -14,7 +14,7 @@ static int PCiSORApply(PC pc,Vec x,Vec y)
 {
   PCiSOR *jac = (PCiSOR *) pc->data;
   int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-  if (ierr = MatRelax(pc->mat,x,jac->omega,flag,0,1,y)) return ierr;
+  if (ierr = MatRelax(pc->mat,x,jac->omega,flag,0,jac->its,y)) return ierr;
   return 0;
 }
 
@@ -31,10 +31,14 @@ static int PCiSORApplyrich(PC pc,Vec b,Vec y,Vec w,int its)
 static int PCisetfrom(PC pc)
 {
   PCiSOR *jac = (PCiSOR *) pc->data;
+  int    its;
   double omega;
 
   if (OptionsGetDouble(0,"-sor_omega",&omega)) {
     PCSORSetOmega(pc,omega);
+  } 
+  if (OptionsGetInt(0,"-sor_its",&its)) {
+    PCSORSetIterations(pc,its);
   }
   if (OptionsHasName(0,"-sor_symmetric")) {
     PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
@@ -50,6 +54,7 @@ int PCiSORprinthelp(PC pc)
   fprintf(stderr,"-sor_omega omega: relaxation factor. 0 < omega <2\n");
   fprintf(stderr,"-sor_symmetric: use SSOR\n");
   fprintf(stderr,"-sor_backward: use backward sweep instead of forward\n");
+  fprintf(stderr,"-sor_its its: number of inner SOR iterations to use\n");
   return 0;
 }
 int PCiSORCreate(PC pc)
@@ -64,6 +69,7 @@ int PCiSORCreate(PC pc)
   pc->data      = (void *) jac;
   jac->sym      = SOR_FORWARD_SWEEP;
   jac->omega    = 1.0;
+  jac->its      = 1;
   return 0;
 }
 
@@ -96,5 +102,20 @@ int PCSORSetOmega(PC pc, double omega)
   VALIDHEADER(pc,PC_COOKIE);
   if (omega >= 2.0 || omega <= 0.0) { SETERR(1,"Relaxation out of range");}
   jac->omega = omega;
+  return 0;
+}
+/*@
+     PCSORSetIterations - Sets the number of inner iterations to 
+       be used by the SOR preconditioner. The default is 1.
+
+  Input Parameters:
+.   pc - the preconditioner context
+.   its - number of iterations to use
+@*/
+int PCSORSetIterations(PC pc, int its)
+{
+  PCiSOR *jac = (PCiSOR *) pc->data; 
+  VALIDHEADER(pc,PC_COOKIE);
+  jac->its = its;
   return 0;
 }

@@ -55,10 +55,10 @@ static int PCisetfrom(PC pc)
   PCiDirect *jac = (PCiDirect *) pc->data;
   char      name[10];
   int       ordering = ORDER_ND;
-  if (OptionsHasName(0,"-in_place")) {
+  if (OptionsHasName(0,"-direct_in_place")) {
     PCDirectSetUseInplace(pc);
   }
-  if (OptionsGetString(0,"-ordering",name,10)) {
+  if (OptionsGetString(0,"-direct_ordering",name,10)) {
     if (!strcmp(name,"nd")) ordering = ORDER_ND;
     else if (!strcmp(name,"natural")) ordering = ORDER_NATURAL;
     else if (!strcmp(name,"1wd")) ordering = ORDER_1WD;
@@ -72,8 +72,8 @@ static int PCisetfrom(PC pc)
 
 static int PCiprinthelp(PC pc)
 {
-  fprintf(stderr,"-in_place: do factorization in place\n");
-  fprintf(stderr,"-ordering name: ordering routine to reduce fill\n");
+  fprintf(stderr,"-direct_in_place: do factorization in place\n");
+  fprintf(stderr,"-direct_ordering name: ordering routine to reduce fill\n");
   return 0;
 }
 
@@ -88,7 +88,7 @@ static int PCiDirectSetup(PC pc)
   }
   else {
     if (ierr = MatLUFactorSymbolic(pc->mat,row,col,&dir->fact)) SETERR(ierr,0);
-    if (ierr = MatLUFactorNumeric(pc->mat,dir->fact)) SETERR(ierr,0);
+    if (ierr = MatLUFactorNumeric(pc->mat,&dir->fact)) SETERR(ierr,0);
   }
   return 0;
 }

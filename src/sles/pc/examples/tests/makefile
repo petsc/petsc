@@ -1,4 +1,4 @@
-ITOOLSDIR = ../..
+ITOOLSDIR = ../../../
 ALL: ex1
 
 CFLAGS   = $(OPT)  $(CONF) $(INCLUDEDIRS)

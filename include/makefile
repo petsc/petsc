@@ -13,7 +13,7 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = 
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
 all:
 	-cd sys; make BOPT=$(BOPT) PARCH=$(PARCH) workers

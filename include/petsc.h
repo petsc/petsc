@@ -4,9 +4,11 @@
 
 #if PETSC_COMPLEX
 #include <complex.h>
-#define Scalar complex
+#define PETSCREAL(a) real(a)
+#define Scalar       complex
 #else
-#define Scalar double
+#define PETSCREAL(a) a
+#define Scalar       double
 #endif
 
 
@@ -21,6 +23,7 @@
 #define NEW(a)          (a *) MALLOC(sizeof(a))
 #define MEMCPY(a,b,n)   memcpy((char*)(a),(char*)(b),n)
 #define MEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
+#include <memory.h>
 
 /*  Macros for error checking */
 #define SETERR(n,s)     {return PetscError(__LINE__,__FILE__,s,n);}
@@ -54,7 +57,8 @@ extern int PetscSetSignalHandler(void (*)(int,int,struct sigcontext *,char*));
 
 extern void *trmalloc(unsigned int,int,char*);
 extern int  trfree(void *,int,char*);
-
+#include <stdio.h> /* I don't like this, but? */
+extern int  trdump(FILE *);
 
 #if defined(titan) || defined(cray) || defined(ncube)
 #define FORTRANCAPS

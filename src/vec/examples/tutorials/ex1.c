@@ -21,8 +21,7 @@ int main(int argc,char **argv)
   FILE     *fd = stdout;
  
 
-  MPI_Init(&argc,&argv);
-  OptionsCreate(argc,argv,(char*)0,(char*)0);
+  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
   OptionsGetInt(0,"-n",&n);
 
   /* create a vector */
@@ -88,7 +87,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(w);CHKERR(ierr);
   ierr = VecFreeVecs(z,3);CHKERR(ierr);
 
-  MPI_Finalize();
+  PetscFinalize();
   return 0;
 }
  

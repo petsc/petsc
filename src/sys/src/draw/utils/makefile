@@ -11,7 +11,7 @@ SOURCEH  =
 OBJSC    = axis.o lg.o
 WOBJS    = 
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscdraw
 LINCLUDE = $(SOURCEH)
 MANSEC   = x
 

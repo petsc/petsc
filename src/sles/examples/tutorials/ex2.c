@@ -25,7 +25,7 @@ int main(int argc,char **args)
   n = 2*numtids;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateSequentialAIJMPI(MPI_COMM_WORLD,-1,-1,m*n,m*n,5,0,5,0,&C); 
+  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,-1,-1,m*n,m*n,5,0,5,0,&C); 
   CHKERR(ierr);
 
   for ( i=0; i<m; i++ ) { 
