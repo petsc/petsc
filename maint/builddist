@@ -54,7 +54,7 @@ make ACTION=clean tree
 cd ${PETSC_DIR}/projects; make 
 # now tar up the PETSc tree
 cd /sandbox/petsc
-/bin/tar --create --file $tmpdir/petsc.tar --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
+/bin/tar --create --file $tmpdir/petsc.tar --exclude=SCCS --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
 cd $tmpdir
 /bin/tar xf $tmpdir/petsc.tar
 mv petsc-dist petsc
