@@ -1,18 +1,11 @@
 #! /bin/csh
 
-foreach matrix (small)
-
+foreach matrix (arco1)
   foreach blocks (1 2 3 6) 
-
     foreach overlap (0 1 2) 
-
-      echo "matrix $matrix blocks $blocks overlap $overlap"
-      mpirun ../ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type asm -mat_seqbaij -matload_block_size 6 -pc_asm_blocks $blocks -pc_asm_overlap $overlap -ksp_monitor >! ex6_asm_matbaij_1.log
-        mpirun ../ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type asm -mat_seqaij -pc_asm_blocks $blocks -pc_asm_overlap $overlap -ksp_monitor >! ex6_asm_matbaij_2.log
-        diff ex6_asm_matbaij_1.log  ex6_asm_matbaij_1.log
-        /bin/rm -f ex6_asm_matbaij_1.log  ex6_asm_matbaij_1.log
+      foreach np (1 2 3 4 )
+      echo "matrix $matrix blocksize $blocks overlap $overlap np $np"
+      mpirun -np $np ../ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type asm -mat_baij -matload_block_size $blocks -pc_asm_overlap $overlap -ksp_monitor 
     end
-
   end
-
 end
