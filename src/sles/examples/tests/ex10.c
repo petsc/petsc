@@ -2,7 +2,8 @@
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
-elasticity. This demonstrates use of the block diagonal data structure.\n";
+elasticity. This demonstrates use of MatGetSubMatrix() and the block\n\
+diagonal data structure.\n\n";
 
 #include "draw.h"
 #include "vec.h"
@@ -60,9 +61,6 @@ int main(int argc,char **args)
   ierr = KSPSetMethod(ksp,KSPCG); CHKERR(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  VecView(u,STDOUT_VIEWER);
-  printf("approx solution \n\n");
-  VecView(x,STDOUT_VIEWER);
  
   /* Check error */
   ierr = VecAXPY(&neg1,u,x); CHKERRA(ierr);
@@ -89,7 +87,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   int     ict, nz, base, r1, r2, N, *rows, *rowkeep, nstart, ierr, mem;
   IS      iskeep;
   double  **K;
-  Mat     mat;
+  Mat     mat, submat;
   DrawCtx win; 
 
   m /= 2;   /* This is done just to be consistent with the old example */
@@ -141,12 +139,6 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatBeginAssembly(mat,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatEndAssembly(mat,FINAL_ASSEMBLY); CHKERR(ierr);
 
-/*  N = 3*(2*m+1)*(2*m+1);
-  rows = (int *) MALLOC(N*sizeof(int)); CHKPTR(rows);
-  for ( i=0; i<N; i++ ) rows[i] = i;
-  SpCondenseRowsCols(mat,rows,N);
-  FREE(rows); mat->map = 0; */
-
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict = 0;
@@ -157,31 +149,48 @@ int GetElasticityMatrix(int m,Mat *newmat)
     ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERR(ierr);
   }
   ierr = ISCreateSequential(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERR(ierr);
-  ISView(iskeep,STDOUT_VIEWER);
-  ierr = MatGetSubMatrix(mat,iskeep,iskeep,newmat); CHKERR(ierr);
+  ierr = MatGetSubMatrix(mat,iskeep,iskeep,&submat); CHKERR(ierr);
+  FREE(rowkeep);
+  ierr = MatDestroy(mat); CHKERR(ierr);
 
+  /* Convert storage formats -- just to demonstrate block diagonal format */
+  { MATTYPE type = MATBDIAG;
+  if (OptionsHasName(0,0,"-mat_row")) type = MATROW; 
+  ierr = MatConvert(submat,type,newmat); CHKERR(ierr);}
+  ierr = MatDestroy(submat); CHKERR(ierr);
+
+  /* Display matrix information and nonzero structure */
   MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
   printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
           nz,nzalloc,mem);
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,0,0,0,300,300,&win); CHKERRA(ierr);
+/*  ierr = DrawOpenX(MPI_COMM_WORLD,0,0,0,0,300,300,&win); CHKERRA(ierr);
   MatView(*newmat,(Viewer)win); CHKERRA(ierr);
-  DrawSyncFlush(win); CHKERRA(ierr);
+  DrawSyncFlush(win); CHKERRA(ierr); 
+  problem here?  All formats hang? */
+  
+  { Scalar *val; int *col, nz;
+  int i = 0;
+  MatGetRow(*newmat, i, &nz, &col, &val);
+  for (j=0; j<nz; j++) {
+    printf("%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
+  }
+  MatRestoreRow(*newmat, i, &nz, &col, &val);
+  }
+
+  /* Dump info to file compatible with Matlab */
+  /* { Viewer fileviewer; ViewerFileOpen("MAT",&fileviewer);
+  ViewerFileSetFormat(fileviewer,FILE_FORMAT_MATLAB,"mmat");
+  MatView(*newmat,fileviewer); CHKERRA(ierr); } */
 
   { Viewer fileviewer; ViewerFileOpen("MAT",&fileviewer);
-  ViewerFileSetFormat(fileviewer,FILE_FORMAT_MATLAB,"mmat");
+  ViewerFileSetFormat(fileviewer,FILE_FORMAT_IMPL,0);
   MatView(*newmat,fileviewer); CHKERRA(ierr); }
 
-/*  {Viewer viewer;
+  /* Use socket connections to Matlab */
+  /*  {Viewer viewer;
   ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERR(ierr);
   ierr = MatView(*newmat,viewer); CHKERR(ierr); } */
 
-/*  { DrawCtx win2;
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,0,0,0,300,300,&win2); CHKERRA(ierr);
-  MatView(mat,(Viewer)win2); CHKERRA(ierr);
-  DrawSyncFlush(win2); CHKERRA(ierr); } */
-
-  FREE(rowkeep);
-  ierr = MatDestroy(mat); CHKERR(ierr);
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -193,8 +202,6 @@ int AddElement(Mat mat,int r1,int r2,Scalar **K,int h1,int h2)
   for ( l1=0; l1<3; l1++ ) {
     for ( l2=0; l2<3; l2++ ) {
       if (ABS(K[h1+l1][h2+l2]) != 0.0) {
-/*	SpAddValue(mat,K[h1+l1][h2+l2],r1+l1,r2+l2);
-	SpAddValue(mat,K[h1+l1][h2+l2],r2+l2,r1+l1); */
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
 	ierr = MatSetValues(mat,1,&row,1,&col,&val,AddValues); CHKERR(ierr);
         row = r2+l2; col = r1+l1;
