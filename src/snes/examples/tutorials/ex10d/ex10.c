@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.41 1996/09/18 12:09:09 curfman Exp $";
+static char vcid[] = "$Id: ex10.c,v 1.1 1999/03/19 04:48:30 bsmith Exp kaushik $";
 #endif
 
 /* 
@@ -10,7 +10,7 @@ static char help[] = "An Unstructured Grid Example\n\
 This example demonstrates how to solve a nonlinear system in parallel\n\
 with SNES for an unstructured mesh. The mesh and partitioning information\n\
 is read in an application defined ordering, which is later transformed\n\
-into another convenient ordering (called the local ordering).The local\n\
+into another convenient ordering (called the local ordering). The local\n\
 ordering, apart from being efficient on cpu cycles and memory, allows\n\
 the use of the SPMD model of parallel programming. After partitioning\n\
 is done, scatters are created between local (sequential)and global\n\
@@ -121,6 +121,7 @@ int main( int argc, char **argv )
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   PetscInitialize( &argc, &argv,"options.inf",help );
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
@@ -230,6 +231,7 @@ int main( int argc, char **argv )
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Demonstrate the use of AO functionality 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   fprintf(fptr1,"Before AOApplicationToPetsc, local indices are : \n");
   for (i=0; i < user.Nvlocal; i++) {
    fprintf(fptr1, " %d ", user.gloInd[i]);
