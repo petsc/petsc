@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.51 1998/07/28 15:53:11 bsmith Exp balay $ 
+# $Id: makefile,v 1.52 1998/08/05 18:08:10 balay Exp curfman $ 
 
 ALL: ex1
 
@@ -73,6 +73,10 @@ ex1f: ex1f.o  chkopts
 ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
 	${RM} ex2.o
+
+ex2a: ex2a.o  chkopts
+	-${CLINKER} -o ex2a ex2a.o  ${PETSC_LIB}
+	${RM} ex2a.o
 
 ex2f: ex2f.o  chkopts
 	-${FLINKER} -o ex2f ex2f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
