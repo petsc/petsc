@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.73 2000/03/23 16:47:15 balay Exp balay $ 
+# $Id: makefile,v 1.74 2000/03/24 19:12:23 balay Exp curfman $ 
 
 ALL: ex1
 
@@ -119,6 +119,9 @@ ex15: ex15.o chkopts
 ex16: ex16.o chkopts
 	-${CLINKER} -o ex16 ex16.o ${PETSC_SNES_LIB}
 	${RM} ex16.o
+ex17: ex17.o chkopts
+	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
+	${RM} ex17.o
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog -snes_smonitor > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
