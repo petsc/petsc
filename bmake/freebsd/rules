@@ -1,4 +1,4 @@
-# $Id: base,v 1.60 1999/03/06 21:24:16 balay Exp balay $ 
+# $Id: base,v 1.61 1999/03/06 22:15:30 balay Exp balay $ 
 #
 include ${PETSC_DIR}/bmake/common
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
@@ -44,7 +44,7 @@ shared: chkopts_basic
 	    fi; \
 	    if [ "$$flag" != "" ]; then \
 	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${LD} -Bshareable -Bforcearchive -o $$LIBNAME.${SLSUFFIX} $$LIBNAME.a ; \
+	      ${LD} -Bshareable --whole-archive -o $$LIBNAME.${SLSUFFIX} $$LIBNAME.a ; \
 	    fi; \
 	  fi; \
 	done
@@ -55,10 +55,12 @@ shared: chkopts_basic
 #
 oshared: 
 	-@echo "building ${LIBNAME}.${SLSUFFIX}"
-	-@{LD} -Bshareable -Bforcearchive -o ${LIBNAME}.${SLSUFFIX} ${LIBNAME}.a  > /dev/null 2>&1;
+	-@{LD} -Bshareable --whole-archive -o ${LIBNAME}.${SLSUFFIX} ${LIBNAME}.a  > /dev/null 2>&1;
 
 #
 # Notes:
+#
+# With older version of ld can be replaced by '-Bforcearchive'
 #
 # We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
 # large Fortran files, you can increase the 1000 if need be.
