@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.228 2000/02/23 21:53:33 kaushik Exp bsmith $*/
+/*$Id: plog.c,v 1.229 2000/02/24 04:52:47 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -153,7 +153,7 @@ static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
      1 - activated for PETSc logging
      0 - not activated for PETSc logging
  */
-PetscTruth PLogEventDepth[200];
+int        PLogEventDepth[200];
 PetscTruth PLogEventFlags[] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,  /* 0 - 24*/
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
