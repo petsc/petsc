@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecstash.c,v 1.4 1999/03/17 21:22:10 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.5 1999/03/17 23:40:48 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -97,7 +97,7 @@ int VecStashScatterEnd_Private(VecStash *stash)
 
   /* Now update nmaxold to be app 10% more than max n, this way the
      wastage of space is reduced the next time this stash is used */
-  stash->oldnmax    = (int)(stash->n * 1.1) + 5;
+  stash->oldnmax    = ((int)(stash->n * 1.1) + 5)*stash->bs;
   stash->nmax       = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
@@ -132,7 +132,7 @@ int VecStashScatterEnd_Private(VecStash *stash)
 int VecStashGetInfo_Private(VecStash *stash,int *nstash, int *reallocs)
 {
   PetscFunctionBegin;
-  *nstash   = stash->n;
+  *nstash   = stash->n*stash->bs;
   *reallocs = stash->reallocs;
   PetscFunctionReturn(0);
 }
@@ -144,7 +144,8 @@ int VecStashGetInfo_Private(VecStash *stash,int *nstash, int *reallocs)
    Input Parameters:
    stash  - the stash
    max    - the value that is used as the max size of the stash. 
-            this value is used while allocating memory.
+            this value is used while allocating memory. It specifies
+            the number of vals stored, even with the block-stash
 */
 #undef __FUNC__  
 #define __FUNC__ "VecStashSetInitialSize_Private"
@@ -175,8 +176,8 @@ int VecStashExpand_Private(VecStash *stash,int incr)
   Scalar *n_array;
 
   PetscFunctionBegin;
-  /* allocate a larger stash */
-  if (stash->nmax == 0) newnmax = stash->oldnmax;
+  /* allocate a larger stash. oldnmax stores the size of values */
+  if (stash->nmax == 0) newnmax = stash->oldnmax/bs;
   else                  newnmax = stash->nmax*2;
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
@@ -188,7 +189,7 @@ int VecStashExpand_Private(VecStash *stash,int incr)
   stash->array   = n_array; 
   stash->idx     = n_idx; 
   stash->nmax    = newnmax;
-  stash->oldnmax = newnmax;
+  stash->oldnmax = newnmax*bs;
   stash->reallocs++;
   PetscFunctionReturn(0);
 }
