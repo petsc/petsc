@@ -60,7 +60,8 @@ int main(int argc,char **args)
           CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(ksp,2*m); CHKERRA(ierr);
-  ierr = KSPSetRelativeTolerance(ksp,1.e-12); CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-12,PETSC_DEFAULT,PETSC_DEFAULT,
+                          PETSC_DEFAULT); CHKERRA(ierr);
   ierr = KSPSetMethod(ksp,KSPCG); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
