@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.33 2001/03/30 04:15:09 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.34 2001/03/30 04:20:30 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -21,7 +21,9 @@
 #define dmmgsolve_               DMMGSOLVE
 #define dmmgsetusematrixfree_    DMMGSETUSEMATRIXFREE
 #define dmmggetda_               DMMGGETDA
+#define dmmgsetsles_             DMMGSETSLES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dmmgsetsles_             dmmgsetsles
 #define dmmgdestroy_             dmmgdestroy
 #define dmmgcreate_              dmmgcreate
 #define dmmgsetup_               dmmgsetup
