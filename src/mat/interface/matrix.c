@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.188 1996/08/12 03:41:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.189 1996/08/15 12:47:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1771,8 +1771,8 @@ int MatRestoreArray(Mat mat,Scalar **v)
 .  submat - the array of submatrices
 
    Notes:
-   The when finished using the submatrices, the user should
-   destroy them with MatDestroySubMatrices().
+   When finished using the submatrices, the user should destroy
+   them with MatDestroySubMatrices().
 
 .keywords: matrix, get, submatrix, submatrices
 
