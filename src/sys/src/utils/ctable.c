@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ctable.c,v 1.3 1999/01/11 17:19:17 balay Exp balay $";
+static char vcid[] = "$Id: ctable.c,v 1.4 1999/02/05 23:00:17 balay Exp balay $";
 #endif
 /* Contributed by - Mark Adams */
 
@@ -50,7 +50,7 @@ int TableCreateCopy(Table *rta, const Table intable)
   ta->tablesize = intable->tablesize;
   ta->keytable = (int*)PetscMalloc( sizeof(int)*ta->tablesize ); CHKPTRQ(ta->keytable);
   ta->table = (int*)PetscMalloc( sizeof(int)*ta->tablesize ); CHKPTRQ(ta->table);
-  for( i = 0 ; i < ta->tablesiz ; i++ ){
+  for( i = 0 ; i < ta->tablesize ; i++ ){
     ta->keytable[i] = intable->keytable[i]; ta->table[i] = intable->table[i];
   }
   ta->head = 0;
