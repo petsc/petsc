@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.181 2000/08/17 22:25:45 balay Exp bsmith $ 
+# $Id: buildtest,v 1.182 2000/11/12 15:36:17 bsmith Exp balay $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
 #
@@ -8,7 +8,7 @@
 source /home/bsmith/petsc/bmake/$1/buildtest
 #
 rsh $MACH -n /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
-rsh $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
+rsh $MACH -n "rm -f ${TMP}/lib/lib\*/${ARCH}/\*" >& /dev/null
 rsh $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 
