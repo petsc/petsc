@@ -13,7 +13,7 @@ within PETSc.  The runtime options include:\n\
   -jfreq <val>,    <val> = frequency of evaluating Jacobian (or precond)\n\
 \n\
 Problem parameters include:\n\
-  -mx <xg>,    <xg> = number of grid points in the x-direction\n\
+  -mx <xg>,    <xg> = number of grid p oints in the x-direction\n\
   -my <yg>,    <yg> = number of grid points in the y-direction\n\
   -x0 <xs>,    <xs> = physical domain value starting in x-direction\n\
   -x1 <xe>,    <xe> = physical domain value ending in x-direction\n\
@@ -52,20 +52,22 @@ Debugging options:\n\
  */
 int main( int argc, char **argv )
 {
-  AppCtx   user;             /* user-defined application context */
-  GridCtx  *grid;
+  AppCtx     user;             /* user-defined application context */
+  GridCtx    *grid;
 
-  SNES     snes;             /* nonlinear solver context */
+  SNES       snes;             /* nonlinear solver context */
 
-  int      Nx, Ny;           /* number of processors in x- and y-directions */
-  int      mx, my;           /* coarse mesh parameters */
+  int        Nx, Ny;           /* number of processors in x- and y-directions */
+  int        mx, my;           /* coarse mesh parameters */
 
-  Viewer   viewer1, viewer2, viewer3;
-  Draw     win_solution, win_mach, win_pressure;
-  DrawLG   lg;
+  Viewer     viewer1, viewer2, viewer3;
+  Draw       win_solution, win_mach, win_pressure;
+  DrawLG     lg;
 
-  Scalar   xd, yd, *pressure, zero = 0.0;
-  int      i, flag, ierr, its, nlocals, nglobals; 
+  ISColoring iscoloring;     /* coloring of matrix */
+
+  Scalar     xd, yd, *pressure, zero = 0.0;
+  int        i, flag, ierr, its, nlocals, nglobals; 
 
   /* ----------------------------------------------------------------------
        Initialize problem parameters
@@ -73,7 +75,7 @@ int main( int argc, char **argv )
 
   /* Initialize PETSc and set default viewer format */
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,ASCII_FORMAT_COMMON,PETSC_NULL);CHKERRA(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRA(ierr);
 
   /* set partitioning of array across processors */
   Nx = PETSC_DECIDE; ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flag); CHKERRA(ierr);
@@ -88,18 +90,18 @@ int main( int argc, char **argv )
   ierr = OptionsGetDouble(PETSC_NULL,"-y0",&user.yy0,&flag); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-x1",&user.xx1,&flag); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-y1",&user.yy1,&flag); CHKERRA(ierr);
-  user.comm        = MPI_COMM_WORLD;
+  user.comm        = PETSC_COMM_WORLD;
   user.mach        = 0.1;
   user.Qinf        = 1.0;
   user.jfreq       = 1;
   user.nc          = 1;
   ierr = OptionsGetInt(PETSC_NULL,"-jfreq",&user.jfreq,&flag); CHKERRA(ierr);
-  if (user.jfreq < 1) SETERRA(1,"jfreq >= 1 only");
+  if (user.jfreq < 1) SETERRA(1,0,"jfreq >= 1 only");
   ierr = OptionsGetDouble(PETSC_NULL,"-mach",&user.mach,&flag); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-qinf",&user.Qinf,&flag); CHKERRA(ierr);
 
-  user.Nlevels = 1; ierr = OptionsGetInt(PETSC_NULL,"-Nlevels",&user.Nlevels,&flag); CHKERRA(ierr);
-  user.Nstep   = 1; ierr = OptionsGetInt(PETSC_NULL,"-Nstep",&user.Nstep,&flag); CHKERRA(ierr);
+  user.Nlevels = 1; ierr = OptionsGetInt(PETSC_NULL,"-Nlevels",&user.Nlevels,&flag);CHKERRA(ierr);
+  user.Nstep   = 1; ierr = OptionsGetInt(PETSC_NULL,"-Nstep",&user.Nstep,&flag);CHKERRA(ierr);
 
   /* ----------------------------------------------------------------------
        Initialize grid parameters
@@ -107,7 +109,7 @@ int main( int argc, char **argv )
 
   mx = 4;  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flag); CHKERRA(ierr);
   my = 4;  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flag); CHKERRA(ierr);
-  if (mx < 2 || my < 2) SETERRA(1,"mx, my >=2 only");
+  if (mx < 2 || my < 2) SETERRA(1,0,"mx, my >=2 only");
 
   for ( i=0; i<user.Nlevels; i++ ) {
     grid              = &user.grids[i];
@@ -124,9 +126,11 @@ int main( int argc, char **argv )
        ---------------------------------------------------------------------- */
 
     ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_BOX, 
-                      grid->mx,grid->my,Nx,Ny,user.nc,1,&grid->da); CHKERRA(ierr);
-    ierr = DAGetCorners(grid->da,&grid->xs,&grid->ys,PETSC_NULL,&grid->xm,&grid->ym,PETSC_NULL);CHKERRA(ierr);
-    ierr = DAGetGhostCorners(grid->da,&grid->Xs,&grid->Ys,PETSC_NULL,&grid->Xm,&grid->Ym,PETSC_NULL); CHKERRA(ierr);
+                      grid->mx,grid->my,Nx,Ny,user.nc,1,0,0,&grid->da); CHKERRA(ierr);
+    ierr = DAGetCorners(grid->da,&grid->xs,&grid->ys,PETSC_NULL,&grid->xm,&grid->ym,
+                        PETSC_NULL);CHKERRA(ierr);
+    ierr = DAGetGhostCorners(grid->da,&grid->Xs,&grid->Ys,PETSC_NULL,&grid->Xm,&grid->Ym,
+                             PETSC_NULL);CHKERRA(ierr);
     grid->xe = grid->xs + grid->xm;
     grid->ye = grid->ys + grid->ym;
     grid->Xe = grid->Xs + grid->Xm;
@@ -159,6 +163,11 @@ int main( int argc, char **argv )
     ierr = VecSet(&zero,grid->globalPressure); CHKERRA(ierr);
     ierr = VecGetLocalSize(grid->globalX,&grid->ldim); CHKERRA(ierr);
     ierr = VecGetSize(grid->globalX,&grid->gdim); CHKERRA(ierr);
+
+    ierr = DAGetColoring2dBox(grid->da,&iscoloring,&grid->J); CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(grid->J,iscoloring,&grid->fdcoloring); CHKERRQ(ierr); 
+    ierr = MatFDColoringSetFromOptions(grid->fdcoloring); CHKERRQ(ierr); 
+    ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
   }
 
   /* Print grid info and problem parameters */
@@ -189,18 +198,32 @@ int main( int argc, char **argv )
   /* Create nonlinear solver */
   ierr = SNESCreate(user.comm,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
-  /* Set default method (can be overridden with runtime option -snes_type <type>) */
+  /* 
+      Set default nonlinear solver method 
+      (can be overridden with runtime option -snes_type <type>) 
+  */
   ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRA(ierr);
 
-  /* Set various routines */
-  ierr = SNESSetFunction(snes,grid->globalF,Function_PotentialFlow,(void *)&user); CHKERRA(ierr);
-  ierr = UserSetJacobian(snes,&user); CHKERRA(ierr);
+  /* 
+      Set the routine that evaluates the "function"
+  */
+  ierr = SNESSetFunction(snes,grid->globalF,Function_PotentialFlow,(void *)&user);CHKERRA(ierr);
+
+  /*
+      Set the routine that evaluates the "Jacobian"
+  */
+  for ( i=0; i<user.Nlevels; i++ ) {
+    GridCtx *lgrid = &user.grids[i];
+    ierr = SNESSetJacobian(snes,lgrid->J,lgrid->J,SNESDefaultComputeJacobianWithColoring,
+                             lgrid->fdcoloring); CHKERRQ(ierr);
+  } 
 
   ierr = OptionsHasName(PETSC_NULL,"-user_monitor",&flag); CHKERRA(ierr);
   if (flag) ierr = SNESSetMonitor(snes,UserMonitor,&user);
-  else      ierr = SNESSetMonitor(snes,SNESDefaultMonitor,PETSC_NULL); CHKERRA(ierr);
 
-  /* Set runtime options */
+  /* 
+     Set runtime solution options 
+  */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
   /* ----------------------------------------------------------------------
@@ -228,9 +251,9 @@ int main( int argc, char **argv )
     ierr = ViewerFileOpenASCII(user.comm,"outmach",&viewer1); CHKERRA(ierr); 
     ierr = ViewerFileOpenASCII(user.comm,"outpre",&viewer2); CHKERRA(ierr); 
     ierr = ViewerFileOpenASCII(user.comm,"outpot",&viewer3); CHKERRA(ierr);
-    ierr = ViewerSetFormat(viewer1,ASCII_FORMAT_COMMON,PETSC_NULL); CHKERRA(ierr);
-    ierr = ViewerSetFormat(viewer2,ASCII_FORMAT_COMMON,PETSC_NULL); CHKERRA(ierr);
-    ierr = ViewerSetFormat(viewer3,ASCII_FORMAT_COMMON,PETSC_NULL); CHKERRA(ierr);
+    ierr = ViewerSetFormat(viewer1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRA(ierr);
+    ierr = ViewerSetFormat(viewer2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRA(ierr);
+    ierr = ViewerSetFormat(viewer3,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRA(ierr);
     ierr = DFVecView(grid->globalMach,viewer1); CHKERRA(ierr);
     ierr = DFVecView(grid->globalPressure,viewer2); CHKERRA(ierr);
     ierr = DFVecView(grid->globalX,viewer3); CHKERRA(ierr);
@@ -278,6 +301,7 @@ int main( int argc, char **argv )
         Free data structures 
      ---------------------------------------------------------------- */
  
+  ierr = SNESDestroy(snes); CHKERRA(ierr);
   for ( i=0; i<user.Nlevels; i++ ) {
     grid              = &user.grids[i];
     ierr = VecDestroyVecs(grid->vec_g,nglobals); CHKERRA(ierr);
@@ -285,11 +309,13 @@ int main( int argc, char **argv )
     ierr = VecDestroy(grid->globalX); CHKERRA(ierr);
     ierr = VecDestroy(grid->globalPressure); CHKERRA(ierr);
     ierr = VecDestroy(grid->localX); CHKERRA(ierr);
-    ierr = DADestroy(grid->da); CHKERRA(ierr);
     ierr = MatDestroy(grid->J); CHKERRA(ierr);
+    if (use_coloring) {
+      ierr = MatFDColoringDestroy(grid->fdcoloring); CHKERRA(ierr);  
+    }
+    ierr = DADestroy(grid->da); CHKERRA(ierr);
   }
 
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
   if (win_solution) {ierr = DrawDestroy(win_solution); CHKERRA(ierr); }
   if (win_mach)     {ierr = DrawDestroy(win_mach); CHKERRA(ierr);}
 
@@ -385,7 +411,7 @@ int UserSetJacobian(SNES snes,AppCtx *user)
           if (i>0 && j<my1)   n_nw   = 1; else n_nw   = 0;
           if (i<mx1 && j>0)   n_se   = 1; else n_se   = 0;
           if (i<mx1 && j<my1) n_ne   = 1; else n_ne   = 0;
-          nnz_d[(j-ys)*xm + i-xs] = 1 + n_south + n_north + n_east + n_west + n_sw + n_nw + n_se + n_ne;
+          nnz_d[(j-ys)*xm + i-xs] = 1 + n_south + n_north + n_east + n_west + n_sw + n_nw + n_se + n_ne; 
         }
       }
     } else if (mtype == MATMPIAIJ) {
@@ -419,7 +445,7 @@ int UserSetJacobian(SNES snes,AppCtx *user)
                                if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
         }
       }
-    } else SETERRQ(1,"UserSetJacobian: preallocation for matrix format not coded yet!");
+    } else SETERRQ(1,0,"UserSetJacobian: preallocation for matrix format not coded yet!");
 
     /* -------- Create data structure for Jacobian matrix --------- */
     /* 
@@ -455,7 +481,7 @@ int UserSetJacobian(SNES snes,AppCtx *user)
     else if (mtype == MATMPIROWBS) {
       ierr = MatCreateMPIRowbs(user->comm,grid->ldim,grid->gdim,PETSC_NULL,nnz_d,
                                PETSC_NULL,&J); CHKERRQ(ierr);
-    } else SETERRQ(1,"UserSetJacobian: interface for matrix format not coded yet!");
+    } else SETERRQ(1,0,"UserSetJacobian: interface for matrix format not coded yet!");
 
     grid->J = J;
     if (nnz_d) PetscFree(nnz_d);
@@ -497,7 +523,7 @@ int UserMonitor(SNES snes,int its,double fnorm,void *dummy)
   /* Print residual vector */
   sprintf(filename,"res.%d.out",its);
   ierr = ViewerFileOpenASCII(MPI_COMM_WORLD,filename,&view1); CHKERRQ(ierr);
-  ierr = ViewerSetFormat(view1,ASCII_FORMAT_COMMON,PETSC_NULL); CHKERRQ(ierr);
+  ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
   ierr = DFVecView(F,view1); CHKERRQ(ierr);
   ierr = ViewerDestroy(view1); CHKERRQ(ierr);
@@ -507,7 +533,7 @@ int UserMonitor(SNES snes,int its,double fnorm,void *dummy)
   if (its) {
     sprintf(filename,"jac.%d.out",its);
     ierr = ViewerFileOpenASCII(MPI_COMM_WORLD,filename,&view1); CHKERRQ(ierr);
-    ierr = ViewerSetFormat(view1,ASCII_FORMAT_COMMON,PETSC_NULL); CHKERRQ(ierr);
+    ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
     ierr = SNESGetJacobian(snes,PETSC_NULL,&Jprec,PETSC_NULL); CHKERRQ(ierr);
     ierr = MatView(Jprec,view1); CHKERRQ(ierr);
     ierr = ViewerDestroy(view1); CHKERRQ(ierr);
