@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.12 1997/03/09 17:58:15 bsmith Exp balay $ */
+/* $Id: mpidense.h,v 1.13 1999/03/18 00:43:17 balay Exp balay $ */
 
 #include "src/mat/impls/dense/seq/dense.h"
 
@@ -38,9 +38,8 @@ typedef struct {
   Mat           A;                      /* local submatrix */
   int           size;                   /* size of communicator */
   int           rank;                   /* rank of proc in communicator */ 
-
   /* The following variables are used for matrix assembly */
-
+  int           donotstash;             /* Flag indicationg if values should be stashed */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends, nrecvs;         /* numbers of sends and receives */
