@@ -1,12 +1,26 @@
 #!/usr/bin/env python
 import user
-import config.base
+import script
 
 import os
 import re
-import sys
 
-class BuildChecker(object):
+class BuildChecker(script.Script):
+  def __init__(self):
+    import RDict
+
+    script.Script.__init__(self, argDB = RDict.RDict())
+    return
+
+  def setupHelp(self, help):
+    import nargs
+
+    help = script.Script.setupHelp(self, help)
+    help.addArgument('BuildCheck', '-remoteMachine', nargs.Arg(None, 'terra.mcs.anl.gov', 'The machine on which PETSc logs are stored'))
+    help.addArgument('BuildCheck', '-logDirectory',  nargs.Arg(None, os.path.join('/home', 'petsc', 'logs', 'nightly'), 'The directory in which PETSc logs are stored'))
+    help.addArgument('BuildCheck', '-archCompilers', nargs.Arg(None, {}, 'A mapping from architecture names to lists of compiler names'))
+    return help
+
   compilers = {'aix5.1.0.0':           ['ibm'],
                'cygwin':               ['gcc'],
                'cygwin-ms':            ['win32fe', 'ms'],
@@ -100,12 +114,6 @@ class BuildChecker(object):
     'win32fe': [r'(?P<type>Warning|Error): (?P<filename>win32fe)']
     }
 
-  def __init__(self, baseDir):
-    self.baseDir = baseDir
-    self.isLocal = os.path.isdir(baseDir)
-    self.remoteMachine = 'terra.mcs.anl.gov'
-    return
-
   def flatten(self, l):
     flat = []
     if not isinstance(l, list) and not isinstance(l, tuple):
@@ -129,9 +137,11 @@ class BuildChecker(object):
     arch    = m.group('arch')
     machine = m.group('machine')
     print arch,machine
-    try:
+    if arch in self.compilers:
       compilers = self.compilers[arch]
-    except KeyError:
+    elif arch in self.argDB['archCompilers']:
+      compilers = self.argDB['archCompilers'][arch]
+    else:
       raise RuntimeError('No compilers for architecture '+arch)
     try:
       # Why doesn't Python have a fucking flatten
@@ -145,7 +155,7 @@ class BuildChecker(object):
     else:
       import tempfile
 
-      (output, error, status) = config.base.Configure.executeShellCommand('ssh '+self.remoteMachine+' cat '+filename)
+      (output, error, status) = self.executeShellCommand('ssh '+self.argDB['remoteMachine']+' cat '+filename)
       lines = output.split('\n')
     for line in lines:
       for regExp in regExps:
@@ -176,20 +186,18 @@ class BuildChecker(object):
     buildRE = re.compile(r'^.*build_.*$')
 
     if self.isLocal:
-      files = os.listdir(self.baseDir)
+      files = os.listdir(self.argDB['logDirectory'])
     else:
-      (output, error, status) = config.base.Configure.executeShellCommand('ssh '+self.remoteMachine+' ls -1 '+self.baseDir)
+      (output, error, status) = self.executeShellCommand('ssh '+self.argDB['self.remoteMachine']+' ls -1 '+self.argDB['logDirectory'])
       files = output.split('\n')
     print files
     return filter(lambda fname: buildRE.match(fname), files)
 
   def run(self):
-    map(lambda f: self.checkFile(os.path.join(self.baseDir, f)), self.getBuildFileNames())
+    self.setup()
+    self.isLocal = os.path.isdir(baseDir)
+    map(lambda f: self.checkFile(os.path.join(self.argDB['logDirectory'], f)), self.getBuildFileNames())
     return
 
 if __name__ == '__main__':
-  import sys
-  if len(sys.argv) > 1:
-    BuildChecker(sys.argv[1]).run()
-  else:
-    BuildChecker('/home/petsc/logs/nightly').run()
+  BuildChecker().run()
