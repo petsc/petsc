@@ -196,6 +196,10 @@ ex41: ex41.o chkopts
 	-$(CLINKER) -o ex41 ex41.o $(PETSC_LIB)
 	$(RM) ex41.o
 
+ex42: ex42.o chkopts
+	-$(CLINKER) -o ex42 ex42.o $(PETSC_LIB)
+	$(RM) ex42.o
+
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
