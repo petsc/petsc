@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.91 2001/03/13 15:36:48 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.92 2001/03/13 15:53:45 bsmith Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -6,7 +6,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/sles/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                   ex12.c ex13.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c ex23.c
+                   ex12.c ex13.c ex15.c ex16.c ex17.c ex22.c ex23.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
 TUTORIALS        = ex23.c ex22.c
 MANSEC           = SLES
@@ -128,6 +128,10 @@ ex21f: ex21f.o  chkopts
 ex22: ex22.o  chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_SLES_LIB}
 	${RM} ex22.o
+
+ex22f: ex22f.o  chkopts
+	-${FLINKER} -o ex22f ex22f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
+	${RM} ex22f.o
 
 ex23: ex23.o  chkopts
 	-${CLINKER} -o ex23 ex23.o  ${PETSC_SLES_LIB}
@@ -362,16 +366,6 @@ runex13f90:
 	   if (diff output/ex13f90_1.out ex13f90_1.tmp) then true; \
 	   else echo "Possible problem with ex13f90_1, diffs above"; fi; \
 	   ${RM} -f ex13f90_1.tmp
-runex14:
-	-@${MPIRUN} -np 1 ex14 -no_output -ksp_gmres_irorthog > ex14_1.tmp 2>&1; \
-	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
-	   else echo "Possible problem with ex14_1, diffs above"; fi; \
-	   ${RM} -f ex14_1.tmp
-runex14_2:
-	-@${MPIRUN} -np 1 ex14 -no_output -ksp_gmres_irorthog > ex14_2.tmp 2>&1; \
-	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
-	   else echo "Possible problem with ex14_2, diffs above"; fi; \
-	   ${RM} -f ex14_2.tmp
 runex14f:
 	-@${MPIRUN} -np 1 ex14f -no_output -ksp_gmres_irorthog > ex14_1.tmp 2>&1; \
 	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
@@ -392,26 +386,16 @@ runex16:
 	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   ${RM} -f ex16_1.tmp
-runex18:
-	-@${MPIRUN} -np 2 ex18 -ksp_smonitor -ksp_gmres_irorthog > ex18_1.tmp 2>&1; \
-	   if (diff output/ex18_1.out ex18_1.tmp) then true; \
-	   else echo "Possible problem with ex18_1, diffs above"; fi; \
-	   ${RM} -f ex18_1.tmp
-runex20:
-	-@${MPIRUN} -np 1 ex20 -options_file ex20options -ksp_smonitor -ksp_gmres_irorthog > ex20_1.tmp 2>&1; \
-	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
-	   else echo "Possible problem with ex20_1, diffs above"; fi; \
-	   ${RM} -f ex20_1.tmp
 runex21f:
 	-@${MPIRUN} -np 1 ex21f  > ex21f_1.tmp 2>&1; \
 	   if (diff output/ex21f_1.out ex21f_1.tmp) then true; \
 	   else echo "Possible problem with ex21f_1, diffs above"; fi; \
 	   ${RM} -f ex21f_1.tmp
-runex20_2:
-	-@${MPIRUN} -np 4 ex20 -options_file ex20options -ksp_smonitor -ksp_gmres_irorthog > ex20_2.tmp 2>&1; \
-	   if (diff output/ex20_2.out ex20_2.tmp) then true; \
-	   else echo "Possible problem with ex20_2, diffs above"; fi; \
-	   ${RM} -f ex20_2.tmp
+runex22:
+	-@${MPIRUN} -np 1 ex22 -dmmg_ksp_monitor > ex22_1.tmp 2>&1;	  \
+	   if (diff output/ex22_1.out ex22_1.tmp) then true; \
+	   else echo "Possible problem with ex22_1, diffs above"; fi; \
+	   ${RM} -f ex22_1.tmp
 
 runex23:
 	-@${MPIRUN} -np 1 ex23 -ksp_smonitor -ksp_gmres_irorthog > ex23_1.tmp 2>&1;	  \
@@ -432,8 +416,7 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
                    ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                    ex15.PETSc runex15 ex15.rm \
-                   ex16.PETSc runex16 ex16.rm ex18.PETSc runex18 ex18.rm \
-                   ex20.PETSc runex20 runex20_2 ex20.rm	\
+                   ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
                    ex23.PETSc runex23 runex23_2 ex23.rm
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm 

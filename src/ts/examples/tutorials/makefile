@@ -1,11 +1,11 @@
-# $Id: makefile,v 1.26 2000/08/17 19:50:31 balay Exp bsmith $ 
+# $Id: makefile,v 1.27 2000/09/22 20:46:37 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c util2.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c util2.c ex7.c
 EXAMPLESF       = ex1f.F ex2f.F ex2f.h
 TUTORIALS       = ex2.c ex2f.F ex2f.h
 MANSEC          = TS
@@ -43,6 +43,10 @@ ex5: ex5.o  chkopts
 ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_TS_LIB}
 	${RM} ex6.o
+
+ex7: ex7.o  chkopts
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_TS_LIB}
+	${RM} ex7.o
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog  > ex1_1.tmp 2>&1;	  \

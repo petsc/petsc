@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.6 2001/03/05 22:14:22 balay Exp balay $ 
+# $Id: base_variables,v 1.7 2001/03/13 17:20:06 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -24,10 +24,10 @@ C_CCV		   = ${C_CC} --version
 C_FCV              = pgf90 --version | head -1
 C_SYS_LIB          = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lpgc -lgcc -lc -lgcc
 # ---------------------------- BOPT - g options ----------------------------
-G_COPTFLAGS	   = -g 
+G_COPTFLAGS	   = -g
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops
+O_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops -Wall
 O_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 # ########################## C++ compiler ##################################
 #

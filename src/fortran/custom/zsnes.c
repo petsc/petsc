@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.54 2000/09/26 19:11:19 balay Exp bsmith $*/
+/*$Id: zsnes.c,v 1.55 2001/01/15 21:49:49 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -488,13 +488,11 @@ void PETSC_STDCALL snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsne
 
   functions, hence no STDCALL
 */
-void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,
-                                 void *ctx,int *ierr)
+void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,void *ctx,int *ierr)
 {
   *ierr = SNESDefaultComputeJacobian(*snes,*x,m,p,type,ctx);
 }
-void  snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,
-                                             MatStructure* type,void *ctx,int *ierr)
+void  snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,void *ctx,int *ierr)
 {
   *ierr = SNESDefaultComputeJacobianColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
 }
