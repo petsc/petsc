@@ -1,11 +1,10 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.27 1999/04/05 18:25:24 bsmith Exp balay $";
+static char vcid[] = "$Id: zksp.c,v 1.28 1999/04/05 18:26:57 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ksp.h"
-#include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
 #define kspregisterdestroy_       KSPREGISTERDESTROY

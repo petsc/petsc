@@ -2,6 +2,7 @@
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
 #include "petsc.h"
+#include "pinclude/petscfix.h"
 
 extern int     PetscScalarAddressToFortran(PetscObject,Scalar*,Scalar*,int,long*);
 extern int     PetscScalarAddressFromFortran(PetscObject,Scalar*,long,int,Scalar **);
