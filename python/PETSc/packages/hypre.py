@@ -178,11 +178,11 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build HYPRE
-    args = ['--prefix='+installDir, '--with-CC='+self.framework.argDB['CC']]
+    args = ['--prefix='+installDir, '--with-CC="'+self.framework.argDB['CC']+' '+self.framework.argDB['CFLAGS']+'"']
     if 'CXX' in self.framework.argDB:
-      args.append('--with-CXX='+self.framework.argDB['CXX'])
+      args.append('--with-CXX="'+self.framework.argDB['CXX']+' '+self.framework.argDB['CXXFLAGS']+'"')
     if 'FC' in self.framework.argDB:
-      args.append('--with-F77='+self.framework.argDB['FC'])
+      args.append('--with-F77="'+self.framework.argDB['FC']+' '+self.framework.argDB['FFLAGS']+'"')
     # TROUBLE if more than one include directory
     args.append('--with-mpi-include='+self.mpi.include[0])
     libdirs = []

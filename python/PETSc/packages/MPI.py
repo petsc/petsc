@@ -338,13 +338,13 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build MPICH
-    args = ['--prefix='+installDir, '-cc='+self.framework.argDB['CC']]
+    args = ['--prefix='+installDir, '-cc="'+self.framework.argDB['CC']+' '+self.framework.argDB['CFLAGS']+'"']
     if 'CXX' in self.framework.argDB:
-      args.append('-c++='+self.framework.argDB['CXX'])
+      args.append('-c++="'+self.framework.argDB['CXX']+' '+self.framework.argDB['CXXFLAGS']+'"')
     else:
       args.append('--disable-c++')
     if 'FC' in self.framework.argDB:
-      args.append('-fc='+self.framework.argDB['FC'])
+      args.append('-fc="'+self.framework.argDB['FC']+' '+self.framework.argDB['FFLAGS']+'"')
     else:
       args.append('--disable-f77 --disable-f90')
     args.append('--without-mpe')
