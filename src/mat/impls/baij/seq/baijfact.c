@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.50 1997/07/09 20:55:07 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.51 1997/07/25 22:14:05 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -589,8 +589,6 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   Scalar          m13,m14,m15,m16;
   Scalar          *ba = b->a,*aa = a->a;
   register int    *pj;
-
-printf("greetings\n");
 
   rtmp  = (Scalar *) PetscMalloc(16*(n+1)*sizeof(Scalar));CHKPTRQ(rtmp);
 
