@@ -14,7 +14,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex3 runex3_2 runex3_3\
                 runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
                 runex8 runex8_2
-EXAMPLES_2    = ex10 ex11 ex6
+EXAMPLES_2    = ex10 ex11 ex6 runex8_3
 RUNEXAMPLES_2 = runex11
 EXAMPLES_3    = ex7 ex12
 RUNEXAMPLES_3 = runex7
@@ -190,7 +190,6 @@ runex7:
            if (diff output/ex7_1.out ex7_1.tmp) then true; \
            else echo "Possible problem with ex7_1, diffs above"; fi; \
            $(RM) -f ex7_1.tmp
-
 runex8:
 	-@$(MPIRUN) ex8 -ksp_smonitor > ex8_1.tmp 2>&1; \
            if (diff output/ex8_1.out ex8_1.tmp) then true; \
