@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.12 1995/04/05 20:31:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: direct.c,v 1.13 1995/04/13 02:28:15 curfman Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -18,18 +18,20 @@ typedef struct {
    PCDirectSetOrdering - Sets the ordering to use for a direct 
    factorization.
 
-  Input Parameters:
-.   pc - the preconditioner context
-.   ordering - the type of ordering to use, one of the following:
+   Input Parameters:
+.  pc - the preconditioner context
+.  ordering - the type of ordering to use, one of the following:
 $      ORDER_NATURAL - Natural 
 $      ORDER_ND - Nested Dissection
 $      ORDER_1WD - One-way Dissection
 $      ORDER_RCM - Reverse Cuthill-McGee
 $      ORDER_QMD - Quotient Minimum Degree
 
-  Options Database Key:
-$ -ilu_ordering <name>, where <name> is one of the following:
-$     natural, nd, 1wd, rcm, qmd
+   Options Database Key:
+$  -ilu_ordering <name>, where <name> is one of the following:
+$      natural, nd, 1wd, rcm, qmd
+
+   Keywords:  ordering, reordering, factorization, direct, LU, Cholesky, fill
 @*/
 int PCDirectSetOrdering(PC pc,int ordering)
 {
@@ -56,6 +58,8 @@ $  -direct_in_place
    This is because the Krylov space methods require an application of the 
    matrix multiplication, which is not possible here because the matrix has 
    been factored in-place, replacing the original matrix.
+
+   Keywords:  factorization, direct, in-place, LU, Cholesky
 @*/
 int PCDirectSetUseInplace(PC pc)
 {

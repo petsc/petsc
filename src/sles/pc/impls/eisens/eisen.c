@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.8 1995/03/25 01:26:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.10 1995/04/13 01:51:30 curfman Exp $";
 #endif
 
 /*
@@ -110,7 +110,7 @@ static int PCPrintHelp_Eisenstat(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"%ssor_omega omega: relaxation factor. 0 < omega <2\n",p);
+  fprintf(stderr," %ssor_omega omega: relaxation factor (0 < omega < 2)\n",p);
   return 0;
 }
 int PCCreate_Eisenstat(PC pc)
@@ -136,13 +136,17 @@ int PCCreate_Eisenstat(PC pc)
 }
 
 /*@ 
-      PCEisenstatSetOmega - Sets relaxation factor to use with SSOR using 
-                       Eisenstat's trick.
+   PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
+   to use with Eisenstat's trick (where omega = 1.0 by default).
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
-.  omega - relaxation factor between 0 and 2.
+.  omega - relaxation coefficient (0 < omega < 2)
 
+   Options Database Key:
+$  -sor_omega  omega
+
+   Keywords:  Eisenstat, SSOR, relaxation
 @*/
 int PCEisenstatSetOmega(PC pc,double omega)
 {
