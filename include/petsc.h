@@ -744,6 +744,38 @@ M*/
 
    Level: beginner
 
+.seealso: PetscReal, PassiveReal, PassiveScalar
+M*/
+
+/*M
+    PetscReal - PETSc type that represents a double precision real number
+
+   Level: beginner
+
+.seealso: PetscScalar, PassiveReal, PassiveScalar
+M*/
+
+/*M
+    PassiveScalar - PETSc type that represents either a double precision real number or 
+       a double precision complex number if the code is compiled with BOPT=g_complex or O_complex
+
+   Level: beginner
+
+    This is the same as a PetscScalar except in code that is automatically differentiated it is
+   treated as a constant (not an indendent or dependent variable)
+
+.seealso: PetscReal, PassiveReal, PetscScalar
+M*/
+
+/*M
+    PassiveReal - PETSc type that represents a double precision real number
+
+   Level: beginner
+
+    This is the same as a PetscReal except in code that is automatically differentiated it is
+   treated as a constant (not an indendent or dependent variable)
+
+.seealso: PetscScalar, PetscReal, PassiveScalar
 M*/
 
 /*

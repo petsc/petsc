@@ -14,7 +14,7 @@ root=`echo $filename | sed 's?/include/[a-zA-A]*.h??g'`
 TROOT=`echo $ROOT | sed "s?$root??g"`
 
 while [ 1 -ne 0 ]; do
-  read line 
+  read -r line 
   if [ $? -ne 0 ] ; then break; fi
 #
 #  To slightly reduce size of .html file change line# labels to l#
@@ -38,10 +38,10 @@ while [ 1 -ne 0 ]; do
     elif [ -f "${ROOT}/${includename}" ] ; then
       echo "${linenumber} #include <A href=\"${ROOT}/${includename}.html\">${includename}</A>"
     else
-      echo "$line"
+      /bin/echo  "$line"
     fi
   else
-    echo "$line"
+    /bin/echo "$line"
   fi
 done
 

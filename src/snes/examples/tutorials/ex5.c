@@ -52,7 +52,7 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-   DA            da;             /* distributed array data structure */
+   DA          da;             /* distributed array data structure */
    PassiveReal param;          /* test problem parameter */
 } AppCtx;
 
