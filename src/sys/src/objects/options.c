@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.33 1995/08/16 22:22:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.34 1995/08/16 22:23:10 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -96,7 +96,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
   return 0;
 }
 
-/*@ 
+/*@C 
    PetscFinalize - Checks for options to be called at the conclusion
    of the program and calls MPI_Finalize().
 
@@ -387,7 +387,10 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
     file = pfile;
   }
 
-  if (*argc) {options->namegiven = 1; strncpy(options->programname,**args,64);}
+  if (*argc) {
+    options->namegiven = 1;
+    strncpy(options->programname,**args,256);
+  }
   else {options->namegiven = 0;}
   options->N = 0;
   options->Naliases = 0;
@@ -532,7 +535,7 @@ static int OptionsDestroy_Private()
 @*/
 int OptionsSetValue(char *name,char *value)
 {
-  int len, N, n, i;
+  int  len, N, n, i;
   char **names;
   if (!options) OptionsCreate_Private(0,0,0,0);
 
@@ -618,7 +621,9 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
   names = options->names;
 
   /* append prefix to name; second check is for pre passed from Fortran */
-  if (pre && *pre != '\000') { strcpy(tmp,pre); strcat(tmp,name+1);}
+  if (pre && *pre != '\000' && *pre != ' ') {
+    strcpy(tmp,pre); strcat(tmp,name+1);
+  }
   else strcpy(tmp,name);
 
   /* slow search */
@@ -632,7 +637,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
   return 0;
 }
 
-/*@
+/*@C
    OptionsHasName - Determines if a certain option is given in the database.
 
    Input Parameters:
@@ -656,7 +661,7 @@ int OptionsHasName(char* pre,char *name)
   return 1;
 }
 
-/*@
+/*@C
    OptionsGetInt - Gets the integer value for a particular option in the 
                     database.
 
@@ -681,7 +686,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
   return 1; 
 } 
 
-/*@
+/*@C
    OptionsGetDouble - Gets the double precision value for a particular 
    option in the database.
 
@@ -704,7 +709,7 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue)
   *dvalue = atof(value);
   return 1; 
 } 
-/*@
+/*@C
    OptionsGetDoubleArray - Gets an array of double precision values for a 
    particular option in the database.  The values must be separated with 
    commas with no intervening spaces.
@@ -741,7 +746,7 @@ int OptionsGetDoubleArray(char* pre,char *name,
   return 1; 
 } 
 
-/*@
+/*@C
    OptionsGetIntArray - Gets an array of integer values for a particular 
    option in the database.  The values must be separated with commas with 
    no intervening spaces. 
@@ -778,7 +783,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
 } 
 
 
-/*@
+/*@C
    OptionsGetString - Gets the string value for a particular option in
    the database.
 
@@ -805,7 +810,7 @@ int OptionsGetString(char *pre,char *name,char *string,int len)
   return 1; 
 }
 
-/*@
+/*@C
    OptionsAllUsed - Returns a count of the number of options in the 
    database that have never been selected.
 
