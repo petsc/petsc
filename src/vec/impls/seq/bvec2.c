@@ -232,7 +232,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file && xin->bs > 1) {
     if (xin->prefix) {
-      ierr = PetscFPrintf(PETSC_COMM_SELf,file,"-%s_vecload_block_size %d\n",xin->prefix,xin->bs);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %d\n",xin->prefix,xin->bs);CHKERRQ(ierr);
     } else {
       ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %d\n",xin->bs);CHKERRQ(ierr);
     }

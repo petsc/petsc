@@ -85,7 +85,7 @@ PetscErrorCode PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 
     *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date);PetscBinaryWrite
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date);CHKERRQ(ierr);
     ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);CHKERRQ(ierr);
     ierr = PetscOptionsPrint(*fd);CHKERRQ(ierr);
