@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.280 1998/06/30 21:53:57 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.281 1998/07/06 16:24:13 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2773,6 +2773,17 @@ The final argument {\tt ctx} is a pointer to the application-provided
 data structure needed by the preconditioner routine.
 The three routine arguments of {\tt apply()} are this context, the
 input vector, and the output vector, respectively.
+
+For a preconditioner that requires some sort of ``setup'' before being used,
+that requires a new setup everytime the operator is changed, one can 
+provide a ``setup'' routine that is called everytime the operator is 
+changed (usually via {\tt SLESSetOperators()}).
+\findex{PCShellSetSetUp()}
+\begin{verbatim}
+   ierr = PCShellSetSetUp(PC pc,int (*setup)(void *ctx));
+\end{verbatim}
+The argument to the ``setup'' routine is the same application-provided 
+data structure passed in with the {\tt PCShellSetApply()} routine.
 
 %----------------------------------------------------------------------
 \subsection{Combining Preconditioners} \sindex{combining preconditioners}

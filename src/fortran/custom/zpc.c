@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.18 1998/03/30 22:22:13 balay Exp balay $";
+static char vcid[] = "$Id: zpc.c,v 1.19 1998/04/21 18:23:47 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -76,6 +76,20 @@ void pcshellsetapply_(PC pc,void (*apply)(void*,PetscFortranAddr*,PetscFortranAd
   *__ierr = PCShellSetApply(
 	(PC)PetscToPointer(pc),ourshellapply,ptr);
 }
+
+static void (*f9)(void *,int*);
+static int ourshellsetup(void *ctx)
+{
+  int              ierr = 0;
+
+  (*f9)(ctx,&ierr); CHKERRQ(ierr);
+  return 0;
+}
+void pcshellsetsetup_(PC pc,void (*setup)(void*,int*), int *__ierr ){
+  f9 = setup;
+  *__ierr = PCShellSetSetUp((PC)PetscToPointer(pc),ourshellsetup);
+}
+
 /* -----------------------------------------------------------------*/
 static void (*f2)(void*,PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,int*,int*);
 static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)

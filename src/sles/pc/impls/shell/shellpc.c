@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.42 1998/04/24 21:21:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.43 1998/05/29 20:36:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,10 +12,26 @@ static char vcid[] = "$Id: shellpc.c,v 1.42 1998/04/24 21:21:24 curfman Exp bsmi
 
 typedef struct {
   void *ctx, *ctxrich;    /* user provided contexts for preconditioner */
+  int  (*setup)(void *);
   int  (*apply)(void *,Vec,Vec);
   int  (*applyrich)(void *,Vec,Vec,Vec,int);
   char *name;
 } PC_Shell;
+
+#undef __FUNC__  
+#define __FUNC__ "PCApply_SetUp"
+static int PCApply_SetUp(PC pc)
+{
+  PC_Shell *shell;
+  int      ierr;
+
+  PetscFunctionBegin;
+  shell = (PC_Shell *) pc->data;
+  if (shell->setup) {
+    ierr  = (*shell->setup)(shell->ctx); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PCApply_Shell"
@@ -26,7 +42,7 @@ static int PCApply_Shell(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   shell = (PC_Shell *) pc->data;
-  ierr = (*shell->apply)(shell->ctx,x,y); CHKERRQ(ierr);
+  ierr  = (*shell->apply)(shell->ctx,x,y); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -39,7 +55,7 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 
   PetscFunctionBegin;
   shell = (PC_Shell *) pc->data;
-  ierr = (*shell->applyrich)(shell->ctx,x,y,w,it);CHKERRQ(ierr);
+  ierr  = (*shell->applyrich)(shell->ctx,x,y,w,it);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -75,6 +91,18 @@ static int PCView_Shell(PC pc,Viewer viewer)
 }
 
 /* ------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ "PCShellSetSetUp_Shell"
+int PCShellSetSetUp_Shell(PC pc, int (*setup)(void*))
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell        = (PC_Shell *) pc->data;
+  shell->setup = setup;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "PCShellSetApply_Shell"
 int PCShellSetApply_Shell(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
@@ -129,6 +157,42 @@ int PCShellSetApplyRichardson_Shell(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),v
 /* -------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
+#define __FUNC__ "PCShellSetSetUp"
+/*@C
+   PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the 
+     matrix operator is changed.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+.  setup - the application-provided setup routine
+
+   Calling sequence of setup:
+.vb
+   int setup (void *ptr)
+.ve
+
+.  ptr - the application context
+
+.keywords: PC, shell, set, setup, user-provided
+
+.seealso: PCShellSetApplyRichardson(), PCShellSetApply()
+@*/
+int PCShellSetSetUp(PC pc, int (*setup)(void*))
+{
+  int ierr, (*f)(PC,int (*)(void*));
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetSetUp_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,setup);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PCShellSetApply"
 /*@C
    PCShellSetApply - Sets routine to use as preconditioner.
@@ -145,13 +209,13 @@ int PCShellSetApplyRichardson_Shell(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),v
    int apply (void *ptr,Vec xin,Vec xout)
 .ve
 
-.  ptr - the application context
++  ptr - the application context
 .  xin - input vector
-.  xout - output vector
+-  xout - output vector
 
 .keywords: PC, shell, set, apply, user-provided
 
-.seealso: PCShellSetApplyRichardson()
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp()
 @*/
 int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 {
@@ -277,10 +341,12 @@ int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),void *p
 
 
   Usage:
-.             int (*mult)(void *,Vec,Vec);
-.             PCCreate(comm,&pc);
-.             PCSetType(pc,PC_Shell);
-.             PC_ShellSetApply(pc,mult,ctx);
+$             int (*mult)(void *,Vec,Vec);
+$             int (*setup)(void *);
+$             PCCreate(comm,&pc);
+$             PCSetType(pc,PC_Shell);
+$             PCShellSetApply(pc,mult,ctx);
+$             PCShellSetSetUp(pc,setup);       (optional)
 
 */
 #undef __FUNC__  
@@ -307,6 +373,8 @@ int PCCreate_Shell(PC pc)
   shell->ctxrich   = 0;
   shell->ctx       = 0;
 
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetSetUp_C","PCShellSetSetUp_Shell",
+                    (void*)PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApply_C","PCShellSetApply_Shell",
                     (void*)PCShellSetApply_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetName_C","PCShellSetName_Shell",
