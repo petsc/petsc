@@ -22,6 +22,7 @@ Meta priorities:
         (MPI_Comm)PetscToPointerComm( *(int*)(comm) )
     instead of
         (MPI_Comm)PetscToPointer( *(int*)(comm) )
+    Make Petsc[To/From]PointerComm public instead of private?
 
   - Change PLOgEventBegin() and end to no longer use the 
     "tacky" stuff since it should be no longer needed, then 
