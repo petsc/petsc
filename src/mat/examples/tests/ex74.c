@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.26 2000/08/13 15:05:22 bsmith Exp bsmith $*/
+/*$Id: ex74.c,v 1.27 2000/09/20 14:52:26 bsmith Exp balay $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -284,8 +284,8 @@ int main(int argc,char **args)
 
   if (reorder){
     ierr = ISGetIndices(ip,&ip_ptr);CHKERRQ(ierr);
-    i = ip_ptr[1]; ip_ptr[1] = ip_ptr[n-2]; ip_ptr[n-2] = i; 
-    i = ip_ptr[0]; ip_ptr[0] = ip_ptr[n-1]; ip_ptr[n-1] = i; 
+    i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 
+    i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i; 
     ierr= ISRestoreIndices(ip,&ip_ptr);CHKERRA(ierr);
 
     ierr = MatReorderingSeqSBAIJ(sA, ip);CHKERRA(ierr);  
