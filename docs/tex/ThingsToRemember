@@ -149,6 +149,10 @@ time you log into the systems.
 
         (*) This machine is named for Lady Ada Lovelace.
 
+Machines: chuck, scott, lovelace, babbage 
+support@nas.nasa.gov user id bfsmith
+password initially 2faWquno
+
 ----------------------------------------------------------------------
 
 To kill the running crontab remove bmake/common and bmake/RCS/common,v
