@@ -1,5 +1,5 @@
 c
-c  "$Id: resid.F,v 1.5 1997/10/16 03:30:33 curfman Exp curfman $";
+c  "$Id: resid.F,v 1.6 1997/10/16 22:01:37 curfman Exp curfman $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -7,8 +7,8 @@ c  require processing.
 c
 c -------------------------------------------------------------------
 c
-      integer function localfortfct_euler(jacform,fff,
-     &                xx,p,xx_bc,p_bc,sadai,sadaj,sadak,
+      integer function localfortfct_euler(jacform,limiter,order,theta,
+     &                psi,fff,xx,p,xx_bc,p_bc,sadai,sadaj,sadak,
      &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                dxx,br,bl,be,f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 
@@ -28,8 +28,9 @@ c                to facilitate use of automatic differentiation.
 #include "sigma.h"
 #include "fv.h"
 
-      integer ierr,resid,residbc,residbc_duct
-      integer jacform, jpressure
+      integer          ierr, resid, residbc, residbc_duct
+      integer          jacform, jpressure, limiter, order
+      double precision psi, theta
   
       localfortfct_euler = 0
 
@@ -58,7 +59,8 @@ C  If using implicit BC's, compute function components for boundary points
       endif
 
 C  Compute function components for interior grid points
-      ierr = resid(jacform, xx, p, dxx, br, bl, be,
+      ierr = resid(jacform, limiter, order, psi, theta,
+     &         xx, p, dxx, br, bl, be,
      &         sadai, sadaj, sadak,
      &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz, 
      &         f1, g1, h1, sp, sm, sp1, sp2, sm1, sm2)
@@ -74,8 +76,8 @@ C  Compute function components for interior grid points
 
 C ----------------------------------------------------------------
 
-      integer function RESID(jacform,xx,p,dxx,
-     &                  br,bl,be,sadai,sadaj,sadak,
+      integer function RESID(jacform,limit,order,psi,theta,
+     &                  xx,p,dxx,br,bl,be,sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                  f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 
@@ -83,6 +85,14 @@ c Computes the nonlinear residual (five components at each interior point)
 c Each coordinate direction is considered in turn (two cell faces per
 c coordinate direction), amortizing use of one-dimensional logic in RLVECS,
 c though most of this is written out more explicitly than necessary.
+c
+c Input Parameters:
+c   jacform - flag: 1 indicates we're in the midst of approximating the
+c             Jacobian for preconditioning via finite differences, so we
+c             use only a first order discretization regardless of the
+c             order used for the residual for matrix-free matrix-vector
+c             products and RHS evaluation.
+c
 
 #include "param.h"
 #include "varbls.h"
@@ -91,10 +101,8 @@ c though most of this is written out more explicitly than necessary.
 #include "wing.h"
 #include "avctrs.h"
 #include "sada.h"
-#include "freq.h"
 #include "es.h"
 #include "sigma.h"
-#include "condi.h"
 #include "fv.h"
 
 C   RESID COMPUTES THE RESIDUAL VECTOR.
@@ -113,12 +121,13 @@ c      common /fv/ f1(5,ni,nj,nk),g1(5,ni,nj,nk),h1(5,ni,nj,nk)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /SIGMA/ SP(5,NI),SM(5,NI)
 c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
-c      COMMON /CONDI/ ORDER,PSI,LIMIT
-c      COMMON /FREQ/ IFREQ,ISGS
-      double precision  DQ(5,D_NI),F(5,D_NI),qer(5),qel(5),tl
-      integer i,j,k,l,ib,jb,kb,i1,j1,k1,jacform
+      double precision  DQ(5,D_NI),F(5,D_NI),qer(5),qel(5),tl,psi,theta
+      integer i,j,k,l,ib,jb,kb,i1,j1,k1,jacform,limit,order
 
       resid = 0
+
+c     write(6,*) 'order, theta = ',order,theta
+
       do 20 l=1,5
       qer(l)=0.
    20 qel(l)=0.
@@ -172,7 +181,7 @@ c      DO 24 I=1,NI
       f1(3,i,j,k)=f(3,i)
       f1(4,i,j,k)=f(4,i)
    24 f1(5,i,j,k)=f(5,i)
-      IF (ORDER.EQ.1. .or. jacform .eq. 1) GO TO 29
+      IF (ORDER.EQ.1 .or. jacform .eq. 1) GO TO 29
       DO 25 I=gxsf2w,xefm1
 c      DO 25 I=2,NI-1
       DO 25 L=1,5
@@ -190,17 +199,24 @@ c      DO 27 I=2,NI-1
       DO 27 L=1,5
       SP1(L,I)=BE(1,L,I,J,K)*SP1(L,I)
    27 SM1(L,I)=BE(2,L,I,J,K)*SM1(L,I)
-      IF (LIMIT.EQ.1) CALL MINMOD (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.2) CALL SUPBEE (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.3) CALL VL (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.4) CALL VALBADA (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.5) CALL DUMMY (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      IF (LIMIT .EQ. LIM_NONE) THEN
+         CALL DUMMY (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_VAN_ALBADA) THEN
+         CALL VALBADA (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_MINMOD) THEN
+         CALL MINMOD (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_SUPERBEE) THEN
+         CALL SUPBEE (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_VAN_LEER) THEN
+         CALL VL (1,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ENDIF
       DO 28 I=gxsf2w,xefm1
 c      DO 28 I=2,NI-1
       DO 28 L=1,5
-   28 F(L,I)=SP(1,I)*BR(L,1,I,J,K)+SP(2,I)*BR(L,2,I,J,K)+
+   28 F(L,I)=theta*
+     *       (SP(1,I)*BR(L,1,I,J,K)+SP(2,I)*BR(L,2,I,J,K)+
      *       SP(3,I)*BR(L,3,I,J,K)+SP(4,I)*BR(L,4,I,J,K)+
-     *       SP(5,I)*BR(L,5,I,J,K)+F(L,I)
+     *       SP(5,I)*BR(L,5,I,J,K)) + F(L,I)
    29 CONTINUE
       DO 2 I=xsf2,xef01
 c      DO 2 I=2,NI
@@ -264,7 +280,7 @@ c      DO 34 J=1,NJ
       g1(3,i,j,k)=f(3,j)
       g1(4,i,j,k)=f(4,j)
    34 g1(5,i,j,k)=f(5,j)
-      IF (ORDER.EQ.1. .or. jacform .eq. 1) GO TO 39
+      IF (ORDER.EQ.1 .or. jacform .eq. 1) GO TO 39
       DO 35 J=gysf2w,yefm1
 c      DO 35 J=2,NJ-1
       DO 35 L=1,5
@@ -282,17 +298,24 @@ c      DO 37 J=2,NJ-1
       DO 37 L=1,5
       SP1(L,J)=BE(1,L,I,J,K)*SP1(L,J)
    37 SM1(L,J)=BE(2,L,I,J,K)*SM1(L,J)
-      IF (LIMIT.EQ.1) CALL MINMOD (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.2) CALL SUPBEE (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.3) CALL VL (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.4) CALL VALBADA (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.5) CALL DUMMY (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      IF (LIMIT .EQ. LIM_NONE) THEN
+         CALL DUMMY (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_VAN_ALBADA) THEN
+         CALL VALBADA (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_MINMOD) THEN
+         CALL MINMOD (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_SUPERBEE) THEN
+         CALL SUPBEE (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_VAN_LEER) THEN
+         CALL VL (2,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ENDIF
       DO 38 J=gysf2w,yefm1
 c      DO 38 J=2,NJ-1
       DO 38 L=1,5
-   38 F(L,J)=SP(1,J)*BR(L,1,I,J,K)+SP(2,J)*BR(L,2,I,J,K)+
+   38 F(L,J)=theta*
+     *       (SP(1,J)*BR(L,1,I,J,K)+SP(2,J)*BR(L,2,I,J,K)+
      *       SP(3,J)*BR(L,3,I,J,K)+SP(4,J)*BR(L,4,I,J,K)+
-     *       SP(5,J)*BR(L,5,I,J,K)+F(L,J)
+     *       SP(5,J)*BR(L,5,I,J,K)) + F(L,J)
    39 CONTINUE
 
       DO 3 J=ysf2,yef01
@@ -356,7 +379,7 @@ c      DO 44 K=1,NK
       h1(3,i,j,k)=f(3,k)
       h1(4,i,j,k)=f(4,k)
    44 h1(5,i,j,k)=f(5,k)
-      IF (ORDER.EQ.1. .or. jacform .eq. 1) GO TO 49
+      IF (ORDER.EQ.1 .or. jacform .eq. 1) GO TO 49
       DO 45 K=gzsf2w,zefm1
 c      DO 45 K=2,NK-1
       DO 45 L=1,5
@@ -374,17 +397,24 @@ c      DO 47 K=2,NK-1
       DO 47 L=1,5
       SP1(L,K)=BE(1,L,I,J,K)*SP1(L,K)
    47 SM1(L,K)=BE(2,L,I,J,K)*SM1(L,K)
-      IF (LIMIT.EQ.1) CALL MINMOD (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.2) CALL SUPBEE (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.3) CALL VL (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.4) CALL VALBADA (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
-      IF (LIMIT.EQ.5) CALL DUMMY (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      IF (LIMIT .EQ. LIM_NONE) THEN
+         CALL DUMMY (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_VAN_ALBADA) THEN
+         CALL VALBADA (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_MINMOD) THEN
+         CALL MINMOD (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_SUPERBEE) THEN
+         CALL SUPBEE (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ELSE IF (LIMIT .EQ. LIM_VAN_LEER) THEN
+         CALL VL (3,PSI,sp,sm,sp1,sp2,sm1,sm2)
+      ENDIF
       DO 48 K=gzsf2w,zefm1
 c      DO 48 K=2,NK-1
       DO 48 L=1,5
-   48 F(L,K)=SP(1,K)*BR(L,1,I,J,K)+SP(2,K)*BR(L,2,I,J,K)+
+   48 F(L,K)=theta*
+     *       (SP(1,K)*BR(L,1,I,J,K)+SP(2,K)*BR(L,2,I,J,K)+
      *       SP(3,K)*BR(L,3,I,J,K)+SP(4,K)*BR(L,4,I,J,K)+
-     *       SP(5,K)*BR(L,5,I,J,K)+F(L,K)
+     *       SP(5,K)*BR(L,5,I,J,K)) + F(L,K)
    49 CONTINUE
       DO 4 K=zsf2,zef01
 c      DO 4 K=2,NK

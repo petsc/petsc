@@ -1,5 +1,5 @@
 c
-c  "$Id: xmod.F,v 1.31 1997/10/17 19:46:34 curfman Exp curfman $";
+c  "$Id: xmod.F,v 1.32 1997/10/20 17:39:39 curfman Exp curfman $";
 c
 c  This file contains routines that are used only within the PETSc
 c  solver.  Most are interface routines to pass between the PETSc
@@ -262,7 +262,7 @@ c     Euler:          mm_xsf <= i <= mm_xef
       if (rank .eq. 0) then 
         write(6,*) 'Problem is ',problem,', ndof = ',ndof
         if (problem .ge. 5) write(6,*) 'Bump = ',bump
-        write(6,*) 'Iteration for BC impermeability switch is',bcswitch
+        write(6,*) 'Iteration for BC impermeability switch is ',bcswitch
       endif
       if (printg .eq. 1) then
       call PetscSequentialPhaseBegin(comm,1,ierr)
@@ -330,7 +330,6 @@ c            the MonitorEuler().
 #include "consts.h"
 #include "wing.h"
 #include "avctrs.h"
-#include "freq.h"
 #include "ang.h"
 
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
@@ -344,7 +343,6 @@ c      COMMON /DVRBLS/ DR(NI1,NJ1,NK1),DRU(NI1,NJ1,NK1),DRV(NI1,NJ1,NK1)
 c      COMMON /DVRBLS/ DRW(NI1,NJ1,NK1),DE(NI1,NJ1,NK1)
 c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
-c      COMMON /FREQ/ IFREQ,ISGS
 
       common /junkvar/ rtrmsr, etrmsr
 

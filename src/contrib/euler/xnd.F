@@ -1,5 +1,5 @@
 C
-C    "$Id: xnd.F,v 1.25 1997/10/16 22:01:00 curfman Exp curfman $";
+C    "$Id: xnd.F,v 1.26 1997/10/17 03:39:22 curfman Exp curfman $";
 C
 C This file contains routines that are used by both the Julianne 
 C and PETSc solvers.
@@ -16,9 +16,8 @@ c small for any significance in the Jacobian.  To run in single precision,
 c set eps to 1.e-3.
 c
 c The default grid is the ONERA M6 wing coarse grid (49x9x9) stored in
-c m6c.  To run the fine grid case, the declaration statements must be
-c increased.  Almost all of the parameters are hardcoded into the driver.
-c File input from nd.in is read in routine IC, which also initializes
+c m6c.  Almost all of the parameters are hardcoded into the driver.
+c The routine IC sets some flow parameters and also initializes
 c the flow field to a plug flow, ignoring the wing.  This creates a large
 c initial residual near the wing. 
 c
@@ -52,8 +51,8 @@ c            application code.
 #include "consts.h"
 #include "wing.h"
 #include "coord.h"
-#include "freq.h"
 #include "es.h"
+#include "freq.h"
 #include "sada.h"
 #include "avctrs.h"
 #include "fv.h"
@@ -81,10 +80,9 @@ c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /COORD/ X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
-c      COMMON /FREQ/ IFREQ,ISGS
 
       double precision  cfl_init,rtol,beta1,eps,time_init
-      integer jsolve,app,nb,nt,ierr,ifreq1
+      integer jsolve,app,ierr,ifreq1
 #if defined(ACTIVATE_JULIANNE)
       integer m,converge,epsi
 #endif
@@ -99,8 +97,8 @@ c      COMMON /FREQ/ IFREQ,ISGS
       endif
 #endif
 
-      OPEN (15,FILE='nd.in',STATUS='OLD')
       NCYC = 0
+      cfl = cfl_init
       GAM  = 1.4d0
 c      GAM  = PetscDoubleExp(1.4,0)
       RGAM = one/GAM
@@ -115,11 +113,14 @@ c         beta = PetscDoubleExp(-3.06,0)
          beta = -beta1
       endif
 C Default frequency of forming Jacobian is every 10 iterations
+c We keep this just for the Julianne solver; the PETSc version controls
+c this elsewhere.
       if (ifreq1 .ge. 1) then
          ifreq = ifreq1
       else
          ifreq = 10
       endif
+      isgs = 3
 c Read input and set up initial conditions (the potential requires coordinates)
       if (model .ne. MMFP) then
          CALL IC(xx,p)
@@ -128,10 +129,15 @@ c Read input and set up initial conditions (the potential requires coordinates)
          CALL IC_fp(xx,p,x,y,z)
       endif
 
-      cfl_init = cfl
-      READ (15,100) NB,NT
-      close(15)
-  100 FORMAT (2I5)
+c The original code read data from the file nd.in; we don't need these
+c parameters anymore.
+c   NB - number of printouts
+c   NT - printout frequency, NB printouts every NT cycles
+c      OPEN (15,FILE='nd.in',STATUS='OLD')
+c      READ (15,100) NB,NT
+c      close(15)
+c  100 FORMAT (2I5)
+
 c Read mesh elsewhere now, to facilitate the parallel case
 c where we need only the local portion.
 c      READ (2,200) ITL,ITU,ILE,KTIP
@@ -252,8 +258,8 @@ c For SNES version, boundary conditions are handled elsewhere.
      &               aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
       epsi = one/eps
 #endif
-      if (rank .eq. 0) WRITE (6,300) NB,NT
-  300 FORMAT(1H0,I20,' PRINTOUTS EVERY ',I5,' CYCLES')
+c      if (rank .eq. 0) WRITE (6,300) NB,NT
+c  300 FORMAT(1H0,I20,' PRINTOUTS EVERY ',I5,' CYCLES')
 c Loop over blocks (just one block, here) and pseudo-time steps
 c     DO 3 L=1,NB
 #if defined(ACTIVATE_JULIANNE)
@@ -301,10 +307,8 @@ c IC - Reads case data and initializes the flow field to plug flow
 #include "param.h"
 #include "varbls.h"
 #include "consts.h"
-#include "freq.h"
 #include "ang.h"
 #include "init.h"
-#include "condi.h"
 
 c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
@@ -312,35 +316,43 @@ c      COMMON /CONST2/ PINIT
 c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
 c      COMMON /VARBLS/ R(NI1,NJ1,NK1),RU(NI1,NJ1,NK1),RV(NI1,NJ1,NK1)
 c      COMMON /VARBLS/ RW(NI1,NJ1,NK1),E(NI1,NJ1,NK1),P(NI1,NJ1,NK1)
-c      COMMON /CONDI/ ORDER,PSI,LIMIT
-c      COMMON /FREQ/ IFREQ,ISGS
-      double precision  conv, beta_dummy
-      integer i,j,k,ifreq_dummy
+      double precision  conv
+      integer           i,j,k,ierr,flg
 
-      READ (15,100) CFL,FSMACH,ALPHA,BETA_dummy,PHI
-      read (15,200) limit,psi,order,isgs,ifreq_dummy
-c LIMIT chooses the limiter (see below)
-c PSI blends discretization stencils for desired ORDER (see DEK for reference)
-c ORDER is discretization order
-c ISGS is the number of symmetric Gauss-Seidel sweeps per Newton step
-c IFREQ determines how often the flux Jacobians are updated
-      IF (ORDER.EQ.3.) PSI=1./3.
-      IF (LIMIT.GT.1) PSI=0.
-      IF (LIMIT.GT.1) ORDER=2.
-C   LIMIT=0 (NO LIMITERS, 1st order), LIMIT=1 (MINMOD), LIMIT=2 (SUPERBEE)
-C   LIMIT=3 (VAN LEER), LIMIT=4 (VAN ALBADA), LIMIT=5 (NO LIMITERS)
-  100 FORMAT (8E10.0)
-  200 FORMAT (I5,2E10.0,2i5)
+c
+c The original code read flow parameters from the file nd.in.
+c      READ (15,100) CFL,FSMACH,ALPHA,BETA_dummy,PHI
+c      read (15,200) limit,psi,order,isgs,ifreq_dummy
+c  100 FORMAT (8E10.0)
+c  200 FORMAT (I5,2E10.0,2i5)
+c
+c We now use a different approach: we set defaults here, and
+c then use runtime options to change these parameters if desired.
+c Note: angle of attack (beta) and CFL are set in the routine user1.c;
+c order, limiter, psi are now passed as input to residual 
+c computation routines.  
+
+      alpha  = 0.0
+      phi    = 0.0
+      fsmach = 0.840
+
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-angle_alpha',
+     &                      alpha,flg,ierr)
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-angle_phi',
+     &                      phi,flg,ierr)
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-fsmach',
+     &                      fsmach,flg,ierr)
+
       if (rank .eq. 0) then
         WRITE (6,20)
-        WRITE (6,30) FSMACH,ALPHA,BETA,PHI,CFL,IFREQ,ISGS,NI,NJ,NK
-   20   FORMAT (1H1,2X,'MACH NO.    ALPHA    BETA    PHI    CFL  IFREQ',
-     * 3X,'ISGS    NI     NJ     NK')
-   30   FORMAT (F10.4,F10.2,F8.2,F7.2,F7.1,2I7,I6,2I7,/)
-        WRITE (6,21)
-        WRITE (6,31) LIMIT,PSI,ORDER
-   21   FORMAT (5X,'LIMIT       PSI   ORDER')
-   31   FORMAT (I10,F10.4,F8.2,/)
+        WRITE (6,30) FSMACH,ALPHA,BETA,PHI,CFL,NI,NJ,NK
+   20   FORMAT (1H1,2X,'MACH NO.    ALPHA    BETA    PHI    CFL',
+     * 3X,'  NI     NJ     NK')
+   30   FORMAT (F10.4,F10.2,F8.2,F7.2,F7.1,3I7,/)
+c        WRITE (6,21)
+c        WRITE (6,31) LIMIT,PSI,ORDER
+c   21   FORMAT (5X,'LIMIT       PSI   ORDER')
+c   31   FORMAT (I10,F10.4,F8.2,/)
       endif
       CONV=ACOS(-1.0d0)/180.
 c      CONV=ACOS(PetscDoubleExp(-1.0,0))/180.
