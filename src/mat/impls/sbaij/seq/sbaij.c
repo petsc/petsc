@@ -1,7 +1,7 @@
 /*$Id: sbaij.c,v 1.62 2001/08/07 03:03:01 balay Exp $*/
 
 /*
-    Defines the basic matrix operations for the BAIJ (compressed row)
+    Defines the basic matrix operations for the SBAIJ (compressed row)
   matrix storage format.
 */
 #include "src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
@@ -46,7 +46,7 @@ int MatMarkDiagonal_SeqSBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
+/* extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**); */
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqSBAIJ"
@@ -55,9 +55,29 @@ static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,in
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
 
   PetscFunctionBegin;
+  
   if (ia) {
     SETERRQ(1,"Function not yet written for SBAIJ format, only supports natural ordering");
   } 
+  
+#ifdef NEW
+  int         ierr;
+ 
+  if (!ia) PetscFunctionReturn(0);
+  
+/*
+  if (symmetric) {
+    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,oshift,ia,ja);CHKERRQ(ierr);
+  } else if (oshift == 1) {
+    int nz = a->i[n]; 
+    for (i=0; i<nz; i++) a->j[i]++;
+    for (i=0; i<n+1; i++) a->i[i]++;
+    *ia = a->i; *ja = a->j;
+  } else {
+*/
+    *ia = a->i; *ja = a->j;
+    /* } */
+#endif
   *nn = a->mbs;
   PetscFunctionReturn(0); 
 }
