@@ -1,4 +1,4 @@
-/* $Id: petsccompilefe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
+/* $Id: petsccompilefe.cpp,v 1.4 2001/03/28 21:03:39 buschelm Exp buschelm $ */
 #include <iostream>
 #include <stdlib.h>
 #include "petscfe.h"
@@ -99,7 +99,7 @@ void compiler::FoundL(LI &i) {
   string temp = i->substr(2);
   ReplaceSlashWithBackslash(temp);
   GetShortPath(temp);
-  temp = "-I"+temp;
+  temp = "-L"+temp;
   linkarg.push_back(temp);
 }
 
