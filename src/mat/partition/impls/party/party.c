@@ -72,6 +72,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         ierr = ISDestroy(isrow);CHKERRQ(ierr);
         ierr = ISDestroy(iscol);CHKERRQ(ierr);
         matSeq = *A;
+        ierr   = PetscFree(A);CHKERRQ(ierr);
     } else
         matSeq = mat;
 

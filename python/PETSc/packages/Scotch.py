@@ -14,8 +14,6 @@ class Configure(config.base.Configure):
     self.found         = 0
     self.compilers     = self.framework.require('config.compilers', self)
     self.libraries     = self.framework.require('config.libraries', self)
-    #self.sourceControl = self.framework.require('config.sourceControl', self) #???
-    #self.arch          = self.framework.require('PETSc.utilities.arch', self) #???
     self.mpi           = self.framework.require('PETSc.packages.MPI', self)
     self.name         = 'Scotch'
     self.PACKAGE      = self.name.upper()
@@ -40,7 +38,7 @@ class Configure(config.base.Configure):
     return
 
   def checkLib(self, libraries):
-    '''Check for Scotch_Init in libraries, which can be a list of libraries or a single library'''
+    '''Check for SCOTCH_archBuild in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
     found   = self.libraries.check(libraries, 'SCOTCH_archBuild', otherLibs = ' '.join(map(self.libraries.getLibArgument, self.mpi.lib))) 
@@ -116,11 +114,7 @@ class Configure(config.base.Configure):
     except RuntimeError:
       import urllib
 
-      packages = self.framework.argDB['with-external-packages-dir']
-#      if hasattr(self.sourceControl, 'bk'):
-#        self.logPrint("Retrieving Scotch; this may take several minutes\n", debugSection='screen')
-#        config.base.Configure.executeShellCommand('bk clone bk://scotch.bkbits.net/Scotch-dev '+os.path.join(packages,'Scotch'), log = self.framework.log, timeout= 600.0)
-#      else:       
+      packages = self.framework.argDB['with-external-packages-dir']      
       try:
         self.logPrint("Retrieving Scotch; this may take several minutes\n", debugSection='screen')
         urllib.urlretrieve('http://www.labri.fr/Perso/~pelegrin/scotch/distrib/scotch_3.4.1A_i586_pc_linux2.tar.gz', os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar.gz'))

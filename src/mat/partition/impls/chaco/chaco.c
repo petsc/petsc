@@ -102,6 +102,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         ierr = ISDestroy(isrow);CHKERRQ(ierr);
         ierr = ISDestroy(iscol);CHKERRQ(ierr);
         matSeq = *A;
+        ierr   = PetscFree(A);CHKERRQ(ierr);
     } else
         matSeq = mat;
 
@@ -495,6 +496,32 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 
     PetscFunctionReturn(0);
 }
+
+/*MC
+   MAT_PARTITIONING_Chaco - Creates a partitioning context via the external package Chaco.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  part - the partitioning context
+
+   Options Database Keys:
++  -mat_partitioning_chaco_global <multilevel-kl> (one of) multilevel-kl spectral linear random scattered
+.  -mat_partitioning_chaco_local <kernighan-lin> (one of) kernighan-lin none
+.  -mat_partitioning_chaco_coarse_level <0>: Coarse level (MatPartitioningChacoSetCoarseLevel)
+.  -mat_partitioning_chaco_eigen_solver <lanczos> (one of) lanczos rqi_symmlq
+.  -mat_partitioning_chaco_eigen_tol <0.001>: Tolerance for eigensolver (MatPartitioningChacoSetEigenTol)
+-  -mat_partitioning_chaco_eigen_number <1>: Number of eigenvectors: 1, 2, or 3 (bi-, quadri-, or octosection) (MatPartitioningChacoSetEigenNumber)
+
+   Level: beginner
+
+   Notes: See http://www.cs.sandia.gov/CRF/chac.html
+
+.keywords: Partitioning, create, context
+
+.seealso: MatPartitioningSetType(), MatPartitioningType
+
+@*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
