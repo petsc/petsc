@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.374 2000/05/26 17:43:24 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.375 2000/06/06 19:01:58 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -898,8 +898,7 @@ int MatMult(Mat mat,Vec x,Vec y)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE); 
-  PetscCheckSameComm(mat,x);
-  PetscCheckSameComm(mat,y);
+
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"x and y must be different vectors");
@@ -946,8 +945,7 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE); 
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PetscCheckSameComm(mat,x);
-  PetscCheckSameComm(mat,y);
+
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (x == y) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"x and y must be different vectors");
@@ -993,9 +991,7 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscValidHeaderSpecific(v1,VEC_COOKIE);
   PetscValidHeaderSpecific(v2,VEC_COOKIE); 
   PetscValidHeaderSpecific(v3,VEC_COOKIE);
-  PetscCheckSameComm(mat,v1);
-  PetscCheckSameComm(mat,v2);
-  PetscCheckSameComm(mat,v3);
+
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix");
   if (mat->N != v1->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v1: global dim %d %d",mat->N,v1->N);
@@ -1044,9 +1040,7 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscValidHeaderSpecific(v1,VEC_COOKIE);
   PetscValidHeaderSpecific(v2,VEC_COOKIE);
   PetscValidHeaderSpecific(v3,VEC_COOKIE);
-  PetscCheckSameComm(mat,v1);
-  PetscCheckSameComm(mat,v2);
-  PetscCheckSameComm(mat,v3);
+
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops->multtransposeadd) SETERRQ(PETSC_ERR_SUP,0,"");
@@ -2561,6 +2555,11 @@ int MatView_Private(Mat mat)
   if (flg) {
     ierr = MatView(mat,VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
     ierr = ViewerFlush(VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(mat->prefix,"-mat_view_binary",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatView(mat,VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
