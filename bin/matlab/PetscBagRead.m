@@ -28,6 +28,8 @@ for lcv = 1:count
     val = deblank(char(fread(fd,msize,'uchar')'));
   elseif dtype == 7 % boolean
     val = fread(fd,1,'bit1');
+  elseif dtype == 8 % Enum
+    val = fread(fd,1,'int32');
   else 
     val = [];
     warning('Bag entry %s could not be read',name);
