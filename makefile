@@ -134,6 +134,8 @@ info:
 	-@echo "Using C linker: ${CLINKER}"
 	-@echo "Using Fortran linker: ${FLINKER}"
 	-@echo "Using libraries: ${PETSC_LIB}"
+	-@echo "------------------------------------------"
+	-@echo "Using mpirun: ${MPIRUN}"
 	-@echo "=========================================="
 #
 #
