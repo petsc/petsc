@@ -8,7 +8,7 @@
 #include "finclude/petscis.h"
 
 
-       PetscErrorCode ierr;
+       PetscErrorCode ierr
        integer     i,n,indices(1000),rank,size,ii(1)
        PetscOffset iis
        IS          is,newis

@@ -142,6 +142,8 @@ typedef struct {
   Mat    symAP;
 } Mat_PtAPstruct;
 
+EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_PtAP"
 PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
@@ -152,7 +154,7 @@ PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
   PetscFunctionBegin;
   ierr = MatDestroy(ptap->symAP);CHKERRQ(ierr);
   ierr = PetscFree(ptap);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
