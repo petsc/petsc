@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: f90_nag.c,v 1.1 1997/01/15 23:23:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: f90_nag.c,v 1.2 1997/04/02 23:16:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -64,7 +64,7 @@ int PetscF90Destroy1dArrayScalar(Dope1 *ptr)
 }
 /* --------------------------------------------------------*/
 /*
-    PetscF90Create2dArrayScalar - Given a C pointer to a one dimensional
+    PetscF90Create2dArrayScalar - Given a C pointer to a two dimensional
   array and its length; this fills in the appropriate Fortran 90
   pointer data structure.
 
@@ -91,7 +91,7 @@ int PetscF90Create2dArrayScalar(void *array,int m,int n, Dope2 *ptr)
 
 /*
     PetscF90Get2dArrayScalar - Gets the address for the data 
-       stored in a Fortran pointer array.
+       stored in a 2d Fortran pointer array.
 
   Input Parameters:
 .   ptr - Fortran 90 pointer
