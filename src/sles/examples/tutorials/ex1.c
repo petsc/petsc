@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.79 2000/01/11 21:02:20 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.80 2000/05/05 22:18:00 balay Exp curfman $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -19,6 +19,8 @@ T*/
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
+
+  Note:  The corresponding parallel example is ex23.c
 */
 #include "petscsles.h"
 
@@ -26,7 +28,7 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x,b,u;      /* approx solution, RHS, exact solution */
+  Vec     x, b, u;      /* approx solution, RHS, exact solution */
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* linear solver context */
   PC      pc;           /* preconditioner context */
@@ -44,6 +46,15 @@ int main(int argc,char **args)
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  /* 
+     Create vectors.  Note that we form 1 vector from scratch and
+     then duplicate as needed.
+  */
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
+  ierr = VecSetFromOptions(x);CHKERRA(ierr);
+  ierr = VecDuplicate(x,&b);CHKERRA(ierr);
+  ierr = VecDuplicate(x,&u);CHKERRA(ierr);
 
   /* 
      Create matrix.  When using MatCreate(), the matrix format can
@@ -75,15 +86,6 @@ int main(int argc,char **args)
   ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-
-  /* 
-     Create vectors.  Note that we form 1 vector from scratch and
-     then duplicate as needed.
-  */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRA(ierr);
-  ierr = VecSetFromOptions(x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRA(ierr);
 
   /* 
      Set exact solution; then compute right-hand-side vector.
