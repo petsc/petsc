@@ -182,7 +182,7 @@ if (n & 0x1) {\
 *U    += a1 * *p1 + a2 * *p2; U += inc; p1 += inc; p2 += inc;n--;}\
 while (n>0) {U[0] += a1*p1[0]+a2*p2[0];U[inc]+=a1*p1[inc]+a2*p2[inc];\
 U += 2*inc;p1 += 2*inc;p2+=2*inc; n -= 2;}}
-#define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc) {
+#define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc) {\
 if (n & 0x1) {\
 *U    += a1 * *p1 + a2 * *p2 + a3 * *p3; \
     U += inc; p1 += inc; p2 += inc; p3 += inc;n--;}\
