@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.30 2000/10/05 21:22:30 kaushik Exp kaushik $
+!  $Id: user.F,v 1.31 2000/10/30 18:39:43 kaushik Exp bsmith $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -1058,7 +1058,7 @@
 #define eptr(i,j) evec(i,j)
 #endif
 #if defined(_OPENMP)
-       integer my_thread_id,omp_get_thread_num,ierr,                        &
+       integer my_thread_id,omp_get_thread_num,                             &
      &         max_threads,omp_get_num_threads,                             &
      &         first_node,last_node,chunk
 #if defined(HAVE_EDGE_COLORING)
@@ -1084,7 +1084,7 @@
 #endif
 #endif
 !      logging variables
-       integer flux_event, flag, ierr
+       integer flux_event, flag
        character * 16 flux_label 
        data flag/-1/,flux_label/'FluxEvaluation  '/
        save flux_event, flag, flux_label
