@@ -15,7 +15,7 @@ Error handling
 
 Convert the Tufo-Fischer parallel direct solver to its own PC.
 
-if PETSC_ARCH is a bmake one then configure should error
-
-convert the int MatUseMatlab_SeqAIJ(Mat A) to the new style like Chris did
+convert the int MatUseMatlab_SeqAIJ(Mat A) to the new style like Kris did
 for all the other external solvers
+
+fix the bmake and configure way of handling -rpath paths for different compilers. How to do??
