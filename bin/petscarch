@@ -93,8 +93,16 @@ fi
 
 if [ $# -gt 0 ]; then
   if [ "${PETSC_DIR}" == "" ]; then
-      echo 'You must indicate the path of PETSc with the environmental variable PETSC_DIR to get suggestions'
-      exit 0
+     if [ -f `pwd`"/bin/petscarch" ]; then
+        PETSC_DIR=`pwd`
+        export PETSC_DIR
+        echo " "
+        echo "Please remember to set your environmental variable PETSC_DIR to " ${PETSC_DIR}
+        echo " "
+     else
+        echo 'You must indicate the path of PETSc with the environmental variable PETSC_DIR to get suggestions'
+        exit 0
+     fi
   fi
   
   # try to get configure arch
