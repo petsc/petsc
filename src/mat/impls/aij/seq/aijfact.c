@@ -1067,8 +1067,10 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat 
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate dloc, solve_work, new a, new j */
   PetscLogObjectMemory(*fact,(ainew[n]+shift-n) * (sizeof(int)+sizeof(PetscScalar)));
-  b->maxnz        = b->nz = ainew[n] + shift;
-  b->lu_damping   = info->damping;
+  b->maxnz             = b->nz = ainew[n] + shift;
+  b->lu_damping        = info->damping;
+  b->lu_shift          = info->lu_shift;
+  b->lu_shift_fraction = info->lu_shift_fraction;
   b->lu_zeropivot = info->zeropivot;
   (*fact)->factor = FACTOR_LU;
   ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
