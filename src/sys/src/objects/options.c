@@ -1,16 +1,21 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.38 1995/05/12 04:17:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.1 1995/05/12 20:38:25 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
 */
 #include <stdio.h>
+#if defined(HAVE_STRING_H)
 #include <string.h>
+#endif
 #include "ptscimpl.h"
 #include "sys.h"
 #include "sysio.h"
 #include "options.h"
 #include "sys/nreg.h"
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
 #include "petscfix.h"
 
 /* 
@@ -170,14 +175,14 @@ int OptionsCheckInitial()
   if (OptionsHasName(0,0,"-v") || OptionsHasName(0,0,"-version") ||
       OptionsHasName(0,0,"-help")) {
     MPE_printf(comm,"--------------------------------------------\
--------------------------------------\n");
-    MPE_printf(comm,"\t\t %s\n",PETSC_VERSION_NUMBER);
+------------------------------\n");
+    MPE_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
     MPE_printf(comm,"Lois Curfman McInnes,Bill Gropp,Barry Smith.\
- Bug reports: petsc-maint@mcs.anl.gov\n");
+ Bugs: petsc-maint@mcs.anl.gov\n");
     MPE_printf(comm,"See petsc/COPYRIGHT for copyright information,\
- petsc/Changes for recent updates.\n");
+ Changes for recent updates.\n");
     MPE_printf(comm,"--------------------------------------------\
---------------------------------------\n");
+---------------------------\n");
   }
   if (OptionsHasName(0,0,"-fp_trap")) {
     PetscSetFPTrap(1);

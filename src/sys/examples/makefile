@@ -11,7 +11,7 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscsys
-EXAMPLES = ex1 ex2 ex3
+CEXAMPLES= ex1 ex2 ex3
 EXAMPLESC= ex1.c ex2.c ex3.c
 LINCLUDE = $(SOURCEH)
 

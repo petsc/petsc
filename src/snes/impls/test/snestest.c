@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.1 1995/05/09 02:48:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.2 1995/05/12 04:18:53 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -23,12 +23,13 @@ typedef struct {
 */
 int SNESSolve_Test(SNES snes,int *its)
 {
-  Mat       A = snes->jacobian,B;
-  Vec       x = snes->vec_sol;
-  int       ierr,flg,i;
-  Scalar    mone = -1.0,one = 1.0;
-  double    norm,gnorm;
-  SNES_Test *neP = (SNES_Test*) snes->data;
+  Mat          A = snes->jacobian,B;
+  Vec          x = snes->vec_sol;
+  int          ierr,i;
+  MatStructure flg;
+  Scalar       mone = -1.0,one = 1.0;
+  double       norm,gnorm;
+  SNES_Test    *neP = (SNES_Test*) snes->data;
 
   if (A != snes->jacobian_pre) SETERR(1,"Cannot test with alternative pre");
 

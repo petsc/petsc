@@ -44,7 +44,7 @@ deletelatexpages:
 #  To locate later occurrences, use M-,
 
 etags:
-	$(RM) -f TAGS
+	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
 	etags -a -f TAGS src/*/*.h src/*/*.c src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/utils/*.c
@@ -56,6 +56,9 @@ etags:
 	etags -a -f TAGS bmake/common docs/tex/routin.tex
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS bmake/common.* bmake/sun4/*.* bmake/rs6000/*.* 
+	etags -a -f TAGS bmake/IRIX/*.* bmake/freebsd/*.* bmake/alpha/*.* 
+	etags -a -f TAGS bmake/hpux/*.*
 	chmod g+w TAGS
 
 runexamples:

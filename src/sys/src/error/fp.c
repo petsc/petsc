@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.6 1995/05/02 23:37:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.7 1995/05/03 04:04:44 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -12,6 +12,7 @@ static char vcid[] = "$Id: fp.c,v 1.6 1995/05/02 23:37:51 bsmith Exp bsmith $";
 #include <stdio.h>
 #include "petsc.h"
 #include "sys.h"
+#include "petscfix.h"
 
 /*----------------IEEE error handler for Sun SparcStations.--------------*/
 #if defined(PARCH_sun4) 
@@ -29,12 +30,6 @@ struct { int code_no; char *name; } error_codes[] = {
 	   { 0			, "unknown error" } 
 } ;
 #define SIGPC(scp) (scp->sc_pc)
-
-#if defined(PARCH_sun4) && defined(__cplusplus)
-extern "C" {
-int exit(int);
-};
-#endif
 
 sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
                                      char *addr)

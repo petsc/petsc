@@ -11,6 +11,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 EXAMPLES = ex1
+CEXAMPLES= ex1
 EXAMPLESC= ex1.c
 LINCLUDE = $(SOURCEH)
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.13 1995/05/05 03:51:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.14 1995/05/12 03:35:41 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -28,10 +28,11 @@ static char vcid[] = "$Id: ls.c,v 1.13 1995/05/05 03:51:33 bsmith Exp bsmith $";
 
 int SNESSolve_LS( SNES snes, int *outits )
 {
-  SNES_LS *neP = (SNES_LS *) snes->data;
-  int     maxits, i, history_len,ierr,lits,flg;
-  double  fnorm, gnorm, xnorm, ynorm, *history;
-  Vec     Y, X, F, G, W, TMP;
+  SNES_LS      *neP = (SNES_LS *) snes->data;
+  int          maxits, i, history_len,ierr,lits;
+  MatStructure flg;
+  double       fnorm, gnorm, xnorm, ynorm, *history;
+  Vec          Y, X, F, G, W, TMP;
 
   history	= snes->conv_hist;	/* convergence history */
   history_len	= snes->conv_hist_len;	/* convergence history length */
@@ -125,7 +126,7 @@ int SNESDestroy_LS(PetscObject obj)
 @*/
 int SNESDefaultMonitor(SNES snes,int its, double fnorm,void *dummy)
 {
-  fprintf( stdout, "iter = %d, Function norm %g \n",its,fnorm);
+  MPE_printf(snes->comm, "iter = %d, Function norm %g \n",its,fnorm);
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.21 1995/05/05 03:48:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.22 1995/05/12 21:30:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -430,6 +430,9 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
     thus obtaining the updated value of the residual
   */
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
+  if (tt == 0.0) {
+    SETERR(1,"KSPSolve_GMRES: bad A or B operator, are you sure it is !0?");
+  }
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;
   *RS(it+1) = - ( *ss * *RS(it) );

@@ -2,6 +2,7 @@
 */
 
 #include "petsc.h"
+#include "order.h"
 
 /* ----- SUBROUTINE DEGREE */
 /****************************************************************           1.
@@ -136,7 +137,7 @@ L100:
 /*<             JSTRT = -XADJ(NODE)                                          >*/
 	jstrt = -xadj[node];
 /*<             JSTOP = IABS(XADJ(NODE + 1)) - 1                             >*/
-	jstop = (i__2 = xadj[node + 1], (int)abs(i__2)) - 1;
+	jstop = (i__2 = xadj[node + 1], (int)ABS(i__2)) - 1;
 /*<             IDEG = 0                                                     >*/
 	ideg = 0;
 /*<             IF ( JSTOP .LT. JSTRT ) GO TO 300                            >*/

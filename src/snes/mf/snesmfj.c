@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.5 1995/05/11 17:20:55 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.6 1995/05/12 18:18:46 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -26,11 +26,12 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   Vec           w = ctx->w,U,F;
   int           ierr;
 
-  SNESGetSolution(snes,&U); CHKERR(ierr);
-  SNESGetFunction(snes,&F); CHKERR(ierr);
+  ierr = SNESGetSolution(snes,&U); CHKERR(ierr);
+  ierr = SNESGetFunction(snes,&F); CHKERR(ierr);
   /* determine a "good" step size */
   VecDot(U,dx,&dot); VecASum(dx,&sum); VecNorm(dx,&norm);
-  if (dot < 1.e-16*sum && dot >= 0.0) dot = 1.e-16*sum;
+  if (sum == 0.0) {dot = 1.0; norm = 1.0;}
+  else if (dot < 1.e-16*sum && dot >= 0.0) dot = 1.e-16*sum;
   else if (dot < 0.0 && dot > 1.e-16*sum) dot = -1.e-16*sum;
   h = epsilon*dot/(norm*norm);
   
@@ -63,7 +64,7 @@ $  -snes_mf
 .seealso: SNESSetJacobian(), SNESTestJacobian()
 @*/
 int SNESDefaultMatrixFreeComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,
-                                         int *flag,void *ctx)
+                                         MatStructure *flag,void *ctx)
 {
   int         n,ierr;
   MatType     type;

@@ -1,18 +1,19 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) 
-SOURCEC  = 
-SOURCEF  =
-WSOURCEC = 
-SOURCEH  =
-OBJSC    =
-WOBJS    = 
-OBJSF    =
-LIBBASE  = libpetscvec
-EXAMPLES = ex1 ex2
-EXAMPLESC= ex1.c ex2.c
-LINCLUDE = $(SOURCEH)
+CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF) 
+SOURCEC   = 
+SOURCEF   =
+WSOURCEC  = 
+SOURCEH   =
+OBJSC     =
+WOBJS     = 
+OBJSF     =
+LIBBASE   = libpetscvec
+EXAMPLES  = ex1 ex2
+CEXAMPLES = ex1 ex2
+EXAMPLESC = ex1.c ex2.c
+LINCLUDE  = $(SOURCEH)
 
 runexamples:
 	-@echo "Examples in src/is/examples -----------"

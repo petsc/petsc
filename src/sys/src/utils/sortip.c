@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: comsort.c,v 1.3 1995/03/06 04:33:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comsort.c,v 1.4 1995/03/17 04:56:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -31,20 +31,20 @@ int SYiIqsort(int *,int), SYiDqsort(double*,int), SYiIqsortPerm(int*,int*,int);
 @*/
 int SYIsort( int n, int *i )
 {
-register int j, k, tmp, ik;
+  register int j, k, tmp, ik;
 
-if (n<8) {
+  if (n<8) {
     for (k=0; k<n; k++) {
 	ik = i[k];
 	for (j=k+1; j<n; j++) {
 	    if (ik > i[j]) {
 		SWAP(i[k],i[j],tmp);
 		ik = i[k];
-		}
 	    }
 	}
     }
-else 
+  }
+  else 
     SYiIqsort(i,n-1);
   return 0;
 }
@@ -59,9 +59,9 @@ int SYiIqsort(int *v,int right)
   if (right <= 1) {
       if (right == 1) {
 	  if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
-	  }
-      return 0;
       }
+      return 0;
+  }
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
   last = 0;
@@ -83,21 +83,21 @@ int SYiIqsort(int *v,int right)
 @*/
 int SYDsort(int n, double *v )
 {
-register int    j, k;
-register double tmp, vk;
+  register int    j, k;
+  register double tmp, vk;
 
-if (n<8) {
+  if (n<8) {
     for (k=0; k<n; k++) {
 	vk = v[k];
 	for (j=k+1; j<n; j++) {
 	    if (vk > v[j]) {
 		SWAP(v[k],v[j],tmp);
 		vk = v[k];
-		}
 	    }
 	}
     }
-else
+  }
+  else
     SYiDqsort( v, n-1 );
   return 0;
 }
@@ -112,9 +112,9 @@ int SYiDqsort(double *v,int right)
   if (right <= 1) {
       if (right == 1) {
 	  if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
-	  }
-      return 0;
       }
+      return 0;
+  }
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
   last = 0;
@@ -140,20 +140,20 @@ int SYiDqsort(double *v,int right)
  @*/
 int SYIsortperm(int n, int *i, int *idx )
 {
-register int j, k, tmp, ik;
+  register int j, k, tmp, ik;
 
-if (n<8) {
+  if (n<8) {
     for (k=0; k<n; k++) {
 	ik = i[idx[k]];
 	for (j=k+1; j<n; j++) {
 	    if (ik > i[idx[j]]) {
 		SWAP(idx[k],idx[j],tmp);
 		ik = i[idx[k]];
-		}
 	    }
 	}
     }
-else 
+  }
+  else 
     SYiIqsortPerm(i,idx,n-1);
   return 0;
 }
@@ -165,9 +165,9 @@ int SYiIqsortPerm(int *v,int *vdx,int right)
   if (right <= 1) {
       if (right == 1) {
 	  if (v[vdx[0]] > v[vdx[1]]) SWAP(vdx[0],vdx[1],tmp);
-	  }
-      return 0;
       }
+      return 0;
+  }
   SWAP(vdx[0],vdx[right/2],tmp);
   vl   = v[vdx[0]];
   last = 0;

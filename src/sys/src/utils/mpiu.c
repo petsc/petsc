@@ -1,10 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: try.c,v 1.6 1995/03/06 04:32:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: try.c,v 1.7 1995/03/27 22:57:15 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>
 #include <stdarg.h>
+#if defined(HAVE_STRING_H)
 #include <string.h>
+#endif
+#include "petscfix.h"
+
 /*@
     MPE_fopen - The first process in the communicator opens a file,
                 all others do nothing.

@@ -13,15 +13,16 @@
 */
 struct _PC {
   PETSCHEADER
-  int  setupcalled,flag;
-  int  (*apply)(PC,Vec,Vec),(*setup)(PC),(*applyrich)(PC,Vec,Vec,Vec,int),
-       (*applyBA)(PC,int,Vec,Vec,Vec),(*setfrom)(PC),(*printhelp)(PC),
-       (*applytrans)(PC,Vec,Vec),(*applyBAtrans)(PC,int,Vec,Vec,Vec);
-  int  (*presolve)(PC,KSP), (*postsolve)(PC,KSP);
-  Mat  mat,pmat;
-  Vec  vec;
-  void *data;
-  char *prefix;
+  int          setupcalled;
+  MatStructure flag;
+  int          (*apply)(PC,Vec,Vec),(*setup)(PC),(*applyrich)(PC,Vec,Vec,Vec,int),
+               (*applyBA)(PC,int,Vec,Vec,Vec),(*setfrom)(PC),(*printhelp)(PC),
+               (*applytrans)(PC,Vec,Vec),(*applyBAtrans)(PC,int,Vec,Vec,Vec);
+  int          (*presolve)(PC,KSP), (*postsolve)(PC,KSP);
+  Mat          mat,pmat;
+  Vec          vec;
+  void         *data;
+  char         *prefix;
 };
 
 #endif

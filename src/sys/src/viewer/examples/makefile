@@ -10,7 +10,7 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-EXAMPLES = ex1 ex2
+CEXAMPLES= ex1 ex2
 EXAMPLESC= ex1.c ex2.c
 SYSLIB   = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscmat -lpetscvec \
            -lpetscdraw -lpetscsys $(BS_LIB) $(LAPACK_LIB) \

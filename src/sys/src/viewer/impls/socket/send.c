@@ -1,7 +1,7 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.8 1995/04/26 15:31:30 curfman Exp curfman $";
+static char vcid[] = "$Id: send.c,v 1.9 1995/04/26 19:32:06 curfman Exp bsmith $";
 #endif
-/* This is part of the MatlabSockettool package. 
+/* 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
@@ -31,7 +31,36 @@ typedef unsigned long   u_long;
 #endif
 
 #include "matlab.h"
+#include "petscfix.h"
 
+/*
+     Sun? doesn't prototype many of the socket functions?
+*/
+#if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_freebsd)
+#if defined(__cplusplus)
+extern "C" {
+#endif
+#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd)
+extern int setsockopt(int,int,int,char*,int);
+#endif
+extern int sleep(unsigned);
+extern int usleep(unsigned);
+extern int write(int,char*,int);
+extern int close(int);
+#if !defined(PARCH_freebsd)
+extern int socket(int,int,int);
+extern int connect(int,struct sockaddr *,int);
+extern void bcopy(char*,char*,int);
+extern void bzero(char*,int);
+#endif
+#if defined(__cplusplus)
+};
+#endif
+#endif
+
+/*
+      Byte swapping for certain Machines.
+*/
 #if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)
 int byteswapint(int *,int),byteswapdouble(double*,int);
 #define BYTESWAPINT(buff,n)    byteswapint(buff,n)
@@ -49,7 +78,7 @@ static int MatlabDestroy(PetscObject obj)
   linger.onoff = 1;
   linger.time  = 0;
 
-  if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,&linger,sizeof(Linger))) 
+  if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) 
     SETERR(1,"Setting linger");
   if (close(viewer->port)) SETERR(1,"closing socket");
 #if !defined(PARCH_IRIX) 
@@ -97,7 +126,7 @@ int call_socket(char *hostname,int portnum)
     perror("SEND: error gethostbyname: ");   
     SETERR(1,0);
   }
-  bzero(&sa,sizeof(sa));
+  bzero((char*)&sa,sizeof(sa));
   bcopy(hp->h_addr,(char*)&sa.sin_addr,hp->h_length);
   sa.sin_family = hp->h_addrtype;
   sa.sin_port = htons((u_short) portnum);
@@ -105,11 +134,7 @@ int call_socket(char *hostname,int portnum)
     if ( (s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0 ) {
       perror("SEND: error socket");  SETERR(-1,0);
     }
-#if defined(PARCH_freebsd)
     if ( connect(s,(struct sockaddr *)&sa,sizeof(sa)) < 0 ) {
-#else
-    if ( connect(s,&sa,sizeof(sa)) < 0 ) {
-#endif
       if ( errno == EALREADY ) {
         fprintf(stderr,"SEND: socket is non-blocking \n");
       }

@@ -1,9 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.4 1995/03/06 04:32:35 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
+#if defined(HAVE_STRING_H)
 #include <string.h>
-
+#endif
 
 /*@
      SYGetArchType - Return a standardized architecture type for the machine
@@ -20,33 +21,33 @@ static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $
 void SYGetArchType( char *str, int slen )
 {
 #if defined(PARCH_solaris)
-strncpy(str,"solaris",7);
+  strncpy(str,"solaris",7);
 #elif defined(PARCH_sun4) 
-strncpy(str,"sun4",4);
+  strncpy(str,"sun4",4);
 #elif defined(PARCH_IRIX)
-strncpy(str,"IRIX",4);
+  strncpy(str,"IRIX",4);
 #elif defined(PARCH_tc2000)
-strcpy( str, "tc2000" );   /* Need a lowercase version eventually ... */
+  strcpy( str, "tc2000" );  
 #elif defined(PARCH_HPUX)
-strncpy( str, "hpux", 4 );
+  strncpy( str, "hpux", 4 );
 #elif defined(PARCH_fx2800)
-strncpy( str, "fx2800", 6 );
+  strncpy( str, "fx2800", 6 );
 #elif defined(PARCH_rs6000)
-strncpy( str, "rs6000", slen );
+  strncpy( str, "rs6000", slen );
 #elif defined(PARCH_MSDOS)
-strncpy( str, "msdos", slen );
+  strncpy( str, "msdos", slen );
 #elif defined(PARCH_intelnx)
-strncpy( str, "intelnx", slen );
+  strncpy( str, "intelnx", slen );
 #elif defined(PARCH_dec5000)
-strncpy( str, "dec5000", slen );
+  strncpy( str, "dec5000", slen );
 #elif defined(PARCH_tc2000)
-strncpy( str, "tc2000", slen );
+  strncpy( str, "tc2000", slen );
 #elif defined(PARCH_cm5)
-strncpy( str, "cm5", slen );
+  strncpy( str, "cm5", slen );
 #elif defined(PARCH_NeXT)
-strncpy( str, "NeXT", slen );
+  strncpy( str, "NeXT", slen );
 #else
-strncpy( str, "Unknown", slen );
+  strncpy( str, "Unknown", slen );
 #endif
 }
 

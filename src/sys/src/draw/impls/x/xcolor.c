@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.6 1995/03/06 04:29:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.7 1995/03/25 01:27:20 bsmith Exp bsmith $";
 #endif
 #include "ximpl.h"
 
@@ -467,7 +467,8 @@ PixVal XiSimColor(DrawCtx_X *XiWin,PixVal pixel, int intensity, int is_fore)
     green = (green < WHITE_AMOUNT) ? 0 : green - WHITE_AMOUNT;
     blue  = (blue  < WHITE_AMOUNT) ? 0 : blue - WHITE_AMOUNT;
   }
-  sprintf( RGBcolor, "rgb:%4.4x/%4.4x/%4.4x", red, green, blue );
+  sprintf( RGBcolor, "rgb:%4.4x/%4.4x/%4.4x", (unsigned int)red, 
+                     (unsigned int)green, (unsigned int)blue );
   XLookupColor( XiWin->disp, XiWin->cmap, RGBcolor, &colordef, 
                      &colorsdef );
   return  colorsdef.pixel;

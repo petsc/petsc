@@ -1,9 +1,22 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.10 1995/04/15 03:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.11 1995/04/15 18:10:40 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
+#if defined(HAVE_STRING_H)
 #include <string.h>
+#endif
 #include "petsc.h"
+/* rs6000 needs _XOPEN_SOURCE to use tsearch */
+#if defined(PARCH_rs6000) && !defined(_XOPEN_SOURCE)
+#define _XOPEN_SOURCE
+#endif
+#if defined(PARCH_HPUX) && !defined(_INCLUDE_XOPEN_SOURCE)
+#define _INCLUDE_XOPEN_SOURCE
+#endif
+#if defined(HAVE_SEARCH_H)
+#include <search.h>
+#endif
+#include "petscfix.h"
 
 #if defined(PETSC_MALLOC)
 /*
@@ -12,18 +25,6 @@ static char vcid[] = "$Id: tr.c,v 1.10 1995/04/15 03:27:16 bsmith Exp bsmith $";
   even then is suspicious.
 */
 void *PetscLow = (void *) 0xEEEEEEEE  , *PetscHigh = (void *) 0x0;
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-#if !defined(PARCH_rs6000) && !defined(PARCH_IRIX)
-extern void *malloc(long unsigned int );
-#endif
-#if defined(__cplusplus)
-};
-#endif
-
-
 
 /*D
     Trspace - Routines for tracing space usage.
@@ -115,33 +116,33 @@ $   Block at address %lx is corrupted
 @*/
 int Trvalid(int line,char *file )
 {
-TRSPACE *head;
-char    *a;
-unsigned long *nend;
-int     errs = 0;
+  TRSPACE *head;
+  char    *a;
+  unsigned long *nend;
+  int     errs = 0;
 
-head = TRhead;
-while (head) {
+  head = TRhead;
+  while (head) {
     if (head->cookie != COOKIE_VALUE) {
-	if (!errs) fprintf( stderr, "called from %s line %d \n",file,line );
-	fprintf( stderr, "Block at address %lx is corrupted\n", head );
-	return errs;
-	}
+      if (!errs) fprintf( stderr, "called from %s line %d \n",file,line );
+      fprintf( stderr, "Block at address %lx is corrupted\n", head );
+      return errs;
+    }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
     if (nend[0] != COOKIE_VALUE) {
-	if (!errs) fprintf( stderr, "called from %s line %d\n",file,line );
-	errs++;
-	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
-	fprintf( stderr, 
+      if (!errs) fprintf( stderr, "called from %s line %d\n",file,line );
+      errs++;
+      head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
+      fprintf( stderr, 
   "Block [id=%d(%d)] at address %lx is corrupted (probably write past end)\n", 
 	     head->id, head->size, a );
-	fprintf( stderr, 
+      fprintf( stderr, 
 		"Block allocated in %s[%d]\n", head->fname, head->lineno );
-	}
-    head = head->next;
     }
-return errs;
+    head = head->next;
+  }
+  return errs;
 }
 
 /*@C
@@ -158,68 +159,62 @@ return errs;
  @*/
 void *Trmalloc(unsigned int a, int lineno, char *fname )
 {
-TRSPACE          *head;
-char             *inew;
-unsigned long    *nend;
-unsigned int     nsize;
-int              l;
+  TRSPACE          *head;
+  char             *inew;
+  unsigned long    *nend;
+  unsigned int     nsize;
+  int              l;
 
-if (TRdebugLevel > 0) {
+  if (TRdebugLevel > 0) {
     if (Trvalid(lineno,fname )) return 0;
-}
+  }
 
-nsize = a;
-if (nsize & TR_ALIGN_MASK) 
+  nsize = a;
+  if (nsize & TR_ALIGN_MASK) 
     nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-inew = (char *) malloc( (unsigned)( nsize + sizeof(TrSPACE) + sizeof(unsigned long) ) );
-if (!inew) return 0;
+  inew = (char *) malloc( (unsigned)( nsize + sizeof(TrSPACE) + 
+                                                sizeof(unsigned long) ) );
+  if (!inew) return 0;
 
-/*
+  /*
    Keep track of range of memory locations we have malloced in 
-*/
+  */
 #if !defined(PETSC_INSIGHT)
-if (PetscLow > (void *) inew) PetscLow = (void *) inew;
-if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)))
-    PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long));
+  if (PetscLow > (void *) inew) PetscLow = (void *) inew;
+  if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)))
+      PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long));
 #endif
 
 
-head = (TRSPACE *)inew;
-inew  += sizeof(TrSPACE);
+  head = (TRSPACE *)inew;
+  inew  += sizeof(TrSPACE);
 
-if (TRhead)
-    TRhead->prev = head;
-head->next     = TRhead;
-TRhead         = head;
-head->prev     = 0;
-head->size     = nsize;
-head->id       = TRid;
-head->lineno   = lineno;
-if ((l = strlen( fname )) > TR_FNAME_LEN-1 ) fname += (l - (TR_FNAME_LEN-1));
-strncpy( head->fname, fname, (TR_FNAME_LEN-1) );
-head->fname[TR_FNAME_LEN-1]= 0;
-head->cookie   = COOKIE_VALUE;
-nend           = (unsigned long *)(inew + nsize);
-nend[0]        = COOKIE_VALUE;
+  if (TRhead) TRhead->prev = head;
+  head->next     = TRhead;
+  TRhead         = head;
+  head->prev     = 0;
+  head->size     = nsize;
+  head->id       = TRid;
+  head->lineno   = lineno;
+  if ((l = strlen( fname )) > TR_FNAME_LEN-1 ) fname += (l - (TR_FNAME_LEN-1));
+  strncpy( head->fname, fname, (TR_FNAME_LEN-1) );
+  head->fname[TR_FNAME_LEN-1]= 0;
+  head->cookie   = COOKIE_VALUE;
+  nend           = (unsigned long *)(inew + nsize);
+  nend[0]        = COOKIE_VALUE;
 
-allocated += nsize;
-if (allocated > TRMaxMem) {
+  allocated += nsize;
+  if (allocated > TRMaxMem) {
     TRMaxMem   = allocated;
     TRMaxMemId = TRid;
-    }
+  }
+  frags     ++;
 
-frags     ++;
-
-if (TRlevel & TR_MALLOC) 
+  if (TRlevel & TR_MALLOC) 
     fprintf( stderr, "Allocating %d bytes at %lx\n", a, inew );
-return (void *)inew;
+  return (void *)inew;
 }
 
-#if defined(PARCH_sun4) && defined(__cplusplus)
-extern "C" {
-int free(char *);
-};
-#endif
 
 /*@C
    Trfree - Free with tracing.
@@ -231,30 +226,30 @@ int free(char *);
  @*/
 int Trfree( void *aa, int line, char *file )
 {
-char    *a = (char *) aa;
-TRSPACE *head;
-char    *ahead;
-unsigned long *nend;
-int ierr;
+  char    *a = (char *) aa;
+  TRSPACE *head;
+  char    *ahead;
+  unsigned long *nend;
+  int ierr;
 
-/* Don't try to handle empty blocks */
-if (!a) return 0;
+  /* Don't try to handle empty blocks */
+  if (!a) return 0;
 
-if (TRdebugLevel > 0) {
+  if (TRdebugLevel > 0) {
     if (ierr = Trvalid(line,file)) return ierr;
-}
+  }
 
-ahead = a;
-a     = a - sizeof(TrSPACE);
-head  = (TRSPACE *)a;
-if (head->cookie != COOKIE_VALUE) {
+  ahead = a;
+  a     = a - sizeof(TrSPACE);
+  head  = (TRSPACE *)a;
+  if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %lx is corrupted; cannot free;\n\
 may be block not allocated with Trmalloc or MALLOC\n", a );
     SETERR(1,0);
-    }
-nend = (unsigned long *)(ahead + head->size);
-if (*nend != COOKIE_VALUE) {
+  }
+  nend = (unsigned long *)(ahead + head->size);
+  if (*nend != COOKIE_VALUE) {
     if (*nend == ALREADY_FREED) {
 	fprintf( stderr, 
   "Block [id=%d(%d)] at address %lx was already freed\n", 
@@ -267,7 +262,7 @@ if (*nend != COOKIE_VALUE) {
 	    fprintf( stderr, 
 	         "Block allocated at %s[%d]\n", head->fname, - head->lineno );
 	SETERR(1,0);
-	}
+    }
     else {
 	/* Damaged tail */
 	fprintf( stderr, 
@@ -277,37 +272,32 @@ if (*nend != COOKIE_VALUE) {
 	fprintf( stderr, 
 		"Block allocated in %s[%d]\n", head->fname, head->lineno );
 	SETERR(1,0);
-	}
     }
-/* Mark the location freed */
-*nend        = ALREADY_FREED;
-/* Save location where freed.  If we suspect the line number, mark as 
-   allocated location */
-if (line > 0 && line < 5000) {
+  }
+  /* Mark the location freed */
+  *nend        = ALREADY_FREED;
+  /* Save location where freed.  If we suspect the line number, mark as 
+     allocated location */
+  if (line > 0 && line < 5000) {
     head->lineno = line;
     strncpy( head->fname, file, (TR_FNAME_LEN-1) );
-    }
-else {
+  }
+  else {
     head->lineno = - head->lineno;
-    }
+  }
 
-allocated -= head->size;
-frags     --;
-if (head->prev)
-    head->prev->next = head->next;
-else
-    TRhead = head->next;
+  allocated -= head->size;
+  frags     --;
+  if (head->prev) head->prev->next = head->next;
+  else TRhead = head->next;
 
-if (head->next)
-    head->next->prev = head->prev;
-if (TRlevel & TR_FREE)
+  if (head->next) head->next->prev = head->prev;
+  if (TRlevel & TR_FREE)
     fprintf( stderr, "Freeing %d bytes at %lx\n", 
 	             head->size, a + sizeof(TrSPACE) );
-free( a );
-return 0;
+  free( a );
+  return 0;
 }
-
-
 
 /*@C
    Trspace - Return space statistics.
@@ -318,9 +308,9 @@ return 0;
  @*/
 int Trspace( int *space, int *fr )
 {
-*space = allocated;
-*fr    = frags;
-return 0;
+  *space = allocated;
+  *fr    = frags;
+  return 0;
 }
 
 /*@C
@@ -331,29 +321,29 @@ return 0;
  @*/
 int Trdump( FILE *fp )
 {
-TRSPACE *head;
-int     id;
+  TRSPACE *head;
+  int     id;
 
-if (fp == 0) fp = stderr;
-head = TRhead;
-while (head) {
+  if (fp == 0) fp = stderr;
+  head = TRhead;
+  while (head) {
     fprintf( fp, "%d at [%lx], id = ", 
 	     head->size, head + sizeof(TrSPACE) );
     if (head->id >= 0) {
 	head->fname[TR_FNAME_LEN-1] = 0;
 	fprintf( fp, "%d %s[%d]\n", head->id, head->fname, head->lineno );
-	}
+    }
     else {
 	/* Decode the package values */
 	head->fname[TR_FNAME_LEN-1] = 0;
 	id = head->id;
 	fprintf( fp, "%d %s[%d]\n", id, head->fname, head->lineno );
-	}
-    head = head->next;
     }
-fprintf( fp, "The maximum space allocated was %d bytes [%d]\n", 
+    head = head->next;
+  }
+  fprintf( fp, "The maximum space allocated was %d bytes [%d]\n", 
 	 TRMaxMem, TRMaxMemId );
- return 0;
+  return 0;
 }
 
 /* Confiure will set HAVE_SEARCH for these systems.  We assume that
@@ -362,34 +352,18 @@ fprintf( fp, "The maximum space allocated was %d bytes [%d]\n",
    two major systems */
 #if defined(HAVE_SEARCH_H)
 
-
-/* The following routine uses the tsearch routines to summarize the
-   memory heap by id */
-/* rs6000 needs _XOPEN_SOURCE to use tsearch */
-#if defined(PARCH_rs6000) && !defined(_XOPEN_SOURCE)
-#define _NO_PROTO
-#define _XOPEN_SOURCE
-#endif
-#if defined(PARCH_HPUX) && !defined(_INCLUDE_XOPEN_SOURCE)
-#define _INCLUDE_XOPEN_SOURCE
-#endif
-#include <search.h>
 typedef struct { int id, size, lineno; char *fname; } TRINFO;
-#if defined(PARCH_sun4) && defined(__cplusplus)
-extern "C" {
-char *tsearch(char *,char **, int (*)(void*,void*));
-void twalk(char *,void (*)(void*,VISIT,int));
-};
-#endif
+static FILE *TRFP;
+
 static int IntCompare( TRINFO *a, TRINFO * b )
 {
-return a->id - b->id;
+  return a->id - b->id;
 }
-static FILE *TRFP;
+
 /*ARGSUSED*/
 static int  PrintSum(TRINFO ** a, VISIT order, int level )
 { 
-if (order == postorder || order == leaf) 
+  if (order == postorder || order == leaf) 
     fprintf( TRFP, "[%d]%s[%d] has %d\n", 
 	     (*a)->id, (*a)->fname, (*a)->lineno, (*a)->size );
   return 0;
@@ -407,14 +381,14 @@ if (order == postorder || order == leaf)
  @*/
 int TrSummary( FILE *fp )
 {
-TRSPACE *head;
-TRINFO  *root, *key, **fnd;
-TRINFO  nspace[1000];
+  TRSPACE *head;
+  TRINFO  *root, *key, **fnd;
+  TRINFO  nspace[1000];
 
-root = 0;
-head = TRhead;
-key  = nspace;
-while (head) {
+  root = 0;
+  head = TRhead;
+  key  = nspace;
+  while (head) {
     key->id     = head->id;
     key->size   = 0;
     key->lineno = head->lineno;
@@ -430,24 +404,24 @@ while (head) {
     if (*fnd == key) {
 	key->size = 0;
 	key++;
-	}
+    }
     (*fnd)->size += head->size;
     head = head->next;
-    }
+  }
 
-/* Print the data */
-TRFP = fp;
-twalk( (char *)root, (void (*)(void*,VISIT,int))PrintSum );
-fprintf( fp, "The maximum space allocated was %d bytes [%d]\n", 
+  /* Print the data */
+  TRFP = fp;
+  twalk( (char *)root, (void (*)(void*,VISIT,int))PrintSum );
+  fprintf( fp, "The maximum space allocated was %d bytes [%d]\n", 
 	 TRMaxMem, TRMaxMemId );
   return 0;
 }
 #else
 int TrSummary(FILE* fp )
 {
-fprintf( fp, "The maximum space allocated was %ld bytes [%ld]\n", 
+  fprintf( fp, "The maximum space allocated was %ld bytes [%ld]\n", 
 	 TRMaxMem, TRMaxMemId );
-return 0;
+  return 0;
 }	
 #endif
 
@@ -464,35 +438,7 @@ return 0;
  @*/
 int Trlevel( int level )
 {
-TRlevel = level;
-return 0;
-}
-
-/*@C
-   Trpush - Push an "id" value for the tracing space routines.
-
-   Input Parameters:
-.  a      - value to push
-@*/
-int Trpush( int a )
-{
-if (TRstackp < MAX_TR_STACK - 1)
-    TRstack[++TRstackp] = a;
-TRid = a;
-return 0;
-}
-
-/*@C
-  Trpop - Pop an "id" value for the tracing space routines.
-@*/
-int  Trpop()
-{
-if (TRstackp > 1) {
-    TRstackp--;
-    TRid = TRstack[TRstackp];
-    }
-else
-    TRid = 0;
+  TRlevel = level;
   return 0;
 }
 
@@ -505,8 +451,8 @@ else
 @*/
 int  TrDebugLevel(int level )
 {
-TRdebugLevel = level;
-return 0;
+  TRdebugLevel = level;
+  return 0;
 }
 
 /*@C
@@ -524,13 +470,13 @@ return 0;
  @*/
 void *Trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
 {
-void *p;
+  void *p;
 
-p = Trmalloc( (unsigned)(nelem*elsize), lineno, fname );
-if (!p) {
+  p = Trmalloc( (unsigned)(nelem*elsize), lineno, fname );
+  if (!p) {
     MEMSET(p,0,nelem*elsize);
-    }
-return p;
+  }
+  return p;
 }
 
 /*@C
@@ -549,28 +495,28 @@ return p;
  @*/
 void *Trrealloc(void * p, int size, int lineno, char *fname )
 {
-void    *pnew;
-char    *pa;
-int     nsize;
-TRSPACE *head;
+  void    *pnew;
+  char    *pa;
+  int     nsize;
+  TRSPACE *head;
 
-pnew = Trmalloc( (unsigned)size, lineno, fname );
-if (!pnew) return p;
+  pnew = Trmalloc( (unsigned)size, lineno, fname );
+  if (!pnew) return p;
 
-/* We should really use the size of the old block... */
-pa   = (char *)p;
-head = (TRSPACE *)(pa - sizeof(TRSPACE));
-if (head->cookie != COOKIE_VALUE) {
+  /* We should really use the size of the old block... */
+  pa   = (char *)p;
+  head = (TRSPACE *)(pa - sizeof(TRSPACE));
+  if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %lx is corrupted; cannot realloc;\n\
 may be block not allocated with Trmalloc or MALLOC\n", pa );
     return (void *) 0;
-    }
-nsize = size;
-if (head->size < nsize) nsize = head->size;
-MEMCPY( pnew, p, nsize );
-FREE( p );
-return pnew;
+  }
+  nsize = size;
+  if (head->size < nsize) nsize = head->size;
+  MEMCPY( pnew, p, nsize );
+  FREE( p );
+  return pnew;
 }
 
 #define TR_MAX_DUMP 100
@@ -596,76 +542,75 @@ return pnew;
 /* Merge two lists, returning the head of the merged list */
 TRSPACE *TrImerge(TRSPACE * l1,TRSPACE * l2 )
 {
-TRSPACE *head = 0, *tail = 0;
-int     sign;
-while (l1 && l2) {
+  TRSPACE *head = 0, *tail = 0;
+  int     sign;
+  while (l1 && l2) {
     sign = strcmp(l1->fname, l2->fname);
     if (sign > 0 || (sign == 0 && l1->lineno >= l2->lineno)) {
 	if (head) tail->next = l1; 
 	else      head = tail = l1;
 	tail = l1;
 	l1   = l1->next;
-	}
+    }
     else {
 	if (head) tail->next = l2; 
 	else      head = tail = l2;
 	tail = l2;
 	l2   = l2->next;
-	}
     }
-/* Add the remaining elements to the end */
-if (l1) tail->next = l1;
-if (l2) tail->next = l2;
-
-return head;
+  }
+  /* Add the remaining elements to the end */
+  if (l1) tail->next = l1;
+  if (l2) tail->next = l2;
+  return head;
 }
 /* Sort head with n elements, returning the head */
 TRSPACE *TrIsort( TRSPACE * head,int n )
 {
-TRSPACE *p, *l1, *l2;
-int     m, i;
+  TRSPACE *p, *l1, *l2;
+  int     m, i;
 
-if (n <= 1) return head;
+  if (n <= 1) return head;
 
-/* This guarentees that m, n are both > 0 */
-m = n / 2;
-p = head;
-for (i=0; i<m-1; i++) p = p->next;
-/* p now points to the END of the first list */
-l2 = p->next;
-p->next = 0;
-l1 = TrIsort( head, m );
-l2 = TrIsort( l2,   n - m );
-return TrImerge( l1, l2 );
+  /* This guarentees that m, n are both > 0 */
+  m = n / 2;
+  p = head;
+  for (i=0; i<m-1; i++) p = p->next;
+  /* p now points to the END of the first list */
+  l2 = p->next;
+  p->next = 0;
+  l1 = TrIsort( head, m );
+  l2 = TrIsort( l2,   n - m );
+  return TrImerge( l1, l2 );
 }
 
 int TrSortBlocks()
 {
-TRSPACE *head;
-int     cnt;
+  TRSPACE *head;
+  int     cnt;
 
-head = TRhead;
-cnt  = 0;
-while (head) {
+  head = TRhead;
+  cnt  = 0;
+  while (head) {
     cnt ++;
     head = head->next;
-    }
-TRhead = TrIsort( TRhead, cnt );
-return 0;
+  }
+  TRhead = TrIsort( TRhead, cnt );
+  return 0;
 }
 
 /* Takes sorted input and dumps as an aggregate */
 int TrdumpGrouped(FILE *fp )
 {
-TRSPACE *head, *cur;
-int     nblocks, nbytes;
+  TRSPACE *head, *cur;
+  int     nblocks, nbytes;
 
-if (fp == 0) fp = stderr;
+  if (fp == 0) fp = stderr;
 
-TrSortBlocks();
-head = TRhead;
-cur  = 0;
-while (head) {
+  TrSortBlocks();
+  head = TRhead;
+  cur  = 0;
+  while (head) {
     cur     = head->next;
     nblocks = 1;
     nbytes  = head->size;
@@ -674,18 +619,18 @@ while (head) {
 	nblocks++;
 	nbytes += cur->size;
 	cur    = cur->next;
-	}
+    }
     fprintf( fp, "File %13s line %5d: %d bytes in %d allocation%c\n", 
 	     head->fname, head->lineno, nbytes, nblocks, 
 	     (nblocks > 1) ? 's' : ' ' );
     head = cur;
-    }
+  }
   fflush( fp );
   return 0;
 }
 
 #else
-void super_dummy() {
- fprintf(stderr,"A dummy function");
+void super_dummy() { /* dummy so we don't have empty .o file */
+  fprintf(stderr,"A dummy function");
 }
 #endif

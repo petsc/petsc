@@ -2,6 +2,7 @@
 */
 
 #include "petsc.h"
+#include "order.h"
 
 /* ----- SUBROUTINE FNDSEP */
 /****************************************************************           1.
@@ -184,7 +185,7 @@ L200:
 /*<             JSTRT = XADJ(NODE)                                           >*/
 	jstrt = xadj[node];
 /*<             JSTOP = IABS(XADJ(NODE+1)) - 1                               >*/
-	jstop = (i__2 = xadj[node + 1], (int)abs(i__2)) - 1;
+	jstop = (i__2 = xadj[node + 1], (int)ABS(i__2)) - 1;
 /*<             DO 400 J = JSTRT, JSTOP                                      >*/
 	i__2 = jstop;
 	for (j = jstrt; j <= i__2; ++j) {

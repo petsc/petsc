@@ -49,18 +49,17 @@ int  FormFunction1(SNES,Vec,Vec,void*),
 
 int main( int argc, char **argv )
 {
+  SLES         sles;
+  PC           pc;
   SNES         snes;
   SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r;
   int          ierr, its, N; 
   AppCtx       user;
-  DrawCtx      win;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&win);
-  CHKERRA(ierr);
 
   user.mx    = 4;
   user.my    = 4;
@@ -95,12 +94,16 @@ int main( int argc, char **argv )
 
   /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+
+  /* Force no preconditioning to be used. */
+  ierr = SNESGetSLES(snes,&sles); CHKERR(ierr);
+  ierr = SLESGetPC(sles,&pc); CHKERR(ierr);
+  ierr = PCSetMethod(pc,PCNONE); CHKERR(ierr);
+
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
 
-  printf( "Number of Newton iterations = %d\n\n", its );
-  DrawTensorContour(win,user.mx,user.my,0,0,x);
-  DrawSyncFlush(win);
+  MPE_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n", its );
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);
@@ -154,7 +157,6 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
     }
   }
   ierr = VecRestoreArray(localX,&x); CHKERR(ierr);
-
   /* stick values into global vector */
   ierr = RALocalToGlobal(user->ra,localX,INSERTVALUES,X);
   return 0;
@@ -180,6 +182,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
+  ierr = RAGlobalToLocal(user->ra,X,INSERTVALUES,localX);
   ierr = VecGetArray(localX,&x); CHKERR(ierr);
   ierr = VecGetArray(localF,&f); CHKERR(ierr);
   RAGetCorners(user->ra,&xs,&ys,0,&xm,&ym,0);
@@ -193,9 +196,9 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
         continue;
       }
       u = x[row];
-      ub = x[row - mx];
+      ub = x[row - Xm];
       ul = x[row - 1];
-      ut = x[row + mx];
+      ut = x[row + Xm];
       ur = x[row + 1];
       uxx = (-ur + two*u - ul)*hydhx;
       uyy = (-ut + two*u - ub)*hxdhy;

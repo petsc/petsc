@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.10 1995/04/21 18:44:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.11 1995/05/02 23:37:51 bsmith Exp bsmith $";
 #endif/*
 */
 #include "petsc.h"
 #include <signal.h> 
 #include <stdio.h>
 #include <unistd.h>
+#include "petscfix.h"
 
 static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;
@@ -40,11 +41,7 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
 
 extern char *OptionsGetProgramName();
  
-#if defined(PARCH_sun4) && defined(__cplusplus)
-extern "C" {
-int exit(int);
-};
-#endif
+
 /*@
    PetscAttachDebugger - Attaches the debugger to the running process.
 
@@ -58,7 +55,6 @@ int PetscAttachDebugger()
   char *program = OptionsGetProgramName();
   if (!program) {
     fprintf(stderr,"Cannot determine program name\n");
-    fprintf(stderr,"Program probably does not have a OptionsCreate_Private()\n");
     return 1;
   }
   child = fork(); 
@@ -149,6 +145,7 @@ $     SETERR(number,message)
 $    PetscDefaultErrorHandler()
 $    PetscAttachDebuggerErrorHandler()
 $    PetscAbortErrorHandler()
+   or you may write your own.
 
 .keywords: attach, debugger, error, handler
 
@@ -158,9 +155,10 @@ $    PetscAbortErrorHandler()
 int PetscAttachDebuggerErrorHandler(int line,char* dir,char* file,char* mess,
                                     int num,void *ctx)
 {
-  int ierr = PetscAttachDebugger();
-  if (ierr) {
-    fprintf(stderr,"Error %s at %d in %s (aborting)\n",mess,line,file);
+  int ierr;
+  fprintf(stderr,"Error %s at %d in %s (aborting)\n",mess,line,file);
+  ierr = PetscAttachDebugger();
+  if (ierr) { /* hopeless so get out */
     exit(num);
   }
   return 0;

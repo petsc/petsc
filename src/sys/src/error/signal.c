@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.6 1995/03/06 04:32:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: signal.c,v 1.7 1995/04/21 18:33:19 curfman Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -7,7 +7,8 @@ static char vcid[] = "$Id: signal.c,v 1.6 1995/03/06 04:32:04 bsmith Exp curfman
 */
 #include "petsc.h"
 #include "sys.h"
-#include <signal.h>     
+#include <signal.h>
+#include "petscfix.h"     
 
 struct SH {
   int    cookie;
@@ -25,12 +26,6 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "SYS",  "PIPE", "ALRM",
                            "TERM",    "URG",  "STOP", "TSTP", "CONT", 
                            "CHLD" }; 
-
-#if defined(PARCH_sun4) && defined(__cplusplus)
-extern "C" {
-int exit(int);
-};
-#endif
 
 /*
     This is the signal handler called by the system. This calls 

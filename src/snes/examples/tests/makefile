@@ -10,42 +10,26 @@ OBJSC     =
 WOBJS     = 
 OBJSF     =
 LIBBASE   = libpetscsnes
-EXAMPLES  = ex1 ex2 ex3 ex4 ex5 ex6
+EXAMPLES  = ex3 ex4 ex5 ex6
+CEXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 LINCLUDE  = $(SOURCEH)
 
-
 runexamples:
 	-@echo "Examples in src/snes/examples -----------------"
-	-@$(MPIRUN) ex1 -snes_monitor > ex1_1.tmp 2>&1;   \
-           if (diff ex1_1.out ex1_1.tmp) then true; \
-           else echo "Possible problem with ex1_1, diffs above"; fi; \
-           $(RM) -f ex1_1.tmp
-	-@$(MPIRUN) ex1 -snes_monitor -snes_method tr > ex1_2.tmp 2>&1;   \
-           if (diff ex1_2.out ex1_2.tmp) then true; \
-           else echo "Possible problem with ex1_2, diffs above"; fi; \
-           $(RM) -f ex1_2.tmp
-	-@$(MPIRUN) ex2 -snes_monitor > ex2_1.tmp 2>&1;   \
-           if (diff ex2_1.out ex2_1.tmp) then true; \
-           else echo "Possible problem with ex2_1, diffs above"; fi; \
-           $(RM) -f ex2_1.tmp
-	-@$(MPIRUN) ex2 -snes_monitor -snes_method tr > ex2_2.tmp 2>&1;   \
-           if (diff ex2_2.out ex2_2.tmp) then true; \
-           else echo "Possible problem with ex2_2, diffs above"; fi; \
-           $(RM) -f ex2_2.tmp
-	-@$(MPIRUN) ex3 -snes_monitor > ex3_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex3 -nox -snes_monitor > ex3_1.tmp 2>&1;   \
            if (diff ex3_1.out ex3_1.tmp) then true; \
            else echo "Possible problem with ex3_1, diffs above"; fi; \
            $(RM) -f ex3_1.tmp
-	-@$(MPIRUN) ex3 -snes_monitor -snes_method tr > ex3_2.tmp 2>&1;   \
+	-@$(MPIRUN) ex3 -nox -snes_monitor -snes_method tr > ex3_2.tmp 2>&1; \
            if (diff ex3_2.out ex3_2.tmp) then true; \
            else echo "Possible problem with ex3_2, diffs above"; fi; \
            $(RM) -f ex3_2.tmp
-	-@$(MPIRUN) ex4 -snes_monitor > ex4_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex4 -snes_monitor -nox > ex4_1.tmp 2>&1;   \
            if (diff ex4_1.out ex4_1.tmp) then true; \
            else echo "Possible problem with ex4_1, diffs above"; fi; \
            $(RM) -f ex4_1.tmp
-	-@$(MPIRUN) ex4 -snes_monitor -snes_method tr > ex4_2.tmp 2>&1;   \
+	-@$(MPIRUN) ex4 -snes_monitor -nox -snes_method tr > ex4_2.tmp 2>&1;\
            if (diff ex4_2.out ex4_2.tmp) then true; \
            else echo "Possible problem with ex4_2, diffs above"; fi; \
            $(RM) -f ex4_2.tmp
@@ -57,6 +41,10 @@ runexamples:
            if (diff ex5_2.out ex5_2.tmp) then true; \
            else echo "Possible problem with ex5_2, diffs above"; fi; \
            $(RM) -f ex5_2.tmp
+	-@$(MPIRUN) -np 4 ex6 -snes_monitor  > ex6_1.tmp 2>&1;   \
+           if (diff ex6_1.out ex6_1.tmp) then true; \
+           else echo "Possible problem with ex6_1, diffs above"; fi; \
+           $(RM) -f ex6_1.tmp
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(PETSC_LIB)

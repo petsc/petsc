@@ -2,7 +2,7 @@
 /*
    Defines the interface to the SparsePack routines, translated into C.
 */
-
+#define  ABS(a) ((a > 0) ? a : -a)
 extern int gen1wd(int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int gennd(int*,int*,int*,int*,int*,int*,int*);
 extern int genrcm(int*,int*,int*,int*,int*,int*);

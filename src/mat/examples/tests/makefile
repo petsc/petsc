@@ -11,6 +11,8 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscmat
 EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
+           ex15 ex16 ex19 ex20 ex21 ex22 ex23 ex24
+CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
            ex15 ex16 ex17 ex18 ex19 ex20 ex21 ex22 ex23 ex24
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
            ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c\
@@ -94,7 +96,7 @@ runexamples:
 	-@$(MPIRUN)  ex21 > ex21_1.tmp 2>&1;   \
            if (diff ex21_1.out ex21_1.tmp) then true; \
            else echo "Possible problem with ex21_1, diffs above"; fi; \
-           $(RM) -f ex20_1.tmp
+           $(RM) -f ex21_1.tmp
 	-@$(MPIRUN)  ex22 > ex22_1.tmp 2>&1;   \
            if (diff ex22_1.out ex22_1.tmp) then true; \
            else echo "Possible problem with ex22_1, diffs above"; fi; \

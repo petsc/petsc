@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.41 1995/05/06 20:11:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.42 1995/05/12 04:16:42 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -635,7 +635,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       SPARSEDENSEMDOT(sum,ls,v,idx,n); 
       x[i] = omega*(sum/d);
     }
-    ierr = VecPipelineEnd(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEUP,
+    ierr = VecPipelineEnd(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
                             mat->Mvctx); CHKERR(ierr);
 
     /*  t = b - (2*E - D)x */
@@ -661,7 +661,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       SPARSEDENSEMDOT(sum,ls,v,idx,n); 
       t[i] = omega*(sum/d);
     }
-    ierr = VecPipelineEnd(tt,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
+    ierr = VecPipelineEnd(tt,mat->lvec,INSERTVALUES,PIPELINEDOWN,
                                                     mat->Mvctx); CHKERR(ierr);
     /*  x = x + t */
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
@@ -697,7 +697,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
       }
-      ierr = VecPipelineEnd(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
+      ierr = VecPipelineEnd(xx,mat->lvec,INSERTVALUES,PIPELINEDOWN,
                             mat->Mvctx); CHKERR(ierr);
       /* come up through the rows */
       ierr = VecPipelineBegin(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
@@ -715,7 +715,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
       }
-      ierr = VecPipelineEnd(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEUP,
+      ierr = VecPipelineEnd(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
                             mat->Mvctx); CHKERR(ierr);
     }    
   }
@@ -737,7 +737,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = omega*(sum/d);
       }
-      ierr = VecPipelineEnd(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
+      ierr = VecPipelineEnd(xx,mat->lvec,INSERTVALUES,PIPELINEDOWN,
                             mat->Mvctx); CHKERR(ierr);
       its--;
     }
@@ -761,7 +761,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
       }
-      ierr = VecPipelineEnd(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEDOWN,
+      ierr = VecPipelineEnd(xx,mat->lvec,INSERTVALUES,PIPELINEDOWN,
                             mat->Mvctx); CHKERR(ierr);
     } 
   }
@@ -783,7 +783,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = omega*(sum/d);
       }
-      ierr = VecPipelineEnd(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEUP,
+      ierr = VecPipelineEnd(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
                             mat->Mvctx); CHKERR(ierr);
       its--;
     }
@@ -807,7 +807,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         SPARSEDENSEMDOT(sum,ls,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
       }
-      ierr = VecPipelineEnd(xx,0,mat->lvec,0,INSERTVALUES,PIPELINEUP,
+      ierr = VecPipelineEnd(xx,mat->lvec,INSERTVALUES,PIPELINEUP,
                             mat->Mvctx); CHKERR(ierr);
     } 
   }

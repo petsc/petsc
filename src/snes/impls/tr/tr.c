@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.6 1995/05/05 03:51:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.7 1995/05/12 04:18:49 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -26,13 +26,14 @@ static char vcid[] = "$Id: tr.c,v 1.6 1995/05/05 03:51:35 bsmith Exp bsmith $";
 */
 static int SNESSolve_TR(SNES snes, int *its )
 {
-  SNES_TR  *neP = (SNES_TR *) snes->data;
-  Vec      X, F, Y, G, TMP, Ytmp;
-  int      maxits, i, history_len, nlconv,ierr,lits, flg;
-  double   rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
-  double   *history, ynorm;
-  Scalar   one = 1.0,cnorm;
-  double  epsmch = 1.0e-14;   /* This must be fixed */
+  SNES_TR      *neP = (SNES_TR *) snes->data;
+  Vec          X, F, Y, G, TMP, Ytmp;
+  int          maxits, i, history_len, nlconv,ierr,lits;
+  MatStructure flg;
+  double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
+  double       *history, ynorm;
+  Scalar       one = 1.0,cnorm;
+  double       epsmch = 1.0e-14;   /* This must be fixed */
 
   nlconv	= 0;			/* convergence monitor */
   history	= snes->conv_hist;	/* convergence history */

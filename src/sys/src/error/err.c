@@ -1,8 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: error.c,v 1.12 1995/04/21 18:44:25 curfman Exp curfman $";
+static char vcid[] = "$Id: error.c,v 1.13 1995/04/21 20:33:19 curfman Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
+#include "petscfix.h"
 
 struct EH {
   int    cookie;
@@ -13,12 +14,6 @@ struct EH {
 
 static struct EH* eh = 0;
 
-
-#if defined(PARCH_sun4) && defined(__cplusplus)
-extern "C" {
-int abort();
-};
-#endif
 /*@
    PetscAbortErrorHandler - Error handler that calls abort on error. 
    This routine is very useful when running in the debugger, because the 

@@ -11,6 +11,8 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
+           ex16 ex17
+CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
            ex15 ex16 ex17
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
            ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c
@@ -22,14 +24,10 @@ runexamples:
            if (diff ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            $(RM) -f ex1_1.tmp
-	-@$(MPIRUN)  ex1 -mpi_vecs > ex1_2.tmp 2>&1;\
-           if (diff ex1_2.out ex1_2.tmp) then true; \
+	-@$(MPIRUN)  -np 2 ex1 > ex1_2.tmp 2>&1;\
+           if (diff ex1_2.out ex1_2.tmp) then true ;  \
            else echo "Possible problem with ex1_2, diffs above"; fi ;\
            $(RM) -f ex1_2.tmp
-	-@$(MPIRUN)  -np 2 ex1 > ex1_3.tmp 2>&1;\
-           if (diff ex1_3.out ex1_3.tmp) then true ;  \
-           else echo "Possible problem with ex1_3, diffs above"; fi ;\
-           $(RM) -f ex1_3.tmp
 	-@$(MPIRUN)  ex2 > ex2_1.tmp 2>&1;\
            if (diff ex2_1.out ex2_1.tmp) then true; \
            else echo "Possible problem with ex2_1, diffs above"; fi;\
@@ -82,10 +80,6 @@ runexamples:
            if (diff ex14_1.out ex14_1.tmp) then true; \
            else echo "Possible problem with ex14_1, diffs above"; fi;\
            $(RM) -f ex14_1.tmp
-	-@$(MPIRUN)  ex15 > ex15_1.tmp 2>&1;\
-           if (diff ex15_1.out ex15_1.tmp) then true; \
-           else echo "Possible problem with ex15_1, diffs above"; fi;\
-           $(RM) -f ex15_1.tmp
 	-@$(MPIRUN) -np 3 ex16 > ex16_1.tmp 2>&1;\
            if (diff ex16_1.out ex16_1.tmp) then true; \
            else echo "Possible problem with ex16_1, diffs above"; fi;\

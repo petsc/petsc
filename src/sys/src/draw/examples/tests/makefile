@@ -10,16 +10,12 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscdraw
-EXAMPLES = ex1 ex2 ex3 ex4
+CEXAMPLES= ex1 ex2 ex3 ex4
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
 LINCLUDE = $(SOURCEH)
 
 runexamples:
-	-@echo "Examples in src/draw/examples -----------------"
-	-@$(MPIRUN) ex1
-	-@$(MPIRUN) ex2
-	-@$(MPIRUN) ex3
-	-@$(MPIRUN) ex4
+	-@echo "Run examples in src/draw/examples manually"
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
