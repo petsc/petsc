@@ -1,0 +1,50 @@
+<BODY BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#ff0000" ALINK="#ff0000" TEXT="#000000">
+<font size="4">
+
+<center>
+<IMG SRC="petsc_title.gif">
+</center>
+<P><HR><P>  
+
+<tt>PETSc</tt> is made up of components that provide much of the 
+functionality required for the parallel solution of partial 
+differential equations.
+  
+  
+<ul> 
+ 
+<li><tt>Vec</tt> - provides all the vector operations required for setting
+    up and solving large scale linear and nonlinear problems. Includes 
+    easy to use parallel scatter and gather operations, as well as
+    special purpose code for handling ghost points on regular data-structures.
+
+<li><tt>Mat</tt> - a large suite of data structures and code  
+      for the manipulation of parallel sparse matrices, includes four
+      different parallel matrix data structures, each appropriate 
+      for a different class of problems. 
+ 
+<li><tt>PC</tt> - a collection of sequential and parallel preconditioners,  
+      including (sequentially) ILU(k), LU, and (both sequentially and parallel)
+      block Jacobi, overlapping additive Schwarz methods and (through
+      BlockSolve95) ILU(0) and ICC(0).
+  
+<li><tt>KSP</tt> - parallel implementations of  
+      many popular Krylov space iterative methods,  including GMRES, PCG, CGS,
+      Bi-CG-stab, two varients of TFQM, CR, and LSQR. All are coded so as
+      to be immediately usable with any preconditioners and any matrix data 
+      structures including matrix free methods.
+ 
+<li><tt>SNES</tt> - data-structure-neutral implementations of Newton-like  
+      methods for nonlinear systems. Includes both line search and trust 
+      region techniques with a single common interface. Offers advanced
+      convergence criteria such as the Eisenstat-Walker criteria.
+  
+<li><tt>TS</tt> - code for evolution time evolution of solutions of PDEs. In addition,
+      provides pseudo-transient continuation techniques for the computation of
+      steady state solutions.
+
+</ul> 
+<BR> 
+  
+
+<a href="http://www.mcs.anl.gov/petsc/petsc.html">Return to PETSc home page.</a>
