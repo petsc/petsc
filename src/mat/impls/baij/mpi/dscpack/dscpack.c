@@ -165,7 +165,8 @@ PetscErrorCode MatConvert_DSCPACK_Base(Mat A,const MatType type,Mat *newmat) {
   PetscErrorCode ierr;
   Mat     B=*newmat;
   Mat_DSC *lu=(Mat_DSC*)A->spptr;
-  
+  void    (*f)(void);
+
   PetscFunctionBegin;
   if (B != A) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
@@ -176,9 +177,18 @@ PetscErrorCode MatConvert_DSCPACK_Base(Mat A,const MatType type,Mat *newmat) {
   B->ops->assemblyend            = lu->MatAssemblyEnd;
   B->ops->choleskyfactorsymbolic = lu->MatCholeskyFactorSymbolic;
   B->ops->destroy                = lu->MatDestroy;
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C","",lu->MatPreallocate);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(lu);CHKERRQ(ierr); 
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_dscpack_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_dscpack_seqbaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_dscpack_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_dscpack_mpibaij_C","",PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
-  ierr = PetscFree(lu);CHKERRQ(ierr); 
   *newmat = B;
 
   PetscFunctionReturn(0);

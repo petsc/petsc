@@ -72,6 +72,8 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
   }
   ierr = PetscFree(a->rowners);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

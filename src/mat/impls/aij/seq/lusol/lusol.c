@@ -197,6 +197,10 @@ PetscErrorCode MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
   B->ops->destroy          = lusol->MatDestroy;
   
   ierr = PetscFree(lusol);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_lusol_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_lusol_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);

@@ -141,6 +141,12 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
   PetscHeaderDestroy(ctx);
+
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSNESMFSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSNESMFSetFunctioniBase_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSNESMFSetFunctioni_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSNESMFSetCheckh_C","",PETSC_NULL);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

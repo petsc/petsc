@@ -92,13 +92,19 @@ PetscErrorCode MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
   if (B != A) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
-  A->ops->duplicate        = lu->MatDuplicate;
-  A->ops->view             = lu->MatView;
-  A->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
-  A->ops->iludtfactor      = lu->MatILUDTFactor;
-  A->ops->destroy          = lu->MatDestroy;
+  B->ops->duplicate        = lu->MatDuplicate;
+  B->ops->view             = lu->MatView;
+  B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+  B->ops->iludtfactor      = lu->MatILUDTFactor;
+  B->ops->destroy          = lu->MatDestroy;
     
   ierr = PetscFree(lu);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_matlab_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_matlab_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"PetscMatlabEnginePut_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"PetscMatlabEngineGet_C","",PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);

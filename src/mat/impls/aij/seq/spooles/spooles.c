@@ -14,7 +14,9 @@ PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,Mat *newmat) {
   PetscErrorCode ierr;
   Mat         B=*newmat;
   Mat_Spooles *lu=(Mat_Spooles*)A->spptr;
+  void        (*f)(void);
 
+  PetscFunctionBegin;
   if (B != A) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
@@ -26,8 +28,22 @@ PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,Mat *newmat) {
   B->ops->assemblyend            = lu->MatAssemblyEnd;
   B->ops->destroy                = lu->MatDestroy;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,lu->basetype);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",lu->MatPreallocate);CHKERRQ(ierr);
+  }
   ierr = PetscFree(lu);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijspooles_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijspooles_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaijspooles_mpiaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijspooles_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaijspooles_seqsbaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqsbaijspooles_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaijspooles_mpisbaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpisbaijspooles_C","",PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)B,lu->basetype);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }    

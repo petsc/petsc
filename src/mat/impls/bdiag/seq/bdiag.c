@@ -32,6 +32,7 @@ PetscErrorCode MatDestroy_SeqBDiag(Mat A)
   ierr = PetscFree(a->colloc);CHKERRQ(ierr);
   ierr = PetscFree(a->dvalue);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBDiagSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
