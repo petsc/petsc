@@ -1,6 +1,7 @@
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.13 1997/11/03 04:50:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.14 1997/11/06 05:47:57 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -18,6 +19,8 @@ static char vcid[] = "$Id: aodata.c,v 1.13 1997/11/03 04:50:45 bsmith Exp bsmith
    Output Parameter:
 .    flag - zero if found, -1 if no room for new one, 1 if found available slot
 .     key - integer of keyname
+
+   Not collective
 
 */
 int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,int *key)
@@ -53,6 +56,8 @@ int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,int *key)
    Output Parameter:
 .    flag - PETSC_TRUE if found, else PETSC_FALSE
 
+   Not collective
+
 @*/
 int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
 {
@@ -81,6 +86,9 @@ int AODataKeyExists(AOData aodata,char *keyname, PetscTruth *flag)
 .    flag - zero if found, -1 if no room for new one, 1 if found available slot
      key - integer of keyname
      segment - integer of segment
+
+   Not collective
+
 */
 int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *flag,int *key,int *segment)
 {
@@ -131,6 +139,8 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *f
    Output Parameter:
 .    flag - PETSC_TRUE if found, else PETSC_FALSE
 
+   Not collective
+
 @*/
 int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *flag)
 {
@@ -159,6 +169,8 @@ int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *f
 
    Output Parameters:
 .  data - the actual data
+
+   Collective on AOData
 
 .keywords: database transactions
 
@@ -191,6 +203,8 @@ int AODataSegmentGet(AOData aodata,char *name,char *segment,int n,int *keys,void
    Output Parameters:
 .  data - the actual data
 
+   Collective on AOData
+
 .keywords: database transactions
 
 .seealso: 
@@ -218,6 +232,8 @@ int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,
 
    Output Parameters:
 .  data - the actual data
+
+   Collective on AOData and IS
 
 .keywords: database transactions
 
@@ -252,6 +268,8 @@ int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
    Output Parameters:
 .  data - the actual data
 
+   Collective on AOData and IS
+
 .keywords: database transactions
 
 .seealso:
@@ -284,6 +302,8 @@ int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **d
    Output Parameters:
 .  data - the actual data
 
+   Collective on AOData
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -315,6 +335,8 @@ int AODataSegmentGetLocal(AOData aodata,char *name,char *segment,int n,int *keys
    Output Parameters:
 .  data - the actual data
 
+   Collective on AOData
+
 .keywords: database transactions
 
 .seealso: 
@@ -342,6 +364,8 @@ int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *
 
    Output Parameters:
 .  data - the actual data
+
+   Collective on AOData and IS
 
 .keywords: database transactions
 
@@ -376,6 +400,8 @@ int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **
    Output Parameters:
 .  data - the actual data
 
+   Collective on AOData and IS
+
 .keywords: database transactions
 
 .seealso:
@@ -406,6 +432,8 @@ int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,voi
 
    Output Parameters:
 .  is - the indices retrieved
+
+   Collective on AOData
 
 .keywords: database transactions
 
@@ -448,6 +476,8 @@ int AODataKeyGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
    Output Parameters:
 .  is - the indices retrieved
 
+   Collective on AOData and IS
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -486,6 +516,8 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
    Output Parameters:
 .  is - the indices retrieved
 
+   Collective on AOData and IS
+
 .keywords: database transactions
 
 .seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
@@ -515,6 +547,8 @@ int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *ke
    Output Parameters:
 .  vmax - the maximum values (user must provide enough space)
 .  vmin - the minimum values (user must provide enough space)
+
+   Collective on AOData
 
 .keywords: database transactions
 
@@ -546,6 +580,8 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
    Output Parameters:
 .  isout - the indices retreived
 
+   Collective on AOData and IS
+
 .keywords: database transactions
 
 .seealso:
@@ -568,22 +604,22 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
 /* ------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "AODataKeyAddLocalToGlobalMapping" 
+#define __FUNC__ "AODataKeySetLocalToGlobalMapping" 
 /*@
-   AODataKeyAddLocalToGlobalMapping - Add another data key to a AOData database.
+   AODataKeySetLocalToGlobalMapping - Add another data key to a AOData database.
 
    Input Parameters:
-.  aodata - the database
-.  name - the name of the key
-.  N - the number of indices in the key
-.  nlocal - number of indices to be associated with this processor
-.  nsegments - the number of segments associated with the key
+.   aodata - the database
+.   name - the name of the key
+.   map - local to global mapping
+
+   Not collective
 
 .keywords: database additions
 
 .seealso:
 @*/
-int AODataKeyAddLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping map)
+int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping map)
 {
   int       ierr,ikey,flag;
 
@@ -601,6 +637,38 @@ int AODataKeyAddLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 }
 
 #undef __FUNC__  
+#define __FUNC__ "AODataKeyGetLocalToGlobalMapping" 
+/*@
+   AODataKeyGetLocalToGlobalMapping - Add another data key to a AOData database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+
+   Output Parameters:
+.   map - local to global mapping
+
+   Not collective
+
+.keywords: database additions
+
+.seealso:
+@*/
+int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping *map)
+{
+  int       ierr,ikey,flag;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+
+  ierr = AODataKeyFind_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
+  if (flag)  SETERRQ(1,1,"Key does not exist");
+
+  *map = aodata->keys[ikey].ltog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "AODataKeyAdd" 
 /*@
    AODataKeyAdd - Add another data key to a AOData database.
@@ -611,6 +679,8 @@ int AODataKeyAddLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 .  N - the number of indices in the key
 .  nlocal - number of indices to be associated with this processor
 .  nsegments - the number of segments associated with the key
+
+   Collective on AOData
 
 .keywords: database additions
 
@@ -684,6 +754,8 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N,int nsegments)
 .  data - the actual data
 .  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR etc
 
+   Collective on AOData
+
 .keywords: database additions
 
 .seealso:
@@ -732,6 +804,8 @@ int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *ke
 .  data - the actual data
 .  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR etc
 
+   Collective on AOData and IS
+
 .keywords: database additions
 
 .seealso:
@@ -753,9 +827,9 @@ int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODataKeyGetInfoOwnership"
+#define __FUNC__ "AODataKeyGetOwnershipRange"
 /*@
-   AODataKeyGetInfoOwnership - Gets the ownership range to this key type.
+   AODataKeyGetOwnershipRange - Gets the ownership range to this key type.
 
    Input Parameters:
 .  aodata - the database
@@ -765,11 +839,13 @@ int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
 .  rstart - first key owned locally
 .  rend - last key owned locally
 
+   Not collective
+
 .keywords: database accessing
 
 .seealso:
 @*/
-int AODataKeyGetInfoOwnership(AOData aodata,char *name,int *rstart,int *rend)
+int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 {
   int key,ierr,flag;
 
@@ -798,6 +874,8 @@ int AODataKeyGetInfoOwnership(AOData aodata,char *name,int *rstart,int *rend)
 .  nglobal - global number of keys
 .  nlocal - local number of keys
 .  nsegments - number of segments associated with key
+
+   Not collective
 
 .keywords: database accessing
 
@@ -836,6 +914,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 .  bs - the blocksize
 .  dtype - the datatype
 
+   Not collective
 
 .keywords: database accessing
 
@@ -868,6 +947,8 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *nglobal,
 .  aodata - the database
 .  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
+   Collective on AOData and Viewer
+
 .keywords: database viewing
 
 .seealso: ViewerFileOpenASCII()
@@ -889,6 +970,8 @@ int AODataView(AOData aodata, Viewer viewer)
 
    Input Parameters:
 .  aodata - the database
+
+   Collective on AOData
 
 .keywords: destroy, database
 
@@ -919,6 +1002,8 @@ int AODataDestroy(AOData aodata)
 .  key  - the key to remap
 .  ao - the old to new ordering
 
+   Collective on AOData and AO
+
 .keywords: database remapping
 
 .seealso: 
@@ -946,6 +1031,8 @@ int AODataKeyRemap(AOData aodata, char *key,AO ao)
    Output Parameter:
 .  adj - the adjacency graph
 
+   Collective on AOData
+
 .keywords: database, adjacency graph
 
 .seealso: 
@@ -971,6 +1058,8 @@ int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
     Input Parameters:
 .    aodata - the database
 .    key - the key you wish partitioned and renumbered
+
+   Collective on AOData
 
 .seealso: AODataKeyPartition()
 @*/

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.148 1997/10/28 14:26:00 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.149 1997/11/03 04:51:27 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -57,6 +57,10 @@ extern int MatAssemblyEnd(Mat,MatAssemblyType);
 #define MatSetValue(v,i,j,va,mode) \
 {int _ierr,_row = i,_col = j; Scalar _va = va; \
   _ierr = MatSetValues(v,1,&_row,1,&_col,&_va,mode);CHKERRQ(_ierr); \
+}
+#define MatGetValue(v,i,j,va) \
+{int _ierr,_row = i,_col = j; \
+  _ierr = MatGetValues(v,1,&_row,1,&_col,&va);CHKERRQ(_ierr); \
 }
 
 typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.66 1997/10/28 14:25:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.67 1997/11/03 04:49:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,8 +40,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  }
-  else if (vtype == DRAW_VIEWER) {
+  } else if (vtype == DRAW_VIEWER) {
     Draw       draw;
     double     ymin = -1.0,ymax = (double) da->N;
     double     xmin = -1.0,xmax = (double) ((da->M+2)*da->P),x,y;
@@ -72,8 +71,6 @@ int DAView_3d(PetscObject dain,Viewer viewer)
     }
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
-
 
     for (k=0; k<da->P; k++) {  /*Go through and draw for each plane*/
       if ((k >= da->zs) && (k < da->ze)) {
@@ -83,10 +80,10 @@ int DAView_3d(PetscObject dain,Viewer viewer)
         xmin = da->xs/da->w    + (da->M+1)*k; 
         xmax =(da->xe-1)/da->w + (da->M+1)*k;
 
-        DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);
-        DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);
-        DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);
-        DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);  
+        ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);CHKERRQ(ierr);
+        ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);CHKERRQ(ierr);
+        ierr = DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);CHKERRQ(ierr);
+        ierr = DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);CHKERRQ(ierr); 
 
         xmin = da->xs/da->w; 
         xmax =(da->xe-1)/da->w;
@@ -109,7 +106,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
     } 
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
+
     for (k=0-da->s; k<da->P+da->s; k++) {  
       /* Go through and draw for each plane */
       if ((k >= da->Zs) && (k < da->Ze)) {
@@ -135,14 +132,14 @@ int DAView_3d(PetscObject dain,Viewer viewer)
 
             if (x<xmin)  { xcoord = xmax - (xmin-x); }
             if (x>=xmax) { xcoord = xmin + (x-xmax); }
-            DrawString(draw,xcoord/da->w,ycoord,DRAW_BLUE,node);
+            ierr = DrawString(draw,xcoord/da->w,ycoord,DRAW_BLUE,node);CHKERRQ(ierr);
             base+=da->w;
           }
         }
       }         
     } 
-    DrawSynchronizedFlush(draw);
-    DrawPause(draw);
+    ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+    ierr = DrawPause(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

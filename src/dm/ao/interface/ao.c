@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.13 1997/09/26 02:21:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.14 1997/10/19 03:31:07 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: ao.c,v 1.13 1997/09/26 02:21:53 bsmith Exp bsmith $";
 .  ao - the application ordering context
 .  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
+   Collective on AO
+
 .keywords:application ordering
 
 .seealso: ViewerFileOpenASCII()
@@ -22,6 +24,7 @@ static char vcid[] = "$Id: ao.c,v 1.13 1997/09/26 02:21:53 bsmith Exp bsmith $";
 int AOView(AO ao, Viewer viewer)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = (*ao->view)((PetscObject)ao,viewer);CHKERRQ(ierr);
@@ -36,6 +39,8 @@ int AOView(AO ao, Viewer viewer)
    Input Parameters:
 .  ao - the application ordering context
 
+   Collective on AO
+
 .keywords: destroy, application ordering
 
 .seealso: AOCreateBasic()
@@ -43,6 +48,7 @@ int AOView(AO ao, Viewer viewer)
 int AODestroy(AO ao)
 {
   int ierr;
+
   PetscFunctionBegin;
   if (!ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ao,AO_COOKIE);
@@ -63,6 +69,8 @@ int AODestroy(AO ao)
 .  ao - the application ordering context
 .  is - the index set
 
+   Collective on AO and IS
+
    Note: Any integers in ia[] that are negative are left unchanged. This 
          allows one to convert, for example, neighbor lists that use negative
          entries to indicate nonexistent neighbors due to boundary conditions
@@ -76,6 +84,7 @@ int AODestroy(AO ao)
 int AOPetscToApplicationIS(AO ao,IS is)
 {
   int n,*ia,ierr;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
@@ -95,6 +104,8 @@ int AOPetscToApplicationIS(AO ao,IS is)
 .  ao - the application ordering context
 .  is - the index set
 
+   Collective on AO and IS
+
    Note: Any integers in ia[] that are negative are left unchanged. This 
          allows one to convert, for example, neighbor lists that use negative
          entries to indicate nonexistent neighbors due to boundary conditions
@@ -108,6 +119,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
 int AOApplicationToPetscIS(AO ao,IS is)
 {
   int n,*ia,ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = ISGetSize(is,&n); CHKERRQ(ierr);
@@ -128,6 +140,8 @@ int AOApplicationToPetscIS(AO ao,IS is)
 .  n - the number of integers
 .  ia - the integers
 
+   Collective on AO
+
    Note: Any integers in ia[] that are negative are left unchanged. This 
          allows one to convert, for example, neighbor lists that use negative
          entries to indicate nonexistent neighbors due to boundary conditions
@@ -141,6 +155,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
 int AOPetscToApplication(AO ao,int n,int *ia)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = (*ao->ops.petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
@@ -158,6 +173,8 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 .  n - the number of integers
 .  ia - the integers
 
+   Collective on AO
+
    Note: Any integers in ia[] that are negative are left unchanged. This 
          allows one to convert, for example, neighbor lists that use negative
          entries to indicate nonexistent neighbors due to boundary conditions
@@ -171,6 +188,7 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 int AOApplicationToPetsc(AO ao,int n,int *ia)
 {
   int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
   ierr = (*ao->ops.applicationtopetsc)(ao,n,ia); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.70 1997/10/28 14:25:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.71 1997/11/03 04:49:58 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -68,14 +68,13 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
 
     ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-    ierr = MPI_Barrier(da->comm);CHKERRQ(ierr);
 
     /* draw my box */
     ymin = 0; ymax = 0.3; xmin = da->xs / da->w; xmax = (da->xe / da->w)  - 1;
-    DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);
-    DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);
-    DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);
-    DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);
+    ierr = DrawLine(draw,xmin,ymin,xmax,ymin,DRAW_RED);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xmin,ymin,xmin,ymax,DRAW_RED);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xmin,ymax,xmax,ymax,DRAW_RED);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xmax,ymin,xmax,ymax,DRAW_RED);CHKERRQ(ierr);
 
     /* Put in index numbers */
     base = da->base / da->w;

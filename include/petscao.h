@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.10 1997/10/20 16:59:05 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.11 1997/10/28 14:26:00 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -38,14 +38,24 @@ typedef struct _p_AOData* AOData;
 extern int AODataCreateBasic(MPI_Comm,int,AOData *);
 
 extern int AODataKeyAdd(AOData,char*,int,int,int);
-extern int AODataKeyAddLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
+extern int AODataKeySetLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
+extern int AODataKeyGetLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping*);
 extern int AODataKeyRemap(AOData,char *,AO);
+
+extern int AODataKeyExists(AOData,char*,PetscTruth*);
+extern int AODataKeyGetInfo(AOData,char *,int *,int*,int *);
+extern int AODataKeyGetOwnershipRange(AOData,char *,int *,int*);
+
+extern int AODataKeyGetNeighbors(AOData,char *,int,int*,IS *);
+extern int AODataKeyGetNeighborsIS(AOData,char *,IS,IS *);
+extern int AODataKeyGetAdjacency(AOData,char *,Mat*);
+
+extern int AODataKeyPartition(AOData,char *);
 
 extern int AODataSegmentAdd(AOData,char*,char *,int, int, int *,void *,PetscDataType);
 extern int AODataSegmentAddIS(AOData,char*,char *,int, IS,void *,PetscDataType);
 
-extern int AODataKeyGetInfo(AOData,char *,int *,int*,int *);
-extern int AODataKeyGetInfoOwnership(AOData,char *,int *,int*);
+extern int AODataSegmentExists(AOData,char*,char*,PetscTruth*);
 extern int AODataSegmentGetInfo(AOData,char *,char *,int *,int *,int*,PetscDataType*);
 
 extern int AODataSegmentGet(AOData,char *,char *,int,int*,void **);
@@ -60,10 +70,9 @@ extern int AODataSegmentRestoreLocalIS(AOData,char *,char *,IS,void **);
 
 extern int AODataSegmentGetReduced(AOData,char *,char *,int,int*,IS *);
 extern int AODataSegmentGetReducedIS(AOData,char *,char *,IS,IS *);
+extern int AODataSegmentGetExtrema(AOData,char*,char*,void *,void *);
 
-extern int AODataKeyGetNeighbors(AOData,char *,int,int*,IS *);
-extern int AODataKeyGetNeighborsIS(AOData,char *,IS,IS *);
-extern int AODataKeyGetAdjacency(AOData,char *,Mat*);
+extern int AODataSegmentPartition(AOData,char *,char *);
 
 extern int AODataView(AOData,Viewer);
 extern int AODataDestroy(AOData);
