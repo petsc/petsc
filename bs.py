@@ -33,7 +33,7 @@ class BS (install.base.Base):
     if not initDB is None:
       argDB = initDB
     else:
-      argDB = RDict.RDict(parentDirectory = os.path.dirname(sys.modules['RDict'].__file__))
+      argDB = RDict.RDict(parentDirectory = os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)))
 
     argDB.setType('help',           nargs.ArgBool(None, None, 'Print help message'), forceLocal = 1)
     argDB.setType('noConfigure',    nargs.ArgBool(None, None, 'Suppress configure'), forceLocal = 1)
