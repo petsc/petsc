@@ -61,8 +61,9 @@ class BabelPackageDict (UserDict.UserDict):
     self.data[key] = value
 
 class Defaults:
-  implRE    = re.compile(r'^(.*)_Impl$')
-  libraryRE = re.compile(r'^(.*)lib(.*).so$')
+  implRE     = re.compile(r'^(.*)_Impl$')
+  libraryRE  = re.compile(r'^(.*)lib(.*).so$')
+  compileExt = ['.h', '.c', '.hh', '.cc', '.f', '.f90']
 
   def __init__(self, sources = None, repositoryDir = None, serverBaseDir = None, compilerFlags = ''):
     self.sources         = sources
@@ -125,7 +126,7 @@ class Defaults:
     return [target.Target(None, [babel.TagAllSIDL(), action])]
 
   def getSIDLServerCompiler(self, lang, rootDir, generatedRoots):
-    action = babel.CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, ['.h', '.c', '.hh', '.cc']), compilerFlags = self.compilerFlags)
+    action = babel.CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, self.compileExt), compilerFlags = self.compilerFlags)
     action.language  = lang
     action.outputDir = rootDir
     action.repositoryDirs.append(self.repositoryDir)
@@ -148,13 +149,13 @@ class Defaults:
                     transform.FileFilter(self.isImpl, tags = 'bkadd'),
                     bk.BKClose()]
 
-      defActions = transform.Transform(fileset.ExtensionFileSet(serverSourceRoots, ['.h', '.c', '.hh', '.cc']))
+      defActions = transform.Transform(fileset.ExtensionFileSet(serverSourceRoots, self.compileExt))
 
       targets.append(target.Target(None, [babel.TagSIDL(), target.If(self.isNewSidl, genActions, defActions)]))
     return targets
 
   def getSIDLClientCompiler(self, lang, rootDir):
-    compiler           = babel.CompileSIDLClient(fileset.ExtensionFileSet(rootDir, ['.h', '.c', '.cc', '.hh']), compilerFlags = self.compilerFlags)
+    compiler           = babel.CompileSIDLClient(fileset.ExtensionFileSet(rootDir, self.compileExt), compilerFlags = self.compilerFlags)
     compiler.language  = lang
     compiler.outputDir = rootDir
     compiler.repositoryDirs.append(self.repositoryDir)
@@ -231,10 +232,12 @@ class CompileDefaults (Defaults):
         else:
           raise RuntimeError('Package '+package+' needs stubs for '+lang+' which have not been configured')
 
-        if lang in ['Python', 'F77', 'C']:
+        if lang in ['Python', 'C']:
           tagger = compile.TagC(root = rootDir)
         elif lang == 'C++':
           tagger = [compile.TagC(root = rootDir), compile.TagCxx(root = rootDir)]
+        elif lang == 'F77':
+          tagger = [compile.TagC(root = rootDir), compile.TagF77(root = rootDir)]
         else:
           raise RuntimeError('Unknown client language: '+lang)
 

@@ -182,16 +182,20 @@ class CompileCxx (Compile):
     elif output.find('warning') >= 0:
       print('\''+command+'\': '+output)
 
-class TagFortran (transform.GenericTag):
-  def __init__(self, tag = 'fortran', ext = 'f', sources = None, extraExt = '', root = None):
+class TagF77 (transform.GenericTag):
+  def __init__(self, tag = 'f77', ext = 'f', sources = None, extraExt = '', root = None):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
 class CompileF77 (Compile):
-  def __init__(self, library, sources = None, tag = 'fortran', compiler = 'g77', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
+  def __init__(self, library, sources = None, tag = 'f77', compiler = 'g77', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
 
+class TagF90 (transform.GenericTag):
+  def __init__(self, tag = 'f77', ext = 'f90', sources = None, extraExt = '', root = None):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
+
 class CompileF90 (Compile):
-  def __init__(self, library, sources = None, tag = 'fortran', compiler = 'f90', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
+  def __init__(self, library, sources = None, tag = 'f90', compiler = 'f90', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
 
 class TagEtags (transform.GenericTag):
