@@ -21,11 +21,12 @@ Arg class, which wraps the usual value.'''
     self.saveFilename    = 'RDict.db'
     self.addrFilename    = 'RDict.loc'
     self.parentAddr      = parentAddr
+    self.isServer        = 0
     self.parentDirectory = parentDirectory
     self.stopCmd         = cPickle.dumps(('stop',))
     self.writeLogLine('Greetings')
-    self.load()
     self.connectParent(self.parentAddr, self.parentDirectory)
+    self.load()
     atexit.register(self.shutdown)
     return
 
@@ -221,9 +222,11 @@ Arg class, which wraps the usual value.'''
     f = file(self.addrFilename, 'w')
     cPickle.dump(server.server_address, f)
     f.close()
+    self.writeLogLine('SERVER: Wrote lock file '+os.path.abspath(self.addrFilename))
     return
 
   def startServer(self, addrFilename):
+    import RDict # Need this to locate server script
     import sys
     import time
 
@@ -347,6 +350,7 @@ Arg class, which wraps the usual value.'''
     if flag == 'nosocket':
       raise RuntimeError,'Cannot get available socket'
 
+    self.isServer = 1
     self.writeServerAddr(server)
  
     server.rdict = self
@@ -356,6 +360,8 @@ Arg class, which wraps the usual value.'''
 
   def load(self):
     '''Load the saved dictionary'''
+    if not self.parentDirectory is None and os.path.samefile(os.getcwd(), self.parentDirectory):
+      return
     if os.path.exists(self.saveFilename):
       try:
         dbFile = file(self.saveFilename)
@@ -388,8 +394,7 @@ Arg class, which wraps the usual value.'''
   def shutdown(self):
     if self.saveTimer:
       self.saveTimer.cancel()
-    self.save()
-    if os.path.isfile(self.addrFilename):
+    if self.isServer and os.path.isfile(self.addrFilename):
       os.remove(self.addrFilename)
     if not self.parent is None:
       self.parent.sendall(self.stopCmd)

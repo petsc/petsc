@@ -52,7 +52,7 @@ class UsingSIDL (maker.Maker):
   def setupArgDB(self):
     import nargs
 
-    self.argDB.setType('SIDL_LANG', nargs.Arg(None, 'The language of the SIDL runtime'))
+    self.argDB.setType('SIDL_LANG', nargs.Arg(None, None, 'The language of the SIDL runtime'))
 
     if not self.argDB.has_key('SIDL_LANG'): self.argDB['SIDL_LANG'] = 'C++'
     return
