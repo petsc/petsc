@@ -694,7 +694,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscEvent event, int t, PetscObject o1, 
   ierr = PetscStrncpy(tracespace, traceblanks, 2*tracelevel);CHKERRQ(ierr);
   tracespace[2*tracelevel] = 0;
   PetscTime(cur_time);
-  fprintf(tracefile, "%s[%d] %g Event begin: %s\n", tracespace, rank, cur_time-tracetime, eventRegLog->eventInfo[event].name);
+  ierr = PetscFPrintf(PETSC_COMM_SELF,tracefile, "%s[%d] %g Event begin: %s\n", tracespace, rank, cur_time-tracetime, eventRegLog->eventInfo[event].name);CHKERRQ(ierr);
   fflush(tracefile);
 
   PetscFunctionReturn(0);
@@ -730,7 +730,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscEvent event,int t,PetscObject o1,Petsc
   ierr = PetscStrncpy(tracespace, traceblanks, 2*tracelevel);CHKERRQ(ierr);
   tracespace[2*tracelevel] = 0;
   PetscTime(cur_time);
-  fprintf(tracefile, "%s[%d] %g Event end: %s\n", tracespace, rank, cur_time-tracetime, eventRegLog->eventInfo[event].name);
+  ierr = PetscFPrintf(PETSC_COMM_SELF,tracefile, "%s[%d] %g Event end: %s\n", tracespace, rank, cur_time-tracetime, eventRegLog->eventInfo[event].name);CHKERRQ(ierr);
   fflush(tracefile);
   PetscFunctionReturn(0);
 }

@@ -12,14 +12,10 @@ EXTERN_C_END
 #define __FUNCT__ "VecDestroy_MPI"
 PetscErrorCode VecDestroy_MPI(Vec v)
 {
-  Vec_MPI *x = (Vec_MPI*)v->data;
+  Vec_MPI        *x = (Vec_MPI*)v->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
-
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%d",v->N);
 #endif  
@@ -42,8 +38,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscInt               i,len,work = xin->n,n,j,cnt;
-  PetscMPIInt       size,rank,tag = ((PetscObject)viewer)->tag;
+  PetscInt          i,work = xin->n,j,cnt,len;
+  PetscMPIInt       n,size,rank,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
   PetscScalar       *values,*xarray;
   char              *name;
@@ -53,7 +49,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   /* determine maximum message to arrive */
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
@@ -81,7 +77,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       }
       /* receive and print messages */
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
         for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -109,7 +105,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       }
       /* receive and print messages */
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
         for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -141,7 +137,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       }
       /* receive and print messages */
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);        
         if (format != PETSC_VIEWER_ASCII_COMMON) {
           ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j);CHKERRQ(ierr);
@@ -179,8 +175,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
-  PetscInt       len,work = xin->n,n,j;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,n;
+  PetscInt       len,work = xin->n,j;
   int            fdes;
   MPI_Status     status;
   PetscScalar    *values,*xarray;
@@ -192,7 +188,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 
   /* determine maximum message to arrive */
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
@@ -204,7 +200,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     /* receive and print messages */
     for (j=1; j<size; j++) {
-      ierr = MPI_Recv(values,len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
       ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
       ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
     }
@@ -212,9 +208,9 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file && xin->bs > 1) {
       if (xin->prefix) {
-	fprintf(file,"-%svecload_block_size %d\n",xin->prefix,xin->bs);
+	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %d\n",xin->prefix,xin->bs);CHKERRQ(ierr);
       } else {
-	fprintf(file,"-vecload_block_size %d\n",xin->bs);
+	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %d\n",xin->bs);CHKERRQ(ierr);
       }
     }
   } else {
@@ -229,6 +225,10 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_Draw_LG"
 PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
+#if defined(PETSC_USE_64BIT_INT)
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Not supported with 64 bit integers");
+#else
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   int            i,N = xin->N,*lens;
@@ -291,6 +291,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -378,6 +379,10 @@ EXTERN_C_END
 #define __FUNCT__ "VecView_MPI_Socket"
 PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 {
+#if defined(PETSC_USE_64BIT_INT)
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Not supported with 64 bit integers");
+#else
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   int            i,N = xin->N,*lens;
@@ -401,6 +406,7 @@ PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
     ierr = MPI_Gatherv(xarray,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -723,9 +729,10 @@ to make sure we never malloc an empty one.
 PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
 {
   PetscErrorCode ierr;
-  PetscInt         *owners = xin->map->range,*bowners,size,i,bs,nstash,reallocs;
-  InsertMode  addv;
-  MPI_Comm    comm = xin->comm;
+  PetscInt       *owners = xin->map->range,*bowners,i,bs,nstash,reallocs;
+  PetscMPIInt    size;
+  InsertMode     addv;
+  MPI_Comm       comm = xin->comm;
 
   PetscFunctionBegin;
   if (xin->stash.donotstash) {
@@ -762,8 +769,9 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
 PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
 {
   PetscErrorCode ierr;
-  PetscInt         base,i,j,n,*row,flg,bs;
-  PetscScalar *val,*vv,*array,*xarray;
+  PetscInt       base,i,j,*row,flg,bs;
+  PetscMPIInt    n;
+  PetscScalar    *val,*vv,*array,*xarray;
 
   PetscFunctionBegin;
   if (!vec->stash.donotstash) {

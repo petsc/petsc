@@ -16,8 +16,8 @@ EXTERN PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
 PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
-  Vec_MPI      *w = (Vec_MPI *)win->data;
-  PetscScalar  *array;
+  Vec_MPI        *w = (Vec_MPI *)win->data;
+  PetscScalar    *array;
 
   PetscFunctionBegin;
 
@@ -51,7 +51,7 @@ EXTERN_C_BEGIN
 PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
-  PetscScalar  *array;
+  PetscScalar    *array;
 
   PetscFunctionBegin;
   ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);

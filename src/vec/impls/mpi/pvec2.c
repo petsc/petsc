@@ -145,7 +145,7 @@ MPI_Op VecMin_Local_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMax_Local"
-void VecMax_Local(void *in,void *out,PetscInt *cnt,MPI_Datatype *datatype)
+void VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
 
@@ -166,7 +166,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMin_Local"
-void VecMin_Local(void *in,void *out,PetscInt *cnt,MPI_Datatype *datatype)
+void VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
 
@@ -189,7 +189,7 @@ EXTERN_C_END
 PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 {
   PetscErrorCode ierr;
-  PetscReal work;
+  PetscReal      work;
 
   PetscFunctionBegin;
   /* Find the local max */
@@ -200,7 +200,7 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
-    PetscInt       rstart;
+    PetscInt  rstart;
 
     if (!VecMax_Local_Op) {
       ierr = MPI_Op_create(VecMax_Local,1,&VecMax_Local_Op);CHKERRQ(ierr);

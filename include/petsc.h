@@ -63,7 +63,7 @@ typedef int PetscMPIInt;
 
 #if defined(PETSC_USE_64BIT_INT)
 typedef long long PetscInt;
-#define MPIU_INT MPI_INT
+#define MPIU_INT MPI_LONG_LONG_INT
 #undef  PETSC_PRINTF_FORMAT_CHECK
 #define PETSC_PRINTF_FORMAT_CHECK(a,b)
 #undef  PETSC_FPRINTF_FORMAT_CHECK

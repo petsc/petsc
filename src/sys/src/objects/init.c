@@ -84,12 +84,12 @@ PetscErrorCode PetscLogOpenHistoryFile(const char filename[],FILE **fd)
     }
 
     *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
-    fprintf(*fd,"---------------------------------------------------------\n");
-    fprintf(*fd,"%s %s\n",version,date);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date);PetscBinaryWrite
     ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-    fprintf(*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);
-    PetscOptionsPrint(*fd);
-    fprintf(*fd,"---------------------------------------------------------\n");
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);CHKERRQ(ierr);
+    ierr = PetscOptionsPrint(*fd);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
     fflush(*fd);
   }
   PetscFunctionReturn(0); 
@@ -105,13 +105,14 @@ PetscErrorCode PetscLogCloseHistoryFile(FILE **fd)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
-  ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-  fprintf(*fd,"---------------------------------------------------------\n");
-  fprintf(*fd,"Finished at %s\n",date);
-  fprintf(*fd,"---------------------------------------------------------\n");
-  fflush(*fd);
-  fclose(*fd);
+  if (!rank) {
+    ierr = PetscGetDate(date,64);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
+    fflush(*fd);
+    fclose(*fd);
+  }
   PetscFunctionReturn(0); 
 }
 
@@ -503,8 +504,9 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
       }
     }
     /* check if this processor node should be in debugger */
-    ierr = PetscMalloc(size*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
-    ierr = PetscOptionsGetIntArray(PETSC_NULL,"-debugger_nodes",nodes,&lsize,&flag);CHKERRQ(ierr);
+    ierr  = PetscMalloc(size*sizeof(PetscInt),&nodes);CHKERRQ(ierr);
+    lsize = size;
+    ierr  = PetscOptionsGetIntArray(PETSC_NULL,"-debugger_nodes",nodes,&lsize,&flag);CHKERRQ(ierr);
     if (flag) {
       for (i=0; i<lsize; i++) {
         if (nodes[i] == rank) { flag = PETSC_FALSE; break; }

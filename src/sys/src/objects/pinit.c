@@ -100,7 +100,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscMaxSum_Local"
 void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
-  int *xin = (int*)in,*xout = (int*)out,i,count = *cnt;
+  PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_2INT) {

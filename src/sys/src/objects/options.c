@@ -1217,11 +1217,11 @@ PetscErrorCode PetscOptionsGetRealArray(const char pre[],const char name[],Petsc
 @*/
 PetscErrorCode PetscOptionsGetIntArray(const char pre[],const char name[],PetscInt dvalue[],PetscInt *nmax,PetscTruth *flg)
 {
-  char       *value;
+  char           *value;
   PetscErrorCode ierr;
-  int        n = 0;
-  PetscTruth flag;
-  PetscToken *token;
+  PetscInt       n = 0;
+  PetscTruth     flag;
+  PetscToken     *token;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);

@@ -197,7 +197,7 @@ PetscErrorCode PetscLogInfo(void *vobj, const char message[], ...)
   sprintf(string, "[%d]", urank); 
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message, Argp);
-  fprintf(PetscLogInfoFile, "%s", string);
+  ierr = PetscFPrintf(PETSC_COMM_SELF,PetscLogInfoFile, "%s", string);CHKERRQ(ierr);
   fflush(PetscLogInfoFile);
   if (petsc_history) {
     PetscVFPrintf(petsc_history, message, Argp);CHKERRQ(ierr);

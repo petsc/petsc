@@ -122,9 +122,9 @@ PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
                  lu->cpus, lu->options.msglvl, lu->options.msgFile);
   }
   if ( lu->options.msglvl > 2 ) {
-    fprintf(lu->options.msgFile, "\n\n right hand side matrix after permutation");
+    ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n right hand side matrix after permutation");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(mtxY, lu->options.msgFile); 
-    fprintf(lu->options.msgFile, "\n\n solution matrix in new ordering");
+    ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n solution matrix in new ordering");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(mtxX, lu->options.msgFile);
     fflush(lu->options.msgFile);
   }
@@ -250,7 +250,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS); 
   if ( lu->options.msglvl > 0 ) {
     printf("\n\n input matrix");
-    fprintf(lu->options.msgFile, "\n\n input matrix");
+    ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n input matrix");CHKERRQ(ierr);
     InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
     fflush(lu->options.msgFile);
   }
@@ -272,9 +272,9 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     Graph_init2(lu->graph, 0, neqns, 0, nedges, neqns, nedges, adjIVL, NULL, NULL);
     if ( lu->options.msglvl > 2 ) {
       if (lu->options.useQR){
-        fprintf(lu->options.msgFile, "\n\n graph of A^T A");
+        ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of A^T A");CHKERRQ(ierr);
       } else {
-        fprintf(lu->options.msgFile, "\n\n graph of the input matrix");
+        ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of the input matrix");CHKERRQ(ierr);
       }
       Graph_writeForHumanEye(lu->graph, lu->options.msgFile);
       fflush(lu->options.msgFile);
@@ -298,7 +298,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     }
 
     if ( lu->options.msglvl > 0 ) {
-      fprintf(lu->options.msgFile, "\n\n front tree from ordering");
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n front tree from ordering");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
       fflush(lu->options.msgFile);
     }
@@ -336,15 +336,15 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
       lu->symbfacIVL = SymbFac_initFromInpMtx(lu->frontETree, lu->mtxA);
     }
     if ( lu->options.msglvl > 2 ) {
-      fprintf(lu->options.msgFile, "\n\n old-to-new permutation vector");
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n old-to-new permutation vector");CHKERRQ(ierr);
       IV_writeForHumanEye(lu->oldToNewIV, lu->options.msgFile);
-      fprintf(lu->options.msgFile, "\n\n new-to-old permutation vector");
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n new-to-old permutation vector");CHKERRQ(ierr);
       IV_writeForHumanEye(lu->newToOldIV, lu->options.msgFile);
-      fprintf(lu->options.msgFile, "\n\n front tree after permutation");
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n front tree after permutation");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
-      fprintf(lu->options.msgFile, "\n\n input matrix after permutation");
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n input matrix after permutation");CHKERRQ(ierr);
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
-      fprintf(lu->options.msgFile, "\n\n symbolic factorization");
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n symbolic factorization");CHKERRQ(ierr);
       IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile);
       fflush(lu->options.msgFile);
     }  
@@ -378,7 +378,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     }
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
     if ( lu->options.msglvl > 2 ) {
-      fprintf(lu->options.msgFile, "\n\n input matrix after permutation");
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n input matrix after permutation");CHKERRQ(ierr);
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile); 
     } 
   } /* end of if( lu->flg == DIFFERENT_NONZERO_PATTERN) */
@@ -415,8 +415,8 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     FrontMtx_QR_factor(lu->frontmtx, lu->mtxA, chvmanager, 
                    lu->cpus, &facops, lu->options.msglvl, lu->options.msgFile);
     if ( lu->options.msglvl > 1 ) {
-      fprintf(lu->options.msgFile, "\n\n factor matrix");
-      fprintf(lu->options.msgFile, "\n facops = %9.2f", facops);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n factor matrix");CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n facops = %9.2f", facops);CHKERRQ(ierr);
     }
   } else {
     IVfill(20, lu->stats, 0);
@@ -454,7 +454,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   ChvManager_free(chvmanager);
 
   if ( lu->options.msglvl > 0 ) {
-    fprintf(lu->options.msgFile, "\n\n factor matrix");
+    ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n factor matrix");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
     fflush(lu->options.msgFile);
   }
@@ -463,7 +463,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     if ( lu->options.patchAndGoFlag == 1 ) {
       if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
         if (lu->options.msglvl > 0 ){
-          fprintf(lu->options.msgFile, "\n small pivots found at these locations");
+          ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n small pivots found at these locations");CHKERRQ(ierr);
           IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile);
         }
       }
@@ -471,11 +471,11 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
     } else if ( lu->options.patchAndGoFlag == 2 ) {
       if (lu->options.msglvl > 0 ){
         if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
-          fprintf(lu->options.msgFile, "\n small pivots found at these locations");
+          ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n small pivots found at these locations");CHKERRQ(ierr);
           IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->options.msgFile);
         }
         if ( lu->frontmtx->patchinfo->fudgeDV != NULL ) {
-          fprintf(lu->options.msgFile, "\n perturbations");
+          ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n perturbations");CHKERRQ(ierr);
           DV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeDV, lu->options.msgFile);
         }
       }
@@ -486,7 +486,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   /* post-process the factorization */
   FrontMtx_postProcess(lu->frontmtx, lu->options.msglvl, lu->options.msgFile);
   if ( lu->options.msglvl > 2 ) {
-    fprintf(lu->options.msgFile, "\n\n factor matrix after post-processing");
+    ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n factor matrix after post-processing");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
     fflush(lu->options.msgFile);
   }

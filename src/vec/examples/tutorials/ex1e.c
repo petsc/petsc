@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   Vec         x, y, w;               /* vectors */
   Vec         *z;                    /* array of vectors */
   PetscReal   norm, v, v1, v2;
-  int         n = 20;
+  PetscInt    n = 20;
   PetscTruth  flg;
   PetscScalar one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
 

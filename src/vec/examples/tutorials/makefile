@@ -124,7 +124,7 @@ runex1_2:
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
 runex1_3:
-	-@${MPIRUN} -np 1 -vec_type petscesi ex1 > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ex1 -vec_type petscesi ex1 > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_3, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
