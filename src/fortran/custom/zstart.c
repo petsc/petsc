@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.65 1999/11/05 14:48:14 bsmith Exp balay $*/
+/*$Id: zstart.c,v 1.66 1999/11/24 21:27:45 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -169,7 +169,7 @@ EXTERN_C_BEGIN
       Since this is called from Fortran it does not return error codes
       
 */
-void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
 {
 #if defined (PARCH_win32)
   short  flg,i;
@@ -179,17 +179,17 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ie
   int  j,flag,argc = 0,dummy_tag,ierr;
   char **args = 0,*t1, name[256];
 
-  *__ierr = 1;
+  *ierr = 1;
   ierr = PetscMemzero(name,256); if (ierr) return;
-  if (PetscInitializedCalled) {*__ierr = 0; return;}
+  if (PetscInitializedCalled) {*ierr = 0; return;}
   
-  *__ierr = OptionsCreate(); 
-  if (*__ierr) return;
+  *ierr = OptionsCreate(); 
+  if (*ierr) return;
   i = 0;
 #if defined(PETSC_HAVE_PXFGETARG)
   { int ilen;
-    PXFGETARG(&i, _cptofcd(name,256),&ilen,__ierr); 
-    if (*__ierr) return;
+    PXFGETARG(&i, _cptofcd(name,256),&ilen,ierr); 
+    if (*ierr) return;
     name[ilen] = 0;
   }
 #elif defined (PARCH_win32)
@@ -208,8 +208,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ie
 
   MPI_Initialized(&flag);
   if (!flag) {
-    mpi_init_(__ierr);
-    if (*__ierr) {(*PetscErrorPrintf)("PetscInitialize:");return;}
+    mpi_init_(ierr);
+    if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:");return;}
     PetscBeganMPI    = 1;
   }
   PetscInitializedCalled = 1;
@@ -230,16 +230,16 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ie
   }
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
-  *__ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);
-  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating MPI ops");return;}
+  *ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating MPI ops");return;}
 #endif
 
   /*
        Create the PETSc MPI reduction operator that sums of the first
      half of the entries and maxes the second half.
   */
-  *__ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);
-  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating MPI ops");return;}
+  *ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating MPI ops");return;}
 
   /*
      PetscInitializeFortran() is called twice. Here it initializes
@@ -251,54 +251,54 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ie
 
   PETScParseFortranArgs_Private(&argc,&args);
   FIXCHAR(filename,len,t1);
-  *__ierr = OptionsInsert(&argc,&args,t1); 
+  *ierr = OptionsInsert(&argc,&args,t1); 
   FREECHAR(filename,t1);
-  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating options database");return;}
-  *__ierr = PetscFree(args);
-  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Freeing args");return;}
-  *__ierr = OptionsCheckInitial(); 
-  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating options database");return;}
+  *ierr = PetscFree(args);
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Freeing args");return;}
+  *ierr = OptionsCheckInitial(); 
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
 
   /*
        Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc attribute.
   */
-  *__ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
-  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}
-  *__ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
-  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
-  *__ierr = PetscInitialize_DynamicLibraries(); 
-  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
+  *ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
+  if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}
+  *ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
+  if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
+  *ierr = PetscInitialize_DynamicLibraries(); 
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
 
-  *__ierr = ViewerInitializeASCII_Private(); 
-  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
-  *__ierr = PetscInitializeFortran();
-  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up common block");return;}
+  *ierr = ViewerInitializeASCII_Private(); 
+  if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
+  *ierr = PetscInitializeFortran();
+  if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up common block");return;}
 
   if (PetscBeganMPI) {
     int size;
 
-    *__ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
-    if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting MPI_Comm_size()");return;}
+    *ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+    if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting MPI_Comm_size()");return;}
     PLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
   }
   
-  *__ierr = OptionsCheckInitial_Components(); 
-  if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
+  *ierr = OptionsCheckInitial_Components(); 
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
 
 }
 
-void PETSC_STDCALL petscfinalize_(int *__ierr)
+void PETSC_STDCALL petscfinalize_(int *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
   standard_arithmetic();
 #endif
 
-  *__ierr = PetscFinalize();
+  *ierr = PetscFinalize();
 }
 
-void PETSC_STDCALL petscsetcommworld_(MPI_Comm *comm,int *__ierr)
+void PETSC_STDCALL petscsetcommworld_(MPI_Comm *comm,int *ierr)
 {
-  *__ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *comm )  );
+  *ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *comm )  );
 }
 EXTERN_C_END

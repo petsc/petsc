@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.73 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.74 1999/11/05 14:48:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
@@ -81,37 +81,37 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,int *tag, int *__ierr )
+void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,int *tag, int *ierr )
 {
-  *__ierr = PetscObjectGetNewTag(*obj,tag);
+  *ierr = PetscObjectGetNewTag(*obj,tag);
 }
 
-void PETSC_STDCALL petscobjectrestorenewtag_(PetscObject *obj,int *tag, int *__ierr )
+void PETSC_STDCALL petscobjectrestorenewtag_(PetscObject *obj,int *tag, int *ierr )
 {
-  *__ierr = PetscObjectRestoreNewTag(*obj,tag);
+  *ierr = PetscObjectRestoreNewTag(*obj,tag);
 }
 
-void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,int *tag, int *__ierr )
+void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,int *tag, int *ierr )
 {
-  *__ierr = PetscCommGetNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
+  *ierr = PetscCommGetNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
 }
 
-void PETSC_STDCALL petsccommrestorenewtag_(MPI_Comm *comm,int *tag, int *__ierr )
+void PETSC_STDCALL petsccommrestorenewtag_(MPI_Comm *comm,int *tag, int *ierr )
 {
-  *__ierr = PetscCommRestoreNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
+  *ierr = PetscCommRestoreNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
 }
 
-void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,int *n,int *N, int *__ierr )
+void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,int *n,int *N, int *ierr )
 {
-  *__ierr = PetscSplitOwnership((MPI_Comm)PetscToPointerComm(*comm),n,N);
+  *ierr = PetscSplitOwnership((MPI_Comm)PetscToPointerComm(*comm),n,N);
 }
 
-void PETSC_STDCALL petscbarrier_(PetscObject *obj, int *__ierr )
+void PETSC_STDCALL petscbarrier_(PetscObject *obj, int *ierr )
 {
-  *__ierr = PetscBarrier(*obj);
+  *ierr = PetscBarrier(*obj);
 }
 
-void PETSC_STDCALL petscstrncpy_(CHAR s1, CHAR s2, int *n,int *__ierr,int len1, int len2)
+void PETSC_STDCALL petscstrncpy_(CHAR s1, CHAR s2, int *n,int *ierr,int len1, int len2)
 {
   char *t1,*t2;
   int  m;
@@ -125,10 +125,10 @@ void PETSC_STDCALL petscstrncpy_(CHAR s1, CHAR s2, int *n,int *__ierr,int len1, 
   t2 = s2;
   m = *n; if (len1 < m) m = len1; if (len2 < m) m = len2;
 #endif
-  *__ierr = PetscStrncpy(t1,t2,m);
+  *ierr = PetscStrncpy(t1,t2,m);
 }
 
-void PETSC_STDCALL petscfixfilename_(CHAR filein ,CHAR fileout,int *__ierr,int len1,int len2)
+void PETSC_STDCALL petscfixfilename_(CHAR filein ,CHAR fileout,int *ierr,int len1,int len2)
 {
   int  i,n;
   char *in,*out;
@@ -154,7 +154,7 @@ void PETSC_STDCALL petscfixfilename_(CHAR filein ,CHAR fileout,int *__ierr,int l
   out[i] = 0;
 }
 
-void PETSC_STDCALL petscbinaryopen_(CHAR name,int *type,int *fd,int *__ierr,int len)
+void PETSC_STDCALL petscbinaryopen_(CHAR name,int *type,int *fd,int *ierr,int len)
 {
   int  ierr;
   char *c1;
@@ -162,52 +162,52 @@ void PETSC_STDCALL petscbinaryopen_(CHAR name,int *type,int *fd,int *__ierr,int 
   FIXCHAR(name,len,c1);
   ierr = PetscBinaryOpen(c1,*type,fd);
   FREECHAR(name,c1);
-  *__ierr = ierr;
+  *ierr = ierr;
 }
 
-void PETSC_STDCALL petscbinarywrite_(int *fd,void *p,int *n,PetscDataType *type,int *istemp,int *__ierr)
+void PETSC_STDCALL petscbinarywrite_(int *fd,void *p,int *n,PetscDataType *type,int *istemp,int *ierr)
 {
-  *__ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
+  *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-void PETSC_STDCALL petscbinaryread_(int *fd,void *p,int *n,PetscDataType *type,int *__ierr)
+void PETSC_STDCALL petscbinaryread_(int *fd,void *p,int *n,PetscDataType *type,int *ierr)
 {
-  *__ierr = PetscBinaryRead(*fd,p,*n,*type);
+  *ierr = PetscBinaryRead(*fd,p,*n,*type);
 }
 
-void PETSC_STDCALL petscbinaryseek_(int *fd,int *size,PetscBinarySeekType *whence,int *__ierr)
+void PETSC_STDCALL petscbinaryseek_(int *fd,int *size,PetscBinarySeekType *whence,int *ierr)
 {
-  *__ierr = PetscBinarySeek(*fd,*size,*whence);
+  *ierr = PetscBinarySeek(*fd,*size,*whence);
 }
 
-void PETSC_STDCALL petscbinaryclose_(int *fd,int *__ierr)
+void PETSC_STDCALL petscbinaryclose_(int *fd,int *ierr)
 {
-  *__ierr = PetscBinaryClose(*fd);
+  *ierr = PetscBinaryClose(*fd);
 }
 
 /* ---------------------------------------------------------------------------------*/
-void PETSC_STDCALL petscmemzero_(void *a,int *n,int *__ierr) 
+void PETSC_STDCALL petscmemzero_(void *a,int *n,int *ierr) 
 {
-  *__ierr = PetscMemzero(a,*n);
+  *ierr = PetscMemzero(a,*n);
 }
 
-void PETSC_STDCALL petsctrdump_(int *__ierr)
+void PETSC_STDCALL petsctrdump_(int *ierr)
 {
-  *__ierr = PetscTrDump(stdout);
+  *ierr = PetscTrDump(stdout);
 }
-void PETSC_STDCALL petsctrlogdump_(int *__ierr)
+void PETSC_STDCALL petsctrlogdump_(int *ierr)
 {
-  *__ierr = PetscTrLogDump(stdout);
-}
-
-void PETSC_STDCALL petscmemcpy_(int *out,int *in,int *length,int *__ierr)
-{
-  *__ierr = PetscMemcpy(out,in,*length);
+  *ierr = PetscTrLogDump(stdout);
 }
 
-void PETSC_STDCALL petsctrlog_(int *__ierr)
+void PETSC_STDCALL petscmemcpy_(int *out,int *in,int *length,int *ierr)
 {
-  *__ierr = PetscTrLog();
+  *ierr = PetscMemcpy(out,in,*length);
+}
+
+void PETSC_STDCALL petsctrlog_(int *ierr)
+{
+  *ierr = PetscTrLog();
 }
 
 /*
@@ -227,8 +227,8 @@ static char FIXCHARSTRING[1024];
   } else {  \
     while((n > 0) && (b[n-1] == ' ')) n--; \
     b = FIXCHARSTRING; \
-    *__ierr = PetscStrncpy(b,_fcdtocp(a),n); \
-    if (*__ierr) return; \
+    *ierr = PetscStrncpy(b,_fcdtocp(a),n); \
+    if (*ierr) return; \
     b[n] = 0; \
   } \
 }
@@ -244,8 +244,8 @@ static char FIXCHARSTRING[1024];
     while((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
       b = FIXCHARSTRING; \
-      *__ierr = PetscStrncpy(b,a,n); \
-      if (*__ierr) return; \
+      *ierr = PetscStrncpy(b,a,n); \
+      if (*ierr) return; \
       b[n] = 0; \
     } else b = a;\
   } \
@@ -253,122 +253,122 @@ static char FIXCHARSTRING[1024];
 
 #endif
 
-void PETSC_STDCALL chkmemfortran_(int *line, CHAR file,int *__ierr,int len)
+void PETSC_STDCALL chkmemfortran_(int *line, CHAR file,int *ierr,int len)
 {
   char *c1;
 
   FIXCHARNOMALLOC(file,len,c1);
-  *__ierr = PetscTrValid(*line,"Userfunction",c1," ");
+  *ierr = PetscTrValid(*line,"Userfunction",c1," ");
 }
 
-void PETSC_STDCALL petsctrvalid_(int *__ierr)
+void PETSC_STDCALL petsctrvalid_(int *ierr)
 {
-  *__ierr = PetscTrValid(0,"Unknown Fortran",0,0);
+  *ierr = PetscTrValid(0,"Unknown Fortran",0,0);
 }
 
-void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,Scalar *val, int *__ierr )
+void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,Scalar *val, int *ierr )
 {
-  *__ierr = PetscRandomGetValue(*r,val);
+  *ierr = PetscRandomGetValue(*r,val);
 }
 
 
-void PETSC_STDCALL petscobjectgetname_(PetscObject *obj, CHAR name, int *__ierr, int len)
+void PETSC_STDCALL petscobjectgetname_(PetscObject *obj, CHAR name, int *ierr, int len)
 {
   char *tmp;
-  *__ierr = PetscObjectGetName(*obj,&tmp);
+  *ierr = PetscObjectGetName(*obj,&tmp);
 #if defined(PETSC_USES_CPTOFCD)
   {
   char *t = _fcdtocp(name);
   int  len1 = _fcdlen(name);
-  *__ierr = PetscStrncpy(t,tmp,len1);if (*__ierr) return;
+  *ierr = PetscStrncpy(t,tmp,len1);if (*ierr) return;
   }
 #else
-  *__ierr = PetscStrncpy(name,tmp,len);if (*__ierr) return;
+  *ierr = PetscStrncpy(name,tmp,len);if (*ierr) return;
 #endif
 }
 
-void PETSC_STDCALL petscobjectdestroy_(PetscObject *obj, int *__ierr )
+void PETSC_STDCALL petscobjectdestroy_(PetscObject *obj, int *ierr )
 {
-  *__ierr = PetscObjectDestroy(*obj);
+  *ierr = PetscObjectDestroy(*obj);
 }
 
-void PETSC_STDCALL petscobjectgetcomm_(PetscObject *obj,int *comm, int *__ierr )
+void PETSC_STDCALL petscobjectgetcomm_(PetscObject *obj,int *comm, int *ierr )
 {
   MPI_Comm c;
-  *__ierr = PetscObjectGetComm(*obj,&c);
+  *ierr = PetscObjectGetComm(*obj,&c);
   *(int*)comm = PetscFromPointerComm(c);
 }
 
-void PETSC_STDCALL petscattachdebugger_(int *__ierr)
+void PETSC_STDCALL petscattachdebugger_(int *ierr)
 {
-  *__ierr = PetscAttachDebugger();
+  *ierr = PetscAttachDebugger();
 }
 
-void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name,int *__ierr,int len)
+void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name,int *ierr,int len)
 {
   char *t1;
 
   FIXCHAR(name,len,t1);
-  *__ierr = PetscObjectSetName(*obj,t1);
+  *ierr = PetscObjectSetName(*obj,t1);
   FREECHAR(name,t1);
 }
 
-void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message,int *__ierr,int len)
+void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message,int *ierr,int len)
 {
   char *t1;
   FIXCHAR(message,len,t1);
-  *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",0,*number,*p,t1);
+  *ierr = PetscError(-1,0,"fortran_interface_unknown_file",0,*number,*p,t1);
   FREECHAR(message,t1);
 }
 
-void PETSC_STDCALL petscgetflops_(PLogDouble *d,int *__ierr)
+void PETSC_STDCALL petscgetflops_(PLogDouble *d,int *ierr)
 {
 #if defined(PETSC_USE_LOG)
-  *__ierr = PetscGetFlops(d);
+  *ierr = PetscGetFlops(d);
 #else
-  __ierr = 0;
+  ierr = 0;
   *d     = 0.0;
 #endif
 }
 
-void PETSC_STDCALL petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,int *__ierr )
+void PETSC_STDCALL petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,int *ierr )
 {
-  *__ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm( *comm ),*type,r);
+  *ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm( *comm ),*type,r);
 }
 
-void PETSC_STDCALL petscrandomdestroy_(PetscRandom *r, int *__ierr )
+void PETSC_STDCALL petscrandomdestroy_(PetscRandom *r, int *ierr )
 {
-  *__ierr = PetscRandomDestroy(*r);
+  *ierr = PetscRandomDestroy(*r);
 }
 
-void PETSC_STDCALL petscdoubleview_(int *n,double *d,int *viwer,int *__ierr)
+void PETSC_STDCALL petscdoubleview_(int *n,double *d,int *viwer,int *ierr)
 {
-  *__ierr = PetscDoubleView(*n,d,0);
+  *ierr = PetscDoubleView(*n,d,0);
 }
 
-void PETSC_STDCALL petscintview_(int *n,int *d,int *viwer,int *__ierr)
+void PETSC_STDCALL petscintview_(int *n,int *d,int *viwer,int *ierr)
 {
-  *__ierr = PetscIntView(*n,d,0);
+  *ierr = PetscIntView(*n,d,0);
 }
 
-void PETSC_STDCALL petscsequentialphasebegin_(MPI_Comm *comm,int *ng, int *__ierr ){
-*__ierr = PetscSequentialPhaseBegin(
+void PETSC_STDCALL petscsequentialphasebegin_(MPI_Comm *comm,int *ng, int *ierr ){
+*ierr = PetscSequentialPhaseBegin(
 	(MPI_Comm)PetscToPointerComm( *comm ),*ng);
 }
-void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng, int *__ierr ){
-*__ierr = PetscSequentialPhaseEnd(
+void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng, int *ierr ){
+*ierr = PetscSequentialPhaseEnd(
 	(MPI_Comm)PetscToPointerComm( *comm ),*ng);
 }
 
-void PETSC_STDCALL petscreleasepointer_(int *index,int *__ierr) 
+void PETSC_STDCALL petscreleasepointer_(int *index,int *ierr) 
 {
    PetscRmPointer(index);
-   *__ierr = 0;
+   *ierr = 0;
 }
 
-void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *__ierr)
+void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *ierr)
 {
-  *__ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm( *comm));
+  *ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm( *comm));
 }
 
 EXTERN_C_END
