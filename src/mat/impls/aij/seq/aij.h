@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.18 1995/11/06 17:32:56 balay Exp balay $ */
+/* $Id: aij.h,v 1.19 1995/11/06 21:04:31 balay Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -6,10 +6,12 @@
 #if !defined(__AIJ_H)
 #define __AIJ_H
 
-/* Stores info about inodes - no of inodes, and  size of each inode */
+/* Info about i-nodes (identical nodes) */
 typedef struct {
-  int node_count;
-  int *size;
+  int node_count;                    /* number of inodes */
+  int *size;                         /* size of each inode */
+  int limit;                         /* inode limit */
+  int max_limit;                     /* maximum supported inode limit */
 } Mat_SeqAIJ_Inode;
 
 /*  

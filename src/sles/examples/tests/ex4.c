@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.33 1995/11/01 23:19:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.34 1995/11/30 22:34:58 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   h = 1.0/m;       /* mesh width */
 
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,9,0,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,9,PetscNull,&C); CHKERRA(ierr);
 
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke); CHKERRA(ierr);

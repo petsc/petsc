@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.37 1995/11/21 03:09:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.38 1995/11/30 22:34:51 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -20,44 +20,44 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
   if (newtype == MATSAME) newtype = (MatType)mat->type;
   switch (newtype) {
     case MATSEQAIJ:
-      ierr = MatCreateSeqAIJ(mat->comm,m,n,0,0,M); CHKERRQ(ierr); 
+      ierr = MatCreateSeqAIJ(mat->comm,m,n,0,PetscNull,M); CHKERRQ(ierr); 
       break;
     case MATSEQROW:
-      ierr = MatCreateSeqRow(mat->comm,m,n,0,0,M); CHKERRQ(ierr); 
+      ierr = MatCreateSeqRow(mat->comm,m,n,0,PetscNull,M); CHKERRQ(ierr); 
       break;
     case MATMPIROW:
       ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                             m,n,0,0,0,0,M); CHKERRQ(ierr);
+             m,n,0,PetscNull,0,PetscNull,M); CHKERRQ(ierr);
       break;
     case MATMPIROWBS:
       if (m != n) SETERRQ(1,"MatConvert:MATMPIROWBS matrix must be square");
-      ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,0,0,M);
-             CHKERRQ(ierr);
+      ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,PetscNull,
+             PetscNull,M); CHKERRQ(ierr);
       break;
     case MATMPIAIJ:
       ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                             m,n,0,0,0,0,M); CHKERRQ(ierr);
+             m,n,0,PetscNull,0,PetscNull,M); CHKERRQ(ierr);
       break;
     case MATSEQDENSE:
-      ierr = MatCreateSeqDense(mat->comm,m,n,0,M); CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(mat->comm,m,n,PetscNull,M); CHKERRQ(ierr);
       break;
     case MATMPIDENSE:
       ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                               m,n,0,M); CHKERRQ(ierr);
+             m,n,PetscNull,M); CHKERRQ(ierr);
       break;
     case MATSEQBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
       OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);     
-      ierr = MatCreateSeqBDiag(mat->comm,m,n,0,nb,0,0,M); CHKERRQ(ierr); 
+      ierr = MatCreateSeqBDiag(mat->comm,m,n,0,nb,PetscNull,PetscNull,M); CHKERRQ(ierr); 
       break;
       }
     case MATMPIBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
       OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);     
-      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,0,0,M); 
-      CHKERRQ(ierr); 
+      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,PetscNull,
+             PetscNull,M); CHKERRQ(ierr); 
       break;
       }
     default:
@@ -90,36 +90,37 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
       break;
     case MATMPIROW:
       ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                             m,n,0,0,0,0,B); CHKERRQ(ierr);
+             m,n,0,PetscNull,0,PetscNull,B); CHKERRQ(ierr);
       break;
     case MATMPIROWBS:
       if (m != n) SETERRQ(1,"MatConvert_SeqAIJ:MATMPIROWBS matrix must be square");
-      ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,0,0,B); CHKERRQ(ierr);
+      ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,PetscNull,PetscNull,B);
+             CHKERRQ(ierr);
       break;
     case MATMPIAIJ:
       ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                             m,n,0,0,0,0,B); CHKERRQ(ierr);
+             m,n,0,PetscNull,0,PetscNull,B); CHKERRQ(ierr);
       break;
     case MATSEQDENSE:
-      ierr = MatCreateSeqDense(A->comm,m,n,0,B); CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(A->comm,m,n,PetscNull,B); CHKERRQ(ierr);
       break;
     case MATMPIDENSE:
       ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                               m,n,0,B); CHKERRQ(ierr);
+             m,n,PetscNull,B); CHKERRQ(ierr);
       break;
     case MATSEQBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
       OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);     
-      ierr = MatCreateSeqBDiag(A->comm,m,n,0,nb,0,0,B); CHKERRQ(ierr); 
+      ierr = MatCreateSeqBDiag(A->comm,m,n,0,nb,PetscNull,PetscNull,B); CHKERRQ(ierr); 
       break;
       }
     case MATMPIBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
       OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);     
-      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,0,0,B); 
-      CHKERRQ(ierr); 
+      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,PetscNull,
+             PetscNull,B); CHKERRQ(ierr); 
       break;
       }
     default:
@@ -150,7 +151,7 @@ int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
   switch (newtype) {
     case MATMPIROW:
       ierr = MatCreateMPIRow(A->comm,m,a->n,a->M,a->N,0,Ad->ilen,
-			0,Bd->ilen,B); CHKERRQ(ierr);
+             0,Bd->ilen,B); CHKERRQ(ierr);
       break;
     default:
       SETERRQ(1,"MatConvert_MPIAIJ:Only MATMPIROW is currently suported");
@@ -158,7 +159,7 @@ int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
   /* Each processor converts its local rows */
   for (i=0; i<m; i++) {
     ig   = i + rstart;
-    ierr = MatGetRow(A,ig,&nz,&cwork,&vwork);	CHKERRQ(ierr);
+    ierr = MatGetRow(A,ig,&nz,&cwork,&vwork); CHKERRQ(ierr);
     ierr = MatSetValues(*B,1,&ig,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,ig,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
@@ -182,34 +183,35 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
   nz = PetscMin(n,a->nd*a->nb); 
   switch (newtype) {
     case MATSEQAIJ:
-      ierr = MatCreateSeqAIJ(A->comm,m,n,nz,0,B); CHKERRQ(ierr); 
+      ierr = MatCreateSeqAIJ(A->comm,m,n,nz,PetscNull,B); CHKERRQ(ierr); 
       break;
     case MATSEQROW:
-      ierr = MatCreateSeqRow(A->comm,m,n,nz,0,B); CHKERRQ(ierr); 
+      ierr = MatCreateSeqRow(A->comm,m,n,nz,PetscNull,B); CHKERRQ(ierr); 
       break;
     case MATMPIROW:
       ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                             m,n,0,0,0,0,B); CHKERRQ(ierr);
+                             m,n,0,PetscNull,0,PetscNull,B); CHKERRQ(ierr);
       break;
     case MATMPIROWBS:
       if (m != n) SETERRQ(1,"MatConvert_SeqBDiag:MATMPIROWBS matrix must be square");
-      ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,0,0,B); CHKERRQ(ierr);
+      ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,PetscNull,PetscNull,
+             B); CHKERRQ(ierr);
       break;
     case MATMPIAIJ:
       ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                             m,n,0,0,0,0,B); CHKERRQ(ierr);
+                             m,n,0,PetscNull,0,PetscNull,B); CHKERRQ(ierr);
       break;
     case MATSEQDENSE:
-      ierr = MatCreateSeqDense(A->comm,m,n,0,B); CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(A->comm,m,n,PetscNull,B); CHKERRQ(ierr);
       break;
     case MATMPIDENSE:
       ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                               m,n,0,B); CHKERRQ(ierr);
+                               m,n,PetscNull,B); CHKERRQ(ierr);
       break;
     case MATMPIBDIAG:
       {
-      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,a->nd,a->nb,0,0,B); 
-      CHKERRQ(ierr); 
+      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,a->nd,a->nb,
+             PetscNull,PetscNull,B); CHKERRQ(ierr); 
       break;
       }
     default:

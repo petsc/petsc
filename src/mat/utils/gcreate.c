@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.58 1995/11/21 03:09:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.59 1995/11/30 22:34:51 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -161,12 +161,13 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 
   ierr = MatGetFormatFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (type == MATSEQDENSE) {
-    return MatCreateSeqDense(comm,m,n,0,V);
+    return MatCreateSeqDense(comm,m,n,PetscNull,V);
   }
   if (type == MATSEQBDIAG || type == MATMPIBDIAG) {
     int nb = 1, ndiag = 0, ndiag2 = 0, *d = 0;
     if (OptionsHasName(PetscNull,"-help")) {
-      MPIU_printf(comm,"Options with -mat_bdiag: -mat_bdiag_bsize <block_size>\n");
+      MPIU_printf(comm,"Options with -mat_bdiag, -mat_seqbdiag, -mat_mpibdiag:\n");
+      MPIU_printf(comm,"  -mat_bdiag_bsize <block_size>\n");
       MPIU_printf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
       MPIU_printf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
       MPIU_printf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
@@ -191,21 +192,26 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     return 0;
   }
   if (type == MATMPIROWBS) {
-    return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,0,PetscNull,V);
+    return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,PetscNull,PetscNull,V);
   }
   if (type == MATMPIROW) {
-    return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
+    return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,PetscNull,0,PetscNull,V);
   }
   if (type == MATSEQROW) {
-    return MatCreateSeqRow(comm,m,n,10,0,V);
+    return MatCreateSeqRow(comm,m,n,10,PetscNull,V);
   }
   if (type == MATMPIDENSE) {
-    return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,0,V);
+    return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PetscNull,V);
+  }
+  if (OptionsHasName(PetscNull,"-help")) {
+    MPIU_printf(comm,"Options with default formats (-mat_aij, -mat_seqaij, -mat_mpiaij):\n");
+    MPIU_printf(comm,"  -mat_aij_no_inode : Do not use inodes\n");
+    MPIU_printf(comm,"  -mat_aij_inode_limit <limit> : Set inode limit (max limit=5)\n");
   }
   if (type == MATMPIAIJ) { 
-    return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
+    return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,PetscNull,0,PetscNull,V);
   }
-  return MatCreateSeqAIJ(comm,m,n,10,0,V); 
+  return MatCreateSeqAIJ(comm,m,n,10,PetscNull,V); 
 }
 
 #include "matimpl.h"

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.6 1995/11/01 23:17:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.7 1995/11/02 04:29:57 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -70,7 +70,7 @@ static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   Mat_SeqAIJ_Essl *essl;
 
   if (a->m != a->n) SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ_Essl:matrix must be square"); 
-  ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,0,F); CHKERRQ(ierr);
+  ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PetscNull,F); CHKERRQ(ierr);
   B             = *F;
   B->ops.solve  = MatSolve_SeqAIJ_Essl;
   B->destroy    = MatDestroy_SeqAIJ_Essl;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.14 1995/11/09 22:32:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.15 1995/11/30 22:36:13 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -43,7 +43,7 @@ int main( int argc, char **argv )
   PetscObjectSetName((PetscObject)U,"Exact Solution");
 
   /* create explict matrix preconditioner */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,&B); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,&B); CHKERRA(ierr);
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {

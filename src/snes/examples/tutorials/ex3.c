@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.20 1995/11/15 03:45:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.21 1995/11/30 22:36:13 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -52,32 +52,32 @@ int main( int argc, char **argv )
   PetscObjectSetName((PetscObject)U,"Exact Solution");
   ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRA(ierr);
   if (mtype == MATMPIROW) {
-    ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-           0,0,&J); CHKERRA(ierr);
+    ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,
+           PetscNull,0,PetscNull,&J); CHKERRA(ierr);
   } else if (mtype == MATMPIBDIAG) {
     int diag[3]; diag[0] = -1; diag[1] = 0; diag[2] = 1;
-    ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,diag,0,&J);
-           CHKERRA(ierr);
+    ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,diag,
+           PetscNull,&J); CHKERRA(ierr);
   } else if (mtype == MATSEQAIJ) {
-    ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,3,0,&J);
+    ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,3,PetscNull,&J);
            CHKERRA(ierr);
   } else {
-    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,0,0,&J);
-           CHKERRA(ierr);
+    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,
+           PetscNull,0,PetscNull,&J); CHKERRA(ierr);
   }
 
   /* Store right-hand-side of PDE and exact solution */
-  ierr = VecGetOwnershipRange(x,&start,&end); CHKERRQ(ierr);
-  ierr = VecGetArray(F,&FF); CHKERRQ(ierr);
-  ierr = VecGetArray(U,&UU); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(x,&start,&end); CHKERRA(ierr);
+  ierr = VecGetArray(F,&FF); CHKERRA(ierr);
+  ierr = VecGetArray(U,&UU); CHKERRA(ierr);
   xp = ctx.h*start; n = end - start;
   for ( i=0; i<n; i++ ) {
     FF[i] = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     UU[i] = xp*xp*xp;
     xp += ctx.h;
   }
-  ierr = VecRestoreArray(F,&FF); CHKERRQ(ierr);
-  ierr = VecRestoreArray(U,&UU); CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&FF); CHKERRA(ierr);
+  ierr = VecRestoreArray(U,&UU); CHKERRA(ierr);
 
   /* Create nonlinear solver */  
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);

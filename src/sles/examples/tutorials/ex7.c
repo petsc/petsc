@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.11 1995/11/01 19:11:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.12 1995/11/30 22:34:58 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
@@ -29,7 +29,7 @@ int main(int argc,char **args)
 
   /* Create and assemble matrix */
   ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,
-                         0,0,0,0,&A); CHKERRA(ierr);
+         0,PetscNull,0,PetscNull,&A); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  

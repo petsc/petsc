@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.30 1995/11/01 23:17:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.31 1995/11/30 22:33:26 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -306,7 +306,7 @@ int Create1dLaplacian(int n,Mat *mat)
   Scalar mone = -1.0, two = 2.0;
   int    ierr,i,idx;
 
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,mat); CHKERRQ(ierr);
   
   idx= n-1;
   ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES); CHKERRQ(ierr);

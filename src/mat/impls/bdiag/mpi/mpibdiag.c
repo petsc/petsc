@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.59 1995/11/29 22:08:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.60 1995/11/30 22:34:13 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -558,10 +558,11 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 
       if (!rank) {
         ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->nb,
-                                 mbd->gdiag,0,&A); CHKERRQ(ierr);
+               mbd->gdiag,PetscNull,&A); CHKERRQ(ierr);
       }
       else {
-        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,0,0,&A); CHKERRQ(ierr);
+        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,PetscNull,PetscNull,&A);
+               CHKERRQ(ierr);
       }
       PLogObjectParent(mat,A);
 
@@ -1030,7 +1031,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
   nb = 1;   /* uses a block size of 1 by default; maybe need a different options
               database key, since this is used for MatCreate() also? */
   OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);
-  ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,0,0,newmat); CHKERRQ(ierr);
+  ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,PetscNull,PetscNull,newmat); CHKERRQ(ierr);
   A = *newmat;
 
   if (!rank) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.74 1995/11/29 22:08:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.75 1995/11/30 22:34:08 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1537,7 +1537,7 @@ static int MatCopyPrivate_SeqBDiag(Mat A,Mat *matout,int cpvalues)
 
   if (!a->assembled) SETERRQ(1,"MatCopyPrivate_SeqBDiag:Assemble matrix");
 
-  ierr = MatCreateSeqBDiag(A->comm,a->m,a->n,a->nd,a->nb,a->diag,0,matout);
+  ierr = MatCreateSeqBDiag(A->comm,a->m,a->n,a->nd,a->nb,a->diag,PetscNull,matout);
   CHKERRQ(ierr);
 
   /* Copy contents of diagonals */
@@ -1578,7 +1578,7 @@ int MatLoad_SeqBDiag(Viewer bview,MatType type,Mat *A)
   /* create our matrix */
   nb = 1;
   OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);
-  ierr = MatCreateSeqBDiag(comm,M,N,0,nb,0,0,A); CHKERRQ(ierr);
+  ierr = MatCreateSeqBDiag(comm,M,N,0,nb,PetscNull,PetscNull,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBDiag *) B->data;
 

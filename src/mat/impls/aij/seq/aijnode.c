@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.21 1995/12/08 17:07:22 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.22 1995/12/08 17:07:43 bsmith Exp curfman $";
 #endif
 /*
-    Provides high performance routines for the AIJ (compressed row) storage 
-  format by taking advantage of rows with identical non-zero structure (I-nodes).
+  This file provides high performance routines for the AIJ (compressed row)
+  format by taking advantage of rows with identical nonzero structure (I-nodes).
 */
 #include "aij.h"                
 
@@ -333,33 +333,34 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 int Mat_AIJ_CheckInode(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size, limit;
+  int        i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size;
 
-  limit      = 5;               /* Mult/Solve Can't Handle more than 5 */
+  /* Notes: We set a->inode.limit=5 in MatCreateSeqAIJ().  For now, help 
+     message is in MatCreate() only.  This should change eventually. */
   if (OptionsHasName(PetscNull, "-mat_aij_no_inode")) return 0;
-  OptionsGetInt(PetscNull, "-mat_aij_inode_limit", &limit);
-  if(limit > 5) limit = 5;
+  OptionsGetInt(PetscNull, "-mat_aij_inode_limit",&a->inode.limit);
+  if (limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
   m = a->m;        
   if (!a->inode.size && m){
     ns = (int *)PetscMalloc(m*sizeof(int));  CHKPTRQ(ns);
   }
-  else return 0;                /* Use the Already formed Inode info */
+  else return 0;                /* Use the already formed inode info */
 
   i          = 0;
   node_count = 0; 
   idx        = a->j;
   ii         = a->i;
-  while ( i < m){               /* For each row */
-    nzx = ii[i+1] - ii[i];      /* No of non zeros*/
-    /*Limits the no of elements in a node to 'limit'*/
-    for(j=i+1, idy= idx, blk_size=1; j<m && blk_size <limit ;++j,++blk_size){
-      nzy     = ii[j+1] - ii[j]; /* same no of nonzeros */
+  while ( i < m){                /* For each row */
+    nzx = ii[i+1] - ii[i];       /* Number of nonzeros */
+    /* Limits the number of elements in a node to 'a->inode.limit' */
+    for (j=i+1, idy=idx, blk_size=1; j<m && blk_size <a->inode.limit; ++j,++blk_size) {
+      nzy     = ii[j+1] - ii[j]; /* Same number of nonzeros */
       if(nzy != nzx) break;
-      idy    += nzx;            /* Same nonzero pattern */
+      idy    += nzx;             /* Same nonzero pattern */
       if (PetscMemcmp((char *)idx,(char *)idy,nzx*sizeof(int))) break;
     }
     ns[node_count++] = blk_size;
-    /*printf("%3d \t %d\n", i, blk_size);*/
+    /* printf("%3d \t %d\n", i, blk_size); */
     idx +=blk_size*nzx;
     i    = j;
   }
@@ -370,7 +371,7 @@ int Mat_AIJ_CheckInode(Mat A)
   A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   a->inode.node_count    = node_count;
   a->inode.size          = ns;
-  PLogInfo((PetscObject)A,"Mat_AIJ_CheckInode:Found %d nodes. Limit used:%d.Using Inode_Routines\n",node_count,limit);
+  PLogInfo((PetscObject)A,"Mat_AIJ_CheckInode: Found %d nodes. Limit used: %d. Using Inode_Routines\n",node_count,a->inode.limit);
   return 0;
 }
 
@@ -769,14 +770,16 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   rtmp2  = rtmp1 + n;  rtmps2 = rtmp2 + shift; 
   rtmp3  = rtmp2 + n;  rtmps3 = rtmp3 + shift; 
   
-  node_max = a->inode.node_count; /*has to be same for both a,b */
+  node_max = a->inode.node_count; /* has to be same for both a,b */
   ns       = b->inode.size ;
-  if (!ns){                     /* If mat_order!=natural, create inode info*/
+  if (!ns){                      /* If mat_order!=natural, create inode info */
     nsa     = a->inode.size;
     ns      = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(ns);
     tmp_vec = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
     b->inode.size          = ns;
     b->inode.node_count    = node_max;
+    b->inode.limit         = a->inode.limit;
+    b->inode.max_limit     = a->inode.max_limit;
     C->ops.mult            = MatMult_SeqAIJ_Inode;
     C->ops.solve           = MatSolve_SeqAIJ_Inode;
     C->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;

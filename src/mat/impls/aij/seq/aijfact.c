@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.49 1995/11/29 20:49:28 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.50 1995/12/12 05:24:01 bsmith Exp curfman $";
 #endif
 
 #include "aij.h"
@@ -110,7 +110,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscFree(fill);
 
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJ(A->comm,n, n, 0, 0, B); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PetscNull,B); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol); 
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
   b = (Mat_SeqAIJ *) (*B)->data;
@@ -207,7 +207,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
-  C->factor      = FACTOR_LU;
+  C->factor = FACTOR_LU;
   ierr = Mat_AIJ_CheckInode(C); CHKERRQ(ierr);
   b->assembled = 1;
   PLogFlops(b->n);
@@ -582,7 +582,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
                              realloc,f,((double)ainew[n])/((double)ai[prow]));
 
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJ(A->comm,n, n, 0, PetscNull, fact); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PetscNull,fact); CHKERRQ(ierr);
   b = (Mat_SeqAIJ *) (*fact)->data;
   PetscFree(b->imax);
   b->singlemalloc = 0;

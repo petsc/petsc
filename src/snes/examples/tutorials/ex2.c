@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.36 1995/11/09 22:32:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.37 1995/11/30 22:36:13 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -38,7 +38,7 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,&J); CHKERRA(ierr);
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {

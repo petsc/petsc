@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.46 1995/11/01 23:19:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.47 1995/11/30 22:34:58 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -106,7 +106,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
   MPIU_printf(MPI_COMM_SELF,"m = %d, N=%d\n", m, N );
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERRQ(ierr); 
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,80,PetscNull,&mat); CHKERRQ(ierr); 
 
   /* Form stiffness for element */
   K = (double **) PetscMalloc(81*sizeof(double *)); CHKPTRQ(K);

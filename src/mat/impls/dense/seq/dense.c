@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.79 1995/11/27 22:23:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.80 1995/11/29 22:08:23 curfman Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -364,7 +364,7 @@ static int MatCopyPrivate_SeqDense(Mat A,Mat *newmat,int cpvalues)
   int          ierr;
   Mat          newi;
 
-  ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,0,&newi); CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,PetscNull,&newi); CHKERRQ(ierr);
   l = (Mat_SeqDense *) newi->data;
   if (cpvalues == COPY_VALUES) {
     PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
@@ -397,7 +397,7 @@ int MatLoad_SeqDense(Viewer bview,MatType type,Mat *A)
   ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
 
   /* create our matrix */
-  ierr = MatCreateSeqDense(comm,M,N,0,A); CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(comm,M,N,PetscNull,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqDense *) B->data;
   v = a->v;
@@ -554,7 +554,7 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
     Mat          tmat;
     Mat_SeqDense *tmatd;
     Scalar       *v2;
-    ierr = MatCreateSeqDense(A->comm,mat->n,mat->m,0,&tmat); CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(A->comm,mat->n,mat->m,PetscNull,&tmat); CHKERRQ(ierr);
     tmatd = (Mat_SeqDense *) tmat->data;
     v = mat->v; v2 = tmatd->v;
     for ( j=0; j<n; j++ ) {
@@ -768,7 +768,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
 
   /* Create and fill new matrix */
-  ierr = MatCreateSeqDense(A->comm,nrows,ncols,0,&newmat);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(A->comm,nrows,ncols,PetscNull,&newmat); CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     nznew = 0;
     val   = mat->v + irow[i];
@@ -878,5 +878,5 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
 int MatCreate_SeqDense(Mat A,Mat *newmat)
 {
   Mat_SeqDense *m = (Mat_SeqDense *) A->data;
-  return MatCreateSeqDense(A->comm,m->m,m->n,0,newmat);
+  return MatCreateSeqDense(A->comm,m->m,m->n,PetscNull,newmat);
 }

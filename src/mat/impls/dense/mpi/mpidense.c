@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.14 1995/11/29 22:08:17 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.15 1995/12/10 18:57:58 curfman Exp curfman $";
 #endif
 
 /*
@@ -503,10 +503,10 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
       Mat_SeqDense *Amdn = (Mat_SeqDense*) mdn->A->data;
 
       if (!rank) {
-        ierr = MatCreateMPIDense(mat->comm,M,M,N,N,0,&A); CHKERRQ(ierr);
+        ierr = MatCreateMPIDense(mat->comm,M,M,N,N,PetscNull,&A); CHKERRQ(ierr);
       }
       else {
-        ierr = MatCreateMPIDense(mat->comm,0,M,N,N,0,&A); CHKERRQ(ierr);
+        ierr = MatCreateMPIDense(mat->comm,0,M,N,N,PetscNull,&A); CHKERRQ(ierr);
       }
       PLogObjectParent(mat,A);
 
@@ -702,7 +702,8 @@ static int MatTranspose_MPIDense(Mat A,Mat *matout)
 
   if (!matout && M != N)
     SETERRQ(1,"MatTranspose_MPIDense:Supports square matrix only in-place");
-  ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,&B); CHKERRQ(ierr);
+  ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,PetscNull,&B);
+         CHKERRQ(ierr);
 
   m = Aloc->m; n = Aloc->n; v = Aloc->v;
   rwork = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(rwork);
@@ -794,8 +795,8 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   Mat_MPIDense *a;
   int          ierr, i;
 
-/* Note:  for now, this assumes that the user knows what he's doing if
-   data is specified above.  */
+/* Note:  For now, when data is specified above, this assumes the user correctly
+   allocates the local dense storage space.  We should add error checking. */
 
   *newmat         = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIDENSE,comm);
@@ -1007,7 +1008,7 @@ int MatLoad_MPIDense(Viewer bview,MatType type,Mat *newmat)
     ourlens[i] -= offlens[i];
   }
   if (type == MATMPIDENSE) {
-    ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,0,newmat); CHKERRQ(ierr);
+    ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PetscNull,newmat); CHKERRQ(ierr);
   }
   A = *newmat;
   for ( i=0; i<m; i++ ) {

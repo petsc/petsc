@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.78 1995/12/01 22:29:43 curfman Exp $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.78 1995/12/02 19:22:32 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1154,22 +1154,22 @@ int MatConvert_MPIRowbs(Mat A, MatType newtype, Mat *newmat)
 
   switch (newtype) {
     case MATMPIROW:
-      ierr = MatCreateMPIRow(A->comm,m,row->n,row->M,row->N,0,0,0,0,newmat); 
-      CHKERRQ(ierr);
+      ierr = MatCreateMPIRow(A->comm,m,row->n,row->M,row->N,0,PetscNull,0,
+             PetscNull,newmat); CHKERRQ(ierr);
       break;
     case MATMPIAIJ:
-      ierr = MatCreateMPIAIJ(A->comm,m,row->n,row->M,row->N,0,0,0,0,newmat);
-      CHKERRQ(ierr);
+      ierr = MatCreateMPIAIJ(A->comm,m,row->n,row->M,row->N,0,PetscNull,0,
+             PetscNull,newmat); CHKERRQ(ierr);
       break;
     case MATSEQROW:
       MPI_Comm_size(A->comm,&size);
       if (size != 1) SETERRQ(1,"MatConvert_MPIRowbs: SEQROW requires 1 proc");
-      ierr = MatCreateSeqRow(A->comm,row->M,row->N,0,0,newmat);CHKERRQ(ierr);
+      ierr = MatCreateSeqRow(A->comm,row->M,row->N,0,PetscNull,newmat); CHKERRQ(ierr);
       break;
     case MATSEQAIJ:
       MPI_Comm_size(A->comm,&size);
       if (size != 1) SETERRQ(1,"MatConvert_MPIRowbs: SEQAIJ requires 1 proc");
-      ierr = MatCreateSeqAIJ(A->comm,row->M,row->N,0,0,newmat); CHKERRQ(ierr);
+      ierr = MatCreateSeqAIJ(A->comm,row->M,row->N,0,PetscNull,newmat); CHKERRQ(ierr);
       break;
     default:
       SETERRQ(1,"MatConvert_MPIRowbs:Matrix format not yet supported");
@@ -1239,14 +1239,14 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
    (possibly both).
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set both nz and nnz to zero for PETSc to control dynamic memory 
+   Set nz=0 and nnz=PetscNull for PETSc to control dynamic memory 
    allocation.
   
 .keywords: matrix, row, symmetric, sparse, parallel, BlockSolve
 
 .seealso: MatCreate(), MatSetValues()
 @*/
-int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,Mat *newA)
+int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,Mat *newA)
 {
   Mat          A;
   Mat_MPIRowbs *a;
@@ -1449,7 +1449,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
   }
 
   /* create our matrix */
-  ierr = MatCreateMPIRowbs(comm,m,M,0,ourlens,0,newmat); CHKERRQ(ierr);
+  ierr = MatCreateMPIRowbs(comm,m,M,0,ourlens,PetscNull,newmat); CHKERRQ(ierr);
   mat = *newmat;
   PetscFree(ourlens);
 
@@ -1565,7 +1565,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
 #else
 #include "petsc.h"
 #include "mat.h"
-int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *info,Mat *newmat)
+int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *info,Mat *newmat)
 {
   SETERRQ(1,"MatCreateMPIRowbs:This matrix format requires BlockSolve");
 }

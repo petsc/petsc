@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.23 1995/11/23 04:29:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.24 1995/11/30 22:36:13 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -38,8 +38,8 @@ int main( int argc, char **argv )
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,1,0,&JPrec); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,1,PetscNull,&JPrec); CHKERRA(ierr);
 
   /* Store right-hand-side of PDE */
   for ( i=0; i<n; i++ ) {

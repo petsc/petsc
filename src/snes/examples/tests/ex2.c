@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.31 1995/11/21 03:29:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.32 1995/11/30 22:36:13 bsmith Exp curfman $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -23,7 +23,7 @@ int main( int argc, char **argv )
   /* Set up data structures */
   ierr = VecCreateSeq(MPI_COMM_SELF,2,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,2,2,0,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,2,2,PetscNull,&J); CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
