@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: richscale.c,v 1.7 1998/04/03 23:13:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: richscale.c,v 1.8 1998/04/13 17:29:39 bsmith Exp curfman $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -17,11 +17,11 @@ static char vcid[] = "$Id: richscale.c,v 1.7 1998/04/03 23:13:37 bsmith Exp bsmi
     KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor 
     defaults to 1.0.
 
-    Input Parameters:
-.   ksp - the iterative context
-.   scale - the relaxation factor
+    Collective on KSP
 
-   Collective on KSP
+    Input Parameters:
++   ksp - the iterative context
+-   scale - the relaxation factor
 
 .keywords: KSP, Richardson, set, scale
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.119 1998/04/22 00:10:44 curfman Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.120 1998/04/22 13:48:24 balay Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -17,22 +17,22 @@ int KSPRegisterAllCalled = 0;
 /*@ 
    KSPView - Prints the KSP data structure.
 
-   Input Parameters:
-.  ksp - the Krylov space context
-.  viewer - visualization context
-
    Collective on KSP unless Viewer is VIEWER_STDOUT_SELF
+
+   Input Parameters:
++  ksp - the Krylov space context
+-  viewer - visualization context
 
    Note:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
-$       output where only the first processor opens
-$       the file.  All other processors send their 
-$       data to the first processor to print. 
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
 
-   The user can open alternative vistualization contexts with
-$    ViewerFileOpenASCII() - output to a specified file
+   The user can open an alternative vistualization context with
+   ViewerFileOpenASCII() - output to a specified file.
 
 .keywords: KSP, view
 
@@ -77,11 +77,13 @@ DLList KSPList = 0;
 /*@C
    KSPCreate - Creates the default KSP context.
 
-   Output Parameter:
-.  ksp - location to put the KSP context
+   Collective on KSP
+
+   Input Parameter:
 .  comm - MPI communicator
 
-   Collective on KSP
+   Output Parameter:
+.  ksp - location to put the KSP context
 
    Notes:
    The default KSP type is GMRES with a restart of 30, using modified Gram-Schmidt
@@ -149,16 +151,15 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 /*@C
    KSPSetType - Builds KSP for a particular solver. 
 
+   Collective on KSP
+
    Input Parameter:
 .  ctx      - the Krylov space context
 .  itmethod - a known method
 
-   Collective on KSP
-
    Options Database Command:
-$  -ksp_type  <method>
-$      Use -help for a list of available methods
-$      (for instance, cg or gmres)
+.  -ksp_type  <method> - Sets the method; use -help for a list 
+    of available methods (for instance, cg or gmres)
 
    Notes:  
    See "petsc/include/ksp.h" for available methods (for instance,
@@ -237,13 +238,13 @@ int KSPRegisterDestroy(void)
 /*@C
    KSPGetType - Gets the KSP type as a string from the KSP object.
 
+   Not Collective
+
    Input Parameter:
 .  ksp - Krylov context 
 
    Output Parameters:
 .  name - name of KSP method 
-
-   Not Collective
 
 .keywords: KSP, get, method, name
 @*/
@@ -259,13 +260,14 @@ int KSPGetType(KSP ksp,KSPType *type)
 /*@ 
    KSPPrintHelp - Prints all options for the KSP component.
 
+   Collective on KSP
+
    Input Parameter:
 .  ksp - the KSP context
 
-   Collective on KSP
-
    Options Database Keys:
-$  -help, -h
++  -help - Prints KSP options
+-  -h - Prints KSP options
 
 .keywords: KSP, help
 
