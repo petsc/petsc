@@ -16,18 +16,18 @@ EXTERN_C_END
 
 
 typedef struct {
-  SuperMatrix A;
-  SuperMatrix B;
-  SuperMatrix AC;
-  SuperMatrix L;
-  SuperMatrix U;
-  int        *perm_r;
-  int        *perm_c;
-  int         relax;
-  int         panel_size;
-  double      pivot_threshold;
-  NCformat        *store;
-  MatStructure    flg;
+  SuperMatrix  A;
+  SuperMatrix  B;
+  SuperMatrix  AC;
+  SuperMatrix  L;
+  SuperMatrix  U;
+  int          *perm_r;
+  int          *perm_c;
+  int          relax;
+  int          panel_size;
+  double       pivot_threshold;
+  NCformat     *store;
+  MatStructure flg;
 } Mat_SeqAIJ_SuperLU;
 
 
@@ -148,48 +148,6 @@ int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-/*
-   Note the r permutation is ignored
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
-int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
-{
-  Mat                 B;
-  Mat_SeqAIJ_SuperLU  *lu;
-  int                 ierr,*ca;
-
-  PetscFunctionBegin;
-  ierr            = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
-  B               = *F;
-  B->ops->solve   = MatSolve_SeqAIJ_SuperLU;
-  B->ops->destroy = MatDestroy_SeqAIJ_SuperLU;
-  B->factor       = FACTOR_LU;
-  
-  ierr            = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
-  B->spptr        = (void*)lu;
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SeqAIJ_SuperLU",
-                                    (void(*)(void))MatCreateNull_SeqAIJ_SuperLU);CHKERRQ(ierr);
-
-  /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
-  ierr = PetscMalloc(A->n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
-  ierr = PetscMalloc(A->m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);
-  ierr = ISGetIndices(c,&ca);CHKERRQ(ierr);
-  ierr = PetscMemcpy(lu->perm_c,ca,A->m*sizeof(int));CHKERRQ(ierr);
-  ierr = ISRestoreIndices(c,&ca);CHKERRQ(ierr);
-  
-  if (info) {
-    lu->pivot_threshold = info->dtcol;
-  } else {
-    lu->pivot_threshold = 0.0; /* no pivoting */
-  }
-
-  PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
-
-  lu->flg = DIFFERENT_NONZERO_PATTERN;
-  PetscFunctionReturn(0);
-}
-
 static int StatInitCalled = 0;
 
 #undef __FUNCT__  
@@ -198,7 +156,6 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 {
   Mat_SeqAIJ         *aa = (Mat_SeqAIJ*)(A)->data;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)(*F)->spptr;
-  /* NCformat           *store; */
   int                *etree,i,ierr;
 
   PetscFunctionBegin;
@@ -266,6 +223,51 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   PetscFunctionReturn(0);
 }
 
+/*
+   Note the r permutation is ignored
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
+int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+{
+  Mat                 B;
+  Mat_SeqAIJ_SuperLU  *lu;
+  int                 ierr,*ca;
+
+  PetscFunctionBegin;
+  /*
+  A->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_SuperLU;
+  */
+  ierr            = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  B               = *F;
+  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_SuperLU;
+  B->ops->solve           = MatSolve_SeqAIJ_SuperLU;
+  B->ops->destroy         = MatDestroy_SeqAIJ_SuperLU;
+  B->factor               = FACTOR_LU;
+  
+  ierr            = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
+  B->spptr        = (void*)lu;
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SeqAIJ_SuperLU",
+                                    (void(*)(void))MatCreateNull_SeqAIJ_SuperLU);CHKERRQ(ierr);
+
+  /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
+  ierr = PetscMalloc(A->n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
+  ierr = PetscMalloc(A->m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);
+  ierr = ISGetIndices(c,&ca);CHKERRQ(ierr);
+  ierr = PetscMemcpy(lu->perm_c,ca,A->m*sizeof(int));CHKERRQ(ierr);
+  ierr = ISRestoreIndices(c,&ca);CHKERRQ(ierr);
+  
+  if (info) {
+    lu->pivot_threshold = info->dtcol;
+  } else {
+    lu->pivot_threshold = 0.0; /* no pivoting */
+  }
+
+  PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
+
+  lu->flg = DIFFERENT_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUseSuperLU_SeqAIJ"
@@ -280,8 +282,6 @@ int MatUseSuperLU_SeqAIJ(Mat A)
   if (!flg) PetscFunctionReturn(0);
 
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
-  A->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_SuperLU;
-  A->ops->solve            = MatSolve_SeqAIJ_SuperLU;
 
   PetscFunctionReturn(0);
 }
