@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.32 1996/07/10 01:52:20 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.33 1996/07/24 20:22:51 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -128,9 +128,14 @@ extern void *PetscLow,*PetscHigh;
   if ((unsigned long)h & (unsigned long)3){                         \
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Int");                \
   }}
+#define PetscValidPointer(h)                                        \
+  {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Pointer");}                 \
+  if ((unsigned long)h & (unsigned long)3){                         \
+    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer");                       \
+  }}
 
 /*
-   FreeBSD gcc does not double align doubles 
+   Some machines do not double align doubles 
 */
 #if defined(PARCH_freebsd) || defined(PARCH_rs6000) || defined(PARCH_linux)
 #define PetscValidScalarPointer(h)                                  \
