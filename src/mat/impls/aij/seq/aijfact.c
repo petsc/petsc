@@ -1015,36 +1015,48 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate dloc, solve_work, new a, new j */
   PetscLogObjectMemory(*fact,(ainew[n]+shift-n) * (sizeof(int)+sizeof(PetscScalar)));
-  b->maxnz          = b->nz = ainew[n] + shift;
+  b->maxnz        = b->nz = ainew[n] + shift;
   b->lu_damping   = info->damping;
   b->lu_zeropivot = info->zeropivot;
-  (*fact)->factor   = FACTOR_LU;
+  (*fact)->factor = FACTOR_LU;
   ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
-  (*fact)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
+  (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
   (*fact)->info.factor_mallocs    = realloc;
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
-  (*fact)->factor                 =  FACTOR_LU;
   PetscFunctionReturn(0); 
 }
 
 #include "src/mat/impls/sbaij/seq/sbaij.h"
+typedef struct {
+  int levels;   
+} Mat_SeqAIJ_SeqSBAIJ;
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
 int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 {
-  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
-  int         ierr;
+  Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
+  int                 ierr;
+  Mat_SeqAIJ_SeqSBAIJ *ptr = (Mat_SeqAIJ_SeqSBAIJ*)(*fact)->spptr;
 
   PetscFunctionBegin; 
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   } 
-  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(a->sbaijMat,fact);CHKERRQ(ierr);
-  if (a->sbaijMat){
-    ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
+  
+  if (ptr->levels > 0){ /* out-place factorization */
+    ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(a->sbaijMat,fact);CHKERRQ(ierr);   
+    ierr                = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
+    a->sbaijMat         = PETSC_NULL;
+
+  } else { /* inplace icc(0) */
+    a->sbaijMat = PETSC_NULL; /* sbaijMat has been assigned to fact, so free pointer sbaijMat */    
+    ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(*fact,fact);CHKERRQ(ierr);
   }
+  ierr = PetscFree(ptr);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0); 
 }
 
@@ -1052,19 +1064,43 @@ int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
 int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,PetscReal fill,int levels,Mat *fact)
 {
-  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
-  int         ierr;
+  Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqSBAIJ        *b;
+  int                 ierr;
+  PetscTruth          perm_identity;
+  Mat_SeqAIJ_SeqSBAIJ *ptr;
  
   PetscFunctionBegin;   
+  ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
+  if (!perm_identity){
+    SETERRQ(1,"Non-identity permutation is not supported yet");
+  }
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   }
 
-  ierr = MatICCFactorSymbolic(a->sbaijMat,perm,fill,levels,fact);CHKERRQ(ierr);
+  if (levels > 0){
+    ierr = MatICCFactorSymbolic(a->sbaijMat,perm,fill,levels,fact);CHKERRQ(ierr);
+    (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering;
 
-  /* icc/cholesky with non-natural ordering is not implemented yet */
+  } else { /* in-place icc(0) */
+    (*fact)             = a->sbaijMat;
+    (*fact)->factor     = FACTOR_CHOLESKY;  
+    b                   = (Mat_SeqSBAIJ*)(*fact)->data;    
+    b->row              = perm;
+    b->icol             = perm;   
+    ierr                = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+    (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    ierr                = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    ierr                = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+  }
+
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
-  (*fact)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering; 
+
+  ierr           = PetscNew(Mat_SeqAIJ_SeqSBAIJ,&ptr);CHKERRQ(ierr);
+  (*fact)->spptr = (void*)ptr;
+  ptr->levels    = levels;   /* to be used by CholeskyFactorNumeric_SeqAIJ() */
+  
   PetscFunctionReturn(0); 
 }
 

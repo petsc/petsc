@@ -49,7 +49,9 @@ extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat,Mat*);

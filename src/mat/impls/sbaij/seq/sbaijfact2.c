@@ -1317,6 +1317,9 @@ int MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
 /*
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.
+   Note: matrix fact in MatSolve_xxx_inplace(fact, ) uses the same matrix
+         structure as the coefficient mat A, while in MatSolve_xxx() (outplace),
+         fact uses Modified Sparse Row storage for u and ju, see Saad pp.85 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering"
@@ -1350,6 +1353,47 @@ int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     vj = aj + ai[k]; 
     xk = x[k];   
     nz = ai[k+1] - ai[k];    
+    while (nz--) xk += (*v++) * x[*vj++];    
+    x[k] = xk;      
+  }
+
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  PetscLogFlops(4*a->s_nz + A->m);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace"
+int MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
+  int             mbs=a->mbs,*ai=a->i,*aj=a->j,ierr;
+  MatScalar       *aa=a->a,*v;
+  PetscScalar     *x,*b,xk;
+  int             nz,*vj,k;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  
+  /* solve U^T*D*y = b by forward substitution */
+  ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+  for (k=0; k<mbs; k++){
+    v  = aa + ai[k] + 1; 
+    vj = aj + ai[k] + 1;    
+    xk = x[k];
+    nz = ai[k+1] - ai[k] - 1;     /* exclude diag[k] */
+    while (nz--) x[*vj++] += (*v++) * xk;
+    x[k] = xk*aa[ai[k]];  /* note: aa[diag[k]] = 1/D(k) */
+  }
+
+  /* solve U*x = y by back substitution */ 
+  for (k=mbs-2; k>=0; k--){ 
+    v  = aa + ai[k] + 1; 
+    vj = aj + ai[k] + 1; 
+    xk = x[k];   
+    nz = ai[k+1] - ai[k] - 1;    
     while (nz--) xk += (*v++) * x[*vj++];    
     x[k] = xk;      
   }
