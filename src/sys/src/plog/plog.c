@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.24 1995/08/04 01:51:30 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.25 1995/08/04 21:26:42 curfman Exp curfman $";
 #endif
 
 #include "ptscimpl.h"    /*I "petsc.h"  I*/
@@ -294,9 +294,9 @@ $  -log_all : Prints extensive log information (for code compiled
 $      with PETSC_LOG)
 
    Notes:
-   A related routine is PLogBegin(), which is intended for production
-   runs since it logs only flop rates and object creation (and shouldn't
-   significantly slow the programs).
+   A related routine is PLogBegin (with the options key -log), which is 
+   intended for production runs since it logs only flop rates and object
+   creation (and shouldn't significantly slow the programs).
 
 .keywords: log, all, begin
 
@@ -319,7 +319,7 @@ int PLogAllBegin()
 /*@
     PLogBegin - Turns on logging of objects and events. This logs flop
     rates and object creation and should not slow programs down too much.
-    This may be called more than once.
+    This routine may be called more than once.
 
    Options Database Keys:
 $  -log : Prints basic log information (for code compiled 
@@ -535,7 +535,7 @@ int PLogEventRegister(int e,char *string)
 
    Input Parameter:
 .  file - a file pointer
-.  comm - communicator, only the first processor prints
+.  comm - MPI communicator (one processor prints)
 
    Options Database Keys:
 $  -log_summary : Prints summary of log information (for code
@@ -543,8 +543,8 @@ $  -log_summary : Prints summary of log information (for code
 
    Notes:
    More extensive examination of the log information can be done with 
-   PLogDump (activated by -log or -log_all) in combination with
-   tkreview. 
+   PLogDump(), which is activated by the option -log or -log_all, in 
+   combination with petsc/bin/petscsim.
    
 .keywords: log, dump, print
 

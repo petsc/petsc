@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.30 1995/08/01 19:04:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.31 1995/08/04 01:51:30 bsmith Exp curfman $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -345,7 +345,7 @@ int TrSpace( int *space, int *fr )
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
 
    Options Database Key:
-$  -TrDump : dumps unfreed memory during call to PetscFinalize()
+$  -trdump : dumps unfreed memory during call to PetscFinalize()
 
 .keywords: memory, allocation, tracing, space, statistics
 
@@ -403,8 +403,12 @@ static int  PrintSum(TRINFO ** a, VISIT order, int level )
 .  fp  - file pointer
 
   Note:
-  This routine is the same as TrDump on those systems that do not include
-  /usr/include/search.h .
+  This routine is the same as TrDump() on those systems that do not 
+  include /usr/include/search.h .
+
+.keywords: memory, allocation, tracing, space, statistics
+
+.seealso: TrDump()
  @*/
 int TrSummary( FILE *fp )
 {
@@ -456,11 +460,13 @@ int TrSummary(FILE* fp )
 #endif
 
 /*@
-   TrGetMaximumAllocated - If TrMalloc is used, returns the 
-   maximum amount of space malloced.
+   TrGetMaximumAllocated - If TrMalloc is used, returns the maximum amount 
+   of space allocated.
 
    Output Parameter:
-.  max - the maximum amount of space in bytes.
+.  max - the maximum amount of space (in bytes).
+
+.keywords: memory, maximum, allocation, tracing, space, statistics
 
 .seealso: TrSummary(), TrDump()
 @*/
