@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.212 2001/01/16 18:17:18 balay Exp balay $ */
+/* $Id: petscmat.h,v 1.213 2001/01/19 23:20:23 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -8,14 +8,25 @@
 
 #define MAT_COOKIE         PETSC_COOKIE+5
 
-typedef struct _p_Mat*           Mat;
-/*E
-    MatType - String with the name of a PETSc matrix or the creation function
-       with an optional dynamic library name
+/*S
+     Mat - Abstract PETSc matrix object
 
    Level: beginner
 
-.seealso: MatSetType()
+  Concepts: matrix; linear operator
+
+.seealso:  MatCreate(), MatType, MatSetType()
+S*/
+typedef struct _p_Mat*           Mat;
+
+/*E
+    MatType - String with the name of a PETSc matrix or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mymatcreate()
+
+   Level: beginner
+
+.seealso: MatSetType(), Mat
 E*/
 #define MATSAME     "same"
 #define MATSEQMAIJ  "seqmaij"
@@ -204,7 +215,7 @@ EXTERN int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth 
 
   Concepts: matrix^nonzero information
 
-.seealso:  MatGetInfo()
+.seealso:  MatGetInfo(), MatInfoType
 S*/
 typedef struct {
   PetscLogDouble rows_global,columns_global;         /* number of global rows and columns */
@@ -218,6 +229,16 @@ typedef struct {
   PetscLogDouble factor_mallocs;                     /* number of mallocs during factorization */
 } MatInfo;
 
+/*E
+    MatInfoType - Indicates if you want information about the local part of the matrix,
+     the entire parallel matrix or the maximum over all the local parts.
+
+    Level: beginner
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatGetInfo(), MatInfo
+E*/
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
 EXTERN int MatGetInfo(Mat,MatInfoType,MatInfo*);
 EXTERN int MatValid(Mat,PetscTruth*);
@@ -339,6 +360,15 @@ EXTERN int MatRetrieveValues(Mat);
   done through the SLES, KSP and PC interfaces.
 */
 
+/*E
+    MatOrderingType - String with the name of a PETSc matrix ordering or the creation function
+       with an optional dynamic library name, for example 
+       http://www.mcs.anl.gov/petsc/lib.a:orderingcreate()
+
+   Level: beginner
+
+.seealso: MatGetOrdering()
+E*/
 typedef char* MatOrderingType;
 #define MATORDERING_NATURAL   "natural"
 #define MATORDERING_ND        "nd"
@@ -455,6 +485,8 @@ EXTERN int MatSetUnfactored(Mat);
 
     Level: beginner
 
+   May be bitwise ORd together
+
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
 
 .seealso: MatRelax()
@@ -469,6 +501,15 @@ EXTERN int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
     These routines are for efficiently computing Jacobians via finite differences.
 */
 
+/*E
+    MatColoringType - String with the name of a PETSc matrix coloring or the creation function
+       with an optional dynamic library name, for example 
+       http://www.mcs.anl.gov/petsc/lib.a:coloringcreate()
+
+   Level: beginner
+
+.seealso: MatGetColoring()
+E*/
 typedef char* MatColoringType;
 #define MATCOLORING_NATURAL "natural"
 #define MATCOLORING_SL      "sl"
@@ -485,14 +526,19 @@ EXTERN int MatColoringRegister(char*,char*,char*,int(*)(Mat,MatColoringType,ISCo
 EXTERN int        MatColoringRegisterAll(char *);
 extern PetscTruth MatColoringRegisterAllCalled;
 EXTERN int        MatColoringRegisterDestroy(void);
-EXTERN int MatColoringPatch(Mat,int,int *,ISColoring*);
+EXTERN int        MatColoringPatch(Mat,int,int *,ISColoring*);
 
-/*
-    Data structures used to compute Jacobian vector products 
-  efficiently using finite differences.
-*/
 #define MAT_FDCOLORING_COOKIE PETSC_COOKIE + 23
+/*S
+     MatFDColoring - Object for computing a sparse Jacobian via finite differences
+        and coloring
 
+   Level: beginner
+
+  Concepts: coloring, sparse Jacobian, finite differences
+
+.seealso:  MatFDColoringCreate()
+S*/
 typedef struct _p_MatFDColoring *MatFDColoring;
 
 EXTERN int MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
@@ -513,7 +559,26 @@ EXTERN int MatFDColoringSetRecompute(MatFDColoring);
 */
 #define MATPARTITIONING_COOKIE PETSC_COOKIE + 25
 
+/*S
+     MatPartitioning - Object for managing the partitioning of a matrix or graph
+
+   Level: beginner
+
+  Concepts: partitioning
+
+.seealso:  MatParitioningCreate(), MatPartitioningType
+S*/
 typedef struct _p_MatPartitioning *MatPartitioning;
+
+/*E
+    MatPartitioningType - String with the name of a PETSc matrix partitioing or the creation function
+       with an optional dynamic library name, for example 
+       http://www.mcs.anl.gov/petsc/lib.a:partitioningcreate()
+
+   Level: beginner
+
+.seealso: MatPartitioingCreate(), MatPartitioning
+E*/
 typedef char* MatPartitioningType;
 #define MATPARTITIONING_CURRENT  "current"
 #define MATPARTITIONING_PARMETIS "parmetis"
@@ -658,7 +723,18 @@ EXTERN int MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);
 EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
 
+/*S
+     MatNullSpace - Object that removes a null space from a vector, i.e.
+         orthogonalizes the vector to a subsapce
+
+   Level: beginner
+
+  Concepts: matrix; linear operator, null space
+
+.seealso:  MatNullSpaceCreate()
+S*/
 typedef struct _p_MatNullSpace* MatNullSpace;
+
 #define MATNULLSPACE_COOKIE    PETSC_COOKIE+17
 
 EXTERN int MatNullSpaceCreate(MPI_Comm,int,int,Vec *,MatNullSpace*);
