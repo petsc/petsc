@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 2001/01/15 21:41:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.10 2001/01/17 19:42:49 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -47,6 +47,9 @@ PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 # 
 JAVAC           = /nfs/software-linux/apps/packages/jdk-1.2/bin/javac
 JAVA            = /nfs/software-linux/apps/packages/jdk-1.2/bin/java
+JAR             = /nfs/software-linux/apps/packages/jdk-1.2/bin/jar
+#JAVAC           = /soft/apps//packages/jdk-1.2/bin/javac
+#JAVA            = /soft/apps//packages/jdk-1.2/bin/java
 PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 #
 # Location of MPE
