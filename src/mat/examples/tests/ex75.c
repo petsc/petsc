@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.6 2000/07/11 22:09:46 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.7 2000/07/12 21:09:05 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -10,10 +10,10 @@ static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,b,u;    /* approx solution, RHS, exact solution */
-  Mat         A,sA;     /* linear system matrix */
-  PetscRandom rctx;     /* random number generator context */
-  double      norm;     /* norm of solution error */
+  Vec         x,y,u,s1,s2;    
+  Mat         A,sA;     
+  PetscRandom rctx;     
+  double      norm;     
   double      r1,r2,tol=1.e-10;
   int         i,j,i1,i2,j1,j2,I,J,Istart,Iend,ierr,its,m,m1;
 
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   
   mbs = n/bs;
-  if (mbs*bs != n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"n/bs must be an integer.");
+  if (mbs*bs != n) SETERRA(1,0,"Number rows/cols must be divisible by bs");
 
   /* Assemble MPISBAIJ matrix sA */
   ierr = MatCreateMPISBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&sA);CHKERRA(ierr);
@@ -103,8 +103,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  /* Test MatView(): not working yet! */
-  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr);*/
+  /* Test MatView(,VIEWER_STDOUT_WORLD): not working yet! */  
+  /* ierr = MatView(sA, VIEWER_DRAW_WORLD); CHKERRA(ierr); */
+  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr); */
 
   /* Assemble MPIBAIJ matrix A */
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRA(ierr);
@@ -166,10 +167,10 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  /* ierr = MatView(A, VIEWER_DRAW_WORLD); CHKERRA(ierr); */
   /* ierr = MatView(A, VIEWER_STDOUT_WORLD); CHKERRA(ierr); */
 
   /* Test MatGetSize(), MatGetLocalSize() */
-  /* ierr = MatScale(&alpha,sA);CHKERRA(ierr); MatView(sA, VIEWER_STDOUT_WORLD); */
   ierr = MatGetSize(sA, &i1,&j1); ierr = MatGetSize(A, &i2,&j2);
   i1 -= i2; j1 -= j2;
   if (i1 || j1) {
@@ -178,18 +179,31 @@ int main(int argc,char **args)
   }
     
   ierr = MatGetLocalSize(sA, &i1,&j1); ierr = MatGetLocalSize(A, &i2,&j2);
-  i1 -= i2; j1 -= j2;
-  if (i1 || j1) {
+  i2 -= i1; j2 -= j1;
+  if (i2 || j2) {
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
+
+  /* vectors */
+  /*--------------------*/
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,i1,n,&x); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&y);CHKERRA(ierr); 
+  ierr = VecDuplicate(x,&u);CHKERRA(ierr);  
+  ierr = VecDuplicate(x,&s1);CHKERRA(ierr);
+  ierr = VecDuplicate(x,&s2);CHKERRA(ierr);
+
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRA(ierr);
+  ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
+  ierr = VecSet(&one,u);CHKERRA(ierr);
 
   /* Test MatNorm() */
   ierr = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRA(ierr); 
   ierr = MatNorm(sA,NORM_FROBENIUS,&r2);CHKERRA(ierr);
   r1 -= r2;
   if (r1<-tol || r1>tol){    
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), A_fnorm - sA_fnorm = %16.14e\n",r1);
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatNorm(), A_fnorm - sA_fnorm = %16.14e\n",rank,r1);
+    PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
   
   /* Test MatGetOwnershipRange() */ 
@@ -199,7 +213,56 @@ int main(int argc,char **args)
   if (i2 || j2) {
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MaGetOwnershipRange()\n",rank);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  }    
+ 
+  /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
+  /*
+  ierr = MatDiagonalScale(A,x,x);CHKERRA(ierr);
+  ierr = MatDiagonalScale(sA,x,x);CHKERRA(ierr);
+  */
+  ierr = MatGetDiagonal(A,s1); CHKERRA(ierr);  
+  ierr = MatGetDiagonal(sA,s2); CHKERRA(ierr);
+  ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
+  ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
+  r1 -= r2;
+  if (r1<-tol || r1>tol) { 
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDiagonalScale() or MatGetDiagonal(), r1=%g \n",rank,r1);
+    PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
+  /*
+  ierr = MatScale(&alpha,A);CHKERRA(ierr);
+  ierr = MatScale(&alpha,sA);CHKERRA(ierr);
+  */
+  /* Test MatMult(), MatMultAdd() */
+  for (i=0; i<1; i++) {
+    ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
+    ierr = MatMult(A,x,s1);CHKERRA(ierr);
+    ierr = MatMult(sA,x,s2);CHKERRA(ierr);
+    VecView(s1,VIEWER_STDOUT_WORLD);
+    VecView(s2,VIEWER_STDOUT_WORLD);
+    /* MatView(sA,VIEWER_DRAW_WORLD); */
+    ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
+    ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
+    r1 -= r2;
+    if (r1<-tol || r1>tol) {
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatMult() or MatScale(), err=%g\n",rank,r1);
+      PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    }
+  }
+#ifdef MatMultAdd
+  for (i=0; i<20; i++) {
+    ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
+    ierr = VecSetRandom(rctx,y);CHKERRA(ierr);
+    ierr = MatMultAdd(A,x,y,s1);CHKERRA(ierr);
+    ierr = MatMultAdd(sA,x,y,s2);CHKERRA(ierr);
+    ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
+    ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
+    r1 -= r2;
+    if (r1<-tol || r1>tol) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd() or MatScale() \n");CHKERRA(ierr);
+    }
+  }                
+#endif
 
   /* Test MatGetRow(): can only obtain rows associated with the given processor */
   for (i=rstart; i<rstart+1; i++) {
@@ -211,8 +274,8 @@ int main(int argc,char **args)
     ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"\n");CHKERRA(ierr);
     ierr = MatRestoreRow(sA,i,&ncols,&cols,&vr);CHKERRA(ierr);
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);CHKERRA(ierr);      
- 
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);CHKERRA(ierr);  
+
 
   /* Test MatZeroRows() */
   ierr = ISCreateStride(PETSC_COMM_SELF,2,rstart,2,&isrow);CHKERRA(ierr); 
@@ -223,53 +286,17 @@ int main(int argc,char **args)
   */
   ISView(isrow, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
   ierr = MatZeroRows(sA,isrow,PETSC_NULL); CHKERRA(ierr); 
-  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr);  */
-  
   ierr = ISDestroy(isrow);CHKERRA(ierr);
-
-  /* vectors */
-  /*--------------------*/
-  /* ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&u);CHKERRA(ierr);*/
-  ierr = MatGetLocalSize(sA,&m,&m1);CHKERRA(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,m,n,&u); CHKERRA(ierr);
-  ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRA(ierr); 
-  ierr = VecDuplicate(b,&x);CHKERRA(ierr);
-
-  /* 
-     Set exact solution; then compute right-hand-side vector.
-     By default we use an exact solution of a vector with all
-     elements of 1.0;  Alternatively, using the runtime option
-     -random_sol forms a solution vector with random components.
-  */
-  ierr = OptionsHasName(PETSC_NULL,"-random_exact_sol",&flg);CHKERRA(ierr);
-  if (flg) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRA(ierr);
-    ierr = VecSetRandom(rctx,u);CHKERRA(ierr);
-    ierr = PetscRandomDestroy(rctx);CHKERRA(ierr);
-  } else {
-    ierr = VecSet(&one,u);CHKERRA(ierr);
-  }
-  ierr = VecSet(&one,x);CHKERRA(ierr);
-
-  /* Test MatDiagonalScale() */
-#ifdef MatDia
-  /* ierr = MatDiagonalScale(A,u,u);CHKERRA(ierr); */
-  /* MatView(A, VIEWER_STDOUT_WORLD); */
-  ierr = MatDiagonalScale(sA,u,u);CHKERRA(ierr); 
-  /* MatView(sA, VIEWER_STDOUT_WORLD); */
-#endif
-
-  ierr = MatMult(sA,u,b);CHKERRA(ierr); 
-  /* ierr = MatMult(A,u,b);CHKERRA(ierr);     */    
-  /* ierr = MatMultAdd(sA,u,x,b);                 */
-  /* ierr = MatGetDiagonal(sA, b); CHKERRA(ierr); */
-
+  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr);  */  
 
  
-  ierr = VecDestroy(u);CHKERRA(ierr);  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);  ierr = MatDestroy(sA);CHKERRA(ierr);
-
+  ierr = VecDestroy(u);CHKERRA(ierr);  
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr); 
+  ierr = VecDestroy(s1);CHKERRA(ierr);
+  ierr = VecDestroy(s2);CHKERRA(ierr);
+  ierr = MatDestroy(sA);CHKERRA(ierr);
+  ierr = PetscRandomDestroy(rctx);CHKERRA(ierr);
  
   PetscFinalize();
   return 0;
