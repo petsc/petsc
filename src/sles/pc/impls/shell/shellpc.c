@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.12 1995/06/08 03:08:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.13 1995/07/07 16:16:00 bsmith Exp curfman $";
 #endif
 
 /*
@@ -64,6 +64,7 @@ int PCCreate_Shell(PC pc)
   pc->applyrich  = 0;
   pc->setup      = 0;
   pc->type       = PCSHELL;
+  pc->view       = 0;
   shell->apply   = 0;
   return 0;
 }
