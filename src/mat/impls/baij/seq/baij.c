@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.181 1999/09/15 02:03:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.182 1999/09/15 16:26:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -124,6 +124,7 @@ int MatDestroy_SeqBAIJ(Mat A)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         ierr;
 
+  PetscFunctionBegin;
   if (A->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(A->mapping);CHKERRQ(ierr);
   }
@@ -521,7 +522,7 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
       for ( k=0; k<bs; k++ ) {
         for ( l=0; l<bs; l++ ) {
           if (PetscReal(*aa++) >=  0.) continue;
-          DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
+          ierr = DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
         }
       }
     } 
@@ -535,7 +536,7 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
       for ( k=0; k<bs; k++ ) {
         for ( l=0; l<bs; l++ ) {
           if (PetscReal(*aa++) != 0.) continue;
-          DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
+          ierr = DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
         }
       }
     } 
@@ -550,7 +551,7 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
       for ( k=0; k<bs; k++ ) {
         for ( l=0; l<bs; l++ ) {
           if (PetscReal(*aa++) <= 0.) continue;
-          DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);
+          ierr = DrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
         }
       }
     } 
@@ -873,10 +874,10 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 #define __FUNC__ "MatZeroRows_SeqBAIJ_Check_Blocks"
 static int MatZeroRows_SeqBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], int *bs_max)
 {
-  int i,j,k,row;
+  int        i,j,k,row;
   PetscTruth flg;
 
-  /*   PetscFunctionBegin;*/
+  PetscFunctionBegin;
   for ( i=0,j=0; i<n; j++ ) {
     row = idx[i];
     if (row%bs!=0) { /* Not the begining of a block */
@@ -1780,7 +1781,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
       rowcount++;
     }
     /* sort the masked values */
-    PetscSortInt(nmask,masked);
+    ierr = PetscSortInt(nmask,masked);CHKERRQ(ierr);
 
     /* set "j" values into matrix */
     maskcount = 1;

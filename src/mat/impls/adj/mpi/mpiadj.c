@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.25 1999/06/30 23:52:07 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.26 1999/09/02 14:53:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,6 +18,7 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
   char        *outputname;
   MPI_Comm    comm = A->comm;
 
+  PetscFunctionBegin;
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -43,6 +44,7 @@ int MatView_MPIAdj(Mat A,Viewer viewer)
   ViewerType  vtype;
   int         ierr;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
@@ -95,6 +97,7 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data;
 
+  PetscFunctionBegin;
   if (op == MAT_STRUCTURALLY_SYMMETRIC) {
     a->symmetric = PETSC_TRUE;
   } else {
@@ -115,6 +118,7 @@ int MatMarkDiag_MPIAdj(Mat A)
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data; 
   int        i,j, *diag, m = a->m;
 
+  PetscFunctionBegin;
   diag = (int *) PetscMalloc( (m+1)*sizeof(int));CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
   for ( i=0; i<a->m; i++ ) {
@@ -133,6 +137,7 @@ int MatMarkDiag_MPIAdj(Mat A)
 #define __FUNC__ "MatGetSize_MPIAdj"
 int MatGetSize_MPIAdj(Mat A,int *m,int *n)
 {
+  PetscFunctionBegin;
   if (m) *m = A->M;
   if (n) *n = A->N;
   PetscFunctionReturn(0);
@@ -143,6 +148,7 @@ int MatGetSize_MPIAdj(Mat A,int *m,int *n)
 int MatGetLocalSize_MPIAdj(Mat A,int *m,int *n)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data; 
+  PetscFunctionBegin;
   if (m) *m = a->m; 
   if (n) *n = A->N;
   PetscFunctionReturn(0);
@@ -153,6 +159,7 @@ int MatGetLocalSize_MPIAdj(Mat A,int *m,int *n)
 int MatGetOwnershipRange_MPIAdj(Mat A,int *m,int *n)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data;
+  PetscFunctionBegin;
   *m = a->rstart; *n = a->rend;
   PetscFunctionReturn(0);
 }
@@ -164,6 +171,7 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data;
   int        *itmp;
 
+  PetscFunctionBegin;
   row -= a->rstart;
 
   if (row < 0 || row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row out of range");
@@ -184,6 +192,7 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 #define __FUNC__ "MatRestoreRow_MPIAdj"
 int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
@@ -191,6 +200,7 @@ int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 #define __FUNC__ "MatGetBlockSize_MPIAdj"
 int MatGetBlockSize_MPIAdj(Mat A, int *bs)
 {
+  PetscFunctionBegin;
   *bs = 1;
   PetscFunctionReturn(0);
 }
@@ -203,6 +213,7 @@ int MatEqual_MPIAdj(Mat A,Mat B, PetscTruth* flg)
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data, *b = (Mat_MPIAdj *)B->data;
  int         flag = 1,ierr;
 
+  PetscFunctionBegin;
   if (B->type != MATMPIADJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
 
   /* If the  matrix dimensions are not equal, or no of nonzeros */
@@ -333,6 +344,7 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   Mat_MPIAdj *b;
   int        ii,ierr, flg,size,rank;
 
+  PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -384,6 +396,12 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
 
 
 

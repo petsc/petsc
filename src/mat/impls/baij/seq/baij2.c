@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.47 1999/06/08 22:56:09 balay Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.48 1999/06/30 23:51:46 balay Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -33,7 +33,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   for ( i=0; i<is_max; i++ ) {
     /* Initialise the two local arrays */
     isz  = 0;
-    BTMemzero(m,table);
+    ierr = BTMemzero(m,table);CHKERRQ(ierr);
                  
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz*bs, nidx2, (is+i));CHKERRQ(ierr);
   }
-  BTDestroy(table);
+  ierr = BTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   ierr = PetscFree(nidx2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -375,6 +375,7 @@ int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   MatScalar       *v;
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
+  PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -415,6 +416,7 @@ int MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
   MatScalar       *v;
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
+  PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
@@ -455,6 +457,7 @@ int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
   MatScalar       *v;
   int             ierr,mbs=a->mbs,i,*idx,*ii,j,n;
 
+  PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 

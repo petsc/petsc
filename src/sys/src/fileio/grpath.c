@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.26 1999/05/06 17:59:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.27 1999/05/12 03:27:04 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -69,20 +69,19 @@ int PetscGetRealPath(char path[], char rpath[])
 {
   int  ierr;
   char tmp3[MAXPATHLEN];
-
-#if defined(PETSC_HAVE_REALPATH)
-  PetscFunctionBegin;
-  realpath(path,rpath);
-#elif defined (PARCH_win32)
-  PetscFunctionBegin;
-  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
-#elif !defined(PETSC_HAVE_READLINK)
-  PetscFunctionBegin;
-  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
-#else
+#if defined(PETSC_HAVE_READLINK)
   char tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
   int  n, m, N;
+#endif
+
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_REALPATH)
+  realpath(path,rpath);
+#elif defined (PARCH_win32)
+  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
+#elif !defined(PETSC_HAVE_READLINK)
+  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
+#else
 
   /* Algorithm: we move through the path, replacing links with the real paths.   */
   ierr = PetscStrcpy( rpath, path );CHKERRQ(ierr);
@@ -116,6 +115,7 @@ int PetscGetRealPath(char path[], char rpath[])
   }
   ierr = PetscStrncpy(rpath,path,MAXPATHLEN);CHKERRQ(ierr);
 #endif
+
   /* remove garbage some automounters put at the beginning of the path */
   if (PetscStrncmp( "/tmp_mnt/", rpath, 9 ) == 0) {
     ierr = PetscStrcpy( tmp3, rpath + 8 );CHKERRQ(ierr);

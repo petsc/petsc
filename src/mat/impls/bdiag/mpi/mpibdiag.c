@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.171 1999/06/30 23:51:34 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.172 1999/09/02 14:53:26 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -52,6 +52,7 @@ int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
+  PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (idxm[i] >= mbd->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");

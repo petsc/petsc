@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.176 1999/07/03 14:06:02 balay Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.177 1999/09/02 14:53:40 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -85,16 +85,16 @@ static int PCPublish_Petsc(PetscObject object)
 #if defined(PETSC_HAVE_AMS)
   PC          v = (PC) object;
   int         ierr;
-  
+#endif
+
   PetscFunctionBegin;
 
+#if defined(PETSC_HAVE_AMS)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
   ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
-#else
-  PetscFunctionBegin;
 #endif
 
   PetscFunctionReturn(0);

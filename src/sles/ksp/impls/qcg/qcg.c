@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.62 1999/06/30 23:53:47 balay Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.63 1999/09/02 14:53:55 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -293,7 +293,7 @@ int KSPDestroy_QCG(KSP ksp)
   int     ierr;
 
   PetscFunctionBegin;
-  KSPDefaultFreeWork( ksp );
+  ierr = KSPDefaultFreeWork( ksp );CHKERRQ(ierr);
   
   /* Free the context variable */
   ierr = PetscFree(cgP);CHKERRQ(ierr);
@@ -351,15 +351,16 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double
 { 
   double zero = 0.0, dsq, ptp, pts, rad, sts;
   int    ierr;
-
 #if defined(PETSC_USE_COMPLEX)
   Scalar cptp, cpts, csts;
+#endif
+
   PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
   ierr = VecDot(p,s,&cpts);CHKERRQ(ierr); pts = PetscReal(cpts);
   ierr = VecDot(p,p,&cptp);CHKERRQ(ierr); ptp = PetscReal(cptp);
   ierr = VecDot(s,s,&csts);CHKERRQ(ierr); sts = PetscReal(csts);
 #else
-  PetscFunctionBegin;
   ierr = VecDot(p,s,&pts);CHKERRQ(ierr);
   ierr = VecDot(p,p,&ptp);CHKERRQ(ierr);
   ierr = VecDot(s,s,&sts);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbdiag.c,v 1.30 1999/05/04 20:32:14 balay Exp balay $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.31 1999/06/30 23:51:34 balay Exp bsmith $";
 #endif
 
 /*
@@ -19,6 +19,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   IS           tofrom;
   Vec          gvec;
 
+  PetscFunctionBegin;
   /* We make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
   indices = (int *) PetscMalloc( (N+1)*sizeof(int) );CHKPTRQ(indices);

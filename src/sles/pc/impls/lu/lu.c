@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.116 1999/05/04 20:34:02 balay Exp balay $";
+static char vcid[] = "$Id: lu.c,v 1.117 1999/06/30 23:52:51 balay Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -434,6 +434,8 @@ int PCLUSetUseInPlace(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetMatOrdering"
 /*@
     PCLUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used it the LU factorization.

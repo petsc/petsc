@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.38 1999/04/02 19:33:56 balay Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.39 1999/05/12 03:27:09 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -83,8 +83,16 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   int             fd;
   char            proc[1024];
   prpsinfo_t      prusage;
+#elif defined(PARCH_t3d)
+  long *ii = sbreak(0); 
+  int fd = ii - (long*)0; 
+#elif defined(PARCH_hpux) || defined(PARCH_win32)
+#else
+  static struct rusage temp;
+#endif
 
   PetscFunctionBegin;
+#if defined(PARCH_solaris)
   sprintf(proc,"/proc/%d", (int)getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) {
     SETERRQ(PETSC_ERR_FILE_OPEN,1,"Unable to access system file to get memory usage data");
@@ -97,14 +105,9 @@ int PetscGetResidentSetSize(PLogDouble *foo)
 #elif defined(PARCH_t3d)
   long *ii = sbreak(0); 
   int fd = ii - (long*)0; 
-  *foo = (PLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
 #elif defined(PARCH_hpux) || defined(PARCH_win32)
-  PetscFunctionBegin;
   *foo = 0.0;
 #else
-  static struct rusage temp;
-
-  PetscFunctionBegin;
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PARCH_rs6000) || defined(PARCH_IRIX) || defined(PARCH_IRIX64) \
   || defined(PARCH_IRIX5) || defined (PARCH_ascired)

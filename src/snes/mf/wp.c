@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.13 1999/05/25 19:31:46 bsmith Exp balay $";
+static char vcid[] = "$Id: wp.c,v 1.14 1999/06/30 23:54:09 balay Exp bsmith $";
 #endif
 /*
   Implements an alternative approach for computing the differencing parameter
@@ -55,6 +55,7 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
   double             norma = 1.0;
   int                ierr;
 
+  PetscFunctionBegin;
   if (hctx->computenorma && (hctx->computenormU || !ctx->ncurrenth)) {
     ierr = VecNormBegin(U,NORM_2,&normU);CHKERRQ(ierr);
     ierr = VecNormBegin(a,NORM_2,&norma);CHKERRQ(ierr);

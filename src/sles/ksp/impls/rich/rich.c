@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.78 1999/06/08 22:57:21 balay Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.79 1999/09/02 14:53:52 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -13,6 +13,7 @@ int KSPSetUp_Richardson(KSP ksp)
 {
   int ierr;
 
+  PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,0,"no right preconditioning for KSPRICHARDSON");}
   else if (ksp->pc_side == PC_SYMMETRIC) {SETERRQ(2,0,"no symmetric preconditioning for KSPRICHARDSON");}
   ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);CHKERRQ(ierr);

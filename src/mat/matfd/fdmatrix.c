@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.47 1999/05/12 03:30:49 bsmith Exp balay $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.48 1999/06/30 23:52:39 balay Exp bsmith $";
 #endif
 
 /*
@@ -361,6 +361,8 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringView_Private"
 int MatFDColoringView_Private(MatFDColoring fd)
 {
   int ierr,flg;

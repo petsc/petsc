@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.2 1999/04/16 16:07:54 bsmith Exp balay $";
+static char vcid[] = "$Id: dlregis.c,v 1.3 1999/05/04 20:33:40 balay Exp bsmith $";
 #endif
 
 #include "mat.h"
@@ -21,12 +21,12 @@ int DLLibraryRegister(char *path)
   int ierr;
 
   ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
+  PetscFunctionBegin;
   /*
       If we got here then PETSc was properly loaded
   */
   ierr = MatPartitioningRegisterAll(path);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
@@ -42,12 +42,12 @@ EXTERN_C_BEGIN
 #define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
+  PetscFunctionBegin;
   if (!PetscStrcmp(type,"Contents"))     *mess = contents;
   else if (!PetscStrcmp(type,"Authors")) *mess = authors;
   else if (!PetscStrcmp(type,"Version")) *mess = version;
   else *mess = 0;
-
-  return 0;
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 

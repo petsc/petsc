@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.72 1999/06/30 23:51:21 balay Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.73 1999/09/02 14:53:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -104,6 +104,8 @@ int MatDestroy_Shell(Mat mat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatGetOwnershipRange_Shell"
 int MatGetOwnershipRange_Shell(Mat mat, int *rstart,int *rend)
 {
   int ierr;

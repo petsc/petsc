@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.123 1999/08/10 19:16:58 balay Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.124 1999/09/02 14:53:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -599,6 +599,7 @@ int MatView_MPIDense(Mat mat,Viewer viewer)
   int          ierr;
   ViewerType   vtype;
  
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = MatView_MPIDense_ASCII(mat,viewer);CHKERRQ(ierr);

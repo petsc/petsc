@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.47 1999/06/30 23:49:30 balay Exp balay $";
+static char vcid[] = "$Id: dl.c,v 1.48 1999/06/30 23:55:41 balay Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -63,6 +63,8 @@ EXTERN_C_BEGIN
 extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
+#undef __FUNC__  
+#define __FUNC__ "DLLibraryPrintPath"
 int DLLibraryPrintPath(void)
 {
   DLLibraryList libs;
