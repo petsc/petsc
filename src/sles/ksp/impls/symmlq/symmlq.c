@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.1 2000/08/18 19:59:18 balay Exp hzhang $*/
+/*$Id: symmlq.c,v 1.2 2000/08/21 15:19:51 hzhang Exp hzhang $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -30,7 +30,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
   Scalar       alpha,malpha,beta,mbeta,ibeta,betaold,beta1,eta;
-  Scalar       ceta,ceta_oold = 0.0, ceta_old = 0.0;
+  Scalar       ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
   Scalar       c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,s_prod;
   Scalar       rho0,rho1,irho1,rho2,mrho2,rho3,mrho3;
   Scalar       mone = -1.0,zero = 0.0; 
@@ -92,70 +92,66 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   KSPMonitor(ksp,0,np);            /* call any registered monitor routines */
   ksp->rnorm = np;  
 
-for (i=0; i<maxit; i++){
-   ksp->its = i+1;
+  for (i=0; i<maxit; i++){
+    ksp->its = i+1;
 
-/*   Lanczos  */
+    /*    Update    */
+    if (ksp->its > 1){
+      ierr = VecCopy(V,VOLD);CHKERRQ(ierr);  /* v_old <- v; */     
+      ierr = VecCopy(U,UOLD);CHKERRQ(ierr);  /* u_old <- u; */
+     
+      ibeta = 1.0 / beta;
+      ierr = VecCopy(R,V);CHKERRQ(ierr);
+      ierr = VecScale(&ibeta,V);CHKERRQ(ierr); /* v <- ibeta*r; */
+      ierr = VecCopy(Z,U);CHKERRQ(ierr);
+      ierr = VecScale(&ibeta,U);CHKERRQ(ierr); /* u <- ibeta*z; */
 
-     ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*  r     <- Amat*u; */  
-     ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- u'*r;   */
-     ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*      z <- B*r;    */
+      ierr = VecCopy(Wbar,W); CHKERRQ(ierr);
+      ierr = VecScale(&c,W);  CHKERRQ(ierr);
+      ierr = VecAXPY(&s,U,W); CHKERRQ(ierr);   /* w  <- c*w_bar + s*u;    (w_k) */
+      ms = -s;
+      ierr = VecScale(&ms,Wbar); CHKERRQ(ierr);
+      ierr = VecAXPY(&c,U,Wbar); CHKERRQ(ierr); /* w_bar <- -s*w_bar + c*u; (w_bar_(k+1)) */
+      ierr = VecAXPY(&ceta,W,X); CHKERRQ(ierr); /* x <- x + ceta * w;       (xL_k )  */
 
-     malpha = - alpha;
-     ierr = VecAXPY(&malpha,V,R);CHKERRQ(ierr);     /*  r <- r - alpha* v;  */
-     ierr = VecAXPY(&malpha,U,Z);CHKERRQ(ierr);     /*  z <- z - alpha* u;  */
-     mbeta = - beta;
-     ierr = VecAXPY(&mbeta,VOLD,R);CHKERRQ(ierr);   /*  r <- r - beta * v_old; */
-     ierr = VecAXPY(&mbeta,UOLD,Z);CHKERRQ(ierr);   /*  z <- z - beta * u_old; */
-     betaold = beta;                                /* beta_k                  */
-     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);          /* dp <- r'*z;             */
+      ceta_oold = ceta_old;
+      ceta_old  = ceta;
+    }
+
+    /*   Lanczos  */
+    ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*  r     <- Amat*u; */  
+    ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- u'*r;   */
+    ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*      z <- B*r;    */
+
+    malpha = - alpha;
+    ierr = VecAXPY(&malpha,V,R);CHKERRQ(ierr);     /*  r <- r - alpha* v;  */
+    ierr = VecAXPY(&malpha,U,Z);CHKERRQ(ierr);     /*  z <- z - alpha* u;  */
+    mbeta = - beta;
+    ierr = VecAXPY(&mbeta,VOLD,R);CHKERRQ(ierr);   /*  r <- r - beta * v_old; */
+    ierr = VecAXPY(&mbeta,UOLD,Z);CHKERRQ(ierr);   /*  z <- z - beta * u_old; */
+    betaold = beta;                                /* beta_k                  */
+    ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);          /* dp <- r'*z;             */
 #if !defined(PETSC_USE_COMPLEX)
      if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
 #endif
      beta = PetscSqrtScalar(dp);                    /*  beta = sqrt(dp); */
 
-/*    QR factorisation    */
-
+     /*    QR factorization    */
      coold = cold; cold = c; soold = sold; sold = s;
-
      rho0 = cold * alpha - coold * sold * betaold;    /* gamma_bar */ 
      rho1 = PetscSqrtScalar(rho0*rho0 + beta*beta);   /* gamma     */
      rho2 = sold * alpha + coold * cold * betaold;    /* delta     */
      rho3 = soold * betaold;                          /* epsilon   */
 
-/*     Givens rotation: [c -s; s c] (different from the Reference!)   */
-
-     c = rho0 / rho1;
-     s = beta / rho1;
-
-/*    Update    */
-
-     ierr = VecCopy(V,VOLD);CHKERRQ(ierr);  /* v_old <- v; */     
-     ierr = VecCopy(U,UOLD);CHKERRQ(ierr);  /* u_old <- u; */
-     
-     ibeta = 1.0 / beta;
-	  ierr = VecCopy(R,V);CHKERRQ(ierr);
-     ierr = VecScale(&ibeta,V);CHKERRQ(ierr); /* v <- ibeta*r; */
-     ierr = VecCopy(Z,U);CHKERRQ(ierr);
-     ierr = VecScale(&ibeta,U);CHKERRQ(ierr); /* u <- ibeta*z; */
+     /* Givens rotation: [c -s; s c] (different from the Reference!) */
+     c = rho0 / rho1; s = beta / rho1;
 
      if (ksp->its==1){
        ceta = beta1/rho1;
      } else {
        ceta = -(rho2*ceta_old + rho3*ceta_oold)/rho1;
      }
-     /* x_c   = x + (ceta/c)*w_bar;          (xc_k) */
-     ierr = VecCopy(Wbar,W); CHKERRQ(ierr);
-     ierr = VecScale(&c,W);  CHKERRQ(ierr);
-     ierr = VecAXPY(&s,U,W); CHKERRQ(ierr);   /* w  <- c*w_bar + s*u;    (w_k) */
-     ms = -s;
-     ierr = VecScale(&ms,Wbar); CHKERRQ(ierr);
-     ierr = VecAXPY(&c,U,Wbar); CHKERRQ(ierr); /* w_bar <- -s*w_bar + c*u; (w_bar_(k+1)) */
-     ierr = VecAXPY(&ceta,W,X); CHKERRQ(ierr); /* x <- x + ceta * w;       (xL_k )  */
-
-     ceta_oold = ceta_old;
-     ceta_old  = ceta;
-     
+          
      s_prod = s_prod*PetscAbsScalar(s);
      if (c == 0.0){
        np = s_prod*1.e16;
@@ -167,15 +163,22 @@ for (i=0; i<maxit; i++){
      KSPMonitor(ksp,i+1,np);
      ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
      if (ksp->reason) break;
-    
   }
+
+  /* move to the CG point: xc_(k+1) */
+  if (c == 0.0){
+    ceta_bar = ceta*1.e15;
+  } else {
+    ceta_bar = ceta/c;
+  }
+  ierr = VecAXPY(&ceta_bar,Wbar,X);CHKERRQ(ierr); /* x <- x + ceta_bar*w_bar */
+
   if (i == maxit) {
     ksp->its--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;
-  /* move to the CG point: xc_k */
-  
+
   PetscFunctionReturn(0);
 }
 
