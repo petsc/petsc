@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.23 2001/01/17 22:22:55 bsmith Exp balay $*/
+/*$Id: sro.c,v 1.24 2001/03/23 23:22:21 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -37,7 +37,7 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 #define __FUNCT__ "MatReorderingSeqSBAIJ"
 int MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
-  Mat_SeqSBAIJ     *a=(Mat_SeqSBAIJ *)A->data;
+  Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ *)A->data;
   int             *r,ierr,i,mbs=a->mbs,*rip,*riip;
   int             *ai,*aj;
   int             *nzr,nz,jmin,jmax,j,k,ajk,len;
@@ -50,7 +50,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
-    if (rip[i] - riip[i] != 0) SETERRQ(1,"Non-symm. permutation, use symm. permutation or general matrix format");     
+    if (rip[i] != riip[i]) SETERRQ(1,"Non-symm. permutation, use symm. permutation or general matrix format");     
   }
   ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
