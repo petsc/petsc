@@ -27,7 +27,7 @@ LAPACK_LIB     = c:/home/blaslapack/lapack.a
 # http://dao.gsfc.nasa.gov/software/grads/win32/X11R6.3/
 #
 X11_INCLUDE	= -I/usr/X11r6.3/include
-X11_LIB 	= -L/usr/X11r6.3/bin -lX11
+X11_LIB 	= -L/usr/X11r6.3/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software  
 #
