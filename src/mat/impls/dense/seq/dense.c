@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.156 1998/09/25 03:14:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.157 1998/10/01 18:54:20 bsmith Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -579,7 +579,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
   Mat          B;
   int          *scols, i, j, nz, ierr, fd, header[4], size;
   int          *rowlengths = 0, M, N, *cols;
-  Scalar       *vals, *svals, *v;
+  Scalar       *vals, *svals, *v,*w;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;
@@ -594,13 +594,21 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
     ierr = MatCreateSeqDense(comm,M,N,PETSC_NULL,A); CHKERRQ(ierr);
     B    = *A;
     a    = (Mat_SeqDense *) B->data;
-
+    v    = a->v;
+    /* Allocate some temp space to read in the values and then flip them
+       from row major to column major */
+    w = (Scalar *) PetscMalloc((M*N+1)*sizeof(Scalar));CHKPTRQ(w);
     /* read in nonzero values */
-    ierr = PetscBinaryRead(fd,a->v,M*N,PETSC_SCALAR); CHKERRQ(ierr);
-
+    ierr = PetscBinaryRead(fd,w,M*N,PETSC_SCALAR); CHKERRQ(ierr);
+    /* now flip the values and store them in the matrix*/
+    for ( j=0; j<N; j++ ) {
+      for ( i=0; i<M; i++ ) {
+        *v++ =w[i*N+j];
+      }
+    }
+    PetscFree(w);
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    /* ierr = MatTranspose(B,PETSC_NULL); CHKERRQ(ierr); */
   } else {
     /* read row lengths */
     rowlengths = (int*) PetscMalloc( (M+1)*sizeof(int) ); CHKPTRQ(rowlengths);
