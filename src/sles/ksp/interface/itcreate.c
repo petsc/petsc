@@ -127,7 +127,7 @@ int KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ksp->normtype = normtype;
-  if (normtype = KSP_NO_NORM) {
+  if (normtype == KSP_NO_NORM) {
     PetscLogInfo(ksp,"KSPSetNormType:Warning seting KSPNormType to skip computing the norm\n\
   make sure you set the KSP convergence test to KSPSkipConvergence\n");
   }

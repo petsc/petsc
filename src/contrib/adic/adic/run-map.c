@@ -111,7 +111,7 @@ void* ad_map_get(void* key)
     }
   }
   */
-  MapEntry*	entry = map + (((int)key>>3) % map_size) ;
+  MapEntry*	entry = map + (((long)key>>3) % map_size) ;
   if (entry->cache && entry->cache->key == key) {
     return entry->cache->val;
   }

@@ -69,11 +69,21 @@
 
       parameter (KSP_CONVERGED_ITERATING = 0)
 !
+!  Possible arguments to KSPSetNormType()
+!
+      integer KSP_NO_NORM
+      integer KSP_PRECONDITIONED_NORM
+      integer KSP_UNPRECONDITIONED_NORM
+      integer KSP_NATURAL_NORM 
+      
+      parameter (KSP_NO_NORM=0)
+      parameter (KSP_PRECONDITIONED_NORM=1)
+      parameter (KSP_UNPRECONDITIONED_NORM=2)
+      parameter (KSP_NATURAL_NORM=3) 
 !
 !   Possible arguments to KSPSetMonitor()
 !
       external KSPDEFAULTCONVERGED
-
       external KSPDEFAULTMONITOR
       external KSPTRUEMONITOR
       external KSPLGMONITOR
@@ -81,25 +91,8 @@
       external KSPVECVIEWMONITOR
       external KSPSINGULARVALUEMONITOR
 !
-!  Possible arguments to KSPSetNormType()
-!
-     integer KSP_NO_NORM
-     integer KSP_PRECONDITIONED_NORM
-     integer KSP_UNPRECONDITIONED_NORM
-     integer KSP_NATURAL_NORM 
-       
-     parameter(KSP_NO_NORM=0)
-     parameter(KSP_PRECONDITIONED_NORM=1)
-     parameter(KSP_UNPRECONDITIONED_NORM=2)
-     parameter(KSP_NATURAL_NORM=3) 
-!
 !  End of Fortran include file for the KSP package in PETSc
+!
 
 #endif
-
-
-
-
-
-
 
