@@ -70,6 +70,8 @@ petsc/bmake/rs6000_mpif
 petsc/bmake/rs6000_local
 petsc/bmake/rs6000_p4
 petsc/bmake/paragon/RCS
+petsc/bmake/paragon/paragon.make
+petsc/bmake/paragon/paragon.makeindir
 petsc/src/snes/impls/trdl
 petsc/src/mat/examples/matrices
 petsc/src/grid
@@ -126,6 +128,7 @@ petsc/src/is/RCS
 petsc/src/ksp/RCS
 petsc/src/mat/RCS
 petsc/src/mat/impls/dense/mpi/mdnfact.c
+petsc/src/mat/impls/csn
 petsc/src/pc/RCS
 petsc/src/sles/RCS
 petsc/src/stencil/RCS
