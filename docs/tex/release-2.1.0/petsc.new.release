@@ -6,12 +6,12 @@ Subject: new PETSc release
 
 PETSc Users,
 
-We are  pleased to announce  the  release  of  the PETSc 2.1  parallel
-software  libraries for  the implicit  solution   of PDEs and  related
+We are pleased to announce the release of the PETSc 2.1.0 parallel
+software libraries for the implicit solution of PDEs and related
 problems. The features of this release include:
 
-(1) a sparse, symmetric matrix storage format including sequential
-    Cholesky and ICC(k)
+(1) a parallel, sparse, symmetric matrix storage format including
+     sequential Cholesky and ICC(k)
 (2) a complete framework for parallel linear multigrid on structured
     grids (for both linear and nonlinear problems)
 (3) Mandel's balancing Neumann-Neumann method for scalar PDEs
@@ -26,7 +26,7 @@ problems. The features of this release include:
 PETSc is available at http://www.mcs.anl.gov/petsc. A list of features
 and changes in PETSc is at http://www.mcs.anl.gov/petsc/docs/changes.
 
-As always,  please send bug  reports, questions, and requests  for new
+As always, please send bug reports, questions, and requests for new
 features to petsc-maint@mcs.anl.gov.
 
 Thanks for your continued support.
@@ -34,12 +34,12 @@ Thanks for your continued support.
 The PETSc developers,
 Satish, Kris, Bill, Dinesh, Lois, and Barry
 
-Why  2.1?  PETSc 2.1  represents  the cumulation  of several years  of
-effort to  convert  PETSc  2.0 to    use  dynamic libraries.   Dynamic
-libraries allow   users to delay   until runtime  the choices  of what
-algorithms and  data   structures to run without   generating enormous
-executables. This capability  increases the flexibility of application
-codes   and  makes it trivial  to   determine experimentally  the best
-available data structures and algorithms for YOUR particular problem. 
+Why 2.1.0?  PETSc 2.1.0 represents the cumulation of several years of
+effort to convert PETSc 2.0 to use dynamic libraries.  Dynamic
+libraries allow users to delay until runtime the choices of what
+algorithms and data structures to run without generating enormous
+executables. This capability increases the flexibility of application
+codes and makes it trivial to determine experimentally the best
+available data structures and algorithms for YOUR particular problem.
 
 
