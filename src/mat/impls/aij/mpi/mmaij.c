@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmaij.c,v 1.41 1999/01/31 16:06:31 bsmith Exp balay $";
+static char vcid[] = "$Id: mmaij.c,v 1.42 1999/02/17 21:37:55 balay Exp bsmith $";
 #endif
 
 
@@ -27,7 +27,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
   PetscFunctionBegin;
 
-#if defined (USE_TABLE)
+#if defined (USE_CTABLE)
   /* use a table - Mark Adams (this has not been tested with "shift") */
   TableCreate(B->m,&gid1_lid1); 
   for ( i=0; i<B->m; i++ ) {
