@@ -91,9 +91,9 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 #define __FUNCT__ "VecScatterLocalOptimize_Private"
 PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from)
 {
-  PetscInt n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
+  PetscInt       n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
   PetscErrorCode ierr;
-  PetscInt *nto_slots,*nfrom_slots,j = 0;
+  PetscInt       *nto_slots,*nfrom_slots,j = 0;
   
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
@@ -133,8 +133,8 @@ PetscErrorCode VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
-  PetscErrorCode ierr;
-  PetscInt                    len,ny;
+  PetscErrorCode         ierr;
+  PetscInt               len,ny;
 
   PetscFunctionBegin;
   out->postrecvs = in->postrecvs;
@@ -259,7 +259,7 @@ PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               i,j,*indices,*rstarts,*sstarts;
   PetscMPIInt            tag = ctx->tag,*rprocs,*sprocs;
   PetscErrorCode         ierr;
-  int                    nrecvs,nsends,iend;
+  PetscInt               nrecvs,nsends,iend;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -454,7 +454,7 @@ PetscErrorCode VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,Scatte
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterLocalOptimizeCopy_Private"
-PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from,int bs)
+PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from,PetscInt bs)
 {
   PetscInt n = gen_to->n,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
   PetscInt to_start,from_start;
@@ -489,8 +489,8 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
-  PetscErrorCode ierr;
-  PetscInt                    len,ny,bs = in_from->bs;
+  PetscErrorCode         ierr;
+  PetscInt               len,ny,bs = in_from->bs;
 
   PetscFunctionBegin;
   out->postrecvs = in->postrecvs;
@@ -576,7 +576,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     PetscMPIInt tag;
     MPI_Comm    comm;
     PetscInt    *sstarts = out_to->starts,  *rstarts = out_from->starts;
-    int         *sprocs  = out_to->procs,   *rprocs  = out_from->procs;
+    PetscMPIInt *sprocs  = out_to->procs,   *rprocs  = out_from->procs;
     PetscInt    i;
     PetscTruth  flg;
     MPI_Request *swaits  = out_to->requests,*rwaits  = out_from->requests;
@@ -979,8 +979,8 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  PetscErrorCode ierr;
-  PetscInt                    i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscErrorCode         ierr;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1205,8 +1205,8 @@ PetscErrorCode VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMod
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  PetscInt                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,len;
-  PetscErrorCode ierr;
+  PetscInt               *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,len;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1448,8 +1448,8 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  PetscErrorCode ierr;
-  PetscInt                    i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscErrorCode         ierr;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1660,8 +1660,8 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  PetscErrorCode ierr;
-  PetscInt                    i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscErrorCode         ierr;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1858,8 +1858,8 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-  PetscErrorCode ierr;
-  PetscInt                    i;
+  PetscErrorCode         ierr;
+  PetscInt               i;
 
   PetscFunctionBegin;
   if (gen_to->use_readyreceiver) {
@@ -1920,7 +1920,7 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate_PtoS"
-PetscErrorCode VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,int bs,VecScatter ctx)
+PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
   PetscErrorCode         ierr;
@@ -2139,7 +2139,7 @@ PetscErrorCode VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin
   if (bs > 1) {
     PetscTruth  flg,flgs = PETSC_FALSE;
     PetscInt    *sstarts = to->starts,  *rstarts = from->starts;
-    int         *sprocs  = to->procs,   *rprocs  = from->procs;
+    PetscMPIInt *sprocs  = to->procs,   *rprocs  = from->procs;
     MPI_Request *swaits  = to->requests,*rwaits  = from->requests;
     MPI_Request *rev_swaits,*rev_rwaits;
     PetscScalar *Ssvalues = to->values, *Srvalues = from->values;

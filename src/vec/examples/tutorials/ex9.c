@@ -25,7 +25,7 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode rank,size;
+  PetscMPIInt    rank,size;
   PetscInt       nlocal = 6,nghost = 2,ifrom[2],i,rstart,rend;
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
   */
   ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
   for (i=0; i<nlocal+nghost; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",i,PetscRealPart(array[i]));CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",(int)i,PetscRealPart(array[i]));CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);

@@ -8,9 +8,10 @@ static char help[] = "Tests repeated VecSetType().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,n = 5;
-  PetscScalar   one = 1.0,two = 2.0;
-  Vec           x,y;
+  PetscErrorCode ierr;
+  PetscInt       n = 5;
+  PetscScalar    one = 1.0,two = 2.0;
+  Vec            x,y;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

@@ -9,10 +9,11 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int          n = 5,ierr,size,rank;
-  PetscScalar  one = 1.0,two = 2.0,three = 3.0;
-  Vec          x,y;
-  int          idx;
+  PetscMPIInt    size,rank;
+  PetscErrorCode ierr;
+  PetscInt       n = 5,idx;
+  PetscScalar    one = 1.0,two = 2.0,three = 3.0;
+  Vec            x,y;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

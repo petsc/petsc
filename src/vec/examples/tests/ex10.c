@@ -11,12 +11,13 @@ uses block index sets\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           bs = 1,n = 5,ierr,ix0[3] = {5,7,9},ix1[3] = {2,3,4};
-  int           size,rank,i,iy0[3] = {1,2,4},iy1[3] = {0,1,3};
-  PetscScalar   value;
-  Vec           x,y;
-  IS            isx,isy;
-  VecScatter    ctx = 0,newctx;
+  PetscErrorCode ierr;
+  PetscInt       bs = 1,n = 5,ix0[3] = {5,7,9},ix1[3] = {2,3,4},i,iy0[3] = {1,2,4},iy1[3] = {0,1,3};
+  PetscMPIInt    size,rank;
+  PetscScalar    value;
+  Vec            x,y;
+  IS             isx,isy;
+  VecScatter     ctx = 0,newctx;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);  
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

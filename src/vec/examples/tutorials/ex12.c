@@ -21,9 +21,10 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Vec      v,s;               /* vectors */
-  int      n = 20,ierr;
-  PetscScalar   one = 1.0;
+  PetscErrorCode ierr;
+  Vec            v,s;               /* vectors */
+  PetscInt       n = 20;
+  PetscScalar    one = 1.0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
