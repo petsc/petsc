@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.10 1995/10/19 22:30:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.11 1995/11/01 23:21:50 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -123,8 +123,8 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d, ",its);
-  MPIU_printf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
+  MPIU_printf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);
+  MPIU_printf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
   ierr = DADestroy(user.da); CHKERRA(ierr);
