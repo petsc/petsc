@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.28 1996/03/26 04:47:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.29 1996/03/31 16:52:01 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -111,7 +111,7 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
 {
   MPI_Comm      comm;
   MFCtx_Private *mfctx;
-  int           n,ierr;
+  int           n, nloc, ierr;
 
   mfctx = (MFCtx_Private *) PetscMalloc(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
   PLogObjectMemory(snes,sizeof(MFCtx_Private));
@@ -120,7 +120,8 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
-  ierr = MatCreateShell(comm,n,n,(void*)mfctx,J); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&nloc); CHKERRQ(ierr);
+  ierr = MatCreateShell(comm,nloc,n,n,n,(void*)mfctx,J); CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MAT_MULT,(void*)SNESMatrixFreeMult_Private);
          CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MAT_DESTROY,(void *)SNESMatrixFreeDestroy_Private);

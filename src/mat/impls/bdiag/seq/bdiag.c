@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.98 1996/03/31 19:59:09 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.99 1996/04/07 22:45:27 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -995,7 +995,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
-  if (format == ASCII_FORMAT_INFO) {
+  if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
     int nline = PetscMin(10,a->nd), k, nk, np;
     fprintf(fd,"  block size=%d, number of diagonals=%d\n",nb,a->nd);
     nk = (a->nd-1)/nline + 1;

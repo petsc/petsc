@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.48 1996/03/26 15:26:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.49 1996/04/07 22:44:30 curfman Exp curfman $";
 #endif
 
 /*
@@ -164,13 +164,14 @@ static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
 
 static int PCSetUp_Eisenstat(PC pc)
 {
-  int          ierr, M, N;
+  int          ierr, M, N, m, n;
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
   Vec          diag;
 
   if (pc->setupcalled == 0) {
     ierr = MatGetSize(pc->mat,&M,&N); CHKERRA(ierr);
-    ierr = MatCreateShell(pc->comm,M,N,(void*)pc,&eis->shell); CHKERRQ(ierr);
+    ierr = MatGetLocalSize(pc->mat,&m,&n); CHKERRA(ierr);
+    ierr = MatCreateShell(pc->comm,m,N,M,N,(void*)pc,&eis->shell); CHKERRQ(ierr);
     PLogObjectParent(pc,eis->shell);
     ierr = MatShellSetOperation(eis->shell,MAT_MULT,(void*)PCMult_Eisenstat); 
            CHKERRQ(ierr);

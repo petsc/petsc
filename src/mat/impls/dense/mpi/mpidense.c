@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.37 1996/04/07 22:45:20 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.38 1996/04/07 23:09:00 curfman Exp curfman $";
 #endif
 
 /*
@@ -439,7 +439,7 @@ static int MatGetDiagonal_MPIDense(Mat A,Vec v)
   ierr = VecGetSize(v,&n); CHKERRQ(ierr);
   if (n != a->M) SETERRQ(1,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
   len = PetscMin(aloc->m,aloc->n);
-  radd = a->rstart*m*m;
+  radd = a->rstart*m;
   for ( i=0; i<len; i++ ) {
     x[i] = aloc->v[radd + i*m + i];
   }

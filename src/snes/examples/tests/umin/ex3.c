@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.32 1996/03/26 04:48:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.33 1996/03/26 15:28:37 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
   int        my=10;                /* discretization in y-direction */
   int        Nx=PETSC_DECIDE;      /* processors in x-direction */
   int        Ny=PETSC_DECIDE;      /* processors in y-direction */
-  int        ierr, its, nfails, size,flg;
+  int        ierr, its, ldim, nfails, size,flg;
   double     one = 1.0;
   SLES       sles;
   PC         pc;
@@ -96,7 +96,9 @@ int main(int argc,char **argv)
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
-    ierr = MatCreateShell(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H); CHKERRA(ierr);
+    ierr = VecGetLocalSize(x,&ldim); CHKERRA(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,ldim,user.ndim,user.ndim,user.ndim,
+           (void*)&user,&H); CHKERRA(ierr);
     ierr = MatShellSetOperation(H,MAT_MULT,(void*)HessianProductMat); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
 
@@ -165,8 +167,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 {
   AppCtx   *user = (AppCtx *) ptr;
   int      i, j, ierr, ndim, xs, xe, ys, ye, xm, ym, rstart, rend, ldim, iglob;
-  Scalar   *y, zero = 0.0, one = 1.0, gamma1;
-  SNESType method;
+  Scalar   *y, zero = 0.0, one = 1.0;
 
   ierr = MatZeroEntries(*H); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
@@ -199,20 +200,6 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
       }
     }
     ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
-  }
-
-  /* Modify diagonal if necessary */
-  ierr = SNESGetType(snes,&method,PETSC_NULL); CHKERRQ(ierr);
-  if (method == SNES_UM_LS) {
-    ierr = SNESGetLineSearchDampingParameter(snes,&gamma1); CHKERRQ(ierr);
-#if !defined(PETSC_COMPLEX)
-    PetscPrintf(MPI_COMM_WORLD,"  gamma1 = %g\n",gamma1);
-#else
-    PetscPrintf(MPI_COMM_WORLD,"  gamma1 = %g\n",real(gamma1));
-#endif
-    for (i=rstart; i<rend; i++) {
-      ierr = MatSetValues(*H,1,&i,1,&i,&gamma1,ADD_VALUES); CHKERRQ(ierr);
-    }
   }
   ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);

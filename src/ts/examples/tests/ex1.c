@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.4 1996/03/26 04:47:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.5 1996/04/04 22:04:55 bsmith Exp curfman $";
 #endif
 
 /*
@@ -44,7 +44,7 @@ int RHSJacobianHeat(TS,Scalar,Vec,Mat*,Mat*,MatStructure *,void*);
 
 int main(int argc,char **argv)
 {
-  int           M = 60, ierr,  time_steps = 100,steps,flg, problem,size;
+  int           M = 60, ierr,  time_steps = 100, steps, flg, problem, size, m;
   AppCtx        appctx;
   Vec           local, global;
   Scalar        h, dt,ftime;
@@ -70,6 +70,7 @@ int main(int argc,char **argv)
   /* Set up the array */ 
   ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,1,1,&appctx.da);CHKERRA(ierr);
   ierr = DAGetDistributedVector(appctx.da,&global); CHKERRA(ierr);
+  ierr = VecGetLocalSize(global,&m); CHKERRA(ierr);
   ierr = DAGetLocalVector(appctx.da,&local); CHKERRA(ierr);
 
   /* Set up display to show wave graph */
@@ -136,7 +137,7 @@ int main(int argc,char **argv)
     /*
          The user provides the RHS as a Shell matrix.
     */
-    ierr = MatCreateShell(MPI_COMM_WORLD,M,M,&appctx,&A);CHKERRQ(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,m,M,M,M,&appctx,&A);CHKERRQ(ierr);
     ierr = MatShellSetOperation(A,MAT_MULT,RHSMatrixFree);CHKERRQ(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
   } else if (problem == linear_no_time) {
@@ -158,7 +159,7 @@ int main(int argc,char **argv)
          The user provides the RHS and a Shell Jacobian
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
-    ierr = MatCreateShell(MPI_COMM_WORLD,M,M,&appctx,&A);CHKERRQ(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,m,M,M,M,&appctx,&A);CHKERRQ(ierr);
     ierr = MatShellSetOperation(A,MAT_MULT,RHSMatrixFree);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);  
   } else if (problem == nonlinear) {

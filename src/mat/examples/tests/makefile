@@ -11,7 +11,7 @@ OBJSF	      =
 LIBBASE	      = libpetscmat
 EXAMPLES_1    = ex1 ex3 ex5 ex6 ex8 ex9 ex10 ex11 ex14\
 		ex15 ex19 ex20 ex21 ex22
-RUNEXAMPLES_1 = runex1 runex3 runex5 runex6 runex8 runex9 \
+RUNEXAMPLES_1 = runex1 runex3 runex5 runex5_2 runex6 runex8 runex9 \
 		runex10 runex11 runex14 runex15 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
 		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex46
@@ -224,55 +224,62 @@ ex48: ex48.o chkopts
 	-$(CLINKER) -o ex48 ex48.o $(PETSC_LIB)
 	$(RM) ex48.o
 
-
+NPROCS    = 1 3
+MATTYPES  = -mat_aij -mat_dense -mat_bdiag
+MATSHAPES = A B
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
 runex2:
-	-@$(MPIRUN)  ex2 > ex2_1.tmp 2>&1;   \
-	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
-	   else echo "Possible problem with ex2_1, diffs above"; fi; \
-	   $(RM) -f ex2_1.tmp
+	-@for mattype in $(MATTYPES); do \
+	  for shape in $(MATSHAPES); do \
+	    $(MPIRUN) ex2 $$mattype -rect$$shape > ex2_1.tmp 2>&1; \
+	      if (diff output/ex2_1_$$shape.out ex2_1.tmp) then true; \
+	      else echo "Possible problem with ex2_1_"$$shape" for" $$mattype", diffs above"; fi; \
+	      $(RM) -f ex2_1.tmp; \
+	  done; \
+	done;
 runex2_2:
-	-@$(MPIRUN)  ex2 -mat_bdiag> ex2_2.tmp 2>&1;   \
-	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
-	   else echo "Possible problem with ex2_2, diffs above"; fi; \
-	   $(RM) -f ex2_2.tmp
+	@-for np in $(NPROCS); do \
+	  for mattype in $(MATTYPES); do \
+	    $(MPIRUN) -np $$np ex2 $$mattype > ex2_2.tmp 2>&1; \
+	      if (diff output/ex2_2.out ex2_2.tmp) then true; \
+	      else echo "Possible problem with ex2_2 for" $$mattype", -np="$$np", diffs above"; fi; \
+	      $(RM) -f ex2_2.tmp; \
+	  done; \
+	done;
 runex3:
-	-@$(MPIRUN)  ex3 > ex3_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex3 > ex3_1.tmp 2>&1;   \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   $(RM) -f ex3_1.tmp
 runex4:
-	-@$(MPIRUN)  ex4 > ex4_1.tmp 2>&1;   \
-	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
-	   else echo "Possible problem with ex4_1, diffs above"; fi; \
-	   $(RM) -f ex4_1.tmp
-
-NPROCS   = 1
-MATTYPES = -mat_aij -mat_bdiag -mat_dense
+	@-for mattype in $(MATTYPES); do \
+	  $(MPIRUN) ex4 $$mattype > ex4_1.tmp 2>&1; \
+	    if (diff output/ex4_1.out ex4_1.tmp) then true; \
+	    else echo "Possible problem with ex4_1 for" $$mattype", diffs above"; fi; \
+	    $(RM) -f ex4_1.tmp; \
+	done;
 runex5:
-	@-if [ "$(MATTYPES)" != "" ] ; then \
-	  (for mattype in $(MATTYPES) foo ; do \
-	    $(MPIRUN) ex5 -rect1 $$mattype > ex5_1.tmp 2>&1; \
-	    if (diff output/ex5_1.out ex5_1.tmp) then true; \
-	    else echo "Possible problem with ex5_1 for" $$mattype", diffs above"; fi; \
-	    $(RM) -f ex5_1.tmp; \
-	  done;) fi
-
+	-@for mattype in $(MATTYPES); do \
+	  for shape in $(MATSHAPES); do \
+	    $(MPIRUN) ex5 $$mattype -rect$$shape > ex5_1.tmp 2>&1; \
+	      if (diff output/ex5_1_$$shape.out ex5_1.tmp) then true; \
+	      else echo "Possible problem with ex5_1_"$$shape" for" $$mattype", diffs above"; fi; \
+	      $(RM) -f ex5_1.tmp; \
+	  done; \
+	done;
 runex5_2:
-	@-if [ "$(MATTYPES)" != "" ] ; then \
-	  (for np in $(NPROCS); do \
-	    (for mattype in $(MATTYPES) foo ; do \
-	      $(MPIRUN) -np $$np ex5 $$mattype > ex5_2.tmp 2>&1; \
+	@-for np in $(NPROCS); do \
+	  for mattype in $(MATTYPES); do \
+	    $(MPIRUN) -np $$np ex5 $$mattype > ex5_2.tmp 2>&1; \
 	      if (diff output/ex5_2.out ex5_2.tmp) then true; \
 	      else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
 	      $(RM) -f ex5_2.tmp; \
-	  done;) \
-	  done;) fi
-
+	  done; \
+	done;
 runex6:
 	-@$(MPIRUN)  ex6 > ex6_1.tmp 2>&1;   \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \

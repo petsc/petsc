@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.30 1996/04/07 22:45:39 curfman Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.31 1996/04/08 23:51:58 balay Exp curfman $";
 #endif
 
 /*
@@ -162,8 +162,8 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
-  if (format == ASCII_FORMAT_INFO) {
-    /* no need to print additional information */ ;
+  if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
+    fprintf(fd,"  block size is %d\n",bs);
   } 
   else if (format == ASCII_FORMAT_MATLAB) {
     SETERRQ(1,"MatView_SeqBAIJ_ASCII:Matlab format not supported");

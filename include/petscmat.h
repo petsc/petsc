@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.100 1996/03/19 21:30:28 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.101 1996/03/26 04:48:31 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -26,7 +26,7 @@ extern int MatCreateSeqBAIJ(MPI_Comm,int,int,int,int,int*,Mat*);
 
 extern int MatDestroy(Mat);
 
-extern int MatCreateShell(MPI_Comm,int,int,void *,Mat*);
+extern int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
 extern int MatShellGetContext(Mat,void **);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
 extern int MatShellSetDestroy(Mat,int (*)(void*));

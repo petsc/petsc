@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.5 1996/03/26 04:47:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.6 1996/04/04 22:04:52 bsmith Exp curfman $";
 #endif
 /*
        Code for Time Stepping with implicit backwards Euler.
@@ -224,7 +224,7 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*) ts->data;
-  int       ierr,M;
+  int       ierr, M, m;
   Scalar    mdt = 1.0/ts->time_step, mone = -1.0;
 
   ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
@@ -237,7 +237,8 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   } else {
     /* construct new shell matrix */
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,M,M,ts,&ts->A); CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
     ierr = MatShellSetOperation(ts->A,MAT_MULT,TSBEulerMatMult); CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
@@ -251,13 +252,14 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*) ts->data;
-  int       ierr, M;
+  int       ierr, M, m;
 
   ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs); CHKERRQ(ierr);  
   if (ts->Ashell) { /* construct new shell matrix */
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,M,M,ts,&ts->A); CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
     ierr = MatShellSetOperation(ts->A,MAT_MULT,TSBEulerMatMult); CHKERRQ(ierr);
   }
   return 0;
@@ -267,14 +269,15 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 static int TSSetUp_BEuler_Nonlinear(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*) ts->data;
-  int       ierr,M;
+  int       ierr, M, m;
 
   ierr = VecDuplicate(ts->vec_sol,&beuler->update); CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->func); CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction,ts);CHKERRQ(ierr);
   if (ts->Ashell) { /* construct new shell matrix */
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,M,M,ts,&ts->A); CHKERRQ(ierr);
+    ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
+    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
     ierr = MatShellSetOperation(ts->A,MAT_MULT,TSBEulerMatMult); CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.23 1996/03/23 16:56:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.24 1996/03/26 04:17:15 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -226,11 +226,11 @@ void matreorderingregisterdestroy_(int *__ierr)
 }
 
 
-void matcreateshell_(MPI_Comm comm,int *m,int *n,void *ctx,Mat *mat, int *__ierr )
+void matcreateshell_(MPI_Comm comm,int *m,int *n,int *M,int *N,void *ctx,Mat *mat, int *__ierr )
 {
   Mat mm;
   *__ierr = MatCreateShell((MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),
-                           *m,*n,ctx,&mm);
+                           *m,*n,*M,*N,ctx,&mm);
   *(int*) mat = MPIR_FromPointer(mm);
 }
 
