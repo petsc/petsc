@@ -1,9 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.45 1998/04/15 04:21:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.46 1998/04/15 15:01:44 bsmith Exp curfman $";
 #endif
 
-static char help[] = "Demonstrates various vector routines. Runtime option:\n\
-   -shared_vec : activate shared vectors (on machines that support this) \n\n";
+/* Usage:  mpirun ex1 [-help] [all PETSc options] */
+
+static char help[] = "Demonstrates various vector routines.\n\n";
 
 /*T
    Concepts: Vectors^Using basic vector routines;
