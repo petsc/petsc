@@ -170,7 +170,7 @@ int PetscMapGetSerializeType(PetscMap map, PetscMapSerializeType *type)
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-/*@CM
+/*CM
   PetscMapRegisterDynamic - Adds a new map component implementation
 
   Synopsis:
