@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.212 1996/12/18 22:51:00 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.213 1997/01/01 03:37:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -90,7 +90,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 
 #undef __FUNCTION__  
 #define __FUNCTION__ "MatView"
-/*@
+/*@C
    MatView - Visualizes a matrix object.
 
    Input Parameters:
@@ -104,6 +104,7 @@ $     VIEWER_STDOUT_WORLD - synchronized standard
 $       output where only the first processor opens
 $       the file.  All other processors send their 
 $       data to the first processor to print. 
+$     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpenASCII() - output to a specified file
@@ -787,11 +788,8 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer  viewer;
-    ierr = ViewerDrawOpenX((*fact)->comm,0,0,0,0,300,300,&viewer);CHKERRQ(ierr);
-    ierr = MatView(*fact,viewer); CHKERRQ(ierr);
-    ierr = ViewerFlush(viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+      ierr = MatView(mat,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+      ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -1643,16 +1641,14 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
     ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
     if (flg) {
-      Viewer    viewer;
-      ierr = ViewerDrawOpenX(mat->comm,0,0,0,0,300,300,&viewer); CHKERRQ(ierr);
-      ierr = MatView(mat,viewer); CHKERRQ(ierr);
-      ierr = ViewerFlush(viewer); CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+      ierr = MatView(mat,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+      ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
     }
   }
   inassm--;
   return 0;
 }
+
 
 #undef __FUNCTION__  
 #define __FUNCTION__ "MatCompress"
@@ -2390,3 +2386,25 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 }
 
 
+/*@
+     MatSetUnfactored - Resets a factored matrix to be treated as unfactored.
+
+  Input Paramter:
+.   mat - the factored matrix to be reset
+
+  Notes: This should only be used with factored matrices formed with ILU(0) in place,
+    or dense matrices with LU in place. For example, one can use this when solving
+    nonlinear systems with SLES using a matrix free multiply and a matrix based 
+    preconditioner on which one uses PCType(pc,PCILU); PCILUSetUseInPlace(pc);
+
+.seealso: PCILUSetUseInPlace(), PCLUSetUseInPlace()
+
+.keywords: matrix free preconditioner, in place ILU
+
+@*/
+int MatSetUnfactored(Mat mat)
+{
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);  
+  mat->factor = 0;
+  return 0;
+}
