@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.87 2000/07/27 15:45:58 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.88 2000/08/30 21:17:19 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -16,7 +16,6 @@ typedef struct  {
   FILE             *fdes_info;      /* optional file containing info on binary file*/
   PetscTruth       storecompressed; /* gzip the write binary file when closing it*/
   char             *filename;
-  MPI_Comm         truecomm;        /* hide communicator here when we become a singleton viewer */
 } Viewer_Binary;
 
 #undef __FUNC__  
@@ -24,17 +23,18 @@ typedef struct  {
 int ViewerGetSingleton_Binary(Viewer viewer,Viewer *outviewer)
 {
   int           rank,ierr;
-  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data;
+  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data,*obinary;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    *outviewer = viewer;
+    ierr    = ViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
+    ierr    = ViewerSetType(*outviewer,BINARY_VIEWER);CHKERRQ(ierr);
+    obinary = (Viewer_Binary*)(*outviewer)->data;
+    ierr    = PetscMemcpy(obinary,vbinary,sizeof(Viewer_Binary));CHKERRQ(ierr);
   } else {
     *outviewer = 0;
   }
-  vbinary->truecomm = viewer->comm;
-  viewer->comm      = PETSC_COMM_SELF;
   PetscFunctionReturn(0);
 }
 
@@ -42,10 +42,13 @@ int ViewerGetSingleton_Binary(Viewer viewer,Viewer *outviewer)
 #define __FUNC__ /*<a name="ViewerRestoreSingleton_Binary"></a>*/"ViewerRestoreSingleton_Binary" 
 int ViewerRestoreSingleton_Binary(Viewer viewer,Viewer *outviewer)
 {
-  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data;
+  int           ierr,rank;
 
   PetscFunctionBegin;
-  viewer->comm = vbinary->truecomm;
+  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscFree((*outviewer)->data);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
