@@ -27,9 +27,9 @@ C_CLINKER          = @CC@ @LDFLAGS@
 C_CCV              = echo "@PETSC_C_VERSION@"
 C_SYS_LIB          = @LIBS@ @FLIBS@
 # ---------------------------- BOPT=g options ------------------------------
-G_COPTFLAGS        = @PETSC_CFLAGS_g@
+G_COPTFLAGS        = @CFLAGS@ @PETSC_CFLAGS_g@
 # ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS        = @PETSC_CFLAGS_O@
+O_COPTFLAGS        = @CFLAGS@ @PETSC_CFLAGS_O@
 # ############################ Fortran compiler ############################
 C_FC               = @FC@ @FC_SHARED_OPT@
 C_FLINKER_SLFLAG   = @PETSC_FLINKER_SLFLAG@
@@ -39,13 +39,13 @@ CXX_FC             = @FC@  @FC_SHARED_OPT@
 CXX_FLINKER_SLFLAG = @PETSC_FLINKER_SLFLAG@
 CXX_FLINKER        = @CXX@ @LDFLAGS@
 # ---------------------------- BOPT=g,g_c++,g_complex options --------------
-G_FOPTFLAGS        = @PETSC_FFLAGS_g@
-GCXX_FOPTFLAGS     = @PETSC_FFLAGS_g@
-GCOMP_FOPTFLAGS	   = @PETSC_FFLAGS_g@
+G_FOPTFLAGS        = @FFLAGS@ @PETSC_FFLAGS_g@
+GCXX_FOPTFLAGS     = @FFLAGS@ @PETSC_FFLAGS_g@
+GCOMP_FOPTFLAGS	   = @FFLAGS@ @PETSC_FFLAGS_g@
 # ----------------------------- BOPT=O,O_c++,O_complex options -------------
-O_FOPTFLAGS        = @PETSC_FFLAGS_O@
-OCXX_FOPTFLAGS     = @PETSC_FFLAGS_O@
-OCOMP_FOPTFLAGS	   = @PETSC_FFLAGS_O@
+O_FOPTFLAGS        = @FFLAGS@ @PETSC_FFLAGS_O@
+OCXX_FOPTFLAGS     = @FFLAGS@ @PETSC_FFLAGS_O@
+OCOMP_FOPTFLAGS	   = @FFLAGS@ @PETSC_FFLAGS_O@
 # ########################## C++ compiler ##################################
 #
 CXX_CC             = @LT_CC@ @CXX@ @CC_SHARED_OPT@
@@ -54,11 +54,11 @@ CXX_CLINKER        = @CXX@ @LDFLAGS@
 CXX_CCV            = echo "@PETSC_CXX_VERSION@"
 CXX_SYS_LIB        = @LIBS@ @FLIBS@
 # ------------------------- BOPT=g_c++,g_complex options -------------------
-GCXX_COPTFLAGS     = @PETSC_CXXFLAGS_g@
-GCOMP_COPTFLAGS	   = @PETSC_CXXFLAGS_g@
+GCXX_COPTFLAGS     = @CXXFLAGS@ @PETSC_CXXFLAGS_g@
+GCOMP_COPTFLAGS	   = @CXXFLAGS@ @PETSC_CXXFLAGS_g@
 # ------------------------- BOPT=O_c++,O_complex options -------------------
-OCXX_COPTFLAGS     = @PETSC_CXXFLAGS_O@
-OCOMP_COPTFLAGS	   = @PETSC_CXXFLAGS_O@
+OCXX_COPTFLAGS     = @CXXFLAGS@ @PETSC_CXXFLAGS_O@
+OCOMP_COPTFLAGS	   = @CXXFLAGS@ @PETSC_CXXFLAGS_O@
 # ########################### PETSc install options ########################
 G_PETSCFLAGS     = -DPETSC_USE_BOPT_g @PETSCFLAGS@
 O_PETSCFLAGS     = -DPETSC_USE_BOPT_O @PETSCFLAGS@
