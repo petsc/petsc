@@ -524,7 +524,7 @@ PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
   ierr = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,mtype);CHKERRQ(ierr);
+  ierr = MatSetType(A,mtype);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatGetType(A,&Atype);CHKERRQ(ierr);
   /*
@@ -1016,7 +1016,7 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
   PetscScalar            *values;
   DAPeriodicType         wrap;
   DAStencilType          st;
-  ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog,ltogb;
 
   PetscFunctionBegin;
   /*     
@@ -1035,7 +1035,8 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
   ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
-  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nx*ny,nx*ny,dnz,onz);CHKERRQ(ierr);
@@ -1067,14 +1068,15 @@ PetscErrorCode DAGetMatrix2d_MPIBAIJ(DA da,Mat J)
           } 
         }
       }
-      ierr = MatPreallocateSetLocal(ltog,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      ierr = MatPreallocateSetLocal(ltogb,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
     } 
   }
   ierr = MatSeqBAIJSetPreallocation(J,nc,0,dnz);CHKERRQ(ierr);  
   ierr = MatMPIBAIJSetPreallocation(J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMappingBlock(J,ltogb);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1129,7 +1131,7 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
   PetscScalar            *values;
   DAPeriodicType         wrap;
   DAStencilType          st;
-  ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog,ltogb;
 
   PetscFunctionBegin;
   /*     
@@ -1149,7 +1151,8 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
   ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr  = PetscMalloc(col*col*col*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
-  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
@@ -1197,7 +1200,7 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
 	    }
 	  }
 	}
-	ierr = MatPreallocateSetLocal(ltog,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+	ierr = MatPreallocateSetLocal(ltogb,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }
@@ -1205,7 +1208,8 @@ PetscErrorCode DAGetMatrix3d_MPIBAIJ(DA da,Mat J)
   ierr = MatMPIBAIJSetPreallocation(J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMappingBlock(J,ltogb);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1277,7 +1281,7 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
   PetscScalar            *values;
   DAPeriodicType         wrap;
   DAStencilType          st;
-  ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog,ltogb;
 
   PetscFunctionBegin;
   /*     
@@ -1296,7 +1300,8 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
   ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
-  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateSymmetricInitialize(comm,nx*ny,nx*ny,dnz,onz);CHKERRQ(ierr);
@@ -1326,14 +1331,15 @@ PetscErrorCode DAGetMatrix2d_MPISBAIJ(DA da,Mat J)
           } 
         }
       }
-      ierr = MatPreallocateSymmetricSetLocal(ltog,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      ierr = MatPreallocateSymmetricSetLocal(ltogb,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
     } 
   }
   ierr = MatSeqSBAIJSetPreallocation(J,nc,0,dnz);CHKERRQ(ierr);  
   ierr = MatMPISBAIJSetPreallocation(J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMappingBlock(J,ltogb);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -1386,7 +1392,7 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
   PetscScalar            *values;
   DAPeriodicType         wrap;
   DAStencilType          st;
-  ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog,ltogb;
 
   PetscFunctionBegin;
   /*     
@@ -1406,7 +1412,8 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
   ierr = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(col*col*col*sizeof(PetscInt),&cols);CHKERRQ(ierr);
 
-  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMappingBlck(da,&ltogb);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
   ierr = MatPreallocateSymmetricInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
@@ -1450,7 +1457,7 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
 	    }
 	  }
 	}
-	ierr = MatPreallocateSymmetricSetLocal(ltog,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+	ierr = MatPreallocateSymmetricSetLocal(ltogb,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }
@@ -1458,7 +1465,8 @@ PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA da,Mat J)
   ierr = MatMPISBAIJSetPreallocation(J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMappingBlock(J,ltogb);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
