@@ -9,7 +9,7 @@ SOURCEC	 = indexf.c stridef.c blockf.c iscoloringf.c isltogf.c \
 	itresf.c eigef.c cgtypef.c gmres2f.c gmpref.c chebyf.c \
 	richscalef.c signalf.c fpf.c mtrf.c mpiuf.c sortif.c \
 	sortdf.c sortipf.c psleepf.c gcookief.c cookief.c memf.c \
-	cputimef.c preconf.c pcsetf.c pcnullf.c sorf.c luf.c \
+	preconf.c pcsetf.c pcnullf.c sorf.c luf.c \
 	bjacobif.c mgf.c mgfuncf.c eisenf.c iluf.c asmf.c matrixf.c \
 	mhasf.c fdmatrixf.c shellf.c axpyf.c zerodiagf.c slesf.c drawf.c \
 	dlinef.c dlinewf.c dlinegwf.c dtextsf.c dtextgsf.c dpointf.c \
@@ -28,7 +28,7 @@ OBJSC	 = indexf.o stridef.o blockf.o iscoloringf.o isltogf.o vinvf.o \
 	vscatf.o vectorf.o itclf.o itfuncf.o itcreatef.o itresf.o eigef.o \
 	cgtypef.o gmres2f.o gmpref.o chebyf.o richscalef.o signalf.o \
 	fpf.o mtrf.o mpiuf.o sortif.o sortdf.o sortipf.o psleepf.o \
-	gcookief.o cookief.o memf.o cputimef.o preconf.o pcsetf.o \
+	gcookief.o cookief.o memf.o preconf.o pcsetf.o \
 	pcnullf.o sorf.o luf.o bjacobif.o mgf.o mgfuncf.o eisenf.o \
 	iluf.o asmf.o matrixf.o mhasf.o fdmatrixf.o shellf.o axpyf.o \
 	zerodiagf.o slesf.o drawf.o dlinef.o dlinewf.o dlinegwf.o \

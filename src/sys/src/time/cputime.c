@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cputime.c,v 1.3 1997/05/03 15:23:12 bsmith Exp balay $";
+static char vcid[] = "$Id: cputime.c,v 1.4 1997/05/16 19:19:53 balay Exp balay $";
 #endif
 
 /*
@@ -39,7 +39,7 @@ extern int getrusage(int,struct rusage*);
 #endif
 #endif
 
-/*@
+/*@C
     PetscGetCPUTime - Returns the time in seconds used by the process.
 
     Returns:
