@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.41 1996/04/16 16:20:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.42 1996/04/18 15:05:25 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -164,9 +164,12 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   }
   MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) {
-    /* This expects a communicator to be a pointer */
     MPI_Comm_dup( comm, &local_comm );
-    MPI_Attr_put( comm, MPIU_Seq_keyval, local_comm );
+    /*
+      This expects a communicator to be a pointer. On the Cray T3d
+      a MPI_Comm is an integer, thus we must cast it below.
+    */
+    MPI_Attr_put( comm, MPIU_Seq_keyval, (void *) local_comm );
   }
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
