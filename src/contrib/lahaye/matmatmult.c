@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.12 2001/09/07 12:41:20 buschelm Exp buschelm $*/
+/*$Id: matmatmult.c,v 1.13 2001/09/07 12:44:52 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -118,11 +118,12 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   ierr = PetscMalloc((ci[an]+1)*sizeof(int),&cj);CHKERRQ(ierr);
   cj2 = cj;
   while (free_space != NULL) {
+    current_space = free_space->morespace;
     ierr = PetscMemcpy(cj2,free_space->head,(free_space->used)*sizeof(int));CHKERRQ(ierr);
     cj2 += free_space->used;
     ierr = PetscFree(free_space->head);CHKERRQ(ierr);
     ierr = PetscFree(free_space);CHKERRQ(ierr);
-    free_space = free_space->morespace;
+    free_space = current_space;
   }
   ierr = PetscFree(densefill);CHKERRQ(ierr);
     
