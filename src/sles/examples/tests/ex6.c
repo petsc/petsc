@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.28 1996/02/23 23:50:46 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.29 1996/03/01 20:44:42 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -12,6 +12,7 @@ Input arguments are:\n\
 #include "draw.h"
 #include "mat.h"
 #include "sles.h"
+#include "plog.h"
 #include <stdio.h>
 
 int main(int argc,char **args)
@@ -25,7 +26,8 @@ int main(int argc,char **args)
   SLES       sles;
   char       file[128]; 
   Viewer     fd;
-
+  int        e1, e2, e3;
+  /*   extern     int xyz(int *); */
   PetscInitialize(&argc,&args,0,0,help);
 
 #if defined(PETSC_COMPLEX)
@@ -46,13 +48,24 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x); CHKERRA(ierr);
 
   /* Solve system */
+  PLogEventRegister(&e1,"SLES_Create    ", "black");
+  PLogEventRegister(&e2,"Sles SetOper   ", "green");
+  PLogEventRegister(&e3,"SLES_Options   ", "orange");
   PetscBarrier(A);
+  
   PLogStagePush(1);
+  PLogEventBegin(e1,sles,0,0,0);
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  PLogEventEnd(e1,sles,0,0,0);
+  PLogEventBegin(e2,sles,0,0,0);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  PLogEventEnd(e2,sles,0,0,0);
+  PLogEventBegin(e3,sles,0,0,0);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  PLogEventEnd(e3,sles,0,0,0);
   ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
   ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
+  /*  ierr = xyz(&flg); CHKERRQ(ierr); */
   PLogStagePop();
   PetscBarrier(A);
   PLogStagePush(2);
