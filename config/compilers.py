@@ -295,6 +295,14 @@ class Configure(config.base.Configure):
             #print 'Found full library spec: '+arg
             flibs.append(arg)
           continue
+        # Check for full object name
+        m = re.match(r'^/.*\.o$', arg)
+        if m:
+          if not arg in lflags:
+            lflags.append(arg)
+            #print 'Found full object spec: '+arg
+            flibs.append(arg)
+          continue
         # Check for ???
         m = re.match(r'^-bI:.*$', arg)
         if m:
