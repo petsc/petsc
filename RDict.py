@@ -275,7 +275,7 @@ class RArgs (UserDict.UserDict):
     UserDict.UserDict.__init__(self)
     self.name    = name
     if dictpw  == "open": dictpw  = readpw
-    if addpw   == "open": addpw   = dict
+    if addpw   == "open": addpw   = dictpw
     if writepw == "open": writepw = addpw
     self.readpw  = readpw
     self.dictpw  = dictpw
@@ -409,9 +409,11 @@ class RArgs (UserDict.UserDict):
     for i in range(3):
       try:
         f = self.s.makefile('w')
+        if self.debug: print 'Sending object: '+str(object)
         cPickle.dump(object, f)
         f.close()
         f = self.s.makefile('r')
+        if self.debug: print 'Receiving object'
         object = cPickle.load(f)
         f.close()
         if not self.persistent:
@@ -419,11 +421,13 @@ class RArgs (UserDict.UserDict):
           self.s = None
         return object
       except IOError, e:
+        if self.debug: print 'IOError: '+str(e)
         if e.errno == 32:
           self.s = self.connectToServer()
         else:
           raise RuntimeError('IOError: '+str(e))
       except Exception, e:
+        if self.debug: print 'Exception: '+str(e)+' : '+str(e.__class__)
         raise RuntimeError('Unable to get results from server: '+str(e))
     return None
 
