@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.182 1996/12/19 01:12:10 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.183 1997/01/01 03:37:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1273,6 +1273,16 @@ static int MatGetBlockSize_MPIAIJ(Mat A,int *bs)
   *bs = 1;
   return 0;
 }
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetUnfactored_MPIAIJ"
+static int MatSetUnfactored_MPIAIJ(Mat A)
+{
+  Mat_MPIAIJ *a   = (Mat_MPIAIJ*) A->data;
+  int        ierr;
+  ierr = MatSetUnfactored(a->A); CHKERRQ(ierr);
+  return 0;
+}
+
 
 extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
 static int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
@@ -1303,7 +1313,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatPrintHelp_MPIAIJ,
        MatScale_MPIAIJ,0,0,0,
        MatGetBlockSize_MPIAIJ,0,0,0,0, 
-       MatFDColoringCreate_MPIAIJ};
+       MatFDColoringCreate_MPIAIJ,0,MatSetUnfactored_MPIAIJ};
 
 
 #undef __FUNCTION__  

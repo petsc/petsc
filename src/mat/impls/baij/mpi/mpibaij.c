@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.43 1996/12/19 01:10:43 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.44 1997/01/01 03:38:25 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -1135,6 +1135,16 @@ static int MatPrintHelp_MPIBAIJ(Mat A)
   else return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetUnfactored_MPIBAIJ"
+static int MatSetUnfactored_MPIBAIJ(Mat A)
+{
+  Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*) A->data;
+  int         ierr;
+  ierr = MatSetUnfactored(a->A); CHKERRQ(ierr);
+  return 0;
+}
+
 static int MatConvertSameType_MPIBAIJ(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
@@ -1151,7 +1161,8 @@ static struct _MatOps MatOps = {
   0,0,0,MatConvertSameType_MPIBAIJ,0,0,
   0,0,0,MatGetSubMatrices_MPIBAIJ,
   MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,MatPrintHelp_MPIBAIJ,
-  MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ};
+  MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ,
+  0,0,0,0,0,0,MatSetUnfactored_MPIBAIJ};
                                 
 
 #undef __FUNCTION__  

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.213 1997/01/01 03:37:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.214 1997/01/03 17:26:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2404,7 +2404,11 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 @*/
 int MatSetUnfactored(Mat mat)
 {
+  int ierr;
+
   PetscValidHeaderSpecific(mat,MAT_COOKIE);  
   mat->factor = 0;
+  if (!mat->ops.setunfactored) return 0;
+  ierr = (*mat->ops.setunfactored)(mat); CHKERRQ(ierr);
   return 0;
 }

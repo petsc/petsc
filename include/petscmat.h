@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.119 1996/11/27 22:58:13 bsmith Exp curfman $ */
+/* $Id: mat.h,v 1.120 1996/11/29 21:45:38 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -166,6 +166,8 @@ extern int MatBackwardSolve(Mat,Vec,Vec);
 extern int MatSolveAdd(Mat,Vec,Vec,Vec);
 extern int MatSolveTrans(Mat,Vec,Vec);
 extern int MatSolveTransAdd(Mat,Vec,Vec,Vec);
+
+extern int MatSetUnfactored(Mat);
 
 typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
