@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.105 1998/07/23 19:31:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.106 1998/07/23 21:54:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -160,10 +160,11 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PLogObjectMemory(*B,(ainew[n]+shift-n)*(sizeof(int)+sizeof(Scalar)));
   b->maxnz = b->nz = ainew[n] + shift;
 
+  (*B)->factor                 =  FACTOR_LU;;
   (*B)->info.factor_mallocs    = realloc;
   (*B)->info.fill_ratio_given  = f;
-  if (ai[i] != 0) {
-    (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[i]);
+  if (ai[n] != 0) {
+    (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[n]);
   } else {
     (*B)->info.fill_ratio_needed = 0.0;
   }
@@ -778,6 +779,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   (*fact)->info.factor_mallocs    = realloc;
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[prow]);
+  (*fact)->factor                 =  FACTOR_LU;;
 
   PetscFunctionReturn(0); 
 }

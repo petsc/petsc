@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.63 1998/05/13 14:14:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.64 1998/07/14 14:49:24 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -153,10 +153,11 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PLogObjectMemory(*B,(ainew[n]-n)*(sizeof(int)+sizeof(Scalar)));
   b->maxnz = b->nz = ainew[n];
   
+  (*B)->factor                 = FACTOR_LU;
   (*B)->info.factor_mallocs    = realloc;
   (*B)->info.fill_ratio_given  = f;
-  if (ai[i] != 0) {
-    (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[i]);
+  if (ai[n] != 0) {
+    (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[n]);
   } else {
     (*B)->info.fill_ratio_needed = 0.0;
   }
@@ -1002,6 +1003,7 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   if (mat->imax) PetscFree(mat->imax);
   if (mat->solve_work) PetscFree(mat->solve_work);
   if (mat->mult_work) PetscFree(mat->mult_work);
+  if (mat->icol) {ierr = ISDestroy(mat->icol);CHKERRQ(ierr);}
   PetscFree(mat);
 
   ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
