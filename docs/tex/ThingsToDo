@@ -76,7 +76,8 @@ rcheng@oasys.dt.navy.mil
 
   - Add MatGetOwnershipRangeColumn() for AIJ and BAIJ
 
-  - Change the zoom in in MatView_xxx and tensor plotting etc to use DrawZoom(),
+  - Change the zoom in in MatView_xxx (MatView_SeqAdj_Draw,MatView_SeqBAIJ_Draw,
+    MatView_SeqBDiag_Draw)  and tensor plotting? etc to use DrawZoom(),
     much nicer.
 
   - Incorporate functionality that Deb needs for VRML stuff (currently she's copied
