@@ -127,10 +127,29 @@ int UserSetJacobian(SNES snes,Euler *app)
   /* Set up coloring information needed for sparse finite difference
      approximation of the Jacobian
    */
+
+
+
   ierr = OptionsHasName(PETSC_NULL,"-jac_snes_fd",&jac_snes_fd); CHKERRQ(ierr);
   if (jac_snes_fd) {
-    PetscPrintf(comm,"Jacobian for preconditioner formed via PETSc FD approx\n"); 
+    ISColoring    iscoloring;
+    MatFDColoring fdc;
+
+    ierr = DAGetColoring3dBox(app->da,&iscoloring,&J); CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(J,iscoloring,&fdc); CHKERRQ(ierr); 
     app->fdcoloring = fdc;
+    ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
+
+    ierr = MatFDColoringSetFunction(fdc,
+         (int (*)(void *,Vec,Vec,void *))ComputeFunctionNoWake,app); CHKERRQ(ierr);
+    ierr = MatFDColoringSetParameters(fdc,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(fdc); CHKERRQ(ierr); 
+
+    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatFDColoringView(fdc,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    PetscPrintf(comm,"Jacobian for preconditioner formed via PETSc FD approx\n"); 
   } else {
     PetscPrintf(comm,"Jacobian for preconditioner formed via application code FD approx\n"); 
   }
@@ -199,7 +218,6 @@ extern int MatView_Hybrid(Mat,Viewer);
 int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *ptr)
 {
   Euler         *app = (Euler *)ptr;
-  MatFDColoring color = app->fdcoloring;
   int           iter, ierr, i, rstart, rend;
   Scalar        one = 1.0;
 
@@ -209,25 +227,6 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
 
   if (app->bctype != IMPLICIT) SETERRQ(1,0,"This version supports only implicit BCs!");
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-
-  /* Set up coloring context */
-  if (iter == 1) {
-    ISColoring    iscoloring;
-
-    ierr = DAGetColoring3dBox(app->da,&iscoloring,pjac); CHKERRQ(ierr);
-    ierr = MatDestroy(J_dummy); CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(*pjac,iscoloring,&fdc); CHKERRQ(ierr); 
-    ierr = MatFDColoringSetFunction(fdc,
-         (int (*)(void *,Vec,Vec,void *))ComputeFunctionNoWake,app); CHKERRQ(ierr);
-    ierr = MatFDColoringSetParameters(fdc,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(fdc); CHKERRQ(ierr); 
-
-    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatFDColoringView(fdc,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-    ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
-  }
 
   /* We want to verify that our preallocation was 100% correct by not allowing
      any additional nonzeros into the matrix. */
@@ -282,7 +281,7 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
   }
 
   /* Do finite differencing with coloring */
-  ierr = MatFDColoringApply(*pjac,color,X,flag,snes); CHKERRQ(ierr);
+  ierr = MatFDColoringApply(*pjac,app->fdcoloring,X,flag,snes); CHKERRQ(ierr);
 
   /* Indicate that the preconditioner matrix has the same nonzero
      structure each time it is formed */
@@ -674,13 +673,16 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
      This is a utility routine that will change over time, not part of the 
      core PETSc package.
 
+     **** THIS CODE IS NOT FINISHED AND INEVITABLY INCORRECT AT THIS POINT!! *****
 @*/
 int DAGetColoring3dBox(DA da,ISColoring *coloring,Mat *J)
 {
-  int      ierr, xs,ys,zs,nx,ny,nz,*colors,i,j,ii,slot,gxs,gys,gzs,ys1,nz1,ny1,nx1,gnx,gny,gnz;
-  int      bnc,bsw,sw,l,m,n,pdim,w,s,N,*indices,*gindices,k,xs1,nc,ng,*cols;
+  int      ierr,ind,xs,ys,zs,xm,ym,zm,*colors,i,j,ii,slot;
+  int      gxs,gys,gzs,gxm,gym,gzm,k,xs1,nc,ng,*rows;
+  int      swidth,bnc,bsw,sw,l,m,n,p,dim,w,s,N,*indices,*gindices;
   MPI_Comm comm;
   Scalar   *values;
+
   /*
                                   m
           ------------------------------------------------------
@@ -688,21 +690,21 @@ int DAGetColoring3dBox(DA da,ISColoring *coloring,Mat *J)
          |                                                     |
          |               ----------------------                |
          |               |                    |                |
-      n  |           yn  |                    |                |
+      n  |           ym  |                    |                |
          |               |                    |                |
          |               .---------------------                |
-         |             (xs,ys)     xn                          |
+         |             (xs,ys)     xm                          |
          |            .                                        |
          |         (gxs,gys)                                   |
          |                                                     |
           -----------------------------------------------------
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&w,&s,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&w,&swidth,0); CHKERRQ(ierr);
   if (dim != 3) SETERRQ(1,0,"3d only");
 
   /* also no support for periodic boundary conditions */
   nc = w;
-  sw = s*2+1;
+  sw = swidth*2+1;
   if (dim == 1)      {bsw = sw; bnc = nc;}
   else if (dim == 2) {bsw = 3*sw; bnc = nc*nc;}
   else if (dim == 3) {bsw = 5*sw; bnc = nc*nc;}
@@ -710,70 +712,66 @@ int DAGetColoring3dBox(DA da,ISColoring *coloring,Mat *J)
 
   values = (Scalar *) PetscMalloc( bsw*bnc*sizeof(Scalar) ); CHKPTRQ(values);
   PetscMemzero(values,bsw*bnc*sizeof(Scalar));
-  cols    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(cols);
-  indices = (int *) PetscMalloc( bsw*bnc*sizeof(int) ); CHKPTRQ(cols);
+  rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
+  indices = (int *) PetscMalloc( bsw*bnc*sizeof(int) ); CHKPTRQ(indices);
   N       = m*n;
 
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz); CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
 
   /* create the coloring */
-  colors = (int *) PetscMalloc( nc*nx*ny*nz*sizeof(int) ); CHKPTRQ(colors);
+  colors = (int *) PetscMalloc( nc*xm*ym*zm*sizeof(int) ); CHKPTRQ(colors);
   ii = 0;
-  for ( k=zs; k<zs+nz; k++ ) {
-    for ( j=ys; j<ys+ny; j++ ) {
-      for ( i=xs; i<xs+nx; i++ ) {
+  for ( k=zs; k<zs+zm; k++ ) {
+    for ( j=ys; j<ys+ym; j++ ) {
+      for ( i=xs; i<xs+xm; i++ ) {
         for ( l=0; l<nc; l++ ) {
           colors[ii++] = l + nc*((i % sw) + sw*(j % sw) + sw*sw*(k % sw));
         }
       }
     }
   }
-  ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,coloring); CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,nc*xm*ym*zm,colors,coloring); CHKERRQ(ierr);
   PetscFree(colors);
 
   /* Use incoming Jacobian matrix data structure */
 
+  ierr = DAGetGlobalIndices(da,&ng,&gindices);
+  {
+    ISLocalToGlobalMapping ltog;
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(ltog); CHKERRQ(ierr);
+  }
+
   /*
-      For each node in the grid: we get the neighbors in the local (on processor ordering
+    For each node in the grid: we get the neighbors in the local (on processor ordering
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
 
-  if (s != 2) SETERRQ(1,0,"s=2 only!");  
-
   /* fill up Jacobian for interior of grid */
-  for ( k=zs; k<zs+nz; k++ ) {
-    for ( i=xs; i<xs+nx; i++ ) {
-      for ( j=ys; j<ys+ny; j++ ) {
-        slot   = i - gxs + gnx*(j - gys) + gnx*gny*(z - gzs);
-        for ( s=0; s<swidth; s++) {
+  for ( k=zs; k<zs+zm; k++ ) {
+    for ( j=ys; j<ys+ym; j++ ) {
+      for ( i=xs; i<xs+xm; i++ ) {
+        slot = i - gxs + gxm*(j - gys) + gxm*gym*(k - gzs);
+        for ( s= -swidth; s<=swidth; s++) {
           for ( l=0; l<nc; l++ ) {    
-            ind = i-xs + 
-            indices[0+l]     = l + nc*(slot - gnx - 2);
-            indices[1*nc+l]  = l + nc*(slot - gnx - 1);
-          indices[2*nc+l]  = l + nc*(slot - gnx);
-          indices[3*nc+l]  = l + nc*(slot - gnx + 1);
-          indices[4*nc+l]  = l + nc*(slot - gnx + 2);
-          indices[5*nc+l]  = l + nc*(slot - 2);  
-          indices[6*nc+l]  = l + nc*(slot - 1);  
-          indices[7*nc+l]  = l + nc*(slot);      
-          indices[8*nc+l]  = l + nc*(slot + 1);
-          indices[9*nc+l]  = l + nc*(slot + 2);
-          indices[10*nc+l] = l + nc*(slot + gnx - 2);
-          indices[11*nc+l] = l + nc*(slot + gnx - 1);
-          indices[12*nc+l] = l + nc*(slot + gnx); 
-          indices[13*nc+l] = l + nc*(slot + gnx + 1);
-          indices[14*nc+l] = l + nc*(slot + gnx + 2);
-          cols[l]          = l + nc*(slot);
+            ind = indices[l]      = l + nc*(slot - gxm*gym + s); if (ind < 0 || ind >= ng) indices[l]      = l + nc*(slot);
+            ind = indices[1*nc+l] = l + nc*(slot - gxm + s);     if (ind < 0 || ind >= ng) indices[1*nc+l] = l + nc*(slot);
+            ind = indices[2*nc+l] = l + nc*(slot + s);           if (ind < 0 || ind >= ng) indices[2*nc+l] = l + nc*(slot);
+            ind = indices[3*nc+l] = l + nc*(slot + gxm + s);     if (ind < 0 || ind >= ng) indices[3*nc+l] = l + nc*(slot);
+            ind = indices[4*nc+l] = l + nc*(slot + gxm*gym + s); if (ind < 0 || ind >= ng) indices[4*nc+l] = l + nc*(slot);
+            rows[l]              = l + nc*(slot);
+          }
+          ierr = MatSetValuesLocal(*J,nc,rows,5*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
         }
-        ierr = MatSetValuesLocal(*J,nc,cols,15*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
       }
     }
   }
   PetscFree(values); 
-  PetscFree(cols);
+  PetscFree(rows);
   PetscFree(indices);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
