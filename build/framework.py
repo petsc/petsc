@@ -152,6 +152,9 @@ class Framework(base.Base):
       if fp: fp.close()
 
   def setupDependencies(self):
+    if not 'projectDependenceGraph' in self.argDB:
+      import build.buildGraph
+      self.argDB['projectDependenceGraph'] = build.buildGraph.BuildGraph()
     self.dependenceGraph = self.argDB['projectDependenceGraph']
     self.dependenceGraph.addVertex(self.project)
     self.dependenceGraph.clearEdges(self.project)
@@ -196,6 +199,7 @@ class Framework(base.Base):
       projects = self.argDB['installedprojects']
       projects.remove(p)
       self.argDB['installedprojects'] = projects
+    self.debugPrint('Deactivated project '+str(self.project), 2, 'install')
     return self.project
 
   def t_configure(self):
@@ -285,7 +289,6 @@ class Framework(base.Base):
 
   def t_default(self):
     '''Configure, build, and install this project'''
-    self.executeTarget('activate')
     self.executeTarget('configure')
     self.executeTarget('compile')
     return self.executeTarget('install')
@@ -405,7 +408,16 @@ class Framework(base.Base):
     try:
       if target is None:
         target = self.argDB.target
+      else:
+        target = target[:]
       if not isinstance(target, list): target = [target]
+
+      if not 'installedprojects'  in self.argDB:
+        self.argDB['installedprojects']  = []
+      if not 'installedLanguages' in self.argDB:
+        self.argDB['installedLanguages'] = ['Python', 'Cxx']
+      if not 'clientLanguages'    in self.argDB:
+        self.argDB['clientLanguages']    = []
 
       self.setupProject()
       # The activation target should happen before setup

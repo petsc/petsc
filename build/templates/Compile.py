@@ -40,19 +40,24 @@ class Template(base.Base):
     '''Set client include directories for all dependencies and the runtime library for linking'''
     import os
 
+    # Hack for excluding build system: Should ask if it is a dependency for Runtime
+    useRuntime = not self.project.getUrl() == 'bk://sidl.bkbits.net/BuildSystem'
+
     for vertex in compileGraph.vertices:
       if hasattr(vertex, 'includeDirs'):
         dft = build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project)
         # Client includes for project dependencies
         vertex.includeDirs.extend([project.ProjectPath(self.usingSIDL.getClientRootDir(lang), v.getUrl()) for v in dft])
         # Runtime includes
-        vertex.includeDirs.extend(self.usingSIDL.getRuntimeIncludes())
+        if useRuntime:
+          vertex.includeDirs.extend(self.usingSIDL.getRuntimeIncludes())
         # Custom includes
         vertex.includeDirs.extend(self.includeDirs)
       if hasattr(vertex, 'extraLibraries'):
-        if self.project == self.usingSIDL.getRuntimeProject() and lang == self.usingSIDL.getRuntimeLanguage(): continue
-        # Runtime libraries
-        vertex.extraLibraries.extend(self.usingSIDL.getRuntimeLibraries())
+        if useRuntime:
+          if not (self.project == self.usingSIDL.getRuntimeProject() and lang == self.usingSIDL.getRuntimeLanguage()):
+            # Runtime libraries
+            vertex.extraLibraries.extend(self.usingSIDL.getRuntimeLibraries())
         # Custom libraries
         vertex.extraLibraries.extend(self.extraLibraries)
     return compileGraph

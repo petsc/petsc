@@ -9,7 +9,7 @@ class Builder(install.base.Base):
     self.retriever = install.retrieval.Retriever(argDB)
     return
 
-  def build(self, root, target = 'default', setupTarget = None, ignoreDependencies = 0):
+  def build(self, root, target = ['activate', 'default'], setupTarget = None, ignoreDependencies = 0):
     self.debugPrint('Building '+str(target)+' in '+root, 1, 'install')
     try:
       maker = self.getMakeModule(root).PetscMake(sys.argv[1:], self.argDB)

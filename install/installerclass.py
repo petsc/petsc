@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 import importer
 import install.base
-import install.build
-import install.retrieval
 
 import os
 import sys
 
 class Installer(install.base.Base):
   def __init__(self, clArgs = None, localDict = 0, initDict = None):
+    import install.build
+    import install.retrieval
+
     install.base.Base.__init__(self, self.setupArgDB(clArgs, localDict, initDict))
     self.retriever = install.retrieval.Retriever(self.argDB)
     self.builder   = install.build.Builder(self.argDB)
@@ -50,7 +51,7 @@ class Installer(install.base.Base):
     root = self.retriever.retrieve(url, force = self.force);
     # This is for purging the sidl after the build
     self.argDB['fileset'] = 'sidl'
-    self.builder.build(root, target = ['default', 'purge'])
+    self.builder.build(root, target = ['activate', 'default', 'purge'])
     # Fixup install arguments
     argDB['installedprojects']  = self.argDB['installedprojects']
     argDB['installedLanguages'] = self.argDB['installedLanguages']
