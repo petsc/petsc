@@ -4,6 +4,8 @@ petsc/src/stencil
 petsc/src/ksp/examples/output
 petsc/surplus
 petsc/TAGS
+petsc/TAGS_MAKEFILES
+petsc/TAGS_NO_EXAMPLES
 petsc/maint
 petsc/docs/petsc.html
 petsc/docs/onepager.html
