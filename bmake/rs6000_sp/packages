@@ -63,6 +63,12 @@ MATLAB_LIB     =
 MATLAB_INCLUDE =
 CMEX           =
 #
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
+PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/rs6000/libpvode.a
+#
+#
 # PCONF - indicates which external packages are available at your site
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you 
 #    have installed BlockSolve95 and listed the include files and
@@ -75,6 +81,6 @@ CMEX           =
 #    installed on your machine (in /usr/lib/libessl.a) and 
 #    have it listed above in the LAPACK_LIB line above.
 #
-PCONF          =  -DHAVE_ESSL -DHAVE_MPE
+PCONF          =  -DHAVE_ESSL -DHAVE_MPE -DHAVE_PVODE
 #
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = $(BS_LIB) $(PVODE_LIB) $(ADIC_LIB)
