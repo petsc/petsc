@@ -13,6 +13,11 @@ PETSc configure
    that they have the appropriate shared libraries that are used when compiling
    or otherwise the static libraries are used.
 
+   Do more error checking on user input arguments for nice error messages like if they
+   pass a directory for -with-blas-lapack-dir or the other way around
+
+   Change bmake/configure to only do one of C or C++ compiler
+
 Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
 

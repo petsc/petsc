@@ -137,6 +137,7 @@ static int KSPSolve_TCQMR(KSP ksp)
     rnorm = rnorm0 * sqrt((double)ksp->its+2.0) * sprod;     
 #endif
     if (ksp->its >= ksp->max_it) {ksp->reason = KSP_DIVERGED_ITS; break;}
+    ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
   KSPMonitor(ksp,ksp->its,rnorm);
   ierr = KSPUnwindPreconditioner(ksp,x,vtmp);CHKERRQ(ierr);
