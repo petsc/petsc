@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.4 1996/06/21 23:12:01 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.5 1996/06/24 22:18:52 balay Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -30,7 +30,7 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
 }
 
 
-static int MatGetReordering_MPIBAIJ(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
+static int MatGetReordering_MPIBAIJ(Mat mat,MatReordering type,IS *rperm,IS *cperm)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   int         ierr;
@@ -119,6 +119,7 @@ static int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *
           ierr = MatGetValues(baij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
         }
         else {
+          if (!baij->colmap) {ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);} 
           col = baij->colmap[idxn[j]/bs]*bs + col%bs;
           ierr = MatGetValues(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
         }
@@ -135,7 +136,7 @@ static int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Mat_SeqBAIJ *amat = (Mat_SeqBAIJ*) baij->A->data, *bmat = (Mat_SeqBAIJ*) baij->B->data;
-  int        ierr, i, j, cstart = baij->cstart,bs2=baij->bs2;
+  int        ierr, i,bs2=baij->bs2;
   double     sum = 0.0;
   Scalar     *v;
 
@@ -162,48 +163,10 @@ static int MatNorm_MPIBAIJ(Mat mat,NormType type,double *norm)
       MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,mat->comm);
       *norm = sqrt(*norm);
     }
-    else if (type == NORM_1) { /* max column norm */
-      double *tmp, *tmp2;
-      int    *jj, *garray = baij->garray;
-      tmp  = (double *) PetscMalloc( baij->N*sizeof(double) ); CHKPTRQ(tmp);
-      tmp2 = (double *) PetscMalloc( baij->N*sizeof(double) ); CHKPTRQ(tmp2);
-      PetscMemzero(tmp,baij->N*sizeof(double));
-      *norm = 0.0;
-      v = amat->a; jj = amat->j;
-      for ( j=0; j<amat->nz; j++ ) {
-        tmp[cstart + *jj++ ] += PetscAbsScalar(*v);  v++;
-      }
-      v = bmat->a; jj = bmat->j;
-      for ( j=0; j<bmat->nz; j++ ) {
-        tmp[garray[*jj++ ]] += PetscAbsScalar(*v); v++;
-      }
-      MPI_Allreduce(tmp,tmp2,baij->N,MPI_DOUBLE,MPI_SUM,mat->comm);
-      for ( j=0; j<baij->N; j++ ) {
-        if (tmp2[j] > *norm) *norm = tmp2[j];
-      }
-      PetscFree(tmp); PetscFree(tmp2);
-    }
-    else if (type == NORM_INFINITY) { /* max row norm */
-      double ntemp = 0.0;
-      for ( j=0; j<amat->m; j++ ) {
-        v = amat->a + amat->i[j];
-        sum = 0.0;
-        for ( i=0; i<amat->i[j+1]-amat->i[j]; i++ ) {
-          sum += PetscAbsScalar(*v); v++;
-        }
-        v = bmat->a + bmat->i[j];
-        for ( i=0; i<bmat->i[j+1]-bmat->i[j]; i++ ) {
-          sum += PetscAbsScalar(*v); v++;
-        }
-        if (sum > ntemp) ntemp = sum;
-      }
-      MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);
-    }
-    else {
-      SETERRQ(1,"MatNorm_MPIBAIJ:No support for two norm");
-    }
+    else
+      SETERRQ(1,"MatNorm_SeqBAIJ:No support for this norm yet");
   }
-  return 0; 
+  return 0;
 }
 
 static int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
@@ -656,13 +619,103 @@ static int MatGetOwnershipRange_MPIBAIJ(Mat matin,int *m,int *n)
   return 0;
 }
 
+extern int MatGetRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
+extern int MatRestoreRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
+
+int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
+{
+  Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *) matin->data;
+  Scalar     *vworkA, *vworkB, **pvA, **pvB,*v_p;
+  int        bs = mat->bs, bs2 = mat->bs2, i, ierr, *cworkA, *cworkB, **pcA, **pcB;
+  int        nztot, nzA, nzB, lrow, rstart = mat->rstart*bs, rend = mat->rend*bs;
+  int        *cmap, *idx_p,cstart = mat->cstart*bs;
+
+  if (mat->getrowactive == PETSC_TRUE) SETERRQ(1,"MatGetRow_MPIBAIJ:Already active");
+  mat->getrowactive = PETSC_TRUE;
+
+  if (!mat->rowvalues && (idx || v)) {
+    /*
+        allocate enough space to hold information from the longest row.
+    */
+    Mat_SeqBAIJ *Aa = (Mat_SeqBAIJ *) mat->A->data,*Ba = (Mat_SeqBAIJ *) mat->B->data; 
+    int     max = 1,nbs = mat->nbs,tmp;
+    for ( i=0; i<nbs; i++ ) {
+      tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
+      if (max < tmp) { max = tmp; }
+    }
+    mat->rowvalues = (Scalar *) PetscMalloc( max*bs2*(sizeof(int)+sizeof(Scalar))); 
+    CHKPTRQ(mat->rowvalues);
+    mat->rowindices = (int *) (mat->rowvalues + max*bs2);
+  }
+       
+
+  if (row < rstart || row >= rend) SETERRQ(1,"MatGetRow_MPIBAIJ:Only local rows")
+  lrow = row - rstart;
+
+  pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
+  if (!v)   {pvA = 0; pvB = 0;}
+  if (!idx) {pcA = 0; if (!v) pcB = 0;}
+  ierr = (*mat->A->ops.getrow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
+  ierr = (*mat->B->ops.getrow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
+  nztot = nzA + nzB;
+
+  cmap  = mat->garray;
+  if (v  || idx) {
+    if (nztot) {
+      /* Sort by increasing column numbers, assuming A and B already sorted */
+      int imark = -1;
+      if (v) {
+        *v = v_p = mat->rowvalues;
+        for ( i=0; i<nzB; i++ ) {
+          if (cmap[cworkB[i]] < cstart)   v_p[i] = vworkB[i];
+          else break;
+        }
+        imark = i;
+        for ( i=0; i<nzA; i++ )     v_p[imark+i] = vworkA[i];
+        for ( i=imark; i<nzB; i++ ) v_p[nzA+i]   = vworkB[i];
+      }
+      if (idx) {
+        *idx = idx_p = mat->rowindices;
+        if (imark > -1) {
+          for ( i=0; i<imark; i++ ) {
+            idx_p[i] = cmap[cworkB[i]];
+          }
+        } else {
+          for ( i=0; i<nzB; i++ ) {
+            if (cmap[cworkB[i]] < cstart)   idx_p[i] = cmap[cworkB[i]];
+            else break;
+          }
+          imark = i;
+        }
+        for ( i=0; i<nzA; i++ )     idx_p[imark+i] = cstart + cworkA[i];
+        for ( i=imark; i<nzB; i++ ) idx_p[nzA+i]   = cmap[cworkB[i]];
+      } 
+    } 
+    else {*idx = 0; *v=0;}
+  }
+  *nz = nztot;
+  ierr = (*mat->A->ops.restorerow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
+  ierr = (*mat->B->ops.restorerow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
+  return 0;
+}
+
+int MatRestoreRow_MPIBAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
+{
+  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
+  if (baij->getrowactive == PETSC_FALSE) {
+    SETERRQ(1,"MatRestoreRow_MPIBAIJ:MatGetRow not called");
+  }
+  baij->getrowactive = PETSC_FALSE;
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {
   MatSetValues_MPIBAIJ,0,0,MatMult_MPIBAIJ,
   MatMultAdd_MPIBAIJ,MatMultTrans_MPIBAIJ,MatMultTransAdd_MPIBAIJ,0,
   0,0,0,0,
   0,0,0,0,
-  0,MatGetDiagonal_MPIBAIJ,0,0,
+  0,MatGetDiagonal_MPIBAIJ,0,MatNorm_MPIBAIJ,
   MatAssemblyBegin_MPIBAIJ,MatAssemblyEnd_MPIBAIJ,0,0,
   0,0,MatGetReordering_MPIBAIJ,0,
   0,0,0,MatGetSize_MPIBAIJ,
@@ -670,7 +723,7 @@ static struct _MatOps MatOps = {
   0,0,0,0,
   0,0,0,0,
   0,0,0,0,
-  0,0,0,0,
+  0,MatGetValues_MPIBAIJ,0,0,
   MatScale_MPIBAIJ,0,0};
                                 
 
