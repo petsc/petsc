@@ -247,6 +247,7 @@ class Framework(base.Base):
           try:
             maker     = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
             maker.setupProject()
+            maker.setupSourceDB(maker.project)
             maker.setupBuild()
             (depGraph, depInput) = maker.getCompileGraph()
             compileGraph.prependGraph(depGraph)
@@ -270,6 +271,7 @@ class Framework(base.Base):
       try:
         maker = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
         maker.setupProject()
+        maker.setupSourceDB(maker.project)
         maker.setupBuild()
         depGraphs.append(maker.executeTarget('sidlCheckpoint'))
       except ImportError:

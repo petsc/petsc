@@ -6,6 +6,7 @@ def runinstaller(opts = []):
   import setuprc
   setuprc.setupRC(os.path.dirname(os.path.abspath(os.path.dirname(sys.modules['setuprc'].__file__))))
 
+  import importer
   import installerclass
   installer   = installerclass.Installer(sys.argv[1:]+opts)
     

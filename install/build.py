@@ -44,7 +44,7 @@ class Builder(install.urlMapping.UrlMapping):
         for k in filter(lambda k: not k in keys, data.keys()):
           if data[k].isValueSet():
             self.argDB.setType(k, data[k])
-          self.debugPrint('Set key '+key+' in argument database', 4, 'install')
+          self.debugPrint('Set key "'+str(k)+'" in argument database', 4, 'install')
         dbFile.close()
         loadedRDict = 1
       except Exception, e:

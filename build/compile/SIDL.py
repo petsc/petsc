@@ -122,6 +122,11 @@ class Compiler(build.processor.Processor):
   def processFileSetModule(self, set):
     '''Compile all the files in "set" using a module directly'''
     if not len(set): return self.output
+    import nargs
+
+    # Save targets so that they do not interfere with Scandal
+    target   = self.argDB.target
+    self.argDB.target = []
     flags    = self.getFlags(set)
     compiler = self.getCompilerModule().Scandal(flags+set)
     if not set.tag.startswith('old'):
@@ -131,6 +136,10 @@ class Compiler(build.processor.Processor):
     self.debugPrint('Reporting on '+str(set)+' for a '+self.language+' '+self.action, 3, 'compile')
     self.debugPrint('  with flags '+str(flags), 4, 'compile')
     compiler.report()
+    # Restore targets and remove flags
+    self.argDB.target = target
+    for flag in flags:
+      del self.argDB[nargs.Arg.parseArgument(flag)[0]]
     tag = self.outputTag
     if self.isServer:
       (package, ext) = os.path.splitext(os.path.basename(set[0]))
