@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.84 1999/01/31 16:08:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.85 1999/01/31 21:46:25 curfman Exp bsmith $";
 #endif
 
 /*
@@ -184,7 +184,7 @@ static int PCSetUp_Eisenstat(PC pc)
     diag = eis->diag;
   }
   ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
-  ierr = VecReciprocal(diag); CHKERRQ(ierr);
+  /* ierr = VecReciprocal(diag); CHKERRQ(ierr);  wrong, as pointed out by Isaac */
   eis->diag = diag;
   PetscFunctionReturn(0);
 }
