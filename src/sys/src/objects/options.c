@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.118 1997/01/22 18:41:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.119 1997/01/27 18:15:50 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -756,12 +756,14 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm," -trdebug: enables extended checking for memory corruption\n");
     PetscPrintf(comm," -optionstable: dump list of options inputted\n");
     PetscPrintf(comm," -optionsleft: dump list of unused options\n");
+#if defined (PETSC_LOG)
     PetscPrintf(comm," -log[_all _summary]: logging objects and events\n");
     PetscPrintf(comm," -log_trace [filename]: prints trace of all PETSc calls\n");
 #if defined (HAVE_MPE)
     PetscPrintf(comm," -log_mpe: Also create logfile viewable through upshot\n");
 #endif
     PetscPrintf(comm," -log_info: print informative messages about the calculations\n");
+#endif
     PetscPrintf(comm," -v: prints PETSc version number and release date\n");
     PetscPrintf(comm," -options_file <file>: reads options from file\n");
     PetscPrintf(comm,"-----------------------------------------------\n");
