@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.46 1996/03/18 20:28:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.47 1996/03/19 21:28:22 bsmith Exp gropp $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -289,7 +289,8 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawTriangle_X,
                                  DrawGetMouseButton_X,
                                  DrawPause_X,
-                                 DrawSyncClear_X};
+                                 DrawSyncClear_X, 
+				 0, 0 };
 
 int DrawDestroy_X(PetscObject obj)
 {
