@@ -9,8 +9,12 @@ cd /home/bsmith/petsc/docs/tex
 #make clean
 #
 #
-set name=`date +%d%m%y`
+set name=`date +%y%m%d`
 cd /home/bsmith
-tar cFFXf /home/bsmith/petsc/maint/xcludebackup /hsm/mcs/petsc/userbackups/petsc_$name.tar petsc >& /hsm/mcs/petsc/userbackups/petsc_$name.out 
+tar cFFXf /home/bsmith/petsc/maint/xcludebackup /ccsthome/petsc/userbackups/petsc_$name.tar petsc >& /ccsthome/petsc/userbackups/petsc_$name.out 
+cd /ccsthome/petsc/userbackups
+gzip petsc_$name.tar
+cp petsc_$name.tar.gz /hsm/mcs/petsc/userbackups
+
 #
 
