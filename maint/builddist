@@ -4,7 +4,7 @@
 # It uses the bk rep in terra:/sandbox/petsc/petsc-dist
 #
 # Usage: builddist version
-# example usage: builddist -2.1.0
+# example usage: builddist -2.1.1
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
 #echo "(0) Excluded any directories not for public release (for example, src/eg, src/snes/interface/noise)"
