@@ -472,6 +472,8 @@ class Configure(config.base.Configure):
       return name
     elif self.fortranMangling == 'capitalize':
       return name.upper()
+    elif self.fortranMangling == 'stdcall':
+      return name.upper()
     raise RuntimeError('Unknown Fortran name mangling: '+self.fortranMangling)
 
   def checkFortranNameMangling(self):
@@ -481,14 +483,14 @@ class Configure(config.base.Configure):
     oldLIBS = self.framework.argDB['LIBS']
 
     # Define known manglings and write tests in C
-    cobjs    = ['confc0.o','confc1.o','confc2.o']
-    cfuncs   = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void D1CHK(void){return;}\n','__stdcall void D1CHK(void){return;}\n']
+    cobjs    = ['confc0.o','confc1.o','confc2.o','confc3.o']
+    cfuncs   = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void D1CHK(void){return;}\n','void __stdcall D1CHK(void){return;}\n']
     manglers = ['underscore','unchanged','capitalize','stdcall']
     manglDEFs= ['HAVE_FORTRAN_UNDERSCORE','HAVE_FORTRAN_NOUNDERSCORE','HAVE_FORTRAN_CAPS','HAVE_FORTRAN_STDCALL']
 
     # Compile each of the C test objects
     self.pushLanguage('C')
-    for cfunc, cobj in zip(cfuns, cobjs):
+    for cfunc, cobj in zip(cfuncs, cobjs):
       if not self.checkCompile(cfunc,None,cleanup = 0):
         raise RuntimeError('Cannot compile C function: '+cfunc)
       if not os.path.isfile(self.compilerObj):
@@ -506,7 +508,8 @@ class Configure(config.base.Configure):
         self.framework.argDB['LIBS'] = oldLIBS
         if mangler=='stdcall':
           self.addDefine('STDCALL','__stdcall')
-          self.addDefine('HAVE_FORTRAN_CAPS',1)b
+          self.addDefine('HAVE_FORTRAN_CAPS',1)
+          self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG',1)
         break
       self.framework.argDB['LIBS'] = oldLIBS
     else:
@@ -525,8 +528,8 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot compile C function: double underscore test')
     if not os.path.isfile(self.compilerObj):
       raise RuntimeError('Cannot locate object file: '+os.path.abspath(self.compilerObj))
-    os.rename(self.compilerObj,cobj[0])
-    self.framework.argDB['LIBS'] += ' '+cobj[0]
+    os.rename(self.compilerObj,cobjs[0])
+    self.framework.argDB['LIBS'] += ' '+cobjs[0]
     self.popLanguage()
 
     #   Test against driver
@@ -538,7 +541,7 @@ class Configure(config.base.Configure):
       self.fortranManglingDoubleUnderscore = 0
 
     #   Cleanup
-    if os.path.isfile(cobj[0]): os.remove(cobj[0])
+    if os.path.isfile(cobjs[0]): os.remove(cobjs[0])
     self.framework.argDB['LIBS'] = oldLIBS
     self.popLanguage()
     return
