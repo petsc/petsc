@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.216 1997/09/26 02:19:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.217 1997/10/19 03:25:26 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1914,5 +1914,57 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+   Not yet optimized. Could do
+
+     1) preallocate memory
+     2) not use MatGetRow() but rather access rows directly 
+*/
+int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Mat *newmat)
+{
+  int     ierr, i, m,n,rstart,row,rend,nz,*cwork;
+  Mat     *local,M;
+  Scalar  *vwork;
+
+  PetscFunctionBegin;
+  ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+
+  /* 
+      m - number of local rows
+      n - number of columns (same on all processors)
+      rstart - first row in new global matrix generated
+  */
+  ierr = MatGetSize(*local,&m,&n);CHKERRQ(ierr);
+  if (call == MAT_INITIAL_MATRIX) {
+    /*
+         Note this is inefficient because we do not preallocate the matrix space
+         to do this one must loop over the local rows and determine the number of 
+         of "on" and "off" diagonal entries and use those in the call to the MatCreate()
+    */
+   ierr = MatCreateMPIAIJ(mat->comm,m,PETSC_DECIDE,
+                          PETSC_DECIDE,n,0,PETSC_NULL,0,PETSC_NULL,&M); CHKERRQ(ierr);
+  } else {
+    int ml,nl;
+
+    M = *newmat;
+    ierr = MatGetLocalSize(M,&ml,&nl);CHKERRQ(ierr);
+    if (ml != m) SETERRQ(1,1,"Previous matrix must be same size/layout as request");
+    ierr = MatZeroEntries(M);CHKERRQ(ierr);
+  }
+  ierr = MatGetOwnershipRange(M,&rstart,&rend); CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    ierr = MatGetRow(*local,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+    row  = rstart + i;
+    ierr = MatSetValues(M,1,&row,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatRestoreRow(*local,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+  }
+
+  ierr = MatDestroyMatrices(1,&local);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  *newmat = M;
   PetscFunctionReturn(0);
 }
