@@ -95,11 +95,14 @@ homepage:
 	@echo "Making PETSc homepage"
 	-/usr/bin/cp  ../onepager.ps /home/ftp/pub/petsc/onepager.ps
 	-/usr/bin/cp  ../manual.ps /home/ftp/pub/petsc/manual.ps
-	-/usr/bin/cp  ../../Installation /home/ftp/pub/petsc/Installation
+	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
 	-/usr/bin/cp  ftp_readme /home/ftp/pub/petsc/README
+	-/usr/bin/cp  ../../Installation /home/ftp/pub/petsc/Installation
 	-/usr/bin/cp  ../../Machines /home/ftp/pub/petsc
 	-/usr/bin/cp  ../../Changes /home/ftp/pub/petsc
 	-/usr/bin/cp  ../../Troubleshooting /home/ftp/pub/petsc
+	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
+	-/usr/bin/cp ../../Performance /home/ftp/pub/petsc
 	-/usr/bin/cp petsc.html /mcs/www/petsc
 	-/usr/bin/cp petscwww.gif /mcs/www/petsc
 	-/usr/bin/cp petsc.map /mcs/www/petsc
@@ -107,10 +110,6 @@ homepage:
 	-/usr/bin/cp onepager.html /mcs/www/petsc
 	-/usr/bin/cp summaries.html /mcs/www/petsc
 	-/usr/bin/cp ../www.html /mcs/www/petsc
-	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
-	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
-	-/usr/bin/cp ../../Performance /home/ftp/pub/petsc
-	-/usr/bin/cp talks/utah.ps /home/ftp/pub/petsc
 	-chmod ug+w /home/ftp/pub/petsc/FAQ /mcs/www/petsc/*
 	-chmod ug+w /home/ftp/pub/petsc/Installation /home/ftp/pub/petsc/README
 	-chmod ug+w /home/ftp/pub/petsc/Machines /home/ftp/pub/petsc/manual.ps
@@ -124,4 +123,4 @@ homepage:
 	-cd /mcs/www/petsc/; /bin/rm -rf www; tar xf $(HOME)/www.tar; 
 	-cd /mcs/www/petsc/; chgrp -R pdetools www; chmod -R g+w www
 	-/bin/rm $(HOME)/www.tar
-	@echo "Finshed making PETSc homepage"
+	@echo "Finshed making PETSc homepage: remember to do the source!"
