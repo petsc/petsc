@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.13 1998/05/08 16:12:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: mprint.c,v 1.14 1998/05/14 03:23:27 curfman Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -432,7 +432,7 @@ int PetscErrorPrintfDefault(char *format,...)
     fprintf(stderr,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
     fprintf(stderr,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
     fprintf(stderr,"Web page: http://www.mcs.anl.gov/petsc/\n");
-    fprintf(stderr,"See docs/copyright.html for copyright information\n");
+    fprintf(stderr,"See docs/copyright.html for copyright information.\n");
     fprintf(stderr,"See docs/changes.html for recent updates.\n");
     fprintf(stderr,"See docs/troubleshooting.html for hints about trouble shooting.\n");
     fprintf(stderr,"See docs/manualpages/manualpages.html for manual pages.\n");
