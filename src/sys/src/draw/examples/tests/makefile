@@ -15,8 +15,8 @@ EXAMPLES_2    = ex1 ex2 ex3 ex4
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF     = ex5.F
 EXAMPLES_3    = ex5
-EXAMPLES_4    = ex1 ex2 ex3 ex4
-RUNEXAMPLES_4 = runex1 runex2 runex3 runex4
+EXAMPLES_4    = ex1 ex4
+RUNEXAMPLES_4 = 
 
 runex1:
 	-@$(MPIRUN) ex1
