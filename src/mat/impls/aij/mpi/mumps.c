@@ -22,6 +22,7 @@ typedef struct {
   MatStructure   matstruc;
   int            myid,size,*irn,*jcn;
   PetscScalar    *val;
+  MPI_Comm       comm_mumps;
 } Mat_MPIAIJ_MUMPS;
 
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
@@ -115,6 +116,7 @@ int MatDestroy_MPIAIJ_MUMPS(Mat A)
   if (lu->jcn) { ierr = PetscFree(lu->jcn);CHKERRQ(ierr);}
   if (size>1 && lu->val) { ierr = PetscFree(lu->val);CHKERRQ(ierr);} 
   
+  ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
   ierr = PetscFree(lu);CHKERRQ(ierr); 
   if (size == 1){
     ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
@@ -293,7 +295,8 @@ int MatLUFactorSymbolic_MPIAIJ_MUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   ierr = MPI_Comm_rank(A->comm, &lu->myid);
   ierr = MPI_Comm_size(A->comm,&lu->size);CHKERRQ(ierr);
   lu->id.job = JOB_INIT; 
-  lu->id.comm_fortran = A->comm;
+  ierr = MPI_Comm_dup(A->comm,&(lu->comm_mumps));CHKERRQ(ierr);
+  lu->id.comm_fortran = lu->comm_mumps;
 
   /* Set default options */
   lu->id.par=1;  /* host participates factorizaton and solve */
