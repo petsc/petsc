@@ -54,10 +54,6 @@ extern void MPIR_RmPointer(int);
 #define FIXCHAR(a,n,b) \
 { \
   b = _fcdtocp(a); \
-  if (a == PETSC_NULL_Fortran) {  \
-    fprintf(stderr,"PETSC ERROR: Must use PETSC_NULL_CHAR!"); \
-    *__ierr = 1; return; \
-  }  \
   if (b == PETSC_NULL_CHAR_Fortran) {b = 0;} \
 }
 #define FREECHAR(a,b) 
