@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: try.c,v 1.8 1995/05/14 16:32:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: try.c,v 1.9 1995/05/25 22:47:05 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>
@@ -177,7 +177,7 @@ void MPIU_Seq_begin(MPI_Comm comm,int ng )
     MPI_Keyval_create( MPI_NULL_COPY_FN, MPI_NULL_DELETE_FN, 
                        &MPIU_Seq_keyval, NULL );
   }
-  MPI_Attr_get( comm, MPIU_Seq_keyval, (void *)&local_comm, &flag );
+  MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) {
     /* This expects a communicator to be a pointer */
     MPI_Comm_dup( comm, &local_comm );
@@ -214,7 +214,7 @@ void MPIU_Seq_end(MPI_Comm comm,int ng )
 
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
-  MPI_Attr_get( comm, MPIU_Seq_keyval, (void *)&local_comm, &flag );
+  MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
   /* Send to the first process in the next group OR to the first process
      in the processor set */

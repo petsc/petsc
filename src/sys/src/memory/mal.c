@@ -1,8 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.2 1995/05/23 23:09:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.3 1995/05/25 22:47:05 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
 #include <malloc.h>
 #include "petscfix.h"
 
@@ -20,13 +23,13 @@ int  (*PetscFree)(void *,int,char*) = (int (*)(void*,int,char*))free;
 .   free - the free routine
 
 @*/
-int PetscSetMalloc(void *(*malloc)(unsigned int,int,char*),
-                   int (*free)(void*,int,char*))
+int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*),
+                   int (*ifree)(void*,int,char*))
 {
   static int visited = 0;
   if (visited) SETERR(1,"PetscSetMalloc: cannot call multiple times");
-  PetscMalloc = malloc;
-  PetscFree   = free;
+  PetscMalloc = imalloc;
+  PetscFree   = ifree;
   visited     = 1;
   return 0;
 }

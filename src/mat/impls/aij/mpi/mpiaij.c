@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.44 1995/05/18 22:45:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.45 1995/05/25 22:47:42 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -358,7 +358,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   FREE(recv_waits); 
   
   /* move the data into the send scatter */
-  lrows = (int *) MALLOC( slen*sizeof(int) ); CHKPTR(lrows);
+  lrows = (int *) MALLOC( (slen+1)*sizeof(int) ); CHKPTR(lrows);
   count = 0;
   for ( i=0; i<nrecvs; i++ ) {
     values = rvalues + i*nmax;

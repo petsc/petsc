@@ -34,7 +34,7 @@ extern int    atoi(char*);
 extern int    exit(int);
 extern void   perror(const char *);
 extern double atof(const char *);
-extern int    free(char *);
+extern void    free(void *);
 extern void   *malloc(long unsigned int );
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
@@ -51,8 +51,10 @@ extern int    vfprintf(FILE*,char*,...);
 extern void   perror(char *);
 extern int    atoi(char*);
 extern double atof(const char*);
+#include <search.h>
+extern char   *tsearch(char *,char **, int (*)(void*,void*));
+extern void   twalk(char *,void (*)(void*,VISIT,int));
 #endif
-
 #endif
 
 
@@ -178,6 +180,22 @@ extern double atof(char *);
 extern int    atoi(char*);
 #endif
 #endif
+
+/* -------------------- HP UX --------------------------------*/
+#if defined(PARCH_hpux)
+
+#if defined(__cplusplus)
+extern int     getdomainname(char *,int);
+extern int    exit(int);
+extern int    abort();
+
+#else
+extern char *mktemp(char*);
+#define SIGBUS _SIGBUS
+#define SIGSYS _SIGSYS
+#endif
+#endif
+
 /* -------------------------------------------------------------------------*/
 
 #endif

@@ -31,7 +31,7 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
     This is the signal handler called by the system. This calls 
   your signal handler.
 */
-#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_alpha)
+#if defined(PARCH_IRIX) || defined(PARCH_sun4)
 static void PetscSignalHandler( int sig, int code,
                                         struct sigcontext * scp,char *addr)
 #else
@@ -47,6 +47,7 @@ static void PetscSignalHandler( int sig )
   }
   if (ierr) exit(ierr);
 }
+
 
 /*@
    PetscDefaultSignalHandler - Default signal handler.

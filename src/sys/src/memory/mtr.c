@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.14 1995/05/25 22:47:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.15 1995/05/26 14:51:06 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -16,6 +17,10 @@ static char vcid[] = "$Id: tr.c,v 1.14 1995/05/25 22:47:05 bsmith Exp bsmith $";
 #if defined(HAVE_SEARCH_H)
 #include <search.h>
 #endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#include <malloc.h>
 #include "petscfix.h"
 
 void *TrMalloc(unsigned int, int, char *);
@@ -91,8 +96,6 @@ static long    allocated = 0, frags = 0;
 static TRSPACE *TRhead = 0;
 static int     TRid = 0;
 static int     TRlevel = 0;
-static int     TRstack[MAX_TR_STACK];
-static int     TRstackp = 0;
 static int     TRdebugLevel = 0;
 static long    TRMaxMem = 0;
 static long    TRMaxMemId = 0;
@@ -136,7 +139,7 @@ int Trvalid(int line,char *file )
   while (head) {
     if (head->cookie != COOKIE_VALUE) {
       if (!errs) fprintf( stderr, "called from %s line %d \n",file,line );
-      fprintf( stderr, "Block at address %lx is corrupted\n", head );
+      fprintf( stderr, "Block at address %p is corrupted\n", head );
       return errs;
     }
     a    = (char *)(((TrSPACE*)head) + 1);
@@ -146,7 +149,7 @@ int Trvalid(int line,char *file )
       errs++;
       head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
       fprintf( stderr, 
-  "Block [id=%d(%d)] at address %lx is corrupted (probably write past end)\n", 
+  "Block [id=%d(%d)] at address %p is corrupted (probably write past end)\n", 
 	     head->id, head->size, a );
       fprintf( stderr, 
 		"Block allocated in %s[%d]\n", head->fname, head->lineno );
@@ -180,6 +183,10 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
     if (Trvalid(lineno,fname )) return 0;
   }
 
+  if (a == 0) {
+    fprintf(stderr,"TrMalloc: malloc zero length, this is illegal!");
+    return 0;
+  }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) 
     nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
@@ -222,7 +229,7 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
   frags     ++;
 
   if (TRlevel & TR_MALLOC) 
-    fprintf( stderr, "Allocating %d bytes at %lx\n", a, inew );
+    fprintf( stderr, "Allocating %d bytes at %p\n", a, inew );
   return (void *)inew;
 }
 
@@ -247,7 +254,7 @@ int TrFree( void *aa, int line, char *file )
   if (!a) return 0;
 
   if (TRdebugLevel > 0) {
-    if (ierr = Trvalid(line,file)) return ierr;
+    if ((ierr = Trvalid(line,file))) return ierr;
   }
 
   ahead = a;
@@ -255,7 +262,7 @@ int TrFree( void *aa, int line, char *file )
   head  = (TRSPACE *)a;
   if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
-    fprintf( stderr, "Block at address %lx is corrupted; cannot free;\n\
+    fprintf( stderr, "Block at address %p is corrupted; cannot free;\n\
 may be block not allocated with TrMalloc or MALLOC\n", a );
     SETERR(1,0);
   }
@@ -263,7 +270,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
   if (*nend != COOKIE_VALUE) {
     if (*nend == ALREADY_FREED) {
 	fprintf( stderr, 
-  "Block [id=%d(%d)] at address %lx was already freed\n", 
+  "Block [id=%d(%d)] at address %p was already freed\n", 
 		head->id, head->size, a + sizeof(TrSPACE) );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	if (head->lineno > 0) 
@@ -277,7 +284,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
     else {
 	/* Damaged tail */
 	fprintf( stderr, 
-  "Block [id=%d(%d)] at address %lx is corrupted (probably write past end)\n", 
+  "Block [id=%d(%d)] at address %p is corrupted (probably write past end)\n", 
 		head->id, head->size, a );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	fprintf( stderr, 
@@ -304,7 +311,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 
   if (head->next) head->next->prev = head->prev;
   if (TRlevel & TR_FREE)
-    fprintf( stderr, "Freeing %d bytes at %lx\n", 
+    fprintf( stderr, "Freeing %d bytes at %p\n", 
 	             head->size, a + sizeof(TrSPACE) );
   free( a );
   return 0;
@@ -338,7 +345,7 @@ int Trdump( FILE *fp )
   if (fp == 0) fp = stderr;
   head = TRhead;
   while (head) {
-    fprintf( fp, "%d at [%lx], id = ", 
+    fprintf( fp, "%d at [%p], id = ", 
 	     head->size, head + sizeof(TrSPACE) );
     if (head->id >= 0) {
 	head->fname[TR_FNAME_LEN-1] = 0;
@@ -520,7 +527,7 @@ void *Trrealloc(void * p, int size, int lineno, char *fname )
   head = (TRSPACE *)(pa - sizeof(TRSPACE));
   if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
-    fprintf( stderr, "Block at address %lx is corrupted; cannot realloc;\n\
+    fprintf( stderr, "Block at address %p is corrupted; cannot realloc;\n\
 may be block not allocated with TrMalloc or MALLOC\n", pa );
     return (void *) 0;
   }

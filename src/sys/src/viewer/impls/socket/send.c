@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.9 1995/04/26 19:32:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.10 1995/05/14 16:34:44 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -15,6 +15,7 @@ typedef unsigned short  ushort;
 typedef unsigned int    u_int;
 typedef unsigned long   u_long;
 #endif
+
 #include <stdio.h>
 #include <errno.h> 
 #include <sys/types.h>
@@ -26,7 +27,7 @@ typedef unsigned long   u_long;
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
-#if !defined(PARCH_freebsd) && !defined(PARCH_rs6000)  && !defined(PARCH_NeXT)
+#if defined(HAVE_STROPTS_H)
 #include <stropts.h>
 #endif
 
@@ -36,23 +37,26 @@ typedef unsigned long   u_long;
 /*
      Sun? doesn't prototype many of the socket functions?
 */
-#if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_freebsd)
+#if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_freebsd) \
+    || defined(PARCH_hpux)
 #if defined(__cplusplus)
 extern "C" {
 #endif
-#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd)
+#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_hpux)
 extern int setsockopt(int,int,int,char*,int);
 #endif
-extern int sleep(unsigned);
-extern int usleep(unsigned);
 extern int write(int,char*,int);
 extern int close(int);
 #if !defined(PARCH_freebsd)
 extern int socket(int,int,int);
+#if !defined(PARCH_hpux)
 extern int connect(int,struct sockaddr *,int);
+#endif
 extern void bcopy(char*,char*,int);
 extern void bzero(char*,int);
 #endif
+extern int sleep(unsigned);
+extern int usleep(unsigned);
 #if defined(__cplusplus)
 };
 #endif
@@ -81,7 +85,7 @@ static int MatlabDestroy(PetscObject obj)
   if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) 
     SETERR(1,"Setting linger");
   if (close(viewer->port)) SETERR(1,"closing socket");
-#if !defined(PARCH_IRIX) 
+#if !defined(PARCH_IRIX) && !defined(PARCH_hpux)
   usleep((unsigned) 100);
 #endif
   PETSCHEADERDESTROY(viewer);
@@ -143,7 +147,7 @@ int call_socket(char *hostname,int portnum)
       }
       else if ( errno == ECONNREFUSED ) {
         /* fprintf(stderr,"SEND: forcefully rejected\n"); */
-#if !defined(PARCH_IRIX)
+#if !defined(PARCH_IRIX) && !defined(PARCH_hpux)
         usleep((unsigned) 1000);
 #endif
       }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: arch.c,v 1.4 1995/03/06 04:32:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.5 1995/05/14 16:32:28 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #if defined(HAVE_STRING_H)
@@ -28,7 +28,7 @@ void SYGetArchType( char *str, int slen )
   strncpy(str,"IRIX",4);
 #elif defined(PARCH_tc2000)
   strcpy( str, "tc2000" );  
-#elif defined(PARCH_HPUX)
+#elif defined(PARCH_hpux)
   strncpy( str, "hpux", 4 );
 #elif defined(PARCH_fx2800)
   strncpy( str, "fx2800", 6 );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.25 1995/05/18 22:43:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.26 1995/05/23 23:09:30 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -22,7 +22,6 @@ static char vcid[] = "$Id: pbvec.c,v 1.25 1995/05/18 22:43:47 bsmith Exp bsmith 
 
 static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
 {
-  Vec_MPI *x = (Vec_MPI *)xin->data;
   Scalar    sum, work;
   VecDot_Blas(  xin, yin, &work );
   MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_SCALAR,MPI_SUM,xin->comm );
@@ -32,7 +31,6 @@ static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
 
 static int VecAsum_MPIBlas(  Vec xin, double *z )
 {
-  Vec_MPI *x = (Vec_MPI *) xin->data;
   double work;
   VecAsum_Blas( xin, &work );
   MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_SUM,xin->comm );

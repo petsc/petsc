@@ -1,8 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.8 1995/05/23 23:09:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.9 1995/05/25 22:47:05 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
+
+    This file uses regular malloc and free because it cannot know 
+  what malloc is being used until it has already processed the input.
+
 */
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -15,6 +19,7 @@ static char vcid[] = "$Id: options.c,v 1.8 1995/05/23 23:09:53 bsmith Exp bsmith
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
+#include <malloc.h>
 #include "pviewer.h"
 #include "petscfix.h"
 
@@ -173,6 +178,8 @@ void abort_function(MPI_Comm *comm,int *flag)
 extern "C" {
   extern int malloc_debug(int);
 };
+#elif defined(PARCH_sun4)
+  extern int malloc_debug(int);
 #endif
 
 extern int PLogAllowInfo(PetscTruth);
@@ -183,10 +190,16 @@ static int OptionsCheckInitial_Private()
   char     string[64];
   MPI_Comm comm = MPI_COMM_WORLD;
 
+#if defined(PETSC_BOPT_g)
+  if (!OptionsHasName(0,"-notrmalloc")) {
+    PetscSetUseTrMalloc_Private();
+  }
+#else
   if (OptionsHasName(0,"-trdump") || OptionsHasName(0,"-trmalloc")) {
     PetscSetUseTrMalloc_Private();
   }
-#if defined(PARCH_sun4) && defined(PETSC_DEBUG)
+#endif
+#if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
   if (OptionsHasName(0,"-malloc_debug")) {
     malloc_debug(2);
   }
@@ -296,6 +309,7 @@ static int OptionsCheckInitial_Private()
     MPIU_printf(comm," -fp_trap: stop on floating point exceptions\n");
     MPIU_printf(comm," -trdump: dump list of unfreed memory at conclusion\n");
     MPIU_printf(comm," -trmalloc: use our error checking malloc\n");
+    MPIU_printf(comm," -notrmalloc: don't use error checking malloc\n");
     MPIU_printf(comm," -optionstable: dump list of options inputted\n");
     MPIU_printf(comm," -optionsleft: dump list of unused options\n");
     MPIU_printf(comm," -optionsused: print number of unused options\n");
