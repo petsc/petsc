@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.2 1999/11/10 03:20:57 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.3 1999/11/24 21:54:59 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -121,9 +121,6 @@ int    KSPSetUp_FGMRES(KSP ksp )
                      PRECONDITIONED) without
                      making any assumptions about the solution.  
 
-    note: the input argument indicating restart that was in the gmres code 
-          was removed for fgmres because it was not being used.
-
 */
 #undef __FUNC__  
 #define __FUNC__ "FGMRESResidual"
@@ -140,8 +137,8 @@ static int FGMRESResidual( KSP ksp )
 
   /* put A*x into VEC_TEMP */
   ierr = MatMult( Amat, VEC_SOLN, VEC_TEMP ); CHKERRQ(ierr);
-  /* now put residual (-a*x + f) into vec_vv(fgmres->nprestart) */
-  ierr = VecWAXPY( &mone, VEC_TEMP, VEC_RHS, VEC_VV(fgmres->nprestart) ); CHKERRQ(ierr);
+  /* now put residual (-a*x + f) into vec_vv(0) */
+  ierr = VecWAXPY( &mone, VEC_TEMP, VEC_RHS, VEC_VV(0) ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
 }
@@ -152,7 +149,6 @@ static int FGMRESResidual( KSP ksp )
                   history if requested.
 
     input parameters:
-.        restart - 1 if restarting fgmres, 0 otherwise
 .	 fgmres  - structure containing parameters and work areas
 .	 itsSoFar- total number of iterations so far (from previous
                    cycles) - THIS IS CURRENTLY NOT USED by this function
@@ -164,14 +160,14 @@ static int FGMRESResidual( KSP ksp )
 
 		  
     Notes:
-    On entry, the value in vector VEC_VV(gmres->nprestart) should be 
+    On entry, the value in vector VEC_VV(0) should be 
     the initial residual.
 
 
  */
 #undef __FUNC__  
 #define __FUNC__ "FGMREScycle"
-int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converged )
+int FGMREScycle(int *  itcount, int itsSoFar, KSP ksp)
 {
 
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -191,9 +187,7 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
 
   /* Number of pseudo iterations since last restart is the number 
      of prestart directions */
-  loc_it = fgmres->nprestart; 
-
-  *converged = 0; /* have not converged yet! */
+  loc_it = 0;
 
   if (loc_it > 0)  {       /* we have some directions already... */
 
@@ -221,7 +215,7 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
     hapbnd = PetscMin(fgmres->haptol, hapbnd);
     if (!(tt > hapbnd)) {
       if (itcount) *itcount = 0;
-      *converged = 1;
+      ksp->reason = KSP_CONVERGED_RTOL;
       PetscFunctionReturn(0);
     }
 
@@ -244,8 +238,8 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
     *RS(0) = res_norm;
 
    /* check for the convergence - maybe the current guess is good enough */
-    *converged = (*ksp->converged)( ksp, ksp->its, res_norm, ksp->cnvP ); 
-    if (*converged) {
+    ierr = (*ksp->converged)( ksp, ksp->its, res_norm, &ksp->reason,ksp->cnvP ); CHKERRQ(ierr);
+    if (ksp->reason) {
       if (itcount) *itcount = 0;
       PetscFunctionReturn(0);
     }
@@ -274,8 +268,8 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
   /* MAIN ITERATION LOOP BEGINNING*/
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */ 
-  while (!(*converged = (*ksp->converged)( ksp, ksp->its, res_norm, ksp->cnvP ))
-           && loc_it < max_k && ksp->its < max_it) {
+  ierr = (*ksp->converged)( ksp, ksp->its, res_norm, &ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  while (!ksp->reason && loc_it < max_k && ksp->its < max_it) {
     KSPLogResidualHistory( ksp, res_norm );
     fgmres->it = (loc_it - 1);
     KSPMonitor( ksp, ksp->its, res_norm); 
@@ -347,14 +341,13 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
-      if (!(*converged = (*ksp->converged)( ksp, ksp->its, res_norm, ksp->cnvP))) {
-        /* also need to give an error here*/ 
-        *converged = 1;
+      ierr = (*ksp->converged)( ksp, ksp->its, res_norm, &ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      if (!ksp->reason) {
         SETERRQ(0,0,"You reached the happy break down, but convergence was not indicated.");
       }
       break;
     }
-
+    ierr = (*ksp->converged)( ksp, ksp->its, res_norm, &ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
   /* END OF ITERATION LOOP */
 
@@ -362,17 +355,12 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (*converged || ksp->its >= max_it) {
+  if (ksp->reason || ksp->its >= max_it) {
     KSPMonitor( ksp,  ksp->its, res_norm );
   }
 
   if (itcount) *itcount    = loc_it;
 
-  /* Didn't go in any direction, current solution is correct */
-  if (loc_it == fgmres->nprestart) {
-    *converged = 1;
-    PetscFunctionReturn(0);
-  }
 
   /*
     Down here we have to solve for the "best" coefficients of the Krylov
@@ -386,14 +374,6 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
 
   ierr = BuildFgmresSoln( RS(0), VEC_SOLN, VEC_SOLN, ksp, loc_it-1 ); CHKERRQ(ierr);
 
-  /* set the prestart counter */
-  if (fgmres->nprestart_requested > 0 && fgmres->nprestart == 0) {
-    /* 
-       Cut off to make sure number of directions is less than or equal
-       number of directions actually computed
-    */
-    fgmres->nprestart = PetscMin( loc_it-1, fgmres->nprestart_requested );
-  }
 
   PetscFunctionReturn(0);
 }
@@ -412,13 +392,12 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
 */
 #undef __FUNC__  
 #define __FUNC__ "KSPSolve_FGMRES"
+
 int KSPSolve_FGMRES(KSP ksp,int *outits )
 {
-  int       ierr;
-  int       restart;   /* 0 = non-restarted fgmres cycle */
-  int       cycle_its; /* iterations done in a call to FGMREScycle */
-  int       itcount;   /* running total of iterations, incl. those in restarts */
-  int       converged; /* indicator of convergence */
+  int        ierr;
+  int        cycle_its; /* iterations done in a call to FGMREScycle */
+  int        itcount;   /* running total of iterations, incl. those in restarts */
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -428,7 +407,6 @@ int KSPSolve_FGMRES(KSP ksp,int *outits )
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
   /* initialize */
-  restart  = 0;
   itcount  = 0;
 
 
@@ -436,26 +414,26 @@ int KSPSolve_FGMRES(KSP ksp,int *outits )
   if (!ksp->guess_zero) {
     ierr = FGMRESResidual( ksp ); CHKERRQ(ierr);
   } else { /* guess is 0 so residual is F (which is in VEC_RHS) */
-    ierr = VecCopy( VEC_RHS, VEC_VV(fgmres->nprestart) ); CHKERRQ(ierr);
+    ierr = VecCopy( VEC_RHS, VEC_VV(0) ); CHKERRQ(ierr);
   }
-  /* now the residual is in VEC_VV(fgmres->nprestart) - which is what 
+  /* now the residual is in VEC_VV(0) - which is what 
      FGMREScycle expects... */
   
-  ierr    = FGMREScycle( &cycle_its, itcount, restart, ksp, &converged ); CHKERRQ(ierr);
+  ierr    = FGMREScycle( &cycle_its, itcount, ksp); CHKERRQ(ierr);
   itcount += cycle_its;
-  while (!converged) {
-    restart  = 1;  /* now we are restarting since one cycle has been completed */
+  while (!ksp->reason) {
     ierr     = FGMRESResidual(  ksp ); CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
     /* need another check to make sure that fgmres breaks out 
        at precisely the number of iterations chosen */
-    ierr     = FGMREScycle( &cycle_its, itcount, restart, ksp, &converged );CHKERRQ(ierr);
+    ierr     = FGMREScycle( &cycle_its, itcount, ksp);CHKERRQ(ierr);
     itcount += cycle_its;  
   }
   /* mark lack of convergence with negative the number of iterations */
-  if (itcount >= ksp->max_it) itcount = -itcount;
+  if (itcount >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
-  *outits = itcount;  PetscFunctionReturn(0);
+  *outits = itcount;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -594,7 +572,7 @@ static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
 
   for (j=1; j<=it; j++) {
     tt  = *hh;
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     *hh = PetscConj(*cc) * tt + *ss * *(hh+1);
 #else
     *hh = *cc * tt + *ss * *(hh+1);
@@ -617,7 +595,7 @@ static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
   /* compute new plane rotation */
 
   if (!hapend) {
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     tt        = PetscSqrtScalar( PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1) );
 #else
     tt        = PetscSqrtScalar( *hh * *hh + *(hh+1) * *(hh+1) );
@@ -628,7 +606,7 @@ static int FGMRESUpdateHessenberg( KSP ksp, int it, int hapend, double *res )
 
     /* apply to 1) and 2) */
     *RS(it+1) = - ( *ss * *RS(it) );
-#if defined(USE_PETSC_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
     *RS(it)   = PetscConj(*cc) * *RS(it);
     *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
 #else
@@ -679,7 +657,7 @@ static int FGMRESGetNewVectors( KSP ksp, int it )
   if (it + VEC_OFFSET + nalloc >= fgmres->vecs_allocated)
       nalloc = fgmres->vecs_allocated - it - VEC_OFFSET;
   /* CHKPTRQ(nalloc); */
-  if (nalloc == 0) PetscFunctionReturn(0);
+  if (!nalloc) PetscFunctionReturn(0);
 
   fgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
@@ -728,7 +706,7 @@ int KSPBuildSolution_FGMRES( KSP ksp, Vec ptr,Vec *result )
   int       ierr;
 
   PetscFunctionBegin;
-  if (ptr == 0) {
+  if (!ptr) {
     if (!fgmres->sol_temp) {
       ierr = VecDuplicate( ksp->vec_sol, &fgmres->sol_temp ); CHKERRQ(ierr);
       PLogObjectParent( ksp, fgmres->sol_temp );
@@ -775,9 +753,6 @@ int KSPView_FGMRES(KSP ksp,Viewer viewer)
       cstr = "unknown orthogonalization";
     }
     ierr = ViewerASCIIPrintf(viewer,"  FGMRES: restart=%d, using %s\n",fgmres->max_k,cstr);CHKERRQ(ierr);
-    if (fgmres->nprestart > 0) {
-      ierr = ViewerASCIIPrintf(viewer,"  FGMRES: using prestart=%d\n",fgmres->nprestart);CHKERRQ(ierr);
-    }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -797,7 +772,6 @@ static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
   PetscFunctionBegin;
   (*PetscHelpPrintf)(ksp->comm," Options for FGMRES method:\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_restart <num>: FGMRES restart, defaults to 30\n",p);
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_prestart <num>: FGMRES prestart, defaults to 0\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_modifiedgramschmidt: use alternative orthogonalization\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_fgmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);
@@ -814,7 +788,7 @@ static int KSPPrintHelp_FGMRES(KSP ksp,char *p)
 #define __FUNC__ "KSPSetFromOptions_FGMRES"
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
-  int        ierr, restart, prestart;
+  int        ierr, restart;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -826,8 +800,6 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   if (flg) {ierr = KSPFGMRESSetOrthogonalization( ksp, KSPFGMRESUnmodifiedGramSchmidtOrthogonalization ); CHKERRQ(ierr);}
   ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_modifiedgramschmidt", &flg); CHKERRQ(ierr);
   if (flg) {ierr = KSPFGMRESSetOrthogonalization( ksp, KSPFGMRESModifiedGramSchmidtOrthogonalization ); CHKERRQ(ierr);}
-  ierr = OptionsGetInt( ksp->prefix, "-ksp_fgmres_prestart", &prestart, &flg ); CHKERRQ(ierr);
-  if (flg) { ierr = KSPFGMRESPrestartSet( ksp, prestart ); CHKERRQ(ierr); }
   ierr = OptionsHasName( ksp->prefix, "-ksp_fgmres_irorthog", &flg ); CHKERRQ(ierr);
   if (flg) {ierr = KSPFGMRESSetOrthogonalization( ksp, KSPFGMRESIROrthogonalization ); CHKERRQ(ierr);}
   
@@ -844,25 +816,8 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
 
 extern int KSPComputeExtremeSingularValues_FGMRES( KSP, double *, double * );
 extern int KSPComputeEigenvalues_FGMRES( KSP, int, double *, double *, int * );
-extern int KSPDefaultConverged_FGMRES( KSP, int, double, void* );
+extern int KSPDefaultConverged_FGMRES( KSP, int, double, KSPConvergedReason*,void* );
 
-EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPFGMRESPrestartSet_FGMRES" 
-int KSPFGMRESPrestartSet_FGMRES( KSP ksp, int pre )
-{
-  KSP_FGMRES *fgmres;
-
-  PetscFunctionBegin;
-  fgmres                      = (KSP_FGMRES *)ksp->data;
-  if (pre > fgmres->max_k-1) {
-    SETERRQ(1,1,"Prestart count is too large for current restart");
-  }
-  fgmres->nprestart_requested = pre;
-  fgmres->nprestart           = 0; /*reset this so that it will be set after the first solve*/
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -955,9 +910,6 @@ int KSPCreate_FGMRES(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFGMRESSetRestart_C",
                                      "KSPFGMRESSetRestart_FGMRES",
                                     (void*)KSPFGMRESSetRestart_FGMRES); CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFGMRESPrestartSet_C",
-                                     "KSPFGMRESPrestartSet_FGMRES",
-                                    (void*)KSPFGMRESPrestartSet_FGMRES); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",
                                     "KSPFGMRESSetModifyPC_FGMRES",
                                    (void*)KSPFGMRESSetModifyPC_FGMRES); CHKERRQ(ierr);
@@ -972,8 +924,6 @@ int KSPCreate_FGMRES(KSP ksp)
   fgmres->sol_temp            = 0;
   fgmres->max_k               = FGMRES_DEFAULT_MAXK;
   fgmres->Rsvd                = 0;
-  fgmres->nprestart           = 0;
-  fgmres->nprestart_requested = 0;
   fgmres->modifypc            = KSPFGMRESModifyPCNoChange;
 
   PetscFunctionReturn(0);
