@@ -39,7 +39,7 @@ int qmdupd(int *xadj, int *adjncy, int *nlist,
 
     /* Local variables */
     static int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    extern int qmdrch(int *, int *, int *, 
+    extern int SPARSEPACKqmdrch(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *),
 	     qmdmrg(int *, int *, int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
@@ -104,7 +104,7 @@ L100:
 	    goto L600;
 	}
 	marker[node] = 2;
-	qmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
+	SPARSEPACKqmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
 		rchset[1], &nhdsze, &nbrhd[1]);
 	deg1 = deg0;
 	if (rchsze <= 0) {

@@ -41,8 +41,8 @@
 /*                                                                */
 /*                                                                */
 #undef __FUNC__  
-#define __FUNC__ "genqmd" 
-int genqmd(int *neqns, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKgenqmd" 
+int SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *invp, int *deg, int *marker, int *
 	rchset, int *nbrhd, int *qsize, int *qlink, int *nofsub)
 {
@@ -51,9 +51,9 @@ int genqmd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     static int ndeg, irch, node, nump1, j, inode;
-    extern int qmdqt(int *, int *, int *, int *, int *, int *, int *);
+    extern int SPARSEPACKqmdqt(int *, int *, int *, int *, int *, int *, int *);
     static int ip, np, mindeg, search;
-    extern int qmdrch(int *, int *, int *, 
+    extern int SPARSEPACKqmdrch(int *, int *, int *, 
 	      int *, int *, int *, int *, int *, int *),
 	   qmdupd(int *, int *, int *, int *, int *, 
 	      int *, int *, int *, int *, int *);
@@ -124,7 +124,7 @@ L500:
     search = j;
     *nofsub += deg[node];
     marker[node] = 1;
-    qmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
+    SPARSEPACKqmdrch(&node, &xadj[1], &adjncy[1], &deg[1], &marker[1], &rchsze, &
 	    rchset[1], &nhdsze, &nbrhd[1]);
 /*          ELIMINATE ALL NODES INDISTINGUISHABLE FROM NODE.       */
 /*          THEY ARE GIVEN BY NODE, QLINK(NODE), ....              */
@@ -174,7 +174,7 @@ L700:
 	;
     }
     if (nhdsze > 0) {
-	qmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &
+	SPARSEPACKqmdqt(&node, &xadj[1], &adjncy[1], &marker[1], &rchsze, &rchset[1], &
 		nbrhd[1]);
     }
 L800:

@@ -21,8 +21,8 @@
 /*       (XLS, LS) - ARRAY PAIR FOR THE ROOTED LEVEL STRUCTURE.*/
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "rootls"
-int rootls(int *root, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKrootls"
+int SPARSEPACKrootls(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {
     /* System generated locals */

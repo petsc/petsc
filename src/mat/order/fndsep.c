@@ -33,8 +33,8 @@
 /*                                                               */
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "fndsep" 
-int fndsep(int *root, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKfndsep" 
+int SPARSEPACKfndsep(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *xls, int *ls)
 {
     /* System generated locals */
@@ -43,7 +43,7 @@ int fndsep(int *root, int *xadj, int *adjncy,
     /* Local variables */
     static int node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, 
 	    midend, midlvl;
-    extern int fnroot(int *, int *, int *, 
+    extern int SPARSEPACKfnroot(int *, int *, int *, 
 	    int *, int *, int *, int *);
     static int nbr;
 
@@ -56,7 +56,7 @@ int fndsep(int *root, int *xadj, int *adjncy,
     --adjncy;
     --xadj;
 
-    fnroot(root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &ls[1]);
+    SPARSEPACKfnroot(root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &ls[1]);
 /*       IF THE NUMBER OF LEVELS IS LESS THAN 3, RETURN */
 /*       THE WHOLE COMPONENT AS THE SEPARATOR.*/
     if (nlvl >= 3) {

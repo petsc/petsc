@@ -3,8 +3,8 @@
 #include "petsc.h"
 
 #undef __FUNC__  
-#define __FUNC__ "revrse" 
-int revrse(int *n, int *perm)
+#define __FUNC__ "SPARSEPACKrevrse" 
+int SPARSEPACKrevrse(int *n, int *perm)
 {
     /* System generated locals */
     int i__1;
@@ -54,8 +54,8 @@ int revrse(int *n, int *perm)
 /*****************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ "gennd" 
-int gennd(int *neqns, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKgennd" 
+int SPARSEPACKgennd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *xls, int *ls)
 {
     /* System generated locals */
@@ -63,7 +63,7 @@ int gennd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     static int nsep, root, i;
-    extern int fndsep(int *, int *, int *, 
+    extern int SPARSEPACKfndsep(int *, int *, int *, 
 	    int *, int *, int *, int *, int *);
     static int num;
 
@@ -90,7 +90,7 @@ L200:
 	}
 	root = i;
 /*              FIND A SEPARATOR AND NUMBER THE NODES NEXT.*/
-	fndsep(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], 
+	SPARSEPACKfndsep(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], 
 		&xls[1], &ls[1]);
 	num += nsep;
 	if (num >= *neqns) {
@@ -104,6 +104,6 @@ L300:
 /*        LAST, ROUTINE REVRSE IS CALLED TO ADJUST THE*/
 /*        ORDERING VECTOR.*/
 L400:
-    revrse(neqns, &perm[1]);
+    SPARSEPACKrevrse(neqns, &perm[1]);
     PetscFunctionReturn(0);
 }

@@ -29,8 +29,8 @@
 /*                                                              */
 /****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "fnroot" 
-int fnroot(int *root, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKfnroot" 
+int SPARSEPACKfnroot(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {
     /* System generated locals */
@@ -39,7 +39,7 @@ int fnroot(int *root, int *xadj, int *adjncy,
     /* Local variables */
     static int ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, 
 	    ccsize, nunlvl;
-    extern int rootls(int *, int *, int *, 
+    extern int SPARSEPACKrootls(int *, int *, int *, 
 	    int *, int *, int *, int *);
 /*       DETERMINE THE LEVEL STRUCTURE ROOTED AT ROOT. */
 
@@ -51,7 +51,7 @@ int fnroot(int *root, int *xadj, int *adjncy,
     --adjncy;
     --xadj;
 
-    rootls(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
+    SPARSEPACKrootls(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
     ccsize = xls[*nlvl + 1] - 1;
     if (*nlvl == 1 || *nlvl == ccsize) {
 	PetscFunctionReturn(0);
@@ -87,7 +87,7 @@ L300:
     }
 /*       AND GENERATE ITS ROOTED LEVEL STRUCTURE.*/
 L400:
-    rootls(root, &xadj[1], &adjncy[1], &mask[1], &nunlvl, &xls[1], &ls[1]);
+    SPARSEPACKrootls(root, &xadj[1], &adjncy[1], &mask[1], &nunlvl, &xls[1], &ls[1]);
     if (nunlvl <= *nlvl) {
 	PetscFunctionReturn(0);
     }

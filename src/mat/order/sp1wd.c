@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sp1wd.c,v 1.24 1997/11/03 04:45:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sp1wd.c,v 1.25 1997/12/01 01:54:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -25,7 +25,7 @@ int MatOrder_1WD( Mat mat, MatReorderingType type, IS *row, IS *col)
   ls   = xls + nrow + 1;
   xblk = ls + nrow;
   perm = xblk + nrow;
-  gen1wd( &nrow, ia, ja, mask, &nblks, xblk, perm, xls, ls );
+  SPARSEPACKgen1wd( &nrow, ia, ja, mask, &nblks, xblk, perm, xls, ls );
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
 
   for (i=0; i<nrow; i++) perm[i]--;

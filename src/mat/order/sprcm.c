@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sprcm.c,v 1.25 1997/11/03 04:45:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sprcm.c,v 1.26 1997/12/01 01:54:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -24,7 +24,7 @@ int MatOrder_RCM( Mat mat, MatReorderingType type, IS *row, IS *col)
   perm = mask + nrow;
   xls  = perm + nrow;
 
-  genrcm( &nrow, ia, ja, perm, mask, xls );
+  SPARSEPACKgenrcm( &nrow, ia, ja, perm, mask, xls );
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
 
   /* shift because Sparsepack indices start at one */

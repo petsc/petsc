@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spqmd.c,v 1.25 1997/11/03 04:45:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.26 1997/12/01 01:54:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -30,7 +30,7 @@ int MatOrder_QMD(Mat mat, MatReorderingType type, IS *row, IS *col)
   qsize  = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(qsize);
   qlink  = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(qlink);
   /* WARNING - genqmd trashes ja */    
-  genqmd( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,qlink, &nofsub );
+  SPARSEPACKgenqmd( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,qlink, &nofsub );
   ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
 
   PetscFree( deg ); PetscFree( marker ); PetscFree( rchset ); 

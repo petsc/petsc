@@ -33,8 +33,8 @@
 /*       FNROOT, RCM.*/
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "genrcm" 
-int genrcm(int *neqns, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKgenrcm" 
+int SPARSEPACKgenrcm(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *mask, int *xls)
 {
     /* System generated locals */
@@ -42,8 +42,8 @@ int genrcm(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     static int nlvl, root, i, ccsize;
-    extern int fnroot(int *, int *, int *, 
-	    int *, int *, int *, int *), rcm(int *, 
+    extern int SPARSEPACKfnroot(int *, int *, int *, 
+	    int *, int *, int *, int *), SPARSEPACKrcm(int *, 
 	    int *, int *, int *, int *, int *, int *);
     static int num;
 
@@ -72,9 +72,9 @@ int genrcm(int *neqns, int *xadj, int *adjncy,
 /*             FNROOT IS STORED STARTING AT PERM(NUM).*/
 /*             THEN RCM IS CALLED TO ORDER THE COMPONENT*/
 /*             USING ROOT AS THE STARTING NODE.*/
-	fnroot(&root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[
+	SPARSEPACKfnroot(&root, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &perm[
 		num]);
-	rcm(&root, &xadj[1], &adjncy[1], &mask[1], &perm[num], &ccsize, &xls[
+	SPARSEPACKrcm(&root, &xadj[1], &adjncy[1], &mask[1], &perm[num], &ccsize, &xls[
 		1]);
 	num += ccsize;
 	if (num > *neqns) {

@@ -27,8 +27,8 @@
 /*       FN1WD, REVRSE, ROOTLS.*/
 /****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "gen1wd" 
-int gen1wd(int *neqns, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKgen1wd" 
+int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *nblks, int *xblk, int *perm, int *
 	xls, int *ls)
 {
@@ -37,10 +37,10 @@ int gen1wd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     static int node, nsep, lnum, nlvl, root;
-    extern int fn1wd(int *, int *, int *, 
+    extern int SPARSEPACKfn1wd(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
     static int i, j, k, ccsize;
-    extern int revrse(int *, int *), rootls(
+    extern int SPARSEPACKrevrse(int *, int *), SPARSEPACKrootls(
 	    int *, int *, int *, int *, int *, int *, int *);
     static int num;
 
@@ -67,7 +67,7 @@ int gen1wd(int *neqns, int *xadj, int *adjncy,
 	}
 /*             FIND A ONE-WAY DISSECTOR FOR EACH COMPONENT.*/
 	root = i;
-	fn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &
+	SPARSEPACKfn1wd(&root, &xadj[1], &adjncy[1], &mask[1], &nsep, &perm[num + 1], &
 		nlvl, &xls[1], &ls[1]);
 	num += nsep;
 	++(*nblks);
@@ -82,7 +82,7 @@ int gen1wd(int *neqns, int *xadj, int *adjncy,
 	    if (mask[node] == 0) {
 		goto L300;
 	    }
-	    rootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &
+	    SPARSEPACKrootls(&node, &xadj[1], &adjncy[1], &mask[1], &nlvl, &xls[1], &
 		    perm[num + 1]);
 	    lnum = num + 1;
 	    num = num + xls[nlvl + 1] - 1;
@@ -106,8 +106,8 @@ L400:
 /*       ROUTINE REVRSE IS CALLED TO ADJUST THE ORDERING*/
 /*       VECTOR, AND THE BLOCK INDEX VECTOR.*/
 L500:
-    revrse(neqns, &perm[1]);
-    revrse(nblks, &xblk[1]);
+    SPARSEPACKrevrse(neqns, &perm[1]);
+    SPARSEPACKrevrse(nblks, &xblk[1]);
     xblk[*nblks + 1] = *neqns + 1;
     PetscFunctionReturn(0);
 }

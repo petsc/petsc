@@ -37,8 +37,8 @@
 /*                                                              */
 /****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "rcm"
-int rcm(int *root, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKrcm"
+int SPARSEPACKrcm(int *root, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *ccsize, int *deg)
 {
     /* System generated locals */
@@ -46,7 +46,7 @@ int rcm(int *root, int *xadj, int *adjncy,
 
     /* Local variables */
     static int node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
-    extern int degree(int *, int *, int *, 
+    extern int SPARSEPACKdegree(int *, int *, int *, 
 	    int *, int *, int *, int *);
     static int lbegin, lvlend, nbr;
 
@@ -64,7 +64,7 @@ int rcm(int *root, int *xadj, int *adjncy,
     --xadj;
 
 
-    degree(root, &xadj[1], &adjncy[1], &mask[1], &deg[1], ccsize, &perm[1]);
+    SPARSEPACKdegree(root, &xadj[1], &adjncy[1], &mask[1], &deg[1], ccsize, &perm[1]);
     mask[*root] = 0;
     if (*ccsize <= 1) {
 	PetscFunctionReturn(0);

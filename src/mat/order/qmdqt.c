@@ -23,8 +23,8 @@
 /*       ADJNCY - BECOMES THE ADJNCY OF THE QUOTIENT GRAPH.*/
 /***************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "qmdqt" 
-int qmdqt(int *root, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKqmdqt" 
+int SPARSEPACKqmdqt(int *root, int *xadj, int *adjncy, 
 	int *marker, int *rchsze, int *rchset, int *nbrhd)
 {
     /* System generated locals */

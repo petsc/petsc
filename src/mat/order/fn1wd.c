@@ -29,8 +29,8 @@
 /*       FNROOT.                                                 */
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "fn1wd" 
-int fn1wd(int *root, int *xadj, int *adjncy, 
+#define __FUNC__ "SPARSEPACKfn1wd" 
+int SPARSEPACKfn1wd(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *nlvl, int *
 	xls, int *ls)
 {
@@ -43,7 +43,7 @@ int fn1wd(int *root, int *xadj, int *adjncy,
     static int kstop, kstrt, lp1beg, lp1end;
     static double deltp1;
     static int lvlbeg, lvlend;
-    extern int fnroot(int *, int *, int *, 
+    extern int SPARSEPACKfnroot(int *, int *, int *, 
 	    int *, int *, int *, int *);
     static int nbr, lvl;
 
@@ -56,7 +56,7 @@ int fn1wd(int *root, int *xadj, int *adjncy,
     --adjncy;
     --xadj;
 
-    fnroot(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
+    SPARSEPACKfnroot(root, &xadj[1], &adjncy[1], &mask[1], nlvl, &xls[1], &ls[1]);
     fnlvl = (double) (*nlvl);
     *nsep = xls[*nlvl + 1] - 1;
     width = (double) (*nsep) / fnlvl;
