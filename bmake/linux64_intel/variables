@@ -24,7 +24,7 @@ C_CCV		   = ecc -V 2>&1| head -2
 C_FCV              = efc -V 2>&1| head -2
 C_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90 -lintrins -lpthread -ldl
 # ---------------------------- BOPT - g options ----------------------------
-G_COPTFLAGS	   = -g -use_msasm
+G_COPTFLAGS	   = -g
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
 O_COPTFLAGS	   = -O2 
@@ -40,13 +40,13 @@ CXX_FLINKER	   = ecc -Kc++ -i_dynamic
 CXX_CCV		   = ecc -Kc++ -Kc++eh -V 2>&1| head -1
 CXX_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90 -lintrins -lpthread -ldl
 # ------------------------- BOPT - g_c++ options ------------------------------
-GCXX_COPTFLAGS	   = -g -use_msasm
+GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
 OCXX_COPTFLAGS	   = -O2
 OCXX_FOPTFLAGS	   = -O2
 # -------------------------- BOPT - g_complex options ------------------------
-GCOMP_COPTFLAGS	   = -g -use_msasm
+GCOMP_COPTFLAGS	   = -g
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
 OCOMP_COPTFLAGS	   = -O2
