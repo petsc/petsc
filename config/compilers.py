@@ -437,6 +437,7 @@ class Configure(config.base.Configure):
 
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
+    self.fortranIsF90 = 0
     if self.framework.argDB.has_key('with-f90-header'):
       headerPath = os.path.abspath(self.stripquotes(self.framework.argDB['with-f90-header']))
       if not os.path.isfile(headerPath):
@@ -444,11 +445,13 @@ class Configure(config.base.Configure):
         if not os.path.isfile(headerPath):
           raise RuntimeError('Invalid F90 header: '+str(self.stripquotes(self.framework.argDB['with-f90-header'])))
       self.f90HeaderPath = headerPath
+      self.fortranIsF90 = 1
     if self.framework.argDB.has_key('with-f90-source'):
       sourcePath = os.path.abspath(self.stripquotes(self.framework.argDB['with-f90-source']))
       if not os.path.isfile(sourcePath):
         raise RuntimeError('Invalid F90 source: '+str(sourcePath))
       self.f90SourcePath = sourcePath
+      self.fortranIsF90 = 1
     return
 
   def output(self):
@@ -526,8 +529,8 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranTypeSizes)
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranPreprocessor)
-    self.executeTest(self.checkFortranLibraries)
-    self.executeTest(self.checkFortran90Interface)
+      self.executeTest(self.checkFortranLibraries)
+      self.executeTest(self.checkFortran90Interface)
     self.executeTest(self.output)
     if self.framework.compilers is None:
       self.logPrint('Setting framework compilers to this module', 2, 'compilers')
