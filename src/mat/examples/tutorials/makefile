@@ -1,15 +1,15 @@
-# $Id: makefile,v 1.10 1998/04/23 22:47:20 balay Exp bsmith $ 
+# $Id: makefile,v 1.11 1998/04/26 21:43:42 bsmith Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS 	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        = 
 LOCDIR          = src/mat/examples/tutorials/
-TESTEXAMPLES_1  = ex2.PETSc ex2.rm
+TESTEXAMPLES_1  = 
 TESTEXAMPLES_2  =
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
-TESTEXAMPLES_6  =
+TESTEXAMPLES_6  = ex2.PETSc runex2 runex2_2 ex2.rm
 TESTEXAMPLES_7  =
 TESTEXAMPLES_9  =
 BUILDEXAMPLES_1 =
@@ -39,5 +39,12 @@ runex2:
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
+
+runex2_2:
+	-@${MPIRUN} -np 2 ex2  >\
+	   ex2_2.tmp 2>&1;   \
+	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
+	   else echo "Possible problem with ex2_2, diffs above"; fi; \
+	   ${RM} -f ex2_2.tmp
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.5 1998/04/24 02:16:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.6 1998/04/28 03:37:39 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -12,23 +12,39 @@ static char help[] =
 T*/
 
 /*
-       This is a very basic, even crude example of managing an unstructured
+     Updates of this example MAY be found at 
+       http://www.mcs.anl.gov/petsc/src/mat/impls/examples/tutorials/ex2.c
+
+       This is a very basic, even crude, example of managing an unstructured
     grid in parallel.
 
     This is for a Galerkin style finite element method. 
 
     After the calls below each processor will have 
-      1) a list of elements it "owns"; for each element it will have the global 
-         (and local) numbering of the three vertices it has
-      2) a list of vertices it "owns" plus any additional ghost vertices that 
-         are contained by a local element but not owned locally. For each owned 
-         (and ghost vertex) it will have the x and y coordinates
+      1) a list of elements it "owns"; for each "owned" element it will have the global 
+         numbering of the three vertices; stored in gdata->ele;
+      2) a list of vertices it "owns". For each owned it will have the x and y 
+         coordinates; stored in gdata->vert
 
     It will not have 
       1) list of ghost elements (since they are not needed for traditional 
          Galerkin style finite element methods). For various finite volume methods
          you may need the ghost element lists, these may be generated using the 
          element neighbor information given in the file database.
+
+    In order to compute the local element stiffness and load one will need on 
+    each processor the vertex coordinates for the all the vertices on the locally 
+    "owned" elements. This could be obtained by doing the appropriate vector scatter
+    on the data stored in gdata->vert; we haven't ahd to time to demonstrate this.
+
+    Clearly writing a complete parallel unstructured grid code with PETSc is still
+    a good deal of work and requires a lot of application level coding. BUT at least
+    PETSc can manage all the nonlinear and linear solver (including matrix assembly 
+    etc) which allows the programmer to concentrate his or her efforts on managing 
+    the unstructured grid. The PETSc team is developing additional library objects
+    to help manage parallel unstructured grid computations, unfortunately we have 
+    not had time to complete those yet, so the application programmer still must
+    manage much of the parallel grid manipulation as indicated below.
 
 */
 
@@ -38,6 +54,10 @@ T*/
      petsc.h  - base PETSc routines   vec.h    - vectors
      sys.h    - system routines       mat.h    - matrices
      is.h     - index sets            viewer.h - viewers               
+
+  Include "ao.h" allows use of the AO (application ordering) commands,
+  used below for renumbering the vertex numbers after the partitioning.
+
 */
 #include "mat.h"
 #include "ao.h"
@@ -49,7 +69,7 @@ typedef struct {
   double *vert;
   int    *ia,*ja;
   IS     isnewproc;
-  int    *localvert,nlocal; /*used temporaritly stashes old global vertex number of new vertex */
+  int    *localvert,nlocal; /*used to temporarily stashes old global vertex number of new vertex */
 } GridData;
 
 /*
@@ -63,7 +83,7 @@ typedef struct {
      mlocal_ele - number of vertices on this processor
      ele  - vertices of elements on this processor
 
-     ia,ja - adjacency graph of elements
+     ia,ja - adjacency graph of elements (for partitioning)
     
   Variables on processor 0 during data reading from file:
      mmlocal_vert[i] - number of vertices on each processor
@@ -72,6 +92,21 @@ typedef struct {
      mmlocal_ele[i] - number of elements on each processor
 
      tmpia, tmpja - adjacency graph of elements for other processors
+
+  Notes:
+     The code below has a great deal of IO. This is to allow one to track 
+   the renumbering and movement of data between processors. In an actual 
+   production run IO of this type would be deactivated.
+
+     To use the ParMETIS partitioner run with the option -partitioning_type parmetis
+   otherwise it defaults to the initial element partitioning induced when the data 
+   is read in.
+
+     In order to understand the parallel performance of this type of code it is 
+   important to profile the time spent in different events in the code; running with 
+   the option -log_summary will indicate how much time is spent in the routines 
+   below. Of course, for very small problems, like the sample grid used here the
+   profiling results are meaningless.
 
 */
 
@@ -85,15 +120,33 @@ extern int DataDestroy(GridData *);
 int main(int argc,char **args)
 {
   int          ierr;
+  int          READ_EVENT,PARTITION_ELEMENT_EVENT,MOVE_ELEMENT_EVENT;
+  int          PARTITION_VERTEX_EVENT,MOVE_VERTEX_EVENT;
   GridData     gdata;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
+  PLogEventRegister(&READ_EVENT,             "Read Data       ","red");
+  PLogEventRegister(&PARTITION_ELEMENT_EVENT,"Partition elemen","blue");
+  PLogEventRegister(&MOVE_ELEMENT_EVENT,     "Move elements   ","green");
+  PLogEventRegister(&PARTITION_VERTEX_EVENT, "Partition vertic","orange");
+  PLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices   ","yellow");
+
+  PLogEventBegin(READ_EVENT,0,0,0,0);
   ierr = DataRead(&gdata); CHKERRA(ierr);
+  PLogEventEnd(READ_EVENT,0,0,0,0);
+  PLogEventBegin(PARTITION_ELEMENT_EVENT,0,0,0,0);
   ierr = DataPartitionElements(&gdata); CHKERRA(ierr);
+  PLogEventEnd(PARTITION_ELEMENT_EVENT,0,0,0,0);
+  PLogEventBegin(MOVE_ELEMENT_EVENT,0,0,0,0);
   ierr = DataMoveElements(&gdata); CHKERRA(ierr);
+  PLogEventEnd(MOVE_ELEMENT_EVENT,0,0,0,0);
+  PLogEventBegin(PARTITION_VERTEX_EVENT,0,0,0,0);
   ierr = DataPartitionVertices(&gdata); CHKERRA(ierr);
+  PLogEventEnd(PARTITION_VERTEX_EVENT,0,0,0,0);
+  PLogEventBegin(MOVE_VERTEX_EVENT,0,0,0,0);
   ierr = DataMoveVertices(&gdata);CHKERRA(ierr);
+  PLogEventEnd(MOVE_VERTEX_EVENT,0,0,0,0);
   ierr = DataDestroy(&gdata); CHKERRA(ierr);
 
   PetscFinalize();
@@ -103,7 +156,8 @@ int main(int argc,char **args)
 
 /*
      Reads in the grid data from a file; each processor is naively 
-  assigned a continuous chunk of vertex and element data.
+  assigned a continuous chunk of vertex and element data. Later the data
+  will be partitioned and moved to the appropriate processor.
 */
 int DataRead(GridData *gdata)
 {
@@ -116,12 +170,14 @@ int DataRead(GridData *gdata)
 
   PetscFunctionBegin;
   /*
-     Processor 0 opens the file, reads in data and send a portion off 
+     Processor 0 opens the file, reads in data and send a portion off to
    each other processor.
 
      Note: For a truely scalable IO portion of the code, one would store
    the grid data in a binary file and use MPI-IO commands to have each 
-   processor read in the parts that it needs.
+   processor read in the parts that it needs. However in most circumstances
+   involving up to a say a million nodes and 100 processors this approach 
+   here is fine.
   */
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -142,14 +198,18 @@ int DataRead(GridData *gdata)
 
     /* 
       allocate enough room for the first processor to keep track of how many 
-      vertices are assigned to each processor.
+      vertices are assigned to each processor. Splitting vertices equally amoung
+      all processors.
     */ 
     mmlocal_vert = (int *) PetscMalloc(size*sizeof(int));CHKPTRA(mmlocal_vert);
     for ( i=0; i<size; i++ ) {
       mmlocal_vert[i] = n_vert/size + ((n_vert % size) > i);
       printf("Processor %d assigned %d vertices\n",i,mmlocal_vert[i]);
     }
- 
+
+    /*
+       Read in vertices assigned to first processor
+    */ 
     vert = (double *) PetscMalloc(2*mmlocal_vert[0]*sizeof(double));CHKPTRA(vert);   
     printf("Vertices assigned to processor 0\n");
     for ( i=0; i<mlocal_vert; i++ ) {
@@ -157,7 +217,9 @@ int DataRead(GridData *gdata)
       printf("%d %g %g\n",cnt,vert[2*i],vert[2*i+1]);
     }
 
-    /* read in vertices for all the other processors */
+    /* 
+       Read in vertices for all the other processors 
+    */
     tmpvert = (double *) PetscMalloc(2*mmlocal_vert[0]*sizeof(double));CHKPTRA(tmpvert);
     for ( j=1; j<size; j++ ) {
       printf("Vertices assigned to processor %d\n",j);
@@ -173,12 +235,14 @@ int DataRead(GridData *gdata)
     fscanf(fd,"Number Elements = %d\n",&n_ele);
     printf("Number of grid elements %d\n",n_ele);
 
-    /* broadcast number of elements to all processors */
+    /* 
+       Broadcast number of elements to all processors
+    */
     MPI_Bcast(&n_ele,1,MPI_INT,0,PETSC_COMM_WORLD);
     mlocal_ele  = n_ele/size + ((n_ele % size) > 0);
 
     /* 
-      allocate enough room for the first processor to keep track of how many 
+      Allocate enough room for the first processor to keep track of how many 
       elements are assigned to each processor.
     */ 
     mmlocal_ele = (int *) PetscMalloc(size*sizeof(int));CHKPTRA(mmlocal_ele);
@@ -187,6 +251,9 @@ int DataRead(GridData *gdata)
       printf("Processor %d assigned %d elements\n",i,mmlocal_ele[i]);
     }
  
+    /*
+        read in element information for the first processor
+    */
     ele = (int *) PetscMalloc(3*mmlocal_ele[0]*sizeof(int));CHKPTRA(ele);   
     printf("Elements assigned to processor 0\n");
     for ( i=0; i<mlocal_ele; i++ ) {
@@ -194,7 +261,9 @@ int DataRead(GridData *gdata)
       printf("%d %d %d %d\n",cnt,ele[3*i],ele[3*i+1],ele[3*i+2]);
     }
 
-    /* read in elements for all the other processors */
+    /* 
+       Read in elements for all the other processors 
+    */
     tmpele = (int *) PetscMalloc(3*mmlocal_ele[0]*sizeof(int));CHKPTRA(tmpele);
     for ( j=1; j<size; j++ ) {
       printf("Elements assigned to processor %d\n",j);
@@ -207,7 +276,7 @@ int DataRead(GridData *gdata)
     PetscFree(tmpele);
 
     /* 
-         read in element neighbors for processor 0 
+         Read in element neighbors for processor 0 
          We don't know how many spaces in ja[] to allocate so we allocate 
        3*the number of local elements, this is the maximum it could be
     */
@@ -237,6 +306,9 @@ int DataRead(GridData *gdata)
     }
     printf("\n");
 
+    /*
+       Read in element neighbor information for all other processors
+    */
     iatmp    = (int *) PetscMalloc((mlocal_ele+1)*sizeof(int));CHKPTRA(iatmp);
     jatmp    = (int *) PetscMalloc((3*mlocal_ele+1)*sizeof(int));CHKPTRA(jatmp);
     for ( j=1; j<size; j++ ) {
@@ -378,16 +450,27 @@ int DataMoveElements(GridData *gdata)
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
-  /* determine how many elements are assigned to each processor */
+  /* 
+      Determine how many elements are assigned to each processor 
+  */
   counts = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(counts);
   ierr   = ISPartitioningCount(gdata->isnewproc,counts);CHKERRQ(ierr);
 
-  /* create a vector to contain the newly ordered element information */
+  /* 
+     Create a vector to contain the newly ordered element information 
+  */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,3*counts[rank],PETSC_DECIDE,&vele);CHKERRQ(ierr);
 
-  /* create an index set from the isnewproc index set to indicate the mapping TO */
+  /* 
+      Create an index set from the isnewproc index set to indicate the mapping TO 
+  */
   ierr = ISPartitioningToNumbering(gdata->isnewproc,&isnum);CHKERRQ(ierr);
   ierr = ISDestroy(gdata->isnewproc);
+  /* 
+      There are three data items per cell, the integer vertex numbers of its three 
+    coordinates (we convert to double to use the scatter) (one can think 
+    of the vectors of having a block size of 3 and there is one index in idx[] for each block)
+  */
   ierr = ISGetIndices(isnum,&idx);CHKERRQ(ierr);
   for ( i=0; i<gdata->mlocal_ele; i++ ) {
     idx[i] *= 3;
@@ -396,7 +479,9 @@ int DataMoveElements(GridData *gdata)
   ierr = ISRestoreIndices(isnum,&idx);CHKERRQ(ierr);
   ierr = ISDestroy(isnum);CHKERRQ(ierr);
 
-  /* create a vector to contain the old ordered element information */
+  /* 
+     Create a vector to contain the old ordered element information
+  */
   ierr = VecCreateSeq(PETSC_COMM_SELF,3*gdata->mlocal_ele,&veleold);CHKERRQ(ierr);
   ierr = VecGetArray(veleold,&array);CHKERRQ(ierr);
   for ( i=0; i<3*gdata->mlocal_ele; i++ ) {
@@ -404,7 +489,9 @@ int DataMoveElements(GridData *gdata)
   }
   ierr = VecRestoreArray(veleold,&array);CHKERRQ(ierr);
   
-  /* scatter the element vertex information to the correct processor */
+  /* 
+     Scatter the element vertex information to the correct processor
+  */
   ierr = VecScatterCreate(veleold,PETSC_NULL,vele,isscat,&vecscat);CHKERRQ(ierr);
   ierr = ISDestroy(isscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(veleold,vele,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
@@ -412,7 +499,9 @@ int DataMoveElements(GridData *gdata)
   ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
   ierr = VecDestroy(veleold);CHKERRQ(ierr);
 
-  /* put the element vertex data into a new allocation of the gdata->ele */
+  /* 
+     Put the element vertex data into a new allocation of the gdata->ele 
+  */
   PetscFree(gdata->ele);
   gdata->mlocal_ele = counts[rank];
   PetscFree(counts);
@@ -461,9 +550,6 @@ int DataMoveElements(GridData *gdata)
      This is a quick-and-dirty implementation; it should work fine for many problems,
      but will need to be replaced once profiling shows that it takes a large amount of
      time. An advantage is it requires no searching or sorting.
-
-
-
      
 */
 int DataPartitionVertices(GridData *gdata)
@@ -491,14 +577,16 @@ int DataPartitionVertices(GridData *gdata)
     nmax = n_vert;
   }
 
-  /* Receive list of marked vertices from left */
+  /* 
+     Receive list of marked vertices from left 
+  */
   if (rank) {
     ierr = MPI_Recv(mask,BTLength(n_vert),MPI_CHAR,rank-1,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
   if (rank == size-1) {
     /* last processor gets all the rest */
-    for ( i=0; i<n_ele; i++ ) {
+    for ( i=0; i<n_vert; i++ ) {
       if (!BTLookup(mask,i)) {
         nlocal++;
       }
@@ -506,8 +594,9 @@ int DataPartitionVertices(GridData *gdata)
     nmax = nlocal;
   }
 
-  /* now we know how many are local, allocated enough space for them and mark them */
-
+  /* 
+     Now we know how many are local, allocated enough space for them and mark them 
+  */
   localvert = (int *) PetscMalloc((nmax+1)*sizeof(int));CHKPTRQ(localvert);
 
   /* generate local list and fill in mask */
@@ -531,10 +620,13 @@ int DataPartitionVertices(GridData *gdata)
       }
     }
   }
-  /* send bit mask on to next processor */
+  /* 
+      Send bit mask on to next processor
+  */
   if (rank < size-1) {
     ierr = MPI_Send(mask,BTLength(n_vert),MPI_CHAR,rank+1,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
+  ierr = BTDestroy(mask);CHKERRQ(ierr);
 
   gdata->localvert = localvert;
   gdata->nlocal    = nlocal;
@@ -544,8 +636,6 @@ int DataPartitionVertices(GridData *gdata)
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = PetscIntView(nlocal,localvert,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-
-  ierr = BTDestroy(mask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -555,9 +645,12 @@ int DataPartitionVertices(GridData *gdata)
 */
 int DataMoveVertices(GridData *gdata)
 {
-  AO  ao;
-  int ierr,rank,i;
-  Vec vert,overt;
+  AO         ao;
+  int        ierr,rank,i;
+  Vec        vert,overt;
+  VecScatter vecscat;
+  IS         isscat;
+  double     *avert;
 
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -565,8 +658,7 @@ int DataMoveVertices(GridData *gdata)
   /* ---------------------------------------------------------------------
       Create a global reodering of the vertex numbers
   */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,gdata->nlocal,gdata->localvert,PETSC_NULL,&ao);
-         CHKERRQ(ierr);
+  ierr = AOCreateBasic(PETSC_COMM_WORLD,gdata->nlocal,gdata->localvert,PETSC_NULL,&ao);CHKERRQ(ierr);
 
   /*
      Change the element vertex information to the new vertex numbering
@@ -596,8 +688,38 @@ int DataMoveVertices(GridData *gdata)
   ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,2*gdata->mlocal_vert,PETSC_DECIDE,gdata->vert,
                                &overt);CHKERRQ(ierr);
 
-  ierr = VecDestroy(vert);CHKERRQ(ierr);
+  /* 
+      There are two data items per vertex, the x and y coordinates (i.e. one can think 
+    of the vectors of having a block size of 2 and there is one index in localvert[] for each block)
+  */
+  for ( i=0; i<gdata->nlocal; i++ ) gdata->localvert[i] *= 2;
+  ierr = ISCreateBlock(PETSC_COMM_WORLD,2,gdata->nlocal,gdata->localvert,&isscat);CHKERRQ(ierr);
+  PetscFree(gdata->localvert);
+
+  /* 
+      Scatter the element vertex information to the correct processor
+  */
+  ierr = VecScatterCreate(overt,isscat,vert,PETSC_NULL,&vecscat);CHKERRQ(ierr);
+  ierr = ISDestroy(isscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(overt,vert,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
+  ierr = VecScatterEnd(overt,vert,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
+
+  PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");
+  ierr = VecView(vert,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   ierr = VecDestroy(overt);CHKERRQ(ierr);
+  PetscFree(gdata->vert);
+ 
+  /*
+        Put resulting vertex information into gdata->vert array
+  */
+  gdata->vert = (double *) PetscMalloc(2*gdata->nlocal*sizeof(double));
+  ierr = VecGetArray(vert,&avert);CHKERRQ(ierr);
+  PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(double));
+  ierr = VecRestoreArray(vert,&avert);CHKERRQ(ierr);
+  gdata->mlocal_vert = gdata->nlocal;
+  ierr = VecDestroy(vert);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 
