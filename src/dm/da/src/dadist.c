@@ -91,6 +91,7 @@ int DACreateNaturalVector(DA da,Vec* g)
     }
   } else { /* create the first version of this guy */
     ierr = VecCreateMPI(da->comm,da->Nlocal,PETSC_DETERMINE,g);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(*g, da->w);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*g);CHKERRQ(ierr);
     da->natural = *g;
   }
