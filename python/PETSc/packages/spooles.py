@@ -73,7 +73,9 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild SPOOLES oldargs = '+oldargs+' new args '+args+'\n')
       try:
         self.logPrint("Compiling spooles; this may take several minutes\n", debugSection='screen')
-        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; SPOOLES_INSTALL_DIR='+installDir+'; export SPOOLES_INSTALL_DIR; make lib; cd '+installDir+'; mv ../*.a .; mkdir MPI; mkdir MPI/src; cp ../MPI/*.h MPI/.; cp ../MPI/src/*.a MPI/src/.', timeout=2500, log = self.framework.log)[0]
+        # cp spoolesDir into spoolesDir/self.arch.arch
+        #  -- can be improved by mkdir subdirectories and cp needed header files
+        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; SPOOLES_INSTALL_DIR='+installDir+'; export SPOOLES_INSTALL_DIR; rm -rf '+self.arch.arch+'; cd ..; cp -r '+spoolesDir+' '+self.arch.arch+'; cd '+spoolesDir+'; mv ../'+self.arch.arch+' '+spoolesDir+'; cd '+spoolesDir+'; cd '+self.arch.arch+'; make lib', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
       if not os.path.isdir(os.path.join(installDir,self.libdir)):
