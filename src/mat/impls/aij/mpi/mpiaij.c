@@ -4,13 +4,6 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 
-EXTERN int MatSetUpMultiply_MPIAIJ(Mat);
-EXTERN int DisAssemble_MPIAIJ(Mat);
-EXTERN int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
-EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN int MatPrintHelp_SeqAIJ(Mat);
-
 /* 
   Local utility routine that creates a mapping from the global column 
 number to the local number in the off-diagonal part of the local 
@@ -1520,17 +1513,7 @@ int MatSetUpPreallocation_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
-EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS [],int);
-EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
-EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);
-#endif
-
 #include "petscblaslapack.h"
-extern int MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_MPIAIJ"
 int MatAXPY_MPIAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str)
@@ -1572,28 +1555,28 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
        MatRestoreRow_MPIAIJ,
        MatMult_MPIAIJ,
-       MatMultAdd_MPIAIJ,
+/* 4*/ MatMultAdd_MPIAIJ,
        MatMultTranspose_MPIAIJ,
        MatMultTransposeAdd_MPIAIJ,
        0,
        0,
        0,
-       0,
+/*10*/ 0,
        0,
        0,
        MatRelax_MPIAIJ,
        MatTranspose_MPIAIJ,
-       MatGetInfo_MPIAIJ,
+/*15*/ MatGetInfo_MPIAIJ,
        MatEqual_MPIAIJ,
        MatGetDiagonal_MPIAIJ,
        MatDiagonalScale_MPIAIJ,
        MatNorm_MPIAIJ,
-       MatAssemblyBegin_MPIAIJ,
+/*20*/ MatAssemblyBegin_MPIAIJ,
        MatAssemblyEnd_MPIAIJ,
        0,
        MatSetOption_MPIAIJ,
        MatZeroEntries_MPIAIJ,
-       MatZeroRows_MPIAIJ,
+/*25*/ MatZeroRows_MPIAIJ,
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
        MatLUFactorSymbolic_MPIAIJ_TFS,
 #else
@@ -1602,52 +1585,62 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        0,
-       MatSetUpPreallocation_MPIAIJ,
+/*30*/ MatSetUpPreallocation_MPIAIJ,
        0,
        0,
        0,
        0,
-       MatDuplicate_MPIAIJ,
+/*35*/ MatDuplicate_MPIAIJ,
        0,
        0,
        0,
        0,
-       MatAXPY_MPIAIJ,
+/*40*/ MatAXPY_MPIAIJ,
        MatGetSubMatrices_MPIAIJ,
        MatIncreaseOverlap_MPIAIJ,
        MatGetValues_MPIAIJ,
        MatCopy_MPIAIJ,
-       MatPrintHelp_MPIAIJ,
+/*45*/ MatPrintHelp_MPIAIJ,
        MatScale_MPIAIJ,
        0,
        0,
        0,
-       MatGetBlockSize_MPIAIJ,
+/*50*/ MatGetBlockSize_MPIAIJ,
        0,
        0,
        0,
        0,
-       MatFDColoringCreate_MPIAIJ,
+/*55*/ MatFDColoringCreate_MPIAIJ,
        0,
        MatSetUnfactored_MPIAIJ,
        0,
        0,
-       MatGetSubMatrix_MPIAIJ,
+/*60*/ MatGetSubMatrix_MPIAIJ,
        MatDestroy_MPIAIJ,
        MatView_MPIAIJ,
        MatGetPetscMaps_Petsc,
        0,
+/*65*/ 0,
        0,
        0,
        0,
        0,
-       0,
-       0,
+/*70*/ 0,
        0,
        MatSetColoring_MPIAIJ,
        MatSetValuesAdic_MPIAIJ,
-       MatSetValuesAdifor_MPIAIJ
-};
+       MatSetValuesAdifor_MPIAIJ,
+/*75*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*80*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*85*/ MatLoad_MPIAIJ};
 
 /* ----------------------------------------------------------------------------------------*/
 
@@ -1682,11 +1675,6 @@ int MatRetrieveValues_MPIAIJ(Mat mat)
 EXTERN_C_END
 
 #include "petscpc.h"
-EXTERN_C_BEGIN
-EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
-EXTERN int MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
-EXTERN_C_END
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJ"

@@ -60,8 +60,21 @@ typedef struct {
                                    for block solve */
 } Mat_MPIRowbs;
 
-
+EXTERN int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
+EXTERN int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,MatFactorInfo*,Mat *);
+EXTERN int MatLUFactorNumeric_MPIRowbs(Mat,Mat*);
+EXTERN int MatILUFactorSymbolic_MPIRowbs(Mat,IS,IS,MatFactorInfo*,Mat *);
+EXTERN int MatSolve_MPIRowbs(Mat,Vec,Vec);
+EXTERN int MatForwardSolve_MPIRowbs(Mat,Vec,Vec);
+EXTERN int MatBackwardSolve_MPIRowbs(Mat,Vec,Vec);
+EXTERN int MatScaleSystem_MPIRowbs(Mat,Vec,Vec);
+EXTERN int MatUnScaleSystem_MPIRowbs(Mat,Vec,Vec);
+EXTERN int MatUseScaledForm_MPIRowbs(Mat,PetscTruth);
+EXTERN int MatGetSubMatrices_MPIRowbs (Mat,int,const IS[],const IS[],MatReuse,Mat **);
+EXTERN int MatGetSubMatrix_MPIRowbs (Mat,IS,IS,int,MatReuse,Mat *);
 EXTERN int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
+EXTERN int MatGetSubMatrices_MPIRowbs_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
+EXTERN int MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
 
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {(*PetscErrorPrintf)(\
         "BlockSolve95 Error Code %d\n",__BSERROR_STATUS);CHKERRQ(1);}}

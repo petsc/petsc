@@ -2,33 +2,6 @@
 
 #include "petscmat.h"
 
-EXTERN_C_BEGIN
-EXTERN int MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_SeqAIJ(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_MPIAIJ(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_SeqBDiag(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_MPIBDiag(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_SeqDense(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_MPIDense(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_SeqBAIJ(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_SeqAdj(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_MPIBAIJ(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_SeqSBAIJ(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_MPISBAIJ(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_ESI(PetscViewer,MatType,Mat*);
-#if defined(PETSC_HAVE_SUPERLU_DIST) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatLoad_SuperLU_DIST(PetscViewer,MatType,Mat*);
-#endif
-#if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatLoad_AIJMUMPS(PetscViewer,MatType,Mat*);
-EXTERN int MatLoad_SBAIJMUMPS(PetscViewer,MatType,Mat*);
-#endif
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-EXTERN int MatLoad_DSCPACK(PetscViewer,MatType,Mat*);
-#endif
-
-EXTERN_C_END
 extern PetscTruth MatLoadRegisterAllCalled;
 
 #undef __FUNCT__  
@@ -49,55 +22,8 @@ extern PetscTruth MatLoadRegisterAllCalled;
 @*/
 int MatLoadRegisterAll(char *path)
 {
-  int ierr;
-
   PetscFunctionBegin;
   MatLoadRegisterAllCalled = PETSC_TRUE;
-  ierr = MatLoadRegisterDynamic(MATSEQAIJ,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATMPIAIJ,path,"MatLoad_MPIAIJ",MatLoad_MPIAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATSEQBDIAG,path,"MatLoad_SeqBDiag",MatLoad_SeqBDiag);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATMPIBDIAG,path,"MatLoad_MPIBDiag",MatLoad_MPIBDiag);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATSEQDENSE,path,"MatLoad_SeqDense",MatLoad_SeqDense);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATMPIDENSE,path,"MatLoad_MPIDense",MatLoad_MPIDense);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATSEQBAIJ,path,"MatLoad_SeqBAIJ",MatLoad_SeqBAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATMPIBAIJ,path,"MatLoad_MPIBAIJ",MatLoad_MPIBAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATSEQSBAIJ,path,"MatLoad_SeqSBAIJ",MatLoad_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATMPISBAIJ,path,"MatLoad_MPISBAIJ",MatLoad_MPISBAIJ);CHKERRQ(ierr);
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
-  ierr = MatLoadRegisterDynamic(MATESI,path,"MatLoad_ESI",MatLoad_ESI);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATPETSCESI,path,"MatLoad_ESI",MatLoad_ESI);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
-  ierr = MatLoadRegisterDynamic(MATMPIROWBS,path,"MatLoad_MPIRowbs",MatLoad_MPIRowbs);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
-  ierr = MatLoadRegisterDynamic(MATSEQAIJSPOOLES,  path,"MatLoad_SeqAIJ",  MatLoad_SeqAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatLoad_SeqSBAIJ",MatLoad_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATMPIAIJSPOOLES,  path,"MatLoad_MPIAIJ",  MatLoad_MPIAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATMPISBAIJSPOOLES,path,"MatLoad_MPISBAIJ",MatLoad_MPISBAIJ);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
-  ierr = MatLoadRegisterDynamic(MATSUPERLU,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_SUPERLU_DIST) && !defined(PETSC_USE_SINGLE)
-  ierr = MatLoadRegisterDynamic(MATSUPERLU_DIST,path,"MatLoad_SuperLU_DIST",MatLoad_SuperLU_DIST);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_UMFPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-  ierr = MatLoadRegisterDynamic(MATUMFPACK,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
-  ierr = MatLoadRegisterDynamic(MATESSL,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-  ierr = MatLoadRegisterDynamic(MATLUSOL,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
-  ierr = MatLoadRegisterDynamic(MATAIJMUMPS,  path,"MatLoad_AIJMUMPS",  MatLoad_AIJMUMPS);CHKERRQ(ierr);
-  ierr = MatLoadRegisterDynamic(MATSBAIJMUMPS,path,"MatLoad_SBAIJMUMPS",MatLoad_SBAIJMUMPS);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-  ierr = MatLoadRegisterDynamic(MATDSCPACK,path,"MatLoad_DSCPACK",MatLoad_DSCPACK);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }  
 

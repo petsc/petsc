@@ -1453,85 +1453,93 @@ int MatSetUpPreallocation_MPIRowbs(Mat A)
 }
 
 /* -------------------------------------------------------------------*/
-EXTERN int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
-EXTERN int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,MatFactorInfo*,Mat *);
-EXTERN int MatLUFactorNumeric_MPIRowbs(Mat,Mat*);
-EXTERN int MatILUFactorSymbolic_MPIRowbs(Mat,IS,IS,MatFactorInfo*,Mat *);
-EXTERN int MatSolve_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatForwardSolve_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatBackwardSolve_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatScaleSystem_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatUnScaleSystem_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatUseScaledForm_MPIRowbs(Mat,PetscTruth);
-EXTERN int MatGetSubMatrices_MPIRowbs (Mat,int,const IS[],const IS[],MatReuse,Mat **);
-EXTERN int MatGetSubMatrix_MPIRowbs (Mat,IS,IS,int,MatReuse,Mat *);
-
 static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
        MatGetRow_MPIRowbs,
        MatRestoreRow_MPIRowbs,
        MatMult_MPIRowbs,
-       MatMultAdd_MPIRowbs,
+/* 4*/ MatMultAdd_MPIRowbs,
        MatMult_MPIRowbs,
        MatMultAdd_MPIRowbs,
        MatSolve_MPIRowbs,
        0,
        0,
+/*10*/ 0,
        0,
        0,
        0,
        0,
-       0,
-       MatGetInfo_MPIRowbs,
+/*15*/ MatGetInfo_MPIRowbs,
        0,
        MatGetDiagonal_MPIRowbs,
-       0,MatNorm_MPIRowbs,
-       MatAssemblyBegin_MPIRowbs,
+       0,
+       MatNorm_MPIRowbs,
+/*20*/ MatAssemblyBegin_MPIRowbs,
        MatAssemblyEnd_MPIRowbs,
        0,
        MatSetOption_MPIRowbs,
        MatZeroEntries_MPIRowbs,
-       MatZeroRows_MPIRowbs,
+/*25*/ MatZeroRows_MPIRowbs,
        0,
        MatLUFactorNumeric_MPIRowbs,
        0,
        MatCholeskyFactorNumeric_MPIRowbs,
-       MatSetUpPreallocation_MPIRowbs,
+/*30*/ MatSetUpPreallocation_MPIRowbs,
        MatILUFactorSymbolic_MPIRowbs,
        MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
        0,
        0,
-       0,
+/*35*/ 0,
        MatForwardSolve_MPIRowbs,
        MatBackwardSolve_MPIRowbs,
        0,
        0,
-       0,
+/*40*/ 0,
        MatGetSubMatrices_MPIRowbs,
        0,
        0,
        0,
-       MatPrintHelp_MPIRowbs,
+/*45*/ MatPrintHelp_MPIRowbs,
        MatScale_MPIRowbs,
        0,
        0,
        0,
+/*50*/ 0,
        0,
        0,
        0,
        0,
+/*55*/ 0,
        0,
        0,
        0,
        0,
-       0,
-       0,
-       MatGetSubMatrix_MPIRowbs,
+/*60*/ MatGetSubMatrix_MPIRowbs,
        MatDestroy_MPIRowbs,
        MatView_MPIRowbs,
        MatGetPetscMaps_Petsc,
        MatUseScaledForm_MPIRowbs,
-       MatScaleSystem_MPIRowbs,
-       MatUnScaleSystem_MPIRowbs};
+/*65*/ MatScaleSystem_MPIRowbs,
+       MatUnScaleSystem_MPIRowbs,
+       0,
+       0,
+       0,
+/*70*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*75*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*80*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*85*/ MatLoad_MPIRowbs
+};
 
 /* ------------------------------------------------------------------- */
 
@@ -2146,8 +2154,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,const int nnz[],Mat *newA
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-
-EXTERN int MatGetSubMatrices_MPIRowbs_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIRowbs" 

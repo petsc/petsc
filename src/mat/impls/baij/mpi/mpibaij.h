@@ -66,5 +66,6 @@ typedef struct {
 #endif
 } Mat_MPIBAIJ;
 
+EXTERN int MatLoad_MPIBAIJ(PetscViewer,MatType,Mat*);
 
 #endif

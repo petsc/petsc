@@ -6,35 +6,6 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 
-EXTERN int MatSetValues_SeqBDiag_1(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
-EXTERN int MatSetValues_SeqBDiag_N(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
-EXTERN int MatGetValues_SeqBDiag_1(Mat,int,const int [],int,const int [],PetscScalar []);
-EXTERN int MatGetValues_SeqBDiag_N(Mat,int,const int [],int,const int [],PetscScalar []);
-EXTERN int MatMult_SeqBDiag_1(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_2(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_3(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_4(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_5(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_N(Mat,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_2(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_3(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_4(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_5(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-EXTERN int MatMultTranspose_SeqBDiag_1(Mat,Vec,Vec);
-EXTERN int MatMultTranspose_SeqBDiag_N(Mat,Vec,Vec);
-EXTERN int MatMultTransposeAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
-EXTERN int MatMultTransposeAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-EXTERN int MatRelax_SeqBDiag_N(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
-EXTERN int MatRelax_SeqBDiag_1(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
-EXTERN int MatView_SeqBDiag(Mat,PetscViewer);
-EXTERN int MatGetInfo_SeqBDiag(Mat,MatInfoType,MatInfo*);
-EXTERN int MatGetRow_SeqBDiag(Mat,int,int *,int **,PetscScalar **);
-EXTERN int MatRestoreRow_SeqBDiag(Mat,int,int *,int **,PetscScalar **);
-EXTERN int MatTranspose_SeqBDiag(Mat,Mat *);
-EXTERN int MatNorm_SeqBDiag(Mat,NormType,PetscReal *);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqBDiag"
 int MatDestroy_SeqBDiag(Mat A)
@@ -404,17 +375,6 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 }
 
 static int MatDuplicate_SeqBDiag(Mat,MatDuplicateOption,Mat *);
-EXTERN int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatFactorInfo*,Mat*);
-EXTERN int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatFactorInfo*,Mat*);
-EXTERN int MatILUFactor_SeqBDiag(Mat,IS,IS,MatFactorInfo*);
-EXTERN int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
-EXTERN int MatLUFactorNumeric_SeqBDiag_1(Mat,Mat*);
-EXTERN int MatSolve_SeqBDiag_1(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBDiag_2(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBDiag_3(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBDiag_4(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBDiag_5(Mat,Vec,Vec);
-EXTERN int MatSolve_SeqBDiag_N(Mat,Vec,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_SeqBDiag"
@@ -432,66 +392,89 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        MatGetRow_SeqBDiag,
        MatRestoreRow_SeqBDiag,
        MatMult_SeqBDiag_N,
-       MatMultAdd_SeqBDiag_N,
+/* 4*/ MatMultAdd_SeqBDiag_N,
        MatMultTranspose_SeqBDiag_N,
        MatMultTransposeAdd_SeqBDiag_N,
        MatSolve_SeqBDiag_N,
        0,
        0,
-       0,
+/*10*/ 0,
        0,
        0,
        MatRelax_SeqBDiag_N,
        MatTranspose_SeqBDiag,
-       MatGetInfo_SeqBDiag,
+/*15*/ MatGetInfo_SeqBDiag,
        0,
        MatGetDiagonal_SeqBDiag_N,
        MatDiagonalScale_SeqBDiag,
        MatNorm_SeqBDiag,
-       0,
+/*20*/ 0,
        MatAssemblyEnd_SeqBDiag,
        0,
        MatSetOption_SeqBDiag,
        MatZeroEntries_SeqBDiag,
-       MatZeroRows_SeqBDiag,
+/*25*/ MatZeroRows_SeqBDiag,
        0,
        MatLUFactorNumeric_SeqBDiag_N,
        0,
        0,
-       MatSetUpPreallocation_SeqBDiag,
+/*30*/ MatSetUpPreallocation_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag,
        0,
        0,
        0,
-       MatDuplicate_SeqBDiag,
+/*35*/ MatDuplicate_SeqBDiag,
        0,
        0,
        MatILUFactor_SeqBDiag,
        0,
-       0,
+/*40*/ 0,
        MatGetSubMatrices_SeqBDiag,
        0,
        MatGetValues_SeqBDiag_N,
        0,
-       MatPrintHelp_SeqBDiag,
+/*45*/ MatPrintHelp_SeqBDiag,
        MatScale_SeqBDiag,
        0,
        0,
        0,
-       MatGetBlockSize_SeqBDiag,
+/*50*/ MatGetBlockSize_SeqBDiag,
        0,
        0,
        0,
        0,
+/*55*/ 0,
        0,
        0,
        0,
        0,
-       0,
-       0,
+/*60*/ 0,
        MatDestroy_SeqBDiag,
        MatView_SeqBDiag,
-       MatGetPetscMaps_Petsc};
+       MatGetPetscMaps_Petsc,
+       0,
+/*65*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*70*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*75*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*80*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*85*/ MatLoad_SeqBDiag
+};
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBDiagSetPreallocation"

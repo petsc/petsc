@@ -7,30 +7,6 @@
 #include "src/inline/ilu.h"
 #include "petscsys.h"
 
-EXTERN int MatSetValues_SeqBDiag_1(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
-EXTERN int MatSetValues_SeqBDiag_N(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
-EXTERN int MatGetValues_SeqBDiag_1(Mat,int,int *,int,int *,PetscScalar *);
-EXTERN int MatGetValues_SeqBDiag_N(Mat,int,int *,int,int *,PetscScalar *);
-EXTERN int MatMult_SeqBDiag_1(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_2(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_3(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_4(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_5(Mat,Vec,Vec);
-EXTERN int MatMult_SeqBDiag_N(Mat,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_2(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_3(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_4(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_5(Mat,Vec,Vec,Vec);
-EXTERN int MatMultAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-EXTERN int MatMultTranspose_SeqBDiag_1(Mat,Vec,Vec);
-EXTERN int MatMultTranspose_SeqBDiag_N(Mat,Vec,Vec);
-EXTERN int MatMultTransposeAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
-EXTERN int MatMultTransposeAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-EXTERN int MatRelax_SeqBDiag_N(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
-EXTERN int MatRelax_SeqBDiag_1(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo_SeqBDiag"
 int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)

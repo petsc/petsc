@@ -142,5 +142,6 @@ EXTERN int MatMultAdd_SeqBAIJ_5(Mat,Vec,Vec,Vec);
 EXTERN int MatMultAdd_SeqBAIJ_6(Mat,Vec,Vec,Vec);
 EXTERN int MatMultAdd_SeqBAIJ_7(Mat,Vec,Vec,Vec);
 EXTERN int MatMultAdd_SeqBAIJ_N(Mat,Vec,Vec,Vec);
+EXTERN int MatLoad_SeqBAIJ(PetscViewer,MatType,Mat*);
 
 #endif

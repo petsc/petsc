@@ -54,3 +54,7 @@ typedef struct {
   PetscTruth    roworiented;            /* if true, row oriented input (default) */
   FactorCtx     *factor;                /* factorization context */
 } Mat_MPIDense;
+
+EXTERN int MatLoad_MPIDense(PetscViewer,MatType,Mat*);
+EXTERN int MatSetUpMultiply_MPIDense(Mat);
+EXTERN int MatGetSubMatrices_MPIDense(Mat,int,const IS[],const IS[],MatReuse,Mat *[]);

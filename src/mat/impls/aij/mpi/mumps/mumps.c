@@ -712,26 +712,6 @@ int MatCreate_AIJMUMPS(Mat A) {
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_AIJMUMPS"
-int MatLoad_AIJMUMPS(PetscViewer viewer,MatType type,Mat *A) {
-  int ierr,size,(*r)(PetscViewer,MatType,Mat*);
-  MPI_Comm comm;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = PetscFListFind(comm,MatLoadList,MATSEQAIJ,(void(**)(void))&r);CHKERRQ(ierr);
-  } else {
-    ierr = PetscFListFind(comm,MatLoadList,MATMPIAIJ,(void(**)(void))&r);CHKERRQ(ierr);
-  }
-  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SBAIJMUMPS"
 int MatAssemblyEnd_SBAIJMUMPS(Mat A,MatAssemblyType mode) {
@@ -868,26 +848,6 @@ int MatCreate_SBAIJMUMPS(Mat A) {
     ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   }
   ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_SBAIJMUMPS"
-int MatLoad_SBAIJMUMPS(PetscViewer viewer,MatType type,Mat *A) {
-  int ierr,size,(*r)(PetscViewer,MatType,Mat*);
-  MPI_Comm comm;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = PetscFListFind(comm,MatLoadList,MATSEQSBAIJ,(void(**)(void))&r);CHKERRQ(ierr);
-  } else {
-    ierr = PetscFListFind(comm,MatLoadList,MATMPISBAIJ,(void(**)(void))&r);CHKERRQ(ierr);
-  }
-  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

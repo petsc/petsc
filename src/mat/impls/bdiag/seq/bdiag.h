@@ -35,9 +35,45 @@ typedef struct {
 } Mat_SeqBDiag;
 
 EXTERN int MatNorm_SeqBDiag_Columns(Mat,PetscReal*,int);
+EXTERN int MatMult_SeqBDiag_1(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_2(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_3(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_4(Mat,Vec,Vec);
+EXTERN int MatMult_SeqBDiag_5(Mat,Vec,Vec);
 EXTERN int MatMult_SeqBDiag_N(Mat A,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_2(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_3(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_4(Mat,Vec,Vec,Vec);
+EXTERN int MatMultAdd_SeqBDiag_5(Mat,Vec,Vec,Vec);
 EXTERN int MatMultAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
+EXTERN int MatMultTranspose_SeqBDiag_1(Mat,Vec,Vec);
 EXTERN int MatMultTranspose_SeqBDiag_N(Mat A,Vec,Vec);
+EXTERN int MatMultTransposeAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
 EXTERN int MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
+EXTERN int MatSetValues_SeqBDiag_1(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+EXTERN int MatSetValues_SeqBDiag_N(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+EXTERN int MatGetValues_SeqBDiag_1(Mat,int,const int [],int,const int [],PetscScalar []);
+EXTERN int MatGetValues_SeqBDiag_N(Mat,int,const int [],int,const int [],PetscScalar []);
+EXTERN int MatRelax_SeqBDiag_1(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
+EXTERN int MatRelax_SeqBDiag_N(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
+EXTERN int MatView_SeqBDiag(Mat,PetscViewer);
+EXTERN int MatGetInfo_SeqBDiag(Mat,MatInfoType,MatInfo*);
+EXTERN int MatGetRow_SeqBDiag(Mat,int,int *,int **,PetscScalar **);
+EXTERN int MatRestoreRow_SeqBDiag(Mat,int,int *,int **,PetscScalar **);
+EXTERN int MatTranspose_SeqBDiag(Mat,Mat *);
+EXTERN int MatNorm_SeqBDiag(Mat,NormType,PetscReal *);
+EXTERN int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatILUFactor_SeqBDiag(Mat,IS,IS,MatFactorInfo*);
+EXTERN int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
+EXTERN int MatLUFactorNumeric_SeqBDiag_1(Mat,Mat*);
+EXTERN int MatSolve_SeqBDiag_1(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBDiag_2(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBDiag_3(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBDiag_4(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBDiag_5(Mat,Vec,Vec);
+EXTERN int MatSolve_SeqBDiag_N(Mat,Vec,Vec);
+EXTERN int MatLoad_SeqBDiag(PetscViewer,MatType,Mat*);
 
 #endif

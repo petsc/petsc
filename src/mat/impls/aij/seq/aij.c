@@ -10,9 +10,6 @@
 #include "src/inline/dot.h"
 #include "petscbt.h"
 
-
-EXTERN int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqAIJ"
 int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
@@ -587,7 +584,6 @@ int MatView_SeqAIJ(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJ"
 int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
@@ -1225,14 +1221,6 @@ int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
-EXTERN int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
-EXTERN int MatLUFactor_SeqAIJ(Mat,IS,IS,MatFactorInfo*);
-EXTERN int MatSolve_SeqAIJ(Mat,Vec,Vec);
-EXTERN int MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
-EXTERN int MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqAIJ"
 int MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
@@ -1825,9 +1813,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN int MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
-EXTERN int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN int MatILUDTFactor_SeqAIJ(Mat,MatFactorInfo*,IS,IS,Mat*);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatCopy_SeqAIJ"
 int MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
@@ -2062,78 +2048,88 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,
        MatRestoreRow_SeqAIJ,
        MatMult_SeqAIJ,
-       MatMultAdd_SeqAIJ,
+/* 4*/ MatMultAdd_SeqAIJ,
        MatMultTranspose_SeqAIJ,
        MatMultTransposeAdd_SeqAIJ,
        MatSolve_SeqAIJ,
        MatSolveAdd_SeqAIJ,
        MatSolveTranspose_SeqAIJ,
-       MatSolveTransposeAdd_SeqAIJ,
+/*10*/ MatSolveTransposeAdd_SeqAIJ,
        MatLUFactor_SeqAIJ,
        0,
        MatRelax_SeqAIJ,
        MatTranspose_SeqAIJ,
-       MatGetInfo_SeqAIJ,
+/*15*/ MatGetInfo_SeqAIJ,
        MatEqual_SeqAIJ,
        MatGetDiagonal_SeqAIJ,
        MatDiagonalScale_SeqAIJ,
        MatNorm_SeqAIJ,
-       0,
+/*20*/ 0,
        MatAssemblyEnd_SeqAIJ,
        MatCompress_SeqAIJ,
        MatSetOption_SeqAIJ,
        MatZeroEntries_SeqAIJ,
-       MatZeroRows_SeqAIJ,
+/*25*/ MatZeroRows_SeqAIJ,
        MatLUFactorSymbolic_SeqAIJ,
        MatLUFactorNumeric_SeqAIJ,
        MatCholeskyFactorSymbolic_SeqAIJ,
        MatCholeskyFactorNumeric_SeqAIJ,
-       MatSetUpPreallocation_SeqAIJ,
+/*30*/ MatSetUpPreallocation_SeqAIJ,
        MatILUFactorSymbolic_SeqAIJ,
        MatICCFactorSymbolic_SeqAIJ,
        MatGetArray_SeqAIJ,
        MatRestoreArray_SeqAIJ,
-       MatDuplicate_SeqAIJ,
+/*35*/ MatDuplicate_SeqAIJ,
        0,
        0,
        MatILUFactor_SeqAIJ,
        0,
-       MatAXPY_SeqAIJ,
+/*40*/ MatAXPY_SeqAIJ,
        MatGetSubMatrices_SeqAIJ,
        MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,
        MatCopy_SeqAIJ,
-       MatPrintHelp_SeqAIJ,
+/*45*/ MatPrintHelp_SeqAIJ,
        MatScale_SeqAIJ,
        0,
        0,
        MatILUDTFactor_SeqAIJ,
-       MatGetBlockSize_SeqAIJ,
+/*50*/ MatGetBlockSize_SeqAIJ,
        MatGetRowIJ_SeqAIJ,
        MatRestoreRowIJ_SeqAIJ,
        MatGetColumnIJ_SeqAIJ,
        MatRestoreColumnIJ_SeqAIJ,
-       MatFDColoringCreate_SeqAIJ,
+/*55*/ MatFDColoringCreate_SeqAIJ,
        0,
        0,
        MatPermute_SeqAIJ,
        0,
-       0,
+/*60*/ 0,
        MatDestroy_SeqAIJ,
        MatView_SeqAIJ,
        MatGetPetscMaps_Petsc,
        0,
+/*65*/ 0,
        0,
        0,
        0,
        0,
-       0,
-       0,
+/*70*/ 0,
        0,
        MatSetColoring_SeqAIJ,
        MatSetValuesAdic_SeqAIJ,
        MatSetValuesAdifor_SeqAIJ,
-       MatFDColoringApply_SeqAIJ};
+/*75*/ MatFDColoringApply_SeqAIJ,
+       0,
+       0,
+       0,
+       0,
+/*80*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*85*/ MatLoad_SeqAIJ};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -2610,16 +2606,6 @@ int MatSeqAIJSetPreallocation_SeqAIJ(Mat B,int nz,int *nnz)
   B->info.nz_unneeded  = (double)b->maxnz;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
-EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
-
-EXTERN_C_BEGIN
-EXTERN int MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,Mat*);
-EXTERN int MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,Mat*);
-EXTERN int MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
-EXTERN int MatAdjustForInodes_SeqAIJ(Mat,IS*,IS*);
-EXTERN int MatSeqAIJGetInodeSizes_SeqAIJ(Mat,int*,int*[],int*);
 EXTERN_C_END
 
 /*MC

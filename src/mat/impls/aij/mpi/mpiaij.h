@@ -47,6 +47,27 @@ typedef struct {
 EXTERN int MatSetColoring_MPIAIJ(Mat,ISColoring);
 EXTERN int MatSetValuesAdic_MPIAIJ(Mat,void*);
 EXTERN int MatSetValuesAdifor_MPIAIJ(Mat,int,void*);
+EXTERN int MatSetUpMultiply_MPIAIJ(Mat);
+EXTERN int DisAssemble_MPIAIJ(Mat);
+EXTERN int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN int MatPrintHelp_SeqAIJ(Mat);
+EXTERN int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
+EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS [],int);
+EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
+EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
+EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
+EXTERN int MatLoad_MPIAIJ(PetscViewer,MatType,Mat*);
+EXTERN int MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
 
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);
+#endif
+
+EXTERN_C_BEGIN
+EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
+EXTERN int MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
+EXTERN_C_END
 
 #endif

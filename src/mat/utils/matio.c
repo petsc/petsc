@@ -146,6 +146,7 @@ and PetscWriteBinary() to see how this may be done.
  @*/  
 int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
 {
+  Mat         factory;
   int         ierr;
   PetscTruth  isbinary,flg;
   MPI_Comm    comm;
@@ -160,10 +161,6 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
 #endif
 
   *newmat = 0;
-
-  if (!MatLoadRegisterAllCalled) {
-    ierr = MatLoadRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
 
   ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
@@ -181,8 +178,15 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   }
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   if (!outtype) outtype = MATMPIAIJ;
-  ierr =  PetscFListFind(comm,MatLoadList,outtype,(void(**)(void))&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);
+  
+  ierr = MatCreate(comm,0,0,0,0,&factory);CHKERRQ(ierr);
+  ierr = MatSetType(factory,outtype);CHKERRQ(ierr);
+  r = factory->ops->load;
+  ierr = MatDestroy(factory);
+  if (!r) {
+    ierr =  PetscFListFind(comm,MatLoadList,outtype,(void(**)(void))&r);CHKERRQ(ierr);
+    if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);
+  }
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(viewer,outtype,newmat);CHKERRQ(ierr);

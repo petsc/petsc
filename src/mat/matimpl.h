@@ -96,11 +96,12 @@ struct _MatOps {
             (*multconstrained)(Mat,Vec,Vec),
             (*multtransposeconstrained)(Mat,Vec,Vec),
             (*ilufactorsymbolicconstrained)(Mat,IS,IS,double,int,int,Mat *),
-            (*serialize)(MPI_Comm, Mat *, PetscViewer, PetscTruth),
-/*80*/      (*permutesparsify)(Mat, int, double, double, IS, IS, Mat *),
+/*80*/      (*serialize)(MPI_Comm, Mat *, PetscViewer, PetscTruth),
+            (*permutesparsify)(Mat, int, double, double, IS, IS, Mat *),
             (*mults)(Mat, Vecs, Vecs),
             (*solves)(Mat, Vecs, Vecs),
-            (*getinertia)(Mat,int*,int*,int*);
+            (*getinertia)(Mat,int*,int*,int*),
+/*85*/      (*load)(PetscViewer,MatType,Mat*);
 };
 
 /*

@@ -718,22 +718,3 @@ int MatCreate_SuperLU_DIST(Mat A) {
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_SuperLU_DIST"
-int MatLoad_SuperLU_DIST(PetscViewer viewer,MatType type,Mat *A) {
-  int      ierr,size,(*r)(PetscViewer,MatType,Mat*);
-  MPI_Comm comm;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = PetscFListFind(comm,MatLoadList,MATSEQAIJ,(void(**)(void))&r);CHKERRQ(ierr);
-  } else {
-    ierr = PetscFListFind(comm,MatLoadList,MATMPIAIJ,(void(**)(void))&r);CHKERRQ(ierr);
-  }
-  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END

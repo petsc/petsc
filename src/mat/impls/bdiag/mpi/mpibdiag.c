@@ -87,7 +87,6 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   PetscLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %d entries,uses %d mallocs.\n",nstash,reallocs);
   PetscFunctionReturn(0);
 }
-EXTERN int MatSetUpMultiply_MPIBDiag(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_MPIBDiag"
@@ -681,7 +680,6 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatPrintHelp_SeqBDiag(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatPrintHelp_MPIBDiag"
 int MatPrintHelp_MPIBDiag(Mat A)
@@ -696,7 +694,6 @@ int MatPrintHelp_MPIBDiag(Mat A)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatScale_SeqBDiag(const PetscScalar*,Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIBDiag"
 int MatScale_MPIBDiag(const PetscScalar *alpha,Mat A)
@@ -726,65 +723,89 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        MatGetRow_MPIBDiag,
        MatRestoreRow_MPIBDiag,
        MatMult_MPIBDiag,
-       MatMultAdd_MPIBDiag,
+/* 4*/ MatMultAdd_MPIBDiag,
        MatMultTranspose_MPIBDiag,
        MatMultTransposeAdd_MPIBDiag,
        0,
        0,
        0,
+/*10*/ 0,
        0,
        0,
        0,
        0,
+/*15*/ MatGetInfo_MPIBDiag,
        0,
-       MatGetInfo_MPIBDiag,0,
        MatGetDiagonal_MPIBDiag,
        0,
        MatNorm_MPIBDiag,
-       MatAssemblyBegin_MPIBDiag,
+/*20*/ MatAssemblyBegin_MPIBDiag,
        MatAssemblyEnd_MPIBDiag,
        0,
        MatSetOption_MPIBDiag,
        MatZeroEntries_MPIBDiag,
-       MatZeroRows_MPIBDiag,
+/*25*/ MatZeroRows_MPIBDiag,
        0,
        0,
        0,
        0,
-       MatSetUpPreallocation_MPIBDiag,
+/*30*/ MatSetUpPreallocation_MPIBDiag,
        0,
        0,
        0,
        0,
+/*35*/ 0,
        0,
        0,
        0,
        0,
-       0,
-       0,
+/*40*/ 0,
        0,
        0,
        MatGetValues_MPIBDiag,
        0,
-       MatPrintHelp_MPIBDiag,
+/*45*/ MatPrintHelp_MPIBDiag,
        MatScale_MPIBDiag,
        0,
        0,
        0,
-       MatGetBlockSize_MPIBDiag,
+/*50*/ MatGetBlockSize_MPIBDiag,
        0,
        0,
        0,
        0,
+/*55*/ 0,
        0,
        0,
        0,
        0,
-       0,
-       0,
+/*60*/ 0,
        MatDestroy_MPIBDiag,
        MatView_MPIBDiag,
-       MatGetPetscMaps_Petsc};
+       MatGetPetscMaps_Petsc,
+       0,
+/*65*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*70*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*75*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*80*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*85*/ MatLoad_MPIBDiag
+};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
