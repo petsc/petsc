@@ -47,6 +47,9 @@ etags:
 	etags -a -f TAGS docs/tex/manual.tex src/sys/error/*.c
 	etags -a -f TAGS include/*.h pinclude/*.h
 	etags -a -f TAGS src/*/impls/*.c src/sys/*.c
+	etags -a -f TAGS makefile src/*/src/makefile src/makefile 
+	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
+	etags -a -f TAGS bmake/common 
 	chmod g+w TAGS
 
 runexamples:
