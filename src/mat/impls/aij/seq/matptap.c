@@ -80,19 +80,18 @@ EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 {
   PetscErrorCode       ierr;
-  Mat_PtAPMPI          *ptap; 
+  Mat_MatMatMultMPI    *ptap; 
   PetscObjectContainer container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"MatPtAPMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
     ierr  = PetscObjectContainerGetPointer(container,(void **)&ptap);CHKERRQ(ierr); 
-
-    ierr = MatDestroyMatrices(1,&ptap->ploc);CHKERRQ(ierr);
-    ierr = MatDestroy(ptap->P_oth);CHKERRQ(ierr);
+    ierr = MatDestroy(ptap->B_loc);CHKERRQ(ierr);
+    ierr = MatDestroy(ptap->B_oth);CHKERRQ(ierr);
     
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)A,"MatPtApMPI",0);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)A,"MatPtAPMPI",0);CHKERRQ(ierr);
   }
   ierr = PetscFree(ptap);CHKERRQ(ierr);
 
@@ -105,38 +104,27 @@ PetscErrorCode MatDestroy_MPIAIJ_PtAP(Mat A)
 PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode       ierr;
-  Mat                  P_loc,P_oth,*ploc;
-  PetscInt             prstart,low;
-  IS                   isrow,iscol;
-  Mat_PtAPMPI          *ptap;
+  Mat_MatMatMultMPI    *ptap;
   PetscObjectContainer container;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){ 
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
+    ierr = PetscNew(Mat_MatMatMultMPI,&ptap);CHKERRQ(ierr);
+
     /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-    ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&P_oth);CHKERRQ(ierr);
+    ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
   
     /* get P_loc by taking all local rows of P */
-    ierr = MatGetOwnershipRange(P,&low,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = ISCreateStride(PETSC_COMM_SELF,P->m,low,1,&isrow);CHKERRQ(ierr); 
-    ierr = ISCreateStride(PETSC_COMM_SELF,P->N,0,1,&iscol);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(P,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&ploc);CHKERRQ(ierr);
-    P_loc = ploc[0];
-    ierr = ISDestroy(isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(iscol);CHKERRQ(ierr);
+    ierr = MatGetLocalMat(P,scall,&ptap->B_loc);CHKERRQ(ierr);
 
     /* attach the supporting struct to P for reuse */
-    ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
-    ptap->ploc    = ploc;
-    ptap->P_oth   = P_oth;
-    ptap->prstart = prstart;
     P->ops->destroy  = MatDestroy_MPIAIJ_PtAP;
     ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscObjectContainerSetPointer(container,ptap);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)P,"MatPtAPMPI",(PetscObject)container);CHKERRQ(ierr);
   
-    /* now, compute symbolic product */
+    /* now, compute symbolic local P^T*A*P */
     ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ(A,P,fill,C);CHKERRQ(ierr);/* numeric product is computed as well */
     ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
   } else if (scall == MAT_REUSE_MATRIX){
@@ -149,20 +137,17 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     
     /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
     /* improve! */
-    ierr = MatDestroy(ptap->P_oth);CHKERRQ(ierr);
-    ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&ptap->P_oth);CHKERRQ(ierr);
+    ierr = MatDestroy(ptap->B_oth);CHKERRQ(ierr);
+    ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&ptap->brstart,&ptap->B_oth);CHKERRQ(ierr);
   
     /* get P_loc by taking all local rows of P */
-    ierr = MatGetOwnershipRange(P,&low,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = ISCreateStride(PETSC_COMM_SELF,P->m,low,1,&isrow);CHKERRQ(ierr); 
-    ierr = ISCreateStride(PETSC_COMM_SELF,P->N,0,1,&iscol);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(P,1,&isrow,&iscol,MAT_REUSE_MATRIX,&ptap->ploc);CHKERRQ(ierr);
-    ierr = ISDestroy(isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(iscol);CHKERRQ(ierr);
+    ierr = MatDestroy(ptap->B_loc);CHKERRQ(ierr); /* improve! */
+    ierr = MatGetLocalMat(P,scall,&ptap->B_loc);CHKERRQ(ierr);
+
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",scall);
   }
-  /* now, compute numeric product */
+  /* now, compute numeric local P^T*A*P */
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
   ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ(A,P,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
@@ -176,7 +161,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode       ierr;
   Mat                  C_seq;
-  Mat_PtAPMPI          *ptap;
+  Mat_MatMatMultMPI    *ptap;
   PetscObjectContainer container;
 
   PetscFunctionBegin;
@@ -188,7 +173,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
   } 
   /* compute C_seq = P_loc^T * A_loc * P_seq */
-  ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_Local(A,ptap->ploc[0],ptap->P_oth,ptap->prstart,fill,&C_seq);CHKERRQ(ierr);
+  ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ_Local(A,ptap->B_loc,ptap->B_oth,ptap->brstart,fill,&C_seq);CHKERRQ(ierr);
   
   /* add C_seq into mpi C */
   ierr = MatMerge_SeqsToMPISymbolic(A->comm,C_seq,P->n,P->n,C);CHKERRQ(ierr);
@@ -202,7 +187,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
-  Mat_PtAPMPI          *ptap;
+  Mat_MatMatMultMPI    *ptap;
   PetscObjectContainer cont_merge,cont_ptap;
 
   PetscFunctionBegin;
@@ -218,7 +203,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
   } 
-  ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ_Local(A,ptap->ploc[0],ptap->P_oth,ptap->prstart,merge->C_seq);CHKERRQ(ierr);
+  ierr = MatPtAPNumeric_MPIAIJ_MPIAIJ_Local(A,ptap->B_loc,ptap->B_oth,ptap->brstart,merge->C_seq);CHKERRQ(ierr);
   ierr = MatMerge_SeqsToMPINumeric(merge->C_seq,C);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }

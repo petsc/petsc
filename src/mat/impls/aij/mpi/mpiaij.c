@@ -3289,19 +3289,17 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   ierr = PetscLogEventEnd(logkey_seqstompi,seqmat,0,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
-
 static PetscEvent logkey_getlocalmat = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMat"
 /*@C
-     MatGetLocalMat - Creates a SeqAIJ matrix by taking all its local rows and NON-ZERO columns
+     MatGetLocalMat - Creates a SeqAIJ matrix by taking all its local rows
 
-    Collective on Mat
+    Not Collective
 
    Input Parameters:
 +    A - the matrix 
-.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--    row, col - index sets of rows and columns to extract (or PETSC_NULL)  
+.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX 
 
    Output Parameter:
 .    A_loc - the local sequential matrix generated
@@ -3309,12 +3307,12 @@ static PetscEvent logkey_getlocalmat = 0;
     Level: developer
 
 @*/
-PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
+PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc) 
 {
-  Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
+  /* Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data; */
   PetscErrorCode    ierr;
-  PetscInt          i,start,end,ncols,nzA,nzB,*cmap,imark,*idx;
-  IS                isrowa,iscola;
+  PetscInt          low;
+  IS                isrow,iscol;
   Mat               *aloc;
 
   PetscFunctionBegin;
@@ -3322,6 +3320,17 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
     ierr = PetscLogEventRegister(&logkey_getlocalmat,"MatGetLocalMat",MAT_COOKIE);
   }
   ierr = PetscLogEventBegin(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
+
+  /* get A_loc by taking all local rows of A */
+  ierr = MatGetOwnershipRange(A,&low,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = ISCreateStride(PETSC_COMM_SELF,A->m,low,1,&isrow);CHKERRQ(ierr); 
+  ierr = ISCreateStride(PETSC_COMM_SELF,A->N,0,1,&iscol);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&aloc);CHKERRQ(ierr);
+  ierr = ISDestroy(isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(iscol);CHKERRQ(ierr);
+  *A_loc = aloc[0];
+  ierr = PetscFree(aloc);CHKERRQ(ierr);
+#ifdef RM
   if (!row){
     start = a->rstart; end = a->rend;
     ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&isrowa);CHKERRQ(ierr); 
@@ -3360,7 +3369,82 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
   if (!col){ 
     ierr = ISDestroy(iscola);CHKERRQ(ierr);
   } 
+#endif
   ierr = PetscLogEventEnd(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscEvent logkey_getlocalmatcondensed = 0;
+#undef __FUNCT__
+#define __FUNCT__ "MatGetLocalMatCondensed"
+/*@C
+     MatGetLocalMatCondensed - Creates a SeqAIJ matrix by taking all its local rows and NON-ZERO columns
+
+    Not Collective
+
+   Input Parameters:
++    A - the matrix 
+.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-    row, col - index sets of rows and columns to extract (or PETSC_NULL)  
+
+   Output Parameter:
+.    A_loc - the local sequential matrix generated
+
+    Level: developer
+
+@*/
+PetscErrorCode MatGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
+{
+  Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,start,end,ncols,nzA,nzB,*cmap,imark,*idx;
+  IS                isrowa,iscola;
+  Mat               *aloc;
+
+  PetscFunctionBegin;
+  if (!logkey_getlocalmatcondensed) {
+    ierr = PetscLogEventRegister(&logkey_getlocalmatcondensed,"MatGetLocalMatCondensed",MAT_COOKIE);
+  }
+  ierr = PetscLogEventBegin(logkey_getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
+  if (!row){
+    start = a->rstart; end = a->rend;
+    ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&isrowa);CHKERRQ(ierr); 
+  } else {
+    isrowa = *row;
+  }
+  if (!col){
+    start = a->cstart;
+    cmap  = a->garray;
+    nzA   = a->A->n; 
+    nzB   = a->B->n;
+    ierr  = PetscMalloc((nzA+nzB)*sizeof(PetscInt), &idx);CHKERRQ(ierr);
+    ncols = 0;
+    for (i=0; i<nzB; i++) {
+      if (cmap[i] < start) idx[ncols++] = cmap[i];
+      else break;
+    }
+    imark = i;
+    for (i=0; i<nzA; i++) idx[ncols++] = start + i;
+    for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i];
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&iscola);CHKERRQ(ierr);
+    ierr = PetscFree(idx);CHKERRQ(ierr); 
+  } else {
+    iscola = *col;
+  }
+  if (scall != MAT_INITIAL_MATRIX){
+    ierr = PetscMalloc(sizeof(Mat),&aloc);CHKERRQ(ierr); 
+    aloc[0] = *A_loc;
+  }
+  ierr = MatGetSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr); 
+  *A_loc = aloc[0];
+  ierr = PetscFree(aloc);CHKERRQ(ierr);
+  if (!row){ 
+    ierr = ISDestroy(isrowa);CHKERRQ(ierr);
+  } 
+  if (!col){ 
+    ierr = ISDestroy(iscola);CHKERRQ(ierr);
+  } 
+  ierr = PetscLogEventEnd(logkey_getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3368,7 +3452,7 @@ static PetscEvent logkey_GetBrowsOfAcols = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBrowsOfAcols"
 /*@C
-     MatGetBrowsOfAcols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero col of A 
+    MatGetBrowsOfAcols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns of local A 
 
     Collective on Mat
 
@@ -3448,7 +3532,7 @@ static PetscEvent logkey_GetBrowsOfAocols = 0;
 #define __FUNCT__ "MatGetBrowsOfAoCols"
 /*@C
     MatGetBrowsOfAoCols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns
-     of the off-diagonal portion of A 
+     of the off-diagonal portion of local A 
 
     Collective on Mat
 
