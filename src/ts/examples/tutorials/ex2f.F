@@ -1,41 +1,43 @@
-
-C "$Id: ex2f.F,v 1.1 1997/04/17 03:29:46 curfman Exp curfman $";
-
-C/*
-C   Concepts: TS^timestepping^nonlinear problems
+C
+C "$Id: ex2f.F,v 1.2 1997/04/17 12:55:50 curfman Exp curfman $";
+C/*T
+C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
 C   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
 C   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSSetMonitor();
 C   Routines: PetscPrintF();
 C   Processors: n
-C*/
+CT*/
 C
 C  ------------------------------------------------------------------------
 C
-C      This program solves            U * U_xx 
+C   This program solves a simple time-dependent nonlinear PDE using implicit
+C   timestepping:
+C                                    U * U_xx 
 C                              U_t = ---------
 C                                    2*(t+1)^2 
 C
 C             U(0,x) = 1 + x*x; U(t,0) = t + 1; U(t,1) = 2*t + 2
 C
-C      The exact solution is u(t,x) = (1 + x*x) * (1 + t).
+C   The exact solution is U(t,x) = (1 + x*x) * (1 + t).
 C
-C      Note that since the solution is linear in time and quadratic in x, the 
-C      finite difference scheme actually computes the "exact" solution.
+C   Note that since the solution is linear in time and quadratic in x, 
+C   the finite difference scheme actually computes the "exact" solution.
 C
-C      We use the backward Euler method.
-C
+C   We use the backward Euler method.
 C
 C  --------------------------------------------------------------------------
 
       program main
       implicit none
 
-#include "ex2f.h"
-
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                    Include files
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C
+C  Each routine within this program uses the include file 'ex2f.h',
+C  which itself includes the various PETSc include files as well as
+C  problem-specific data in several common blocks.
 C
 C  This program uses CPP for preprocessing, as indicated by the use of
 C  PETSc include files in the directory petsc/include/FINCLUDE.  This
@@ -52,13 +54,21 @@ C  each file needed for the various PETSc components within their
 C  program (unlike the C/C++ interface).
 C
 C  See the Fortran section of the PETSc users manual for details.
-C
+
+#include "ex2f.h"
+
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                   Variable declarations
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C
 C  Variables:
-C     ts          - timestepping solver
+C     ts         - timestepping solver
+C     A          - Jacobian matrix context
+C     local      -
+C     global     -
+C     ftime      -
+C     duration   - 
+C     time_steps -
 C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
@@ -77,7 +87,7 @@ C  See the Fortran section of the PETSc users manual for details.
       integer  time_steps, steps
       Double   dt, ftime, duration
 
-C  Note: Any user-defined Fortran routines (such as FormJacobian)
+C  Note: Any user-defined Fortran routines (such as RHSFunction)
 C  MUST be declared as external.
 
       external Monitor, RHSFunction
@@ -86,7 +96,6 @@ C  MUST be declared as external.
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C23456789012345678901234567890123456789012345678901234567890123456789012
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       comm = PETSC_COMM_WORLD
@@ -98,37 +107,42 @@ C  Initialize problem parameters
       time_steps = 1000
       duration   = 100.0
       M          = 60
+      debug      = 0
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,
      &                   flg,ierr)
-      h  = 1.0/(M-1.0)
-      dt = h/2.0
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
+      one_d0  = PetscDoubleExp(1.0,0)
+      two_d0  = PetscDoubleExp(2.0,0)
+      four_d0 = PetscDoubleExp(4.0,0)
+      h       = one_d0/(M-one_d0)
+      dt      = h/two_d0
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create vector data structures
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Create distributed array (DA) to manage parallel grid and vectors
-C  Set up the ghost point communication pattern .
-C  There are M total grid values spread equally among all the processors.
-C
+C  Set up the ghost point communication pattern.  There are M total
+C  grid values spread equally among all the processors.
+
       call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,1,1,
      &     PETSC_NULL,da,ierr)
 
 C  Extract global and local vectors from DA; then duplicate for remaining
-C  vectors that are the same types
+C  vectors that are the same types.
 
       call DAGetDistributedVector(da,global,ierr)
       call DAGetLocalVector(da,local,ierr)
 
-C  Make local work array for evaluating right hand side function
+C  Make local work vector for evaluating right-hand-side function
       call VecDuplicate(local,localwork,ierr)
 
-C  Make global work array for storing exact solution
+C  Make global work vector for storing exact solution
       call VecDuplicate(global,solution,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Evaluate conditions
+C  Evaluate initial conditions
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       if (rank .eq. 0) 
@@ -154,13 +168,19 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call TSSetType(ts,TS_BEULER,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Customize timestepping solver; set runtime options
+C  Customize timestepping solver; set runtime options.
+C  We can override the defaults set by TSSetDuration() with
+C     -ts_max_steps <maxsteps> -ts_max_time <maxtime>
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+      call TSSetDuration(ts,time_steps,duration,ierr)
       call TSSetFromOptions(ts,ierr)
 
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C  Set solution vector, initial timestep.
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
       call TSSetInitialTimeStep(ts,0.0,dt,ierr)
-      call TSSetDuration(ts,time_steps,duration,ierr)
       call TSSetSolution(ts,global,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -188,8 +208,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Always call PetscFinalize() before exiting a program.  This routine
 C    - finalizes the PETSc libraries as well as MPI
 C    - provides summary and diagnostic information if certain runtime
-C      options are chosen (e.g., -log_summary).  See PetscFinalize()
-C      manpage for more information.
+C      options are chosen (e.g., -log_summary).
 
       call PetscFinalize(ierr)
 
@@ -217,7 +236,7 @@ C  Local variables:
       Double  localptr(1)
       integer i, mybase, myend, ierr, idx
 
-C  Determine starting and ending point of each processors range of
+C  Determine starting and ending point of each processor's range of
 C  grid values.  Note that we shift by 1 to convert from the 0-based
 C  C convention of starting indices to the 1-based Fortran convention.
 
@@ -234,18 +253,24 @@ C      C version.  See the users manual for details.
 
       call VecGetArray(global,localptr,idx,ierr) 
 
-C     We Initialize the solution array by simply writing the solution
+C     We initialize the solution array by simply writing the solution
 C     directly into the array locations.
 
       do 10, i=mybase,myend
 C       x - current location in global grid 
         x = h*(i-1)
-        localptr(i-mybase+idx) = 1.0 + x*x
+        localptr(i-mybase+idx+1) = one_d0 + x*x
  10   continue
 
 C  Restore vector
 
       call VecRestoreArray(global,localptr,idx,ierr) 
+
+C  Print debugging information if desired
+      if (debug .eq. 1) then
+        if (rank .eq. 0) write(6,*) 'initial guess vector'
+        call VecView(global,VIEWER_STDOUT_WORLD,ierr)
+      endif
 
       return
       end
@@ -281,15 +306,15 @@ C  C convention of starting indices to the 1-based Fortran convention.
       call VecGetOwnershipRange(solution,mybase,myend,ierr)
       mybase = mybase + 1
 
-C  Get a pointer to vector data.
+C  Get a pointer to vector data
       call VecGetArray(solution,localptr,idx,ierr) 
 
-C  Simply write the solution directly into the array locations.
+C  Simply write the solution directly into the array locations
 
       do 10, i=mybase,myend
 C       x - current location in global grid 
         x = h*(i-1)
-        localptr(i-mybase+idx) = (t + 1.0)*(1.0 + x*x)
+        localptr(i-mybase+idx+1) = (t + one_d0)*(one_d0 + x*x)
  10   continue
 
 C  Restore vector
@@ -301,17 +326,20 @@ C  Restore vector
 
 C  ------------------------------------------------------------------------
 C
-C  Monitor - A user provided routine to monitor the solution computed at 
-C  each time-step. This example plots the solution and computes the
-C  error in two different norms.
+C   Monitor - A user-provided routine to monitor the solution computed at 
+C   each time-step.  This example plots the solution and computes the
+C   error in two different norms.
 C
-C    Arguments are: 
-C        ts     - the time-step context
-C        step   - the count of the current step; with 0 meaning initial condition
-C        time   - the current time
-C        global - the solution at this time-step
-C        dummy  - an (optional) user-provided context for this monitor routine,
-C                  not used here because we employ a common block instead.
+C   Input Parameters:
+C   ts     - the time-step context
+C   step   - the count of the current step (with 0 meaning the
+C            initial condition)
+C   time   - the current time
+C   dummy  - optional user-provided context for this monitoring routine,
+C           not used here
+C
+C   Output Parameter:
+C   global - the solution at this timestep
 
       subroutine Monitor(ts,step,time,global,dummy)
 
@@ -329,19 +357,21 @@ C  Local variables:
       Double   mone
       Draw     draw
 
-      mone = -1.0
+      mone = PetscDoubleExp(-1.0,0)
 
-C     Use the default X windows viewer; VIEWER_DRAWX_PETSC_COMM associated
-C     with the PETSC_COMM_WORLD communicator. This saves the effort of calling 
-C     ViewerDrawOpenX() to create the window. Note if we wished to plot several
-C     items on seperate windows we would create each viewer with ViewerDrawOpenX()
-C     and store them in the application context, appctx.
+C  We use the default X windows viewer
+C       VIEWER_DRAWX_PETSC_COMM 
+C  that is associated with the PETSC_COMM_WORLD communicator. This
+C  saves the effort of calling ViewerDrawOpenX() to create the window.
+C  Note that if we wished to plot several items in separate windows we
+C  would create each viewer with ViewerDrawOpenX() and store them in
+C  the application context, appctx.
 C
-C     Double buffering makes graphics look better.
+C  Double buffering makes graphics look better.
 
-      call ViewerDrawGetDraw(VIEWER_DRAWX_PETSC_COMM_WORLD,draw,ierr)
+      call ViewerDrawGetDraw(VIEWER_DRAWX_WORLD,draw,ierr)
       call DrawSetDoubleBuffer(draw,ierr)
-      call VecView(global,VIEWER_DRAWX_PETSC_COMM_WORLD,ierr)
+      call VecView(global,VIEWER_DRAWX_WORLD,ierr)
 
 C  Compute the exact solution at this time-step, then compute the 
 C  2-norm and max-norm of the error.  Note that the solution vector
@@ -350,13 +380,22 @@ C  is passed via the user-defined common block.
       call VecAXPY(mone,global,solution,ierr)
       call VecNorm(solution,NORM_2,n2,ierr)
 C  Scale the 2-norm by the grid spacing
-      n_2 = sqrt(h*n2)
+      n_2 = dsqrt(h*n2)
       call VecNorm(solution,NORM_MAX,nmax,ierr)
 
 C  Print only from processor 0
-      if (rank .eq. 0) 
-     &   write(6,*) "Timestep, time, norm of error [2,max] ",
-     &               step,time,n2,nmax
+      if (rank .eq. 0) write(6,100) step,time,n2,nmax
+ 100  format('Timestep = ',i5,', time = ',f8.3,
+     &       ' sec, error [2-norm] = ',e9.3,
+     &       ', error [max-norm] = ',e9.3)
+
+C  Print debugging information if desired
+      if (debug .eq. 1) then
+        if (rank .eq. 0) write(6,*) 'Computed solution vector'
+        call VecView(global,VIEWER_STDOUT_WORLD,ierr)
+        if (rank .eq. 0) write(6,*) 'Exact solution vector'
+        call VecView(solution,VIEWER_STDOUT_WORLD,ierr)
+      endif
 
       return
       end
@@ -366,10 +405,10 @@ C
 C   RHSFunction - User-provided routine that evalues the RHS function
 C   in the ODE.  This routine is set in the main program by calling
 C   TSSetRHSFunction().  We compute:
-C                     globalout = F(globalin)
+C         globalout = F(globalin)
 C
 C   Input Parameters:
-C      ts        - time-step context
+C      ts        - timestep context
 C      t         - current time
 C      globalin  - input vector to function
 C      dummy     - (optional) user-provided context for function
@@ -407,24 +446,22 @@ C  Access directly the values in our local INPUT work array
 C  Access directly the values in our local OUTPUT work array
       call VecGetArray(localwork,copyptr,idx_c,ierr) 
 
-      sc = 1.0/(h*h*2.0*(1.0+t)*(1.0+t))
+      sc = one_d0/(h*h*two_d0*(one_d0+t)*(one_d0+t))
 
 C  Evaluate our function on the nodes owned by this processor
 
       call VecGetLocalSize(local,localsize,ierr)
 
-C     Handle the boundary conditions: this is done by using the boundary condition
-C     U(t,boundary) = g(t,boundary) for some function g. Now take the derivative with
-C     respect to t to obtain
+C  Handle boundary conditions: This is done by using the boundary condition 
+C        U(t,boundary) = g(t,boundary) 
+C  for some function g. Now take the derivative with respect to t to obtain
+C        U_{t}(t,boundary) = g_{t}(t,boundary)
 C
-C             U_{t}(t,boundary) = g_{t}(t,boundary)
-C
-C     In our case U(t,0) = t + 1; so U_{t}(t,0) = 1 and 
-C                 U(t,1) = 2t+ 1; so U_{t}(t,1) = 2
-C
+C  In our case, U(t,0) = t + 1; so U_{t}(t,0) = 1 
+C          and  U(t,1) = 2t+ 1; so U_{t}(t,1) = 2
 
-       if (rank .eq. 0)      copyptr(1) = 1.0
-       if (rank .eq. size-1) copyptr(localsize) = 2.0
+       if (rank .eq. 0)      copyptr(1+idx_c) = one_d0
+       if (rank .eq. size-1) copyptr(localsize+idx_c) = two_d0
 
 C  Handle the interior nodes where the PDE is replace by finite 
 C  difference operators.
@@ -432,7 +469,7 @@ C  difference operators.
       do 10, i=2, localsize-1
          il = i + idx_l
          copyptr(i+idx_c) =  localptr(il) * sc * 
-     &             (localptr(il+1) + localptr(il-1) - 2.0*localptr(il))
+     &     (localptr(il+1) + localptr(il-1) - two_d0*localptr(il))
  10   continue
 
       call VecRestoreArray(local,localptr,idx_l,ierr) 
@@ -442,6 +479,12 @@ C  Return the values from our local OUTPUT array into our global
 C  output array.
 
       call DALocalToGlobal(da,localwork,INSERT_VALUES,globalout,ierr)
+
+C  Print debugging information if desired
+      if (debug .eq. 1) then
+        if (rank .eq. 0) write(6,*) 'RHS function vector'
+        call VecView(globalout,VIEWER_STDOUT_WORLD,ierr)
+      endif
 
       return
       end
@@ -493,7 +536,7 @@ C  Local variables:
       integer i, ierr, idx
 
       integer mstart, mend, mstarts, mends
-      integer idx(3),is
+      integer col(3), is
       Double  v(3)
       Vec     local
 
@@ -514,29 +557,29 @@ C  Set matrix sparsity info
 
 C  Set matrix rows corresponding to boundary data
       if (mstart .eq. 0) then
-        v(1) = 0.0
+        v(1) = zero_d0
         call MatSetValues(A,1,mstart,1,mstart,v,INSERT_VALUES,ierr)
         mstart = mstart + 1
       endif
       if (mend .eq. M) then
         mend = mend - 1
-        v(1) = 0.0
+        v(1) = zero_d0
         call MatSetValues(A,1,mend,1,mend,v,INSERT_VALUES,ierr)
       endif
 
 C  Set matrix rows corresponding to interior data.
 C  We construct the matrix one row at a time
-      sc = 1.0/(h*h*2.0*(1.0+t)*(1.0+t))
+      sc = one_d0/(h*h*two_d0*(one_d0+t)*(one_d0+t))
       do 10, i=mstart, mend-1
-         idx(1) = i-1
-         idx(2) = i
-         idx(3) = i+1
-         is     = i - mstart + 2
+         col(1) = i-1
+         col(2) = i
+         col(3) = i+1
+         is     = i - mstart + 1 +idx + 1
          v(1)   = sc*localptr(is)
          v(2)   = sc*(localptr(is+1) + localptr(is-1) -
-     &                4.0*localptr(is))
+     &                four_d0*localptr(is))
          v(3)   = sc*localptr(is)
-        call MatSetValues(A,1,i,3,idx,v,INSERT_VALUES,ierr)
+        call MatSetValues(A,1,i,3,col,v,INSERT_VALUES,ierr)
  10   continue
 
 C  Restore array
