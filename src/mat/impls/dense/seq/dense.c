@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.42 1995/07/06 17:19:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.43 1995/07/09 23:16:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -455,8 +455,7 @@ static int MatScale_Dense(Mat matin,Vec ll,Vec rr)
   return 0;
 }
 
-
-static int MatNorm_Dense(Mat matin,int type,double *norm)
+static int MatNorm_Dense(Mat matin,MatNormType type,double *norm)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   Scalar *v = mat->v;
