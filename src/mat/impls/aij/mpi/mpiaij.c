@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.241 1998/05/06 15:28:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.242 1998/05/06 15:30:30 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -615,8 +615,6 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
     MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
     MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
   }
-
-  ierr = ISDestroy(istmp); CHKERRQ(ierr);
 
   if (diag) {
     for ( i = 0; i < slen; i++ ) {
