@@ -18,13 +18,13 @@ if ($day == Sun) then
   set M =(snake  maverick   cyan       elvis         clyde       ptera        maverick   quad        caffeine   )
   set B =(O      O_complex  g          g_c++         O_c++       Opg          O          O_c++       g          )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha        sun4_uni   rs6000_quad solaris    )
-  set S =(shared noshared   shared     noshared      noshared    shared       shared     shared      1          )
+  set S =(shared noshared   shared     noshared      noshared    shared       shared     shared      shared     )
   set J1=(1      1          1          1             1           1            4          4           2          )
   set J2=(0      2          2          2             2           2            9          9           3          )
   set J3=(0      3          3          3             3           3            0          0           6          )
   set J4=(0      5          6          6             6           8            0          0           7          )
   set J5=(0      10         7          8             8           0            0          0           8          )
-  set J6=(0      0          8          0             0           0            0          0           0          )
+  set J6=(0      0          8          0             0           0            0          0           1          )
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       /tmp/petsc )
 endif
 if ($day == Mon) then
