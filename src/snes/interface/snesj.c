@@ -1,10 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.24 1995/11/01 19:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.25 1996/01/11 20:14:56 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
-#include "snes.h"    /*I  "snes.h"  I*/
+#include "snesimpl.h"    /*I  "snes.h"  I*/
 
 /*@C
    SNESDefaultComputeJacobian - Computes the Jacobian using finite 
@@ -40,6 +40,13 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
   double   amax, epsilon = 1.e-8; /* assumes double precision */
   MPI_Comm comm;
+  int      (*eval_fct)(SNES,Vec,Vec);
+
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS)
+    eval_fct = SNESComputeFunction;
+  else if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION)
+    eval_fct = SNESComputeGradient;
+  else SETERRQ(1,"SNESDefaultComputeJacobian: Invalid method class");
 
   PetscObjectGetComm((PetscObject)x1,&comm);
   MatZeroEntries(*J);
@@ -52,7 +59,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
   VecGetArray(x1,&xx);
-  ierr = SNESComputeFunction(snes,x1,j1); CHKERRQ(ierr);
+  ierr = eval_fct(snes,x1,j1); CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
     ierr = VecCopy(x1,x2); CHKERRQ(ierr);
     if ( i>= start && i<end) {
@@ -71,7 +78,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     else {
       wscale = 0.0;
     }
-    ierr = SNESComputeFunction(snes,x2,j2); CHKERRQ(ierr);
+    ierr = eval_fct(snes,x2,j2); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,j1,j2); CHKERRQ(ierr);
 /* communicate scale to all processors */
 #if !defined(PETSC_COMPLEX)
@@ -96,3 +103,34 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   return 0;
 }
 
+/*@C
+   SNESDefaultComputeHessian - Computes the Hessian using finite 
+   differences. 
+
+   Input Parameters:
+.  x1 - compute Hessian at this point
+.  ctx - application's gradient context, as set with SNESSetGradient()
+
+   Output Parameters:
+.  J - Hessian
+.  B - preconditioner, same as Hessian
+.  flag - matrix flag
+
+   Options Database Key:
+$  -snes_fd
+
+   Notes:
+   This routine is slow and expensive, and is not currently optimized
+   to take advantage of sparsity in the problem.  Although
+   SNESDefaultComputeHessian() is not recommended for general use
+   in large-scale applications, It can be useful in checking the
+   correctness of a user-provided Hessian.
+
+.keywords: SNES, finite differences, Hessian
+
+.seealso: SNESSetHessian(), SNESTestHessian()
+@*/
+int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+{
+  return SNESDefaultComputeJacobian(snes,x1,J,B,flag,ctx);
+}
