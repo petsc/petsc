@@ -4,7 +4,6 @@
    Routines to compute overlapping regions of a parallel MPI matrix.
    Used for finding submatrices that were shared across processors.
 */
-#include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 #include "petscbt.h"
 
@@ -361,13 +360,13 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int **dat
   Mat_MPISBAIJ *c = (Mat_MPISBAIJ*)C->data;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)(c->A)->data;
   Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)(c->B)->data;
-  int          ierr,row,mbs,Mbs,*nidx,*nidx_i,col,isz,isz0,*ai,*aj,bs,*bi,*bj,*garray,rstart,l;
+  int          ierr,row,mbs,Mbs,*nidx,*nidx_i,col,isz,isz0,*ai,*aj,*bi,*bj,*garray,rstart,l;
   int          a_start,a_end,b_start,b_end,i,j,k,is_max,*idx_i,n;
   PetscBT      table0;  /* mark the indices of input is[] for look up */
   PetscBT      table_i; /* poits to i-th table. When whose=OTHER, a single table is used for all is[] */
   
   PetscFunctionBegin;
-  Mbs = c->Mbs; mbs = a->mbs; bs = a->bs;
+  Mbs = c->Mbs; mbs = a->mbs; 
   ai = a->i; aj = a->j;
   bi = b->i; bj = b->j;
   garray = c->garray;
