@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.173 1999/02/28 23:22:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.174 1999/03/14 22:14:56 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -195,6 +195,17 @@ int SNESSetFromOptions(SNES snes)
   if (flg) {
     ierr = SNESSetType(snes,(SNESType) method); CHKERRQ(ierr);
   }
+  /*
+      If SNES type has not yet been set, set it now
+  */
+  if (!snes->type_name) {
+    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+      ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRQ(ierr);
+    } else {
+      ierr = SNESSetType(snes,SNES_UM_TR); CHKERRQ(ierr);
+    }
+  }
+
   ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
@@ -274,18 +285,6 @@ int SNESSetFromOptions(SNES snes)
     KSP ksp;
     ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
     ierr = KSPSetMonitor(ksp,MatSNESFDMFKSPMonitor,PETSC_NULL);CHKERRQ(ierr);
-  }
-
-  /*
-      Since the private setfromoptions requires the type to have 
-      been set already, we make sure a type is set by this time.
-  */
-  if (!snes->type_name) {
-    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRQ(ierr);
-    } else {
-      ierr = SNESSetType(snes,SNES_UM_TR); CHKERRQ(ierr);
-    }
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
