@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.159 1997/07/03 23:16:02 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.160 1997/07/09 21:01:39 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1273,7 +1273,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PLogDouble ptotts,ptotff,ptotts_stime,ptotff_sflops,rat1,rat2,rat3;
   PLogDouble minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
   PLogDouble rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
-  PLogDouble pstime,psflops1,psflops,flopr;
+  PLogDouble pstime,psflops1,psflops,flopr,mict,mact,rct;
   int    size,rank,i,j;
   char   arch[10],hostname[64],username[16];
   FILE   *fd = stdout;
@@ -1292,7 +1292,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   }
 
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
-  PetscFPrintf(comm,fd,"***                   WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r' to print this document                 ***\n");
+  PetscFPrintf(comm,fd,"***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
 
   PetscFPrintf(comm,fd,"\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");
@@ -1433,9 +1433,9 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 #endif
 
   /* loop over operations looking for interesting ones */
-  PetscFPrintf(comm,fd,"Phase              Count      Time (sec)        Flops/sec \
+  PetscFPrintf(comm,fd,"Phase                  Count      Time (sec)        Flops/sec \
                           --- Global ---  --- Stage ---   Total\n");
-  PetscFPrintf(comm,fd,"                            Max     Ratio      Max     Ratio\
+  PetscFPrintf(comm,fd,"                    Max  Ratio  Max     Ratio      Max     Ratio\
   Mess  Avg len  Reduct %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");
   PetscFPrintf(comm,fd,
     "------------------------------------------------------------------------------------------------------------------------\n"); 
@@ -1465,6 +1465,9 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
       MPI_Allreduce(&EventsType[j][i][LENGTHS],&lp,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
       MPI_Allreduce(&EventsType[j][i][REDUCTIONS],&rp,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
 
+      MPI_Allreduce(&EventsType[j][i][COUNT],&mict,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);
+      MPI_Allreduce(&EventsType[j][i][COUNT],&mact,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);
+     
       if (maxt) flopr = totff/maxt; else flopr = 0.0;
       MPI_Allreduce(&EventsStageMessageCounts[j],&totms,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
       MPI_Allreduce(&EventsStageMessageLengths[j],&totmls,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
@@ -1488,10 +1491,11 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
         if (totmls)  lps = 100.*lp/totmls; else lps = 0.0; if (lps >= 99.) lps = 99.;
         if (totrs)  rps = 100.*rp/totrs; else rps = 0.0;if (rps >= 99.) rps = 99.;
         if (mp) lpmp = lp/mp; else lpmp = 0.0;
+        if (mict) rct = mact/mict; else rct = 0.0;
         mp = mp/2.0;
         rp = rp/((PLogDouble) size);
-        PetscFPrintf(comm,fd,"%s %7d %5.4e %6.1f  %3.2e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
-                    PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
+        PetscFPrintf(comm,fd,"%s %7d %3.1f  %5.4e %5.1f  %3.2e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
+                    PLogEventName[i],(int)mact,rct,maxt,rat,maxf,ratf,
                     mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps,flopr/1.e6);
       }
     }
