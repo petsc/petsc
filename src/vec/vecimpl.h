@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.47 1998/05/18 22:25:56 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.48 1998/05/19 01:58:39 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -45,11 +45,13 @@ struct _VecOps {
        (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode),
        (*destroy)(Vec),
        (*view)(Vec,Viewer),
-       (*placearray)(Vec,Scalar*);        /* place data array */
+       (*placearray)(Vec,Scalar*),        /* place data array */
+       (*getmap)(Vec,Map*);
 };
 
 struct _p_Vec {
   PETSCHEADER(struct _VecOps)
+  Map                    map;
   void                   *data;     /* implementation-specific data */
   int                    N, n;      /* global, local vector size */
   int                    bs;

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.86 1998/04/15 18:05:14 balay Exp bsmith $ */
+/* $Id: matimpl.h,v 1.87 1998/05/19 02:20:39 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -87,6 +87,7 @@ struct _MatOps {
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps)
+  Map                    rmap,cmap;
   void                   *data;            /* implementation-specific data */
   int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
   double                 lupivotthreshold; /* threshold for pivoting */
