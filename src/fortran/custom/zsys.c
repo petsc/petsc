@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.13 1996/03/04 04:35:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.14 1996/03/23 16:56:55 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -116,9 +116,11 @@ void plogeventbegin_(int e,int o1,int o2,int o3,int o4){
   if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
   if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
 
+#if defined(PETSC_LOG)
   if (_PLB) (*_PLB)(e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
   if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e,0,"");
+#endif
 #endif
 }
 
@@ -128,9 +130,11 @@ void plogeventend_(int e,int o1,int o2,int o3,int o4){
   if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
   if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
   if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
+#if defined(PETSC_LOG)
   if (_PLE) (*_PLE)(e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
   if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e+1,0,"");
+#endif
 #endif
 }
 
@@ -198,7 +202,7 @@ void petscrandomdestroy_(PetscRandom *r, int *__ierr ){
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: zsys.c,v 1.13 1996/03/04 04:35:50 bsmith Exp bsmith $
+ *  $Id: zsys.c,v 1.14 1996/03/23 16:56:55 bsmith Exp curfman $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.

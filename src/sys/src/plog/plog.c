@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.87 1996/03/19 21:59:48 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.88 1996/03/22 22:35:56 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -964,6 +964,14 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 double PetscGetFlops()
 {
   return _TotalFlops;
+}
+
+/* end of -DPETSC_LOG section */
+#else
+
+int PLogObjectState(PetscObject obj,char *format,...)
+{
+  return 0;
 }
 
 #endif

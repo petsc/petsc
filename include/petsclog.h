@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.63 1996/03/22 19:56:40 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.64 1996/03/22 22:35:44 curfman Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -183,25 +183,29 @@ extern int PLogEventRegister(int*,char*,char*);
 
 #else
 
-#define PLogEventBegin(e,o1,o2,o3,o4)
-#define PLogEventEnd(e,o1,o2,o3,o4)
-#define PLogObjectParent(p,c)
-#define PLogObjectParents(p,n,c)
-#define PLogObjectCreate(h) 
-#define PLogObjectDestroy(h)
-#define PLogObjectMemory(p,m)
-/* #define PLogObjectState(a,b,...) */
-#define PLogDestroy()
-#define PLogStagePush(int)
-#define PLogStagePop()
-#define PLogStageRegister(a,b)
-#define PLogPrintSummary(comm,file)
-#define PLogBegin()
-#define PLogAllBegin()
-#define PLogDump(char)
-#define PLogEventRegister(a,b,c)
-#define PLogMPEBegin()
-#define PLogMPEDump(a)
+#define _PLB                          0
+#define _PLE                          0
+#define _PHC                          0
+#define _PHD                          0
+#define PLogEventBegin(e,o1,o2,o3,o4) 0
+#define PLogEventEnd(e,o1,o2,o3,o4)   0
+#define PLogObjectParent(p,c)         0
+#define PLogObjectParents(p,n,c)      0
+#define PLogObjectCreate(h)           0
+#define PLogObjectDestroy(h)          0
+#define PLogObjectMemory(p,m)         0
+#define PLogDestroy()                 0
+#define PLogStagePush(int)            0
+#define PLogStagePop()                0
+#define PLogStageRegister(a,b)        0
+#define PLogPrintSummary(comm,file)   0
+#define PLogBegin()                   0
+#define PLogAllBegin()                0
+#define PLogDump(char)                0
+#define PLogEventRegister(a,b,c)      0
+#define PLogMPEBegin()                0
+#define PLogMPEDump(a)                0
+extern int PLogObjectState(PetscObject,char *,...);
 
 #endif
 
