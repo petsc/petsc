@@ -339,4 +339,11 @@ runex22_2:
 	   else echo "Possible problem with ex22_2, diffs above"; fi; \
 	   $(RM) -f ex22_2.tmp
 
+runex22_3:
+	-@$(MPIRUN) ex22 -mat_aij -print_debug -modify_submat \
+	   -ksp_smonitor -pc_type bjacobi -pc_bjacobi_blocks 4 > ex22_3.tmp 2>&1;	  \
+	   if (diff output/ex22_3.out ex22_3.tmp) then true; \
+	   else echo "Possible problem with ex22_3, diffs above"; fi; \
+	   $(RM) -f ex22_3.tmp
+
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
