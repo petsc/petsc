@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.18 1996/12/18 17:36:57 balay Exp balay $";
+static char vcid[] = "$Id: iccbs.c,v 1.19 1996/12/19 01:08:55 balay Exp balay $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -279,9 +279,9 @@ int PCBSIterSetBlockSolve(PC pc)
 }
 
 #else
-i#undef __FUNCTION__  
+#undef __FUNCTION__  
 #define __FUNCTION__ "MatNull_MPIRowbs"
-nt MatNull_MPIRowbs()
+int MatNull_MPIRowbs()
 {return 0;}
 #endif
 

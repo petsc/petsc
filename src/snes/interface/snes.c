@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.101 1996/12/16 20:39:19 balay Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.102 1996/12/18 23:00:53 balay Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1744,7 +1744,7 @@ int SNESGetFunction(SNES snes,Vec *r)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
-    For SNES_NONLINEAR_EQUATIONS only");
+    "For SNES_NONLINEAR_EQUATIONS only");
   *r = snes->vec_func_always;
   return 0;
 }  
