@@ -8,7 +8,7 @@ manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex routines
 	-bibtex manual_tex
 	latex manual_tex
 	/nfs/local-sun4/tex3.14/bin/makeindex manual_tex
-	echo  \\begin\{theindex\} > findex.tex
+	echo  \\\\begin\{theindex\} > findex.tex
 	echo \\indexspace >> findex.tex
 	grep FUNCTION manual_tex.ind | sed "s/FUNCTION/ /g"  | \
              sed 's/_/\\_/g' >> findex.tex
@@ -34,9 +34,9 @@ manual.ps:
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit
 	cat ../../manualpages/manualpages.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
-	tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
+	/home/gropp/bin/solaris/tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/manualpages.cit
-	tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
+	/home/gropp/bin/solaris/tohtml -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/manualpages.cit
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
@@ -85,40 +85,42 @@ clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
                           *.ilg *.idx *.ind sindex.tex findex.tex *.aus
 
-routines.red: routines.tex ../rsum/rsum1.tex ../rsum/rsum2.tex \
-              ../rsum/rsum3.tex ../rsum/rsum4.tex ../rsum/rsum5.tex \
-	      ../rsum/rsum6.tex ../rsum/rsum7.tex ../rsum/rsumx.tex \
-	      ../rsum/rsumn.tex ../rsum/rsump.tex ../rsum/rsumv.tex \
-	      ../rsum/rsumt.tex
-	rm -f ../rsum/ssum1.tex ../rsum/ssum2.tex \
-              ../rsum/ssum3.tex ../rsum/ssum4.tex ../rsum/ssum5.tex \
-	      ../rsum/ssum6.tex ../rsum/ssum7.tex ../rsum/ssumx.tex \
-	      ../rsum/ssumn.tex ../rsum/ssump.tex ../rsum/ssumv.tex \
-	      ../rsum/ssumt.tex
-	sort ../rsum/rsum1.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g' | \
-                 sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum1.tex
-	sort ../rsum/rsum2.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum2.tex
-	sort ../rsum/rsum3.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum3.tex
-	sort ../rsum/rsum4.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum4.tex
-	sort ../rsum/rsum5.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum5.tex
-	sort ../rsum/rsum6.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum6.tex
-	sort ../rsum/rsum7.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum7.tex
-	sort ../rsum/rsumv.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumv.tex
-	sort ../rsum/rsump.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssump.tex
-	sort ../rsum/rsumn.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumn.tex
-	sort ../rsum/rsumt.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumt.tex
-	sort ../rsum/rsumx.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
-                grep -v document | sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumx.tex
+routines.red: routines.tex 
+	rm -f ../rsum/ssum*.tex
+	sort ../rsum/rsumVec.tex|sed 's/\\\\/ /g' | \
+                 sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumVec.tex
+	sort ../rsum/rsumMat.tex|sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumMat.tex
+	sort ../rsum/rsumSLES.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumSLES.tex
+	sort ../rsum/rsumPC.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumPC.tex
+	sort ../rsum/rsumKSP.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumKSP.tex
+	sort ../rsum/rsumDA.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumDA.tex
+	sort ../rsum/rsumSys.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumSys.tex
+	sort ../rsum/rsumViewer.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumViewer.tex
+	sort ../rsum/rsumProfiling.tex|sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumProfiling.tex
+	sort ../rsum/rsumSNES.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumSNES.tex
+	sort ../rsum/rsumTS.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumTS.tex
+	sort ../rsum/rsumMatFD.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumMatFD.tex
+	sort ../rsum/rsumMatOrderings.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumMatOrderings.tex
+	sort ../rsum/rsumSNESMF.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumSNESMF.tex
+	sort ../rsum/rsumAO.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumAO.tex
+	sort ../rsum/rsumIS.tex |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumIS.tex
+	sort ../rsum/rsumDraw.tex |sed 's/\\\\/ /g'| \
+                grep -v document | sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumDraw.tex
 	-@chmod g+w ../rsum/ssum*.tex
 
 routines.dvi: routines.red
