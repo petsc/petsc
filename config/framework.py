@@ -38,7 +38,7 @@ class Help:
       nameLen = max([nameLen, max(map(len, self.options[section].keys()))+1])
       descLen = max([descLen, max(map(len, self.options[section].values()))+1])
     format    = '  -%-'+str(nameLen)+'s: %s'
-    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  default: %s'
+    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s'
     for section in self.sections:
       print section+':'
       for item in self.options[section].items():
@@ -54,13 +54,8 @@ class Help:
 
 class Framework(config.base.Configure):
   def __init__(self, clArgs = None, argDB = None):
-    self.clArgs     = clArgs
-    if argDB is None:
-      self.argDB    = self.setupArgDB(clArgs)
-    else:
-      self.argDB    = argDB
-    self.logName    = 'configure.log'
-    self.log        = file(self.logName, 'w')
+    self.argDB = self.setupArgDB(clArgs, argDB)
+    self.setupLogging()
     config.base.Configure.__init__(self, self)
     self.children   = []
     self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
@@ -71,8 +66,19 @@ class Framework(config.base.Configure):
     self.setupChildren()
     return
 
-  def setupArgDB(self, clArgs):
-    return nargs.ArgDict('ArgDict', localDict = 1)
+  def setupArgDB(self, clArgs, initDB):
+    self.clArgs = clArgs
+    if initDB is None:
+      argDB = nargs.ArgDict('ArgDict', localDict = 1)
+    else:
+      argDB = initDB
+    return argDB
+
+  def setupLogging(self):
+    self.logName   = 'configure.log'
+    self.logExists = os.path.exists(self.logName)
+    self.log       = file(self.logName, 'a')
+    return self.log
 
   def setupChildren(self):
     self.argDB['configModules'] = nargs.findArgument('configModules', self.clArgs)

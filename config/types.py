@@ -13,9 +13,9 @@ class Configure(config.base.Configure):
   def configureHelp(self, help):
     import nargs
 
-    help.addOption('Types', '-enable-complex', 'Complex arithmetic flag', nargs.ArgBool)
+    #help.addOption('Types', '-enable-complex', 'Complex arithmetic flag', nargs.ArgBool)
 
-    self.framework.argDB['enable-complex'] = 0
+    #self.framework.argDB['enable-complex'] = 0
     return
 
   def check(self, typeName, defaultType = None):
@@ -71,8 +71,8 @@ class Configure(config.base.Configure):
       found = 1
     self.popLanguage()
 
-    if found and self.framework.argDB['enable-complex']:
-      self.addDefine('PETSC_USE_COMPLEX', 1)
+    #if found and self.framework.argDB['enable-complex']:
+    #  self.addDefine('PETSC_USE_COMPLEX', 1)
     return
 
   def checkFortranStar(self):
