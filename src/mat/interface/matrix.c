@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.401 2001/04/10 19:35:09 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.402 2001/04/10 22:35:02 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -735,7 +735,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
    MatSetValue - Set a single entry into a matrix.
 
    Synopsis:
-   void MatSetValue(Mat m,int row,int col,Scalar value,InsertMode mode);
+   int MatSetValue(Mat m,int row,int col,Scalar value,InsertMode mode);
 
    Not collective
 
@@ -1517,6 +1517,8 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidPointer(fact);
+  PetscValidHeaderSpecific(row,IS_COOKIE);
+  PetscValidHeaderSpecific(col,IS_COOKIE);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->lufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic LU",mat->type_name);
@@ -1626,6 +1628,7 @@ int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidType(mat);
   MatPreallocated(mat);
+  PetscValidHeaderSpecific(perm,IS_COOKIE);
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -3392,6 +3395,8 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidPointer(fact);
+  PetscValidHeaderSpecific(row,IS_COOKIE);
+  PetscValidHeaderSpecific(col,IS_COOKIE);
   if (info && info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %d",info->levels);
   if (info && info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",info->fill);
   if (!mat->ops->ilufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ILU",mat->type_name);
@@ -3446,6 +3451,7 @@ int MatICCFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidPointer(fact);
+  PetscValidHeaderSpecific(perm,IS_COOKIE);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (fill < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Fill negative %d",fill);
   if (f < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",f);
@@ -4470,5 +4476,115 @@ int MatICCFactor(Mat mat,IS row,PetscReal fill,int level)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->iccfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->iccfactor)(mat,row,fill,level);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesAdic"
+/*@ 
+   MatSetValuesAdic - Sets values computed with ADIC automatic differentiation into a matrix.
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  v - the values compute with ADIC
+
+   Level: developer
+
+   Notes:
+     Must call MatSetColoring() before using this routine. Also this matrix must already
+     have its nonzero pattern determined.
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
+          MatSetValues(), MatSetColoring(), MatSetValuesAdifor()
+@*/
+int MatSetValuesAdic(Mat mat,void *v)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+
+  if (!mat->assembled) {
+    SETERRQ(1,"Matrix must be already assembled");
+  }
+  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->setvaluesadic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = (*mat->ops->setvaluesadic)(mat,v);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetColoring"
+/*@ 
+   MatSetColoring - Sets a coloring used by calls to MatSetValuesAdic()
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  coloring - the coloring
+
+   Level: developer
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
+          MatSetValues(), MatSetValuesAdic()
+@*/
+int MatSetColoring(Mat mat,ISColoring coloring)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+
+  if (!mat->assembled) {
+    SETERRQ(1,"Matrix must be already assembled");
+  }
+  if (!mat->ops->setcoloring) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = (*mat->ops->setcoloring)(mat,coloring);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesAdifor"
+/*@ 
+   MatSetValuesAdifor - Sets values computed with automatic differentiation into a matrix.
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+.  nl - leading dimension of v
+-  v - the values compute with ADIFOR
+
+   Level: developer
+
+   Notes:
+     Must call MatSetColoring() before using this routine. Also this matrix must already
+     have its nonzero pattern determined.
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
+          MatSetValues(), MatSetColoring()
+@*/
+int MatSetValuesAdifor(Mat mat,int nl,void *v)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+
+  if (!mat->assembled) {
+    SETERRQ(1,"Matrix must be already assembled");
+  }
+  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->setvaluesadifor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = (*mat->ops->setvaluesadifor)(mat,nl,v);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
