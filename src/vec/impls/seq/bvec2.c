@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.42 1995/08/23 17:08:22 curfman Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.43 1995/08/25 19:30:58 curfman Exp curfman $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -108,7 +108,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
     ierr = SYWrite(fdes,(char *)&n,sizeof(int),SYINT,0); CHKERRQ(ierr);
 
     /* Write vector contents */
-    ierr = SYWrite(fdes,(char *)x->array,n*sizeof(Scalar),SYINT,0); CHKERRQ(ierr);
+    ierr = SYWrite(fdes,(char *)x->array,n*sizeof(Scalar),SYSCALAR,0); CHKERRQ(ierr);
   }
 #endif
   return 0;

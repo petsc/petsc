@@ -1,6 +1,7 @@
-/* $Id: pdvec.c,v 1.21 1995/08/24 22:26:21 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.22 1995/08/27 13:56:35 bsmith Exp curfman $ */
 
 #include "pinclude/pviewer.h"
+#include "sysio.h"
 
 static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
@@ -109,6 +110,42 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
         MPI_Send(x->array,x->n,MPIU_SCALAR,0,47,xin->comm);
       }
     }
+    else if (vobj->type == BIN_FILE_VIEWER || vobj->type == BIN_FILES_VIEWER) {
+#if defined(PETSC_COMPLEX)
+      SETERRQ(1,"VecView_MPI:  Not done for complex version.");
+#else
+      Vec     v2;
+      Vec_MPI *v2d;
+      VecType ntype;
+      int     *iglobal, fdes = ViewerFileGetDescriptor_Private(ptr);
+      int     rstart = x->ownership[x->mytid];
+
+      /* transfer vector to 1 processor; perhaps we should do this manually
+         instead of with the vector assembly? */
+      if (!mytid) {ierr = VecCreateMPI(MPI_COMM_WORLD,x->N,x->N,&v2); CHKERRQ(ierr);}
+      else {ierr = VecCreateMPI(MPI_COMM_WORLD,0,x->N,&v2); CHKERRQ(ierr);}
+      v2d = (Vec_MPI *) v2->data;
+
+      iglobal = (int *) PETSCMALLOC(x->n*sizeof(int));
+      for (i=0; i<x->n; i++) iglobal[i] = i + rstart;
+      ierr = VecSetValues(v2,x->n,iglobal,x->array,INSERTVALUES); CHKERRQ(ierr);
+      PETSCFREE(iglobal);
+      ierr = VecAssemblyBegin(v2); CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(v2); CHKERRQ(ierr);
+
+      if (!mytid) {
+        /* Write vector header */
+        ntype = VECSEQ; /* pretend that the type is VECSEQ */
+        ierr = SYWrite(fdes,(char *)&ntype,sizeof(int),SYINT,0); CHKERRQ(ierr);
+        ierr = SYWrite(fdes,(char *)&v2d->N,sizeof(int),SYINT,0); CHKERRQ(ierr);
+
+        /* Write vector contents */
+        ierr = SYWrite(fdes,(char *)v2d->array,v2d->N*sizeof(Scalar),
+                       SYSCALAR,0); CHKERRQ(ierr);
+      }
+      ierr = VecDestroy(v2); CHKERRQ(ierr);
+    }
+#endif
   }
   else if (vobj->cookie == DRAW_COOKIE) {
     DrawCtx win = (DrawCtx) ptr;
