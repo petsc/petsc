@@ -69,6 +69,8 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
   PetscFunctionReturn(0);
 }
 
+EXTERN PetscErrorCode MatGetLocalMat(Mat,MatReuse,IS*,IS*,Mat*);
+EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
 EXTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ_ReducedPt(Mat,Mat,MatReuse,PetscReal,int,int,Mat*); 
 EXTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_ReducedPt(Mat,Mat,PetscReal,int,int,Mat*);
 EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt(Mat,Mat,int,int,Mat);
@@ -77,41 +79,30 @@ EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt(Mat,Mat,int,int,Mat
 PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode    ierr;
-  Mat               AP,P_seq,A_loc,C_seq;
-  Mat_MatMatMultMPI *mult;
+  Mat               P_seq,A_loc,C_seq;
   int               prstart,prend,m=P->m;
-  int               rank,prid=10;
+  IS                isrowp,iscolp;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
-
-  /* compute symbolic and numeric AP = A*P */
-  ierr = MatMatMult_MPIAIJ_MPIAIJ(A,P,scall,fill,&AP);CHKERRQ(ierr);
-  mult = (Mat_MatMatMultMPI*)AP->spptr;
-  P_seq = mult->bseq[0]; /* = submatrix of P by taking rows of P that equal to nonzero col of A */
-  
-  if (rank == prid){
-    ierr = PetscPrintf(PETSC_COMM_SELF," [%d] A_loc: %d, %d\n",rank,A_loc->m,A_loc->n);CHKERRQ(ierr);
-    ierr = MatView(A_loc,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF," [%d] P_seq: %d, %d\n",rank,P_seq->m,P_seq->n);CHKERRQ(ierr);
-    ierr = MatView(P_seq,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF," [%d]  AP_seq: %d, %d\n",rank,AP->m,AP->n);
-    ierr = MatView(AP,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  }
-
-  prstart = mult->brstart;
-  prend   = prstart + m;
+  /* get P_seq = submatrix of P by taking rows of P that equal to nonzero col of A */
+  ierr = MatGetBrowsOfAcols(A,P,scall,&isrowp,&iscolp,&prstart,&P_seq);CHKERRQ(ierr);
+  ierr = ISDestroy(iscolp);CHKERRQ(ierr);
  
-  A_loc = mult->aseq[0]; /* = submatrix of A by taking all local rows of A */
+  /* get A_loc = submatrix of A by taking all local rows of A */
+  ierr = MatGetLocalMat(A,scall,PETSC_NULL,&isrowp,&A_loc);CHKERRQ(ierr); 
+  ierr = ISDestroy(isrowp);CHKERRQ(ierr);
+
+  /* compute C_seq = P_loc^T * A_loc * P_seq */
+  prend   = prstart + m;
   ierr = MatPtAP_SeqAIJ_SeqAIJ_ReducedPt(A_loc,P_seq,scall,fill,prstart,prend,&C_seq);CHKERRQ(ierr);
 
-  /* add C_seq into C */
+  /* add C_seq into mpi C */
   ierr = MatMerge_SeqsToMPI(A->comm,C_seq,P->n,P->n,scall,C);CHKERRQ(ierr); 
 
   /* clean up */
-  ierr = MatDestroy(AP);CHKERRQ(ierr);
   ierr = MatDestroy(C_seq);CHKERRQ(ierr);
-
+  ierr = MatDestroy(P_seq);CHKERRQ(ierr);
+  ierr = MatDestroy(A_loc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -686,7 +677,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,int prstart,in
     pnzi = pi[i+1+prstart] - pi[i+prstart];
     for (j=0;j<pnzi;j++) {
       nextap = 0;
-      crow   = *pJ++;
+      crow   = *pJ++;  
       cjj    = cj + ci[crow];
       caj    = ca + ci[crow];
       /* Perform sparse axpy operation.  Note cjj includes apj. */

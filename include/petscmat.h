@@ -406,6 +406,8 @@ EXTERN PetscErrorCode MatDestroyMatrices(int,Mat *[]);
 EXTERN PetscErrorCode MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
 EXTERN PetscErrorCode MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
+EXTERN PetscErrorCode MatGetLocalMat(Mat,MatReuse,IS*,IS*,Mat*);
+EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
 
 EXTERN PetscErrorCode MatIncreaseOverlap(Mat,int,IS[],int);
 
