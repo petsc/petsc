@@ -3,23 +3,33 @@
 */
 #if !defined(__MG_PACKAGE)
 #define __MG_PACKAGE
+#include "sles.h"
 
 #define Multiplicative 0
 #define Additive       1
+#define FullMultigrid  2
+#define Kaskade        3
+extern int MGSetMethod(PC,int);
+extern int MGCheck(PC);
+extern int MGSetLevels(PC,int);
 
-typedef struct _MG* MG;
+extern int MGSetNumberSmoothUp(PC,int);
+extern int MGSetNumberSmoothDown(PC,int);
+extern int MGSetCycles(PC,int);
+extern int MGSetCyclesOnLevel(PC,int,int);
 
+extern int MGGetSmoother(PC,int,SLES*);
+extern int MGGetSmootherDown(PC,int,SLES*);
+extern int MGGetSmootherUp(PC,int,SLES*);
+extern int MGGetCoarseSolve(PC,SLES*);
 
-extern int MGCreate(MG *);
-extern int MGDestroy(MG);
-extern int MGCheck(MG);
-extern int MGSetNumberSmoothUp(MG,int);
-extern int MGSetNumberSmoothDown(MG,int);
-extern int MGSetCycles(MG,int);
-extern int MGACycle(MG);
-extern int MGMCycle(MG);
-extern int MGFCycle(MG);
+extern int MGSetRhs(PC,int,Vec);
+extern int MGSetX(PC,int,Vec);
+extern int MGSetR(PC,int,Vec);
 
+extern int MGSetRestriction(PC,int,Mat);
+extern int MGSetInterpolate(PC,int,Mat);
+extern int MGSetResidual(PC,int,int (*)(Mat,Vec,Vec,Vec),Mat);
 
 #endif
 
