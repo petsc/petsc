@@ -33,7 +33,7 @@
 */
 int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 {
-  int ierr;
+  int ierr,N;
   IS  from,to;
   Vec tmplocal,global;
   AO  ao;
@@ -46,7 +46,8 @@ int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
   ierr = ISCreateStride(da->comm,da->Nlocal,0,1,&to);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
   ierr = ISCreateStride(da->comm,da->Nlocal,0,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,da->Nlocal,0,&tmplocal);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&da->Nlocal,&N,1,MPI_INT,MPI_SUM,da->comm);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,0,&tmplocal);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(da->comm,da->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
   ierr = VecDestroy(tmplocal);CHKERRQ(ierr);  

@@ -48,15 +48,17 @@ T*/
 #include "petscda.h"
 #include "petscmg.h"
 
-#define D_x(x,m,i,j) (p5 * ((x)[(j)][(i)+1].m - (x)[(j)][(i)+1].m) * dhx)
-#define D_xm(x,m,i,j) (((x)[(j)][(i)].m - (x)[(j)][(i)-1].m) * dhx)
-#define D_xp(x,m,i,j) (((x)[(j)][(i+1)].m - (x)[(j)][(i)].m) * dhx)
-#define D_y(x,m,i,j) (p5 * ((x)[(j)+1][(i)].m - (x)[(j)-1][(i)].m) * dhy)
-#define D_ym(x,m,i,j) (((x)[(j)][(i)].m - (x)[(j)-1][(i)].m) * dhy)
-#define D_yp(x,m,i,j) (((x)[(j)+1][(i)].m - (x)[(j)][(i)].m) * dhy)
-#define D_xx(x,m,i,j) (((x)[(j)][(i)+1].m - two*(x)[(j)][(i)].m + (x)[(j)][(i)-1].m) * hydhx * dhxdhy)
-#define D_yy(x,m,i,j) (((x)[(j)+1][(i)].m - two*(x)[(j)][(i)].m + (x)[(j)-1][(i)].m) * hxdhy * dhxdhy)
+#define D_x(x,m,i,j)  (p5 * (x[(j)][(i)+1].m - x[(j)][(i)+1].m) * dhx)
+#define D_xm(x,m,i,j) ((x[(j)][(i)].m - x[(j)][(i)-1].m) * dhx)
+#define D_xp(x,m,i,j) ((x[(j)][(i+1)].m - x[(j)][(i)].m) * dhx)
+#define D_y(x,m,i,j)  (p5 * (x[(j)+1][(i)].m - x[(j)-1][(i)].m) * dhy)
+#define D_ym(x,m,i,j) ((x[(j)][(i)].m - x[(j)-1][(i)].m) * dhy)
+#define D_yp(x,m,i,j) ((x[(j)+1][(i)].m - x[(j)][(i)].m) * dhy)
+#define D_xx(x,m,i,j) ((x[(j)][(i)+1].m - two*x[(j)][(i)].m + x[(j)][(i)-1].m) * hydhx * dhxdhy)
+#define D_yy(x,m,i,j) ((x[(j)+1][(i)].m - two*x[(j)][(i)].m + x[(j)-1][(i)].m) * hxdhy * dhxdhy)
 #define Lapl(x,m,i,j) (D_xx(x,m,i,j) + D_yy(x,m,i,j))
+#define lx (2.*M_PI)
+#define ly (4.*M_PI)
 
 #define HERE do { ierr = PetscPrintf(PETSC_COMM_WORLD,"LINE %d (%s)\n", __LINE__, __FUNCTION__);CHKERRQ(ierr); } while (0)
 
@@ -106,15 +108,6 @@ extern int Initialize(DMMG *);
 extern int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
 extern int Gnuplot(DA da, Vec X, double time);
 extern int AttachNullSpace(PC,Vec);
-
-#if 0
-PetscReal lx = 2.*M_PI;
-PetscReal ly = 4.*M_PI;
-#endif
-
-#define lx (2.*M_PI)
-#define ly (4.*M_PI)
-
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -200,6 +193,7 @@ int main(int argc,char **argv)
        Process adiC:  AddTSTermLocal FormFunctionLocal
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    //ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,0,0);CHKERRQ(ierr);
 
     {
       SLES       subsles,sles;
@@ -470,9 +464,6 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       By_eq = 0.;
 #endif
 
-      /* AdiC doesn't cope with my macros and two many parentheses,
-       * so use the de-macrotized version below */
-#if 0
       /*
        * convective coefficients for upwinding
        */
@@ -522,53 +513,6 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 			    Bxm*(D_xp(x,U,i,j)) +
 			    Byp*(D_ym(x,U,i,j)) +
 			    Bym*(D_yp(x,U,i,j))) * rhos2);
-#else
-      /* Same as above, less human- but more adic-readable */
-      vx = - (p5 * (x[(j)+1][(i)].phi - x[(j)-1][(i)].phi) * dhy);
-      vy = (p5 * (x[(j)][(i)+1].phi - x[(j)][(i)+1].phi) * dhx);
-      avx = PetscAbsScalar(vx); vxp = p5*(vx+avx); vxm = p5*(vx-avx);
-      avy = PetscAbsScalar(vy); vyp = p5*(vy+avy); vym = p5*(vy-avy);
-#ifdef UPWINDING
-      vxp = vxm = p5*vx;
-      vyp = vym = p5*vy;
-#endif
-
-      Bx = (p5 * (x[(j)+1][(i)].psi - x[(j)-1][(i)].psi) * dhy);
-      By = - (p5 * (x[(j)][(i)+1].psi - x[(j)][(i)+1].psi) * dhx) + By_eq;
-      aBx = PetscAbsScalar(Bx); Bxp = p5*(Bx+aBx); Bxm = p5*(Bx-aBx);
-      aBy = PetscAbsScalar(By); Byp = p5*(By+aBy); Bym = p5*(By-aBy);
-#ifdef UPWINDING
-      Bxp = Bxm = p5*Bx;
-      Byp = Bym = p5*By;
-#endif
-
-      f[j][i].phi = ((((x[(j)][(i)+1].phi - two*x[(j)][(i)].phi + x[(j)][(i)-1].phi) * hydhx * dhxdhy) + ((x[(j)+1][(i)].phi - two*x[(j)][(i)].phi + x[(j)-1][(i)].phi) * hxdhy * dhxdhy)) - x[j][i].U) * hxhy;
-
-
-      f[j][i].psi = (x[j][i].psi - de2 * (((x[(j)][(i)+1].psi - two*x[(j)][(i)].psi + x[(j)][(i)-1].psi) * hydhx * dhxdhy) + ((x[(j)+1][(i)].psi - two*x[(j)][(i)].psi + x[(j)-1][(i)].psi) * hxdhy * dhxdhy)) - x[j][i].F) * hxhy;
-
-
-      f[j][i].U = hxhy * (-nu * (((x[(j)][(i)+1].U - two*x[(j)][(i)].U + x[(j)][(i)-1].U) * hydhx * dhxdhy) + ((x[(j)+1][(i)].U - two*x[(j)][(i)].U + x[(j)-1][(i)].U) * hxdhy * dhxdhy)) +
-                           (vxp*(((x[(j)][(i)].U - x[(j)][(i)-1].U) * dhx)) +
-                            vxm*(((x[(j)][(i+1)].U - x[(j)][(i)].U) * dhx)) +
-                            vyp*(((x[(j)][(i)].U - x[(j)-1][(i)].U) * dhy)) +
-                            vym*(((x[(j)+1][(i)].U - x[(j)][(i)].U) * dhy))) -
-                           (Bxp*(((x[(j)][(i)].F - x[(j)][(i)-1].F) * dhx) + F_eq_x) +
-                            Bxm*(((x[(j)][(i+1)].F - x[(j)][(i)].F) * dhx) + F_eq_x) +
-                            Byp*(((x[(j)][(i)].F - x[(j)-1][(i)].F) * dhy)) +
-                            Bym*(((x[(j)+1][(i)].F - x[(j)][(i)].F) * dhy))) * dde2);
-
-
-      f[j][i].F = hxhy * (-nu * (((x[(j)][(i)+1].F - two*x[(j)][(i)].F + x[(j)][(i)-1].F) * hydhx * dhxdhy) + ((x[(j)+1][(i)].F - two*x[(j)][(i)].F + x[(j)-1][(i)].F) * hxdhy * dhxdhy)) +
-                           (vxp*(((x[(j)][(i)].F - x[(j)][(i)-1].F) * dhx) + F_eq_x) +
-                            vxm*(((x[(j)][(i+1)].F - x[(j)][(i)].F) * dhx) + F_eq_x) +
-                            vyp*(((x[(j)][(i)].F - x[(j)-1][(i)].F) * dhy)) +
-                            vym*(((x[(j)+1][(i)].F - x[(j)][(i)].F) * dhy))) +
-                           (Bxp*(((x[(j)][(i)].U - x[(j)][(i)-1].U) * dhx)) +
-                            Bxm*(((x[(j)][(i+1)].U - x[(j)][(i)].U) * dhx)) +
-                            Byp*(((x[(j)][(i)].U - x[(j)-1][(i)].U) * dhy)) +
-                            Bym*(((x[(j)+1][(i)].U - x[(j)][(i)].U) * dhy))) * rhos2);
-#endif
     }
   }
 
