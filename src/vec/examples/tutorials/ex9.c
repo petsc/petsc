@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.7 1997/07/25 00:45:37 balay Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.8 1997/09/09 21:07:25 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
@@ -32,7 +32,7 @@ T*/
 int main(int argc,char **argv)
 {
   int        rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend,flag;
-  Scalar     value,*array,*tarray;
+  Scalar     value,*array,*tarray=0;
   Vec        lx,gx,gxs;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
