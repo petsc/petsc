@@ -330,6 +330,10 @@ class Configure(config.base.Configure):
       flag = '-Wl,-rpath,'
     elif self.archBase.startswith('solaris'):
       flag = '-R'
+    if self.archBase.startswith('darwin'):
+      self.framework.addSubstitution('SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
+    else:
+      self.framework.addSubstitution('SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
     self.addSubstitution('CLINKER_SLFLAG', flag)
     self.addSubstitution('FLINKER_SLFLAG', flag)
     return

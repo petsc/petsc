@@ -197,14 +197,14 @@ EXTERN_C_END
     This is code for translating PETSc memory addresses to integer offsets 
     for Fortran.
 */
-char   *PETSC_NULL_CHARACTER_Fortran;
-void   *PETSC_NULL_INTEGER_Fortran;
-void   *PETSC_NULL_Fortran;
-void   *PETSC_NULL_SCALAR_Fortran;
-void   *PETSC_NULL_DOUBLE_Fortran;
-void   *PETSC_NULL_REAL_Fortran;
+char   *PETSC_NULL_CHARACTER_Fortran = 0;
+void   *PETSC_NULL_INTEGER_Fortran   = 0;
+void   *PETSC_NULL_Fortran           = 0;
+void   *PETSC_NULL_SCALAR_Fortran    = 0;
+void   *PETSC_NULL_DOUBLE_Fortran    = 0;
+void   *PETSC_NULL_REAL_Fortran      = 0;
 EXTERN_C_BEGIN
-void   (*PETSC_NULL_FUNCTION_Fortran)(void);
+void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
 long PetscIntAddressToFortran(int *base,int *addr)
 {

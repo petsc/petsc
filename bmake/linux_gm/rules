@@ -9,6 +9,7 @@ libf: ${OBJSF}
 shared_arch:
 
 include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+include ${PETSC_DIR}/bmake/common/rules.shared.basic
 
 #
 #  Generates a shared library from any .a library; not just the PETSc ones

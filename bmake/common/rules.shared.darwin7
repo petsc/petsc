@@ -1,0 +1,61 @@
+
+# Actions to rebuild an out-of-date shared library
+#   The library basename is given by LIBNAME
+SLSUFFIX = dylib
+
+# configure generated targets:
+
+shared_darwin7: 
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
+	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
+        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${PETSC_MAT_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscsles" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_SLES_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscmesh" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscgrid" ]; then OTHERLIBS="${PETSC_MESH_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscgsolver" ]; then OTHERLIBS="${PETSC_GRID_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_GSOLVER_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_GSOLVER_LIB_BASIC} ${MPI_LIB}"  ; fi;\
+	libtool  -noprebind -dynamic -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS ${EXTERNAL_LIB} ${BLASLAPACK_LIB} ${SYS_LIB} -lm -lc;\
+	${RM} -f *
+
+
+# This is the main target for building shared libraries. It takes the following actions
+#   a) Create 'tmp' in the library directory
+#   b) Loops over the shared libraries in $SHLIBS
+#   c) Checks that the corresponding archive or its libtool counterpart exists
+#   d) Checks whether an existing archive is newer than the shared library
+#   e) Executes target 'shared_arch' for any out-of-date library (The library basename is passed as LIBNAME)
+#   c) Removes 'tmp'
+# The 'shared_arch' target is passed
+#   a) BOPT
+#   b) LIBNAME (the library basename)
+#   c) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
+# and both the archive and shared library reside in INSTALL_LIB_DIR.
+shared: chkopts_basic
+	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
+	${RM} -rf ${INSTALL_LIB_DIR}/tmp; \
+	mkdir ${INSTALL_LIB_DIR}/tmp; \
+	for LIBNAME in libmpiuni ${SHLIBS}; \
+	do \
+	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${LIB_SUFFIX}; then \
+	    if test -f ${INSTALL_LIB_DIR}/$$LIBNAME..dylib; then \
+	      flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
+	      if [ "$$flag" = "" ]; then \
+	        flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
+	      fi; \
+	    else \
+	      flag="build"; \
+	    fi; \
+	    if [ "$$flag" != "" ]; then \
+            echo "Building $$LIBNAME.dylib"; \
+	      ${OMAKE} BOPT=${BOPT} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp shared_arch; \
+	    fi; \
+	  fi; \
+	done; \
+	${RM} -rf ${INSTALL_LIB_DIR}/tmp
+

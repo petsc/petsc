@@ -13,6 +13,7 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 shared_arch:
 
 include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+include ${PETSC_DIR}/bmake/common/rules.shared.basic
 
 oshared:
 

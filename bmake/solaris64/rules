@@ -19,6 +19,7 @@ shared_arch: shared_solaris
 #  Since there is no .so version of the libC.a it must be done this way.
 
 include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+include ${PETSC_DIR}/bmake/common/rules.shared.basic
 
 oshared: 
 	-@${RM} -rf tmp; \

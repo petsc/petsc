@@ -6,6 +6,7 @@ libf: ${OBJSF}
 
 #############
 include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+include ${PETSC_DIR}/bmake/common/rules.shared.basic
 
 # with 5.0.1 Build 010730D0 version of intel compilers, shared libraries created
 # are broken with BOPT=O && using -KPIC flag

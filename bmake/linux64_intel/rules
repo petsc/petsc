@@ -8,3 +8,4 @@ libf: ${OBJSF}
 shared_arch: shared_linux_intel
 
 include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+include ${PETSC_DIR}/bmake/common/rules.shared.basic

@@ -10,6 +10,7 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 #########
 
 include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp
+include ${PETSC_DIR}/bmake/common/rules.shared.basic
 
 shared_arch:
 

@@ -9,6 +9,7 @@ libf:
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
 include ${PETSC_DIR}/bmake/common/rules.fortran.cpp
+include ${PETSC_DIR}/bmake/common/rules.shared.basic
 
 ###################
 # Need to build libpetscfortran as a shared library as well, 

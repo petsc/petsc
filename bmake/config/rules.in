@@ -2,6 +2,7 @@
 @LIB_F_TARGET@
 
 @F_to_o_TARGET@
+@SHARED_TARGET@
 
 #############
 
