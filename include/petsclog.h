@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.143 2000/07/21 20:45:51 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.144 2000/08/17 04:53:46 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -157,9 +157,9 @@ extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
  */
 
 #if defined(PETSC_USE_COMPLEX)
-#define PLogFlops(n) {_TotalFlops += (4*n);}
+#define PLogFlops(n) 0; {_TotalFlops += (4*n);}
 #else
-#define PLogFlops(n) {_TotalFlops += (n);}
+#define PLogFlops(n) 0; {_TotalFlops += (n);}
 #endif
 
 #if defined (PETSC_HAVE_MPE)
