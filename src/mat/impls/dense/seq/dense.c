@@ -1,10 +1,10 @@
-/*$Id: dense.c,v 1.186 2000/05/05 22:15:33 balay Exp bsmith $*/
+/*$Id: dense.c,v 1.187 2000/06/30 20:49:23 bsmith Exp balay $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
 
 #include "src/mat/impls/dense/seq/dense.h"
-#include "pinclude/blaslapack.h"
+#include "petscblaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatAXPY_SeqDense"
