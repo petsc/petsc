@@ -1,4 +1,5 @@
 petsc/bmake/sun4
+petsc/bmake/t3d
 petsc/bmake/sun4_f90
 petsc/bmake/sun4_nodebug
 petsc/src/contrib/fun3d
@@ -22,7 +23,6 @@ petsc/bin/petscconf.h.in.sav
 petsc/bin/confmake
 petsc/bmake/adicmastercontrol
 petsc/bmake/paragon
-petsc/bmake/solaris_uni
 petsc/bmake/IRIX64_uni
 petsc/bmake/alpha/base.g_pointer
 petsc/bin/petscopt
