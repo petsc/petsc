@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.226 1999/12/22 06:35:06 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.227 2000/01/11 20:59:43 bsmith Exp kaushik $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1540,8 +1540,8 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,"   Count: number of times phase was executed\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"   Time and Flops/sec: Max - maximum over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"                       Ratio - ratio of maximum to minimum over all processors\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,"   Mess: number of messages sent\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,"   Avg. len: average message length\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Mess: number of messages sent over all processors\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"   Avg. len: average message length over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"   Reduct: number of global reductions\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"   Global: entire computation\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"   Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().\n");CHKERRQ(ierr);
