@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.52 2000/02/02 20:07:23 bsmith Exp $ 
+# $Id: base.site,v 1.1 2000/06/19 17:19:38 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,9 +16,9 @@ LAPACK_LIB     = -L${PGI}/linux86/lib -llapack
 
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /soft/apps/packages/mpich-gmpg-1.2.0-0
-MPI_LIB        = -L${MPI_HOME}/lib -lmpich -L/soft/apps/packages/gm-1.2pre12/binary/lib/ -lgm
-MPI_INCLUDE    = -I${MPI_HOME}/include -I/soft/apps/packages/gm-1.2pre12/binary/include 
+MPI_HOME       = /soft/apps/packages/mpich-gmpg-1.2.0-1
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich -L/soft/apps/packages/gm-1.2/binary/lib/ -lgm
+MPI_INCLUDE    = -I${MPI_HOME}/include -I/soft/apps/packages/gm-1.2/binary/include 
 MPIRUN         =  ${MPI_HOME}/bin/mpirun
 
 #
