@@ -85,41 +85,6 @@ class Configure(config.base.Configure):
        - libName may be a list of library names'''
     if not isinstance(funcs,list): funcs = [funcs]
     if not isinstance(libName, list): libName = [libName]
-    self.framework.logPrint('Checking for function '+funcName+' in library '+str(libName))
-    # Handle Fortran mangling
-    if fortranMangle:
-      funcName = self.compilers.mangleFortranFunction(funcName)
-    includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
-    # Handle C++ mangling
-    if self.language[-1] == 'C++':
-      includes += '''
-      #ifdef __cplusplus
-      extern "C"
-      #endif'''
-    # Construct prototype
-    if prototype:
-      includes += prototype
-    else:
-      includes += '/* We use char because int might match the return type of a gcc2 builtin and then its argument prototype would still apply. */\n'
-      includes += 'char '+funcName+'();\n'
-    # Construct function call
-    if call:
-      body = call
-    else:
-      body = funcName+'()\n'
-    # Setup link line
-    oldLibs = self.framework.argDB['LIBS']
-    if libDir:
-      if not isinstance(libDir, list): libDir = [libDir]
-      for dir in libDir:
-        self.framework.argDB['LIBS'] += ' -L'+dir
-    for lib in libName:
-      self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
-    self.framework.argDB['LIBS'] += ' '+otherLibs
-    self.pushLanguage(self.language[-1])
-    if self.checkLink(includes, body):
-      found = 1
-      self.framework.argDB['LIBS'] = oldLibs
     self.framework.logPrint('Checking for functions '+str(funcs)+' in library '+str(libName)+' '+str(otherLibs))
     for funcName in funcs:
       # Handle Fortran mangling
