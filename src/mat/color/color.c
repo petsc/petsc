@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.38 1999/06/08 22:56:22 balay Exp balay $";
+static char vcid[] = "$Id: color.c,v 1.39 1999/06/30 23:52:03 balay Exp balay $";
 #endif
  
 /*
@@ -259,8 +259,7 @@ int MatColoringRegister_Private(char *sname,char *path,char *name,int (*function
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&MatColoringList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.13 1999/09/02 14:52:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.14 1999/10/01 21:20:17 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -166,9 +166,7 @@ int ViewerRegister_Private(char *sname,char *path,char *name,int (*function)(Vie
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&ViewerList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.170 1999/09/27 21:31:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.171 1999/10/01 21:22:06 bsmith Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -671,8 +671,7 @@ int KSPRegister_Private(char *sname,char *path,char *name,int (*function)(KSP))
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

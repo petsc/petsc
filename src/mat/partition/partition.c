@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.33 1999/08/29 23:56:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.34 1999/10/01 21:21:34 bsmith Exp balay $";
 #endif
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
@@ -91,8 +91,7 @@ int MatPartitioningRegister_Private(char *sname,char *path,char *name,int (*func
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&MatPartitioningList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

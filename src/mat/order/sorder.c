@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.62 1999/06/30 23:51:38 balay Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.63 1999/10/01 21:21:25 bsmith Exp balay $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -162,8 +162,7 @@ int MatOrderingRegister_Private(char *sname,char *path,char *name,int (*function
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

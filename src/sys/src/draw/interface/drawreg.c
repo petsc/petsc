@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.16 1999/09/08 18:27:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.17 1999/10/01 21:20:18 bsmith Exp balay $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -209,9 +209,7 @@ int DrawRegister_Private(char *sname,char *path,char *name,int (*function)(Draw)
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&DrawList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

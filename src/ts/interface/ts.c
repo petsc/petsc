@@ -1363,8 +1363,7 @@ int TSRegister_Private(char *sname,char *path,char *name,int (*function)(TS))
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":"); PetscStrcat(fullname,name);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   FListAdd_Private(&TSList,sname,fullname,        (int (*)(void*))function);
   PetscFunctionReturn(0);
 }

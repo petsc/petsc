@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.63 1999/09/02 14:53:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.64 1999/10/01 21:20:56 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -123,8 +123,7 @@ int VecRegister_Private(const char sname[],const char path[],const char name[],
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

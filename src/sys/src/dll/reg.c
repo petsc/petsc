@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.43 1999/10/04 18:49:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.44 1999/10/05 19:45:48 bsmith Exp balay $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -541,6 +541,35 @@ int FListDuplicate(FList fl, FList *nl)
 }
 
 
+#undef __FUNC__  
+#define __FUNC__ "FListDuplicate"
+/*
+    FListConcat_Private - joins name of a libary, and the path where it is located
+    into a single string.
 
+    Input Parameters:
+.   path   - path to the library name.
+.   name   - name of the library
 
+    Output Parameters:
+.   fullname - the name that is the union of the path and the library name,
+               delimited by a semicolon. i.e path:name
 
+    Notes:
+    If the path is NULL, assumes that the name, specified also includes
+    the path as path:name
+
+*/
+int FListConcat_Private(const char path[],const char name[], char fullname[])
+{
+  int ierr;
+  PetscFunctionBegin;
+  if (path) {
+    ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
+    ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
+    ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrcpy(fullname,name);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

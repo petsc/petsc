@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.93 1999/10/04 18:53:49 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.94 1999/10/04 23:23:03 balay Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -105,8 +105,7 @@ int MatSNESMFRegister_Private(char *sname,char *path,char *name,int (*function)(
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&MatSNESMFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

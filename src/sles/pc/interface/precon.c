@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.179 1999/09/27 21:30:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.180 1999/10/01 21:21:48 bsmith Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -1296,9 +1296,8 @@ int PCRegister_Private(char *sname,char *path,char *name,int (*function)(PC))
   char fullname[256];
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
+
+  ierr = FListConcat_Private(path,name,fullname); CHKERRQ(ierr);
   ierr = FListAdd_Private(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
