@@ -1,10 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.70 1996/10/10 19:49:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.71 1996/11/07 15:10:13 bsmith Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 #include "pinclude/pviewer.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESView"
 /*@ 
    SLESView - Prints the SLES data structure.
 
@@ -45,6 +47,8 @@ int SLESView(SLES sles,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESPrintHelp"
 /*@
    SLESPrintHelp - Prints SLES options.
 
@@ -67,6 +71,8 @@ int SLESPrintHelp(SLES sles)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESSetOptionsPrefix"
 /*@C
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
    SLES options in the database. You must include the - at the beginning of 
@@ -93,6 +99,8 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESAppendOptionsPrefix"
 /*@C
    SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SLES options in the database. You must include the - at the beginning of 
@@ -118,6 +126,9 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
   ierr = PCAppendOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESGetOptionsPrefix"
 /*@
    SLESGetOptionsPrefix - Gets the prefix used for searching for all 
    SLES options in the database.
@@ -141,6 +152,8 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
   return PetscObjectGetOptionsPrefix((PetscObject)sles, prefix); 
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESSetFromOptions"
 /*@
    SLESSetFromOptions - Sets various SLES parameters from user options.
    Also takes all KSP and PC options.
@@ -162,6 +175,9 @@ int SLESSetFromOptions(SLES sles)
   ierr = PCSetFromOptions(sles->pc); CHKERRQ(ierr);
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESCreate"
 /*@C
    SLESCreate - Creates a linear equation solver context.
 
@@ -191,6 +207,8 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESDestroy"
 /*@C
    SLESDestroy - Destroys the SLES context.
 
@@ -211,7 +229,10 @@ int SLESDestroy(SLES sles)
   PetscHeaderDestroy(sles);
   return 0;
 }
+
 extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESSetUp"
 /*@
    SLESSetUp - Performs set up required for solving a linear system.
 
@@ -257,6 +278,9 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   }
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESSolve"
 /*@
    SLESSolve - Solves a linear system.
 
@@ -328,6 +352,8 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESSetOperators"
 /*@C
    SLESGetKSP - Returns the KSP context for a SLES solver.
 
@@ -351,6 +377,9 @@ int SLESGetKSP(SLES sles,KSP *ksp)
   *ksp = sles->ksp;
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESSetOperators"
 /*@C
    SLESGetPC - Returns the preconditioner (PC) context for a SLES solver.
 
@@ -376,6 +405,8 @@ int SLESGetPC(SLES sles,PC *pc)
 }
 
 #include "src/mat/matimpl.h"
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESSetOperators"
 /*@
    SLESSetOperators - Sets the matrix associated with the linear system
    and a (possibly) different one associated with the preconditioner. 
@@ -432,6 +463,8 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SLESSetUpOnBlocks"
 /*@
    SLESSetUpOnBlocks - Sets up the preconditioner for each block in
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
