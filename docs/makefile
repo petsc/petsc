@@ -1,12 +1,10 @@
 PETSC_DIR = ../
 
-CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   = $(OPT) -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
-WSOURCEC = 
 SOURCEH  = tex/manual.tex www.html tex/part1.tex tex/intro.tex
 OBJSC    =
-WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)

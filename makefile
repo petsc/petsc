@@ -88,6 +88,8 @@ etags:
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
 	etags -a -f TAGS src/*/examples/*/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS src/fortran/makefile src/fortran/auto/makefile 
+	etags -a -f TAGS src/fortran/custom/makefile
 	etags -a -f TAGS include/makefile include/*/makefile docs/makefile
 	etags -a -f TAGS bmake/common bmake/sun4/sun4* bmake/rs6000/rs6000* 
 	etags -a -f TAGS bmake/solaris/solaris*
@@ -113,6 +115,8 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/*/utils/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/makefile src/fortran/auto/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/makefile
 	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile docs/makefile
 	etags -a -f TAGS_NO_EXAMPLES bmake/common bmake/sun4/sun4* 
 	etags -a -f TAGS_NO_EXAMPLES bmake/rs6000/rs6000* 
@@ -134,6 +138,8 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES src/*/utils/makefile src/*/interface/makefile
 	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS_MAKEFILES src/*/examples/makefile src/*/examples/*/makefile
+	etags -a -f TAGS_MAKEFILES src/fortran/makefile src/fortran/auto/makefile 
+	etags -a -f TAGS_MAKEFILES src/fortran/custom/makefile
 	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile docs/makefile
 	etags -a -f TAGS_MAKEFILES bmake/common bmake/sun4/sun4* 
 	etags -a -f TAGS_MAKEFILES bmake/rs6000/rs6000* 
