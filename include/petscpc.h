@@ -33,11 +33,11 @@ extern int    PCGetMethodName(PCMethod,char **);
 /* Flags for PCSetOperators */
 #define MAT_SAME_NONZERO_PATTERN 1
 
-extern int    PCSetOperators(PC,Mat,Mat,int);
-extern int    PCBJacobiSetUseTrueLocal(PC);
-extern int    PCSetVector(PC,Vec);
-extern int    PCPrintHelp(PC);
-extern int    PCSetOptionsPrefix(PC,char*);
+extern int PCSetOperators(PC,Mat,Mat,int);
+extern int PCBJacobiSetUseTrueLocal(PC);
+extern int PCSetVector(PC,Vec);
+extern int PCPrintHelp(PC);
+extern int PCSetOptionsPrefix(PC,char*);
 
 extern int PCSORSetSymmetric(PC, int);
 extern int PCSORSetOmega(PC, double);
@@ -55,9 +55,9 @@ extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 
 extern int PCGetOperators(PC,Mat*,Mat*,int*);
 
-extern int PCLUSetOrdering(PC,int);
+extern int PCLUSetOrdering(PC,MatOrdering);
 extern int PCLUSetUseInplace(PC);
-extern int PCILUSetOrdering(PC,int);
+extern int PCILUSetOrdering(PC,MatOrdering);
 extern int PCILUSetLevels(PC,int);
 
 #endif
