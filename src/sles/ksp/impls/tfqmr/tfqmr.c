@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.11 1995/07/17 03:54:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: tfqmr.c,v 1.12 1995/07/26 01:07:42 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -20,105 +20,106 @@ static int KSPSetUp_TFQMR(KSP itP)
 
 static int  KSPSolve_TFQMR(KSP itP,int *its)
 {
-int       i = 0, maxit, m, conv, hist_len, cerr = 0;
-Scalar    rho, rhoold, a, s, b, eta,
-          etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
-double    *history,dp,dpold,w,dpest,tau,psi,cm;
-Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
+  int       i = 0, maxit, m, conv, hist_len, cerr = 0, ierr;
+  Scalar    rho, rhoold, a, s, b, eta,
+            etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
+  double    *history,dp,dpold,w,dpest,tau,psi,cm;
+  Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 
-maxit   = itP->max_it;
-history = itP->residual_history;
-hist_len= itP->res_hist_size;
-X       = itP->vec_sol;
-B       = itP->vec_rhs;
-R       = itP->work[0];
-RP      = itP->work[1];
-V       = itP->work[2];
-T       = itP->work[3];
-Q       = itP->work[4];
-P       = itP->work[5];
-BINVF   = itP->work[6];
-U       = itP->work[7];
-D       = itP->work[8];
-T1      = itP->work[9];
-AUQ     = V;
+  maxit   = itP->max_it;
+  history = itP->residual_history;
+  hist_len= itP->res_hist_size;
+  X       = itP->vec_sol;
+  B       = itP->vec_rhs;
+  R       = itP->work[0];
+  RP      = itP->work[1];
+  V       = itP->work[2];
+  T       = itP->work[3];
+  Q       = itP->work[4];
+  P       = itP->work[5];
+  BINVF   = itP->work[6];
+  U       = itP->work[7];
+  D       = itP->work[8];
+  T1      = itP->work[9];
+  AUQ     = V;
 
-/* Compute initial preconditioned residual */
-KSPResidual(itP,X,V,T, R, BINVF, B );
+  /* Compute initial preconditioned residual */
+  ierr = KSPResidual(itP,X,V,T, R, BINVF, B ); CHKERRQ(ierr);
 
-/* Test for nothing to do */
-VecNorm(R,&dp);
-if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
-MONITOR(itP,dp,0);
+  /* Test for nothing to do */
+  ierr = VecNorm(R,&dp); CHKERRQ(ierr);
+  if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
+  MONITOR(itP,dp,0);
 
-/* Make the initial Rp == R */
-VecCopy(R,RP);
+  /* Make the initial Rp == R */
+  ierr = VecCopy(R,RP); CHKERRQ(ierr);
 
-/* Set the initial conditions */
-etaold = 0.0;
-psiold = 0.0;
-tau    = dp;
-dpold  = dp;
+  /* Set the initial conditions */
+  etaold = 0.0;
+  psiold = 0.0;
+  tau    = dp;
+  dpold  = dp;
 
-VecDot(RP,R,&rhoold);
-VecCopy(R,U);
-VecCopy(R,P);
-PCApplyBAorAB(itP->B,itP->right_pre,P,V,T);
-VecSet(&zero,D);
+  ierr = VecDot(RP,R,&rhoold); CHKERRQ(ierr);
+  ierr = VecCopy(R,U); CHKERRQ(ierr);
+  ierr = VecCopy(R,P); CHKERRQ(ierr);
+  ierr = PCApplyBAorAB(itP->B,itP->right_pre,P,V,T); CHKERRQ(ierr);
+  ierr = VecSet(&zero,D); CHKERRQ(ierr);
 
-for (i=0; i<maxit; i++) {
-    VecDot(RP,V,&s);                        /* s <- rp' v          */
-    a = rhoold / s;                        /* a <- rho / s        */
-    tmp = -a; VecWAXPY(&tmp,V,U,Q);         /* q <- u - a v        */
-    VecWAXPY(&one,U,Q,T);                   /* t <- u + q          */
-    PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,T1);
-    VecAXPY(&tmp,AUQ,R);                    /* r <- r - a K (u + q) */
-    VecNorm(R,&dp);
+  for (i=0; i<maxit; i++) {
+    ierr = VecDot(RP,V,&s); CHKERRQ(ierr);          /* s <- rp' v           */
+    a = rhoold / s;                                 /* a <- rho / s         */
+    tmp = -a; VecWAXPY(&tmp,V,U,Q); CHKERRQ(ierr);  /* q <- u - a v         */
+    ierr = VecWAXPY(&one,U,Q,T); CHKERRQ(ierr);     /* t <- u + q           */
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,T1); CHKERRQ(ierr);
+    ierr = VecAXPY(&tmp,AUQ,R); CHKERRQ(ierr);      /* r <- r - a K (u + q) */
+    ierr = VecNorm(R,&dp); CHKERRQ(ierr);
     for (m=0; m<2; m++) {
-	if (m == 0)
-	    w = sqrt(dp*dpold);
-	else 
-	    w = dp;
-	psi = w / tau;
-	cm  = 1.0 / sqrt( 1.0 + psi * psi );
-	tau = tau * psi * cm;
-	eta = cm * cm * a;
-	cf  = psiold * psiold * etaold / a;
-	if (m == 0) {
-	    VecAYPX(&cf,U,D);
-	    }
-	else {
-	    VecAYPX(&cf,Q,D);
-	    }
-	VecAXPY(&eta,D,X);
+      if (m == 0)
+        w = sqrt(dp*dpold);
+      else 
+        w = dp;
+      psi = w / tau;
+      cm  = 1.0 / sqrt( 1.0 + psi * psi );
+      tau = tau * psi * cm;
+      eta = cm * cm * a;
+      cf  = psiold * psiold * etaold / a;
+      if (m == 0) {
+        ierr = VecAYPX(&cf,U,D); CHKERRQ(ierr);
+      }
+      else {
+	ierr = VecAYPX(&cf,Q,D); CHKERRQ(ierr);
+      }
+      ierr = VecAXPY(&eta,D,X); CHKERRQ(ierr);
 
-	dpest = sqrt(m + 1.0) * tau;
-	if (history && hist_len > i + 1) history[i+1] = dpest;
-	MONITOR(itP,dpest,i+1);
-	if ((conv = cerr = (*itP->converged)(itP,i+1,dpest,itP->cnvP))) break;
+      dpest = sqrt(m + 1.0) * tau;
+      if (history && hist_len > i + 1) history[i+1] = dpest;
+      MONITOR(itP,dpest,i+1);
+      if ((conv = cerr = (*itP->converged)(itP,i+1,dpest,itP->cnvP))) break;
 
-	etaold = eta;
-	psiold = psi;
-	}
+      etaold = eta;
+      psiold = psi;
+    }
     if (conv) break;
 
-    VecDot(RP,R,&rho);                      /* newrho <- rp' r       */
-    b = rho / rhoold;                      /* b <- rho / rhoold     */
-    VecWAXPY(&b,Q,R,U);                     /* u <- r + b q          */
-    VecAXPY(&b,P,Q);                          
-    VecWAXPY(&b,Q,U,P);                     /* p <- u + b(q + b p)   */
-    PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q);  /* v <- K p              */
+    ierr = VecDot(RP,R,&rho); CHKERRQ(ierr);        /* newrho <- rp' r     */
+    b = rho / rhoold;                               /* b <- rho / rhoold   */
+    ierr = VecWAXPY(&b,Q,R,U); CHKERRQ(ierr);       /* u <- r + b q        */
+    ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);
+    ierr = VecWAXPY(&b,Q,U,P); CHKERRQ(ierr);       /* p <- u + b(q + b p) */
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,
+                         P,V,Q); CHKERRQ(ierr);     /* v <- K p            */
 
     rhoold = rho;
     dpold  = dp;
-    }
-if (i == maxit) i--;
-if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
+  }
+  if (i == maxit) i--;
+  if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-KSPUnwindPre(  itP, X, T );
-if (cerr <= 0) *its = -(i+1);
-else          *its = i + 1;
-return 0;
+  ierr = KSPUnwindPre(itP,X,T); CHKERRQ(ierr);
+  if (cerr <= 0) *its = -(i+1);
+  else          *its = i + 1;
+  return 0;
 }
 
 int KSPCreate_TFQMR(KSP itP)

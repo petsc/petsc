@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.21 1995/07/26 01:08:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.22 1995/08/07 18:51:23 bsmith Exp curfman $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -51,7 +51,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   Mat              Amat, Pmat;
   MatStructure     pflag;
 
-  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
+  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   history = itP->residual_history;
   hist_len= itP->res_hist_size;
   maxit   = itP->max_it;
@@ -81,26 +81,26 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   c[k] = mu;
 
   if (!itP->guess_zero) {
-    MatMult(Amat,x,r);                       /*  r = b - Ax     */
-    VecAYPX(&mone,b,r);       
+    ierr = MatMult(Amat,x,r); CHKERRQ(ierr);     /*  r = b - Ax     */
+    ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
   }
-  else VecCopy(b,r);
+  else {ierr = VecCopy(b,r); CHKERRQ(ierr);}
                   
-  PCApply(itP->B,r,p[k]);                    /*  p[k] = scale B^{-1}r  + x */
-  VecAYPX(&scale,x,p[k]);                        
+  ierr = PCApply(itP->B,r,p[k]); CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
+  ierr = VecAYPX(&scale,x,p[k]); CHKERRQ(ierr);
 
   for ( i=0; i<maxit; i++) {
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 
-    MatMult(Amat,p[k],r);        /*  r = b - Ap[k]    */
-    VecAYPX(&mone,b,r);                        
-    PCApply(itP->B,r,p[kp1]);                /*  p[kp1] = B^{-1}z  */
+    ierr = MatMult(Amat,p[k],r);                 /*  r = b - Ap[k]    */
+    ierr = VecAYPX(&mone,b,r);                       
+    ierr = PCApply(itP->B,r,p[kp1]);             /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
     if (itP->calc_res) {
-      if (!pres) VecNorm(r,&rnorm);
-      else VecNorm(p[kp1],&rnorm);
+      if (!pres) {ierr = VecNorm(r,&rnorm); CHKERRQ(ierr);}
+      else {ierr = VecNorm(p[kp1],&rnorm); CHKERRQ(ierr);}
       if (history && hist_len > i) history[i] = rnorm;
       itP->vec_sol = p[k]; 
       MONITOR(itP,rnorm,i);
@@ -110,9 +110,9 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
 
     /* y^{k+1} = omega( y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
     tmp = omega*Gamma*scale;
-    VecScale(&tmp,p[kp1]);
+    ierr = VecScale(&tmp,p[kp1]); CHKERRQ(ierr);
     tmp = 1.0-omega; VecAXPY(&tmp,p[km1],p[kp1]);
-    VecAXPY(&omega,p[k],p[kp1]);
+    ierr = VecAXPY(&omega,p[k],p[kp1]); CHKERRQ(ierr);
 
     ktmp = km1;
     km1  = k;
@@ -120,12 +120,12 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
     kp1  = ktmp;
   }
   if (!cerr && itP->calc_res) {
-    MatMult(Amat,p[k],r);              /*  r = b - Ap[k]    */
-    VecAYPX(&mone,b,r);                        
-    if (!pres) VecNorm(r,&rnorm);
+    ierr = MatMult(Amat,p[k],r); CHKERRQ(ierr);       /*  r = b - Ap[k]    */
+    ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
+    if (!pres) {ierr = VecNorm(r,&rnorm); CHKERRQ(ierr);}
     else {
-      ierr = PCApply(itP->B,r,p[kp1]);CHKERRQ(ierr);/*  p[kp1] = B^{-1}z  */
-      VecNorm(p[kp1],&rnorm);
+      ierr = PCApply(itP->B,r,p[kp1]); CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
+      ierr = VecNorm(p[kp1],&rnorm); CHKERRQ(ierr);
     }
     if (history && hist_len > i) history[i] = rnorm;
     itP->vec_sol = p[k]; 

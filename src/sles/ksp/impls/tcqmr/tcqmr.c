@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.12 1995/07/17 20:40:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: tcqmr.c,v 1.13 1995/07/26 01:07:46 curfman Exp curfman $";
 #endif
 
 /*
@@ -15,114 +15,117 @@ static char vcid[] = "$Id: tcqmr.c,v 1.12 1995/07/17 20:40:12 bsmith Exp curfman
 
 static int KSPSolve_TCQMR(KSP itP,int *its )
 {
-double      rnorm0, rnorm;                      /* residual values */
-Scalar      theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f; 
-Scalar      deltmp, rho, beta, eptmp, ta, s, c, tau_n, delta;
-Scalar      dp11,dp2, rhom1, alpha,tmp, zero = 0.0;
-int         it, cerr;
-double      dp1,Gamma;
+  double      rnorm0, rnorm;                      /* residual values */
+  Scalar      theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f; 
+  Scalar      deltmp, rho, beta, eptmp, ta, s, c, tau_n, delta;
+  Scalar      dp11,dp2, rhom1, alpha,tmp, zero = 0.0;
+  int         it, cerr, ierr;
+  double      dp1,Gamma;
 
-it = 0;
-KSPResidual(itP,x,u,v, r, v0, b );
-VecNorm(r,&rnorm0);                            /*  rnorm0 = ||r|| */
+  it = 0;
+  ierr = KSPResidual(itP,x,u,v,r,v0,b); CHKERRQ(ierr);
+  ierr = VecNorm(r,&rnorm0); CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
 
-VecSet(&zero,um1);
-VecCopy(r,u);
-rnorm = rnorm0;
-tmp = 1.0/rnorm; VecScale(&tmp, u);
-VecSet(&zero,vm1);
-VecCopy(u,v);
-VecCopy(u,v0);
-VecSet(&zero,pvec1);
-VecSet(&zero,pvec2);
-VecSet(&zero,p);
-theta = 0.0; 
-ep    = 0.0; 
-cl1   = 0.0; 
-sl1   = 0.0; 
-cl    = 0.0; 
-sl    = 0.0;
-sprod = 1.0; 
-tau_n1= rnorm0;
-f     = 1.0; 
-Gamma = 1.0; 
-rhom1 = 1.0;
+  ierr = VecSet(&zero,um1); CHKERRQ(ierr);
+  ierr = VecCopy(r,u); CHKERRQ(ierr);
+  rnorm = rnorm0;
+  tmp = 1.0/rnorm; ierr = VecScale(&tmp,u); CHKERRQ(ierr);
+  ierr = VecSet(&zero,vm1); CHKERRQ(ierr);
+  ierr = VecCopy(u,v); CHKERRQ(ierr);
+  ierr = VecCopy(u,v0); CHKERRQ(ierr);
+  ierr = VecSet(&zero,pvec1); CHKERRQ(ierr);
+  ierr = VecSet(&zero,pvec2); CHKERRQ(ierr);
+  ierr = VecSet(&zero,p); CHKERRQ(ierr);
+  theta = 0.0; 
+  ep    = 0.0; 
+  cl1   = 0.0; 
+  sl1   = 0.0; 
+  cl    = 0.0; 
+  sl    = 0.0;
+  sprod = 1.0; 
+  tau_n1= rnorm0;
+  f     = 1.0; 
+  Gamma = 1.0; 
+  rhom1 = 1.0;
 
-/*
- CALCULATE SQUARED LANCZOS  vectors
- */
+  /*
+   CALCULATE SQUARED LANCZOS  vectors
+   */
   while (!(cerr=(*itP->converged)(itP,it,rnorm,itP->cnvP))) {     
     if (itP->monitor) {
         (*itP->monitor)( itP, it, rnorm,itP->monP );
     }
-    PCApplyBAorAB(itP->B,itP->right_pre, u, y, vtmp );   /* y = A*u */
-    VecDot( v0, y, &dp11 );
-    VecDot( v0, u, &dp2 );
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,
+                         u,y,vtmp); CHKERRQ(ierr);   /* y = A*u */
+    ierr = VecDot(v0,y,&dp11); CHKERRQ(ierr);
+    ierr = VecDot(v0,u,&dp2); CHKERRQ(ierr);
     alpha = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
     deltmp = alpha;
-    VecCopy(y,z);     
-    tmp = -alpha; VecAXPY(&tmp,u,z);             /* z = y - alpha u */
-    VecDot( v0, u, &rho );
-    beta   = rho / (f*rhom1);
-    rhom1  = rho;
-    VecCopy(z,utmp);                               /* up1 = (A-alpha*I)*
-					       (z-2*beta*p) + f*beta*
-					     beta*um1 */
+    ierr = VecCopy(y,z); CHKERRQ(ierr);
+    tmp = -alpha; 
+    ierr = VecAXPY(&tmp,u,z); CHKERRQ(ierr); /* z = y - alpha u */
+    ierr = VecDot(v0,u,&rho); CHKERRQ(ierr);
+    beta  = rho / (f*rhom1);
+    rhom1 = rho;
+    ierr = VecCopy(z,utmp); CHKERRQ(ierr);    /* up1 = (A-alpha*I)*
+					         (z-2*beta*p) + f*beta*
+					         beta*um1 */
     tmp = -2.0*beta;VecAXPY(&tmp,p,utmp);
-    PCApplyBAorAB(itP->B,itP->right_pre,utmp,up1,vtmp);
-    tmp = -alpha; VecAXPY(&tmp,utmp,up1);
-    tmp = f*beta*beta; VecAXPY(&tmp,um1,up1);
-    VecNorm(up1,&dp1);
-    f     = 1.0 / dp1;
-    VecScale(&f,up1);
-    tmp = -beta; VecAYPX(&tmp,z,p);                          /* p = f*(z-beta*p) */
-    VecScale(&f,p);
-    VecCopy(u,um1);
-    VecCopy(up1,u);
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,utmp,up1,vtmp); CHKERRQ(ierr);
+    tmp = -alpha; ierr = VecAXPY(&tmp,utmp,up1); CHKERRQ(ierr);
+    tmp = f*beta*beta; ierr = VecAXPY(&tmp,um1,up1); CHKERRQ(ierr);
+    ierr = VecNorm(up1,&dp1); CHKERRQ(ierr);
+    f = 1.0 / dp1;
+    ierr = VecScale(&f,up1); CHKERRQ(ierr);
+    tmp = -beta; 
+    ierr = VecAYPX(&tmp,z,p); CHKERRQ(ierr);   /* p = f*(z-beta*p) */
+    ierr = VecScale(&f,p); CHKERRQ(ierr);
+    ierr = VecCopy(u,um1); CHKERRQ(ierr);
+    ierr = VecCopy(up1,u); CHKERRQ(ierr);
     beta  = beta/Gamma;
     eptmp = beta;
-    PCApplyBAorAB(itP->B,itP->right_pre,v,vp1,vtmp);
-    tmp = -alpha; VecAXPY(&tmp,v,vp1);
-    tmp = -beta;VecAXPY(&tmp,vm1,vp1);
-    VecNorm(vp1,&Gamma);
-    tmp = 1.0/Gamma; VecScale(&tmp,vp1);
-    VecCopy(v,vm1);
-    VecCopy(vp1,v);
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,v,vp1,vtmp); CHKERRQ(ierr);
+    tmp = -alpha; ierr = VecAXPY(&tmp,v,vp1); CHKERRQ(ierr);
+    tmp = -beta; ierr = VecAXPY(&tmp,vm1,vp1); CHKERRQ(ierr);
+    ierr = VecNorm(vp1,&Gamma); CHKERRQ(ierr);
+    tmp = 1.0/Gamma; ierr = VecScale(&tmp,vp1); CHKERRQ(ierr);
+    ierr = VecCopy(v,vm1); CHKERRQ(ierr);
+    ierr = VecCopy(vp1,v); CHKERRQ(ierr);
 
-/*
+  /*
      SOLVE  Ax = b
- */
-/* Apply the last two Given's (Gl-1 and Gl) rotations to (beta,alpha,Gamma) */
+   */
+  /* Apply last two Given's (Gl-1 and Gl) rotations to (beta,alpha,Gamma) */
     if (it > 1) {
-	theta =  sl1*beta;
-	eptmp = -cl1*beta;
-	}
+      theta =  sl1*beta;
+      eptmp = -cl1*beta;
+    }
     if (it > 0) {
-	ep     = -cl*eptmp + sl*alpha;
-	deltmp = -sl*eptmp - cl*alpha;
-	}
+      ep     = -cl*eptmp + sl*alpha;
+      deltmp = -sl*eptmp - cl*alpha;
+    }
 #if defined(PETSC_COMPLEX)
     if (abs(Gamma) > abs(deltmp)) {
 #else    
     if (fabs(Gamma) > fabs(deltmp)) {
 #endif
-	ta = -deltmp / Gamma;
-	s = 1.0 / sqrt(1.0 + ta*ta);
-	c = s*ta;
-	}
+      ta = -deltmp / Gamma;
+      s = 1.0 / sqrt(1.0 + ta*ta);
+      c = s*ta;
+    }
     else {
-	ta = -Gamma/deltmp;
-	c = 1.0 / sqrt(1.0 + ta*ta);
-	s = c*ta;
-	}
+      ta = -Gamma/deltmp;
+      c = 1.0 / sqrt(1.0 + ta*ta);
+      s = c*ta;
+    }
 
     delta  = -c*deltmp + s*Gamma;
     tau_n  = -c*tau_n1; tau_n1 = -s*tau_n1;
-    VecCopy(vm1,pvec);
-    tmp = -theta; VecAXPY(&tmp,pvec2,pvec);
-    tmp = -ep; VecAXPY(&tmp,pvec1,pvec);
-    tmp = 1.0/delta; VecScale(&tmp,pvec);
-    VecAXPY(&tau_n,pvec,x);
+    ierr = VecCopy(vm1,pvec); CHKERRQ(ierr);
+    tmp = -theta; ierr = VecAXPY(&tmp,pvec2,pvec); CHKERRQ(ierr);
+    tmp = -ep; ierr = VecAXPY(&tmp,pvec1,pvec); CHKERRQ(ierr);
+    tmp = 1.0/delta; ierr = VecScale(&tmp,pvec); CHKERRQ(ierr);
+    ierr = VecAXPY(&tau_n,pvec,x); CHKERRQ(ierr);
     cl1 = cl; sl1 = sl; cl = c; sl = s;     
 
     VecCopy(pvec1,pvec2);
@@ -137,17 +140,17 @@ rhom1 = 1.0;
     rnorm = rnorm0 * sqrt((double)it+2.0) * sprod;     
 #endif
     it++; if (it > itP->max_it) {break;}
-    }
+  }
 
-/* Need to undo preconditioning here  */
-KSPUnwindPre(  itP, x, vtmp );
+  /* Need to undo preconditioning here  */
+  ierr = KSPUnwindPre(itP,x,vtmp); CHKERRQ(ierr);
 
-if (cerr <= 0) *its = -it;
-else          *its = it;
-return 0;
+  if (cerr <= 0) *its = -it;
+  else          *its = it;
+  return 0;
 }
 
-static int KSPSetUp_TCQMR(KSP  itP )
+static int KSPSetUp_TCQMR(KSP itP)
 {
   int ierr;
   if ((ierr = KSPCheckDef( itP ))) return ierr;

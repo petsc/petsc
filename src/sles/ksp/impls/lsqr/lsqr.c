@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.13 1995/07/17 03:54:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: lsqr.c,v 1.14 1995/07/26 01:08:16 curfman Exp curfman $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -7,10 +7,6 @@ static char vcid[] = "$Id: lsqr.c,v 1.13 1995/07/17 03:54:05 bsmith Exp curfman 
 /*                       
        This implements LSQR (Paige and Saunders, ACM Transactions on
        Mathematical Software, Vol 8, pp 43-71, 1982).
-
-       and add the extern declarations of the create, solve, and setup 
-       routines to 
-
 */
 #include <stdio.h>
 #include <math.h>
@@ -27,69 +23,71 @@ static int KSPSetUp_LSQR(KSP itP)
 
 static int KSPSolve_LSQR(KSP itP,int *its)
 {
-int          i = 0, maxit, hist_len, cerr = 0;
-Scalar       rho, rhobar, phi, phibar, theta, c, s;
-double       beta, alpha, rnorm, *history;
-Scalar       tmp, zero = 0.0;
-Vec          X,B,V,V1,U,U1,TMP,W,BINVF;
-Mat          Amat, Pmat;
-MatStructure pflag;
+  int          i = 0, maxit, hist_len, cerr = 0, ierr;
+  Scalar       rho, rhobar, phi, phibar, theta, c, s;
+  double       beta, alpha, rnorm, *history;
+  Scalar       tmp, zero = 0.0;
+  Vec          X,B,V,V1,U,U1,TMP,W,BINVF;
+  Mat          Amat, Pmat;
+  MatStructure pflag;
 
-PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
-maxit   = itP->max_it;
-history = itP->residual_history;
-hist_len= itP->res_hist_size;
-X       = itP->vec_sol;
-B       = itP->vec_rhs;
-U       = itP->work[0];
-U1      = itP->work[1];
-V       = itP->work[2];
-V1      = itP->work[3];
-W       = itP->work[4];
-BINVF   = itP->work[5];
+  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  maxit    = itP->max_it;
+  history  = itP->residual_history;
+  hist_len = itP->res_hist_size;
+  X        = itP->vec_sol;
+  B        = itP->vec_rhs;
+  U        = itP->work[0];
+  U1       = itP->work[1];
+  V        = itP->work[2];
+  V1       = itP->work[3];
+  W        = itP->work[4];
+  BINVF    = itP->work[5];
 
-/* Compute initial preconditioned residual */
-KSPResidual(itP,X,V,U, W, BINVF, B );
+  /* Compute initial preconditioned residual */
+  ierr = KSPResidual(itP,X,V,U, W,BINVF,B); CHKERRQ(ierr);
 
-/* Test for nothing to do */
-VecNorm(W,&rnorm);
-if ((*itP->converged)(itP,0,rnorm,itP->cnvP)) { *its = 0; return 0;}
-MONITOR(itP,rnorm,0);
-if (history) history[0] = rnorm;
+  /* Test for nothing to do */
+  ierr = VecNorm(W,&rnorm); CHKERRQ(ierr);
+  if ((*itP->converged)(itP,0,rnorm,itP->cnvP)) { *its = 0; return 0;}
+  MONITOR(itP,rnorm,0);
+  if (history) history[0] = rnorm;
 
-VecCopy(B,U);
-VecNorm(U,&beta);
-tmp = 1.0/beta; VecScale( &tmp, U );
-MatMultTrans(Amat, U, V );
-VecNorm(V,&alpha);
-tmp = 1.0/alpha; VecScale(&tmp, V );
+  ierr = VecCopy(B,U); CHKERRQ(ierr);
+  ierr = VecNorm(U,&beta); CHKERRQ(ierr);
+  tmp = 1.0/beta; ierr = VecScale(&tmp,U); CHKERRQ(ierr);
+  ierr = MatMultTrans(Amat,U,V); CHKERRQ(ierr);
+  ierr = VecNorm(V,&alpha); CHKERRQ(ierr);
+  tmp = 1.0/alpha; ierr = VecScale(&tmp,V); CHKERRQ(ierr);
 
-VecCopy(V,W);
-VecSet(&zero,X);
+  ierr = VecCopy(V,W); CHKERRQ(ierr);
+  ierr = VecSet(&zero,X); CHKERRQ(ierr);
 
-phibar = beta;
-rhobar = alpha;
-for (i=0; i<maxit; i++) {
-    MatMult(Amat,V,U1);
-    tmp = -alpha; VecAXPY(&tmp,U,U1);
-    VecNorm(U1,&beta);
-    tmp = 1.0/beta; VecScale(&tmp, U1 );
+  phibar = beta;
+  rhobar = alpha;
+  for (i=0; i<maxit; i++) {
+    ierr = MatMult(Amat,V,U1); CHKERRQ(ierr);
+    tmp = -alpha; ierr = VecAXPY(&tmp,U,U1); CHKERRQ(ierr);
+    ierr = VecNorm(U1,&beta); CHKERRQ(ierr);
+    tmp = 1.0/beta; ierr = VecScale(&tmp,U1); CHKERRQ(ierr);
 
-    MatMultTrans(Amat,U1,V1);
-    tmp = -beta; VecAXPY(&tmp,V,V1);
-    VecNorm(V1,&alpha);
-    tmp = 1.0 / alpha; VecScale(&tmp , V1 );
+    ierr = MatMultTrans(Amat,U1,V1); CHKERRQ(ierr);
+    tmp = -beta; ierr = VecAXPY(&tmp,V,V1); CHKERRQ(ierr);
+    ierr = VecNorm(V1,&alpha); CHKERRQ(ierr);
+    tmp = 1.0 / alpha; ierr = VecScale(&tmp,V1); CHKERRQ(ierr);
 
-    rho   = sqrt(rhobar*rhobar + beta*beta);
-    c     = rhobar / rho;
-    s     = beta / rho;
-    theta = s * alpha;
-    rhobar= - c * alpha;
-    phi   = c * phibar;
-    phibar= s * phibar;
+    rho    = sqrt(rhobar*rhobar + beta*beta);
+    c      = rhobar / rho;
+    s      = beta / rho;
+    theta  = s * alpha;
+    rhobar = - c * alpha;
+    phi    = c * phibar;
+    phibar = s * phibar;
 
-    tmp = phi/rho; VecAXPY(&tmp,W,X);      /*    x <- x + (phi/rho) w   */
-    tmp = -theta/rho; VecAYPX(&tmp,V1,W);  /*    w <- v - (theta/rho) w */
+    tmp = phi/rho; 
+    ierr = VecAXPY(&tmp,W,X); CHKERRQ(ierr);  /*    x <- x + (phi/rho) w   */
+    tmp = -theta/rho; 
+    ierr = VecAYPX(&tmp,V1,W); CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
 #if defined(PETSC_COMPLEX)
     rnorm = real(phibar);
@@ -107,7 +105,7 @@ for (i=0; i<maxit; i++) {
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-  KSPUnwindPre(  itP, X, W );
+  ierr = KSPUnwindPre(itP,X,W); CHKERRQ(ierr);
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
   return 0;

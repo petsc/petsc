@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.35 1995/08/07 18:51:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.36 1995/08/11 13:45:26 curfman Exp curfman $";
 #endif
 
 /*
@@ -98,7 +98,7 @@ static int KSPSetUp_GMRES(KSP itP )
 
   if (gmresP->q_preallocate) {
     gmresP->vv_allocated   = VEC_OFFSET + 2 + max_k;
- ierr = VecGetVecs(itP->vec_rhs, gmresP->vv_allocated,&gmresP->user_work[0]);
+    ierr = VecGetVecs(itP->vec_rhs,gmresP->vv_allocated,&gmresP->user_work[0]);
     CHKERRQ(ierr);
     PLogObjectParents(itP,gmresP->vv_allocated,gmresP->user_work[0]);
     gmresP->mwork_alloc[0] = gmresP->vv_allocated;
@@ -143,8 +143,8 @@ static int GMRESResidual(  KSP itP,int restart )
                          VEC_TEMP_MATOP ); CHKERRQ(ierr);
   }
   /* This is an extra copy for the right-inverse case */
-  VecCopy( VEC_BINVF, VEC_VV(0) );
-  VecAXPY( &mone, VEC_TEMP, VEC_VV(0) );
+  ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
+  ierr = VecAXPY( &mone, VEC_TEMP, VEC_VV(0) ); CHKERRQ(ierr);
       /* inv(b)(f - a*x) into dest */
   return 0;
 }
@@ -183,12 +183,12 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   /* Question: on restart, compute the residual?  No; provide a restart 
      driver */
 
-  it  = 0;
+  it = 0;
 
   /* dest . dest */
-  VecNorm(VEC_VV(0),&res_norm);
-  res         = res_norm;
-  *RS(0)      = res_norm;
+  ierr = VecNorm(VEC_VV(0),&res_norm); CHKERRQ(ierr);
+  res    = res_norm;
+  *RS(0) = res_norm;
 
   /* Do-nothing case: */
   if (res_norm == 0.0) {
@@ -196,7 +196,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
     return 0;
   }
   /* scale VEC_VV (the initial residual) */
-  tmp = 1.0/res_norm; VecScale(&tmp , VEC_VV(0) );
+  tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(ierr);
 
   if (!restart) {
     rtol      = itP->rtol * res_norm;
@@ -222,7 +222,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
     (*gmresP->orthog)(  itP, it );
 
     /* vv(i+1) . vv(i+1) */
-    VecNorm(VEC_VV(it+1),&tt);
+    ierr = VecNorm(VEC_VV(it+1),&tt); CHKERRQ(ierr);
     /* save the magnitude */
     *HH(it+1,it)    = tt;
     *HES(it+1,it)   = tt;
@@ -235,7 +235,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 #endif
     if (hapbnd > gmresP->haptol) hapbnd = gmresP->haptol;
     if (tt > hapbnd) {
-        tmp = 1.0/tt; VecScale( &tmp , VEC_VV(it+1) );
+        tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it+1) ); CHKERRQ(ierr);
     }
     else {
         /* We SHOULD probably abort the gmres step
@@ -267,7 +267,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   }
 
   /* Form the solution (or the solution so far) */
-  BuildGmresSoln(  RS(0), VEC_SOLN, VEC_SOLN, itP, it-1 );
+  ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,itP,it-1); CHKERRQ(ierr);
 
   /* Return correct status (Failed on iteration test (failed to converge)) */
   return !converged;
@@ -285,13 +285,16 @@ static int KSPSolve_GMRES(KSP itP,int *outits )
     /* inv(b)*f */
     ierr = PCApply(itP->B, VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
   }
-  else 
-    VecCopy( VEC_RHS, VEC_BINVF );
+  else {
+    ierr = VecCopy( VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
+  }
   /* Compute the initial (preconditioned) residual */
   if (!itP->guess_zero) {
     if ((ierr=GMRESResidual(  itP, restart ))) return ierr;
   }
-  else VecCopy( VEC_BINVF, VEC_VV(0) );
+  else {
+    ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
+  }
     
   while ((ierr = GMREScycle(  &its, itcount, restart, itP ))) {
     restart = 1;
@@ -365,7 +368,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
   /* If it is < 0, no gmres steps have been performed */
   if (it < 0) {
     if (vdest != vs) {
-	VecCopy( vs, vdest );
+      ierr = VecCopy( vs, vdest ); CHKERRQ(ierr);
     }
     return 0;
   }
@@ -379,28 +382,29 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
 
   /* Accumulate the correction to the solution of the preconditioned problem
     in TEMP */
-  VecSet( &zero, VEC_TEMP );
-  VecMAXPY(it+1, nrs, VEC_TEMP, &VEC_VV(0) );
+  ierr = VecSet( &zero, VEC_TEMP ); CHKERRQ(ierr);
+  ierr = VecMAXPY(it+1, nrs, VEC_TEMP, &VEC_VV(0) ); CHKERRQ(ierr);
 
   /* If we preconditioned on the right, we need to solve for the correction to
      the unpreconditioned problem */
   if (itP->right_pre) {
     if (vdest != vs) {
       ierr = PCApply(itP->B, VEC_TEMP, vdest ); CHKERRQ(ierr);
-      VecAXPY( &one, vs, vdest );
+      ierr = VecAXPY( &one, vs, vdest ); CHKERRQ(ierr);
     }
     else {
       ierr = PCApply(itP->B,VEC_TEMP,VEC_TEMP_MATOP); CHKERRQ(ierr);
-      VecAXPY(&one,VEC_TEMP_MATOP,vdest);
+      ierr = VecAXPY(&one,VEC_TEMP_MATOP,vdest); CHKERRQ(ierr);
     }
   }
   else {
     if (vdest != vs) {
-      VecCopy( VEC_TEMP, vdest );
-      VecAXPY( &one, vs, vdest );
+      ierr = VecCopy( VEC_TEMP, vdest ); CHKERRQ(ierr);
+      ierr = VecAXPY( &one, vs, vdest ); CHKERRQ(ierr);
     }
-    else 
-      VecAXPY( &one, VEC_TEMP, vdest );
+    else {
+      ierr = VecAXPY( &one, VEC_TEMP, vdest ); CHKERRQ(ierr);
+    }
   }
   return 0;
 }
@@ -491,7 +495,7 @@ $   -ksp_gmres_restart  max_k
 
 .keywords: GMRES, set, restart
 
-.seealso: KSPGMRESSetUseUnmodifiedGrammSchmidt()
+.seealso: KSPGMRESSetUseUnmodifiedGramSchmidt()
 @*/
 int KSPGMRESSetRestart(KSP itP,int max_k )
 {
@@ -525,13 +529,12 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
     gmresP->nrs = (Scalar *)PETSCMALLOC((unsigned)(gmresP->max_k*sizeof(Scalar)));
   }
 
-  BuildGmresSoln(  gmresP->nrs, VEC_SOLN, ptr, itP, gmresP->it );
+  ierr = BuildGmresSoln(gmresP->nrs,VEC_SOLN,ptr,itP,gmresP->it); CHKERRQ(ierr);
   *result = ptr; return 0;
 }
 
 /*
-  KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by 
-                             GMRES.
+  KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by GMRES.
 
   Input Parameters:
 .   itP   - iterative context obtained from KSPCreate
@@ -540,7 +543,7 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
   Notes:
   The functions GMRESBasicOrthog and GMRESUnmodifiedOrthog are predefined.
   The default is GMRESBasicOrthog; GMRESUnmodifiedOrthog is a simple 
-  Gramm-Schmidt (NOT modified Gramm-Schmidt).  The GMRESUnmodifiedOrthog is 
+  Gram-Schmidt (NOT modified Gram-Schmidt).  The GMRESUnmodifiedOrthog is 
   NOT recommended; however, for some problems, particularly when using 
   parallel distributed vectors, this may be significantly faster.
 */
@@ -556,8 +559,8 @@ int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 int GMRESUnmodifiedOrthog(KSP,int);
 
 /*@
-    KSPGMRESSetUseUnmodifiedGrammSchmidt - Sets GMRES to use unmodified
-    Gramm-Schmidt for the orthogonalization.  This is not recommended, due 
+    KSPGMRESSetUseUnmodifiedGramSchmidt - Sets GMRES to use unmodified
+    Gram-Schmidt for the orthogonalization.  This is not recommended, due 
     to possible numerical problems, although it may be faster, especially
     in a parallel environment.
 
@@ -565,16 +568,16 @@ int GMRESUnmodifiedOrthog(KSP,int);
 .   itP - the iterative context
 
     Options Database Key:
-$   -ksp_gmres_unmodifiedgrammschmidt
+$   -ksp_gmres_unmodifiedgramschmidt
 
     Notes:
-    The default is to use modified Gramm-Schmidt.
+    The default is to use modified Gram-Schmidt.
 
-.keywords: GMRES, unmodified, Gramm-Schmidt, orthogonalization
+.keywords: GMRES, unmodified, Gram-Schmidt, orthogonalization
 
 .seealso: KSPGMRESSetRestart()
 @*/
-int KSPGMRESSetUseUnmodifiedGrammSchmidt(KSP itP)
+int KSPGMRESSetUseUnmodifiedGramSchmidt(KSP itP)
 {
   return KSPGMRESSetOrthogRoutine( itP, GMRESUnmodifiedOrthog);
 }

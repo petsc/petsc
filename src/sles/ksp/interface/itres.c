@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.12 1995/07/07 17:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.13 1995/08/07 18:51:04 bsmith Exp curfman $";
 #endif
 
 #include "kspimpl.h"   /*I "ksp.h" I*/
@@ -81,12 +81,13 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 
 .seealso: KSPSetRightPreconditioner()
 @*/
-int KSPUnwindPre( KSP itP, Vec vsoln, Vec vt1 )
+int KSPUnwindPre(KSP itP,Vec vsoln,Vec vt1)
 {
+  int ierr;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->right_pre) {
-    PCApply(itP->B, vsoln, vt1 );
-    VecCopy( vt1, vsoln );
+    ierr = PCApply(itP->B,vsoln,vt1); CHKERRQ(ierr);
+    ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
   return 0;
 }

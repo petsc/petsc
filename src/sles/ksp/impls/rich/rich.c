@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.22 1995/07/18 21:25:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.23 1995/08/07 18:51:24 bsmith Exp curfman $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -18,9 +18,9 @@ int KSPSetUp_Richardson(KSP itP)
   if (itP->right_pre) {
     SETERRQ(2,"KSPSetUp_Richardson: no right-inverse preconditioning"); 
   }
-  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
+  ierr = KSPCheckDef(itP); CHKERRQ(ierr);
   /* get work vectors from user code */
-  return KSPiDefaultGetWork( itP,  2 );
+  return KSPiDefaultGetWork(itP,2);
 }
 
 /*@
@@ -46,7 +46,7 @@ int KSPRichardsonSetScale(KSP itP,double scale)
 
 int  KSPSolve_Richardson(KSP itP,int *its)
 {
-  int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr = 0;
+  int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr = 0, ierr;
   MatStructure       pflag;
   double             rnorm,*history;
   Scalar             scale, mone = -1.0;
@@ -55,7 +55,7 @@ int  KSPSolve_Richardson(KSP itP,int *its)
   KSP_Richardson     *richardsonP;
   richardsonP = (KSP_Richardson *) itP->MethodPrivate;
 
-  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
+  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   x       = itP->vec_sol;
   b       = itP->vec_rhs;
   r       = itP->work[0];
@@ -73,32 +73,40 @@ int  KSPSolve_Richardson(KSP itP,int *its)
   scale   = richardsonP->scale;
   pres    = itP->use_pres;
 
-  if (!itP->guess_zero) {                     /*   r <- b - A x    */
-    MatMult(Amat,x,r);
-    VecAYPX(&mone,b,r);
+  if (!itP->guess_zero) {                          /*   r <- b - A x     */
+    ierr = MatMult(Amat,x,r); CHKERRQ(ierr);
+    ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
   }
-  else VecCopy(b,r);
+  else {
+    ierr = VecCopy(b,r); CHKERRQ(ierr);
+  }
 
   for ( i=0; i<maxit; i++ ) {
-     PCApply(itP->B,r,z);                     /*   z <- B r         */
+     ierr = PCApply(itP->B,r,z); CHKERRQ(ierr);    /*   z <- B r          */
      if (itP->calc_res) {
-	if (!pres) VecNorm(r,&rnorm);         /*   rnorm <- r'*r    */
-	else       VecNorm(z,&rnorm);         /*   rnorm <- z'*z    */
+	if (!pres) {
+          ierr = VecNorm(r,&rnorm); CHKERRQ(ierr); /*   rnorm <- r'*r     */
+        }
+	else {
+          ierr = VecNorm(z,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
+        }
         if (history && hist_len > i) history[i] = rnorm;
         MONITOR(itP,rnorm,i);
         cerr = (*itP->converged)(itP,i,rnorm,itP->cnvP);
         if (cerr) {brokeout = 1; break;}
      }
    
-     VecAXPY(&scale,z,x);                     /*   x  <- x + scale z */
-     MatMult(Amat,x,r);                       /*   r  <- b - Ax      */
-     VecAYPX(&mone,b,r);
+     ierr = VecAXPY(&scale,z,x); CHKERRQ(ierr);    /*   x  <- x + scale z */
+     ierr = MatMult(Amat,x,r); CHKERRQ(ierr);      /*   r  <- b - Ax      */
+     ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
   }
   if (itP->calc_res && !brokeout) {
-    if (!pres) VecNorm(r,&rnorm);             /*   rnorm <- r'*r     */
+    if (!pres) {
+      ierr = VecNorm(r,&rnorm); CHKERRQ(ierr);     /*   rnorm <- r'*r     */
+    }
     else {
-      PCApply(itP->B,r,z);                    /*   z <- B r          */
-      VecNorm(z,&rnorm);                      /*   rnorm <- z'*z     */
+      ierr = PCApply(itP->B,r,z); CHKERRQ(ierr);   /*   z <- B r          */
+      ierr = VecNorm(z,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
     }
     if (history && hist_len > i) history[i] = rnorm;
     MONITOR(itP,rnorm,i);
@@ -128,11 +136,11 @@ int KSPCreate_Richardson(KSP itP)
   itP->MethodPrivate = (void *) richardsonP;
   itP->type                 = KSPRICHARDSON;
   richardsonP->scale        = 1.0;
-  itP->setup      = KSPSetUp_Richardson;
-  itP->solver     = KSPSolve_Richardson;
-  itP->adjustwork = KSPiDefaultAdjustWork;
-  itP->destroy    = KSPiDefaultDestroy;
-  itP->calc_res   = 1;
+  itP->setup                = KSPSetUp_Richardson;
+  itP->solver               = KSPSolve_Richardson;
+  itP->adjustwork           = KSPiDefaultAdjustWork;
+  itP->destroy              = KSPiDefaultDestroy;
+  itP->calc_res             = 1;
   itP->converged            = KSPDefaultConverged;
   itP->buildsolution        = KSPDefaultBuildSolution;
   itP->buildresidual        = KSPDefaultBuildResidual;
