@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.14 2000/01/23 18:28:17 bsmith Exp kaushik $
+c  $Id: user.F,v 1.15 2000/01/23 19:55:00 kaushik Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -1477,11 +1477,11 @@ c=============================================================================
      &        t13,t23,t33,t43,t14,t24,t34,t44,
      &        fluxp1,fluxp2,fluxp3,fluxp4, 
      &        fluxm1,fluxm2,fluxm3,fluxm4
-     Scalar   res1,res2,res3,res4,
+      Scalar  res1,res2,res3,res4,
      &        rhs1,rhs2,rhs3,rhs4,   
-     &       c68,c18,second,
-     &       ax,ay,az,bx,by,bz,
-     &       pa,pb,pc,ub,vb,wb       
+     &        c68,c18,second,
+     &        ax,ay,az,bx,by,bz,
+     &        pa,pb,pc,ub,vb,wb       
 #if defined(INTERLACING)
       Scalar qvec(4,nvertices) 
       Scalar grad(3,4,nvertices) 
