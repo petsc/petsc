@@ -7,6 +7,7 @@
 #include "pviewer.h"
 #include <math.h>
 #include "draw.h"
+#include "plog.h"
 
 int DAView_3d(PetscObject dain,Viewer ptr)
 {

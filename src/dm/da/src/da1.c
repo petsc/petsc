@@ -9,6 +9,7 @@
 #include "pviewer.h"   
 #include <math.h>
 #include "draw.h"      /*I  "draw.h"  I*/
+#include "plog.h"
 
 static int DAView_1d(PetscObject pobj,Viewer ptr)
 {
