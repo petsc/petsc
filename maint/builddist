@@ -11,10 +11,16 @@ echo "(5) Rebuilt and checked all Fortran stubs?"
 echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
 echo "(7) Made sure Fortran include files match C ones?"
 #
+if ($#argv == 1) then
+  set version=$1
+else
+  set version=""
+endif
+#
 cd /home/bsmith/petsc
 make ACTION=clean tree
 #
-/bin/rm -f ~/petsc.tar
+/bin/rm -f ~/petsc
 #
 cd /home/bsmith
 tar cFFXf /home/bsmith/petsc/maint/xclude ~/petsc.tar petsc
@@ -23,8 +29,9 @@ cd /mcs/tmp
 tar xf ~/petsc.tar
 chmod -R u+w petsc
 /bin/rm -f ~/petsc.tar
-tar cf ~/petsc.tar petsc
-/bin/rm -r -f /mcs/tmp/petsc
+mv petsc petsc$version
+tar cf ~/petsc$version.tar petsc$version
+/bin/rm -r -f /mcs/tmp/petsc$version
 
 #
 #  To test locally and build petsc.solid
