@@ -132,35 +132,24 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    diag = aij->diag;
 
    for (I=0;I<numnodes;I++){
-
-     /*....Get row I of matrix....*/
-     ncols_getrow = aij->i[I+1] - aij->i[I];
-     vals_getrow  = aij->a + aij->i[I];
-     cols_getrow  = aij->j + aij->i[I];
-
-
-
-     /*     for (j=0;j<ncols_getrow;j++){
-           J               = cols_getrow[j];
-	   if (J == I) {
-             Asky[nnz_count] = vals_getrow[j];
-             ja[nnz_count]   = J; 
-             nnz_count++; 
-           }
-	   } */
-
      ia[I]           = nnz_count; 
+
+     /* put in diagonal entry first */
      ja[nnz_count]   = I;
      Asky[nnz_count] = aij->a[diag[I]];
      nnz_count++;
 
+     /* put in off diagonals */
+     ncols_getrow = aij->i[I+1] - aij->i[I];
+     vals_getrow  = aij->a + aij->i[I];
+     cols_getrow  = aij->j + aij->i[I];
      for (j=0;j<ncols_getrow;j++){
-           J               = cols_getrow[j];
-	   if (J != I) {
-             Asky[nnz_count] = vals_getrow[j];
-             ja[nnz_count]   = J; 
-             nnz_count++; 
-           }
+       J = cols_getrow[j];
+       if (J != I) {
+         Asky[nnz_count] = vals_getrow[j];
+         ja[nnz_count]   = J; 
+         nnz_count++; 
+       }
      }
    }
    ia[numnodes] = nnz_count; 
