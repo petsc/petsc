@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.5 2000/08/13 15:03:03 bsmith Exp balay $*/
+/*$Id: sbaij2.c,v 1.6 2000/08/16 15:15:02 balay Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -12,63 +12,13 @@
 #define __FUNC__ "MatIncreaseOverlap_SeqSBAIJ"
 int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS *is,int ov)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int         row,i,j,k,l,m,n,*idx,ierr,*nidx,isz,val,ival;
   int         start,end,*ai,*aj,bs,*nidx2;
   PetscBT     table;
 
   PetscFunctionBegin;
-  m     = a->mbs;
-  ai    = a->i;
-  aj    = a->j;
-  bs    = a->bs;
-
-  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap specified");
-
-  ierr  = PetscBTCreate(m,table);CHKERRQ(ierr);
-  nidx  = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(nidx); 
-  nidx2 = (int *)PetscMalloc((a->m+1)*sizeof(int));CHKPTRQ(nidx2);
-
-  for (i=0; i<is_max; i++) {
-    /* Initialise the two local arrays */
-    isz  = 0;
-    ierr = PetscBTMemzero(m,table);CHKERRQ(ierr);
-                 
-    /* Extract the indices, assume there can be duplicate entries */
-    ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetSize(is[i],&n);CHKERRQ(ierr);
-
-    /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
-    for (j=0; j<n ; ++j){
-      ival = idx[j]/bs; /* convert the indices into block indices */
-      if (ival>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
-      if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
-    }
-    ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
-    k = 0;
-    for (j=0; j<ov; j++){ /* for each overlap*/
-      n = isz;
-      for (; k<n ; k++){ /* do only those rows in nidx[k], which are not done yet */
-        row   = nidx[k];
-        start = ai[row];
-        end   = ai[row+1];
-        for (l = start; l<end ; l++){
-          val = aj[l];
-          if (!PetscBTLookupSet(table,val)) {nidx[isz++] = val;}
-        }
-      }
-    }
-    /* expand the Index Set */
-    for (j=0; j<isz; j++) {
-      for (k=0; k<bs; k++)
-        nidx2[j*bs+k] = nidx[j]*bs+k;
-    }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,isz*bs,nidx2,is+i);CHKERRQ(ierr);
-  }
-  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
-  ierr = PetscFree(nidx);CHKERRQ(ierr);
-  ierr = PetscFree(nidx2);CHKERRQ(ierr);
+  SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
 }
 
@@ -1126,7 +1076,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNC__ "MatMultTranspose_SeqSBAIJ"
 int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
 {
-  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *xg,*zg,*zb,zero = 0.0;
   Scalar          *x,*z,*xb,x1,x2,x3,x4,x5,x6,x7;
   MatScalar       *v;
@@ -1134,159 +1084,7 @@ int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
   int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
 
   PetscFunctionBegin;
-  ierr = VecSet(&zero,zz);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&xg);CHKERRQ(ierr); x = xg;
-  ierr = VecGetArray(zz,&zg);CHKERRQ(ierr); z = zg;
-
-  idx   = a->j;
-  v     = a->a;
-  ii    = a->i;
-  xb    = x;
-  switch (bs) {
-  case 1:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++;
-      x1 = xb[0];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval    = ib[j];
-        z[rval] += *v * x1;
-        v++;
-      }
-      xb++;
-    }
-    break;
-  case 2:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*2;
-        z[rval++] += v[0]*x1 + v[1]*x2;
-        z[rval]   += v[2]*x1 + v[3]*x2;
-        v  += 4;
-      }
-      xb += 2;
-    }
-    break;
-  case 3:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*3;
-        z[rval++] += v[0]*x1 + v[1]*x2 + v[2]*x3;
-        z[rval++] += v[3]*x1 + v[4]*x2 + v[5]*x3;
-        z[rval]   += v[6]*x1 + v[7]*x2 + v[8]*x3;
-        v  += 9;
-      }
-      xb += 3;
-    }
-    break;
-  case 4:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*4;
-        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
-        z[rval++] +=  v[4]*x1 +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
-        z[rval++] +=  v[8]*x1 +  v[9]*x2 + v[10]*x3 + v[11]*x4;
-        z[rval]   += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
-        v  += 16;
-      }
-      xb += 4;
-    }
-    break;
-  case 5:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; 
-      x4 = xb[3]; x5 = xb[4];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*5;
-        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
-        z[rval++] +=  v[5]*x1 +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
-        z[rval++] += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
-        z[rval++] += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4 + v[19]*x5;
-        z[rval]   += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4 + v[24]*x5;
-        v  += 25;
-      }
-      xb += 5;
-    }
-    break;
-  case 6:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; 
-      x4 = xb[3]; x5 = xb[4]; x6 = xb[5];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*6;
-        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 + v[4]*x5 + v[5]*x6;
-        z[rval++] +=  v[6]*x1 +  v[7]*x2 +  v[8]*x3 +  v[9]*x4 + v[10]*x5 + v[11]*x6;
-        z[rval++] += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4 + v[16]*x5 + v[17]*x6;
-        z[rval++] += v[18]*x1 + v[19]*x2 + v[20]*x3 + v[21]*x4 + v[22]*x5 + v[23]*x6;
-        z[rval++] += v[24]*x1 + v[25]*x2 + v[26]*x3 + v[27]*x4 + v[28]*x5 + v[29]*x6;
-        z[rval]   += v[30]*x1 + v[31]*x2 + v[32]*x3 + v[33]*x4 + v[34]*x5 + v[35]*x6;
-        v  += 36;
-      }
-      xb += 6;
-    }
-    break;
-  case 7:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; 
-      x4 = xb[3]; x5 = xb[4]; x6 = xb[5]; x7 = xb[6];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*7;
-        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 + v[4]*x5 + v[5]*x6 + v[6]*x7;
-        z[rval++] +=  v[7]*x1 +  v[8]*x2 +  v[9]*x3 + v[10]*x4 + v[11]*x5 + v[12]*x6 + v[13]*x7;
-        z[rval++] += v[14]*x1 + v[15]*x2 + v[16]*x3 + v[17]*x4 + v[18]*x5 + v[19]*x6 + v[20]*x7;
-        z[rval++] += v[21]*x1 + v[22]*x2 + v[23]*x3 + v[24]*x4 + v[25]*x5 + v[26]*x6 + v[27]*x7;
-        z[rval++] += v[28]*x1 + v[29]*x2 + v[30]*x3 + v[31]*x4 + v[32]*x5 + v[33]*x6 + v[34]*x7;
-        z[rval++] += v[35]*x1 + v[36]*x2 + v[37]*x3 + v[38]*x4 + v[39]*x5 + v[40]*x6 + v[41]*x7;
-        z[rval]   += v[42]*x1 + v[43]*x2 + v[44]*x3 + v[45]*x4 + v[46]*x5 + v[47]*x6 + v[48]*x7;
-        v  += 49;
-      }
-      xb += 7;
-    }
-    break;
-  default: {       /* block sizes larger then 7 by 7 are handled by BLAS */
-      int       ncols,k;
-      Scalar    *work,*workt;
-
-      if (!a->mult_work) {
-        k = PetscMax(a->m,a->n);
-        a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
-      }
-      work = a->mult_work;
-      for (i=0; i<mbs; i++) {
-        n     = ii[1] - ii[0]; ii++;
-        ncols = n*bs;
-        ierr  = PetscMemzero(work,ncols*sizeof(Scalar));CHKERRQ(ierr);
-        Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,work);
-        /* LAgemv_("T",&bs,&ncols,&_DOne,v,&bs,x,&_One,&_DOne,work,&_One); */
-        v += n*bs2;
-        x += bs;
-        workt = work;
-        for (j=0; j<n; j++) {
-          zb = z + bs*(*idx++);
-          for (k=0; k<bs; k++) zb[k] += workt[k] ;
-          workt += bs;
-        }
-      }
-    }
-  }
-  ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
-  PLogFlops(2*a->nz*a->bs2 - a->n);
+  SETERRQ(1,1,"Matrix is symmetric. Call MatMult().");
   PetscFunctionReturn(0);
 }
 
@@ -1301,122 +1099,7 @@ int MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval,bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&xg);CHKERRQ(ierr); x = xg;
-  ierr = VecGetArray(zz,&zg);CHKERRQ(ierr); z = zg;
-
-  if (yy != zz) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
-
-  idx   = a->j;
-  v     = a->a;
-  ii    = a->i;
-  xb    = x;
-
-  switch (bs) {
-  case 1:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++;
-      x1 = xb[0];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval    = ib[j];
-        z[rval] += *v * x1;
-        v++;
-      }
-      xb++;
-    }
-    break;
-  case 2:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*2;
-        z[rval++] += v[0]*x1 + v[1]*x2;
-        z[rval++] += v[2]*x1 + v[3]*x2;
-        v  += 4;
-      }
-      xb += 2;
-    }
-    break;
-  case 3:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*3;
-        z[rval++] += v[0]*x1 + v[1]*x2 + v[2]*x3;
-        z[rval++] += v[3]*x1 + v[4]*x2 + v[5]*x3;
-        z[rval++] += v[6]*x1 + v[7]*x2 + v[8]*x3;
-        v  += 9;
-      }
-      xb += 3;
-    }
-    break;
-  case 4:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*4;
-        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
-        z[rval++] +=  v[4]*x1 +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
-        z[rval++] +=  v[8]*x1 +  v[9]*x2 + v[10]*x3 + v[11]*x4;
-        z[rval++] += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
-        v  += 16;
-      }
-      xb += 4;
-    }
-    break;
-  case 5:
-    for (i=0; i<mbs; i++) {
-      n  = ii[1] - ii[0]; ii++; 
-      x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; 
-      x4 = xb[3]; x5 = xb[4];
-      ib = idx + ai[i];
-      for (j=0; j<n; j++) {
-        rval      = ib[j]*5;
-        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
-        z[rval++] +=  v[5]*x1 +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
-        z[rval++] += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
-        z[rval++] += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4 + v[19]*x5;
-        z[rval++] += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4 + v[24]*x5;
-        v  += 25;
-      }
-      xb += 5;
-    }
-    break;
-  default: {      /* block sizes larger then 5 by 5 are handled by BLAS */
-      int       ncols,k; 
-      Scalar    *work,*workt;
-
-      if (!a->mult_work) {
-        k = PetscMax(a->m,a->n);
-        a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
-      }
-      work = a->mult_work;
-      for (i=0; i<mbs; i++) {
-        n     = ii[1] - ii[0]; ii++;
-        ncols = n*bs;
-        ierr  = PetscMemzero(work,ncols*sizeof(Scalar));CHKERRQ(ierr);
-        Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,work);
-        /* LAgemv_("T",&bs,&ncols,&_DOne,v,&bs,x,&_One,&_DOne,work,&_One); */
-        v += n*bs2;
-        x += bs;
-        workt = work;
-        for (j=0; j<n; j++) {
-          zb = z + bs*(*idx++);
-          for (k=0; k<bs; k++) zb[k] += workt[k] ;
-          workt += bs;
-        }
-      }
-    }
-  }
-  ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
-  PLogFlops(2*a->nz*a->bs2);
+  SETERRQ(1,1,"Matrix is symmetric. Call MatMultAdd().");
   PetscFunctionReturn(0);
 }
 
@@ -1530,51 +1213,6 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   }
   PetscFunctionReturn(0);
 }
-
-#ifdef MatNorm_SeqBAIJ
-/* This is modified MatNorm_SeqBAIJ. 
-   MatNorm_SeqBAIJ in baij/seq/baij2.c is not correct for bs>1 */
-
-#undef __FUNC__  
-#define __FUNC__ "MatNorm_SeqBAIJ"
-int MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-  MatScalar   *v = a->a;
-  PetscReal   sum = 0.0;
-  int         i,j,k,bs = a->bs,nz=a->nz,bs2=a->bs2,k1;
-
-  PetscFunctionBegin;
-  if (type == NORM_FROBENIUS) {
-    for (i=0; i< bs2*nz; i++) {
-#if defined(PETSC_USE_COMPLEX)
-      sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
-#else
-      sum += (*v)*(*v); v++;
-#endif
-    }
-    *norm = sqrt(sum);
-  }  else if (type == NORM_INFINITY) { /* maximum row sum */
-    *norm = 0.0;
-    for (j=0; j<a->mbs; j++) {
-      for (k=0; k<bs; k++) {       
-        v = a->a + bs2*a->i[j] + k;
-        sum = 0.0;
-        for (i=0; i<a->i[j+1]-a->i[j]; i++) {
-          for (k1=0; k1<bs; k1++){   /* this loop was missing in the original code*/
-            sum += PetscAbsScalar(*v); 
-            v   += bs;
-          }
-        }
-        if (sum > *norm) *norm = sum;
-      }
-    }
-  } else {
-    SETERRQ(PETSC_ERR_SUP,0,"No support for this norm yet");
-  }
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "MatEqual_SeqSBAIJ"
