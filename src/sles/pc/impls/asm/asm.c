@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.120 2000/09/28 21:12:53 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.121 2000/09/29 02:37:32 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -79,7 +79,9 @@ static int PCView_ASM(PC pc,Viewer viewer)
     }
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
-    if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);}
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      if (jac->sles) {ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);}
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for PCASM",((PetscObject)viewer)->type_name);
   }
