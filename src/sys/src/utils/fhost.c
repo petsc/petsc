@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.5 1996/04/16 16:20:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.6 1996/06/12 02:40:21 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -40,7 +40,7 @@ int PetscGetHostName( char *name, int nlen )
     getdomainname( name+l, nlen - l );
 #endif
     /* 
-       Some machines (Linx) default to (none) if the not
+       Some machines (Linx) default to (none) if not
        configured with a particular domain name.
     */
     if (PetscStrncmp(name+l,"(none)",6)) {
