@@ -28,12 +28,11 @@ def setupASESection(lines, path):
   skipASE   = 0
   aseMarker = '###### ASE Section'
 
-  for line in lines:
-    if skipASE:
-      continue
+  for line in [l.strip() for l in lines]:
     if line == aseMarker:
       foundASE = 1
       skipASE  = not skipASE
+    if skipASE:
       continue
     if foundASE:
       bottom.append(line)
