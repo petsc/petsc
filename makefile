@@ -1,12 +1,12 @@
-# $Id: makefile,v 1.338 2001/03/20 04:21:39 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.339 2001/03/20 16:31:19 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
 # See also bmake/common for additional commands.
 #
 ALL: all
-
-DIRS	   = src include docs 
+LOCDIR = . 
+DIRS   = src include docs 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test
@@ -287,11 +287,12 @@ deletemanualpages:
 allmanualpages: deletemanualpages
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic  LOC=${LOC}
-	-maint/wwwindex.py ${LOC}
+	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} ACTION=manexamples tree  LOC=${LOC}
 	-${OMAKE} manconcepts  LOC=${LOC}
-	-${OMAKE} ACTION=exampleconcepts tree
-	-maint/helpindex.py
+	-${OMAKE} ACTION=getexlist tree LOC=${LOC}
+	-${OMAKE} ACTION=exampleconcepts tree LOC=${LOC}
+	-maint/helpindex.py ${PETSC_DIR} ${LOC}
 	-@chmod g+w ${LOC}/docs/manualpages/*/*.html
 
 # Builds Fortran stub files
