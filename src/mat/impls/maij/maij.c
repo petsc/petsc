@@ -974,6 +974,198 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 
 /* ------------------------------------------------------------------------------*/
 #undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqMAIJ_7"
+PetscErrorCode MatMult_SeqMAIJ_7(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqMAIJ    *b = (Mat_SeqMAIJ*)A->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)b->AIJ->data;
+  PetscScalar    *x,*y,*v,sum1, sum2, sum3, sum4, sum5, sum6, sum7;
+  PetscErrorCode ierr;
+  PetscInt       m = b->AIJ->m,*idx,*ii;
+  PetscInt       n,i,jrow,j;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  idx  = a->j;
+  v    = a->a;
+  ii   = a->i;
+
+  for (i=0; i<m; i++) {
+    jrow = ii[i];
+    n    = ii[i+1] - jrow;
+    sum1  = 0.0;
+    sum2  = 0.0;
+    sum3  = 0.0;
+    sum4  = 0.0;
+    sum5  = 0.0;
+    sum6  = 0.0;
+    sum7  = 0.0;
+    for (j=0; j<n; j++) {
+      sum1 += v[jrow]*x[7*idx[jrow]];
+      sum2 += v[jrow]*x[7*idx[jrow]+1];
+      sum3 += v[jrow]*x[7*idx[jrow]+2];
+      sum4 += v[jrow]*x[7*idx[jrow]+3];
+      sum5 += v[jrow]*x[7*idx[jrow]+4];
+      sum6 += v[jrow]*x[7*idx[jrow]+5];
+      sum7 += v[jrow]*x[7*idx[jrow]+6];
+      jrow++;
+     }
+    y[7*i]   = sum1;
+    y[7*i+1] = sum2;
+    y[7*i+2] = sum3;
+    y[7*i+3] = sum4;
+    y[7*i+4] = sum5;
+    y[7*i+5] = sum6;
+    y[7*i+6] = sum7;
+  }
+
+  PetscLogFlops(14*a->nz - 7*m);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTranspose_SeqMAIJ_7"
+PetscErrorCode MatMultTranspose_SeqMAIJ_7(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqMAIJ    *b = (Mat_SeqMAIJ*)A->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)b->AIJ->data;
+  PetscScalar    *x,*y,*v,alpha1,alpha2,alpha3,alpha4,alpha5,alpha6,alpha7,zero = 0.0;
+  PetscErrorCode ierr;
+  PetscInt       m = b->AIJ->m,n,i,*idx;
+
+  PetscFunctionBegin; 
+  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+
+  for (i=0; i<m; i++) {
+    idx    = a->j + a->i[i] ;
+    v      = a->a + a->i[i] ;
+    n      = a->i[i+1] - a->i[i];
+    alpha1 = x[7*i];
+    alpha2 = x[7*i+1];
+    alpha3 = x[7*i+2];
+    alpha4 = x[7*i+3];
+    alpha5 = x[7*i+4];
+    alpha6 = x[7*i+5];
+    alpha7 = x[7*i+6];
+    while (n-->0) {
+      y[7*(*idx)]   += alpha1*(*v);
+      y[7*(*idx)+1] += alpha2*(*v);
+      y[7*(*idx)+2] += alpha3*(*v);
+      y[7*(*idx)+3] += alpha4*(*v);
+      y[7*(*idx)+4] += alpha5*(*v);
+      y[7*(*idx)+5] += alpha6*(*v);
+      y[7*(*idx)+6] += alpha7*(*v);
+      idx++; v++;
+    }
+  }
+  PetscLogFlops(14*a->nz - 7*b->AIJ->n);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqMAIJ_7"
+PetscErrorCode MatMultAdd_SeqMAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqMAIJ    *b = (Mat_SeqMAIJ*)A->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)b->AIJ->data;
+  PetscScalar    *x,*y,*v,sum1, sum2, sum3, sum4, sum5, sum6, sum7;
+  PetscErrorCode ierr;
+  PetscInt       m = b->AIJ->m,*idx,*ii;
+  PetscInt       n,i,jrow,j;
+
+  PetscFunctionBegin;
+  if (yy != zz) {ierr = VecCopy(yy,zz);CHKERRQ(ierr);}
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&y);CHKERRQ(ierr);
+  idx  = a->j;
+  v    = a->a;
+  ii   = a->i;
+
+  for (i=0; i<m; i++) {
+    jrow = ii[i];
+    n    = ii[i+1] - jrow;
+    sum1  = 0.0;
+    sum2  = 0.0;
+    sum3  = 0.0;
+    sum4  = 0.0;
+    sum5  = 0.0;
+    sum6  = 0.0;
+    sum7  = 0.0;
+    for (j=0; j<n; j++) {
+      sum1 += v[jrow]*x[7*idx[jrow]];
+      sum2 += v[jrow]*x[7*idx[jrow]+1];
+      sum3 += v[jrow]*x[7*idx[jrow]+2];
+      sum4 += v[jrow]*x[7*idx[jrow]+3];
+      sum5 += v[jrow]*x[7*idx[jrow]+4];
+      sum6 += v[jrow]*x[7*idx[jrow]+5];
+      sum7 += v[jrow]*x[7*idx[jrow]+6];
+      jrow++;
+     }
+    y[7*i]   += sum1;
+    y[7*i+1] += sum2;
+    y[7*i+2] += sum3;
+    y[7*i+3] += sum4;
+    y[7*i+4] += sum5;
+    y[7*i+5] += sum6;
+    y[7*i+6] += sum7;
+  }
+
+  PetscLogFlops(14*a->nz);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransposeAdd_SeqMAIJ_7"
+PetscErrorCode MatMultTransposeAdd_SeqMAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqMAIJ    *b = (Mat_SeqMAIJ*)A->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)b->AIJ->data;
+  PetscScalar    *x,*y,*v,alpha1,alpha2,alpha3,alpha4,alpha5,alpha6,alpha7;
+  PetscErrorCode ierr;
+  PetscInt       m = b->AIJ->m,n,i,*idx;
+
+  PetscFunctionBegin; 
+  if (yy != zz) {ierr = VecCopy(yy,zz);CHKERRQ(ierr);}
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&y);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    idx    = a->j + a->i[i] ;
+    v      = a->a + a->i[i] ;
+    n      = a->i[i+1] - a->i[i];
+    alpha1 = x[7*i];
+    alpha2 = x[7*i+1];
+    alpha3 = x[7*i+2];
+    alpha4 = x[7*i+3];
+    alpha5 = x[7*i+4];
+    alpha6 = x[7*i+5];
+    alpha7 = x[7*i+6];
+    while (n-->0) {
+      y[7*(*idx)]   += alpha1*(*v);
+      y[7*(*idx)+1] += alpha2*(*v);
+      y[7*(*idx)+2] += alpha3*(*v);
+      y[7*(*idx)+3] += alpha4*(*v);
+      y[7*(*idx)+4] += alpha5*(*v);
+      y[7*(*idx)+5] += alpha6*(*v);
+      y[7*(*idx)+6] += alpha7*(*v);
+      idx++; v++;
+    }
+  }
+  PetscLogFlops(14*a->nz);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqMAIJ_8"
 PetscErrorCode MatMult_SeqMAIJ_8(Mat A,Vec xx,Vec yy)
 {
@@ -1174,6 +1366,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_8(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 /* ------------------------------------------------------------------------------*/
 #undef __FUNCT__  
@@ -2156,6 +2349,11 @@ PetscErrorCode MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
         B->ops->multadd          = MatMultAdd_SeqMAIJ_6;
         B->ops->multtranspose    = MatMultTranspose_SeqMAIJ_6;
         B->ops->multtransposeadd = MatMultTransposeAdd_SeqMAIJ_6;
+      } else if (dof == 7) {
+        B->ops->mult             = MatMult_SeqMAIJ_7;
+        B->ops->multadd          = MatMultAdd_SeqMAIJ_7;
+        B->ops->multtranspose    = MatMultTranspose_SeqMAIJ_7;
+        B->ops->multtransposeadd = MatMultTransposeAdd_SeqMAIJ_7;
       } else if (dof == 8) {
         B->ops->mult             = MatMult_SeqMAIJ_8;
         B->ops->multadd          = MatMultAdd_SeqMAIJ_8;
