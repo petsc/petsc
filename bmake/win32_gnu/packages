@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.25 1999/11/05 14:42:55 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.26 2000/02/02 20:07:23 bsmith Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -25,11 +25,11 @@ MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 # ---------------------------------------------------------------------------------------- 
 #
 # Location of X-windows software
-# http://dao.gsfc.nasa.gov/software/grads/win32/X11R6.3/
+# http://dao.gsfc.nasa.gov/software/grads/win32/X11R6.4/
 #
-X11_INC= -I/usr/X11r6.3/include
-X11_LIB        = -L/usr/X11r6.3/lib -lX11
-PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+X11_INC		= -I/usr/X11r6.4/include
+X11_LIB         = -L/usr/X11r6.4/lib -lX11
+PETSC_HAVE_X11  = -DPETSC_HAVE_X11
 #
 # Location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
