@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.193 2000/02/02 20:08:42 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.194 2000/02/16 20:24:57 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1779,7 +1779,7 @@ int VecGetArray2d(Vec x,int m,int n,Scalar **a[])
   PetscValidPointer(a);
   PetscValidType(x);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  if (m*n != N) SETERRQ(1,1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
+  if (m*n != N) SETERRQ3(1,1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   *a = (Scalar **) PetscMalloc(m*sizeof(Scalar*));CHKPTRQ(*a);
@@ -1887,6 +1887,8 @@ int VecView(Vec vec,Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(vec,viewer);
+  if (vec->stash.n || vec->bstash.n) SETERRQ(1,1,"Must call VecAssemblyBegin/End() before viewing this vector");
+
   ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

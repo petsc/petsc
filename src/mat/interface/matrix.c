@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.357 2000/01/11 21:00:31 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.358 2000/02/02 16:33:11 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -198,6 +198,7 @@ int MatView(Mat mat,Viewer viewer)
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(mat,viewer);
+  if (!mat->assembled) SETERRQ(1,1,"Must call MatAssemblyBegin/End() before viewing matrix");
 
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
