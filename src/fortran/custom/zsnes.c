@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.32 1999/05/12 03:34:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.33 1999/05/24 17:28:12 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -34,6 +34,8 @@ static char vcid[] = "$Id: zsnes.c,v 1.32 1999/05/12 03:34:35 bsmith Exp bsmith 
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
 #define snesgetjacobian_                 SNESGETJACOBIAN
 #define matsnesmfsetfunction_            MATSNESMFSETFUNCTION
+#define snessetlinesearchparams_         SNESSETLINESEARCHPARAMS
+#define snesgetlinesearchparams_         SNESGETLINESEARCHPARAMS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsnesmfsetfunction_            matsnesmfsetfunction
 #define snesregisterdestroy_         snesregisterdestroy
@@ -63,9 +65,24 @@ static char vcid[] = "$Id: zsnes.c,v 1.32 1999/05/12 03:34:35 bsmith Exp bsmith 
 #define matsnesmfsettype_                matsnesmfsettype
 #define snesgetoptionsprefix_            snesgetoptionsprefix
 #define snesgetjacobian_                 snesgetjacobian
+#define snessetlinesearchparams_         snessetlinesearchparams
+#define snesgetlinesearchparams_         snesgetlinesearchparams
 #endif
 
 EXTERN_C_BEGIN
+
+void snessetlinesearchparams_(SNES *snes, double *alpha, double *maxstep, double *steptol,int *__ierr)
+{
+  *__ierr = SNESSetLineSearchParams(*snes,*alpha,*maxstep,*steptol);
+}
+
+void snesgetlinesearchparams_(SNES *snes, double *alpha, double *maxstep, double *steptol,int *__ierr)
+{
+  if (FORTRANNULLDOUBLE(alpha)) alpha = PETSC_NULL;
+  if (FORTRANNULLDOUBLE(maxstep)) maxstep = PETSC_NULL;
+  if (FORTRANNULLDOUBLE(steptol)) steptol = PETSC_NULL;
+  *__ierr = SNESGetLineSearchParams(*snes,alpha,maxstep,steptol);
+}
 
 void snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx, int *__ierr )
 {
