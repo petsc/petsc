@@ -13,11 +13,11 @@ LOCDIR          = src/mat/examples/
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		  runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
 		  runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm\
-		  ex11.PETSc runex11 ex11.rm ex14.PETSc runex14 ex14.rm \
+		  ex11.PETSc runex11 runex11_2 ex11.rm ex14.PETSc runex14 ex14.rm \
 		  ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
 		  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm clean
 TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
-		  runex7 ex7.rm ex12.PETSc runex12 ex12.rm  ex13.PETSc runex13 \
+		  runex7 ex7.rm ex12.PETSc runex12 runex12_2 ex12.rm  ex13.PETSc runex13 \
 		  ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
 		  ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
 		  ex29.PETSc ex29.rm ex30.PETSc ex30.rm ex31.PETSc ex31.rm ex32.PETSc\
@@ -386,6 +386,11 @@ runex12:
 	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   $(RM) -f ex12_1.tmp
+runex12_2:
+	-@$(MPIRUN)  -np 3 ex12 -mat_mpibaij -mat_block_size 3 > ex12_2.tmp 2>&1;   \
+	   if (diff output/ex12_2.out ex12_2.tmp) then true; \
+	   else echo "Possible problem with ex12_2, diffs above"; fi; \
+	   $(RM) -f ex12_2.tmp
 runex13:
 	-@$(MPIRUN)  ex13 > ex13_1.tmp 2>&1;   \
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
