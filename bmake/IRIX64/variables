@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 1999/02/08 23:32:46 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/02/08 23:34:10 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -11,7 +11,7 @@ SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
 C_CC             = cc -64 -woff 1164 -woff 1048
-C_FC             = f90 -cpp -64 -DHAVE_IRIXF90
+C_FC             = f90 -cpp -64
 C_CLINKER        = cc  -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
 		   -rpath ${LDIR}:${DYLIBPATH}
 C_FLINKER        = f90 -cpp ${FOPTFLAGS} -64 -Wl,-woff,84,-woff,85,-woff,134 \
@@ -27,7 +27,7 @@ O_FOPTFLAGS      = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = CC -64 -woff 1164 -woff 1048
-CXX_FC           = f90 -cpp -64 -DHAVE_IRIXF90
+CXX_FC           = f90 -cpp -64
 CXX_CLINKER      = CC -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
 		   -rpath ${LDIR}:${DYLIBPATH}
 CXX_FLINKER      = CC -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 \
