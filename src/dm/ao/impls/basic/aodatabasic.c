@@ -152,7 +152,7 @@ PetscErrorCode AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
 
       segment = key->segments;
       while (segment) {      
-        dt = PetscDataTypes[dtype];
+        dt = PetscDataTypes[segment->datatype];
         ierr = PetscViewerASCIIPrintf(viewer,"  AOData Segment: %s Blocksize %D datatype %s\n",segment->name,segment->bs,dt);CHKERRQ(ierr);
         if (segment->datatype == PETSC_INT) {
           PetscInt *mdata = (PetscInt*)segment->data;

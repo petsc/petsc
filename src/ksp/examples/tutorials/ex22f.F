@@ -28,7 +28,6 @@
 #include "include/finclude/petscda.h"
       DMMG             dmmg
       PetscErrorCode   ierr
-      double precision norm
       DA               da
       external         ComputeRHS,ComputeJacobian
       Vec              x
