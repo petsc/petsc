@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.62 1996/05/19 23:28:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.63 1996/08/06 19:37:05 curfman Exp curfman $";
 #endif
 
 #include "aij.h"
@@ -14,7 +14,9 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   int        *r,*ic, ierr, i, n = a->m, *ai = a->i, *aj = a->j;
   int        *ainew,*ajnew, jmax,*fill, *ajtmp, nz,shift = a->indexshift;
   int        *idnew, idx, row,m,fm, nnz, nzi,len, realloc = 0,nzbd,*im;
- 
+
+  PetscValidHeaderSpecific(isrow,IS_COOKIE);
+  PetscValidHeaderSpecific(iscol,IS_COOKIE);
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
@@ -258,6 +260,8 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   int        ierr;
   Mat        C;
 
+  PetscValidHeaderSpecific(row,IS_COOKIE);
+  PetscValidHeaderSpecific(col,IS_COOKIE);
   ierr = MatLUFactorSymbolic_SeqAIJ(A,row,col,f,&C); CHKERRQ(ierr);
   ierr = MatLUFactorNumeric_SeqAIJ(A,&C); CHKERRQ(ierr);
 

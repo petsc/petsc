@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.34 1996/08/06 19:37:44 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.35 1996/08/06 20:59:03 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -16,10 +15,14 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
   int          ierr;
 
   if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
-  ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
-  if (!idn) SETERRQ(1,"MatILUFactor_SeqBDiag:Only identity row permutation supported");
-  ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
-  if (!idn) SETERRQ(1,"MatILUFactor_SeqBDiag:Only identity column permutation supported");
+  if (isrow) {
+    ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
+    if (!idn) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Only identity row permutation supported");
+  }
+  if (iscol) {
+    ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
+    if (!idn) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Only identity column permutation supported");
+  }
   if (levels != 0)
     SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:Only ILU(0) is supported");
   ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
@@ -38,10 +41,14 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
   /* For now, no fill is allocated in symbolic factorization phase, so we
      directly use the input matrix for numeric factorization. */
   if (a->m != a->n) SETERRQ(1,"MatILUFactor_SeqBDiag:Matrix must be square");
-  ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
-  if (!idn) SETERRQ(1,"MatILUFactor_SeqBDiag:Only identity row permutation supported");
-  ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
-  if (!idn) SETERRQ(1,"MatILUFactor_SeqBDiag:Only identity column permutation supported");
+  if (isrow) {
+    ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
+    if (!idn) SETERRQ(1,"MatILUFactor_SeqBDiag:Only identity row permutation supported");
+  }
+  if (iscol) {
+    ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
+    if (!idn) SETERRQ(1,"MatILUFactor_SeqBDiag:Only identity column permutation supported");
+  }
   if (level != 0) SETERRQ(1,"MatILUFactor_SeqBDiag:Only ILU(0) is supported");
   return MatLUFactorNumeric(A,&A);
 }

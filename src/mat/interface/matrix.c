@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.183 1996/08/06 15:51:59 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.184 1996/08/06 19:37:16 curfman Exp curfman $";
 #endif
 
 /*
@@ -523,8 +523,6 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidHeaderSpecific(row,IS_COOKIE);
-  PetscValidHeaderSpecific(col,IS_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,"MatLUFactor:matrix must be square");
   if (!mat->ops.lufactor) SETERRQ(PETSC_ERR_SUP,"MatLUFactor");
   if (!mat->assembled) SETERRQ(1,"MatLUFactor:Not for unassembled matrix");
@@ -553,8 +551,6 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidHeaderSpecific(row,IS_COOKIE);
-  PetscValidHeaderSpecific(col,IS_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,"MatILUFactor:matrix must be square");
   if (!mat->ops.ilufactor) SETERRQ(PETSC_ERR_SUP,"MatILUFactor");
   if (!mat->assembled) SETERRQ(1,"MatILUFactor:Not for unassembled matrix");
@@ -594,8 +590,6 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
 {
   int ierr,flg;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidHeaderSpecific(row,IS_COOKIE);
-  PetscValidHeaderSpecific(col,IS_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,"MatLUFactorSymbolic:matrix must be square");
   if (!fact) SETERRQ(1,"MatLUFactorSymbolic:Missing factor matrix argument");
   if (!mat->ops.lufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"MatLUFactorSymbolic");
@@ -672,7 +666,6 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidHeaderSpecific(perm,IS_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,"MatCholeskyFactor:matrix must be square");
   if (!mat->ops.choleskyfactor) SETERRQ(PETSC_ERR_SUP,"MatCholeskyFactor");
   if (!mat->assembled) SETERRQ(1,"MatCholeskyFactor:Not for unassembled matrix");
@@ -706,7 +699,6 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidHeaderSpecific(perm,IS_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,"MatCholeskyFactorSymbolic:matrix must be square");
   if (!fact) SETERRQ(1,"MatCholeskyFactorSymbolic:Missing factor matrix argument");
   if (!mat->ops.choleskyfactorsymbolic)SETERRQ(PETSC_ERR_SUP,"MatCholeskyFactorSymbolic");

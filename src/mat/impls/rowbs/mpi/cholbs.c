@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.33 1996/08/02 20:17:11 bsmith Exp balay $";
+static char vcid[] = "$Id: cholbs.c,v 1.34 1996/08/02 20:32:43 balay Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -12,13 +12,18 @@ static char vcid[] = "$Id: cholbs.c,v 1.33 1996/08/02 20:17:11 bsmith Exp balay 
 #include "src/pc/pcimpl.h"
 #include "mpirowbs.h"
 
-int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
+int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,
                                       double f,int fill,Mat *newfact)
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
   int          ierr;
+  PetscTruth   idn;
 
+  if (isrow) {
+    ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
+    if (!idn) SETERRQ(1,"MatIncompleteCholeskyFactorSymbolic_MPIRowbs:Only identity row permutation supported");
+  }
   if (!mbs->blocksolveassembly) {
     MatSetOption(mat,MAT_SYMMETRIC);
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat); CHKERRQ(ierr);
@@ -44,12 +49,22 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
   return 0; 
 }
 
-int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS perm,IS cperm,
+int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,
                                       double f,int fill,Mat *newfact)
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
   int          ierr;
+  PetscTruth   idn;
+
+  if (isrow) {
+    ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
+    if (!idn) SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:Only identity row permutation supported");
+  }
+  if (iscol) {
+    ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
+    if (!idn) SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:Only identity column permutation supported");
+  }
 
   if (!mbs->blocksolveassembly) {
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat); CHKERRQ(ierr);

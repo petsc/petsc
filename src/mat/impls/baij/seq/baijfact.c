@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.25 1996/08/04 23:12:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: baijfact.c,v 1.26 1996/08/06 19:36:50 curfman Exp curfman $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -22,7 +22,9 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   int         *r,*ic, ierr, i, n = a->mbs, *ai = a->i, *aj = a->j;
   int         *ainew,*ajnew, jmax,*fill, *ajtmp, nz, bs = a->bs, bs2=a->bs2;
   int         *idnew, idx, row,m,fm, nnz, nzi,len, realloc = 0,nzbd,*im;
- 
+
+  PetscValidHeaderSpecific(isrow,IS_COOKIE);
+  PetscValidHeaderSpecific(iscol,IS_COOKIE);
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
@@ -799,7 +801,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
     diag = diag_offset[i] - bi[i];
     /* check pivot entry for current row */
     if (pv[diag] == 0.0) {
-      SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");
+      SETERRQ(1,"MatLUFactorNumeric_SeqBAIJ_1:Zero pivot");
     }
     pv[diag] = 1.0/pv[diag];
   }
@@ -1237,6 +1239,8 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   PetscTruth  col_identity, row_identity;
 
   /* special case that simply copies fill pattern */
+  PetscValidHeaderSpecific(isrow,IS_COOKIE);
+  PetscValidHeaderSpecific(iscol,IS_COOKIE);
   ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);
   if (levels == 0 && row_identity && col_identity) {
     ierr = MatConvertSameType_SeqBAIJ(A,fact,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
