@@ -21,7 +21,13 @@ proc main { }  {
             set mesg [ file tail $filename ]
             regsub -all ".html" $mesg "()" mesg
             puts stdout $mesg
+            if { $mesg == "SLESSolve()" } {
+                #puts $start_data
+            }
+        } else {
+            #puts stdout $filename
         }
+        
         close $fileid
     }
 }
