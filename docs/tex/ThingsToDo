@@ -10,8 +10,12 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
+
+  - allow more than one TS monitor. Model on KSP.
+
   - Need to allow repeated matix assembly for repeated linear solves with
-    in-place ILU(0).
+    in-place ILU(0). Perhaps new routine MatSetUnfactored(Mat)? 
 
   - Use MPI topology routines for DA codes.
 
@@ -19,12 +23,10 @@ Additional Capabilities that PETSc Needs:
 
   - Check out the performance of VecOps ( noticed tnem to be extremely bad (Satish)
 
-
   - fix PetscView so that with scrolling in horizontal direction and click on icon
     it pops up detailed information in correct location.
 
   - Add some indication to window indicating that it is awaiting input.
-
 
   - Maybe, like, say, test one or two BDiag routines before making a release?
 
@@ -40,7 +42,6 @@ Additional Capabilities that PETSc Needs:
   - Thorougly test PetscRandomSetInterval().
 
   - change KSP to not return -it on error but instead use error handling.
-
 
   * Try using Isaac's trick for VecGetArray(), ISGetIndices(), etc:
       common /xxx/ v(1),i(1)
@@ -64,16 +65,13 @@ Additional Capabilities that PETSc Needs:
   - write SLESCompareTypes() that for a given sles runs all possible PC, KSP, options etc.
     builds giant table.
 
-  - Have two types of error tests, one assert type and one real error type?
-
-  - allow more than one TS monitor. Model on KSP.
+  - Have two types of error tests, one assert type and one real error type????
 
  - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
 
  - Subdivide html manpage sections, e.g. elementary, advanced and developer.
 
- - Aim for more exhaustive PETSc testing.  See
-         /home/MPI/mpich/examples/test/rlist.srt:
+ - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
 
  - Add verify timestep for all TS styles.
 
