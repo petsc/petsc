@@ -1,4 +1,4 @@
-# $Id: base.O_complex,v 1.11 1997/10/08 15:22:03 curfman Exp curfman $ 
+# $Id: base.O_complex,v 1.12 1997/10/08 15:27:02 curfman Exp curfman $ 
 
 CLINKER    = g++ $(COPTFLAGS) 
 FLINKER    = g++ $(COPTFLAGS) 
@@ -7,6 +7,9 @@ CC         = g++ -DPARCH_sun4 -fPIC
 # This version of PETSCFLAGS specifies the use of Fortran kernels (via
 # -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
 # complex numbers rather than using the potentially slower C++ versions.
+# To instead use the C++ routines, remove -DUSE_FORTRAN_KERNELS from this
+# list and do not specify the kernel library variable, i.e., use
+#   KERNEL_LIB =
 #
 PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_O -DPETSC_COMPLEX  \
              -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS
