@@ -35,29 +35,29 @@ info:
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
-	-@echo "Using C/C++ compiler: ${C_CC} ${COPTFLAGS} ${CCPPFLAGS}"
-	-@echo "C/C++ Compiler version: " `${C_CCV}`
-	-@if [ "${C_FC}" != "" ]; then \
-	   echo "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}";\
-	   echo "Fortran Compiler version: " `${C_FCV}`;\
-         fi
+	-@echo "Using PETSc directory: ${PETSC_DIR}"
+	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "-----------------------------------------"
 	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags:"
 	-@grep "\#define " ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc directory: ${PETSC_DIR}"
-	-@echo "Using PETSc arch: ${PETSC_ARCH}"
+	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "------------------------------------------"
+	-@echo "Using C/C++ compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}"
+	-@echo "C/C++ Compiler version: " `${CCV}`
+	-@if [ "${FC}" != "" ]; then \
+	   echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}";\
+	   echo "Fortran Compiler version: " `${FCV}`;\
+         fi
+	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ linker: ${CLINKER}"
-	-@if [ "${C_FC}" != "" ]; then \
+	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran linker: ${FLINKER}";\
          fi
+	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
 	-@echo "Using mpirun: ${MPIRUN}"

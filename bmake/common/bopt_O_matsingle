@@ -1,6 +1,8 @@
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}
+CCV            = ${C_CCV}
+FCV            = ${C_FCV}
 CLINKER_SLFLAG = ${C_CLINKER_SLFLAG}
 FLINKER_SLFLAG = ${C_FLINKER_SLFLAG}
 CLINKER	       = ${C_CLINKER} ${COPTFLAGS} ${C_SH_LIB_PATH}
