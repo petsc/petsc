@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.254 2001/02/16 20:09:10 balay Exp balay $*/
+/*$Id: plog.c,v 1.255 2001/03/06 17:52:05 balay Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1184,31 +1184,31 @@ int PetscLogDump(const char sname[])
   ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
   fd   = fopen(fname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"cannot open file: %s",fname);
 
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"Objects created %d Destroyed %d\n",nobjects,ObjectsDestroyed);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"Clock Resolution %g\n",0.0);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"Events %d\n",nevents);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"Objects created %d Destroyed %d\n",nobjects,ObjectsDestroyed);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"Clock Resolution %g\n",0.0);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"Events %d\n",nevents);CHKERRQ(ierr);
   for (i=0; i<nevents; i++) {
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%g %d %d %d %d %d %d %g %g %g\n",events[i].time,
                               events[i].event,
                               events[i].cookie,events[i].type,events[i].id1,
                               events[i].id2,events[i].id3,
                               events[i].flops,events[i].mem,
-                              events[i].maxmem);
+                              events[i].maxmem);CHKERRQ(ierr);
   }
   for (i=0; i<nobjects; i++) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%d %d\n",objects[i].parent,(int)objects[i].mem);
-    if (!objects[i].string[0]) {ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"No Info\n");}
-    else ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%s\n",objects[i].string);
-    if (!objects[i].name[0]) {ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"No Name\n");}
-    else ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%s\n",objects[i].name);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%d %d\n",objects[i].parent,(int)objects[i].mem);CHKERRQ(ierr);
+    if (!objects[i].string[0]) {ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"No Info\n");CHKERRQ(ierr);}
+    else {ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%s\n",objects[i].string);CHKERRQ(ierr);}
+    if (!objects[i].name[0]) {ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"No Name\n");CHKERRQ(ierr);}
+    else {ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%s\n",objects[i].name);CHKERRQ(ierr);}
   }
   for (i=0; i<PetscLog_USER_EVENT_HIGH; i++) {
     flops = 0.0;
     if (EventsType[0][i][TIME]){flops = EventsType[0][i][FLOPS]/EventsType[0][i][TIME];}
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%d %16g %16g %16g %16g\n",i,EventsType[0][i][COUNT],
-                      EventsType[0][i][FLOPS],EventsType[0][i][TIME],flops);
+                      EventsType[0][i][FLOPS],EventsType[0][i][TIME],flops);CHKERRQ(ierr);
   }
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"Total Flops %14e %16.8e\n",_TotalFlops,_TotalTime);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"Total Flops %14e %16.8e\n",_TotalFlops,_TotalTime);CHKERRQ(ierr);
   fclose(fd);
   PetscFunctionReturn(0);
 }
