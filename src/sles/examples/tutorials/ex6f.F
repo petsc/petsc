@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.9 1995/11/30 22:34:58 bsmith Exp $";
+C    "$Id: ex20.F,v 1.1 1996/04/12 00:30:59 curfman Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -14,7 +14,7 @@ C
       Vec              x, u, b
       Mat              A
       SLES             sles
-      PetscRandom      rctx
+c      PetscRandom      rctx
       integer          i, j, II, JJ, ierr, m, n
       integer          Istart, Iend
       double precision v, zero, one
@@ -60,8 +60,9 @@ C Create vectors for exact solution, approx solution, and RHS
       call VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
-      call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,rctx)
-      call VecSetRandom(rctx,u,ierr)
+c      call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,rctx)
+c      call VecSetRandom(rctx,u,ierr)
+      call VecSet(one,u,ierr)
 
 C Create SLES context and set initial operators
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
@@ -88,12 +89,14 @@ C Free data structures
 
 C -----------------------------------------------------------------------
 C
+      subroutine solve1(A,x,b,u,count,nsteps,ierr)
+C
 C   solve1 - This routine is used for repeated linear system solves.
 C   We update the linear system matrix each time, but retain the same
 C   preconditioning matrix for all linear solves.
 C
 C      A - linear system matrix
-C      B - preconditioning matrix
+C      A2 - preconditioning matrix
 C
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -101,12 +104,14 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
 
-      subroutine solve1(A,x,b,u,count,nsteps,ierr)
       double precision v
-      integer          II, ierr, Istart, Iend, count, nsteps, printflag
-      Mat              A, A2
+      integer          II, ierr, Istart, Iend, count, nsteps
+      Mat              A
       SLES             sles
 
+C Use common block to retain matrix between successive subroutine calls
+      Mat              A2
+      integer          rank, printflag
       common /my_data/ A2, printflag, rank
 
 C First time thorough, create a new matrix to use as the preconditioner
