@@ -627,7 +627,7 @@ EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring,int*,int**);
 
   Concepts: partitioning
 
-.seealso:  MatParitioningCreate(), MatPartitioningType
+.seealso:  MatPartitioningCreate(), MatPartitioningType
 S*/
 typedef struct _p_MatPartitioning *MatPartitioning;
 
