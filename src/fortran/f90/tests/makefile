@@ -1,18 +1,21 @@
-# $Id: makefile,v 1.184 1997/09/10 16:23:37 bsmith Exp $ 
+# $Id: makefile,v 1.1 1998/03/12 19:28:59 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = -cpp $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 FFLAGS   = 
-SOURCEC  = zf90.c f90_nag.c
-SOURCEF  = 
+SOURCEC  = test_IRIX.c
+SOURCEF  = test_IRIXf90.F
 SOURCEH  = 
-OBJSC    = zf90.o f90_nag.o
+OBJSC    = test_IRIX.o test_IRIXf90.o
 OBJSF    = 
 LIBBASE  = libpetscfortran
-MANSEC   = 7
-LOCDIR   = src/fortran/f90/
+MANSEC   =
+LOCDIR   = src/fortran/f90/tests
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 
+test_IRIX: test_IRIX.o test_IRIXf90.o
+	-$(FLINKER) -o test_IRIX test_IRIX.o test_IRIXf90.o
+	$(RM) -f test_IRIX.o test_IRIXf90.o

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.12 1997/12/18 21:33:15 balay Exp balay $ 
+# $Id: base.site,v 1.13 1998/01/28 21:17:49 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,8 @@
 # FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-#  The line -bI:/usr/lpp/xlf/lib/lowsys.exp is probably not needed 
-#  when running with OS version 4.1
+#  The line -bI:/usr/lpp/xlf/lib/lowsys.exp is needed when using
+#  AIX version 3.*, for eg: AIX 3.2
 #
 #  Note that when using gcc/g++ is is ESSENTIAL that "-lbsd -lc"
 #  precede the Fortran libraries here.  Otherwise, the Fortran
