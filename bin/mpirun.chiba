@@ -169,7 +169,7 @@ while [ "$status" = "Q" ] ; do
   sleep 5
   lstatus=`qstat $pbs_job_id 2> /dev/null`
   status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-  echo -n "#"
+  echo -n "."
 done
 echo " "
 # 
@@ -178,10 +178,10 @@ date
 #
 status="R"
 while [ "$status" = "R" ] ; do
-  sleep 5
+  sleep 2
   lstatus=`qstat $pbs_job_id 2> /dev/null`
   status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-  echo -n "#"
+  echo -n "."
 done
 echo " "
 #
@@ -190,10 +190,10 @@ date
 #
 status="E"
 while [ "$status" = "E" ] ; do
-  sleep 5
+  sleep 1
   lstatus=`qstat $pbs_job_id 2> /dev/null`
   status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-  echo -n "#"
+  echo -n "."
 done
 echo " "
 #
