@@ -75,7 +75,7 @@ static char help4[] = "Options for debugging and matrix dumping:\n\
   -printg                    : Print grid information\n\
   -mat_dump -cfl_switch [cfl]: Dump linear system corresponding to this CFL in binary to file\n\
                                'euler.dat'; then exit.\n\
-These shouldn't be needed anymore but were useful in writing the parallel code\n\
+These shouldn't be needed anymore but were useful in testing the parallel code\n\
   -printv                    : Print various vectors\n\
   -debug                     : Activate debugging printouts (dump matices, index sets, etc.).\n\
                                Since this option dumps lots of data, it should be used for just\n\
@@ -542,6 +542,7 @@ int UserDestroyEuler(Euler *app)
   if (app->J) {ierr = MatDestroy(app->J); CHKERRQ(ierr);}
   if (app->matrix_free) {ierr = MatDestroy(app->Jmf); CHKERRQ(ierr);}
   if (app->Fvrml) {ierr = VecDestroy(app->Fvrml); CHKERRQ(ierr);}
+  if (app->F_low) {ierr = VecDestroy(app->F_low); CHKERRQ(ierr);}
   ierr = VecDestroy(app->X); CHKERRQ(ierr);
   ierr = VecDestroy(app->Xbc); CHKERRQ(ierr);
   ierr = VecDestroy(app->F); CHKERRQ(ierr);
@@ -934,8 +935,9 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
 {
   Euler  *app = (Euler *)ptr;
-  int    ierr, base_unit, fortvec, iter;
+  int    ierr, base_unit, fortvec, iter, ii, fcount, mfm_tmp;
   Scalar zero = 0.0, *farray;
+  Vec    Fvec;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Do setup (not required for the first function evaluation)
@@ -958,17 +960,36 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     } else {
       ierr = BoundaryConditionsImplicit(app,X); CHKERRQ(ierr);
     }
-    /* Set flag for controlling "frozen" limiters:
-          matrix_free_mult = 0: not in the midst of a matrix-free multiply
-          matrix_free_mult = 1: matrix-free mult: using frozen limiter
-          matrix_free_mult = 2: matrix-free mult: compute new limiter for
-                                first matrix-vector mult of a new linear solve
-     */
-    if (app->matrix_free_mult && app->new_linear_solve) {
-      app->matrix_free_mult++;
-      app->new_linear_solve = 0;
-    } 
   }
+
+  /* Flag for controlling "frozen" limiters:
+        matrix_free_mult = 0: not in the midst of a matrix-free multiply
+        matrix_free_mult = 1: matrix-free mult: using frozen limiter
+        matrix_free_mult = 2: matrix-free mult: compute new limiter for
+                              first matrix-vector mult of a new linear solve
+  */
+
+  /* This assumes we are doing plain Newton with nothing else fancy.  Need to
+     revise if we use line search, etc.!! */
+  fcount = 1;
+  mfm_tmp = app->matrix_free_mult;
+  if (app->matrix_free && !app->matrix_free_mult) {
+    if (!app->F_low) {printf("creating F_low\n"); ierr = VecDuplicate(F,&app->F_low); CHKERRQ(ierr);}
+    fcount = 2;
+  }
+
+  for (ii=0; ii<fcount; ii++) {
+    if (ii == 0) {
+      if (!app->matrix_free) {
+        Fvec = F;
+      } else {
+        Fvec = app->F_low;
+        if (!app->matrix_free_mult) app->matrix_free_mult = 2;
+      }
+    } else if (ii == 1) {
+      Fvec = F;
+    } else SETERRQ(1,0,"Unsupported function type");
+    printf("ii = %d, mfm=%d\n",ii,app->matrix_free_mult);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Compute nonlinear function in Julianne work arrays
@@ -1017,13 +1038,13 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
 
     /* Initialize vector to zero.  These values will be overwritten everywhere but
        the edges of the 3D domain */
-    ierr = VecSet(&zero,F); CHKERRQ(ierr);
+    ierr = VecSet(&zero,Fvec); CHKERRQ(ierr);
 
     if (app->use_vecsetvalues) {
-      /* Transform F to a Fortran vector */
-      ierr = PetscCObjectToFortranObject(F,&fortvec); CHKERRQ(ierr);
+      /* Transform Fvec to a Fortran vector */
+      ierr = PetscCObjectToFortranObject(Fvec,&fortvec); CHKERRQ(ierr);
 
-      /* Build F(X) using VecSetValues() */
+      /* Build Fvec(X) using VecSetValues() */
       ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dr, app->dru, app->drv,
            app->drw, app->de, app->ltog, &app->nloc,
 	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
@@ -1033,8 +1054,8 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
            app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
            app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
     } else {
-      /* Build F(X) directly, without using VecSetValues() */
-      ierr = VecGetArray(F,&farray); CHKERRQ(ierr);
+      /* Build Fvec(X) directly, without using VecSetValues() */
+      ierr = VecGetArray(Fvec,&farray); CHKERRQ(ierr);
       ierr = rbuild_direct_(farray, &app->sctype, app->dt, app->dr, app->dru, app->drv,
            app->drw, app->de,
 	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
@@ -1049,7 +1070,11 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     if (app->sctype == DT_MULT) {
       ierr = rscale_(app->dt,app->dr,app->dru,app->drv,app->drw,app->de); CHKERRQ(ierr);
     }
-    ierr = UnpackWork(app,app->dr,app->dru,app->drv,app->drw,app->de,F); CHKERRQ(ierr);
+    ierr = UnpackWork(app,app->dr,app->dru,app->drv,app->drw,app->de,Fvec); CHKERRQ(ierr);
+  }
+
+  /* Reset flag */
+  app->matrix_free_mult = mfm_tmp;
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1306,10 +1331,10 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->matrix_free      = 0;
   app->matrix_free_mult = 0;
   app->first_time_resid = 1;
-  app->new_linear_solve = 1;
   app->J                = 0;
   app->Jmf              = 0;
   app->Fvrml            = 0;
+  app->F_low            = 0;
   nc = app->nc;
 
   if (app->dump_vrml) dump_angle_vrml(app->angle);
