@@ -663,8 +663,8 @@ int MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F) 
   /* Create the factorization matrix */ 
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->choleskyfactornumeric = MatFactorNumeric_AIJMUMPS;
   B->ops->getinertia            = MatGetInertia_SBAIJMUMPS;
