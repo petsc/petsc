@@ -1,6 +1,6 @@
       subroutine dnest(nf,fval,h,fnoise,fder2,hopt,info,eps)
 
-#include "include/FINCLUDE/petsc.h"
+#include "../../../include/FINCLUDE/petsc.h"
 
       integer nf, info
       Double h, fnoise, fder2, hopt
