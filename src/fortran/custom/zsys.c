@@ -1,9 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.16 1996/03/23 19:06:19 curfman Exp curfman $";
+static char vcid[] = "$Id: zsys.c,v 1.17 1996/03/23 19:22:54 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "sys.h"
+#include "vec.h"
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
@@ -17,6 +18,8 @@ static char vcid[] = "$Id: zsys.c,v 1.16 1996/03/23 19:06:19 curfman Exp curfman
 #define petscerror_           PETSCERROR
 #define petscrandomcreate_    PETSCRANDOMCREATE
 #define petscrandomdestroy_   PETSCRANDOMDESTROY
+#define petscrandomgetvalue_  PETSCRANDOMGETVALUE
+#define vecsetrandom_         VECSETRANDOM
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscattachdebugger_  petscattachdebugger
 #define petscobjectsetname_   petscobjectsetname
@@ -28,18 +31,31 @@ static char vcid[] = "$Id: zsys.c,v 1.16 1996/03/23 19:06:19 curfman Exp curfman
 #define petscerror_           petscerror
 #define petscrandomcreate_    petscrandomcreate
 #define petscrandomdestroy_   petscrandomdestroy
+#define petscrandomgetvalue_  petscrandomgetvalue
+#define vecsetrandom_         vecsetrandom
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
+void petscrandomgetvalue_(PetscRandom *r,Scalar *val, int *__ierr )
+{
+  *__ierr = PetscRandomGetValue((PetscRandom)MPIR_ToPointer(*(int*)(r)),val);
+}
+
+void vecsetrandom_(PetscRandom *r,Vec x, int *__ierr )
+{
+  *__ierr = VecSetRandom((PetscRandom)MPIR_ToPointer(*(int*)(r)),
+                         (Vec)MPIR_ToPointer( *(int*)(x) ));
+}
+
 void petscobjectgetname(PetscObject obj, CHAR name, int *__ierr, int len)
 {
   char *tmp;
   *__ierr = PetscObjectGetName((PetscObject)MPIR_ToPointer(*(int*)(obj)),
                                &tmp);
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
   PetscStrncpy(t,tmp,len1);
@@ -120,7 +136,7 @@ void petscrandomdestroy_(PetscRandom *r, int *__ierr ){
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: zsys.c,v 1.16 1996/03/23 19:06:19 curfman Exp curfman $
+ *  $Id: zsys.c,v 1.17 1996/03/23 19:22:54 curfman Exp bsmith $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.
