@@ -564,11 +564,12 @@ class Framework(base.Base):
     
   def t_updateBootstrap(self):
     '''Create a bootstrap tarball and copy it to the FTP site'''
-    import installerclass
+    import install.installerclass
 
-    installer = installerclass.Installer()
+    installer = install.installerclass.Installer()
     tarball   = installer.backup(self.project.getUrl())
-    self.executeShellCommand('scp '+tarball+' petsc@terra.mcs.anl.gov://mcs/ftp/pub/petsc/sidl/'+tarball)
+    #self.executeShellCommand('scp '+tarball+' petsc@terra.mcs.anl.gov://mcs/ftp/pub/petsc/sidl/'+tarball)
+    os.rmdir('backup')
     raise RuntimeError('Need to fix the path')
     return
 
