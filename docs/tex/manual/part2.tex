@@ -3205,24 +3205,33 @@ PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU
 %\nobreak
 %\label{fig_package}
 %\end{figure}               
+It should be clear that SUPERLU_LIB specifies the compiler command to link with the SuperLU libraries, and 
+similarly SUPERLU_INCLUDE specifies the compiler command to augment the Include search path to find SuperLU
+header files.  The third essential detail, PETSC_HAVE_SUPERLU informs our make system to perform builds
+in the directories that include the SuperLU interface, and sets the flag -DPETSC_HAVE_SUPERLU for conditional
+inclusion within various source files.
 
 \item Build the PETSc libraries.
-\item Use the runtime option: \trl{-mat_<mattype>_<package>} \trl{-ksp_type preonly} \trl{-pc_type <pctype>}.
+\item Use the runtime option: \trl{-mat_type <mattype>} \trl{-ksp_type preonly} \trl{-pc_type <pctype>}.
 \end{enumerate}
 
 \begin{table}[H]
 \begin{center}
-\begin{tabular}{llll}
-{\bf Package}    &{\bf MatType}  & {\bf PCType} & {\bf Runtime Options}\\
+\begin{tabular}{lllll}
+{\bf Package}    &{\bf Base Matrix Class}  & {\bf PCType} & {\bf MatType} & {\bf Runtime Options}\\
 \hline
-DSCPACK          & baij         & cholesky     &  \trl{-mat_baij_dscpack}\\
-MUMPS            & aij          & lu           &  \trl{-mat_aij_mumps}\\
-                 & sbaij        & cholesky     &  \trl{-mat_sbaij_mumps}\\
-SPOOLES          & aij          & lu           &  \trl{-mat_aij_spooles}\\
-                 & sbaij        & cholesky     &  \trl{-mat_sbaij_spooles}\\
-SUPERLU          & aij          & lu           &  \trl{-mat_aij_superlu} \\
-SUPERLU\_DIST    & aij          & lu           &  \trl{-mat_aij_superlu_dist}\\
-UMFPACK          & aij          & lu           &  \trl{-mat_aij_umfpack}\\
+DSCPACK          & baij         & cholesky     &  MATDSCPACK         & \trl{-mat_type dscpack}\\
+MUMPS            & aij          & lu           &  MATAIJMUMPS        & \trl{-mat_type aijmumps}\\
+                 & sbaij        & cholesky     &  MATSBAIJMUMPS      & \trl{-mat_type sbaijmumps}\\
+SPOOLES          & seqaij       & lu           &  MATSEQAIJSPOOLES   & \trl{-mat_type seqaijspooles}\\
+                 & mpiaij       & lu           &  MATMPIAIJSPOOLES   & \trl{-mat_type mpiaijspooles}\\
+                 & seqsbaij     & cholesky     &  MATSEQSBAIJSPOOLES & \trl{-mat_type seqsbaijspooles}\\
+                 & mpisbaij     & cholesky     &  MATMPISBAIJSPOOLES & \trl{-mat_type mpisbaijspooles}\\
+SUPERLU          & seqaij       & lu           &  MATSUPERLU         & \trl{-mat_type superlu} \\
+SUPERLU\_DIST    & aij          & lu           &  MATSUPERLU\_DIST   & \trl{-mat_type superlu_dist}\\
+UMFPACK          & seqaij       & lu           &  MATUMFPACK         & \trl{-mat_type umfpack}\\
+ESSL             & seqaij       & lu           &  MATESSL            & \trl{-mat_type essl}\\
+LUSOL            & seqaij       & lu           &  MATLUSOL           & \trl{-mat_type lusol}\\
 \hline
 \end{tabular}
 \end{center}
@@ -3230,10 +3239,29 @@ UMFPACK          & aij          & lu           &  \trl{-mat_aij_umfpack}\\
 \label{tab_externaloptions}
 \end{table}
 
-
 The default and available input options for each external software can be found
 by specifying -help (or -h) at runtime.
 
+As an alternative to using runtime flags to employ these external
+packages, one can also create matrices with the appropriate
+capabilities by calling MatCreate() followed by MatSetType()
+specifying the desired matrix type from \ref{tab_externaloptions}.
+These matrix types inherit capabilities from their PETSc matrix
+parents: seqaij, mpiaij, etc.  As a result, the preallocation routines
+MatSeqAIJPreallocate, MatMPIAIJPreallocate, etc. and any other type
+specific routines of the base class are supported.  One can also
+call MatConvert inplace to convert the matrix to and from its base
+class without performing an expensive data copy.  MatConvert cannot be
+called on matrices that have already been factored.
+
+In \ref{tab_externaloptions}, the base class aij refers to the fact
+that inheritance is based on MATSEQAIJ when constructed with a single
+process communicator, and from MATMPIAIJ otherwise.  The same holds
+for baij and sbaij.  For codes that are intended to be run as both a
+single process or with multiple processes, depending on the mpirun
+command, it is recommended that both sets of preallocation routines
+are called for these communicator morphing types.  The call for the
+incorrect type will simply be ignored without any harm or message.
 
 
 % ---------------------------------------------------------------
