@@ -500,7 +500,7 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 
 .keywords: PC, apply, transpose
 
-.seealso: PCApply(), PCApplyBAorAB(), PCApplyBAorABTranspose(), PCHasTransposeApply()
+.seealso: PCApply(), PCApplyBAorAB(), PCApplyBAorABTranspose(), PCHasApplyTranspose()
 @*/
 int PCApplyTranspose(PC pc,Vec x,Vec y)
 {
@@ -524,9 +524,9 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCHasTransposeApply"
+#define __FUNCT__ "PCHasApplyTranspose"
 /*@
-   PCHasTransposeApply - Test whether the preconditioner has a transpose apply operation
+   PCHasApplyTranspose - Test whether the preconditioner has a transpose apply operation
 
    Collective on PC and Vec
 
@@ -542,7 +542,7 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
 
 .seealso: PCApplyTranspose()
 @*/
-int PCHasTransposeApply(PC pc,PetscTruth *flg)
+int PCHasApplyTranspose(PC pc,PetscTruth *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

@@ -136,7 +136,7 @@ int  KSPSolve_CGNE(KSP ksp,int *its)
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale); CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
-  ierr = PCHasTransposeApply(ksp->B,&transpose_pc); CHKERRQ(ierr);
+  ierr = PCHasApplyTranspose(ksp->B,&transpose_pc); CHKERRQ(ierr);
 
   cg            = (KSP_CG*)ksp->data;
   eigs          = ksp->calc_sings;
