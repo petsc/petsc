@@ -1,5 +1,5 @@
 #! /bin/csh -f
-# $Id: petscarch,v 1.8 1997/09/16 16:07:33 balay Exp balay $ 
+# $Id: petscarch,v 1.9 1997/09/16 16:09:17 balay Exp balay $ 
 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
@@ -44,7 +44,7 @@ if ("$SunOSTest" == "sun4") then
   if ("$MajorVersion" ==  5) then
     set LARCH = "solaris"
   endif
-else if ("$LARCH" == "iris4d" || $LARCH == "IRIX") then
+else if ("$LARCH" == "iris4d" || "$LARCH" == "IRIX") then
   set LARCH = "IRIX"
   set Version = `/bin/uname -r`
   set MajorVersion = `expr "$Version" : "\(.\)"`
