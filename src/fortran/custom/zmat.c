@@ -405,7 +405,7 @@ void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,long *ia,PetscError
 
 void PETSC_STDCALL mattranspose_(Mat *mat,Mat *B,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLINTEGER(B);
+  CHKFORTRANNULLOBJECT(B);
   *ierr = MatTranspose(*mat,B);
 }
 

@@ -139,7 +139,7 @@
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCMG,ierr)
-      call MGSetLevels(pc,one,PETSC_NULL_OBJECT,ierr)
+      call MGSetLevels(pc,one,PETSC_NULL_INTEGER,ierr)
       call MGSetResidual(pc,zero,MGDefaultResidual,A,ierr)
 
       call MGSetResidual(pc,zero,MyResidual,A,ierr)

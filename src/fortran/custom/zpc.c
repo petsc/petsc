@@ -150,7 +150,7 @@ void PETSC_STDCALL pccompositegetpc_(PC *pc,PetscInt *n,PC *subpc,PetscErrorCode
 
 void PETSC_STDCALL mgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(comms);
+  CHKFORTRANNULLINTEGER(comms);
   *ierr = MGSetLevels(*pc,*levels,comms);
 }
 
@@ -255,7 +255,6 @@ void PETSC_STDCALL pcasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_loca
 
 void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLINTEGER(flag);
   CHKFORTRANNULLOBJECT(mat);
   CHKFORTRANNULLOBJECT(pmat)
   *ierr = PCGetOperators(*pc,mat,pmat,flag);

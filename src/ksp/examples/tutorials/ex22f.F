@@ -160,7 +160,8 @@
              col(MatStencil_i,7) = i 
              col(MatStencil_j,7) = j 
              col(MatStencil_k,7) = k+1
-	    call MatSetValuesStencil(jac,i1,row,i7,col,v,INSERT_VALUES,ierr)
+      call MatSetValuesStencil(jac,i1,row,i7,col,v,INSERT_VALUES,               &
+     &                               ierr)
           endif
  30       continue
  20     continue

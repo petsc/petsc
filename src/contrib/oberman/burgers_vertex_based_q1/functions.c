@@ -1,5 +1,5 @@
 
-#include <math.h>
+#include "petsc.h"
 
 /* forcing fucntions */
  PetscReal pde_g(PetscReal x,PetscReal y){ 

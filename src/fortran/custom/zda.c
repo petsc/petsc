@@ -291,9 +291,9 @@ void PETSC_STDCALL darestorelocalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
 
 void PETSC_STDCALL dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLINTEGER(ltog);
-  CHKFORTRANNULLINTEGER(gtol);
-  CHKFORTRANNULLINTEGER(ltol);
+  CHKFORTRANNULLOBJECT(ltog);
+  CHKFORTRANNULLOBJECT(gtol);
+  CHKFORTRANNULLOBJECT(ltol);
   *ierr = DAGetScatter(*da,ltog,gtol,ltol);
 }
 

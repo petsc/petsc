@@ -58,7 +58,7 @@
       double precision  param_max,param_min,dt,tmax,zero
       double precision  ftime
 
-      i5 = 5g
+      i5 = 5
       param_max = 6.81
       param_min = 0
 

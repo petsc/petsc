@@ -441,7 +441,7 @@ void PETSC_STDCALL snesgetsolutionupdate_(SNES *snes,Vec *x,PetscErrorCode *ierr
 void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void **ctx,void *func,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(ctx);
-  CHKFORTRANNULLINTEGER(r);
+  CHKFORTRANNULLOBJECT(r);
   *ierr = SNESGetFunction(*snes,r,ctx,PETSC_NULL);
 }
 

@@ -119,7 +119,7 @@ EXTERN_C_END
 #define CHKFORTRANNULLINTEGER(a)  \
   if (FORTRANNULL(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a)) { \
     PetscError(__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,1, \
-    "Use PETSC_NULL_INTEGER or PETSC_NULL_OBJECT"); *ierr = 1; return; } \
+    "Use PETSC_NULL_INTEGER"); *ierr = 1; return; } \
   else if (FORTRANNULLINTEGER(a)) { a = PETSC_NULL; }
 
 #define CHKFORTRANNULLSCALAR(a)  \
@@ -139,10 +139,13 @@ EXTERN_C_END
     PetscError(__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,1, \
     "Use PETSC_NULL_REAL"); *ierr = 1; return; } \
   else if (FORTRANNULLREAL(a)) { a = PETSC_NULL; }
+
+#define CHKFORTRANNULLOBJECT(a)  \
+  if (FORTRANNULL(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a)) { \
+    PetscError(__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,1, \
+    "Use PETSC_NULL_OBJECT"); *ierr = 1; return; } \
+  else if (FORTRANNULLOBJECT(a)) { a = PETSC_NULL; }
   
-#define CHKFORTRANNULLOBJECT CHKFORTRANNULLINTEGER
-
-
 /*
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.
