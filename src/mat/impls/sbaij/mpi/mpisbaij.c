@@ -2252,7 +2252,13 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPOOLES)
   ierr = PetscOptionsHasName(A->prefix,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseSpooles_MPISBAIJ(A);CHKERRQ(ierr); }
+  if (flag) {
+    if (size == 1) {
+      ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr);
+    } else {
+      ierr = MatUseSpooles_MPISBAIJ(A);CHKERRQ(ierr); 
+    }
+  }
 #endif
   PetscFunctionReturn(0);
 }

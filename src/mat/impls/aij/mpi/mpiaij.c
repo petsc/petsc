@@ -1984,7 +1984,13 @@ int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPOOLES)
   ierr = PetscOptionsHasName(A->prefix,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseSpooles_MPIAIJ(A);CHKERRQ(ierr); }
+  if (flag) {
+    if (size == 1) {
+      ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr);
+    } else {
+      ierr = MatUseSpooles_MPIAIJ(A);CHKERRQ(ierr); 
+    }
+  }
 #endif 
 #if defined(PETSC_HAVE_SUPERLUDIST)
   ierr = PetscOptionsHasName(A->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
