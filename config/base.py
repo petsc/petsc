@@ -52,20 +52,28 @@ class Configure:
   def printLine(self,msg):
     import sys
     if not hasattr(self.framework,'linewidth'):
-      import curses
-      stdscr = curses.initscr()
-      (y,x) = stdscr.getmaxyx()
-      curses.endwin()
+      try:
+        import curses
+        curses.setupterm()
+        stdscr = curses.initscr()
+        (y,x) = stdscr.getmaxyx()
+        curses.endwin()
 
-      self.framework.linewidth = x
-      self.framework.cwd       = os.getcwd()+'/'
+        self.framework.linewidth = x
+        self.framework.cwd       = os.getcwd()+'/'
+      except curses.error:
+        self.framework.linewidth = -1
+        return
+    elif self.framework.linewidth < 0:
+      return
     else:
-      for i in range(0,self.framework.linewidth): sys.stdout.write('\b')
-      pass
+      for i in range(0,self.framework.linewidth):
+        sys.stdout.write('\b')
     msg = msg.replace(self.framework.cwd,'')
     msg = msg+'                                                                                                                       '
     sys.stdout.write(msg[0:self.framework.linewidth])
     sys.stdout.flush()
+    return
 
   def executeTest(self, test, args = []):
     self.framework.log.write('================================================================================\n')
@@ -471,7 +479,7 @@ class Configure:
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (out, ret)
 
-  def checkLink(self, includes, body, cleanup = 1):
+  def checkLink(self, includes = '', body = '', cleanup = 1):
     (output, returnCode) = self.outputLink(includes, body, cleanup)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
