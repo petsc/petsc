@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.29 1999/01/31 16:04:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.30 1999/03/17 23:21:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: view.c,v 1.29 1999/01/31 16:04:48 bsmith Exp bsmith $
 
    Level: beginner
 
-.seealso: ViewerSocketOpen(), ViewerASCIIOpen()
+.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerCreate(), ViewerDrawOpen()
 
 .keywords: Viewer, destroy
 @*/
@@ -58,11 +58,14 @@ int ViewerDestroy(Viewer v)
    Level: intermediate
 
    Note:
-   See petsc/include/viewer.h for a complete list of viewers.
+   See include/viewer.h for a complete list of viewers.
 
    ViewerType is actually a string
 
 .keywords: Viewer, get, type
+
+.seealso: ViewerCreate(), ViewerSetType()
+
 @*/
 int ViewerGetType(Viewer v,ViewerType *type)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: flush.c,v 1.18 1999/01/31 16:04:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: flush.c,v 1.19 1999/03/17 23:21:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: flush.c,v 1.18 1999/01/31 16:04:48 bsmith Exp bsmith 
 
 .keywords: Viewer, flush
 
-.seealso: ViewerMatlabOpen(), ViewerASCIIOpen()
+.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen()
 @*/
 int ViewerFlush(Viewer v)
 {

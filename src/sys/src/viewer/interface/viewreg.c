@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.6 1999/03/17 23:21:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.7 1999/03/31 04:09:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -58,10 +58,12 @@ int ViewerCreate(MPI_Comm comm,Viewer *inviewer)
    Level: advanced
 
    Notes:  
-   See "petsc/include/viewer.h" for available methods (for instance,
+   See "include/viewer.h" for available methods (for instance,
    SOCKET_VIEWER)
 
 .keywords: Viewer, set, method, type
+
+.seealso: ViewerCreate(), ViewerGetType()
 @*/
 int ViewerSetType(Viewer viewer,ViewerType type)
 {
