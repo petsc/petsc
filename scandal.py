@@ -1,14 +1,23 @@
 import compile
+import install.base
 import transform
 
 import os
 
-class CompileSIDL (compile.Process):
+class CompileSIDL (compile.Process, install.base.Base):
   def __init__(self, sourceDB, generatedSources, sources, compiler, compilerFlags, isRepository):
     if isRepository:
       compile.Process.__init__(self, sourceDB, generatedSources, 'sidl', sources, compiler, compilerFlags, 1, 'deferred')
     else:
       compile.Process.__init__(self, sourceDB, generatedSources, 'sidl', sources, compiler, compilerFlags, 0, 'deferred')
+    # TODO: Redo this whole initialization process
+    #   Maker sets the default argDB, but that means we have to wait for that until figuring out compiler
+    #     maybe I should make accessor functions
+    if self.compiler is None:
+      # used by Process
+      self.compiler = self.getCompilerDriver()
+      # used by Action
+      self.program  = self.compiler
     self.repositoryDirs = []
     self.errorHandler   = self.handleScandalErrors
     self.spawn          = 1
@@ -71,8 +80,6 @@ class CompileSIDL (compile.Process):
 
 class CompileSIDLRepository (CompileSIDL):
   def __init__(self, sourceDB, sources = None, compiler = None, compilerFlags = ''):
-    if compiler is None:
-      compiler = self.getCompilerDriver()
     CompileSIDL.__init__(self, sourceDB, None, sources, compiler, compilerFlags, 1)
     #self.spawn = 0
     #self.flags = []
@@ -109,8 +116,6 @@ class CompileSIDLRepository (CompileSIDL):
 
 class CompileSIDLServer (CompileSIDL):
   def __init__(self, sourceDB, generatedSources, sources = None, compiler = None, compilerFlags = ''):
-    if compiler is None:
-      compiler = self.getCompilerDriver()
     CompileSIDL.__init__(self, sourceDB, generatedSources, sources, compiler, compilerFlags, 0)
     self.language = 'C++'
     return
@@ -130,8 +135,6 @@ class CompileSIDLServer (CompileSIDL):
 
 class CompileSIDLClient (CompileSIDL):
   def __init__(self, sourceDB, generatedSources = None, sources = None, compiler = None, compilerFlags = ''):
-    if compiler is None:
-      compiler = self.getCompilerDriver()
     CompileSIDL.__init__(self, sourceDB, generatedSources, sources, compiler, compilerFlags, 1)
     self.language = 'Python'
     return
@@ -150,8 +153,6 @@ class CompileSIDLClient (CompileSIDL):
 
 class CompileSIDLPrint (CompileSIDL):
   def __init__(self, sourceDB, generatedSources = None, sources = None, compiler = None, compilerFlags = ''):
-    if compiler is None:
-      compiler = self.getCompilerDriver()
     CompileSIDL.__init__(self, sourceDB, generatedSources, sources, compiler, compilerFlags, 1)
     self.printer   = 'ANL.SIDLVisitorI.PrettyPrinterHTML'
     self.outputDir = None
