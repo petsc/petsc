@@ -252,7 +252,7 @@ runex6_6:
 	   -mat_mpirowbs -ksp_max_it 150 > ex6_6.tmp 2>&1; \
 	   if (diff output/ex6_6.out ex6_6.tmp) then true; \
 	   else echo "Possible problem with ex6_6, diffs above"; fi; \
-#	   $(RM) -f ex6_6.tmp
+	   $(RM) -f ex6_6.tmp
 runex7:
 	-@$(MPIRUN) -np 2 ex7 -ksp_smonitor > ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
