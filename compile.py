@@ -238,9 +238,15 @@ class CompilePythonC (CompileC):
     (dir, file) = os.path.split(source)
     (base, ext) = os.path.splitext(file)
     if not base[-7:] == '_Module' or not ext == '.c':
-      raise RuntimeError('Invalid Python extension module: '+source)
-    package     = base[:-7]
-    libraryName = os.path.join(dir, package+'module.a')
+      # Stupid Babel hack
+      if base == 'SIDLObjA' or base == 'SIDLPyArrays':
+        package     = base
+        libraryName = os.path.join(dir, package+'.a')
+      else:
+        raise RuntimeError('Invalid Python extension module: '+source)
+    else:
+      package     = base[:-7]
+      libraryName = os.path.join(dir, package+'module.a')
     return libraryName
 
   def setExecute(self, set):
