@@ -1,4 +1,4 @@
-/*$Id: dgefa4.c,v 1.18 2001/04/07 15:42:33 bsmith Exp buschelm $*/
+/*$Id: dgefa4.c,v 1.19 2001/04/13 18:44:03 buschelm Exp buschelm $*/
 /*
        Inverts 4 by 4 matrix using partial pivoting.
 
@@ -150,111 +150,249 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
     PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_ICL_SSE)
-#include "xmmintrin.h"
+#if defined(PETSC_HAVE_SSE)
+#include PETSC_HAVE_SSE
 
 #undef __FUNCT__
 #define __FUNCT__ "Kernel_A_gets_inverse_A_4_ICL_SSE"
 int Kernel_A_gets_inverse_A_4_ICL_SSE(float *a)
 {
   /* 
-     This routine is taken from Intel's Small Matrix Library.
+     This routine is converted from Intel's Small Matrix Library.
      See: Streaming SIMD Extensions -- Inverse of 4x4 Matrix
      Order Number: 245043-001
      March 1999
      http://www.intel.com
 
-     Note: Intel's SML uses row-wise storage for these small matrices,
-     and PETSc uses column-wise storage.  However since inv(A')=(inv(A))'
-     the same code can be used here.
-
      Inverse of a 4x4 matrix via Kramer's Rule:
      bool Invert4x4(SMLXMatrix &);
   */
-  __m128 minor0, minor1, minor2, minor3;
-  __m128 row0, row1, row2, row3;
-  __m128 det, tmp1;
-
   PetscFunctionBegin;
-  tmp1 = _mm_loadh_pi(_mm_loadl_pi(tmp1, (__m64*)(a)), (__m64*)(a+ 4));
-  row1 = _mm_loadh_pi(_mm_loadl_pi(row1, (__m64*)(a+8)), (__m64*)(a+12));
-  row0 = _mm_shuffle_ps(tmp1, row1, 0x88);
-  row1 = _mm_shuffle_ps(row1, tmp1, 0xDD);
-  tmp1 = _mm_loadh_pi(_mm_loadl_pi(tmp1, (__m64*)(a+ 2)), (__m64*)(a+ 6));
-  row3 = _mm_loadh_pi(_mm_loadl_pi(row3, (__m64*)(a+10)), (__m64*)(a+14));
-  row2 = _mm_shuffle_ps(tmp1, row3, 0x88);
-  row3 = _mm_shuffle_ps(row3, tmp1, 0xDD);
-  /* ----------------------------------------------- */
-  tmp1 = _mm_mul_ps(row2, row3);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
-  minor0 = _mm_mul_ps(row1, tmp1);
-  minor1 = _mm_mul_ps(row0, tmp1);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
-  minor0 = _mm_sub_ps(_mm_mul_ps(row1, tmp1), minor0);
-  minor1 = _mm_sub_ps(_mm_mul_ps(row0, tmp1), minor1);
-  minor1 = _mm_shuffle_ps(minor1, minor1, 0x4E);
-  /* ----------------------------------------------- */
-  tmp1 = _mm_mul_ps(row1, row2);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
-  minor0 = _mm_add_ps(_mm_mul_ps(row3, tmp1), minor0);
-  minor3 = _mm_mul_ps(row0, tmp1);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
-  minor0 = _mm_sub_ps(minor0, _mm_mul_ps(row3, tmp1));
-  minor3 = _mm_sub_ps(_mm_mul_ps(row0, tmp1), minor3);
-  minor3 = _mm_shuffle_ps(minor3, minor3, 0x4E);
-  /* ----------------------------------------------- */
-  tmp1 = _mm_mul_ps(_mm_shuffle_ps(row1, row1, 0x4E), row3);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
-  row2 = _mm_shuffle_ps(row2, row2, 0x4E);
-  minor0 = _mm_add_ps(_mm_mul_ps(row2, tmp1), minor0);
-  minor2 = _mm_mul_ps(row0, tmp1);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
-  minor0 = _mm_sub_ps(minor0, _mm_mul_ps(row2, tmp1));
-  minor2 = _mm_sub_ps(_mm_mul_ps(row0, tmp1), minor2);
-  minor2 = _mm_shuffle_ps(minor2, minor2, 0x4E);
-  /* ----------------------------------------------- */
-  tmp1 = _mm_mul_ps(row0, row1);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
-  minor2 = _mm_add_ps(_mm_mul_ps(row3, tmp1), minor2);
-  minor3 = _mm_sub_ps(_mm_mul_ps(row2, tmp1), minor3);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
-  minor2 = _mm_sub_ps(_mm_mul_ps(row3, tmp1), minor2);
-  minor3 = _mm_sub_ps(minor3, _mm_mul_ps(row2, tmp1));
-  /* ----------------------------------------------- */
-  tmp1 = _mm_mul_ps(row0, row3);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
-  minor1 = _mm_sub_ps(minor1, _mm_mul_ps(row2, tmp1));
-  minor2 = _mm_add_ps(_mm_mul_ps(row1, tmp1), minor2);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
-  minor1 = _mm_add_ps(_mm_mul_ps(row2, tmp1), minor1);
-  minor2 = _mm_sub_ps(minor2, _mm_mul_ps(row1, tmp1));
-  /* ----------------------------------------------- */
-  tmp1 = _mm_mul_ps(row0, row2);
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
-  minor1 = _mm_add_ps(_mm_mul_ps(row3, tmp1), minor1);
-  minor3 = _mm_sub_ps(minor3, _mm_mul_ps(row1, tmp1));
-  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
-  minor1 = _mm_sub_ps(minor1, _mm_mul_ps(row3, tmp1));
-  minor3 = _mm_add_ps(_mm_mul_ps(row1, tmp1), minor3);
-  /* ----------------------------------------------- */
-  det = _mm_mul_ps(row0, minor0);
-  det = _mm_add_ps(_mm_shuffle_ps(det, det, 0x4E), det);
-  det = _mm_add_ss(_mm_shuffle_ps(det, det, 0xB1), det);
-  tmp1 = _mm_rcp_ss(det);
-  det = _mm_sub_ss(_mm_add_ss(tmp1, tmp1), _mm_mul_ss(det, _mm_mul_ss(tmp1, tmp1)));
-  det = _mm_shuffle_ps(det, det, 0x00);
-  minor0 = _mm_mul_ps(det, minor0);
-  _mm_storel_pi((__m64*)(a), minor0);
-  _mm_storeh_pi((__m64*)(a+2), minor0);
-  minor1 = _mm_mul_ps(det, minor1);
-  _mm_storel_pi((__m64*)(a+4), minor1);
-  _mm_storeh_pi((__m64*)(a+6), minor1);
-  minor2 = _mm_mul_ps(det, minor2);
-  _mm_storel_pi((__m64*)(a+ 8), minor2);
-  _mm_storeh_pi((__m64*)(a+10), minor2);
-  minor3 = _mm_mul_ps(det, minor3);
-  _mm_storel_pi((__m64*)(a+12), minor3);
-  _mm_storeh_pi((__m64*)(a+14), minor3);
+
+  SSE_SCOPE_BEGIN;
+    SSE_INLINE_BEGIN_1(a)
+
+/* ----------------------------------------------- */
+
+      SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
+      SSE_LOADH_PS(SSE_ARG_1,FLOAT_4,XMM0)
+
+      SSE_LOADL_PS(SSE_ARG_1,FLOAT_8,XMM5)
+      SSE_LOADH_PS(SSE_ARG_1,FLOAT_12,XMM5)
+
+      SSE_COPY_PS(XMM3,XMM0)
+      SSE_SHUFFLE(XMM3,XMM5,0x88)
+
+      SSE_SHUFFLE(XMM5,XMM0,0xDD)
+
+      SSE_LOADL_PS(SSE_ARG_1,FLOAT_2,XMM0)
+      SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM0)
+
+      SSE_LOADL_PS(SSE_ARG_1,FLOAT_10,XMM6)
+      SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM6)
+
+      SSE_COPY_PS(XMM4,XMM0)
+      SSE_SHUFFLE(XMM4,XMM6,0x88)
+
+      SSE_SHUFFLE(XMM6,XMM0,0xDD)
+
+/* ----------------------------------------------- */
+
+      SSE_COPY_PS(XMM7,XMM4)
+      SSE_MULT_PS(XMM7,XMM6)
+
+      SSE_SHUFFLE(XMM7,XMM7,0xB1)
+
+      SSE_COPY_PS(XMM0,XMM5)
+      SSE_MULT_PS(XMM0,XMM7)
+
+      SSE_COPY_PS(XMM2,XMM3)
+      SSE_MULT_PS(XMM2,XMM7)
+
+      SSE_SHUFFLE(XMM7,XMM7,0x4E)
+
+      SSE_COPY_PS(XMM1,XMM5)
+      SSE_MULT_PS(XMM1,XMM7)
+      SSE_SUB_PS(XMM1,XMM0)
+
+      SSE_MULT_PS(XMM7,XMM3)
+      SSE_SUB_PS(XMM7,XMM2)
+
+      SSE_SHUFFLE(XMM7,XMM7,0x4E)
+      SSE_STORE_PS(SSE_ARG_1,FLOAT_4,XMM7)
+
+/* ----------------------------------------------- */
+
+      SSE_COPY_PS(XMM0,XMM5)
+      SSE_MULT_PS(XMM0,XMM4)
+
+      SSE_SHUFFLE(XMM0,XMM0,0xB1)
+
+      SSE_COPY_PS(XMM2,XMM6)
+      SSE_MULT_PS(XMM2,XMM0)
+      SSE_ADD_PS(XMM2,XMM1)
+    
+      SSE_COPY_PS(XMM7,XMM3)
+      SSE_MULT_PS(XMM7,XMM0)
+
+      SSE_SHUFFLE(XMM0,XMM0,0x4E)
+
+      SSE_COPY_PS(XMM1,XMM6)
+      SSE_MULT_PS(XMM1,XMM0)
+      SSE_SUB_PS(XMM2,XMM1)
+
+      SSE_MULT_PS(XMM0,XMM3)
+      SSE_SUB_PS(XMM0,XMM7)
+
+      SSE_SHUFFLE(XMM0,XMM0,0x4E)
+      SSE_STORE_PS(SSE_ARG_1,FLOAT_12,XMM0)
+
+      /* ----------------------------------------------- */
+
+      SSE_COPY_PS(XMM7,XMM5)
+      SSE_SHUFFLE(XMM7,XMM5,0x4E)
+      SSE_MULT_PS(XMM7,XMM6)
+
+      SSE_SHUFFLE(XMM7,XMM7,0xB1)
+
+      SSE_SHUFFLE(XMM4,XMM4,0x4E)
+
+      SSE_COPY_PS(XMM0,XMM4)
+      SSE_MULT_PS(XMM0,XMM7)
+      SSE_ADD_PS(XMM0,XMM2)
+
+      SSE_COPY_PS(XMM2,XMM3)
+      SSE_MULT_PS(XMM2,XMM7)
+
+      SSE_SHUFFLE(XMM7,XMM7,0x4E)
+
+      SSE_COPY_PS(XMM1,XMM4)
+      SSE_MULT_PS(XMM1,XMM7)
+      SSE_SUB_PS(XMM0,XMM1)
+      SSE_STORE_PS(SSE_ARG_1,FLOAT_0,XMM0)
+
+      SSE_MULT_PS(XMM7,XMM3)
+      SSE_SUB_PS(XMM7,XMM2)
+
+      SSE_SHUFFLE(XMM7,XMM7,0x4E)
+
+      /* ----------------------------------------------- */
+
+      SSE_COPY_PS(XMM1,XMM3)
+      SSE_MULT_PS(XMM1,XMM5)
+
+      SSE_SHUFFLE(XMM1,XMM1,0xB1)
+
+      SSE_COPY_PS(XMM0,XMM6)
+      SSE_MULT_PS(XMM0,XMM1)
+      SSE_ADD_PS(XMM0,XMM7)
+    
+      SSE_COPY_PS(XMM2,XMM4)
+      SSE_MULT_PS(XMM2,XMM1)
+      SSE_SUB_PS_M(XMM2,SSE_ARG_1,FLOAT_12)
+
+      SSE_SHUFFLE(XMM1,XMM1,0x4E)
+
+      SSE_COPY_PS(XMM7,XMM6)
+      SSE_MULT_PS(XMM7,XMM1)
+      SSE_SUB_PS(XMM7,XMM0)
+
+      SSE_MULT_PS(XMM1,XMM4)
+      SSE_SUB_PS(XMM2,XMM1)
+      SSE_STORE_PS(SSE_ARG_1,FLOAT_12,XMM2)
+
+      /* ----------------------------------------------- */
+
+      SSE_COPY_PS(XMM1,XMM3)
+      SSE_MULT_PS(XMM1,XMM6)
+
+      SSE_SHUFFLE(XMM1,XMM1,0xB1)
+
+      SSE_COPY_PS(XMM2,XMM4)
+      SSE_MULT_PS(XMM2,XMM1)
+      SSE_LOAD_PS(SSE_ARG_1,FLOAT_4,XMM0)
+      SSE_SUB_PS(XMM0,XMM2)
+
+      SSE_COPY_PS(XMM2,XMM5)
+      SSE_MULT_PS(XMM2,XMM1)
+      SSE_ADD_PS(XMM2,XMM7)
+
+      SSE_SHUFFLE(XMM1,XMM1,0x4E)
+
+      SSE_COPY_PS(XMM7,XMM4)
+      SSE_MULT_PS(XMM7,XMM1)
+      SSE_ADD_PS(XMM7,XMM0)
+
+      SSE_MULT_PS(XMM1,XMM5)
+      SSE_SUB_PS(XMM2,XMM1)
+
+      /* ----------------------------------------------- */
+
+      SSE_MULT_PS(XMM4,XMM3)
+
+      SSE_SHUFFLE(XMM4,XMM4,0xB1)
+
+      SSE_COPY_PS(XMM1,XMM6)
+      SSE_MULT_PS(XMM1,XMM4)
+      SSE_ADD_PS(XMM1,XMM7)
+
+      SSE_COPY_PS(XMM0,XMM5)
+      SSE_MULT_PS(XMM0,XMM4)
+      SSE_LOAD_PS(SSE_ARG_1,FLOAT_12,XMM7)
+      SSE_SUB_PS(XMM7,XMM0)
+
+      SSE_SHUFFLE(XMM4,XMM4,0x4E)
+
+      SSE_MULT_PS(XMM6,XMM4)
+      SSE_SUB_PS(XMM1,XMM6)
+
+      SSE_MULT_PS(XMM5,XMM4)
+      SSE_ADD_PS(XMM5,XMM7)
+
+      /* ----------------------------------------------- */
+
+      SSE_LOAD_PS(SSE_ARG_1,FLOAT_0,XMM0)
+      SSE_MULT_PS(XMM3,XMM0)
+
+      SSE_COPY_PS(XMM4,XMM3)
+      SSE_SHUFFLE(XMM4,XMM3,0x4E)
+      SSE_ADD_PS(XMM4,XMM3)
+
+      SSE_COPY_PS(XMM6,XMM4)
+      SSE_SHUFFLE(XMM6,XMM4,0xB1)
+      SSE_ADD_SS(XMM6,XMM4)
+
+      SSE_COPY_PS(XMM3,XMM6)
+      SSE_RECIP_SS(XMM3,XMM6)
+      SSE_COPY_SS(XMM4,XMM3)
+      SSE_ADD_SS(XMM4,XMM3)
+      SSE_MULT_SS(XMM3,XMM3)
+      SSE_MULT_SS(XMM6,XMM3)
+      SSE_SUB_SS(XMM4,XMM6)
+
+      SSE_SHUFFLE(XMM4,XMM4,0x00)
+
+      SSE_MULT_PS(XMM0,XMM4)
+      SSE_STOREL_PS(SSE_ARG_1,FLOAT_0,XMM0)
+      SSE_STOREH_PS(SSE_ARG_1,FLOAT_2,XMM0)
+
+      SSE_MULT_PS(XMM1,XMM4)
+      SSE_STOREL_PS(SSE_ARG_1,FLOAT_4,XMM1)
+      SSE_STOREH_PS(SSE_ARG_1,FLOAT_6,XMM1)
+
+      SSE_MULT_PS(XMM2,XMM4)
+      SSE_STOREL_PS(SSE_ARG_1,FLOAT_8,XMM2)
+      SSE_STOREH_PS(SSE_ARG_1,FLOAT_10,XMM2)
+
+      SSE_MULT_PS(XMM4,XMM5)
+      SSE_STOREL_PS(SSE_ARG_1,FLOAT_12,XMM4)
+      SSE_STOREH_PS(SSE_ARG_1,FLOAT_14,XMM4)
+
+      /* ----------------------------------------------- */
+
+      SSE_INLINE_END_1;
+  SSE_SCOPE_END;
+
   PetscFunctionReturn(0);
 }
 
