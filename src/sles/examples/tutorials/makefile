@@ -260,31 +260,31 @@ runex10:
 	   ${RM} -f ex10_1.tmp
 runex10_2:
 	-@${MPIRUN} -np 2 ex10 -options_left no -ksp_type bicg \
-	   -f0 /home/petsc/datafiles/matrices/medium > ex10_2.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
 	   else echo "Possible problem with ex10_2, diffs above"; fi; \
 	   ${RM} -f ex10_2.tmp
 runex10_3:
 	-@${MPIRUN} -np 2 ex10 -options_left no -ksp_type bicg -pc_type asm \
-	   -f0 /home/petsc/datafiles/matrices/medium > ex10_3.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_3.tmp 2>&1; \
 	   if (${DIFF} output/ex10_3.out ex10_3.tmp) then true; \
 	   else echo "Possible problem with ex10_3, diffs above"; fi; \
 	   ${RM} -f ex10_3.tmp
 runex10_4:
 	-@${MPIRUN} -np 1 ex10 -options_left no -ksp_type bicg -pc_type lu \
-	   -f0 /home/petsc/datafiles/matrices/medium > ex10_4.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_4.tmp 2>&1; \
 	   if (${DIFF} output/ex10_4.out ex10_4.tmp) then true; \
 	   else echo "Possible problem with ex10_4, diffs above"; fi; \
 	   ${RM} -f ex10_4.tmp
 runex10_5:
 	-@${MPIRUN} -np 1 ex10 -options_left no -ksp_type bicg \
-	   -f0 /home/petsc/datafiles/matrices/medium > ex10_5.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_5.tmp 2>&1; \
 	   if (${DIFF} output/ex10_5.out ex10_5.tmp) then true; \
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
 	   ${RM} -f ex10_5.tmp
 runex10_6:
 	-@${MPIRUN} -np 1 ex10 -pc_ilu_levels 2 -pc_ilu_fill 1.73 -ksp_gmres_irorthog \
-	   -f0 /home/petsc/datafiles/matrices/fem1 > ex10_6.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/fem1 > ex10_6.tmp 2>&1; \
 	   if (${DIFF} output/ex10_6.out ex10_6.tmp) then true; \
 	   else echo "Possible problem with ex10_6, diffs above"; fi; \
 	   ${RM} -f ex10_6.tmp
@@ -292,16 +292,16 @@ BS = 2 3 4 5 6 7 8
 runex10_7:
 	-@echo > ex10_7.tmp
 	-@for bs in ${BS}; do \
-	 ${MPIRUN} -np 1 ex10 -f0 /home/petsc/datafiles/matrices/medium -load_ignore_info \
+	 ${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
                     1.0e-15 -ksp_smonitor >> ex10_7.tmp 2>&1 ; \
-	 ${MPIRUN} -np 1 ex10 -f0 /home/petsc/datafiles/matrices/medium -load_ignore_info \
+	 ${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
                     1.0e-15 -ksp_smonitor -pc_ilu_mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
-	 ${MPIRUN} -np 1 ex10 -f0 /home/petsc/datafiles/matrices/medium -load_ignore_info \
+	 ${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
                     1.0e-15 -ksp_smonitor -pc_ilu_levels 1 >> ex10_7.tmp 2>&1 ; \
-	 ${MPIRUN} -np 1 ex10 -f0 /home/petsc/datafiles/matrices/medium -load_ignore_info \
+	 ${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_type preonly \
                     -ksp_smonitor -pc_type lu  >> ex10_7.tmp 2>&1 ; \
          done;
@@ -310,7 +310,7 @@ runex10_7:
 	-@${RM} -f ex10_7.tmp
 runex10_8:
 	-@${MPIRUN} -np 1 ex10 -sles_diagonal_scale -pc_type eisenstat -ksp_smonitor -sles_diagonal_scale_fix \
-	   -f0 /home/petsc/datafiles/matrices/medium -ksp_gmres_irorthog -options_left no > ex10_8.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_irorthog -options_left no > ex10_8.tmp 2>&1; \
 	   if (${DIFF} output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
 	   ${RM} -f ex10_8.tmp
@@ -319,10 +319,10 @@ runex10_9:
 	-@for type in gmres bicg bcgs tcqmr tfqmr; do \
           for bs in 1 2 3 4 5 6 7; do \
           for np in 1 2 3; do \
-	 ${MPIRUN} -np $$np ex10 -f0 /home/petsc/datafiles/matrices/medium -load_ignore_info \
+	 ${MPIRUN} -np $$np ex10 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
                     1.0e-15 -ksp_smonitor >> ex10_9.tmp 2>&1 ; \
-	 ${MPIRUN} -np $$np ex10 -f0 /home/petsc/datafiles/matrices/medium -ksp_gmres_irorthog -load_ignore_info \
+	 ${MPIRUN} -np $$np ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_irorthog -load_ignore_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
                     1.0e-15 -ksp_smonitor -trans >> ex10_9.tmp 2>&1 ; \
          done; done; done; 
@@ -331,7 +331,7 @@ runex10_9:
 	-@${RM} -f ex10_9.tmp
 runex10_10:
 	-@${MPIRUN} -np 2 ex10 -options_left no -ksp_type fgmres -pc_type sles \
-	   -f0 /home/petsc/datafiles/matrices/medium -ksp_fgmres_modifypcsles -ksp_smonitor> ex10_10.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcsles -ksp_smonitor> ex10_10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_10.out ex10_10.tmp) then true; \
 	   else echo "Possible problem with ex10_10, diffs above"; fi; \
 	   ${RM} -f ex10_10.tmp
@@ -341,17 +341,17 @@ runex10_11:
 	   else echo "Possible problem with ex10_11, diffs above"; fi; \
 	   ${RM} -f ex10_11.tmp
 runex10_12:
-	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_matlab -pc_type lu -f0 /home/petsc/datafiles/matrices/arco1 > ex10_12.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_matlab -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_12.tmp 2>&1;\
 	   if (${DIFF} output/ex10_12.out ex10_12.tmp) then true; \
 	   else echo "Possible problem with ex10_12, diffs above"; fi; \
 	   ${RM} -f ex10_12.tmp
 runex10_13:
-	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_lusol -pc_type lu -f0 /home/petsc/datafiles/matrices/arco1 > ex10_13.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_lusol -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_13.tmp 2>&1;\
 	   if (${DIFF} output/ex10_13.out ex10_13.tmp) then true; \
 	   else echo "Possible problem with ex10_13, diffs above"; fi; \
 	   ${RM} -f ex10_13.tmp
 runex10_14:
-	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type spai -f0 /home/petsc/datafiles/matrices/medium; \
+	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type spai -f0 ${DATAFILESPATH}/matrices/medium; \
 	echo "ex10_14: This program tested the SPAI preconditioner."
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \

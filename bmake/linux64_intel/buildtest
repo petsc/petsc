@@ -3,14 +3,12 @@
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
+set DATAFILESPATH=/u/ac/balay/datafiles
 set TMP=/u/ac/balay/petsc-test
 set MACH=balay@titan.ncsa.uiuc.edu
 set ARCH=linux64_intel
 set TEST=testexamples_
-set NICE=''
 set RSH=ssh
-set RSYNCSSH='-z -e ssh'
-set RCP='scp -q -B'
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

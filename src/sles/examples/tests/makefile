@@ -194,13 +194,13 @@ runex5:
 #
 runex6:
 	-@${MPIRUN} -np 1 ex6 -ksp_type preonly  -pc_type lu -options_left no \
-	   -f /home/petsc/datafiles/matrices/arco1 > ex6_1.tmp 2>&1; \
+	   -f ${DATAFILESPATH}/matrices/arco1 > ex6_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex6_2:
 	-@${MPIRUN} -np 1 ex6 -sub_pc_type ilu -options_left no \
-	   -f /home/petsc/datafiles/matrices/arco1 \
+	   -f ${DATAFILESPATH}/matrices/arco1 \
 	   -ksp_gmres_restart 100 -ksp_gmres_irorthog -sub_ksp_type preonly -pc_type bjacobi \
 	   -pc_bjacobi_blocks 8 -sub_pc_ilu_in_place -ksp_smonitor \
 	   > ex6_2.tmp 2>&1; \
@@ -209,7 +209,7 @@ runex6_2:
 	   ${RM} -f ex6_2.tmp
 runex6_3:
 	-@${MPIRUN} -np 1 ex6 -pc_type ilu -options_left no \
-	   -f /home/petsc/datafiles/matrices/arco4 \
+	   -f ${DATAFILESPATH}/matrices/arco4 \
 	   -ksp_gmres_restart 100  -ksp_gmres_irorthog -ksp_smonitor  > ex6_3.tmp 2>&1; \
 	   if (${DIFF} output/ex6_3.out ex6_3.tmp) then true; \
 	   else echo "Possible problem with ex6_3, diffs above"; fi; \
@@ -220,12 +220,12 @@ runex6_3:
 # may differ slightly on various architectures.
 runex6_6:
 	-@${MPIRUN} -np 3 ex6  -ksp_gmres_irorthog -ksp_gmres_restart 100 \
-	   -f /home/petsc/datafiles/matrices/arco1_ns \
+	   -f ${DATAFILESPATH}/matrices/arco1_ns \
 	   -mat_type mpirowbs -pc_type ilu -pc_ilu_factorpointwise 
 	-@echo "ex6_6: This program tested the ILU preconditioner in BlockSolve95."
 runex6_7:
 	-@${MPIRUN} -np 1 ex6 -ksp_gmres_irorthog -pc_type asm -pc_asm_blocks 6 \
-	   -f /home/petsc/datafiles/matrices/small \
+	   -f ${DATAFILESPATH}/matrices/small \
 	   -matload_block_size 6  -ksp_smonitor  > ex6_7.tmp 2>&1; \
 	   if (${DIFF} output/ex6_7.out ex6_7.tmp) then true; \
 	   else echo "Possible problem with ex6_7, diffs above"; fi; \
@@ -268,7 +268,7 @@ runex11:
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
 runex12:
-	-@${MPIRUN} -np 3  ex12 -ksp_gmres_irorthog -f /home/petsc/datafiles/matbinary.ex
+	-@${MPIRUN} -np 3  ex12 -ksp_gmres_irorthog -f ../../../mat/examples/matbinary.ex
 runex13:
 	-@${MPIRUN} -np 2  ex13 -ksp_gmres_irorthog -ksp_smonitor > ex13_1.tmp 2>&1; \
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
@@ -281,7 +281,7 @@ runex17:
 	   else echo "Possible problem with ex17_1, diffs above"; fi; \
 	   ${RM} -f ex17_1.tmp
 runex18:
-	-@${MPIRUN} -np 1 ex18 -ksp_gmres_irorthog -f  /home/petsc/datafiles/matbinary.ex
+	-@${MPIRUN} -np 1 ex18 -ksp_gmres_irorthog -f  ../../../mat/examples/matbinary.ex
 runex19:
 	-@${MPIRUN} -np 1 ex19 -ksp_gmres_irorthog -t 2 -pc_type jacobi -ksp_smonitor -ksp_type gmres \
 	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_smonitor \
@@ -328,12 +328,12 @@ runex24_4:
            else echo "Possible problem with ex24_4, diffs above"; fi; \
            ${RM} -f ex24_4.tmp
 runex25:
-	-@${MPIRUN} -np 1 ex25 -fload /home/petsc/datafiles/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
            if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
            else echo "Possible problem with ex25_1, diffs above"; fi; \
            ${RM} -f ex25_1.tmp
 runex25_2:
-	-@${MPIRUN} -np 1 ex25 -fload /home/petsc/datafiles/matrices/indefinite/afiro \
+	-@${MPIRUN} -np 1 ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro \
 		-pc_type jacobi -pc_jacobi_rowmax > ex25_2.tmp 2>&1; \
            if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
            else echo "Possible problem with ex25_2, diffs above"; fi; \

@@ -8,7 +8,6 @@
 set TMP=/sandbox/petsc/petsc-test
 set MACH=maple
 set TEST=testexamples_
-set NICE=''
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

@@ -560,26 +560,26 @@ runex37:
 	   else echo "Possible problem with part IV of ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex40:
-	-@${MPIRUN} -np 3 ex40 -f /home/petsc/datafiles/matrices/arco1 -nd 7 -ov 2 -options_left no > ex40_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ex40 -f ${DATAFILESPATH}/matrices/arco1 -nd 7 -ov 2 -options_left no > ex40_1.tmp 2>&1; \
 	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
 	   if (${DIFF} output/ex40_1.out ex40_12.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   ${RM} -f ex40_1.tmp ex40_12.tmp
 runex41:
-	-@${MPIRUN} -np 3 ex41 -f /home/petsc/datafiles/matrices/arco1 -nd 3 -ov 1 -options_left no > ex41_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ex41 -f ${DATAFILESPATH}/matrices/arco1 -nd 3 -ov 1 -options_left no > ex41_1.tmp 2>&1; \
 	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \
 	   if (${DIFF} output/ex41_1.out ex41_12.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   ${RM} -f ex41_1.tmp ex41_12.tmp
 runex42:
-	-@${MPIRUN} -np 3 ex42 -f /home/petsc/datafiles/matrices/arco1 -mat_aij_oneindex -options_left no \
+	-@${MPIRUN} -np 3 ex42 -f ${DATAFILESPATH}/matrices/arco1 -mat_aij_oneindex -options_left no \
 	   -nd 5 -ov 2  > ex42_1.tmp 2>&1; \
 	   grep -v "flg =1" ex42_1.tmp > ex42_12.tmp; \
 	   if (${DIFF} output/ex42_1.out ex42_12.tmp) then true; \
 	   else echo "Possible problem with ex42_1, diffs above"; fi; \
 	   ${RM} -f ex42_1.tmp ex42_12.tmp
 runex42_2:
-	-@${MPIRUN} -np 1  ex42 -f /home/petsc/datafiles/matrices/arco1 -mat_aij_oneindex  \
+	-@${MPIRUN} -np 1  ex42 -f ${DATAFILESPATH}/matrices/arco1 -mat_aij_oneindex  \
 	   -nd 5 -ov 2  -n > ex42_2.tmp 2>&1; \
 	   if (${DIFF} output/ex42_2.out ex42_2.tmp) then true; \
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
@@ -590,7 +590,7 @@ runex46:
 	   else echo "Possible problem with ex46_1, diffs above"; fi; \
 	   ${RM} -f ex46_1.tmp
 runex47:
-	-@${MPIRUN} -np 1  ex47 -f /home/petsc/datafiles/matrices/cfd.1.10 -mat_block_size 5 > ex47_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1  ex47 -f ${DATAFILESPATH}/matrices/cfd.1.10 -mat_block_size 5 > ex47_1.tmp 2>&1; \
 	   if (${DIFF} output/ex47_1.out ex47_1.tmp) then true; \
 	   else echo "Possible problem with ex47_1, diffs above"; fi; \
 	   ${RM} -f ex47_1.tmp
@@ -626,14 +626,14 @@ runex51:
 	  ${RM} -f ex51_1.tmp ex51_12.tmp
 
 runex53:
-	-@${MPIRUN} -np 3 ex53 -matload_block_size 1 -f /home/petsc/datafiles/matrices/small > ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 2 -f /home/petsc/datafiles/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 4 ex53 -matload_block_size 3 -f /home/petsc/datafiles/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 4 -f /home/petsc/datafiles/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 5 -f /home/petsc/datafiles/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 6 -f /home/petsc/datafiles/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 7 -f /home/petsc/datafiles/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 8 -f /home/petsc/datafiles/matrices/small >> ex53_1.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ex53 -matload_block_size 1 -f ${DATAFILESPATH}/matrices/small > ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 2 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 4 ex53 -matload_block_size 3 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 4 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 5 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 6 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 7 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ex53 -matload_block_size 8 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
 	if (${DIFF} output/ex53_1.out ex53_1.tmp) then true; \
 	else echo "Possible problem with ex53_1, diffs above"; fi; \
 	${RM} -f ex53_1.tmp
@@ -728,7 +728,7 @@ runex67f:
 	   else echo "Possible problem with ex67f_1, diffs above"; fi; \
 	   ${RM} -f ex67f_1.tmp
 runex73:
-	-@${MPIRUN} -np 3  ex73  -nox -f /home/petsc/datafiles/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info
+	-@${MPIRUN} -np 3  ex73  -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info
 
 MATBLOCKSIZE   = 1 2 3 4 5 6 7 8
 runex74:

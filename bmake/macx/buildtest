@@ -3,14 +3,12 @@
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
+set DATAFILESPATH=/Users/petsc/datafiles
 set TMP=/Users/petsc/petsc-test
 set MACH=playstation
 set ARCH=macx
 set TEST=testexamples_
-set NICE=''
-set RSH='ssh -x'
-set RCP='scp -q -B'
-set RSYNCSSH='-z -e ssh'
+set RSH=ssh
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

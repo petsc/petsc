@@ -30,13 +30,13 @@ puns3d: puns3d.a.o
 	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_FORTRAN_LIB) $(PETSC_DM_LIB)
 
 runflow1:
-	-@${MPIRUN} -np 1 flow -options_file /home/petsc/datafiles/fun3dgrid/petsc.opt -mesh /home/petsc/datafiles/fun3dgrid/uns3d.msh -partition /home/petsc/datafiles/fun3dgrid/part_vec.part.1 | grep clift | tail -1 > runflow1.tmp 2>&1;   \
-	   if (${DIFF} /home/petsc/datafiles/fun3dgrid/coef.dat runflow1.tmp) then true; \
+	-@${MPIRUN} -np 1 flow -options_file ${DATAFILESPATH}/fun3dgrid/petsc.opt -mesh ${DATAFILESPATH}/fun3dgrid/uns3d.msh -partition ${DATAFILESPATH}/fun3dgrid/part_vec.part.1 | grep clift | tail -1 > runflow1.tmp 2>&1;   \
+	   if (${DIFF} ${DATAFILESPATH}/fun3dgrid/coef.dat runflow1.tmp) then true; \
 	   else echo "Possible problem with runflow1, diffs above"; fi; \
 	   ${RM} -f runflow1.tmp
 runflow4:
-	-@${MPIRUN} -np 4 flow -options_file /home/petsc/datafiles/fun3dgrid/petsc.opt -mesh /home/petsc/datafiles/fun3dgrid/uns3d.msh -partition /home/petsc/datafiles/fun3dgrid/part_vec.part.4 | grep clift | tail -1 > runflow4.tmp 2>&1;   \
-	   if (${DIFF} /home/petsc/datafiles/fun3dgrid/coef.dat runflow4.tmp) then true; \
+	-@${MPIRUN} -np 4 flow -options_file ${DATAFILESPATH}/fun3dgrid/petsc.opt -mesh ${DATAFILESPATH}/fun3dgrid/uns3d.msh -partition ${DATAFILESPATH}/fun3dgrid/part_vec.part.4 | grep clift | tail -1 > runflow4.tmp 2>&1;   \
+	   if (${DIFF} ${DATAFILESPATH}/fun3dgrid/coef.dat runflow4.tmp) then true; \
 	   else echo "Possible problem with runflow4, diffs above"; fi; \
 	   ${RM} -f runflow4.tmp
 runflow64:

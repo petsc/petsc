@@ -3,14 +3,12 @@
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
+set DATAFILESPATH=/home/balay/datafiles
 set TMP=/home/balay/petsc-test
 set MACH=balay@parth
 set ARCH=win32_gnu
 set TEST=testexamples_
-set NICE
-set RSH='ssh -x'
-set RSYNCSSH='-z -e ssh'
-set RCP='scp -q -B'
+set RSH=ssh
 set APPEND='2>&1 >>'
 #
 set day=`date | cut -f1 -d" "`

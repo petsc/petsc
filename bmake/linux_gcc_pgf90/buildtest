@@ -7,7 +7,6 @@ set TMP=/sandbox/petsc/petsc-test
 set MACH=lyre
 set ARCH=linux_gcc_pgf90
 set TEST=testexamples_
-set NICE=''
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

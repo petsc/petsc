@@ -7,10 +7,7 @@ set TMP=/tmp/petsc/petsc-test
 set MACH=ptera
 set ARCH=alpha
 set TEST=testexamples_
-set NICE=''
 set RSH=ssh
-set RSYNCSSH='-z -e ssh'
-set RCP='scp -q -B'
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
