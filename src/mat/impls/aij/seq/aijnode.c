@@ -1,3 +1,95 @@
+#include "aij.h"
+
+/*
+  MatToSymmetricIJ_SeqAIJ - Convert a sparse AIJ matrix to IJ format 
+           (ignore the "A" part) Allocates the space needed. Uses only 
+           the lower triangular part of the matrix.
+
+    Description:
+    Take the data in the row-oriented sparse storage and build the
+    IJ data for the Matrix.  Return 0 on success, row + 1 on failure
+    at that row. Produces the ij for a symmetric matrix by only using
+    the lower triangular part of the matrix.
+
+    Input Parameters:
+.   Matrix - matrix to convert
+
+    Output Parameters:
+.   ia     - ia part of IJ representation (row information)
+.   ja     - ja part (column indices)
+
+    Notes:
+$    Both ia and ja may be freed with PetscFree();
+$    This routine is provided for ordering routines that require a 
+$    symmetric structure.  It is used in SpOrder (and derivatives) since
+$    those routines call SparsePak routines that expect a symmetric 
+$    matrix.
+*/
+int MatToSymmetricIJ_SeqAIJ_Iode( Mat_SeqAIJ *A, int **iia, int **jja )
+{
+  int *work,*ia,*ja,*j, nz, n = A->m, row, wr, col, shift = A->indexshift;
+  int *tns, *ns = A->inode.size, node_count = A->inode.node_count;
+  int i, i1, i2;
+  /* allocate space for reformated inode structure */
+  tns = (int *) PetscMalloc((node_count +1 )*sizeof(int));
+  for(i = 0, tns[0] =0; i < node_count; ++i)
+    tns[i+1] = tns[i]+ ns[i];
+
+  /* allocate space for row pointers */
+  *iia = ia = (int *) PetscMalloc( (node_count+1)*sizeof(int) ); CHKPTRQ(ia);
+  PetscMemzero(ia,(node_count+1)*sizeof(int));
+  work = (int *) PetscMalloc( (node_count+1)*sizeof(int) ); CHKPTRQ(work);
+
+  /* determine the number of columns in each row */
+  ia[0] = 1;
+  for (i1=0, row = 0; i1<node_count; ++i1) {
+    row= tns[i];
+  /*  nz = A->i[row+1] - A->i[row];*/
+    j  = A->j + A->i[row] + shift;
+    /*For each row,assume the colums to be of the same inode pattern
+      of rows. Now identify the column indices of the *nonzero* inodes*/
+    i2 = 0;                     /* Col Node Index */
+    col = *j + shift;
+    while (i2 <= i1) {
+      while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
+      if(i2 <i1 ) 
+        ia[i1+1]++;
+      ia[i2+1]++;
+      while((col = *j + shift)< tns[i2]) ++j; /* Skip all the col indices in this node */
+    }
+  }
+
+  /* shift ia[i] to point to next row */
+  for ( i=1; i<n+1; i++ ) {
+    row       = ia[i-1];
+    ia[i]     += row;
+    work[i-1] = row - 1;
+  }
+
+  /* allocate space for column pointers */
+  nz = ia[n] + (!shift);
+  *jja = ja = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(ja);
+
+ /* loop over lower triangular part putting into ja */ 
+  for (i1=0, row = 0; i1<node_count; ++i1) {
+    row= tns[i];
+    j  = A->j + A->i[row] + shift;
+    i2 = 0;                     /* Col Node Index */
+    col = *j + shift;
+    while (i2 <= i1) {
+      while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
+      if(i2 <i1 ) {wr = work[i2]; work[i2] = wr +1; ja[wr] = i1 +1;}
+      wr = work[i1]; work[i1] = wr + 1; ja[wr] = i2 + 1;
+      while((col = *j + shift)< tns[i2]) ++j; /* Skip all the col indices in this node */
+    }
+  }
+  PetscFree(work);
+  PetscFree(tns);
+  return 0;
+}
+
+
+
 #include "aij.h"                
 
 int Mat_AIJ_CheckInode(Mat);
@@ -5,7 +97,7 @@ int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 
 /* ----------------------------------------------------------- */
 
-static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
+int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   Scalar     sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
@@ -608,8 +700,86 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 }
 
 
+int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
+{
+  Mat        C = *B;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b = (Mat_SeqAIJ *)C->data;
+  IS         iscol = b->col, isrow = b->row, isicol;
+  int        *r,*ic, ierr, i, j, n = a->m, *ai = b->i, *aj = b->j;
+  int        *ajtmpold, *ajtmp, nz, row, *ics, shift = a->indexshift;
+  int        *diag_offset = b->diag, node_max, nsz, *ns;
+  Scalar     *rtmp,*v, *pc, multiplier; 
+  
+  /* These declarations are for optimizations.  They reduce the number of
+     memory references that are made by locally storing information; the
+     word "register" used here with pointers can be viewed as "private" or 
+     "known only to me"
+   */
+  register Scalar *pv, *rtmps;
+  register int    *pj;
+
+  ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  PLogObjectParent(*B,isicol);
+  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  rtmp  = (Scalar *) PetscMalloc( (2*n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp);
+  rtmps = rtmp + shift; ics = ic + shift;
+  
+if (!a->inode.size)SETERRQ(1,"MatLUFactorNumeric_SeqAIJ_Inode: Missing Inode Structure");
+  node_max = a->inode.node_count;                
+  ns       = a->inode.size;     /* Node Size array */
+  
+  for ( i=0,row=0; i<node_max; i++ ) {
+    nsz   = ns[i];
+    nz    = ai[row+1] - ai[row];
+    ajtmp = aj + ai[row] + shift;
+    for  ( j=0; j<nz; j++ ) rtmps[ajtmp[j]] = 0.0;
+
+    /* load in initial (unfactored row) */
+    nz       = a->i[r[i]+1] - a->i[r[i]];
+    ajtmpold = a->j + a->i[r[i]] + shift;
+    v        = a->a + a->i[r[i]] + shift;
+    for ( j=0; j<nz; j++ ) rtmp[ics[ajtmpold[j]]] =  v[j];
+
+    row = *ajtmp++ + shift;
+    while (row < i) {
+      pc = rtmp + row;
+      if (*pc != 0.0) {
+        pv         = b->a + diag_offset[row] + shift;
 
 
+        pj         = b->j + diag_offset[row] + (!shift);
+        multiplier = *pc * *pv++;
+        *pc        = multiplier;
+        nz         = ai[row+1] - diag_offset[row] - 1;
+        PLogFlops(2*nz);
+	/* The for-loop form can aid the compiler in overlapping 
+	   loads and stores */
+        /*while (nz-->0) rtmps[*pj++] -= multiplier* *pv++;  */
+	{int __i;
+	 for (__i=0; __i<nz; __i++) rtmps[pj[__i]] -= multiplier * pv[__i];
+	}
+      }      
+      row = *ajtmp++ + shift;
+    }
+    /* finished row so stick it into b->a */
+    pv = b->a + ai[i] + shift;
+    pj = b->j + ai[i] + shift;
+    nz = ai[i+1] - ai[i];
+    if (rtmp[i] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
+    rtmp[i] = 1.0/rtmp[i];
+    for ( j=0; j<nz; j++ ) {pv[j] = rtmps[pj[j]];}
+  } 
+  PetscFree(rtmp);
+  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISDestroy(isicol); CHKERRQ(ierr);
+  C->factor      = FACTOR_LU;
+  ierr = Mat_AIJ_CheckInode(C); CHKERRQ(ierr);
+  b->assembled = 1;
+  PLogFlops(b->n);
+  return 0;
+}
 
 
 
