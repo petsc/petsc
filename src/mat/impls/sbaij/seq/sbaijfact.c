@@ -294,7 +294,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
   } 
 
   /* At present, the code below works only for perm_identity=PETSC_TRUE */
-  printf(" MatCholeskyFactorSymbolic_SeqSBAIJ\n");
   a->permute = PETSC_FALSE; 
 
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);   

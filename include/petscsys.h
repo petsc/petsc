@@ -277,5 +277,91 @@ M*/
 */
 #define PetscLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
 
+/* 
+  Create and initialize a linked list 
+  Input Parameters:
+    idx_start - starting index of the list
+    lnk_max   - max value of lnk indicating the end of the list
+    nlnk      - max length of the list
+  Output Parameters:
+    lnk       - list initialized
+    bt        - PetscBT (bitarray) with all bits set to false
+*/
+#define PetscLLCreate_PermutedLeveled(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt) \
+  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscMalloc(nlnk*sizeof(PetscInt),&lnk_lvl)|| PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,0))
+
+
+/*
+  Add a index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - interger array
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    bt        - updated PetscBT (bitarray) 
+*/
+#define PetscLLAdd_PermutedLeveled(nidx,indices,level,indices_lvl,idx_start,perm,nlnk,lnk,lnk_lvl,bt) 0;\
+{\
+  int _k,_entry,_location,_lnkdata,_incrlev;\
+  nlnk = 0;\
+  _k   = nidx;\
+  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
+    _incrlev = indices_lvl[_k-1] + 1;\
+    if (_incrlev > level) { --_k; continue;} \
+    _entry = indices[--_k];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      _lnkdata  = idx_start;\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk if it is new */\
+      if (_entry <  _lnkdata){/* new entry */\
+        lnk[_location] = _entry;\
+        lnk[_entry]    = _lnkdata;\
+        nlnk++;\
+        lnk_lvl[_entry] = _incrlev;\
+      }\
+    } else { /* existing entry: update lnk_lvl */\
+      if (lnk_lvl[_entry] > _incrlev) lnk_lvl[_entry] = _incrlev;\
+    }\
+  }\
+}
+/*
+  Copy data on the list into an array, then initialize the list 
+  Input Parameters:
+    idx_start - starting index of the list 
+    lnk_max   - max value of lnk indicating the end of the list 
+    nlnk      - number of data on the list to be copied
+    lnk       - linked list
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    indices   - array that contains the copied data
+    lnk       -llinked list that is cleaned and initialize
+    bt        - PetscBT (bitarray) with all bits set to false
+*/
+#define PetscLLClean_PermutedLeveled(idx_start,lnk_max,nlnk,lnk,lnk_lvl,indices,indices_lvl,bt) 0;\
+{\
+  int _j,_idx=idx_start;\
+  for (_j=0; _j<nlnk; _j++){\
+    _idx = lnk[_idx];\
+    *(indices+_j) = _idx;\
+    *(indices_lvl+_j) = lnk_lvl[_idx];\
+    lnk_lvl[_idx] = -1;\
+    PetscBTClear(bt,_idx);\
+  }\
+  lnk[idx_start] = lnk_max;\
+}
+/*
+  Free memories used by the list
+*/
+#define PetscLLDestroy_PermutedLeveled(lnk,lnk_lvl,bt) \
+(PetscFree(lnk) || PetscFree(lnk_lvl) || PetscBTDestroy(bt))
+
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

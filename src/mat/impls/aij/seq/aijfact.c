@@ -1116,6 +1116,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
   PetscFunctionReturn(0); 
 }
 
+#include "petscbt.h"
+#include "src/mat/utils/freespace.h"
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
 PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
@@ -1123,26 +1126,198 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscTruth     perm_identity;
- 
+  Mat_SeqSBAIJ   *b;  
+  PetscInt       *rip,i,*ai = a->i,*aj = a->j;
+  PetscInt       reallocs=0;
+  PetscInt       jmin,jmax,nzk,k,j,*jl;
+  PetscInt       prow;
+  PetscInt       *il,nextprow;
+  PetscReal      fill = info->fill,levels = info->levels;
+  PetscInt       am=A->m,*ui;
+  PetscInt       nlnk,*lnk,*lnk_lvl,ncols,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
+  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
+  FreeSpaceList  free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscBT        lnkbt;
+  
   PetscFunctionBegin;   
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   if (!perm_identity){
     SETERRQ(PETSC_ERR_SUP,"Non-identity permutation is not supported yet");
   }
-  if (!a->sbaijMat){
-    ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
+
+  /* levels = 0: simply copies fill pattern */
+  if (!levels) { 
+    ierr = MatConvert(A,MATSEQSBAIJ,fact);CHKERRQ(ierr); /* don't need copy numerical values! */
+    (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering; 
+    (*fact)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;  
+
+    ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr);
+    (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+    PetscFunctionReturn(0);
   }
 
-  ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
+  ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);   
+  ai = a->i; aj = a->j;
+  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
+  
+  /* initialization */
+  ierr  = PetscMalloc((am+1)*sizeof(PetscInt),&ui);CHKERRQ(ierr);
+  ui[0] = 0; 
+  ierr  = PetscMalloc((am+1)*sizeof(PetscInt),&cols_lvl);CHKERRQ(ierr); 
+
+  /* jl: linked list for storing indices of the pivot rows 
+     il: il[i] points to the 1st nonzero entry of U(i,k:am-1) */
+  ierr = PetscMalloc((2*am+1)*sizeof(PetscInt)+2*am*sizeof(PetscInt*),&jl);CHKERRQ(ierr); 
+  il     = jl + am;
+  uj_ptr = (PetscInt**)(il + am);
+  uj_lvl_ptr = (PetscInt**)(uj_ptr + am);
+  for (i=0; i<am; i++){
+    jl[i] = am; il[i] = 0;
+  }
+
+  /* create and initialize a linked list for storing column indices of the active row k */
+  nlnk = am + 1;
+  ierr = PetscLLCreate_PermutedLeveled(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+
+  /* initial FreeSpace size is fill*(ai[am]+1) */
+  ierr = GetMoreSpace((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
+  current_space = free_space;
+  ierr = GetMoreSpace((PetscInt)(fill*(ai[am]+1)),&free_space_lvl);CHKERRQ(ierr);
+  current_space_lvl = free_space_lvl;
+
+  for (k=0; k<am; k++){  /* for each active row k */
+    /* initialize lnk by the column indices of row rip[k] of A */
+    nzk     = 0;
+    ncols    = ai[rip[k]+1] - a->diag[rip[k]]; /* diag would change for !perm_identity */
+    cols = aj + a->diag[rip[k]];
+    for (j=0; j<ncols; j++) cols_lvl[j] = -1;  /* initialize level for nonzero entries */
+    ierr = PetscLLAdd_PermutedLeveled(ncols,cols,levels,cols_lvl,am,rip,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+    nzk += nlnk;
+
+    /* update lnk by computing fill-in for each pivot row to be merged in */
+    prow = jl[k]; /* 1st pivot row */
+   
+    while (prow < k){
+      nextprow = jl[prow];
+      
+      /* merge prow into k-th row */
+      jmin = il[prow] + 1;  /* index of the 2nd nzero entry in U(prow,k:am-1) */
+      jmax = ui[prow+1]; 
+      ncols = jmax-jmin;
+      cols = uj_ptr[prow] + jmin - ui[prow]; /* points to the 2nd nzero entry in U(prow,k:am-1) */
+      /* ierr = PetscLLAdd(ncols,cols,am,nlnk,lnk,lnkbt);CHKERRQ(ierr); */
+      /* cols_lvl = uj_lvl_ptr[prow] + jmin - ui[prow]; */
+      for (j=0; j<ncols; j++) cols_lvl[j] = *(uj_lvl_ptr[prow] + jmin - ui[prow] + j);
+      ierr = PetscLLAdd_PermutedLeveled(ncols,cols,levels,cols_lvl,am,rip,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr); 
+      nzk += nlnk;
+
+      /* update il and jl for prow */
+      if (jmin < jmax){
+        il[prow] = jmin;
+        j = *cols; jl[prow] = jl[j]; jl[j] = prow;  
+      } 
+      prow = nextprow; 
+    }  
+
+    /* if free space is not available, make more free space */
+    if (current_space->local_remaining<nzk) {
+      i = am - k + 1; /* num of unfactored rows */
+      i = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+      ierr = GetMoreSpace(i,&current_space);CHKERRQ(ierr);
+      ierr = GetMoreSpace(i,&current_space_lvl);CHKERRQ(ierr);
+      reallocs++;
+    }
+
+    /* copy data into free_space and free_space_lvl, then initialize lnk */
+    ierr = PetscLLClean_PermutedLeveled(am,am,nzk,lnk,lnk_lvl,current_space->array,current_space_lvl->array,lnkbt);CHKERRQ(ierr);
+
+    /* add the k-th row into il and jl */
+    if (nzk-1 > 0){
+      i = current_space->array[1]; /* col value of the first nonzero element in U(k, k+1:am-1) */    
+      jl[k] = jl[i]; jl[i] = k;
+      il[k] = ui[k] + 1;
+    } 
+    uj_ptr[k]     = current_space->array;
+    uj_lvl_ptr[k] = current_space_lvl->array; 
+
+    current_space->array           += nzk;
+    current_space->local_used      += nzk;
+    current_space->local_remaining -= nzk;
+
+    current_space_lvl->array           += nzk;
+    current_space_lvl->local_used      += nzk;
+    current_space_lvl->local_remaining -= nzk;
+
+    ui[k+1] = ui[k] + nzk;  
+  } 
+
+  if (ai[am] != 0) {
+    PetscReal af = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+    PetscLogInfo(A,"MatICCFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af);
+    PetscLogInfo(A,"MatICCFactorSymbolic_SeqAIJ:Run with -pc_cholesky_fill %g or use \n",af);
+    PetscLogInfo(A,"MatICCFactorSymbolic_SeqAIJ:PCCholeskySetFill(pc,%g) for best performance.\n",af);
+  } else {
+     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqAIJ:Empty matrix.\n");
+  }
+
+  ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
+  ierr = PetscFree(jl);CHKERRQ(ierr);
+  ierr = PetscFree(cols_lvl);CHKERRQ(ierr);
+
+  /* destroy list of free space and other temporary array(s) */
+  ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
+  ierr = MakeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
+  ierr = PetscLLDestroy_PermutedLeveled(lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+  ierr = DestroySpace(free_space_lvl);CHKERRQ(ierr);
+
+  /* put together the new matrix in MATSEQSBAIJ format */
+  ierr = MatCreate(PETSC_COMM_SELF,am,am,am,am,fact);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,MATSEQSBAIJ);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(*fact,1,0,PETSC_NULL);CHKERRQ(ierr);
+
+  b = (Mat_SeqSBAIJ*)(*fact)->data;
+  ierr = PetscFree(b->imax);CHKERRQ(ierr);
+  b->singlemalloc = PETSC_FALSE;
+  /* the next line frees the default space generated by the Create() */
+  ierr = PetscFree(b->a);CHKERRQ(ierr);
+  ierr = PetscFree(b->ilen);CHKERRQ(ierr);
+  ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
+  b->j    = uj;
+  b->i    = ui;
+  b->diag = 0;
+  b->ilen = 0;
+  b->imax = 0;
+  b->row  = perm;
+  b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
+  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
+  b->icol = perm;
+  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
+  ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+  /* In b structure:  Free imax, ilen, old a, old j.  
+     Allocate idnew, solve_work, new a, new j */
+  PetscLogObjectMemory(*fact,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));
+  b->maxnz = b->nz = ui[am];
+  
+  (*fact)->factor                 = FACTOR_CHOLESKY;
+  (*fact)->info.factor_mallocs    = reallocs;
+  (*fact)->info.fill_ratio_given  = fill;
+  if (ai[am] != 0) {
+    (*fact)->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+  } else {
+    (*fact)->info.fill_ratio_needed = 0.0;
+  }
+  /* Should the followings be moved to MatCholeskyFactorNumeric_SeqAIJ()? */
+  (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering; 
+  (*fact)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+  (*fact)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+
+  /* -------- end of new ---------------------------*/
   ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr);
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
  
   PetscFunctionReturn(0); 
 }
 
-#include "petscbt.h"
-#include "src/mat/utils/freespace.h"
-#include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJ"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
@@ -1192,7 +1367,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   for (k=0; k<am; k++){  /* for each active row k */
     /* initialize lnk by the column indices of row rip[k] of A */
     nzk     = 0;
-    ncols    = ai[rip[k]+1] - a->diag[rip[k]]; 
+    ncols    = ai[rip[k]+1] - a->diag[rip[k]]; /* diag would change for !perm_identity */
     cols = aj + a->diag[rip[k]];
     ierr = PetscLLAdd(ncols,cols,am,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzk += nlnk;
@@ -1262,7 +1437,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
   /* put together the new matrix in MATSEQSBAIJ format */
-  ierr = MatCreate(A->comm,am,am,am,am,fact);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,am,am,am,am,fact);CHKERRQ(ierr);
   ierr = MatSetType(*fact,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(*fact,1,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -1297,7 +1472,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   } else {
     (*fact)->info.fill_ratio_needed = 0.0;
   }
-  
+  /* Should the followings be moved to MatCholeskyFactorNumeric_SeqAIJ()? */
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering; 
   (*fact)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   (*fact)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;

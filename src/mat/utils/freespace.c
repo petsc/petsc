@@ -44,3 +44,20 @@ PetscErrorCode MakeSpaceContiguous(FreeSpaceList *head,PetscInt *space)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DestroySpace"
+PetscErrorCode DestroySpace(FreeSpaceList head) 
+{
+  FreeSpaceList  a;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while ((head)!=NULL) {
+    a    = (head)->more_space;
+    ierr = PetscFree((head)->array_head);CHKERRQ(ierr);
+    ierr = PetscFree(head);CHKERRQ(ierr);
+    head = a;
+  }
+  PetscFunctionReturn(0);
+}
