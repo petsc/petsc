@@ -1,8 +1,10 @@
 PARCH    = hpux
 #
-#   The name of the C compiler to use
+#   The name of the C compiler to use, the -Aa option is mandatory
+#  and indicates the we are compiling with ANSI C.
 #
 CC       = cc -DPARCH_hpux -Aa
+#
 # If building shared libraries, use the following instead.
 # You MUST use +z for shared libraries.
 # CC       = cc -DPARCH_hpux -Aa +z
