@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.2 1995/05/08 02:09:56 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.3 1995/05/11 18:50:04 curfman Exp bsmith $";
 #endif
 
 /*
@@ -53,9 +53,9 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
     ierr = VecSetValues(gvec,1,&iglobal,&value,INSERTVALUES); CHKERRA(ierr);
   }
 
-  ierr = VecScatterBegin(gvec,0,mbd->lvec,0,ADDVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterBegin(gvec,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
-  ierr = VecScatterEnd(gvec,0,mbd->lvec,0,ADDVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterEnd(gvec,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
   CHKERR(ierr);
 
   printf("processor %d\n", mytid);
