@@ -1,4 +1,4 @@
-#include "src/mat/matimp.h"
+#include "src/mat/matimpl.h"
 
 typedef struct {
   PetscErrorCode (*MatConvert)(Mat,const MatType,Mat*);
@@ -33,7 +33,7 @@ PetscErrorCode MatConvert_AIJ_SeqAIJ(Mat A, const MatType type, Mat *newmat)
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aij_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_aij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject),B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -60,7 +60,7 @@ PetscErrorCode MatConvert_AIJ_MPIAIJ(Mat A, const MatType type, Mat *newmat)
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aij_mpiaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_aij_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject),B,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -153,7 +153,7 @@ PetscErrorCode MatConvert_SeqAIJ_AIJ(Mat A, const MatType type, Mat *newmat)
                                     "MatConvert_AIJ_SeqAIJ",MatConvert_AIJ_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_aij_C",
                                     "MatConvert_SeqAIJ_AIJ",MatConvert_SeqAIJ_AIJ);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject),B,MATAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -182,10 +182,12 @@ PetscErrorCode MatConvert_MPIAIJ_AIJ(Mat A, const MatType type, Mat *newmat)
   B->ops->destroy = MatDestroy_AIJ;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aij_mpiaij_C",
-                                    "MatConvert_AIJ_MPIAIJ",MatConvert_AIJ_MPIAIJ);CHKERRQ(ierr);
+                                    "MatConvert_AIJ_MPIAIJ",
+                                    (void (*)(void))MatConvert_AIJ_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_aij_C",
-                                    "MatConvert_MPIAIJ_AIJ",MatConvert_MPIAIJ_AIJ);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject),B,MATAIJ);CHKERRQ(ierr);
+                                    "MatConvert_MPIAIJ_AIJ",
+                                    (void (*)(void))MatConvert_MPIAIJ_AIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
