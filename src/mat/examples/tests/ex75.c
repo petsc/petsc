@@ -1,8 +1,8 @@
-/*$Id: ex75.c,v 1.3 2000/07/10 20:09:54 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.4 2000/07/10 21:51:15 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
-static char help[] = "Tests the vatious parallel routines in MatMPISBAIJ format.\n";
+static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 
 #include "petscmat.h"
 
@@ -18,10 +18,10 @@ int main(int argc,char **args)
 
   PetscTruth  flg;
   Scalar      v, one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*diag;
-  int         bs=2, d_nz=3, o_nz=3, n = 16, prob=1;
-  int         rank,col[3],n1,mbs,block,row;
+  int         bs=1, d_nz=3, o_nz=3, n = 16, prob=1;
+  int         rank,size,col[3],n1,mbs,block,row;
   int         flg_A = 0, flg_sA = 1;
-  int         ncols,*cols,*ip_ptr,rstart,rend;
+  int         ncols,*cols,*ip_ptr,rstart,rend,N;
   Scalar      *vr;
   IS          isrow;
 
@@ -30,16 +30,13 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
   
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   
-  /* Assemble matrix */
-
   mbs = n/bs;
-  
-  ierr = MatCreateMPISBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&sA);CHKERRA(ierr);
+  if (mbs*bs != n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"n/bs must be an integer.");
 
-  ierr = MatGetOwnershipRange(sA,&Istart,&Iend);CHKERRA(ierr); 
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d],for sA, Istart=%d, Iend=%d\n",rank,Istart,Iend); 
-  PetscSynchronizedFlush(PETSC_COMM_WORLD); 
+  /* Assemble MPISBAIJ matrix sA */
+  ierr = MatCreateMPISBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&sA);CHKERRA(ierr);
 
   if (bs == 1){
     if (prob == 1){ /* tridiagonal matrix */
@@ -105,15 +102,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
  
-  /* ------ A -----------*/
-  
+  /* Assemble MPIBAIJ matrix A */
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRA(ierr);
 
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);  
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d],for A, Istart=%d, Iend=%d\n",rank,Istart,Iend); 
-  PetscSynchronizedFlush(PETSC_COMM_WORLD); 
-
-  /* Assemble matrix */
   if (bs == 1){
     if (prob == 1){ /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
@@ -189,9 +180,17 @@ int main(int argc,char **args)
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
   
-  /* Test MatGetRow(): can only obtain rows for the associated processor */ 
-  ierr = MatGetOwnershipRange(sA,&rstart,&rend);CHKERRA(ierr);
-  for (i=rstart; i<rend; i++) {
+  /* Test MatGetOwnershipRange() */ 
+  ierr = MatGetOwnershipRange(sA,&i1,&j1);CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&i2,&j2);CHKERRA(ierr);
+  i2 -= i1; j2 -= j1;
+  if (i2 || j2) {
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MaGetOwnershipRange()\n",rank);
+    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  }
+
+  /* Test MatGetRow(): can only obtain rows associated with the given processor */
+  for (i=i1; i<i1+1; i++) {
     ierr = MatGetRow(sA,i,&ncols,&cols,&vr);CHKERRA(ierr);
     ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %d: ",rank,i);CHKERRA(ierr);
     for (j=0; j<ncols; j++) {
@@ -201,32 +200,29 @@ int main(int argc,char **args)
     ierr = MatRestoreRow(sA,i,&ncols,&cols,&vr);CHKERRA(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);CHKERRA(ierr);      
-  /*-------------------
+ 
 
-  row = 3*bs-1; 
-  ierr = MatGetRow(sA,row,&ncols,&cols,&vr); CHKERRA(ierr); 
-  PetscPrintf(PETSC_COMM_WORLD,"[%d], row=%d\n", rank,row);
-  for (i=0; i<ncols; i++) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], cols[%d] = %d, %g\n",rank,i,*cols++,*vr++);
-  }
-
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
-  cols -= ncols; vr -= ncols; 
-  ierr = MatRestoreRow(sA,row,&ncols,&cols,&vr); CHKERRA(ierr); 
-  */
-
-#ifdef MatZeroRows
+#ifndef MatZeroRows
   /* list all the rows we want on THIS processor. For symm. matrix, iscol=isrow. */
+  /*
   ip_ptr = (int*)PetscMalloc(n*sizeof(int)); CHKERRA(ierr);
   j = 0;
   for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
     for (i=0; i<bs; i++) ip_ptr[j++] = n1*bs + i;  
   }
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"in ex75, [%d], j=%d\n",rank,j);
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
   ierr = ISCreateGeneral(PETSC_COMM_WORLD, j, ip_ptr, &isrow); CHKERRA(ierr);
   ierr = PetscFree(ip_ptr); CHKERRA(ierr); 
+*/
+
+  ierr = ISGetSize(isrow,&N);CHKERRQ(ierr);
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"in ex75, [%d], N=%d\n",rank,N);
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+
   ISView(isrow, VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  ierr = MatZeroRows(sA,isrow,diag); CHKERRA(ierr);
+  ierr = MatZeroRows(sA,isrow,PETSC_NULL); CHKERRA(ierr);
   MatView(sA, VIEWER_STDOUT_WORLD);
   ierr = ISDestroy(isrow);CHKERRA(ierr);
 #endif
