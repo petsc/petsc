@@ -47,3 +47,6 @@ Paragon account
    you must run make with the -e option and have the environmental
    argument IPETSCDIR properly set.
 
+
+  To kill the running crontab remove bmake/common and bmake/RCS/common,v
+
