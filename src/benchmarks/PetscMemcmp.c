@@ -1,4 +1,4 @@
-/*$Id: PetscMemcmp.c,v 1.20 2001/08/07 03:04:59 balay Exp balay $*/
+/*$Id: PetscMemcmp.c,v 1.21 2001/08/29 20:23:33 balay Exp balay $*/
 
 #include "petsc.h"
 
@@ -33,16 +33,16 @@ int main(int argc,char **argv)
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   ierr = PetscGetTime(&y);CHKERRQ(ierr);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
-  PetscMemcmp(A,B,sizeof(PetscScalar)*0);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
+  PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   ierr = PetscGetTime(&z);CHKERRQ(ierr);
 
   fprintf(stdout,"%s : \n","PetscMemcmp");

@@ -1,4 +1,4 @@
-/*$Id: Index.c,v 1.32 2001/08/06 21:19:06 bsmith Exp balay $*/
+/*$Id: Index.c,v 1.33 2001/08/07 03:04:59 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -192,7 +192,7 @@ int test2(void)
 #define __FUNCT__ "BlastCache"
 int BlastCache(void)
 {
-  int    i,n = 1000000;
+  int    i,ierr,n = 1000000;
   PetscScalar *x,*y,*z,*a,*b;
 
   ierr = PetscMalloc(5*n*sizeof(PetscScalar),&x);CHKERRQ(ierr);

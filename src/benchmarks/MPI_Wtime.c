@@ -1,4 +1,4 @@
-/*$Id: MPI_Wtime.c,v 1.15 2001/01/23 20:58:37 balay Exp balay $*/
+/*$Id: MPI_Wtime.c,v 1.16 2001/03/23 23:25:45 balay Exp balay $*/
 
 #include "petsc.h"
 
@@ -7,6 +7,7 @@
 int main(int argc,char **argv)
 {
   double x,y;
+  int    ierr;
   
   PetscInitialize(&argc,&argv,0,0);
  /* To take care of paging effects */

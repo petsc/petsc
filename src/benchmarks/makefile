@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.27 2001/03/13 04:14:06 bsmith Exp balay $ 
+# $Id: makefile,v 1.28 2001/08/22 18:02:54 balay Exp balay $ 
 
 ALL: 
 
@@ -13,7 +13,7 @@ EXAMPLESC     = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c
 EXAMPLESF     = 
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm \
-		PetscGetCPUTime
+		PetscGetCPUTime sizeof
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
@@ -96,5 +96,8 @@ runtest:
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
 	-@${MPIRUN} -np 1 Index  > /dev/null
-
-
+	-@echo " "
+	-@echo "Datatype Sizes "
+	-@echo "------------------------------------------------"
+	-@${MPIRUN} -np 1 sizeof
+	-@echo "------------------------------------------------"

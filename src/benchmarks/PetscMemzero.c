@@ -1,4 +1,4 @@
-/*$Id: PetscMemzero.c,v 1.20 2001/08/06 21:19:06 bsmith Exp balay $*/
+/*$Id: PetscMemzero.c,v 1.21 2001/08/07 03:04:59 balay Exp balay $*/
 
 #include "petsc.h"
 
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
   ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
   ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);,
+  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
   ierr = PetscGetTime(&y);CHKERRQ(ierr);
   ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
   ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);

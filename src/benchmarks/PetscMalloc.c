@@ -1,4 +1,4 @@
-/*$Id: PetscMalloc.c,v 1.25 2001/01/23 20:58:37 balay Exp balay $*/
+/*$Id: PetscMalloc.c,v 1.26 2001/03/23 23:25:45 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -51,9 +51,9 @@ int main(int argc,char **argv)
     ierr = PetscFree(arr[i]);CHKERRQ(ierr);
   }
   
-  fprintf(stdout,"%-15s : %e sec, with options : ","PetscMalloc",(y-x)/500.0);
-  if(PetscOptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stdout,"-trmalloc ");
-  fprintf(stdout,"\n"); 
+  fprintf(stderr,"%-15s : %e sec, with options : ","PetscMalloc",(y-x)/500.0);
+  if(PetscOptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stderr,"-trmalloc ");
+  fprintf(stderr,"\n"); 
   
   ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);

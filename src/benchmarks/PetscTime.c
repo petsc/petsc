@@ -1,15 +1,15 @@
-/*$Id: PetscTime.c,v 1.19 2001/01/23 20:58:37 balay Exp balay $*/
+/*$Id: PetscTime.c,v 1.20 2001/03/23 23:25:45 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscfix.h"
-#include "src/sys/src/PetscLog/ptime.h"
+#include "src/sys/src/plog/ptime.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
-  int        i;
+  int            i,ierr;
 
   PetscInitialize(&argc,&argv,0,0);
   /* To take care of paging effects */
