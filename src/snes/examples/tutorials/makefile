@@ -148,11 +148,11 @@ runex5_5:
 	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   $(RM) -f ex5_5.tmp
-runex5_5:
-	-@$(MPIRUN) -np 4 ex5 -snes_fd -Nx 2 -Ny 2 -snes_smonitor > ex5_5.tmp 2>&1; \
-	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
-	   else echo "Possible problem with ex5_5, diffs above"; fi; \
-	   $(RM) -f ex5_5.tmp
+runex5_6:
+	-@$(MPIRUN) -np 4 ex5 -snes_fd -Nx 2 -Ny 2 -snes_smonitor > ex5_6.tmp 2>&1; \
+	   if (diff output/ex5_6.out ex5_6.tmp) then true; \
+	   else echo "Possible problem with ex5_6, diffs above"; fi; \
+	   $(RM) -f ex5_6.tmp
 runex5_7:
 	-@$(MPIRUN) -np 3 ex5 -snes_fd  -snes_smonitor > ex5_7.tmp 2>&1;\
 	   if (diff output/ex5_7.out ex5_7.tmp) then true; \
