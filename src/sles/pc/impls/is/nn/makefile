@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2000/08/23 15:11:35 bsmith Exp bsmith $
+# $Id: makefile,v 1.3 2000/08/23 15:19:09 bsmith Exp balay $
 ALL: lib
 
 CFLAGS   =
@@ -11,7 +11,7 @@ OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 
 MANSEC   = PC
-LOCDIR   = src/sles/pc/impls/itersub/nn/
+LOCDIR   = src/sles/pc/impls/is/nn/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test
