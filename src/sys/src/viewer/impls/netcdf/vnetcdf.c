@@ -114,31 +114,28 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerSetFilename_Netcdf" 
 int PetscViewerSetFilename_Netcdf(PetscViewer viewer,const char name[])
 {
-  int   rank,ierr,flg;
+  int   rank,ierr;
   PetscViewer_Netcdf    *vnetcdf = (PetscViewer_Netcdf*)viewer->data;
   PetscViewerNetcdfType type = vnetcdf->nctype;
   MPI_Comm              comm = viewer->comm;
+  PetscTruth            flg;
+  char                  fname[PETSC_MAX_PATH_LEN],*gz;
+  
   PetscFunctionBegin;
+  ierr = PetscOptionsGetString(PETSC_NULL,"-netcdf_viewer_name",fname,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg) {  
+    ierr = PetscStrallocpy(fname,&vnetcdf->filename);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrallocpy(name,&vnetcdf->filename);CHKERRQ(ierr);
+  }
   if (type == (PetscViewerNetcdfType) -1) {
     SETERRQ(1,"Must call PetscViewerNetcdfSetType() before PetscViewerSetFilename()");
+  } else if (type == PETSC_NETCDF_RDONLY) {
+    ierr = ncmpi_open(comm,vnetcdf->filename,0,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
+  } else if (type == PETSC_NETCDF_RDWR) {
+    ierr = ncmpi_open(comm,vnetcdf->filename,NC_WRITE,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
+  } else if (type == PETSC_NETCDF_CREATE) {
+    ierr = ncmpi_create(comm,vnetcdf->filename,NC_CLOBBER,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
   }
-  if (type == PETSC_NETCDF_RDONLY) {
-    ierr = ncmpi_open(comm,name,0,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
-  }
-  else if (type == PETSC_NETCDF_RDWR) {
-    ierr = ncmpi_open(comm,name,NC_WRITE,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
-  }
-  else if (type == PETSC_NETCDF_CREATE) {
-    PetscTruth  flg;
-    char        fname[PETSC_MAX_PATH_LEN];
-    ierr = PetscOptionsGetString(PETSC_NULL,"-netcdf_viewer_name",fname,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = ncmpi_create(comm,fname,NC_CLOBBER,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
-    } else {
-      ierr = ncmpi_create(comm,name,NC_CLOBBER,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
-    }
-
-  }
-  /*vnetcdf->filename = name; */
   PetscFunctionReturn(0);
 }
