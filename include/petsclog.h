@@ -458,13 +458,12 @@ extern PetscTruth PetscPreLoadingOn;         /* true if we are currently in a pr
 
 #define PreLoadBegin(flag,name) \
 {\
-  PetscTruth PreLoading = flag,PreLoadStage;\
+  PetscTruth PreLoading = flag;\
   int        PreLoadMax,PreLoadIt,_stageNum,_3_ierr;\
   _3_ierr = PetscOptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
   PreLoadMax = (int)(PreLoading);\
   PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
   for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
-    PreLoadState = (PetscTruth)(PreLoadMax && !PreLoadIt);\
     PetscPreLoadingOn = PreLoading;\
     _3_ierr = PetscBarrier(PETSC_NULL);CHKERRQ(_3_ierr);\
     if (PreLoadIt>0) {\
