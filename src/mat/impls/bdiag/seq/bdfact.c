@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.23 1995/11/01 23:18:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.24 1996/03/23 20:42:51 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -127,8 +127,11 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
     for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
       knb = k*nb; knb2 = knb*nb;
-  /*  LAgetrf_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info); */
+#if !defined (PARCH_T3D)
       LAgetf2_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info);
+#else
+      LAgetrf_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info);
+#endif
       if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad subblock LU factorization");
       for ( d=mainbd-1; d>=0; d-- ) {
         elim_row = k + diag[d];
