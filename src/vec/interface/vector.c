@@ -2028,7 +2028,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
       ierr = VecView(vec,PETSC_VIEWER_MATLAB_(vec->comm));CHKERRQ(ierr);
     }
 #endif
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
     ierr = PetscOptionsName("-vec_view_socket","Send vector to socket (can be read from matlab)","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = VecView(vec,PETSC_VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);

@@ -38,7 +38,7 @@
 
 EXTERN_C_BEGIN
 
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
 void PETSC_STDCALL petscviewersocketputscalar(PetscViewer *viewer,PetscInt *m,PetscInt *n,PetscScalar *s,PetscErrorCode *ierr)
 {
   PetscViewer v;
@@ -79,7 +79,7 @@ void PETSC_STDCALL  petscviewersetfiletype_(PetscViewer *viewer,PetscViewerFileT
   *ierr = PetscViewerSetFileType(v,*type);
 }
 
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
 void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char   *c1;

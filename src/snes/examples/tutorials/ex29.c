@@ -217,7 +217,7 @@ int main(int argc,char **argv)
 
 
     tsCtx.socketviewer = 0;
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
     ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);CHKERRQ(ierr);
     if (flg && !PreLoading) {
       tsCtx.ts_monitor = PETSC_TRUE;
@@ -710,7 +710,7 @@ PetscErrorCode Update(DMMG *dmmg)
       {
         Vec v;
         ierr = SNESGetSolution(snes, &v);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
         ierr = VecView(v, tsCtx->socketviewer);CHKERRQ(ierr);
 #endif
       }

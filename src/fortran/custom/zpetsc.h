@@ -165,16 +165,22 @@ EXTERN_C_END
 #define PETSC_VIEWER_MATLAB_WORLD_FORTRAN   -14
 #define PETSC_VIEWER_MATLAB_SELF_FORTRAN    -15
 
+#if defined (PETSC_USE_SOCKET_VIEWER)
+#define PetscPatchDefaultViewers_Fortran_Socket \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_SOCKET_WORLD_FORTRAN) { \
+      v = PETSC_VIEWER_SOCKET_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_SOCKET_SELF_FORTRAN) { \
+      v = PETSC_VIEWER_SOCKET_SELF
+#else
+#define PetscPatchDefaultViewers_Fortran_Socket
+#endif
+
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
     if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_DRAW_WORLD_FORTRAN) { \
       v = PETSC_VIEWER_DRAW_WORLD; \
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_DRAW_SELF_FORTRAN) { \
       v = PETSC_VIEWER_DRAW_SELF; \
-    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_SOCKET_WORLD_FORTRAN) { \
-      v = PETSC_VIEWER_SOCKET_WORLD; \
-    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_SOCKET_SELF_FORTRAN) { \
-      v = PETSC_VIEWER_SOCKET_SELF; \
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_STDOUT_WORLD_FORTRAN) { \
       v = PETSC_VIEWER_STDOUT_WORLD; \
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_STDOUT_SELF_FORTRAN) { \
@@ -191,6 +197,7 @@ EXTERN_C_END
       v = PETSC_VIEWER_BINARY_WORLD; \
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_MATLAB_SELF_FORTRAN) { \
       v = PETSC_VIEWER_BINARY_SELF; \
+    PetscPatchDefaultViewers_Fortran_Socket; \
     } else { \
       v = *vin; \
     } \

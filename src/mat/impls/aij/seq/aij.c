@@ -527,7 +527,6 @@ PetscErrorCode MatView_SeqAIJ_Draw(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatView_SeqAIJ"
 PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscTruth     issocket,iascii,isbinary,isdraw;
 
@@ -538,8 +537,9 @@ PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = MatView_SeqAIJ_ASCII(A,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   } else if (issocket) {
+    Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
     ierr = PetscViewerSocketPutSparse_Private(viewer,A->m,A->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
 #endif
   } else if (isbinary) {

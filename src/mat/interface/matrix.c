@@ -3398,7 +3398,7 @@ PetscErrorCode MatView_Private(Mat mat)
       ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
     ierr = PetscOptionsName("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatView(mat,PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
