@@ -379,8 +379,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *d
 
    Input Parameters:
 +  viewer - the binary viewer
-.  data - location of the array of strings
--
+-  data - location of the array of strings
+
 
    Level: intermediate
 

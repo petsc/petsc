@@ -288,6 +288,7 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
+  KSP_CG         *cg = (KSP_CG *)ksp->data;
 #endif
 
   PetscFunctionBegin;
