@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.51 1996/02/08 17:08:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.52 1996/02/08 20:43:00 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -677,6 +677,33 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
   return 0;
 }
 
+/*@
+   SNESComputeJacobian - Computes the Jacobian matrix that has been
+   set with SNESSetJacobian().
+
+   Input Parameters:
+.  snes - the SNES context
+.  x - input vector
+
+   Output Parameters:
+.  A - Jacobian matrix
+.  B - optional preconditioning matrix
+.  flag - flag indicating matrix structure
+
+   Notes: 
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the nonlinear solvers. 
+
+   See SLESSetOperators() for information about setting the flag parameter.
+
+   SNESComputeJacobian() is valid only for SNES_NONLINEAR_EQUATIONS
+   methods. An analogous routine for SNES_UNCONSTRAINED_MINIMIZATION 
+   methods is SNESComputeJacobian().
+
+.keywords: SNES, compute, Jacobian, matrix
+
+.seealso:  SNESSetJacobian(), SLESSetOperators()
+@*/
 int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
   int    ierr;
@@ -690,15 +717,42 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   return 0;
 }
 
-int SNESComputeHessian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
+/*@
+   SNESComputeHessian - Computes the Hessian matrix that has been
+   set with SNESSetHessian().
+
+   Input Parameters:
+.  snes - the SNES context
+.  x - input vector
+
+   Output Parameters:
+.  A - Hessian matrix
+.  B - optional preconditioning matrix
+.  flag - flag indicating matrix structure
+
+   Notes: 
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the nonlinear solvers. 
+
+   See SLESSetOperators() for information about setting the flag parameter.
+
+   SNESComputeHessian() is valid only for 
+   SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
+   SNES_NONLINEAR_EQUATIONS methods is SNESComputeJacobian().
+
+.keywords: SNES, compute, Hessian, matrix
+
+.seealso:  SNESSetHessian(), SLESSetOperators()
+@*/
+int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 {
   int    ierr;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
     "SNESComputeHessian:For SNES_UNCONSTRAINED_MINIMIZATION only");
   if (!snes->computejacobian) return 0;
-  PLogEventBegin(SNES_HessianEval,snes,X,*A,*B);
-  ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP); CHKERRQ(ierr);
-  PLogEventEnd(SNES_HessianEval,snes,X,*A,*B);
+  PLogEventBegin(SNES_HessianEval,snes,x,*A,*B);
+  ierr = (*snes->computejacobian)(snes,x,A,B,flag,snes->jacP); CHKERRQ(ierr);
+  PLogEventEnd(SNES_HessianEval,snes,x,*A,*B);
   return 0;
 }
 
@@ -750,6 +804,7 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
   snes->jacobian_pre    = B;
   return 0;
 }
+
 /*@
    SNESGetJacobian - Returns the Jacobian matrix and optionally the user 
    provided context for evaluating the Jacobian.
@@ -766,6 +821,8 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 @*/
 int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 {
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
+    "SNESSetJacobian:For SNES_NONLINEAR_EQUATIONS only");
   if (A)   *A = snes->jacobian;
   if (B)   *B = snes->jacobian_pre;
   if (ctx) *ctx = snes->jacP;
@@ -818,6 +875,30 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
   snes->jacP            = ctx;
   snes->jacobian        = A;
   snes->jacobian_pre    = B;
+  return 0;
+}
+
+/*@
+   SNESGetHessian - Returns the Hessian matrix and optionally the user 
+   provided context for evaluating the Hessian.
+
+   Input Parameter:
+.  snes - the nonlinear solver context
+
+   Output Parameters:
+.  A - location to stash Hessian matrix (or PETSC_NULL)
+.  B - location to stash preconditioner matrix (or PETSC_NULL)
+.  ctx - location to stash Hessian ctx (or PETSC_NULL)
+
+.seealso: SNESSetHessian(), SNESComputeHessian()
+@*/
+int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
+{
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
+    "SNESSetHessian:For SNES_UNCONSTRAINED_MINIMIZATION only");
+  if (A)   *A = snes->jacobian;
+  if (B)   *B = snes->jacobian_pre;
+  if (ctx) *ctx = snes->jacP;
   return 0;
 }
 
