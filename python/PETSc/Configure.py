@@ -433,9 +433,9 @@ class Configure(config.base.Configure):
     '''(Belongs in config.libraries) Determine the suffix used for libraries'''
     # This is exactly like the libtool check
     if self.archBase.find('win') >= 0 and not self.compilers.CC == 'gcc':
-      suffix = '.lib'
+      suffix = 'lib'
     else:
-      suffix = '.a'
+      suffix = 'a'
     self.libraries.addSubstitution('LIB_SUFFIX', suffix)
     return
 
