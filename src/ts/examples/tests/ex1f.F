@@ -40,6 +40,7 @@
       PetscViewer      viewer
       character*(60)   type,tsinfo
       character*(5)    etype
+      PetscInt         flg
 
 !
 !    Application context data, stored in common block
@@ -49,9 +50,8 @@
       PetscViewer           viewer1,viewer2
       PetscInt          M,i1,i60
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
-     &               viewer1 ,viewer2
-      PetscTruth flg
+      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
+     &               h,nrm_2,nrm_max,nox,M
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
       external RHSMatrixHeat,RHSJacobianHeat
@@ -299,8 +299,8 @@
       PetscViewer           viewer1,viewer2
       PetscInt          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
-     &               viewer1 ,viewer2
+      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
+     &               h,nrm_2,nrm_max,nox,M
 
 !   determine starting point of each processor 
 
@@ -350,8 +350,8 @@
       PetscViewer            viewer1,viewer2
       PetscInt           M
       double precision  h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
-     &               viewer1 ,viewer2
+      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
+     &               h,nrm_2,nrm_max,nox,M
 
 !   determine starting point of each processor 
 
@@ -401,8 +401,8 @@
       PetscViewer           viewer1,viewer2
       PetscInt          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
-     &               viewer1 ,viewer2
+      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
+     &               h,nrm_2,nrm_max,nox,M
 
       call VecView(global,viewer1,ierr) 
 
@@ -449,7 +449,7 @@
 
       ts0 = PETSC_NULL_OBJECT
 
-      call RHSFunctionHeat(ts0,zero,x,y,0,ierr) 
+      call RHSFunctionHeat(ts0,zero,x,y,PETSC_NULL_OBJECT,ierr) 
       return
       end
 
@@ -484,8 +484,8 @@
       PetscViewer           viewer1,viewer2
       PetscInt          M
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
-     &               viewer1 ,viewer2
+      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
+     &               h,nrm_2,nrm_max,nox,M
 
 !  Extract local array  
 
@@ -554,8 +554,8 @@
       PetscViewer           viewer1,viewer2
       PetscInt          M,i1,i3
       double precision h,nrm_2,nrm_max,nox
-      common /tsctx/ h,nrm_2,nrm_max,nox,M,localwork,csolution,da,         &
-     &               viewer1 ,viewer2
+      common /tsctx/ localwork,csolution,da,viewer1 ,viewer2,              &
+     &               h,nrm_2,nrm_max,nox,M
 
       i1 = 1
       i3 = 3
