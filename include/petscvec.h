@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.23 1995/06/07 16:29:54 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.24 1995/06/24 01:14:22 bsmith Exp curfman $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -22,6 +22,7 @@
 #define VEC_COOKIE         PETSC_COOKIE+3
 #define VEC_SCATTER_COOKIE PETSC_COOKIE+4
 
+typedef enum { VECSAME=-1, VECSEQ, VECMPI } VecType;
 
 typedef struct _Vec*            Vec;
 typedef struct _VecScatterCtx*  VecScatterCtx;
