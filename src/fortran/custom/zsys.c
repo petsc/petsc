@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.5 1995/10/26 22:01:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.6 1995/11/23 04:15:38 bsmith Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -18,6 +18,7 @@ static char vcid[] = "$Id: zsys.c,v 1.5 1995/10/26 22:01:47 bsmith Exp bsmith $"
 #define plogdump_             PLOGDUMP
 #define plogeventregister_    PLOGEVENTREGISTER
 #define petscerror_           PETSCERROR
+#define petscgettime_         PETSCGETTIME
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define petscattachdebugger_  petscattachdebugger
 #define plogallbegin_         plogallbegin
@@ -30,6 +31,7 @@ static char vcid[] = "$Id: zsys.c,v 1.5 1995/10/26 22:01:47 bsmith Exp bsmith $"
 #define plogeventregister_    plogeventregister
 #define plogdump_             plogdump
 #define petscerror_           petscerror
+#define petscgettime_         petscgettime
 #endif
 
 void plogdump_(char* name, int *__ierr,int len ){
@@ -117,4 +119,9 @@ void petscerror_(int *number,char *message,int *__ierr,int len)
   }
   else t1 = message;
   *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",*number,t1);
+}
+
+double petscgettime_()
+{
+  return PetscGetTime();
 }

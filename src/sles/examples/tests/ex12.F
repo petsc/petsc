@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.5 1995/11/30 22:34:58 bsmith Exp bsmith $";
+C      "$Id: ex12.F,v 1.6 1995/12/04 21:47:25 bsmith Exp balay $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -48,9 +48,9 @@ C Solve system
       call SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN,
      &                      ierr)
       call SLESSetFromOptions(sles,ierr)
-      time = MPI_Wtime()
+      time = PetscGetTime()
       call SLESSolve(sles,b,x,its,ierr)
-      time = MPI_Wtime()-time
+      time = PetscGetTime()-time
 
 C Show result
       call MatMult(A,x,u,ierr)
