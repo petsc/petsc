@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.188 2000/04/09 03:09:57 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.189 2000/04/09 04:36:25 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -13,6 +13,24 @@ extern int MatSetValuesBlocked_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode)
 extern int MatGetRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatRestoreRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatPrintHelp_SeqBAIJ(Mat);
+extern int MatZeroRows_SeqAIJ(Mat,IS,Scalar*);
+
+/*  UGLY, ugly, ugly
+   When MatScalar == Scalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
+   not exist. Otherwise ..._MatScalar() takes matrix elements in single precision and 
+   inserts them into the single precision data structure. The function MatSetValuesBlocked_MPIBAIJ()
+   converts the entries into single precision and then calls ..._MatScalar() to put them
+   into the single precision data structures.
+*/
+#if defined(PETSC_USE_MAT_SINGLE)
+extern int MatSetValues_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+extern int MatSetValuesBlock_MPIBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+extern int MatSetValuesBlock_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+#else
+#define MatSetValues_MPIBAIJ_MatScalar MatSetValues_MPIBAIJ
+#define MatSetValuesBlocked_MPIBAIJ_MatScalar MatSetValuesBlocked_MPIBAIJ
+#define MatSetValuesBlocked_SeqBAIJ_MatScalar MatSetValuesBlocked_SeqBAIJ
+#endif
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -228,12 +246,44 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
     bilen[brow] = nrow; \
 } 
 
+#if defined(PETSC_USE_MAT_SINGLE)
 #undef __FUNC__  
 #define  __FUNC__ /*<a name=""></a>*/"MatSetValues_MPIBAIJ"
 int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
+  int       ierr,i,N = m*n;
+  MatScalar *vsingle = (MatScalar*)v;
+
+  PetscFunctionBegin;  
+  for (i=0; i<N; i++) {
+    vsingle[i] = v[i];
+  }
+  ierr = MatSetValues_MPIBAIJ_MatScalar(mat,m,im,n,in,vsingle,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNC__  
+#define  __FUNC__ /*<a name=""></a>*/"MatSetValuesBlocked_MPIBAIJ"
+int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
+{
+  int       ierr,i,N = m*n*((Mat_MPIBAIJ*)mat->data)->bs2;
+  MatScalar *vsingle = (MatScalar*)v;
+
+  PetscFunctionBegin;  
+  for (i=0; i<N; i++) {
+    vsingle[i] = v[i];
+  }
+  ierr = MatSetValuesBlocked_MPIBAIJ_MatScalar(mat,m,im,n,in,vsingle,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+#endif
+
+#undef __FUNC__  
+#define  __FUNC__ /*<a name=""></a>*/"MatSetValues_MPIBAIJ"
+int MatSetValues_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
+{
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
-  Scalar      value;
+  MatScalar   value;
   int         ierr,i,j,row,col;
   int         roworiented = baij->roworiented,rstart_orig=baij->rstart_bs ;
   int         rend_orig=baij->rend_bs,cstart_orig=baij->cstart_bs;
@@ -313,10 +363,10 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
 
 #undef __FUNC__  
 #define  __FUNC__ /*<a name=""></a>*/"MatSetValuesBlocked_MPIBAIJ"
-int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
+int MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
-  Scalar      *value,*barray=baij->barray;
+  MatScalar   *value,*barray=baij->barray;
   int         ierr,i,j,ii,jj,row,col;
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
   int         rend=baij->rend,cstart=baij->cstart,stepval;
@@ -324,7 +374,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   
   PetscFunctionBegin;
   if(!barray) {
-    baij->barray = barray = (Scalar*)PetscMalloc(bs2*sizeof(Scalar));CHKPTRQ(barray);
+    baij->barray = barray = (MatScalar*)PetscMalloc(bs2*sizeof(MatScalar));CHKPTRQ(barray);
   }
 
   if (roworiented) { 
@@ -361,7 +411,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
           
         if (in[j] >= cstart && in[j] < cend){
           col  = in[j] - cstart;
-          ierr = MatSetValuesBlocked_SeqBAIJ(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ_MatScalar(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
         else if (in[j] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
@@ -395,7 +445,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
             }
           }
           else col = in[j];
-          ierr = MatSetValuesBlocked_SeqBAIJ(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked_SeqBAIJ_MatScalar(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
         }
       }
     } else {
@@ -844,7 +894,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
         if (j < n) ncols = j-i;
         else       ncols = n-i;
         /* Now assemble all these values with a single function call */
-        ierr = MatSetValues_MPIBAIJ(mat,1,row+i,ncols,col+i,val+i,addv);CHKERRQ(ierr);
+        ierr = MatSetValues_MPIBAIJ_MatScalar(mat,1,row+i,ncols,col+i,val+i,addv);CHKERRQ(ierr);
         i = j;
       }
     }
@@ -867,7 +917,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
         for (j=i,rstart=row[j]; j<n; j++) { if (row[j] != rstart) break; }
         if (j < n) ncols = j-i;
         else       ncols = n-i;
-        ierr = MatSetValuesBlocked_MPIBAIJ(mat,1,row+i,ncols,col+i,val+i*bs2,addv);CHKERRQ(ierr);
+        ierr = MatSetValuesBlocked_MPIBAIJ_MatScalar(mat,1,row+i,ncols,col+i,val+i*bs2,addv);CHKERRQ(ierr);
         i = j;
       }
     }
@@ -919,7 +969,6 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-/*
 #undef __FUNC__  
 #define  __FUNC__ /*<a name=""></a>*/"MatView_MPIBAIJ_Binary"
 static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
@@ -933,7 +982,6 @@ static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
   } else SETERRQ(PETSC_ERR_SUP,0,"Only uniprocessor output supported");
   PetscFunctionReturn(0);
 }
-*/
 
 #undef __FUNC__  
 #define  __FUNC__ /*<a name=""></a>*/"MatView_MPIBAIJ_ASCIIorDraworSocket"
@@ -983,10 +1031,6 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     Mat_SeqBAIJ *Aloc;
     int         M = baij->M,N = baij->N,*ai,*aj,col,i,j,k,*rvals,mbs = baij->mbs;
     MatScalar   *a;
-#if defined(PETSC_USE_MAT_SINGLE)
-    Scalar      *atmp = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar));
-    int         l;
-#endif
 
     if (!rank) {
       ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
@@ -1006,12 +1050,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
       for (j=ai[i]; j<ai[i+1]; j++) {
         col = (baij->cstart+aj[j])*bs;
         for (k=0; k<bs; k++) {
-#if defined(PETSC_USE_MAT_SINGLE)
-          for (l=0; l<bs; l++) atmp[l] = a[l];
-#else
-          atmp = a;
-#endif
-          ierr = MatSetValues_MPIBAIJ(A,bs,rvals,1,&col,atmp,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues_MPIBAIJ_MatScalar(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
           col++; a += bs;
         }
       }
@@ -1025,19 +1064,11 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
       for (j=ai[i]; j<ai[i+1]; j++) {
         col = baij->garray[aj[j]]*bs;
         for (k=0; k<bs; k++) {
-#if defined(PETSC_USE_MAT_SINGLE)
-          for (l=0; l<bs; l++) atmp[l] = a[l];
-#else
-          atmp = a;
-#endif
-          ierr = MatSetValues_MPIBAIJ(A,bs,rvals,1,&col,atmp,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues_MPIBAIJ_MatScalar(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
           col++; a += bs;
         }
       }
     } 
-#if defined(PETSC_USE_MAT_SINGLE)
-    ierr = PetscFree(atmp);CHKERRQ(ierr);
-#endif
     ierr = PetscFree(rvals);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1495,10 +1526,6 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   int         ierr,M=baij->M,N=baij->N,*ai,*aj,i,*rvals,j,k,col;
   int         bs=baij->bs,mbs=baij->mbs;
   MatScalar   *a;
-#if defined(PETSC_USE_MAT_SINGLE)
-  Scalar      *atmp = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar));
-  int         l;
-#endif
   
   PetscFunctionBegin;
   if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Square matrix only for in-place");
@@ -1515,12 +1542,7 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
     for (j=ai[i]; j<ai[i+1]; j++) {
       col = (baij->cstart+aj[j])*bs;
       for (k=0; k<bs; k++) {
-#if defined(PETSC_USE_MAT_SINGLE)
-        for (l=0; l<bs; l++) atmp[l] = a[l];
-#else
-        atmp = a;
-#endif
-        ierr = MatSetValues_MPIBAIJ(B,1,&col,bs,rvals,atmp,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues_MPIBAIJ_MatScalar(B,1,&col,bs,rvals,a,INSERT_VALUES);CHKERRQ(ierr);
         col++; a += bs;
       }
     }
@@ -1534,19 +1556,11 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
     for (j=ai[i]; j<ai[i+1]; j++) {
       col = baij->garray[aj[j]]*bs;
       for (k=0; k<bs; k++) { 
-#if defined(PETSC_USE_MAT_SINGLE)
-        for (l=0; l<bs; l++) atmp[l] = a[l];
-#else
-        atmp = a;
-#endif
-        ierr = MatSetValues_MPIBAIJ(B,1,&col,bs,rvals,atmp,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues_MPIBAIJ_MatScalar(B,1,&col,bs,rvals,a,INSERT_VALUES);CHKERRQ(ierr);
         col++; a += bs;
       }
     }
   } 
-#if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscFree(atmp);CHKERRQ(ierr);
-#endif
   ierr = PetscFree(rvals);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
