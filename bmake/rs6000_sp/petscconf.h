@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.13 1998/08/26 16:13:01 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.14 1999/02/08 22:22:33 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -25,7 +25,9 @@
 #define HAVE_UNISTD_H 
 #define HAVE_SYS_TIME_H 
 #define HAVE_UNAME 
-#define _XOPEN_SOURCE_EXTENDED  1
+#if !defined(_XOPEN_SOURCE_EXTENDED)
+#define _XOPEN_SOURCE_EXTENDED 1
+#endif
 #define _ALL_SOURCE   
 #define HAVE_BROKEN_REQUEST_FREE 
 #define HAVE_STRINGS_H
