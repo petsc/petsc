@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.28 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.29 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -29,7 +29,7 @@ int __gierr = 0;
     PETSc components
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"OptionsCheckInitial_Components"
+#define __FUNC__ /*<a name="OptionsCheckInitial_Components"></a>*/"OptionsCheckInitial_Components"
 int OptionsCheckInitial_Components(void)
 {
   MPI_Comm   comm = PETSC_COMM_WORLD;
@@ -117,7 +117,7 @@ int OptionsCheckInitial_Components(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscInitializeNoArguments"
+#define __FUNC__ /*<a name="PetscInitializeNoArguments"></a>*/"PetscInitializeNoArguments"
 /*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
         the command line arguments.
@@ -149,7 +149,7 @@ MPI_Op PetscMaxSum_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscMaxSum_Local"
+#define __FUNC__ /*<a name="PetscMaxSum_Local"></a>*/"PetscMaxSum_Local"
 void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   int *xin = (int *)in,*xout = (int*)out,i,count = *cnt;
@@ -182,7 +182,7 @@ MPI_Op PetscSum_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PetscSum_Local"
+#define __FUNC__ /*<a name="PetscSum_Local"></a>*/"PetscSum_Local"
 void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
@@ -205,7 +205,7 @@ EXTERN_C_END
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscInitialize"
+#define __FUNC__ /*<a name="PetscInitialize"></a>*/"PetscInitialize"
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize() calls MPI_Init() if that has yet to be called,
@@ -305,13 +305,13 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
-    ierr = MPI_Init(argc,args);CHKERRQ(ierr);
-    PetscBeganMPI    = PETSC_TRUE;
+    ierr          = MPI_Init(argc,args);CHKERRQ(ierr);
+    PetscBeganMPI = PETSC_TRUE;
   }
   PetscInitializeCalled = PETSC_TRUE;
 
   if (!PETSC_COMM_WORLD) {
-    PETSC_COMM_WORLD          = MPI_COMM_WORLD;
+    PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);CHKERRQ(ierr);
@@ -342,11 +342,17 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
         Build the options database and check for user setup requests
   */
   ierr = OptionsInsert(argc,args,file);CHKERRQ(ierr);
+  /*
+      Print main application help message
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
+  if (help && flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
+  }
   ierr = OptionsCheckInitial();CHKERRQ(ierr); 
 
   /*
-       Initialize PETSC_COMM_SELF and WORLD as a MPI_Comm with the PETSc 
-     attribute.
+       Initialize PETSC_COMM_SELF and WORLD as a MPI_Comm with the PETSc attribute.
     
        We delay until here to do it, since PetscMalloc() may not have been
      setup before this.
@@ -354,6 +360,10 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
   ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);CHKERRQ(ierr);
 
+  /*
+      Load the dynamic libraries (on machines that support them), this registers all
+    the solvers etc. (On non-dynamic machines this initializes the Draw and Viewer classes)
+  */
   ierr = PetscInitialize_DynamicLibraries();CHKERRQ(ierr);
 
   /*
@@ -364,23 +374,14 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   PLogInfo(0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size);
   ierr = PetscGetHostName(hostname,16);CHKERRQ(ierr);
   PLogInfo(0,"PetscInitialize:Running on machine: %s\n",hostname);
-  /*
-      Print main application help message
-  */
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (help && flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
-  }
+
   ierr = OptionsCheckInitial_Components();CHKERRQ(ierr);
 
-  /*
-      Initialize the default dynamic libraries
-  */
   PetscFunctionReturn(ierr);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscFinalize"
+#define __FUNC__ /*<a name="PetscInitialize"></a>*/"PetscFinalize"
 /*@C 
    PetscFinalize - Checks for options to be called at the conclusion
    of the program and calls MPI_Finalize().
