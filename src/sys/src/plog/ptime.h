@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.25 1996/10/20 04:07:46 balay Exp balay $ */
+/* $Id: ptime.h,v 1.26 1996/10/22 18:04:20 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -106,8 +106,9 @@ extern UTP_readTime(struct timestruc_t *);
                              (v)+=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 /*
     Dec Alpha has a very fast system clock accessible through getclock()
+    the Clock is not accessible from gcc/g++
 */
-#elif defined(PARCH_alpha)
+#elif defined(PARCH_alpha) && !defined (__cplusplus)
 #include <sys/types.h>
 #include <sys/time.h>
 
