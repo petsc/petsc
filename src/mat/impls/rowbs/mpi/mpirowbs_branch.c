@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.53 1995/08/31 20:15:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.54 1995/09/01 04:52:05 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -573,8 +573,8 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   MPI_Status   *send_status,recv_status;
   int          imdex,nrecvs = mrow->nrecvs, count = nrecvs, i, n;
-  int          ldim, low, high, loc, row, col, ierr;
-  Scalar       *values, val;
+  int          ldim, low, high, row, col, ierr;
+  Scalar       *values, val, *diag;
   InsertMode   addv = mrow->insertmode;
 
   /*  wait on receives */
@@ -639,20 +639,17 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     /* Store inverse of square root of permuted diagonal scaling matrix */
     ierr = VecGetLocalSize( mrow->diag, &ldim ); CHKERRQ(ierr);
     ierr = VecGetOwnershipRange( mrow->diag, &low, &high ); CHKERRQ(ierr);
+    ierr = VecGetArray(mrow->diag,&diag); CHKERRQ(ierr);
     for (i=0; i<ldim; i++) {
-      loc = low + i;
       if (mrow->pA->scale_diag[i] != 0.0) {
-        val = 1.0/sqrt(fabs(mrow->pA->scale_diag[i]));
+        diag[i] = 1.0/sqrt(fabs(mrow->pA->scale_diag[i]));
         mrow->inv_diag[i] = 1.0/fabs((mrow->pA->scale_diag[i]));
       }
       else {
-        val = 1.0;
+        diag[i] = 1.0;
         mrow->inv_diag[i] = 1.0;
       }   
-      ierr = VecSetValues(mrow->diag,1,&loc,&val,INSERTVALUES); CHKERRQ(ierr);
     }
-    ierr = VecAssemblyBegin( mrow->diag ); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd( mrow->diag ); CHKERRQ(ierr);
     mrow->assembled = 1;
     mrow->reassemble_begun = 0;
   }
@@ -1280,8 +1277,14 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   BSctx_set_err(bspinfo,0); CHKERRBS(0);
 #endif
   BSctx_set_rt(bspinfo,1); CHKERRBS(0);
-  BSctx_set_pr(bspinfo,1); CHKERRBS(0);
-  BSctx_set_si(bspinfo,0); CHKERRBS(0);
+  if (OptionsHasName(0,"-info")) {
+    BSctx_set_pr(bspinfo,1); CHKERRBS(0);
+  }
+  if (OptionsHasName(0,"-pc_ilu_factorpointwise")) {
+    BSctx_set_si(bspinfo,1); CHKERRBS(0);
+  } else {
+    BSctx_set_si(bspinfo,0); CHKERRBS(0);
+  }
 #if defined(PETSC_DEBUG)
   MLOG_INIT();  /* Initialize logging */
 #endif
