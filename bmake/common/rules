@@ -38,7 +38,10 @@ chkpetsc_dir:
 examples: 
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
-          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex;\
+          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
+          > trash 2>&1; egrep -i 'Error|warning =' trash >> /dev/null ; \
+          if [ "$$?" != 1 ]; then \
+          cat trash ; fi; $(RM) trash;\
           done;) fi
 
 foo:
