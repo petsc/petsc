@@ -1,4 +1,4 @@
-/*$Id: signal.c,v 1.64 1999/10/24 14:01:21 bsmith Exp bsmith $*/
+/*$Id: signal.c,v 1.65 2000/01/11 20:59:24 bsmith Exp balay $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -158,7 +158,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGFPE,  (void (*)(int)) PetscSignalHandler_Private);
     signal(SIGSEGV, (void (*)(int)) PetscSignalHandler_Private);
     signal(SIGSYS,  (void (*)(int)) PetscSignalHandler_Private);
-#elif defined(PARCH_win32)
+#elif defined(PARCH_win32) || defined (PARCH_beos)
     /*
     signal(SIGILL,  PetscSignalHandler_Private);
     signal(SIGFPE,  PetscSignalHandler_Private);
@@ -187,7 +187,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGQUIT, 0);
     signal(SIGSEGV, 0);
     signal(SIGSYS,  0);
-#elif defined(PARCH_win32)
+#elif defined(PARCH_win32) || defined (PARCH_beos)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
@@ -235,7 +235,7 @@ int PetscPopSignalHandler(void)
     signal(SIGQUIT, 0);
     signal(SIGSEGV, 0);
     signal(SIGSYS,  0);
-#elif defined(PARCH_win32)
+#elif defined(PARCH_win32) || defined (PARCH_beos)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
