@@ -137,6 +137,7 @@ extern int    atoi(char*);
 
 #if defined(__cplusplus)
 extern "C" {
+
 extern char   *mktemp(char *);
 extern char   *getwd(char *);
 extern int     getdomainname(char *,int);
