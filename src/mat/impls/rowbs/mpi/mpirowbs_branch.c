@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.15 1995/05/02 23:17:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.16 1995/05/03 00:06:45 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -835,7 +835,6 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        MatRelax_MPIRowbs,
        0,
        MatGetInfo_MPIRowbs,0,
-       0,
        MatGetDiagonal_MPIRowbs,0,0,
        MatAssemblyBegin_MPIRowbs,MatAssemblyEnd_MPIRowbs,
        0,
@@ -844,7 +843,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        MatGetSize_MPIRowbs,MatGetLocalSize_MPIRowbs,
        MatGetOwnershipRange_MPIRowbs,
        0,MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
-       0,0 };
+       0,0,0,0,0,0};
 
 /* ------------------------------------------------------------------- */
 

@@ -34,9 +34,9 @@ struct _MatOps {
             (*getarray)(Mat,Scalar **),(*restorearray)(Mat,Scalar **),
             (*convert)(Mat,MatType,Mat *),
             (*getsubmatrix)(Mat,IS,IS,Mat*),
-            (*getsubmatrixinplace)(Mat,IS,IS);
+            (*getsubmatrixinplace)(Mat,IS,IS),
+            (*copyprivate)(Mat,Mat *);
 };
-
 
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2

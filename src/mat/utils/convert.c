@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.10 1995/05/02 23:24:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.11 1995/05/02 23:38:47 bsmith Exp curfman $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -129,8 +129,7 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
     default:
       SETERR(1,"Only MATROW, MATDENSE, and MATBDIAG are currently supported.");
   }
-/*  for (i=0; i<m; i++) { */
-  for (i=0; i<1; i++) {
+  for (i=0; i<m; i++) {
     ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
     ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,INSERTVALUES); 
            CHKERR(ierr);

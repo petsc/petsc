@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.32 1995/05/02 21:11:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.33 1995/05/02 23:38:15 bsmith Exp curfman $";
 #endif
 
 /*
@@ -50,7 +50,7 @@ static int MatLUFactor_Dense(Mat matin,IS row,IS col)
 static int MatLUFactorSymbolic_Dense(Mat matin,IS row,IS col,Mat *fact)
 {
   int ierr;
-  if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
+  if ((ierr = MatConvert(matin,MATSAME,fact))) SETERR(ierr,0);
   return 0;
 }
 static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
@@ -60,7 +60,7 @@ static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
 static int MatCholeskyFactorSymbolic_Dense(Mat matin,IS row,Mat *fact)
 {
   int ierr;
-  if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
+  if ((ierr = MatConvert(matin,MATSAME,fact))) SETERR(ierr,0);
   return 0;
 }
 static int MatCholeskyFactorNumeric_Dense(Mat matin,Mat *fact)
@@ -322,7 +322,7 @@ static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
 }
 
 /* -----------------------------------------------------------------*/
-static int MatCopy_Dense(Mat matin,Mat *newmat)
+static int MatCopy_Dense_Private(Mat matin,Mat *newmat)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int ierr;
@@ -621,15 +621,15 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatRelax_Dense,
        MatTrans_Dense,
        MatGetInfo_Dense,MatEqual_Dense,
-       MatCopy_Dense,
        MatGetDiagonal_Dense,MatScale_Dense,MatNorm_Dense,
        0,0,
        0, MatSetOption_Dense,MatZero_Dense,MatZeroRows_Dense,0,
        MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
        MatCholeskyFactorSymbolic_Dense,MatCholeskyFactorNumeric_Dense,
        MatGetSize_Dense,MatGetSize_Dense,0,
-       0,0,MatGetArray_Dense,0,
-       MatGetSubMatrix_Dense,MatGetSubMatrixInPlace_Dense};
+       0,0,MatGetArray_Dense,0,0,
+       MatGetSubMatrix_Dense,MatGetSubMatrixInPlace_Dense,
+       MatCopy_Dense_Private};
 
 /*@
    MatCreateSequentialDense - Creates a sequential dense matrix that 

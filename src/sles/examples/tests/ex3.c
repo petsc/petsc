@@ -118,9 +118,9 @@ int main(int argc,char **args)
   ierr = ISDestroy(is); CHKERRA(ierr);
 
   { Mat A;
-  ierr = MatCopy(C,&A); CHKERRA(ierr);
+  ierr = MatConvert(C,MATSAME,&A); CHKERRA(ierr);
   ierr = MatDestroy(C); CHKERRA(ierr);
-  ierr = MatCopy(A,&C); CHKERRA(ierr);
+  ierr = MatConvert(A,MATSAME,&C); CHKERRA(ierr);
   ierr = MatDestroy(A); CHKERRA(ierr);
   }
 
