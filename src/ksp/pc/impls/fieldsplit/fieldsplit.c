@@ -502,7 +502,7 @@ PetscErrorCode PCFieldSplitSetType(PC pc,PCCompositeType type)
    Concepts: physics based preconditioners
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields()
+           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(),PCFieldSplitSetType()
 M*/
 
 EXTERN_C_BEGIN
