@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.85 1997/02/21 18:24:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.86 1997/02/22 02:28:49 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -475,6 +475,9 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
     Options Database Keys:
 $   -snes_eq_ls [basic,quadratic,cubic]
+$   -snes_eq_ls_alpha <alpha>
+$   -snes_eq_ls_maxstep <max>
+$   -snes_eq_ls_steptol <steptol>
 
    Calling sequence of func:
    func (SNES snes, Vec x, Vec f, Vec g, Vec y,
