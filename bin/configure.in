@@ -124,7 +124,7 @@ AC_ARG_WITH(blas,[ --with-blas=library - Use system-provided BLAS],BLAS_LIB=$wit
 dnl AC_SUBST(BLAS_LIB)
 AC_ARG_WITH(lapack,[ --with-lapack=library - Use system-provide LAPACK],LAPACK_LIB=$withval)
 dnl AC_SUBST(LAPACK_LIB)
-BLASLAPACK_LIB=$LAPACK_LIB $BLAS_LIB
+BLASLAPACK_LIB="$LAPACK_LIB $BLAS_LIB"
 AC_SUBST(BLASLAPACK_LIB)
 dnl
 dnl Special features for the libraries
@@ -135,11 +135,14 @@ LAPACK library:
        MKL (Intel MKL_C)],lapacktype=$withval)
 dnl
 dnl Set the flags variables
-case "$lapacktype" ; 
-    C) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_C" ; break;;
-    ESSL) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_ESSL_ONLY" ; break;;
-    MKL) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_MKL_ONLY" ; break;;
-    *) break;;
+case "$lapacktype" in
+    C) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_C" ;;
+    ESSL) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_ESSL_ONLY" ;;
+    MKL) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_MKL_ONLY" ;;
+    *) if test -n "$lapacktype" ; then 
+           AC_MSG_WARN([Unknown lapacktype of $lapacktype])
+       fi
+    ;;
 esac
 AC_SUBST(PETSC_BLASLAPACK_FLAGS)
 dnl
