@@ -23,3 +23,5 @@ include ${PETSC_DIR}/bmake/common/test
 
 ex1: ex1.o matmatmult.o chkopts
 	${CLINKER}  -o ex1 ex1.o matmatmult.o ${PETSC_MAT_LIB} 
+ex2: ex2.o matmatmult.o chkopts
+	${CLINKER}  -o ex2 ex2.o matmatmult.o ${PETSC_MAT_LIB} 
