@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.66 2001/04/16 03:16:27 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.67 2001/04/26 20:20:53 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -726,11 +726,9 @@ int DAGetColoring3d_MPIBAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat 
 #define __FUNCT__ "DAGetColoring2d_5pt_MPIAIJ" 
 int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
-  int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,w,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    lstart,lend,pstart,pend,*dnz,*onz,size;
-  MPI_Comm               comm;
-  Scalar                 *values;
+  int      ierr,xs,ys,nx,ny,*colors,i,j,ii,gxs,gys,gnx,gny;           
+  int      m,n,dim,w,s,k,nc;
+  MPI_Comm comm;
 
   PetscFunctionBegin;
   /*     
@@ -740,11 +738,9 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
   */
   ierr   = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0,0);CHKERRQ(ierr);
   nc     = w;
-  col    = 2*s + 1;
   ierr   = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr   = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr   = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create the coloring */
   if (ctype == IS_COLORING_LOCAL) {
