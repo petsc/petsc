@@ -33,11 +33,11 @@ manual.ps:
 
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit
-	cat ../../www/www.cit | sed 's/+man+../+man+www/g' > www.cit 
+	cat ../../manualpages/www.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
 	tohtml -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../www/petsc.cit -nobottomnav
+	       -mapref ../../manualpages/petsc.cit -nobottomnav
 	tohtml -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../www/petsc.cit -nobottomnav
+	       -mapref ../../manualpages/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
 	cat manual_html.html \
@@ -69,11 +69,11 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 # This is the split version; some users prefer this
 manual/manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit latex.err
-	cat ../../www/www.cit | sed 's#+man+..#+man+../www#g' > www.cit 
+	cat ../../manualpages/www.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../www/petsc.cit -nobottomnav
+	       -mapref ../../manualpages/petsc.cit -nobottomnav
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../www/petsc.cit -nobottomnav
+	       -mapref ../../manualpages/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err 
 	-@chmod -R ug+w manual
 	-@/bin/rm -r ../../manual
