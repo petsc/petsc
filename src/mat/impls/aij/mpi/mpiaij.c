@@ -35,29 +35,25 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
 #define CHUNKSIZE   15
 #define MatSetValues_SeqAIJ_A_Private(row,col,value,addv) \
 { \
- \
-    rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
-    rmax = aimax[row]; nrow = ailen[row];  \
-    col1 = col - shift; \
-     \
-    low = 0; high = nrow; \
-    while (high-low > 5) { \
-      t = (low+high)/2; \
-      if (rp[t] > col) high = t; \
-      else             low  = t; \
+    if (lastcol1 > col) low1 = 0; else high1 = nrow1; \
+    lastcol1 = col;\
+    while (high1-low1 > 5) { \
+      t = (low1+high1)/2; \
+      if (rp1[t] > col) high1 = t; \
+      else             low1  = t; \
     } \
-      for (_i=low; _i<high; _i++) { \
-        if (rp[_i] > col1) break; \
-        if (rp[_i] == col1) { \
-          if (addv == ADD_VALUES) ap[_i] += value;   \
-          else                    ap[_i] = value; \
+      for (_i=low1; _i<high1; _i++) { \
+        if (rp1[_i] > col) break; \
+        if (rp1[_i] == col) { \
+          if (addv == ADD_VALUES) ap1[_i] += value;   \
+          else                    ap1[_i] = value; \
           goto a_noinsert; \
         } \
       }  \
       if (value == 0.0 && ignorezeroentries) goto a_noinsert; \
       if (nonew == 1) goto a_noinsert; \
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      if (nrow >= rmax) { \
+      if (nrow1 >= rmax1) { \
         /* there is no extra room in row, therefore enlarge */ \
         PetscInt    new_nz = ai[am] + CHUNKSIZE,len,*new_i,*new_j; \
         PetscScalar *new_a; \
@@ -73,13 +69,11 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         /* copy over old data into new slots */ \
         for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];} \
         for (ii=row+1; ii<am+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;} \
-        ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow+shift)*sizeof(PetscInt));CHKERRQ(ierr); \
-        len = (new_nz - CHUNKSIZE - ai[row] - nrow - shift); \
-        ierr = PetscMemcpy(new_j+ai[row]+shift+nrow+CHUNKSIZE,aj+ai[row]+shift+nrow, \
-                                                           len*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a,aa,(ai[row]+nrow+shift)*sizeof(PetscScalar));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a+ai[row]+shift+nrow+CHUNKSIZE,aa+ai[row]+shift+nrow, \
-                                                           len*sizeof(PetscScalar));CHKERRQ(ierr);  \
+        ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow1)*sizeof(PetscInt));CHKERRQ(ierr); \
+        len = (new_nz - CHUNKSIZE - ai[row] - nrow1); \
+        ierr = PetscMemcpy(new_j+ai[row]+nrow1+CHUNKSIZE,aj+ai[row]+nrow1,len*sizeof(PetscInt));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_a,aa,(ai[row]+nrow1)*sizeof(PetscScalar));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_a+ai[row]+nrow1+CHUNKSIZE,aa+ai[row]+nrow1,len*sizeof(PetscScalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
  \
         ierr = PetscFree(a->a);CHKERRQ(ierr);  \
@@ -90,49 +84,45 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
         a->singlemalloc = PETSC_TRUE; \
  \
-        rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
-        rmax = aimax[row] = aimax[row] + CHUNKSIZE; \
+        rp1   = aj + ai[row]; ap1 = aa + ai[row]; \
+        rmax1 = aimax[row] = aimax[row] + CHUNKSIZE; \
         ierr = PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));CHKERRQ(ierr); \
         a->maxnz += CHUNKSIZE; \
         a->reallocs++; \
       } \
-      N = nrow++ - 1; a->nz++; \
+      N = nrow1++ - 1; a->nz++; \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
-        rp[ii+1] = rp[ii]; \
-        ap[ii+1] = ap[ii]; \
+        rp1[ii+1] = rp1[ii]; \
+        ap1[ii+1] = ap1[ii]; \
       } \
-      rp[_i] = col1;  \
-      ap[_i] = value;  \
+      rp1[_i] = col;  \
+      ap1[_i] = value;  \
       a_noinsert: ; \
-      ailen[row] = nrow; \
+      ailen[row] = nrow1; \
 } 
 
 #define MatSetValues_SeqAIJ_B_Private(row,col,value,addv) \
 { \
- \
-    rp   = bj + bi[row] + shift; ap = ba + bi[row] + shift; \
-    rmax = bimax[row]; nrow = bilen[row];  \
-    col1 = col - shift; \
-     \
-    low = 0; high = nrow; \
-    while (high-low > 5) { \
-      t = (low+high)/2; \
-      if (rp[t] > col) high = t; \
-      else             low  = t; \
+    if (lastcol2 > col) low2 = 0; else high2 = nrow2; \
+    lastcol2 = col;\
+    while (high2-low2 > 5) { \
+      t = (low2+high2)/2; \
+      if (rp2[t] > col) high2 = t; \
+      else             low2  = t; \
     } \
-       for (_i=low; _i<high; _i++) { \
-        if (rp[_i] > col1) break; \
-        if (rp[_i] == col1) { \
-          if (addv == ADD_VALUES) ap[_i] += value;   \
-          else                    ap[_i] = value; \
+       for (_i=low2; _i<high2; _i++) { \
+        if (rp2[_i] > col) break; \
+        if (rp2[_i] == col) { \
+          if (addv == ADD_VALUES) ap2[_i] += value;   \
+          else                    ap2[_i] = value; \
           goto b_noinsert; \
         } \
       }  \
       if (value == 0.0 && ignorezeroentries) goto b_noinsert; \
       if (nonew == 1) goto b_noinsert; \
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      if (nrow >= rmax) { \
+      if (nrow2 >= rmax2) { \
         /* there is no extra room in row, therefore enlarge */ \
         PetscInt    new_nz = bi[bm] + CHUNKSIZE,len,*new_i,*new_j; \
         PetscScalar *new_a; \
@@ -148,13 +138,11 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         /* copy over old data into new slots */ \
         for (ii=0; ii<row+1; ii++) {new_i[ii] = bi[ii];} \
         for (ii=row+1; ii<bm+1; ii++) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
-        ierr = PetscMemcpy(new_j,bj,(bi[row]+nrow+shift)*sizeof(PetscInt));CHKERRQ(ierr); \
-        len = (new_nz - CHUNKSIZE - bi[row] - nrow - shift); \
-        ierr = PetscMemcpy(new_j+bi[row]+shift+nrow+CHUNKSIZE,bj+bi[row]+shift+nrow, \
-                                                           len*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a,ba,(bi[row]+nrow+shift)*sizeof(PetscScalar));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a+bi[row]+shift+nrow+CHUNKSIZE,ba+bi[row]+shift+nrow, \
-                                                           len*sizeof(PetscScalar));CHKERRQ(ierr);  \
+        ierr = PetscMemcpy(new_j,bj,(bi[row]+nrow2)*sizeof(PetscInt));CHKERRQ(ierr); \
+        len = (new_nz - CHUNKSIZE - bi[row] - nrow2); \
+        ierr = PetscMemcpy(new_j+bi[row]+nrow2+CHUNKSIZE,bj+bi[row]+nrow2,len*sizeof(PetscInt));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_a,ba,(bi[row]+nrow2)*sizeof(PetscScalar));CHKERRQ(ierr); \
+        ierr = PetscMemcpy(new_a+bi[row]+nrow2+CHUNKSIZE,ba+bi[row]+nrow2,len*sizeof(PetscScalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
  \
         ierr = PetscFree(b->a);CHKERRQ(ierr);  \
@@ -165,22 +153,22 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
         b->singlemalloc = PETSC_TRUE; \
  \
-        rp   = bj + bi[row] + shift; ap = ba + bi[row] + shift; \
-        rmax = bimax[row] = bimax[row] + CHUNKSIZE; \
+        rp2   = bj + bi[row]; ap2 = ba + bi[row]; \
+        rmax2 = bimax[row] = bimax[row] + CHUNKSIZE; \
         ierr = PetscLogObjectMemory(B,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));CHKERRQ(ierr); \
         b->maxnz += CHUNKSIZE; \
         b->reallocs++; \
       } \
-      N = nrow++ - 1; b->nz++; \
+      N = nrow2++ - 1; b->nz++; \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
-        rp[ii+1] = rp[ii]; \
-        ap[ii+1] = ap[ii]; \
+        rp2[ii+1] = rp2[ii]; \
+        ap2[ii+1] = ap2[ii]; \
       } \
-      rp[_i] = col1;  \
-      ap[_i] = value;  \
+      rp2[_i] = col;  \
+      ap2[_i] = value;  \
       b_noinsert: ; \
-      bilen[row] = nrow; \
+      bilen[row] = nrow2; \
 }
 
 #undef __FUNCT__  
@@ -205,9 +193,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscInt       *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->m,am = aij->A->m;
   PetscScalar    *ba = b->a;
 
-  PetscInt       *rp,ii,nrow,_i,rmax,N,col1,low,high,t; 
-  PetscInt       nonew = a->nonew,shift=0; 
-  PetscScalar    *ap;
+  PetscInt       *rp1,*rp2,ii,nrow1,nrow2,_i,rmax1,rmax2,N,low1,high1,low2,high2,t,lastcol1,lastcol2; 
+  PetscInt       nonew = a->nonew; 
+  PetscScalar    *ap1,*ap2;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -216,21 +204,33 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
     if (im[i] >= mat->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->M-1);
 #endif
     if (im[i] >= rstart && im[i] < rend) {
-      row = im[i] - rstart;
+      row      = im[i] - rstart;
+      lastcol1 = -1;
+      rp1      = aj + ai[row]; 
+      ap1      = aa + ai[row];
+      rmax1    = aimax[row]; 
+      nrow1    = ailen[row];  
+      low1     = 0; 
+      high1    = nrow1;
+      lastcol2 = -1;
+      rp2      = bj + bi[row]; 
+      ap2      = ba + bi[row]; \
+      rmax2    = bimax[row]; 
+      nrow2    = bilen[row];  \
+      low2     = 0; 
+      high2    = nrow2;
+
       for (j=0; j<n; j++) {
+        if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
+        if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
-          if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
-          /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
         else if (in[j] >= mat->N) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->N-1);}
 #endif
         else {
-          if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
           if (mat->was_assembled) {
             if (!aij->colmap) {
               ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
@@ -252,7 +252,6 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
             }
           } else col = in[j];
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
-          /* ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
       }
     } else {

@@ -1,9 +1,9 @@
 
 ALL: lib 
 
-CFLAGS    = -DCONFIGURE_RUN_TIME='${CONFIGURE_RUN_TIME}' -DCONFIGURE_OPTIONS='${CONFIGURE_OPTIONS}'
+CFLAGS    = 
 FFLAGS    =
-CPPFLAGS  = -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"'
+CPPFLAGS  = -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' -DCONFIGURE_RUN_TIME='"${CONFIGURE_RUN_TIME}"' -DCONFIGURE_OPTIONS='"${CONFIGURE_OPTIONS}"'
 SOURCEC	  = ffpath.c ftest.c ghome.c mpiuopen.c rpath.c \
             fpath.c fwd.c grpath.c mprint.c sysio.c fretrieve.c smatlab.c
 SOURCEF	  =
