@@ -1,8 +1,6 @@
-/*$Id: umtr.c,v 1.105 2001/03/23 23:24:16 balay Exp buschelm $*/
+/*$Id: umtr.c,v 1.106 2001/07/10 02:22:22 buschelm Exp buschelm $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
-#include "src/sles/ksp/kspimpl.h"
-#include "src/sles/ksp/impls/qcg/qcg.h"
 
 /*
     SNESSolve_UM_TR - Implements Newton's Method with a trust region approach 
@@ -35,14 +33,13 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   SNES_UM_TR          *neP = (SNES_UM_TR*)snes->data;
   int                 maxits,i,nlconv,ierr,qits;
   PetscTruth          newton;
-  double              xnorm,max_val,ftrial,delta;
+  double              xnorm,max_val,ftrial,delta,ltsnrm,quadratic;
   double              zero = 0.0,two = 2.0,four = 4.0;
   Scalar              one = 1.0;
   Vec                 X,G,S,Xtrial;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   SLES                sles;
   KSP                 ksp;
-  KSP_QCG             *qcgP;
   SNESConvergedReason reason;
   KSPConvergedReason  kreason;
 
@@ -74,7 +71,6 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPQCG);CHKERRQ(ierr);
   PetscLogInfo(snes,"SNESSolve_UM_TR: setting KSPType = KSPQCG\n");
-  qcgP = (KSP_QCG*)ksp->data;
 
   for (i=0; i<maxits && !nlconv; i++) {
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
@@ -103,8 +99,6 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     }
     do {
       /* Minimize the quadratic to compute the step s */
-
-      /* qcgP->delta = delta; */
       ierr = KSPQCGSetTrustRegionRadius(ksp,delta);CHKERRQ(ierr);
 
       ierr = SLESSolve(snes->sles,G,S,&qits);CHKERRQ(ierr);
@@ -114,8 +108,10 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       if (kreason != KSP_CONVERGED_QCG_NEG_CURVE && kreason != KSP_CONVERGED_QCG_CONSTRAINED) {
         newton = PETSC_TRUE;
       }
+      ierr = KSPQCGGetTrialStepNorm(ksp,&ltsnrm);CHKERRQ(ierr);
+      ierr = KSPQCGGetQuadratic(ksp,&quadratic);CHKERRQ(ierr);
       PetscLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
-               i,qcgP->ltsnrm,delta,qcgP->quadratic,qits);
+               i,ltsnrm,delta,quadratic,qits);
 
       ierr = VecWAXPY(&one,X,S,Xtrial);CHKERRQ(ierr); /* Xtrial <- X + S */
       ierr = VecNorm(Xtrial,NORM_2,&xnorm);CHKERRQ(ierr);
@@ -123,11 +119,13 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial);CHKERRQ(ierr);
 
       /* Compute the function reduction and the step size */
+      ierr        = KSPQCGGetQuadratic(ksp,&quadratic);CHKERRQ(ierr); /* I don't think this is really necessary */
+      neP->prered = -quadratic;
       neP->actred = snes->fc - ftrial;
-      neP->prered = -qcgP->quadratic;
 
       /* Adjust delta for the first Newton step */
-      if (!i && (newton)) delta = PetscMin(delta,qcgP->ltsnrm);
+      ierr = KSPQCGGetTrialStepNorm(ksp,&ltsnrm);CHKERRQ(ierr); /* I don't think this is really necessary */
+      if (!i && (newton)) delta = PetscMin(delta,ltsnrm);
 
       if (neP->actred < neP->eta1 * neP->prered) {  /* Unsuccessful step */
 
@@ -136,7 +134,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 
          /* If iterate is Newton step, reduce delta to current step length */
          if (newton) {
-           delta  = qcgP->ltsnrm;
+           delta  = ltsnrm;
            newton = PETSC_FALSE;
          }
          delta /= four; 
@@ -146,7 +144,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
         neP->success = 1;
         PetscLogInfo(snes,"SNESSolve_UM_TR: Accepting step\n");
         if (newton) {
-           delta = sqrt(qcgP->ltsnrm*delta);
+           delta = sqrt(ltsnrm*delta);
            if (neP->actred < neP->eta2 * neP->prered) delta /= two;
         } else if (neP->actred < neP->eta2 * neP->prered)
            delta /= delta;
