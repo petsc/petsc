@@ -14,9 +14,9 @@ RUNEXAMPLES_1 = runex1  runex3  runex5 runex6  runex8 runex9\
                 runex10 runex11 runex14 runex15 runex15_2 runex16\
                 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex18 ex19 ex23 ex24 ex25 \
-                ex27 ex28 ex29 ex30 ex31 ex32 ex33 ex34
+                ex27 ex28 ex29 ex30 ex31 ex32 ex33 ex34 ex35
 RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 runex19 \
-                runex30
+                runex30 runex35
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
                 ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c \
@@ -159,6 +159,10 @@ ex34: ex34.o chkopts
 	-$(CLINKER) -o ex34 ex34.o $(PETSC_LIB)
 	$(RM) ex34.o
 
+ex35: ex35.o chkopts
+	-$(CLINKER) -o ex35 ex35.o $(PETSC_LIB)
+	$(RM) ex35.o
+
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -286,9 +290,15 @@ runex22:
            else echo "Possible problem with ex22_1, diffs above"; fi; \
            $(RM) -f ex22_1.tmp
 runex30:
-	-@$(MPIRUN)  ex30 > ex30_1.tmp 2>&1;   \
+	-@$(MPIRUN)  ex30 -nox > ex30_1.tmp 2>&1;   \
            if (diff output/ex30_1.out ex30_1.tmp) then true; \
            else echo "Possible problem with ex30_1, diffs above"; fi; \
            $(RM) -f ex30_1.tmp
+
+runex35:
+	-@$(MPIRUN)  ex35 > ex35_1.tmp 2>&1;   \
+           if (diff output/ex35_1.out ex35_1.tmp) then true; \
+           else echo "Possible problem with ex35_1, diffs above"; fi; \
+           $(RM) -f ex35_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
