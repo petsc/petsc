@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.170 1999/03/31 18:41:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.171 1999/04/19 22:12:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1124,11 +1124,11 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   PetscTruth  row_identity, col_identity;
 
   PetscFunctionBegin;
-  if (info && info->fill != 0) SETERRQ(PETSC_ERR_SUP,0,"Only fill=0 supported");
+  if (info && info->fill != 0) SETERRQ(PETSC_ERR_SUP,0,"Only fill=0 supported for in-place ILU");
   ierr = ISIdentity(row,&row_identity); CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity); CHKERRQ(ierr);
   if (!row_identity || !col_identity) {
-    SETERRQ(1,1,"Row and column permutations must be identity");
+    SETERRQ(1,1,"Row and column permutations must be identity for in-place ILU");
   }
 
   outA          = inA; 
