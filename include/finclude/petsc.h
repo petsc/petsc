@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.57 1998/03/23 23:46:47 balay Exp balay $;
+!  $Id: petsc.h,v 1.58 1998/03/25 00:24:01 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -143,6 +143,7 @@
 !  that are not used in the numerical computations, but rather in logging,
 !  timing etc.
 !
-#define PLogDouble double precision
+#define PetscObject PetscAddr
+#define PLogDouble  double precision
 
 
