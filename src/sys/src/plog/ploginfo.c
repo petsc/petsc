@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.7 1998/08/26 22:01:58 balay Exp bsmith $";
+static char vcid[] = "$Id: ploginfo.c,v 1.8 1998/12/03 03:58:43 bsmith Exp bsmith $";
 #endif
 /*
       PLogInfo() is contained in a different file from the other profiling to 
@@ -17,8 +17,9 @@ static char vcid[] = "$Id: ploginfo.c,v 1.7 1998/08/26 22:01:58 balay Exp bsmith
 #endif
 #include "pinclude/petscfix.h"
 
-extern int PLogPrintInfo,PLogPrintInfoNull;
-extern int PLogInfoFlags[];
+extern int  PLogPrintInfo,PLogPrintInfoNull;
+extern int  PLogInfoFlags[];
+extern FILE *PLogInfoFile;
 
 /*
    If the option -log_history was used, then all printed PLogInfo() 
@@ -31,7 +32,7 @@ extern FILE *petsc_history;
 #define __FUNC__ "PLogInfo"
 /*@C
     PLogInfo - Logs informative data, which is printed to standard output
-    when the option -log_info is specified.
+    or a file when the option -log_info <file> is specified.
 
     Collective over PetscObject argument
 
@@ -56,7 +57,7 @@ $
 
 .seealso: PLogInfoAllow()
 @*/
-int PLogInfo(void *vobj,const char message[],...)
+int PLogInfo(void *vobj,const char message[],...)  
 {
   va_list     Argp;
   int         rank,urank,len;
@@ -80,8 +81,8 @@ int PLogInfo(void *vobj,const char message[],...)
 #else
   vsprintf(string+len,message,Argp);
 #endif
-  fprintf(stdout,"%s",string);
-  fflush(stdout);
+  fprintf(PLogInfoFile,"%s",string);
+  fflush(PLogInfoFile);
   if (petsc_history) {
 #if defined(HAVE_VPRINTF_CHAR)
     vfprintf(petsc_history,message,(char *)Argp);
