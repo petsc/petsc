@@ -1,4 +1,4 @@
-/*$Id: openport.c,v 1.21 2000/08/15 22:17:46 balay Exp bsmith $*/
+/*$Id: openport.c,v 1.22 2001/01/15 21:43:08 bsmith Exp balay $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
@@ -46,6 +46,9 @@ typedef unsigned long   u_long;
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
+#endif
+#if defined(PETSC_HAVE_STRINGS_H)
+#include <strings.h>
 #endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
