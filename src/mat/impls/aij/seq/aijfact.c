@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.112 1999/01/22 20:01:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.113 1999/01/22 20:13:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -617,8 +617,8 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   PetscFunctionBegin;
   if (info) {
     f             = info->fill;
-    levels        = info->levels;
-    diagonal_fill = info->diagonal_fill;
+    levels        = (int) info->levels;
+    diagonal_fill = (int) info->diagonal_fill;
   } else {
     f             = 1.0;
     levels        = 0;
