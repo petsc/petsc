@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.30 1996/07/08 22:21:48 bsmith Exp balay $";
+static char vcid[] = "$Id: axis.c,v 1.31 1996/07/15 17:55:01 balay Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -239,6 +239,21 @@ int DrawAxisDraw(DrawAxis ad)
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
+static int PetscStripInitialZero(char *buf)
+{
+  int i,n = (int) PetscStrlen(buf); 
+  if (buf[0] == '0') {
+    for ( i=0; i<n; i++ ) {
+      buf[i] = buf[i+1];
+    }
+  } else if (buf[0] == '-' && buf[1] == '0') {
+    for ( i=1; i<n; i++ ) {
+      buf[i] = buf[i+1];
+    }
+  }
+  return 0;
+}
+
 static int PetscStripZeros(char *buf)
 {
   int i,j,n = (int) PetscStrlen(buf);
@@ -305,8 +320,8 @@ static char *PetscADefLabel(double val,double sep )
 	if (w > 0) sprintf( fmat, "%%%dd", w );
 	else PetscStrcpy( fmat, "%d" );
 	sprintf( buf, fmat, (int)val );
-    }
-    else {
+        PetscStripInitialZero(buf);
+    } else {
 	/* The code used here is inappropriate for a val of 0, which
 	   tends to print with an excessive numer of digits.  In this
 	   case, we should look at the next/previous values and 
@@ -314,13 +329,14 @@ static char *PetscADefLabel(double val,double sep )
 	if (w > 0) sprintf( fmat, "%%%d.%dlf", w + 1, d );
 	else PetscStrcpy( fmat, "%lf" );
 	sprintf( buf, fmat, val );
+        PetscStripInitialZero(buf);
     }
-  }
-  else {
+  } else {
     sprintf( buf, "%e", val );
     /* remove the extraneous 0's before the e */
     PetscStripZeros(buf);
     PetscStripZerosPlus(buf);
+    PetscStripInitialZero(buf);
   }
   return buf;
 }
@@ -332,6 +348,12 @@ static int PetscADefTicks( double low, double high, int num, int *ntick,
   int    i;
   double x, base;
   int    power;
+
+  /* patch if low == high */
+  if (PetscAbsScalar(low-high) < 1.e-5) {
+    low  -= .01;
+    high += .01;
+  }
 
   PetscAGetBase( low, high, num, &base, &power );
   x = PetscAGetNice( low, base, -1 );
