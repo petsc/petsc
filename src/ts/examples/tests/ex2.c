@@ -18,10 +18,10 @@ static char help[] = "Solves a nonlinear ODE. \n\n";
 #include "petscts.h"
 #include "petscpc.h"
 
-extern int RHSFunction(TS,PetscReal,Vec,Vec,void*);
-extern int RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
-extern int Monitor(TS,int,PetscReal,Vec,void *);
-extern int Initial(Vec,void *);
+extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
+extern PetscErrorCode Initial(Vec,void *);
 
 extern PetscReal solx(PetscReal);
 extern PetscReal soly(PetscReal);
@@ -31,12 +31,14 @@ extern PetscReal solz(PetscReal);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,time_steps = 100,steps,size;
-  Vec           global;
-  PetscReal     dt,ftime;
-  TS            ts;
-  MatStructure  A_structure;
-  Mat           A = 0;
+  PetscErrorCode ierr;
+  PetscInt       time_steps = 100,steps;
+  PetscMPIInt    size;
+  Vec            global;
+  PetscReal      dt,ftime;
+  TS             ts;
+  MatStructure   A_structure;
+  Mat            A = 0;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -90,10 +92,11 @@ int main(int argc,char **argv)
 #undef __FUNCT__
 #define __FUNCT__ "Initial"
 /* this test problem has initial values (1,1,1).                      */
-int Initial(Vec global,void *ctx)
+PetscErrorCode Initial(Vec global,void *ctx)
 {
-  PetscScalar *localptr;
-  int    i,mybase,myend,ierr,locsize;
+  PetscScalar    *localptr;
+  PetscInt       i,mybase,myend,locsize;
+  PetscErrorCode ierr;
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRQ(ierr);
@@ -113,20 +116,20 @@ int Initial(Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
+PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
-  VecScatter   scatter;
-  IS           from,to;
-  int          i,n,*idx;
-  Vec          tmp_vec;
-  int          ierr;
-  PetscScalar  *tmp;
+  VecScatter     scatter;
+  IS             from,to;
+  PetscInt       i,n,*idx;
+  Vec            tmp_vec;
+  PetscErrorCode ierr;
+  PetscScalar    *tmp;
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(int),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
@@ -155,19 +158,20 @@ int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunction"
-int RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
+PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
-  PetscScalar  *inptr,*outptr;
-  int          i,n,ierr,*idx;
-  IS           from,to;
-  VecScatter   scatter;
-  Vec          tmp_in,tmp_out;
+  PetscScalar    *inptr,*outptr;
+  PetscInt       i,n,*idx;
+  PetscErrorCode ierr;
+  IS             from,to;
+  VecScatter     scatter;
+  Vec            tmp_in,tmp_out;
 
   /* Get the length of parallel vector */
   ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
 
   /* Set the index sets */
-  ierr = PetscMalloc(n*sizeof(int),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   for(i=0; i<n; i++) idx[i]=i;
   
   /* Create local sequential vectors */
@@ -211,11 +215,12 @@ int RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
-int RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat    A = *AA;
-  PetscScalar v[3],*tmp;
-  int    idx[3],i,ierr;
+  Mat            A = *AA;
+  PetscScalar    v[3],*tmp;
+  PetscInt       idx[3],i;
+  PetscErrorCode ierr;
  
   *str = SAME_NONZERO_PATTERN;
 

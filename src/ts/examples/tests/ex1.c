@@ -18,18 +18,18 @@ typedef struct {
   Vec         global,local,localwork,solution;    /* location for local work (with ghost points) vector */
   DA          da;                    /* manages ghost point communication */
   PetscViewer viewer1,viewer2;
-  int         M;                     /* total number of grid points */
+  PetscInt    M;                     /* total number of grid points */
   PetscReal   h;                     /* mesh width h = 1/(M-1) */
   PetscReal   norm_2,norm_max;
-  int         nox;                   /* indicates problem is to be run without graphics */ 
+  PetscTruth  nox;                   /* indicates problem is to be run without graphics */ 
 } AppCtx;
 
-extern int Monitor(TS,int,PetscReal,Vec,void *);
-extern int RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
-extern int RHSMatrixFree(Mat,Vec,Vec);
-extern int Initial(Vec,void*);
-extern int RHSMatrixHeat(TS,PetscReal,Mat *,Mat *,MatStructure *,void *);
-extern int RHSJacobianHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
+extern PetscErrorCode RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
+extern PetscErrorCode RHSMatrixFree(Mat,Vec,Vec);
+extern PetscErrorCode Initial(Vec,void*);
+extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Mat *,Mat *,MatStructure *,void *);
+extern PetscErrorCode RHSJacobianHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 #define linear_no_matrix       0
 #define linear_no_time         1
@@ -41,18 +41,20 @@ extern int RHSJacobianHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,time_steps = 100,steps,size,m;
-  int           problem = linear_no_matrix;
-  PetscTruth    flg;
-  AppCtx        appctx;
-  PetscReal     dt,ftime;
-  TS            ts;
-  Mat           A = 0;
-  MatStructure  A_structure;
-  TSProblemType tsproblem = TS_LINEAR;
-  PetscDraw     draw;
-  PetscViewer   viewer;
-  char          tsinfo[120];
+  PetscErrorCode ierr;
+  PetscInt       time_steps = 100,steps,m;
+  PetscMPIInt    size;
+  PetscInt       problem = linear_no_matrix;
+  PetscTruth     flg;
+  AppCtx         appctx;
+  PetscReal      dt,ftime;
+  TS             ts;
+  Mat            A = 0;
+  MatStructure   A_structure;
+  TSProblemType  tsproblem = TS_LINEAR;
+  PetscDraw      draw;
+  PetscViewer    viewer;
+  char           tsinfo[120];
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -220,11 +222,12 @@ int main(int argc,char **argv)
 /* -------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "Initial" 
-int Initial(Vec global,void *ctx)
+PetscErrorCode Initial(Vec global,void *ctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;
-  PetscScalar *localptr,h = appctx->h;
-  int    i,mybase,myend,ierr;
+  AppCtx         *appctx = (AppCtx*) ctx;
+  PetscScalar    *localptr,h = appctx->h;
+  PetscInt       i,mybase,myend;
+  PetscErrorCode ierr;
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRQ(ierr);
@@ -243,11 +246,12 @@ int Initial(Vec global,void *ctx)
 /*
        Exact solution 
 */
-int Solution(PetscReal t,Vec solution,void *ctx)
+PetscErrorCode Solution(PetscReal t,Vec solution,void *ctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;
-  PetscScalar *localptr,h = appctx->h,ex1,ex2,sc1,sc2;
-  int    i,mybase,myend,ierr;
+  AppCtx *       appctx = (AppCtx*) ctx;
+  PetscScalar    *localptr,h = appctx->h,ex1,ex2,sc1,sc2;
+  PetscInt       i,mybase,myend;
+  PetscErrorCode ierr;
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(solution,&mybase,&myend);CHKERRQ(ierr);
@@ -265,13 +269,13 @@ int Solution(PetscReal t,Vec solution,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(TS ts,int step,PetscReal ltime,Vec global,void *ctx)
+PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal ltime,Vec global,void *ctx)
 {
-  AppCtx       *appctx = (AppCtx*) ctx;
-  int          ierr;
-  PetscReal    norm_2,norm_max;
-  PetscScalar  mone = -1.0;
-  MPI_Comm     comm;
+  AppCtx         *appctx = (AppCtx*) ctx;
+  PetscErrorCode ierr;
+  PetscReal      norm_2,norm_max;
+  PetscScalar    mone = -1.0;
+  MPI_Comm       comm;
 
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
 
@@ -298,10 +302,10 @@ int Monitor(TS ts,int step,PetscReal ltime,Vec global,void *ctx)
 /* -----------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "RHSMatrixFree"
-int RHSMatrixFree(Mat mat,Vec x,Vec y)
+PetscErrorCode RHSMatrixFree(Mat mat,Vec x,Vec y)
 {
-  int  ierr;
-  void *ctx;
+  PetscErrorCode  ierr;
+  void            *ctx;
 
   MatShellGetContext(mat,(void **)&ctx);
   ierr = RHSFunctionHeat(0,0.0,x,y,ctx);CHKERRQ(ierr);
@@ -310,13 +314,14 @@ int RHSMatrixFree(Mat mat,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunctionHeat"
-int RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
+PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
-  AppCtx      *appctx = (AppCtx*) ctx;
-  DA          da = appctx->da;
-  Vec         local = appctx->local,localwork = appctx->localwork;
-  int         ierr,i,localsize; 
-  PetscScalar *copyptr,*localptr,sc;
+  AppCtx         *appctx = (AppCtx*) ctx;
+  DA             da = appctx->da;
+  Vec            local = appctx->local,localwork = appctx->localwork;
+  PetscErrorCode ierr;
+  PetscInt       i,localsize; 
+  PetscScalar    *copyptr,*localptr,sc;
 
   /*Extract local array */ 
   ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local);CHKERRQ(ierr);
@@ -347,12 +352,14 @@ int RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 /* ---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "RHSMatrixHeat"
-int RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat    A = *AA;
-  AppCtx *appctx = (AppCtx*) ctx;
-  int    ierr,i,mstart,mend,rank,size,idx[3];
-  PetscScalar v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
+  Mat            A = *AA;
+  AppCtx         *appctx = (AppCtx*) ctx;
+  PetscErrorCode ierr;
+  PetscInt       i,mstart,mend,idx[3];
+  PetscMPIInt    size,rank;
+  PetscScalar    v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
 
   *str = SAME_NONZERO_PATTERN;
 
@@ -387,7 +394,7 @@ int RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobianHeat"
-int RHSJacobianHeat(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+PetscErrorCode RHSJacobianHeat(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   return RHSMatrixHeat(ts,t,AA,BB,str,ctx);
 }
