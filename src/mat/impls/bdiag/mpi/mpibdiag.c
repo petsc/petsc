@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.66 1996/01/03 16:10:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.67 1996/01/12 22:07:41 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -807,7 +807,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 {
   Mat          mat;
   Mat_MPIBDiag *mbd;
-  int          ierr, i, k, *ldiag, len, dset = 0, nd2,ierr,flg1,flg2;
+  int          ierr, i, k, *ldiag, len, dset = 0, nd2,flg1,flg2;
   Scalar       **ldiagv = 0;
 
   *newmat       = 0;
@@ -991,7 +991,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
   int          nb, i, nz, ierr, j, rstart, rend, fd, *rowners, maxnz, *cols;
   int          header[4], rank, size, *rowlengths = 0, M, N, m;
   int          *ourlens, *sndcounts = 0, *procsnz = 0, jj, *mycols, *smycols;
-  int          tag = ((PetscObject)bview)->tag;
+  int          tag = ((PetscObject)bview)->tag,flg;
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {

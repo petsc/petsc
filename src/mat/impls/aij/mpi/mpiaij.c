@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.108 1996/01/04 15:58:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.109 1996/01/12 22:07:09 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1503,7 +1503,7 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   PLogObjectParent(mat,a->A);
   ierr =  MatConvert(oldmat->B,MATSAME,&a->B); CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg) CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
   }

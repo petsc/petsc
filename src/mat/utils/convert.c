@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.40 1995/12/21 18:33:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.41 1996/01/12 22:08:29 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -83,7 +83,7 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
 { 
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *vwork;
-  int        i, ierr, nz, m = a->m, n = a->n, *cwork, rstart, rend;
+  int        i, ierr, nz, m = a->m, n = a->n, *cwork, rstart, rend,flg;
 
   switch (newtype) {
     case MATSEQROW:

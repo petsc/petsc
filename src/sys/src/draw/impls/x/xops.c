@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.38 1995/12/21 18:33:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.39 1996/01/12 22:08:56 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -330,7 +330,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   int    ierr,size,rank,flg;
   char   string[128];
 
-  ierr = OptionsHasName(PETSC_NULL,"-nox"); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg); CHKERRQ(ierr);
   if (flg) {
     return DrawOpenNull(comm,inctx);
   }

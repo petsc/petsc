@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.43 1996/01/12 03:52:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.44 1996/01/12 22:06:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -38,31 +38,31 @@ static int PCSetFromOptions_SOR(PC pc)
   int    its,ierr,flg;
   double omega;
 
-  iOptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg);CHKERRQ(ierr);
   if (flg) {
     PCSORSetOmega(pc,omega);
   } 
-  OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg);CHKERRQ(ierr);
   if (flg) {
     PCSORSetIterations(pc,its);
   }
-  OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg);CHKERRQ(ierr);
   if (flg) {
     PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
   }
-  OptionsHasName(pc->prefix,"-pc_sor_backward",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_backward",&flg);CHKERRQ(ierr);
   if (flg) {
     PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);
   }
-  iOptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg);CHKERRQ(ierr);
   if (flg) {
     PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);
   }
-  OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg);CHKERRQ(ierr);
   if (flg) {
     PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);
   }
-  OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg);CHKERRQ(ierr);
   if (flg) {
     PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.82 1996/01/03 16:09:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.83 1996/01/12 22:07:36 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1478,7 +1478,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
 {
   Mat          A;
   Mat_SeqBDiag *a;
-  int          i, nda, sizetot, ierr, dset = 0, nd2,ierr,flg1,flg2;
+  int          i, nda, sizetot, ierr, dset = 0, nd2,flg1,flg2;
 
   *newmat       = 0;
   if (nb == PETSC_DEFAULT) nb = 1;
@@ -1563,8 +1563,8 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   a->nz          = a->maxnz; /* Currently not keeping track of exact count */
   a->assembled   = 0;
   a->roworiented = 1;
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
-  if (flg) {
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
+  if (flg1) {
     ierr = MatPrintHelp(A); CHKERRQ(ierr);
   }
   if (dset) PetscFree(diag);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.125 1996/01/09 03:30:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.126 1996/01/12 22:06:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -507,7 +507,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   PLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = (*mat->ops.lufactornumeric)(mat,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw"); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
     Draw    win;
     ierr = DrawOpenX((*fact)->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
