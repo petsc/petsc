@@ -14,7 +14,6 @@
 #   11 - uniprocessor version of 5
 #   12 - basic f90 examples
 #   13 - Examples that should only be compiled.
-#   14 - requires Matlab - src/dm/da/examples/tests
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 #   18 - requires C++ and dynamic libraries (for ESI)
 
@@ -31,7 +30,6 @@ testexamples_10: ${TESTEXAMPLES_10} clean
 testexamples_11: ${TESTEXAMPLES_11} clean
 testexamples_12: ${TESTEXAMPLES_12} clean
 testexamples_13: ${TESTEXAMPLES_13} clean
-testexamples_14: ${TESTEXAMPLES_14} clean
 testexamples_17: ${TESTEXAMPLES_17} clean
 testexamples_18: ${TESTEXAMPLES_18} clean
 testexamples_AMS: ${TESTEXAMPLES_AMS} clean
@@ -69,8 +67,6 @@ buildexamples_12:
 	-@${OMAKE} testexamples_12 TESTEXAMPLES_12=`echo ${TESTEXAMPLES_12} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_13:
 	-@${OMAKE} testexamples_13 TESTEXAMPLES_13=`echo ${TESTEXAMPLES_13} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_14:
-	-@${OMAKE} testexamples_14 TESTEXAMPLES_14=`echo ${TESTEXAMPLES_14} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_18:
 	-@${OMAKE} testexamples_18 TESTEXAMPLES_18=`echo ${TESTEXAMPLES_18} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_17:

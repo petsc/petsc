@@ -127,6 +127,6 @@ TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
 TESTEXAMPLES_5  =
 TESTEXAMPLES_13 = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm \
 		  ex11.PETSc ex11.rm
-TESTEXAMPLES_14 = ex12.PETSc runex12 ex12.rm
+TESTEXAMPLES_MATLAB = ex12.PETSc runex12 ex12.rm
 
 include ${PETSC_DIR}/bmake/common/test
