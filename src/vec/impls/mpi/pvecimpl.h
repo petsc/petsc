@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.21 1999/01/12 23:13:27 bsmith Exp balay $ */
+/* $Id: pvecimpl.h,v 1.22 1999/01/27 21:20:20 balay Exp bsmith $ */
 /* 
  */
 
@@ -47,7 +47,7 @@ extern int VecSetValuesBlocked_MPI(Vec, int, const int [], const Scalar[],Insert
 extern int VecAssemblyBegin_MPI(Vec);
 extern int VecAssemblyEnd_MPI(Vec);
 
-extern int VecCreate_MPI_Private(Vec,int,int,int,const Scalar[],Map);
+extern int VecCreate_MPI_Private(Vec,int,const Scalar[],Map);
 
 #endif
 
