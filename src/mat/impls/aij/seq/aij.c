@@ -2739,7 +2739,6 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->nz                 = a->nz;
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;
-  C->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
   C->preallocated       = PETSC_TRUE;
 
   *B = C;

@@ -56,7 +56,7 @@ typedef struct {
   int (*MatPreallocate)(Mat,int,int,int*,int,int*);
 
   MatType    basetype;
-  PetscTruth CleanUpSpooles,useQR,isAIJ;
+  PetscTruth CleanUpSpooles,useQR;
 } Mat_Spooles;
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
