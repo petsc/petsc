@@ -5,29 +5,13 @@
 
 set shadowdir=$1
 set petscdir=/home/bsmith/petsc
-if ($shadowdir == /sphome/curfman/petsc) then
-  set suffix=SP
-else 
-  set suffix=""
-endif
 
 cd $petscdir
 #
 #  remove all garabage from true petsc directory
 #
-make ACTION=clean tree
+make ACTION=clean tree >>& /dev/null
 #
-/bin/rm -f $petscdir/maint/links$suffix.log
-echo "Building links from" $petscdir "to" $shadowdir "(`date`)" \
-     > $petscdir/maint/links$suffix.log
-if ($shadowdir == /sphome/curfman/petsc) then
-  find . \( -name RCS -prune -o -name docs -prune -o -name lib -prune \) \
+find . \( -name RCS -prune -o -name docs -prune \) \
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
-        >>& $petscdir/maint/links$suffix.log \;
-else
-  find . \( -name RCS -prune -o -name docs -prune \) \
-        -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
-        >>& $petscdir/maint/links$suffix.log \;
-endif
-echo "Finished building links from" $petscdir "to" $shadowdir "(`date`)" \
-     >> $petscdir/maint/links$suffix.log
+        >>& /dev/null \;
