@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.48 1995/08/07 18:51:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.49 1995/08/18 17:39:37 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.48 1995/08/07 18:51:04 bsmith Exp curf
 
 .keywords: KSP, view
 
-.seealso: KSPView(), ViewerFileOpen(), ViewerFileOpenSync()
+.seealso: PCView(), ViewerFileOpen(), ViewerFileOpenSync()
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.31 1995/07/26 21:40:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.32 1995/08/07 18:53:27 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -10,12 +10,18 @@ static char vcid[] = "$Id: sles.c,v 1.31 1995/07/26 21:40:38 curfman Exp bsmith 
 
    Input Parameters:
 .  SLES - the SLES context
-.  viewer - the location to display context (usually 0)
+.  viewer - optional visualization context
 
    Options Database Key:
 $  -sles_view : calls SLESView() at end of SLESSolve()
 
+   Note:
+   Most users should employ the viewer STDOUT_VIEWER (or SYNC_STDOUT_VIEWER 
+   for the parallel case).
+
 .keywords: SLES, view
+
+.seealso: ViewerFileOpen(), ViewerFileOpenSync()
 @*/
 int SLESView(SLES sles,Viewer viewer)
 {

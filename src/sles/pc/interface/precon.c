@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.38 1995/07/21 23:40:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.39 1995/08/07 18:51:52 bsmith Exp curfman $";
 #endif
 
 /*  
@@ -435,52 +435,52 @@ int PCPostSolve(PC pc,KSP ksp)
   else return 0;
 }
 
-/* matimpl.h should not be included here!  This should be changed! */
-#include "mat/matimpl.h"
 /*@ 
    PCView - Prints the PC data structure.
 
    Input Parameters:
 .  PC - the PC context
-.  viewer - the location to display context (usually 0)
+.  viewer - optional visualization context
+
+   Note:
+   Most users should employ the viewer STDOUT_VIEWER (or SYNC_STDOUT_VIEWER 
+   for the parallel case).
 
 .keywords: PC, view
+
+.seealso: KSPView(), ViewerFileOpen(), ViewerFileOpenSync()
 @*/
 int PCView(PC pc,Viewer viewer)
 {
   PetscObject vobj = (PetscObject) viewer;
   FILE *fd;
   char *cstring;
-  int  ierr, rows, cols, mat_exists;
-  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
-                                        vobj->type == FILES_VIEWER)){
+  int  fmt, ierr, rows, cols, mat_exists;
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  if ((vobj->type == FILE_VIEWER || vobj->type == FILES_VIEWER) &&
+     vobj->cookie == VIEWER_COOKIE) {
     fd = ViewerFileGetPointer_Private(viewer);
+    fmt = ViewerFileGetFormat_Private(viewer);
     MPIU_fprintf(pc->comm,fd,"PC Object:\n");
-    PetscObjectExists((PetscObject)pc->mat,&mat_exists);
-    if (mat_exists) {
-      ierr = MatGetName(pc->mat,&cstring); CHKERRQ(ierr);
-      ierr = MatGetSize(pc->mat,&rows,&cols); CHKERRQ(ierr);
-      if (pc->pmat == pc->mat) {
-        MPIU_fprintf(pc->comm,fd,
-        "  linear system matrix = precond matrix: type=%s, rows=%d, cols=%d\n",
-           cstring,rows,cols);
-      } else {
-        MPIU_fprintf(pc->comm,fd,
-          "  linear system matrix: type=%s, rows=%d, cols=%d\n",
-          cstring,rows,cols);
-        PetscObjectExists((PetscObject)pc->pmat,&mat_exists);
-        if (mat_exists) {
-          ierr = MatGetName(pc->pmat,&cstring); CHKERRQ(ierr);
-          ierr = MatGetSize(pc->pmat,&rows,&cols); CHKERRQ(ierr);
-          MPIU_fprintf(pc->comm,fd,
-            "  preconditioner matrix: type=%s, rows=%d, cols=%d\n",
-            cstring,rows,cols);
-        }
-      }
-    }
     PCGetMethodName((PCMethod)pc->type,&cstring);
     MPIU_fprintf(pc->comm,fd,"  method: %s\n",cstring);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
+    PetscObjectExists((PetscObject)pc->mat,&mat_exists);
+    ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);
+    if (mat_exists) {
+      if (pc->pmat == pc->mat) {
+        MPIU_fprintf(pc->comm,fd,"  linear system matrix = precond matrix:\n");
+        ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
+      } else {
+        MPIU_fprintf(pc->comm,fd,"  linear system matrix:\n");
+        ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
+        PetscObjectExists((PetscObject)pc->pmat,&mat_exists);
+        if (mat_exists) {
+          MPIU_fprintf(pc->comm,fd,"  preconditioner matrix:\n");
+          ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
+        }
+      }
+    }
   }
   return 0;
 }
