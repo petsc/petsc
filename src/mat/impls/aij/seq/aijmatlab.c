@@ -1,4 +1,4 @@
-/*$Id: aijmatlab.c,v 1.1 2000/05/09 03:30:27 bsmith Exp bsmith $*/
+/*$Id: aijmatlab.c,v 1.2 2000/05/10 16:40:36 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface for the Matlab engine sparse solver
@@ -19,11 +19,19 @@ int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
   char            *_A,*_b,*_x;
 
   PetscFunctionBegin;
+  /* make sure objects have names; use default if not */
+  ierr = PetscObjectName((PetscObject)b);CHKERRQ(ierr);
+  ierr = PetscObjectName((PetscObject)x);CHKERRQ(ierr);
+
   ierr = PetscObjectGetName((PetscObject)A,&_A);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)b,&_b);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)x,&_x);CHKERRQ(ierr);
   ierr = PetscMatlabEnginePut(MATLAB_ENGINE_(A->comm),(PetscObject)b);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"u_%s\\(l_%s\\(p_%s*%s'))",_A,_A,_A,_A);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"whos");CHKERRQ(ierr);
+  ierr = PetscMatlabEnginePrintOutput(MATLAB_ENGINE_(A->comm),stdout);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"condest(u%s),condest(l%s)",_A,_A);CHKERRQ(ierr);
+  ierr = PetscMatlabEnginePrintOutput(MATLAB_ENGINE_(A->comm),stdout);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(MATLAB_ENGINE_(A->comm),"%s = u%s\\(l%s\\(p%s*%s));",_x,_A,_A,_A,_b);CHKERRQ(ierr);
   ierr = PetscMatlabEnginePrintOutput(MATLAB_ENGINE_(A->comm),stdout);CHKERRQ(ierr);
   ierr = PetscMatlabEngineGet(MATLAB_ENGINE_(A->comm),(PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
