@@ -26,7 +26,7 @@ manual.html: manual.tex
 	       -mapref../www/petsc.cit
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv *.html ..
-	rm -f *.gif *.xbm
+	rm -f *.gif *.xbm latex.err findex.tex sindex.tex
 
 petsc.ps: petsc.tex
 	latex petsc
@@ -36,7 +36,7 @@ petsc.ps: petsc.tex
 petsc.html: petsc.tex
 	tohtml petsc.tex -notopnames -nocontents -nonavnames 
 	tohtml petsc.tex -notopnames -nocontents -nonavnames 
-	rm -f *.gif *.xbm
+	rm -f *.gif *.xbm latex.err
 
 clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
