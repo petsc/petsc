@@ -125,7 +125,7 @@ class UsingPython (base.Base):
     library      = self.getServerLibrary(package)
     linker       = build.buildGraph.BuildGraph()
     archiver     = build.processor.DirectoryArchiver(self.sourceDB, 'cp', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
-    consolidator = build.transform.Consolidator([archiveTag, 'old '+archiveTag], archiveTag)
+    consolidator = build.transform.Consolidator(archiveTag, archiveTag, 'old '+archiveTag)
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, archiveTag, sharedTag, isSetwise = 1, library = library)
     if not (self.project.getUrl() == 'bk://sidl.bkbits.net/Compiler' and package == 'pythonGenerator'):
       # Also need pythonGenerator library

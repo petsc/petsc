@@ -215,9 +215,6 @@ class Framework(base.Base):
     framework.argDB['log'] = os.path.join(root, 'configure.log')
     if not self.configureHeader is None:
       framework.header     = self.configureHeader
-    # Perhaps these initializations should just be local arguments
-    framework.argDB['CPPFLAGS'] = ''
-    framework.argDB['LIBS']     = ''
     # Load default configure module
     try:
       framework.children.append(self.getMakeModule(root, 'configure').Configure(framework))
@@ -244,21 +241,42 @@ class Framework(base.Base):
     compileGraph.prependGraph(sidlGraph)
     return self.executeGraph(compileGraph, input = self.filesets['sidl'], checkpoint = endVertex)
 
+  def getCompileInput(self):
+    if 'checkpoint' in self.argDB:
+      return None
+    return self.filesets['sidl']
+
   def t_compile(self):
     '''Recompile the entire source for this project'''
     import build.buildGraph
 
+    input = self.getCompileInput()
     if 'checkpoint' in self.argDB:
-      input        = None
       self.builder = cPickle.loads(self.argDB['checkpoint'])
       compileGraph = self.builder.buildGraph
       #del self.argDB['checkpoint']
       self.debugPrint('Loaded checkpoint for '+str(self.project), 2, 'build')
     else:
-      input        = self.filesets['sidl']
       sidlGraph    = self.sidlTemplate.getTarget()
       compileGraph = self.compileTemplate.getTarget()
       compileGraph.prependGraph(sidlGraph)
+      # Add project dependency compile graphs
+      # TODO: Remove all "forward" edges in dependenceGraph (edges which connect further down to already reachable nodes)
+      if len(self.dependenceGraph.outEdges[self.project]):
+        import sys
+        input = dict(map(lambda r: (r, self.getCompileInput()), build.buildGraph.BuildGraph.getRoots(compileGraph)))
+        for v in self.dependenceGraph.outEdges[self.project]:
+          try:
+            maker     = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
+            maker.setupProject()
+            maker.setupBuild()
+            sidlGraph = maker.sidlTemplate.getTarget()
+            depGraph  = maker.compileTemplate.getTarget()
+            depGraph.prependGraph(sidlGraph)
+            compileGraph.prependGraph(depGraph)
+            input.update(dict(map(lambda r: (r, maker.getCompileInput()), build.buildGraph.BuildGraph.getRoots(depGraph))))
+          except ImportError:
+            self.debugPrint('No make module present in '+v.getRoot(), 2, 'build')
     return self.executeGraph(compileGraph, input = input)
 
   def t_install(self):
@@ -316,19 +334,19 @@ class Framework(base.Base):
   - With -regExp=<re>, it purge all files matching the expression from the source database'''
     if 'fileset' in self.argDB:
       setName = self.argDB['fileset']
-      try:
+      if setName in self.filesets:
         self.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
-        for file in self.filesets[setName]:
-          if file in self.sourceDB:
-            self.debugPrint('Purging '+file, 3, 'sourceDB')
-            del self.sourceDB[file]
-      except KeyError:
-        try:
-          if self.sourceDB.has_key(setName):
-            self.debugPrint('Purging '+setName, 3, 'sourceDB')
-            del self.sourceDB[setName]
-        except KeyError:
-          print 'FileSet '+setName+' not found for purge'
+        for f in self.filesets[setName]:
+          self.debugPrint('Purging '+f, 3, 'sourceDB')
+          try:
+            del self.sourceDB[f]
+          except KeyError:
+            print 'File '+f+' not found for purge'
+      elif setName in self.sourceDB:
+        self.debugPrint('Purging '+setName, 3, 'sourceDB')
+        del self.sourceDB[setName]
+      else:
+        print 'FileSet '+setName+' not found for purge'
     else:
       import re
 
@@ -348,17 +366,19 @@ class Framework(base.Base):
   - With -fileset=<filename>, it updates one file'''
     if 'fileset' in self.argDB:
       setName = self.argDB['fileset']
-      try:
+      if setName in self.filesets:
         self.debugPrint('Updating source database of fileset '+setName, 1, 'sourceDB')
-        for file in self.filesets[setName]:
-          self.debugPrint('Updating '+file, 3, 'sourceDB')
-          self.sourceDB.updateSource(file)
-      except KeyError:
-        try:
-          self.debugPrint('Updating '+setName, 3, 'sourceDB')
-          self.sourceDB.updateSource(setName)
-        except KeyError:
-          print 'FileSet '+setName+' not found for update'
+        for f in self.filesets[setName]:
+          self.debugPrint('Updating '+f, 3, 'sourceDB')
+          try:
+            self.sourceDB.updateSource(f)
+          except KeyError:
+            print 'File '+f+' not found in source database'
+      elif setName in self.sourceDB:
+        self.debugPrint('Updating '+setName, 3, 'sourceDB')
+        self.sourceDB.updateSource(setName)
+      else:
+        print 'FileSet '+setName+' not found for update'
     else:
       import re
 
@@ -409,7 +429,7 @@ class Framework(base.Base):
     '''Execute the build operation'''
     try:
       if target is None:
-        target = self.argDB.target
+        target = self.argDB.target[:]
       else:
         target = target[:]
       if not isinstance(target, list): target = [target]

@@ -20,7 +20,7 @@ class PetscMake(build.framework.Framework):
     import build.fileset
     url                     = self.project.getUrl()
     pythonRoot              = self.sidlTemplate.usingSIDL.getClientRootDir('Python')
-    self.filesets['python'] = build.fileset.RootedFileSet(url, [os.path.join(pythonRoot, 'cygwinpath_Module.c')], tag = 'python client c')
+    self.filesets['python'] = build.fileset.RootedFileSet(url, [os.path.join(pythonRoot, 'cygwinpath_Module.c')], tag = 'python client')
     self.filesets['sidl'].children.append(self.filesets['python'])
     return
 

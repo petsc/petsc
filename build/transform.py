@@ -33,10 +33,11 @@ class Transform(base.Base):
     '''Process a FileSet
        - This default method calls handleFile() on each member of the set'''
     # Preserve rooted file sets and those with nonexistent files
-    if not set.tag is None:
+    #   Could probably just create all nonempty sets, since empty ones will get filtered out at the next node
+    if not set.tag is None and len(set):
       if isinstance(set, build.fileset.RootedFileSet):
         self.output.children.append(build.fileset.RootedFileSet(set.projectUrl, tag = set.tag))
-      elif not set.mustExist and len(set):
+      elif not set.mustExist:
         self.output.children.append(build.fileset.FileSet(tag = set.tag, mustExist = set.mustExist))
     map(lambda f: self.handleFile(f, set.tag), set)
     map(self.handleFileSet, set.children)
@@ -64,21 +65,40 @@ class Remover (Transform):
     return Transform.handleFile(self, f, tag)
 
 class Consolidator (Transform):
-  '''A Consolidator combines every file in sets matching inputTag into a single output set'''
-  def __init__(self, inputTag, outputTag):
+  '''A Consolidator combines every file in sets matching inputTag into a single output set
+     - If oldTag is provided, sets matching this tag are added only if at least one file with inputTag is present'''
+  def __init__(self, inputTag, outputTag, oldTag = []):
     Transform.__init__(self)
-    self.inputTag = inputTag
+    self.inputTag   = inputTag
+    self.oldTag     = oldTag
     if not isinstance(self.inputTag, list):
       self.inputTag = [self.inputTag]
+    if not isinstance(self.oldTag, list):
+      self.oldTag   = [self.oldTag]
     self.output.tag = outputTag
+    if len(self.oldTag):
+      self.oldOutput     = build.fileset.FileSet()
+      self.oldOutput.tag = self.oldTag[0]
+      self.hasOutput     = 0
+      self.output.children.append(self.oldOutput)
     return
 
   def __str__(self):
-    return 'Consolidating '+str(self.inputTag)+' into '+self.output.tag
+    return 'Consolidating '+str(self.inputTag)+'('+str(self.oldTag)+') into '+self.output.tag
 
   def handleFile(self, f, tag):
     '''Put all files matching inputTag in the output set'''
     if self.inputTag is None or tag in self.inputTag:
       self.output.append(f)
+      if not self.hasOutput:
+        self.hasOutput = 1
+        self.output.children.remove(self.oldOutput)
+        self.output.extend(self.oldOutput)
+      return self.output
+    elif tag in self.oldTag:
+      if self.hasOutput:
+        self.output.append(f)
+      else:
+        self.oldOutput.append(f)
       return self.output
     return Transform.handleFile(self, f, tag)
