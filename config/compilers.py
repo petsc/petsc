@@ -618,7 +618,7 @@ class Configure(config.base.Configure):
         # Check for canonical library argument
         m = re.match(r'^-[lLR]$', arg)
         if m:
-          lib = arg+' '+argIter.next()
+          lib = arg+argIter.next()
           #print 'Found canonical library: '+lib
           flibs.append(lib)
           continue
