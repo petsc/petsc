@@ -188,7 +188,7 @@ runex8:
 	   else echo "Possible problem with ex8_1, diffs above"; fi; \
 	   ${RM} -f ex8_1.tmp
 runex8_2:
-	-@${MPIRUN} -np 3 ex8 -ksp_gmres_irorthog -pc_type asm  -mat_type mpiaij -mat_aij_oneindex \
+	-@${MPIRUN} -np 3 ex8 -ksp_gmres_irorthog -pc_type asm  -mat_type mpiaij  \
 	   -snes_smonitor > ex8_2.tmp 2>&1; \
 	   if (${DIFF} output/ex8_2.out ex8_2.tmp) then true; \
 	   else echo "Possible problem with ex8_2, diffs above"; fi; \
