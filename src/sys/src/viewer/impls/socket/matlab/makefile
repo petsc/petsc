@@ -1,8 +1,9 @@
-# $Id: makefile,v 1.10 2001/01/15 21:43:08 bsmith Exp balay $ 
+# $Id: makefile,v 1.11 2001/01/23 20:52:25 balay Exp bsmith $ 
 
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
 #requiresscalar real 
+#requireslanguage CONLY
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
 # in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If cmex fails 
