@@ -16,7 +16,7 @@ class Base (maker.Maker):
     return
 
   def checkNumeric(self):
-    import distutils
+    import distutils.sysconfig
     import os
 
     try:
