@@ -125,7 +125,6 @@ int MatDestroy_SuperLU_DIST(Mat A)
 #define __FUNCT__ "MatSolve_SuperLU_DIST"
 int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 {
-  Mat_MPIAIJ       *aa = (Mat_MPIAIJ*)A->data;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr;
   int              ierr, size;
   int              m=A->M, N=A->N; 
@@ -206,7 +205,6 @@ int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU_DIST"
 int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
 {
-  Mat_MPIAIJ       *fac = (Mat_MPIAIJ*)(*F)->data,*mat;
   Mat              *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ       *aa,*bb;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(*F)->spptr;
