@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.17 1995/09/04 17:25:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.18 1995/09/06 03:06:47 bsmith Exp curfman $";
 #endif
  
 /*
@@ -16,7 +16,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
 {
   DA          da = (DA) dain;
   PetscObject vobj = (PetscObject)ptr;
-  int         mytid;
+  int         mytid, ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&mytid); 
@@ -795,7 +795,7 @@ $    ViewerFileOpen() - output to a specified file
 $    DrawOpenX() - output nonzero matrix structure to 
 $         an X window display
 
-   Default output format:
+   Default Output Format:
 $ (for 3d arrays):
 $   Processor [proc] M  N  P  m  n  p  w  s
 $   where

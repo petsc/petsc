@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.26 1995/08/24 22:30:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.27 1995/09/06 03:06:34 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -234,8 +234,9 @@ static int SNESView_TR(PetscObject obj,Viewer viewer)
   SNES    snes = (SNES)obj;
   SNES_TR *tr = (SNES_TR *)snes->data;
   FILE    *fd;
+  int     ierr;
+
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
-  
   MPIU_fprintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",
     tr->mu,tr->eta,tr->sigma);
   MPIU_fprintf(snes->comm,fd,

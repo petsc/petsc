@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.8 1995/08/24 22:30:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.9 1995/09/06 03:06:40 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -166,8 +166,9 @@ static int SNESView_UMLS(PetscObject obj,Viewer viewer)
   SNES      snes = (SNES)obj;
   SNES_UMLS *ls = (SNES_UMLS *)snes->data;
   FILE      *fd;
+  int       ierr;
+
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
-  
   MPIU_fprintf(snes->comm,fd,
     "    gamma_f=%g, maxf=%d, maxkspf=%d,stepmin=%g,stepmax=%g\n",
     ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->stepmin,ls->stepmax);

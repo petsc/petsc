@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.12 1995/09/04 17:25:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.13 1995/09/06 03:06:47 bsmith Exp curfman $";
 #endif
 
 /*
@@ -16,7 +16,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
 {
   DA da = (DA) dain;
   PetscObject vobj = (PetscObject)ptr;
-  int         mytid;
+  int         mytid, ierr;
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&mytid); 
