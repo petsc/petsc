@@ -1,13 +1,15 @@
 
-C "$Id: ex1f.F,v 1.3 1996/08/28 19:35:51 curfman Exp curfman $";
+C "$Id: ex1f.F,v 1.4 1996/08/29 15:56:17 curfman Exp curfman $";
 C
-C  Description: Uses Newton's method to solve a two-variable system.
-C
+C/*T
 C  Concepts: SNES (solving nonlinear equations)
 C  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); 
 C  Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSLES();
 C  Routines: SLESGetPC(); SLESGetKSP(); KSPSetTolerances(); PCSetType();
 C  Processors: 1
+CT*/
+C
+C  Description: Uses the Newton method to solve a two-variable system.
 C
 C -----------------------------------------------------------------------
 

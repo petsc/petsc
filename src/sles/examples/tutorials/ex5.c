@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.66 1996/08/22 20:18:39 balay Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.67 1996/08/27 18:15:57 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -10,12 +10,12 @@ also uses multiple profiling stages.  Input arguments are\n\
   -mat_nonsym : use nonsymmetric matrix (default is symmetric)\n\n";
 
 /*T
-   Concepts: SLES (solving linear equations)
-   Concepts: repeatedly solving linear systems; multiple profiling stages
-   Routines: SLESCreate(); SLESSetFromOptions(); SLESSetUp(); SLESSolve()
-   Routines: SLESSetOperators(A,A,SAME_NONZERO_PATTERN)
-   Routines: MatZeroEntries(); MatSetOption(A,MAT_SYMMETRIC)
-   Routines: PLogStagePush(); PLogStagePop(); PLogStageRegister()
+   Concepts: SLES (repeatedly solving linear systems)
+   Concepts: multiple profiling stages
+   Routines: SLESCreate(); SLESSetFromOptions(); SLESSetUp(); SLESSolve();
+   Routines: SLESSetOperators(A,A,SAME_NONZERO_PATTERN);
+   Routines: MatZeroEntries(); MatSetOption(A,MAT_SYMMETRIC);
+   Routines: PLogStagePush(); PLogStagePop(); PLogStageRegister();
    Processors: n
 T*/
 
