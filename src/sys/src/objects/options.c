@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.177 1998/04/01 20:54:55 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.178 1998/04/06 15:19:38 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -1171,6 +1171,9 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
          we strip them out here.
       */
       } else if (!PetscStrcmp(eargs[0],"-p4pg")) {
+        eargs += 2; left -= 2;
+
+       } else if (!PetscStrcmp(eargs[0],"-np")) {
         eargs += 2; left -= 2;
 
       
