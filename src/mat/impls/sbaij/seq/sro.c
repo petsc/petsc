@@ -1,3 +1,5 @@
+/*$Id: sbaij.c,v 1.2 2000/06/22 15:25:58 balay Exp hzhang $*/
+
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
