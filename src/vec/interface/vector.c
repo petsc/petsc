@@ -3366,6 +3366,8 @@ int VecRestoreArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,P
 }
 
 extern int VecStashGetInfo_Private(VecStash*,int*,int*);
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashGetInfo"
 /*@ 
    VecStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
        to be communicated to other processors during the VecAssemblyBegin/End() process
@@ -3386,8 +3388,6 @@ extern int VecStashGetInfo_Private(VecStash*,int*,int*);
 .seealso: VecAssemblyBegin(), VecAssemblyEnd(), Vec, VecStashSetInitialSize(), VecStashView()
   
 @*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecStashGetInfo"
 int VecStashGetInfo(Vec vec,int *nstash,int *reallocs,int *bnstash,int *brealloc)
 {
   int ierr;
@@ -3396,9 +3396,3 @@ int VecStashGetInfo(Vec vec,int *nstash,int *reallocs,int *bnstash,int *brealloc
   ierr = VecStashGetInfo_Private(&vec->bstash,nstash,reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
