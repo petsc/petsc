@@ -1,11 +1,8 @@
-
-
-
 /*
       Wrappers for PETSc_Matrix ESI implementation
 */
 
-#include "petsc/matrix.h"
+#include "esi/petsc/matrix.h"
 
 esi::petsc::Matrix<double,int>::Matrix(esi::MapPartition<int> *inrmap,esi::MapPartition<int> *incmap)
 {
