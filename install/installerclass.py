@@ -26,15 +26,11 @@ class Installer(install.base.Base):
       parentDirectory = os.path.dirname(sys.modules['RDict'].__file__)
     argDB = RDict.RDict(parentDirectory = parentDirectory)
 
-    argDB.setType('backup',            nargs.ArgBool(None, None, 'Backup makes a tar archive of the generated source rather than installing'), forceLocal = 1)
-    argDB.setType('forceInstall',      nargs.ArgBool(None, None, 'Forced installation overwrites any existing project'), forceLocal = 1)
-    argDB.setType('retrievalCanExist', nargs.ArgBool(None, None, 'Allow a project to exist prior to installation'), forceLocal = 1)
-    argDB.setType('urlMappingModules', nargs.Arg(None, None, 'Module name or list of names with a method setupUrlMapping(urlMaps)'), forceLocal = 1)
-
-    argDB['backup']            = 0
-    argDB['forceInstall']      = 0
-    argDB['retrievalCanExist'] = 0
-    argDB['urlMappingModules'] = ''
+    argDB.setType('backup',            nargs.ArgBool(None, 0, 'Backup makes a tar archive of the generated source rather than installing'), forceLocal = 1)
+    argDB.setType('forceInstall',      nargs.ArgBool(None, 0, 'Forced installation overwrites any existing project'), forceLocal = 1)
+    argDB.setType('userRepositories',  nargs.ArgBool(None, 0, 'Trys a user level login for all repositories'), forceLocal = 1)
+    argDB.setType('retrievalCanExist', nargs.ArgBool(None, 0, 'Allow a project to exist prior to installation'), forceLocal = 1)
+    argDB.setType('urlMappingModules', nargs.Arg(None, '', 'Module name or list of names with a method setupUrlMapping(urlMaps)'), forceLocal = 1)
 
     argDB.insertArgs(clArgs)
     argDB.insertArgs(initDict)
