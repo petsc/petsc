@@ -37,9 +37,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
   PetscValidPointer(obj,2);
 
   ierr = PetscHeaderCreate(o,_p_Object,PetscInt,-1,0,"PetscObject",comm,PetscObjectDestroy,0);CHKERRQ(ierr);
-  o->data        = 0;
-  o->view        = 0;
-  o->setupcalled = 0;
   *obj = o;
   PetscFunctionReturn(0);
 }
