@@ -1,105 +1,31 @@
 #! /bin/csh
 # 
-# Runs buildall and mails all error messages to bsmith and curfman
+# Runs buildall in Petsc's petsc directory
 #
 #
-/bin/rm -f ~/.petscrc
-echo "-display eagle:0.0 " > ~/.petscrc
-echo "-trdump " >> ~/.petscrc
-setenv H $1
+setenv H /home/petsc/petsc
+echo $H
 cd $H/maint
 /bin/rm -f build.log examples.log ftp.log
 set day=`date | cut -f1 -d" "`
 #
 # Set up configurations for library building and testing
-# Note:  snake should be built in the PETSc directory of the person
-#        running buildtest; for some strange reason only the owner of
-#        the PETSc directory has write permission within it on snake.
-#
-if ($H == /home/bsmith/petsc) then
-# send copy off to ICASE, UCLA, and NERSC for testing
-  builddist >>& /dev/null
-  /bin/rm -f ~/petsc.tar.Z
-  compress ~/petsc.tar
-  chmod ug+w ~/petsc.tar.Z
-  echo "ftp logging:" > ftp.log
-  chmod 660 ftp.log
-  autoftp joshua.math.ucla.edu bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
-  autoftp h4p.nersc.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
-  autoftp crabcake.larc.nasa.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
-endif
 
 if ($day == Sun || $day == Wed || $day == Fri) then
-  if ($H == /home/bsmith/petsc) then
-    set M=(merlin       merlin      )
-    set B=(g            O           )
-    set A=(sun4         sun4        )
-    set J=(fortran      fortran     )
-  else if ($H == /home/curfman/petsc) then
-    set M=(screech      screech     )
-    set B=(O            O_c++       )
-    set A=(freebsd      freebsd     )
-    set J=(fortran      nofortran   )
-  else if ($H == /home/petsc/petsc) then
     set M=(snake   doc              )
     set B=(O       g                )
     set A=(hpux    rs6000_p4        )
     set J=(fortran fortran          )
- else
-    set M=(clyde         )
-    set B=(g             )
-    set A=(rs6000        )
-    set J=(fortran       )
-  endif
 else if ($day == Mon || $day == Sat) then
-  if ($H == /home/bsmith/petsc) then
-    set M=(merlin     ptera     )
-    set B=(g          O_c++     )
-    set A=(sun4       alpha     )
-    set J=(fortran    nofortran )
-  else if ($H == /home/curfman/petsc) then
-    set M=( merlin    doc       )
-    set B=( O_complex O         )
-    set A=( sun4      rs6000_p4 )
-    set J=( nofortran fortran   )
-  else if ($H == /home/petsc/petsc) then
     set M=(ptera      ryan      )
     set B=(O_complex  O         )
     set A=(alpha      IRIX      )
     set J=(nofortran  fortran   )
-  else
-    set M=(clyde     )
-    set B=(O_complex )
-    set A=(rs6000    )
-    set J=(nofortran )
-  endif
 else
-  if ($H == /home/bsmith/petsc) then
-    set M=(merlin       merlin        )
-    set B=(g            O_c++         )
-    set A=(sun4         sun4          )
-    set J=(fortran      nofortran     )
-  else if ($H == /home/curfman/petsc) then
-    set M=(screech    )
-    set B=(O_complex  )
-    set A=(freebsd    )
-    set J=(nofortran  )
-  else if ($H == /home/petsc/petsc) then
     set M=(ptera      )
     set B=(O          )
     set A=(alpha      )
     set J=(fortran    )
-  else if ($H == /home/balay/petsc) then
-    set M=(freedom  oban    )
-    set B=(O        g       )
-    set A=(sun4     freebsd )
-    set J=(fortran  fortran )
-  else
-    set M=( clyde     )
-    set B=( O_c++     )
-    set A=(rs6000     )
-    set J=(nofortran  )
-  endif
 endif
 
 #
@@ -120,20 +46,15 @@ foreach machine ($M)
   echo "Finished Build on $machine  $arch $bopt `date`" >> build.log
   echo "******************************************************" >> examples.log
   echo "Build on $machine  $bopt `date` " >> examples.log
-  rsh $machine -n "cd $H ; $UNI; \
+  rsh $machine -n "cd $H ;  \
        make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  testexamples >>& maint/examples.log"
   echo "******************************************************" >> examples.log
-  rsh $machine -n "cd $H ; $UNI; \
+  rsh $machine -n "cd $H ;  \
        make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  ACTION=testexamples_2 tree >>& maint/examples.log"
   echo "******************************************************" >> examples.log
-  rsh $machine -n "cd $H ; $UNI; \
-       make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  testexamples_4 >>& maint/examples.log"
   if ($J[$i] == fortran) then
-    rsh $machine -n "cd $H ; $UNI; \
+    rsh $machine -n "cd $H ;  \
          make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt  ACTION=testexamples_3 tree >>& maint/examples.log"
-  endif
-  if ($machine == clyde) then 
-    rsh $machine -n "rm -f /sphome/petsc/SPnodes.*"
   endif
   echo "Finished Build on $machine $arch $bopt `date`" >> examples.log
   @ i = ($i + 1)
@@ -160,15 +81,4 @@ endif
 /bin/rm -f trash trashz
 chmod ug+w  build.log examples.log
 
-# get results back from foreign sites 
-if ($H == /sphome/curfman/petsc) then
-  cp build.log /home/petsc/petsc/maint/spbuild.log
-  cp examples.log /home/petsc/petsc/maint/spexamples.log
-endif
-
-if ($H == /home/bsmith/petsc) then
-  sleep 3600
-  autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/petsc/petsc/maint/solaris.log >>& ftp.log
-  autoftp h4p.nersc.gov bsmith get buildtest.log /home/petsc/petsc/maint/t3d.log >>& ftp.log
-endif
 
