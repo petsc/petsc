@@ -149,6 +149,7 @@ struct _EventLog {
   int       maxEvents;   /* The maximum number of events */
   PerfInfo *eventInfo;   /* The performance information for each event */
 };
+typedef int PetscEvent;
 
 /* The structure for logging class information */
 typedef struct _ClassInfo {
@@ -184,13 +185,10 @@ struct _StageLog {
   ClassLog   *classLog;     /* The class information for each stage */
 };
 
-EXTERN int EventLogGetEvent(EventLog, int, int *);
-
 #if defined(PETSC_HAVE_MPE)
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { int _1_ierr, _1_eventNum; \
-    _1_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_1_eventNum); \
-    if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[_1_eventNum].active) { \
+  0; { int _1_ierr; \
+    if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) { \
       _1_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_1_ierr);  \
       if (UseMPE && PetscLogEventMPEFlags[(e)])                      \
         MPE_Log_event(MPEBEGIN+2*(e),0,"");                      \
@@ -204,18 +202,16 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
       MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                    \
   }
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  \
-  0; { int _3_ierr, _3_eventNum; \
-    _3_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_3_eventNum); \
-   if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[_3_eventNum].active) {\
+  0; { \
+   if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
      (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
    if (UseMPE && PetscLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e),0,"");\
   }
 #else
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { int _2_ierr, _2_eventNum;\
-    _2_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_2_eventNum); \
-    if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[_2_eventNum].active) {                         \
+  0; { int _2_ierr;\
+    if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) { \
       _2_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);    \
       _2_ierr = MPI_Barrier(cm);CHKERRQ(_2_ierr);                    \
       _2_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);      \
@@ -223,9 +219,8 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
     _2_ierr = PetscLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(_2_ierr);    \
   }
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  \
-  0; { int _4_ierr, _4_eventNum; \
-    _4_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_4_eventNum); \
-   if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[_4_eventNum].active) {\
+  0; { \
+   if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
      (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   }
 #endif
@@ -233,9 +228,8 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
 #if defined(PETSC_HAVE_MPE)
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
 #define PetscLogEventEnd(e,o1,o2,o3,o4) \
-  0; { int _5_ierr, _5_eventNum; \
-    _5_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_5_eventNum); \
-  if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[_5_eventNum].active) {\
+  0; { \
+  if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   if (UseMPE && PetscLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e)+1,0,"");\
@@ -243,9 +237,8 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
 #else
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
 #define PetscLogEventEnd(e,o1,o2,o3,o4) \
-  0; { int _6_ierr, _6_eventNum; \
-    _6_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_6_eventNum); \
-  if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[_6_eventNum].active) {\
+  0; { \
+  if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   } 
 #endif
