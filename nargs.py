@@ -310,6 +310,57 @@ class ArgLibrary(Arg):
     self.value = value
     return
 
+class ArgExecutable(Arg):
+  '''Arguments that represent executables'''
+  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
+    self.mustExist = mustExist
+    Arg.__init__(self, key, value, help, isTemporary)
+    return
+
+  def getEntryPrompt(self):
+    return 'Please enter executable for '+str(self.key)+': '
+
+  def getValue(self):
+    '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
+    if not self.isValueSet():
+      try:
+        import GUI.FileBrowser
+        import SIDL.Loader
+        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
+        if self.help: db.setTitle(self.help)
+        else:         db.setTitle('Select the executable for '+self.key)
+        db.setMustExist(self.exist)
+        self.value = db.getFile()
+      except Exception:
+        return Arg.getValue(self)
+    return self.value
+
+  def checkExecutable(self, dir, name):
+    prog = os.path.join(dir, name)
+    return os.path.isfile(prog) and os.access(prog, os.X_OK):
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    import os
+    # Should check whether it is a well-formed path
+    if self.mustExist:
+      index = value.find(' ')
+      if index >= 0:
+        options = value[index:]
+        value   = value[:index]
+      else:
+        options = ''
+      found = self.checkExecutable('', value)
+      if not found:
+        for dir in os.environ['PATH'].split(':'):
+          if self.checkExecutable(dir, value):
+            found = 1
+            break
+      if found:
+        raise TypeError('Invalid executable: '+str(value)+' for key '+str(self.key))
+    self.value = value+options
+    return
+
 class ArgString(Arg):
   '''Arguments that represent strings satisfying a given regular expression'''
   def __init__(self, key, value = None, help = '', regExp = None, isTemporary = 0):
