@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.5 2000/11/03 21:30:37 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.6 2000/11/03 22:23:16 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -18,6 +18,7 @@ public class PETScRun extends java.applet.Applet
   Hashtable        systems[];
 
   JPanel      tpanel;
+
     Choice    arch;
     Choice    dir;
     Choice    example;
@@ -59,6 +60,13 @@ public class PETScRun extends java.applet.Applet
       tpanel.add(arch);
         
       dir = new Choice();
+      dir.addItemListener(new ItemListener() {
+                            public void itemStateChanged(ItemEvent e) {
+                            System.out.println("Called choie");
+                            Choice choice = (Choice) e.getItemSelectable();
+                            setexamples(example,choice.getSelectedItem());
+		            System.out.println("Called ch");}
+	                  });
       keys = systems[EXAMPLES].keys();
       while (keys.hasMoreElements()) {
         dir.add((String)keys.nextElement());
@@ -66,12 +74,9 @@ public class PETScRun extends java.applet.Applet
       tpanel.add(dir);
 
       example = new Choice();
-      ArrayList ex = (ArrayList)systems[EXAMPLES].get(systems[EXAMPLES].keys().nextElement());
-      Iterator its = ex.iterator();
-      while (its.hasNext()) {
-        example.add((String)its.next());
-      }
+      setexamples(example,(String)systems[EXAMPLES].keys().nextElement());
       tpanel.add(example);
+
 
       np = new Choice();
       np.add("1");
@@ -98,6 +103,18 @@ public class PETScRun extends java.applet.Applet
     this.add(new JScrollPane(opanel), BorderLayout.NORTH); 
     opanel.setLineWrap(true);
     opanel.setWrapStyleWord(true);
+  }
+
+  /*
+      Fills in the examples pull down menu based on the directory selected
+  */
+  public void setexamples(Choice example,String exin) {
+    ArrayList ex = (ArrayList)systems[EXAMPLES].get(exin);
+    Iterator its = ex.iterator();
+    example.removeAll();
+    while (its.hasNext()) {
+      example.add((String)its.next());
+    }
   }
 
   public void stop() {
