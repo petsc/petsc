@@ -13,12 +13,12 @@
 !
 !  Note: These dimensions MUST agree with those in the routine nd() !!
 !
-      double precision
-     & B1(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),
-     & B2(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),
-     & B3(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),
-     & B4(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),
-     & B5(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),
+      double precision                                                  &
+     & B1(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),            &
+     & B2(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),            &
+     & B3(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),            &
+     & B4(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),            &
+     & B5(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),            &
      & B6(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
 !
 !  Uniprocessor array sizes

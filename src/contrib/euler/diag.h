@@ -2,7 +2,7 @@
 !  Parallel array sizes for the main diagonal blocks of the
 !  Jacobian matrix.  Space is allocated in UserCreateEuler().
 !
-      double precision
+      double precision                                                  &
      &  D(ndof_e,ndof_e,xsf2:xef01,ysf2:yef01,zsf2:zef01)
 !
 !  Uniprocessor array sizes:

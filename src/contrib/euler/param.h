@@ -1,5 +1,5 @@
 !
-!  $Id: param.h,v 1.21 1998/03/25 21:43:14 curfman Exp balay $;
+!  $Id: param.h,v 1.22 1998/03/25 21:44:59 balay Exp balay $;
 !
 ! PETSc include files needed by Fortran routines
 !   petsc.h - basic PETSc interface
@@ -34,10 +34,10 @@
         parameter(LOCAL_TS=0, GLOBAL_TS=1)
 
 !   Type of limiter
-        integer LIM_NONE, LIM_MINMOD, LIM_SUPERBEE, LIM_VAN_LEER, 
-     &          LIM_VAN_ALBADA
-        parameter(LIM_NONE=0, LIM_MINMOD=1, LIM_SUPERBEE=2,
-     &          LIM_VAN_LEER=3, LIM_VAN_ALBADA=4)
+        integer LIM_NONE, LIM_MINMOD, LIM_SUPERBEE, LIM_VAN_LEER 
+        integer LIM_VAN_ALBADA
+        parameter (LIM_NONE=0, LIM_MINMOD=1, LIM_SUPERBEE=2)
+        parameter (LIM_VAN_LEER=3, LIM_VAN_ALBADA=4)
 
 !   The following are the test problem dimensions:
        integer d_ni,d_nj,d_nk,d_ni1,d_nj1,d_nk1

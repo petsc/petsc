@@ -1,7 +1,7 @@
 !
 !  Local function components due to boundary conditions
 !  
-      double precision 
+      double precision                                                  &
      & fff(ndof,xsf1:xefp1,ysf1:yefp1,zsf1:zefp1)
 
 #define fbcrk1(i,j) fff(1,i,j,1)

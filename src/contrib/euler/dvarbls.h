@@ -25,7 +25,7 @@
 #define drw(i,j,k) dxx(4,i,j,k)
 #define de(i,j,k) dxx(5,i,j,k)
 
-        double precision
+        double precision                                                &
      &   dxx(ndof,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
 ! ---------------------------------------------------------------
