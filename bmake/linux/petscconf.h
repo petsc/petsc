@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.16 1999/05/12 03:24:58 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.17 1999/06/30 22:48:03 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -8,6 +8,7 @@
 
 #define PARCH_linux
 
+#define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_PWD_H 
 #define PETSC_HAVE_MALLOC_H 
 #define PETSC_HAVE_STRING_H 
@@ -18,7 +19,6 @@
 #define PETSC_HAVE_UNISTD_H 
 #define PETSC_HAVE_SYS_TIME_H 
 #define PETSC_HAVE_STDLIB_H
-#define PETSC_HAVE_UNISTD_H
 
 #define PETSC_HAVE_FORTRAN_UNDERSCORE 
 #define PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.1 1999/08/30 19:55:55 balay Exp balay $"
+"$Id: petscconf.h,v 1.2 1999/08/31 03:35:56 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -8,6 +8,7 @@
 
 #define PARCH_linux
 
+#define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_PWD_H 
 #define PETSC_HAVE_MALLOC_H 
 #define PETSC_HAVE_STRING_H 
