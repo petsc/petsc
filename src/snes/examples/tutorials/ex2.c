@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.52 1996/07/08 22:23:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.53 1996/08/20 16:34:06 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -59,11 +59,10 @@ int main( int argc, char **argv )
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr); 
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
-  /* Print the various parameters used for convergence testing */
+  /* Print parameters used for convergence testing */
   ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf); CHKERRA(ierr);
   PetscPrintf(MPI_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
      atol,rtol,stol,maxit,maxf);
-
 
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr); CHKERRA(ierr);
