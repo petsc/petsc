@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.6 2001/07/17 21:15:19 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.7 2001/07/17 21:17:21 bsmith Exp bsmith $ 
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -9,7 +9,12 @@
 #  into a new file to be processed with adiC
 # 
 #  Calling sequence: 
-#      adprocess.py file1.[cf] functionname
+#      adprocess.py file1.[cf] functionname functionname2
+#
+#
+#   Bugs: Final line of C function must begin with } on first line
+#         Application context must be called AppCtx
+#         structs possible format is not completely general
 #
 import urllib
 import os
