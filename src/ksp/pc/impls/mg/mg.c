@@ -149,13 +149,12 @@ static PetscErrorCode PCDestroy_MG(PC pc)
   }
 
   for (i=0; i<n-1; i++) {
-    if (mg[i]->r) {ierr = VecDestroy(mg[i]->r);CHKERRQ(ierr);}
+    if (mg[i+1]->r) {ierr = VecDestroy(mg[i+1]->r);CHKERRQ(ierr);}
     if (mg[i]->b) {ierr = VecDestroy(mg[i]->b);CHKERRQ(ierr);}
     if (mg[i]->x) {ierr = VecDestroy(mg[i]->x);CHKERRQ(ierr);}
     if (mg[i+1]->restrct) {ierr = MatDestroy(mg[i+1]->restrct);CHKERRQ(ierr);}
     if (mg[i+1]->interpolate) {ierr = MatDestroy(mg[i+1]->interpolate);CHKERRQ(ierr);}
   }
-  if (mg[n-1]->r) {ierr = VecDestroy(mg[n-1]->r);CHKERRQ(ierr);}
 
   for (i=0; i<n; i++) {
     if (mg[i]->smoothd != mg[i]->smoothu) {
