@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 1999/11/15 16:04:32 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1999/11/24 17:24:54 bsmith Exp hzhang $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
@@ -9,16 +9,16 @@ CFLAGS    =
 # -----------------------------------------------------------------------
 #    
 TESTEXAMPLES_1 = main.PETSc main.rm
-EXAMPLESC      = main.c appview.c appload.c functions.c integrator.c appctx.h appcreate.c
+EXAMPLESC      = main.c appview.c appload.c functions.c appctx.h appcreate.c
 
 ALL: main
 
 LOCDIR     = src/usg/2d/constant_bilinear/
 
-main: chkopts main.o appview.o appload.o functions.o integrator.o appcreate.o
+main: chkopts main.o appview.o appload.o functions.o appcreate.o
 	-$(RM) main
-	-$(CLINKER) -o main main.o appview.o appload.o integrator.o appcreate.o functions.o $(PETSC_LIB)
-	-$(RM) main.o appview.o appload.o functions.o integrator.o appcreate.o
+	-$(CLINKER) -o main main.o appview.o appload.o appcreate.o functions.o $(PETSC_LIB)
+	-$(RM) main.o appview.o appload.o functions.o appcreate.o
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
