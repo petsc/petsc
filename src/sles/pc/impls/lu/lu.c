@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: direct.c,v 1.6 1995/03/06 04:15:26 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -20,8 +20,12 @@ typedef struct {
 
   Input Parameters:
 .   pc - the preconditioner context
-.   ordering - the type of ordering to use, one of ORDER_NATURAL,
-.              ORDER_ND, ORDER_RCM, ORDER_1WD, ORDER_QMD.
+.   ordering - the type of ordering to use, one of 
+$      ORDER_NATURAL - Natural 
+$      ORDER_ND - Nested Dissection
+$      ORDER_1WD - One-way Dissection
+$      ORDER_RCM - Reverse Cuthill-McGee
+$      ORDER_QMD - Quotient Minimum Degree
 @*/
 int PCDirectSetOrdering(PC pc,int ordering)
 {
@@ -33,13 +37,15 @@ int PCDirectSetOrdering(PC pc,int ordering)
   return 0;
 }
 /*@
-      PCDirectSetUseInplace - tells system to do an inplace factorization.
+   PCDirectSetUseInplace - Tells system to do an in-place factorization.
               For some implementations, for instance, dense matrices,
-              this can allow one to do much larger problems. This can 
-              only be used with the KSP method, KSPPREONLY, because
-              the Krylov space methods require an application of the 
-              matrix multiply, which is not possible here because the 
-              matrix has been factored inplace of the original matrix.
+              this enables the solution of much larger problems. 
+
+   Note:
+   PCDirectSetUseInplace() can only be used with the KSP method KSPPREONLY.
+   This is because the Krylov space methods require an application of the 
+   matrix multiplication, which is not possible here because the matrix has 
+   been factored in-place, replacing the original matrix.
 
   Input Parameters:
 .   pc - the preconditioner context
