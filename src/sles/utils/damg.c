@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.6 2000/07/11 03:10:14 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.7 2000/07/13 03:53:43 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -87,6 +87,7 @@ int DAMGDestroy(DAMG *damg)
     if (damg[i]->Rscale)  {ierr = VecDestroy(damg[i]->Rscale);CHKERRQ(ierr);}
     if (damg[i]->localX)  {ierr = VecDestroy(damg[i]->localX);CHKERRQ(ierr);}
     if (damg[i]->localF)  {ierr = VecDestroy(damg[i]->localF);CHKERRQ(ierr);}
+    if (damg[i]->fdcoloring)  {ierr = MatFDColoringDestroy(damg[i]->fdcoloring);CHKERRQ(ierr);}
     ierr = PetscFree(damg[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(damg);CHKERRQ(ierr);
