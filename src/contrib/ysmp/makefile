@@ -10,34 +10,36 @@ OBJSC     =
 WOBJS     = 
 OBJSF     =
 LIBBASE   = libpetscsles
-EXAMPLES  = ex1 ex2 ex3 ex4
-EXAMPLESC = ex1.c ex2.c ex3.c ex4.c
-SYSLIB    = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscsles -lpetscksp \
-           -lpetscmat \
+EXAMPLES  = ex1
+EXAMPLESC = ex1.c
+SYSLIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
            -lpetscvec -lpetscsys -lpetscdraw \
            $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) $(MPI_LIB) $(SYS_LIB) \
            $(FC_LIB) -lm 
 LINCLUDE  = $(SOURCEH)
 
-runexamples:
-	-$(MPIRUN) ex1 
-	-$(MPIRUN) $(NP) ex2 -m 5
-	-$(MPIRUN) $(NP) ex3 -m 5
-
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex1.o
 
-ex2: ex2.o 
-	-$(CLINKER) -o ex2 ex2.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex2.o
-
-ex3: ex3.o 
-	-$(CLINKER) -o ex3 ex3.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex3.o
-
-ex4: ex4.o 
-	-$(CLINKER) -o ex4 ex4.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex4.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+#
+#   Makefile for Yale sparse matrix package
+#
+
+OBJ = cdrv.o md.o mdi.o mdm.o mdp.o mdu.o ndrv.o nnf.o \
+      nnfc.o nns.o nnsc.o nnt.o nntc.o nroc.o nsf.o \
+      nsfc.o odrv.o sdrv.o snf.o sns.o sro.o ssf.o \
+      tdrv.o trk.o r1mach.o xsetf.o xsetun.o d1mach.o \
+      i1mach.o xermax.o xerror.o xerrwv.o j4save.o  \
+      xerprt.o xerabt.o fdump.o xerctl.o xgetua.o xersav.o
+
+test1:  ysmp.o $(PETSC_ARCH)ysmp.a
+	f77 -o test1 ysmp.o $(PETSC_ARCH)ysmp.a
+	rm -f ysmp.o
+
+$(PETSC_ARCH)ysmp.a  : $(OBJ)
+	ar r $(PETSC_ARCH)ysmp.a $?
+	ranlib $(PETSC_ARCH)ysmp.a
+	rm -f  $(OBJ)
