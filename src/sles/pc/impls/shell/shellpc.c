@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.44 1998/07/15 14:30:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.45 1998/07/16 14:37:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -372,6 +372,7 @@ int PCCreate_Shell(PC pc)
   shell->applyrich = 0;
   shell->ctxrich   = 0;
   shell->ctx       = 0;
+  shell->setup     = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetSetUp_C","PCShellSetSetUp_Shell",
                     (void*)PCShellSetSetUp_Shell);CHKERRQ(ierr);
