@@ -2,12 +2,7 @@
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
 # -----------------------------------------------------------------------
-
-PETSC_DIR = /tmp/petsc/
-# PETSC_DIR = /home/petsc/petsc-2.0.14
-CFLAGS    = $(CPPFLAGS) -I$(PETSC_DIR)/src/snes
-# CFLAGS    = $(CPPFLAGS)
-
+CFLAGS    = $(CPPFLAGS)
 # -----------------------------------------------------------------------
 # Define application source and examples
 # -----------------------------------------------------------------------
@@ -15,60 +10,61 @@ CFLAGS    = $(CPPFLAGS) -I$(PETSC_DIR)/src/snes
 # Use following variables for use with PETSc commands "make ci" and
 # "make co" for checking in/out an entire directory of files via RCS.
 #    SOURCEC - C source code
+#    OBJSC   - C source with .o extension
 #    SOURCEF - Fortran source code
 #    SOURCEH - include files
-# Also can use:
-#    EXAMPLESC - C examples
-#    EXAMPLESF - Fortran examples
 # 
 # Note: "make clean" removes the files
-#    *.o, ex[0-9], ex[0-9][0-9], plus others (see petsc/bmake/common)
+#    *.o 
 #    CLEANFILES - variable to specify other files to delete via "make clean"
 #    
 
 ALL: pfull
 
-PFULL    = pfull.o pdsfi.o formjac.o
-PFULL_C  = pfull.c pdsfi.c formjac.c
-EX6      = ex6.o snesj2.o
-EX6_C    = ex6.c snesj2.c
-
-SOURCEC    = $(PFULL_C) $(EX6_C)
+SOURCEC    = pfull.c pfunc.c
 SOURCEF    =
-SOURCEH    = puser.h
+SOURCEH    = pfull.h
+OBJSC      = pfull.o pfunc.o
 CLEANFILES = pfull
 
-# Both conventional and  matrix-free versions
-pfull: chkopts $(PFULL) $(SOURCEH)
-	-$(CLINKER) -o pfull $(PFULL) $(PETSC_LIB)
-
-ex6: chkopts $(EX6) $(SOURCEH)
-	-$(CLINKER) -o ex6 $(EX6) $(PETSC_LIB)
+pfull: chkopts $(OBJSC) $(SOURCEH)
+	-$(CLINKER) -o pfull $(OBJSC) $(PETSC_LIB)
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 # -----------------------------------------------------------------------
 # Define example tests
 # -----------------------------------------------------------------------
+#
+# runex1 - test for comparison with validated output.
+#
+runpfull1:
+	-@$(MPIRUN) -np 1 pfull -nox -print_param -snes_mf_operator -jfreq 10 \
+	    -mat_mpiaij -pc_type bjacobi -sub_pc_type lu -snes_smonitor -ksp_smonitor \
+	    -mx 20 -my 20 -snes_view -snes_fd_coloring > pfull1_1.tmp 2>&1; \
+	   if (diff output/pfull1_1.out pfull1_1.tmp) then true; \
+	   else echo "Possible problem with pfull1_1, diffs above"; fi; \
+	   $(RM) -f pfull1_1.tmp
 
-# runex1 - test for comparison with Jie's output, as given in Readme
-# See Readme for summary of differences between this version of the
-# full potential code and the old version.
-runex1:
-	-@$(MPIRUN) pfull -nox -print_param -matrix_free -jfreq 10 \
-	    -mat_mpiaij -pc_type bjacobi -sub_pc_type lu -ksp_smonitor \
-	    -mx 20 -my 20 -snes_view -optionsleft > ex1_1.tmp 2>&1; \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
-	   $(RM) -f ex1_1.tmp
-
-runex1_2:
+runpfull4:
 	-@$(MPIRUN) -np 4 pfull -nox -pc_type bjacobi -sub_pc_type lu \
-	    -mx 20 -my 20 -snes_view -optionsleft > ex1_2.tmp 2>&1; \
-	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
-	   else echo "Possible problem with ex1_2, diffs above"; fi; \
-	   $(RM) -f ex1_2.tmp
+	    -mx 20 -my 20 -snes_view -snes_fd_coloring -snes_smonitor -ksp_smonitor \
+           > pfull4_1.tmp 2>&1; \
+	   if (diff output/pfull4_1.out pfull4_1.tmp) then true; \
+	   else echo "Possible problem with pfull4_1, diffs above"; fi; \
+	   $(RM) -f pfull4_1.tmp
 
+runcool:
+	-@$(MPIRUN) $(NP) pfull -print_param -snes_mf_operator  \
+	    -mat_mpiaij -pc_type bjacobi -sub_pc_type lu -ksp_smonitor \
+	    -mx 20 -my 20 -snes_view -optionsleft -draw_x_private_colormap \
+            -draw_pause -1
+
+runcoolnox:
+	-@$(MPIRUN) $(NP) pfull -nox -print_param -snes_mf_operator \
+	    -mat_mpiaij -pc_type bjacobi -sub_pc_type lu -ksp_smonitor \
+	    -mx 20 -my 20 -snes_view -optionsleft -draw_x_private_colormap \
+            -draw_pause -1
 
 # ---------------------------------------------------------------
 #                    Utilities
@@ -78,14 +74,3 @@ etags_pfull:
 	$(RM) TAGS_PFULL
 	etags -f TAGS_PFULL $(SOURCEC) $(SOURCEF) $(SOURCEH)
  
-# Redefine some utilities from petsc/bmake/common for the ODU system
-
-# RCS file check-in
-ci_odu: 
-	@-ci -u -q -mAutoCheckin $(SOURCEH) $(SOURCE) makefile\
-	  $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) 
-
-# RCS file check-out
-co_odu:
-	@-co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
-	  $(EXAMPLESF) $(TESTSC) $(TESTSF)

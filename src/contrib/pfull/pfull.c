@@ -25,12 +25,10 @@ Problem parameters include:\n\
   -Ny <ny>,    <ny> = number of processors in y-direction\n\
 \n\
 Debugging options:\n\
-  -snes_fd :      use SNESDefaultComputeJacobian() to form Jacobian (instead\n\
-                  of user-defined sparse variant)\n\
   -user_monitor : activate monitoring routine that prints the residual\n\
                   vector and Jacobian matrix to files at each iteration\n\n";
 
-#include "puser.h"
+#include "pfull.h"
 
 /*
     main - This program controls the potential flow application code. 
@@ -49,11 +47,16 @@ Debugging options:\n\
       -on_error_attach_debugger  attaches debugger if an error is encountered
 
       See manpages of various routines for many more runtime options!
+
+    Currently this code works on a single grid; the "grid" datastructure is 
+  separated from the "application" data structure to allow future expansion for
+  grid sequencing.
+
  */
 int main( int argc, char **argv )
 {
-  AppCtx     user;             /* user-defined application context */
-  GridCtx    *grid;
+  AppCtx     user;             /* full potential application context */
+  GridCtx    *grid;            /* grid information (for each level in multigrid/level methods) */
 
   SNES       snes;             /* nonlinear solver context */
 
@@ -64,24 +67,29 @@ int main( int argc, char **argv )
   Draw       win_solution, win_mach, win_pressure;
   DrawLG     lg;
 
-  ISColoring iscoloring;     /* coloring of matrix */
+  ISColoring iscoloring;      /* coloring of matrix, for computation of jacobian */
 
   Scalar     xd, yd, *pressure, zero = 0.0;
   int        i, flag, ierr, its, nlocals, nglobals; 
 
-  /* ----------------------------------------------------------------------
-       Initialize problem parameters
-     ---------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------
+     Initialize PETSc and set default viewer format 
+     ------------------------------------------------------------------------*/
 
-  /* Initialize PETSc and set default viewer format */
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRA(ierr);
+
+  /* ----------------------------------------------------------------------
+       Initialize partioning across processors
+     ---------------------------------------------------------------------- */
 
   /* set partitioning of array across processors */
   Nx = PETSC_DECIDE; ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flag); CHKERRA(ierr);
   Ny = PETSC_DECIDE; ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flag); CHKERRA(ierr);
 
-  /* Set problem parameters */
+  /* --------------------------------------------------------------------
+        Set problem parameters 
+     -------------------------------------------------------------------- */
   user.xx0         = -5.0;
   user.xx1         = 5.0;
   user.yy0         = 0.0;
@@ -100,75 +108,74 @@ int main( int argc, char **argv )
   ierr = OptionsGetDouble(PETSC_NULL,"-mach",&user.mach,&flag); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-qinf",&user.Qinf,&flag); CHKERRA(ierr);
 
-  user.Nlevels = 1; ierr = OptionsGetInt(PETSC_NULL,"-Nlevels",&user.Nlevels,&flag);CHKERRA(ierr);
-  user.Nstep   = 1; ierr = OptionsGetInt(PETSC_NULL,"-Nstep",&user.Nstep,&flag);CHKERRA(ierr);
 
   /* ----------------------------------------------------------------------
-       Initialize grid parameters
+       Initialize grid size parameters
      ---------------------------------------------------------------------- */
+  user.Nlevels = 1; 
 
   mx = 4;  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flag); CHKERRA(ierr);
   my = 4;  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flag); CHKERRA(ierr);
   if (mx < 2 || my < 2) SETERRA(1,0,"mx, my >=2 only");
 
-  for ( i=0; i<user.Nlevels; i++ ) {
-    grid              = &user.grids[i];
-    grid->mx          = mx;
-    grid->my          = my;
-    grid->hx          = (user.xx1-user.xx0) / (double)(grid->mx-1);
-    grid->hy          = (user.yy1-user.yy0) / (double)(grid->my-1);
+  grid              = &user.grids[0];
+  grid->mx          = mx;
+  grid->my          = my;
+  grid->hx          = (user.xx1-user.xx0) / (double)(grid->mx-1);
+  grid->hy          = (user.yy1-user.yy0) / (double)(grid->my-1);
 
-    mx  = pow(2.0,(double) user.Nstep)*mx - pow(2.0,(double) (user.Nstep)) + 1;
-    my  = pow(2.0,(double) user.Nstep)*my - pow(2.0,(double) (user.Nstep)) + 1;
-
-    /* ----------------------------------------------------------------------
+  /* ----------------------------------------------------------------------
          Create DA to manage parallel array
-       ---------------------------------------------------------------------- */
+     ---------------------------------------------------------------------- */
 
-    ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_BOX, 
+  ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_BOX, 
                       grid->mx,grid->my,Nx,Ny,user.nc,1,0,0,&grid->da); CHKERRA(ierr);
-    ierr = DAGetCorners(grid->da,&grid->xs,&grid->ys,PETSC_NULL,&grid->xm,&grid->ym,
+  ierr = DAGetCorners(grid->da,&grid->xs,&grid->ys,PETSC_NULL,&grid->xm,&grid->ym,
                         PETSC_NULL);CHKERRA(ierr);
-    ierr = DAGetGhostCorners(grid->da,&grid->Xs,&grid->Ys,PETSC_NULL,&grid->Xm,&grid->Ym,
+  ierr = DAGetGhostCorners(grid->da,&grid->Xs,&grid->Ys,PETSC_NULL,&grid->Xm,&grid->Ym,
                              PETSC_NULL);CHKERRA(ierr);
-    grid->xe = grid->xs + grid->xm;
-    grid->ye = grid->ys + grid->ym;
-    grid->Xe = grid->Xs + grid->Xm;
-    grid->Ye = grid->Ys + grid->Ym;
+  grid->xe = grid->xs + grid->xm;
+  grid->ye = grid->ys + grid->ym;
+  grid->Xe = grid->Xs + grid->Xm;
+  grid->Ye = grid->Ys + grid->Ym;
 
-    /* ----------------------------------------------------------------------
+  /* ----------------------------------------------------------------------
              Create vector data structures  
-       ---------------------------------------------------------------------- */
+     ---------------------------------------------------------------------- */
 
-    /* Extract global and local vectors from DA; then duplicate for remaining work vectors */
-    ierr     = DAGetDistributedVector(grid->da,&grid->globalX); CHKERRA(ierr);
-    ierr     = DAGetLocalVector(grid->da,&grid->localX); CHKERRA(ierr);
+  /* Extract global and local vectors from DA; duplicate for remaining work vectors */
+  ierr     = DAGetDistributedVector(grid->da,&grid->globalX); CHKERRA(ierr);
+  ierr     = DAGetLocalVector(grid->da,&grid->localX); CHKERRA(ierr);
 
-    nglobals = 4;
-    ierr     = VecDuplicateVecs(grid->globalX,nglobals,&grid->vec_g); CHKERRA(ierr);
-    grid->globalF      = grid->vec_g[0];
-    grid->globalMach   = grid->vec_g[1];
-    grid->jj2          = grid->vec_g[2];
-    grid->x2           = grid->vec_g[3];
+  nglobals = 4; /* number of parallel work vectors */
+  ierr     = VecDuplicateVecs(grid->globalX,nglobals,&grid->vec_g); CHKERRA(ierr);
+  grid->globalF      = grid->vec_g[0];
+  grid->globalMach   = grid->vec_g[1];
+  grid->jj2          = grid->vec_g[2];
+  grid->x2           = grid->vec_g[3];
 
-    nlocals = 5; 
-    ierr    = VecDuplicateVecs(grid->localX,nlocals,&grid->vec_l); CHKERRA(ierr);
-    grid->localF       = grid->vec_l[0];
-    grid->localMach    = grid->vec_l[1];
-    grid->localDensity = grid->vec_l[2];
-    grid->localXbak    = grid->vec_l[3];
-    grid->localFbak    = grid->vec_l[4];
+  nlocals = 5; /* number of sequential (ghosted) work vectors */
+  ierr    = VecDuplicateVecs(grid->localX,nlocals,&grid->vec_l); CHKERRA(ierr);
+  grid->localF       = grid->vec_l[0];
+  grid->localMach    = grid->vec_l[1];
+  grid->localDensity = grid->vec_l[2];
+  grid->localXbak    = grid->vec_l[3];
+  grid->localFbak    = grid->vec_l[4];
 
-    ierr = VecCreateMPI(user.comm,PETSC_DECIDE,grid->mx,&grid->globalPressure); CHKERRA(ierr);
-    ierr = VecSet(&zero,grid->globalPressure); CHKERRA(ierr);
-    ierr = VecGetLocalSize(grid->globalX,&grid->ldim); CHKERRA(ierr);
-    ierr = VecGetSize(grid->globalX,&grid->gdim); CHKERRA(ierr);
+  ierr = VecCreateMPI(user.comm,PETSC_DECIDE,grid->mx,&grid->globalPressure); CHKERRA(ierr);
+  ierr = VecSet(&zero,grid->globalPressure); CHKERRA(ierr);
+  ierr = VecGetLocalSize(grid->globalX,&grid->ldim); CHKERRA(ierr);
+  ierr = VecGetSize(grid->globalX,&grid->gdim); CHKERRA(ierr);
 
-    ierr = DAGetColoring2dBox(grid->da,&iscoloring,&grid->J); CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(grid->J,iscoloring,&grid->fdcoloring); CHKERRQ(ierr); 
-    ierr = MatFDColoringSetFromOptions(grid->fdcoloring); CHKERRQ(ierr); 
-    ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
-  }
+  /*
+       Set up coloring information needed for finite difference
+       computation of sparse Jacobian
+  */
+  ierr = DAGetColoring2dBox(grid->da,&iscoloring,&grid->J); CHKERRQ(ierr);
+  ierr = MatFDColoringCreate(grid->J,iscoloring,&grid->fdcoloring); CHKERRQ(ierr); 
+  ierr = MatFDColoringSetFromOptions(grid->fdcoloring); CHKERRQ(ierr); 
+  ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
+
 
   /* Print grid info and problem parameters */
   ierr = OptionsHasName(PETSC_NULL,"-print_param",&flag); CHKERRA(ierr);
@@ -195,12 +202,11 @@ int main( int argc, char **argv )
                Also, create data structure for Jacobian matrix.
      ---------------------------------------------------------------------- */
 
-  /* Create nonlinear solver */
   ierr = SNESCreate(user.comm,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* 
       Set default nonlinear solver method 
-      (can be overridden with runtime option -snes_type <type>) 
+      (can be overridden with runtime option -snes_type tr) 
   */
   ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRA(ierr);
 
@@ -212,14 +218,11 @@ int main( int argc, char **argv )
   /*
       Set the routine that evaluates the "Jacobian"
   */
-  for ( i=0; i<user.Nlevels; i++ ) {
-    GridCtx *lgrid = &user.grids[i];
-    ierr = SNESSetJacobian(snes,lgrid->J,lgrid->J,SNESDefaultComputeJacobianWithColoring,
-                             lgrid->fdcoloring); CHKERRQ(ierr);
-  } 
+  ierr = SNESSetJacobian(snes,grid->J,grid->J,SNESDefaultComputeJacobianWithColoring,
+                             grid->fdcoloring); CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-user_monitor",&flag); CHKERRA(ierr);
-  if (flag) ierr = SNESSetMonitor(snes,UserMonitor,&user);
+  if (flag) {ierr = SNESSetMonitor(snes,UserMonitor,&user); CHKERRA(ierr);}
 
   /* 
      Set runtime solution options 
@@ -302,195 +305,20 @@ int main( int argc, char **argv )
      ---------------------------------------------------------------- */
  
   ierr = SNESDestroy(snes); CHKERRA(ierr);
-  for ( i=0; i<user.Nlevels; i++ ) {
-    grid              = &user.grids[i];
-    ierr = VecDestroyVecs(grid->vec_g,nglobals); CHKERRA(ierr);
-    ierr = VecDestroyVecs(grid->vec_l,nlocals); CHKERRA(ierr);
-    ierr = VecDestroy(grid->globalX); CHKERRA(ierr);
-    ierr = VecDestroy(grid->globalPressure); CHKERRA(ierr);
-    ierr = VecDestroy(grid->localX); CHKERRA(ierr);
-    ierr = MatDestroy(grid->J); CHKERRA(ierr);
-    if (use_coloring) {
-      ierr = MatFDColoringDestroy(grid->fdcoloring); CHKERRA(ierr);  
-    }
-    ierr = DADestroy(grid->da); CHKERRA(ierr);
-  }
+  ierr = VecDestroyVecs(grid->vec_g,nglobals); CHKERRA(ierr);
+  ierr = VecDestroyVecs(grid->vec_l,nlocals); CHKERRA(ierr);
+  ierr = VecDestroy(grid->globalX); CHKERRA(ierr);
+  ierr = VecDestroy(grid->globalPressure); CHKERRA(ierr);
+  ierr = VecDestroy(grid->localX); CHKERRA(ierr);
+  ierr = MatDestroy(grid->J); CHKERRA(ierr);
+  ierr = MatFDColoringDestroy(grid->fdcoloring); CHKERRA(ierr);  
+  ierr = DADestroy(grid->da); CHKERRA(ierr);
 
   if (win_solution) {ierr = DrawDestroy(win_solution); CHKERRA(ierr); }
   if (win_mach)     {ierr = DrawDestroy(win_mach); CHKERRA(ierr);}
 
   PetscFinalize();
   return 0;
-}
-/* ----------------------------------------------------------------- */
-/*
-   UserSetJacobian - Forms Jacobian matrix context and sets Jacobian
-   evaluation routine.
-
-   Input Parameters:
-.  snes - SNES context
-.  user - user-defined application context
-
-   Notes:
-   This routine preallocates matrix memory space for the Jacobian
-   that arises for nonlinear problems when using the standard
-   9-point finite difference stencil in 2D.  This code is writen
-   for the specialized case of 1 degree of freedom per node (for
-   the potential flow application); extensions to block data structures
-   and multiple degrees of freedom per node are straightforward.
-  
-   Matrix memory preallocation such as in this routine is not necessary
-   for matrix creation, since PETSc dynamically allocates memory when
-   needed.  However, preallocation is crucial for fast matrix assembly!
-   See the users manual for details.
-
-   Useful Options Database Keys:
-     -log_info        prints info about matrix memory allocation
-     -mat_view_draw   draws sparsity pattern of matrix
-
-     See manpage for MatAssemblyEnd() for additional options.
- */
-int UserSetJacobian(SNES snes,AppCtx *user)
-{
-  GridCtx *grid;
-  MatType mtype = MATSEQAIJ;                 /* matrix format */
-  Mat     J;                                 /* Jacobian and/or preconditioner */
-  int     ierr, c, flag, i, j, k, ye, xe;
-  int     lrow, row, Xs, Ys, xm;
-  int     ys, xs, is, ie, *nnz_d, *nnz_o;
-  int     n_south, n_north, n_east, n_west, n_sw, n_nw, n_se, n_ne;
-  int     mx1, my1, *ltog, nloc, Xm;
-
-  /*
-     Loop over all levels building the Jacobian matrix data structure for each level 
-  */
-  for ( k=0; k<user->Nlevels; k++ ) {
-    grid   = &user->grids[k];
-    mx1    = grid->mx-1;
-    my1    = grid->my-1;
-    ye     = grid->ye;
-    xe     = grid->xe;
-    Xs     = grid->Xs;
-    Xm     = grid->Xm;
-    Ys     = grid->Ys;
-    xm     = grid->xm;
-    ys     = grid->ys;
-    xs     = grid->xs;
-    nnz_d  = 0;
-    nnz_o  = 0;
-
-
-
-    /* ---------------- Preallocate matrix space ----------------- */
-    /* First, precompute amount of space for matrix preallocation, to enable
-       fast matrix assembly without continual dynamic memory allocation.
-
-       IMPORTANT: This is not a particularly efficient way to compute this,
-       having the if test inside a double loop. More efficiently you would have 
-       seperate loops arount the boundary and in the interior!
-
-       For this problem we need only a few basic formats.  Additional formats
-       are available (in particular, use block formats for problems with multiple
-       degrees of freedom per node!)
-
-       Note: We over-allocate space here, since this is based on the stencil
-       pattern only (not currently accounting for more sparsity due to boundary
-       conditions). 
-    */
-    ierr = MatGetTypeFromOptions(user->comm,PETSC_NULL,&mtype,&flag); CHKERRQ(ierr);
-    if (mtype == MATSEQAIJ || mtype == MATMPIROWBS) {
-      nnz_d = (int *)PetscMalloc(grid->ldim * sizeof(int)); CHKPTRQ(nnz_d);
-      PetscMemzero(nnz_d,grid->ldim * sizeof(int));
-      for (j=ys; j<ye; j++) {
-        if (j>0)   n_south = 1; else n_south = 0;
-        if (j<my1) n_north = 1; else n_north = 0;
-        for (i=xs; i<xe; i++) {
-          if (i>0)            n_west = 1; else n_west = 0;
-          if (i<mx1)          n_east = 1; else n_east = 0;
-          if (i>0 && j>0)     n_sw   = 1; else n_sw   = 0;
-          if (i>0 && j<my1)   n_nw   = 1; else n_nw   = 0;
-          if (i<mx1 && j>0)   n_se   = 1; else n_se   = 0;
-          if (i<mx1 && j<my1) n_ne   = 1; else n_ne   = 0;
-          nnz_d[(j-ys)*xm + i-xs] = 1 + n_south + n_north + n_east + n_west + n_sw + n_nw + n_se + n_ne; 
-        }
-      }
-    } else if (mtype == MATMPIAIJ) {
-      nnz_d = (int *)PetscMalloc(2*grid->ldim * sizeof(int)); CHKPTRQ(nnz_d);
-      nnz_o = nnz_d + grid->ldim;
-      PetscMemzero(nnz_d,2*grid->ldim * sizeof(int));
-      /* Note: vector and matrix partitionings are identical */
-      ierr = VecGetOwnershipRange(grid->globalX,&is,&ie); CHKERRQ(ierr);
-      ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog); CHKERRQ(ierr);
-      for (j=ys; j<ye; j++) {
-        for (i=xs; i<xe; i++) {
-          row  = (j-Ys)*Xm + i-Xs;
-          lrow = (j-ys)*xm + i-xs;
-          if (i>0 && j>0)     {c = ltog[row - Xm - 1]; /* south-west */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
-          if (j>0)            {c = ltog[row - Xm];     /* south */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
-          if (i<mx1 && j>0)   {c = ltog[row - Xm + 1]; /* south-east */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
-          if (i>0)            {c = ltog[row - 1];      /* west */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
-                               c = ltog[row];          /* center */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;
-          if (i<mx1)          {c = ltog[row + 1];      /* east */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
-          if (i>0 && j<my1)   {c = ltog[row + Xm - 1]; /* north-west */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
-          if (j<my1)          {c = ltog[row + Xm];     /* north */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
-          if (i<mx1 && j<my1) {c = ltog[row + Xm + 1]; /* north-east */
-                               if (c>=is && c<ie) nnz_d[lrow]++; else nnz_o[lrow]++;}
-        }
-      }
-    } else SETERRQ(1,0,"UserSetJacobian: preallocation for matrix format not coded yet!");
-
-    /* -------- Create data structure for Jacobian matrix --------- */
-    /* 
-     Notes:
-
-     - We MUST specify the local matrix dimensions for the parallel matrix formats
-     so that the matrix partitions match the vector partitions generated by the
-     distributed array (DA).
-
-      - To reduce the size of the executable, we do NOT use the generic matrix
-     creation routine MatCreate(), which loads all possible PETSc matrix formats.
-     While using MatCreate() is a good first step when beginnning to write a new 
-     application code, the user should generally progress to using only the formats
-     most appropriate for the application at hand.
-
-      - For this problem (potential flow), we are concerned now only with sparse,
-     row-based data structures; additional matrix formats can easily be added 
-     (e.g., block variants for problems with multiple degrees of freedom per node).
-     Here, we use:
-         MATSEQAIJ - default uniprocessor sparse format
-         MATMPIAIJ - default parallel sparse format
-         MATMPIROWBS - parallel format needed for use of the parallel ILU(0)
-                       preconditioner within BlockSolve95
-     */
-
-    if (mtype == MATSEQAIJ) {
-      ierr = MatCreateSeqAIJ(user->comm,grid->gdim,grid->gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
-    } 
-    else if (mtype == MATMPIAIJ) {
-      ierr = MatCreateMPIAIJ(user->comm,grid->ldim,grid->ldim,grid->gdim,
-                             grid->gdim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&J); CHKERRQ(ierr);
-    } 
-    else if (mtype == MATMPIROWBS) {
-      ierr = MatCreateMPIRowbs(user->comm,grid->ldim,grid->gdim,PETSC_NULL,nnz_d,
-                               PETSC_NULL,&J); CHKERRQ(ierr);
-    } else SETERRQ(1,0,"UserSetJacobian: interface for matrix format not coded yet!");
-
-    grid->J = J;
-    if (nnz_d) PetscFree(nnz_d);
-  }
-
-    /* -------- Specify Jacobian info for use by SNES solver (finest level only) --------- */
-  
-    ierr = SNESSetJacobian(snes,J,J,Jacobian_PotentialFlow,user); CHKERRQ(ierr);
-    return 0;
 }
 
 /* --------------------------------------------------------------- */
@@ -499,8 +327,8 @@ int UserSetJacobian(SNES snes,AppCtx *user)
    This routine is primarily intended for use in debugging.
 
    Input Parameters:
-.  snes - SNES context
-.  its - current iteration number
+.  snes  - SNES context
+.  its   - current iteration number
 .  fnorm - norm of current function
 .  dummy - optional user-defined context
 
@@ -540,3 +368,16 @@ int UserMonitor(SNES snes,int its,double fnorm,void *dummy)
   }
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
