@@ -498,9 +498,8 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetCheckh_FD"
-int MatSNESMFSetCheckh_FD(Mat J,int (*fun)(Vec,Vec,PetscReal*,void*),void*ectx)
+int MatSNESMFSetCheckh_FD(Mat J,int (*fun)(Vec,Vec,PetscScalar*,void*),void*ectx)
 {
-  int          ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
@@ -1111,7 +1110,7 @@ int MatSNESMFSetBase(Mat J,Vec U)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetCheckh"
-/*@
+/*@C
     MatSNESMFSetCheckh - Sets a function that checks the computed h and adjusts
         it to satisfy some criteria
 
@@ -1132,9 +1131,9 @@ int MatSNESMFSetBase(Mat J,Vec U)
 
 .seealso:  MatSNESMFSetCheckPositivity()
 @*/
-int MatSNESMFSetCheckh(Mat J,int (*fun)(Vec,Vec,PetscReal*,void*),void* ctx)
+int MatSNESMFSetCheckh(Mat J,int (*fun)(Vec,Vec,PetscScalar*,void*),void* ctx)
 {
-  int  ierr,(*f)(Mat,int (*)(Vec,Vec,PetscReal*,void*),void*);
+  int  ierr,(*f)(Mat,int (*)(Vec,Vec,PetscScalar*,void*),void*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);
@@ -1181,20 +1180,20 @@ int MatSNESMFCheckPositivity(Vec U,Vec a,PetscScalar *h,void *dummy)
   ierr = VecGetArray(U,&u_vec);CHKERRQ(ierr);  
   ierr = VecGetArray(a,&a_vec);CHKERRQ(ierr);  
   ierr = VecGetLocalSize(U,&size);CHKERRQ(ierr);
-  minval = fabs(*h*1.01);
+  minval = PetscAbsScalar(*h*1.01);
   for(i=0;i<size;i++) {
-    if (u_vec[i] + *h*a_vec[i] <= 0.0) {
-      val = fabs(u_vec[i]/a_vec[i]);
+    if (PetscRealPart(u_vec[i] + *h*a_vec[i]) <= 0.0) {
+      val = PetscAbsScalar(u_vec[i]/a_vec[i]);
       if (val < minval) minval = val;
     }
   }
   ierr = VecRestoreArray(U,&u_vec);CHKERRQ(ierr);  
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);  
   ierr = PetscGlobalMin(&minval,&val,comm);CHKERRQ(ierr);
-  if (val <= fabs(*h)) {
-    PetscLogInfo(U,"MatSNESMFCheckPositivity: Scaling back h from %g to %g\n",*h,.99*val);
-    if (*h > 0.0) *h =  0.99*val;
-    else          *h = -0.99*val;
+  if (val <= PetscAbsScalar(*h)) {
+    PetscLogInfo(U,"MatSNESMFCheckPositivity: Scaling back h from %g to %g\n",PetscRealPart(*h),.99*val);
+    if (PetscRealPart(*h) > 0.0) *h =  0.99*val;
+    else                         *h = -0.99*val;
   }
   PetscFunctionReturn(0);
 }
