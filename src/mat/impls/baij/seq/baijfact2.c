@@ -2253,8 +2253,8 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A,Vec bb,Vec xx)
 #include PETSC_HAVE_SSE
 #include "src/vec/vecimpl.h" /* to allow VecGetArrayFast() */
 #undef __FUNCT__
-#define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion"
-int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
+#define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj"
+int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data;
   unsigned short *aj=(unsigned short *)a->j;
@@ -2353,6 +2353,204 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
       while (nz--) {
         PREFETCH_NTA(&v[16]);
         idx = 4*((unsigned int)(*vi++));
+
+        /* 4x4 Matrix-Vector Product with negative accumulation: */
+        SSE_INLINE_BEGIN_2(&t[idx],v)
+          SSE_LOAD_PS(SSE_ARG_1,FLOAT_0,XMM6)
+
+          /* First Column */
+          SSE_COPY_PS(XMM0,XMM6)
+          SSE_SHUFFLE(XMM0,XMM0,0x00)
+          SSE_MULT_PS_M(XMM0,SSE_ARG_2,FLOAT_0)
+          SSE_SUB_PS(XMM7,XMM0)
+
+          /* Second Column */
+          SSE_COPY_PS(XMM1,XMM6)
+          SSE_SHUFFLE(XMM1,XMM1,0x55)
+          SSE_MULT_PS_M(XMM1,SSE_ARG_2,FLOAT_4)
+          SSE_SUB_PS(XMM7,XMM1)
+
+          SSE_PREFETCH_NTA(SSE_ARG_2,FLOAT_24)
+          
+          /* Third Column */
+          SSE_COPY_PS(XMM2,XMM6)
+          SSE_SHUFFLE(XMM2,XMM2,0xAA)
+          SSE_MULT_PS_M(XMM2,SSE_ARG_2,FLOAT_8)
+          SSE_SUB_PS(XMM7,XMM2)
+
+          /* Fourth Column */
+          SSE_COPY_PS(XMM3,XMM6)
+          SSE_SHUFFLE(XMM3,XMM3,0xFF)
+          SSE_MULT_PS_M(XMM3,SSE_ARG_2,FLOAT_12)
+          SSE_SUB_PS(XMM7,XMM3)
+        SSE_INLINE_END_2
+        v  += 16;
+      }
+      v    = aa + ai16;
+      ai16 = 16*diag[--i];
+      PREFETCH_NTA(aa+ai16+16);
+      /* 
+         Scale the result by the diagonal 4x4 block, 
+         which was inverted as part of the factorization
+      */
+      SSE_INLINE_BEGIN_3(v,&t[idt],aa+ai16)
+        /* First Column */
+        SSE_COPY_PS(XMM0,XMM7)
+        SSE_SHUFFLE(XMM0,XMM0,0x00)
+        SSE_MULT_PS_M(XMM0,SSE_ARG_1,FLOAT_0)
+
+        /* Second Column */
+        SSE_COPY_PS(XMM1,XMM7)
+        SSE_SHUFFLE(XMM1,XMM1,0x55)
+        SSE_MULT_PS_M(XMM1,SSE_ARG_1,FLOAT_4)
+        SSE_ADD_PS(XMM0,XMM1)
+
+        SSE_PREFETCH_NTA(SSE_ARG_3,FLOAT_24)
+        
+        /* Third Column */
+        SSE_COPY_PS(XMM2,XMM7)
+        SSE_SHUFFLE(XMM2,XMM2,0xAA)
+        SSE_MULT_PS_M(XMM2,SSE_ARG_1,FLOAT_8)
+        SSE_ADD_PS(XMM0,XMM2)
+
+        /* Fourth Column */ 
+        SSE_COPY_PS(XMM3,XMM7)
+        SSE_SHUFFLE(XMM3,XMM3,0xFF)
+        SSE_MULT_PS_M(XMM3,SSE_ARG_1,FLOAT_12)
+        SSE_ADD_PS(XMM0,XMM3)
+
+        SSE_STORE_PS(SSE_ARG_2,FLOAT_0,XMM0)
+      SSE_INLINE_END_3
+
+      v    = aa + ai16 + 16;
+      idt -= 4;
+    }
+
+    /* Convert t from single precision back to double precision (inplace)*/
+    idt = 4*(n-1);
+    for (i=n-1;i>=0;i--) {
+      /*     CONVERT_FLOAT4_DOUBLE4(&x[idt],&t[idt]); */
+      /* Unfortunately, CONVERT_ will count from 0 to 3 which doesn't work here. */
+      PetscScalar *xtemp=&x[idt];
+      MatScalar   *ttemp=&t[idt];
+      xtemp[3] = (PetscScalar)ttemp[3];
+      xtemp[2] = (PetscScalar)ttemp[2];
+      xtemp[1] = (PetscScalar)ttemp[1];
+      xtemp[0] = (PetscScalar)ttemp[0];
+      idt -= 4;
+    }
+
+  } /* End of artificial scope. */
+  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
+  PetscLogFlops(2*16*(a->nz) - 4*A->n);
+  SSE_SCOPE_END;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion"
+int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data;
+  int            *aj=a->j;
+  int            ierr,*ai=a->i,n=a->mbs,*diag = a->diag;
+  MatScalar      *aa=a->a;
+  PetscScalar    *x,*b;
+
+  PetscFunctionBegin;
+  SSE_SCOPE_BEGIN;
+  /* 
+     Note: This code currently uses demotion of double
+     to float when performing the mixed-mode computation.
+     This may not be numerically reasonable for all applications.
+  */
+  PREFETCH_NTA(aa+16*ai[1]);
+
+  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr); 
+  {
+    /* x will first be computed in single precision then promoted inplace to double */
+    MatScalar *v,*t=(MatScalar *)x;
+    int       nz,i,idt,ai16;
+    int       jdx,idx;
+    int       *vi;
+    /* Forward solve the lower triangular factor. */
+
+    /* First block is the identity. */
+    idx  = 0;
+    CONVERT_DOUBLE4_FLOAT4(t,b);
+    v    =  aa + 16*ai[1];
+
+    for (i=1; i<n;) {
+      PREFETCH_NTA(&v[8]);
+      vi   =  aj      + ai[i];
+      nz   =  diag[i] - ai[i];
+      idx +=  4;
+
+      /* Demote RHS from double to float. */
+      CONVERT_DOUBLE4_FLOAT4(&t[idx],&b[idx]);
+      LOAD_PS(&t[idx],XMM7);
+
+      while (nz--) {
+        PREFETCH_NTA(&v[16]);
+        jdx = 4*(*vi++);
+/*          jdx = *vi++; */
+        
+        /* 4x4 Matrix-Vector product with negative accumulation: */
+        SSE_INLINE_BEGIN_2(&t[jdx],v)
+          SSE_LOAD_PS(SSE_ARG_1,FLOAT_0,XMM6)
+
+          /* First Column */
+          SSE_COPY_PS(XMM0,XMM6)
+          SSE_SHUFFLE(XMM0,XMM0,0x00)
+          SSE_MULT_PS_M(XMM0,SSE_ARG_2,FLOAT_0)
+          SSE_SUB_PS(XMM7,XMM0)
+
+          /* Second Column */
+          SSE_COPY_PS(XMM1,XMM6)
+          SSE_SHUFFLE(XMM1,XMM1,0x55)
+          SSE_MULT_PS_M(XMM1,SSE_ARG_2,FLOAT_4)
+          SSE_SUB_PS(XMM7,XMM1)
+
+          SSE_PREFETCH_NTA(SSE_ARG_2,FLOAT_24)
+          
+          /* Third Column */
+          SSE_COPY_PS(XMM2,XMM6)
+          SSE_SHUFFLE(XMM2,XMM2,0xAA)
+          SSE_MULT_PS_M(XMM2,SSE_ARG_2,FLOAT_8)
+          SSE_SUB_PS(XMM7,XMM2)
+
+          /* Fourth Column */
+          SSE_COPY_PS(XMM3,XMM6)
+          SSE_SHUFFLE(XMM3,XMM3,0xFF)
+          SSE_MULT_PS_M(XMM3,SSE_ARG_2,FLOAT_12)
+          SSE_SUB_PS(XMM7,XMM3)
+        SSE_INLINE_END_2
+        
+        v  += 16;
+      }
+      v    =  aa + 16*ai[++i];
+      PREFETCH_NTA(v);
+      STORE_PS(&t[idx],XMM7);
+    }
+
+    /* Backward solve the upper triangular factor.*/
+
+    idt  = 4*(n-1);
+    ai16 = 16*diag[n-1];
+    v    = aa + ai16 + 16;
+    for (i=n-1; i>=0;){
+      PREFETCH_NTA(&v[8]);
+      vi = aj + diag[i] + 1;
+      nz = ai[i+1] - diag[i] - 1;
+      
+      LOAD_PS(&t[idt],XMM7);
+
+      while (nz--) {
+        PREFETCH_NTA(&v[16]);
+        idx = 4*(*vi++);
+/*          idx = *vi++; */
 
         /* 4x4 Matrix-Vector Product with negative accumulation: */
         SSE_INLINE_BEGIN_2(&t[idx],v)
@@ -3055,6 +3253,19 @@ int MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
   int i,*AJ=a->j,nz=a->nz;
+  /* Undo Column scaling */
+/*    while (nz--) { */
+/*      AJ[i] = AJ[i]/4; */
+/*    } */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj"
+int MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
+  int i,*AJ=a->j,nz=a->nz;
   unsigned short *aj=(unsigned short *)AJ;
   while (nz--) {
     AJ[i] = (int)((unsigned int)aj[i]); /* First extend, then convert to signed. */
@@ -3096,16 +3307,22 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
       ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
       if (sse_enabled_local) {
 #  if defined(PETSC_HAVE_SSE)
+        int i,*AJ=a->j,nz=a->nz,n=a->mbs;
+        if (n==(unsigned short)n) {
+          unsigned short *aj=(unsigned short *)AJ;
+          for (i=0;i<nz;i++) {
+            aj[i] = (unsigned short)AJ[i];
+          }
+          inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj;
+          inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj;
+        } else {
         /* Scale the column indices for easier indexing in MatSolve. */
-        int i,*AJ=a->j,nz=a->nz;
-        unsigned short *aj=(unsigned short *)AJ;
-        for (i=0;i<nz;i++) {
-          aj[i] = (unsigned short)AJ[i];
-          /* We might want to not perform this scaling to avoid overflowing unsigned short */
-/*            aj[i] = ((unsigned short)AJ[i])*4; */
+/*            for (i=0;i<nz;i++) { */
+/*              AJ[i] = AJ[i]*4; */
+/*            } */
+          inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE;
+          inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
         }
-        inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE;
-        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
         PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
 #  else
       /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
