@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.61 1996/11/20 16:03:04 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.62 1996/11/20 16:15:46 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -60,7 +60,7 @@ static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A, int* size, int ** ns)
       This builds symmetric version of nonzero structure, 
 */
 static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **jja,
-                                            int ishift,int oshift)
+                                               int ishift,int oshift)
 {
   int *work,*ia,*ja,*j, nz, nslim_row, nslim_col, m, row, col, *jmax, n;
   int *tns, *tvc, *ns_row = A->inode.size, *ns_col, nsz, i1, i2, *ai= A->i, *aj = A->j;
@@ -146,7 +146,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
       This builds nonsymmetric version of nonzero structure, 
 */
 static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
-                                               int ishift,int oshift)
+                                                  int ishift,int oshift)
 {
   int *work,*ia,*ja,*j, nz, nslim_row ,m, n, row, col, ierr, *ns_col,nslim_col;
   int *tns, *tvc, *ns_row = A->inode.size, nsz, i1, i2, *ai= A->i, *aj = A->j;
@@ -1457,7 +1457,7 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   if (A->ops.mult != MatMult_SeqAIJ_Inode) return 0;
 
   ierr = Mat_AIJ_CreateColInode(a,&nslim_col,&ns_col); CHKERRQ(ierr);
-  tns   = (int *) PetscMalloc((((nslim_row>nslim_col)?nslim_row:nslim_col) +1 )*sizeof(int)); CHKPTRQ(tns);
+  tns   = (int *) PetscMalloc((((nslim_row>nslim_col)?nslim_row:nslim_col)+1)*sizeof(int));CHKPTRQ(tns);
   permr = (int *) PetscMalloc( (m+n+1)*sizeof(int) ); CHKPTRQ(permr);
   permc = permr + m;
 
