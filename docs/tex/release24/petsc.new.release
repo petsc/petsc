@@ -17,7 +17,7 @@ or
 Also, before installing a new version PETSc, please see the list
 of patches at
      http://www.mcs.anl.gov/petsc/petsc-patches.html
-to determine if any are required for you machine(s) of interest.
+to determine if any are required for your machine(s) of interest.
 
 Highlights of new features added since the last public release of
 PETSc (version 2.0.13) include:
