@@ -14,6 +14,8 @@ add to it).
 
      All VecGetArray() must now be matched with a VecRestoreArray()   
 
+     Vectors are now dynamically loaded; types can be set at run-time via VecSetType()
+
   MAT
 
     Fixed bugs in MatReorderForNonzeroDiagonal() and made it more
@@ -39,6 +41,10 @@ add to it).
   IS
 
     
+  Draw
+
+    DrawCreate() creates a generic draw object whose type can be set at run time
+    with DrawSetType()
 
   General
 
