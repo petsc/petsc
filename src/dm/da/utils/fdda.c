@@ -8,7 +8,6 @@ EXTERN int DAGetColoring1d_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetColoring2d_5pt_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
-EXTERN int DAGetColoring3d_MPIBAIJ(DA,ISColoringType,ISColoring *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring" 
@@ -368,13 +367,7 @@ EXTERN int DAGetMatrix3d_MPIBAIJ(DA,Mat *);
 
     Level: advanced
 
-
-   This does not yet handle BAIJ matrices, because
-      1) we need a way for the user to indicate what matrix type they want
-      2) after the matrix is created, for BAIJ matrices we need to set nc to 1 and
-         use MatSetValuesBlockedLocal() instead of MatSetValuesLocal()
-
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DAGetMatrixMPIBAIJ()
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate()
 
 @*/
 int DAGetMatrix(DA da,MatType mtype,Mat *J)
@@ -868,8 +861,7 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
   }
 
   /* create empty Jacobian matrix */
-  ierr = MatCreateMPIBAIJ(comm,nc,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,
-			  PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);
+  ierr = MatCreateMPIBAIJ(comm,nc,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);
 
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(*J,ltog);CHKERRQ(ierr);
