@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.5 1997/10/19 03:28:33 bsmith Exp balay $";
+static char vcid[] = "$Id: util2.c,v 1.6 1998/05/29 22:50:54 balay Exp balay $";
 #endif
 
 /*
@@ -24,12 +24,21 @@ int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 #define setcroutinefromfortran_ setcroutinefromfortran
 #endif
 
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 void setcroutinefromfortran_(TS ts,Mat A,Mat B,int *__ierr )
 {
     *__ierr = TSSetRHSJacobian((TS)PetscToPointer( *(int*)(ts) ),
 	                       (Mat)PetscToPointer( *(int*)(A) ),
 	                       (Mat)PetscToPointer( *(int*)(B) ),RHSJacobianFD,PETSC_NULL);
 }
+
+#if defined(__cplusplus)
+}
+#endif
 
 /* -------------------------------------------------------------------*/
 /*
