@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.40 2000/07/03 19:14:39 bsmith Exp kaushik $";*/
+/* "$Id: flow.c,v 1.41 2000/07/12 16:02:24 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -62,7 +62,7 @@ AMS_Comm ams;
 AMS_Memory memid;
 int ams_err;
 char *msg;
-char *vtk = "vtk", *grid_type = "Unstructured Grid", *cell_type = "VTK_TETRA";
+char *vtk = "vtk", *grid_type = "Unstructured Grid", *cell_type = "VTK_TRIANGLE";
 int point_dims[2], cell_dims[2];
 int p_start_ind[2], p_end_ind[2];
 int c_start_ind[2], c_end_ind[2];
@@ -221,7 +221,7 @@ int main(int argc,char **args)
 
 
     /* Add points field */
-    ams_err =  AMS_Memory_add_field(memid, "scalars", user.grid->qnode, 4*user.grid->nnodesLoc,
+    ams_err =  AMS_Memory_add_field(memid, "supervectors", user.grid->qnode, 4*user.grid->nnodesLoc,
                           AMS_DOUBLE, AMS_READ, AMS_DISTRIBUTED, AMS_REDUCT_UNDEF);
     AMS_Check_error(ams_err, &msg);
 
@@ -235,7 +235,7 @@ int main(int argc,char **args)
     /*
      * This would be an array of ??? rows and 4 columns
      */ 
-    err = AMS_Memory_set_field_block(memid, "scalars", 2, s_start_ind, s_end_ind);
+    err = AMS_Memory_set_field_block(memid, "supervectors", 2, s_start_ind, s_end_ind);
     AMS_Check_error(err, &msg);
 
 #endif
