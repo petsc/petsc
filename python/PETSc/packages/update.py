@@ -1,7 +1,6 @@
 from __future__ import generators
 import config.base
 import os
-import commands
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -45,26 +44,32 @@ class Configure(config.base.Configure):
     
     import re
     self.framework.log.write('Checking if can downloading latest source with bk\n')
-    (status1,output1) = commands.getstatusoutput('bk sfiles -lgpC')
-    (status2,output2) = commands.getstatusoutput('bk changes -L -v')
-    output2 = re.sub('Pseudo-terminal will not be allocated because stdin is not a terminal.','',output2)
-    if output1 or output2:
-      self.framework.log.write('Cannot pull latest source code, you have changed files or bk change sets\n')
-      self.framework.log.write(output1+'\n'+output2+'\n')
+    try:
+      output1 = self.executeShellCommand('bk sfiles -lgpC')
+      output2 = self.executeShellCommand('bk changes -L -v')
+      output2 = re.sub('Pseudo-terminal will not be allocated because stdin is not a terminal.', '', output2)
+      if output1 or output2:
+        self.framework.log.write('Cannot pull latest source code, you have changed files or bk change sets\n')
+        self.framework.log.write(output1+'\n'+output2+'\n')
+        return
+    except RuntimeError:
+      self.framework.log.write('BK failure in checking for latest changes\n')
       return
 
     self.framework.log.write('Downloading latest source with bk\n')
-    (status1,output1) = commands.getstatusoutput('bk pull')
-    (status2,output2) = commands.getstatusoutput('cd python/BuildSystem; bk pull')
-    if status1 or output1.find('error') >= 0 or status2 or output2.find('error') >= 0:
+    try:
+      output1 = self.executeShellCommand('bk pull')
+      output2 = self.executeShellCommand('cd python/BuildSystem; bk pull')
+      if output1.find('error') >= 0 or output2.find('error') >= 0:
+        raise RuntimeError()
+      if output1.find('Nothing to pull') >= 0 and output2.find('Nothing to pull') >= 0:
+        self.strmsg = 'Source is current with PETSc BK website\n'
+      else: 
+        self.strmsg = 'Updated source code from PETSc BK website\n'
+    except RuntimeError:
       self.framework.log.write('Error doing bk pull. Continuing configure anyways.\n')
       self.framework.log.write(output1+'\n')
       self.framework.log.write(output2+'\n')
-      return
-    if output1.find('Nothing to pull') >= 0 and output2.find('Nothing to pull') >= 0:
-      self.strmsg = 'Source is current with PETSc BK website\n'
-    else: 
-      self.strmsg = 'Updated source code from PETSc BK website\n'
     return 
 
   # should only apply patch if it truly has something new in it. Keep checksum somewhere?
@@ -101,16 +106,19 @@ class Configure(config.base.Configure):
     except:
       self.framework.log.write('Unable to download patches. Perhaps you are off the network?\nContinuing configure without patches.\n')
       return
-    import commands
-    (status1,output1) = commands.getstatusoutput('echo patch -Np1 < patches1')
-    (status2,output2) = commands.getstatusoutput('cd python/BuildSystem; echo patch -Np1 < ../../patches2')
-    os.unlink('patches1')
-    os.unlink('patches2')
-    if status1 or output1.find('error') >= 0 or status2 or output2.find('error') >= 0:
+    try:
+      output1 = self.executeShellCommand('echo patch -Np1 < patches1')
+      os.unlink('patches1')
+      output2 = self.executeShellCommand('cd python/BuildSystem; echo patch -Np1 < ../../patches2')
+      os.unlink('patches2')
+      if output1.find('error') >= 0 or output2.find('error') >= 0:
+        self.framework.log.write(output1+'\n')
+        self.framework.log.write(output2+'\n')
+        raise RuntimeError()
+    except RuntimeError:
       self.framework.log.write('Error applying patches. Continuing configure anyways.\n')
-      self.framework.log.write(output1+'\n')
-      self.framework.log.write(output2+'\n')
-      return
+      try: os.unlink('patches1')
+      except: pass
     self.strmsg = 'Updated source code from PETSc website (using latest patches)'
     return 
 
