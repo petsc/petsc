@@ -120,10 +120,13 @@ class Configure:
   def setLanguage(self, language):
     if language == 'C':
       self.compilerDefines = 'confdefs.h'
+      self.sourceExtension = '.c'
     elif language in ['C++', 'Cxx']:
       self.compilerDefines = 'confdefs.h'
+      self.sourceExtension = '.cc'
     elif language == 'F77':
       self.compilerDefines = 'confdefs.h'
+      self.sourceExtension = '.f'
     else:
       raise RuntimeError('Unknown language: '+language)
     return
@@ -152,19 +155,19 @@ class Configure:
     if language == 'C':
       self.checkCCompilerSetup()
       self.compilerName   = 'CC'
-      self.compilerSource = 'conftest.c'
+      self.compilerSource = 'conftest'+self.sourceExtension
       self.compilerObj    = 'conftest.o'
       self.compilerFlags  = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
     elif language in ['C++', 'Cxx']:
       self.checkCxxCompilerSetup()
       self.compilerName   = 'CXX'
-      self.compilerSource = 'conftest.cc'
+      self.compilerSource = 'conftest'+self.sourceExtension
       self.compilerObj    = 'conftest.o'
       self.compilerFlags  = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
     elif language == 'F77':
       self.checkF77CompilerSetup()
       self.compilerName   = 'FC'
-      self.compilerSource = 'conftest.f'
+      self.compilerSource = 'conftest'+self.sourceExtension
       self.compilerObj    = 'conftest.o'
       self.compilerFlags  = self.framework.argDB['FFLAGS']
     else:
