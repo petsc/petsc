@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.41 1996/12/18 23:56:00 balay Exp balay $";
+static char vcid[] = "$Id: cholbs.c,v 1.42 1996/12/19 00:04:01 balay Exp balay $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -77,7 +77,7 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
                                        mbs->failures,mbs->ierr,mbs->alpha); 
   }
   mbs->factor = FACTOR_LU;
-  mbs->assembled = PETSC_TRUE;
+  (*factp)->assembled = PETSC_TRUE;
 #if defined(PETSC_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
