@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.3 1997/04/19 15:37:19 curfman Exp curfman $";
+C "$Id: ex2f.F,v 1.4 1997/04/19 16:51:28 curfman Exp curfman $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -164,12 +164,7 @@ C  Set the solution method to be backward Euler.
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call MatCreate(comm,M,M,A,ierr)
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
-      if (flg .eq. 1) then
-         call TSSetRHSJacobian(ts,A,A,RHSJacobianFD,PETSC_NULL,ierr)
-      else
-         call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL,ierr)
-      endif
+      call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL,ierr)
       call TSSetType(ts,TS_BEULER,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -231,14 +226,14 @@ C  Output Parameter:
 C     global - vector with solution at initial time
 C
       subroutine InitialConditions(global)
-
+      implicit none
 #include "ex2f.h"
 
 C  Input/output parameters:
       Vec     global
 
 C  Local variables:
-      Double  localptr(1)
+      Double  localptr(1), x
       integer i, mybase, myend, ierr, idx
 
 C  Determine starting and ending point of each processor's range of
@@ -293,11 +288,11 @@ C
 C  Note: The solution vector is stored in the common block!
 C
       subroutine ExactSolution(t,ierr)
-
+      implicit none
 #include "ex2f.h"
 
 C  Input/output parameters:
-      Double  t
+      Double  t, x
       integer ierr
 
 C  Local variables:
@@ -347,18 +342,18 @@ C   Output Parameter:
 C   global - the solution at this timestep
 
       subroutine Monitor(ts,step,time,global,dummy)
-
+      implicit none
 #include "ex2f.h"
 
 C  Input/output parameters:
       TS      ts
-      integer step
+      integer step, dummy
       Double  time
       Vec     global
 
 C  Local variables:
       integer  ierr
-      Double   en2, en2h, enmax
+      Double   en2, en2s, enmax
       Double   mone
       Draw     draw
 
@@ -431,7 +426,7 @@ C   Output Parameter:
 C      globalout - value of function
 C
       subroutine RHSFunction(ts,t,globalin,globalout,dummy)
-
+      implicit none
 #include "ex2f.h"
 
 C  Input/output parameters:
@@ -443,7 +438,7 @@ C  Input/output parameters:
 C  Local variables:
       Vec    local
       Double  localptr(1), copyptr(1), sc
-      integer i, ierr, idx_c, idx_l, localsize
+      integer i, il, ierr, idx_c, idx_l, localsize
 
 C  Local will be a workspace for us that contains the ghost region
 
@@ -533,7 +528,7 @@ C   - Note that MatSetValues() uses 0-based row and column numbers
 C     in Fortran as well as in C.
 
       subroutine RHSJacobian(ts,t,globalin,A,B,str,dummy)
-
+      implicit none
 #include "ex2f.h"
 
 C  Input/output parameters:
