@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.34 1995/11/19 00:55:08 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.35 1995/12/13 15:59:10 curfman Exp bsmith $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -103,6 +103,8 @@ extern int SNESConverged_UMTR(SNES,double,double,double,void*);
 /* Should these 2 routines be private? */
 extern int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*);
 extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
+
+extern int SNESDefaultMatrixFreeMatAddNullSpace(Mat,int,int,Vec *);
 
 #endif
 
