@@ -29,6 +29,7 @@ int MatAssemblyEnd_SeqSBAIJ_Spooles(Mat A,MatAssemblyType mode) {
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   if (bs > 1) SETERRQ1(1,"Block size %d not supported by Spooles",bs);
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles;  
