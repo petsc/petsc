@@ -1,12 +1,12 @@
-/* $Id: f90_solaris.h,v 1.4 2000/04/09 03:11:48 bsmith Exp $ */
+/* $Id: f90_win32.h,v 1.1 2000/07/11 18:47:02 balay Exp balay $ */
 
-#if !defined (__F90_SOLARIS_H)
-#define __F90_SOLARIS_H
+#if !defined (__F90_WIN32_H)
+#define __F90_WIN32_H
  
 typedef struct {
-  long lower;   /* starting index of the fortran array */
   long extent;  /* length of the array */
-  long mult;    /* in bytes for char,32 bit words for others. Why???? */
+  long mult;    /* stride in bytes */
+  long lower;   /* starting index of the fortran array */
 } tripple;
 
 /*
@@ -15,11 +15,11 @@ typedef struct {
   if these constants are not set in
   the f90 pointer
 */
-#define F90_CHAR_ID    100665344
-#define F90_INT_ID     35659784
-#define F90_DOUBLE_ID  58736640
-#define F90_COMPLEX_ID 68190216
-#define F90_COOKIE     36864
+#define F90_CHAR_ID    234881027
+#define F90_INT_ID     50331651
+#define F90_DOUBLE_ID  167772163
+#define F90_COMPLEX_ID 218103811
+
 
 #if !defined (PETSC_COMPLEX)
 #define F90_SCALAR_ID F90_DOUBLE_ID
@@ -31,10 +31,9 @@ typedef struct {
 #define f90_header() \
 void*          addr;    /* Pointer to the data */ \
 int            sd;      /* sizeof(DataType) in bits */  \
-unsigned short cookie;  /* a wierd f90 cookie */ \
-unsigned short ndim;    /* No of dimensions */          \
+int            sum_d;   /* -sumof(lower*mult) */
 int            id;      /* integer id representing the datatype */ \
-int            a,b;     /* unknown stuff - always zero. */
+int            ndim;    /* No of dimensions */
 
 typedef struct {
   f90_header()
