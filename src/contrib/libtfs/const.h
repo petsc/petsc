@@ -167,8 +167,12 @@ macros are not used, they are commented out
 #define LOG2(x)		(REAL)log((double)x)/log(2)
 #define SWAP(a,b)       temp=(a); (a)=(b); (b)=temp;
 #define P_SWAP(a,b)     ptr=(a); (a)=(b); (b)=ptr;
+#if !defined(MAX)
 #define MAX(x,y)        ((x)>(y)) ? (x) : (y)
+#endif
+#if !defined(MIN)
 #define MIN(x,y)        ((x)<(y)) ? (x) : (y)
+#endif
 
 #define MAX_FABS(x,y)   ((double)fabs(x)>(double)fabs(y)) ? ((REAL)x) : ((REAL)y)
 #define MIN_FABS(x,y)   ((double)fabs(x)<(double)fabs(y)) ? ((REAL)x) : ((REAL)y)

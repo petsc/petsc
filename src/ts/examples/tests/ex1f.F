@@ -35,8 +35,8 @@
       Mat              A
       MatStructure     A_structure
       TSProblemType    tsproblem
-      PetscDraw             draw
-      PetscViewer           viewer
+      PetscDraw        draw
+      PetscViewer      viewer
       character*(60)   type,tsinfo
       character*(5)    etype
 

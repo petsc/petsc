@@ -31,9 +31,9 @@ int XiOpenDisplay(PetscDraw_X* XiWin,char *display_name)
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay(display_name);
   if (!XiWin->disp) {
-    SETERRQ1(1,"Unable to open display on %s\n.  Make sure your DISPLAY variable\n\
-    is set, or you use the -display name option and xhost + has been\n\
-    run on your displaying machine.\n",display_name);
+    SETERRQ1(1,"Unable to open display on %s\n.  Make sure your COMPUTE NODES are authorized to connect \n\
+    to this X server and either your DISPLAY variable\n\
+    is set or you use the -display name option\n",display_name);
   }
   XiWin->screen = DefaultScreen(XiWin->disp);
   PetscFunctionReturn(0);
@@ -211,12 +211,7 @@ int XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
   XWindowAttributes attributes;
 
   PetscFunctionBegin;
-  if (XiOpenDisplay(w,host)) {
-    SETERRQ(PETSC_ERR_LIB,"Could not open display: make sure your DISPLAY variable\n\
-    is set, or you use the [-display name] option and xhost + has been\n\
-    run on your displaying machine.\n");
-  }
-
+  ierr = XiOpenDisplay(w,host);CHKERRQ(ierr);
   w->win = win;
   XGetWindowAttributes(w->disp,w->win,&attributes);
 
