@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2000/01/12 14:15:22 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.4 2000/01/12 14:20:24 bsmith Exp bsmith $ 
 
 ALL: flow
 
@@ -16,7 +16,7 @@ OBJSF	         = user.o userJac.o
 CLEANFILES       = flow.exe flow.o flow
 LOCDIR           = src/contrib/fun3d
 TESTEXAMPLES_3	 = flow.PETSc flow.rm
-EXAMPLESC        = flow.c flow.h
+EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.c userJac.c
 #
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
