@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.234 1997/03/14 20:48:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.235 1997/03/26 01:35:37 bsmith Exp balay $";
 #endif
 
 /*
@@ -1831,12 +1831,16 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   if (mat->ops.assemblyend) {
     ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);
   }
-  mat->assembled  = PETSC_TRUE; mat->num_ass++;
+
+  /* Flush assembly is not a true assembly */
+  if (type != MAT_FLUSH_ASSEMBLY) {
+    mat->assembled  = PETSC_TRUE; mat->num_ass++;
+  }
   mat->insertmode = NOT_SET_VALUES;
   PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
   MatAssemblyEnd_InUse--;
 
-  if (inassm == 1) {
+  if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat); CHKERRQ(ierr);
   }
   inassm--;
