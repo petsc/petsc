@@ -89,8 +89,7 @@
       call VecAssemblyEnd(U,ierr)
 
 ! Create nonlinear solver
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,        &
-     &                snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
 
 ! Set various routines and options
       call SNESSetFunction(snes,r,FormFunction,ctx,ierr)

@@ -151,7 +151,7 @@ int main( int argc, char **argv )
   }
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRA(ierr);
 
   /* provide user function and Jacobian */
   ierr = SNESSetFunction(snes,user.fine.b,FormFunction,&user);CHKERRA(ierr);
