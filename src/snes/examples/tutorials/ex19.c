@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.21 2001/04/24 22:04:24 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.22 2001/04/24 22:09:40 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -135,11 +135,13 @@ int main(int argc,char **argv)
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
+
+       Process adiC: FormFunctionLocal
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
     if (localfunction) {
-      ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0);CHKERRQ(ierr);
+      ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal);CHKERRQ(ierr);
     } else {
       ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
     }
@@ -442,6 +444,7 @@ int FormFunctionLocal(Field **x,Field **f,DALocalInfo *info,void *ptr)
   double  grashof,prandtl,lid;
   Scalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
+  PetscFunctionBegin;
   grashof = user->grashof;  
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
@@ -560,6 +563,6 @@ int FormFunctionLocal(Field **x,Field **f,DALocalInfo *info,void *ptr)
      Flop count (multiply-adds are counted as 2 operations)
   */
   ierr = PetscLogFlops(84*info->ym*info->xm);CHKERRQ(ierr);
-  return 0; 
+  PetscFunctionReturn(0);
 } 
 
