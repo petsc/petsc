@@ -727,6 +727,72 @@ PetscErrorCode VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMax_Seq"
+PetscErrorCode VecPointwiseMax_Seq(Vec xin,Vec yin,Vec win)
+{
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
+  PetscErrorCode ierr;
+  PetscInt       n = xin->n,i;
+  PetscScalar    *xx = x->array,*yy,*ww;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecGetArray(win,&ww);CHKERRQ(ierr);}
+  else ww = yy;
+  for (i=0; i<n; i++) {
+    ww[i] = PetscMax(PetscRealPart(xx[i]),PetscRealPart(yy[i]));
+  }
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);}
+  PetscLogFlops(n);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMin_Seq"
+PetscErrorCode VecPointwiseMin_Seq(Vec xin,Vec yin,Vec win)
+{
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
+  PetscErrorCode ierr;
+  PetscInt       n = xin->n,i;
+  PetscScalar    *xx = x->array,*yy,*ww;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecGetArray(win,&ww);CHKERRQ(ierr);}
+  else ww = yy;
+  for (i=0; i<n; i++) {
+    ww[i] = PetscMin(PetscRealPart(xx[i]),PetscRealPart(yy[i]));
+  }
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);}
+  PetscLogFlops(n);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPointwiseMaxAbs_Seq"
+PetscErrorCode VecPointwiseMaxAbs_Seq(Vec xin,Vec yin,Vec win)
+{
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
+  PetscErrorCode ierr;
+  PetscInt       n = xin->n,i;
+  PetscScalar    *xx = x->array,*yy,*ww;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecGetArray(win,&ww);CHKERRQ(ierr);}
+  else ww = yy;
+  for (i=0; i<n; i++) {
+    ww[i] = PetscMax(PetscAbsScalar(xx[i]),PetscAbsScalar(yy[i]));
+  }
+  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+  if (yin != win) {ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);}
+  PetscLogFlops(n);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_Seq"
 PetscErrorCode VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
 {
