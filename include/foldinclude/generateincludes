@@ -13,4 +13,4 @@ end
 cd /home/bsmith/petsc/include/finclude
 echo "C   You will have to adjust this line for your site" >> petsc.h
 echo "      include '/usr/local/mpi/include/mpif.h'" >> petsc.h
-chmod g+w *.h
+chmod g+w *.h *.h90
