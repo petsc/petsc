@@ -1,11 +1,14 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.79 1996/02/26 23:16:51 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.80 1996/02/26 23:21:21 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
+#if defined(HAVE_MPE)
+#include "mpe.h"
+#endif
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/types.h>
@@ -172,9 +175,17 @@ char *(PLogEventName[]) = {"MatMult         ",
                          " ",
                          " ",
                          "TS_Step         ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         "PetscBarrier    ",
                          " "," "," "," ",
-                         " "," "," "," "," ",
-                         " "," "," "," "," ",
                          " "," "," "," "," ",
                          " "," "," "," "," ",
                          " "," "," "," "," ",
@@ -695,12 +706,15 @@ int PLogDump(char* sname)
   return 0;
 }
 
+extern char **PLogEventColor;
+extern int  *MPEFlag,UseMPE;
 /*@C
     PLogEventRegister - Registers an event name for logging operations in 
     an application code. 
 
     Input Parameter:
 .   string - name associated with the event
+.   color - string giving a color for displaying event
 
     Output Parameter:
 .   e -  event id for use with PLogEventBegin() and End().
@@ -715,7 +729,7 @@ int PLogDump(char* sname)
     Example of Usage:
 $     int USER_EVENT;
 $     int user_event_flops;
-$     PLogEventRegister(&USER_EVENT,"User event name");
+$     PLogEventRegister(&USER_EVENT,"User event name"."EventColor");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
 $        [code segment to monitor]
 $        PLogFlops(user_event_flops);
@@ -725,7 +739,7 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .seealso: PLogEventBegin(), PLogEventEnd(), PLogFlops()
 @*/
-int PLogEventRegister(int *e,char *string)
+int PLogEventRegister(int *e,char *string,char *color)
 {
   *e = PLOG_USER_EVENT_LOW++;
   if (*e > PLOG_USER_EVENT_HIGH) { 
@@ -733,6 +747,13 @@ int PLogEventRegister(int *e,char *string)
     SETERRQ(1,"PLogEventRegister:Out of event IDs");
   }
   PLogEventName[*e] = string;
+#if defined(HAVE_MPE)
+  if (UseMPE) {
+    MPEFlags[*e]       = 1;
+    PLogEventColor[*e] = color;
+    MPE_Describe_state(MPEBEGIN+2*(*e),MPEBEGIN+2*(*e)+1,string,color);
+  }
+#endif
   return 0;
 }
   
@@ -829,7 +850,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
                      100.*sflops/totf);
       } else {
         MPIU_fprintf(comm,fd," %d:          %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
-                    j,stime/size,100.0*stime/tott,sflops/size,100.*sflops/totf);
+                    j,stime/size,100.0*stime/tott,(size*sflops)/stime,100.*sflops/totf);
       }
     }
   }
