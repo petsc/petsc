@@ -84,7 +84,7 @@ int MatScale_SeqDense(const PetscScalar *alpha,Mat A)
 int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
 {
 #if defined(PETSC_MISSING_LAPACK_GETRF) 
-  PetscFuntionBegin;
+  PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
 #else
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
