@@ -401,18 +401,18 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCASMSetLocalSubdomains_ASM"
 int PCASMSetLocalSubdomains_ASM(PC pc,int n,IS is[])
 {
-  PC_ASM *osm;
+  PC_ASM *osm = (PC_ASM*)pc->data;
 
   PetscFunctionBegin;
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 0 or more blocks");
 
-  if (pc->setupcalled) {
+  if (pc->setupcalled && n != osm->n_local_true) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetup().");
   }
-
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 0 or more blocks");
-  osm               = (PC_ASM*)pc->data;
-  osm->n_local_true = n;
-  osm->is           = is;
+  if (!pc->setupcalled){
+    osm->n_local_true = n;
+    osm->is           = is;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -422,26 +422,25 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCASMSetTotalSubdomains_ASM"
 int PCASMSetTotalSubdomains_ASM(PC pc,int N,IS *is)
 {
-  PC_ASM *osm;
-  int    rank,size,ierr;
+  PC_ASM *osm = (PC_ASM*)pc->data;
+  int    rank,size,ierr,n;
 
   PetscFunctionBegin;
-  if (pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetup().");
 
   if (is) SETERRQ(PETSC_ERR_SUP,"Use PCASMSetLocalSubdomains() to set specific index sets\n\
 they cannot be set globally yet.");
 
-  osm               = (PC_ASM*)pc->data;
   /*
      Split the subdomains equally amoung all processors 
   */
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
-  osm->n_local_true = N/size + ((N % size) > rank);
-  if (osm->n_local_true < 0) {
-    SETERRQ(PETSC_ERR_SUP,"Each process must have 0 or more blocks");
+  n = N/size + ((N % size) > rank);
+  if (pc->setupcalled && n != osm->n_local_true) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetup().");
+  if (!pc->setupcalled){
+    osm->n_local_true = n;
+    osm->is           = 0;
   }
-  osm->is           = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

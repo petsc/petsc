@@ -22,12 +22,16 @@ def petsc_configure(configure_options):
   sys.path.insert(0, os.path.join(pythonDir, 'BuildSystem'))
   sys.path.insert(0, pythonDir)
   import config.framework
+  import PETSc.packages.update
 
+  
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
   try:
     framework.configure(out = sys.stdout)
+  except PETSc.packages.update.UpdateException, e:
+    return 1
   except Exception, e:
     import traceback
 
@@ -38,6 +42,8 @@ def petsc_configure(configure_options):
       traceback.print_tb(sys.exc_info()[2], file = framework.log)
     sys.exit(1)
   framework.storeSubstitutions(framework.argDB)
+  return 0
 
 if __name__ == '__main__':
-  petsc_configure([])
+  if petsc_configure([]):
+    petsc_configure([])
