@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.17 2000/07/24 20:34:28 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.18 2000/07/26 16:16:40 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -209,18 +209,19 @@ int main(int argc,char **args)
     /* Test GetSubMatrix() */
     /* get a submatrix consisting of every next block row and column of the original matrix */
     /* for symm. matrix, iscol=isrow. */
+    isrow  =   (IS)PetscMalloc(n*sizeof(IS));CHKPTRA(isrow);
     ip_ptr = (int*)PetscMalloc(n*sizeof(int)); CHKERRA(ierr);
     j = 0;
     for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
       for (i=0; i<bs; i++) ip_ptr[j++] = n1*bs + i;  
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, j, ip_ptr, &isrow); CHKERRA(ierr);
-    ierr = PetscFree(ip_ptr); CHKERRA(ierr); 
     /* ISView(isrow, VIEWER_STDOUT_SELF); CHKERRA(ierr); */
     
     ierr = MatGetSubMatrix(sA,isrow,isrow,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);
     CHKERRA(ierr);
     ierr = ISDestroy(isrow);CHKERRA(ierr);
+    ierr = PetscFree(ip_ptr); CHKERRA(ierr);
     printf("sA =\n");
     ierr = MatView(sA,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
     printf("submatrix of sA =\n");
