@@ -1,12 +1,12 @@
 
-C    "$Id: ex1f.F,v 1.1 1996/10/25 15:02:53 curfman Exp curfman $"
+C    "$Id: ex1f.F,v 1.2 1996/10/26 15:45:35 curfman Exp curfman $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
 C   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); VecDot();
 C   Routines: VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); VecAYPX();
 C   Routines: VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); VecSwap();
-C   Routines: VecDestroy(); VecDestroyVecs();
+C   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecs();
 C   Processors: n
 CT*/
 C
