@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.73 1996/11/27 22:50:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.74 1996/12/07 01:19:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -705,7 +705,6 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     *newctx = ctx;
     return 0;
   }
-  SETERRQ(1,"VecScatterCreate:Cannot generate such Scatter Context yet");
 }
 
 /* ------------------------------------------------------------------*/
@@ -795,7 +794,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
-  if (x == y) SETERRQ(PETSC_ERR_IDN,"VecScatterBegin:y cannot be x");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"VecScatterBegin:y cannot be x");
 #if defined(PETSC_BOPT_g)
   /*
      Error checking to make sure these vectors match the vectors used
@@ -854,7 +853,7 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
   int ierr;
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_IDN,"VecScatterEnd:y cannot be x");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"VecScatterEnd:y cannot be x");
   ctx->inuse = 0;
   if (!ctx->end) return 0;
   PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);

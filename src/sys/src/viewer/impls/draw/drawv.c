@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: drawv.c,v 1.10 1996/12/08 20:29:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.11 1996/12/08 20:51:23 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -40,7 +40,9 @@ int ViewerFlush_Draw(Viewer v)
 int ViewerDrawGetDraw(Viewer v, Draw *draw)
 {
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
-  if (v->type != DRAW_VIEWER) SETERRQ(PETSC_ERR_INVOBJ,"ViewerDrawGetDraw:Must be draw type viewer");
+  if (v->type != DRAW_VIEWER) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"ViewerDrawGetDraw:Must be draw type viewer");
+  }
   *draw = v->draw;
   return 0;
 }
@@ -64,7 +66,9 @@ int ViewerDrawGetDraw(Viewer v, Draw *draw)
 int ViewerDrawGetDrawLG(Viewer v, DrawLG *drawlg)
 {
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
-  if (v->type != DRAW_VIEWER) SETERRQ(PETSC_ERR_INVOBJ,"ViewerDrawGetDraw:Must be draw type viewer");
+  if (v->type != DRAW_VIEWER) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"ViewerDrawGetDraw:Must be draw type viewer");
+  }
   *drawlg = v->drawlg;
   return 0;
 }

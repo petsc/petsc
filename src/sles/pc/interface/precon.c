@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.106 1996/09/30 17:54:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.107 1996/10/28 23:51:24 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -131,7 +131,7 @@ int PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  if (x == y) SETERRQ(1,"PCApply:x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"PCApply:x and y must be different vectors");
   PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_Apply,pc,x,y,0);
@@ -212,12 +212,14 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 @*/
 int PCApplyTrans(PC pc,Vec x,Vec y)
 {
+  int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  if (x == y) SETERRQ(1,"PCApplyTrans:x and y must be different vectors");
-  if (pc->applytrans) return (*pc->applytrans)(pc,x,y);
-  SETERRQ(PETSC_ERR_SUP,"PCApplyTrans");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"PCApplyTrans:x and y must be different vectors");
+  if (!pc->applytrans) SETERRQ(PETSC_ERR_SUP,"PCApplyTrans");
+  ierr = (*pc->applytrans)(pc,x,y); CHKERRQ(ierr);
+  return 0;
 }
 
 /*@
@@ -244,7 +246,10 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(work,VEC_COOKIE);
-  if (x == y) SETERRQ(1,"PCApplyBAorAB:x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"PCApplyBAorAB:x and y must be different vectors");
+  if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"PCApplyBAorAB:Side must be right, left, or symmetric");
+  }
   if (pc->applyBA)  return (*pc->applyBA)(pc,side,x,y,work);
   if (side == PC_RIGHT) {
     ierr = PCApply(pc,x,work); CHKERRQ(ierr);
@@ -261,7 +266,7 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
     ierr = VecCopy(y,work); CHKERRQ(ierr);
     return PCApplySymmetricLeft(pc,work,y);
   }
-  else SETERRQ(1,"PCApplyBAorAB: Preconditioner side must be right, left, or symmetric");
+  return 0;  /* note: actually will never get here */
 }
 
 /*@ 
@@ -289,8 +294,11 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(work,VEC_COOKIE);
-  if (x == y) SETERRQ(1,"PCApplyBAorABTrans:x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"PCApplyBAorABTrans:x and y must be different vectors");
   if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,side,x,y,work);
+  if (side != PC_LEFT && side != PC_RIGHT) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"PCApplyBAorABTrans:Side must be right or left");
+  }
   if (side == PC_RIGHT) {
     ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
     return PCApplyTrans(pc,work,y);
@@ -300,8 +308,7 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
     return MatMultTrans(pc->mat,work,y); 
   }
   /* add support for PC_SYMMETRIC */
-  else 
-   SETERRQ(1,"PCApplyBAorABTrans: Only right and left preconditioning are currently supported");
+  return 0; /* actually will never get here */
 }
 
 /*@

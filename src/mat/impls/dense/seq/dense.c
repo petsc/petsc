@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.115 1996/11/29 22:20:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.116 1996/12/08 20:50:35 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -697,7 +697,7 @@ static int MatGetDiagonal_SeqDense(Mat A,Vec v)
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetSize(v,&n);
   len = PetscMin(mat->m,mat->n);
-  if (n != mat->m) SETERRQ(PETSC_ERR_SIZ,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
+  if (n != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
   for ( i=0; i<len; i++ ) {
     x[i] = mat->v[i*mat->m + i];
   }
@@ -712,7 +712,7 @@ static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != mat->m) SETERRQ(PETSC_ERR_SIZ,"MatDiagonalScale_SeqDense:Left scaling vec wrong size");
+    if (m != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,"MatDiagonalScale_SeqDense:Left scaling vec wrong size");
     for ( i=0; i<m; i++ ) {
       x = l[i];
       v = mat->v + i;
@@ -722,7 +722,7 @@ static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != mat->n) SETERRQ(PETSC_ERR_SIZ,"MatDiagonalScale_SeqDense:Right scaling vec wrong size");
+    if (n != mat->n) SETERRQ(PETSC_ERR_ARG_SIZ,"MatDiagonalScale_SeqDense:Right scaling vec wrong size");
     for ( i=0; i<n; i++ ) {
       x = r[i];
       v = mat->v + i*m;
@@ -928,7 +928,7 @@ static int MatCopy_SeqDense(Mat A, Mat B)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data, *b = (Mat_SeqDense *)B->data;
   if (B->type != MATSEQDENSE) return MatCopy_Basic(A,B);
-  if (a->m != b->m || a->n != b->n) SETERRQ(PETSC_ERR_SIZ,"MatCopy_SeqDense:size(B) != size(A)");
+  if (a->m != b->m || a->n != b->n) SETERRQ(PETSC_ERR_ARG_SIZ,"MatCopy_SeqDense:size(B) != size(A)");
   PetscMemcpy(b->v,a->v,a->m*a->n*sizeof(Scalar));
   return 0;
 }
