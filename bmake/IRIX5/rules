@@ -38,22 +38,22 @@ libf:
 libmember:    $(LIBNAME)($(LIBMEMBER))
 
 .c.a: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .c.o: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
-.C.a: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.C
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
+.cpp.a .cc.a .C.a: 
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
-.C.o: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.C
+.cpp.o .cc.o .C.o: 
+	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
 .f.o: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $<
 
 .f.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $<
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
