@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.38 1996/01/01 01:05:46 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.39 1996/01/02 20:18:04 bsmith Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -7,11 +7,6 @@
 #if !defined(__PLOG_PACKAGE)
 #define __PLOG_PACKAGE
 #include "petsc.h"  
-
-/* Activate logging for BlockSolve */
-#if defined (PETSC_LOG) && defined(HAVE_BLOCKSOLVE)
-/* #define BSMAINLOG turn on when new BlockSolve version is ready */
-#endif
 
 /*
   If you add an event here, make sure you add to petsc/bin/petscview.cfg
