@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.16 1995/08/14 19:39:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.17 1995/08/15 20:29:15 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -49,11 +49,11 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   h = epsilon*dot/(norm*norm);
   
   /* evaluate function at F(x + dx) */
-  VecWAXPY(&h,dx,U,w); 
+  ierr = VecWAXPY(&h,dx,U,w); CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,w,y); CHKERRQ(ierr);
-  VecAXPY(&mone,F,y);
+  ierr = VecAXPY(&mone,F,y); CHKERRQ(ierr);
   h = -1.0/h;
-  VecScale(&h,y);
+  ierr = VecScale(&h,y); CHKERRQ(ierr);
   return 0;
 }
 /*@
@@ -85,15 +85,15 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   MFCtx_Private *mfctx;
   int           n,ierr;
 
-  mfctx = (MFCtx_Private *) PETSCMALLOC(sizeof(MFCtx_Private));CHKPTRQ(mfctx);
+  mfctx = (MFCtx_Private *) PETSCMALLOC(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
   PLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->snes = snes;
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
-  PetscObjectGetComm((PetscObject)x,&comm);
-  VecGetSize(x,&n);
+  ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   ierr = MatShellCreate(comm,n,n,(void*)mfctx,J); CHKERRQ(ierr);
-  MatShellSetMult(*J,SNESMatrixFreeMult_Private);
-  MatShellSetDestroy(*J,SNESMatrixFreeDestroy_Private);
+  ierr = MatShellSetMult(*J,SNESMatrixFreeMult_Private); CHKERRQ(ierr);
+  ierr = MatShellSetDestroy(*J,SNESMatrixFreeDestroy_Private); CHKERRQ(ierr);
   PLogObjectParent(*J,mfctx->w);
   PLogObjectParent(snes,*J);
   return 0;
