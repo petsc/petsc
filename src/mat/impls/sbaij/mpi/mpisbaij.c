@@ -2031,10 +2031,13 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
   *newmat       = 0;
   ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATMPISBAIJ);CHKERRQ(ierr);
-  /* ierr = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);  -- cause error? */ 
+
+  /* ierr = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr); */ /*-- cause error? */ 
   mat->factor       = matin->factor; 
   mat->preallocated = PETSC_TRUE;
   mat->assembled    = PETSC_TRUE;
+  mat->insertmode   = NOT_SET_VALUES;
+
   a = (Mat_MPISBAIJ*)mat->data;
   a->bs  = oldmat->bs;
   a->bs2 = oldmat->bs2;
