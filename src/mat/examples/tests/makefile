@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.240 2000/09/20 20:23:40 balay Exp balay $ 
+# $Id: makefile,v 1.241 2000/09/20 20:28:34 balay Exp balay $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -750,6 +750,14 @@ runex76:
 	if (diff output/ex76_1.out ex76_1.tmp) then true; \
 	else echo "Possible problem with ex76_1, diffs above"; fi; \
 	${RM} -f ex76_1.tmp
+runex77:
+	-@touch ex77_1.tmp;\
+	for bs in ${MATBLOCKSIZE}; do \
+	  ${MPIRUN} -np 1  ex77 -bs  $$bs >> ex77_1.tmp 2>&1; \
+	done; \
+	if (diff output/ex77_1.out ex77_1.tmp) then true; \
+	else echo "Possible problem with ex77_1, diffs above"; fi; \
+	${RM} -f ex77_1.tmp
 
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
@@ -774,7 +782,7 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
 		   runex56_2  runex56_3  runex56_4 runex56_5 ex56.rm \
 		   ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm \
-		   ex76.PETSc runex76 ex76.rm
+		   ex76.PETSc runex76 ex76.rm ex77.PETSc runex77 ex77.rm
 TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm ex63.PETSc runex63 ex63.rm \
                    ex67f.PETSc ex67f.rm
 TESTEXAMPLES_9	 = ex36.PETSc runex36 ex36.rm
