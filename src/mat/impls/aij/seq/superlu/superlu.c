@@ -437,7 +437,7 @@ int MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,Mat *newmat) {
 EXTERN_C_END
 
 /*MC
-  MATSUPERLU - a matrix type providing direct solvers (LU) for sequential matrices 
+  MATSUPERLU = "superlu" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package SuperLU.
 
   If SuperLU is installed (see the manual for
@@ -451,7 +451,7 @@ EXTERN_C_END
   the MATSEQAIJ type without data copy.
 
   Options Database Keys:
-+ -mat_type superlu - sets the matrix type to superlu during a call to MatSetFromOptions()
++ -mat_type superlu - sets the matrix type to "superlu" during a call to MatSetFromOptions()
 - -mat_superlu_ordering <0,1,2,3> - 0: natural ordering, 
                                     1: MMD applied to A'*A, 
                                     2: MMD applied to A'+A, 

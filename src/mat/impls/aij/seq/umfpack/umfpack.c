@@ -346,7 +346,7 @@ int MatDuplicate_UMFPACK(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATUMFPACK - a matrix type providing direct solvers (LU) for sequential matrices 
+  MATUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package UMFPACK.
 
   If UMFPACK is installed (see the manual for
@@ -363,7 +363,7 @@ int MatDuplicate_UMFPACK(Mat A, MatDuplicateOption op, Mat *M) {
   which correspond to the options database keys below.
 
   Options Database Keys:
-+ -mat_type umfpack - sets the matrix type to umfpack during a call to MatSetFromOptions()
++ -mat_type umfpack - sets the matrix type to "umfpack" during a call to MatSetFromOptions()
 . -mat_umfpack_prl - UMFPACK print level: Control[UMFPACK_PRL]
 . -mat_umfpack_dense_col <alpha_c> - UMFPACK dense column threshold: Control[UMFPACK_DENSE_COL]
 . -mat_umfpack_block_size <bs> - UMFPACK block size for BLAS-Level 3 calls: Control[UMFPACK_BLOCK_SIZE]

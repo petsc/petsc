@@ -154,7 +154,6 @@ int MatDuplicate_MPISBAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
 .seealso: MATSEQSBAIJSPOOLES, MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, PCCHOLESKY
 M*/
 
-
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPISBAIJSpooles"

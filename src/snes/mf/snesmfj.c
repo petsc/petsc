@@ -541,6 +541,14 @@ int MatSNESMFSetFromOptions(Mat mat)
   PetscFunctionReturn(0);
 }
 
+/*MC
+  MATMFFD = "mffd" - A matrix free matrix type.
+
+  Level: advanced
+
+.seealso: MatCreateMF, MatCreateSNESMF
+M*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MFFD"
 EXTERN_C_BEGIN

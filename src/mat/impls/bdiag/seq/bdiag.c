@@ -778,6 +778,17 @@ int MatLoad_SeqBDiag(PetscViewer viewer,MatType type,Mat *A)
 }
 EXTERN_C_END
 
+/*MC
+   MATSEQBDIAG = "seqbdiag" - A matrix type to be used for sequential block diagonal matrices.
+
+   Options Database Keys:
+. -mat_type seqbdiag - sets the matrix type to "seqbdiag" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateSeqBDiag
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqBDiag"

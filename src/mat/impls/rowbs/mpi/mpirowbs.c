@@ -1549,6 +1549,20 @@ int MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,const int nnz[])
 }
 EXTERN_C_END
 
+/* MC
+   MATMPIROWBS = "mpirowbs" - A matrix type providing ILU and ICC for distributed sparse matrices for use
+   with the external package BlockSolve95.  If BlockSolve95 is installed (see the manual for instructions
+   on how to declare the existence of external packages), a matrix type can be constructed which invokes
+   BlockSolve95 preconditioners and solvers. 
+
+   Options Database Keys:
+. -mat_type mpirowbs - sets the matrix type to "mpirowbs" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIRowbs
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIRowbs"

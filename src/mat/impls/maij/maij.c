@@ -98,6 +98,22 @@ int MatDestroy_MPIMAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+/*MC
+  MATMAIJ = "maij" - A matrix type to be used for restriction and interpolation operations for 
+  multicomponent problems, interpolating or restricting each component the same way independently.
+  The matrix type is based on MATSEQAIJ for sequential matrices, and MATMPIAIJ for distributed matrices.
+
+  Operations provided:
+. MatMult
+. MatMultTranspose
+. MatMultAdd
+. MatMultTransposeAdd
+
+  Level: advanced
+
+.seealso: MatCreateSeqDense
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MAIJ" 
@@ -1453,6 +1469,21 @@ int MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 /* ---------------------------------------------------------------------------------- */
+/*@C
+  MatCreateMAIJ - Creates a matrix type providing restriction and interpolation 
+  operations for multicomponent problems.  It interpolates each component the same
+  way independently.  The matrix type is based on MATSEQAIJ for sequential matrices,
+  and MATMPIAIJ for distributed matrices.
+
+  Operations provided:
+. MatMult
+. MatMultTranspose
+. MatMultAdd
+. MatMultTransposeAdd
+
+  Level: advanced
+
+M*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMAIJ" 
 int MatCreateMAIJ(Mat A,int dof,Mat *maij)

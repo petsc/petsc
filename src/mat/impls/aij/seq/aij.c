@@ -2622,6 +2622,18 @@ EXTERN int MatAdjustForInodes_SeqAIJ(Mat,IS*,IS*);
 EXTERN int MatSeqAIJGetInodeSizes_SeqAIJ(Mat,int*,int*[],int*);
 EXTERN_C_END
 
+/*MC
+   MATSEQAIJ = "seqaij" - A matrix type to be used for sequential sparse matrices, 
+   based on compressed sparse row format.
+
+   Options Database Keys:
+. -mat_type seqaij - sets the matrix type to "seqaij" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateSeqAIJ
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJ"

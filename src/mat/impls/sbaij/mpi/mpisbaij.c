@@ -1637,6 +1637,18 @@ int MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_
 }
 EXTERN_C_END
 
+/*MC
+   MATMPISBAIJ = "mpisbaij" - A matrix type to be used for distributed symmetric sparse block matrices, 
+   based on block compressed sparse row format.  Only the upper triangular portion of the matrix is stored.
+
+   Options Database Keys:
+. -mat_type mpisbaij - sets the matrix type to "mpisbaij" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPISBAIJ
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPISBAIJ"

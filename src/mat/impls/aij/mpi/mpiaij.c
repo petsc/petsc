@@ -1722,6 +1722,17 @@ int MatMPIAIJSetPreallocation_MPIAIJ(Mat B,int d_nz,const int d_nnz[],int o_nz,c
 }
 EXTERN_C_END
 
+/*MC
+   MATMPIAIJ = "mpiaij" - A matrix type to be used for parallel sparse matrices.
+
+   Options Database Keys:
+. -mat_type mpiaij - sets the matrix type to "mpiaij" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIAIJ
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAIJ"

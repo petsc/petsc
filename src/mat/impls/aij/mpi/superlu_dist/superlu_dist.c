@@ -663,7 +663,7 @@ int MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATSUPERLU_DIST - a matrix type providing direct solvers (LU) for parallel matrices 
+  MATSUPERLU_DIST = "superlu_dist" - A matrix type providing direct solvers (LU) for parallel matrices 
   via the external package SuperLU_DIST.
 
   If SuperLU_DIST is installed (see the manual for
@@ -681,7 +681,7 @@ int MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
   without data copy.
 
   Options Database Keys:
-+ -mat_type superlu_dist
++ -mat_type superlu_dist - sets the matrix type to "superlu_dist" during a call to MatSetFromOptions()
 . -mat_superlu_dist_r <n> - number of rows in processor partition
 . -mat_superlu_dist_c <n> - number of columns in processor partition
 . -mat_superlu_dist_matinput <0,1> - matrix input mode; 0=global, 1=distributed

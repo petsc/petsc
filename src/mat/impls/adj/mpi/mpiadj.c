@@ -337,6 +337,15 @@ int MatMPIAdjSetPreallocation_MPIAdj(Mat B,int *i,int *j,int *values)
 }
 EXTERN_C_END
 
+/*MC
+   MATMPIADJ = "mpiadj" - A matrix type to be used for distributed adjacency matrices,
+   intended for use constructing orderings and partitionings.
+
+  Level: beginner
+
+.seealso: MatCreateMPIAdj
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAdj"

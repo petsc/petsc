@@ -650,7 +650,7 @@ int MatDuplicate_AIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATAIJMUMPS - a matrix type providing direct solvers (LU) for distributed
+  MATAIJMUMPS = "aijmumps" - A matrix type providing direct solvers (LU) for distributed
   and sequential matrices via the external package MUMPS.
 
   If MUMPS is installed (see the manual for instructions
@@ -668,7 +668,7 @@ int MatDuplicate_AIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   without data copy.
 
   Options Database Keys:
-+ -mat_type aijmumps
++ -mat_type aijmumps - sets the matrix type to "aijmumps" during a call to MatSetFromOptions()
 . -mat_mumps_sym <0,1,2> - 0 the matrix is unsymmetric, 1 symmetric positive definite, 2 symmetric
 . -mat_mumps_icntl_4 <0,1,2,3,4> - print level
 . -mat_mumps_icntl_6 <0,...,7> - matrix prescaling options (see MUMPS User's Guide)
@@ -812,7 +812,7 @@ int MatDuplicate_SBAIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATSBAIJMUMPS - a symmetric matrix type providing direct solvers (Cholesky) for
+  MATSBAIJMUMPS = "sbaijmumps" - A symmetric matrix type providing direct solvers (Cholesky) for
   distributed and sequential matrices via the external package MUMPS.
 
   If MUMPS is installed (see the manual for instructions
@@ -830,7 +830,7 @@ int MatDuplicate_SBAIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   without data copy.
 
   Options Database Keys:
-+ -mat_type aijmumps
++ -mat_type sbaijmumps - sets the matrix type to "sbaijmumps" during a call to MatSetFromOptions()
 . -mat_mumps_sym <0,1,2> - 0 the matrix is unsymmetric, 1 symmetric positive definite, 2 symmetric
 . -mat_mumps_icntl_4 <0,...,4> - print level
 . -mat_mumps_icntl_6 <0,...,7> - matrix prescaling options (see MUMPS User's Guide)

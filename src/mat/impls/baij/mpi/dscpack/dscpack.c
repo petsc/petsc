@@ -697,7 +697,7 @@ int MatDuplicate_DSCPACK(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATDSCPACK - a matrix type providing direct solvers (Cholesky) for sequential 
+  MATDSCPACK = "dscpack" - A matrix type providing direct solvers (Cholesky) for sequential 
   or distributed matrices via the external package DSCPACK.
 
   If DSCPACK is installed (see the manual for

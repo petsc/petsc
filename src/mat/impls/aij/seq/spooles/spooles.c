@@ -535,7 +535,7 @@ int MatDuplicate_SeqAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATSEQAIJSPOOLES - a matrix type providing direct solvers (LU or Cholesky) for sequential matrices 
+  MATSEQAIJSPOOLES = "seqaijspooles" - A matrix type providing direct solvers (LU or Cholesky) for sequential matrices 
   via the external package SEQAIJSPOOLES.
 
   If SEQAIJSPOOLES is installed (see the manual for
@@ -549,7 +549,7 @@ int MatDuplicate_SeqAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
   the MATSEQAIJ type without data copy.
 
   Options Database Keys:
-+ -mat_type seqaijspooles - sets the matrix type to seqaijspooles during a call to MatSetFromOptions()
++ -mat_type seqaijspooles - sets the matrix type to "seqaijspooles" during a call to MatSetFromOptions()
 . -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
 . -mat_spooles_seed <seed> - random number seed used for ordering
 . -mat_spooles_msglvl <msglvl> - message output level
