@@ -2,7 +2,7 @@
 #
 # Default values
 num=1
-max_minutes=10
+max_minutes=30
 USE_MYRINET=${USE_MYRINET-no}
 infiles=""
 outfiles=""
@@ -94,7 +94,7 @@ while [ $# -gt 0 ] ; do
     esac
 done
 #
-# Now process program options looking for -f filename or -f0 or -f1
+# Now process program options looking for possible input files
 # stage the file directly into the rundir directory so we need to generate new
 # command line arguments that strip the path form the filename
 #
@@ -103,22 +103,34 @@ newprogargs=""
 shortinfiles=""
 while [ $# -gt 0 ] ; do
     arg=$1
-    newprogargs="$newprogargs $arg"
     shift
     case $arg in 
+    -start_in_debugger|-on_error_attach_debugger) 
+      shared="yes"
+      nolocal="-nolocal"
+      newprogargs="$newprogargs $arg"
+    ;;
     -f|-f0|-f1|-options_file) 
       infiles="$infiles $1"
       shortinfiles="$shortinfiles `basename $1`"
-      newprogargs="$newprogargs `basename $1`"
+      newprogargs="$newprogargs $arg `basename $1`"
       if [ -e "$1.info" ] ; then
         infiles="$infiles $1.info"
       fi
       shift
     ;;
-    -start_in_debugger|-on_error_attach_debugger) 
-      shared="yes"
-      nolocal="-nolocal"
-    ;;
+    *)
+      if [ -e $arg ] ; then 
+        infiles="$infiles $arg"
+        shortinfiles="$shortinfiles `basename $arg`"
+        newprogargs="$newprogargs `basename $arg`"
+        if [ -e "$arg.info" ] ; then
+          infiles="$infiles $arg.info"
+        fi
+      else 
+        newprogargs="$newprogargs $arg"
+      fi
+    ;; 
   esac
 done
 if [ "$infiles" != "" ] ; then echo "Staging files: $infiles" ; fi
@@ -325,8 +337,8 @@ fi
 pushd $rundir > /dev/null
 rm -rf $programbase parseargs.py urlget.py
 rm -rf */$$/$programbase */$$/parseargs.py */$$/urlget.py */$$/PI*
-rm -rf $infiles
-for x in $infiles
+rm -rf $shortinfiles
+for x in $shortinfiles
 do
   rm -rf */$$/$x
 done
