@@ -93,30 +93,31 @@ runex1f:
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   $(RM) -f ex1f_1.tmp
 runex2:
-	-@$(MPIRUN) ex2 -nox -snes_smonitor -snes_view \
-		-pc_type jacobi >ex2_1.tmp 2>&1;	\
+	-@$(MPIRUN) ex2 -nox -snes_cancelmonitors -snes_smonitor \
+		 -snes_view -pc_type jacobi >ex2_1.tmp 2>&1;	\
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   $(RM) -f ex2_1.tmp
 runex2_2:
-	-@$(MPIRUN) ex2 -nox -snes_smonitor -snes_type tr -snes_view \
+	-@$(MPIRUN) ex2 -nox -snes_cancelmonitors -snes_smonitor \
+		-snes_type tr -snes_view \
 		-pc_type jacobi > ex2_2.tmp 2>&1; \
 	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   $(RM) -f ex2_2.tmp
 runex3:
-	-@$(MPIRUN) ex3 -nox -snes_smonitor  > ex3_1.tmp 2>&1;	  \
+	-@$(MPIRUN) ex3 -nox -snes_cancelmonitors -snes_smonitor  > ex3_1.tmp 2>&1;	  \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   $(RM) -f ex3_1.tmp
 runex3_2:
-	-@$(MPIRUN) -np 3 ex3 -nox -pc_type asm  -mat_mpiaij -mat_aij_oneindex \
-	   -snes_smonitor > ex3_2.tmp 2>&1; \
+	-@$(MPIRUN) -np 3 ex3 -nox -pc_type asm -mat_mpiaij -mat_aij_oneindex \
+	   -snes_cancelmonitors -snes_smonitor > ex3_2.tmp 2>&1; \
 	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   $(RM) -f ex3_2.tmp
 runex3_3:
-	-@$(MPIRUN) -np 2 ex3 -nox -snes_smonitor > ex3_3.tmp 2>&1; \
+	-@$(MPIRUN) -np 2 ex3 -nox -snes_cancelmonitors -snes_smonitor > ex3_3.tmp 2>&1; \
 	   if (diff output/ex3_3.out ex3_3.tmp) then true; \
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   $(RM) -f ex3_3.tmp

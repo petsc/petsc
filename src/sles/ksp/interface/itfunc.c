@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.71 1996/11/13 15:42:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.72 1996/11/13 15:44:31 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -614,7 +614,7 @@ int KSPGetPC(KSP ksp, PC *B)
 
 /*@C
    KSPSetMonitor - Sets the function to be called at every iteration to monitor 
-       the residual/error etc.
+   the residual/error etc.
       
 
    Input Parameters:
@@ -634,16 +634,21 @@ int KSPGetPC(KSP ksp, PC *B)
 .  mctx  - optional monitoring context, as set by KSPSetMonitor()
 
    Options Database Keys:
-$    -ksp_monitor      : sets KSPDefaultMonitor()
-$    -ksp_truemonitor  : sets KSPTrueMonitor()
-$    -ksp_xmonitor     : sets line graph monitor,
-$                        uses KSPLGMonitorCreate()
-$    -ksp_xtruemonitor : sets line graph monitor,
-$                        uses KSPLGMonitorCreate()
-$    -ksp_singmonitor  : sets KSPSingularValueMonitor()
-$    -ksp_bsmonitor    : sets BlockSolve95 monitor that
-$                        prints both scaled and unscaled
-$                        residual norms
+$    -ksp_monitor        : sets KSPDefaultMonitor()
+$    -ksp_truemonitor    : sets KSPTrueMonitor()
+$    -ksp_xmonitor       : sets line graph monitor,
+$                          uses KSPLGMonitorCreate()
+$    -ksp_xtruemonitor   : sets line graph monitor,
+$                          uses KSPLGMonitorCreate()
+$    -ksp_singmonitor    : sets KSPSingularValueMonitor()
+$    -ksp_bsmonitor      : sets BlockSolve95 monitor that
+$                          prints both scaled and unscaled
+$                          residual norms
+$    -ksp_cancelmonitors : cancels all monitors that have
+$                          been hardwired into a code by 
+$                          calls to KSPSetMonitor(), but
+$                          does not cancel those set via
+$                          the options database.
 
    Notes:  
    The default is to do nothing.  To print the residual, or preconditioned 
