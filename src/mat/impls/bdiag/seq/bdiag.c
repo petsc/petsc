@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.17 1995/06/07 22:47:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.18 1995/06/08 03:09:57 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -99,7 +99,7 @@ static int MatMult_BDiag_base(Mat matin,Vec xx,Vec yy)
 { 
   Mat_BDiag *mat= (Mat_BDiag *) matin->data;
   int             nd = mat->nd, nb = mat->nb, diag;
-  int             kshift;
+  int             kshift, kloc;
   Scalar          *vin, *vout;
   register Scalar *pvin, *pvout, *dv;
   register int    d, i, j, k, len;
@@ -133,10 +133,10 @@ static int MatMult_BDiag_base(Mat matin,Vec xx,Vec yy)
         pvout = vout;
       }
       for (k=0; k<len; k++) {
-        kshift = k*nb*nb;
+        kloc = k*nb; kshift = kloc*nb; 
         for (i=0; i<nb; i++) {	/* i = local row */
           for (j=0; j<nb; j++) {	/* j = local column */
-            pvout[k*nb + i] += dv[kshift + j*nb + i] * pvin[k*nb + j];
+            pvout[kloc + i] += dv[kshift + j*nb + i] * pvin[kloc + j];
           }
         }
       }
@@ -154,7 +154,7 @@ static int MatMultTrans_BDiag_base(Mat matin,Vec xx,Vec yy)
 {
   Mat_BDiag       *mat = (Mat_BDiag *) matin->data;
   int             nd = mat->nd, nb = mat->nb, diag;
-  int             kshift;
+  int             kshift, kloc;
   register Scalar *pvin, *pvout, *dv;
   register int    d, i, j, k, len;
   Scalar          *vin, *vout;
@@ -192,10 +192,10 @@ static int MatMultTrans_BDiag_base(Mat matin,Vec xx,Vec yy)
         pvout = vout;
       }
       for (k=0; k<len; k++) {
-        kshift = k*nb*nb;
+        kloc = k*nb; kshift = kloc*nb;
         for (i=0; i<nb; i++) {	 /* i = local column of transpose */
           for (j=0; j<nb; j++) { /* j = local row of transpose */
-            pvout[k*nb + j] += dv[kshift + j*nb + i] * pvin[k*nb + i];
+            pvout[kloc + j] += dv[kshift + j*nb + i] * pvin[kloc + i];
           }
         }
       }
@@ -234,42 +234,44 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
                         double shift,int its,Vec xx)
 {
   Mat_BDiag  *mat = (Mat_BDiag *) matin->data;
-  Scalar   *x, *b, *xb, *dvmain;
-  int      m = mat->m, i, j, k, d, len, kshift, nb = mat->nb, loc;
-  int      mainbd = mat->mainbd, dval, diag;
-  Scalar register sum, *dv, *pb;
+  Scalar     *x, *b, *xb, *dvmain;
+  int        m = mat->m, i, j, k, d, kbase, nb = mat->nb, loc, kloc;
+  int        mainbd = mat->mainbd, diag, mblock = mat->mblock;
+  register Scalar sum;
+  Scalar     *swork = 0, *bin, *dv;
 
   VecGetArray(xx,&x); VecGetArray(bb,&b);
-
   if (mainbd == -1) SETERRQ(1,"Main diagonal not set.");
   dvmain = mat->diagv[mainbd];
+  if (nb > 1) {
+    swork = (Scalar *) PETSCMALLOC( nb*sizeof(Scalar) ); CHKPTRQ(swork); 
+  }
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
-    for ( i=0; i<m; i++ ) {
-      x[i] = b[i] * (shift + dvmain[i]) / omega;
-    }
     if (nb == 1) {
-      for (d=mainbd+1; d<mat->nd; d++) {
-        dv   = mat->diagv[d];
-        diag = mat->diag[d];
-        len  = mat->bdlen[d];
-        pb   = b - diag;
-        for (j=0; j<len; j++) x[j] += dv[j] * pb[j];
+      for ( i=0; i<m; i++ ) {
+        sum = b[i] * (shift + dvmain[i]) / omega;
+        for (d=mainbd+1; d<mat->nd; d++) {
+          diag = mat->diag[d];
+          if (i-diag < m) sum += mat->diagv[d][i] * x[i-diag];
+        }
+        x[i] = sum;
       }
-    }
-    else {
-      for (d=mainbd+1; d<mat->nd; d++) {
-        dv   = mat->diagv[d];
-        diag = mat->diag[d];
-        len  = mat->bdlen[d];
-        pb   = b - nb*diag;
-        for (k=0; k<len; k++) {
-          kshift = k*nb*nb;
-          for (i=0; i<nb; i++) {
-            for (j=0; j<nb; j++) { 
-              x[k*nb + i] += dv[kshift + j*nb + i] * pb[k*nb + j];
+    } else {
+      for ( k=0; k<mblock; k++ ) {
+        kloc = k*nb; kbase = kloc*nb;
+        for (i=0; i<nb; i++) {
+          swork[i] = b[i+kloc] * (shift + dvmain[i*(nb+1)+kbase]) / omega;
+          for (d=mainbd+1; d<mat->nd; d++) {
+            diag = mat->diag[d];
+            bin = b - nb*diag;
+            dv = mat->diagv[d];
+            for (j=0; j<nb; j++) {
+              if (k-diag < mblock) swork[i] += 
+                 dv[kbase + j*nb + i] * b[(k-diag)*nb + i];
             }
-          }
+	  }
+          x[kloc+i] = swork[i];
         }
       }
     }
@@ -308,6 +310,7 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
     SETERRQ(1, "This section not done.");
     SETERRQ(1,"This option not yet supported for MATBDiag format.");
   }
+  if (swork) PETSCFREE(swork);
   return 0;
 } 
 
@@ -651,7 +654,7 @@ static int MatZero_BDiag(Mat A)
 static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
 {
   Mat_BDiag *l = (Mat_BDiag *) A->data;
-  int     i, j, ierr, N, *rows, m = l->m - 1, nz, *col;
+  int     i, ierr, N, *rows, m = l->m - 1, nz, *col;
   Scalar  *dvmain, *val;
 
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
