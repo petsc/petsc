@@ -49,11 +49,26 @@ int MatDestroy_SeqAIJ_SuperLU(Mat A)
 {
   int                ierr;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
-  int                (*destroy)(Mat)=lu->MatDestroy;
 
   PetscFunctionBegin;
+  if (lu->CleanUpSuperLU) {
+    /* We have to free the global data or SuperLU crashes (sucky design)*/
+    /* Since we don't know if more solves on other matrices may be done
+       we cannot free the yucky SuperLU global data
+       StatFree(); 
+    */
+    
+    /* Free the SuperLU datastructures */
+    Destroy_CompCol_Permuted(&lu->AC);
+    Destroy_SuperNode_Matrix(&lu->L);
+    Destroy_CompCol_Matrix(&lu->U);
+    ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
+    ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+  }
   ierr = MatConvert_SuperLU_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = (*destroy)(A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -343,6 +358,8 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
 int MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
+  /* to its base PETSc type, so we will ignore 'MatType type'. */
   int                  ierr;
   Mat                  B=*newmat;
   Mat_SeqAIJ_SuperLU   *lu=(Mat_SeqAIJ_SuperLU *)A->spptr;
@@ -352,22 +369,6 @@ int MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,Mat *newmat) {
     /* This routine was inherited from SeqAIJ. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   } else {
-    if (lu->CleanUpSuperLU) {
-      /* We have to free the global data or SuperLU crashes (sucky design)*/
-      /* Since we don't know if more solves on other matrices may be done
-         we cannot free the yucky SuperLU global data
-         StatFree(); 
-      */
-  
-      /* Free the SuperLU datastructures */
-      Destroy_CompCol_Permuted(&lu->AC);
-      Destroy_SuperNode_Matrix(&lu->L);
-      Destroy_CompCol_Matrix(&lu->U);
-      ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
-      ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
-      ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
-      ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
-    }
     /* Reset the original function pointers */
     B->ops->view             = lu->MatView;
     B->ops->assemblyend      = lu->MatAssemblyEnd;
@@ -386,6 +387,8 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
 int MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert to MATSUPERLU */
+  /* from MATSEQAIJ, so we will ignore 'MatType type'. */
   int                ierr;
   Mat                B=*newmat;
   Mat_SeqAIJ_SuperLU *lu;
@@ -412,7 +415,8 @@ int MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,Mat *newmat) {
                                            "MatConvert_SeqAIJ_SuperLU",MatConvert_SeqAIJ_SuperLU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
                                            "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+  PetscLogInfo(0,"Using SuperLU for SeqAIJ LU factorization and solves.");
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
