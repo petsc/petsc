@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.10 1995/06/08 03:10:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.12 1995/06/20 01:30:14 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -394,7 +394,8 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
   PLogObjectState(obj,"Rows %d Cols %d",mbd->M,mbd->N);
 #endif
   PETSCFREE(mbd->rowners); 
-  PETSCFREE(mbd->gdiag); 
+  PETSCFREE(mbd->gdiag);
+  if (mbd->gdiagv) PETSCFREE(mbd->gdiagv); 
   ierr = MatDestroy(mbd->A); CHKERRQ(ierr);
   if (mbd->lvec) VecDestroy(mbd->lvec);
   if (mbd->Mvctx) VecScatterCtxDestroy(mbd->Mvctx);
@@ -589,6 +590,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   Mat_MPIBDiag *mbd;
   Mat_BDiag    *mlocal;
   int          ierr, i, k, *ldiag;
+  Scalar       **ldiagv = 0;
 
   *newmat       = 0;
   if ((N%nb)) SETERRQ(1,"Invalid block size.  Bad column number.");
@@ -639,37 +641,60 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
            mbd->rstart,mbd->rend,mbd->brstart, mbd->brend);
 
   /* Determine local diagonals; for now, assume global rows = global cols */
-  ldiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(ldiag); /* local diags */
+  /* These are sorted in MatCreateSequentialBDiag */
+  ldiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(ldiag); 
   mbd->gdiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(mbd->gdiag);
   k = 0;
+  if (diagv) {
+    ldiagv = (Scalar **)PETSCMALLOC((nd+1)*sizeof(Scalar*)); CHKPTRQ(ldiagv); 
+  }
   for (i=0; i<nd; i++) {
     mbd->gdiag[i] = diag[i];
+    if (diagv) mbd->gdiagv[i] = diagv[i];
     if (diag[i] > 0) { /* lower triangular */
-      if (diag[i] < mbd->brend) {ldiag[k] = diag[i] - mbd->brstart; k++;}
+      if (diag[i] < mbd->brend) {
+        ldiag[k] = diag[i] - mbd->brstart;
+        if (diagv) ldiagv[k] = diagv[i];
+        k++;
+      }
     } else { /* upper triangular */
       if (mbd->M/nb - diag[i] > mbd->N/nb) {
-        if (mbd->M/nb + diag[i] > mbd->brstart)
-          {ldiag[k] = diag[i] - mbd->brstart; k++;}
+        if (mbd->M/nb + diag[i] > mbd->brstart) {
+          ldiag[k] = diag[i] - mbd->brstart;
+          if (diagv) ldiagv[k] = diagv[i];
+          k++;
+        }
       } else {
-        if (mbd->M/nb > mbd->brstart)
-          {ldiag[k] = diag[i] - mbd->brstart; k++;}
+        if (mbd->M/nb > mbd->brstart) {
+          ldiag[k] = diag[i] - mbd->brstart;
+          if (diagv) ldiagv[k] = diagv[i];
+          k++;
+        }
       }
     }
   }
 
-  for (i=0; i<nd; i++) printf("[%d] i=%d, diag[i]=%d, ldiag[i]=%d\n", 
-         mbd->mytid,i,diag[i],ldiag[i]);
+  /* Form local matrix */
   ierr = MatCreateSequentialBDiag(MPI_COMM_SELF,mbd->m,mbd->n,k,nb,
-                                  ldiag,diagv,&mbd->A); CHKERRQ(ierr); 
+                                  ldiag,ldiagv,&mbd->A); CHKERRQ(ierr); 
+
+  /* Fix main diagonal location */
   mlocal = (Mat_BDiag *) mbd->A->data;
-  mlocal->mainbd += mbd->brstart; /* fix main diagonal location */
+  mlocal->mainbd = -1; 
+  for (i=0; i<k; i++) {
+    if (ldiag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
+  }
+  for (i=0; i<nd; i++)
+    printf("[%d] i=%d, diag[i]=%d, ldiag[i]=%d, mainbd=%d\n", 
+         mbd->mytid,i,diag[i],ldiag[i],mlocal->mainbd);
+ 
   PLogObjectParent(mat,mbd->A);
-  PETSCFREE(ldiag);
+  PETSCFREE(ldiag); if (ldiagv) PETSCFREE(ldiagv);
 
   /* build cache for off array entries formed */
   ierr = StashBuild_Private(&mbd->stash); CHKERRQ(ierr);
 
-  /* stuff used for matrix vector multiply */
+  /* stuff used for matrix-vector multiply */
   mbd->lvec      = 0;
   mbd->Mvctx     = 0;
   mbd->assembled = 0;
