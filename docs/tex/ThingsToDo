@@ -37,15 +37,12 @@ Meta priorities:
         PetscToPointer()
     Make Petsc[To/From]PointerComm public instead of private?
 
-  - Change PLOgEventBegin() and end to no longer use the 
-    "tacky" stuff since it should be no longer needed, then 
-    fix the logging inside snesmfj.c
+  - Remove the unused tacky argument to the PETSc profiling 
+     functions; not needed anymore.
+
 
   - PetscFree(); CHKERRQ(); on IRIX64 ( + manpages)
 
-  - There is no man page for AOCreateDebug() why and fix?
-
-  - add documentation on -ksp_smonitor and -snes_smonitor
 
   - Convert DACreateXd() to use ISCreateBlock() when block size is bigger then
     1.
@@ -855,3 +852,13 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
  X Change VecNorm_MPI() so that they use compiled code on
    the IBM instead of call the blas; which is very slow due to their
    XScareful stability stuff.
+
+
+ X Change PLOgEventBegin() and end to no longer use the 
+    "tacky" stuff since it should be no longer needed, then 
+    fix the logging inside snesmfj.c
+
+ X There is no man page for AOCreateDebug() why and fix?
+
+
+  X add documentation on -ksp_smonitor and -snes_smonitor

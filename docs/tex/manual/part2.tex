@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.226 1997/07/02 22:28:48 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.227 1997/07/07 14:45:31 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1972,6 +1972,17 @@ Where {\tt x, y, w, h} are the optional location and size of the window.
 Once can cancel all hardwired monitoring routines for KSP at runtime with 
 {\tt -ksp\_cancelmonitors}. \findex{-ksp_cancelmonitors}
 
+As the Krylov method converges so that the residual norm is small,
+say $ 10^{-10} $ many of the final digits printed with the {\tt -ksp\_monitor}
+option are meaningless. Worse, they are different on different 
+machines; due to different round-off rules used by, say, the IBM RS6000
+and the Sun Sparc. This makes testing between different machines
+difficult. The option {\tt -ksp\_smonitor} \findex{-ksp_smonitor}
+causes PETSc to print fewer of the digits of the residual norm 
+as it gets smaller; thus on most of the machines it will always
+print the same numbers making cross processor testing easier.
+
+
 \subsection{Understanding the Operator's Spectrum}
 
 Since the convergence of Krylov subspace methods depends strongly on 
@@ -3007,6 +3018,15 @@ a simple line graph of the residual norm's convergence.
 Once can cancel all hardwired monitoring routines for SNES at runtime with 
 {\tt -snes\_cancelmonitors}. \findex{-snes_cancelmonitors}
 
+As the Newton method converges so that the residual norm is small,
+say $ 10^{-10} $ many of the final digits printed with the {\tt -snes\_monitor}
+option are meaningless. Worse, they are different on different 
+machines; due to different round-off rules used by, say, the IBM RS6000
+and the Sun Sparc. This makes testing between different machines
+difficult. The option {\tt -snes\_smonitor} \findex{-snes_smonitor}
+causes PETSc to print fewer of the digits of the residual norm 
+as it gets smaller; thus on most of the machines it will always
+print the same numbers making cross processor testing easier.
 
 The routines \findex{SNESGetSolution()} \findex{SNESGetFunction}
 \begin{verbatim}

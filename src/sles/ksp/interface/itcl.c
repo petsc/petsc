@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.96 1997/07/09 20:50:16 balay Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.97 1997/07/18 18:52:39 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -48,6 +48,9 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 
    Input Parameters:
 .  ksp - the Krylov space context
+
+   Notes:  To see all options, run your program with the -help option;
+           or consult the users manual.
 
 .keywords: KSP, set, from, options, database
 

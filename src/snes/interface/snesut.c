@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.29 1997/02/22 02:28:38 bsmith Exp balay $";
+static char vcid[] = "$Id: snesut.c,v 1.30 1997/07/09 20:59:37 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -40,6 +40,13 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESDefaultSMonitor" /* ADIC Ignore */
+/*
+     Default (short) SNES Monitor, same as SNESDefaultMonitor() except
+  it prints fewer digits of the residual as the residual gets smaller.
+  This is because the later digits are meaningless and are often 
+  different on different machines; by using this routine different 
+  machines will usually generate the same output.
+*/
 int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 {
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
