@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.17 1995/06/23 12:40:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.18 1995/07/07 17:15:33 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -119,6 +119,19 @@ int PetscFinalize()
 {
   int  ierr,i,mytid = 0;
 
+#if defined(PETSC_LOG)
+  if (OptionsHasName(0,"-log_summary")) {
+    PLogPrint(MPI_COMM_WORLD,stdout);
+  }
+  {
+    char monitorname[64];
+    if (OptionsGetString(0,"-log_all",monitorname,64) || 
+        OptionsGetString(0,"-log",monitorname,64)) {
+      if (monitorname[0]) PLogDump(monitorname); 
+      else PLogDump(0);
+    }
+  }
+#endif
   if (!OptionsHasName(0,"-no_signal_handler")) {
     PetscPopSignalHandler();
   }
@@ -144,19 +157,6 @@ int PetscFinalize()
       }
     } 
   }
-#if defined(PETSC_LOG)
-  {
-    char monitorname[64];
-    if (OptionsGetString(0,"-log_all",monitorname,64) || 
-        OptionsGetString(0,"-log",monitorname,64)) {
-      if (monitorname[0]) PLogDump(monitorname); 
-      else PLogDump(0);
-    }
-    if (OptionsHasName(0,"-log_summary")) {
-       PLogPrint(MPI_COMM_WORLD,stdout);
-    }
-  }
-#endif
   if (OptionsHasName(0,"-trdump")) {
     OptionsDestroy_Private();
     NRDestroyAll();
@@ -305,16 +305,15 @@ static int OptionsCheckInitial_Private()
     PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
   }
 #if defined(PETSC_LOG)
+  if (OptionsHasName(0,"-info")) {
+    PLogAllowInfo(PETSC_TRUE);
+  }
   if (OptionsHasName(0,"-log_all")) {
     PLogAllBegin();
   }
   else if (OptionsHasName(0,"-log") || OptionsHasName(0,"-log_summary")) {
-    PLogAllBegin();
+    PLogBegin();
   }
-  if (OptionsHasName(0,"-info")) {
-    PLogAllowInfo(PETSC_TRUE);
-  }
-
 #endif
   if (OptionsHasName(0,"-help")) {
     MPIU_printf(comm,"Options for all PETSc programs:\n");
