@@ -29,7 +29,16 @@ for lcv = 1:count
   elseif dtype == 7 % boolean
     val = fread(fd,1,'bit1');
   elseif dtype == 8 % Enum
-    val = fread(fd,1,'int32');
+    val   = fread(fd,1,'int32');
+    n     = fread(fd,1,'int32');
+    sizes = fread(fd,n,'int32');
+    enumnames = {'  '};
+    for i=1:n-2,
+      enumnames{i} = deblank(char(fread(fd,sizes(i),'uchar')));
+    end
+    val  = char(enumnames{val+1})';
+    enumname   = deblank(char(fread(fd,sizes(n-1),'uchar')));
+    enumprefix = deblank(char(fread(fd,sizes(n),'uchar')));
   else 
     val = [];
     warning('Bag entry %s could not be read',name);
