@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.2 2000/01/11 20:59:37 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.3 2000/01/16 23:59:32 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -19,7 +19,7 @@
 
     Eventually we'll attach this beast to a MPI_Comm
 */
-typedef enum {PETSC_OPTION_INT, PETSC_OPTION_NAME, PETSC_OPTION_DOUBLE, PETSC_OPTION_LIST} PetscOptionType;
+typedef enum {PETSC_OPTION_INT, PETSC_OPTION_LOGICAL, PETSC_OPTION_DOUBLE, PETSC_OPTION_LIST} PetscOptionType;
 typedef struct _p_PetscOptionsAMS* PetscOptionsAMS;
 struct _p_PetscOptionsAMS {
   char            *option;
@@ -101,7 +101,8 @@ int OptionsSelectEnd(MPI_Comm comm)
         case PETSC_OPTION_DOUBLE:
           sprintf(value,"%g",*(double*)amspub.next->data);
           break;
-        case PETSC_OPTION_NAME:
+        case PETSC_OPTION_LOGICAL:
+          sprintf(value,"%d",*(int*)amspub.next->data);
           break;
         case PETSC_OPTION_LIST:
           ierr = PetscStrcpy(value,*(char**)amspub.next->data);CHKERRQ(ierr);
@@ -122,7 +123,10 @@ int OptionsSelectEnd(MPI_Comm comm)
   ierr = PetscStrfree(amspub.prefix);CHKERRQ(ierr); amspub.prefix = 0;
   PetscFunctionReturn(0);
 }
-
+/*
+     Publishes the "lock" for an option; with a name that is the command line
+   option name. This is the first item that is always published for an option
+*/
 #undef __FUNC__  
 #define __FUNC__ "OptionsSelectCreate"
 static int OptionsSelectCreate(char *opt,char *text,PetscOptionsAMS *amsopt)
@@ -150,6 +154,10 @@ static int OptionsSelectCreate(char *opt,char *text,PetscOptionsAMS *amsopt)
   PetscFunctionReturn(0);
 }
 
+/*
+     Publishes an AMS int field (with the default value in it) and with a name
+   given by the text string
+*/
 #undef __FUNC__  
 #define __FUNC__ "OptionsSelectInt"
 int OptionsSelectInt(MPI_Comm comm,char *opt,char *text,int defaultv)
@@ -168,6 +176,10 @@ int OptionsSelectInt(MPI_Comm comm,char *opt,char *text,int defaultv)
   PetscFunctionReturn(0);
 }
 
+/*
+     Publishes an AMS double field (with the default value in it) and with a name
+   given by the text string
+*/
 #undef __FUNC__  
 #define __FUNC__ "OptionsSelectDouble"
 int OptionsSelectDouble(MPI_Comm comm,char *opt,char *text,double defaultv)
@@ -186,6 +198,10 @@ int OptionsSelectDouble(MPI_Comm comm,char *opt,char *text,double defaultv)
   PetscFunctionReturn(0);
 }
 
+/*
+     Publishes an AMS logical field (with the default value in it) and with a name
+   given by the text string
+*/
 #undef __FUNC__  
 #define __FUNC__ "OptionsSelectName"
 int OptionsSelectName(MPI_Comm comm,char *opt,char *text)
@@ -195,7 +211,7 @@ int OptionsSelectName(MPI_Comm comm,char *opt,char *text)
 
   PetscFunctionBegin;
   ierr = OptionsSelectCreate(opt,text,&amsopt);CHKERRQ(ierr);
-  amsopt->type        = PETSC_OPTION_NAME;
+  amsopt->type        = PETSC_OPTION_LOGICAL;
   amsopt->data        = (void *) PetscMalloc(sizeof(int));CHKERRQ(ierr);
   *(int*)amsopt->data = 0;
 
@@ -204,6 +220,11 @@ int OptionsSelectName(MPI_Comm comm,char *opt,char *text)
   PetscFunctionReturn(0);
 }
 
+/*
+     Publishes a single string (the default) with a name given by the DEFAULT: + text
+  and an AMS array of strings which are to be selected from with a name given by the text
+
+*/
 #undef __FUNC__  
 #define __FUNC__ "OptionsSelectList"
 int OptionsSelectList(MPI_Comm comm,char *opt,char *ltext,char **text,int ntext,char *defaultv)
@@ -215,14 +236,19 @@ int OptionsSelectList(MPI_Comm comm,char *opt,char *ltext,char **text,int ntext,
   PetscFunctionBegin;
   ierr = OptionsSelectCreate(opt,ltext,&amsopt);CHKERRQ(ierr);
   amsopt->type           = PETSC_OPTION_LIST;
-  amsopt->data           = (void *) PetscMalloc(ntext*sizeof(char*));CHKERRQ(ierr);
-  ierr = PetscMemcpy(amsopt->data,text,ntext*sizeof(char*));CHKERRQ(ierr);
 
-  ierr = AMS_Memory_add_field(amspub.amem,ltext,amsopt->data,ntext,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  amsopt->edata             = (void *) PetscMalloc(sizeof(char*));CHKERRQ(ierr);
-  *(char **)(amsopt->edata) = defaultv;
-  ierr = PetscStrcpy(ldefault,ltext);CHKERRQ(ierr);
-  ierr = PetscStrcat(ldefault,"default");CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amspub.amem,ldefault,amsopt->edata,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  amsopt->data             = (void *) PetscMalloc(sizeof(char*));CHKERRQ(ierr);
+  *(char **)(amsopt->data) = defaultv;
+  ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
+  ierr = PetscStrcat(ldefault,ltext);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amspub.amem,ldefault,amsopt->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
+  amsopt->edata          = (void *) PetscMalloc(ntext*sizeof(char*));CHKPTRQ(amsopt->edata);
+  ierr = PetscMemcpy(amsopt->edata,text,ntext*sizeof(char*));CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amspub.amem,ltext,amsopt->edata,ntext,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
+
+
+
