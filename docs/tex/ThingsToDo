@@ -10,10 +10,6 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
- - Add variant ot MatSetOption(MAT_NO_NEW_NONZERO_LOCATIONS) to print error
-   instead of ignoring calls to insert values for which no storage has
-   been allocated.
-
  - Add support to DA so that Global to Local and Local to Global uninterlaces
    multicomponent vectors.
 
@@ -24,11 +20,11 @@ Additional Capabilities that PETSc Needs:
 
  - Test mpiuni on DEC alpha, document any changes needed for it to work.
 
-  - Add info about which library components do what.  Mention SLES_LIB.
+ - Add info about which library components do what.  Mention SLES_LIB.
 
-  - Add table of all preconditioners and options to PETSc manual.
+ - Add table of all preconditioners and options to PETSc manual.
 
-  - investigate Said's ILUDT
+ - investigate Said's ILUDT
 
 Satish  * MatSetValuesBlocked()
 
@@ -38,7 +34,6 @@ Satish  * MatSetValuesBlocked()
 
 Lois  - add info about help message printout to section 12.1 (version 2.0.15)
     of users manual.
-
 
 Satish/Lois  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
@@ -103,6 +98,7 @@ Lois  - Add SLES example showing multiple linear solves with same matrices but
 -----------------------------------------------------------------------
 
  - Provide tools that help with imposing BCs but retaining matrix symmetry.
+   Is this even possible or just academics dreaming in their ivory towers?
 
  - Fix VRML vector viewer interface; add documentation about VRML.
 
@@ -275,6 +271,7 @@ Lois  - Add SLES example showing multiple linear solves with same matrices but
          Web pages to read and possible software to interface to 
 ------------------------------------------------------------------------
 
+  - http://www.maths.bath.ac.uk/~mjh/doug/
   - http://www.cis.ohio-state.edu/~white/splc96/
   - http://www.c3.lanl.gov/~dquinlan/A++P++.html
   - http://www-sccm.stanford.edu/~burgess/papers/renumber.ps.gz
@@ -720,3 +717,7 @@ Lois  - Add SLES example showing multiple linear solves with same matrices but
  X Where does the Fortran interface flag really belong?  Should be more
    readily available to applications codes so that $(CONF) need not be
    use there.
+
+ X Add variant ot MatSetOption(MAT_NO_NEW_NONZERO_LOCATIONS) to print error
+   instead of ignoring calls to insert values for which no storage has
+   been allocated.
