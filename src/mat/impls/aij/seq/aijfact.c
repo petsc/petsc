@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.83 1997/07/09 13:09:45 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.84 1997/07/09 20:53:48 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -353,6 +353,51 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
   return 0;
 }
 
+/* ----------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqAIJ_NaturalOrdering"
+int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        i,  n = a->m, *vi, *ai = a->i, *aj = a->j,nz, *adiag = a->diag;
+  int        ai_i, adiag_i;
+  Scalar     *x,*b, *aa = a->a, sum, *v;
+
+  if (!n) return 0;
+  if (a->indexshift) {
+     return MatSolve_SeqAIJ(A,bb,xx);
+  }
+
+  VecGetArray_Fast(bb,b); 
+  VecGetArray_Fast(xx,x); 
+
+  /* forward solve the lower triangular */
+  x[0] = b[0];
+  for ( i=1; i<n; i++ ) {
+    ai_i = ai[i];
+    v    = aa + ai_i;
+    vi   = aj + ai_i;
+    nz   = adiag[i] - ai_i;
+    sum  = b[i];
+    while (nz--) sum -= *v++ * x[*vi++];
+    x[i] = sum;
+  }
+
+  /* backward solve the upper triangular */
+  for ( i=n-1; i>=0; i-- ){
+    adiag_i = adiag[i];
+    v       = aa + adiag_i;
+    vi      = aj + adiag_i;
+    nz      = ai[i+1] - adiag_i - 1;
+    sum     = x[i];
+    while (nz--) sum -= *v++ * x[*vi++];
+    x[i]    = sum*aa[adiag_i];
+  }
+
+  PLogFlops(2*a->nz - a->n);
+  return 0;
+}
+
 #undef __FUNC__  
 #define __FUNC__ "MatSolveAdd_SeqAIJ"
 int MatSolveAdd_SeqAIJ(Mat A,Vec bb, Vec yy, Vec xx)
@@ -538,9 +583,10 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
     if (!b->diag) {
       ierr = MatMarkDiag_SeqAIJ(*fact); CHKERRQ(ierr);
     }
-    b->row          = isrow;
-    b->col          = iscol;
-    b->solve_work = (Scalar *) PetscMalloc((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    b->row             = isrow;
+    b->col             = iscol;
+    b->solve_work      = (Scalar *) PetscMalloc((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    (*fact)->ops.solve = MatSolve_SeqAIJ_NaturalOrdering;
     return 0;
   }
 
