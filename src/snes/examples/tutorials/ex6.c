@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.60 2000/01/11 21:02:45 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.61 2000/05/05 22:18:34 balay Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\
@@ -39,15 +39,15 @@ int MatrixFreePreconditioner(void*,Vec,Vec);
 
 int main(int argc,char **argv)
 {
-  SNES       snes;                 /* SNES context */
-  SLES       sles;                 /* SLES context */
-  PC         pc;                   /* PC context */
-  KSP        ksp;                  /* KSP context */
-  Vec        x,r,F;              /* vectors */
+  SNES       snes;                /* SNES context */
+  SLES       sles;                /* SLES context */
+  PC         pc;                  /* PC context */
+  KSP        ksp;                 /* KSP context */
+  Vec        x,r,F;               /* vectors */
   Mat        J,JPrec;             /* Jacobian,preconditioner matrices */
-  int        ierr,its,n = 5,i,size;
-  int        *sres_hist_its = 0,res_hist_len = 200,sres_hist_len = 10;
-  double     h,xp = 0.0,*res_hist = 0,*sres_hist = 0;
+  int        ierr,it,n = 5,i,size;
+  int        *Shistit = 0,Khistl = 200,Shistl = 10;
+  double     h,xp = 0.0,*Khist = 0,*Shist = 0;
   Scalar     v,pfive = .5;
   PetscTruth flg;
 
@@ -118,13 +118,13 @@ int main(int argc,char **argv)
   */
   ierr = OptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr     = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-    ierr     = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-    res_hist = (double*)PetscMalloc(res_hist_len*sizeof(double));CHKPTRA(res_hist);
-    ierr     = KSPSetResidualHistory(ksp,res_hist,res_hist_len,PETSC_FALSE);CHKERRA(ierr);
-    sres_hist = (double*)PetscMalloc(sres_hist_len*sizeof(double));CHKPTRA(sres_hist);
-    sres_hist_its = (int*)PetscMalloc(sres_hist_len*sizeof(int));CHKPTRA(sres_hist_its);
-    ierr     = SNESSetConvergenceHistory(snes,sres_hist,sres_hist_its,sres_hist_len,PETSC_FALSE);CHKERRA(ierr);
+    ierr    = SNESGetSLES(snes,&sles);CHKERRA(ierr);
+    ierr    = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
+    Khist   = (double*)PetscMalloc(Khistl*sizeof(double));CHKPTRA(Khist);
+    ierr    = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRA(ierr);
+    Shist   = (double*)PetscMalloc(Shistl*sizeof(double));CHKPTRA(Shist);
+    Shistit = (int*)PetscMalloc(Shistl*sizeof(int));CHKPTRA(Shistit);
+    ierr    = SNESSetConvergenceHistory(snes,Shist,Shistit,Shistl,PETSC_FALSE);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,19 +144,19 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = VecSet(&pfive,x);CHKERRA(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
+  ierr = SNESSolve(snes,x,&it);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Newton iterations = %d\n\n",it);CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = KSPGetResidualHistory(ksp,PETSC_NULL,&res_hist_len);CHKERRA(ierr);
-    PetscDoubleView(res_hist_len,res_hist,VIEWER_STDOUT_SELF);
-    ierr = PetscFree(res_hist);CHKERRA(ierr);
-    ierr = SNESGetConvergenceHistory(snes,PETSC_NULL,PETSC_NULL,&sres_hist_len);CHKERRA(ierr);
-    PetscDoubleView(sres_hist_len,sres_hist,VIEWER_STDOUT_SELF);
-    PetscIntView(sres_hist_len,sres_hist_its,VIEWER_STDOUT_SELF);
-    ierr = PetscFree(sres_hist);CHKERRA(ierr);
-    ierr = PetscFree(sres_hist_its);CHKERRA(ierr);
+    ierr = KSPGetResidualHistory(ksp,PETSC_NULL,&Khistl);CHKERRA(ierr);
+    PetscDoubleView(Khistl,Khist,VIEWER_STDOUT_SELF);
+    ierr = PetscFree(Khist);CHKERRA(ierr);
+    ierr = SNESGetConvergenceHistory(snes,PETSC_NULL,PETSC_NULL,&Shistl);CHKERRA(ierr);
+    PetscDoubleView(Shistl,Shist,VIEWER_STDOUT_SELF);
+    PetscIntView(Shistl,Shistit,VIEWER_STDOUT_SELF);
+    ierr = PetscFree(Shist);CHKERRA(ierr);
+    ierr = PetscFree(Shistit);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
