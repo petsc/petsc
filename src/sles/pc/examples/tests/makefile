@@ -15,8 +15,31 @@ EXAMPLES = ex1 ex2 ex3 ex4
 REXAMPLES= runex1 runex2 runex3 runex4 runex4_2
 CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
-SYSLIB   = $(SLES_LIB) -lm
 LINCLUDE = $(SOURCEH)
+
+ex1: ex1.o 
+	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
+	$(RM) ex1.o
+
+ex2: ex2.o 
+	-$(CLINKER) -o ex2 ex2.o $(SLES_LIB)
+	$(RM) ex2.o
+
+ex3: ex3.o 
+	-$(CLINKER) -o ex3 ex3.o $(SLES_LIB)
+	$(RM) ex3.o
+
+ex4: ex4.o 
+	-$(CLINKER) -o ex4 ex4.o $(SLES_LIB)
+	$(RM) ex4.o
+
+ex5: ex5.o 
+	-$(CLINKER) -o ex5 ex5.o $(SLES_LIB)
+	$(RM) ex5.o
+
+ex6: ex6.o 
+	-$(CLINKER) -o ex6 ex6.o $(SLES_LIB)
+	$(RM) ex6.o
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
@@ -45,28 +68,5 @@ runex4_2:
            else echo "Possible problem with ex4_2, diffs above"; fi; \
            $(RM) -f ex4_2.tmp 
 
-ex1: ex1.o 
-	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex1.o
-
-ex2: ex2.o 
-	-$(CLINKER) -o ex2 ex2.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex2.o
-
-ex3: ex3.o 
-	-$(CLINKER) -o ex3 ex3.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex3.o
-
-ex4: ex4.o 
-	-$(CLINKER) -o ex4 ex4.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex4.o
-
-ex5: ex5.o 
-	-$(CLINKER) -o ex5 ex5.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex5.o
-
-ex6: ex6.o 
-	-$(CLINKER) -o ex6 ex6.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex6.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
