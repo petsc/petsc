@@ -1,0 +1,11 @@
+# $Id: common.O,v 1.2 1998/12/04 23:33:30 balay Exp $ 
+
+CC         = ${C_CC}
+FC         = ${C_FC}
+CLINKER    = ${C_CLINKER}
+FLINKER    = ${C_FLINKER}
+SYS_LIB    = ${C_SYS_LIB}
+
+PETSCFLAGS = ${O_PETSCFLAGS}
+COPTFLAGS  = ${O_COPTFLAGS}
+FOPTFLAGS  = ${O_FOPTFLAGS}
