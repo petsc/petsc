@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.23 1996/08/22 22:36:48 curfman Exp bsmith $;
+C  $Id: mat.h,v 1.24 1996/08/30 14:35:15 bsmith Exp curfman $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -67,8 +67,23 @@ C  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
 C  (See petsc/include/mat.h)
 C
       integer MAT_INFO_SIZE
-
       parameter (MAT_INFO_SIZE=14)
+
+      integer   MAT_INFO_ROWS_GLOBAL,MAT_INFO_COLUMNS_GLOBAL,
+     *          MAT_INFO_ROWS_LOCAL,MAT_INFO_COLUMNS_LOCAL,
+     *          MAT_INFO_BLOCK_SIZE,MAT_INFO_NZ_ALLOCATED,
+     *          MAT_INFO_NZ_USED,MAT_INFO_NZ_UNNEEDED,
+     *          MAT_INFO_MEMORY,MAT_INFO_ASSEMBLIES,
+     *          MAT_INFO_MALLOCS,MAT_INFO_FILL_RATIO_GIVEN,
+     *          MAT_INFO_FILL_RATIO_NEEDED,MAT_FACTOR_MALLOCS
+
+      parameter (MAT_INFO_ROWS_GLOBAL=1,MAT_INFO_COLUMNS_GLOBAL=2,
+     *          MAT_INFO_ROWS_LOCAL=3,MAT_INFO_COLUMNS_LOCAL=4,
+     *          MAT_INFO_BLOCK_SIZE=5,MAT_INFO_NZ_ALLOCATED=6,
+     *          MAT_INFO_NZ_USED=7,MAT_INFO_NZ_UNNEEDED=8,
+     *          MAT_INFO_MEMORY=9,MAT_INFO_ASSEMBLIES=10,
+     *          MAT_INFO_MALLOCS=11,MAT_INFO_FILL_RATIO_GIVEN=12,
+     *          MAT_INFO_FILL_RATIO_NEEDED=13,MAT_FACTOR_MALLOCS=14)
 
 C
 C  MatSubMatrixCall
