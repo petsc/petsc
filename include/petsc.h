@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.72 1995/12/05 05:14:54 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.73 1995/12/07 19:30:54 bsmith Exp balay $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -42,21 +42,22 @@ extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,
 extern int  TrDump(FILE *);
 extern int  TrGetMaximumAllocated(double*);
 
-extern void  PetscMemcpy(void *,void *,int);
-extern void  PetscMemzero(void *,int);
-extern int   PetscStrlen(char *);
-extern int   PetscStrcmp(char *,char *);
-extern int   PetscStrncmp(char *,char *,int );
-extern void  PetscStrcpy(char *,char *);
-extern void  PetscStrcat(char *,char *);
-extern void  PetscStrncat(char *,char *,int);
-extern void  PetscStrncpy(char *,char *,int);
-extern char* PetscStrchr(char *,char);
-extern char* PetscStrrchr(char *,char);
-extern char* PetscStrstr(char*,char*);
-extern char* PetscStrtok(char*,char*);
-extern char* PetscStrrtok(char*,char*);
-extern int   PetscMemcmp(char*, char*, int);
+extern void   PetscMemcpy(void *,void *,int);
+extern void   PetscMemzero(void *,int);
+extern int    PetscMemcmp(char*, char*, int);
+extern int    PetscStrlen(char *);
+extern int    PetscStrcmp(char *,char *);
+extern int    PetscStrncmp(char *,char *,int );
+extern void   PetscStrcpy(char *,char *);
+extern void   PetscStrcat(char *,char *);
+extern void   PetscStrncat(char *,char *,int);
+extern void   PetscStrncpy(char *,char *,int);
+extern char*  PetscStrchr(char *,char);
+extern char*  PetscStrrchr(char *,char);
+extern char*  PetscStrstr(char*,char*);
+extern char*  PetscStrtok(char*,char*);
+extern char*  PetscStrrtok(char*,char*);
+extern double PetscGetTime();
 
 #define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
