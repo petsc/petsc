@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.86 1997/12/12 19:36:34 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.87 1998/03/12 23:15:32 bsmith Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -373,9 +373,11 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
 #define __FUNC__ "VecView_MPI_Matlab"
 int VecView_MPI_Matlab(Vec xin, Viewer viewer )
 {
+#if !defined(USE_PETSC_COMPLEX)
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size, N = x->N,*lens,ierr;
   double      *xx;
+#endif
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_COMPLEX)

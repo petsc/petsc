@@ -1,6 +1,6 @@
 
 
-/* $Id: dvec2.c,v 1.46 1997/11/05 20:36:32 balay Exp bsmith $ */
+/* $Id: dvec2.c,v 1.47 1997/11/27 00:03:02 bsmith Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -20,7 +20,7 @@
 int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
-  register int i,j,nv_rem,j_rem;
+  register int i,nv_rem;
   int      n = xv->n;
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
@@ -33,7 +33,6 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
   i      = nv;
   nv_rem = nv&0x3;
   yy     = yin;
-  j      = n;
   x      = xv->array;
 
   switch (nv_rem) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.47 1997/11/09 03:54:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.48 1997/11/28 16:18:15 bsmith Exp balay $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -62,14 +62,16 @@ $  -draw_contour_grid
 @*/
 int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 {
-  int           xin = 1, yin = 1, i, N, rank, ierr;
-  int           pause,showgrid;
-  double        h, *v, min, max, scale = 1.0;
+  int           N, rank, ierr;
   Vec           W;
   IS            from, to;
   VecScatter    ctx;
   PetscObject   vobj = (PetscObject) win;
   Draw          popup;
+#if !defined(USE_PETSC_COMPLEX)
+  int          xin=1,yin=1,i,pause,showgrid;
+  double        h, *v, min, max, scale = 1.0;
+#endif
 
   PetscFunctionBegin;
   if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.137 1998/02/18 21:00:43 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.138 1998/03/12 23:18:15 bsmith Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -292,7 +292,10 @@ int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *x, *b, *v = mat->v, zero = 0.0, xt;
-  int          o = 1,ierr, m = mat->m, i;
+  int          ierr, m = mat->m, i;
+#if !defined(USE_PETSC_COMPLEX)
+  int          o = 1;
+#endif
 
   PetscFunctionBegin;
   if (flag & SOR_ZERO_INITIAL_GUESS) {
