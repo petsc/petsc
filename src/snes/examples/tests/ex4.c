@@ -32,10 +32,9 @@ is solved.  The command line options are:\n\
     nonlinear equations. 
 */
 
-#include "vec.h"
 #include "draw.h"
 #include "snes.h"
-#include "options.h"
+#include "petsc.h"
 #include <math.h>
 #define MIN(a,b) ( ((a)<(b)) ? a : b )
 

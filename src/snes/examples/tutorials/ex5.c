@@ -27,10 +27,9 @@ is solved.  The command line options are:\n\
 
 */
 
-#include "vec.h"
 #include "draw.h"
 #include "snes.h"
-#include "options.h"
+#include "petsc.h"
 #include "ra.h"
 #include <math.h>
 #include <stdio.h>

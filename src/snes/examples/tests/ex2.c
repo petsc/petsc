@@ -3,7 +3,7 @@ static char help[] =
 "This example uses Newton's method to solve a two-variable system.\n\n";
 
 #include "snes.h"
-#include "options.h"
+#include "petsc.h"
 
 int  FormJacobian(SNES snes,Vec,Mat*,Mat*,int*,void*),
      FormFunction(SNES snes,Vec,Vec,void*),

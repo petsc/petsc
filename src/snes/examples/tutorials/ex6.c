@@ -10,7 +10,7 @@ with a user-provided preconditioner.  Input arguments are:\n\
 
 #include "draw.h"
 #include "snes.h"
-#include "options.h"
+#include "petsc.h"
 #include <math.h>
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
