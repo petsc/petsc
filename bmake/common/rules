@@ -464,9 +464,14 @@ noshared:
 # Builds manual pages in HTML in two stages
 #   1.) manualpages_buildcite: builds the file manualpages.cit for hyperlinks
 #   2.) manualpages: builds the html pages, complete with hyperlinks
-manualpages_buildcite:
+
+chk_manualpage_dir:
+	@if [ ! -d "${LOC}/docs/manualpages/${MANSEC}" ]; then \
+	  echo Making directory ${LOC}/docs/manualpages/${MANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/${MANSEC}; fi
+
+manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
-	  DOCTEXT_PATH=/home/bsmith/petsc/docs/tex/doctext; \
+	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; \
           /home/gropp/bin/linux/doctext -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH};  fi 
@@ -474,10 +479,10 @@ manualpages_buildcite:
 #
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
-	  DOCTEXT_PATH=/home/bsmith/petsc/docs/tex/doctext; \
+	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; \
 	  /home/gropp/bin/linux/doctext -html \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
-		-defn /home/bsmith/petsc/docs/tex/doctext/html.def \
+		-defn ${PETSC_DIR}/docs/tex/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit \
 		${SOURCEC} ${SOURCEH}; \
 		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi 

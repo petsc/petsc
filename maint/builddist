@@ -43,11 +43,14 @@ cd $PETSC_DIR
 bk pull
 bk -r co -q
 
-# Clean up, create fortran stubs and tar up the PETSc tree
+# create fortran stubdocs, configure and cleanup
 cd $PETSC_DIR
 make allfortranstubs
 make configure
+make allmanualpages LOC=${PETSC_DIR}
 make ACTION=clean tree
+
+# now tar up the PETSc tree
 cd /sandbox/petsc
 /bin/tar --create --file $tmpdir/petsc.tar --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
 cd $tmpdir

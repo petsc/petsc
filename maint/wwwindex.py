@@ -262,7 +262,7 @@ def getallmandirs(dirs):
       mandirs = []
       for filename in dirs:
             path,name = posixpath.split(filename)
-            if name == 'RCS' or name == 'sec' or name == "concepts" : continue
+            if name == 'RCS' or name == 'sec' or name == "concepts" or name  == "SCCS" : continue
             if posixpath.isdir(filename):
                   mandirs.append(filename)
       return mandirs

@@ -165,7 +165,6 @@ info_h:
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
 	-@cat MINFO | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}
-	-@chmod g+w ${MINFO}
 	-@$(RM) MINFO
 #
 # Builds the PETSc libraries
@@ -177,7 +176,6 @@ build:
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
-	-@chmod g+w  ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
@@ -280,7 +278,6 @@ etags:
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_examplesfh alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS ACTION=etags_makefile alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS etags_bmakefiles
-	-chmod g+w TAGS
 # Builds complete etags list; only for PETSc developers.
 etags_complete:
 	-${RM} ${TAGSDIR}/TAGS_COMPLETE
@@ -297,7 +294,6 @@ etags_complete:
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE etags_bmakefiles
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_docs alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_COMPLETE ACTION=etags_scripts alltree
-	-chmod g+w TAGS_COMPLETE
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
 	-${RM} ${TAGSDIR}/TAGS_NO_EXAMPLES
@@ -309,14 +305,12 @@ etags_noexamples:
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_makefile alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES etags_bmakefiles
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_docs alltree
-	-chmod g+w TAGS_NO_EXAMPLES
 # Builds the etags file for makefiles
 etags_makefiles: 
 	-${RM} ${TAGSDIR}/TAGS_MAKEFILES
 	-touch ${TAGSDIR}/TAGS_MAKEFILES
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_MAKEFILES ACTION=etags_makefile alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_MAKEFILES etags_bmakefiles
-	-chmod g+w TAGS_MAKEFILES
 # Builds the etags file for examples
 etags_examples: 
 	-${RM} ${TAGSDIR}/TAGS_EXAMPLES
@@ -325,13 +319,11 @@ etags_examples:
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesch alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesf alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesfh alltree
-	-chmod g+w TAGS_EXAMPLES
 etags_fexamples: 
 	-${RM} ${TAGSDIR}/TAGS_FEXAMPLES
 	-touch ${TAGSDIR}/TAGS_FEXAMPLES
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_FEXAMPLES ACTION=etags_examplesf alltree
 	-${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesfh alltree
-	-chmod g+w TAGS_FEXAMPLES
 #
 # These are here for the target allci and allco, and etags
 #
@@ -363,8 +355,8 @@ alldoc: allmanualpages
 
 # Deletes man pages (HTML version)
 deletemanualpages:
-	${RM} -f ${LOC}/docs/manualpages/*/*.html \
-                 ${LOC}/docs/manualpages/manualpages.cit 
+	find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \;
+	${RM} ${LOC}/docs/manualpages/manualpages.cit
 
 # Builds all versions of the man pages
 allmanualpages: deletemanualpages
@@ -376,7 +368,6 @@ allmanualpages: deletemanualpages
 	-${OMAKE} ACTION=getexlist tree LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree LOC=${LOC}
 	-maint/helpindex.py ${PETSC_DIR} ${LOC}
-	-@chmod g+w ${LOC}/docs/manualpages/*/*.html
 
 # Builds .html versions of the source
 allhtml: 
@@ -390,7 +381,6 @@ allfortranstubs:
 	-@include/foldinclude/generateincludes ${PETSC_DIR}
 	-@${RM} -f src/fortran/auto/*.c
 	-${OMAKE} ACTION=fortranstubs tree_basic
-	chmod g+w src/fortran/auto/*.c
 	-@cd src/fortran/auto; ${RM} makefile.src; echo SOURCEC = `find . -type f -name "*.c" -printf "%f "` > makefile.src
 	-@cd src/fortran/auto; ${OMAKE} fixfortran
 
@@ -500,7 +490,6 @@ noise: info chklib_dir
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; ${RM} trashz
 	${RANLIB} ${INSTALL_LIB_DIR}/libpetscsnes.${LIB_SUFFIX}
-	-@chmod g+w  ${INSTALL_LIB_DIR}/libpetscsnes.${LIB_SUFFIX}
 	-@echo "Completed compiling noise routines"
 	-@echo "========================================="
 
