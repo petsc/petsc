@@ -121,9 +121,19 @@ int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
 #if !defined(PETSC_HAVE_X11)
   {
     ierr = PetscStrcmp(type,PETSC_DRAW_X,&match);CHKERRQ(ierr);
-    if (match) flg = PETSC_TRUE;
+    if (match) {
+      PetscTruth dontwarn = PETSC_TRUE;
+      flg = PETSC_TRUE;
+      ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&dontwarn);CHKERRQ(ierr);
+      if (!dontwarn) {
+        (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
+      }
+    }
   }
 #endif
+  if (flg) {
+    type  = PETSC_DRAW_NULL;
+  }
 
   if (draw->data) {
     /* destroy the old private PetscDraw context */
