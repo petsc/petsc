@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    =  
 OBJSF    =
 LIBBASE  = libpetscsnes
-DIRS     = ls tr test umtr
+DIRS     = ls tr test umtr umls
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.4 1995/08/14 19:45:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.5 1995/08/14 23:15:33 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -52,7 +52,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-  VecGetSize(X,&global_dim);
+  ierr = VecGetSize(X,&global_dim); CHKERRQ(ierr);
   kspmaxit = neP->max_kspiter_factor * ((int) sqrt((double) global_dim));
   ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,
                           kspmaxit); CHKERRQ(ierr);
@@ -61,8 +61,8 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
     snes->iter = i+1;
     neP->gamma = neP->gamma_factor*(*gnorm);
     success = 0;
-    VecCopy(G,RHS);
-    VecScale(&neg_one,RHS);
+    ierr = VecCopy(G,RHS); CHKERRQ(ierr);
+    ierr = VecScale(&neg_one,RHS); CHKERRQ(ierr);
     while (!success) {
       ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,
                                                        &flg); CHKERRQ(ierr);
@@ -70,7 +70,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
       ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
                                 flg); CHKERRQ(ierr);
       ierr = SLESSolve(snes->sles,RHS,S,&iters); CHKERRQ(ierr);
-      VecNorm(S,&snorm);
+      ierr = VecNorm(S,&snorm); CHKERRQ(ierr);
       if ((iters < 0) || (iters >= kspmaxit)) {
         neP->gamma_factor *= two; 
         neP->gamma = neP->gamma_factor*(*gnorm); 
@@ -85,7 +85,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
 
     if (history && history_len > i+1) history[i+1] = *gnorm;
     if (snes->monitor) 
-      {(*snes->monitor)(snes,i+1,*gnorm,snes->monP); CHKERRQ(ierr);}
+      {ierr = (*snes->monitor)(snes,i+1,*gnorm,snes->monP); CHKERRQ(ierr);}
     PLogInfo((PetscObject)snes,
       "%d:  f=%g, gnorm=%g, snorm=%g, step=%g, KSP iters=%d\n",
       snes->iter, *f, *gnorm, snorm, neP->step, iters );
@@ -96,7 +96,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
   }
   /* Verify solution is in correct location */
   if (X != snes->vec_sol) {
-    VecCopy(X,snes->vec_sol);
+    ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
     snes->vec_sol_always = snes->vec_sol;
     snes->vec_func_always = snes->vec_func;
   }
@@ -114,6 +114,7 @@ static int SNESSetUp_UMLS(SNES snes)
   int ierr;
   snes->nwork = 4;
   ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work); CHKERRQ(ierr);
+  PLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   return 0;
 }
@@ -274,7 +275,7 @@ $   -6:  stepmax < stepmin
 $   -7:  maxfev < 0 
 $
 $  positive number > 1 if the line search otherwise terminates:
-$    2:  Relative width of the interval of unceratinty is 
+$    2:  Relative width of the interval of uncertainty is 
 $        at most rtol.
 $    3:  Maximum number of function evaluations (maxfev) has 
 $        been reached.
@@ -394,17 +395,17 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
       *step = stx;
 
 #if defined(PETSC_COMPLEX)
-    VecWAXPY(&cstep,S,W,X); *step = real(cstep);
+    ierr = VecWAXPY(&cstep,S,W,X); CHKERRQ(ierr); *step = real(cstep);
 #else
-    VecWAXPY(step,S,W,X);	/* X = W + step*S */
+    ierr = VecWAXPY(step,S,W,X); CHKERRQ(ierr); 	/* X = W + step*S */
 #endif
     ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr);
     neP->nfev++;
     ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
-    VecDot(G,S,&cdg); dg = real(cdg);
+    ierr = VecDot(G,S,&cdg); CHKERRQ(ierr); dg = real(cdg);
 #else
-    VecDot(G,S,&dg);		/* dg = G^T S */
+    ierr = VecDot(G,S,&dg); CHKERRQ(ierr);	        /* dg = G^T S */
 #endif
     ftest1 = finit + *step * dgtest;
   
@@ -435,7 +436,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     }
     if ((neP->bracket) && (neP->stepmax - neP->stepmin <= neP->rtol*neP->stepmax)){
       PLogInfo((PetscObject)snes,
-        "Relative width of interval of unceratinty is at most rtol (%g)\n",
+        "Relative width of interval of uncertainty is at most rtol (%g)\n",
          neP->rtol);
       *info = 2;
     }
@@ -508,7 +509,6 @@ int SNESCreate_UMLS(SNES snes)
   snes->printhelp       = SNESPrintHelp_UMLS;
   snes->view            = SNESView_UMLS;
   snes->setfromoptions  = SNESSetFromOptions_UMLS;
-  snes->view            = 0;
 
   neP			= PETSCNEW(SNES_UMLS); CHKPTRQ(neP);
   snes->data	        = (void *) neP;
