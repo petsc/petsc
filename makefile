@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.283 1999/04/09 18:13:57 balay Exp balay $ 
+# $Id: makefile,v 1.284 1999/04/13 20:47:40 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -53,13 +53,13 @@ info:
 # This target also builds fortran77 and f90 interface
 # files. (except compiling *.F files)
 #
+#	-@cd ${PETSC_DIR}/src/sys/src/time ; \
 #	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} rs6000_asmtime
 #	${RANLIB} ${PDIR}/*.a
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=libfast  tree 
-	-@cd ${PETSC_DIR}/src/sys/src/time ; \
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed building libraries"
 	-@echo "========================================="
