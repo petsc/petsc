@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.69 1998/04/24 04:53:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.70 1998/05/29 20:39:06 bsmith Exp balay $";
 #endif
 
 #include <math.h>
@@ -77,7 +77,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
                  neP->gamma_factor,neP->gamma);
 #else
         PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
-                 neP->gamma_factor,real(neP->gamma));
+                 neP->gamma_factor,PetscReal(neP->gamma));
 #endif
         ierr = MatShift(&neP->gamma,snes->jacobian); CHKERRQ(ierr);
         if ((snes->jacobian_pre != snes->jacobian) && (flg != SAME_PRECONDITIONER)){
@@ -387,7 +387,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
   /* Check that search direction is a descent direction */
 #if defined(USE_PETSC_COMPLEX)
-  ierr = VecDot(G,S,&cdginit); CHKERRQ(ierr); dginit = real(cdginit);
+  ierr = VecDot(G,S,&cdginit); CHKERRQ(ierr); dginit = PetscReal(cdginit);
 #else
   ierr = VecDot(G,S,&dginit); CHKERRQ(ierr);  /* dginit = G^T S */
 #endif
@@ -450,7 +450,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     neP->nfev++;
     ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
-    ierr = VecDot(G,S,&cdg); CHKERRQ(ierr); dg = real(cdg);
+    ierr = VecDot(G,S,&cdg); CHKERRQ(ierr); dg = PetscReal(cdg);
 #else
     ierr = VecDot(G,S,&dg); CHKERRQ(ierr);	        /* dg = G^T S */
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.46 1998/04/03 23:13:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.47 1998/04/21 00:38:22 curfman Exp balay $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -112,7 +112,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = VecScale(&negone,R); CHKERRQ(ierr);
   ierr = VecCopy(R,P); CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
-  ierr = VecDot(R,R,&crtr); CHKERRQ(ierr); rtr = real(crtr);
+  ierr = VecDot(R,R,&crtr); CHKERRQ(ierr); rtr = PetscReal(crtr);
 #else
   ierr = VecDot(R,R,&rtr); CHKERRQ(ierr);
 #endif
@@ -128,7 +128,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
     /* Check for negative curvature */
 #if defined(USE_PETSC_COMPLEX)
     ierr = VecDot(P,ASP,&cptasp); CHKERRQ(ierr);
-    ptasp = real(cptasp);
+    ptasp = PetscReal(cptasp);
 #else
     ierr = VecDot(P,ASP,&ptasp); CHKERRQ(ierr);	/* ptasp = p^T asp */
 #endif
@@ -147,8 +147,8 @@ int KSPSolve_QCG(KSP ksp,int *its)
          ierr = QuadraticRoots_Private(W,P,&pcgP->delta,&step1,&step2);
          CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
-         ierr = VecDot(W,ASP,&cwtasp); CHKERRQ(ierr); wtasp = real(cwtasp);
-         ierr = VecDot(BS,P,&cbstp); CHKERRQ(ierr);   bstp  = real(cbstp);
+         ierr = VecDot(W,ASP,&cwtasp); CHKERRQ(ierr); wtasp = PetscReal(cwtasp);
+         ierr = VecDot(BS,P,&cbstp); CHKERRQ(ierr);   bstp  = PetscReal(cbstp);
 #else
          ierr = VecDot(W,ASP,&wtasp); CHKERRQ(ierr);
          ierr = VecDot(BS,P,&bstp); CHKERRQ(ierr);
@@ -230,7 +230,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          if (cerr) {                 /* convergence for */
            pcgP->info = 3;          /* truncated step */
 #if defined(USE_PETSC_COMPLEX)               
-           PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",real(step),rnrm,pcgP->delta);
+           PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",PetscReal(step),rnrm,pcgP->delta);
 #else
            PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",step,rnrm,pcgP->delta);
 #endif
@@ -243,7 +243,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
       beta = rntrn/rtr;
       ierr = VecAYPX(&beta,R,P); CHKERRQ(ierr);	/*  p <- r + beta*p  */
 #if defined(USE_PETSC_COMPLEX)
-      rtr = real(rntrn);
+      rtr = PetscReal(rntrn);
 #else
       rtr = rntrn;
 #endif
@@ -257,7 +257,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
   ierr = VecDot(B,X,&btx); CHKERRQ(ierr);
   ierr = VecDot(X,WA,&xtax); CHKERRQ(ierr);
 #if defined(USE_PETSC_COMPLEX)
-  pcgP->quadratic = real(btx) + p5* real(xtax);
+  pcgP->quadratic = PetscReal(btx) + p5* PetscReal(xtax);
 #else
   pcgP->quadratic = btx + p5*xtax;              /* Compute q(x) */
 #endif
@@ -348,9 +348,9 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,double *step1,double
 #if defined(USE_PETSC_COMPLEX)
   Scalar cptp, cpts, csts;
   PetscFunctionBegin;
-  ierr = VecDot(p,s,&cpts); CHKERRQ(ierr); pts = real(cpts);
-  ierr = VecDot(p,p,&cptp); CHKERRQ(ierr); ptp = real(cptp);
-  ierr = VecDot(s,s,&csts); CHKERRQ(ierr); sts = real(csts);
+  ierr = VecDot(p,s,&cpts); CHKERRQ(ierr); pts = PetscReal(cpts);
+  ierr = VecDot(p,p,&cptp); CHKERRQ(ierr); ptp = PetscReal(cptp);
+  ierr = VecDot(s,s,&csts); CHKERRQ(ierr); sts = PetscReal(csts);
 #else
   PetscFunctionBegin;
   ierr = VecDot(p,s,&pts); CHKERRQ(ierr);

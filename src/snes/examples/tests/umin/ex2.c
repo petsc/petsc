@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.40 1997/10/19 03:29:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.41 1997/11/28 16:21:55 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -271,7 +271,7 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 #if !defined(USE_PETSC_COMPLEX)
       x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
 #else
-      x[k] = PetscMin(real(PetscMin(i+1,nx-i)*hx),real(temp));
+      x[k] = PetscMin(PetscReal(PetscMin(i+1,nx-i)*hx),PetscReal(temp));
 #endif
     }
   }
@@ -365,7 +365,7 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #if !defined(USE_PETSC_COMPLEX)
     *f = area*(p5*fquad+flin);
 #else
-    *f = real(area*(p5*fquad+flin));
+    *f = PetscReal(area*(p5*fquad+flin));
 #endif
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
@@ -555,7 +555,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #if !defined(USE_PETSC_COMPLEX)
         *f += fl;
 #else
-        *f += real(fl);
+        *f += PetscReal(fl);
 #endif
       }
       if (fg & GradientEval) {
@@ -604,7 +604,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #if !defined(USE_PETSC_COMPLEX)
         *f += fu;
 #else
-        *f += real(fu);
+        *f += PetscReal(fu);
 #endif
       } if (fg & GradientEval) {
         if (i<nx && j>0) {
@@ -628,7 +628,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #if !defined(USE_PETSC_COMPLEX)
     *f *= area;
 #else
-    *f *= real(area);
+    *f *= PetscReal(area);
 #endif
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
@@ -845,7 +845,7 @@ int BoundaryValues(AppCtx *user)
 #if !defined(USE_PETSC_COMPLEX)
         if (fnorm <= tol) break;
 #else
-        if (real(fnorm) <= tol) break;
+        if (PetscReal(fnorm) <= tol) break;
 #endif
         njac[0][0] = one + u[1]*u[1] - u[0]*u[0];
         njac[0][1] = two*u[0]*u[1];

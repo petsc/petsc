@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex21.c,v 1.3 1997/09/22 15:24:15 balay Exp bsmith $";
+static char vcid[] = "$Id: ex21.c,v 1.4 1997/10/19 03:26:38 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
@@ -46,7 +46,7 @@ int main(int argc,char **args)
     fprintf(stdout,"[%d] get row %d: ", rank, i);
     for ( j=0; j<nz; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
-      fprintf(stdout,"%d %g  ",idx[j],real(values[j]));
+      fprintf(stdout,"%d %g  ",idx[j],PetscReal(values[j]));
 #else
       fprintf(stdout,"%d %g  ",idx[j],values[j]);
 #endif

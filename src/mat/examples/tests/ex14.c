@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.4 1997/10/19 03:26:38 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests MatGetRow() and MatRestoreRow().\n";
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   for ( i=0; i<m*n; i++ ) {
     ierr = MatGetRow(C,i,&nz,&idx,&values); CHKERRA(ierr);
 #if defined(USE_PETSC_COMPLEX)
-    for ( j=0; j<nz; j++ ) PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],real(values[j]));
+    for ( j=0; j<nz; j++ ) PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],PetscReal(values[j]));
 #else
     for ( j=0; j<nz; j++ ) PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],values[j]);
 #endif

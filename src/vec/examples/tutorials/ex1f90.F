@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.10 1998/04/15 04:20:51 curfman Exp balay $"
+!    "$Id: ex1f90.F,v 1.11 1998/04/15 18:00:22 balay Exp balay $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
@@ -105,9 +105,9 @@
 
       if (rank .eq. 0) then
 #if defined(USE_PETSC_COMPLEX)
-         write(6,100) int(real(dot))
-         write(6,110) int(real(dots(1))),int(real(dots(2))),            &
-     &                int(real(dots(3)))
+         write(6,100) int(PetscReal(dot))
+         write(6,110) int(PetscReal(dots(1))),int(PetscReal(dots(2))),            &
+     &                int(PetscReal(dots(3)))
 #else
          write(6,100) int(dot)
          write(6,110) int(dots(1)),int(dots(2)),int(dots(3))
