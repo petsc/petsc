@@ -225,7 +225,7 @@ class Framework(base.Base):
       framework.header     = self.configureHeader
     # Load default configure module
     try:
-      framework.children.append(self.getMakeModule(root, 'configure').Configure(framework))
+      framework.addChild(self.getMakeModule(root, 'configure').Configure(framework))
     except ImportError:
       return
     # Run configuration only if the log file was absent or it is forced (must setup logging early to check)
