@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.3 1995/11/24 20:26:33 curfman Exp bsmith $";
+C      "$Id: ex36.F,v 1.4 1995/11/29 22:10:22 curfman Exp balay $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/mat.h"
@@ -15,27 +15,27 @@ C  Note the use of PetscNull in MatCreateSeqDense() to indicate that no
 C  storage is being provided by the user. (Do NOT pass a zero in that
 C  location.)
 C
-      double precision aa(1)
-      integer          ierr, ia, n, m
       Mat              A
+      integer          ia, n, m, err
+      double precision aa(1)
 
-      call PetscInitialize(ierr)
-      m = 5
+      call PetscInitialize(err)
       n = 5
+      m = 5
 
 C  Create matrix
-      call MatCreateSeqDense(MPI_COMM_SELF,m,n,PetscNull,A,ierr)
+      call MatCreateSeqDense(MPI_COMM_SELF,m,n,PetscNull,A,err)
 
 C  Access array storage
-      call MatGetArray(A,aa,ia,ierr)
+      call MatGetArray(A,aa,ia,err)
 
 C  Set matrix values directly
       call FillUpMatrix(m,n,aa(ia+1))
-      call MatView(A,STDOUT_VIEWER_SELF,ierr)
+      call MatView(A,STDOUT_VIEWER_SELF,err)
 
 C  Clean up
-      call MatDestroy(A,ierr)     
-      call PetscFinalize(ierr)
+      call MatDestroy(A,err)     
+      call PetscFinalize(err)
       stop
       end
 

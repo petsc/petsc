@@ -1,4 +1,5 @@
 #include "petsc.h"
+#include "pinclude/petscfix.h"
 #define MPI_SUCCESS 0
 void * MPID_TMP  = 0;
 double MPID_DUMMY =0;
