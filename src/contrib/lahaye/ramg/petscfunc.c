@@ -118,7 +118,8 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
   numnodes = convhist->NUMNODES;
 
   sprintf(filename,"/home/domenico/Antas/Output/residual.%u",n); 
-  ierr = VecCreate(MPI_COMM_WORLD,numnodes,numnodes,&t); CHKERRQ(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,&t); CHKERRQ(ierr);
+  ierr = VecSetSizes(t,numnodes,numnodes); CHKERRQ(ierr);
   ierr = VecSetType(t,VECSEQ); CHKERRQ(ierr);
   ierr = VecDuplicate(t,&v); CHKERRQ(ierr); 
 

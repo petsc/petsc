@@ -36,5 +36,14 @@ extern char   *mktemp(char *);
 extern int    strcasecmp(const char *, const char *);
 extern int    getrusage(int,s_rusage);
 #endif
+
+/*
+    IBMS old MPI does not have MPI_Comm_f2c(). Treat MPI_Comm as integer
+*/
+#if MPI_SUBVERSION == 1
+#define MPI_Fint int
+#define MPI_Comm_f2c(a)  (a)
+#endif
+
 #endif
 

@@ -32,7 +32,7 @@ MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_p4
 
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lsocket -lnsl
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 #
 #
 # ----------------------------------------------------------------------------------------  

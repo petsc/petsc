@@ -25,7 +25,7 @@ BLASLAPACK_LIB       =  -lsunperf
 MPI_HOME       = /home/petsc/software/mpich-1.2.1/solaris64
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 
 #
 #

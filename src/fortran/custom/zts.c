@@ -4,6 +4,7 @@
 #include "petscts.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define tssetproblemtype_                    TSSETPROBLEMTYPE
 #define tssetrhsfunction_                    TSSETRHSFUNCTION
 #define tssetrhsmatrix_                      TSSETRHSMATRIX
 #define tssetrhsjacobian_                    TSSETRHSJACOBIAN
@@ -25,6 +26,7 @@
 #define tsgetrhsmatrix_                      TSGETRHSMATRIX
 #define tssetrhsboundaryconditions_          TSSETRHSBOUNDARYCONDITIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define tssetproblemtype_                    tssetproblemtype
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
 #define tspvodegetiterations_                tspvodegetiterations
@@ -65,6 +67,11 @@ void PETSC_STDCALL tssetrhsboundaryconditions_(TS *ts,int (PETSC_STDCALL *f)(TS*
 void PETSC_STDCALL tsgetrhsjacobian_(TS *ts,Mat *J,Mat *M,void **ctx,int *ierr)
 {
   *ierr = TSGetRHSJacobian(*ts,J,M,ctx);
+}
+
+void PETSC_STDCALL tssetproblemtype_(TS *ts,TSProblemType *t,int *ierr)
+{
+  *ierr = TSSetProblemType(*ts,*t);
 }
 
 void PETSC_STDCALL tsgetrhsmatrix_(TS *ts,Mat *J,Mat *M,void **ctx,int *ierr)
@@ -161,9 +168,9 @@ void PETSC_STDCALL tsgetsolution_(TS *ts,Vec *v,int *ierr)
   *ierr = TSGetSolution(*ts,v);
 }
 
-void PETSC_STDCALL tscreate_(MPI_Comm *comm,TSProblemType *problemtype,TS *outts,int *ierr)
+void PETSC_STDCALL tscreate_(MPI_Comm *comm,TS *outts,int *ierr)
 {
-  *ierr = TSCreate((MPI_Comm)PetscToPointerComm(*comm),*problemtype,outts);
+  *ierr = TSCreate((MPI_Comm)PetscToPointerComm(*comm),outts);
   *ierr = PetscMalloc(7*sizeof(void *),&((PetscObject)*outts)->fortran_func_pointers);
 }
 

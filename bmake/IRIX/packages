@@ -28,7 +28,7 @@ BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/IRIX -lflapack -lblas
 MPI_HOME       = /home/petsc/software/mpich-1.2.0/IRIX
 MPI_LIB        = -L${MPI_HOME}/lib  -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 
 #
 # ----------------------------------------------------------------------------------------  
