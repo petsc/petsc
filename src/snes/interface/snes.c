@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.98 1996/11/13 15:52:16 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.99 1996/11/13 16:25:34 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -127,7 +127,7 @@ int SNESSetFromOptions(SNES snes)
   SNESType method;
   double   tmp;
   SLES     sles;
-  int      ierr, flg,i;
+  int      ierr, flg,i,loc[4],nmax = 4;
   int      version   = PETSC_DEFAULT;
   double   rtol_0    = PETSC_DEFAULT;
   double   rtol_max  = PETSC_DEFAULT;
@@ -135,6 +135,9 @@ int SNESSetFromOptions(SNES snes)
   double   alpha     = PETSC_DEFAULT;
   double   alpha2    = PETSC_DEFAULT;
   double   threshold = PETSC_DEFAULT;
+
+  loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
+
 
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->setup_called) SETERRQ(1,"SNESSetFromOptions:Must call prior to SNESSetUp");
@@ -184,14 +187,14 @@ int SNESSetFromOptions(SNES snes)
   if (flg) {
    ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0);  CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(snes->prefix,"-snes_xmonitor",&flg); CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(snes->prefix,"-snes_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     int    rank = 0;
     DrawLG lg;
     MPI_Initialized(&rank);
     if (rank) MPI_Comm_rank(snes->comm,&rank);
     if (!rank) {
-      ierr = SNESLGMonitorCreate(0,0,0,0,300,300,&lg); CHKERRQ(ierr);
+      ierr = SNESLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
       ierr = SNESSetMonitor(snes,SNESLGMonitor,(void *)lg); CHKERRQ(ierr);
       snes->xmonitor = lg;
       PLogObjectParent(snes,lg);
