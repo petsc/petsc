@@ -7,17 +7,72 @@
 ALL: all
 LOCDIR = . 
 DIRS   = src include docs 
+#
+# Configuration Variables
+#
+# Read configure options from a file if CONFIGURE_OPTIONSis not defined
+CONFIGURE_OPTIONS_FILE = ./config/configure_options
+CONFIGURE_OPTIONS      = $(shell cat $(CONFIGURE_OPTIONS_FILE))
+CONFIGURE_LOG_FILE     = configure_petsc.log
+AUTOMAKE_ADD_FILES     = config/config.guess config/config.sub config/install-sh config/missing config/mkinstalldirs \
+                         config/ltconfig config/ltmain.sh
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
 
+#
+# Configuration Targets
+#
+aclocal.m4: configure.in
+	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
+	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
+	@aclocal >> $(CONFIGURE_LOG_FILE)
 
+bmake/config/petscconf.h.in: config/acconfig.h config/acsite.m4 configure.in
+	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
+	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
+	@autoheader -l config >> $(CONFIGURE_LOG_FILE)
 
+$(AUTOMAKE_ADD_FILES):
+	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
+	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
+	@automake --foreign --add-missing Makefile >> $(CONFIGURE_LOG_FILE)
+
+Makefile.am: $(AUTOMAKE_ADD_FILES)
+
+Makefile.in: Makefile.am
+	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
+	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
+	@automake --foreign Makefile >> $(CONFIGURE_LOG_FILE)
+
+configure: configure.in config/acsite.m4 aclocal.m4 bmake/config/petscconf.h.in $(AUTOMAKE_ADD_FILES)
+	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
+	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
+	@autoconf -l config >> $(CONFIGURE_LOG_FILE)
+
+start_configure:
+	-@$(RM) $(CONFIGURE_LOG_FILE)
+
+configure_petsc: start_configure configure Makefile.in
+	@echo "Configuring Petsc with options:" >> $(CONFIGURE_LOG_FILE)
+	@echo "$(CONFIGURE_OPTIONS)" >> $(CONFIGURE_LOG_FILE)
+	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
+	@echo "$(CONFIGURE_OPTIONS)" > $(CONFIGURE_OPTIONS_FILE)
+	@./configure $(CONFIGURE_OPTIONS) >> $(CONFIGURE_LOG_FILE)
+
+$(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE)
+	@$(MAKE) configure_petsc
+
+configure_clean:
+	-@$(RM) aclocal.m4
+	-@$(RM) bmake/config/petscconf.h.in
+	-@$(RM) $(AUTOMAKE_ADD_FILES) Makefile.in
+	-@$(RM) configure
 #
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran, and f90 libraries
-all       : chk_petsc_dir info info_h chklib_dir deletelibs build shared
-all_lt    : chk_petsc_dir info info_h chklib_dir deletelibs build_lt shared
+all       : $(CONFIGURE_LOG_FILE) chk_petsc_dir info info_h chklib_dir deletelibs build shared
+all_lt    : $(CONFIGURE_LOG_FILE) chk_petsc_dir info info_h chklib_dir deletelibs build_lt shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -475,4 +530,5 @@ exercises:
 .PHONY: info info_h build build_lt testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
+        start_configure configure_petsc configure_clean
 
