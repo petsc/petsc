@@ -20,7 +20,7 @@ BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/soft/linux-rh73/mkl-52/lib/32 -L/h
 # Location of MPI (Message Passing Interface) software
 #
 MPI_HOME       = /home/petsc/soft/linux-rh73/mpich-1.2.4
-MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib -L${MPI_HOME}/lib -lmpich -lpmpich
+MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib/shared -L${MPI_HOME}/lib/shared -lmpich -lpmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #
@@ -39,9 +39,9 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 #MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
 #MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
-MPE_INCLUDE   =
-MPE_LIB       = -L${MPI_HOME}/lib -lmpe
-PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
+#MPE_INCLUDE   =
+#MPE_LIB       = -L${MPI_HOME}/lib/shared -lmpe
+#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)
 #
