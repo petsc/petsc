@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.228 1998/04/14 12:25:07 balay Exp balay $ 
+# $Id: makefile,v 1.229 1998/04/15 17:59:21 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -155,14 +155,6 @@ testfortran: info chkopts
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines or the way Fortran formats numbers"
 	-@echo "some of the results may not match exactly."
-	-@echo "========================================="
-	-@echo "On some machines you may get messages of the form"
-	-@echo "PetscScalarAddressToFortran:C and Fortran arrays are"
-	-@echo "not commonly aligned or are too far apart to be indexed" 
-	-@echo "by an integer. Locations: C xxxc Fortran xxxf"
-	-@echo "Locations/sizeof(Scalar): C yyc Fortran yyf"
-	-@echo "This indicates that you may not be able to use the"
-	-@echo "PETSc routines VecGetArray() and MatGetArray() from Fortran" 
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} \
 	   ACTION=testexamples_3  tree 
