@@ -1,5 +1,5 @@
 c
-c  "$Id: rbuild_fp.F,v 1.4 1997/10/11 22:22:05 keyes Exp $";
+c  "$Id: rbuild_fp.F,v 1.5 1997/10/12 18:35:57 keyes Exp curfman $";
 c
 c ----------------------------------------------------------------------
 c
@@ -40,7 +40,7 @@ c     uniprocessor grid!
 #include "dvarbls.h"
 
       double precision f(0:*)
-      integer i,j,k,jk,sctype,ijkx
+      integer i,j,k,jk,sctype,ijkx,ndof_fe
 
       rbuild_direct_fp = 0
       if ((bctype .ne. EXPLICIT) .and. (bctype .ne. IMPLICIT)) then
@@ -52,6 +52,16 @@ c     uniprocessor grid!
       if (sctype .ne. DT_MULT .and. sctype .ne. DT_DIV) then
         if (rank .eq. 0) 
      &    write(6,*) 'rbuild_direct_fp: invalid value of sctype flag!'
+        rbuild_direct_fp = -1
+        return
+      endif
+      if (model .eq. MMFP) then
+        ndof_fe = 0
+      else if (model .eq. MMHYBRID_F .or.
+     &         model .eq. MMHYBRID_EF1) then
+        ndof_fe = 5
+      else
+        if (rank .eq. 0) write(6,*) 'Unsupported model type'
         rbuild_direct_fp = -1
         return
       endif
@@ -103,16 +113,16 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          do 400 j=ysf2,yef01
              jk = (j-ysf)*xm + (k-zsf)*xm*ym
          do 400 i=xsf2,xef01
-             ijkx      = ndof * (i-xsf + jk)
-             f(ijkx)   = dfp(i,j,k)*dt(i,j,k)
+             ijkx            = ndof * (i-xsf + jk)
+             f(ijkx+ndof_fe) = dfp(i,j,k)*dt(i,j,k)
  400     continue
       else if (sctype .eq. DT_DIV) then
          do 450 k=zsf2,zef01
          do 450 j=ysf2,yef01
              jk = (j-ysf)*xm + (k-zsf)*xm*ym
          do 450 i=xsf2,xef01
-             ijkx   = ndof * (i-xsf + jk)
-             f(ijkx)   = dfp(i,j,k)
+             ijkx            = ndof * (i-xsf + jk)
+             f(ijkx+ndof_fe) = dfp(i,j,k)
  450     continue
       else
         if (rank .eq. 0) write(6,*) 'rbuild_direct_fp: invalid sctype!'
