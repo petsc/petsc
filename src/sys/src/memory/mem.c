@@ -1,9 +1,44 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.29 1998/04/26 21:27:33 balay Exp curfman $";
+static char vcid[] = "$Id: mem.c,v 1.30 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
-#include "src/sys/src/files.h"
+#include "sys.h"
+#include "pinclude/ptime.h"
+#if defined(HAVE_PWD_H)
+#include <pwd.h>
+#endif
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#if defined(HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if !defined(PARCH_nt)
+#include <sys/param.h>
+#include <sys/utsname.h>
+#endif
+#if defined(PARCH_nt)
+#include <windows.h>
+#include <io.h>
+#include <direct.h>
+#endif
+#if defined (PARCH_nt_gnu)
+#include <windows.h>
+#endif
+#include <fcntl.h>
+#include <time.h>  
+#if defined(HAVE_SYS_SYSTEMINFO_H)
+#include <sys/systeminfo.h>
+#endif
+#include "pinclude/petscfix.h"
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 1024
+#endif
 
 #if !defined (PARCH_t3d) && !defined(PARCH_nt)
 #include <sys/resource.h>
@@ -22,7 +57,7 @@ static char vcid[] = "$Id: mem.c,v 1.29 1998/04/26 21:27:33 balay Exp curfman $"
    Not Collective
 
    Output Parameter:
-   mem - memory usage in bytes
+.   mem - memory usage in bytes
 
    Options Database Key:
 .  -trmalloc_log - Activate logging of memory usage
