@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.12 1996/03/23 16:56:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.13 1996/10/24 17:27:24 bsmith Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -12,11 +12,14 @@ static char vcid[] = "$Id: zvec.c,v 1.12 1996/03/23 16:56:55 bsmith Exp bsmith $
 #define vecscattercreate_     VECSCATTERCREATE
 #define vecscattercopy_       VECSCATTERCOPY
 #define vecdestroy_           VECDESTROY
+#define vecdestroyvecs_       VECDESTROYVECS
 #define vecscatterdestroy_    VECSCATTERDESTROY
 #define vecrestorearray_      VECRESTOREARRAY
 #define vecgetarray_          VECGETARRAY
 #define vecload_              VECLOAD
 #define vecgettype_           VECGETTYPE
+#define vecduplicatevecs_     VECDUPLICATEVECS
+#define vecdestroyvecs_       VECDESTROYVECS
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define veccreateseq_         veccreateseq
 #define veccreate_            veccreate
@@ -25,18 +28,19 @@ static char vcid[] = "$Id: zvec.c,v 1.12 1996/03/23 16:56:55 bsmith Exp bsmith $
 #define vecscattercreate_     vecscattercreate
 #define vecscattercopy_       vecscattercopy
 #define vecdestroy_           vecdestroy
+#define vecdestroyvecs_       vecdestroyvecs
 #define vecscatterdestroy_    vecscatterdestroy
 #define vecrestorearray_      vecrestorearray
 #define vecgetarray_          vecgetarray
 #define vecload_              vecload
 #define vecgettype_           vecgettype
+#define vecduplicatevecs_     vecduplicatevecs
+#define vecdestroyvecs_       vecddestroyvecs
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-
 
 void vecgettype_(Vec vv,VecType *type,CHAR name,int *__ierr,int len)
 {
@@ -91,6 +95,15 @@ void vecdestroy_(Vec v, int *__ierr )
    PetscRmPointer(*(int*)(v)); 
 }
 
+void vecdestroyvecs_(Vec *v,int *m,int *__ierr )
+{
+  int i;
+  for (i=0; i<*m; i++) {
+    *__ierr = VecDestroy((Vec)PetscToPointer( *(int*)(v[i]) ));
+    PetscRmPointer(*(int*)(v[i])); 
+  }
+}
+
 void vecscattercreate_(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx, int *__ierr )
 {
   VecScatter lV;
@@ -134,6 +147,20 @@ void vecduplicate_(Vec v,Vec *newv, int *__ierr )
   Vec lV;
   *__ierr = VecDuplicate((Vec)PetscToPointer( *(int*)(v) ),&lV);
   *(int*)newv = PetscFromPointer(lV);
+}
+
+void vecduplicatevecs_(Vec v,int *m,int *newv, int *__ierr )
+{
+  Vec *lV;
+  int i;
+  *__ierr = VecDuplicateVecs((Vec)PetscToPointer( *(int*)(v) ),*m,&lV);
+  for (i=0; i<*m; i++) {
+    if (!&newv[i]) {
+      fprintf(stderr,"vecduplicatevecs_: Must allocate array for vectors!");
+      *__ierr = 1; return;
+    }
+    newv[i] = PetscFromPointer(lV[i]);
+  }
 }
 
 #if defined(__cplusplus)
