@@ -1,0 +1,4 @@
+
+
+  Code to access the SPAI preconditioner coded by Bernard
+from PETSc. Uses PETSc's PCShell().
