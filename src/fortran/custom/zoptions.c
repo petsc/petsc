@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.40 1998/04/08 22:30:23 balay Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.41 1998/04/16 15:02:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -286,7 +286,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
                          ((double) tmp3)/sizeof(Scalar),((double) tmp1)/sizeof(Scalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
-    PLogInfo((void *)obj,"Efficiency warning, copy array in XXXGetArray() due\n\
+    PLogInfo((void *)obj,"Efficiency warning, copying array in XXXGetArray() due\n\
     to alignment differences between C and Fortran\n");
   }
   *res = itmp2;
