@@ -22,7 +22,7 @@ typedef struct _p_DA* DA;
 
 /*E
     DAStencilType - Determines if the stencil extends only along the coordinate directions, or also
-      to the northest, northwest etc
+      to the northeast, northwest etc
 
    Level: beginner
 

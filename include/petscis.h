@@ -146,8 +146,9 @@ typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
 #define IS_COLORING_MAX     255
 typedef unsigned char ISColoringValue;
 EXTERN int ISAllGatherColors(MPI_Comm,int,ISColoringValue*,int*,ISColoringValue*[]);
+
 /*S
-     ISColorings - sets of IS's that define a coloring
+     ISColoring - sets of IS's that define a coloring
               of the underlying indices
 
    Level: intermediate

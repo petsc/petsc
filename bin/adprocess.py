@@ -60,12 +60,12 @@ def setupfunctionC(filename):
                         fl = reg.search(line)
                         if fl:
                                 print "Extracting structure AppCtx"
-                                reg = re.compile('\n[ ]*Scalar ')
+                                reg = re.compile('\n[ ]*PetscScalar ')
                                 struct = reg.sub('\nPassiveScalar ',struct)
                                 reg = re.compile('\n[ ]*double ')
-                                struct = reg.sub('\nPassiveDouble ',struct)
+                                struct = reg.sub('\nPassiveReal ',struct)
                                 reg = re.compile('\n[ ]*PetscReal ')
-                                struct = reg.sub('\nPassiveDouble ',struct)
+                                struct = reg.sub('\nPassiveReal ',struct)
                         else:
                                 reg = re.compile('^[ ]*}[ ]*')
                                 line = reg.sub('',line)
@@ -98,14 +98,15 @@ def getfunctionC(g,filename,functionname):
         g.write("/* Function "+functionname+"*/\n\n")
 	line = f.readline()
 	while line:
-                for i in split('int double PetscReal Scalar'," "):
+                for i in split('int double PetscReal PetscScalar PassiveReal PassiveScalar'," "):
                   reg = re.compile('^[ ]*'+i+'[ ]*'+functionname+'[ ]*\(')
                   fl = reg.search(line)
                   if fl:
                         print 'Extracting function', functionname
 			while line:
 				g.write(line)
-                                if line[0] == "}":
+				# this is dangerous, have no way to find end of function
+				if line[0] == '}':
                                   break
  		                line = f.readline()
  		        line = f.readline()

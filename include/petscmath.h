@@ -180,7 +180,7 @@ typedef double PetscLogDouble;
 #endif
 #endif
 
-#define PassiveReal PetscReal
+#define PassiveReal   PetscReal
 #define PassiveScalar PetscScalar
 
 #define PETSCMAP1_a(a,b)  a ## _ ## b
