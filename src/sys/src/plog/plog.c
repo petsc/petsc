@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.193 1998/08/01 14:54:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.194 1998/08/01 14:55:16 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -905,6 +905,13 @@ int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
    intended for production runs since it logs only flop rates and object
    creation (and shouldn't significantly slow the programs).
 
+   Usage:
+     PetscInitialize(...);
+     PLogAllBegin();
+     ... code ...
+     PLogDump(filename);
+     PetscFinalize();
+
 .keywords: log, all, begin
 
 .seealso: PLogDump(), PLogBegin(), PLogTraceBegin()
@@ -974,6 +981,13 @@ int PLogDestroy(void)
 +   -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
 -   -log_summary - Prints summary of flop and timing information to the 
                    screen (for code compiled with USE_PETSC_LOG)
+
+     Usage:
+       PetscInitialize(...);
+       PLogBegin();
+        ... code ...
+       PLogPrintSummary(PETSC_COMM_WORLD,filename);
+       PetscFinalize();
 
 .keywords: log, begin
 
@@ -1045,6 +1059,13 @@ int PLogTraceBegin(FILE *file)
 +  -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
 -  -log_all - Prints extensive log information (for code compiled with USE_PETSC_LOG)
    
+   Usage:
+     PetscInitialize(...);
+     PLogAllBegin();
+     ... code ...
+     PLogDump(filename);
+     PetscFinalize();
+
    Notes:
    The default file name is 
 $      Log.<rank>
@@ -1053,7 +1074,7 @@ $      Log.<rank>
 
 .keywords: log, dump
 
-.seealso: PLogBegin(), PLogPrintSummary()
+.seealso: PLogBegin(), PLogAllBegin(), PLogPrintSummary()
 @*/
 int PLogDump(const char sname[])
 {
@@ -1289,6 +1310,13 @@ int PLogEventActivate(int event)
    Options Database Keys:
 .  -log_summary - Prints summary of log information (for code
    compiled with USE_PETSC_LOG)
+
+   Usage:
+     PetscInitialize(...);
+     PLogAllBegin();
+     ... code ...
+     PLogDump(MPI_Comm,filename);
+     PetscFinalize();
 
    Notes:
    By defult the summary is printed to stdout.
