@@ -1,5 +1,5 @@
 
-C    "$Id: ex20.F,v 1.3 1996/04/12 02:26:21 curfman Exp curfman $";
+C    "$Id: ex20.F,v 1.4 1996/04/12 23:41:07 curfman Exp balay $";
 C
 C  This example demonstrates repeated linear solves as well as the use of
 C  different preconditioner and linear system matrices.  This example also
@@ -107,6 +107,7 @@ C
       Mat     A
       SLES    sles
       KSP     ksp
+      Vec     x, b, u
 
 C Use common block to retain matrix between successive subroutine calls
       Mat              A2
