@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.17 1996/04/16 13:54:22 balay Exp bsmith $";
+C    "$Id: ex7.F,v 1.18 1996/07/08 22:20:55 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -14,7 +14,7 @@ C
 C  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
 C  MUST be declared as external.
 C
-      double precision norm
+      Double           norm
       integer          i, j, II, JJ, ierr, m, n
       integer          rank, size, its, Istart, Iend,flg
       Scalar           v, zero, one, none

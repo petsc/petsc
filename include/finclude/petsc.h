@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.24 1996/07/08 22:21:57 curfman Exp curfman $;
+C  $Id: petsc.h,v 1.25 1996/07/08 22:30:59 curfman Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -53,6 +53,14 @@ C
 #endif
 #endif
 C
+C     real on the Cray T3d is actually double precision
+C
+#if defined(PARCH_t3d)
+#define Double real
+#else
+#define Double double precision
+#endif
+C
 C     Macros for error checking
 C
 #if defined(PETSC_DEBUG)
@@ -66,14 +74,7 @@ C
 C     Prototypes for functions which return a value.
 C
       external PetscGetTime, PetscGetFlops
-
-C     On the Cray T3D this should be "real" not "double precision"!
-#if defined(PARCH_t3d)
-      real PetscGetTime, PetscGetFlops
-#else
-      double precision PetscGetTime, PetscGetFlops
-#endif
-
+      DOUBLE PetscGetTime, PetscGetFlops
 C     
 C     End of base Fortran include file for the PETSc package
 

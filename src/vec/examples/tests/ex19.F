@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.22 1996/04/23 21:52:31 balay Exp bsmith $";
+C    "$Id: ex19.F,v 1.23 1996/07/21 22:18:56 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -9,7 +9,7 @@ C  to vectors.
 C
        integer          n, ierr,flg
        Scalar           one, two, three, dot
-       DOUBLE           norm,rdot
+       Double           norm,rdot
        Vec              x,y,w
 
        n     = 20
