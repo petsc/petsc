@@ -1,9 +1,21 @@
-/*$Id: zpetsc.h,v 1.64 2001/08/10 16:50:40 balay Exp balay $*/
+/*$Id: zpetsc.h,v 1.65 2001/08/22 18:02:57 balay Exp bsmith $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
 #include "petsc.h"
 #include "petscfix.h"
+
+/*
+   Indicates that PETSc was initialized to use Fortran either by a call to 
+   PetscInitialize() from Fortran or a call to PetscInitializeFortran() from C.
+*/
+extern PetscTruth PetscInitializeFortranCalled;
+
+#define CHKFRTN(a) if (!PetscInitializeFortranCalled) {\
+  (*PetscErrorPrintf)("You forgot a call to PetscInitialize() with Fortran main program or\n"); \
+  (*PetscErrorPrintf)("a call to PetscInitializeFortran() with C main program\n"); \
+  *a = 1; return; }
+
 
 EXTERN int     PetscScalarAddressToFortran(PetscObject,PetscScalar*,PetscScalar*,int,long*);
 EXTERN int     PetscScalarAddressFromFortran(PetscObject,PetscScalar*,long,int,PetscScalar **);
