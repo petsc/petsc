@@ -90,47 +90,44 @@ class Configure(config.base.Configure):
 
     blacsDir  = self.getDirBLACS()
     installDir = os.path.join(blacsDir, self.framework.argDB['PETSC_ARCH'])
-    f = open(os.path.join(blacsDir,'Bmake.Inc.template'))
     g = open(os.path.join(blacsDir,'Bmake.Inc'),'w')
-    line = f.readline()
-    while line:
-      if line.find('BLACSdir =') >= 0:
-        line = 'BLACSdir = '+blacsDir+'\n'
-      if line.find('BLACSLIB    =') >= 0:
-        line = 'BLACSLIB = '+os.path.join(installDir,'libblacs.a')+'\n'
-      if line.find('MPIINCdir =') >= 0:
-        line = 'MPIINCdir='+self.mpi.include[0]+'\n'
-      if line.find('MPILIB =') >= 0:
-        line = 'MPILIB='+' '.join(map(self.libraries.getLibArgument, self.mpi.lib))+'\n'
-      if line.find('INTFACE =') >= 0:
-        if self.compilers.fortranManglingDoubleUnderscore:
-          blah = 'f77IsF2C'
-        elif self.compilers.fortranMangling == 'underscore':
-          blah = 'Add_'
-        elif self.compilers.fortranMangling == 'capitalize':
-          blah = 'UpCase'
-        else:
-          blah = 'NoChange'
-        line = 'INTFACE=-D'+blah+'\n'
-      g.write(line)
-      line = f.readline()
-      
+    g.write('SHELL = /bin/sh\n')
+    g.write('COMMLIB = MPI\n')
+    g.write('SENDIS = -DSndIsLocBlk\n')
+    g.write('WHATMPI = -DUseF77Mpi\n')
+    g.write('DEBUGLVL = -DBlacsDebugLvl=1\n')
+    g.write('BLACSdir = '+blacsDir+'\n')
+    g.write('BLACSLIB = '+os.path.join(installDir,'libblacs.a')+'\n')
+    g.write('MPIINCdir='+self.mpi.include[0]+'\n')
+    g.write('MPILIB='+' '.join(map(self.libraries.getLibArgument, self.mpi.lib))+'\n')
+    g.write('SYSINC = -I$(MPIINCdir)\n')
+    g.write('BTLIBS = $(BLACSLIB)  $(MPILIB) \n')
+    if self.compilers.fortranManglingDoubleUnderscore:
+      blah = 'f77IsF2C'
+    elif self.compilers.fortranMangling == 'underscore':
+      blah = 'Add_'
+    elif self.compilers.fortranMangling == 'capitalize':
+      blah = 'UpCase'
+    else:
+      blah = 'NoChange'
+    g.write('INTFACE=-D'+blah+'\n')
+    g.write('DEFS1 = -DSYSINC $(SYSINC) $(INTFACE) $(DEFBSTOP) $(DEFCOMBTOP) $(DEBUGLVL)\n')
+    g.write('BLACSDEFS = $(DEFS1) $(SENDIS) $(BUFF) $(TRANSCOMM) $(WHATMPI) $(SYSERRORS)\n')
     self.setcompilers.pushLanguage('F77')  
-    g.write('  F77 ='+self.setcompilers.getCompiler()+'\n')
-    g.write('  F77FLAGS ='+self.setcompilers.getCompilerFlags()+'\n')
-    g.write('  F77LOADER ='+self.setcompilers.getLinker()+'\n')      
-    g.write('  F77LOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
+    g.write('F77 ='+self.setcompilers.getCompiler()+'\n')
+    g.write('F77FLAGS ='+self.setcompilers.getCompilerFlags()+'\n')
+    g.write('F77LOADER ='+self.setcompilers.getLinker()+'\n')      
+    g.write('F77LOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
     self.setcompilers.pushLanguage('C')
-    g.write('  CC ='+self.setcompilers.getCompiler()+'\n')
-    g.write('  CCFLAGS ='+self.setcompilers.getCompilerFlags()+'\n')      
-    g.write('  CCLOADER ='+self.setcompilers.getLinker()+'\n')
-    g.write('  CCLOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
+    g.write('CC ='+self.setcompilers.getCompiler()+'\n')
+    g.write('CCFLAGS ='+self.setcompilers.getCompilerFlags()+'\n')      
+    g.write('CCLOADER ='+self.setcompilers.getLinker()+'\n')
+    g.write('CCLOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
-    g.write('  ARCH ='+self.setcompilers.AR+'\n')
-    g.write('  ARCHFLAGS ='+self.setcompilers.AR_FLAGS+'\n')    
-    g.write('  RANLIB ='+self.setcompilers.RANLIB+'\n')    
-    f.close()
+    g.write('ARCH ='+self.setcompilers.AR+'\n')
+    g.write('ARCHFLAGS ='+self.setcompilers.AR_FLAGS+'\n')    
+    g.write('RANLIB ='+self.setcompilers.RANLIB+'\n')    
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
@@ -144,11 +141,104 @@ class Configure(config.base.Configure):
       self.framework.log.write(output)
       self.framework.log.write('********End of Output of running make on BLACS *******\n')
       raise RuntimeError('Error running make on BLACS, libraries not installed')
-
     self.framework.actions.addArgument('blacs', 'Install', 'Installed blacs into '+installDir)
-
     return os.path.join(installDir,'libblacs.a')
 
+  def getDirSCALAPACK(self):
+    '''Find the directory containing SCALAPACK'''
+    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+    if not os.path.isdir(packages):
+      os.mkdir(packages)
+      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
+    scalapackDir = None
+    for dir in os.listdir(packages):
+      if dir.startswith('SCALAPACK') and os.path.isdir(os.path.join(packages, dir)):
+        scalapackDir = dir
+    if scalapackDir is None:
+      raise RuntimeError('Error locating SCALAPACK directory')
+    return os.path.join(packages, scalapackDir)
+
+  def downLoadSCALAPACK(self):
+    import commands
+    self.framework.log.write('Downloading SCALAPACK\n')
+    try:
+      scalapackDir = self.getDirSCALAPACK()
+    except RuntimeError:
+      import urllib
+      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      try:
+        urllib.urlretrieve('http://www.netlib.org/scalapack/scalapack.tgz', os.path.join(packages, 'scalapack.tar.gz'))
+      except Exception, e:
+        raise RuntimeError('Error downloading SCALAPACK: '+str(e))
+      try:
+        config.base.Configure.executeShellCommand('cd packages; gunzip scalapack.tar.gz', log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error unzipping scalapack.tar.gz: '+str(e))
+      try:
+        config.base.Configure.executeShellCommand('cd packages; tar -xf scalapack.tar', log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error doing tar -xf scalapack.tar: '+str(e))
+      os.unlink(os.path.join(packages, 'scalapack.tar'))
+      self.framework.actions.addArgument('SCALAPACK', 'Download', 'Downloaded scalapack into '+self.getDirSCALAPACK())
+
+    scalapackDir  = self.getDirSCALAPACK()
+    installDir = os.path.join(scalapackDir, self.framework.argDB['PETSC_ARCH'])
+    g = open(os.path.join(scalapackDir,'SLmake.inc'),'w')
+    g.write('SHELL = /bin/sh\n')
+    g.write('home = '+self.getDirSCALAPACK()+'\n')    
+    g.write('USEMPI        = -DUsingMpiBlacs\n')
+    g.write('SENDIS = -DSndIsLocBlk\n')
+    g.write('WHATMPI = -DUseF77Mpi\n')
+    g.write('BLACSDBGLVL = -DBlacsDebugLvl=1\n')
+    g.write('BLACSLIB = '+' '.join(map(self.libraries.getLibArgument, self.blacslib))+'\n')
+    g.write('SMPLIB='+' '.join(map(self.libraries.getLibArgument, self.mpi.lib))+'\n')
+    g.write('SCALAPACKLIB  = '+os.path.join('$(home)',self.framework.argDB['PETSC_ARCH'],'libscalapack.a')+' \n')
+    g.write('CBLACSLIB     = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
+    g.write('FBLACSLIB     = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
+    if self.compilers.fortranManglingDoubleUnderscore:
+      blah = 'f77IsF2C'
+    elif self.compilers.fortranMangling == 'underscore':
+      blah = 'Add_'
+    elif self.compilers.fortranMangling == 'capitalize':
+      blah = 'UpCase'
+    else:
+      blah = 'NoChange'
+    g.write('CDEFS=-D'+blah+' -DUsingMpiBlacs\n')
+    g.write('PBLASdir      = $(home)/PBLAS\n')
+    g.write('SRCdir        = $(home)/SRC\n')
+    g.write('TOOLSdir      = $(home)/TOOLS\n')
+    g.write('REDISTdir     = $(home)/REDIST\n')
+    self.setcompilers.pushLanguage('F77')  
+    g.write('F77 ='+self.setcompilers.getCompiler()+'\n')
+    if self.setcompilers.getCompiler().find('g77') == -1:    g.write('F77FLAGS ='+self.setcompilers.getCompilerFlags()+'\n')
+    else:    g.write('F77FLAGS = -O\n')
+    g.write('F77LOADER ='+self.setcompilers.getLinker()+'\n')      
+    g.write('F77LOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
+    self.setcompilers.popLanguage()
+    self.setcompilers.pushLanguage('C')
+    g.write('CC ='+self.setcompilers.getCompiler()+'\n')
+    g.write('CCFLAGS ='+self.setcompilers.getCompilerFlags()+'\n')      
+    g.write('CCLOADER ='+self.setcompilers.getLinker()+'\n')
+    g.write('CCLOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
+    self.setcompilers.popLanguage()
+    g.write('ARCH ='+self.setcompilers.AR+'\n')
+    g.write('ARCHFLAGS ='+self.setcompilers.AR_FLAGS+'\n')    
+    g.write('RANLIB ='+self.setcompilers.RANLIB+'\n')    
+    g.close()
+    if not os.path.isdir(installDir):
+      os.mkdir(installDir)
+    try:
+      output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
+    except RuntimeError, e:
+      raise RuntimeError('Error running make on SCALAPACK: '+str(e))
+    if not os.path.isfile(os.path.join(installDir,'libscalapack.a')):
+      self.framework.log.write('Error running make on SCALAPACK   ******(libraries not installed)*******\n')
+      self.framework.log.write('********Output of running make on SCALAPACK follows *******\n')        
+      self.framework.log.write(output)
+      self.framework.log.write('********End of Output of running make on SCALAPACK *******\n')
+      raise RuntimeError('Error running make on SCALAPACK, libraries not installed')
+    self.framework.actions.addArgument('scalapack', 'Install', 'Installed SCALAPACK into '+installDir)
+    return os.path.join(installDir,'libscalapack.a')
 
   def generateIncludeGuesses(self):
     if 'with-'+self.package in self.framework.argDB:
@@ -190,6 +280,9 @@ class Configure(config.base.Configure):
       self.framework.log.write('Must specify either a library or installation root directory for '+self.PACKAGE+'\n')
 
   def generateScalapackLibGuesses(self):
+    if self.framework.argDB['download-scalapack'] == 1:
+      yield ('Downloaded SCALAPACK library',self.downLoadSCALAPACK())
+      raise RuntimeError('Downloaded SCALAPACK could not be used. Please check install in '+os.path.dirname(libs[0])+'\n')
     if 'with-scalapack-lib' in self.framework.argDB: 
       yield ('User specified SCALAPACK library',self.framework.argDB['with-scalapack-lib'])
     elif 'with-scalapack-dir' in self.framework.argDB:
@@ -197,8 +290,11 @@ class Configure(config.base.Configure):
       libs = []
       libs.append(os.path.join(dir,'libscalapack.a'))
       yield('User specified SCALAPACK root directory',libs)
+    elif self.framework.argDB['download-scalapack'] == 2 or self.framework.argDB['download-mumps']:
+      yield ('Downloaded SCALAPACK library',self.downLoadSCALAPACK())
+      raise RuntimeError('Downloaded BLACS could not be used. Please check install in '+os.path.dirname(libs[0])+'\n')
     else:
-      self.framework.log.write('Must specify either a library or installation root directory for SCALAPACK\n')
+      self.framework.log.write('Must specify either a library or installation root directory for SCALAPACK, or -download-scalapack=yes\n')
   
   def generateBlacsLibGuesses(self):
     if self.framework.argDB['download-blacs'] == 1:
@@ -242,7 +338,8 @@ class Configure(config.base.Configure):
       found = self.executeTest(self.checkLib,[libs,'blacs_pinfo'])
       break  
     if found:
-          self.blacslib = [libs]
+      if not isinstance(libs,list): self.blacslib = [libs]
+      else: self.blacslib = libs
     else:
       raise RuntimeError('Could not find a functional BLACS: use --with-blacs-dir or --with-blacs-lib to indicate location\n')
 
