@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.50 1997/06/12 22:52:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.51 1997/06/15 14:07:37 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -109,11 +109,11 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   */
 
   /*
-     Call the Seq Vector routines and then do 
-    a single reduction to reduce the number of communications
-     required
+     Call the Seq Vector routines and then do a single reduction 
+     to reduce the number of communications required
   */
 
+#if !defined(PETSC_COMPLEX)
   PLogEventBegin(VEC_Dot,U,a,0,0);
   ierr = VecDot_Seq(U,a,ovalues); CHKERRQ(ierr);
   PLogEventEnd(VEC_Dot,U,a,0,0);
@@ -124,6 +124,23 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm );
   dot = values[0]; sum = values[1]; norm = sqrt(values[2]);
   PLogEventEnd(VEC_Norm,a,0,0,0);
+#else
+  {
+    Scalar cvalues[3],covalues[3];
+
+    PLogEventBegin(VEC_Dot,U,a,0,0);
+    ierr = VecDot_Seq(U,a,covalues); CHKERRQ(ierr);
+    PLogEventEnd(VEC_Dot,U,a,0,0);
+    PLogEventBegin(VEC_Norm,a,0,0,0);
+    ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
+    ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
+    covalues[1] = ovalues[1];
+    covalues[2] = ovalues[2]*ovalues[2];
+    MPI_Allreduce(covalues,cvalues,6,MPI_DOUBLE,MPI_SUM,comm );
+    dot = cvalues[0]; sum = PetscReal(cvalues[1]); norm = sqrt(PetscReal(cvalues[2]));
+    PLogEventEnd(VEC_Norm,a,0,0,0);
+  }
+#endif
 
   /* 
      the plogeventbegin() below should really be above,
