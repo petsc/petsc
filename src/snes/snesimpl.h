@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.3 1995/04/17 03:33:03 curfman Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.4 1995/04/25 16:24:29 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -16,17 +16,18 @@ struct _SNES {
   /*  ----------------- User provided stuff ------------------------*/
   void  *user;		             /* User context */
 
-  int   (*ComputeInitialGuess)(Vec,void*); /* Calculates an initial guess */
+  int   (*ComputeInitialGuess)(SNES,Vec,void*); /* Calculates initial guess */
   Vec   vec_sol;                     /* Pointer to solution */
   void  *gusP;
 
-  int   (*ComputeResidual)(Vec,Vec,void *);
+  int   (*ComputeFunction)(SNES,Vec,Vec,void *);
   Vec   vec_res;                    /* Pointer to function or gradient */
   void  *resP;
   int   rsign;                      /* sign (+/-)  of residual */
 
-  int   (*ComputeJacobian)(Vec,Mat*,void*);
+  int   (*ComputeJacobian)(SNES,Vec,Mat*,Mat*,int*,void*);
   Mat   jacobian;                   /* Jacobian (or Hessian) matrix context */
+  Mat   jacobian_pre;
   void  *jacP;
   SLES  sles;
 

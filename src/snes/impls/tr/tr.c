@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.3 1995/04/15 03:29:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.4 1995/04/19 03:01:26 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -28,7 +28,7 @@ static int SNESSolve_TR(SNES snes, int *its )
 {
   SNES_TR  *neP = (SNES_TR *) snes->data;
   Vec      X, F, Y, G, TMP, Ytmp;
-  int      maxits, i, history_len, nlconv,ierr,lits;
+  int      maxits, i, history_len, nlconv,ierr,lits, flg;
   double   rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
   double   *history, ynorm;
   Scalar   one = 1.0,cnorm;
@@ -58,8 +58,9 @@ static int SNESSolve_TR(SNES snes, int *its )
    for ( i=0; i<maxits; i++ ) {
      snes->iter = i+1;
 
-     (*snes->ComputeJacobian)(X,&snes->jacobian,snes->jacP);
-     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian,0);
+     (*snes->ComputeJacobian)(snes,X,&snes->jacobian,&snes->jacobian_pre,
+                                                             &flg,snes->jacP);
+     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
      ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERR(ierr);
      VecNorm( Ytmp, &norm );
      while(1) {

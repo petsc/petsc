@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.7 1995/04/19 03:01:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.8 1995/04/27 20:17:12 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve a two variable system\n";
@@ -7,15 +7,14 @@ static char help[] = "Uses Newton method to solve a two variable system\n";
 
 #include "snes.h"
 
-int  FormJacobian(Vec,Mat*,void*),
-     FormResidual(Vec,Vec,void*),
-     FormInitialGuess(Vec,void*),
+int  FormJacobian(SNES snes,Vec,Mat*,Mat*,int*,void*),
+     FormFunction(SNES snes,Vec,Vec,void*),
+     FormInitialGuess(SNES snes,Vec,void*),
      Monitor(SNES,int,double,void *);
 
 int main( int argc, char **argv )
 {
   SNES         snes;
-  SLES         sles;
   SNESMETHOD   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r;
   Mat          J;
@@ -34,8 +33,8 @@ int main( int argc, char **argv )
 
   /* Set various routines */
   SNESSetSolution( snes, x,FormInitialGuess,0 );
-  SNESSetFunction( snes, r,FormResidual,0, 0 );
-  SNESSetJacobian( snes, J, FormJacobian,0 );	
+  SNESSetFunction( snes, r,FormFunction,0, 0 );
+  SNESSetJacobian( snes, J, J, FormJacobian,0 );	
 
   SNESSetUp( snes );				       
 
@@ -53,10 +52,10 @@ int main( int argc, char **argv )
 }
 /* ------------------------------------------------ */
 /*
-    Evaluate residual F(x).
+    Evaluate Function F(x).
  */
 
-int FormResidual(Vec x,Vec  f,void *dummy )
+int FormFunction(SNES snes,Vec x,Vec  f,void *dummy )
 {
    Scalar *xx, *ff;
    VecGetArray(x,&xx); VecGetArray(f,&ff);
@@ -68,7 +67,7 @@ int FormResidual(Vec x,Vec  f,void *dummy )
 /*
     Form initial approximation.
  */
-int FormInitialGuess(Vec x,void *dummy)
+int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
    Scalar pfive = .50;
    VecSet(&pfive,x);
@@ -78,7 +77,7 @@ int FormInitialGuess(Vec x,void *dummy)
 /*
    Evaluate Jacobian matrix F'(x).
  */
-int FormJacobian(Vec x,Mat *jac,void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B, int *flag,void *dummy)
 {
   Scalar *xx, A[4];
   int    idx[2] = {0,1};
@@ -86,13 +85,14 @@ int FormJacobian(Vec x,Mat *jac,void *dummy)
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
   MatSetValues(*jac,2,idx,2,idx,A,InsertValues);
+  *flag = 0;
   return 0;
 }
 
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
   Vec x;
-  fprintf( stdout, "iter = %d, residual norm %g \n",its,fnorm);
+  fprintf( stdout, "iter = %d, Function norm %g \n",its,fnorm);
   SNESGetSolution(snes,&x);
   VecView(x,STDOUT_VIEWER);
   return 0;

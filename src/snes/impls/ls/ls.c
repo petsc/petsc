@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.10 1995/04/19 03:01:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.11 1995/04/25 16:24:36 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -29,7 +29,7 @@ static char vcid[] = "$Id: ls.c,v 1.10 1995/04/19 03:01:24 bsmith Exp bsmith $";
 int SNESSolve_LS( SNES snes, int *outits )
 {
   SNES_LS *neP = (SNES_LS *) snes->data;
-  int     maxits, i, history_len,ierr,lits;
+  int     maxits, i, history_len,ierr,lits,flg;
   double  fnorm, gnorm, xnorm, ynorm, *history;
   Vec     Y, X, F, G, W, TMP;
 
@@ -54,10 +54,12 @@ int SNESSolve_LS( SNES snes, int *outits )
        snes->iter = i+1;
 
        /* Solve J Y = -F, where J is Jacobian matrix */
-       (*snes->ComputeJacobian)(X,&snes->jacobian,snes->jacP);
-       ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian,0);
+       (*snes->ComputeJacobian)(snes,X,&snes->jacobian,&snes->jacobian_pre,
+                                &flg,snes->jacP);
+       ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
        ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERR(ierr);
        ierr = (*neP->LineSearch)(snes, X, F, G, Y, W, fnorm, &ynorm, &gnorm );
+       CHKERR(ierr);
 
        TMP = F; F = G; G = TMP;
        TMP = X; X = Y; Y = TMP;
@@ -331,7 +333,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                    fnorm,*gnorm, *ynorm,lambda);
            VecCopy(w, y );
            PLogEventEnd(SNES_LineSearch,snes,x,f,g);
-           return 0;
+           return -1;
       }
       t1 = *gnorm - fnorm - lambda*initslope;
       t2 = gnormprev  - fnorm - lambdaprev*initslope;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.18 1995/04/17 02:15:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.19 1995/04/26 18:22:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -380,7 +380,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
   /* Accumulate the correction to the solution of the preconditioned problem
     in TEMP */
   VecSet( &zero, VEC_TEMP );
-  VecMAXPY(it, nrs, VEC_TEMP, &VEC_VV(0) );
+  VecMAXPY(it+1, nrs, VEC_TEMP, &VEC_VV(0) );
 
   /* If we preconditioned on the right, we need to solve for the correction to
      the unpreconditioned problem */

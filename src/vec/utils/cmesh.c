@@ -20,7 +20,7 @@
 @*/
 int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
 {
-  int           xin = 1, yin = 1, c1, c2, c3, c4, *c,i, N, mytid;
+  int           xin = 1, yin = 1, c1, c2, c3, c4, i, N, mytid;
   int           ierr;
   double        h,x1,x2,x3,x4,y1,y2,y3,y4,*v,min,max;
   Scalar        scale;
@@ -80,10 +80,10 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
       if (!((i+1) % m) ) continue;  /* last column on right is skipped */
       if (i+m+1 >= N) continue;
 
-      x1 = x[i % m];     y1 = y[i/m];        c1 = (int) (min + v[i]);
-      x2 = x[(i+1) % m]; y2 = y1;            c2 = (int) (min + v[i+1]);
-      x3 = x2;           y3 = y[(i/m) + 1];  c3 = (int) (min + v[i+m+1]);
-      x4 = x1;           y4 = y3;            c4 = (int) (min + v[i+m]);
+      x1 = x[i % m];     y1 = y[i/m];        c1 = (int) (32. + v[i]);
+      x2 = x[(i+1) % m]; y2 = y1;            c2 = (int) (32. + v[i+1]);
+      x3 = x2;           y3 = y[(i/m) + 1];  c3 = (int) (32. + v[i+m+1]);
+      x4 = x1;           y4 = y3;            c4 = (int) (32. + v[i+m]);
 
       DrawTriangle(win,x1,y1,x2,y2,x3,y3,c1,c2,c3);
       DrawTriangle(win,x1,y1,x3,y3,x4,y4,c1,c3,c4);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.9 1995/04/27 20:17:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.10 1995/04/27 22:11:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
@@ -9,14 +9,13 @@ static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
 #include "options.h"
 #include <math.h>
 
-int  FormJacobian(Vec,Mat*,void*),
-     FormResidual(Vec,Vec,void*),
-     FormInitialGuess(Vec,void*),
+int  FormJacobian(SNES,Vec,Mat*,Mat*,int*,void*),
+     FormFunction(SNES,Vec,Vec,void*),
+     FormInitialGuess(SNES,Vec,void*),
      Monitor(SNES,int,double,void *);
 
 typedef struct {
-   DrawCtx win1,win2;
-   Vec     U;
+   DrawCtx win1;
 } MonitorCtx;
 
 int main( int argc, char **argv )
@@ -35,14 +34,12 @@ int main( int argc, char **argv )
   h = 1.0/(n-1);
 
   ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERR(ierr);
-  ierr = DrawOpenX(MPI_COMM_SELF,0,0,400,0,400,400,&monP.win2); CHKERR(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecCreate(x,&r); CHKERRA(ierr);
   ierr = VecCreate(x,&F); CHKERRA(ierr);
   ierr = VecCreate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  monP.U = U; 
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
 
   /* store right hand side to PDE; and exact solution */
@@ -57,13 +54,13 @@ int main( int argc, char **argv )
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP);
-  ierr = SNESSetFromOptions(snes); CHKERR(ierr);
 
   /* Set various routines */
   SNESSetSolution( snes, x,FormInitialGuess,0 );
-  SNESSetFunction( snes, r,FormResidual,(void*)F, 1 );
-  SNESSetJacobian( snes, J, FormJacobian,0 );	
+  SNESSetFunction( snes, r,FormFunction,(void*)F, 1 );
+  SNESSetJacobian( snes, J,J, FormJacobian,0 );	
 
+  ierr = SNESSetFromOptions(snes); CHKERR(ierr);
   SNESSetUp( snes );				       
 
   /* Execute solution method */
@@ -77,17 +74,16 @@ int main( int argc, char **argv )
   MatDestroy(J);
   SNESDestroy( snes );	
   DrawDestroy(monP.win1);			       
-  DrawDestroy(monP.win2);			       
   PetscFinalize();
 
   return 0;
 }
 /* ------------------------------------------------ */
 /*
-    Evaluate residual F(x).
+    Evaluate Function F(x).
  */
 
-int FormResidual(Vec x,Vec  f,void *dummy )
+int FormFunction(SNES snes,Vec x,Vec  f,void *dummy )
 {
    Scalar *xx, *ff,*FF,d;
    int    i,n;
@@ -105,7 +101,7 @@ int FormResidual(Vec x,Vec  f,void *dummy )
 /*
     Form initial approximation.
  */
-int FormInitialGuess(Vec x,void *dummy)
+int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
    Scalar pfive = .50;
    VecSet(&pfive,x);
@@ -115,7 +111,7 @@ int FormInitialGuess(Vec x,void *dummy)
 /*
    Evaluate Jacobian matrix F'(x).
  */
-int FormJacobian(Vec x,Mat *jac,void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,int *flag, void *dummy)
 {
   Scalar *xx, A,d;
   int    i,n,j,ierr;
@@ -132,6 +128,7 @@ int FormJacobian(Vec x,Mat *jac,void *dummy)
   i = n-1; A = 1.0; MatSetValues(*jac,1,&i,1,&i,&A,InsertValues);
   ierr = MatBeginAssembly(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatEndAssembly(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
+  *flag = MAT_SAME_NONZERO_PATTERN;
   return 0;
 }
 
@@ -139,9 +136,8 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
   MonitorCtx *monP = (MonitorCtx*) dummy;
   Vec        x;
-  fprintf( stdout, "iter = %d, residual norm %g \n",its,fnorm);
+  fprintf( stdout, "iter = %d, Function norm %g \n",its,fnorm);
   SNESGetSolution(snes,&x);
   VecView(x,(Viewer)monP->win1);
-  VecView(monP->U,(Viewer)monP->win2);
   return 0;
 }
