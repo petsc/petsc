@@ -1780,7 +1780,7 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   int          *masked,nmask,tmp,bs2,ishift;
   PetscScalar  *aa;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
-#if defined(PETSC_HAVE_DSCPACK)
+#if defined(PETSC_HAVE_SPOOLES)
   PetscTruth   flag;
 #endif
 
@@ -1913,9 +1913,9 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   ierr = PetscFree(mask);CHKERRQ(ierr);
 
   B->assembled = PETSC_TRUE;
-#if defined(PETSC_HAVE_DSCPACK)
-  ierr = PetscOptionsHasName(B->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(B);CHKERRQ(ierr); }
+#if defined(PETSC_HAVE_SPOOLES)
+  ierr = PetscOptionsHasName(B->prefix,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSpooles_SeqSBAIJ(B);CHKERRQ(ierr); }
 #endif
   ierr = MatView_Private(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
