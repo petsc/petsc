@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.4 1995/11/01 19:11:21 bsmith Exp bsmith $";
+C      "$Id: ex12.F,v 1.5 1995/11/30 22:34:58 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -21,6 +21,7 @@ C
       SLES             sles
       character*(128)  f 
       Viewer           fd
+
 
       none = -1.0
       call PetscInitialize(ierr)
