@@ -67,5 +67,5 @@ PVODE_LIB     = @PVODE_LIB@
 # comment out the locations indicated for that package.
 #
 PCONF         = @PCONF@
-EXTERNAL_LIB  = $(BS_LIB) $(PVODE_LIB) $(MPE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${MPE_LIB} ${ADIC_LIB}
 
