@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.22 2000/05/05 18:28:31 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.23 2000/07/10 03:38:14 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -42,5 +42,6 @@
 
 #define PETSC_NEED_KILL_FOR_DEBUGGER
 #define PETSC_USE_PID_FOR_DEBUGGER
+#define PETSC_HAVE_DECF90
 
 #endif
