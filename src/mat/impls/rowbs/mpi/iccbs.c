@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.4 1995/12/01 22:29:37 curfman Exp $";
+static char vcid[] = "$Id: iccbs.c,v 1.4 1995/12/02 19:22:23 curfman Exp curfman $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
 */
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-#include "src/pc/pcimpl.h"
+#include "src/pc/pcimpl.h"            /*I "pc.h" I*/
 #include "src/pc/impls/icc/icc.h"
 #include "ksp/kspimpl.h"
 #include "matimpl.h"
