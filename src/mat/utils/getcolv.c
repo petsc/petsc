@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: getcolv.c,v 1.3 1998/04/13 17:43:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: getcolv.c,v 1.4 1998/04/24 02:16:14 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -30,16 +30,16 @@ int MatGetColumnVector(Mat A, Vec yy, int col)
   PetscValidHeaderSpecific(A,MAT_COOKIE); 
   PetscValidHeaderSpecific(yy,VEC_COOKIE); 
 
-  if (col < 0)  SETERRQ(1,1,"Requested negative column");
+  if (col < 0)  SETERRQ1(1,1,"Requested negative column: %d",col);
   ierr = MatGetSize(A,&M,&N); CHKERRQ(ierr);
-  if (col >= N)  SETERRQ(1,1,"Requested column larger than number columns in matrix");
+  if (col >= N)  SETERRQ2(1,1,"Requested column %d larger than number columns in matrix %d",col,N);
 
   ierr = VecGetSize(yy,&Mv); CHKERRQ(ierr);
-  if (M != Mv) SETERRQ(1,1,"Matrix does not have same number of columns as vector");
+  if (M != Mv) SETERRQ2(1,1,"Matrix does not have same number of columns %d as vector %d",M,Mv);
 
   ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);
-  if (Rs != rs || Re != re) SETERRQ(1,1,"Matrix does not have same ownership range as vector");
+  if (Rs != rs || Re != re) SETERRQ4(1,1,"Matrix %d %d does not have same ownership range as vector %d %d",Rs,Re,rs,re);
 
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);

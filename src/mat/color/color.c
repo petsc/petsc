@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.31 1998/04/15 22:52:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.32 1998/10/19 22:18:28 bsmith Exp bsmith $";
 #endif
  
 /*

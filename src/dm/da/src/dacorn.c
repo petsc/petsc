@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.15 1998/04/27 15:58:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.16 1998/12/17 22:12:48 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -82,7 +82,7 @@ int DASetFieldName(DA da,int no,const char name[])
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (no < 0 || no >= da->w) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number");
+  if (no < 0 || no >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",no);
   if (da->fieldname[no]) PetscFree(da->fieldname[no]);
   
   da->fieldname[no] = (char *) PetscMalloc((1+PetscStrlen(name))*sizeof(char));CHKPTRQ(da->fieldname[no]);
@@ -114,7 +114,7 @@ int DAGetFieldName(DA da,int no,char **name)
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (no < 0 || no >= da->w) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number");
+  if (no < 0 || no >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",no);
   *name = da->fieldname[no];
   PetscFunctionReturn(0);
 }

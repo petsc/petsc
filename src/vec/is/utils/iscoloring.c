@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.35 1998/12/17 22:08:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.36 1998/12/21 23:09:53 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -232,7 +232,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
     np = PetscMax(np,indices[i]);
   }  
   if (np >= size) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Number of partitions larger than number of processors");
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Number of partitions %d larger than number of processors %d",np,size);
   }
 
   /*
@@ -308,7 +308,7 @@ int ISPartitioningCount(IS part,int count[])
     np = PetscMax(np,indices[i]);
   }  
   if (np >= size) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Number of partitions larger than number of processors");
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Number of partitions %d larger than number of processors %d",np,size);
   }
 
   /*

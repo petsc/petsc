@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.5 1998/11/23 22:02:22 balay Exp balay $";
+static char vcid[] = "$Id: fretrieve.c,v 1.6 1998/12/17 21:57:15 balay Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -204,8 +204,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     }
 #endif
     if (fgets(buf,1024,fp) == 0) {
-      fprintf(stderr,"Trying to get file %s\n",libname);
-      SETERRQ(1,1,"No output from ${PETSC_DIR}/bin/urlget.py");
+      SETERRQ1(1,1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
     }
     /* Check for \n and make it 0 */
     for ( i=0; i<1024; i++ ) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.17 1998/08/26 22:01:40 balay Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.18 1998/12/17 21:57:00 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -408,18 +408,19 @@ int PetscErrorPrintfDefault(const char format[],...)
     it may be called by PetscStackView()
   */
 
-  /*
-       On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
-    different processors, the messages are printed all jumbled up; to try to 
-    prevent this we have each processor wait based on their rank
-  */
   if (!PetscErrorPrintfCalled) {
     int  rank;
     char arch[10],hostname[64],username[16],pname[256];
 
+    /*
+        On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
+      different processors, the messages are printed all jumbled up; to try to 
+      prevent this we have each processor wait based on their rank
+    */
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (rank > 8) rank = 8;
     PetscSleep(rank);
+
     PetscGetArchType(arch,10);
     PetscGetHostName(hostname,64);
     PetscGetUserName(username,16);

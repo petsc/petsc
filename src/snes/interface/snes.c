@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.164 1998/12/17 22:12:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.165 1998/12/21 01:04:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -182,7 +182,7 @@ int SNESSetFromOptions(SNES snes)
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp");
+  if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp()");
 
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = OptionsGetString(snes->prefix,"-snes_type",method,256,&flg);
@@ -1781,7 +1781,7 @@ int SNESSetType(SNES snes,SNESType method)
 
   ierr =  FListFind(snes->comm, SNESList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
 
-  if (!r) SETERRQ(1,1,"Unable to find requested SNES type");
+  if (!r) SETERRQ1(1,1,"Unable to find requested SNES type %s",method);
 
   if (snes->data) PetscFree(snes->data);
   snes->data = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.2 1998/12/17 22:12:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.3 1998/12/23 22:53:37 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -17,7 +17,7 @@ int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double 
   Scalar         *coors;
 
   PetscFunctionBegin;
-  if (xmax <= xmin) SETERRQ(1,1,"Xmax must be larger than xmin");
+  if (xmax <= xmin) SETERRQ2(1,1,"Xmax must be larger than xmin %d %d",xmin,xmax);
 
   ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&igstart,&jgstart,0,&igsize,&jgsize,0);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.87 1998/12/17 22:12:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.88 1998/12/23 22:53:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -218,8 +218,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   PetscFunctionBegin;
   *inra = 0;
 
-  if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
-  if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
+  if (w < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",w);
+  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative: %d",s);
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   da->bops->publish = DAPublish_Petsc;
@@ -237,16 +237,16 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   MPI_Comm_rank(comm,&rank); 
 
   if (m != PETSC_DECIDE) {
-    if (m < 1) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in X direction");}
-    else if (m > size) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in X direction");}
+    if (m < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in X direction: %d",m);}
+    else if (m > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in X direction: %d %d",m,size);}
   }
   if (n != PETSC_DECIDE) {
-    if (n < 1) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in Y direction");}
-    else if (n > size) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in Y direction");}
+    if (n < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in Y direction: %d",n);}
+    else if (n > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in Y direction: %d %d",n,size);}
   }
   if (p != PETSC_DECIDE) {
-    if (p < 1) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in Z direction");}
-    else if (p > size) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in Z direction");}
+    if (p < 1) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Non-positive number of processors in Z direction: %d",p);}
+    else if (p > size) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Too many processors in Z direction: %d %d",p,size);}
   }
 
   /* Partition the array among the processors */
@@ -265,7 +265,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (m*n*p == size) break;
       m--;
     }
-    if (m == 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"bad p value");
+    if (m == 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad p value: p = %d",p);
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -276,7 +276,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (m*n*p == size) break;
       m--;
     }
-    if (m == 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"bad n value");
+    if (m == 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad n value: n = %d",n);
     if (M > P && m < p) {int _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -287,7 +287,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       if (m*n*p == size) break;
       n--;
     }
-    if (n == 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"bad m value");
+    if (n == 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"bad m value: m = %d",n);
     if (N > P && n < p) {int _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -310,9 +310,9 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   } else if (m*n*p != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Given Bad partition"); 
 
   if (m*n*p != size) SETERRQ(PETSC_ERR_PLIB,0,"Could not find good partition");  
-  if (M < m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in x direction is too fine!");
-  if (N < n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in y direction is too fine!");
-  if (P < p) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in z direction is too fine!");
+  if (M < m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in x direction is too fine! %d %d",M,m);
+  if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in y direction is too fine! %d %d",N,n);
+  if (P < p) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in z direction is too fine! %d %d",P,p);
 
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
@@ -324,21 +324,21 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     x  = lx[rank % m];
     xs = 0;
     for ( i=0; i<(rank%m)-1; i++ ) { xs += lx[i];}
-    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
+    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
   } else if (flg1) { /* Block Comm type Distribution */
     xs = (rank%m)*M/m;
     x  = (rank%m + 1)*M/m - xs;
-    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
+    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
     x = (M + rank%m)/m;
-    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
+    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
     if (M/m == x) { xs = (rank % m)*x; }
     else          { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
     x = M/m + ((M % m) > (rank % m));
-    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
+    if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil! %d %d",x,s);
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
     else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
     flx = lx = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(lx);
@@ -348,23 +348,23 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   }
   if (ly) { /* user decided distribution */
     y  = ly[(rank % m*n)/m];
-    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");      
+    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);      
     ys = 0;
     for ( i=0; i<(rank % m*n)/m-1; i++ ) { ys += ly[i];}
   } else if (flg1) { /* Block Comm type Distribution */
     ys = ((rank%(m*n))/m)*N/n;
     y  = ((rank%(m*n))/m + 1)*N/n - ys;
-    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");      
+    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);      
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
     y = (N + (rank%(m*n))/m)/n;
-    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
+    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);
     if (N/n == y) { ys = ((rank%(m*n))/m)*y;  }
     else          { ys = ((rank%(m*n))/m)*(y-1) + (N+((rank%(m*n))/m))%(y*n); }
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
     y = N/n + ((N % n) > ((rank % (m*n)) /m)); 
-    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
+    if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil! %d %d",y,s);
     if ((N % n) > ((rank % (m*n)) /m)) {ys = ((rank % (m*n))/m)*y;}
     else                               {ys = (N % n)*(y+1) + (((rank % (m*n))/m)-(N % n))*y;}
     fly = ly = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ly);
@@ -374,24 +374,24 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   }
   if (lz) { /* user decided distribution */
     z  = lz[rank/(m*n)];
-    if (z < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil!");      
+    if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);      
     zs = 0;
     for ( i=0; i<(rank/(m*n))-1; i++ ) { zs += lz[i];}
   }
   if (flg1) { /* Block Comm type Distribution */
     zs = (rank/(m*n))*P/p;
     z  = (rank/(m*n) + 1)*P/p -zs;
-    if (z < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil!");    
+    if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);    
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
     z = (P + rank/(m*n))/p;
-    if (z < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil!");
+    if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);
     if (P/p == z) { zs = (rank/(m*n))*z; }
     else          { zs = (rank/(m*n))*(z-1) + (P+(rank/(m*n)))%(z*p); }
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
     z = P/p + ((P % p) > (rank / (m*n)));
-    if (z < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil!");
+    if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);
     if ((P % p) > (rank / (m*n))) {zs = (rank/(m*n))*z;}
     else                          {zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z;}
     flz = lz = (int *) PetscMalloc( p*sizeof(int) ); CHKPTRQ(lz);

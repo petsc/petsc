@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa.c,v 1.13 1998/12/24 02:56:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgefa.c,v 1.14 1998/12/24 04:04:26 bsmith Exp bsmith $";
 #endif
 /*
        This routine was converted by f2c from Linpack source
@@ -17,8 +17,8 @@ static char vcid[] = "$Id: dgefa.c,v 1.13 1998/12/24 02:56:18 bsmith Exp bsmith 
 #include "petsc.h"
 
 #undef __FUNC__  
-#define __FUNC__ "Linpack_DGEFA"
-int Linpack_DGEFA(MatScalar *a, int n, int *ipvt)
+#define __FUNC__ "LINPACKdgefa"
+int LINPACKdgefa(MatScalar *a, int n, int *ipvt)
 {
     int        i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn1;
     MatScalar  t,*ax,*ay,*aa;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.80 1998/08/26 22:01:35 balay Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.81 1998/10/01 14:43:47 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -94,9 +94,9 @@ int PetscAttachDebugger(void)
     PetscFunctionReturn(1);
   }
   child = (int) fork(); 
-  if (child <0) {
-    (*PetscErrorPrintf)("PETSC ERROR: Error attaching debugger\n");
-    PetscFunctionReturn(-11);
+  if (child < 0) {
+    (*PetscErrorPrintf)("PETSC ERROR: Error in fork() attaching debugger\n");
+    PetscFunctionReturn(1);
   }
 
   /*
@@ -209,7 +209,7 @@ int PetscAttachDebugger(void)
         args[6] = 0;
       }
 #endif
-        (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s\n",Debugger,program,pid);
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s\n",Debugger,program,pid);
       } else {
         args[0] = "xterm";  args[1] = "-d";
         args[2] = display;  args[3] = "-e";
@@ -243,8 +243,7 @@ int PetscAttachDebugger(void)
         args[8] = 0;
       }
 #endif
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s\n",
-              Debugger,program,pid,display);
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s\n",Debugger,program,pid,display);
       }
 
       if (execvp("xterm", args)  < 0) {
@@ -326,8 +325,7 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int num,int p,
-                                    char* mess,void *ctx)
+int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int num,int p,char* mess,void *ctx)
 {
   int ierr,rank;
 
@@ -341,6 +339,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 
   ierr = PetscAttachDebugger();
   if (ierr) { /* hopeless so get out */
+    MPI_Finalize();
     exit(num);
   }
   PetscFunctionReturn(0);

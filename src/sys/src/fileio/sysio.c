@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.48 1998/12/13 19:14:54 bsmith Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.49 1998/12/17 21:56:54 balay Exp bsmith $";
 #endif
 
 /* 
@@ -388,29 +388,29 @@ int PetscBinaryOpen(const char name[],int type,int *fd)
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
   if (type == BINARY_CREATE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
-      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
+      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing: %s",name);
     }
   } else if (type == BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
-    SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading");
+      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading: %s",name);
     }
   } else if (type == BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
-      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing");
+      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing: %s",name);
     }
 #else
   if (type == BINARY_CREATE) {
     if ((*fd = creat(name,0666)) == -1) {
-      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
+      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing: %s",name);
     }
   } else if (type == BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY,0)) == -1) {
-      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading");
+      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading: %s",name);
     }
   }
   else if (type == BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY,0)) == -1) {
-      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing");
+      SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing: %s",name);
     }
 #endif
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");

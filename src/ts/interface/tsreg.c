@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.38 1998/12/03 04:03:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.39 1998/12/17 22:11:33 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -55,7 +55,7 @@ int TSSetType(TS ts,TSType method)
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
   ierr =  FListFind(ts->comm, TSList, method, (int (**)(void *)) &r );CHKERRQ(ierr);
-  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method: %s",method);}
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles); CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes); CHKERRQ(ierr);}
@@ -182,7 +182,7 @@ int TSSetFromOptions(TS ts)
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp!");
+  if (ts->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp()");
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = OptionsGetString(ts->prefix,"-ts_type",(char *) type,256,&flg);
   if (flg) {

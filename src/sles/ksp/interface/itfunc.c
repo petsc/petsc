@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.106 1998/11/20 15:27:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.107 1998/12/03 03:57:26 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -43,7 +43,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
   PetscValidScalarPointer(emax);
   PetscValidScalarPointer(emin);
   if (!ksp->calc_sings) {
-    SETERRQ(4,0,"Singular values not requested before KSPSetUp");
+    SETERRQ(4,0,"Singular values not requested before KSPSetUp()");
   }
 
   if (ksp->ops->computeextremesingularvalues) {
@@ -105,7 +105,7 @@ int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c,int *neig)
   PetscValidScalarPointer(r);
   PetscValidScalarPointer(c);
   if (!ksp->calc_sings) {
-    SETERRQ(4,0,"Eigenvalues not requested before KSPSetUp");
+    SETERRQ(4,0,"Eigenvalues not requested before KSPSetUp()");
   }
 
   if (ksp->ops->computeeigenvalues) {
@@ -885,7 +885,7 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->numbermonitors >= MAXKSPMONITORS) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too KSP many monitors set");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many KSP monitors set");
   }
 
   ksp->monitor[ksp->numbermonitors]           = monitor;

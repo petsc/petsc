@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.120 1998/12/03 04:03:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.121 1998/12/17 22:11:24 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -507,10 +507,9 @@ int DrawXGetDisplaySize_Private(const char name[],int *width,int *height)
   if (!display) {
     *width  = 0; 
     *height = 0; 
-    (*PetscErrorPrintf)("Unable to open display on %s\n",name);
-    SETERRQ(PETSC_ERR_LIB,0,"Could not open display: make sure your DISPLAY variable\n\
+    SETERRQ1(1,1,"Unable to open display on %s\n.  Make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
-    run on your displaying machine.\n" );
+    run on your displaying machine.\n",name);
   }
 
   *width  = DisplayWidth(display,0);
@@ -719,8 +718,7 @@ int DrawOpenX(MPI_Comm comm,const char disp[],const char ttl[],
   MPI_Comm_rank(comm,&rank);
   OptionsHasName(PETSC_NULL,"-nox",&flag);
   if (!flag && !rank) {
-    (*PetscErrorPrintf)("PETSc installed without X windows on this machine\n");
-    (*PetscErrorPrintf)("proceeding without graphics\n");
+    (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
   }
   ierr = DrawOpenNull(comm,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.52 1998/09/25 03:13:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.53 1998/12/17 22:08:16 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -165,7 +165,7 @@ int VecCreateWithType(MPI_Comm comm,VecType type_name,int n,int N,Vec *v)
 
   ierr =  FListFind(comm, VecList, vectype,(int (**)(void *)) &r );CHKERRQ(ierr);
 
-  if (!r) SETERRQ(1,1,"Unknown vector type given");
+  if (!r) SETERRQ1(1,1,"Unknown vector type given: %s",vectype);
 
   ierr = (*r)(comm,n,N,v); CHKERRQ(ierr);
 

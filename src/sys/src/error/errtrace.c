@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: errtrace.c,v 1.1 1998/07/02 02:28:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: errtrace.c,v 1.2 1998/07/02 14:34:14 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -41,8 +41,7 @@ $     SETERRQ(number,p,mess)
 int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
   PLogDouble mem, rss;
-  int        rank;
-  int        ierr, flg1, flg2;
+  int        rank, ierr, flg1, flg2;
 
   PetscFunctionBegin;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);

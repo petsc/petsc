@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.23 1998/12/09 20:43:54 bsmith Exp balay $";
+static char vcid[] = "$Id: init.c,v 1.24 1998/12/17 21:56:46 balay Exp bsmith $";
 #endif
 /*
 
@@ -90,7 +90,7 @@ int PLogOpenHistoryFile(const char filename[],FILE **fd)
       ierr = PetscFixFilename(pfile,fname);CHKERRQ(ierr);
     }
 
-    *fd = fopen(fname,"a"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"");
+    *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file: %s",fname);
     fprintf(*fd,"---------------------------------------------------------\n");
     fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,PetscGetDate());
     ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
@@ -502,7 +502,7 @@ int OptionsCheckInitial_Alice(void)
         ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
         file = fopen(fname,"w"); 
         if (!file) {
-          SETERRQ(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file");
+          SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Unable to open trace file: %s",fname);
         }
       } else {
         file = stdout;
@@ -951,7 +951,7 @@ int AliceFinalize(void)
       char sname[256];
 
       sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ(1,1,"Cannot open log file");
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,1,"Cannot open log file: %s",sname);
       ierr = PetscTrDump(fd); CHKERRQ(ierr);
       fclose(fd);
     } else {
@@ -984,7 +984,7 @@ int AliceFinalize(void)
       char sname[256];
 
       sprintf(sname,"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); if (!fd) SETERRQ(1,1,"Cannot open log file");
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,1,"Cannot open log file: %s",sname);
       ierr = PetscTrLogDump(fd);CHKERRQ(ierr); 
       fclose(fd);
     } else {

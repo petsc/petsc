@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgedi.c,v 1.10 1998/12/24 02:56:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgedi.c,v 1.11 1998/12/24 04:04:06 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: dgedi.c,v 1.10 1998/12/24 02:56:37 bsmith Exp bsmith 
       cleve moler, university of new mexico, argonne national lab.
 
       Computes the inverse of a matrix given its factors and pivots
-    calculated by Linpack_DGEFA(). Performed in-place for an n by n
+    calculated by LINPACKdgefa(). Performed in-place for an n by n
     dense matrix.
 
        Used by the sparse factorization routines in 
@@ -20,8 +20,8 @@ static char vcid[] = "$Id: dgedi.c,v 1.10 1998/12/24 02:56:37 bsmith Exp bsmith 
 #include "petsc.h"
 
 #undef __FUNC__  
-#define __FUNC__ "Linpack_DGEDI"
-int Linpack_DGEDI(MatScalar *a,int n,int *ipvt,MatScalar *work)
+#define __FUNC__ "LINPACKdgedi"
+int LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
 {
     int        i__2,kb, kp1, nm1,i, j, k, l, ll,kn,knp1,jn1;
     MatScalar  *aa,*ax,*ay,tmp;

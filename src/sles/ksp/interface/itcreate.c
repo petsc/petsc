@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.140 1998/12/17 22:09:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.141 1998/12/21 00:57:30 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -260,7 +260,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
   ierr =  FListFind(ksp->comm, KSPList, itmethod,(int (**)(void *)) &r );CHKERRQ(ierr);
 
-  if (!r) SETERRQ(1,1,"Unknown KSP type given");
+  if (!r) SETERRQ1(1,1,"Unknown KSP type given: %s",itmethod);
 
   if (ksp->data) PetscFree(ksp->data);
   ksp->data        = 0;

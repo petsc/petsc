@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.200 1998/11/25 20:13:09 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.201 1998/11/25 20:14:59 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -116,7 +116,7 @@ int OptionsInsertFile(const char file[])
         OptionsSetValue(first,second);
       } else if (first && !PetscStrcmp(first,"alias")) {
         third = PetscStrtok(0," ");
-        if (!third) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias");
+        if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias missing (%s)",second);
         len = PetscStrlen(third); 
         if (third[len-1] == '\n') third[len-1] = 0;
         ierr = OptionsSetAlias(second,third); CHKERRQ(ierr);
@@ -412,10 +412,7 @@ int OptionsSetValue(const char name[],const char value[])
     }
   }
   if (N >= MAXOPTIONS) {
-    (*PetscErrorPrintf)("No more room in option table, limit %d\n",MAXOPTIONS);
-    (*PetscErrorPrintf)("recompile options/src/options.c with larger ");
-    (*PetscErrorPrintf)("value for MAXOPTIONS\n");
-    PetscFunctionReturn(0);
+    SETERRQ1(1,1,"No more room in option table, limit %d recompile \n src/sys/src/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
   }
   /* shift remaining values down 1 */
   for ( i=N; i>n; i-- ) {
@@ -492,9 +489,11 @@ int OptionsSetAlias(const char newname[],const char oldname[])
   int len,n = options->Naliases;
 
   PetscFunctionBegin;
-  if (newname[0] != '-') SETERRQ(PETSC_ERR_ARG_WRONG,0,"aliased must have -");
-  if (oldname[0] != '-') SETERRQ(PETSC_ERR_ARG_WRONG,0,"aliasee must have -");
-  if (n >= MAXALIASES) {SETERRQ(PETSC_ERR_MEM,0,"You have defined to many PETSc options aliases");}
+  if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"aliased must have -: Instead %s",newname);
+  if (oldname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"aliasee must have -: Instead %s",oldname);
+  if (n >= MAXALIASES) {
+    SETERRQ1(PETSC_ERR_MEM,0,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/src/objects/options.c with larger value for MAXALIASES",MAXALIASES);
+  }
 
   newname++; oldname++;
   len = (PetscStrlen(newname)+1)*sizeof(char);
@@ -519,7 +518,7 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
   N = options->N;
   names = options->names;
 
-  if (name[0] != '-') SETERRQ(PETSC_ERR_ARG_WRONG,0,"Name must begin with -");
+  if (name[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Name must begin with -: Instead %s",name);
 
   /* append prefix to name */
   if (pre) {
@@ -566,9 +565,7 @@ int OptionsReject(const char name[],const char mess[])
   PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,name,&flag); CHKERRQ(ierr);
   if (flag) {
-    (*PetscErrorPrintf)("Cannot run program with option %s\n",name);
-    (*PetscErrorPrintf)("  %s",mess);
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option");
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option: %s with %s",name,mess);
   }
   PetscFunctionReturn(0);
 }
@@ -681,7 +678,7 @@ int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int 
           !PetscStrcmp(value,"false") || !PetscStrcmp(value,"no")) {
         *ivalue = PETSC_FALSE;
       } else {
-        SETERRQ(1,1,"Unknown logical value");
+        SETERRQ1(1,1,"Unknown logical value: %s",value);
       }
     }
   } else {
@@ -769,7 +766,7 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
       double re=0.0,im=0.0;
       char   *tvalue = 0;
       tvalue  = PetscStrtok(value,",");
-      if (!tvalue) { SETERRQ(1,0,"unknnown string specified\n"); }
+      if (!tvalue) { SETERRQ(1,0,"unknown string specified\n"); }
       re      = atof(tvalue);
       tvalue  = PetscStrtok(0,",");
       if (!tvalue) { /* Unknown separator used. using only real value */

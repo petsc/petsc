@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.86 1998/12/03 04:06:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.87 1998/12/17 22:12:48 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -149,8 +149,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   PetscFunctionBegin;
   *inra = 0;
 
-  if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
-  if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
+  if (w < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node: %d",w);
+  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative: %d",s);
 
   PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PLogObjectCreate(da);
@@ -167,8 +167,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
   m = size;
 
-  if (M < m)     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"More processors than data points!");
-  if ((M-1) < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Array is too small for stencil!");
+  if (M < m)     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"More processors than data points! %d %d",m,M);
+  if ((M-1) < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Array is too small for stencil! %d %d",M-1,s);
 
   /* 
      Determine locally owned region 
@@ -202,7 +202,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
       left += lc[i];
     }
     if (left != M) {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of lc across processors not equal to M");
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of lc across processors not equal to M %d %d",left,M);
     }
   }
 

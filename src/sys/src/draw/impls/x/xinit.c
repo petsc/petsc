@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.47 1998/11/22 19:40:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.48 1998/12/03 04:03:22 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -35,8 +35,9 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay( display_name );
   if (!XiWin->disp) {
-    (*PetscErrorPrintf)("Unable to open display on %s\n",display_name);
-    PetscFunctionReturn(1);
+    SETERRQ1(1,1,"Unable to open display on %s\n.  Make sure your DISPLAY variable\n\
+    is set, or you use the -display name option and xhost + has been\n\
+    run on your displaying machine.\n",display_name);
   }
   XiWin->screen = DefaultScreen( XiWin->disp );
   PetscFunctionReturn(0);
@@ -212,12 +213,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
   XVisualInfo vinfo;
 
   PetscFunctionBegin;
-  if (XiOpenDisplay( w, host )) {
-    (*PetscErrorPrintf)("Trying to open display: %s\n",host);
-    SETERRQ(PETSC_ERR_LIB,0,"Could not open display: make sure your DISPLAY variable\n\
-    is set, or you use the -display name option and xhost + has been\n\
-    run on your displaying machine.\n" );
-  }
+  ierr = XiOpenDisplay( w, host ); CHKERRQ(ierr);
 
   /*
       The reason these are slow is they call XAllocColor() for each 256 colors

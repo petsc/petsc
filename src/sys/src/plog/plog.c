@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.197 1998/12/03 03:58:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.198 1998/12/04 23:25:41 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -70,7 +70,7 @@ int PLogInfoAllow(PetscTruth flag,char *filename)
     sprintf(tname,".%d",rank);
     PetscStrcat(fname,tname);
     PLogInfoFile = fopen(fname,"w");
-    if (!PLogInfoFile) SETERRQ(1,1,"Cannot open requested file for writing");
+    if (!PLogInfoFile) SETERRQ1(1,1,"Cannot open requested file for writing: %s",fname);
   } else if (flag) {
     PLogInfoFile = stdout;
   }
@@ -462,7 +462,7 @@ int PLogStageRegister(int stage, const char sname[])
   char *str;
 
   PetscFunctionBegin;
-  if (stage < 0 || stage > 10) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stages must be >= 0 and < 10");
+  if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stages must be >= 0 and < 10: Instead %d",stage);
   n = PetscStrlen(sname);
   str = (char *) PetscMalloc((n+1)*sizeof(char)); CHKPTRQ(str);
   PetscStrcpy(str,sname);
@@ -509,7 +509,7 @@ int PLogStageRegister(int stage, const char sname[])
 int PLogStagePush(int stage)
 {
   PetscFunctionBegin;
-  if (stage < 0 || stage > 10) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stage must be >= 0 < 10");
+  if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stage must be >= 0 < 10: Instead %d",stage);
   /* record flops/time of previous stage */
   if (EventsStagePushed) {
     PetscTimeAdd(EventsStageTime[EventsStage]);
@@ -1112,7 +1112,7 @@ int PLogDump(const char sname[])
   if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
   ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
-  fd   = fopen(fname,"w"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"cannot open file");
+  fd   = fopen(fname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"cannot open file: %s",fname);
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,ObjectsDestroyed);
   fprintf(fd,"Clock Resolution %g\n",0.0);
@@ -1376,7 +1376,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   if (filename && !rank) {
     ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
     fd = fopen(fname,"w"); 
-    if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"cannot open file");
+    if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"cannot open file: %s",fname);
   }
 
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");

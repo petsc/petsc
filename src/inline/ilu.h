@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.8 1998/12/24 02:53:03 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.9 1998/12/24 04:05:52 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -14,8 +14,8 @@
    src/mat/impls/baij/seq
 */
 
-extern int  Linpack_DGEFA(MatScalar *,int, int *);
-extern int  Linpack_DGEDI(MatScalar *,int, int *,MatScalar*);
+extern int  LINPACKdgefa(MatScalar *,int, int *);
+extern int  LINPACKdgedi(MatScalar *,int, int *,MatScalar*);
 extern int  Kernel_A_gets_inverse_A_3(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_4(MatScalar *);
 extern int  Kernel_A_gets_inverse_A_5(MatScalar *);
@@ -61,8 +61,8 @@ EXTERN_C_END
 */
 #define Kernel_A_gets_inverse_A(bs,A,pivots,W)\
 { \
-  ierr = Linpack_DGEFA((A),(bs),(pivots)); CHKERRQ(ierr); \
-  ierr = Linpack_DGEDI((A),(bs),(pivots),(W)); CHKERRQ(ierr); \
+  ierr = LINPACKdgefa((A),(bs),(pivots)); CHKERRQ(ierr); \
+  ierr = LINPACKdgedi((A),(bs),(pivots),(W)); CHKERRQ(ierr); \
 }
 
 /* -----------------------------------------------------------------------*/

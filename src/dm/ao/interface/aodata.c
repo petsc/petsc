@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.28 1998/06/04 22:29:30 balay Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.29 1998/12/03 04:06:44 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -850,7 +850,7 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
-  if (!flag)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key does not exist");
+  if (!flag)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key does not exist: %s",name);
 
   *map = ikey->ltog;
   PetscFunctionReturn(0);
@@ -934,7 +934,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&oldkey);CHKERRQ(ierr);
-  if (flag == 1)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key already exists with given name");
+  if (flag == 1)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key already exists with given name: %s",name);
   if (nlocal == PETSC_DECIDE && N == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_WRONG,1,"nlocal and N both PETSC_DECIDE");
 
   key                = PetscNew(AODataKey);CHKPTRQ(key);
@@ -957,7 +957,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
     ierr = MPI_Allreduce(&nlocal,&N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (nlocal != PETSC_DECIDE) {
     ierr = MPI_Allreduce(&nlocal,&Ntmp,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (Ntmp != N) SETERRQ(PETSC_ERR_ARG_WRONG,1,"Sum of nlocal is not N");
+    if (Ntmp != N) SETERRQ2(PETSC_ERR_ARG_WRONG,1,"Sum of nlocal is not N: sum %d N %d",Ntmp,N);
   } else {
     nlocal = N/size + ((N % size) > rank);
   }
@@ -1087,7 +1087,7 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&key); CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created");
+  if (!flag) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created: %s",name);
 
   *rstart = key->rstart;
   *rend   = key->rend;
@@ -1116,8 +1116,7 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 
 .seealso: AODataKeyGetOwnershipRange()
 @*/
-int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments,
-                     char ***segnames)
+int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments,char ***segnames)
 {
   int           ierr,flag,i,n=0;
   AODataKey     *key;
@@ -1127,7 +1126,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataKeyFind_Private(aodata,name,&flag,&key); CHKERRQ(ierr);
-  if (!flag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created");
+  if (!flag) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created: %s",name);
 
   if (nglobal)   *nglobal   = key->N;
   if (nlocal)    *nlocal    = key->nlocal;
@@ -1175,8 +1174,8 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs, Pets
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   ierr = AODataSegmentFind_Private(aodata,keyname,segname,&flag,&key,&seg); CHKERRQ(ierr);
-  if (flag == 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Segment never created");
-  if (flag == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created");
+  if (flag == 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Segment never created: %s",segname);
+  if (flag == -1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created: %s",keyname);
   if (bs)        *bs        = seg->bs;
   if (dtype)     *dtype     = seg->datatype;
 

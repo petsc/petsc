@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgeig.c,v 1.41 1998/10/19 22:16:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.42 1998/12/03 03:57:38 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -7,8 +7,7 @@ static char vcid[] = "$Id: cgeig.c,v 1.41 1998/10/19 22:16:39 bsmith Exp bsmith 
    matrices (not complex matrices that are symmetric).
 */
 #include "src/ksp/impls/cg/cgctx.h"
-static int ccgtql1_private(int *, double *, double *, int *);
-
+static int LINPACKcgtql1(int *, double *, double *, int *);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvalues_CG"
@@ -36,7 +35,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c,int *neig)
     ee[j] = PetscReal(e[j]);
   }
 
-  ccgtql1_private(&n,r,ee,&j);
+  LINPACKcgtql1(&n,r,ee,&j);
   if (j != 0) SETERRQ(PETSC_ERR_LIB,0,"Error from tql1(); eispack eigenvalue routine");  
   PetscSortDouble(n,r);
   PetscFunctionReturn(0);
@@ -64,7 +63,7 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
     ee[j] = PetscReal(e[j]);
   }
 
-  ccgtql1_private(&n,dd,ee,&j);
+  LINPACKcgtql1(&n,dd,ee,&j);
   if (j != 0) SETERRQ(PETSC_ERR_LIB,0,"Error from tql1(); eispack eigenvalue routine");  
   *emin = dd[0]; *emax = dd[n-1];
   PetscFunctionReturn(0);
@@ -80,11 +79,11 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
   always produces a real, symmetric tridiagonal matrix.
 */
 
-static double cgpthy_private(double*,double*);
+static double LINPACKcgpthy(double*,double*);
 
 #undef __FUNC__  
-#define __FUNC__ "ccgtql1_private"
-static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
+#define __FUNC__ "LINPACKcgtql1"
+static int LINPACKcgtql1(int *n, double *d, double *e, int *ierr)
 {
     /* System generated locals */
     int    i__1, i__2;
@@ -193,7 +192,7 @@ L130:
         l2 = l1 + 1;
         g = d[l];
         p = (d[l1] - g) / (e[l] * 2.);
-        r = cgpthy_private(&p, &c_b10);
+        r = LINPACKcgpthy(&p, &c_b10);
 /*      d[l] = e[l] / (p + d_sign(&r, &p));
         d[l1] = e[l] * (p + d_sign(&r, &p)); */
         ds = 1.0; if (p < 0.0) ds = -1.0;
@@ -228,7 +227,7 @@ L145:
             i = m - ii;
             g = c * e[i];
             h = c * p;
-            r = cgpthy_private(&p, &e[i]);
+            r = LINPACKcgpthy(&p, &e[i]);
             e[i + 1] = s * r;
             s = e[i] / r;
             c = p / r;
@@ -275,8 +274,8 @@ L1001:
 } /* cgtql1_ */
 
 #undef __FUNC__  
-#define __FUNC__ "cgpthy_private"
-static double cgpthy_private(double *a, double *b)
+#define __FUNC__ "LINPACKcgpthy"
+static double LINPACKcgpthy(double *a, double *b)
 {
     /* System generated locals */
     double ret_val, d__1, d__2, d__3;

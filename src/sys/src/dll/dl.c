@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.36 1998/11/20 15:28:03 bsmith Exp balay $";
+static char vcid[] = "$Id: dl.c,v 1.37 1998/12/17 21:57:25 balay Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -69,7 +69,7 @@ int DLLibraryPrintPath()
   PetscErrorPrintf("Unable to find function. Search path:\n");
   libs = DLLibrariesLoaded;
   while (libs) {
-    PetscErrorPrintf("%s\n",libs->libname);
+    PetscErrorPrintf("  %s\n",libs->libname);
     libs = libs->next;
   }
   PetscFunctionReturn(0);
@@ -164,19 +164,17 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   par3 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par3);
   ierr = PetscFileRetrieve(comm,par2,par3,1024,&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
-    PetscErrorPrintf("Library name %s\n  %s\n",libname,par2);
-    SETERRQ(1,1,"Unable to locate dynamic library");
+    SETERRQ2(1,1,"Unable to locate dynamic library:\n  %s\n  %s\n",libname,par2);
   }
   ierr = PetscStrcpy(par2,par3);CHKERRQ(ierr);
   PetscFree(par3);
 
 #if !defined(USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
-#endif
   if (!foundlibrary) {
-    PetscErrorPrintf("Library name %s\n  %s\n",libname,par2);
-    SETERRQ(1,1,"Dynamic library is not executable");
+    SETERRQ2(1,1,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
   }
+#endif
 
   /*
     Under linux open the executable itself in the hope it will
@@ -199,9 +197,8 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 #endif
 
   if (!*handle) {
-    PetscErrorPrintf("Error message from dlopen() %s\n",dlerror());    
-    PetscErrorPrintf("Library name %s\n  %s\n",libname,par2);
-    SETERRQ(1,1,"Unable to open dynamic library");
+    SETERRQ3(1,1,"Unable to open dynamic library:\n  %s\n  %s\n  Error message from dlopen() %s\n",
+             libname,par2,dlerror());
   }
 
   /* run the function FListAdd() if it is in the library */
@@ -314,8 +311,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
     done:; 
     *value   = dlsym(handle,symbol);
     if (!*value) {
-      PetscErrorPrintf("Library path %s and function name %s\n",path,insymbol);
-      SETERRQ(1,1,"Unable to locate function in dynamic library");
+      SETERRQ2(1,1,"Unable to locate function %s in dynamic library %s",insymbol,path);
     }
     PLogInfo(0,"DLLibrarySym:Loading function %s from dynamic library %s\n",insymbol,path);
 

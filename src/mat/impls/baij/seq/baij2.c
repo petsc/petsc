@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.33 1998/12/23 22:20:35 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.34 1998/12/23 22:34:53 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -1078,7 +1078,7 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   MatScalar   *v = a->a;
   double      sum = 0.0;
-  int         i,nz=a->nz,bs2=a->bs2;
+  int         i,j,k,bs = a->bs, nz=a->nz,bs2=a->bs2;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -1090,8 +1090,22 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
 #endif
     }
     *norm = sqrt(sum);
-  }
-  else {
+  }  else if (type == NORM_INFINITY) { /* maximum row sum */
+    int j;
+
+    *norm = 0.0;
+    for ( k=0; k<bs; k++ ) {
+      for ( j=0; j<a->m; j++ ) {
+        v = a->a + bs2*a->i[j] + k;
+        sum = 0.0;
+        for ( i=0; i<a->i[j+1]-a->i[j]; i++ ) {
+          sum += PetscAbsScalar(*v); 
+          v   += bs;
+        }
+        if (sum > *norm) *norm = sum;
+      }
+    }
+  } else {
     SETERRQ(PETSC_ERR_SUP,0,"No support for this norm yet");
   }
   PetscFunctionReturn(0);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.154 1998/11/30 19:32:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.155 1998/12/03 03:56:52 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -31,8 +31,8 @@ int VecSetBlockSize(Vec v,int bs)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE); 
-  if (v->N % bs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Vector length not divisible by blocksize");
-  if (v->n % bs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Local vector length not divisible by blocksize");
+  if (v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Vector length not divisible by blocksize %d %d",v->N,bs);
+  if (v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Local vector length not divisible by blocksize %d %d",v->n,bs);
   
   v->bs = bs;
   PetscFunctionReturn(0);
@@ -1362,7 +1362,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidPointer(a);
-  if (n <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must get at least one array");
+  if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Must get at least one array n = %d",n);
   q = (Scalar **) PetscMalloc(n*sizeof(Scalar*)); CHKPTRQ(q);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]); CHKERRQ(ierr);
@@ -1675,7 +1675,7 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE);
   PetscValidPointer(V);
-  if (m <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0");
+  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0: m = %d",m);
   *V = (Vec *) PetscMalloc( m * sizeof(Vec *)); CHKPTRQ(*V);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i); CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -1689,7 +1689,7 @@ int VecDestroyVecs_Default( Vec *v, int m )
 
   PetscFunctionBegin;
   PetscValidPointer(v);
-  if (m <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0");
+  if (m <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0: m = %d",m);
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]); CHKERRQ(ierr);}
   PetscFree( v );
   PetscFunctionReturn(0);

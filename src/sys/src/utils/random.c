@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.42 1998/10/19 22:17:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.43 1998/12/17 22:09:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -88,7 +88,7 @@ int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
   if (PetscReal(low) >= PetscReal(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
   if (PetscImaginary(low) >= PetscImaginary(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
 #else
-  if (low >= high) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
+  if (low >= high) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high: Instead %g %g",low,high);
 #endif
   r->low   = low;
   r->width = high-low;
