@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.24 1996/03/23 20:42:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.25 1996/04/19 21:38:26 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -67,6 +67,9 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
   return MatConvert(A,MATSAME,B);
 }
 
+int  Linpack_DGEFA(Scalar *,int, int *);
+int  Linpack_DGEDI(Scalar *,int, int *,Scalar *);
+
 int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
 {
   Mat          C = *B;
@@ -127,12 +130,8 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
     for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
       knb = k*nb; knb2 = knb*nb;
-#if !defined (PARCH_T3D)
-      LAgetf2_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info);
-#else
-      LAgetrf_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info);
-#endif
-      if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad subblock LU factorization");
+      /* factor the diagonal block */
+      ierr = Linpack_DGEFA(dd+knb2,nb,a->pivot+knb); CHKERRQ(ierr);
       for ( d=mainbd-1; d>=0; d-- ) {
         elim_row = k + diag[d];
         if (elim_row < mblock) { /* sweep down */

@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.15 1996/03/19 21:27:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: axpy.c,v 1.16 1996/04/02 04:12:36 curfman Exp bsmith $";
 #endif
 
 #include "matimpl.h"  /*I   "mat.h"  I*/
 
 /*@
-   MatAXPY - Computes Y = a*X + Y
+   MatAXPY - Computes Y = a*X + Y.
 
    Input Parameters:
 .  X,Y - the matrices

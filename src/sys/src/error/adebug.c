@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.41 1996/04/10 04:28:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.42 1996/04/18 21:11:04 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -68,12 +68,6 @@ int PetscAttachDebugger()
   fprintf(stderr,"PETSC ERROR: Cray t3d cannot start debugger\n");
   MPI_Finalize();
   exit(0);
-#elif defined(PARCH_IRIX)
-  /*
-    fprintf(stderr,"PETSC ERROR: IRIX cannot start debugger\n");
-    MPI_Finalize();
-    exit(0);
-  */
 #else
   if (!program) {
     fprintf(stderr,"PETSC ERROR: Cannot determine program name\n");
@@ -94,7 +88,8 @@ int PetscAttachDebugger()
 
   if (child) { /* I am the parent will run the debugger */
     char  *args[9],pid[9];
-#if !defined(PARCH_rs6000) && !defined(PARCH_solaris) && !defined(PARCH_IRIX)
+#if !defined(PARCH_rs6000) && !defined(PARCH_solaris) && \
+    !defined(PARCH_IRIX) && !defined(PARCH_IRIX64)
     kill(child,SIGSTOP);
 #endif
     sprintf(pid,"%d",child); 
@@ -236,7 +231,7 @@ int PetscAttachDebugger()
     }
   }
   else { /* I am the child, continue with user code */
-#if defined(PARCH_hpux) || defined(PARCH_IRIX)
+#if defined(PARCH_hpux)
     { 
       double x = 1.0;
       int i=10000000;

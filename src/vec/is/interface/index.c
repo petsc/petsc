@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.25 1996/02/21 19:23:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.26 1996/03/19 21:22:35 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -208,7 +208,7 @@ int ISView(IS is, Viewer viewer)
 }
 
 /*@
-   ISSort - Sort the indices of an Index set.
+   ISSort - Sort the indices of an index set.
 
    Input Parameters:
 .  is - the index set

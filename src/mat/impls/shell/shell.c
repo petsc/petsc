@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.33 1996/04/08 19:49:15 curfman Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.34 1996/04/08 22:11:17 curfman Exp bsmith $";
 #endif
 
 /*
@@ -208,12 +208,12 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
   if (op == MAT_DESTROY) {
     if (mat->type == MATSHELL) {
        Mat_Shell *shell = (Mat_Shell *) mat->data;
-       shell->destroy                                 = (int (*)(Mat)) f;
+       shell->destroy                 = (int (*)(Mat)) f;
     } 
-    else mat->destroy                                 = (int (*)(PetscObject)) f;
+    else mat->destroy                 = (int (*)(PetscObject)) f;
   } 
-  else if (op == MAT_VIEW) mat->view                  = (int (*)(PetscObject,Viewer)) f;
-  else                     (((void **)&mat->ops)[op]) = f;
+  else if (op == MAT_VIEW) mat->view  = (int (*)(PetscObject,Viewer)) f;
+  else      (((void**)&mat->ops)[op]) = f;
 
   return 0;
 }

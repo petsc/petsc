@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.2 1996/03/23 18:34:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.3 1996/04/04 22:04:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem";
@@ -20,10 +20,6 @@ typedef struct {
       double      param;        /* test problem parameter */
       int         mx;           /* Discretization in x-direction */
       int         my;           /* Discretization in y-direction */
-      double	  dt;		/* Size of time step */
-      double      dt_init;	/* Size of first time step */
-      double      ssnorm;	/* Steady-state nonlinear norm (for SER) */
-      double      ssnorm_init;  /* Initial steady-state nonlinear norm */
 } AppCtx;
 
 typedef struct {
@@ -32,8 +28,8 @@ typedef struct {
 } MFCtx_Private;
 
 
-int  FormJacobian(TS,Scalar,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(TS,Scalar,Vec,Vec,void*),
+int  FormJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),
+     FormFunction(TS,double,Vec,Vec,void*),
      FormInitialGuess(Vec,AppCtx*);
 
 int main( int argc, char **argv )
@@ -43,22 +39,21 @@ int main( int argc, char **argv )
   Mat          J;
   int          ierr, N, its,flg; 
   AppCtx       user;
-  double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  Scalar       ftime;
+  double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.,dt = 1.e-6;
+  double       ftime;
 
   PetscInitialize( &argc, &argv, (char *)0,help );
   user.mx        = 4;
   user.my        = 4;
   user.param     = 6.0;
-  user.dt_init   = 1.0e-6;
   
   OptionsGetInt(0,"-mx",&user.mx,&flg);
   OptionsGetInt(0,"-my",&user.my,&flg);
   OptionsGetDouble(0,"-param",&user.param,&flg);
-  OptionsGetDouble(0,"-dt",&user.dt_init,&flg);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(1,"Lambda is out of range");
   }
+  OptionsGetDouble(0,"-dt",&dt,&flg);
   N          = user.mx*user.my;
   
   /* Set up data structures */
@@ -69,7 +64,6 @@ int main( int argc, char **argv )
   /* Create nonlinear solver */
   ierr = TSCreate(MPI_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
 
-
   /* Set various routines */
   ierr = TSSetSolution(ts,x); CHKERRA(ierr);
   ierr = TSSetRHSFunction(ts,FormFunction,(void *)&user); CHKERRA(ierr);
@@ -77,13 +71,14 @@ int main( int argc, char **argv )
 
   /* Set up nonlinear solver; then execute it */
   ierr = FormInitialGuess(x,&user);
-  ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
+  ierr = TSSetType(ts,TS_PSEUDO_POSITION_INDEPENDENT_TIMESTEP); CHKERRA(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
+  ierr = TSSetDuration(ts,1000,1.e12);
+  ierr = TSPseudoSetPositionIndependentTimeStep(ts,
+                    TSPseudoDefaultPositionIndependentTimeStep,0); CHKERRA(ierr);
+
   ierr = TSSetFromOptions(ts); CHKERRA(ierr);
   ierr = TSSetUp(ts); CHKERRA(ierr);
-  ierr = FormFunction(ts,0.0,x,r,&user);
-  ierr = VecNorm(r,NORM_2,&user.ssnorm_init);
-  user.ssnorm = user.ssnorm_init;
-  user.dt     = user.dt_init;
   ierr = TSStep(ts,&its,&ftime); CHKERRA(ierr);
   printf( "number of pseudo time-steps = %d\n", its );
 
@@ -108,7 +103,7 @@ int FormInitialGuess(Vec X,AppCtx *user)
   double  one = 1.0, lambda;
   double  temp1, temp, hx, hy, hxdhy, hydhx;
   double  sc;
-  double  *x;
+  Scalar  *x;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -138,13 +133,13 @@ int FormInitialGuess(Vec X,AppCtx *user)
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
-int FormFunction(TS ts,Scalar t,Vec X,Vec F,void *ptr)
+int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my;
   double  two = 2.0, one = 1.0, lambda;
   double  hx, hy, hxdhy, hydhx;
-  double  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
+  Scalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -172,7 +167,7 @@ int FormFunction(TS ts,Scalar t,Vec X,Vec F,void *ptr)
       ur = x[row + 1];
       uxx = (-ur + two*u - ul)*hydhx;
       uyy = (-ut + two*u - ub)*hxdhy;
-      f[row] = uxx + uyy - sc*lambda*exp(u);
+      f[row] = -uxx + -uyy + sc*lambda*exp(u);
     }
   }
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
@@ -181,7 +176,7 @@ int FormFunction(TS ts,Scalar t,Vec X,Vec F,void *ptr)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-int FormJacobian(TS ts,Scalar t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   Mat     jac = *J;
@@ -208,11 +203,11 @@ int FormJacobian(TS ts,Scalar t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr
         ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES); CHKERRQ(ierr);
         continue;
       }
-      v[0] = -hxdhy; col[0] = row - mx;
-      v[1] = -hydhx; col[1] = row - 1;
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
-      v[3] = -hydhx; col[3] = row + 1;
-      v[4] = -hxdhy; col[4] = row + mx;
+      v[0] = hxdhy; col[0] = row - mx;
+      v[1] = hydhx; col[1] = row - 1;
+      v[2] = -two*(hydhx + hxdhy) + sc*lambda*exp(x[row]); col[2] = row;
+      v[3] = hydhx; col[3] = row + 1;
+      v[4] = hxdhy; col[4] = row + mx;
       ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }

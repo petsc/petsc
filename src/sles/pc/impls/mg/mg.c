@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.46 1996/03/19 21:25:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.47 1996/04/05 05:58:31 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -93,7 +93,7 @@ static int PCDestroy_MG(PetscObject obj)
 #include <stdio.h>
 /*@
    MGCheck - Checks that all components of the MG structure have 
-   been set; use before MGCycle().
+   been set.
 
    Iput Parameters:
 .  mg - the MG structure

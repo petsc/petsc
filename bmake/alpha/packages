@@ -36,20 +36,14 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 # PCONF - indicates which external packages are available at your site
 # Make sure that the next line below does not have -DHAVE_BLOCKSOLVE
-# or -DHAVE_SUPERLU unless you have BlockSolve or SuperLU installed.
+# unless you have BlockSolve installed.
 # Make sure that you have the DEC alpha dxml library installed on your 
 # machine and -ldxml in the BLAS_LIB line above if you define 
 # HAVE_DXML below.
 #
-# Note: We temporarily exclude BlockSolve, since the new version doesn't
-#       compile on the alphas now.
+PCONF      =  -DHAVE_DXML -DHAVE_BLOCKSOLVE
 #
-PCONF         =  -DHAVE_DXML
+BS_INCLUDE = -I/home/curfman/BlockSolve95/include
+BS_LIB     = /home/curfman/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/bslib.a
 #
-BS_INCLUDE = 
-BS_LIB     = 
-# BS_INCLUDE = -I/home/curfman/BlockSolve95/include
-# BS_LIB     = /home/curfman/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/bslib.a
-#
-#SUPERLU_LIB     = /home/bsmith/SuperLU/superlu$(PETSC_ARCH)$(BOPT).a
-#SUPERLU_INCLUDE = -I/home/bsmith/SuperLU/SRC
+

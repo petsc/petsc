@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.21 1996/03/26 17:30:22 balay Exp balay $";
+static char vcid[] = "$Id: vinv.c,v 1.22 1996/04/05 16:34:09 balay Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -114,7 +114,7 @@ int VecAbs(Vec v)
 /*@
     VecPlaceArray - Allows one to replace the array in a vector with 
          a user provided one. This is useful to avoid copying an 
-         array into a vector. This is an EXPERTS ONLY routine.
+         array into a vector. EXPERTS ONLY.
 
   Input Parameters:
 .  vec - the vector

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.78 1996/04/04 22:02:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.79 1996/04/13 20:46:59 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -63,7 +63,7 @@ int VecDot(Vec x, Vec y, Scalar *val)
 }
 
 /*@
-   VecNorm  - Computes the vector two norm.
+   VecNorm  - Computes the vector norm.
 
    Input Parameters:
 .  x - the vector
@@ -455,7 +455,7 @@ int VecDuplicate(Vec v,Vec *newv)
   return   (*v->ops.duplicate)(v,newv);
 }
 /*@C
-   VecDestroy - Destroys a vector created with VecDuplicate().
+   VecDestroy - Destroys a vector.
 
    Input Parameters:
 .  v  - the vector
@@ -570,7 +570,7 @@ int VecAssemblyBegin(Vec vec)
 
 /*@
    VecAssemblyEnd - Completes assembling the vector.  This routine should
-   be called after all calls to VecSetValues() and after VecAssemblyBegin().
+   be called after VecAssemblyBegin().
 
    Input Parameter:
 .  vec - the vector
@@ -820,8 +820,7 @@ int VecRestoreArray(Vec x,Scalar **a)
 }
 
 /*@
-   VecView - Views a vector object. This routine is intended
-   to be replaceable with fancy graphical based viewing.
+   VecView - Views a vector object. 
 
    Input Parameters:
 .  v - the vector

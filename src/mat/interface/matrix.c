@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.167 1996/04/09 02:10:32 curfman Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.168 1996/04/12 19:48:18 balay Exp bsmith $";
 #endif
 
 /*
@@ -1154,7 +1154,7 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
 /*@
    MatDiagonalScale - Scales a matrix on the left and right by diagonal
    matrices that are stored as vectors.  Either of the two scaling
-   matrices can be null.
+   matrices can be PETSC_NULL.
 
    Input Parameters:
 .  mat - the matrix to be scaled
@@ -1264,7 +1264,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 
 /*@
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
-   be called after all calls to MatSetValues() and after MatAssemblyBegin().
+   be called after MatAssemblyBegin().
 
    Input Parameters:
 .  mat - the matrix 

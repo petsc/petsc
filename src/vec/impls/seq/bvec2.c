@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.70 1996/04/04 22:02:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.71 1996/04/07 22:46:18 curfman Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -250,7 +250,7 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
             VecSetRandom_Seq};
 
 /*@C
-   VecCreateSeq - Creates a standard, array-style vector.
+   VecCreateSeq - Creates a standard, sequential array-style vector.
 
    Input Parameter:
 .  comm - the communicator, should be MPI_COMM_SELF

@@ -9,10 +9,10 @@ SOURCEH	      =
 OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscts
-EXAMPLES_1    = 
-RUNEXAMPLES_1 = 
-EXAMPLES_2    = ex1 ex2
-RUNEXAMPLES_2 = runex1
+EXAMPLES_1    = ex1 ex2
+RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6 runex2
+EXAMPLES_2    = 
+RUNEXAMPLES_2 = 
 EXAMPLES_3    = 
 RUNEXAMPLES_3 = 
 EXAMPLES_4    = 
@@ -70,13 +70,45 @@ ex12: ex12.o  chkopts
 	$(RM) ex12.o
 
 runex1:
-	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex1 -nox -ts_type euler > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
 
+runex1_2:
+	-@$(MPIRUN) ex1 -nox -ts_type beuler -linear_no_matrix > ex1_2.tmp 2>&1;\
+	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
+	   else echo "Possible problem with ex1_2, diffs above"; fi; \
+	   $(RM) -f ex1_2.tmp
+
+runex1_3:
+	-@$(MPIRUN) ex1 -nox -ts_type beuler -nonlinear_no_jacobian > ex1_3.tmp 2>&1;\
+	   if (diff output/ex1_3.out ex1_3.tmp) then true; \
+	   else echo "Possible problem with ex1_3, diffs above"; fi; \
+	   $(RM) -f ex1_3.tmp
+
+runex1_4:
+	-@$(MPIRUN) ex1 -nox -ts_type beuler  -linear_constant_matrix \
+                        -pc_type lu > ex1_4.tmp 2>&1;   \
+	   if (diff output/ex1_4.out ex1_4.tmp) then true; \
+	   else echo "Possible problem with ex1_4, diffs above"; fi; \
+	   $(RM) -f ex1_4.tmp
+
+runex1_5:
+	-@$(MPIRUN) ex1 -nox -ts_type beuler -linear_variable_matrix \
+                        > ex1_5.tmp 2>&1;   \
+	   if (diff output/ex1_5.out ex1_5.tmp) then true; \
+	   else echo "Possible problem with ex1_5, diffs above"; fi; \
+	   $(RM) -f ex1_5.tmp
+
+runex1_6:
+	-@$(MPIRUN) ex1 -nox -ts_type beuler -nonlinear_jacobian > ex1_6.tmp 2>&1;\
+	   if (diff output/ex1_6.out ex1_6.tmp) then true; \
+	   else echo "Possible problem with ex1_6, diffs above"; fi; \
+	   $(RM) -f ex1_6.tmp
+
 runex2:
-	-@$(MPIRUN) ex2	 > ex2_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex2	 -ts_monitor -dt 10 -snes_monitor  > ex2_1.tmp 2>&1;   \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   $(RM) -f ex2_1.tmp

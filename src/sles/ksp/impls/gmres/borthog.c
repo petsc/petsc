@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.24 1996/04/10 13:43:35 bsmith Exp balay $";
+static char vcid[] = "$Id: borthog.c,v 1.25 1996/04/10 14:41:03 balay Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -172,8 +172,12 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,Scalar *emax,Scalar *emin)
   }
   
   /* compute Singular Values */
+#if defined(PARCH_t3d)
+  SETERRQ(1,"DGESVD not found on Cray T3D");
+#else
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,
            &idummy,work,&lwork,&ierr);
+#endif
   if (ierr) SETERRQ(1,"KSPComputeExtremeSingularValues_GMRES:Error in SVD");
 
   *emin = realpart[n-1];

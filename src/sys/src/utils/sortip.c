@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortip.c,v 1.10 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortip.c,v 1.11 1996/03/19 21:24:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,7 +40,8 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
 }
 
 /*@
-   PetscSortIntWithPermutation - Compute the permutation of values that gives a sorted sequence
+   PetscSortIntWithPermutation - Compute the permutation of values that gives 
+          a sorted sequence.
 
    Input Parameters:
 .  n  - number of values to sort

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorti.c,v 1.2 1996/01/30 04:46:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorti.c,v 1.3 1996/03/19 21:24:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -43,7 +43,7 @@ static int PetsciIqsort(int *v,int right)
 }
 
 /*@
-  PetscSortInt - Sort an array of integer inplace in increasing order
+  PetscSortInt - Sort an array of integer inplace in increasing order.
 
   Input Parameters:
 . n  - number of values

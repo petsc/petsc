@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.39 1996/04/01 03:12:00 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.40 1996/04/12 00:04:57 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -52,7 +52,7 @@ int ViewerFlush_File(Viewer v)
 }
 
 /*@C
-    ViewerASCIIGetPointer - Extracts the file pointer from a viewer.
+    ViewerASCIIGetPointer - Extracts the file pointer from an ASCII viewer.
 
 .   viewer - viewer context, obtained from ViewerFileOpenASCII()
 .   fd - file pointer

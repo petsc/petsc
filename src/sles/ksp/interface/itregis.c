@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.11 1995/08/22 16:29:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.12 1996/01/01 01:01:38 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
 
 /*@C
-  KSPRegisterAll - Registers all of the iterative methods in the KSP package.
+  KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 
   Adding new methods:
   To add a new method to the registry

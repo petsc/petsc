@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.32 1996/03/19 21:28:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.33 1996/04/04 22:04:41 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -24,7 +24,7 @@ struct _DrawLG {
 #define CHUNCKSIZE 100
 
 /*@C
-    DrawLGCreate - Creates a line graph data structure
+    DrawLGCreate - Creates a line graph data structure.
 
     Input Parameters:
 .   win - the window where the graph will be made.

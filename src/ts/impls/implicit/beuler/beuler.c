@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.6 1996/04/04 22:04:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: beuler.c,v 1.7 1996/04/09 02:23:54 curfman Exp bsmith $";
 #endif
 /*
        Code for Time Stepping with implicit backwards Euler.
@@ -13,15 +13,15 @@ typedef struct {
   Vec  update;      /* work vector where new solution is formed */
   Vec  func;        /* work vector where F(t[i],u[i]) is stored */
   Vec  rhs;         /* work vector for RHS; vec_sol/dt */
-  int  (*computepseudotimestep)(TS,void*);
-  void *dtctx;
 } TS_BEuler;
+
+/*------------------------------------------------------------------------------*/
 
 /*
     Version for linear PDE where RHS does not depend on time. Has built a
   single matrix that is to be used for all time steps.
 */
-static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,Scalar *time)
+static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 {
   TS_BEuler *beuler = (TS_BEuler*) ts->data;
   Vec       sol = ts->vec_sol,update = beuler->update;
@@ -53,7 +53,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,Scalar *time)
 /*
       Version where matrix depends on time 
 */
-static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,Scalar *time)
+static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 {
   TS_BEuler    *beuler = (TS_BEuler*) ts->data;
   Vec          sol = ts->vec_sol,update = beuler->update, rhs = beuler->rhs;
@@ -98,7 +98,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,Scalar *time)
 /*
     Version for nonlinear PDE.
 */
-static int TSStep_BEuler_Nonlinear(TS ts,int *steps,Scalar *time)
+static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its;
@@ -108,9 +108,6 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,Scalar *time)
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
-    if (beuler->computepseudotimestep) {
-      ierr = (*beuler->computepseudotimestep)(ts,beuler->dtctx); CHKERRQ(ierr);
-    }
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update); CHKERRQ(ierr);
@@ -239,7 +236,7 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MAT_MULT,TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MAT_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
   }
   if (ts->A != ts->B && ts->Ashell != ts->B) {
     ierr = MatScale(&mone,ts->B); CHKERRQ(ierr);
@@ -260,11 +257,10 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MAT_MULT,TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MAT_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
   }
   return 0;
 }
-
 
 static int TSSetUp_BEuler_Nonlinear(TS ts)
 {
@@ -278,7 +274,7 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
     ierr = VecGetSize(ts->vec_sol,&M); CHKERRQ(ierr);
     ierr = VecGetLocalSize(ts->vec_sol,&m); CHKERRQ(ierr);
     ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A); CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MAT_MULT,TSBEulerMatMult); CHKERRQ(ierr);
+    ierr = MatShellSetOperation(ts->A,MAT_MULT,(void *)TSBEulerMatMult); CHKERRQ(ierr);
   }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);
   return 0;
@@ -368,6 +364,7 @@ int TSCreate_BEuler(TS ts )
 
   return 0;
 }
+
 
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortd.c,v 1.4 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortd.c,v 1.5 1996/03/19 21:24:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -43,7 +43,7 @@ static int PetsciDqsort(double *v,int right)
 }
 
 /*@
-  PetscSortDouble - Sort an array of doubles inplace in increasing order
+  PetscSortDouble - Sort an array of doubles inplace in increasing order.
 
   Input Parameters:
 . n  - number of values

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.54 1996/04/12 15:59:11 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.55 1996/04/12 17:43:03 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -97,7 +97,7 @@ int KSPSolve(KSP ksp, int *its)
 }
 
 /*@C
-   KSPDestroy - Destroys KSP context that was created with KSPCreate().
+   KSPDestroy - Destroys KSP context.
 
    Input Parameter:
 .  ksp - iterative context obtained from KSPCreate()

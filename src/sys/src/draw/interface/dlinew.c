@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dlinew.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlinew.c,v 1.4 1996/03/19 21:28:06 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dlinew.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith 
 /*@
    DrawLineSetWidth - Sets the line width for future draws.  The width is
    relative to the user coordinates of the window; 0.0 denotes the natural
-   width; 1.0 denotes the interior viewport. 
+   width; 1.0 denotes the entire viewport. 
 
    Input Parameters:
 .  draw - the drawing context

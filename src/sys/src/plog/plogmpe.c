@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.6 1996/03/01 22:55:56 bsmith Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.7 1996/03/11 17:37:51 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -235,8 +235,7 @@ int PLogMPEBegin()
 }
 
 /*@C
-   PLogMPEDump - Destroys the object and event logging data and resets the 
-   global counters. 
+   PLogMPEDump - Dumps the MPE logging info to file for later use with Upshot.
 
 
 .keywords: log, destroy

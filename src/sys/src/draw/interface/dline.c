@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dline.c,v 1.3 1996/03/10 17:28:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dline.c,v 1.4 1996/03/19 21:28:06 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -24,7 +24,7 @@ int DrawLine(Draw draw,double xl,double yl,double xr,double yr,int cl)
 }
 
 /*@
-    DrawIsNull - Returns PETSC_TRUE if there is a null draw object.
+    DrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
 
   Input Parameter:
     draw - the draw context

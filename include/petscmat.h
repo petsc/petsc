@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.101 1996/03/26 04:48:31 bsmith Exp curfman $ */
+/* $Id: mat.h,v 1.102 1996/04/09 02:23:45 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -28,10 +28,7 @@ extern int MatDestroy(Mat);
 
 extern int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
 extern int MatShellGetContext(Mat,void **);
-extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
-extern int MatShellSetDestroy(Mat,int (*)(void*));
-extern int MatShellSetMultTrans(Mat,int (*)(void*,Vec,Vec));
-extern int MatShellSetMultTransAdd(Mat,int (*)(void*,Vec,Vec,Vec));
+
   
 extern int MatPrintHelp(Mat);
 

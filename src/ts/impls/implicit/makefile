@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = t
 LOCDIR   = src/ts/impls/implicit/
-DIRS     = beuler pseudo
+DIRS     = beuler
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

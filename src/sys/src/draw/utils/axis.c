@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.27 1996/01/26 04:35:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.28 1996/04/09 23:12:42 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -151,7 +151,7 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double yma
     effects may be generated.  These routines are part of the Axis
     structure (ad).
 @*/
-int DrawAxisDraw(DrawAxis ad )
+int DrawAxisDraw(DrawAxis ad)
 {
   int       i,  ntick, numx, numy, ac = ad->ac, tc = ad->tc,cc = ad->cc,rank;
   double    tickloc[MAXSEGS], sep;

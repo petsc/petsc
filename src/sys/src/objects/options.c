@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.80 1996/04/10 04:28:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.81 1996/04/12 01:20:11 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -609,7 +609,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
 
 /*@C
    OptionsPrint - Prints the options that have been loaded. This is
-   mainly useful for debugging purposes.
+        useful for debugging purposes.
 
    Input Parameter:
 .  FILE fd - location to print options (usually stdout or stderr)

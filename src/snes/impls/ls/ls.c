@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.66 1996/03/24 16:05:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.67 1996/03/25 23:13:07 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -104,7 +104,9 @@ int SNESDestroy_EQ_LS(PetscObject obj)
 {
   SNES snes = (SNES) obj;
   int  ierr;
-  ierr = VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+  if (snes->work) {
+    ierr = VecDestroyVecs(snes->work,snes->nwork); CHKERRQ(ierr);
+  }
   PetscFree(snes->data);
   return 0;
 }

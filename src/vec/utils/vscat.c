@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.57 1996/03/19 21:22:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.58 1996/04/13 20:32:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -758,7 +758,7 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 
 /* ------------------------------------------------------------------*/
 /*@ 
-   VecPipelineBegin - Begins a vector pipeline operation.  
+   VecPipelineBegin - Begins a vector pipeline operation. EXPERTS ONLY.  
 
    Input Parameters:
 .  x - the vector from which we scatter
@@ -795,7 +795,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatter in
 /* --------------------------------------------------------------------*/
 /*@
    VecPipelineEnd - Sends results to next processor in pipeline.  Call
-   after calling VecPipelineBegin().
+   after calling VecPipelineBegin(). EXPERTS ONLY.
 
    Input Parameters:
 .  x - the vector from which we scatter
@@ -846,8 +846,8 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 }
 
 /*@
-     VecScatterRemap - Remaps the from and two indices in a 
-        vector scatter context. 
+     VecScatterRemap - Remaps the from and to indices in a 
+        vector scatter context. EXPERTS ONLY.
 
   Input Parameters:
 .   scat - vector scatter context

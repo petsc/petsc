@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.5 1996/03/26 16:21:14 balay Exp curfman $ */
+/* $Id: tsimpl.h,v 1.6 1996/03/29 18:30:57 curfman Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -62,5 +62,5 @@ struct _TS {
 };
 
 
-extern int TSMonitor(TS,int,Scalar,Vec);
+extern int TSMonitor(TS,int,double,Vec);
 #endif

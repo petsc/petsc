@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.82 1996/04/01 21:07:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.83 1996/04/04 22:02:51 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -196,7 +196,7 @@ int  KSPRegister(KSPType name, char *sname, int  (*create)(KSP))
 }
 
 /*@C
-   KSPRegisterDestroy - Frees the list of iterative solvers that were
+   KSPRegisterDestroy - Frees the list of KSP methods that were
    registered by KSPRegister().
 
 .keywords: KSP, register, destroy
@@ -252,11 +252,11 @@ int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod)
 
 .keywords: KSP, get, method, name
 @*/
-int KSPGetType(KSP ksp,KSPType *itmeth,char **name)
+int KSPGetType(KSP ksp,KSPType *type,char **name)
 {
   int ierr;
   if (!__KSPList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
-  if (itmeth) *itmeth = (KSPType) ksp->type;
+  if (type) *type = (KSPType) ksp->type;
   if (name)  *name = NRFindName( __KSPList, (int) ksp->type);
   return 0;
 }

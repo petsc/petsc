@@ -1,11 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.18 1996/03/10 17:26:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.19 1996/03/19 21:23:32 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"   /*I "ksp.h" I*/
 /*@
-   KSPResidual - Computes the residual without making any assumptions
-   about the solution.
+   KSPResidual - Computes the residual.
 
    Input Parameters:
 .  vsoln    - solution to use in computing residual

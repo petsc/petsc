@@ -12,9 +12,13 @@ FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
-# BLAS usually comes with SGI.
 #
-BLAS_LIB       = -lblas
+# BLAS usually comes with SGI and can be accessed with -lblas listed 
+# below for BLAS_LIB. However, the complex BLAS routine izamax() has
+# a bug in it, so if you are using complex numbers we recommend using
+# the SGI BLAS with extreme care.
+#
+BLAS_LIB       = /home/bsmith/lapack/blas_IRIX.a 
 LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX.a $(FC_LIB)
 #
 # Location of X-windows software

@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    =  
 OBJSF    =
 LIBBASE  = libpetscsnes
-DIRS     = explicit implicit
+DIRS     = explicit implicit pseudo
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.16 1996/04/15 23:00:33 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.17 1996/04/16 13:49:12 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -216,15 +216,6 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     diag = diag_offset[i] - ai[i];
     /* invert diagonal block */
     w = pv + bs2*diag; 
-
-    /* Old version that used LAPACK, make v_work bs2 length for this 
-          LAgetrf_(&bs,&bs,w,&bs,v_pivots,&info); CHKERRQ(info);  
-          PetscMemzero(v_work,bs2*sizeof(Scalar));  
-          for ( j=0; j<bs; j++ ) { v_work[j + bs*j] = 1.0; } 
-          LAgetrs_("N",&bs,&bs,w,&bs,v_pivots,v_work,&bs, &info);CHKERRQ(info);
-          PetscMemcpy(w,v_work,bs2*sizeof(Scalar));
-    */ 
-
     ierr = Linpack_DGEFA(w,bs,v_pivots); CHKERRQ(ierr);
     ierr = Linpack_DGEDI(w,bs,v_pivots,v_work); CHKERRQ(ierr);
   }

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.15 1996/03/20 23:50:29 curfman Exp curfman $ */
+/* $Id: sys.h,v 1.16 1996/03/21 00:07:38 curfman Exp bsmith $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -8,12 +8,15 @@
 #include "petsc.h"
 
 extern int  PetscGetArchType(char*,int);
+extern int  PetscGetHostName(char *,int);
+
 extern char *PetscGetDate();
 
 extern int  PetscSortInt(int,int*);
 extern int  PetscSortIntWithPermutation(int,int*,int*);
 extern int  PetscSortDouble(int,double*);
 
+extern int  PetscSetDisplay(MPI_Comm,char *,int);
 
 #define RANDOM_COOKIE PETSC_COOKIE+19
 
@@ -38,6 +41,9 @@ typedef enum { BINARY_INT, BINARY_DOUBLE, BINARY_SHORT, BINARY_FLOAT,
 #define BINARY_SCALAR BINARY_DOUBLE /* not correct if compiled with complex */
 extern int PetscBinaryRead(int,void*,int,PetscBinaryType);
 extern int PetscBinaryWrite(int,void*,int,PetscBinaryType,int);
+
+extern int PetscSetDebugger(char *,int,char *);
+extern int PetscAttachDebugger();
 
 #endif      
 
