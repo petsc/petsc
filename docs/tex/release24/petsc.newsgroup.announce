@@ -2,7 +2,8 @@
     Portable, Extensible Toolkit for Scientific Computation (PETSc)
    ----------------------------------------------------------------- 
     
-   We are pleased to announce a public release of PETSc 2.0.
+   We are pleased to announce a public release of PETSc 2.0
+Version 17, dated April, 5, 1997.
 
    PETSc provides many tools for the parallel (and uniprocessor),
 numerical solution of PDEs that require solving large-scale, sparse
