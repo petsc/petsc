@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.107 1996/06/12 20:35:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.108 1996/06/26 18:20:55 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -35,7 +35,7 @@ static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 .   flag - PETSC_TRUE or PETSC_FALSE
 
     Options Database Key:
-$    -info 
+$    -log_info 
 
 .keywords: allow, information, printing, monitoring
 
@@ -89,14 +89,14 @@ int PLogInfoActivateClass(int objclass)
 
 /*@C
     PLogInfo - Logs informative data, which is printed to standard output
-    when the option -info is specified.
+    when the option -log_info is specified.
 
     Input Parameter:
 .   vobj - object most closely associated with the logging statement
 .   message - logging message, using standard "printf" format
 
     Options Database Key:
-$    -info : activates printing of PLogInfo() messages 
+$    -log_info : activates printing of PLogInfo() messages 
 
     Fortran Note:
     This routine is not supported in Fortran.
