@@ -20,7 +20,7 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *newmat) {
       rowlengths[i*bs+j] = bs*(ai[i+1] - ai[i]);
     }
   }
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,A->m,A->n,0,rowlengths,B);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,A->m,A->n,0,rowlengths,&B);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
