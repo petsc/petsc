@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.3 1999/02/19 21:09:18 balay Exp balay $ 
+# $Id: common_variables,v 1.4 1999/02/19 23:05:22 balay Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -70,6 +70,12 @@ PETSC_FORTRAN_LIB = -L${LDIR} -lpetscfortran
 # Link if you are using code from the contributed part of PETSc
 #
 PETSC_CONTRIB = -L${LDIR} -lpetsccontrib
+#
+# Some variables used to build shared libraries
+SHLIBS = libpetsccontrib libpetsc libpetscmat libpetscsles \
+	libpetscsnes libpetscts libpetscvec libpetscdm
+SLSUFFIX = so
+#
 # The following include files set customized site, optimization, and version
 # options.  Do NOT remove any of these include files.  You should generally
 # need to edit only ${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site to specify your
