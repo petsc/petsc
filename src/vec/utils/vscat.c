@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.116 1998/04/27 14:31:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.117 1998/04/30 13:02:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -644,7 +644,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = 0;
       *newctx           = ctx;
-      PLogInfo(xin,"Special case: sequential vector general scatter");
+      PLogInfo(xin,"Special case: sequential vector general scatter\n");
       goto functionend;
     } else if (ix->type == IS_STRIDE &&  iy->type == IS_STRIDE){
       int                    nx,ny,to_first,to_step,from_first,from_step;
@@ -672,7 +672,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = 0;
       *newctx           = ctx;
-      PLogInfo(xin,"Special case: sequential vector stride to stride");
+      PLogInfo(xin,"Special case: sequential vector stride to stride\n");
       goto functionend; 
     } else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
       int                    nx,ny,*idx,first,step;
@@ -702,7 +702,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to->type        = VEC_SCATTER_SEQ_STRIDE; 
       from->type      = VEC_SCATTER_SEQ_GENERAL;
       *newctx         = ctx;
-      PLogInfo(xin,"Special case: sequential vector general to stride");
+      PLogInfo(xin,"Special case: sequential vector general to stride\n");
       goto functionend;
     } else if (ix->type == IS_STRIDE && iy->type == IS_GENERAL){
       int                    nx,ny,*idx,first,step;
@@ -733,7 +733,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to->type        = VEC_SCATTER_SEQ_GENERAL; 
       from->type      = VEC_SCATTER_SEQ_STRIDE; 
       *newctx         = ctx;
-      PLogInfo(xin,"Special case: sequential vector stride to general");
+      PLogInfo(xin,"Special case: sequential vector stride to general\n");
       goto functionend;
     } else {
       int                    nx,ny,*idx,*idy;
@@ -762,7 +762,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = 0;
       *newctx           = ctx;
-      PLogInfo(xin,"Sequential vector scatter with block indices");
+      PLogInfo(xin,"Sequential vector scatter with block indices\n");
       goto functionend;
     }
   }
@@ -802,7 +802,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_SGtoSG;
         ctx->copy         = VecScatterCopy_PStoSS;
         *newctx           = ctx;
-        PLogInfo(xin,"Special case: processors only getting local values");
+        PLogInfo(xin,"Special case: processors only getting local values\n");
         goto functionend;
       }
     } else {
@@ -847,7 +847,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
         *newctx           = ctx;
-        PLogInfo(xin,"Special case: all processors get entire parallel vector");
+        PLogInfo(xin,"Special case: all processors get entire parallel vector\n");
         goto functionend;
       }
     } else {
@@ -898,7 +898,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
         *newctx           = ctx;
-        PLogInfo(xin,"Special case: processor zero gets entire parallel vector, rest get none");
+        PLogInfo(xin,"Special case: processor zero gets entire parallel vector, rest get none\n");
         goto functionend;
       }
     } else {
@@ -922,7 +922,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           ISBlockRestoreIndices(ix,&idx);
           ISBlockRestoreIndices(iy,&idy);
           *newctx = ctx;
-          PLogInfo(xin,"Special case: blocked indices");
+          PLogInfo(xin,"Special case: blocked indices\n");
           goto functionend;
         }
       } else if (iystride) {
@@ -943,7 +943,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           PetscFree(idy);
           ISBlockRestoreIndices(ix,&idx);
           *newctx = ctx;
-          PLogInfo(xin,"Special case: blocked indices to stride");
+          PLogInfo(xin,"Special case: blocked indices to stride\n");
           goto functionend;
         }
       }
