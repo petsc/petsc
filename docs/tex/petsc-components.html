@@ -6,92 +6,45 @@
 </center>
 <P><HR><P>  
 
+<tt>PETSc</tt> is made up of components that provide much of the 
+functionality required for the parallel solution of partial 
+differential equations.
   
-<P> 
-<HR><H1><A NAME="Node0">Description</a></H1>
-<tt>PETSc</tt>, the Portable, Extensible Toolkit for Scientific computation,  
-is a suite of uni- and parallel-processor codes that are intended for  
-the solution of large-scale problems modeled by partial differential  
-equations.  <tt>PETSc</tt> employs the MPI standard for all  
-message-passing communication.  The code is written in a  
-data-structure-neutral manner to enable easy reuse and flexibility.  
-<P> 
-<tt> PETSc</tt> is easy to use for beginners.  Moreover, its careful  
-design allows advanced users to have detailed control over the  
-solution process. <tt>PETSc</tt> includes an expanding suite of parallel  
-linear and nonlinear equation solvers that are easily used in  
-application codes written in C, C++, and Fortran.  <tt>PETSc</tt>  
-provides many of the mechanisms needed within parallel application  
-codes, such as simple parallel matrix and vector assembly routines  
-that allow the overlap of communication and computation.  In addition,  
-<tt>PETSc</tt> includes growing support for distributed arrays.  
-<P> 
-<tt>PETSc</tt> integrates a hierarchy of components, thus  
-enabling the user to employ the level of abstraction that is most  
-natural for a particular problem.  Some of the components are  
   
 <ul> 
  
-<li><tt>Mat</tt> - a suite of data structures and code  
-      for the manipulation of parallel sparse matrices,  
-  
+<li><tt>Vec</tt> - provides all the vector operations required for setting
+    up and solving large scale linear and nonlinear problems. Includes 
+    easy to use parallel scatter and gather operations, as well as
+    special purpose code for handling ghost points on regular data-structures.
+
+<li><tt>Mat</tt> - a large suite of data structures and code  
+      for the manipulation of parallel sparse matrices, includes four
+      different parallel matrix data structures, each appropriate 
+      for a different class of problems. 
  
-<li><tt>PC</tt> - a collection of preconditioners,  
+<li><tt>PC</tt> - a collection of sequential and parallel preconditioners,  
+      including (sequentially) ILU(k), LU, and (both sequentially and parallel)
+      block Jacobi, overlapping additive Schwarz methods and (through
+      BlockSolve95) ILU(0) and ICC(0).
   
- 
-<li><tt>KSP</tt> - data-structure-neutral implementations of  
-      many popular Krylov space iterative methods,  
-  
- 
-<li><tt>SLES</tt> - a higher-level interface for the solution of  
-      large-scale linear systems, and  
-  
+<li><tt>KSP</tt> - parallel implementations of  
+      many popular Krylov space iterative methods,  including GMRES, PCG, CGS,
+      Bi-CG-stab, two varients of TFQM, CR, and LSQR. All are coded so as
+      to be immediately usable with any preconditioners and any matrix data 
+      structures including matrix free methods.
  
 <li><tt>SNES</tt> - data-structure-neutral implementations of Newton-like  
-      methods for nonlinear systems.  
+      methods for nonlinear systems. Includes both line search and trust 
+      region techniques with a single common interface. Offers advanced
+      convergence criteria such as the Eisenstat-Walker criteria.
+  
+<li><tt>TS</tt> - code for evolution time evolution of solutions of PDEs. In addition,
+      provides pseudo-transient continuation techniques for the computation of
+      steady state solutions.
+
 </ul> 
 <BR> 
   
-<P> 
 
-<P>
-<HR><H1><A NAME="Node1">Applications</a></H1>
-<tt>PETSc</tt> is intended for use in large-scale application projects, and  
-several ongoing computational science projects at Argonne  
-and other institutions are built around the <tt>PETSc</tt> framework.  
-With strict attention to component interoperability, <tt>PETSc</tt>  
-facilitates the integration of independently developed application  
-modules, which often most naturally employ different coding styles and  
-data structures.   
-<P> 
-
-<P>
-<HR><H1><A NAME="Node2">Computational Environment</a></H1>
-<tt>PETSc</tt> is available on Sun, DEC Alpha, Silicon Graphics, HP-UX, and IBM  
-RS/6000 workstations; IBM PCs running FreeBSD or Linux; the Cray T3D,  
-the Intel Paragon; and the IBM SP.  
-<P> 
-
-<P>
-<HR><H1><A NAME="Node3">Availability</a></H1>
-The <tt>PETSc</tt> package is freely available.  
-The complete distribution can be obtained by anonymous ftp from   
-<a href="ftp://info.mcs.anl.gov/pub/petsc">ftp://info.mcs.anl.gov/pub/petsc</a>.  
-The <tt>PETSc</tt> distribution contains all source code, installation  
-instructions, a users guide, <tt> man pages</tt> for all routines, and a  
-collection of examples.  Additional information is available via the  
-World Wide Web at  
-<a href="http://www.mcs.anl.gov/petsc/petsc.html">http://www.mcs.anl.gov/petsc/petsc.html</a>.  
-<P> 
-  
-  
-  
-  
-
-<P>
-<HR><H1><A NAME="Node4">Further Information</a></H1>
-Satish Balay, William Gropp, Lois Curfman McInnes, Barry Smith<BR> 
-<a href="mailto:petsc-maint@mcs.anl.gov" > petsc-maint@mcs.anl.gov </a> <BR> 
-(708) 252-4318<BR> 
-
-<P>
+<a href="http://www.mcs.anl.gov/petsc/petsc.html">Return to PETSc home page.</a>
