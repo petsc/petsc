@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.4 1997/09/20 23:57:14 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.5 1997/10/01 04:09:08 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -26,26 +26,67 @@ struct _p_AO {
     Defines the abstract AOData operations
 */
 struct _AODataOps {
-  int (*add)(AOData,char *,int,int,int*,void*,PetscDataType);
-  int (*get)(AOData,char *,int,int*,void**);
-  int (*restore)(AOData,char *,int,int*,void**);
+  int (*addsegment)(AOData,char *,char *,int,int,int*,void*,PetscDataType);
+  int (*getsegment)(AOData,char *,char*,int,int*,void**);
+  int (*restoresegment)(AOData,char *,char *,int,int*,void**);
+  int (*getreducedsegment)(AOData,char *,char*,int,int*,int *,void**);
+  int (*restorereducedsegment)(AOData,char *,char *,int,int*,int *,void**);
 };
 
+/*
+      A AODate object consists of 
+
+           - key1 
+	       * name      = name of first key
+               * N         = number of local keys 
+               * nsegments = number of segments in first key  
+
+               - segment1 
+                  * name      = name of first segment in first key
+                  * bs        = blocksize of first segment in first key
+                  * datatype  = datatype of first segment in first key
+
+               - segment2
+
+                  ....
+
+            - key2
+
+                ....
+*/       
 typedef struct {
   void              *data;                   /* implementation-specific data */
   char              *name;
-  int               N;                       /* global size of data*/
   int               bs;                      /* block size of basic chunk */
   PetscDataType     datatype;                /* type of data item, int, double etc */
 } AODataSegment;
 
+typedef struct {
+  void              *data;                   /* implementation-specific data */
+  char              *name;
+  int               N;                       /* number of keys */
+  int               nsegments;               /* number of segments in key */
+  int               nsegments_max;           /* number of segments allocated for */
+  AODataSegment     *segments;
+
+  /* should the following be so public? */
+  int               nlocal;                  /* number of keys owned locally */
+  int               *rowners;                /* ownership range of each processor */
+  int               rstart,rend;             /* first and 1 + last owned locally */
+} AODataKey;
+
 struct _p_AOData {
   PETSCHEADER                                /* general PETSc header */
   struct _AODataOps ops;                     /* AOData operations */
-  int               nsegments;               /* number of items allocated for */
-  int               nc;                      /* current number of items */
-  AODataSegment     *segments;
+  int               nkeys_max;               /* number of keys allocated for */
+  int               nkeys;                   /* current number of keys */
+  AODataKey         *keys;
   void              *data;
+  int               datacomplete;            /* indicates all AOData object is fully set */
 };
+
+extern int AODataFindKey_Private(AOData, char *, int *,int *);
+extern int AODataFindSegment_Private(AOData,char *, char *, int *,int *,int *);
+
 
 #endif

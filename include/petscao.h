@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.6 1997/10/01 04:09:15 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.7 1997/10/01 22:47:58 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -35,13 +35,21 @@ typedef enum {AODATA_BASIC=0, AODATA_ADVANCED=1} AODataType;
 typedef struct _p_AOData* AOData;
 
 extern int AODataCreateBasic(MPI_Comm,int,AOData *);
-extern int AODataAdd(AOData,char*,int, int, int *,void *,PetscDataType);
-extern int AODataAddIS(AOData,char*,int, IS,void *,PetscDataType);
-extern int AODataGetInfo(AOData,char *,int *,int*,PetscDataType*);
-extern int AODataGet(AOData,char *,int,int*,void **);
-extern int AODataRestore(AOData,char *,int,int*,void **);
-extern int AODataGetIS(AOData,char *,IS,void **);
-extern int AODataRestoreIS(AOData,char *,IS,void **);
+
+extern int AODataAddKey(AOData,char*,int,int,int);
+
+extern int AODataAddSegment(AOData,char*,char *,int, int, int *,void *,PetscDataType);
+extern int AODataAddSegmentIS(AOData,char*,char *,int, IS,void *,PetscDataType);
+
+extern int AODataGetInfoKey(AOData,char *,int *,int*,int *);
+extern int AODataGetInfoKeyOwnership(AOData,char *,int *,int*);
+extern int AODataGetInfoSegment(AOData,char *,char *,int *,int *,int*,PetscDataType*);
+
+extern int AODataGetSegment(AOData,char *,char *,int,int*,void **);
+extern int AODataRestoreSegment(AOData,char *,char *,int,int*,void **);
+extern int AODataGetSegmentIS(AOData,char *,char *,IS,void **);
+extern int AODataRestoreSegmentIS(AOData,char *,char *,IS,void **);
+
 extern int AODataView(AOData,Viewer);
 extern int AODataDestroy(AOData);
 
