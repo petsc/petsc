@@ -14,7 +14,7 @@ SOURCEC  = adintr_acos.c adintr_exp.c adintr_max.c adintr_acosh.c \
 	adintr_log10.c adintrinsics.c report-once.c
 
 SOURCEF  =
-SOURCEH  = ../../../../include/adic/run-map.h ../../../../include/adic/run-alloc.h report-once.h
+SOURCEH  = ../../../../../include/adic/run-map.h ../../../../../include/adic/run-alloc.h report-once.h
 OBJSC    = adintr_acos.o adintr_exp.o adintr_max.o adintr_acosh.o \
 	adintr_fabs.o adintr_min.o adintr_asin.o adintr_floor.o \
 	adintr_modf.o adintr_asinh.o adintr_fmax.o adintr_pow.o \
@@ -26,7 +26,7 @@ OBJSC    = adintr_acos.o adintr_exp.o adintr_max.o adintr_acosh.o \
 OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 
-LOCDIR   = src/contrib/adic/adintrinsics/
+LOCDIR   = src/sys/src/adic/adintrinsics/
 MANSEC   = Sys
 
 include ${PETSC_DIR}/bmake/common/base

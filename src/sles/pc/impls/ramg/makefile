@@ -15,7 +15,7 @@ OBJSC    = petscfunc.o  ramgpetsc.o
 OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = PC
-LOCDIR   = src/contrib/lahaye/ramg/
+LOCDIR   = src/sles/pc/impls/ramg/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -14,7 +14,7 @@ OBJSC    = ad_grad_daxpy.o ad_grad.o ad_utils.o
 OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 
-LOCDIR   = src/contrib/adic/adic/
+LOCDIR   = src/sys/src/adic/Gradient/
 MANSEC   = Sys
 
 include ${PETSC_DIR}/bmake/common/base
