@@ -31,8 +31,22 @@ class Configure(config.base.Configure):
     '''Try to determine how to measure the memory usage'''
     if self.functions.haveFunction('sbreak'):
       self.addDefine('USE_SBREAK_FOR_SIZE', 1)
-    elif self.functions.haveFunction('getrusage'):
-      # we are using getrusage() until we add the other tests for procfs
+      return
+    if os.path.isfile(os.path.join('/proc',str(os.getpid()),'stat')):
+      self.addDefine('PETSC_USE_PROC_FOR_SIZE', 1)
+      try:
+        fd = open(os.path.join('/proc',str(os.getpid()),'stat'))
+        l  = fd.readline().split(' ')
+        if not l[0] == str(os.getpid()):
+          raise RuntimeError("/proc stat file has wrong format")
+        # make sure we can access the rss field
+        if not l[23].isdigit():
+          raise RuntimeError("/proc stat file has wrong format rss not integer "+l[23])
+        self.framework.log.write("Using /proc for PetscGetResidentSetSize()")
+        return
+      except:
+        pass
+    if self.functions.haveFunction('getrusage'):
       if self.functions.haveFunction('getpagesize'):
         (output,status) = self.outputRun('#include <ctype.h>\n#include <sys/times.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n#include <sys/resource.h>\n#include <stdlib.h>','''
   #define ARRAYSIZE 10000000
@@ -85,10 +99,10 @@ class Configure(config.base.Configure):
           self.delDefine('HAVE_GETRUSAGE')
           self.framework.log.write("Unable to determine how to use getrusage() memory information\n")
         self.framework.log.write("output from getrusage() \n")
-        self.framework.log.write(output)          
-      else:
-        # problem, assumes getrusage() works
-        pass 
+        self.framework.log.write(output)
+        return
+      # do not provide a way to get resident set size
+      self.delDefine('HAVE_GETRUSAGE')
     return
 
   def configure(self):
