@@ -453,7 +453,7 @@ class Configure(config.base.Configure):
           # filter out the normal messages
           cnt = 0
           for i in output.split('\n'):
-            if not (i.startswith('etags_') or i.find('TAGS') >= 0):
+            if not (i.startswith('etags_') or i.find('TAGS') >= 0 or i.find('Entering') >= 0 or i.find('Leaving') >= 0 or i==''):
               if not cnt:
                 self.framework.log.write('*******Error generating etags files****\n')
               cnt = cnt + 1
