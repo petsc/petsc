@@ -80,6 +80,24 @@ int PetscHeaderDestroy_Private(PetscObject h)
   if (h->fortran_func_pointers) {
     ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
   }
+  if (h->intcomposeddata) {
+    ierr = PetscFree(h->intcomposeddata); CHKERRQ(ierr);
+  }
+  if (h->intcomposedstate) {
+    ierr = PetscFree(h->intcomposedstate); CHKERRQ(ierr);
+  }
+  if (h->realcomposeddata) {
+    ierr = PetscFree(h->realcomposeddata); CHKERRQ(ierr);
+  }
+  if (h->realcomposedstate) {
+    ierr = PetscFree(h->realcomposedstate); CHKERRQ(ierr);
+  }
+  if (h->scalarcomposeddata) {
+    ierr = PetscFree(h->scalarcomposeddata); CHKERRQ(ierr);
+  }
+  if (h->scalarcomposedstate) {
+    ierr = PetscFree(h->scalarcomposedstate); CHKERRQ(ierr);
+  }
   ierr = PetscFree(h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
