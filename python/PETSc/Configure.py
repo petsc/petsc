@@ -278,8 +278,12 @@ class Configure(config.base.Configure):
     flag = '-L'
     if self.archBase == 'linux':
       flag = '-rdynamic -Wl,-rpath,'
-    elif self.archBase == 'irix6':
+    elif self.archBase.startswith('irix'):
       flag = '-rpath '
+    elif self.archBase.startswith('osf'):
+      flag = '-Wl,-rpath,'
+    elif self.archBase.startswith('solaris'):
+      flag = '-R'
     self.addSubstitution('CLINKER_SLFLAG', flag)
     self.addSubstitution('FLINKER_SLFLAG', flag)
     return
