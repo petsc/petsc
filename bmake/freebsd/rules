@@ -1,5 +1,5 @@
 
-CC       = gcc  -DPARCH_freebsd -fPIC
+CC       = gcc  -DPARCH_freebsd
 FC       = f77
 AR       = ar
 RM       = rm -f *.c.*
@@ -40,9 +40,3 @@ libf: $(LIBNAME)($(OBJSF))
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o
 
-shared: chkopts
-	-@echo making shared libraries in $(LDIR) ;\
-	cd $(LDIR); \
-	for LIBNAME in $(SHLIBS) ; \
-	  do $(LD) -Bshareable -Bforcearchive -o $$LIBNAME.so.1.0 $$LIBNAME.a  > /dev/null 2>&1; \
-	done
