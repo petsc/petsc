@@ -291,7 +291,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if self.framework.argDB['with-parmetis']  and not self.framework.argDB['with-64-bit-ints']:
+    if (self.framework.argDB['with-parmetis'] or self.framework.argDB['download-parmetis'])  and not self.framework.argDB['with-64-bit-ints']:
       self.executeTest(self.configureLibrary)
     self.setOutput()
     return
