@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.85 1996/08/21 17:31:31 gropp Exp gropp $ */
+/* $Id: plog.h,v 1.86 1996/08/21 17:34:45 gropp Exp gropp $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -359,7 +359,23 @@ extern int PLogMPEDump(char *);
 #define PLogMPEBegin()
 #define PLogMPEDump(a)
 extern int PLogObjectState(PetscObject,char *,...);
-#endif
+
+/* If PETSC_LOG is NOT defined, these still need to be! */
+#define MPI_Startall_irecv( count,number,requests) \
+{ \
+  MPI_Startall( number, requests);\
+}
+
+#define MPI_Startall_isend( count,number,requests) \
+{ \
+  MPI_Startall( number, requests);\
+}
+
+#define MPI_Start_isend(count,  requests) \
+{ \
+  MPI_Start( requests);\
+}
+#endif   /* PETSC_LOG */
 
 /*MC
    PLogFlops - Adds floating point operations to the global counter.
