@@ -1,30 +1,30 @@
 #!/usr/bin/env python
 import user
-import builder
+import maker
 import script
 
 import os
 
-class Make(script.Script):
-  def __init__(self, builder):
-    import RDict
-    import sys
-
-    script.Script.__init__(self, sys.argv[1:], RDict.RDict())
-    self.builder = builder
-    self.builder.pushLanguage('C')
+class Make(maker.Make):
+  def __init__(self, builder = None):
+    maker.Make.__init__(self, builder)
+    self.libBases = ['libpetsc', 'libpetscvec', 'libpetscmat', 'libpetscdm', 'libpetscksp', 'libpetscsnes', 'libpetscts']
     return
 
   def setupHelp(self, help):
     import nargs
 
-    help = script.Script.setupHelp(self, help)
+    help = maker.Make.setupHelp(self, help)
     help.addArgument('PETSc', '-build-shared-libraries=<bool>', nargs.ArgBool(None, 0, 'Build the PETSc shared libraries', isTemporary = 1))
     return help
 
+  def setupDependencies(self, sourceDB):
+    for libBase in self.libBases:
+      sourceDB.addDependency(os.path.join(self.libDir, 'test_'+libBase+'.so'), os.path.join(self.libDir, libBase+'.'+self.argDB['LIB_SUFFIX']))
+    return
+
   def setup(self):
-    script.Script.setup(self)
-    self.builder.setup()
+    maker.Make.setup(self)
     if not self.argDB['build-shared-libraries']:
       import sys
 
@@ -55,10 +55,15 @@ class Make(script.Script):
     return self._petscArch
   def setPetscArch(self, petscArch):
     self._petscArch = petscArch
-  petscArch = property(getPetscArch, setPetscArch, doc = 'The root of the PETSc tree')
+  petscArch = property(getPetscArch, setPetscArch, doc = 'The PETSc build configuration')
 
-  def configure(self):
-    return
+  def getLibDir(self):
+    if not hasattr(self, '_libDir'):
+      self._libDir = os.path.join(self.petscDir, 'lib', 'lib'+self.argDB['BOPT'], self.petscArch)
+    return self._libDir
+  def setLibDir(self, libDir):
+    self._libDir = libDir
+  libDir = property(getLibDir, setLibDir, doc = 'The PETSc library directory')
 
   def expandArchive(self, archive, dir):
     self.executeShellCommand(' '.join(['cd', dir, ';', self.argDB['AR'], 'x', archive]))
@@ -77,35 +82,29 @@ class Make(script.Script):
   def buildSharedLibraries(self, builder):
     import shutil
 
-    libDir = os.path.join(self.petscDir, 'lib', 'lib'+self.argDB['BOPT'], self.petscArch)
-    tmpDir = os.path.join(libDir, 'tmp')
-    self.logPrint('Starting shared library build into '+libDir, debugSection = 'build')
+    tmpDir = os.path.join(self.libDir, 'tmp')
+    self.logPrint('Starting shared library build into '+self.libDir, debugSection = 'build')
     builder.pushConfiguration('Shared Libraries')
     builder.setLinkerExtraArguments(' '.join(self.getExternalLibraries()+[self.argDB['BLASLAPACK_LIB'], self.argDB['MPI_LIB'], self.argDB['LIBS'], self.argDB['FLIBS']]))
     if os.path.exists(tmpDir):
       shutil.rmtree(tmpDir)
     os.mkdir(tmpDir)
-    for libBase in ['libpetsc', 'libpetscvec', 'libpetscmat', 'libpetscdm', 'libpetscksp', 'libpetscsnes', 'libpetscts']:
-      library       = os.path.join(libDir, libBase+'.'+self.argDB['LIB_SUFFIX'])
-      if not os.path.isfile(library):
-        library     = os.path.join(libDir, 'lt_'+libBase+'.'+self.argDB['LIB_SUFFIX'])
-      sharedLibrary = os.path.join(libDir, libBase+'.so')
-      # Check archive against ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}
+    for libBase in self.libBases:
+      library       = os.path.join(self.libDir, libBase+'.'+self.argDB['LIB_SUFFIX'])
+      sharedLibrary = os.path.join(self.libDir, 'test_'+libBase+'.so')
       self.logPrint('Building shared library: '+sharedLibrary, debugSection = 'build')
-      self.builder.link(self.expandArchive(library, tmpDir), os.path.join('lib', 'triangle.so'), shared = 1)
-      [os.remove(os.path.join(tmpDir, f)) for f in os.listdir(tmpDir)]
+      if builder.shouldCompile([library], sharedLibrary):
+        builder.link(self.expandArchive(library, tmpDir), sharedLibrary, shared = 1)
+        [os.remove(os.path.join(tmpDir, f)) for f in os.listdir(tmpDir)]
+      builder.shouldCompile.sourceDB.updateSource(library)
     shutil.rmtree(tmpDir)
     builder.popConfiguration()
     self.logPrint('Ended shared library build', debugSection = 'build')
     return
 
-  def run(self):
-    self.setup()
-    self.logPrint('Starting', debugSection = 'build')
-    self.configure()
-    self.buildSharedLibraries(self.builder)
-    self.logPrint('Done', debugSection = 'build')
-    return 1
+  def build(self, builder):
+    self.buildSharedLibraries(builder)
+    return
 
 if __name__ == '__main__':
-  Make(builder.Builder()).run()
+  Make().run()
