@@ -1,13 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.47 1996/08/14 01:42:50 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.48 1996/08/27 01:32:19 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
 /*T
    Concepts: SNES; solving nonlinear equations
-   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
+   Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESGetSLES();
    Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSolution();
+   Routines: SLESGetPC(); SLESGetKSP();
    Processors: 1
 T*/
 
@@ -32,12 +33,26 @@ int FormFunction(SNES,Vec,Vec,void*), Monitor(SNES,int,double,void*);
 int main( int argc, char **argv )
 {
   SNES     snes;         /* nonlinear solver context */
+  SLES     sles;         /* linear solver context */
+  PC       pc;           /* preconditioner context */
+  KSP      ksp;          /* KSP context */
   Vec      x, r;         /* solution, residual vectors */
   Mat      J;            /* Jacobian matrix */
   int      ierr, its;
   Scalar   pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
+
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create nonlinear solver contest
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create matrix and vector data structures; set corresponding routines
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
      Create vectors for solution and nonlinear function
@@ -49,11 +64,6 @@ int main( int argc, char **argv )
      Create Jacobian matrix data structure
   */
   ierr = MatCreate(MPI_COMM_SELF,2,2,&J); CHKERRA(ierr);
-
-  /* 
-     Create nonlinear solver context
-  */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* 
      Set function evaluation routine and vector
@@ -70,26 +80,31 @@ int main( int argc, char **argv )
   */
   ierr = SNESSetMonitor(snes,Monitor,PETSC_NULL); CHKERRA(ierr);
 
-  /*
-     Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
-  */
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set runtime options
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Evaluate initial guess; then solve nonlinear system
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   /*
-     Evaluate initial guess; then solve nonlinear system.
-     - The user should initialize the vector, x, with the initial guess
-       for the nonlinear solver prior to calling SNESSolve().  In particular,
-       to employ an initial guess of zero, the user should explicitly set
-       this vector to zero by calling VecSet().
+     Note: The user should initialize the vector, x, with the initial guess
+     for the nonlinear solver prior to calling SNESSolve().  In particular,
+     to employ an initial guess of zero, the user should explicitly set
+     this vector to zero by calling VecSet().
   */
   ierr = VecSet(&pfive,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its);
 
-  /* 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
-  */
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   ierr = VecDestroy(x); CHKERRA(ierr); ierr = VecDestroy(r); CHKERRA(ierr);
   ierr = MatDestroy(J); CHKERRA(ierr); ierr = SNESDestroy(snes); CHKERRA(ierr);
 
