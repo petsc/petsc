@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.228 2000/06/21 15:53:14 balay Exp balay $ 
+# $Id: makefile,v 1.229 2000/07/05 20:52:57 balay Exp hzhang $ 
 
 ALL: ex1
 
@@ -764,7 +764,7 @@ MATBLOCKSIZE   = 1 2 3 4 5 6 7 8
 runex74:
 	-@touch ex74_1.tmp;\
 	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIRUN} -np 1  ex74 -mat_block_size  $$bs >> ex48_1.tmp 2>&1; \
+	  ${MPIRUN} -np 1  ex74 -mat_block_size  $$bs >> ex74_1.tmp 2>&1; \
 	done; \
 	if (diff output/ex74_1.out ex74_1.tmp) then true; \
 	else echo "Possible problem with ex74_1, diffs above"; fi; \
