@@ -144,14 +144,6 @@ class Configure(config.base.Configure):
           self.addArgumentSubstitution(versionName, versionName)
           # Check normal compiler flags
           self.addCompilerFlag(options.getCompilerFlags(language, self.getCompiler(), ''))
-          if language == 'Cxx':
-            # Does C++ compiler (IBM's xlC, OSF5) need special flag for .c which contain c++?
-            self.sourceExtension = '.c'
-            for flag in ['', '-+', '-x cxx -tlocal']:
-              try:
-                self.addCompilerFlag(flag, body = 'class somename { int i; };')
-                break
-              except RuntimeError: pass
           # Check special compiler flags
           for bopt in ['g', 'O']:
             flagsName = flags+'_'+bopt
@@ -580,7 +572,7 @@ acfindx:
   def configureGetDomainName(self):
     if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.missingPrototypesC.append('int getdomainname(char *, int);')
-    if 'CXX' in self.framework.argDB and self.framework.argDB['CXX']:
+    if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
       if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
         self.missingPrototypesExternC.append('int getdomainname(char *, int);')
