@@ -187,6 +187,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvertTo_AIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvertTo_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
+  /*
+    This method is to be registered using MatConvertRegisterDynamic.  Perhaps a better mechanism would be to
+    add a second MatConvert function pointer (one for "from" -- which we already have, and a second for "to").
+    We should maintain the current registry list as well in order to provide a measure of backwards compatibility
+    if indeed we make this change.
+  */
   PetscErrorCode ierr;
   PetscMPIInt    size;
   Mat            B=*newmat;
