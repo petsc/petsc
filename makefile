@@ -15,6 +15,7 @@ DIRS     = src include pinclude
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
 all:
+	-@mkdir -p $(LDIR) > /dev/null
 	-$(RM) -f $(LDIR)/*.a
 	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PARCH) COMPLEX=$(COMPLEX) \
            ACTION=libfast  tree 
