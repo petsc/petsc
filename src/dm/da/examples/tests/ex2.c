@@ -30,7 +30,8 @@ int main(int argc,char **argv)
   OptionsGetInt(0,"-s",&s);  /* stencil width */
   OptionsGetInt(0,"-wrap",&wrap);  /* wrap or not */
 
-  ierr = DACreate1d(MPI_COMM_WORLD,M,w,s,(DAPeriodicType)wrap,&da); CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,(DAPeriodicType)wrap,M,w,s,&da); 
+  CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 

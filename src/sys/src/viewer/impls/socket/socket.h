@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.10 1995/06/07 17:30:43 bsmith Exp $ */
+/* $Id: matlab.h,v 1.3 1995/06/07 17:35:10 bsmith Exp bsmith $ */
 /* 
      This is the include file, it contains definitions 
   needed by different components of the package.
@@ -25,7 +25,7 @@ struct _Viewer {
 /* DENSECHARACTER simply has a flag set which tells that it should be */
 /* interpreted as a string not a numeric vector                       */
 
-extern int write_double(int,double *,int);
-extern int write_int(int,int *,int);
-extern int write_data(int,void *,int);
+extern int SOCKWriteDouble_Private(int,double *,int);
+extern int SOCKWriteInt_Private(int,int *,int);
+extern int SOCKWrite_Private(int,void *,int);
 

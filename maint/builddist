@@ -12,6 +12,12 @@ pushd ~/petsc; make ACTION=clean tree; popd
 #
 tar cFFXf ~/petsc/maint/xclude ~/petsc.tar -C ~  petsc
 #
+cd /mcs/tmp
+tar xf ~/petsc.tar
+chmod -R u+w petsc
+/bin/rm -f ~/petsc.tar
+tar cf ~/petsc.tar petsc
+/bin/rm -r -f /mcs/tmp/petsc
 #
 #  To test locally and build petsc.solid
 #

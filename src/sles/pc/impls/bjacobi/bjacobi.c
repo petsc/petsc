@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.26 1995/07/18 21:50:56 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.27 1995/07/20 02:34:02 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -91,19 +91,6 @@ static int PCPrintHelp_BJacobi(PC pc)
   return 0;
 }
 
-static int PCView_BJacobi(PetscObject obj,Viewer viewer)
-{
-  PC         pc = (PC)obj;
-  FILE       *fd = ViewerFileGetPointer_Private(viewer);
-  PC_BJacobi *jac = (PC_BJacobi *) pc->data;
-  if (jac->usetruelocal) 
-    MPIU_fprintf(pc->comm,fd,
-       "    Block Jacobi: using true local matrix, number of blocks = %d\n",
-       jac->n);
-  MPIU_fprintf(pc->comm,fd,"    Block Jacobi: number of blocks = %d\n",jac->n);
-  if (jac->view) (*jac->view)(obj,viewer);
-  return 0;
-}
 
 int PCCreate_BJacobi(PC pc)
 {
@@ -115,10 +102,11 @@ int PCCreate_BJacobi(PC pc)
   pc->printhelp     = PCPrintHelp_BJacobi;
   pc->type          = PCBJACOBI;
   pc->data          = (void *) jac;
-  pc->view          = PCView_BJacobi;
+  pc->view          = 0;
   jac->n            = 0;
+  jac->n_local      = 1;
+  jac->sles         = 0;
   jac->usetruelocal = 0;
-  jac->view         = 0;
   return 0;
 }
 /*@

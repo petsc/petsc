@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   OptionsGetInt(0,"-M",&M);
     
   /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,M,1,1,DA_XPERIODIC,&da); CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,DA_XPERIODIC,M,1,1,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRQ(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.35 1995/07/13 18:56:03 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.36 1995/07/13 23:04:51 curfman Exp bsmith $";
 #endif
 
 /*  
@@ -23,10 +23,10 @@ int PCPrintHelp(PC pc)
 {
   char *p; 
   if (pc->prefix) p = pc->prefix; else p = "-";
-  MPIU_fprintf(pc->comm,stderr,"PC options ----------------------------------------\n");
+  MPIU_printf(pc->comm,"PC options ----------------------------------------\n");
   PCPrintMethods_Private(p,"pc_method");
-  MPIU_fprintf(pc->comm,stderr,"Run program with %spc_method method -help for help on ",p);
-  MPIU_fprintf(pc->comm,stderr,"a particular method\n");
+  MPIU_printf(pc->comm,"Run program with %spc_method method -help for help on ",p);
+  MPIU_printf(pc->comm,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc);
   return 0;
 }

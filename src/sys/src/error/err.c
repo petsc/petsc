@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.14 1995/05/14 16:32:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.15 1995/06/08 03:08:02 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -155,7 +155,7 @@ int PetscPopErrorHandler()
 
    Notes:
    Most users need not directly use this routine and the error handlers, but
-   can instead use the simplified interface SETERR, which has the calling 
+   can instead use the simplified interface SETERRQ, which has the calling 
    sequence
 $     SETERRQ(number,message)
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.13 1995/07/15 17:44:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.14 1995/07/17 03:54:14 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -13,6 +13,9 @@ static char vcid[] = "$Id: fp.c,v 1.13 1995/07/15 17:44:44 bsmith Exp bsmith $";
 #include "petsc.h"
 #include "sys.h"
 #include "petscfix.h"
+
+#if !defined(PETSC_INSIGHT)
+/* insight crashes on this file for some reason!*/
 
 /*----------------IEEE error handler for Sun SparcStations.--------------*/
 #if defined(PARCH_sun4) 
@@ -323,5 +326,12 @@ int PetscSetBenignUnderflows()
 }
 #endif
 
+#else
 
+int PetscSetFPTrap(int flag)
+{
+  return 0;
+}
+ 
+#endif
 

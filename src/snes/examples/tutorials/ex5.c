@@ -64,8 +64,9 @@ int main( int argc, char **argv )
   N          = user.mx*user.my;
   
   /* Set up distributed array */
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_STENCIL_STAR,user.mx,user.my,
-                    PETSC_DECIDE,PETSC_DECIDE,1,1,&user.da); CHKERRA(ierr);
+  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
+               user.mx,user.my,PETSC_DECIDE,PETSC_DECIDE,1,1,&user.da); 
+  CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRQ(ierr);

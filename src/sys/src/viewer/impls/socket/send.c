@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.15 1995/07/10 04:53:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.16 1995/07/17 20:42:41 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -72,7 +72,7 @@ extern int close(int);
       Byte swapping for certain Machines.
 */
 #if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)
-int byteswapint(int *,int),byteswapdouble(double*,int);
+static int byteswapint(int *,int),byteswapdouble(double*,int);
 #define BYTESWAPINT(buff,n)    byteswapint(buff,n)
 #define BYTESWAPDOUBLE(buff,n) byteswapdouble(buff,n)
 #else
@@ -101,25 +101,25 @@ static int ViewerDestroy_Matlab(PetscObject obj)
 }
 
 /*-----------------------------------------------------------------*/
-int write_int(int t,int *buff,int n)
+int SOCKWriteInt_Private(int t,int *buff,int n)
 {
   int err;
   BYTESWAPINT(buff,n);
-  err = write_data(t,(void *) buff,n*sizeof(int));
+  err = SOCKWrite_Private(t,(void *) buff,n*sizeof(int));
   BYTESWAPINT(buff,n);
   return err;
 }
 /*-----------------------------------------------------------------*/
-int write_double(int t,double *buff,int n)
+int SOCKWriteDouble_Private(int t,double *buff,int n)
 {
   int err;
   BYTESWAPDOUBLE((double*)buff,n);
-  err = write_data(t,(void *) buff,n*sizeof(double)); 
+  err = SOCKWrite_Private(t,(void *) buff,n*sizeof(double)); 
   BYTESWAPDOUBLE((double*)buff,n);
   return err; 
 }
 /*-----------------------------------------------------------------*/
-int write_data(int t,void *buff,int n)
+int SOCKWrite_Private(int t,void *buff,int n)
 {
   if ( n <= 0 ) return 0;
   if ( write(t,(char *)buff,n) < 0 ) {
@@ -128,7 +128,7 @@ int write_data(int t,void *buff,int n)
   return 0; 
 }
 /*--------------------------------------------------------------*/
-int call_socket(char *hostname,int portnum)
+int SOCKCall_Private(char *hostname,int portnum)
 {
   struct sockaddr_in sa;
   struct hostent     *hp;
@@ -175,7 +175,7 @@ int call_socket(char *hostname,int portnum)
 }
 /*  ------------------- BYTE SWAPPING ROUTINES ---------------------*/
 #if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)
-int byteswapint(int *buff,int n)
+static int byteswapint(int *buff,int n)
 {
   int  i,j,tmp;
   char *ptr1,*ptr2 = (char *) &tmp;
@@ -188,7 +188,7 @@ int byteswapint(int *buff,int n)
   }
   return 0;
 }
-int byteswapdouble(double *buff,int n)
+static int byteswapdouble(double *buff,int n)
 {
   int    i,j;
   double tmp,*ptr3;
@@ -237,7 +237,7 @@ int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
   Viewer v;
   int    t;
   if (port <= 0) port = DEFAULTPORT;
-  t = call_socket(machine,port);
+  t = SOCKCall_Private(machine,port);
   PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,MPI_COMM_SELF);
   PLogObjectCreate(v);
   v->port        = t;

@@ -4,12 +4,12 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR) \
            -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"da/src/"'
-SOURCEC  = da.c da1.c
+SOURCEC  = da2.c da1.c
 SOURCEF  = 
-WSOURCEC = daf.c da1f.c
+WSOURCEC = da2f.c da1f.c
 SOURCEH  = 
-OBJSC    = da.o da1.o
-WOBJS    = daf.o da1f.o
+OBJSC    = da2.o da1.o
+WOBJS    = da2f.o da1f.o
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: daimpl.h,v 1.4 1995/06/07 16:36:33 bsmith Exp bsmith $ */
 
 /*
 
@@ -19,6 +19,7 @@ struct _DA {
   int           Xs,Xe,Ys,Ye,Zs,Ze; /* range including ghost values*/
   int           *idx,Nl;           /* local to global map */
   int           base;              /* global number of 1st local node */
+  int           wrap;              /* indicates if periodic boundaries */
   VecScatterCtx gtol,ltog;      
   Vec           global,local;
 };

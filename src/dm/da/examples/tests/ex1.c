@@ -25,7 +25,8 @@ int main(int argc,char **argv)
   OptionsGetInt(0,"-m",&m);
   OptionsGetInt(0,"-n",&n);
 
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_STENCIL_BOX,M,N,m,n,1,1,&da); 
+  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
+                    M,N,m,n,1,1,&da); 
   CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);

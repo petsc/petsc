@@ -221,6 +221,7 @@ extern char   *mktemp(char *);
 extern char   *getenv( char *);
 extern void   *malloc(long unsigned int );
 extern int    free(void *);
+extern double atof(char *);
 #endif
 #endif
 

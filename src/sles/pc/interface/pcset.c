@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.19 1995/07/07 19:03:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.20 1995/07/08 18:05:23 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -11,7 +11,10 @@ static char vcid[] = "$Id: pcset.c,v 1.19 1995/07/07 19:03:16 curfman Exp bsmith
 static NRList *__PCList = 0;
 
 /*@
-  PCSetMethod - Builds PC for a particular preconditioner.
+  PCSetMethod - Builds PC for a particular preconditioner. It is 
+                best to use the SLESSetFromOptions() command and 
+                set the PC method from the command line rather then
+                by using this routine.
 
   Input Parameter:
 .  pc - the preconditioner context.
@@ -20,11 +23,11 @@ static NRList *__PCList = 0;
    Options Database Command:
 $  -pc_method  <method>
 $      Use -help for a list of available methods
-$      (for instance, jacobi or bdd)
+$      (for instance, jacobi or bjacobi)
 
   Notes:
   See "petsc/include/pc.h" for available methods (for instance,
-  PCJACOBI or PCBDD).
+  PCJACOBI, PCILU, or PCBJACOBI).
 
 .keywords: PC, set, method
 @*/
@@ -145,12 +148,12 @@ int PCPrintMethods_Private(char *prefix,char *name)
   FuncList *entry;
   if (!__PCList) {PCRegisterAll();}
   entry = __PCList->head;
-  fprintf(stderr," %s%s (one of)",prefix,name);
+  printf(" %s%s (one of)",prefix,name);
   while (entry) {
-    fprintf(stderr," %s",entry->name);
+    printf(" %s",entry->name);
     entry = entry->next;
   }
-  fprintf(stderr,"\n");
+  printf("\n");
   return 0;
 }
 

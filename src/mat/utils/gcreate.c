@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.31 1995/07/12 20:22:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.32 1995/07/17 20:41:50 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -72,6 +72,10 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
       ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); 
     CHKERRQ(ierr);
     if (d) PETSCFREE(d);
+    MPIU_printf(comm,"Options with -mat_bdiag: -mat_bdiag_bsize block_size\n");
+    MPIU_printf(comm,"  -mat_bdiag_ndiag number_diags \n"); 
+    MPIU_printf(comm,"  -mat_bdiag_dvals d1,d2,d3...  \n"); 
+    MPIU_printf(comm,"(for example)  -mat_bdiag_dvals -5,-1,0,1,5  \n"); 
     return ierr;
   }
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)

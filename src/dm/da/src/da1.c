@@ -10,7 +10,7 @@
 #include <math.h>
 #include "draw.h"      /*I  "draw.h"  I*/
 
-int DAView_1d(PetscObject pobj,Viewer ptr)
+static int DAView_1d(PetscObject pobj,Viewer ptr)
 {
   DA da  = (DA) pobj;
   PetscObject vobj = (PetscObject)ptr;
@@ -96,8 +96,8 @@ int DAView_1d(PetscObject pobj,Viewer ptr)
 .  M - global dimension of the array
 .  w - number of degress of freedom per node
 .  s - stencil width  
-.  wrap - Do you want ghost points to wrap around? 
-$          0=No Wrap 1=Wrap for periodic boundary conditions
+.  wrap - Do you want ghost points to wrap around? Use one of
+$         DA_NONPERIODIC, DA_XPERIODIC
 
    Output Parameter:
 .  inra - the resulting array object
@@ -106,8 +106,7 @@ $          0=No Wrap 1=Wrap for periodic boundary conditions
 .seealso: DADestroy(), DAView()
 @*/
 
-int DACreate1d(MPI_Comm comm,int M, int w,int s, DAPeriodicType wrap, 
-               DA *inra)
+int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 {
   int           mytid, numtid,xs,xe,x,Xs,Xe,ierr,start,end,m;
   int           i,*idx,nn;
@@ -139,7 +138,7 @@ int DACreate1d(MPI_Comm comm,int M, int w,int s, DAPeriodicType wrap,
   xe = xs + x;
 
   /* determine ghost region */
-  if (wrap) {
+  if (wrap == DA_XPERIODIC) {
     Xs = xs - s; 
     Xe = xe + s;
   }
@@ -169,7 +168,7 @@ int DACreate1d(MPI_Comm comm,int M, int w,int s, DAPeriodicType wrap,
   idx = (int *) PETSCMALLOC( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
 
   nn = 0;
-  if (wrap) {    /* Handle all cases with wrap first */
+  if (wrap == DA_XPERIODIC) {    /* Handle all cases with wrap first */
 
     for (i=0; i<s; i++) {  /* Left ghost points */
       if ((xs-s+i)>=0) { idx[nn++] = xs-s+i;}
@@ -212,6 +211,7 @@ int DACreate1d(MPI_Comm comm,int M, int w,int s, DAPeriodicType wrap,
   da->Nl     = nn;
   da->base   = xs;
   da->view   = DAView_1d;
+  da->wrap   = wrap;
   *inra = da;
   return 0;
 }

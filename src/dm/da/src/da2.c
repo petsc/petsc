@@ -8,19 +8,117 @@
 */
 #include "daimpl.h"
 #include "pviewer.h"
+#include "draw.h"
 #include <math.h>
+
+static int DAView_2d(PetscObject dain,Viewer ptr)
+{
+  DA          da = (DA) dain;
+  PetscObject vobj = (PetscObject)ptr;
+  int         mytid;
+  VALIDHEADER(da,DA_COOKIE);
+
+  MPI_Comm_rank(da->comm,&mytid); 
+
+  if (!ptr) { /* so that viewers may be used from debuggers */
+    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+  }
+
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
+
+  if (vobj->cookie == VIEWER_COOKIE) {
+    FILE *fd = ViewerFileGetPointer_Private(ptr);
+    if (vobj->type == FILE_VIEWER) {
+      MPIU_Seq_begin(da->comm,1);
+      fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",mytid,da->M,
+                 da->N,da->m,da->n,da->w,da->s);
+      fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,da->ys,da->ye);
+      fflush(fd);
+      MPIU_Seq_end(da->comm,1);
+    }
+    else if (vobj->type == FILES_VIEWER) {
+
+      if (!mytid) {
+      }
+      else {
+      }
+    }
+  }
+  else if (vobj->cookie == DRAW_COOKIE) {
+    DrawCtx win = (DrawCtx) ptr;
+    double  ymin = -1*da->s-1, ymax = da->N+da->s;
+    double  xmin = -1*da->s-1, xmax = da->M+da->s;
+    double  x,y;
+    int     base,*idx,max;
+    char    node[10];
+ 
+    DrawSetCoordinates(win,xmin,ymin,xmax,ymax);
+
+    /* first processor draw all node lines */
+    if (!mytid) {
+      ymin = 0.0; ymax = da->N - 1;
+      for ( xmin=0; xmin<da->M; xmin++ ) {
+        DrawLine(win,xmin,ymin,xmin,ymax,DRAW_BLACK);
+      }
+      xmin = 0.0; xmax = da->M - 1;
+      for ( ymin=0; ymin<da->N; ymin++ ) {
+        DrawLine(win,xmin,ymin,xmax,ymin,DRAW_BLACK);
+      }
+    }
+    DrawSyncFlush(win);
+    MPI_Barrier(da->comm);
+
+    /* draw my box */
+    ymin = da->ys; ymax = da->ye - 1; xmin = da->xs/da->w; xmax =(da->xe-1)/da->w;
+    DrawLine(win,xmin,ymin,xmax,ymin,DRAW_RED);
+    DrawLine(win,xmin,ymin,xmin,ymax,DRAW_RED);
+    DrawLine(win,xmin,ymax,xmax,ymax,DRAW_RED);
+    DrawLine(win,xmax,ymin,xmax,ymax,DRAW_RED);
+
+    /* put in numbers */
+    base = (da->base)/da->w;
+    for ( y=ymin; y<=ymax; y++ ) {
+      for ( x=xmin; x<=xmax; x++ ) {
+        sprintf(node,"%d",base++);
+        DrawText(win,x,y,DRAW_BLACK,node);
+      }
+    }
+
+    DrawSyncFlush(win);
+    MPI_Barrier(da->comm);
+
+    /* overlay ghost numbers, useful for error checking */
+    /* put in numbers */
+
+    base = 0; idx = da->idx;
+    ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
+    for ( y=ymin; y<ymax; y++ ) {
+      for ( x=xmin; x<xmax; x++ ) {
+        if ((base % da->w) == 0) {
+          sprintf(node,"%d",idx[base]/da->w);
+          DrawText(win,x/da->w,y,DRAW_BLUE,node);
+        }
+        base++;
+      }
+    }        
+
+    DrawSyncFlush(win);
+  }
+  return 0;
+}
 
 /*@
     DACreate2d - Creates a two-dimensional regular array that is
     distributed across some processors.
 
    Input Parameters:
+.  st - stencil type either DA_STENCIL_BOX or DA_STENCIL_STAR
 .  M,N - global dimension in each direction of the array
 .  m,n - corresponding local dimensions (or PETSC_DECIDE to have calculated)
 .  w - number of degress of freedom per node
 .  s - stencil width
-.  xwrap - wrap in x direction?  0 = NO   1 = YES
-.  ywrap - wrap in y direction?  0 = NO   1 = YES
+.  wrap - Are you using a periodic domain? Choose from 
+$         DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC  
 
    Output Parameter:
 .  inra - the resulting array object
@@ -28,8 +126,8 @@
 .keywords: distributed array, create, two-dimensional
 .seealso: DADestroy(), DAView()
 @*/
-int DACreate2dn(MPI_Comm comm,int M, int N, int m, int n, int w,
-               int s, int xwrap, int ywrap, DA *inra)
+int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,
+                int M, int N, int m,int n, int w, int s, DA *inra)
 {
   int           mytid, numtid,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
@@ -82,13 +180,13 @@ int DACreate2dn(MPI_Comm comm,int M, int N, int m, int n, int w,
     if (ye+s <= N) Ye = ye + s; else Ye = N;
 
   /* X Periodic */
-  if (xwrap == 1) {
+  if (wrap == DA_XPERIODIC || wrap ==  DA_XYPERIODIC) {
     Xs = xs - s; 
     Xe = xe + s; 
   }
 
   /* Y Periodic */
-  if (ywrap == 1) {
+  if (wrap == DA_YPERIODIC || wrap ==  DA_XYPERIODIC) {
     Ys = ys - s;
     Ye = ye + s;
   }
@@ -165,7 +263,7 @@ int DACreate2dn(MPI_Comm comm,int M, int N, int m, int n, int w,
 
 
   /* Modify for Periodic Cases */
-  if (ywrap && !xwrap) {  /* Handle Top and Bottom Sides */
+  if (wrap == DA_YPERIODIC) {  /* Handle Top and Bottom Sides */
     if (n1 < 0) n1 = mytid + m * (n-1);
     if (n7 < 0) n7 = mytid - m * (n-1);
     if ((n3 >= 0) && (n0 < 0)) n0 = numtid - m + mytid - 1;
@@ -173,8 +271,7 @@ int DACreate2dn(MPI_Comm comm,int M, int N, int m, int n, int w,
     if ((n5 >= 0) && (n2 < 0)) n2 = numtid - m + mytid + 1;
     if ((n5 >= 0) && (n8 < 0)) n8 = (mytid%m)+1;
   } 
-
-  if (xwrap && !ywrap) { /* Handle Left and Right Sides */
+  else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
     if (n3 < 0) n3 = mytid + (m-1);
     if (n5 < 0) n5 = mytid - (m-1);
     if ((n1 >= 0) && (n0 < 0)) n0 = mytid-1;
@@ -182,8 +279,7 @@ int DACreate2dn(MPI_Comm comm,int M, int N, int m, int n, int w,
     if ((n7 >= 0) && (n6 < 0)) n6 = mytid+2*m-1;
     if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
   }
-
-  if (xwrap && ywrap) {
+  else if (wrap == DA_XYPERIODIC) {
 
     /* Handle all four corners */
     if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
@@ -210,7 +306,7 @@ int DACreate2dn(MPI_Comm comm,int M, int N, int m, int n, int w,
     if ((n7 >= 0) && (n8 < 0)) n8 = mytid+1;
   }
 
-  idx = (int *) PETSCMALLOC( (x+2*s_x)*(y+2*s_y)*sizeof(int) ); CHKPTRQ(idx);
+  idx = (int *)PETSCMALLOC((x+2*s_x)*(y+2*s_y)*sizeof(int));CHKPTRQ(idx);
   nn = 0;
 
   xbase = bases[mytid];
@@ -292,6 +388,8 @@ int DACreate2dn(MPI_Comm comm,int M, int N, int m, int n, int w,
   da->idx    = idx;
   da->Nl     = nn;
   da->base   = base;
+  da->wrap   = wrap;
+  da->view   = DAView_2d;
   *inra = da;
   return 0;
 }
@@ -481,7 +579,7 @@ int   DAGetLocalVector(DA da,Vec* l)
   return 0;
 }
 
-#include "draw.h"
+
 /*@
    DAView - Visualizes a distributed array object.
 
@@ -508,100 +606,11 @@ $         an X window display
 
 .seealso: ViewerFileOpen(), ViewerFileOpenSync(), DrawOpenX(), 
 @*/
-int DAView(DA da,Viewer ptr)
+int DAView(DA da, Viewer v)
 {
-  PetscObject vobj = (PetscObject)ptr;
-  int         mytid;
   VALIDHEADER(da,DA_COOKIE);
-
-  MPI_Comm_rank(da->comm,&mytid); 
-
-  if (!ptr) { /* so that viewers may be used from debuggers */
-    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
-  }
-
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
-
-  if (vobj->cookie == VIEWER_COOKIE) {
-    FILE *fd = ViewerFileGetPointer_Private(ptr);
-    if (vobj->type == FILE_VIEWER) {
-      MPIU_Seq_begin(da->comm,1);
-      fprintf(fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",mytid,da->M,
-                 da->N,da->m,da->n,da->w,da->s);
-      fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,da->ys,da->ye);
-      fflush(fd);
-      MPIU_Seq_end(da->comm,1);
-    }
-    else if (vobj->type == FILES_VIEWER) {
-
-      if (!mytid) {
-      }
-      else {
-      }
-    }
-  }
-  else if (vobj->cookie == DRAW_COOKIE) {
-    DrawCtx win = (DrawCtx) ptr;
-    double  ymin = -1*da->s-1, ymax = da->N+da->s;
-    double  xmin = -1*da->s-1, xmax = da->M+da->s;
-    double  x,y;
-    int     base,*idx,max;
-    char    node[10];
- 
-    DrawSetCoordinates(win,xmin,ymin,xmax,ymax);
-
-    /* first processor draw all node lines */
-    if (!mytid) {
-      ymin = 0.0; ymax = da->N - 1;
-      for ( xmin=0; xmin<da->M; xmin++ ) {
-        DrawLine(win,xmin,ymin,xmin,ymax,DRAW_BLACK);
-      }
-      xmin = 0.0; xmax = da->M - 1;
-      for ( ymin=0; ymin<da->N; ymin++ ) {
-        DrawLine(win,xmin,ymin,xmax,ymin,DRAW_BLACK);
-      }
-    }
-    DrawSyncFlush(win);
-    MPI_Barrier(da->comm);
-
-    /* draw my box */
-    ymin = da->ys; ymax = da->ye - 1; xmin = da->xs/da->w; xmax =(da->xe-1)/da->w;
-    DrawLine(win,xmin,ymin,xmax,ymin,DRAW_RED);
-    DrawLine(win,xmin,ymin,xmin,ymax,DRAW_RED);
-    DrawLine(win,xmin,ymax,xmax,ymax,DRAW_RED);
-    DrawLine(win,xmax,ymin,xmax,ymax,DRAW_RED);
-
-    /* put in numbers */
-    base = (da->base)/da->w;
-    for ( y=ymin; y<=ymax; y++ ) {
-      for ( x=xmin; x<=xmax; x++ ) {
-        sprintf(node,"%d",base++);
-        DrawText(win,x,y,DRAW_BLACK,node);
-      }
-    }
-
-    DrawSyncFlush(win);
-    MPI_Barrier(da->comm);
-
-    /* overlay ghost numbers, useful for error checking */
-    /* put in numbers */
-
-    base = 0; idx = da->idx;
-    ymin = da->Ys; ymax = da->Ye; xmin = da->Xs; xmax = da->Xe;
-    for ( y=ymin; y<ymax; y++ ) {
-      for ( x=xmin; x<xmax; x++ ) {
-        if ((base % da->w) == 0) {
-          sprintf(node,"%d",idx[base]/da->w);
-          DrawText(win,x/da->w,y,DRAW_BLUE,node);
-        }
-        base++;
-      }
-    }        
-
-    DrawSyncFlush(win);
-  }
-  return 0;
-}
+  return (*da->view)((PetscObject)da,v);
+}  
 
 /*@
    DAGetGlobalIndices - Returns the global node number of all local nodes,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sendsparse.c,v 1.9 1995/06/08 03:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sendsparse.c,v 1.10 1995/07/17 20:42:41 bsmith Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a sparse matrix to Matlab.
@@ -39,22 +39,31 @@ int ViewerMatlabPutSparse_Private(Viewer viewer,int m,int n,int nnz,Scalar *v,in
                         int *c)
 {
   int t = viewer->port,type = SPARSEREAL,value;
-  if (write_int(t,&type,1)) SETERRQ(1,"ViewerMatlabPutSparse_Private");
-  if (write_int(t,&m,1))    SETERRQ(1,"ViewerMatlabPutSparse_Private");
-  if (write_int(t,&n,1))    SETERRQ(1,"ViewerMatlabPutSparse_Private");
-  if (write_int(t,&nnz,1))  SETERRQ(1,"ViewerMatlabPutSparse_Private");
+  if (SOCKWriteInt_Private(t,&type,1)) 
+                                 SETERRQ(1,"ViewerMatlabPutSparse_Private");
+  if (SOCKWriteInt_Private(t,&m,1))
+                                  SETERRQ(1,"ViewerMatlabPutSparse_Private");
+  if (SOCKWriteInt_Private(t,&n,1)) 
+                                  SETERRQ(1,"ViewerMatlabPutSparse_Private");
+  if (SOCKWriteInt_Private(t,&nnz,1))
+                                SETERRQ(1,"ViewerMatlabPutSparse_Private");
 #if !defined(PETSC_COMPLEX)
   value = 0;
-  if (write_int(t,&value,1)) SETERRQ(1,"ViewerMatlabPutSparse_Private");
-  if (write_double(t,v,nnz)) SETERRQ(1,"ViewerMatlabPutSparse_Private");
+  if (SOCKWriteInt_Private(t,&value,1))
+                                SETERRQ(1,"ViewerMatlabPutSparse_Private");
+  if (SOCKWriteDouble_Private(t,v,nnz)) 
+                              SETERRQ(1,"ViewerMatlabPutSparse_Private");
 #else
   value = 1;
-  if (write_int(t,&value,1))  SETERRQ(1,"ViewerMatlabPutSparse_Private");  
-  if (write_double(t,(double*)v,2*nnz)) 
+  if (SOCKWriteInt_Private(t,&value,1)) 
+                                SETERRQ(1,"ViewerMatlabPutSparse_Private");  
+  if (SOCKWriteDouble_Private(t,(double*)v,2*nnz)) 
                              SETERRQ(1,"ViewerMatlabPutSparse_Private");
 #endif
-  if (write_int(t,r,m+1))    SETERRQ(1,"ViewerMatlabPutSparse_Private");
-  if (write_int(t,c,nnz))    SETERRQ(1,"ViewerMatlabPutSparse_Private");
+  if (SOCKWriteInt_Private(t,r,m+1))
+                                 SETERRQ(1,"ViewerMatlabPutSparse_Private");
+  if (SOCKWriteInt_Private(t,c,nnz))   
+                                   SETERRQ(1,"ViewerMatlabPutSparse_Private");
   return 0;
 }
 
