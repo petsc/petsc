@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.15 1995/10/12 21:35:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.16 1995/10/18 03:17:34 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -64,13 +64,13 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
   MatType     type;
   *newmat = 0;
 
-  PLogEventBegin(MAT_Load,bview,0,0,0);
-  ierr = MatGetFormatFromOptions(vobj->comm,&type,&set); CHKERRQ(ierr);
-  if (!set) type = outtype;
-
   PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
   if (vobj->type != BINARY_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary()");
+
+  PLogEventBegin(MAT_Load,bview,0,0,0);
+  ierr = MatGetFormatFromOptions(vobj->comm,&type,&set); CHKERRQ(ierr);
+  if (!set) type = outtype;
 
   if (type == MATSEQAIJ) {
     ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
