@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.24 2000/11/28 17:27:52 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.25 2001/01/15 21:43:57 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -23,15 +23,15 @@
 typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_DOUBLE,OPTION_LIST,OPTION_STRING,OPTION_DOUBLE_ARRAY,OPTION_HEAD} OptionType;
 typedef struct _p_OptionsAMS* PetscOptionsAMS;
 struct _p_OptionsAMS {
-  char       *option;
-  char       *text;
-  void       *data;
-  void       *edata;
-  int        arraylength;
-  PetscTruth set;
-  OptionType type;
+  char            *option;
+  char            *text;
+  void            *data;
+  void            *edata;
+  int             arraylength;
+  PetscTruth      set;
+  OptionType      type;
   PetscOptionsAMS next;
-  char       *man;
+  char            *man;
 };
 #endif
 
@@ -232,7 +232,7 @@ int PetscOptionsInt(char *opt,char *text,char *man,int defaultv,int *value,Petsc
 #endif
   ierr = PetscOptionsGetInt(amspub.prefix,opt,value,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%d>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,defaultv,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%d>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,defaultv,text,man);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -258,7 +258,7 @@ int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value
 #endif
   ierr = PetscOptionsGetString(amspub.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%s>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,defaultv,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%s>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,defaultv,text,man);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -288,7 +288,7 @@ int PetscOptionsDouble(char *opt,char *text,char *man,double defaultv,double *va
 #endif
   ierr = PetscOptionsGetDouble(amspub.prefix,opt,value,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%g>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,defaultv,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%g>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,defaultv,text,man);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -333,7 +333,7 @@ int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
 #endif
   ierr = PetscOptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -417,7 +417,7 @@ int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char
 #endif
   ierr = PetscOptionsGetString(amspub.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%s> (one of)",amspub.prefix?amspub.prefix:"",opt,defaultv);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%s> (one of)",amspub.prefix?amspub.prefix:"",opt+1,defaultv);CHKERRQ(ierr);
     for (i=0; i<ntext; i++){
       ierr = (*PetscHelpPrintf)(amspub.comm," %s",list[i]);CHKERRQ(ierr);
     }
@@ -452,7 +452,7 @@ int PetscOptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg
   ierr = PetscOptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     ierr = (*PetscHelpPrintf)(amspub.comm,"  Pick at most one of -------------\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"    -%s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -479,7 +479,7 @@ int PetscOptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
 #endif
   ierr = PetscOptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"    -%s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -506,7 +506,7 @@ int PetscOptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
 #endif
   ierr = PetscOptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"    -%s%s: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -534,7 +534,7 @@ int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTru
   ierr = PetscOptionsGetLogical(amspub.prefix,opt,flg,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     const char *v = (deflt ? "true" : "false");
-    ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,v,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"    -%s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,v,text,man);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -566,7 +566,7 @@ int PetscOptionsDoubleArray(char *opt,char *text,char *man,double *value,int *n,
 #endif
   ierr = PetscOptionsGetDoubleArray(amspub.prefix,opt,value,n,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <%g",amspub.prefix?amspub.prefix:"",opt,value[0]);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%g",amspub.prefix?amspub.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
     for (i=1; i<*n; i++) {
       ierr = (*PetscHelpPrintf)(amspub.comm,",%g",value[i]);CHKERRQ(ierr);
     }
@@ -596,7 +596,7 @@ int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nma
 #endif
   ierr = PetscOptionsGetStringArray(amspub.prefix,opt,value,nmax,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    ierr = (*PetscHelpPrintf)(amspub.comm,"  %s%s <string1,string2,...>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,text,man);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <string1,string2,...>: %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,text,man);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
