@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.115 1998/03/30 22:18:00 balay Exp balay $ 
+# $Id: crontab,v 1.116 1998/03/30 23:17:35 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -9,7 +9,7 @@
 #  The timing between these runs IS not important.
 #
 1  23 * * * /home/bsmith/petsc/maint/buildremotetest
-1  23 * * * /bin/rm /home/bsmith/petsc/maint/nightlylogs/*.log
+1  23 * * * /bin/rm /home/bsmith/petsc/maint/nightlylogs/*
 1  23 * * * /home/bsmith/petsc/maint/removelibs
 #
 ##30  1 * * * /home/bsmith/petsc/maint/buildtest 1
