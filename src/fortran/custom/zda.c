@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.39 2001/01/15 21:49:49 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.40 2001/01/17 19:48:31 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -12,6 +12,8 @@
 #define dadestroy_                   DADESTROY
 #define dacreateglobalvector_        DACREATEGLOBALVECTOR
 #define dacreatelocalvector_         DACREATELOCALVECTOR
+#define dagetlocalvector_            DAGETLOCALVECTOR
+#define darestorelocalvector_        DARESTORELOCALVECTOR
 #define dagetscatter_                DAGETSCATTER
 #define dagetglobalindices_          DAGETGLOBALINDICES
 #define daview_                      DAVIEW
@@ -23,6 +25,8 @@
 #define dasetfieldname_              DASETFIELDNAME
 #define dagetfieldname_              DAGETFIELDNAME
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dagetlocalvector_            dagetlocalvector
+#define darestorelocalvector_        darestorelocalvector
 #define dagetinterpolation_          dagetinterpolation
 #define daload_                      daload
 #define dacreateglobalvector_        dacreateglobalvector
@@ -91,11 +95,11 @@ void PETSC_STDCALL dagetislocaltoglobalmappingblck_(DA *da,ISLocalToGlobalMappin
   *ierr = DAGetISLocalToGlobalMappingBlck(*da,map);
 }
 
-void PETSC_STDCALL dagetcoloring_(DA *da,ISColoring *coloring,Mat *J,int *ierr)
+void PETSC_STDCALL dagetcoloring_(DA *da,MatType *mtype,ISColoring *coloring,Mat *J,int *ierr)
 {
   if (FORTRANNULLOBJECT(coloring)) coloring = PETSC_NULL;
   if (FORTRANNULLOBJECT(J))        J        = PETSC_NULL;
-  *ierr = DAGetColoring(*da,coloring,J);
+  *ierr = DAGetColoring(*da,*mtype,coloring,J);
 }
 
 void PETSC_STDCALL daview_(DA *da,PetscViewer *vin,int *ierr)
@@ -120,6 +124,16 @@ void PETSC_STDCALL dacreateglobalvector_(DA *da,Vec* g,int *ierr)
 void PETSC_STDCALL dacreatelocalvector_(DA *da,Vec* l,int *ierr)
 {
   *ierr = DACreateLocalVector(*da,l);
+}
+
+void PETSC_STDCALL dagetlocalvector_(DA *da,Vec* l,int *ierr)
+{
+  *ierr = DAGetLocalVector(*da,l);
+}
+
+void PETSC_STDCALL darestorelocalvector_(DA *da,Vec* l,int *ierr)
+{
+  *ierr = DARestoreLocalVector(*da,l);
 }
 
 void PETSC_STDCALL dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,int *ierr)
