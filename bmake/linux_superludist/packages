@@ -31,7 +31,7 @@ PETSC_HAVE_SUPERLU_DIST = -DPETSC_HAVE_SUPERLU_DIST
 # SuperLU
 #
 SUPERLU_INCLUDE         = -I/home/petsc/soft/linux-rh73/SuperLU_3.0/SRC 
-SUPERLU_LIB             = /home/petsc/soft/linux-rh73/SuperLU_3.0/superlu_linux.a
+SUPERLU_LIB             = /home/petsc/soft/linux-rh73/SuperLU_3.0/superlu_linux_g.a
 PETSC_HAVE_SUPERLU      = -DPETSC_HAVE_SUPERLU 
 #
 # SPOOLES, SPOOLES_MPI

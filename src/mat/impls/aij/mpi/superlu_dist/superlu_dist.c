@@ -267,7 +267,7 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
     dCreate_CompCol_Matrix_dist(&lu->A_sup, M, N, aa->nz, lu->val, lu->col, lu->row, SLU_NC, SLU_D, SLU_GE);  
 #endif
   } else { /* distributed mat input */
-    mat =  (Mat_MPIAIJ*)A->data;  
+    Mat_MPIAIJ *mat = (Mat_MPIAIJ*)A->data;  
     aa=(Mat_SeqAIJ*)(mat->A)->data;
     bb=(Mat_SeqAIJ*)(mat->B)->data;
     ai=aa->i; aj=aa->j; 
