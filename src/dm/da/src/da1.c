@@ -133,7 +133,7 @@ EXTERN int DAPublish_Petsc(PetscObject);
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
 {
   int        rank,size,xs,xe,x,Xs,Xe,ierr,start,end,m;
-  int        i,*idx,nn,j,left,refine_x = 2,tM = M;
+  int        i,*idx,nn,left,refine_x = 2,tM = M;
   PetscTruth flg1,flg2;
   DA         da;
   Vec        local,global;

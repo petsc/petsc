@@ -102,11 +102,12 @@ int DAGetAO(DA da,AO *ao)
     int ierr,i,j,k,*lidx,lict = 0,Nlocal;
 
     Nlocal = (da->xe-da->xs);
-    if (da->dim == 2) {
+    if (da->dim > 1) {
       Nlocal *= (da->ye-da->ys);
-    } else if (da->dim == 3) {
+    } 
+    if (da->dim > 2) {
       Nlocal *= (da->ze-da->zs);
-    } else if (da->dim != 1) SETERRQ1(1,"DA has invalid dimension %d",da->dim);
+    }
 
     ierr = ISCreateStride(da->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
     ierr = PetscMalloc(Nlocal*sizeof(int),&lidx);CHKERRQ(ierr);

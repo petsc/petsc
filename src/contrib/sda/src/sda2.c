@@ -38,10 +38,8 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 @*/
 int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA *sda)
 {
-  int           ierr,ntmp,*idx;
+  int           ierr,ntmp;
   DA            da;
-  PetscScalar   *array;
-  VecScatter    scat1,scat2;
   char          **args;
   int           argc = 0;
 
@@ -57,21 +55,13 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
-  ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscFree(array);CHKERRQ(ierr);
-  ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscFree(array);CHKERRQ(ierr);
+  ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
-  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
-
-  ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0;
+  ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0; 
 
   PetscFunctionReturn(0);
 }
@@ -107,11 +97,9 @@ $           the x and y coordinates, or PETSC_NULL
 int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M,int N,int m,int n,int w,int s,int *lx,int *ly,SDA *sda)
 {
-  int           ierr,ntmp,*idx;
+  int           ierr,ntmp;
   DA            da;
-  PetscScalar   *array;
   Vec           vec;
-  VecScatter    scat1,scat2;
   char          **args;
   int           argc = 0;
 
@@ -127,12 +115,8 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
-  ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscFree(array);CHKERRQ(ierr);
-  ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscFree(array);CHKERRQ(ierr);
+  ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
   /* free global vector never needed by user */
   ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
@@ -140,12 +124,8 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
-  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
-
-  ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0;
+  ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0;
 
   PetscFunctionReturn(0);
 }
@@ -181,11 +161,9 @@ $           the x, y, and z coordinates, or PETSC_NUL
 int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
                 int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,SDA *sda)
 {
-  int           ierr,ntmp,*idx;
+  int           ierr,ntmp;
   DA            da;
-  PetscScalar   *array;
   Vec           vec;
-  VecScatter    scat1,scat2;
   char          **args;
   int           argc = 0;
 
@@ -201,12 +179,8 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
-  ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscFree(array);CHKERRQ(ierr);
-  ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscFree(array);CHKERRQ(ierr);
+  ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
   /* free global vector never needed by user */
   ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
@@ -214,12 +188,8 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
-  ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
-
-  ierr = DAGetGlobalIndices(da,&ntmp,&idx);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0;
+  ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);da->gtol = 0;
 
   PetscFunctionReturn(0);
 }
@@ -237,14 +207,9 @@ int SDADestroy(SDA sda)
   int ierr;
 
   PetscFunctionBegin;
-  /*
-     This doesn't properly distroy these objects, but since 
-    I have already illegally freed parts of the objects, I 
-    cannot call the proper destroy routines.
-    */
-  ierr = PetscFree(sda->gvec);CHKERRQ(ierr);
-  ierr = PetscFree(sda->lvec);CHKERRQ(ierr);
-  ierr = PetscFree(sda->da);CHKERRQ(ierr);
+  ierr = VecDestroy(sda->gvec);CHKERRQ(ierr);
+  ierr = VecDestroy(sda->lvec);CHKERRQ(ierr); 
+  ierr = DADestroy(sda->da);CHKERRQ(ierr);
   ierr = PetscFree(sda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
