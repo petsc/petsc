@@ -9,6 +9,10 @@ set TMP=/scratch/scratchdirs/kaushik/petsc-test
 set MACH=kaushik@seaborg.nersc.gov
 set ARCH=rs6000_64
 set TEST=buildexamples_
+set RSH='ssh -P'
+set RCP='scp -q -B scp -o UsePrivilegedPort=no'
+set CONFIGURE='no'
+
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
