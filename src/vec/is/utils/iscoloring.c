@@ -236,6 +236,9 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   /* compute the total number of colors */
   ncwork = 0;
   for (i=0; i<n; i++) {
+#if defined(PETSC_USE_BOPT_g)
+    if (colors[i] < 0) SETERRQ2(1,"Colors must be 0 or greater, you have given %d at %d",colors[i],i);
+#endif    
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;

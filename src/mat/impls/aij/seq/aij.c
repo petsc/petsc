@@ -2976,8 +2976,27 @@ int MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;  
 
   PetscFunctionBegin;
-  ierr        = ISColoringReference(coloring);CHKERRQ(ierr);
-  a->coloring = coloring;
+  if (coloring->ctype == IS_COLORING_LOCAL) {
+    ierr        = ISColoringReference(coloring);CHKERRQ(ierr);
+    a->coloring = coloring;
+  } else if (coloring->ctype == IS_COLORING_GHOSTED) {
+    int        *colors,i,*larray;
+    ISColoring ocoloring;
+
+    /* set coloring for diagonal portion */
+    ierr = PetscMalloc((A->n+1)*sizeof(int),&larray);CHKERRQ(ierr);
+    for (i=0; i<A->n; i++) {
+      larray[i] = i;
+    }
+    ierr = ISGlobalToLocalMappingApply(A->mapping,IS_GTOLM_MASK,A->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
+    ierr = PetscMalloc((A->n+1)*sizeof(int),&colors);CHKERRQ(ierr);
+    for (i=0; i<A->n; i++) {
+      colors[i] = coloring->colors[larray[i]];
+    }
+    ierr = PetscFree(larray);CHKERRQ(ierr);
+    ierr = ISColoringCreate(PETSC_COMM_SELF,A->n,colors,&ocoloring);CHKERRQ(ierr);
+    a->coloring = ocoloring;
+  }
   PetscFunctionReturn(0);
 }
 
