@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.158 1999/03/11 22:30:18 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.159 1999/03/11 23:21:46 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -240,8 +240,7 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
           MatSetValues_SeqBAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
-        }
-        else if (in[j] < 0) continue;
+        } else if (in[j] < 0) continue;
 #if defined(USE_PETSC_BOPT_g)
         else if (in[j] >= baij->N) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Col too large");}
 #endif
