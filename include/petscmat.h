@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.112 1996/08/22 19:53:21 curfman Exp curfman $ */
+/* $Id: mat.h,v 1.113 1996/08/22 22:25:21 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -67,6 +67,11 @@ extern int MatCopy(Mat,Mat);
 extern int MatView(Mat,Viewer);
 extern int MatLoad(Viewer,MatType,Mat*);
 
+extern int MatGetRowIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
+extern int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
+extern int MatGetColumnIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
+extern int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
+
 /* 
    Context of matrix information, used with MatGetInfo()
    Note: If any entries are added to this context, be sure
@@ -126,13 +131,18 @@ typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
               ORDER_APPLICATION_1,ORDER_APPLICATION_2} MatReordering;
 extern int MatGetReordering(Mat,MatReordering,IS*,IS*);
 extern int MatGetReorderingTypeFromOptions(char *,MatReordering*);
-extern int MatReorderingRegister(MatReordering *,char*,PetscTruth,int,
-                                 int (*)(int*,int*,int*,int*,int*));
+extern int MatReorderingRegister(MatReordering *,char*,int (*)(Mat,MatReordering,IS*,IS*));
 extern int MatReorderingRegisterAll();
 extern int MatReorderingRegisterDestroy();
 extern int MatReorderingGetName(MatReordering,char **);
-extern PetscTruth MatReorderingRequiresSymmetric[];
-extern int MatReorderingIndexShift[];
+
+typedef enum {COLORING_NATURAL, COLORING_SL, COLORING_LD, COLORING_IF,
+              COLORING_APPLICATION_1,COLORING_APPLICATION_2} MatColoring;
+extern int MatGetColoring(Mat,MatColoring,int *,IS**);
+extern int MatGetColoringTypeFromOptions(char *,MatColoring*);
+extern int MatColoringRegister(MatColoring *,char*,int (*)(Mat,MatColoring,int*,IS**));
+extern int MatColoringRegisterAll();
+extern int MatColoringRegisterDestroy();
 
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
@@ -163,6 +173,9 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               } MatSORType;
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
+/*
+    If you add entries here you must also add them to FINCLUDE/mat.h
+*/
 typedef enum { MAT_SET_VALUES=0,
                MAT_GET_ROW=1,
                MAT_RESTORE_ROW=2,
@@ -189,35 +202,36 @@ typedef enum { MAT_SET_VALUES=0,
                MAT_SET_OPTION=23,
                MAT_ZERO_ENTRIES=24,
                MAT_ZERO_ROWS=25,
-               MAT_GET_REORDERING=26,
-               MAT_LUFACTOR_SYMBOLIC=27,
-               MAT_LUFACTOR_NUMERIC=28,
-               MAT_CHOLESKY_FACTOR_SYMBOLIC=29,
-               MAT_CHOLESKY_FACTOR_NUMERIC=30,
-               MAT_GET_SIZE=31,
-               MAT_GET_LOCAL_SIZE=32,
-               MAT_GET_OWNERSHIP_RANGE=33,
-               MAT_ILUFACTOR_SYMBOLIC=34,
-               MAT_INCOMPLETECHOLESKYFACTOR_SYMBOLIC=35,
-               MAT_GET_ARRAY=36,
-               MAT_RESTORE_ARRAY=37,
-               MAT_CONVERT=38,
-               MAT_GET_SUBMATRIX=39,
-               MAT_GET_SUBMATRIX_INPLACE=40,
-               MAT_CONVERT_SAME_TYPE=41,
-               MAT_FORWARD_SOLVE=42,
-               MAT_BACKWARD_SOLVE=43,
-               MAT_ILUFACTOR=44,
-               MAT_INCOMPLETECHOLESKYFACTOR=45,
-               MAT_AXPY=46,
-               MAT_GET_SUBMATRICES=47,
-               MAT_INCREASE_OVERLAP=48,
-               MAT_GET_VALUES=49,
-               MAT_COPY=50,
-               MAT_PRINT_HELP=51,
-               MAT_SCALE=52,
-               MAT_SHIFT=53,
-               MAT_DIAGONAL_SHIFT=54,
+               MAT_LUFACTOR_SYMBOLIC=26,
+               MAT_LUFACTOR_NUMERIC=27,
+               MAT_CHOLESKY_FACTOR_SYMBOLIC=28,
+               MAT_CHOLESKY_FACTOR_NUMERIC=29,
+               MAT_GET_SIZE=30,
+               MAT_GET_LOCAL_SIZE=31,
+               MAT_GET_OWNERSHIP_RANGE=32,
+               MAT_ILUFACTOR_SYMBOLIC=33,
+               MAT_INCOMPLETECHOLESKYFACTOR_SYMBOLIC=34,
+               MAT_GET_ARRAY=35,
+               MAT_RESTORE_ARRAY=36,
+               MAT_CONVERT=37,
+               MAT_GET_SUBMATRIX=38,
+               MAT_GET_SUBMATRIX_INPLACE=39,
+               MAT_CONVERT_SAME_TYPE=40,
+               MAT_FORWARD_SOLVE=41,
+               MAT_BACKWARD_SOLVE=42,
+               MAT_ILUFACTOR=43,
+               MAT_INCOMPLETECHOLESKYFACTOR=44,
+               MAT_AXPY=45,
+               MAT_GET_SUBMATRICES=46,
+               MAT_INCREASE_OVERLAP=47,
+               MAT_GET_VALUES=48,
+               MAT_COPY=49,
+               MAT_PRINT_HELP=50,
+               MAT_SCALE=51,
+               MAT_SHIFT=52,
+               MAT_DIAGONAL_SHIFT=53,
+               MAT_ILUDT_FACTOR=54,
+               MAT_GET_BLOCK_SIZE=55,
                MAT_DESTROY=250,
                MAT_VIEW=251
              } MatOperation;

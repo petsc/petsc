@@ -10,7 +10,8 @@
 
 typedef struct {
   Scalar    emin, emax;           /* eigenvalues */
-  Scalar    *e, *d, *ee, *dd;     /* work space for Lanczos algorithm */
+  Scalar    *e, *d;
+  double    *ee, *dd;             /* work space for Lanczos algorithm */
   KSPCGType type;                 /* type of system (symmetric or Hermitian) */
 } KSP_CG;
 

@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.31 1996/07/08 22:24:30 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.32 1996/07/10 01:52:20 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -39,6 +39,9 @@ extern int DrawOpenNull(MPI_Comm,Draw *);
 extern int DrawDestroy(Draw);
 extern int DrawIsNull(Draw,PetscTruth*);
 
+extern int DrawCreatePopUp(Draw,Draw*);
+extern int DrawCheckResizedWindow(Draw);
+
 extern int ViewerDrawGetDraw(Viewer, Draw*);
 
 
@@ -60,6 +63,10 @@ extern int DrawTextGetSize(Draw,double*,double*);
 extern int DrawSetViewPort(Draw,double,double,double,double);
 extern int DrawSetCoordinates(Draw,double,double,double,double);
 extern int DrawGetCoordinates(Draw,double*,double*,double*,double*);
+
+extern int DrawSetTitle(Draw,char *);
+extern int DrawAppendTitle(Draw,char *);
+extern int DrawGetTitle(Draw,char **);
 
 extern int DrawSetPause(Draw,int);
 extern int DrawGetPause(Draw,int*);
@@ -97,6 +104,19 @@ extern int DrawLGGetAxis(DrawLG,DrawAxis *);
 extern int DrawLGGetDraw(DrawLG,Draw *);
 extern int DrawLGIndicateDataPoints(DrawLG);
 extern int DrawLGSetLimits(DrawLG,double,double,double,double); 
+
+typedef struct _DrawSP*   DrawSP;
+#define DRAWSP_COOKIE PETSC_COOKIE+27
+extern int DrawSPCreate(Draw,int,DrawSP *);
+extern int DrawSPDestroy(DrawSP);
+extern int DrawSPAddPoint(DrawSP,double*,double*);
+extern int DrawSPAddPoints(DrawSP,int,double**,double**);
+extern int DrawSPDraw(DrawSP);
+extern int DrawSPReset(DrawSP);
+extern int DrawSPSetDimension(DrawSP,int);
+extern int DrawSPGetAxis(DrawSP,DrawAxis *);
+extern int DrawSPGetDraw(DrawSP,Draw *);
+extern int DrawSPSetLimits(DrawSP,double,double,double,double); 
 
 extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
 

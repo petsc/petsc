@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.33 1996/08/15 12:44:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.34 1996/08/17 14:35:19 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -99,7 +99,7 @@ int ISDestroy(IS is)
   return (*is->destroy)((PetscObject) is);
 }
 
-/*@
+/*@C
    ISInvertPermutation - Creates a new permutation that is the inverse of 
                          a given permutation.
 

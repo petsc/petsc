@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.48 1996/08/15 12:44:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.49 1996/08/15 13:12:24 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -29,6 +29,15 @@ static int ISGetIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General *) in->data;
   *idx = sub->idx; return 0;
+}
+
+static int ISRestoreIndices_General(IS in,int **idx)
+{
+  IS_General *sub = (IS_General *) in->data;
+  if (*idx != sub->idx ) {
+    SETERRQ(1,"ISRestoreIndices_General:Must restore with value from ISGetIndices()");
+  }
+  return 0;
 }
 
 static int ISGetSize_General(IS is,int *size)
@@ -94,7 +103,7 @@ static int ISSorted_General(IS is, PetscTruth *flg)
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetSize_General,
                                ISGetIndices_General,
-                               0,
+                               ISRestoreIndices_General,
                                ISInvertPermutation_General,
                                ISSort_General,
                                ISSorted_General };

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.129 1996/08/28 15:49:28 balay Exp balay $ */
+/* $Id: petsc.h,v 1.130 1996/08/28 16:25:44 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -36,6 +36,10 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define PetscAbsScalar(a) ( ((a)<0.0)   ? -(a) : (a) )
 #define Scalar            double
 #endif
+
+/* PETSC_i is the imaginary number i */
+extern  Scalar            PETSC_i;
+
 
 #define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )

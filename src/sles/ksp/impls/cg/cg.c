@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.48 1996/07/08 22:17:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.49 1996/08/08 14:40:59 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -19,7 +19,8 @@ static char vcid[] = "$Id: cg.c,v 1.48 1996/07/08 22:17:15 bsmith Exp bsmith $";
 #include <stdio.h>
 #include <math.h>
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
-extern int KSPComputeExtremeSingularValues_CG(KSP,Scalar *,Scalar *);
+extern int KSPComputeExtremeSingularValues_CG(KSP,double *,double *);
+extern int KSPComputeEigenvalues_CG(KSP,int,double *,double *);
 
 int KSPSetUp_CG(KSP ksp)
 {
@@ -37,12 +38,14 @@ int KSPSetUp_CG(KSP ksp)
 
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczo */
-    cgP->e = (Scalar *) PetscMalloc(4*(maxit+1)*sizeof(Scalar)); CHKPTRQ(cgP->e);
-    PLogObjectMemory(ksp,4*(maxit+1)*sizeof(Scalar));
+    cgP->e = (Scalar *) PetscMalloc(2*(maxit+1)*sizeof(Scalar));CHKPTRQ(cgP->e);
+    PLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->d                         = cgP->e + maxit + 1; 
-    cgP->ee                        = cgP->d + maxit + 1;
+    cgP->ee = (double *)PetscMalloc(2*(maxit+1)*sizeof(double));CHKPTRQ(cgP->ee);
+    PLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->dd                        = cgP->ee + maxit + 1;
     ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
+    ksp->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
   return 0;
 }
@@ -153,6 +156,7 @@ int KSPDestroy_CG(PetscObject obj)
   /* free space used for Singularvalue calculations */
   if ( ksp->calc_sings ) {
     PetscFree(cg->e);
+    PetscFree(cg->ee);
   }
 
   KSPDefaultFreeWork( ksp );

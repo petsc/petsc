@@ -10,10 +10,10 @@
 #
 FC_LIB         = 
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# Location of BLAS and LAPACK.  These are in the Cray library "sci"
+# you may have to have "-lsci" or "/mpp/lib/libsci.a" before the FC_LIB below
 #
-BLAS_LIB       = /mpp/lib/libsci.a $(FC_LIB)
+BLAS_LIB       = 
 LAPACK_LIB     = 
 #
 # Location of X-windows software (couldn't find on NERSc T3D)
@@ -23,8 +23,12 @@ X11_LIB        =
 #
 # Location of MPI (Message Passing Interface) software
 #
+#  If you are using the MPICH implementation of MPI, you should remove the 
+#  -DUSES_INT_MPI_COMM. This indicates that the MPI_Comm is defined to
+#  be an integer.
+#
 MPI_LIB        = /mpp/lib/libmpi.a
-MPI_INCLUDE    = -I/usr/include/mpp
+MPI_INCLUDE    = -I/usr/include/mpp -DUSES_INT_MPI_COMM
 MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 # the -I/usr/include above is to insure that the C++ compiler with 

@@ -1,22 +1,51 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.26 1996/04/09 23:08:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.27 1996/08/08 14:40:59 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
-   running with CG.
+   running with CG. Note this only works for symmetric real and Hermitian
+   matrices (not complex matrices that are symmetric).
 */
 #include <stdio.h>
 #include <math.h>
 #include "src/ksp/impls/cg/cgctx.h"
-static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
+static int ccgtql1_private(int *, double *, double *, int *);
 
-#if !defined(PETSC_COMPLEX)
 
-int KSPComputeExtremeSingularValues_CG(KSP ksp,Scalar *emax,Scalar *emin)
+int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
 {
   KSP_CG *cgP = (KSP_CG *) ksp->data;
-  double *d, *e, *dd, *ee;
-  int    ii,j,n = ksp->its;
+  Scalar *d, *e;
+  double *ee;
+  int    j,n = ksp->its;
+
+  if (nmax < n) SETERRQ(1,"KSPComputeEigenvalues_CG:Not enough room in r and c for eigenvalues");
+
+  PetscMemzero(c,nmax*sizeof(double));
+  if (n == 0) {
+    *r = 0.0;
+    return 0;
+  }
+  d = cgP->d; e = cgP->e; ee = cgP->ee;
+
+  /* copy tridiagonal matrix to work space */
+  for ( j=0; j<n ; j++) { 
+    r[j]  = PetscReal(d[j]);
+    ee[j] = PetscReal(e[j]);
+  }
+
+  ccgtql1_private(&n,r,ee,&j);
+  if (j != 0) SETERRQ(1,"KSPComputeEigenvalues_CG:Error from tql1.");  
+  PetscSortDouble(n,r);
+  return 0;
+}
+
+int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
+{
+  KSP_CG *cgP = (KSP_CG *) ksp->data;
+  Scalar *d, *e;
+  double *dd, *ee;
+  int    j,n = ksp->its;
 
   if (n == 0) {
     *emax = *emin = 1.0;
@@ -25,12 +54,14 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,Scalar *emax,Scalar *emin)
   d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
 
   /* copy tridiagonal matrix to work space */
-  ii = n;
-  for ( j=0; j<ii ; j++) { dd[j] = d[j]; ee[j] = e[j]; }
+  for ( j=0; j<n ; j++) { 
+    dd[j] = PetscReal(d[j]);
+    ee[j] = PetscReal(e[j]);
+  }
 
-  ccgtql1_private(&ii,dd,ee,&j);
+  ccgtql1_private(&n,dd,ee,&j);
   if (j != 0) SETERRQ(1,"KSPComputeExtremeSingularValues_CG:Error from tql1.");  
-  *emin = dd[0]; *emax = dd[ii-1];
+  *emin = dd[0]; *emax = dd[n-1];
   return 0;
 }
 
@@ -45,7 +76,7 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,Scalar *emax,Scalar *emin)
 static double c_b10 = 1.;
 static double cgpthy_private(double*,double*);
 
-static int ccgtql1_private(int *n, Scalar *d, Scalar *e, int *ierr)
+static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
 {
     /* System generated locals */
     int    i__1, i__2;
@@ -282,12 +313,4 @@ L20:
     return ret_val;
 } /* cgpthy_ */
 
-#else
 
-int KSPComputeExtremeSingularValues_CG(KSP ksp,Scalar *emax,Scalar *emin)
-{
-  fprintf(stderr,"KSPComputeExtremeSingularValues_CG:No code for complex case\n");
-  return 0;
-}
-
-#endif

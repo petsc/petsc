@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.192 1996/08/29 17:32:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.193 1996/08/29 17:36:20 curfman Exp bsmith $";
 #endif
 
 /*
@@ -13,92 +13,6 @@ static char vcid[] = "$Id: matrix.c,v 1.192 1996/08/29 17:32:19 bsmith Exp curfm
 #include "pinclude/pviewer.h"
 #include "draw.h"
        
-/*@C
-   MatGetReordering - Gets a reordering for a matrix to reduce fill or to
-   improve numerical stability of LU factorization.
-
-   Input Parameters:
-.  mat - the matrix
-.  type - type of reordering, one of the following:
-$      ORDER_NATURAL - Natural
-$      ORDER_ND - Nested Dissection
-$      ORDER_1WD - One-way Dissection
-$      ORDER_RCM - Reverse Cuthill-McGee
-$      ORDER_QMD - Quotient Minimum Degree
-
-   Output Parameters:
-.  rperm - row permutation indices
-.  cperm - column permutation indices
-
-   Options Database Keys:
-   To specify the ordering through the options database, use one of
-   the following 
-$    -mat_order natural, -mat_order nd, -mat_order 1wd, 
-$    -mat_order rcm, -mat_order qmd
-
-   The user can define additional orderings; see MatReorderingRegister().
-
-.keywords: matrix, set, ordering, factorization, direct, ILU, LU,
-           fill, reordering, natural, Nested Dissection,
-           One-way Dissection, Cholesky, Reverse Cuthill-McGee, 
-           Quotient Minimum Degree
-
-.seealso:  MatGetReorderingTypeFromOptions(), MatReorderingRegister()
-@*/
-int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
-{
-  int         ierr;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,"MatGetReordering:Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,"MatGetReordering:Not for factored matrix"); 
-
-  if (!mat->ops.getreordering) {*rperm = 0; *cperm = 0; return 0;}
-  PLogEventBegin(MAT_GetReordering,mat,0,0,0);
-  ierr = MatGetReorderingTypeFromOptions(0,&type); CHKERRQ(ierr);
-  ierr = (*mat->ops.getreordering)(mat,type,rperm,cperm); CHKERRQ(ierr);
-  PLogEventEnd(MAT_GetReordering,mat,0,0,0);
-  return 0;
-}
-
-/*@C
-   MatGetColoring - Gets a coloring for a matrix.
-
-   Input Parameters:
-.  mat - the matrix
-.  type - type of coloring, one of the following:
-$      COLORING_NATURAL - 1 color per row
-$      COLORING_SL
-$      COLORING_LD
-$      COLORING_IF
-
-   Output Parameters:
-.  nc - number of colors
-.  is - index sets for each color
-
-   Options Database Keys:
-   To specify the coloring through the options database, use one of
-   the following 
-$    -mat_color natural, -mat_color sl, -mat_color ld
-$    -mat_color if
-
-.keywords: matrix, get, coloring
-
-.seealso: MatGetReordering()
-@*/
-int MatGetColoring(Mat mat,MatColoring type,int *nc,IS **is)
-{
-  int         ierr;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,"MatGetColoring:Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,"MatGetColoring:Not for factored matrix"); 
-
-  if (!mat->ops.getcoloring) {*is = 0; return 0;}
-  PLogEventBegin(MAT_GetColoring,mat,0,0,0);
-  ierr = MatGetColoringTypeFromOptions(0,&type); CHKERRQ(ierr);
-  ierr = (*mat->ops.getcoloring)(mat,type,nc,is); CHKERRQ(ierr);
-  PLogEventEnd(MAT_GetColoring,mat,0,0,0);
-  return 0;
-}
 
 /*@C
    MatGetRow - Gets a row of a matrix.  You MUST call MatRestoreRow()
@@ -1937,3 +1851,132 @@ int MatGetBlockSize(Mat mat,int *bs)
   if (!mat->ops.getblocksize) SETERRQ(PETSC_ERR_SUP,"MatGetBlockSize");
   return (*mat->ops.getblocksize)(mat,bs);
 }
+
+/*@C
+      MatGetRowIJ - Returns the compress row storage i and j indices for sequential matrices.
+                 EXPERTS ONLY.
+
+  Input Parameters:
+.   mat - the matrix
+.   shift - 1 or zero indicating we want the indices starting at 0 or 1
+.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
+                symmetrized
+
+  Output Parameters:
+.   n - number of rows and columns in the (possibly compressed) matrix
+.   ia - the row indices
+.   ja - the column indices
+.   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+@*/
+int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
+{
+  int ierr;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (ia) PetscValidIntPointer(ia);
+  if (ja) PetscValidIntPointer(ja);
+  PetscValidIntPointer(done);
+
+  if (!mat->ops.getrowij) *done = PETSC_FALSE;
+  else {
+    *done = PETSC_TRUE;
+    ierr  = (*mat->ops.getrowij)(mat,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  }
+  return 0;
+}
+
+/*@C
+      MatGetColumnIJ - Returns the compress Column storage i and j indices for sequential matrices.
+                 EXPERTS ONLY.
+
+  Input Parameters:
+.   mat - the matrix
+.   shift - 1 or zero indicating we want the indices starting at 0 or 1
+.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
+                symmetrized
+
+  Output Parameters:
+.   n - number of Columns and columns in the (possibly compressed) matrix
+.   ia - the Column indices
+.   ja - the column indices
+.   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+@*/
+int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
+{
+  int ierr;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (ia) PetscValidIntPointer(ia);
+  if (ja) PetscValidIntPointer(ja);
+  PetscValidIntPointer(done);
+
+  if (!mat->ops.getcolumnij) *done = PETSC_FALSE;
+  else {
+    *done = PETSC_TRUE;
+    ierr  = (*mat->ops.getcolumnij)(mat,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  }
+  return 0;
+}
+
+/*@C
+      MatRestoreRowIJ - Call after you are completed with the ia,ja indices obtained with
+                     MatGetRowIJ(). EXPERTS ONLY.
+
+  Input Parameters:
+.   mat - the matrix
+.   shift - 1 or zero indicating we want the indices starting at 0 or 1
+.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
+                symmetrized
+
+  Output Parameters:
+.   n - size of (possibly compressed) matrix
+.   ia - the row indices
+.   ja - the column indices
+.   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+@*/
+int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
+{
+  int ierr;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (ia) PetscValidIntPointer(ia);
+  if (ja) PetscValidIntPointer(ja);
+  PetscValidIntPointer(done);
+
+  if (!mat->ops.restorerowij) *done = PETSC_FALSE;
+  else {
+    *done = PETSC_TRUE;
+    ierr  = (*mat->ops.restorerowij)(mat,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  }
+  return 0;
+}
+
+/*@C
+      MatRestoreColumnIJ - Call after you are completed with the ia,ja indices obtained with
+                     MatGetColumnIJ(). EXPERTS ONLY.
+
+  Input Parameters:
+.   mat - the matrix
+.   shift - 1 or zero indicating we want the indices starting at 0 or 1
+.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
+                symmetrized
+
+  Output Parameters:
+.   n - size of (possibly compressed) matrix
+.   ia - the Column indices
+.   ja - the column indices
+.   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
+@*/
+int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
+{
+  int ierr;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (ia) PetscValidIntPointer(ia);
+  if (ja) PetscValidIntPointer(ja);
+  PetscValidIntPointer(done);
+
+  if (!mat->ops.restorecolumnij) *done = PETSC_FALSE;
+  else {
+    *done = PETSC_TRUE;
+    ierr  = (*mat->ops.restorecolumnij)(mat,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
+  }
+  return 0;
+}
+

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.42 1996/04/07 16:54:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.43 1996/08/04 23:11:37 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -357,7 +357,7 @@ int PetscDoubleView(int N,double* idx,Viewer viewer)
   PetscValidScalarPointer(idx);
 
   for ( i=0; i<n; i++ ) {
-    PetscPrintf(MPI_COMM_SELF,"%d:",5*i);
+    /* PetscPrintf(MPI_COMM_SELF,"%d:",5*i); */
     for ( j=0; j<5; j++ ) {
        PetscPrintf(MPI_COMM_SELF," %6.4e",idx[i*5+j]);
     }

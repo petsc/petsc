@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.61 1996/08/05 17:18:21 bsmith Exp curfman $ */
+/* $Id: matimpl.h,v 1.62 1996/08/22 20:07:54 curfman Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -9,7 +9,9 @@
   shared by all matrix types.
 */
 
-/* matrix operations */
+/*
+    If you add entries here also add them to include/mat.h
+*/
 struct _MatOps {
   int       (*setvalues)(Mat,int,int *,int,int *,Scalar *,InsertMode),
             (*getrow)(Mat,int,int *,int **,Scalar **),
@@ -37,7 +39,6 @@ struct _MatOps {
             (*setoption)(Mat,MatOption),
             (*zeroentries)(Mat),
             (*zerorows)(Mat,IS,Scalar *),
-            (*getreordering)(Mat,MatReordering,IS *,IS *),
             (*lufactorsymbolic)(Mat,IS,IS,double,Mat *),
             (*lufactornumeric)(Mat,Mat *),
             (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
@@ -65,7 +66,11 @@ struct _MatOps {
             (*shift)(Scalar *,Mat),
             (*diagonalshift)(Vec,Mat),
             (*iludtfactor)(Mat,double,int,IS,IS,Mat *),
-            (*getblocksize)(Mat,int *);
+            (*getblocksize)(Mat,int *),
+            (*getrowij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
+            (*restorerowij)(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *),
+            (*getcolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
+            (*restorecolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
 };
 
 #define FACTOR_LU       1
@@ -108,9 +113,10 @@ extern int StashDestroy_Private(Stash*);
 extern int StashInfo_Private(Stash*);
 
 /*
-  Reorderings for sequential IJ format. By default uses SparsePak routines.
+  Reorderings for sequential IJ format. By default uses SparsePak and Minpack routines.
 */
 extern int MatGetReordering_IJ(int,int*,int*,MatReordering,IS *,IS*);
+extern int MatGetColoring_IJ(int,int*,int*,MatReordering,int*,IS **);
 
 
 extern int MatConvert_Basic(Mat,MatType,Mat*);

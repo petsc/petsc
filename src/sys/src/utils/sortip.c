@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortip.c,v 1.11 1996/03/19 21:24:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortip.c,v 1.12 1996/04/20 04:19:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -68,5 +68,63 @@ int PetscSortIntWithPermutation(int n, int *i, int *idx )
   }
   else 
     PetsciIqsortPerm(i,idx,n-1);
+  return 0;
+}
+
+/* ---------------------------------------------------------------------- */
+
+static int PetsciDqsortPerm(double *v,int *vdx,int right)
+{
+  double       vl;
+  register int tmp,i, last;
+
+  if (right <= 1) {
+    if (right == 1) {
+      if (v[vdx[0]] > v[vdx[1]]) SWAP(vdx[0],vdx[1],tmp);
+    }
+    return 0;
+  }
+  SWAP(vdx[0],vdx[right/2],tmp);
+  vl   = v[vdx[0]];
+  last = 0;
+  for ( i=1; i<=right; i++ ) {
+    if (v[vdx[i]] < vl ) {last++; SWAP(vdx[last],vdx[i],tmp);}
+  }
+  SWAP(vdx[0],vdx[last],tmp);
+  PetsciDqsortPerm(v,vdx,last-1);
+  PetsciDqsortPerm(v,vdx+last+1,right-(last+1));
+  return 0;
+}
+
+/*@
+   PetscSortDoubleWithPermutation - Compute the permutation of values that gives 
+          a sorted sequence.
+
+   Input Parameters:
+.  n  - number of values to sort
+.  i  - values to sort
+.  idx - permutation array.  Must be initialized to 0:n-1 on input.
+
+   Notes: 
+   i is unchanged on output.
+ @*/
+int PetscSortDoubleWithPermutation(int n, double *i, int *idx )
+{
+  register int j, k,tmp;
+  double       ik;
+
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      ik = i[idx[k]];
+      for (j=k+1; j<n; j++) {
+	if (ik > i[idx[j]]) {
+	  SWAP(idx[k],idx[j],tmp);
+	  ik = i[idx[k]];
+	}
+      }
+    }
+  }
+  else 
+    PetsciDqsortPerm(i,idx,n-1);
   return 0;
 }

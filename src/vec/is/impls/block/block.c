@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.6 1996/08/15 13:12:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.7 1996/08/17 14:35:25 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -54,6 +54,10 @@ static int ISRestoreIndices_Block(IS in,int **idx)
 
   if (sub->bs != 1) {
     PetscFree(*idx);
+  } else {
+    if (*idx !=  sub->idx) {
+      SETERRQ(1,"ISRestoreIndices_Block:Must restore with value from ISGetIndices()");
+    }
   }
   return 0;
 }

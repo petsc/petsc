@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.54 1996/08/20 22:21:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.55 1996/08/27 14:33:20 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -470,9 +470,10 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 #include "draw.h"
 int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* ctx)
 {
-  int rank;
+  int rank,flag;
   MPI_Comm_rank(comm,&rank);
-  if (!rank) {
+  OptionsHasName(PETSC_NULL,"-nox",&flag);
+  if (!flag && !rank) {
     fprintf(stderr,"PETSc installed without X windows on this machine\n");
     fprintf(stderr,"proceeding without graphics\n");
   }

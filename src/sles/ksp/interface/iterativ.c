@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.50 1996/06/30 17:10:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.51 1996/08/08 14:40:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -48,8 +48,7 @@ $     -ksp_singmonitor
 @*/
 int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
-  Scalar emin,emax;
-  double c;
+  double emin,emax,c;
   int    ierr;
 
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -58,14 +57,8 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   }
   else {
     ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin); CHKERRQ(ierr);
-#if defined(PETSC_COMPLEX)
-    c = real(emax)/real(emin);
-    PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g \n",n,rnorm,real(emax),
-                                                                 real(emin),c);
-#else
     c = emax/emin;
-    PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g \n",n,rnorm,emax,emin,c);
-#endif
+    PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);
   }
   return 0;
 }

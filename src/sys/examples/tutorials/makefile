@@ -1,5 +1,5 @@
 PETSC_DIR = ../../../..
-ALL: ex1
+ALL:
 
 CFLAGS	        =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	        = 
@@ -9,20 +9,18 @@ SOURCEH	        =
 OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsys
-LOCDIR          = src/sys/examples/tests
-TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
-		  runex3 ex3.rm clean
-TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
-TESTEXAMPLES_9  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
-TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_2 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
-		  ex3.rm clean
-BUILDEXAMPLES_3 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
-BUILDEXAMPLES_9 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
+LOCDIR          = src/sys/examples/tutorials
+TESTEXAMPLES_2  = 
+TESTEXAMPLES_3  = 
+TESTEXAMPLES_9  = 
+TESTEXAMPLES_4  = 
+BUILDEXAMPLES_2 = 
+BUILDEXAMPLES_3 = 
+BUILDEXAMPLES_9 = 
+BUILDEXAMPLES_4 = 
 
-EXAMPLESC       = ex1.c ex2.c ex3.c
-EXAMPLESF       = ex5.F ex6.F
+EXAMPLESC       = 
+EXAMPLESF       = 
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\

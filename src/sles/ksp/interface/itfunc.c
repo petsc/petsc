@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.64 1996/08/08 14:40:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.65 1996/08/20 16:03:08 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: itfunc.c,v 1.64 1996/08/08 14:40:48 bsmith Exp curfma
 .  emin, emax - extreme singular values
 
    Notes:
-   One must call KSPSetCalculateSingularValues() before calling KSPSetUp() 
+   One must call KSPSetComputeSingularValues() before calling KSPSetUp() 
    (or use the option -ksp_eigen) in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
@@ -29,9 +29,9 @@ static char vcid[] = "$Id: itfunc.c,v 1.64 1996/08/08 14:40:48 bsmith Exp curfma
 
 .keywords: KSP, compute, extreme, singular, values
 
-.seealso: KSPSetCalculateSingularValues(), KSPSingularValueMonitor()
+.seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeEigenvalues()
 @*/
-int KSPComputeExtremeSingularValues(KSP ksp,Scalar *emax,Scalar *emin)
+int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidScalarPointer(emax);
@@ -42,6 +42,47 @@ int KSPComputeExtremeSingularValues(KSP ksp,Scalar *emax,Scalar *emin)
 
   if (ksp->computeextremesingularvalues) {
     return (*ksp->computeextremesingularvalues)(ksp,emax,emin);
+  }
+  return 0;
+}
+
+/*@
+   KSPComputeEigenvalues - Computes the extreme eigenvalue
+          for the preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
+          This does not usually provide accurate estimates; it is only for helping 
+          people understand the convergence of iterative methods, not for eigenanalysis. 
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+.  n - size of arrays r and c
+
+   Output Parameters:
+.  r - real part of computed eigenvalues
+.  c - complex part of computed eigenvalues
+
+   Notes:
+   One must call KSPSetComputeEigenvalues() before calling KSPSetUp() 
+   (or use the option -ksp_eigen) in order for this routine to work correctly.
+
+   Many users may just want to use the monitoring routine
+   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
+   to print the singular values at each iteration of the linear solve.
+
+.keywords: KSP, compute, extreme, singular, values
+
+.seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
+@*/
+int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c)
+{
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidScalarPointer(r);
+  PetscValidScalarPointer(c);
+  if (!ksp->calc_sings) {
+    SETERRQ(4,"KSPComputeEigenvalues:Eigenvalues not requested before KSPSetUp");
+  }
+
+  if (ksp->computeeigenvalues) {
+    return (*ksp->computeeigenvalues)(ksp,n,r,c);
   }
   return 0;
 }
@@ -67,6 +108,8 @@ int KSPSetUp(KSP ksp)
   ksp->setupcalled = 1;
   return (*ksp->setup)(ksp);
 }
+
+
 /*@
    KSPSolve - Solves linear system; call it after calling 
    KSPCreate(), KSPSetup(), and KSPSet*().
@@ -95,14 +138,85 @@ $      divergence or breakdown was detected.
 @*/
 int KSPSolve(KSP ksp, int *its) 
 {
-  int    ierr;
+  int    ierr,flag1,flag2,rank;
   Scalar zero = 0.0;
+
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidIntPointer(its);
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
   if (ksp->guess_zero) { VecSet(&zero,ksp->vec_sol);}
   ierr = (*ksp->solver)(ksp,its); CHKERRQ(ierr);
+
+  MPI_Comm_rank(ksp->comm,&rank);
+
+  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
+  if (flag1 || flag2) {
+    int    n = *its, i;
+    double *r,*c;
+    r = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(r);
+    c = r + n;
+    ierr = KSPComputeEigenvalues(ksp,n,r,c); CHKERRQ(ierr);
+    if (flag1) {
+      PetscPrintf(ksp->comm,"Iteratively computed Eigenvalues\n");
+      for ( i=0; i<n; i++ ) {
+        PetscPrintf(ksp->comm,"%g %g\n",r[i],c[i]);
+      }
+    }
+    if (flag2 && !rank) {
+      Viewer    viewer;
+      Draw      draw;
+      DrawSP    drawsp;
+
+      ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,"Iteratively Computed Eigenvalues",0,0,300,300,&viewer);
+             CHKERRQ(ierr);
+      ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+      ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);
+      for ( i=0; i<n; i++ ) {
+        ierr = DrawSPAddPoint(drawsp,r+i,c+i); CHKERRQ(ierr);
+      }
+      ierr = DrawSPDraw(drawsp); CHKERRQ(ierr);
+      ierr = DrawSPDestroy(drawsp); CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    }
+    PetscFree(r);
+  }
+
+  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2); CHKERRQ(ierr);
+  if (flag1 || flag2) {
+    int    n, i;
+    double *r,*c;
+    ierr = VecGetSize(ksp->vec_sol,&n); CHKERRQ(ierr);
+    r = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(r);
+    c = r + n;
+    ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c); CHKERRQ(ierr);
+    if (flag1) {
+      PetscPrintf(ksp->comm,"Explicitly computed Eigenvalues\n");
+      for ( i=0; i<n; i++ ) {
+        PetscPrintf(ksp->comm,"%g %g\n",r[i],c[i]);
+      }
+    }
+    if (flag2 && !rank) {
+      Viewer    viewer;
+      Draw      draw;
+      DrawSP    drawsp;
+
+      ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer); 
+             CHKERRQ(ierr);
+      ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+      ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);
+      for ( i=0; i<n; i++ ) {
+        ierr = DrawSPAddPoint(drawsp,r+i,c+i); CHKERRQ(ierr);
+      }
+      ierr = DrawSPDraw(drawsp); CHKERRQ(ierr);
+      ierr = DrawSPDestroy(drawsp); CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    }
+    PetscFree(r);
+  }
+  
   return 0;
 }
 
@@ -259,7 +373,7 @@ int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
 }
 
 /*@
-   KSPSetCalculateResidual - Sets a flag to indicate whether the two norm 
+   KSPSetComputeResidual - Sets a flag to indicate whether the two norm 
    of the residual is calculated at each iteration.
 
    Input Parameters:
@@ -271,7 +385,7 @@ int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
 
 .keywords: KSP, set, residual, norm, calculate, flag
 @*/
-int KSPSetCalculateResidual(KSP ksp,PetscTruth flag)
+int KSPSetComputeResidual(KSP ksp,PetscTruth flag)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ksp->calc_res   = flag;
@@ -321,7 +435,7 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 }
 
 /*@
-   KSPSetCalculateSingularValues - Sets a flag so that the extreme singular 
+   KSPSetComputeSingularValues - Sets a flag so that the extreme singular 
    values will be calculated via a Lanczos or Arnoldi process as the linear 
    system is solved.
 
@@ -342,7 +456,7 @@ $  -ksp_singmonitor
 
 .seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
 @*/
-int KSPSetCalculateSingularValues(KSP ksp)
+int KSPSetComputeSingularValues(KSP ksp)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ksp->calc_sings  = 1;

@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.21 1996/04/20 04:22:10 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.22 1996/07/02 18:09:32 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -50,6 +50,7 @@ Cray T3D.  Yet another reason to hate ...
 #define DGETRS   SGETRS
 #define DGEMM    SGEMM
 #define DGESVD   SGESVD
+#define DGEEV    SGEEV
 #define DTRMV    STRMV
 #define DTRSL    STRSL
 #endif
@@ -116,6 +117,9 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) DGESVD(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m),(n))
+#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) DGEEV(_cptofcd((a),1), \
+                                            _cptofcd((a),1),(c),(d),(e),\
+                                        (f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #elif defined(HAVE_FORTRAN_CAPS)
@@ -128,6 +132,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #define LAgesvd_ DGESVD
+#define LAgeev_  DGEEV
 #define BLgemm_  DGEMM
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAormqr_ dormqr
@@ -140,6 +145,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAtrsl_  dtrsl
 #define BLgemm_  dgemm
 #define LAgesvd_ dgesvd
+#define LAgeev_  dgeev
 #else
 #define LAormqr_ dormqr_
 #define LAtrtrs_ dtrtrs_
@@ -151,6 +157,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAtrsl_  dtrsl_
 #define BLgemm_  dgemm_
 #define LAgesvd_ dgesvd_
+#define LAgeev_  dgeev_
 #endif
 
 #else
@@ -223,6 +230,12 @@ Cray T3D.  Yet another reason to hate ...
 #define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) ZGEMM(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m))
+#define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,p) ZGESVD(_cptofcd((a),1), \
+                                            _cptofcd((a),1),(c),(d),(e),\
+                                        (f),(g),(h),(i),(j),(k),(l),(m),(n),(p))
+#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m) ZGEEV(_cptofcd((a),1), \
+                                            _cptofcd((a),1),(c),(d),(e),\
+                                        (f),(g),(h),(i),(j),(k),(l),(m))
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
 #elif defined(HAVE_FORTRAN_CAPS)
@@ -236,6 +249,8 @@ Cray T3D.  Yet another reason to hate ...
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
 #define BLgemm_  ZGEMM
+#define LAgesvd_ ZGESVD
+#define LAgeev_  ZGEEV
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAtrtrs_ ztrtrs
 #define LApotrf_ zpotrf
@@ -245,6 +260,8 @@ Cray T3D.  Yet another reason to hate ...
 #define LAtrmv_  ztrmv
 #define LAtrsl_  ztrsl
 #define BLgemm_  zgemm
+#define LAgesvd_ zgesvd
+#define LAgeev_  zgeev
 #else
 #define LAtrtrs_ ztrtrs_
 #define LApotrf_ zpotrf_
@@ -254,6 +271,8 @@ Cray T3D.  Yet another reason to hate ...
 #define LAtrmv_  ztrmv_
 #define LAtrsl_  ztrsl_
 #define BLgemm_  zgemm_
+#define LAgesvd_ zgesvd_
+#define LAgeev_  zgeev_
 #endif
 
 #endif
@@ -286,6 +305,10 @@ extern void   ZPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   ZGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 extern void   ZGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
+extern void   ZGESVD(_fcd,_fcd,int *,int*, Scalar *,int*,double*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
+extern void   ZGEEV(_fcd,_fcd,int *, Scalar *,int*,Scalar*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
 #else
 extern void   DPOTRF(_fcd,int*,Scalar*,int*,int*);
 extern void   DGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
@@ -295,6 +318,8 @@ extern void   DGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 extern void   DGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
 extern void   DGESVD(_fcd,_fcd,int *,int*, Scalar *,int*,Scalar*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,int*);
+extern void   DGEEV(_fcd,_fcd,int *,Scalar *,int*,Scalar*,Scalar*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 #endif
 
@@ -310,8 +335,17 @@ extern void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 extern void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
-extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,Scalar*,Scalar*,
+#if !defined(PETSC_COMPLEX)
+extern void   LAgeev_(char *,char *,int *, Scalar *,int*,double*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
+extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,int*);
+#else
+extern void   LAgeev_(char *,char *,int *, Scalar *,int*,Scalar*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
+extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
+#endif
 #endif
 
 #if defined(__cplusplus)

@@ -1,8 +1,9 @@
 C
-C static char vcid[] = "$Id: ex1f.c,v 1.1 1996/08/15 17:43:51 bsmith Exp bsmith $"
+C static char vcid[] = "$Id: ex1f.F,v 1.2 1996/08/17 14:35:28 bsmith Exp bsmith $"
 C
 C        Tests IS general routines
 C
+      implicit none
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
 
@@ -11,7 +12,7 @@ C
        IS         is,newis
        PetscTruth flag
 
-       call PetscInitialize(PETSC_NULL_CHAR,ierr)
+       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
             CHKERRA(ierr)
        call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
        call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
@@ -45,7 +46,7 @@ C     Create large IS and test ISGetIndices(,ierr)
            stop
         endif
  20   continue
-      call ISRestoreIndices(is,ii,is,ierr) 
+      call ISRestoreIndices(is,ii,iis,ierr) 
             CHKERRA(ierr)
 
 C     Check identity and permutation 

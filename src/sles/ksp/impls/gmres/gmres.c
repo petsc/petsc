@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.67 1996/08/08 14:41:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.68 1996/08/16 21:59:13 curfman Exp bsmith $";
 #endif
 
 /*
@@ -90,8 +90,9 @@ static int    KSPSetUp_GMRES(KSP ksp )
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
-    size = (max_k + 2)*(max_k + 8)*sizeof(Scalar);
+    size = (max_k + 3)*(max_k + 9)*sizeof(Scalar);
     gmres->Rsvd = (Scalar *) PetscMalloc(size);CHKPTRQ(gmres->Rsvd);
+    gmres->Dsvd = (double *) PetscMalloc(5*(max_k+2)*sizeof(double));CHKPTRQ(gmres->Dsvd);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
@@ -345,6 +346,7 @@ static int KSPDestroy_GMRES(PetscObject obj)
   if (gmres->nrs) PetscFree( gmres->nrs );
   if (gmres->sol_temp) VecDestroy(gmres->sol_temp);
   if (gmres->Rsvd) PetscFree(gmres->Rsvd);
+  if (gmres->Dsvd) PetscFree(gmres->Dsvd);
   PetscFree( gmres ); 
   return 0;
 }
@@ -609,7 +611,8 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-extern int KSPComputeExtremeSingularValues_GMRES(KSP,Scalar *,Scalar *);
+extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
+extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *);
 
 int KSPCreate_GMRES(KSP ksp)
 {
@@ -629,6 +632,7 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->destroy           = KSPDestroy_GMRES;
   ksp->view              = KSPView_GMRES;
   ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
+  ksp->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   gmres->haptol         = 1.0e-8;
   gmres->epsabs         = 1.0e-8;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.4 1996/04/20 04:21:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.5 1996/07/08 22:22:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem";
@@ -179,7 +179,7 @@ int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  Mat     jac = *J;
+  Mat     jac = *B;
   int     i, j, row, mx, my, col[5], ierr;
   Scalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
   double  hx, hy, hxdhy, hydhx;

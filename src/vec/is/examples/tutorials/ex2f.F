@@ -1,5 +1,5 @@
 
-C      "$Id: ex2f.F,v 1.1 1996/08/14 15:15:49 bsmith Exp bsmith $";
+C      "$Id: ex2f.F,v 1.2 1996/08/17 14:35:33 bsmith Exp bsmith $";
 C
 C    Concepts: Index set, indices, stride, accessing PETSc array from Fortran
 C    Routines: ISCreateStride(), ISDestroy(), ISView()
@@ -12,6 +12,7 @@ C
 C  Always include petsc.h
 C  include is.h so we can work with PETSc IS objects 
 C  include viewer.h so we can use Viewer (e.g. VIEWER_STDOUT_SELF)
+      implicit none
 
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
@@ -23,7 +24,7 @@ C  include viewer.h so we can use Viewer (e.g. VIEWER_STDOUT_SELF)
 
 #define indices(ib)  index(iss + (ib))
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       n     = 10
       first = 3
       step  = 2

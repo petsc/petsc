@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.17 1996/07/02 18:07:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.18 1996/08/08 14:45:12 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -207,19 +207,18 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
 int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
                    int nx,int ny,int nc )
 {
-  int ierr;
+  int ierr,flag;
   if (XiOpenDisplay( w, host )) {
     fprintf(stderr,"Trying to open display: %s\n",host);
     SETERRQ(1,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n" );
   }
-  if (XiSetVisual( w, 1, (Colormap)0, nc )) {
-    return 1;
-  }
-  if (XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 )) {
-    return 1;
-  }
+  ierr = OptionsHasName(PETSC_NULL,"-draw_x_private_colormap",&flag); CHKERRQ(ierr);
+  ierr = XiSetVisual( w, !flag, (Colormap)0, nc ); CHKERRQ(ierr);
+
+  ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 ); CHKERRQ(ierr);
+
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
   XFillRectangle(w->disp,w->win,w->gc.set,0,0,w->w,w->h);
@@ -242,9 +241,8 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
     is set, or you use the [-display name] option and xhost + has been\n\
     run on your displaying machine.\n" );
   }
-  if (XiSetVisual( w, 1, (Colormap)0, 0 )) {
-    SETERRQ(1,"DrawFromDrawable_X: Cannot set visual in display");
-  }
+
+  ierr = XiSetVisual( w, 1, (Colormap)0, 0 ); CHKERRQ(ierr);
 
   w->win = win;
   XGetGeometry( w->disp, w->win, &root, &d, &d, 

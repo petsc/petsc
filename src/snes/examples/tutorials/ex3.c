@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.38 1996/08/30 19:33:13 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.39 1996/08/30 23:01:59 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -224,6 +224,7 @@ int main( int argc, char **argv )
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
+  ierr = ViewerDestroy(monP.viewer);  CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(ctx.xlocal); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);

@@ -1,9 +1,10 @@
 C
-C  "$Id: ex2f.F,v 1.2 1996/08/17 14:35:28 bsmith Exp bsmith $"
+C  "$Id: ex2f.F,v 1.3 1996/08/17 18:30:43 bsmith Exp bsmith $"
 C
 C
 C  Tests IS stride routines
 C
+      implicit none
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
 
@@ -11,7 +12,7 @@ C
       IS         is
       PetscTruth flag
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 C     Test IS of size 0 
 
@@ -46,7 +47,7 @@ C     Test ISGetIndices()
         endif
  10   continue
       call ISRestoreIndices(is,ii,iis,ierr)
-      call ISDestroy(is)
+      call ISDestroy(is,ierr)
 
       call PetscFinalize(ierr)
       stop 

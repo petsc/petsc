@@ -1,106 +1,69 @@
-/* ido.f -- translated by f2c (version of 25 March 1992  12:58:56).
-   You must link the resulting object file with the libraries:
-	-lF77 -lI77 -lm -lc   (in that order)
-*/
+/* ido.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
-#include <f2c.h>
+#include "petsc.h"
+#include "src/mat/impls/color/color.h"
 
-/* Table of constant values */
+static int c_n1 = -1;
 
-static integer c_n1 = -1;
-
-/* Subroutine */ int ido_(m, n, indrow, jpntr, indcol, ipntr, ndeg, list, 
-	maxclq, iwa1, iwa2, iwa3, iwa4)
-integer *m, *n, *indrow, *jpntr, *indcol, *ipntr, *ndeg, *list, *maxclq, *
-	iwa1, *iwa2, *iwa3, *iwa4;
+int MINPACKido(int *m,int * n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,
+               int *list,int *maxclq, int *iwa1, int *iwa2, int *iwa3, int *iwa4)
 {
     /* System generated locals */
-    integer i__1, i__2, i__3, i__4;
+    int i__1, i__2, i__3, i__4;
 
     /* Local variables */
-    static integer jcol, ncomp, ic, ip, jp, ir, maxinc, numinc, numord, 
-	    maxlst, numwgt, numlst;
-    extern /* Subroutine */ int numsrt_();
-
-/*     ********** */
-
-/*     subroutine ido */
+    int jcol = 0, ncomp = 0, ic, ip, jp, ir, maxinc, numinc, numord, maxlst, numwgt, numlst;
 
 /*     Given the sparsity pattern of an m by n matrix A, this */
 /*     subroutine determines an incidence-degree ordering of the */
 /*     columns of A. */
-
 /*     The incidence-degree ordering is defined for the loopless */
 /*     graph G with vertices a(j), j = 1,2,...,n where a(j) is the */
 /*     j-th column of A and with edge (a(i),a(j)) if and only if */
 /*     columns i and j have a non-zero in the same row position. */
-
 /*     The incidence-degree ordering is determined recursively by */
 /*     letting list(k), k = 1,...,n be a column with maximal */
 /*     incidence to the subgraph spanned by the ordered columns. */
 /*     Among all the columns of maximal incidence, ido chooses a */
 /*     column of maximal degree. */
-
 /*     The subroutine statement is */
-
 /*       subroutine ido(m,n,indrow,jpntr,indcol,ipntr,ndeg,list, */
 /*                      maxclq,iwa1,iwa2,iwa3,iwa4) */
-
 /*     where */
-
 /*       m is a positive integer input variable set to the number */
 /*         of rows of A. */
-
 /*       n is a positive integer input variable set to the number */
 /*         of columns of A. */
-
 /*       indrow is an integer input array which contains the row */
 /*         indices for the non-zeroes in the matrix A. */
-
 /*       jpntr is an integer input array of length n + 1 which */
 /*         specifies the locations of the row indices in indrow. */
 /*         The row indices for column j are */
-
 /*               indrow(k), k = jpntr(j),...,jpntr(j+1)-1. */
-
 /*         Note that jpntr(n+1)-1 is then the number of non-zero */
 /*         elements of the matrix A. */
-
 /*       indcol is an integer input array which contains the */
 /*         column indices for the non-zeroes in the matrix A. */
-
 /*       ipntr is an integer input array of length m + 1 which */
 /*         specifies the locations of the column indices in indcol. */
 /*         The column indices for row i are */
-
 /*               indcol(k), k = ipntr(i),...,ipntr(i+1)-1. */
-
 /*         Note that ipntr(m+1)-1 is then the number of non-zero */
 /*         elements of the matrix A. */
-
 /*       ndeg is an integer input array of length n which specifies */
 /*         the degree sequence. The degree of the j-th column */
 /*         of A is ndeg(j). */
-
 /*       list is an integer output array of length n which specifies */
 /*         the incidence-degree ordering of the columns of A. The j-th */
 /*         column in this order is list(j). */
-
 /*       maxclq is an integer output variable set to the size */
 /*         of the largest clique found during the ordering. */
-
 /*       iwa1,iwa2,iwa3, and iwa4 are integer work arrays of length n. */
-
 /*     Subprograms called */
-
 /*       MINPACK-supplied ... numsrt */
-
 /*       FORTRAN-supplied ... max */
-
 /*     Argonne National Laboratory. MINPACK Project. August 1984. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
-
-/*     ********** */
 
 /*     Sort the degree sequence. */
 
@@ -117,28 +80,22 @@ integer *m, *n, *indrow, *jpntr, *indcol, *ipntr, *ndeg, *list, *maxclq, *
 
     /* Function Body */
     i__1 = *n - 1;
-    numsrt_(n, &i__1, &ndeg[1], &c_n1, &iwa4[1], &iwa2[1], &iwa3[1]);
+    MINPACKnumsrt(n, &i__1, &ndeg[1], &c_n1, &iwa4[1], &iwa2[1], &iwa3[1]);
 
 /*     Initialization block. */
-
 /*     Create a doubly-linked list to access the incidences of the */
 /*     columns. The pointers for the linked list are as follows. */
-
 /*     Each un-ordered column ic is in a list (the incidence list) */
 /*     of columns with the same incidence. */
-
 /*     iwa1(numinc) is the first column in the numinc list */
 /*     unless iwa1(numinc) = 0. In this case there are */
 /*     no columns in the numinc list. */
-
 /*     iwa2(ic) is the column before ic in the incidence list */
 /*     unless iwa2(ic) = 0. In this case ic is the first */
 /*     column in this incidence list. */
-
 /*     iwa3(ic) is the column after ic in the incidence list */
 /*     unless iwa3(ic) = 0. In this case ic is the last */
 /*     column in this incidence list. */
-
 /*     If ic is an un-ordered column, then list(ic) is the */
 /*     incidence of ic to the graph induced by the ordered */
 /*     columns. If jcol is an ordered column, then list(jcol) */
@@ -156,7 +113,6 @@ integer *m, *n, *indrow, *jpntr, *indcol, *ipntr, *ndeg, *list, *maxclq, *
 	iwa1[0] = ic;
 	iwa4[jp] = 0;
 	list[jp] = 0;
-/* L10: */
     }
 
 /*     Determine the maximal search length for the list */
@@ -168,7 +124,6 @@ integer *m, *n, *indrow, *jpntr, *indcol, *ipntr, *ndeg, *list, *maxclq, *
 /* Computing 2nd power */
 	i__2 = ipntr[ir + 1] - ipntr[ir];
 	maxlst += i__2 * i__2;
-/* L20: */
     }
     maxlst /= *n;
     *maxclq = 0;
@@ -200,7 +155,6 @@ L50:
 	if (jp <= 0) {
 	    goto L70;
 	}
-/* L60: */
     }
 L70:
     list[jcol] = numord;
@@ -213,7 +167,7 @@ L70:
     }
     ++ncomp;
     if (maxinc + 1 == ncomp) {
-	*maxclq = max(*maxclq,ncomp);
+	*maxclq = PetscMax(*maxclq,ncomp);
     }
 
 /*        Termination test. */
@@ -258,14 +212,13 @@ L70:
 	    if (iwa4[ic] < numord) {
 		iwa4[ic] = numord;
 
-/*                 Update the pointers to the current incidenc
-e lists. */
+/*                 Update the pointers to the current incidence lists. */
 
 		numinc = list[ic];
 		++list[ic];
 /* Computing MAX */
 		i__3 = maxinc, i__4 = list[ic];
-		maxinc = max(i__3,i__4);
+		maxinc = PetscMax(i__3,i__4);
 
 /*                 Delete column ic from the numinc list. */
 
@@ -287,9 +240,7 @@ e lists. */
 		}
 		iwa1[numinc + 1] = ic;
 	    }
-/* L80: */
 	}
-/* L90: */
     }
 
 /*        End of iteration loop. */
@@ -302,16 +253,11 @@ L100:
     i__1 = *n;
     for (jcol = 1; jcol <= i__1; ++jcol) {
 	iwa2[list[jcol]] = jcol;
-/* L110: */
     }
     i__1 = *n;
     for (jp = 1; jp <= i__1; ++jp) {
 	list[jp] = iwa2[jp];
-/* L120: */
     }
     return 0;
-
-/*     Last card of subroutine ido. */
-
-} /* ido_ */
+}
 

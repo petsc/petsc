@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.28 1996/07/07 17:34:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.29 1996/08/08 14:41:03 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -141,23 +141,18 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
   return 0;
 }
 
-#if !defined(PETSC_COMPLEX)
-
 #include "pinclude/plapack.h"
-/*
-    The Hessenberg matrix is factored at H = QR by the 
-  GMRESUpdateHessenberg() routine. This routine computes the 
-  singular values of R as estimates for the singular values of 
-  the preconditioned operator.
-*/
-int KSPComputeExtremeSingularValues_GMRES(KSP ksp,Scalar *emax,Scalar *emin)
+
+/*  ---------------------------------------------------------------------------*/
+
+int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
   int       n = gmres->it + 1, N = gmres->max_k + 2, ierr, lwork = 5*N;
   int       idummy = N, i;
   Scalar    *R = gmres->Rsvd;
-  Scalar    *realpart = R + N*N, *work = realpart + N;
-  Scalar    sdummy;
+  double    *realpart = gmres->Dsvd;
+  Scalar    *work = R + N*N, sdummy;
 
   if (n == 0) {
     *emax = *emin = 1.0;
@@ -176,8 +171,11 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,Scalar *emax,Scalar *emin)
   SETERRQ(1,"KSPComputeExtremeSingularValues_GMRES:DGESVD not found on Cray T3D\n\
              Therefore not able to provide singular value estimates.");
 #else
-  LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,
-           &idummy,work,&lwork,&ierr);
+#if !defined(PETSC_COMPLEX)
+  LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
+#else
+  LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&ierr);
+#endif
   if (ierr) SETERRQ(1,"KSPComputeExtremeSingularValues_GMRES:Error in SVD");
 #endif
 
@@ -187,13 +185,74 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,Scalar *emax,Scalar *emin)
   return 0;
 }
 
-#else
-
-int KSPComputeExtremeSingularValues_GMRES(KSP ksp,Scalar *emax,Scalar *emin)
+#if !defined(PETSC_COMPLEX)
+int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 {
-  SETERRQ(1,"KSPComputeExtremeSingularValues_GMRES:No code for complex");
-}
+  KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
+  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
+  int       idummy = N, i,*perm;
+  Scalar    *R = gmres->Rsvd;
+  Scalar    *work = R + N*N;
+  Scalar    *realpart = gmres->Dsvd, *imagpart = realpart + N ;
+  Scalar    sdummy;
 
+  if (nmax < n) SETERRQ(1,"KSPComputeEigenvalues_CG:Not enough room in r and c for eigenvalues");
+
+  if (n == 0) {
+    return 0;
+  }
+  /* copy R matrix to work space */
+  PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
+
+  /* compute eigenvalues */
+  LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
+  if (ierr) SETERRQ(1,"KSPComputeEigenvalues_GMRES:Error in Lapack routine");
+  perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+  for ( i=0; i<n; i++ ) { perm[i] = i;}
+  ierr = PetscSortDoubleWithPermutation(n,realpart,perm); CHKERRQ(ierr);
+  for ( i=0; i<n; i++ ) {
+    r[i] = realpart[perm[i]];
+    c[i] = imagpart[perm[i]];
+  }
+  PetscFree(perm);
+  
+  return 0;
+}
+#else
+int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
+{
+  KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
+  int       n = gmres->it + 1, N = gmres->max_k + 1, ierr, lwork = 5*N;
+  int       idummy = N, i,*perm;
+  Scalar    *R = gmres->Rsvd;
+  Scalar    *work = R + N*N;
+  Scalar    *eigs = work + 5*N;
+  Scalar    sdummy;
+
+  if (nmax < n) SETERRQ(1,"KSPComputeEigenvalues_CG:Not enough room in r and c for eigenvalues");
+
+  if (n == 0) {
+    return 0;
+  }
+  /* copy R matrix to work space */
+  PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));
+
+  /* compute eigenvalues */
+  LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
+  if (ierr) SETERRQ(1,"KSPComputeEigenvalues_GMRES:Error in Lapack routine");
+  perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+  for ( i=0; i<n; i++ ) { perm[i] = i;}
+  for ( i=0; i<n; i++ ) { r[i]    = real(eigs[i]);}
+  ierr = PetscSortDoubleWithPermutation(n,r,perm); CHKERRQ(ierr);
+  for ( i=0; i<n; i++ ) {
+    r[i] = PetscReal(eigs[perm[i]]);
+    c[i] = imag(eigs[perm[i]]);
+  }
+  PetscFree(perm);
+  
+  return 0;
+}
 #endif
+
 
 

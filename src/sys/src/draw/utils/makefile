@@ -3,10 +3,10 @@ PETSC_DIR = ../../..
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
-SOURCEC  = axis.c lg.c
+SOURCEC  = axis.c lg.c dscatter.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = axis.o lg.o
+OBJSC    = axis.o lg.o dscatter.o
 OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = x

@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.22 1996/04/05 05:57:46 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.23 1996/04/09 23:07:51 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -48,7 +48,7 @@ struct _KSP {
 				      calculates the residual in a 
 				      user-provided area.  */
   int (*adjust_work_vectors)(KSP,Vec*,int); /* should pre-allocate the vectors*/
-  PC  B;    /* fit this framework just fine */
+  PC  B;
 
   /*------------ Major routines which act on KSPCtx-----------------*/
   int  (*solver)(KSP,int*);      /* actual solver */
@@ -66,7 +66,8 @@ struct _KSP {
   DrawLG xmonitor;  /* location for stashing default xmonitor context */
 
   int    its;       /* number of iterations so far computed */
-  int    (*computeextremesingularvalues)(KSP,Scalar*,Scalar*);
+  int    (*computeextremesingularvalues)(KSP,double*,double*);
+  int    (*computeeigenvalues)(KSP,int,double*,double*);
 };
 
 #define KSPMonitor(ksp,it,rnorm) \

@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.7 1996/04/09 23:08:13 bsmith Exp bsmith $ */
+/* $Id: gmresp.h,v 1.8 1996/08/08 14:41:03 bsmith Exp bsmith $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -13,7 +13,8 @@ typedef struct {
        the original (unmodified) hessenberg matrix which may be used
        to estimate the Singular Values of the matrix */
     Scalar *hh_origin, *hes_origin, *cc_origin, *ss_origin, *rs_origin;
-    /* Work space for holding R matrix that is passed to LAPACK for SVD */
+    /* Work space for computing eigenvalues/singular values */
+    double *Dsvd;
     Scalar *Rsvd;
       
     /* parameters */

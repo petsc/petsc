@@ -1,5 +1,5 @@
 
-C  "$Id: ex1f.F,v 1.2 1996/08/17 14:35:33 bsmith Exp curfman $";
+C  "$Id: ex1f.F,v 1.3 1996/08/17 14:46:33 curfman Exp bsmith $";
 C
 C
 C    Concepts: Index set, indices
@@ -13,6 +13,7 @@ C
 C  Always include petsc.h
 C  include is.h so we can work with PETSc IS objects 
 C  include viewer.h so we can use Viewer (e.g. VIEWER_STDOUT_SELF)
+      implicit none
 
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
@@ -21,7 +22,7 @@ C  include viewer.h so we can use Viewer (e.g. VIEWER_STDOUT_SELF)
       integer ierr, indices(5),rank,n,ix
       IS      is
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
 
 C  Create an index set with 5 entries. Each processor creates

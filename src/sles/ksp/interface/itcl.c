@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.72 1996/08/08 14:40:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.73 1996/08/14 02:11:07 curfman Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -73,7 +73,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
     if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
-    KSPSetCalculateSingularValues(ksp);
+    KSPSetComputeSingularValues(ksp);
     KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0); mset = 1;
   }
   /*
@@ -146,7 +146,11 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_eigen",&flg); CHKERRQ(ierr);
-  if (flg) { KSPSetCalculateSingularValues(ksp); }
+  if (flg) { KSPSetComputeSingularValues(ksp); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flg);CHKERRQ(ierr);
+  if (flg) { KSPSetComputeSingularValues(ksp); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flg);CHKERRQ(ierr);
+  if (flg) { KSPSetComputeSingularValues(ksp); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
   if (flg) { KSPCGSetType(ksp,KSP_CG_HERMITIAN); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);

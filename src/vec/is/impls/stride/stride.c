@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.46 1996/08/15 13:12:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.47 1996/08/16 13:11:04 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -12,6 +12,29 @@ typedef struct {
   int n,first,step;
 } IS_Stride;
 
+static int ISInvertPermutation_Stride(IS is, IS *perm)
+{
+  IS_Stride *isstride = (IS_Stride *) is->data;
+  int       ierr;
+
+  if (is->isidentity) {
+    ierr = ISCreateStride(MPI_COMM_SELF,isstride->n,0,1,perm); CHKERRQ(ierr);
+    ierr = ISSetPermutation(*perm); CHKERRQ(ierr);
+  } else {
+    int *ii,*indices,i,n = isstride->n;
+    ierr = ISGetIndices(is,&indices); CHKERRQ(ierr);
+    ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
+    for ( i=0; i<n; i++ ) {
+      ii[indices[i]] = i;
+    }
+    ierr = ISRestoreIndices(is,&indices); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,n,ii,perm); CHKERRQ(ierr);
+    PetscFree(ii);
+    ierr = ISSetPermutation(*perm); CHKERRQ(ierr);
+  }
+  return 0;
+}
+    
 /*@
    ISStrideGetInfo - Returns the first index in a stride index set and 
    the stride width.
@@ -146,7 +169,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISGetSize_Stride,
                                ISGetIndices_Stride,
                                ISRestoreIndices_Stride,
-                               0,
+                               ISInvertPermutation_Stride,
                                ISSort_Stride, 
                                ISSorted_Stride };
 

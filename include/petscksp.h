@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.42 1996/07/08 22:24:30 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.43 1996/08/05 04:04:10 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -31,10 +31,11 @@ extern int KSPSetPreconditionerSide(KSP,PCSide);
 extern int KSPGetPreconditionerSide(KSP,PCSide*);
 extern int KSPGetTolerances(KSP,double*,double*,double*,int*);
 extern int KSPSetTolerances(KSP,double,double,double,int);
-extern int KSPSetCalculateResidual(KSP,PetscTruth);
+extern int KSPSetComputeResidual(KSP,PetscTruth);
 extern int KSPSetUsePreconditionedResidual(KSP);
 extern int KSPSetInitialGuessNonzero(KSP);
-extern int KSPSetCalculateSingularValues(KSP);
+#define KSPSetComputeEigenvalues(a) KSPSetComputeSingularValues(a)
+extern int KSPSetComputeSingularValues(KSP);
 extern int KSPSetRhs(KSP,Vec);
 extern int KSPGetRhs(KSP,Vec *);
 extern int KSPSetSolution(KSP,Vec);
@@ -55,7 +56,9 @@ extern int KSPBuildResidual(KSP, Vec, Vec,Vec *);
 
 extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
-extern int KSPComputeExtremeSingularValues(KSP, Scalar*,Scalar*);
+extern int KSPComputeExtremeSingularValues(KSP, double*,double*);
+extern int KSPComputeEigenvalues(KSP,int,double*,double*);
+extern int KSPComputeEigenvaluesExplicitly(KSP,int,double*,double*);
 
 extern int KSPGMRESSetRestart(KSP, int);
 extern int KSPGMRESSetPreAllocateVectors(KSP);
@@ -85,6 +88,8 @@ extern int KSPAppendOptionsPrefix(KSP,char*);
 extern int KSPGetOptionsPrefix(KSP,char**);
 
 extern int KSPView(KSP,Viewer);
+
+extern int KSPComputeExplicitOperator(KSP,Mat *);
 
 typedef enum {KSP_CG_SYMMETRIC=1, KSP_CG_HERMITIAN=2} KSPCGType;
 extern int KSPCGSetType(KSP,KSPCGType);

@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.53 1996/07/08 22:16:36 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.54 1996/07/10 01:48:54 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -233,6 +233,7 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
   double      coors[4],ymin,ymax,xmin,xmax,tmp;
   Draw        draw;
   PetscTruth  isnull;
+  DrawAxis    axis;
 
   ViewerDrawGetDraw(v,&draw);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
@@ -257,16 +258,15 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
   MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);
   MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);
   MPI_Comm_rank(xin->comm,&rank);
+  ierr = DrawAxisCreate(draw,&axis); CHKERRQ(ierr);
+  PLogObjectParent(draw,axis);
   if (!rank) {
-    DrawAxis axis;
     DrawClear(draw); DrawFlush(draw);
-    ierr = DrawAxisCreate(draw,&axis); CHKERRQ(ierr);
-    PLogObjectParent(draw,axis);
     ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERRQ(ierr);
     ierr = DrawAxisDraw(axis); CHKERRQ(ierr);
-    DrawAxisDestroy(axis);
     DrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);
   }
+  DrawAxisDestroy(axis);
   MPI_Bcast(coors,4,MPI_DOUBLE,0,xin->comm);
   if (rank) DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);
   /* draw local part of vector */

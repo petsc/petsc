@@ -302,7 +302,7 @@ runex16:
 	   -b_sub_pc_type bgs -b_sub_pc_bgs_blocks 2  > ex16_1.tmp 2>&1; \
 	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
-	   $(RM) -f ex13_1.tmp
+	   $(RM) -f ex16_1.tmp
 runex17:
 	-@$(MPIRUN) ex17 -n 20 -ksp_smonitor -p 4 -ksp_type cg \
 	   -ksp_cg_symmetric -pc_type jacobi > ex17_1.tmp 2>&1; \

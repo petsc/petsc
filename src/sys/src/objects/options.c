@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.94 1996/08/27 20:31:31 curfman Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.95 1996/09/03 23:02:12 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -49,6 +49,9 @@ static int OptionsDestroy_Private();
 
 #if defined(PETSC_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
+Scalar PETSC_i(0.0,1.0);
+#else
+Scalar PETSC_i = 0.0;
 #endif
 
 /* 

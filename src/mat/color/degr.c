@@ -1,81 +1,54 @@
-/* degr.f -- translated by f2c (version of 25 March 1992  12:58:56).
-   You must link the resulting object file with the libraries:
-	-lF77 -lI77 -lm -lc   (in that order)
-*/
+/* degr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 
-#include <f2c.h>
+#include "petsc.h"
+#include "src/mat/impls/color/color.h"
 
-/* Subroutine */ int degr_(n, indrow, jpntr, indcol, ipntr, ndeg, iwa)
-integer *n, *indrow, *jpntr, *indcol, *ipntr, *ndeg, *iwa;
+int MINPACKdegr(int *n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,int * iwa)
 {
     /* System generated locals */
-    integer i__1, i__2, i__3;
+    int i__1, i__2, i__3;
 
     /* Local variables */
-    static integer jcol, ic, ip, jp, ir;
-
-/*     ********** */
+    int jcol, ic, ip, jp, ir;
 
 /*     subroutine degr */
-
 /*     Given the sparsity pattern of an m by n matrix A, */
 /*     this subroutine determines the degree sequence for */
 /*     the intersection graph of the columns of A. */
-
 /*     In graph-theory terminology, the intersection graph of */
 /*     the columns of A is the loopless graph G with vertices */
 /*     a(j), j = 1,2,...,n where a(j) is the j-th column of A */
 /*     and with edge (a(i),a(j)) if and only if columns i and j */
 /*     have a non-zero in the same row position. */
-
 /*     Note that the value of m is not needed by degr and is */
 /*     therefore not present in the subroutine statement. */
-
 /*     The subroutine statement is */
-
 /*       subroutine degr(n,indrow,jpntr,indcol,ipntr,ndeg,iwa) */
-
 /*     where */
-
 /*       n is a positive integer input variable set to the number */
 /*         of columns of A. */
-
 /*       indrow is an integer input array which contains the row */
 /*         indices for the non-zeroes in the matrix A. */
-
 /*       jpntr is an integer input array of length n + 1 which */
 /*         specifies the locations of the row indices in indrow. */
 /*         The row indices for column j are */
-
 /*               indrow(k), k = jpntr(j),...,jpntr(j+1)-1. */
-
 /*         Note that jpntr(n+1)-1 is then the number of non-zero */
 /*         elements of the matrix A. */
-
 /*       indcol is an integer input array which contains the */
 /*         column indices for the non-zeroes in the matrix A. */
-
 /*       ipntr is an integer input array of length m + 1 which */
 /*         specifies the locations of the column indices in indcol. */
 /*         The column indices for row i are */
-
 /*               indcol(k), k = ipntr(i),...,ipntr(i+1)-1. */
-
 /*         Note that ipntr(m+1)-1 is then the number of non-zero */
 /*         elements of the matrix A. */
-
 /*       ndeg is an integer output array of length n which */
 /*         specifies the degree sequence. The degree of the */
 /*         j-th column of A is ndeg(j). */
-
 /*       iwa is an integer work array of length n. */
-
 /*     Argonne National Laboratory. MINPACK Project. July 1983. */
 /*     Thomas F. Coleman, Burton S. Garbow, Jorge J. More' */
-
-/*     ********** */
-
-/*     Initialization block. */
 
     /* Parameter adjustments */
     --iwa;
@@ -90,7 +63,6 @@ integer *n, *indrow, *jpntr, *indcol, *ipntr, *ndeg, *iwa;
     for (jp = 1; jp <= i__1; ++jp) {
 	ndeg[jp] = 0;
 	iwa[jp] = 0;
-/* L10: */
     }
 
 /*     Compute the degree sequence by determining the contributions */
@@ -115,27 +87,18 @@ integer *n, *indrow, *jpntr, *indcol, *ipntr, *ndeg, *iwa;
 	    for (ip = ipntr[ir]; ip <= i__3; ++ip) {
 		ic = indcol[ip];
 
-/*              Array iwa marks columns which have contributed
- to */
-/*              the degree count of column jcol. Update the de
-gree */
-/*              counts of these columns as well as column jcol
-. */
+/*              Array iwa marks columns which have contributed to */
+/*              the degree count of column jcol. Update the degree */
+/*              counts of these columns as well as column jcol. */
 
 		if (iwa[ic] < jcol) {
 		    iwa[ic] = jcol;
 		    ++ndeg[ic];
 		    ++ndeg[jcol];
 		}
-/* L20: */
 	    }
-/* L30: */
 	}
-/* L40: */
     }
     return 0;
-
-/*     Last card of subroutine degr. */
-
-} /* degr_ */
+}
 

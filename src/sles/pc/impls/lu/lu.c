@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.67 1996/08/08 14:42:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.68 1996/08/22 20:08:09 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -85,7 +85,7 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
     else PetscFPrintf(pc->comm,fd,"  LU: out-of-place factorization\n");
     PetscFPrintf(pc->comm,fd,"      matrix ordering: %s\n",order);
     ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);
-    PetscFPrintf(pc->comm,fd,"      LU nonzeros %d\n",info.nz_used);
+    PetscFPrintf(pc->comm,fd,"      LU nonzeros %g\n",info.nz_used);
   }
   else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," order=%s",order);

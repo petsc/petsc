@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.9 1996/07/25 23:24:22 balay Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.10 1996/08/15 23:32:15 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
 
 #include "sles.h"
-#include <math.h>
+#include <math.h> 
 #include <stdio.h>
 
 typedef enum {TEST_1, TEST_2, TEST_3, HELMHOLTZ_1, HELMHOLTZ_2} TestType;
@@ -22,6 +22,7 @@ int main(int argc,char **args)
   double      norm;
   PetscRandom rctx;
   TestType    type;
+
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
