@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.31 1996/07/08 01:36:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.32 1996/07/31 21:42:19 bsmith Exp balay $";
 #endif
 
 /* 
@@ -22,6 +22,17 @@ extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
 extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 
 extern int MatLoadGetInfo_Private(Viewer);
+static int MatLoadPrintHelp_Private(Mat A)
+{
+  static int called = 0; 
+  MPI_Comm   comm = A->comm;
+  
+  if (called) return 0; else called = 1;
+  PetscPrintf(comm," Options for MatLoad:\n");
+  PetscPrintf(comm,"  -matload_block_size <block_size> :Used for MATBAIJ, MATBDIAG\n");
+  PetscPrintf(comm,"  -matload_bdiag_diags <s1,s2,s3,...> : Used for MATBDIAG\n");
+  return 0;
+}
 
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
@@ -93,12 +104,13 @@ $    Scalar *values of all nonzeros
  @*/  
 int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 {
-  int         ierr,set;
+  int         ierr,set,flg;
   MatType     type;
   ViewerType  vtype;
   MPI_Comm    comm;
-  *newmat = 0;
 
+  
+  *newmat  = 0;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype != BINARY_FILE_VIEWER)
@@ -147,6 +159,8 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
     SETERRQ(1,"MatLoad: cannot load with that matrix type yet");
   }
 
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
+  if (flg) {ierr = MatLoadPrintHelp_Private(*newmat); CHKERRQ(ierr); }
   PLogEventEnd(MAT_Load,viewer,0,0,0);
   return 0;
 }
