@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.23 1998/09/25 03:13:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.24 1998/10/19 22:17:04 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -169,18 +169,16 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
   char     *fpath,*fname;
 
   PetscFunctionBegin;
-  entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
-  entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
-  PetscStrcpy( entry->name, name );
-
-  ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-
-  entry->path    = fpath;
-  entry->rname   = fname;
-  entry->routine = fnc;
-  entry->next    = 0;
 
   if (!*fl) {
+    entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
+    entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
+    PetscStrcpy( entry->name, name );
+    ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+    entry->path    = fpath;
+    entry->rname   = fname;
+    entry->routine = fnc;
+    entry->next    = 0;
     *fl = entry;
 
     /* add this new list to list of all lists */
@@ -196,8 +194,26 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
     /* add entry to the end of the list */
     ne = *fl;
     while (ne->next) {
+      if (!PetscStrcmp(ne->name,name)) { /* found duplicate */
+        ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+        if (ne->path) PetscFree(ne->path);
+        if (ne->rname) PetscFree(ne->rname);
+        ne->path    = fpath;
+        ne->rname   = fname;
+        ne->routine = fnc;
+        PetscFunctionReturn(0);
+      }
       ne = ne->next;
     }
+    /* create new entry and add to end of list */
+    entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
+    entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
+    PetscStrcpy( entry->name, name );
+    ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+    entry->path    = fpath;
+    entry->rname   = fname;
+    entry->routine = fnc;
+    entry->next    = 0;
     ne->next = entry;
   }
 
@@ -366,6 +382,41 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 }
 
 #undef __FUNC__  
+#define __FUNC__ "FListView"
+/*
+   FListView - prints out contents of an FList
+
+   Collective over MPI_Comm
+
+   Input Parameters:
++  flist - the list of functions
+-  viewer - currently ignored
+
+.seealso: FListAdd(), FListPrintTypes()
+*/
+int FListView(FList list,Viewer viewer)
+{
+  int      ierr;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+
+  while (list) {
+    if (list->path) {
+      PetscPrintf(comm," %s %s %s\n",list->path,list->name,list->rname);
+    } else {
+      PetscPrintf(comm," %s %s\n",list->name,list->rname);
+    }
+    list = list->next;
+  }
+  PetscPrintf(comm,"\n");
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
 #define __FUNC__ "FListPrintTypes"
 /*
    FListPrintTypes - Prints the methods available.
@@ -387,9 +438,11 @@ int FListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[]
   char     p[64];
 
   PetscFunctionBegin;
+  if (!fd) fd = stdout;
+
   PetscStrcpy(p,"-");
   if (prefix) PetscStrcat(p,prefix);
-  PetscPrintf(comm,"  %s%s (one of)",p,name);
+  PetscFPrintf(comm,fd,"  %s%s (one of)",p,name);
 
   while (list) {
     PetscFPrintf(comm,fd," %s",list->name);
