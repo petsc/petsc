@@ -10,19 +10,17 @@
    parallel data structure. 
  */
 
-/* For now, this is just the same as the MPIAIJ stash ... */
-typedef  struct {int nmax, n, *idx, *idy; Scalar *array;} Stash2;
-
 typedef struct {
   int           *rowners,*cowners;  /* ranges owned by each processor */
   int           m,n,M,N;            /* local rows, cols, global rows, cols */
   int           rstart,rend,cstart,cend;
+  int           brstart,brend;
   Mat           A;
   int           numtids,mytid;
 /*  Used in Matrix assembly */
   int           assembled;          /* MatAssemble has been called */
   InsertMode    insertmode;
-  Stash2        stash;
+  Stash         stash;
   MPI_Request   *send_waits,*recv_waits;
   int           nsends,nrecvs;
   Scalar        *svalues,*rvalues;
@@ -32,5 +30,5 @@ typedef struct {
 /*  Used in Matrix-vector product */
   Vec           lvec;
   VecScatterCtx Mvctx;
-} Mat_MPIRow;
+} Mat_MPIBDiag;
 
