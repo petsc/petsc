@@ -1749,8 +1749,6 @@ EXTERN_C_BEGIN
 int MatSeqAIJGetInodeSizes_SeqAIJ(Mat A,int *node_count,int *sizes[],int *limit)
 {
   Mat_SeqAIJ *a;
-  PetscTruth flg;
-  int        ierr;
 
   PetscFunctionBegin;  
   PetscValidHeaderSpecific(A,MAT_COOKIE);

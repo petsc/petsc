@@ -483,10 +483,10 @@ EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat);
 @*/
 int DAGetMatrix(DA da,MatType mtype,Mat *J)
 {
-  int      ierr,dim,dof,nx,ny,nz,size;
+  int      ierr,dim,dof,nx,ny,nz;
   Mat      A;
   MPI_Comm comm;
-  MatType  Atype,type;
+  MatType  Atype;
   void     (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
 
   PetscFunctionBegin;
