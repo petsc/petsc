@@ -354,11 +354,13 @@ options database may be found in Section \ref{sec_options}.
 
 One creates a new parallel or 
 sequential vector, \trl{x}, of global dimension \trl{M} with the 
-command \findex{VecCreate()} \sindex{vectors}
+commands \findex{VecCreate()}  \findex{VecSetSizes()} \sindex{vectors}
 \begin{tabbing}
-  VecCreate(MPI\_Comm comm,int m,int M,Vec *x);
+  VecCreate(MPI\_Comm comm,Vec *x);
+  VecSetSizes(Vec x, int m, int M);
 \end{tabbing}
-where \trl{comm} denotes the MPI communicator. The type of storage
+where \trl{comm} denotes the MPI communicator and \trl{m} is the optional local size
+which may be \trl{PETSC_DECIDE}. The type of storage
 for the vector may be set with either calls to 
 \trl{VecSetType()} or \trl{VecSetFromOptions()}. \findex{VecSetType()} \findex{VecSetFromOptions}
 Additional vectors of the same type can be formed with
@@ -510,7 +512,7 @@ as mentioned above, some commands for matrix, vector, and linear solver
 creation are:
 \begin{tabbing}
   MatCreate(MPI\_Comm comm,int M,int N,Mat *A);\\
-  VecCreate(MPI\_Comm comm,int m,int M,Vec *x);\\
+  VecCreate(MPI\_Comm comm,Vec *x);\\
   SLESCreate(MPI\_Comm comm,SLES *sles); 
 \end{tabbing}
 The creation routines are collective over all processors in the

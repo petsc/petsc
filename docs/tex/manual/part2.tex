@@ -52,10 +52,11 @@ of components to store on the local processor, and \trl{M} is the
 total number of vector components.  Either the local or global 
 dimension, but not both, can be set to PETSC\_DECIDE to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
-More generally, one can use the routines \findex{VecCreate()} \findex{VecSetFromOptions()}
+More generally, one can use the routines \findex{VecCreate()} \findex{VecSetSizes()} \findex{VecSetFromOptions()}
 \begin{tabbing}
-  VecCreate(MPI\_Comm comm,int m,int M,Vec *v);\\
-  VecSetFromOptions(v);
+  VecCreate(MPI\_Comm comm,Vec *v);\\
+  VecSetSizes(Vec v, int m, int M);\\
+  VecSetFromOptions(Vec v);
 \end{tabbing}
 which automatically generates the appropriate vector type 
 (sequential or parallel) over all processors in \trl{comm}.
