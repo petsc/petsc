@@ -17,7 +17,8 @@ TESTEXAMPLES_1  = ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_2 \
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex7.PETSc\
 		  runex7 ex7.rm ex8.PETSc runex8 runex8_2 ex8.rm ex9.PETSc\
 		  runex9 ex9.rm ex13.PETSc ex13.rm  clean
-TESTEXAMPLES_3  = ex12.PETSc runex12  ex12.rm clean
+TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm ex14.PETSc runex14 runex14_2 \
+                  runex14_3 runex14_4 ex12.rm clean
 TESTEXAMPLES_9  = 
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
 		  runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_2 ex4.rm \
@@ -86,9 +87,14 @@ ex11: ex11.o  chkopts
 ex12: ex12.o  chkopts
 	-$(FLINKER) -o ex12 ex12.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex12.o
+
 ex13: ex13.o  chkopts
 	-$(CLINKER) -o ex13 ex13.o $(PETSC_LIB)
 	$(RM) ex13.o
+
+ex14: ex14.o  chkopts
+	-$(FLINKER) -o ex14 ex14.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex14.o
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
@@ -199,23 +205,35 @@ runex9_2:
 	   if (diff output/ex9_1.out ex9_2.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   $(RM) -f ex9_2.tmp
-
 runex9_3:
 	-@$(MPIRUN) -np 8 ex9 -star -snes_smonitor  > ex9_3.tmp 2>&1;	\
 	   if (diff output/ex9_1.out ex9_3.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   $(RM) -f ex9_3.tmp
-
 runex10:
 	-@$(MPIRUN) -np 2 ex10 -n 10 -snes_smonitor  > ex10_1.tmp 2>&1;	  \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   $(RM) -f ex10_1.tmp
-
 runex12:
 	-@$(MPIRUN) -np 2 ex12 -n 10 -snes_smonitor  > ex12_1.tmp 2>&1;	  \
 	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   $(RM) -f ex12_1.tmp
+runex14:
+	-@$(MPIRUN) -np 4 ex14 -snes_mf -Nx 4 -Ny 1 -snes_smonitor > ex14_1.tmp 2>&1; \
+	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
+	   else echo "Possible problem with ex14_1, diffs above"; fi; \
+	   $(RM) -f ex14_1.tmp
+runex14_2:
+	-@$(MPIRUN) -np 4 ex14 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex14_2.tmp 2>&1; \
+	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
+	   else echo "Possible problem with ex14_2, diffs above"; fi; \
+	   $(RM) -f ex14_2.tmp
+runex14_3:
+	-@$(MPIRUN) -np 3 ex14 -snes_fd  -snes_smonitor > ex14_3.tmp 2>&1;\
+	   if (diff output/ex14_3.out ex14_3.tmp) then true; \
+	   else echo "Possible problem with ex14_3, diffs above"; fi; \
+	   $(RM) -f ex14_3.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.59 1996/08/23 14:00:30 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.60 1996/08/23 14:39:27 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -144,10 +144,10 @@ int main( int argc, char **argv )
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
   if (!matrix_free) {
     if (size == 1) {
-      ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,0,&J); CHKERRA(ierr);
+      ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
     } else {
       ierr = VecGetLocalSize(x,&m); CHKERRA(ierr);
-      ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,5,0,3,0,&J); CHKERRA(ierr);
+      ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J); CHKERRA(ierr);
     }
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user); CHKERRA(ierr);
   }
@@ -424,7 +424,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
      by placing code between these two statements.
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /*
@@ -434,10 +434,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
      up the preconditioner (e.g., no need to redo symbolic factorization for
      ILU/ICC preconditioners).
       - If the nonzero structure of the matrix is different during
-        the second linear solve, then the flag DIFFERENT_NONZERO_PATTERN
-        must be used instead.  If you are unsure whether the
-        matrix structure has changed or not, use the flag
-        DIFFERENT_NONZERO_PATTERN.
+        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
+        must be used instead.  If you are unsure whether the matrix
+        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
       - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
         believes your assertion and does not check the structure
         of the matrix.  If you erroneously claim that the structure
