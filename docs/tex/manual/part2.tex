@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.240 1997/11/10 04:51:08 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.241 1997/11/12 19:17:07 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -14,19 +14,19 @@
 \sindex{vectors}
 
 The vector (denoted by {\tt Vec}) is one of the simplest PETSc
-objects.  Vectors are used to store discrete PDE solutions, right hand
-sides for linear systems, etc. This chapter is organized as follows
+objects.  Vectors are used to store discrete PDE solutions, right-hand
+sides for linear systems, etc. This chapter is organized as follows:
 
 \begin{itemize}
-\item Sections~\ref{sec:veccreate} and \ref{sec:vecbasic}, basic usage of vectors.
-\item Section \ref{sec:indexingandordering}, management of the various numberings of
+\item Sections~\ref{sec:veccreate} and \ref{sec:vecbasic} - basic usage of vectors
+\item Section \ref{sec:indexingandordering} - management of the various numberings of
                degrees of freedom, vertices, cells, etc.
   \begin{itemize} 
-  \item Mapping between different global numbering. 
-  \item Mapping between local and global numbering.
+  \item Mapping between different global numberings
+  \item Mapping between local and global numberings
   \end{itemize}
-\item Section \ref{sec:struct}, management of structured grids.
-\item Section \ref{sec:unstruct}, management of unstructured grids.
+\item Section \ref{sec:struct} - management of structured grids
+\item Section \ref{sec:unstruct} - management of unstructured grids
 \end{itemize}
 
 % --------------------------------------------------------------------------------------
@@ -173,8 +173,10 @@ Note that the Fortran interface for {\tt VecDestroyVecs()} differs slightly,
 as described in Section~\ref{sec:fortvecd}.
 
 It is also possible to create vectors that use an array provided by the user, 
-rather then allocating internally the array space. \sindex{providing arrays for vectors}
-\sindex{vectors, providing your own array} These are done using the routines
+rather than having PETSc internally allocate the array space. 
+\sindex{providing arrays for vectors}
+\sindex{vectors, user-supplied arrays} 
+Such vectors can be created with the routines
 \begin{verbatim}
    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,int m,Scalar *array,Vec *x);
 \end{verbatim}
@@ -280,17 +282,17 @@ The global vector length can be determined by \findex{VecGetSize()}
 
   When writing parallel PDE codes there is extra complexity caused by
 having multiple ways of indexing (numbering) and ordering objects such
-as vertices, degrees of freedom etc. For example, the grid generator
-or partitioner may renumber the nodes, requiring one to adjust the
+as vertices and degrees of freedom. For example, a grid generator
+or partitioner may renumber the nodes, requiring adjustment of the
 other data structures that refer to these objects; see Figure
-\ref{fig:daao}.  In addition, local (on a single processor) numbering
-of objects may be different than the global (cross processor)
-numbering. PETSc provides a variety of objects that help to manage the
-mapping between the various numbering systems. The two most basic are
-the {\tt AO}, application ordering, that allows one to map between
-different global (cross processor) numbering schemes and the {\tt
-ISLocalToGlobalMapping} that allows one to map between local (on
-processor) and global (cross processor) numbering.
+\ref{fig:daao}.  In addition, local numbering (on a single processor) 
+of objects may be different than the global (cross-processor)
+numbering. PETSc provides a variety of tools that help to manage the
+mapping among the various numbering systems. The two most basic are
+the {\tt AO} (application ordering), which enables mapping between
+different global (cross-processor) numbering schemes and the {\tt
+ISLocalToGlobalMapping}, which allows mapping between local 
+(on-processor) and global (cross-processor) numbering.
 
 % ----------------------------------------------------------------------------------
 \subsection{Application Orderings}
@@ -371,10 +373,11 @@ Although we refer to the two orderings as ``PETSc'' and
 application orderings and to maintain relationships among a variety of
 orderings by employing several {\tt AO} contexts.
 
-The {\tt AOxxToxx()} routines allow negative entries in the input 
-integer array. These entries are not mapped, they are just left the same.
-This is to allow one to map, for example, neighbor lists that use negative
-numbers to indicate nonexistent neighbors due to boundary conditions, etc.
+The {\tt AOxxToxx()} routines allow negative entries in the input
+integer array. These entries are not mapped; they simply remain
+unchanged.  This functionality enables, for example, mapping neighbor
+lists that use negative numbers to indicate nonexistent neighbors due
+to boundary conditions, etc.
 
 %-------------------------------------------------------------------------
 \subsection{Local to Global Mappings}
@@ -389,58 +392,57 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to 
 the PETSc global numbering scheme. This is done via the following routines
 \begin{verbatim}
-   ierr = ISLocalToGlobalMappingCreate(int N,int* globalnumbers,ISLocalToGlobalMapping* ctx);
+   ierr = ISLocalToGlobalMappingCreate(int N,int* globalnum,ISLocalToGlobalMapping* ctx);
    ierr = ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);
    ierr = ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);
    ierr = ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
 \end{verbatim}
 \findex{ISLocalToGlobalMappingCreate()} \findex{ISLocalToGlobalMappingApply()}
 \findex{ISLocalToGlobalMappingApplyIS()} \findex{ISLocalToGlobalMappingDestroy()}
-Here {\tt N} denotes the number of local indices, {\tt globalnumbers} represents the
-global number of each local number and {\tt ISLocalToGlobalMapping} is the 
+Here {\tt N} denotes the number of local indices, {\tt globalnum} represents the
+global number of each local number, and {\tt ISLocalToGlobalMapping} is the 
 resulting PETSc object that contains the information needed to apply the mapping with 
-either the routine {\tt ISLocalToGlobalMappingApply()} or 
+either {\tt ISLocalToGlobalMappingApply()} or 
 {\tt ISLocalToGlobalMappingApplyIS()}.  \findex{ISLocalToGlobalMapping}
 
 Note that the {\tt ISLocalToGlobalMapping} routines serve a different purpose
 than the {\tt AO} \findex{AO} routines. In the former case they provide a mapping 
-from  a local numbering scheme (including ghost points) to a global numbering scheme;
+from  a local numbering scheme (including ghost points) to a global numbering scheme,
 while in the latter they provide a mapping between two global numbering schemes.
-In fact many applications may use both {\tt AO} and {\tt ISLocalToGlobalMapping} routines.
+In fact, many applications may use both {\tt AO} and {\tt ISLocalToGlobalMapping} routines.
 The {\tt AO} routines are first used to map from an application global ordering 
 (that has no relationship to parallel processing etc.) to the PETSc ordering scheme
 (where each processor has a contiguous set of indices in the numbering). Then in order
-to perform function or Jacobian evaluations locally on each processor the one works
-with a local numbering scheme that includes ghost points, the mapping from this local
+to perform function or Jacobian evaluations locally on each processor, one works
+with a local numbering scheme that includes ghost points.  The mapping from this local
 numbering scheme back to the global PETSc numbering can be handled with the 
 {\tt ISLocalToGlobalMapping} routines.
 
-If one is given a list of indices in the global numbering the routine
+If one is given a list of indices in a global numbering, the routine
 \begin{verbatim}
    ierr = ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingType
                                       type,int nin,int *idxin,int *nout,int *idxout);
 
 \end{verbatim}
-\findex{ISGlobalToLocalMappingApply} will 
-provide \sindex{global to local mapping}
-a new list of indices in the local numbering. Again negative values in 
-{\tt idxin} are left unmapped; but, in addition, if {\tt type} is set to {\tt IS\_GTOLM\_MASK}
-\findex{IS_GTOLM_MASK} then {\tt nout} is set to {\tt nin} and all global values
+\findex{ISGlobalToLocalMappingApply}  \sindex{global to local mapping} will provide
+a new list of indices in the local numbering. Again, negative values in 
+{\tt idxin} are left unmapped.  But, in addition, if {\tt type} is set to {\tt IS\_GTOLM\_MASK},
+\findex{IS_GTOLM_MASK}, then {\tt nout} is set to {\tt nin} and all global values
 in {\tt idxin} that are not represented in the local to global mapping
 are replaced by -1. When {\tt type} is set to {\tt IS\_GTOLM\_DROP}
-\findex{IS_GTOLM_DROP} the values in {\tt idxin} that are not
-represented locally in the mapping are not included in {\tt idxout}
-and thus potentially {\tt nout} is smaller then {\tt nin}.  One must
-pass in an array long enough to hold all the indices. You can call
+\findex{IS_GTOLM_DROP}, the values in {\tt idxin} that are not
+represented locally in the mapping are not included in {\tt idxout}, so that
+potentially {\tt nout} is smaller than {\tt nin}.  One must
+pass in an array long enough to hold all the indices. One can call
 {\tt ISGlobalToLocalMappingApply()} with {\tt idxout} equal to {\tt
 PETSC\_NULL} to determine the required length (returned in {\tt nout})
 and then allocate the required space and call {\tt
 ISGlobalToLocalMappingApply()} a second time to set the values.
 
 Often it is convenient to set elements into a vector using the local node 
-numbering rather then the global node numbering; for example, if each processor
-maintains its own sublist of vertices and elements and numbers them locally.
-To set values into a vector with the local numbering you must first call
+numbering rather than the global node numbering (e.g.,  each processor may
+maintain its own sublist of vertices and elements and number them locally).
+To set values into a vector with the local numbering, one must first call
 \begin{verbatim}
    ierr = VecSetLocalToGlobalMapping(Vec v,ISLocalToGlobalMapping ctx);
 \end{verbatim}
@@ -449,10 +451,10 @@ and then call \findex{VecSetValuesLocal}
 \begin{verbatim}
    ierr = VecSetValuesLocal(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
 \end{verbatim}
-Now the {\tt indices} are in the local numbering, rather then the global.
+Now the {\tt indices} use the local numbering, rather than the global.
 
 % ------------------------------------------------------
-\section{Structured Grids using Distributed Arrays}
+\section{Structured Grids Using Distributed Arrays}
 \label{sec:da} \label{sec:struct}
 
 In this section we consider a distributed array ({\tt DA}) to be,
@@ -828,9 +830,9 @@ done by using
    ierr = VecScatterBegin(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
    ierr = VecScatterEnd(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
 \end{verbatim} 
-\findex{SCATTER_REVERSE} Note that you must swap the roles of the first 
-two arguments to these routines, whenever you use the {\tt SCATTER\_REVERSE}
-option.
+\findex{SCATTER_REVERSE} Note that the roles of the first 
+two arguments to these routines must be swapped whenever the {\tt SCATTER\_REVERSE}
+option is used.
 
 \sindex{vector values, getting} \findex{VecGetValues()}
 There is no PETSc routine that is the opposite of {\tt VecSetValues()}
@@ -879,11 +881,10 @@ hence, it is best to reuse such information when possible.
 % -------------------------------------------------------------------------------
 \subsection{Scattering Ghost Values}
 
-
 The scatters provide a very general method for managing the communication of 
 required ghost values for unstructured grid computations. One scatters
-the global vector into a local ``ghosted'' work vector and performs the computation
-on the local work vectors and then scatters back into the global solution 
+the global vector into a local ``ghosted'' work vector, performs the computation
+on the local work vectors, and then scatters back into the global solution 
 vector. In the simplest case this may be written as
 \begin{verbatim}
    Function: (Input Vec globalin, Output Vec globalout)
@@ -893,7 +894,7 @@ vector. In the simplest case this may be written as
    ierr = VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT_VALUES,ScatterMode
                           SCATTER_FORWARD,VecScatter scatter);
    /*
-        For example,  do local calculations from localin to localout and call
+        For example,  do local calculations from localin to localout 
    */
    ierr = VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD_VALUES,ScatterMode
                           SCATTER_REVERSE,VecScatter scatter);
@@ -906,14 +907,14 @@ vector. In the simplest case this may be written as
 
 We recommend that application developers skip this section on a first reading.
 It contains information about more advanced use of PETSc vectors to improve 
-efficiency slightly. Once your application code is fully debugged and optimized
-you can try to use these techniques to slightly decrease memory use and improve 
-computation speed slightly.
+efficiency slightly. Once an application code is fully debugged and optimized
+these techniques can be tried to slightly decrease memory use and improve 
+computation speed.
 
-There are two minor (IMHO) drawbacks to this approach:
+There are two minor drawbacks to the basic approach described above:
 \begin{itemize}
 \item the extra memory requirement for the local work vector, {\tt localin} that
-      duplicates the memory in {\tt globalin},
+      duplicates the memory in {\tt globalin}, and
 \item the extra time required to copy the local values from {\tt localin} to 
       {\tt globalin}.
 \end{itemize}
@@ -949,8 +950,8 @@ access the ``ghost'' values past ``the end of the'' array. Note that one access 
 entries in {\tt l} using the local numbering of elements and ghosts, while they 
 access in {\tt g} using the global numbering.
 
-A common usage of a ghosted
-vector could be given by \findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEnd()}
+A common usage of a ghosted vector is given by
+\findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEnd()}
 \begin{verbatim}
    ierr = VecGhostUpdateBegin(Vec globalin,InsertMode INSERT_VALUES,ScatterMode
                           SCATTER_FORWARD);
@@ -969,18 +970,18 @@ vector could be given by \findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEn
                           SCATTER_REVERSE);
 \end{verbatim}
       
-The routines {\tt VecGhostUpdateBegin/End()} are equivalent to {\tt VecScatterBegin/End()}
-above except that since they are scattering into the ghost locations they do not need
-to copy the local vector values (they are already there). In addition the user does not
+The routines {\tt VecGhostUpdateBegin/End()} are equivalent to the routines {\tt VecScatterBegin/End()}
+above except that since they are scattering into the ghost locations, they do not need
+to copy the local vector values, which are already in place. In addition, the user does not
 have to allocate the local work vector, since the ghosted vector already has allocated 
 slots to contain the ghost values.
 
-The use of the arguments {\tt INSERT\_VALUES} and {\tt SCATTER\_FORWARD } causes the 
-ghost values to be correctly updated from the appropriate processor. The arguments
-{\tt ADD\_VALUES} and {\tt SCATTER\_REVERSE } update the ``local'' portions of the vector 
-from all the other processors ghost values; this would be appropriate, for example, for
-finite element assembly of the load vector. 
-
+The input arguments {\tt INSERT\_VALUES} and {\tt SCATTER\_FORWARD}
+cause the ghost values to be correctly updated from the appropriate
+processor. The arguments {\tt ADD\_VALUES} and {\tt SCATTER\_REVERSE }
+update the ``local'' portions of the vector from all the other
+processors' ghost values.  This would be appropriate, for example,
+when performing a finite element assembly of a load vector.
 
 
 %-------------------------------------------------------------
@@ -1169,6 +1170,9 @@ consecutive rows with the same nonzero structure, thereby reusing
 matrix information for increased efficiency.  Related options database
 keys are {\tt -mat\_aij\_no\_inode} (do not use inodes) and {\tt
 -mat\_aij\_inode\_limit <limit>} (set inode limit (max limit=5)).
+Note that problems with a single degree of freedom per grid node
+should use the option {\tt -mat\_aij\_no\_inode} to avoid I-node
+overhead.
 
 By default the internal data representation for the AIJ formats employs
 zero-based indexing.  For compatibility with standard Fortran storage,
@@ -1289,12 +1293,12 @@ The matrix is stored with a fixed number of rows on
 each processor, given by {\tt m}, or determined by PETSc if {\tt m} is
 {\tt PETSC\_DECIDE}.
 
-If you do not use {\tt PETSC\_DECIDE} for
-{\tt m} and {\tt n} then you  must ensure that they are chosen to be
-compatible with the vectors. To do this, one first considers the product 
-$y = A x$. The {\tt m} that one uses in {\tt MatCreateMPIAIJ()}
-must match the local size used in the {\tt VecCreateMPI()} for {\tt y}.
-The {\tt n} used must match that used as the local size in 
+If {\tt PETSC\_DECIDE} is not used for the arguments
+{\tt m} and {\tt n}, then the user must ensure that they are chosen to be
+compatible with the vectors. To do this, one first considers the matrix-vector product 
+$y = A x$. The {\tt m} that is used in the matrix creation routine {\tt MatCreateMPIAIJ()}
+must match the local size used in the vector creation routine {\tt VecCreateMPI()} for {\tt y}.
+Likewise, the {\tt n} used must match that used as the local size in 
 {\tt VecCreateMPI()} for {\tt x}. 
 
 The user must set {\tt d\_nz=0}, {\tt o\_nz=0}, {\tt d\_nnz=PETSC\_NULL}, and 
@@ -2896,7 +2900,7 @@ During successive calls to {\tt FormJacobian()}, the user can either
 insert new matrix contexts or reuse old ones, depending on the
 application requirements. For many sparse matrix formats, reusing the
 old space (and merely changing the matrix elements) is more efficient;
-however, if the matrix structure completely changes, then creating an
+however, if the matrix structure completely changes, creating an
 entirely new matrix context may be preferable.  
 Upon subsequent calls to the 
 {\tt FormJacobian()} routine, the user may wish to reinitialize the matrix
@@ -3484,8 +3488,8 @@ These parameters may be set from the options database with
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
 Note that the {\tt MatGetColoring()} routine currently 
-only work on sequential routines.  Extensions may be forthcoming. However,
-if you can compute the coloring {\tt iscoloring} some other way the routine
+works only on sequential routines.  Extensions may be forthcoming. However,
+if one can compute the coloring {\tt iscoloring} some other way, the routine
 {\tt MatFDColoringCreate()} does work in parallel. An example of this for 
 2D distributed arrays is given below that uses the utility routine
 {\tt DAGetColoring2dBox()}. \findex{DAGetColoring2dBox}
@@ -3677,19 +3681,19 @@ to {\tt SNESSetJacobian()}. \findex{SNESSetJacobian()}
 
 \subsection{Using PVODE from PETSc}
 
-PVODE is a parallel ODE solver developed by Hindmarsh et al. at LLNL \cite{?}.
+PVODE is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
 The TS component provides an interface to use PVODE directly from PETSc.
-(To install PETSc to use PVODE, see the Installation guide.) 
+(To install PETSc to use PVODE, see the installation guide.) 
 
-To use the PVODE integrators call 
+To use the PVODE integrators, call 
 \begin{verbatim}
   ierr = TSSetType(TS ts,TSType TS_PVODE);
 \end{verbatim}
-or the command line option {\tt -ts\_type pvode}. \findex{TS_PVODE} 
+or use the command line option {\tt -ts\_type pvode}. \findex{TS_PVODE} 
 \sindex{PVODE} \sindex{Hindmarsh} \sindex{ODE solvers}
 
-PVODE comes with to main integrator families, Adams and BDF, backward 
-differentiation formula. One selects these with 
+PVODE comes with to main integrator families, Adams and BDF (backward 
+differentiation formula). One can select these with 
 \begin{verbatim}
   ierr = TSPvodeSetType(TS ts,TSPvodeType [PVODE_ADAMS,PVODE_BDF]);
 \end{verbatim}
@@ -3697,13 +3701,15 @@ or the command line option {\tt -ts\_pvode\_type <adams,bdf>}. BDF is
 the default. \findex{-ts_pvode_type} \findex{TSPVodeType}
 \findex{TSPvodeSetType()} \sindex{Adams} \sindex{BDF}
 
-PVODE does not use SNES for its nonlinear solver so one cannot change
-the nonlinear solver options via SNES. Rather, PVODE uses PC, you can 
-obtain the PC object via
+PVODE does not use the SNES component of PETSc for its nonlinear
+solvers, so one cannot change the nonlinear solver options via
+SNES. Rather, PVODE uses the preconditioners within the PC component
+of PETSc, which can be accessed via
 \begin{verbatim}
   ierr = TSPvodeGetPC(TS ts,PC *pc);
 \end{verbatim}
-and thus set preconditioner options; or use the command line interface
+The user can then directly set preconditioner options; 
+alternatively, the usual runtime options can be employed
 via {\tt -pc\_xxx}. \findex{TSPvodeGetPC()}
 
 Finally, one can set the PVODE tolerances via
@@ -3714,6 +3720,7 @@ where {\tt abs} denotes the absolute tolerance and {\tt rel}
 the relative tolerance. \findex{TSPvodeSetTolerance()}
 
 \subsection{Solving Steady-State Problems with Pseudo-Timestepping}
+
 For solving steady-state problems with pseudo-timestepping one proceeds 
 as follows.
 \begin{itemize}
@@ -3737,7 +3744,7 @@ the timestep context, the current time, the location where the
 Jacobian is to be computed, the Jacobian matrix, an alternative
 approximate Jacobian matrix used as a preconditioner, and the optional
 user-provided context, passed in as {\tt fP}. The user must provide the 
-Jacobian as a matrix, thus if one is using a matrix-free approach you 
+Jacobian as a matrix; thus, if using a matrix-free approach, one 
 must create a {\tt MatShell} matrix.
 \end{itemize}
 
@@ -4109,13 +4116,13 @@ and {\tt VIEWER\_DRAWX\_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
 
 \medskip
-If the colormap on your machine is incorrect so colors in contour plots
-etc.~are incorrect you can use the option {\tt -draw\_x\_private\_colormap}
-\findex{-draw_x_private_colormap} to have PETSc use a seperate colormap
-for its windows. This will correct the color problem, but you will get
-flashing of colors as you move the mouse between the PETSc windows and other 
-windows. You can also try stopping programs (like Netscape) that change the 
-default colormap.
+By default, PETSc drawing tools employ a private colormap,
+which remedies the problem of poor color choices for contour plots due
+to an external program's mangling of the colormap (e.g, Netscape tends
+to do this).
+Unfortunately, this causes flashing of colors as the mouse is moved
+between the PETSc windows and other windows.  Alternatively, a shared
+colormap can be used via the option {\tt -draw\_x\_shared\_colormap}.
 
 \section{Simple Drawing}
 
@@ -4478,10 +4485,10 @@ Fortran manner.
 Figure \ref{fig:vec2-Fortran} contains an example of using {\tt VecGetArray()}
 within a Fortran routine.
 
-Since you are accessing the array directly from Fortran you will use indexing
-starting with 1, not 0 (unless you declare the array as {\tt xx\_v(0:1)}).
-This is different than the use of {\tt VecSetValues()} where you always index 
-starting with 0.
+Since in this case the array is accessed directly from Fortran,
+indexing begins with 1, not 0 (unless the array is declared as {\tt xx\_v(0:1)}).
+This is different from the use of {\tt VecSetValues()}
+where, indexing always starts with 0.
 
 {\em Note}: If using {\tt VecGetArray()}, {\tt MatGetArray()}, {\tt ISGetIndices()},
 or {\tt DAGetGlobalIndices()}
@@ -5020,16 +5027,16 @@ Section~\ref{sec:profileuser}).  These routines may be called as many
 times as desired in an application program, so that one could restrict
 MPE event logging only to certain code segments.
 
-To see what events are logged by default, you can use the source; see
-files src/plot/src/plogmpe.c and include/petsclog.h .  A simple program and
+To see what events are logged by default, the user can view the source code; see
+the files {\tt src/plot/src/plogmpe.c} and {\tt include/petsclog.h}.  A simple program and
 GUI interface to see the events that are predefined and their definition is 
 being developed.
 
-You can also log the MPI events.  To do this, just view the PETSc application
-as any MPI application, and follow the instructions on logging MPI calls that
-are appropriate for your MPI implementation.  For the MPICH implementation,
-this simply involves adding {\tt -llmpi} to the library list {\em ahead of}
-{\tt -lmpi}.  
+The user can also log MPI events.  To do this, simply consider the
+PETSc application as any MPI application, and follow the MPI
+implementation's instructions for logging MPI calls. For example, when
+using MPICH, this merely required adding {\tt -llmpi} to the library
+list {\em before} {\tt -lmpi}.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Profiling Application Codes}
@@ -7129,54 +7136,13 @@ and {\tt PetscFinalize()} routines when the option {\tt -log},
 \label{sec:matclasses}
 
 PETSc provides a variety of matrix implementations, since no single
-matrix format is appropriate for all problems. The following sections
-briefly describe the ever-expanding assortment of matrix types within PETSc.
+matrix format is appropriate for all problems.  This section first
+discusses various matrix blocking strategies, and then briefly
+describes the ever-expanding assortment of matrix types within PETSc.
 
-\subsection{Sequential AIJ Sparse Matrices}
-
-The default matrix representation within PETSc is the general sparse
-AIJ format (also called the Yale sparse matrix format or compressed
-sparse row format, CSR). Section~\ref{sec:matsparse} describes this
-matrix type.
-
-\subsection{Parallel AIJ Sparse Matrices}
-
-%
-%  Temp remove
-%
-%The implementation of the parallel AIJ matrix data structure is 
-%described in detail within \cite{petsc-mpi-paper}.
-
-\subsection{Sequential Block AIJ Sparse Matrices}
-
-The sequential and parallel block AIJ formats, which are extensions of
-the AIJ formats described above, are intended especially for use with
-multicomponent PDEs.  The block variants store matrix elements by
-fixed-sized dense {\tt nb} $\times$ {\tt nb} blocks, where currently
-{\tt nb} ranges from two through five.  These formats are fully
-compatible with standard Fortran77 storage.  That is, the stored row
-and column indices can begin at either one (as in Fortran) or zero.
-
-The routine for creating a sequential block AIJ matrix with {\tt m} 
-rows, {\tt n} columns, and a block size of {\tt nb} is
-\begin{verbatim}
-   ierr = MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz, Mat *A)
-\end{verbatim}
-\findex{MatCreateSeqBAIJ} 
-The arguments {\tt nz} and {\tt nnz} can be used to preallocate matrix
-memory by indicating the number of {\em block} nonzeros per row.  For good
-performance during matrix assembly, preallocation is crucial; however, the
-user can set {\tt nz=0} and {\tt nzz=PETSC\_NULL} for PETSc to dynamically
-allocate matrix memory as needed.  Section~\ref{sec:matsparse}
-discusses preallocation for the AIJ format; extension to the block AIJ
-format is straightforward.
-
-Note that the routine {\tt MatSetValuesBlocked()}
-\findex{MatSetValuesBlocked()} can be used for more efficient matrix assembly
-when using the block AIJ format.
-
-
-Improving Sequential Performance: Matrix Blocking Strategies
+\subsection{Matrix Blocking Strategies}
+\sindex{matrix blocking} 
+\sindex{blocking} 
 
 In today's computers, the time to perform an arithmetic operation is
 dominated by the time to move the data into position, not the time to
@@ -7213,29 +7179,32 @@ degrees of freedom per cell), blocking is extremely advantageous.  The
 PETSc (and BlockSolve95) sparse matrix representations use a variety
 of techniques for blocking, including
 
- - storing the matrices using a generic sparse matrix format, but 
+\begin{itemize}
+\item storing the matrices using a generic sparse matrix format, but 
    storing additional information about adjacent rows with identical 
    nonzero structure (so called I-nodes); this I-node information is 
-   used in the key computational routines to improve performance,
-
- - storing the matrices using a fixed (problem dependent) block size,
-
- - storing the matrices using a variable block size, that can be 
-   different for different parts of the matrix.
+   used in the key computational routines to improve performance
+   (the default for the {\tt MATSEQAIJ} and {\tt MATMPIAIJ} formats);
+\item storing the matrices using a fixed (problem dependent) block size
+   (via the {\tt MATSEQBAIJ} and {\tt MATMPIBAIJ} formats); and
+\item storing the matrices using a variable block size, that can be 
+   different for different parts of the matrix
+   (supported by the BlockSolve95 matrix format {\tt MATMPIROWBS}).
+\end{itemize}
 
 The advantage of the first approach is that it is a minimal change
 from a standard sparse matrix format and brings a large percent of the
-improvement one obtains via blocking. Using a fixed block size gives
-the absolute best performance, since the code can be hardwired with
-that particular size (for example, in some problems the size may be 3,
-in others 5, etc.), so that the compiler will then optimize for that
+improvement one obtains via blocking.  Using a fixed block size gives
+the best performance, since the code can be hardwired with that
+particular size (for example, in some problems the size may be 3, in
+others 5, etc.), so that the compiler will then optimize for that
 size, removing the overhead of small loops entirely. Variable block
 size is, of course, appropriate for problems where the natural matrix
 block size is different in different parts of the domain. It is
 slightly less efficient than the fixed block size code due to overhead
 of checking block sizes.
 
-The table below presents the floating point performance
+The following table presents the floating point performance
 for a basic matrix-vector product using these four approaches: a basic
 compressed row storage format (using the PETSc runtime options 
 -mat\_seqaij -mat\_no\_unroll); the same compressed row format using
@@ -7247,29 +7216,31 @@ node of an IBM SP2, using two test matrices.  The first matrix
 (ARCO1), courtesy of Rick Dean of Arco, arises in multiphase flow
 simulation; it has 1501 degrees of freedom, 26,131 matrix nonzeros
 and, a natural block size of 3, and a small number of well terms. The
-second matrix (CFD), which comes from a three-dimensional compressible flow
-simulation, has 15,360 degrees of freedom, 496,000 nonzeros, and a
+second matrix (CFD), arises in a three-dimensional Euler flow
+simulation and has 15,360 degrees of freedom, 496,000 nonzeros, and a
 natural block size of 5. In addition to displaying the flop rates for
 matrix-vector products, we also display them for triangular solve
 obtained from an ILU(0) factorization.
 
-
---------------------------------------------------------------------
-  Basic Kernel Flop Rates (MFlops/second) on 1 Node of an IBM SP2
---------------------------------------------------------------------
-Problem  Basic    I-nodes    Fixed block size   Variable block size
-
- - - - - - - - - - - - Matrix-Vector Product - - - - - - - - - - - - 
-
-ARCO1     27         43             70                   22
-CFD1      28         58             90                   39
-
- - - - - - - - - - Triangular Solves from ILU(0) - - - - - - - - - -
-
-ARCO1     22         31             49                   15
-CFD1      22         39             65                   24 
---------------------------------------------------------------------
-
+\medskip
+\centerline{
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Problem & Block size & Basic & I-node version & Fixed block size &Variable block size \\
+\hline
+\multicolumn{6}{c}{{\em Matrix-Vector Product (Mflop/sec)}} \\
+\hline
+Multiphase & 3 & 27 & 43 & 70 & 22 \\
+Euler & 5 &  28 & 58 & 90 & 39 \\
+\hline
+\multicolumn{6}{c}{{\em Triangular Solves from ILU(0) (Mflop/sec)}}\\
+\hline
+Multiphase & 3 & 22 & 31 & 49 & 15 \\
+Euler & 5 & 22 & 39 & 65 & 24\\
+\hline
+\end{tabular}
+}
+\medskip
 
 These examples demonstrate that careful implementations of the basic
 sequential kernels in PETSc can dramatically improve overall floating
@@ -7284,13 +7255,47 @@ thus does not utilize the cache particularly efficiently.  This is an
 example of improving the parallelization capability at the expense of
 using each processor less efficiently.
 
+\subsection{Sequential AIJ Sparse Matrices}
 
-Problems with a Single DoF Per Node
+The default matrix representation within PETSc is the general sparse
+AIJ format (also called the Yale sparse matrix format or compressed
+sparse row format, CSR). Section~\ref{sec:matsparse} describes this
+matrix type.
 
-  Use the option -mat\_no\_unroll
-     (e.g., Bratu problem)
+\subsection{Parallel AIJ Sparse Matrices}
 
+Section~\ref{sec:matsparse} describes this matrix type, which is the
+default parallel matrix format; additional implementation details are
+given in \cite{efficient}.
 
+\subsection{Sequential Block AIJ Sparse Matrices}
+
+The sequential and parallel block AIJ formats, which are extensions of
+the AIJ formats described above, are intended especially for use with
+multicomponent PDEs.  The block variants store matrix elements by
+fixed-sized dense {\tt nb} $\times$ {\tt nb} blocks, where currently
+{\tt nb} ranges from two through five.  These formats are fully
+compatible with standard Fortran77 storage.  That is, the stored row
+and column indices can begin at either one (as in Fortran) or zero.
+
+The routine for creating a sequential block AIJ matrix with {\tt m} 
+rows, {\tt n} columns, and a block size of {\tt nb} is
+\begin{verbatim}
+   ierr = MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz, Mat *A)
+\end{verbatim}
+\findex{MatCreateSeqBAIJ} 
+The arguments {\tt nz} and {\tt nnz} can be used to preallocate matrix
+memory by indicating the number of {\em block} nonzeros per row.  For good
+performance during matrix assembly, preallocation is crucial; however, the
+user can set {\tt nz=0} and {\tt nzz=PETSC\_NULL} for PETSc to dynamically
+allocate matrix memory as needed.  Section~\ref{sec:matsparse}
+discusses preallocation for the AIJ format; extension to the block AIJ
+format is straightforward.
+
+Note that the routine {\tt MatSetValuesBlocked()}
+\findex{MatSetValuesBlocked()} can be used for more efficient matrix assembly
+when using the block AIJ format.
+ 
 \subsection{Parallel Block AIJ Sparse Matrices}
 
 Parallel block AIJ matrices with block size {\t nb} can be created with
@@ -7308,8 +7313,8 @@ The matrix is stored with a fixed number of rows on
 each processor, given by {\tt m}, or determined by PETSc if {\tt m} is
 {\tt PETSC\_DECIDE}.
 
-If you do not use {\tt PETSC\_DECIDE} for
-{\tt m} and {\tt n} then you must ensure that they are chosen to be
+If {\tt PETSC\_DECIDE} is not used for
+{\tt m} and {\tt n} then the user must ensure that they are chosen to be
 compatible with the vectors. To do this, one first considers the product 
 $y = A x$. The {\tt m} that one uses in {\tt MatCreateMPIBAIJ()}
 must match the local size used in the {\tt VecCreateMPI()} for {\tt y}.
@@ -7424,14 +7429,16 @@ not many robust, general-purpose, easy-to-use software packages
 are available, and some of those that do exist have a very low-level 
 user interface. 
 
-\sindex{petsc-maint}  \sindex{SPARSPAK}
-To simplify the use of certain packages, we have integrated
-into PETSc an interface to those packages. At the moment, these include
-parts of LAPACK, BLAS, BlockSolve95, and the reordering routines in 
-SPARSPAK.  We invite users to let us know (by writing to petsc-maint@mcs.anl.gov)
-whether they need particular libraries that 
-are related to PETSc for an application; we may try to provide 
-easy-to-use PETSc interfaces for them.
+\sindex{petsc-maint} \sindex{BLAS} \sindex{LAPACK} \sindex{LINPACK}
+\sindex{MINPACK} \sindex{SPARSPAK} \sindex{BlockSolve95} \sindex{ESSL} \sindex{Matlab}
+\sindex{ParMeTis} \sindex{PVODE} \sindex{SPAI}
+To simplify the use of certain packages, we have integrated into PETSc
+an interface to them.  The current collection includes parts of
+LAPACK, BLAS, LINPACK, MINPACK, SPARSPAK, BlockSolve95, ESSL, Matlab,
+ParMeTis, PVODE, and SPAI.  We invite users to let us know (by writing
+to {\tt petsc-maint@mcs.anl.gov}) whether they need particular
+libraries that are related to PETSc for an application; we may try to
+provide easy-to-use PETSc interfaces for them.
 
 To allow the portable use of BLAS and LAPACK from C, we constructed a
 new include file, 
