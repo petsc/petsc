@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.31 2000/10/26 20:34:41 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.32 2000/10/27 16:15:27 hzhang Exp hzhang $*/
 /*
     Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -1913,7 +1913,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
 
   PetscFunctionBegin;
-  printf("called FactorNumeric_SeqSBAIJ_3\n");
   /* initialization */
   rtmp  = (MatScalar*)PetscMalloc(9*mbs*sizeof(MatScalar));CHKPTRQ(rtmp);
   ierr = PetscMemzero(rtmp,9*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
@@ -1953,9 +1952,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
           ap = aa + j*9;                     /* ptr to the beginning of j-th block of aa */
           for (k=0; k<9; k++) dk[k] = ap[k]; /* dk <- j-th block of aa */
           for (k=0; k<3; k++){               /* j-th block of aa <- dk^T */
-            for (k1=0; k1<3; k++){
-              *ap++ = dk[k + 3*k1];
-            }
+            for (k1=0; k1<3; k++) *ap++ = dk[k + 3*k1];         
           }
         }
       }
