@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscViewer  viewer;
   int          i,ierr,m,n,size,rank,j,idxn[10],M,N,nzp;
   PetscReal    norm,norm_tmp,tol=1.e-10,fill=4.0;
-  PetscRandom  rand;
+  PetscRandom  rdm;
   char         file[4][128];
   PetscTruth   flg,preload = PETSC_TRUE;
   PetscScalar  a[10],rval,alpha,none = -1.0;
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(v1);CHKERRQ(ierr);
   ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
 
   /* Test MatMatMult() */
@@ -80,7 +80,7 @@ int main(int argc,char **args)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
       ierr = MatMult(B,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*B*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);   /* v1 = C*x   */
@@ -109,11 +109,11 @@ int main(int argc,char **args)
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<nzp; i++){
-      ierr = PetscRandomGetValue(rand,&a[i]);CHKERRQ(ierr);
+      ierr = PetscRandomGetValue(rdm,&a[i]);CHKERRQ(ierr);
     }
     for (i=0; i<M; i++){
       for (j=0; j<nzp; j++){
-        ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
         idxn[j] = (int)(PetscRealPart(rval)*PN);
       }
       ierr = MatSetValues(P,1,&i,nzp,idxn,a,ADD_VALUES);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ int main(int argc,char **args)
 
     norm = 0.0; 
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
       ierr = MatMult(B,x,v5);CHKERRQ(ierr);            /* v5 = B*x   */
       ierr = MatMultTranspose(P,v5,v3);CHKERRQ(ierr);  /* v3 = Pt*B*x */
       ierr = MatMult(C,x,v4);CHKERRQ(ierr);            /* v4 = C*x   */
@@ -181,11 +181,11 @@ int main(int argc,char **args)
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<nzp; i++){
-      ierr = PetscRandomGetValue(rand,&a[i]);CHKERRQ(ierr);
+      ierr = PetscRandomGetValue(rdm,&a[i]);CHKERRQ(ierr);
     }
     for (i=0; i<M; i++){
       for (j=0; j<nzp; j++){
-        ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+        ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
         idxn[j] = (int)(PetscRealPart(rval)*PN);
       }
       ierr = MatSetValues(P,1,&i,nzp,idxn,a,ADD_VALUES);CHKERRQ(ierr);
@@ -216,7 +216,7 @@ int main(int argc,char **args)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
       ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
 
@@ -241,7 +241,7 @@ int main(int argc,char **args)
   /* Destroy objects */
   ierr = VecDestroy(v1);CHKERRQ(ierr);
   ierr = VecDestroy(v2);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
   
   ierr = MatDestroy(A_save);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);

@@ -23,7 +23,7 @@ ex4: ex4.o  chkopts
 	${RM} ex4.o
 
 runex1: 
-	${MPIRUN} ex1 -f0 ${DATAFILESPATH}/matrices/medium
+	-@${MPIRUN} ex1 -f0 ${DATAFILESPATH}/matrices/medium
 
 #-------------------------------------------------------------
 TESTEXAMPLES_1  = ex4.PETSc ex4.rm

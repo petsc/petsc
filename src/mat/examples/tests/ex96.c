@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   PetscTruth    flg;
   Vec          x,v1,v2;
   PetscReal    norm,norm_tmp,norm_tmp1,tol=1.e-12;
-  PetscRandom  rand;
+  PetscRandom  rdm;
   PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
   ierr = VecSetSizes(v1,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v1);CHKERRQ(ierr);
   ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
 
   /* Test MatMatMult(): C = A*P */
   /*----------------------------*/
@@ -158,7 +158,7 @@ int main(int argc,char **argv)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
       ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A_tmp,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);       /* v1 = C*x   */
@@ -205,7 +205,7 @@ int main(int argc,char **argv)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
       ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
 
@@ -230,7 +230,7 @@ int main(int argc,char **argv)
 
   /* Clean up */
    ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
   ierr = VecDestroy(v1);CHKERRQ(ierr);
   ierr = VecDestroy(v2);CHKERRQ(ierr);
   ierr = DADestroy(user.fine.da);CHKERRQ(ierr);

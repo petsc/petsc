@@ -11,9 +11,9 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       n = 5,idx;
-  PetscScalar    value;
+  PetscReal      value;
   Vec            x;
-  PetscRandom    rand;
+  PetscRandom    rdm;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -23,9 +23,9 @@ int main(int argc,char **argv)
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_REAL,&rand);CHKERRQ(ierr);
-  ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_REAL,&rdm);CHKERRQ(ierr);
+  ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscReal          norm1,norm2,tol=1.e-10;
   PetscScalar        neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
   IS                 perm, iscol;
-  PetscRandom        rand;
+  PetscRandom        rdm;
   PetscTruth         doIcc=PETSC_TRUE;
   MatInfo            minfo1,minfo2;
   MatFactorInfo      factinfo;
@@ -183,13 +183,13 @@ int main(int argc,char **args)
   }
 
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);     
   ierr = VecDuplicate(x,&s1);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&s2);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+  ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
 
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr);
@@ -226,7 +226,7 @@ int main(int argc,char **args)
 
   /* Test MatMult() */
   for (i=0; i<40; i++) { 
-    ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
+    ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
     ierr = MatMult(A,x,s1);CHKERRQ(ierr);
     ierr = MatMult(sB,x,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
@@ -239,8 +239,8 @@ int main(int argc,char **args)
 
   /* MatMultAdd() */
   for (i=0; i<40; i++) {
-    ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
-    ierr = VecSetRandom(rand,y);CHKERRQ(ierr);
+    ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+    ierr = VecSetRandom(rdm,y);CHKERRQ(ierr);
     ierr = MatMultAdd(A,x,y,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(sB,x,y,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(s1);CHKERRQ(ierr);
   ierr = VecDestroy(s2);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

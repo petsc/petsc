@@ -432,10 +432,13 @@
       Vec              x,y
       integer          ierr
       double precision zero
+      TS               ts0
 
       zero = 0.0
 
-      call RHSFunctionHeat(0,zero,x,y,0,ierr) 
+      ts0 = PETSC_NULL_INTEGER
+
+      call RHSFunctionHeat(ts0,zero,x,y,0,ierr) 
       return
       end
 
