@@ -1,5 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: pvec.c,v 1.12 1995/03/17 04:55:44 bsmith Exp bsmith $";
+#endif
 
-/* cannot have vcid because included in other files */
 
 #include "ptscimpl.h"
 #include "inline/dot.h"
@@ -64,6 +66,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
 
   size           = sizeof(DvPVector)+n*sizeof(Scalar)+(numtids+1)*sizeof(int);
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,MPIVECTOR,comm);
+  PLogObjectCreate(v);
   s              = (DvPVector *) MALLOC(size); CHKPTR(s);
   v->ops         = &DvOps;
   v->data        = (void *) s;
