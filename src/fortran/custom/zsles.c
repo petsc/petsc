@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.32 2001/03/28 18:35:00 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.33 2001/03/30 04:15:09 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -115,11 +115,6 @@ void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmm
 
 void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,int *ierr)
 {
-  int i;
-  /* loop over the levels remove the place to hang the function pointers in the DM for each level*/
-  for (i=0; i<(**dmmg)->nlevels; i++) {
-    *ierr = PetscFree(((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
-  }
   *ierr = DMMGDestroy(*dmmg);
 }
 
