@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.92 1996/02/15 00:56:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.93 1996/02/19 03:51:06 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -501,11 +501,32 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 #include "viewer.h"
 #include "sysio.h"
 
+static int MatView_MPIRowbs_ASCII_Base_Private(Mat_MPIRowbs *a)
+{
+  BSspmat *A = a->A;
+  BSsprow **rs = A->rows;
+  int     i, j;
+  FILE    *fd;
+
+  fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
+          a->rank,a->m,a->rstart,a->rend,a->n,0,a->N);
+  for ( i=0; i<A->num_rows; i++ ) {
+    fprintf(fd,"row %d:",i+a->rstart);
+    for (j=0; j<rs[i]->length; j++) {
+      fprintf(fd," %d %g ", rs[i]->col[j], rs[i]->nz[j]);
+    }
+    fprintf(fd,"\n");
+  }
+  fflush(fd);
+  return 0;
+}
+
 static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
-  int          ierr, format, i, j;
+  int          ierr, format, i, rank, size, row;
   FILE         *fd;
+  PetscObject  vobj = (PetscObject) viewer;
 
   ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
@@ -525,20 +546,38 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
     MPIU_Seq_end(mat->comm,1);
   }
   else {
-    BSspmat *A = a->A;
-    BSsprow **rs = A->rows;
-    MPIU_Seq_begin(mat->comm,1);
-    fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
-            a->rank,a->m,a->rstart,a->rend,a->n,0,a->N);
-    for ( i=0; i<A->num_rows; i++ ) {
-      fprintf(fd,"row %d:",i+a->rstart);
-      for (j=0; j<rs[i]->length; j++) {
-        fprintf(fd," %d %g ", rs[i]->col[j], rs[i]->nz[j]);
-      }
-      fprintf(fd,"\n");
+    if (vobj->type == ASCII_FILE_VIEWER) {
+      MPIU_Seq_begin(mat->comm,1);
+      ierr = MatView_MPIRowbs_ASCII_Base_Private(a); CHKERRQ(ierr);
+      MPIU_Seq_end(mat->comm,1);
     }
-    fflush(fd);
-    MPIU_Seq_end(mat->comm,1);
+    else {
+      size = a->size; rank = a->rank;
+      if (size == 1) {
+        ierr = MatView_MPIRowbs_ASCII_Base_Private(a); CHKERRQ(ierr);
+      }
+      else { /* Assemble the entire matrix onto first processor */
+        Mat mat2;
+        BSspmat *A = a->A;
+        BSsprow **rs = A->rows;
+        int     M = a->M, m;
+        if (!rank) {
+          ierr = MatCreateMPIRowbs(mat->comm,M,M,0,PETSC_NULL,PETSC_NULL,&mat2); CHKERRQ(ierr);
+        }
+        else {
+          ierr = MatCreateMPIRowbs(mat->comm,0,M,0,PETSC_NULL,PETSC_NULL,&mat2); CHKERRQ(ierr);
+        }
+        PLogObjectParent(mat,mat2);
+        A = a->A; rs = A->rows;
+        row = a->rstart;
+        for ( i=0; i<m; i++ ) {
+	  ierr = MatSetValues(mat2,1,&row,rs[i]->length,rs[i]->col,rs[i]->nz,
+                 INSERT_VALUES); CHKERRQ(ierr);
+          row++;
+        }
+        ierr = MatDestroy(mat2); CHKERRQ(ierr);
+      }
+    }
   }
   return 0;
 }
