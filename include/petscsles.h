@@ -12,7 +12,7 @@ extern int SLESGetKSP(SLES,KSP*);
 extern int SLESSetMat(SLES,Mat);
 extern int SLESSolve(SLES,Vec,Vec);
 extern int SLESSetFromOptions(SLES);
-
+extern int SLESDestroy(SLES);
 extern int SLESPrintHelp(SLES);
 
 #endif
