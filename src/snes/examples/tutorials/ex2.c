@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.4 1995/04/14 21:26:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.5 1995/04/15 03:29:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
@@ -35,7 +35,7 @@ int main( int argc, char **argv )
 
   ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERR(ierr);
   ierr = DrawOpenX(MPI_COMM_SELF,0,0,400,0,400,400,&monP.win2); CHKERR(ierr);
-  ierr = VecCreateSequential(n,&x); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecCreate(x,&r); CHKERRA(ierr);
   ierr = VecCreate(x,&F); CHKERRA(ierr);
