@@ -1,34 +1,46 @@
 #!/usr/bin/env python
-import commands
 import os
-import re
 import sys
-import time
 
 class Patch (object):
-  def __init__(self, clArgs = None):
-    import bs.nargs
-    self.argDB    = self.setupArgDB(clArgs)
+  def __init__(self, clArgs = None, argDB = None):
+    self.argDB    = self.setupArgDB(clArgs, argDB)
     self.root     = os.getcwd()
-    self.patchDir = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
+    self.logFile  = sys.stdout
     self.checkPetscRoot(self.root)
     return
 
-  def setupArgDB(self, clArgs):
-    import bs.nargs
-    argDB = bs.nargs.ArgDict('ArgDict', localDict = 1)
-    # Actions
-    argDB.setLocalType('submit', bs.nargs.ArgBool('Construct and submit a patch for Petsc'))
-    argDB.setLocalType('doVersion', bs.nargs.ArgBool('Update petscversion.h'))
-    argDB.setLocalType('doPush', bs.nargs.ArgBool('Push changes'))
-    argDB.setLocalType('makePatch', bs.nargs.ArgBool('Construct the patch for Petsc'))
-    argDB.setLocalType('makeMasterPatch', bs.nargs.ArgBool('Construct the master patch for Petsc'))
-    argDB.setLocalType('integrate', bs.nargs.ArgBool('Integrate changes into the Petsc development repository'))
-    # Variables
-    argDB.setLocalType('version', bs.nargs.ArgString('The version number, e.g. 2.1.0'))
+  def setupArgDB(self, clArgs, initDB):
+    import RDict
+    import nargs
 
-    argDB.insertArgList(clArgs)
+    argDB = RDict.RDict()
+    # Actions
+    argDB.setType('updateVersion',   nargs.ArgBool(None, 1, 'Update petscversion.h'))
+    argDB.setType('pushChange',      nargs.ArgBool(None, 1, 'Push changes'))
+    argDB.setType('makePatch',       nargs.ArgBool(None, 1, 'Construct the patch for Petsc'))
+    argDB.setType('makeMasterPatch', nargs.ArgBool(None, 1, 'Construct the master patch for Petsc'))
+    argDB.setType('integratePatch',  nargs.ArgBool(None, 1, 'Integrate changes into the Petsc development repository'))
+    argDB.setType('updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
+    # Variables
+    patchDir = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
+    if not os.path.isdir(patchDir): patchDir = None
+    argDB.setType('patchDir',        nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
+    # Variables necessary when some actions are excluded
+    argDB.setType('version',         nargs.Arg(None, None, 'The version number being patched, e.g. 2.1.0', isTemporary = 1))
+    argDB.setType('patchNum',        nargs.ArgInt(None, None, 'The patch number, e.g. 1', min = 1, isTemporary = 1))
+    argDB.setType('changeSets',      nargs.Arg(None, None, 'The ChangeSets which were pushed, e.g. 1.1052', isTemporary = 1))
+    argDB.setType('dryRun',          nargs.ArgBool(None, 0, 'Log all actions which would be taken, but do not actually do anything', isTemporary = 1))
+
+    argDB.insertArgs(clArgs)
     return argDB
+
+  def writeLogLine(self, message):
+    '''Writes the message to the log along with the current time'''
+    import time
+    self.logFile.write('('+str(os.getpid())+')('+str(id(self))+')'+message+' ['+time.asctime(time.localtime())+']\n')
+    self.logFile.flush()
+    return
 
   def defaultCheckCommand(self, command, status, output):
     if status: raise RuntimeError('Could not execute\''+command+'\': '+output)
@@ -36,12 +48,17 @@ class Patch (object):
 
   # Should use Maker.executeShellCommand() here
   def executeShellCommand(self, command, checkCommand = None):
-    print 'Executing: '+command
+    '''Execute a shell command, unless -dryRun is specified'''
+    import commands
+
+    self.writeLogLine('Executing shell cmd: '+command)
+    if self.argDB['dryRun']: return ''
     (status, output) = commands.getstatusoutput(command)
     if checkCommand:
       checkCommand(command, status, output)
     else:
       self.defaultCheckCommand(command, status, output)
+    self.writeLogLine('  Output: '+output)
     return output
 
   def checkPetscRoot(self, root):
@@ -52,9 +69,15 @@ class Patch (object):
 
   def setVersion(self):
     '''If petscversion.h has not been edited, increment the patch level and checkin'''
+    if not self.argDB['updateVersion']: return
+    import re
+    import time
+
     filename = os.path.join(self.root, 'include', 'petscversion.h')
+    # Check to see if petscversion.h was edited
     output   = self.executeShellCommand('bk sfiles -lg '+filename)
-    if output.find(filename) >= 0: return
+    if output and output.find(filename) >= 0: return
+    # Parse petscversion.h and calculate the new version
     self.executeShellCommand('bk edit '+filename)
     majorRE    = re.compile(r'^#define PETSC_VERSION_MAJOR([\s]+)(?P<versionNum>\d+)[\s]*$');
     minorRE    = re.compile(r'^#define PETSC_VERSION_MINOR([\s]+)(?P<versionNum>\d+)[\s]*$');
@@ -77,74 +100,96 @@ class Patch (object):
         subminorNum = int(m3.group('versionNum'))
 
       if m4:
-        self.patchNum = int(m4.group('patchNum'))+1
-        lines.append('#define PETSC_VERSION_PATCH'+m4.group(1)+str(self.patchNum)+'\n')
+        patchNum = int(m4.group('patchNum'))+1
+        lines.append('#define PETSC_VERSION_PATCH'+m4.group(1)+str(patchNum)+'\n')
       elif m5:
         self.date = time.strftime('%b %d, %Y', time.localtime(time.time()))
         lines.append('#define PETSC_VERSION_DATE'+m5.group(1)+'"'+self.date+'"\n')
       else:
         lines.append(line)
     input.close()
-    output = file(filename, 'w')
-    output.writelines(lines)
-    output.close()
-    self.executeShellCommand('bk ci -u -y"Cranked up patch level" '+filename)
-    version = majorNum+'.'+minorNum+'.'+subminorNum
-    if self.argDB.has_key('version'):
-      if not self.argDB['version'] == verison:
+    # Update the version and patchNum in argDB
+    version = '%d.%d.%d' % (majorNum, minorNum, subminorNum)
+    if 'version' in self.argDB:
+      if not self.argDB['version'] == version:
         raise RuntimeError('Specified version ('+self.argDB['version']+') disagrees with petscversion.h ('+version+')')
     else:
       self.argDB['version'] = version
-    print 'Changed version to '+version+'.'+self.patchNum
+    if 'patchNum' in self.argDB:
+      if not self.argDB['patchNum'] == patchNum:
+        raise RuntimeError('Specified patch number ('+self.argDB['patchNum']+') disagrees with the one create ('+str(patchNum)+')')
+    else:
+      self.argDB['patchNum'] = patchNum
+    # Write the new petscversion.h
+    if not self.argDB['dryRun']:
+      output = file(filename, 'w')
+      output.writelines(lines)
+      output.close()
+    # Check in the new petscversion.h
+    self.executeShellCommand('bk ci -u -y"Cranked up patch level" '+filename)
+    self.writeLogLine('Changed version to '+version+'.'+str(patchNum))
     return
 
   def pushChange(self):
     '''Push the change and parse the output to discover the change sets'''
+    if not self.argDB['pushChange']: return
+    import re
+
+    # Create any remaining change set
     self.executeShellCommand('bk citool')
+    # Get the change sets to be pushed
+    changeSets = []
+    output     = self.executeShellCommand('bk changes -L')
+    setRE      = re.compile(r'ChangeSet@(?P<changeSet>\d+(\.\d+)*),.*')
+    for line in output.split('\n'):
+      m = setRE.match(line)
+      if m:
+        changeSets.append(m.group('changeSet'))
+    changeSets.sort()
     output = self.executeShellCommand('bk push')
-    # Get the change sets pushed
-    self.changeSets = []
-    m = re.search(r'----------------------- Sending the following csets -----------------------\n(?P<sets>[\d\. ]+)\n---------------------------------------------------------------------------', output)
-    if m:
-      sets = re.split(r'\s+', m.group('sets'))
-      for set in sets:
-        if not set: continue
-        print 'Change Set: '+set
-        m = re.match(r'^(\d)\.(\d+)$', set)
-        if m and m.group(1) == '1':
-          self.changeSets.append(int(m.group(2)))
-        else:
-          raise RuntimeError('Invalid change set: '+set)
+    self.writeLogLine('Pushed change sets '+str(changeSets))
+    if 'changeSets' in self.argDB:
+      if not self.argDB['changeSets'] == changeSets:
+        raise RuntimeError('Specified ChangeSets ('+self.argDB['changeSets']+') disagree with those pushed ('+str(changeSets)+')')
     else:
-      raise RuntimeError('Cannot parse push output: '+output)
-    print 'Pushed changes in '+str(self.changeSets)
-    return self.changeSets
+      self.argDB['changeSets'] = changeSets
+    return
+
+  def prevChangeSet(self, set):
+    '''Find the previous ChangeSet'''
+    num = set.split('.')
+    if len(num) > 2:
+      raise RuntimeError('A merge set should not be the first change set')
+    return num[0]+str(int(num[1])-1)
 
   def makePatch(self):
-    '''Make a patch, self.patchNum, from the pushed change sets, self.changeSets'''
-    command = 'bk export -tpatch -T'
-    if len(self.changeSets) == 1:
-      command += ' -r1.'+str(self.changeSets[0])
+    '''Make a patch from the pushed change sets'''
+    if not self.argDB['makePatch']: return
+    changeSets = self.argDB['changeSets']
+    command    = 'bk export -tpatch -T'
+    if len(changeSets) == 1:
+      command += ' -r'+str(changeSets[0])
     else:
-      command += ' -r1.'+str(min(self.changeSets)-1)+',1.'+str(max(self.changeSets))
+      command += ' -r'+str(self.prevChangeSet(changeSets[0]))+','+str(changeSets[-1])
     self.patch = self.executeShellCommand(command)
 
-    patchName = os.path.join(self.patchDir, 'petsc_patch-'+self.version+'.'+str(self.patchNum))
+    patchName = os.path.join(self.argDB['patchDir'], 'petsc_patch-'+self.argDB['version']+'.'+str(self.argDB['patchNum']))
     patchFile = file(patchName, 'w')
     patchFile.write(self.patch)
     patchFile.close()
     os.chmod(patchName, 0644)
-    print 'Made patch '+patchFile.name
+    self.writeLogLine('Made patch '+patchName)
     return
 
   def makeMasterPatch(self):
     '''Recreate the master patch from all patch files present'''
-    masterName = os.path.join(self.patchDir, 'petsc_patch_all-'+self.version)
+    if not self.argDB['makeMasterPatch']: return
+    masterName = os.path.join(self.argDB['patchDir'], 'petsc_patch_all-'+self.argDB['version'])
     if os.path.exists(masterName): os.remove(masterName)
     masterFile = file(masterName, 'w')
-    for num in range(self.patchNum+1):
+    for num in range(self.argDB['patchNum']+1):
       try:
-        patchFile = file(os.path.join(self.patchDir, 'petsc_patch-'+self.version+'.'+str(num)))
+        patchFile = file(os.path.join(self.argDB['patchDir'], 'petsc_patch-'+self.argDB['version']+'.'+str(num)))
         patch     = patchFile.read()
         patchFile.close()
         masterFile.write(patch)
@@ -152,59 +197,49 @@ class Patch (object):
         pass
     masterFile.close()
     os.chmod(masterName, 0664)
-    print 'Made master patch '+patchFile.name
+    self.writeLogLine('Made master patch '+masterName)
     return
 
-  def integrateChange(self):
-    # Precondition
-    if not self.argDB.has_key('version'):
-      raise RuntimeError('No version number specified')
+  def getPetscDevelopmentDir(self):
+    '''Find the development copy of PETSc'''
+    dir = os.path.abspath(os.path.join(os.getcwd(), '..', 'petsc'))
+    if not os.path.isdir(dir):
+      dir = os.path.abspath(os.path.join(os.getcwd(), '..', 'petsc-dev'))
+      if not os.path.isdir(dir):
+        raise RuntimeError('Could not find PETSc development directory')
+    # I should really check that its parent is the dev repository
+    return dir
+
+  def integratePatch(self):
+    '''This method pulls the patch back into the development repository'''
+    if not self.argDB['integratePatch']: return
+    oldDir = os.getcwd()
+    os.chdir(self.getPetscDevelopmentDir())
     output = self.executeShellCommand('bk pull bk://petsc.bkbits.net/petsc-release-'+self.argDB['version'])
-    print 'Integrated changes into development repository'
+    os.chdir(oldDir)
+    self.writeLogLine('Integrated changes into development repository')
     return
 
-  def setupRun(self):
-    if self.argDB.has_key('submit') and self.argDB['submit']:
-      self.doVersion     = 1
-      self.doPush        = 1
-      self.doPatch       = 1
-      self.doMasterPatch = 1
-    if self.argDB.has_key('updateVersion') and self.argDB['updateVersion']:
-      self.doVersion = 1
-    if self.argDB.has_key('pushChange') and self.argDB['pushChange']:
-      self.doPush = 1
-    if self.argDB.has_key('makePatch') and self.argDB['makePatch']:
-      self.doPatch = 1
-    if self.argDB.has_key('makeMasterPatch') and self.argDB['makeMasterPatch']:
-      self.doMasterPatch = 1
-    if self.argDB.has_key('integrate') and self.argDB['integrate']:
-      self.doIntegrate = 1
+  def updateWeb(self):
+    '''Update the patches web page'''
+    if not self.argDB['updateWeb']: return
+    self.writeLogLine('Cannot update web until after merge with petsc-private')
     return
 
   def submit(self):
-    self.setupRun()
-    if doVersion:
-      self.setVersion()
-    if doPush:
-      self.pushChange()
-    if doPatch:
-      self.makePatch()
-    if doMasterPatch:
-      self.makeMasterPatch()
-    #self.updateWeb()
-    if doIntegrate:
-      self.integrateChange()
+    self.setVersion()
+    self.pushChange()
+    self.makePatch()
+    self.makeMasterPatch()
+    self.integratePatch()
+    self.updateWeb()
     return
 
 if __name__ == '__main__':
   sys.path.insert(0, os.path.abspath('python'))
   try:
     Patch(sys.argv[1:]).submit()
-    # Need self.patchNum and self.changeSets set in order to bypass the push
-    # Need a better way of getting change sets
-    #   Should be 
   except Exception, e:
-    import sys
     import traceback
 
     print traceback.print_tb(sys.exc_info()[2])
