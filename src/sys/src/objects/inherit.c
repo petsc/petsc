@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.37 1998/06/04 22:42:17 balay Exp curfman $";
+static char vcid[] = "$Id: inherit.c,v 1.38 1998/06/14 18:23:22 curfman Exp bsmith $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -10,10 +10,10 @@ static char vcid[] = "$Id: inherit.c,v 1.37 1998/06/04 22:42:17 balay Exp curfma
 extern int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
 extern int PetscObjectCompose_Petsc(PetscObject,char *,PetscObject);
 extern int PetscObjectQuery_Petsc(PetscObject,char *,PetscObject *);
-extern int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
-extern int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 extern int PetscObjectComposeFunction_Petsc(PetscObject,char *,char *,void *);
 extern int PetscObjectQueryFunction_Petsc(PetscObject,char *,void **);
+extern int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
+extern int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 
 #undef __FUNC__  
 #define __FUNC__ "PetscHeaderCreate_Private"
@@ -29,6 +29,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,in
   h->type                   = type;
   h->prefix                 = 0;
   h->refct                  = 1;
+  h->amem                   = -1;
   h->bops->destroy          = des;
   h->bops->view             = vie;
   h->bops->getcomm          = PetscObjectGetComm_Petsc;
@@ -57,7 +58,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
   PetscFree(h->bops);
   PetscFree(h->ops);
   ierr = OListDestroy(&h->olist);CHKERRQ(ierr);
-  ierr = DLRegisterDestroy(h->qlist); CHKERRQ(ierr);
+  ierr = FListDestroy(h->qlist); CHKERRQ(ierr);
   if (h->type_name) PetscFree(h->type_name);
   h->cookie = PETSCFREEDHEADER;
   if (h->prefix) PetscFree(h->prefix);
@@ -220,7 +221,7 @@ int PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,char *fname,void
   int ierr;
 
   PetscFunctionBegin;
-  ierr = DLRegister(&obj->qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);
+  ierr = FListAdd(&obj->qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -231,7 +232,7 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(obj->comm,obj->qlist,name,( int(**)(void *)) ptr);CHKERRQ(ierr);
+  ierr = FListFind(obj->comm,obj->qlist,name,( int(**)(void *)) ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
