@@ -1,0 +1,35 @@
+# $Id: base.site,v 1.5 2001/03/22 04:38:46 balay Exp $ 
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK
+#
+#BLAS_LIB       = -Lc:/cblas -lblas
+#LAPACK_LIB     = -Lc:/cblas -llapack
+MKL_HOME       = C:/Progra~1/Intel/plsuite
+LAPACK_LIB     = -L'"$(MKL_HOME)/lib32/dll"' mkl_c.lib
+
+#
+# Location of MPI (Message Passing Interface) software  
+#
+# To use the single processor MPI interface provided in PETSc
+#
+MPI_INCLUDE    = -I$(PETSC_DIR)/src/sys/src/mpiuni -DMPIUNI_USE_STDCALL
+MPI_LIB        = -lmpiuni
+MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
+
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+#  Optional location for ALICE Memory Snooper
+#
+#AMS_HOME    = c:/Program Files/Argonne National Laboratory/Alice Memory Snooper
+#AMS_INCLUDE = -I'"$(AMS_HOME)/include"'
+#AMS_LIB     = -L'"$(AMS_HOME)/src/pubacc/pub/Release"' -L'"$(AMS_HOME)/src/util/Release"' -L'"$(AMS_HOME)/src/mpiuni/Release"'  amspub.lib amsutil.lib amsmpiuni.lib wsock32.lib
+#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
+
