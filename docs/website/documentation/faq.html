@@ -250,7 +250,7 @@
     types share the same filesystem, PETSC_ARCH will be set correctly when logging into any of
     them. </p>
     <p>c) Begin by copying one of the many PETSc examples (in, for example,
-    petsc/src/sles/examples/tutorials) and its corresponding makefile. </p>
+    petsc/src/ksp/examples/tutorials) and its corresponding makefile. </p>
     <p>d) See the introductory section of the PETSc users manual for tips on documentation. </p>
     <p><a name="reduce-disk-space"><strong><font color="#FF0000">The PETSc distribution is SO
     large. How can I reduce my disk space usage?</font> </strong></a></p>
@@ -378,7 +378,7 @@
     petsc/bmake/${PETSC_ARCH}/base.${BOPT} Then use these options at runtime: -log_summary
     -optionsleft See the Performance chapter of the users manual for information on
     interpreting the summary data. If using the PETSc (non)linear solvers, one can also
-    specify -snes_view or -sles_view for a printout of solver info. Only the highest level
+    specify -snes_view or -ksp_view for a printout of solver info. Only the highest level
     PETSc object used needs to specify the view option. </p>
     <hr>
     <h3><a name="Debugging">Debugging</a></h3>
