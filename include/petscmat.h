@@ -72,7 +72,6 @@ E*/
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE;
-extern PetscCookie PETSCMAT_DLLEXPORT MATSNESMFCTX_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_FDCOLORING_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
@@ -1316,7 +1315,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace,Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat,IS);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetColumnIndices(Mat,PetscInt *);
-EXTERN PetscErrorCode MatSeqBAIJInvertBlockDiagonal(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJInvertBlockDiagonal(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat,PetscInt,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJRedimension(Mat,PetscInt,Mat*);

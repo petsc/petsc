@@ -22,7 +22,7 @@
 
   Level: advanced
 @*/
-PetscErrorCode MatSeqBAIJInvertBlockDiagonal(Mat mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJInvertBlockDiagonal(Mat mat)
 {
   PetscErrorCode ierr,(*f)(Mat);
 
@@ -43,7 +43,7 @@ PetscErrorCode MatSeqBAIJInvertBlockDiagonal(Mat mat)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqBAIJ"
-PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;

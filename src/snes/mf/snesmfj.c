@@ -5,6 +5,9 @@
 PetscFList MatSNESMPetscFList         = 0;
 PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
 
+PetscCookie MATSNESMFCTX_COOKIE = 0;
+PetscEvent  MATSNESMF_Mult = 0;
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetType"
 /*@C
@@ -232,7 +235,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  ierr = PetscLogEventBegin(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
 
   snes = ctx->snes;
   w    = ctx->w;
@@ -288,7 +291,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr = PetscLogEventEnd(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -37,7 +37,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path)
   ierr = MatRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&MAT_Mult,                     "MatMult",          MAT_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&MAT_MultMatrixFree,           "MatMultMatrixFre", MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_Mults,                    "MatMults",         MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MultConstrained,          "MatMultConstr",    MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MultAdd,                  "MatMultAdd",       MAT_COOKIE);CHKERRQ(ierr);

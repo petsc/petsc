@@ -9,8 +9,7 @@
 
 /* Logging support */
 PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE = 0;
-PetscCookie PETSCMAT_DLLEXPORT MATSNESMFCTX_COOKIE = 0;
-PetscEvent  MAT_Mult = 0, MAT_MultMatrixFree = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
+PetscEvent  MAT_Mult = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
 PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0;
 PetscEvent  MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
 PetscEvent  MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;

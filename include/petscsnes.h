@@ -34,7 +34,8 @@ E*/
 /* Logging support */
 extern PetscCookie SNES_COOKIE;
 extern PetscEvent    SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
-
+extern PetscCookie MATSNESMFCTX_COOKIE;
+extern PetscEvent    MATSNESMF_Mult;
 
 EXTERN PetscErrorCode SNESInitializePackage(const char[]);
 
