@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.11 1999/05/12 03:32:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.12 1999/05/24 19:52:36 bsmith Exp bsmith $";
 #endif
 /*
   Implements an alternative approach for computing the differencing parameter
@@ -51,7 +51,6 @@ typedef struct {
 static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 {
   MatSNESMFWP        *hctx = (MatSNESMFWP *) ctx->hctx;
-  MPI_Comm           comm = ctx->comm;
   double             normU;
   double             norma = 1.0;
   int                ierr;
