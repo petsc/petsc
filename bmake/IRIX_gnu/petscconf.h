@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.1 1999/09/27 16:04:19 balay Exp balay $"
+"$Id: petscconf.h,v 1.2 1999/09/27 22:31:50 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -44,5 +44,7 @@
 #define PETSC_HAVE_RTLD_GLOBAL 1
 
 #define PETSC_HAVE_4ARG_SIGNAL_HANDLER
+
+#define PETSC_HAVE_TEMPLATED_COMPLEX
 
 #endif
