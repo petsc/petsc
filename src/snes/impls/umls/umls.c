@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.96 2000/05/05 22:18:26 balay Exp bsmith $*/
+/*$Id: umls.c,v 1.97 2000/05/10 16:42:47 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -99,6 +99,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     ierr = VecNorm(S,NORM_2,&snorm);CHKERRQ(ierr);
 
     /* Line search */
+    neP->step = 1.0;
     ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),&tnorm,&(neP->line));
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->norm = tnorm;
