@@ -18,7 +18,7 @@ EXAMPLESCH     = appctx.h
 
 main: chkopts main.o appview.o appload.o functions.o integrator.o
 	-$(RM) main
-	-$(CLINKER) -o main main.o appview.o appload.o integrator.o functions.o $(PETSC_LIB)
+	-$(CLINKER) -o main main.o appview.o appload.o integrator.o functions.o $(PETSC_SNES_LIB)
 
 include $(PETSC_DIR)/bmake/common/base
 

@@ -29,11 +29,11 @@ OBJSC          = inpututils.o
 EXAMPLESC      = input.c triconvert.c
 
 input: chkopts input.o
-	-${CLINKER} -o input input.o ${PETSC_LIB}
+	-${CLINKER} -o input input.o ${PETSC_DM_LIB}
 	-${RM} input.o
 
 triconvert: chkopts triconvert.o
-	-${CLINKER} -o triconvert triconvert.o ${PETSC_LIB}
+	-${CLINKER} -o triconvert triconvert.o ${PETSC_DM_LIB}
 	-${RM} triconvert.o
 
 include ${PETSC_DIR}/bmake/common/base

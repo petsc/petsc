@@ -20,12 +20,12 @@ DIRS           = scalable
 
 main: chkopts ${EXAMPLESO}
 	-$(RM) main
-	-$(CLINKER) -o main ${EXAMPLESO} $(PETSC_LIB)
+	-$(CLINKER) -o main ${EXAMPLESO} $(PETSC_SNES_LIB)
 	-$(RM) ${EXAMPLESO}
 
 finput: chkopts finput.o
 	-$(RM) finput
-	-$(CLINKER) -o finput finput.o $(PETSC_LIB)
+	-$(CLINKER) -o finput finput.o $(PETSC_SNES_LIB)
 	-$(RM) finput.o
 
 include $(PETSC_DIR)/bmake/common/base

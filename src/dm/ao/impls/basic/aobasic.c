@@ -300,7 +300,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   /* get all indices on all processors */
   ierr   = PetscMalloc(2*N * sizeof(int), &allpetsc);                                                     CHKERRQ(ierr);
   allapp = allpetsc + N;
-  ierr   = MPI_Allgatherv(mypetsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);                   CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv(petsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
   ierr   = MPI_Allgatherv(myapp, napp, MPI_INT, allapp, lens, disp, MPI_INT, comm);                       CHKERRQ(ierr);
   ierr   = PetscFree(lens);                                                                               CHKERRQ(ierr);
 

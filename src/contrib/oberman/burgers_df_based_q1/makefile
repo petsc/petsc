@@ -17,7 +17,7 @@ LOCDIR     = src/usg/2d/constant_bilinear/
 
 main: chkopts main.o appview.o appload.o functions.o appsetalg.o
 	-$(RM) main
-	-$(CLINKER) -o main main.o appview.o appload.o appsetalg.o functions.o $(PETSC_LIB)
+	-$(CLINKER) -o main main.o appview.o appload.o appsetalg.o functions.o $(PETSC_SNES_LIB)
 	-$(RM) main.o appview.o appload.o functions.o appsetalg.o
 
 include $(PETSC_DIR)/bmake/common/base
