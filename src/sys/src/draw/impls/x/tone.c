@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tone.c,v 1.1 1995/04/18 20:48:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.2 1995/04/19 03:00:37 bsmith Exp bsmith $";
 #endif
 
 #include "ximpl.h"
@@ -19,7 +19,7 @@ int XiDrawInterpolatedTriangle(DrawCtx_X* win, int x1, int y1, int t1,
                                 int x2,int y2,int t2,int x3,int y3,int t3)
 {
   double rfrac, lfrac;
-  int    lc, rc, lx, rx, xx, y, off,c;
+  int    lc, rc = 0, lx, rx = 0, xx, y, off,c;
   int    rc_lc, rx_lx, t2_t1, x2_x1, t3_t1, x3_x1, t3_t2, x3_x2;
   double R_y2_y1, R_y3_y1, R_y3_y2;
 
@@ -85,7 +85,7 @@ int XiDrawInterpolatedTriangle(DrawCtx_X* win, int x1, int y1, int t1,
 
   /* For simplicity, "move" t1 to the intersection of t1-t3 with the line y=y2.
      We take advantage of the previous iteration. */
-  if (y2 >= y3) return;
+  if (y2 >= y3) return 0;
   if (y1 < y2) {
     t1 = rc;
     y1 = y2;
