@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.32 2000/10/31 18:28:45 bsmith Exp bsmith $
+!  $Id: user.F,v 1.33 2001/01/15 21:49:32 bsmith Exp balay $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -1065,18 +1065,18 @@
        integer ncolor,ncount(1)
 #elif defined(HAVE_REDUNDANT_WORK)
        Scalar resd(4,nnodes)
-#undef res(a,b)
+#undef res
 #define res(a,b) resd(a,b)
 #else
        integer nedgeAllThr,part_thr(nnodes),nedge_thr(0:max_threads),         &
      &     edge_thr(2,nedgeAllThr)
        Scalar xyzn_thr(4,nedgeAllThr)
-#undef eptr(a,b)
+#undef eptr
 #define eptr(a,b) edge_thr(b,a)
-#undef xn(i)
-#undef yn(i)
-#undef zn(i)
-#undef ra(i)
+#undef xn
+#undef yn
+#undef zn
+#undef ra
 #define xn(i) xyzn_thr(1,i)
 #define yn(i) xyzn_thr(2,i)
 #define zn(i) xyzn_thr(3,i)
@@ -1412,7 +1412,7 @@
        flops = flops + 4*nnodes
 !$omp end critical (residual_update)
 !$omp end parallel
-#undef res(a,b)
+#undef res
 #define res(a,b) resvec(a,b)
 #else
 !$omp end parallel
@@ -2395,7 +2395,7 @@
 !     save delta2_event,delta2_label
 #if defined(INTERLACING)
        Scalar resvec(4,nnodes)
-#undef res(a,b)
+#undef res
 #define res(i,j) resvec(i,j)
 #else
        Scalar resvec(nnodes,4)
