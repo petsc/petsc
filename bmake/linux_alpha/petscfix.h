@@ -15,16 +15,10 @@
 
 #include "petsc.h"
 
-/*
-  This prototype lets us resolve the datastructure 'rusage' only in
-  the source files using getrusage, and not in other source files.
-*/
-typedef struct rusage* s_rusage;
 
-/* -----------------------linux ------------------------------------------*/
 #if defined(__cplusplus)
 extern "C" {
-extern void* memalign (int,int);
+
 }
 #endif
 #endif
