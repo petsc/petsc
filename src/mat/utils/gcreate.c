@@ -256,6 +256,8 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
 
   /* copy C over to A */
   if (C) {
