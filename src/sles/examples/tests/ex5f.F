@@ -1,5 +1,5 @@
 
-C      "$Id: ex5f.F,v 1.1 1997/05/01 21:43:40 bsmith Exp bsmith $";
+C      "$Id: ex5f.F,v 1.2 1997/07/10 20:21:26 balay Exp balay $";
 
        implicit none
 
@@ -43,7 +43,6 @@ C
       call VecDestroy(y,ierr)
 
       call PetscFinalize(ierr)
-      stop
       end
 
 
