@@ -559,6 +559,8 @@ class Configure(config.base.Configure):
       if self.gccFormatChecking:
         self.addDefine(self.gccFormatChecking[0], self.gccFormatChecking[1])
       self.addDefine('C_STATIC_INLINE', self.cStaticInlineKeyword)
+      if 'with-language' in self.framework.argDB and self.framework.argDB['with-language'].lower() == 'c':
+        self.addDefine('STATIC_INLINE', self.cStaticInlineKeyword)
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
       setattr(self, 'CXX', self.argDB['CXX'])
@@ -571,6 +573,8 @@ class Configure(config.base.Configure):
       if self.cxxNamespace:
         self.addDefine('HAVE_CXX_NAMESPACE', 1)
       self.addDefine('CXX_STATIC_INLINE', self.cxxStaticInlineKeyword)
+      if 'with-language' in self.framework.argDB and self.framework.argDB['with-language'].lower() == 'cxx':
+        self.addDefine('STATIC_INLINE', self.cxxStaticInlineKeyword)
     if 'FC' in self.framework.argDB:
       self.pushLanguage('FC')
       setattr(self, 'FC', self.argDB['FC'])
