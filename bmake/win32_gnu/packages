@@ -24,6 +24,8 @@ LAPACK_LIB     =  /home/bsmith/lapack/lapack_nt_gnu_double.a \
 #
 #X11_INCLUDE    = -I/usr/local/X11R5/include
 #X11_LIB        = -lX11
+X11_INCLUDE	=
+X11_LIB 	=
 #
 # Location of MPI (Message Passing Interface) software  
 #
