@@ -1,40 +1,51 @@
-#!/usr/bin/env python
-import importer
-import install.base
+import install.urlMapping
 
 import os
 import sys
 
-class Installer(install.base.Base):
-  def __init__(self, clArgs = None, localDict = 0, initDict = None):
+class Installer(install.urlMapping.UrlMapping):
+  def __init__(self, clArgs = None, argDB = None):
     import install.build
     import install.retrieval
 
-    install.base.Base.__init__(self, self.setupArgDB(clArgs, localDict, initDict))
-    self.retriever = install.retrieval.Retriever(self.argDB)
-    self.builder   = install.build.Builder(self.argDB)
+    install.urlMapping.UrlMapping.__init__(self, clArgs, argDB)
+    self.retriever = install.retrieval.Retriever()
+    self.builder   = install.build.Builder()
     self.force     = self.argDB['forceInstall']
+    self.checkPython()
+    self.checkNumeric()
     return
 
-  def setupArgDB(self, clArgs, localDict, initDict):
+  def setupArgDB(self, argDB, clArgs):
+    '''Setup argument types, using the database created by base.Base'''
     import nargs
-    import RDict
-
-    if localDict:
-      parentDirectory = None
-    else:
-      parentDirectory = os.path.dirname(sys.modules['RDict'].__file__)
-    argDB = RDict.RDict(parentDirectory = parentDirectory)
 
     argDB.setType('backup',            nargs.ArgBool(None, 0, 'Backup makes a tar archive of the generated source rather than installing'), forceLocal = 1)
     argDB.setType('forceInstall',      nargs.ArgBool(None, 0, 'Forced installation overwrites any existing project'), forceLocal = 1)
     argDB.setType('userRepositories',  nargs.ArgBool(None, 0, 'Trys a user level login for all repositories'), forceLocal = 1)
     argDB.setType('retrievalCanExist', nargs.ArgBool(None, 0, 'Allow a project to exist prior to installation'), forceLocal = 1)
     argDB.setType('urlMappingModules', nargs.Arg(None, '', 'Module name or list of names with a method setupUrlMapping(urlMaps)'), forceLocal = 1)
-
-    argDB.insertArgs(clArgs)
-    argDB.insertArgs(initDict)
+    install.urlMapping.UrlMapping.setupArgDB(self, argDB, clArgs)
     return argDB
+
+  def checkPython(self):
+    import sys
+
+    if not hasattr(sys, 'version_info') or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
+      raise RuntimeError('BuildSystem requires Python version 2.2 or higher. Get Python at http://www.python.org')
+    return
+
+  def checkNumeric(self):
+    import distutils.sysconfig
+
+    try:
+      import Numeric
+    except ImportError, e:
+      raise RuntimeError('BuildSystem requires Numeric Python (http://www.pfdubois.com/numpy) to be installed: '+str(e))
+    header = os.path.join(distutils.sysconfig.get_python_inc(), 'Numeric', 'arrayobject.h')
+    if not os.path.exists(header):
+      raise RuntimeError('The include files from the Numeric are misplaced: Cannot find '+header)
+    return
 
   def install(self, url):
     self.debugPrint('Installing '+url, 3, 'install')

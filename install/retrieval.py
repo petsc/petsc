@@ -1,16 +1,14 @@
-import install.base
-import maker
+import install.urlMapping
 
 import os
 import urllib
 import urlparse
-
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['bk', 'ssh'])
 
-class Retriever(install.base.Base):
-  def __init__(self, argDB, base = ''):
-    install.base.Base.__init__(self, argDB, base)
+class Retriever(install.urlMapping.UrlMapping):
+  def __init__(self):
+    install.urlMapping.UrlMapping.__init__(self)
     return
 
   def removeRoot(self,root,canExist,force = 0):

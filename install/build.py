@@ -1,14 +1,23 @@
-import install.base
 import install.retrieval
+import install.urlMapping
 
 import os
 import sys
 
-class Builder(install.base.Base):
-  def __init__(self, argDB):
-    install.base.Base.__init__(self, argDB)
-    self.retriever = install.retrieval.Retriever(argDB)
+class Builder(install.urlMapping.UrlMapping):
+  def __init__(self):
+    install.urlMapping.UrlMapping.__init__(self)
+    self.retriever = install.retrieval.Retriever()
     return
+
+  def getMakeModule(self, root, name = 'make'):
+    import imp
+
+    (fp, pathname, description) = imp.find_module(name, [root])
+    try:
+      return imp.load_module(name, fp, pathname, description)
+    finally:
+      if fp: fp.close()
 
   def build(self, root, target = ['activate', 'default'], setupTarget = None, ignoreDependencies = 0):
     self.debugPrint('Building '+str(target)+' in '+root, 1, 'install')
@@ -54,6 +63,7 @@ class Builder(install.base.Base):
       for url in maker.executeTarget('getDependencies'):
         self.debugPrint('  Installing dependency '+url, 2, 'install')
         self.build(self.getInstallRoot(url), target = ['install'])
+      maker.executeTarget('install')
     # Save source database (since atexit() functions might not be called before another build)
     maker.sourceDB.save()
     return ret

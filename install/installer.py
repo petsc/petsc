@@ -18,7 +18,7 @@ def runinstaller(opts = []):
       installer.backup(url)
     else:
       if installer.checkBootstrap():
-        booter = installerclass.Installer(localDict = 0, initDict = installer.argDB)
+        booter = installerclass.Installer(argDB = installer.argDB)
         # Must build and install BuildSystem
         booter.builder.build(os.path.dirname(booter.builder.getRoot()))
         # Install Compiler and Runtime

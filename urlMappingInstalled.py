@@ -1,5 +1,3 @@
-import install.base
-
 import urlparse
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['bk', 'ssh'])
