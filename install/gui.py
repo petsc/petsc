@@ -85,7 +85,7 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
 
   def GetProject(self,stdscr):
     stdscr.clear()
-    CenterAddStr(stdscr,1,'Downloading '+self.project)
+    bootstrap.CenterAddStr(stdscr,1,'Downloading '+self.project)
     stdscr.refresh()
 
 #------------------------------------------------------------------
