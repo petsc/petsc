@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.111 1997/08/29 17:15:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.112 1997/09/26 02:19:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2419,45 +2420,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
 
   B->assembled = PETSC_TRUE;
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg); CHKERRQ(ierr);
-  if (flg) {
-    Viewer tviewer;
-    ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(tviewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-    ierr = MatView(B,tviewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
-  if (flg) {
-    Viewer tviewer;
-    ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(tviewer,VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
-    ierr = MatView(B,tviewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view",&flg); CHKERRQ(ierr);
-  if (flg) {
-    Viewer tviewer;
-    ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
-    ierr = MatView(B,tviewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_matlab",&flg); CHKERRQ(ierr);
-  if (flg) {
-    Viewer tviewer;
-    ierr = ViewerFileOpenASCII(B->comm,"stdout",&tviewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(tviewer,VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
-    ierr = MatView(B,tviewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
-  if (flg) {
-    Viewer tviewer;
-    ierr = ViewerDrawOpenX(B->comm,0,0,0,0,300,300,&tviewer); CHKERRQ(ierr);
-    ierr = MatView(B,(Viewer)tviewer); CHKERRQ(ierr);
-    ierr = ViewerFlush(tviewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(tviewer); CHKERRQ(ierr);
-  }
+  ierr = MatView_Private(B); CHKERRQ(ierr);
   return 0;
 }
 
