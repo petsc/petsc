@@ -10,16 +10,15 @@ OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscmat
 EXAMPLES_1    = ex1 ex3 ex5 ex6 ex8 ex9 ex10 ex11 ex14\
-		ex15 ex16 ex19 ex20 ex21 ex22
-RUNEXAMPLES_1 = runex1	runex3	runex5_2 runex5_3 runex6  runex8 runex9\
-		runex10 runex11 runex14 runex15 runex16\
-		runex20 runex21 runex22
+		ex15 ex19 ex20 ex21 ex22
+RUNEXAMPLES_1 = runex1 runex3 runex5_2 runex5_3 runex6 runex8 runex9 \
+		runex10 runex11 runex14 runex15 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
 		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex46
 RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 runex19 \
 		runex35 runex40 runex42 runex46
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
-		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
+		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c \
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
 		ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
 		ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
@@ -28,10 +27,10 @@ EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
 EXAMPLES_4    = ex1 ex2 ex4 ex5 ex6 ex10 ex14\
-		ex15 ex16 ex20 ex21 ex35 ex47 ex48
+		ex15 ex20 ex21 ex35 ex47 ex48
 RUNEXAMPLES_4 = runex1 runex2 runex2_2	runex4 runex5 runex6 \
 		runex10 runex14 runex15 runex15_2 \
-		runex16 runex20 runex21 runex35
+		runex20 runex21 runex35
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB)
@@ -330,11 +329,6 @@ runex15:
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   $(RM) -f ex15_1.tmp
-runex16:
-	-@$(MPIRUN)  ex16 > ex16_1.tmp 2>&1;   \
-	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
-	   else echo "Possible problem with ex16_1, diffs above"; fi; \
-	   $(RM) -f ex16_1.tmp
 runex17:
 	-@$(MPIRUN)  ex17 > ex17_1.tmp 2>&1;   \
 	   if (diff output/ex17_1.out ex17_1.tmp) then true; \
