@@ -1,28 +1,29 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
-FFLAGS	      =	 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscsnes
-LOCDIR        = src/snes/examples/
-EXAMPLES_1    = ex3 ex4 ex5 ex6
-RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6 \
-		runex6_2 runex6_3 runex6_4 runex6_5 runex6_6
-EXAMPLES_2    = ex1 ex2 ex7 ex8 ex9 ex13
-RUNEXAMPLES_2 = runex1 runex2 runex7 runex8 runex8_2 runex9 
-EXAMPLES_3    = ex12 
-RUNEXAMPLES_3 = runex12
-EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9
-RUNEXAMPLES_4 = runex1 runex2 runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 \
-		runex7 
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex13.c
-EXAMPLESF     = ex12.F ex10.f
-DIRS	      = umin
+CFLAGS	       = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
+FFLAGS	       =	 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscsnes
+LOCDIR         = src/snes/examples/
+TESTEXAMPLES_1 = ex3.PETSc runex3 runex3_2 clean ex4.PETSc runex4 runex4_2 \
+		clean ex5.PETSc runex5 runex5_2 clean ex6.PETSc runex6\
+		runex6_2 runex6_3 runex6_4 runex6_5 runex6_6 clean
+TESTEXAMPLES_2 = ex1.PETSc runex1 cleanf ex2.PETSc runex2 clean ex7.PETSc\
+		runex7 clean ex8.PETSc runex8 runex8_2 clean ex9.PETSc\
+		 runex9 ex13.PETSc clean 
+TESTEXAMPLES_3 = ex12.PETSc runex12  clean
+TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex3.PETSc\
+		runex3 runex3_2 clean ex4.PETSc runex4 runex4_2 clean \
+		ex5.PETSc runex5 runex5_2 clean ex6.PETSc ex7.PETSc runex7\
+		clean ex8.PETSc ex9.PETSc clean
+EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex13.c
+EXAMPLESF      = ex12.F ex10.f
+DIRS	       = umin
 #
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
