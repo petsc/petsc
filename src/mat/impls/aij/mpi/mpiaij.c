@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.60 1995/07/13 16:15:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.61 1995/07/17 20:41:11 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -620,7 +620,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   if (!A->diag) {if ((ierr = MatMarkDiag_AIJ(A))) return ierr;}
   diag = A->diag;
   if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
-    SETERRQ(1,"MatRelax_MPIAIJ:option not yet support");
+    SETERRQ(1,"MatRelax_MPIAIJ:Option not yet supported");
   }
   if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
