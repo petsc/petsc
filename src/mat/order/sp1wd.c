@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sp1wd.c,v 1.1 1994/03/18 00:27:01 gropp Exp $";
+static char vcid[] = "$Id: sp1wd.c,v 1.1 1994/11/09 21:41:23 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,9 +20,9 @@ static char vcid[] = "$Id: sp1wd.c,v 1.1 1994/03/18 00:27:01 gropp Exp $";
 .    perm   - permutation vector (0-origin)
 .    iperm  - inverse permutation vector.  If NULL, ignored.
 */    
-int SpOrder1WD(int nrow, int *ia, int *ja, int * perm, int *iperm )
+int SpOrder1WD(int nrow, int *ia, int *ja, int * perm )
 {
-int i, nrow,  *mask, *xls, nblks, *xblk, *ls;
+int i,   *mask, *xls, nblks, *xblk, *ls;
 
 mask = (int *)MALLOC( nrow * sizeof(int) );     CHKPTR(mask);
 xls  = (int *)MALLOC( (nrow+1) * sizeof(int) ); CHKPTR(xls);
@@ -30,10 +30,9 @@ ls   = (int *)MALLOC( nrow * sizeof(int) );     CHKPTR(ls);
 xblk = (int *)MALLOC( nrow * sizeof(int) );     CHKPTR(xblk);
 gen1wd_( &nrow, ia, ja, mask, &nblks, xblk, perm, xls, ls );
 FREE( mask ); FREE( xls ); FREE( ls ); FREE( xblk );
-FREE( ia );  FREE( ja );
 
 for (i=0; i<nrow; i++) perm[i]--;
-if (iperm) SpInverse( nrow, perm, iperm );
+
 return 0;
 }
 

@@ -61,6 +61,7 @@ int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,void*),void *ctx )
   else {neweh->previous = 0;}
   neweh->handler = handler;
   neweh->ctx     = ctx;
+  eh = neweh;
   return 0;
 }
 int PetscPopErrorHandler()

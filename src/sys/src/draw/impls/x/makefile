@@ -1,11 +1,12 @@
 ITOOLSDIR = ../../..
 
 ALL: lib 
-CFLAGS    = $(OPT) $(INCLUDEDIRS) $(XINCLUDEDIR) $(CONF)
-SOURCEC   =  
+CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
+            $(XINCLUDEDIR) $(CONF)
+SOURCEC   = xinit.c  
 SOURCEF   =
 SOURCEH   =
-OBJSC     = 
+OBJSC     = xinit.o
 OBJSF     =
 WSOURCEC  =   
 WOBJS     = 

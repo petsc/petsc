@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PC        pc;
   KSP       ksp;
   int       ierr, n = 10, i, its, col[3];
-  Scalar    value[3], one = 1.0, zero = 0.0;
+  Scalar    value[3], mone = -1.0, norm, one = 1.0, zero = 0.0;
   KSPMETHOD kspmethod;
   PCMETHOD  pcmethod;
   char      *kspname, *pcname;
@@ -65,7 +65,9 @@ int main(int argc,char **args)
   
   printf("Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERR(ierr);
-  fprintf(stdout,"Number of iterations %d\n",its);
+  ierr = VecAXPY(&mone,ustar,u); CHKERR(ierr);
+  ierr = VecNorm(u,&norm);
+  fprintf(stdout,"Number of iterations %d 2 norm error %g\n",its,norm);
 
   ierr = KSPDestroy(ksp); CHKERR(ierr);
   ierr = VecDestroy(u); CHKERR(ierr);

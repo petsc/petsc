@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sprcm.c,v 1.1 1994/03/18 00:27:06 gropp Exp $";
+static char vcid[] = "$Id: sprcm.c,v 1.1 1994/11/09 21:41:25 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,18 +20,22 @@ static char vcid[] = "$Id: sprcm.c,v 1.1 1994/03/18 00:27:06 gropp Exp $";
 .    perm   - permutation vector (0-origin)
 .    iperm  - inverse permutation vector.  If NULL, ignored.
 */    
-int SpOrderRCM( int nrow, int *ia, int *ja,int *perm, int *iperm )
+int SpOrderRCM( int nrow, int *ia, int *ja,int *perm )
 {
-int i, nrow,  *mask, *xls;
+int i,   *mask, *xls;
 
 mask = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(mask);
-xls  = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(xls);
+/*
+  There appears to be a bug in genrcm_ it requires xls to be longer
+than nrow, I have made it 2nrow to be safe.
+*/
+xls  = (int *)MALLOC( 2*nrow * sizeof(int) ); CHKPTR(xls);
 
 genrcm_( &nrow, ia, ja, perm, mask, xls );
-FREE( mask ); FREE( xls );
-FREE( ia );  FREE( ja );
+FREE( mask );
+FREE( xls );
 
 for (i=0; i<nrow; i++) perm[i]--;
-if (iperm) SpInverse( nrow, perm, iperm );
+
 return 0;
 }

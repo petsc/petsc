@@ -283,6 +283,7 @@ int VecGetVecs(Vec v,int m,Vec **V)
 @*/
 int VecFreeVecs(Vec *vv,int m)
 {
+  if (!vv) SETERR(1,"Null vectors");
   VALIDHEADER(*vv,VEC_COOKIE);
   return (*(*vv)->ops->release_vectors)( vv, m );
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.1 1994/03/18 00:27:05 gropp Exp $";
+static char vcid[] = "$Id: spqmd.c,v 1.1 1994/11/09 21:41:24 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,16 +20,13 @@ static char vcid[] = "$Id: spqmd.c,v 1.1 1994/03/18 00:27:05 gropp Exp $";
 .    perm   - permutation vector (0-origin)
 .    iperm  - inverse permutation vector.  If NULL, ignored.
 */    
-int SpOrderQMD( int nrow, int *ia, int *ja, int *perm, int *iperm )
+int SpOrderQMD( int nrow, int *ia, int *ja, int *perm )
 {
-int i, nrow,  *deg, *marker, *rchset, *nbrhd, *qsize,
-    *qlink, nofsub, hadiperm;
+int i,   *deg, *marker, *rchset, *nbrhd, *qsize,
+    *qlink, nofsub, *iperm;
 
-if (iperm) hadiperm = 1;
-else {
-    hadiperm = 0;
     iperm = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(iperm);
-    }
+
 deg    = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(deg);
 marker = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(marker);
 rchset = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(rchset);
@@ -41,13 +38,8 @@ genqmd_( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,
 	 qlink, &nofsub );
 FREE( deg ); FREE( marker ); FREE( rchset ); FREE( nbrhd ); FREE( qsize );
 FREE( qlink );
-FREE( ia );  FREE( ja );
-if (!hadiperm) {
-    FREE(iperm);
-    }
-else
-    for (i=0; i<nrow; i++) iperm[i]--;
 
+    FREE(iperm);
 for (i=0; i<nrow; i++) perm[i]--;
 return 0;
 }

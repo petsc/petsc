@@ -2,18 +2,18 @@
 #include "drawimpl.h"  /*I "draw.h" I*/
   
 /*@
-     Draw2dLine - Draws a line onto a drawable.
+     DrawLine - Draws a line onto a drawable.
 
   Input Parameters:
 .   ctx - the drawing context
 .   xl,yl,xr,yr - the coordinates of the line endpoints
 .   cl,cr - the colors of the two endpoints
 @*/
-int Draw2dLine(DrawCtx ctx,double xl,double yl,double xr,double yr,
+int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,
                int cl, int cr)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
-  return (*ctx->ops2d->drawline)(ctx,xl,yl,xr,yr,cl,cr);
+  return (*ctx->ops->drawline)(ctx,xl,yl,xr,yr,cl,cr);
 }
 
 /*@
@@ -36,7 +36,7 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
 }
 
 /*@
-    Draw2dSetCoordinates - sets the application coordinates of the 
+    DrawSetCoordinates - sets the application coordinates of the 
           corners of the window (or page).
 
   Input Paramters:
@@ -44,10 +44,34 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
 .  xl,yl,xr,yr - the coordinates of the lower left corner and upper
                  right corner of the drawing region.
 @*/
-int Draw2dSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
+int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
   ctx->coor_xl = xl; ctx->coor_yl = yl;
   ctx->coor_xr = xr; ctx->coor_yr = yr;
+  return 0;
+}
+/*@
+   DrawSetDoubleBuffer - Sets a window to be double buffered. 
+
+  Input Parameters:
+.  ctx - the drawing context
+@*/
+int DrawSetDoubleBuffer(DrawCtx ctx)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->ops->doublebuff) return (*ctx->ops->doublebuff)(ctx);
+  return 0;
+}
+/*@
+   DrawFlush - Flushs graphical output.
+
+  Input Parameters:
+.  ctx - the drawing context
+@*/
+int DrawFlush(DrawCtx ctx)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  if (ctx->ops->flush) return (*ctx->ops->flush)(ctx);
   return 0;
 }

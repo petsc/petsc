@@ -1,10 +1,6 @@
-#ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.5 1994/07/31 16:02:17 gropp Exp $";
-#endif
 
 #include <stdio.h>
-#include "tools.h"
-#include "xtools/ximpl.h"
+#include "ximpl.h"
 
 /* 
    This file contains routines to open an X window display and window
@@ -18,86 +14,35 @@ static char vcid[] = "$Id: xinit.c,v 1.5 1994/07/31 16:02:17 gropp Exp $";
    call to XBCreateWindow .  Similarly for the Display.
  */
 
-/*@
-  XBWinCreate - Create an XBWin structure that can be used by all other XB
-  routines
- @*/
-XBWindow XBWinCreate()
-{
-struct XBiWindow *w;
 
-w = NEW(struct XBiWindow);
-CHKPTRN(w);
-
-/* Initialize the structure */
-w->disp      = 0;
-w->screen    = 0;
-w->win       = 0;
-w->gc.set    = 0;
-w->vis       = 0;
-w->numcolors = 0;
-w->maxcolors = 0;
-w->cmap      = 0;
-w->foreground= 0;
-w->background= 0;
-w->x         = 0;
-w->y         = 0;
-w->w         = 0;
-w->h         = 0;
-w->drw       = 0;
-return w;
-}
-
-/*@
-  XBWinDestroy - Recover an XBWindow structure
-
-  Input parameter:
-. w  - XB window structure to destroy.  
-@*/
-void XBWinDestroy( w )
-XBWindow w;
-{
-/* Should try to recover X resources ... */
-FREE( w );
-}
-
-/*@
+/*
   XBOpenDisplay - Open a display
   
   Input Parameters:
   XBWin        - pointer to base window structure
   display_name - either null ("") or of the form "host:0"
-@*/
-int XBOpenDisplay( XBWin, display_name )
-XBWindow XBWin;
-char     *display_name;
+*/
+int XBOpenDisplay(XBWindow XBWin,char *display_name )
 {
-if (display_name && display_name[0] == 0)
-    display_name = 0;
-XBWin->disp = XOpenDisplay( display_name );
+  if (display_name && display_name[0] == 0)  display_name = 0;
+  XBWin->disp = XOpenDisplay( display_name );
 
-if (!XBWin->disp) 
-    return ERR_CAN_NOT_OPEN_DISPLAY;
+  if (!XBWin->disp)  return 1;
 
-/* Set the default screen */
-XBWin->screen = DefaultScreen( XBWin->disp );
+  /* Set the default screen */
+  XBWin->screen = DefaultScreen( XBWin->disp );
 
-/* ? should this set defaults? */
-return ERR_NONE;
+  return 0;
 }
 
-/* @ 
+/*  
     XBSetVisual - set the visual class for a window and colormap
 
     Input Parameters:
 .   nc - number of colors.  Use the maximum of the visual if
     nc == 0.  Use nc = 2 for black and white displays.
- @ */
-int XBSetVisual( XBWin, q_default_visual, cmap, nc )
-XBWindow XBWin;
-int      q_default_visual;
-Colormap cmap;
-int      nc;
+  */
+int XBSetVisual(XBWindow XBWin,int q_default_visual,Colormap cmap,int nc )
 {
 if (q_default_visual) {
     XBWin->vis    = DefaultVisual( XBWin->disp, XBWin->screen );
@@ -137,15 +82,13 @@ else {
 
 /* reset the number of colors from info on the display, the colormap */
 XBInitColors( XBWin, cmap, nc );
-return ERR_NONE;
+return 0;
 }
 
-/* @
+/* 
    XBSetGC - set the GC structure in the base window
- @ */
-XBSetGC( XBWin, fg )
-XBWindow XBWin;
-PixVal   fg;
+  */
+XBSetGC(XBWindow XBWin,PixVal fg )
 {
 XGCValues       gcvalues;       /* window graphics context values */
 
@@ -157,41 +100,17 @@ gcvalues.foreground = fg;
 XBWin->gc.cur_pix   = fg;
 XBWin->gc.set = XCreateGC( XBWin->disp, RootWindow(XBWin->disp,XBWin->screen),
                               GCFunction | GCForeground, &gcvalues );
-return ERR_NONE;
+return 0;
 }
 
-/*@
-   XBOpenWindow - Open the window data structure 
-
-   Note that before a window can be opened, the Visual class and the
-   (initial) colormap should be set.
-    Opening a window comes in two parts:
-    Creating most of the local window structure, and
-    actually creating and mapping the window.
-    This allows us to defer the choice of the window size until
-    the various tools have been set (note that many tools have
-    minimum sizes determined by things like the current font size).
-
-    This needs to know a few more things inorder to co-exist with
-    other tools and applications.  In particular, it needs to know
-    whether to use the default visual or another window's colormap.
- @*/
-int XBOpenWindow( XBWin )
-XBWindow XBWin;
-{
-return ERR_NONE;
-}
 
 /*
     Actually display a window at [x,y] with sizes (w,h)
     If w and/or h are 0, use the sizes in the fields of XBWin
     (which may have been set by, for example, XBSetWindowSize)
  */
-int XBDisplayWindow( XBWin, label, x, y, w, h, backgnd_pixel )
-XBWindow XBWin;
-char     *label;
-int      w, h, x, y;
-PixVal   backgnd_pixel;
+int XBDisplayWindow( XBWindow XBWin, char *label, int x, int y,
+                     int w,int h,PixVal backgnd_pixel )
 {
 unsigned int    wavail, havail;
 XSizeHints      size_hints;
@@ -205,7 +124,7 @@ unsigned long           wmask;
 wavail              = DisplayWidth(  XBWin->disp, XBWin->screen );
 havail              = DisplayHeight( XBWin->disp, XBWin->screen );
 
-if (w <= 0 || h <= 0) return ERR_ILLEGAL_SIZE;
+if (w <= 0 || h <= 0) return 2;
 
 if (w > wavail)
     w   = wavail;
@@ -257,7 +176,7 @@ XBWin->win  = XCreateWindow( XBWin->disp,
                              wmask, &window_attributes );
 
 if (!XBWin->win) 
-    return ERR_CAN_NOT_OPEN_WINDOW;
+    return 2;
 
 /* set resize hints (prohibit?) */
 size_hints.x            = x;
@@ -298,79 +217,9 @@ return 0;
    that this structure can be used with a widget set 
  */
 
-/*@C
-  XBGetArgs - Get the X related arguments (geometry for now)
 
-  Input Parameters:
-. Argc - pointer to argument count
-. argv - argument vector
-. flag - 1 if the "found" arguments should be stripped from the argument list
-
-  Output Parameters:
-. px,py - position of window
-. pw,ph - width and height of window
-
-  Note:
-  The output parameters are unchanged if they are not set.  The form of the
-  argument is
-$ -geometry width x height + xoffset + yoffset
-$ with no spaces.  For example
-$ -geometry 400x400
-$ for a 400 x 400 window, and
-$ -geometry +100+200
-$ for a window located at (100,200).
- @*/
-void XBGetArgs( Argc, argv, flag, px, py, pw, ph )
-int  *Argc, flag;
-char **argv;
-int  *px, *py, *pw, *ph;
-{
-char         val[128];
-int          vallen;
-int          st, xx, yy;
-unsigned int ww, hh;
-
-vallen = 128;
-if (SYArgGetString( Argc, argv, flag, "-geometry", val, vallen )) {
-    /* value is of form wxh+x+y */
-    st  = XParseGeometry( val, &xx, &yy, &ww, &hh );
-    if (st & XValue)        *px = xx;
-    if (st & YValue)        *py = yy;
-    if (st & WidthValue)    *pw = (int)ww;
-    if (st & HeightValue)   *ph = (int)hh;
-    }
-}
-
-/*@C
-  XBGetArgsDisplay - Get the X display name from the argument list
-
-  Input Parameters:
-. Argc - pointer to argument count
-. argv - argument vector
-. flag - 1 if the "found" arguments should be stripped from the argument list
-. dlen - length of dname
-
-  Output Parameters:
-. dname - Name of display
-
-  Note:
-  The output parameter is unchanged if they are not set.  The form of the
-  argument is
-$ -display name
- @*/
-void XBGetArgsDisplay( Argc, argv, flag, dlen, dname )
-int  *Argc, flag;
-char **argv, *dname;
-int  dlen;
-{
-SYArgGetString( Argc, argv, flag, "-display", dname, dlen );
-}
-
-
-int XBiQuickWindow( mywindow, host, name, x, y, nx, ny, nc )
-XBWindow mywindow;
-char     *host, *name;
-int      x, y, nx, ny, nc;
+int XBiQuickWindow(XBWindow mywindow,char* host,char* name,int x,int y,
+                   int nx,int ny,int nc )
 {
 if (XBOpenDisplay( mywindow, host )) {
     fprintf( stderr, "Could not open display\n" );
@@ -393,7 +242,7 @@ XBClearWindow(mywindow,0,0,mywindow->w,mywindow->h);
 return 0;
 }
 
-/*@
+/*
    XBQuickWindow - Create an X window
 
    Input parameters:
@@ -414,24 +263,18 @@ return 0;
    to be used on color displays; this would be useful for testing codes.
 
    Use XBWinCreate to create a valid XBWindow for this routine.
-@*/
-int XBQuickWindow( mywindow, host, name, x, y, nx, ny )
-XBWindow mywindow;
-char     *host, *name;
-int      x, y, nx, ny;
+*/
+
+int DrawOpenX(char* display,char *name,int x,int y,int w,int h,DrawCtx* ctx)
 {
-/* Just to be careful, clear mywindow */
-MEMSET( mywindow, 0, sizeof(XBWindow) );
-return XBiQuickWindow( mywindow, host, name, x, y, nx, ny, 0 );
+  XBWindow mywindow;
+  return XBiQuickWindow( mywindow, display, name, x, y, w, h, 0 );
 }
 
 /* 
    And a quick version (from an already defined window) 
  */
-int XBQuickWindowFromWindow( mywindow, host, win )
-XBWindow mywindow;
-char     *host;
-Window   win;
+int XBQuickWindowFromWindow( XBWindow mywindow,char *host, Window win )
 {
 Window       root;
 int          d;
@@ -457,7 +300,7 @@ XBSetGC( mywindow, mywindow->cmapping[1] );
 return 0;
 }
 
-/*@
+/*
     XBFlush - Flush all X 11 requests.
 
     Input parameter:
@@ -471,9 +314,8 @@ return 0;
     If double-buffering is enabled, this routine copies from the buffer
     to the window before flushing the requests.  This is the appropriate
     action for animation.
-@*/
-void XBFlush( XBWin )
-XBWindow XBWin;
+*/
+void XBFlush(XBWindow XBWin )
 {
 if (XBWin->drw) {
     XCopyArea( XBWin->disp, XBWin->drw, XBWin->win, XBWin->gc.set, 0, 0, 
@@ -482,84 +324,29 @@ if (XBWin->drw) {
 XFlush( XBWin->disp );
 }
 
-/*@
+/*
       XBSetWindowLabel - Sets new label in open window.
 
   Input Parameters:
 .  window - Window to set label for
 .  label  - Label to give window
-@*/
-void XBSetWindowLabel( XBwin, label )
-XBWindow XBwin;
-char     *label;
+*/
+int XBSetWindowLabel(XBWindow XBwin, char *label )
 {
   XTextProperty prop;
   XGetWMName(XBwin->disp,XBwin->win,&prop);
   prop.value = (unsigned char *)label; prop.nitems = (long) strlen(label);
   XSetWMName(XBwin->disp,XBwin->win,&prop);
+  return 0;
 }
 
-/*@
-  XBCaptureWindowToFile - Capture a window and write it in xwd format to a file
 
-  Input Parameters:
-. XBWin - XB Window to write out
-. fname - name of file
-
-  Notes:
-  This command uses XGetImage; thus, the window must be unobscured.  The
-  current implementation actually uses xwd called by spawning a process.  Later
-  implementations may write the file directly.
-
-  Be sure that you have XBFlush()'ed the output; X11 does not require that
-  the image be current until a flush is executed.
-@*/
-void XBCaptureWindowToFile( XBWin, fname )
-XBWindow XBWin;
-char     *fname;
-{
-char cmdbuf[1024];
-
-sprintf( cmdbuf, "xwd -id %d > %s\n", XBWin->win, fname );
-system( cmdbuf );
-}
-
-/*
- */
-int XBWinWidth( XBWin )
-XBWindow XBWin;
-{
-return XBWin->w;
-}
-
-int XBWinHeight( XBWin )
-XBWindow XBWin;
-{
-return XBWin->h;
-}
-
-int XBWinX( XBWin )
-XBWindow XBWin;
-{
-return XBWin->x;
-}
-
-int XBWinY( XBWin )
-XBWindow XBWin;
-{
-return XBWin->y;
-}
-
-/* 
- */
-PixVal XBWinForeground( XBWin )
-XBWindow XBWin;
+PixVal XBWinForeground(XBWindow XBWin )
 {
 return XBWin->foreground;
 }
 
-void XBSetToForeground( XBWin )
-XBWindow XBWin;
+void XBSetToForeground(XBWindow XBWin )
 {
 if (XBWin->gc.cur_pix != XBWin->foreground) { 
     XSetForeground( XBWin->disp, XBWin->gc.set, XBWin->foreground ); 
@@ -567,8 +354,7 @@ if (XBWin->gc.cur_pix != XBWin->foreground) {
     }
 }
 
-void XBSetToBackground( XBWin )
-XBWindow XBWin;
+void XBSetToBackground(XBWindow XBWin )
 {
 if (XBWin->gc.cur_pix != XBWin->background) { 
     XSetForeground( XBWin->disp, XBWin->gc.set, XBWin->background ); 
@@ -576,28 +362,14 @@ if (XBWin->gc.cur_pix != XBWin->background) {
     }
 }
 
-PixVal XBGetForeground( XBWin )
-XBWindow XBWin;
-{
-return XBWin->foreground;
-}
-
-PixVal XBGetBackground( XBWin )
-XBWindow XBWin;
-{
-return XBWin->background;
-}
-
-/*@
+/*
    XBSetForegroundByIndex - Set the foreground color to the given value
 
    Input Parameters:
 .  XBWin - XBWindow structure
 .  icolor - Index into the pre-establised window color map.
-@*/
-void  XBSetForegroundByIndex( XBWin, icolor )
-XBWindow XBWin;
-int      icolor;
+*/
+void  XBSetForegroundByIndex( XBWindow XBWin,int icolor )
 {
 PixVal pixval = XBWin->cmapping[icolor];
 if (XBWin->gc.cur_pix != pixval) { 
@@ -606,23 +378,19 @@ if (XBWin->gc.cur_pix != pixval) {
     }
 }
 
-PixVal XBGetPixvalByIndex( XBWin, icolor )
-XBWindow XBWin;
-int      icolor;
+PixVal XBGetPixvalByIndex(XBWindow XBWin,int icolor )
 {
 return XBWin->cmapping[icolor];
 }
 
-/*@
+/*
    XBSetForeground - Set the foreground color to the given pixel value
 
    Input Parameters:
 .  XBWin - XBWindow structure
 .  pixval - Pixel value 
-@*/
-void  XBSetForeground( XBWin, pixval )
-XBWindow XBWin;
-PixVal   pixval;
+*/
+void  XBSetForeground(XBWindow XBWin,PixVal pixval )
 {
 if (XBWin->gc.cur_pix != pixval) { 
     XSetForeground( XBWin->disp, XBWin->gc.set, pixval ); 
@@ -630,73 +398,22 @@ if (XBWin->gc.cur_pix != pixval) {
     }
 }
 
-/*@
+/*
   XBFillRectangle - Fills a rectangle
 
-@*/
-void XBFillRectangle( XBWin, x, y, w, h )
-XBWindow XBWin;
-int      x, y, w, h;
+*/
+void XBFillRectangle(XBWindow XBWin,int x,int y,int w,int h )
 {
 XFillRectangle( XBWin->disp, XBDrawable(XBWin), XBWin->gc.set, x, y, w, h );
 }
 
-/*@
+/*
   XBDrawLine - Draws a line
-@*/
-void XBDrawLine( XBWin, x1, y1, x2, y2 )
-XBWindow XBWin;
-int      x1, y1, x2, y2;
+*/
+void XBDrawLine(XBWindow XBWin, int x1,int y1,int x2,int y2 )
 {
 XDrawLine( XBWin->disp, XBWin->win, XBWin->gc.set, x1, y1, x2, y2 );
 }
 
-
-/*
-   XBWinSetSize
-
-   Lets you change the effective size/location of a window
- */
-void XBWinSetSize( XBWin, x, y, w, h )
-XBWindow XBWin;
-int      x, y, w, h;
-{
-XBWin->x = x;
-XBWin->y = y;
-XBWin->w = w;
-XBWin->h = h;
-}
-
-void XBDrawSegments( XBWin, nsegs, segs )
-XBWindow  XBWin;
-int       nsegs;
-XBSegment *segs;
-{
-XDrawSegments( XBWin->disp, XBWin->win, XBWin->gc.set, 
-	       (XSegment *)segs, nsegs );
-}
-
-void XBDrawLines( XBWin, pts, npts )
-XBWindow XBWin;
-XBPoint  *pts;
-int      npts;
-{
-XDrawLines( XBWin->disp, XBWin->win, XBWin->gc.set, 
-	    (XPoint *)pts, npts, CoordModeOrigin );
-}
-
-/*@
-      XBPixFromInteger - Looks up an entry in the win->cmapping
-
-    Input Parameters:
-     color - an integer color as listed in xtools/baseclr.h
-
-@*/
-PixVal XBPixFromInteger(win,color)
-XBWindow win;
-int      color; 
-{
-return (win)->cmapping[color];
-}
 
 

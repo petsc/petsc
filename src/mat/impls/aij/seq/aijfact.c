@@ -1,7 +1,7 @@
 
 
 #include "aij.h"
-
+#include "inline/spops.h"
 /*
     Factorization code for AIJ format. 
 */
@@ -97,11 +97,11 @@ int MatiAIJLUFactorSymbolic(Mat mat,IS isrow,IS iscol,Mat *fact)
   aijnew = (Matiaij *) (*fact)->data;
   FREE(aijnew->imax);
   aijnew->singlemalloc = 0;
-  len = ainew[n] - 1;
+  len = (ainew[n] - 1)*sizeof(double);
   aijnew->a         = (Scalar *) MALLOC( len ); CHKPTR(aijnew->a);
   aijnew->j         = ajnew;
   aijnew->i         = ainew;
-  aij->diag         = idnew;
+  aijnew->diag      = idnew;
   (*fact)->row      = isrow;
   (*fact)->col      = iscol;
   (*fact)->factor   = FACTOR_LU;
@@ -114,31 +114,88 @@ int MatiAIJLUFactorNumeric(Mat mat,Mat fact)
   IS      iscol = fact->col, isrow = fact->row, isicol;
   int     *r,*ic, ierr, i, j, n = aij->m, *ai = aijnew->i, *aj = aijnew->j;
   int     prow, *ainew,*ajnew, jmax,*fill, *ajtmpold, *ajtmp, nz , *ii;
-  int     *idnew, idx, pivot_row,row,m,fm, nnz, nzi,len;
-  Scalar  *rtmp,*vnew,*v; 
+  int     *idnew, idx, pivot_row,row,*pj, m,fm, nnz, nzi,len;
+  Scalar  *rtmp,*vnew,*v, *pv, *pc, multiplier; 
 
   if (ierr = ISInvertPermutation(iscol,&isicol)) SETERR(ierr,0);
-  ISGetIndices(isrow,&r);  ISGetIndices(isicol,&ic);
+  ierr = ISGetIndices(isrow,&r); CHKERR(ierr);
+  ierr = ISGetIndices(isicol,&ic); CHKERR(ierr);
   rtmp = (Scalar *) MALLOC( (n+1)*sizeof(Scalar) ); CHKPTR(rtmp);
 
   for ( i=0; i<n; i++ ) {
     nz = ai[i+1] - ai[i];
     ajtmp = aj + ai[i] - 1;
-    vnew  = aij->a + ai[i] - 1;
     for  ( j=0; j<nz; j++ ) rtmp[ajtmp[j]-1] = 0.0;
 
     /* load in initial (unfactored row) */
-    nz = aij->i[i+1] - aij->i[i];
-    ajtmpold = aij->j + aij->i[i] - 1;
-    v  = aij->a + aij->i[i] - 1;
-    for ( j=0; j<nz; j++ ) rtmp[ic[ajtmpold[j]-1]] =  v[i];
+    nz = aij->i[r[i]+1] - aij->i[r[i]];
+    ajtmpold = aij->j + aij->i[r[i]] - 1;
+    v  = aij->a + aij->i[r[i]] - 1;
+    for ( j=0; j<nz; j++ ) rtmp[ic[ajtmpold[j]-1]] =  v[j];
 
-    row = *ajtmp++:
+    row = *ajtmp++ - 1;
     while (row < i) {
-      pc = rm
+      pc = rtmp + row;
+      if (*pc != 0.0) {
+        nz = aijnew->diag[row] - ai[row];
+        pv = aijnew->a + aijnew->diag[row] - 1;
+        pj = aijnew->j + aijnew->diag[row];
+        multiplier = *pc * *pv++;
+        *pc = multiplier;
+        nz = ai[row+1] - ai[row] - 1 - nz;
+        while (nz-->0) rtmp[*pj++ - 1] -= multiplier* *pv++; 
+      }      
+      row = *ajtmp++ - 1;
     }
+    /* finished row so stick it into aijnew->a */
+    pv = aijnew->a + ai[i] - 1;
+    pj = aijnew->j + ai[i] - 1;
+    nz = ai[i+1] - ai[i];
+    rtmp[i] = 1.0/rtmp[i];
+    for ( j=0; j<nz; j++ ) {pv[j] = rtmp[pj[j]-1];}
   } 
-  ISDestroy(isicol);
+  FREE(rtmp);
+  ierr = ISDestroy(isicol); CHKERR(ierr);
+  fact->factor = FACTOR_LU;
  
+  return 0;
+}
+int MatiAIJSolve(Mat mat,Vec bb, Vec xx)
+{
+  Matiaij *aij = (Matiaij *) mat->data;
+  IS      iscol = mat->col, isrow = mat->row;
+  int     *r,*c, ierr, i, j, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
+  int     nz;
+  Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
+
+  if (ierr = VecGetArray(bb,&b)) SETERR(ierr,0);
+  if (ierr = VecGetArray(xx,&x)) SETERR(ierr,0);
+  tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
+
+  if (ierr = ISGetIndices(isrow,&r)) SETERR(ierr,0);
+  if (ierr = ISGetIndices(iscol,&c)) SETERR(ierr,0); c = c + (n-1);
+
+  /* forward solve the lower triangular */
+  tmp[0] = b[*r++];
+  for ( i=1; i<n; i++ ) {
+    v   = aa + ai[i] - 1;
+    vi  = aj + ai[i] - 1;
+    nz  = aij->diag[i] - ai[i];
+    sum = b[*r++];
+    while (nz--) sum -= *v++ * tmp[*vi++ - 1];
+    tmp[i] = sum;
+  }
+
+  /* backward solve the upper triangular */
+  for ( i=n-1; i>=0; i-- ){
+    v   = aa + aij->diag[i];
+    vi  = aj + aij->diag[i];
+    nz  = ai[i+1] - aij->diag[i] - 1;
+    sum = tmp[i];
+    while (nz--) sum -= *v++ * tmp[*vi++ - 1];
+    x[*c--] = tmp[i] = sum*aa[aij->diag[i]-1];
+  }
+
+  FREE(tmp);
   return 0;
 }

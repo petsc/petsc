@@ -5,6 +5,7 @@
 
 int PCiJacobiCreate(PC);
 int PCiNoneCreate(PC);
+int PCiDirectCreate(PC);
 int PCiSORCreate(PC);
 
 /*@
@@ -21,6 +22,7 @@ int PCRegisterAll()
   PCRegister(PCNONE         , "none",       PCiNoneCreate);
   PCRegister(PCJACOBI       , "jacobi",     PCiJacobiCreate);
   PCRegister(PCSOR          , "sor",        PCiSORCreate);
+  PCRegister(PCDIRECT       , "direct",        PCiDirectCreate);
   return 0;
 }
 

@@ -96,20 +96,7 @@ static int MatiSDsolve(Mat matin,Vec xx,Vec yy)
   if (info) SETERR(1,"Bad solve");
   return 0;
 }
-static int MatiSDsolveadd(Mat matin,Vec xx,Vec yy,Vec zz)
-{
-  MatiSD *mat = (MatiSD *) matin->data;
-  int    i;
-  Scalar *y, *z;
-  VecGetArray(yy,&y); VecGetArray(zz,&z);
-  MatiSDsolve(matin,xx,zz);
-  for ( i=0; i<mat->m; i++ ) z[i] += y[i];
-  return 0;
-}
 static int MatiSDsolvetrans(Mat matin,Vec xx,Vec yy)
-{return 0;}
-
-static int MatiSDsolvetransadd(Mat matin,Vec xx,Vec yy,Vec zz)
 {return 0;}
 
 /* ------------------------------------------------------------------*/
@@ -421,7 +408,7 @@ static int MatiDenseinsopt(Mat aijin,int op)
 static struct _MatOps MatOps = {MatiSDinsert,MatiSDinsert,
        MatiSDgetrow, MatiSDrestorerow,
        MatiSDmult, MatiSDmultadd, MatiSDmulttrans, MatiSDmulttransadd, 
-       MatiSDsolve,MatiSDsolveadd,MatiSDsolvetrans,MatiSDsolvetransadd,
+       MatiSDsolve,0,MatiSDsolvetrans,0,
        MatiSDlufactor,MatiSDchfactor,
        MatiSDrelax,
        MatiSDtrans,

@@ -10,8 +10,8 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
-EXAMPLES = ex1 ex2 ex4 ex5 ex6
-EXAMPLESC= ex1.c ex2.c ex4.c ex5.c ex6.c
+EXAMPLES = ex1 ex2 ex4 ex5 ex6 ex7
+EXAMPLESC= ex1.c ex2.c ex4.c ex5.c ex6.c ex7.c
 SYSLIB   = $(LDIR)/libpetscvec.a $(LDIR)/libpetscsys.a \
            $(LAPACK) $(BLAS) \
            $(CLIB) $(SLIB) $(FCLIB) -lm 

@@ -13,5 +13,6 @@ int PCiNoneCreate(PC pc)
   pc->apply   = PCiNoneApply;
   pc->destroy = 0;
   pc->setup   = 0;
+  pc->data    = 0;
   return 0;
 }
