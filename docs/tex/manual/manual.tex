@@ -1,14 +1,6 @@
-% $Id: manual_tex.tex,v 1.103 1996/04/18 16:28:49 curfman Exp curfman $ 
+% $Id: manual_tex.tex,v 1.104 1996/08/04 20:15:07 bsmith Exp bsmith $ 
 %
-% Design of PETSc Version 2.0
-%
-% This document serves two roles:  a users manual for PETSc 2.0 and 
-% a design document. Certain blocks of text will be ifdefed out in the 
-% users manual version.
-%
-% Note that we use a modified version of report.sty, so that tables and
-% figures are numbered consecutively throughout the document (not by
-% chapters).  
+% LATEX version of the PETSc users manual.
 %
 % manual_tex.tex is the base file for LaTeX format, while manual.tex is
 % the corresponding base HTML format file.
@@ -59,19 +51,21 @@ Mathematics and Computer Science Division}{95/11}{1995}
 \vspace{1in}
 \date{\today}
 
+% Blank page makes double sided printout look bettter.
+\newpage
+
 % Abstract for users manual
 \input{abstract.tex}
 
-\vspace{.4in}
-
+\medskip \medskip
 % Acknowledgements for users manual
 \input{acknowl.tex}
 
-\vspace{.4in}
-\noindent {\bf Note:}
-          
 \medskip \medskip 
 This manual is suitable for use with PETSc 2.0, beta version 14.\\
+
+% Blank page makes double sided printout look bettter.
+\newpage \hbox{ } \newpage
 
 \pagenumbering{roman}
 \setcounter{page}{3}
