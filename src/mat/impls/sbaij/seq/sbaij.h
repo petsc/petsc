@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.18 2000/11/07 16:52:12 hzhang Exp hzhang $ */
+/* $Id: sbaij.h,v 1.19 2000/11/07 18:02:16 hzhang Exp balay $ */
 
 #include "src/mat/matimpl.h"
 
@@ -39,7 +39,7 @@ typedef struct {
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
 } Mat_SeqSBAIJ;
 
-extern int MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat *);
+extern int MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat *);
 extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 

@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.16 2000/02/24 04:53:59 bsmith Exp bsmith $;
+!  $Id: petsclog.h,v 1.17 2000/08/01 20:58:48 bsmith Exp balay $;
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
@@ -33,8 +33,8 @@
        parameter (MAT_ILUFactorSymbolic = 11)
        integer    MAT_CholeskyFactorSymbolic
        parameter (MAT_CholeskyFactorSymbolic = 12)
-       integer    MAT_IncompleteCholeskyFactorSym
-       parameter (MAT_IncompleteCholeskyFactorSym = 13)
+       integer    MAT_ICCFactorSymolic
+       parameter (MAT_ICCFactorSymbolic = 13)
        integer    MAT_LUFactorNumeric
        parameter (MAT_LUFactorNumeric = 14)
        integer    MAT_CholeskyFactorNumeric
@@ -82,16 +82,16 @@
        integer    MAT_GetPartitioning
        parameter (MAT_GetPartitioning = 36)
 
+       integer    MAT_FDColoringApply
+       parameter (MAT_FDColoringApply = 38)
+
+       integer    MAT_FDColoringCreate
+       parameter (MAT_FDColoringCreate = 41)
+
        integer    VEC_ReduceArithmetic
        parameter (VEC_ReduceArithmetic = 37)
-       integer    VEC_ReduceBarrier
-       parameter (VEC_ReduceBarrier = 87)
-       integer    VEC_ReduceComm
-       parameter (VEC_ReduceComm = 88)
-       integer    VEC_ScatterBarrier
-       parameter (VEC_ScatterBarrier = 39)
-       integer    VEC_ScatterBegin
-       parameter (VEC_ScatterBegin = 40)
+       integer    VEC_View
+       parameter (VEC_View = 39)
 
        integer    VEC_Max
        parameter (VEC_Max = 42)
@@ -128,8 +128,10 @@
        parameter (VEC_SetValues = 58)
        integer    VEC_Load
        parameter (VEC_Load = 59)
-       integer    VEC_View
-       parameter (VEC_View = 39)
+       integer    VEC_ScatterBarrier
+       parameter (VEC_ScatterBarrier = 60)
+       integer    VEC_ScatterBegin
+       parameter (VEC_ScatterBegin = 61)
 
        integer    VEC_ScatterEnd
        parameter (VEC_ScatterEnd = 62)
@@ -148,12 +150,15 @@
        integer    VEC_MDot
        parameter (VEC_MDot = 69)    
 
+
        integer    SLES_Solve
        parameter (SLES_Solve = 70)
        integer    SLES_SetUp
        parameter (SLES_SetUp = 71)
        integer    KSP_GMRESOrthogonalization
        parameter (KSP_GMRESOrthogonalization = 72)
+       integer    PC_ApplyCoarse
+       parameter (PC_ApplyCoarse = 73)
        integer    PC_ModifySubMatrices
        parameter (PC_ModifySubMatrices = 74)
        integer    PC_SetUp
@@ -181,6 +186,11 @@
        parameter (SNES_GradientEval = 85)
        integer    SNES_HessianEval
        parameter (SNES_HessianEval = 86)
+
+       integer    VEC_ReduceBarrier
+       parameter (VEC_ReduceBarrier = 87)
+       integer    VEC_ReduceComm
+       parameter (VEC_ReduceComm = 88)
 
        integer    TS_Step
        parameter (TS_Step = 90)

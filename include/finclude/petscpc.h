@@ -1,5 +1,5 @@
 !
-!  $Id: petscpc.h,v 1.35 2000/09/25 18:01:55 balay Exp bsmith $;
+!  $Id: petscpc.h,v 1.36 2001/04/10 19:37:50 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
@@ -7,7 +7,6 @@
 #define __PETSCPC_H
 
 #define PC PetscFortranAddr
-#define MatNullSpace PetscFortranAddr
 #define PCSide integer
 #define PCASMType integer
 #define PCCompositeType integer
@@ -29,6 +28,11 @@
 #define PCSLES 'sles'
 #define PCCOMPOSITE 'composite'
 #define PCREDUNDANT 'redundant'
+#define PCSPAI 'spai'
+#define PCMILU 'milu'
+#define PCNN 'nn'
+#define PCCHOLESKY 'cholesky'
+#define PCRAMG 'ramg'
 
 #endif
 

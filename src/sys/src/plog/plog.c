@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.257 2001/03/23 23:20:50 balay Exp bsmith $*/
+/*$Id: plog.c,v 1.258 2001/04/10 19:34:39 bsmith Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1870,7 +1870,7 @@ int PetscLogEventActivateClass(int cookie)
     PetscLogEventActivate(MAT_LUFactorSymbolic);
     PetscLogEventActivate(MAT_ILUFactorSymbolic);
     PetscLogEventActivate(MAT_CholeskyFactorSymbolic);
-    PetscLogEventActivate(MAT_IncompleteCholeskyFactorSymbolic);
+    PetscLogEventActivate(MAT_ICCFactorSymbolic);
     PetscLogEventActivate(MAT_LUFactorNumeric);
     PetscLogEventActivate(MAT_CholeskyFactorNumeric);
     PetscLogEventActivate(MAT_CholeskyFactorNumeric);
@@ -1972,7 +1972,7 @@ int PetscLogEventDeactivateClass(int cookie)
     PetscLogEventDeactivate(MAT_LUFactorSymbolic);
     PetscLogEventDeactivate(MAT_ILUFactorSymbolic);
     PetscLogEventDeactivate(MAT_CholeskyFactorSymbolic);
-    PetscLogEventDeactivate(MAT_IncompleteCholeskyFactorSymbolic);
+    PetscLogEventDeactivate(MAT_ICCFactorSymbolic);
     PetscLogEventDeactivate(MAT_LUFactorNumeric);
     PetscLogEventDeactivate(MAT_CholeskyFactorNumeric);
     PetscLogEventDeactivate(MAT_CholeskyFactorNumeric);

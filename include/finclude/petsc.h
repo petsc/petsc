@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.94 2000/11/19 15:25:29 bsmith Exp bsmith $;
+!  $Id: petsc.h,v 1.95 2001/01/15 21:50:11 bsmith Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !
@@ -17,17 +17,24 @@
 !    
 !     Flags
 !
-      integer   PETSC_TRUE,PETSC_FALSE,PETSC_DECIDE
-      integer   PETSC_DEFAULT_INTEGER,PETSC_DETERMINE
-      integer   PETSC_FP_TRAP_OFF,PETSC_FP_TRAP_ON
+      integer   PETSC_TRUE,PETSC_FALSE
+      integer   PETSC_YES,PETSC_NO
+      parameter (PETSC_TRUE = 1,PETSC_FALSE = 0)
+      parameter (PETSC_YES=1, PETSC_NO=0)
 
-      parameter (PETSC_TRUE = 1,PETSC_FALSE = 0,PETSC_DECIDE = -1)
-      parameter (PETSC_DEFAULT_INTEGER = -2,PETSC_DETERMINE = -1)
-      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1) 
+      integer   PETSC_DECIDE,PETSC_DETERMINE
+      parameter (PETSC_DECIDE=-1,PETSC_DETERMINE=-1)
 
+      integer   PETSC_DEFAULT_INTEGER
+      parameter (PETSC_DEFAULT_INTEGER = -2)
 
       PetscFortranDouble PETSC_DEFAULT_DOUBLE_PRECISION
       parameter (PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
+
+      integer   PETSC_FP_TRAP_OFF,PETSC_FP_TRAP_ON
+      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1) 
+
+
 
 !
 !     Default PetscViewers.
@@ -40,6 +47,8 @@
       PetscFortranAddr PETSC_VIEWER_STDOUT_SELF
       PetscFortranAddr PETSC_VIEWER_STDERR_WORLD
       PetscFortranAddr PETSC_VIEWER_STDERR_SELF
+      PetscFortranAddr PETSC_VIEWER_BINARY_WORLD
+      PetscFortranAddr PETSC_VIEWER_BINARY_SELF
 
 !
 !     The numbers used below should match those in 
@@ -53,6 +62,8 @@
       parameter (PETSC_VIEWER_STDOUT_SELF  = -9)
       parameter (PETSC_VIEWER_STDERR_WORLD = -10)
       parameter (PETSC_VIEWER_STDERR_SELF  = -11)
+      parameter (PETSC_VIEWER_BINARY_WORLD = -12)
+      parameter (PETSC_VIEWER_BINARY_SELF  = -13)
 !
 !     PETSc DataTypes
 !

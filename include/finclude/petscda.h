@@ -1,5 +1,5 @@
 !
-!  $Id: petscda.h,v 1.17 2000/09/25 17:55:27 balay Exp bsmith $;
+!  $Id: petscda.h,v 1.18 2001/04/10 19:37:50 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the DA (distributed array) package in PETSc
 !
@@ -10,7 +10,10 @@
 #define DAPeriodicType integer
 #define DAStencilType integer
 #define DADirection integer
-#define DMMG        integer
+#define DMMG PetscFortranAddr
+#define VecPack PetscFortranAddr
+#define DM PetscFortranAddr
+
 #endif
 
 

@@ -1,5 +1,5 @@
 !
-!  $Id: petscsnes.h,v 1.29 2000/05/08 15:10:00 balay Exp balay $;
+!  $Id: petscsnes.h,v 1.30 2000/09/25 18:02:37 balay Exp balay $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -10,6 +10,8 @@
 #define SNESProblemType integer
 #define SNESType character*(80)
 #define SNESConvergedReason integer
+#define MatSNESMFCtx PetscFortranAddr
+#define MatSNESMFType PetscFortranAddr
 !
 !  SNESType
 !
@@ -18,6 +20,11 @@
 #define SNESEQTEST 'test'
 #define SNESUMLS 'umls'
 #define SNESUMTR 'umtr'
+!
+! MatSNESMFCtx
+! 
+#define MATSNESMF_DEFAULT 'default'
+#define MATSNESMF_WP 'wp'
 
 #endif
 
@@ -47,6 +54,7 @@
       integer SNES_DIVERGED_MAX_IT
       integer SNES_DIVERGED_LS_FAILURE
       integer SNES_DIVERGED_TR_REDUCTION
+      integer SNES_DIVERGED_LOCAL_MIN
       integer SNES_CONVERGED_ITERATING
    
       parameter (SNES_CONVERGED_FNORM_ABS         =  2)
@@ -61,6 +69,7 @@
       parameter (SNES_DIVERGED_MAX_IT             = -5)
       parameter (SNES_DIVERGED_LS_FAILURE         = -6)
       parameter (SNES_DIVERGED_TR_REDUCTION       = -7)
+      parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
       parameter (SNES_CONVERGED_ITERATING         =  0)
      
 !

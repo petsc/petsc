@@ -1,5 +1,5 @@
 !
-!  $Id: petscsys.h,v 1.22 2001/01/15 21:50:11 bsmith Exp balay $;
+!  $Id: petscsys.h,v 1.23 2001/01/19 23:22:59 balay Exp balay $;
 !
 !  Include file for Fortran use of the System package in PETSc
 !
@@ -30,15 +30,15 @@
       integer PETSC_BINARY_SHORT_SIZE,PETSC_BINARY_DOUBLE_SIZE
       integer PETSC_BINARY_SCALAR_SIZE
 
-      parameter (PETSC_BINARY_INT_SIZE = 32)
-      parameter (PETSC_BINARY_FLOAT_SIZE = 32)
-      parameter (PETSC_BINARY_CHAR_SIZE = 8)
-      parameter (PETSC_BINARY_SHORT_SIZE = 16)
-      parameter (PETSC_BINARY_DOUBLE_SIZE = 64)
+      parameter (PETSC_BINARY_INT_SIZE = 4)
+      parameter (PETSC_BINARY_FLOAT_SIZE = 4)
+      parameter (PETSC_BINARY_CHAR_SIZE = 1)
+      parameter (PETSC_BINARY_SHORT_SIZE = 2)
+      parameter (PETSC_BINARY_DOUBLE_SIZE = 8)
 #if defined(PETSC_USE_COMPLEX)
-      parameter (PETSC_BINARY_SCALAR_SIZE = 128)
+      parameter (PETSC_BINARY_SCALAR_SIZE = 16)
 #else
-      parameter (PETSC_BINARY_SCALAR_SIZE = 64)
+      parameter (PETSC_BINARY_SCALAR_SIZE = 8)
 #endif
 
       integer PETSC_BINARY_SEEK_SET,PETSC_BINARY_SEEK_CUR

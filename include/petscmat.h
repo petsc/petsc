@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.217 2001/03/28 19:41:14 balay Exp bsmith $ */
+/* $Id: petscmat.h,v 1.218 2001/04/10 19:35:07 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -484,8 +484,8 @@ EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
 EXTERN int MatILUFactor(Mat,IS,IS,MatILUInfo*);
 EXTERN int MatLUFactorSymbolic(Mat,IS,IS,MatLUInfo*,Mat*);
 EXTERN int MatILUFactorSymbolic(Mat,IS,IS,MatILUInfo*,Mat*);
-EXTERN int MatIncompleteCholeskyFactorSymbolic(Mat,IS,double,int,Mat*);
-EXTERN int MatIncompleteCholeskyFactor(Mat,IS,double,int);
+EXTERN int MatICCFactorSymbolic(Mat,IS,double,int,Mat*);
+EXTERN int MatICCFactor(Mat,IS,double,int);
 EXTERN int MatLUFactorNumeric(Mat,Mat*);
 EXTERN int MatILUDTFactor(Mat,MatILUInfo*,IS,IS,Mat *);
 
@@ -663,7 +663,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_LOCAL_SIZE=31,
                MATOP_GET_OWNERSHIP_RANGE=32,
                MATOP_ILUFACTOR_SYMBOLIC=33,
-               MATOP_INCOMPLETECHOLESKYFACTOR_SYMBOLIC=34,
+               MATOP_ICCFACTOR_SYMBOLIC=34,
                MATOP_GET_ARRAY=35,
                MATOP_RESTORE_ARRAY=36,
 
@@ -671,7 +671,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_FORWARD_SOLVE=38,
                MATOP_BACKWARD_SOLVE=39,
                MATOP_ILUFACTOR=40,
-               MATOP_INCOMPLETECHOLESKYFACTOR=41,
+               MATOP_ICCFACTOR=41,
                MATOP_AXPY=42,
                MATOP_GET_SUBMATRICES=43,
                MATOP_INCREASE_OVERLAP=44,

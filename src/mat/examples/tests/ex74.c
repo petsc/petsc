@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.41 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex74.c,v 1.42 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
@@ -285,7 +285,7 @@ int main(int argc,char **args)
     } 
   }
 
-  /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() with natural ordering */
+  /* Test MatCholeskyFactor(), MatICCFactor() with natural ordering */
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRQ(ierr); 
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
   norm1 = tol;  
@@ -296,7 +296,7 @@ int main(int argc,char **args)
       ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRQ(ierr); 
     } else {       /* incomplete Cholesky factor */
       fill          = 5.0;
-      ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRQ(ierr);
+      ierr = MatICCFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRQ(ierr);
     }
     ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRQ(ierr);
     /* MatView(sC, PETSC_VIEWER_DRAW_WORLD); */

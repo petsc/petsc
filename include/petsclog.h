@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.151 2001/03/22 20:33:30 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.152 2001/04/10 19:34:39 bsmith Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -29,7 +29,7 @@
 #define MAT_LUFactorSymbolic                    10
 #define MAT_ILUFactorSymbolic                   11
 #define MAT_CholeskyFactorSymbolic              12
-#define MAT_IncompleteCholeskyFactorSymbolic    13
+#define MAT_ICCFactorSymbolic                   13
 #define MAT_LUFactorNumeric                     14
 #define MAT_CholeskyFactorNumeric               15
 #define MAT_Relax                               16

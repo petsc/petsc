@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.400 2001/03/30 03:54:45 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.401 2001/04/10 19:35:09 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3405,9 +3405,9 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatIncompleteCholeskyFactorSymbolic"
+#define __FUNCT__ "MatICCFactorSymbolic"
 /*@  
-   MatIncompleteCholeskyFactorSymbolic - Performs symbolic incomplete
+   MatICCFactorSymbolic - Performs symbolic incomplete
    Cholesky factorization for a symmetric matrix.  Use 
    MatCholeskyFactorNumeric() to complete the factorization.
 
@@ -3437,7 +3437,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
+int MatICCFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
 {
   int ierr;
 
@@ -3449,12 +3449,12 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (fill < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Fill negative %d",fill);
   if (f < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",f);
-  if (!mat->ops->incompletecholeskyfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",mat->type_name);
+  if (!mat->ops->iccfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
-  ierr = PetscLogEventBegin(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->incompletecholeskyfactorsymbolic)(mat,perm,f,fill,fact);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->iccfactorsymbolic)(mat,perm,f,fill,fact);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4430,9 +4430,9 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatIncompleteCholeskyFactor"
+#define __FUNCT__ "MatICCFactor"
 /*@  
-   MatIncompleteCholeskyFactor - Performs in-place incomplete Cholesky factorization of matrix.
+   MatICCFactor - Performs in-place incomplete Cholesky factorization of matrix.
 
    Collective on Mat
 
@@ -4455,9 +4455,9 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
    Concepts: matrices^incomplete Cholesky factorization
    Concepts: Cholesky factorization
 
-.seealso: MatIncompleteCholeskyFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
+.seealso: MatICCFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatIncompleteCholeskyFactor(Mat mat,IS row,PetscReal fill,int level)
+int MatICCFactor(Mat mat,IS row,PetscReal fill,int level)
 {
   int ierr;
 
@@ -4468,7 +4468,7 @@ int MatIncompleteCholeskyFactor(Mat mat,IS row,PetscReal fill,int level)
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->incompletecholeskyfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
-  ierr = (*mat->ops->incompletecholeskyfactor)(mat,row,fill,level);CHKERRQ(ierr);
+  if (!mat->ops->iccfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = (*mat->ops->iccfactor)(mat,row,fill,level);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 !
-!  "$Id: petscksp.h,v 1.30 2000/09/25 17:59:14 balay Exp bsmith $";
+!  "$Id: petscksp.h,v 1.31 2001/03/09 16:59:31 bsmith Exp balay $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
@@ -26,6 +26,7 @@
 #define KSPPREONLY 'preonly'
 #define KSPQCG 'qcg'
 #define KSPBICG 'bicg'
+#define KSPFGMRES 'fgmres'
 #define KSPMINRES 'minres'
 #define KSPSYMMLQ 'symmlq'
 #endif

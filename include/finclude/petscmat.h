@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.67 2000/10/24 20:28:11 bsmith Exp bsmith $;
+!  $Id: petscmat.h,v 1.68 2001/04/10 19:37:50 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -22,9 +22,11 @@
 #define MatInfo double precision
 #define MatILUInfo double precision
 #define MatLUInfo double precision
+#define MatCholeskyInfo double precision
 #define MatDuplicateOption integer      
 #define MatStructure integer
 #define MatPartitioningType character*(80)
+#define MatNullSpace PetscFortranAddr
 
 #define MatStencil integer
 #define MatStencil_k 1
@@ -46,6 +48,9 @@
 #define MATORDERING_RCM 'rcm'
 #define MATORDERING_QMD 'qmd'
 #define MATORDERING_ROWLENGTH 'rowlength'
+#define MATORDERING_DSC_ND 'dsc_nd'
+#define MATORDERING_DSC_MMD 'dsc_mmd'
+#define MATORDERING_DSC_MDF 'dsc_mdf'
 
 #endif
 
@@ -169,23 +174,25 @@
 !
       integer   MAT_ILUINFO_SIZE
 
-      parameter (MAT_ILUINFO_SIZE=6)
+      parameter (MAT_ILUINFO_SIZE=8)
 
       integer MAT_ILUINFO_LEVELS
       integer MAT_ILUINFO_FILL
       integer MAT_ILUINFO_DIAGONAL_FILL
+      integer MAT_ILUINFO_DT
+      integer MAT_ILUINFO_DTCOL
+      integer MAT_ILUINFO_DTCOUNT
+      integer MAT_ILUINFO_DAMPING
+      integer MAT_ILUINFO_DAMP
 
       parameter (MAT_ILUINFO_LEVELS = 1)
       parameter (MAT_ILUINFO_FILL = 2)
       parameter (MAT_ILUINFO_DIAGONAL_FILL = 3)
-
-      integer MAT_ILUINFO_DT
-      integer MAT_ILUINFO_DTCOL
-      integer MAT_ILUINFO_DTCOUNT
-
       parameter (MAT_ILUINFO_DT = 4)
       parameter (MAT_ILUINFO_DTCOL = 5)
       parameter (MAT_ILUINFO_DTCOUNT = 6)
+      parameter (MAT_ILUINFO_DAMPING = 7)
+      parameter (MAT_ILUINFO_DAMP = 8)
 
 !
 !  Note: MAT_LUINFO_SIZE must equal # elements in MatLUInfo structure
@@ -193,13 +200,34 @@
 !
       integer   MAT_LUINFO_SIZE
 
-      parameter (MAT_LUINFO_SIZE=2)
+      parameter (MAT_LUINFO_SIZE = 4)
 
       integer MAT_LUINFO_FILL
       integer MAT_LUINFO_DTCOL
+      integer MAT_LUINFO_DAMPING
+      integer MAT_LUINFO_DAMP
 
       parameter (MAT_LUINFO_FILL  = 1)
       parameter (MAT_LUINFO_DTCOL = 2)
+      parameter (MAT_LUINFO_DAMPING = 3)
+      parameter (MAT_LUINFO_DAMP = 4)
+
+
+!
+!  Note: MAT_CHOLESKYINFO_SIZE must equal # elements in MatCholeskyInfo structure
+!  (See petsc/include/petscmat.h)
+!
+      integer   MAT_CHOLESKYINFO_SIZE
+
+      parameter (MAT_CHOLESKYINFO_SIZE = 3)
+
+      integer MAT_CHOLESKYINFO_FILL
+      integer MAT_CHOLESKYINFO_DAMPING
+      integer MAT_CHOLESKYINFO_DAMP
+
+      parameter (MAT_CHOLESKYINFO_FILL  = 1)
+      parameter (MAT_CHOLESKYINFO_DAMPING = 2)
+      parameter (MAT_CHOLESKYINFO_DAMP = 3)
 
 !
 !  Options for SOR and SSOR
@@ -253,7 +281,7 @@
       integer MATOP_GET_LOCAL_SIZE
       integer MATOP_GET_OWNERSHIP_RANGE
       integer MATOP_ILUFACTOR_SYMBOLIC
-      integer MATOP_I_CHOLESKYFACTOR_SY
+      integer MATOP_ICCFACTOR_SYMBOLIC
       integer MATOP_GET_ARRAY
       integer MATOP_RESTORE_ARRAY
 
@@ -261,7 +289,7 @@
       integer MATOP_FORWARD_SOLVE
       integer MATOP_BACKWARD_SOLVE
       integer MATOP_ILUFACTOR
-      integer MATOP_INCOMPLETECHOLESKYFACTOR
+      integer MATOP_ICCFACTOR
       integer MATOP_AXPY
       integer MATOP_GET_SUBMATRICES
       integer MATOP_INCREASE_OVERLAP
@@ -321,7 +349,7 @@
       parameter(MATOP_GET_LOCAL_SIZE=31)
       parameter(MATOP_GET_OWNERSHIP_RANGE=32)
       parameter(MATOP_ILUFACTOR_SYMBOLIC=33)
-      parameter(MATOP_I_CHOLESKYFACTOR_SY=34)
+      parameter(MATOP_ICCFACTOR_SYMBOLIC=34)
       parameter(MATOP_GET_ARRAY=35)
       parameter(MATOP_RESTORE_ARRAY=36)
 
@@ -329,7 +357,7 @@
       parameter(MATOP_FORWARD_SOLVE=38)
       parameter(MATOP_BACKWARD_SOLVE=39)
       parameter(MATOP_ILUFACTOR=40)
-      parameter(MATOP_INCOMPLETECHOLESKYFACTOR=41)
+      parameter(MATOP_ICCFACTOR=41)
       parameter(MATOP_AXPY=42)
       parameter(MATOP_GET_SUBMATRICES=43)
       parameter(MATOP_INCREASE_OVERLAP=44)

@@ -1,5 +1,5 @@
 !
-!  $Id: petscdraw.h,v 1.28 2001/01/15 21:50:11 bsmith Exp balay $;
+!  $Id: petscdraw.h,v 1.29 2001/01/17 19:47:10 balay Exp balay $;
 !
 !  Include file for Fortran use of the PetscDraw package in PETSc
 !
@@ -21,6 +21,8 @@
 !
 #define PETSC_DRAW_X 'x'
 #define PETSC_DRAW_NULL 'null'
+#define PETSC_DRAW_PS 'ps'
+#define PETSC_DRAW_WIN32 'win32'
 
 #endif
 

@@ -1,5 +1,5 @@
 !
-!  $Id: petscvec.h,v 1.33 2000/05/08 15:10:00 balay Exp balay $;
+!  $Id: petscvec.h,v 1.34 2000/09/25 18:04:32 balay Exp balay $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
@@ -21,6 +21,7 @@
 
 #define VEC_SEQ 'seq'
 #define VEC_MPI 'mpi'
+#define VEC_FETI 'feti'
 #define VEC_SHARED 'shared'
 
 #endif
@@ -76,7 +77,7 @@
 !
       integer VECOP_VIEW,VECOP_LOADINTOVECTOR
 
-      parameter (VECOP_VIEW=32,VECOP_LOADINTOVECTOR=40)
+      parameter (VECOP_VIEW=33,VECOP_LOADINTOVECTOR=40)
 !
 !  End of Fortran include file for the Vec package in PETSc
 

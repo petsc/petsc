@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.119 2001/03/23 22:04:35 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.120 2001/04/10 19:35:07 bsmith Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -49,14 +49,14 @@ struct _MatOps {
             (*dummy2)(Mat,int *,int *),
             (*getownershiprange)(Mat,int *,int *),
             (*ilufactorsymbolic)(Mat,IS,IS,MatILUInfo*,Mat *),
-            (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
+            (*iccfactorsymbolic)(Mat,IS,double,int,Mat *),
 /*35*/      (*getarray)(Mat,Scalar **),
             (*restorearray)(Mat,Scalar **),
             (*duplicate)(Mat,MatDuplicateOption,Mat *),
             (*forwardsolve)(Mat,Vec,Vec),
             (*backwardsolve)(Mat,Vec,Vec),
 /*40*/      (*ilufactor)(Mat,IS,IS,MatILUInfo*),
-            (*incompletecholeskyfactor)(Mat,IS,double,int),
+            (*iccfactor)(Mat,IS,double,int),
             (*axpy)(Scalar *,Mat,Mat),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatReuse,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),

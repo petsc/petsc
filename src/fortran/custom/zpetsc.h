@@ -1,4 +1,4 @@
-/*$Id: zpetsc.h,v 1.59 2001/01/17 19:47:04 balay Exp balay $*/
+/*$Id: zpetsc.h,v 1.60 2001/03/28 19:43:08 balay Exp balay $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
@@ -165,6 +165,8 @@ Fortran.
 #define PETSC_VIEWER_STDOUT_SELF_FORTRAN    -9
 #define PETSC_VIEWER_STDERR_WORLD_FORTRAN   -10 
 #define PETSC_VIEWER_STDERR_SELF_FORTRAN    -11
+#define PETSC_VIEWER_BINARY_WORLD_FORTRAN   -12
+#define PETSC_VIEWER_BINARY_SELF_FORTRAN    -13
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
@@ -184,6 +186,10 @@ Fortran.
       v = PETSC_VIEWER_STDERR_WORLD; \
     } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_STDERR_SELF_FORTRAN) { \
       v = PETSC_VIEWER_STDERR_SELF; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_BINARY_WORLD_FORTRAN) { \
+      v = PETSC_VIEWER_BINARY_WORLD; \
+    } else if ((*(PetscFortranAddr*)vin) == PETSC_VIEWER_BINARY_SELF_FORTRAN) { \
+      v = PETSC_VIEWER_BINARY_SELF; \
     } else { \
       v = *vin; \
     } \

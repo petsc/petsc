@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.14 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex76.c,v 1.15 2001/03/23 23:22:29 balay Exp balay $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -158,7 +158,7 @@ int main(int argc,char **args)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,ip_ptr,&perm);CHKERRQ(ierr);
   ierr = ISSetPermutation(perm);CHKERRQ(ierr);
   
-  /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
+  /* Test MatCholeskyFactor(), MatICCFactor() */
   norm1 = tol;
   for (lf=-1; lf<10*bs; lf += bs){ 
     if (lf==-1) {  /* Cholesky factor */
@@ -166,7 +166,7 @@ int main(int argc,char **args)
       ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRQ(ierr);
     } else {       /* incomplete Cholesky factor */
       fill          = 5.0;
-      ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRQ(ierr);
+      ierr = MatICCFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRQ(ierr);
     }      
     ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRQ(ierr);  
     /* MatView(sC, PETSC_VIEWER_DRAW_WORLD);  */ /* view factored matrix */

@@ -1,5 +1,5 @@
 !
-!  $Id: petscao.h,v 1.12 2000/05/08 15:10:00 balay Exp balay $;
+!  $Id: petscao.h,v 1.13 2000/09/25 17:55:13 balay Exp balay $;
 !
 !  Include file for Fortran use of the AO (application ordering) package in PETSc
 !
@@ -10,6 +10,7 @@
 #define AOData PetscFortranAddr
 #define AOType integer
 #define AODataType integer
+#define AOData2dGrid PetscFortranAddr
 
 #endif
 

@@ -1,5 +1,5 @@
 !
-!  $Id: petscviewer.h,v 1.29 2001/01/20 03:37:43 bsmith Exp balay $;
+!  $Id: petscviewer.h,v 1.30 2001/01/22 23:27:10 balay Exp balay $;
 !
 !  Include file for Fortran use of the PetscViewer package in PETSc
 !
@@ -7,6 +7,7 @@
 #define __VIEWER_H
 
 #define PetscViewer PetscFortranAddr
+#define PetscViewers PetscFortranAddr
 #define PetscViewerBinaryType integer
 #define PetscViewerType character*(80)
 #define PetscViewerFormat integer
