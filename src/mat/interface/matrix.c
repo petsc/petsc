@@ -3090,10 +3090,13 @@ int MatAssembled(Mat mat,PetscTruth *assembled)
 */
 int MatView_Private(Mat mat)
 {
-  int        ierr;
-  PetscTruth flg;
+  int               ierr;
+  PetscTruth        flg;
+  static PetscTruth incall = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (incall) PetscFunctionReturn(0);
+  incall = PETSC_TRUE;
   ierr = PetscOptionsBegin(mat->comm,mat->prefix,"Matrix Options","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsName("-mat_view_info","Information on matrix size","MatView",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -3140,6 +3143,7 @@ int MatView_Private(Mat mat)
       ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
