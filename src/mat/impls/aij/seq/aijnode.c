@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.20 1995/11/30 22:33:40 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.21 1995/12/08 17:07:22 balay Exp bsmith $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -94,8 +94,6 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   IS         ris= 0, cis = 0;
 
   if (!a->assembled) SETERRQ(1,"MatGetReordering_SeqAIJ_Inode:Not for unassembled matrix");
-  if (*rperm) ISDestroy(*rperm);
-  if (*cperm) ISDestroy(*cperm);
   if (type  == ORDER_NATURAL) {
     idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
     for ( i=0; i<n; i++ ) idx[i] = i;
