@@ -1,4 +1,4 @@
-/*$Id: aosetlocal.c,v 1.8 2000/04/12 04:26:18 bsmith Exp balay $*/
+/*$Id: aosetlocal.c,v 1.9 2000/05/05 22:19:20 balay Exp bsmith $*/
 
 #include "petscao.h"       /*I  "petscao.h"  I*/
 
@@ -34,6 +34,7 @@ int AODataPartitionAndSetupLocal(AOData ao,char *keyname,char *segmentname,IS *i
 {
   ISLocalToGlobalMapping ltogkey;
   int                    ierr,rstart,rend;
+  MPI_Comm               comm;
 
   PetscFunctionBegin;  
 
@@ -45,7 +46,9 @@ int AODataPartitionAndSetupLocal(AOData ao,char *keyname,char *segmentname,IS *i
 
  /*     Generate the list of key entries (cells) on this processor   */
   ierr = AODataKeyGetOwnershipRange(ao,"cell",&rstart,&rend);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,iskey);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)ao,&comm);CHKERRQ(ierr);
+
+  ierr = ISCreateStride(comm,rend-rstart,rstart,1,iskey);CHKERRQ(ierr);
 
  /*       Get the list of segment entries (vertices) used by these key entries (cells)   */
   ierr = AODataSegmentGetReducedIS(ao,keyname,segmentname,*iskey,issegment);CHKERRQ(ierr);

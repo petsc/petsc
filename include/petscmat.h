@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.193 2000/05/24 20:59:39 balay Exp balay $ */
+/* $Id: petscmat.h,v 1.194 2000/05/24 21:05:08 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -498,6 +498,7 @@ EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
 #endif
 
 EXTERN int MatCreateMAIJ(Mat,int,Mat*);
+EXTERN int MatSetTypeFromOptions(Mat);
 
 #define MATSEQMAIJ "seqaij"
 #endif
