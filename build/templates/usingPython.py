@@ -34,10 +34,6 @@ class UsingPython (base.Base):
     return
 
   def setupArgDB(self, argDB, clArgs):
-    import nargs
-
-    argDB.setType('PYTHON_INCLUDE', nargs.ArgDir(None, None, 'The directory containing Python.h', 1))
-    argDB.setType('PYTHON_LIB',     nargs.ArgLibrary(None, None, 'The library containing PyInitialize()', 1))
     return base.Base.setupArgDB(self, argDB, clArgs)
 
   def setup(self):
