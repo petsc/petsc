@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.75 1997/11/03 04:51:27 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.76 1998/01/06 20:13:31 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -43,6 +43,8 @@ extern int    PCRegisterAllCalled;
 extern int    PCDestroy(PC);
 extern int    PCSetFromOptions(PC);
 extern int    PCGetType(PC,PCType*,char**);
+extern int    PCGetTypeFromName(char *,PCType *);
+
 extern int    PCGetFactoredMatrix(PC,Mat*);
 extern int    PCSetModifySubMatrices(PC,int(*)(PC,int,IS*,IS*,Mat*,void*),void*);
 extern int    PCModifySubMatrices(PC,int,IS*,IS*,Mat*,void*);
@@ -83,6 +85,7 @@ extern int PCBGSSetLocalBlocks(PC, int, int*);
 extern int PCBGSSetSymmetric(PC, PCBGSType);
 
 extern int PCSLESSetUseTrue(PC);
+extern int PCCompositeSetUseTrue(PC);
 
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
