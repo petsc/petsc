@@ -38,7 +38,7 @@ class DependencyChecker(logging.Logger):
 
 class MD5DependencyChecker(DependencyChecker):
   '''This class uses MD5 fingerprints and a database to detect changes in files'''
-  def __call__(self, source, target):
+  def __call__(self, source, target, checked = None):
     '''This method determines whether source should be recompiled into target
        - If the superclass returns True, then rebuild
        - If source is not in the database, then rebuild
@@ -53,8 +53,14 @@ class MD5DependencyChecker(DependencyChecker):
       if not self.sourceDB[f][0] == self.sourceDB.getChecksum(f):
         self.logPrint('Source '+str(source)+' rebuilds due to changed checksum of file '+str(f))
         return True
+      if checked is None:
+        checked = sets.Set()
       for dep in self.sourceDB[f][3]:
-        if self([dep], None):
+        if dep in checked:
+          continue
+        else:
+          checked.add(dep)
+        if self([dep], None, checked):
           self.logPrint('Source '+str(source)+' rebuilds due to rebuilt dependecy '+str(dep))
           return True
     self.logPrint('Source '+str(source)+' will not be rebuilt into target '+str(target))
@@ -62,7 +68,7 @@ class MD5DependencyChecker(DependencyChecker):
 
 class TimeDependencyChecker(DependencyChecker):
   '''This class uses modification times to detect changes in files'''
-  def __call__(self, source, target):
+  def __call__(self, source, target, checked = None):
     '''This method determines whether source should be recompiled into target
        - If the superclass returns True, then rebuild
        - If source is not in the database, then rebuild
@@ -82,8 +88,14 @@ class TimeDependencyChecker(DependencyChecker):
       if targetModTime < self.sourceDB.getModificationTime(f):
         self.logPrint('Source '+str(source)+' rebuilds due to later modification time of '+str(f)+' than target '+str(target))
         return True
+      if checked is None:
+        checked = sets.Set()
       for dep in self.sourceDB[f][3]:
-        if self([dep], None):
+        if dep in checked:
+          continue
+        else:
+          checked.add(dep)
+        if self([dep], None, checked):
           self.logPrint('Source '+str(source)+' rebuilds due to rebuilt dependecy '+str(dep))
           return True
     self.logPrint('Source '+str(source)+' will not be rebuilt into target '+str(target))

@@ -165,12 +165,16 @@ class ArgFuzzyBool(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     try:
-      if   value == 'no':       value = 0
+      if   value == '0':        value = 0
+      elif value == '1':        value = 1
+      elif value == 'no':       value = 0
       elif value == 'yes':      value = 1
       elif value == 'true':     value = 1
       elif value == 'false':    value = 0
       elif value == 'maybe':    value = 2
-      elif value == 'ifneeded': value = 2      
+      elif value == 'ifneeded': value = 2
+      elif value == 'client':   value = 2
+      elif value == 'server':   value = 3
       else:                     value = int(bool(value))
     except:
       raise TypeError('Invalid boolean value: '+str(value)+' for key '+str(self.key))

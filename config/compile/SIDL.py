@@ -35,6 +35,15 @@ class Compiler(script.Script):
       outputFiles['Client '+lang] = self.scandal.outputFiles[lang]
     return
 
+  def filterShellOutput(self, output):
+    output = filter(lambda l: not l.startswith('Mapping'), output.split('\n'))
+    output = filter(lambda l: not l.startswith('Searching'), output)
+    output = filter(lambda l: not l.startswith('Creating'), output)
+    output = filter(lambda l: not l.startswith('Parsing'), output)
+    output = filter(lambda l: not l.startswith('Failed to'), output)
+    self.logPrint('Got scandal output: '+str(output))
+    return ''.join(output)
+
   def createClientShell(self, source, outputFiles):
     import os
     from sets import Set
@@ -44,16 +53,23 @@ class Compiler(script.Script):
       cmd.append('--client='+client)
       cmd.append('--clientDirs={'+client+':'+self.clientDirs[client]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
+      cmd.append('--ior=0')
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
       cmd.extend(source)
       (output, error, status) = self.executeShellCommand(' '.join(cmd), timeout = None)
-      output = filter(lambda l: l.find('Mapping') < 0, output.split('\n'))
-      output = filter(lambda l: l.find('Searching') < 0, output)
-      output = filter(lambda l: l.find('Creating') < 0, output)
-      output = filter(lambda l: l.find('Failed to') < 0, output)
-      self.logPrint('Got scandal output: '+str(output))
-      scandalOutputFiles = eval(''.join(output))
+      scandalOutputFiles = eval(self.filterShellOutput(output))
+      for lang in scandalOutputFiles:
+        outputFiles['Client '+lang] = scandalOutputFiles[lang]
+      cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
+      cmd.append('--ior=client')
+      cmd.append('--clientDirs={'+client+':'+self.clientDirs[client]+'}')
+      cmd.append('--includes=['+','.join(self.includes)+']')
+      cmd.append('--outputFiles')
+      cmd.append('--logAppend')
+      cmd.extend(source)
+      (output, error, status) = self.executeShellCommand(' '.join(cmd), timeout = None)
+      scandalOutputFiles = eval(self.filterShellOutput(output))
       for lang in scandalOutputFiles:
         outputFiles['Client '+lang] = scandalOutputFiles[lang]
     return
@@ -80,12 +96,18 @@ class Compiler(script.Script):
       for root, dirs, files in os.walk(serverDir):
         if os.path.basename(root) == 'SCCS':
           continue
-        implFiles = filter(lambda a: self.implRE.match(a), files)
-        added     = added or vc.add(vc.getNewFiles([os.path.join(root, f) for f in implFiles]))
-        reverted  = reverted or vc.revert(vc.getUnchangedFiles([os.path.join(root, f) for f in implFiles]))
-        committed = committed or vc.commit(vc.getChangedFiles([os.path.join(root, f) for f in implFiles]))
+        try:
+          implFiles = filter(lambda a: self.implRE.match(a), files)
+          added     = added or vc.add(vc.getNewFiles([os.path.join(root, f) for f in implFiles]))
+          reverted  = reverted or vc.revert(vc.getUnchangedFiles([os.path.join(root, f) for f in implFiles]))
+          committed = committed or vc.commit(vc.getChangedFiles([os.path.join(root, f) for f in implFiles]))
+        except RuntimeError, e:
+          self.logPrint('ERROR: Checking in server: '+str(e))
     if added or committed:
-      vc.changeSet()
+      try:
+        vc.changeSet()
+      except RuntimeError, e:
+        self.logPrint('ERROR: Checking in server: '+str(e))
     return
 
   def createServer(self, source, outputFiles):
@@ -110,17 +132,23 @@ class Compiler(script.Script):
       cmd.append('--server='+server)
       cmd.append('--serverDirs={'+server+':'+self.serverDirs[server]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
+      cmd.append('--ior=0')
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
       cmd.extend(source)
       (output, error, status) = self.executeShellCommand(' '.join(cmd), timeout = None)
-      output = filter(lambda l: l.find('Mapping') < 0, output.split('\n'))
-      output = filter(lambda l: l.find('Searching') < 0, output)
-      output = filter(lambda l: l.find('Creating') < 0, output)
-      output = filter(lambda l: l.find('Parsing') < 0, output)
-      output = filter(lambda l: l.find('Failed to') < 0, output)
-      self.logPrint('Got scandal output: '+str(output))
-      scandalOutputFiles = eval(''.join(output))
+      scandalOutputFiles = eval(self.filterShellOutput(output))
+      for lang in scandalOutputFiles:
+        outputFiles['Server '+lang] = scandalOutputFiles[lang]
+      cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
+      cmd.append('--ior=server')
+      cmd.append('--serverDirs={'+server+':'+self.serverDirs[server]+'}')
+      cmd.append('--includes=['+','.join(self.includes)+']')
+      cmd.append('--outputFiles')
+      cmd.append('--logAppend')
+      cmd.extend(source)
+      (output, error, status) = self.executeShellCommand(' '.join(cmd), timeout = None)
+      scandalOutputFiles = eval(self.filterShellOutput(output))
       for lang in scandalOutputFiles:
         outputFiles['Server '+lang] = scandalOutputFiles[lang]
     self.checkinServer(self.serverDirs)
