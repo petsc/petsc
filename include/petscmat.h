@@ -420,7 +420,8 @@ EXTERN int MatZeroRowsLocal(Mat,IS,const PetscScalar*);
 EXTERN int MatSetValuesLocal(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 EXTERN int MatSetValuesBlockedLocal(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 
-EXTERN int MatSetStashInitialSize(Mat,int,int);
+EXTERN int MatStashSetInitialSize(Mat,int,int);
+EXTERN int MatStashGetInfo(Mat,int*,int*,int*,int*);
 
 EXTERN int MatInterpolateAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatInterpolate(Mat,Vec,Vec);

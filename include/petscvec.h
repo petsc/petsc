@@ -184,8 +184,9 @@ EXTERN int VecStrideScatterAll(Vec*,Vec,InsertMode);
 EXTERN int VecSetValues(Vec,int,const int[],const PetscScalar[],InsertMode);
 EXTERN int VecAssemblyBegin(Vec);
 EXTERN int VecAssemblyEnd(Vec);
-EXTERN int VecSetStashInitialSize(Vec,int,int);
+EXTERN int VecStashSetInitialSize(Vec,int,int);
 EXTERN int VecStashView(Vec,PetscViewer);
+EXTERN int VecStashGetInfo(Vec,int*,int*,int*,int*);
 
 extern int         VecSetValue_Row;
 extern PetscScalar VecSetValue_Value;

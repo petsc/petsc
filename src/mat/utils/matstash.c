@@ -175,9 +175,11 @@ int MatStashGetInfo_Private(MatStash *stash,int *nstash,int *reallocs)
   int bs2 = stash->bs*stash->bs;
 
   PetscFunctionBegin;
-  *nstash   = stash->n*bs2;
-  if (stash->reallocs < 0) *reallocs = 0;
-  else                     *reallocs = stash->reallocs;
+  if (nstash) *nstash   = stash->n*bs2;
+  if (reallocs) {
+    if (stash->reallocs < 0) *reallocs = 0;
+    else                     *reallocs = stash->reallocs;
+  }
   PetscFunctionReturn(0);
 }
 

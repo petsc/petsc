@@ -2929,9 +2929,9 @@ int VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecSetStashInitialSize"
+#define __FUNCT__ "VecStashSetInitialSize"
 /*@
-   VecSetStashInitialSize - sets the sizes of the vec-stash, that is
+   VecStashSetInitialSize - sets the sizes of the vec-stash, that is
    used during the assembly process to store values that belong to 
    other processors.
 
@@ -2964,7 +2964,7 @@ int VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked(), VecStashView()
 
 @*/
-int VecSetStashInitialSize(Vec vec,int size,int bsize)
+int VecStashSetInitialSize(Vec vec,int size,int bsize)
 {
   int ierr;
 
@@ -3365,6 +3365,37 @@ int VecRestoreArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,P
   PetscFunctionReturn(0);
 }
 
+extern int VecStashGetInfo_Private(VecStash*,int*,int*);
+/*@ 
+   VecStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
+       to be communicated to other processors during the VecAssemblyBegin/End() process
+
+    Not collective
+
+   Input Parameter:
+.   vec - the vector
+
+   Output Parameters:
++   nstash   - the size of the stash
+.   reallocs - the number of additional mallocs incurred.
+.   bnstash   - the size of the block stash
+-   breallocs - the number of additional mallocs incurred.in the block stash
+ 
+   Level: advanced
+
+.seealso: VecAssemblyBegin(), VecAssemblyEnd(), Vec, VecStashSetInitialSize(), VecStashView()
+  
+@*/
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashGetInfo"
+int VecStashGetInfo(Vec vec,int *nstash,int *reallocs,int *bnstash,int *brealloc)
+{
+  int ierr;
+  PetscFunctionBegin;
+  ierr = VecStashGetInfo_Private(&vec->stash,nstash,reallocs);CHKERRQ(ierr);
+  ierr = VecStashGetInfo_Private(&vec->bstash,nstash,reallocs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 
