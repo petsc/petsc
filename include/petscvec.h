@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.92 1999/03/18 15:38:02 bsmith Exp balay $ */
+/* $Id: vec.h,v 1.93 1999/04/02 22:02:38 balay Exp balay $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -117,13 +117,13 @@ typedef enum {PIPELINE_NONE=1, PIPELINE_SEQUENTIAL=2,
 
 typedef struct _p_VecPipeline*  VecPipeline;
 
-extern int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx);
-extern int VecPipelineSetType(VecPipeline ctx,PipelineType typ,PetscObject x);
-extern int VecPipelineSetup(VecPipeline ctx);
+extern int VecPipelineCreate(MPI_Comm,Vec,IS,Vec,IS,VecPipeline *);
+extern int VecPipelineSetType(VecPipeline,PipelineType,PetscObject);
+extern int VecPipelineSetup(VecPipeline);
 extern int VecPipelineBegin(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline);
 extern int VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline); 
-extern int VecPipelineView(VecPipeline pipe,Viewer viewer);
-extern int VecPipelineDestroy(VecPipeline ctx);
+extern int VecPipelineView(VecPipeline,Viewer);
+extern int VecPipelineDestroy(VecPipeline);
 
 extern int VecGetArray(Vec,Scalar*[]);
 extern int VecRestoreArray(Vec,Scalar*[]);
