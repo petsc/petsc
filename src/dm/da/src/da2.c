@@ -554,9 +554,9 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
 
 
-  /* determine who lies on each side of use stored in    n6 n7 n8
-                                                         n3    n5
-                                                         n0 n1 n2
+  /* determine who lies on each side of us stored in    n6 n7 n8
+                                                        n3    n5
+                                                        n0 n1 n2
   */
 
   /* Assume the Non-Periodic Case */
