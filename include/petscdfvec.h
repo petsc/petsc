@@ -1,5 +1,5 @@
 
-/* $Id: vgrid.h,v 1.6 1996/02/24 07:38:05 curfman Exp curfman $ */
+/* $Id: vgrid.h,v 1.7 1996/02/26 02:44:30 curfman Exp curfman $ */
 
 /* This file declares some utility routines for manipulating vectors that are
    associated with multicomponent problems on grids.  VGI = VecGridInfo */
@@ -24,8 +24,9 @@ typedef struct _VGI* VGI;
 extern int VGICreate(MPI_Comm,GridType,int,int,GridComponentOrdering,char**,int,int,int,VGI*);
 extern int VGIDuplicate(VGI,VGI*);
 extern int VGIDestroy(VGI);
-extern int VGIGetComponentVecs(Vec,VGI,Vec**);
-extern int VGIAssembleFullVec(Vec*,VGI,Vec);
+extern int VGIGetComponentVectors(Vec,VGI,Vec**);
+extern int VGIAssembleFullVector(Vec*,VGI,Vec);
+extern int VGIGetInfo(VGI,GridType*,int*,int*,GridComponentOrdering*,int*,int*,int*);
 extern int VGIDrawContours(Vec,VGI,int,int);
 extern int VGIRefineVector(Vec,VGI,DA,Vec*,VGI*);
 extern int VGISetCoordinates(VGI,Scalar*,Scalar*,Scalar*);
