@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.48 1998/06/11 19:53:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.49 1998/10/19 22:15:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -195,10 +195,11 @@ void   *PETSC_NULL_FUNCTION_Fortran;
 
 long PetscIntAddressToFortran(int *base,int *addr)
 {
-  unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(int);
+  unsigned long tmp1 = (unsigned long) base,tmp2 = 0;
   unsigned long tmp3 = (unsigned long) addr;
   long          itmp2;
 
+#if !defined(USE_CRAY90_POINTER)
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1)/sizeof(int);
     itmp2 = (long) tmp2;
@@ -206,6 +207,16 @@ long PetscIntAddressToFortran(int *base,int *addr)
     tmp2  = (tmp1 - tmp3)/sizeof(int);
     itmp2 = -((long) tmp2);
   }
+#else
+  if (tmp3 > tmp1) {
+    tmp2  = (tmp3 - tmp1);
+    itmp2 = (long) tmp2;
+  } else {
+    tmp2  = (tmp1 - tmp3);
+    itmp2 = -((long) tmp2);
+  }
+#endif
+
   if (base + itmp2 != addr) {
     (*PetscErrorPrintf)("PetscIntAddressToFortran:C and Fortran arrays are\n");
     (*PetscErrorPrintf)("not commonly aligned or are too far apart to be indexed \n");
