@@ -17,8 +17,8 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
 		runex8 runex8_2
 EXAMPLES_2    = ex10 ex11 ex6 ex13 ex14 ex15
 RUNEXAMPLES_2 = runex11 runex6 runex6_2 runex6_3 runex6_4 runex6_5 runex13
-EXAMPLES_3    = ex7 ex12
-RUNEXAMPLES_3 = runex7
+EXAMPLES_3    = ex7 ex12 ex16
+RUNEXAMPLES_3 = runex7 runex16
 EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex8 ex11 
 RUNEXAMPLES_4 = runex1 runex1_3 runex1_5 runex2 runex2_3 runex2_5 \
 		runex3 runex4 
@@ -85,6 +85,9 @@ ex14: ex14.o  chkopts
 ex15: ex15.o  chkopts
 	-$(CLINKER) -o ex15 ex15.o  $(PETSC_LIB)
 	$(RM) ex15.o
+ex16: ex16.o  chkopts
+	-$(FLINKER) -o ex16 ex16.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex12.o
 
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
@@ -270,6 +273,15 @@ runex13:
 	-@$(MPIRUN) -np 2  ex13 -ksp_smonitor > ex13_1.tmp 2>&1; \
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
+	   $(RM) -f ex13_1.tmp
+
+runex16:
+	-@$(MPIRUN) ex16 -f $(PETSC_DIR)/mat/examples/mat.ex.binary \
+	   -a_pc_type bgs -a_pc_bgs_blocks 5 -a_sub_pc_method ilu \
+	   -b_pc_type bjacobi -b_pc_bjacobi_blocks 5 -b_ksp_max_it 10 \
+	   -b_sub_pc_type bgs _b_sub_pc_bgs_blocks 2  > ex16_1.tmp 2>&1; \
+	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
+	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   $(RM) -f ex13_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
