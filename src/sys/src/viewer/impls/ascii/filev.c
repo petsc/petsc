@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.10 1995/05/02 23:39:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.11 1995/06/08 03:11:33 bsmith Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
@@ -104,8 +104,8 @@ int ViewerFileOpen(char *name,Viewer *lab)
    As shown below, ViewerFileOpenSync() is useful in conjunction with 
    MatView() and VecView()
 $
-$     ViewerFileOpenSycn("mat.output", &viewer);
-$     MatView(matrix, viewer);
+$    ViewerFileOpenSycn("mat.output",MPI_COMM_WORLD,&viewer);
+$    MatView(matrix,viewer);
 
 .keywords: Viewer, file, open
 
