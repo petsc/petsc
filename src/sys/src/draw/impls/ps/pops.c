@@ -171,6 +171,30 @@ static int PetscDrawTriangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscR
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscDrawRectangle_PS" 
+static int PetscDrawRectangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
+                          PetscReal Y2,int c1,int c2,int c3,int c4)
+{
+  PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
+  int           ierr;
+  PetscReal     x1,y_1,x2,y2,x3,y3,x4,y4;
+
+  PetscFunctionBegin;
+  x1   = XTRANS(draw,X1);
+  y_1  = YTRANS(draw,Y_1); 
+  x2   = XTRANS(draw,X2);
+  y2   = YTRANS(draw,Y_1); 
+  x3   = XTRANS(draw,X2);
+  y3   = YTRANS(draw,Y2); 
+  x4   = XTRANS(draw,X1);
+  y4   = YTRANS(draw,Y2); 
+
+  ierr = PSSetColor(ps,(c1+c2+c3+c4)/4);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto %g %g lineto %g %g lineto %g %g lineto fill\n",x1,y_1,x2,y2,x3,y3,x4,y4,x1,y_1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscDrawDestroy_PS" 
 static int PetscDrawDestroy_PS(PetscDraw draw)
 {
@@ -233,7 +257,7 @@ static struct _PetscDrawOps DvOps = { 0,
                                  0,
                                  0,
                                  PetscDrawSynchronizedFlush_PS,
-                                 0,
+                                 PetscDrawRectangle_PS,
                                  PetscDrawTriangle_PS,
                                  0,
                                  0,
