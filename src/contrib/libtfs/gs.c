@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
+/*$Id: gs.c,v 1.2 2001/03/29 16:18:29 bsmith Exp balay $*/
 /***********************************gs.c***************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -173,7 +173,11 @@ typedef struct gather_scatter_id {
 
 
 /* to be made public */
+#if defined(not_used)
 static int  gs_dump_ngh(gs_id *id, int loc_num, int *num, int *ngh_list);
+static void gsi_via_int_list(gs_id *gs);
+static int in_sub_tree(int *ptr3, int p_mask_size, int *buf2, int buf_size);
+#endif
 
 /* PRIVATE - and definitely not exported */
 /*static void gs_print_template(register gs_id* gs, int who);*/
@@ -181,7 +185,6 @@ static int  gs_dump_ngh(gs_id *id, int loc_num, int *num, int *ngh_list);
 
 static gs_id *gsi_check_args(int *elms, int nel, int level);
 static void gsi_via_bit_mask(gs_id *gs);
-static void gsi_via_int_list(gs_id *gs);
 static void get_ngh_buf(gs_id *gs);
 static void set_pairwise(gs_id *gs);
 static gs_id * gsi_new(void);
@@ -250,7 +253,6 @@ static void gs_gop_local_binary(gs_id *gs, REAL *vals, rbfp fct);
 static void gs_gop_local_in_binary(gs_id *gs, REAL *vals, rbfp fct);
 static void gs_gop_tree_binary(gs_id *gs, REAL *vals, rbfp fct);
 
-static int in_sub_tree(int *ptr3, int p_mask_size, int *buf2, int buf_size);
 
 
 /* global vars */
@@ -1509,6 +1511,7 @@ gsi_via_int_list(gs_id *gs)
 }*/
 
 
+#if defined(not_used)
 static
 int
 root_sub_tree(int *proc_list, int num)
@@ -1557,9 +1560,10 @@ root_sub_tree(int *proc_list, int num)
 
   return(root);
 }
+#endif
 
 
-#if defined(not_using)
+#if defined(not_used)
 static int
 in_sub_tree(int *mask, int mask_size, int *work, int nw)
 {
@@ -4522,7 +4526,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-#if defined(notusing)
+#if defined(not_used)
 static
 int 
 level_best_guess(void)
