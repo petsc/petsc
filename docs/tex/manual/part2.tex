@@ -4367,28 +4367,29 @@ to guide your development. We give a short summary here.
 \begin{tabbing}
   DMMG        *dmmg;\\
   DA          da;\\
+  Vec         soln;\\
 
   /* Create the DA that stores information about the coarsest grid you wish to use */\\
   ierr = DACreate3d(PETSC\_COMM\_WORLD,DA\_NONPERIODIC,DA\_STENCIL\_STAR,\\
          3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);\\
 
-  /* Create the DMMG data structure \\
+  /* Create the DMMG data structure */\\
        - the second argument indicates the number of levels you wish to use and \\
          can be changed with the option -dmmg\_nlevels \\
   ierr = DMMGCreate(PETSC\_COMM\_WORLD,3,PETSC\_NULL,\&dmmg);CHKERRQ(ierr);\\
 
-  /*  Tell the DMMG object to use the da to define the coarsest grid\\
+  /*  Tell the DMMG object to use the da to define the coarsest grid */\\
   ierr = DMMGSetDM(dmmg,(DM)da);\\
 
   /*  Tell the DMMG we are solving a linear problem (hence SLES) and provide the \\
-      callback function to compute the right hand side and matrices for each level\\
-  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);\\
+      callback function to compute the right hand side and matrices for each level */\\
+  ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);\\
 
   /*  Solve the problem */\\
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);\\
 
   /*  One can access the solution with */\\
-  DMMGGetx(dmmg)\\
+  soln = DMMGGetx(dmmg);\\
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
   ierr = DADestroy(da);CHKERRQ(ierr);\\
