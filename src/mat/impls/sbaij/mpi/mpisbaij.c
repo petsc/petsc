@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.23 2000/09/27 21:14:30 balay Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.24 2000/09/28 21:11:44 bsmith Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1535,7 +1535,14 @@ static struct _MatOps MatOps_Values = {
   0,
   0,
   0,
-  MatGetMaps_Petsc};
+  MatGetMaps_Petsc,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  MatGetRowMax_MPISBAIJ};
 
 
 EXTERN_C_BEGIN
@@ -2184,4 +2191,17 @@ int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
   PetscFunctionBegin;
   SETERRQ(1,"Function not yet written for SBAIJ format"); 
   /* PetscFunctionReturn(0); */
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatGetDiagonal_MPISBAIJ"
+int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
+{
+  Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
+  int          ierr;
+
+  PetscFunctionBegin;
+  /* if (a->M != a->N) SETERRQ(PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block"); */
+  ierr = MatGetDiagonal(a->A,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }

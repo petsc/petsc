@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.30 2000/09/28 21:11:41 bsmith Exp hzhang $*/
+/*$Id: sbaij.c,v 1.31 2000/10/06 20:26:17 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1209,7 +1209,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,    
-       MatGetRowMax};
+       MatGetRowMax_SeqSBAIJ};
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
