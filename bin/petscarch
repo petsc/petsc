@@ -1,5 +1,5 @@
 #! /bin/sh -f
-# $Id: petscarch,v 1.26 2001/06/14 23:07:59 balay Exp balay $ 
+# $Id: petscarch,v 1.27 2001/06/14 23:37:08 balay Exp balay $ 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
@@ -61,7 +61,7 @@ elif [ "$LARCH" = "SunOS" ]; then
     fi
 elif [ "$LARCH" = "Linux" ]; then
     if [ "$MARCH" = "alpha" ]; then
-        setLARCH="linux_alpha"
+        LARCH="linux_alpha"
     elif [ "$MARCH" = "ppc" ]; then
         LARCH="linux_ppc"
     else
