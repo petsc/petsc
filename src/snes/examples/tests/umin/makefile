@@ -12,16 +12,19 @@ OBJSF         =
 LIBBASE       = libpetscsnes
 EXAMPLES_1    = ex2 ex3
 RUNEXAMPLES_1 = runex2 runex2_2 runex2_3 runex3 runex3_2
-EXAMPLES_2    = 
+EXAMPLES_2    = ex4
 RUNEXAMPLES_2 = 
 EXAMPLES_3    = ex1
 RUNEXAMPLES_3 = runex1 runex1_2
-EXAMPLESC     = ex1.c ex2.c ex3.c ex6.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESF     = deptfg.f dgl1fg.f dgl2fg.f dmsafg.f dodcfg.f dpjbfg.f dsscfg.f \
+                ndepths.f dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f dsschs.f \
+                dmsabc.f dodcps.f dgl2co.f mpinter.f pdgl2fg.f
 DIRS          = 
 
 FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
         depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \
-        dmsabc.o dodcps.o dgl2co.o mpinter.o
+        dmsabc.o dodcps.o dgl2co.o mpinter.o pdgl2fg.o
 
 ex1: ex1.o $(FOBJ1) chkopts
 	-$(CLINKER) -o ex1 ex1.o $(FOBJ1)  $(PETSC_LIB)
@@ -35,10 +38,15 @@ ex3: ex3.o chkopts
 	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
 	$(RM) ex3.o
 
+FOBJ4 = pdgl2fg.o
+ex4: ex4.o $(FOBJ4) chkopts
+	-$(CLINKER) -o ex4 ex4.o $(FOBJ4)  $(PETSC_LIB)
+	$(RM) ex4.o $(FOBJ4)
+
 PETSC_CONTRIB = -L$(LDIR) -lpetsccontrib
-ex4: ex4.o chkopts dgl2hs.o dgl2fg.o dgl2co.o
-	-$(CLINKER) -o ex4 ex4.o dgl2hs.o dgl2fg.o dgl2co.o $(PETSC_CONTRIB) $(PETSC_LIB)
-	$(RM) ex4.o
+ex5: ex5.o chkopts dgl2hs.o dgl2fg.o dgl2co.o
+	-$(CLINKER) -o ex5 ex5.o dgl2hs.o dgl2fg.o dgl2co.o $(PETSC_CONTRIB) $(PETSC_LIB)
+	$(RM) ex5.o
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
@@ -76,5 +84,11 @@ runex3_2:
            if (diff output/ex3_2.out ex3_2.tmp) then true; \
            else echo "Possible problem with ex3_2, diffs above"; fi;\
 	   $(RM) -f ex3_2.tmp
+
+runex3_3:
+	-@$(MPIRUN) -np 4 ex3 -Nx 2 -Ny 2 -snes_fd -snes_smonitor > ex3_3.tmp 2>&1;\
+           if (diff output/ex3_3.out ex3_3.tmp) then true; \
+           else echo "Possible problem with ex3_3, diffs above"; fi;\
+	   $(RM) -f ex3_3.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
