@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.31 1995/09/12 03:25:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.32 1995/09/21 20:10:55 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -18,13 +18,11 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
   mbd->insertmode = addv;
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,"MatSetValues_MPIBDiag:Negative row");
-    if (idxm[i] >= mbd->M) 
-      SETERRQ(1,"MatSetValues_MPIBDiag:Row too large");
+    if (idxm[i] >= mbd->M) SETERRQ(1,"MatSetValues_MPIBDiag:Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) 
-          SETERRQ(1,"MatSetValues_MPIBDiag:Negative column");
+        if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIBDiag:Negative column");
         if (idxn[j] >= mbd->N) 
           SETERRQ(1,"MatSetValues_MPIBDiag:Column too large");
         ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv);
@@ -572,12 +570,14 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of columns (local and global)
-.  nd - number of block diagonals (global)
+.  nd - number of block diagonals (global) (optional)
 .  nb - each element of a diagonal is an nb x nb dense matrix
-.  diag - array of block diagonal numbers,
+.  diag - array of block diagonal numbers (length nd),
 $     where for a matrix element A[i,j], 
 $     where i=row and j=column, the diagonal number is
 $     diag = i/nb - j/nb  (integer division)
+$     Set diag=0 on input for PETSc to dynamically allocate memory
+$     as needed.
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
    if allocated by user. Otherwise, set diagv=0 on input for PETSc to 
    control memory allocation.
@@ -593,13 +593,10 @@ $     diag = i/nb - j/nb  (integer division)
    The user MUST specify either the local or global numbers of rows
    (possibly both).
 
-   Currently, once the diagonals have been created, no new diagonals can
-   be added.  Thus, only elements that fall on the specified diagonals
-   can be set or altered; trying to modify other elements results in
-   an error.
-
    The case nb=1 (conventional diagonal storage) is implemented as
    a special case.
+
+   Fortran programmers cannot set diagv; It is ignored.
 
 .keywords: matrix, block, diagonal, parallel, sparse
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.51 1995/09/12 03:25:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.52 1995/09/21 20:10:51 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1295,12 +1295,14 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
 .  comm - MPI communicator, set to MPI_COMM_SELF
 .  m - number of rows
 .  n - number of columns
-.  nd - number of block diagonals
+.  nd - number of block diagonals (optional)
 .  nb - each element of a diagonal is an nb x nb dense matrix
-.  diag - array of block diagonal numbers,
+.  diag - optional array of block diagonal numbers (length nd),
 $     where for a matrix element A[i,j], 
 $     where i=row and j=column, the diagonal number is
 $     diag = i/nb - j/nb  (integer division)
+$     Set diag=0 on input for PETSc to dynamically allocate memory
+$     as needed.
 .  diagv - pointer to actual diagonals (in same order as diag array), 
    if allocated by user.  Otherwise, set diagv=0 on input for PETSc to 
    control memory allocation.
@@ -1311,15 +1313,10 @@ $     diag = i/nb - j/nb  (integer division)
    Notes:
    See the users manual for further details regarding this storage format.
 
-   Currently, once the diagonals have been created, no new diagonals can
-   be added.  Thus, only elements that fall on the specified diagonals
-   can be set or altered; trying to modify other elements results in
-   an error.
-
    The case nb=1 (conventional diagonal storage) is implemented as
    a special case. 
 
-   Note: Fortran programmers may not set diagv. It is ignored.
+   Fortran programmers cannot set diagv; It is ignored.
 
 .keywords: matrix, block, diagonal, sparse
 
