@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.25 1998/04/29 18:38:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.26 1998/05/01 02:49:09 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -521,7 +521,7 @@ int TSPVodeGetIterations(TS ts, int *nonlin,int *lin )
   int ierr, (*f)(TS,int*,int*);
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeGetIterations",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeGetIterations_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,nonlin,lin);CHKERRQ(ierr);
   }
@@ -554,7 +554,7 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
   int ierr, (*f)(TS,TSPVodeType);
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetType",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetType_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,type);CHKERRQ(ierr);
   }
@@ -588,7 +588,7 @@ int TSPVodeSetGMRESRestart(TS ts, int restart)
   int ierr, (*f)(TS,int);  
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetGMRESRestart",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetGMRESRestart_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,restart);CHKERRQ(ierr);
   }
@@ -624,7 +624,7 @@ int TSPVodeSetLinearTolerance(TS ts, double tol)
   int ierr, (*f)(TS,double);  
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetLinearTolerance",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetLinearTolerance_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,tol);CHKERRQ(ierr);
   }
@@ -657,7 +657,7 @@ int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
   int ierr, (*f)(TS,TSPVodeGramSchmidtType);  
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetGramSchmidtType",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetGramSchmidtType_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,type);CHKERRQ(ierr);
   }
@@ -693,7 +693,7 @@ int TSPVodeSetTolerance(TS ts, double aabs, double rel)
   int ierr, (*f)(TS,double,double);  
   
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetTolerance",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetTolerance_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,aabs,rel);CHKERRQ(ierr);
   }
@@ -723,7 +723,7 @@ int TSPVodeGetPC(TS ts, PC *pc)
   int ierr, (*f)(TS,PC *);  
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeGetPC",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeGetPC_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,pc);CHKERRQ(ierr);
   } else {
@@ -754,7 +754,7 @@ int TSPVodeSetExactFinalTime(TS ts, PetscTruth ft)
   int ierr, (*f)(TS,PetscTruth);  
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetExactFinalTime",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPVodeSetExactFinalTime_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,ft);CHKERRQ(ierr);
   } 
@@ -803,23 +803,23 @@ int TSCreate_PVode(TS ts )
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetType","TSPVodeSetType_PVode",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetType_C","TSPVodeSetType_PVode",
                     (void*)TSPVodeSetType_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetGMRESRestart","TSPVodeSetGMRESRestart_PVode",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetGMRESRestart_C","TSPVodeSetGMRESRestart_PVode",
                     (void*)TSPVodeSetGMRESRestart_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetLinearTolerance",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetLinearTolerance_C",
                     "TSPVodeSetLinearTolerance_PVode",
                     (void*)TSPVodeSetLinearTolerance_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetGramSchmidtType",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetGramSchmidtType_C",
                     "TSPVodeSetGramSchmidtType_PVode",
                     (void*)TSPVodeSetGramSchmidtType_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetTolerance","TSPVodeSetTolerance_PVode",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetTolerance_C","TSPVodeSetTolerance_PVode",
                     (void*)TSPVodeSetTolerance_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeGetPC","TSPVodeGetPC_PVode",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeGetPC_C","TSPVodeGetPC_PVode",
                     (void*)TSPVodeGetPC_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeGetIterations","TSPVodeGetIterations_PVode",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeGetIterations_C","TSPVodeGetIterations_PVode",
                     (void*)TSPVodeGetIterations_PVode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetExactFinalTime","TSPVodeSetExactFinalTime_PVode",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPVodeSetExactFinalTime_C","TSPVodeSetExactFinalTime_PVode",
                     (void*)TSPVodeSetExactFinalTime_PVode);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
