@@ -61,7 +61,10 @@ class UsingSIDL (logging.Logger):
     return self.includeDirs
 
   def getRuntimeProject(self):
-    for project in bs.argDB['installedprojects']+[self.project]:
+    projects = [self.project]
+    if bs.argDB.has_key('installedprojects'):
+      projects += bs.argDB['installedprojects']
+    for project in projects:
       if project.getName() == 'sidlruntime':
         return project
     raise RuntimeError('Could not find runtime project')

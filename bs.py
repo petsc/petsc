@@ -60,17 +60,12 @@ class BS (install.base.Base):
   directories = {}
   filesets    = {}
 
-  def __init__(self, projectObj, clArgs = None):
+  def __init__(self, project, clArgs = None):
     self.setupArgDB(clArgs)
     install.base.Base.__init__(self, argDB)
-    self.project          = projectObj
-    self.sourceDBFilename = os.path.join(projectObj.getRoot(), 'bsSource.db')
+    self.project          = project
+    self.sourceDBFilename = os.path.join(self.project.getRoot(), 'bsSource.db')
     self.setupSourceDB()
-    # Put current project name into the database
-    if not argDB.has_key('installedprojects'):
-      argDB['installedprojects'] = []
-    if projectObj not in argDB['installedprojects']:
-      argDB['installedprojects'] = argDB['installedprojects']+[projectObj]
     return
 
   def setupArgDB(self, clArgs):
@@ -161,11 +156,18 @@ class BS (install.base.Base):
   def t_compile(self):
     return self.getCompileDefaults().getCompileTarget().execute()
 
+  def t_install(self):
+    p = self.getInstalledProject(self.project.getUrl())
+    if p is None:
+      argDB['installedprojects'] = argDB['installedprojects']+[self.project]
+    return p
+
   def t_print(self):
     return self.getSIDLDefaults().getSIDLPrintTarget().execute()
 
   def t_default(self):
-    return self.executeTarget('compile')
+    self.executeTarget('compile')
+    return self.executeTarget('install')
 
   def t_recalc(self):
     return sourceDB.calculateDependencies()
