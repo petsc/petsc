@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.99 1998/05/19 01:42:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.100 1998/06/11 19:56:58 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -326,6 +326,8 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
+static int slesdoublecount = 0;
+
 #undef __FUNC__  
 #define __FUNC__ "SLESSolve"
 /*@
@@ -385,12 +387,12 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 .keywords: SLES, solve, linear system
 
 .seealso: SLESCreate(), SLESSetOperators(), SLESGetKSP(), KSPSetTolerances(),
-          KSPDefaultConverged(), KSPSetInitialGuessNonzero(), KSPGetResidualNorm()
+          KSPDefaultConverged(), KSPSetInitialGuessNonzero(), KSPGetResidualNorm(),
+          KSPSolve()
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
   int        ierr, flg;
-  static int doublecount = 0;
   KSP        ksp;
   PC         pc;
 
@@ -405,11 +407,94 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
     ierr = SLESSetUp(sles,b,x); CHKERRQ(ierr);
   }
   ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
-  if (!doublecount) {PLogEventBegin(SLES_Solve,sles,b,x,0);} doublecount++;
+  if (!slesdoublecount) {PLogEventBegin(SLES_Solve,sles,b,x,0);} slesdoublecount++;
   ierr = PCPreSolve(pc,ksp); CHKERRQ(ierr);
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
-  if (doublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} doublecount--;
+  if (slesdoublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} slesdoublecount--;
+  ierr = OptionsHasName(sles->prefix,"-sles_view", &flg); CHKERRQ(ierr); 
+  if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SLESSolveTrans"
+/*@
+   SLESSolveTrans - Solves the transpose of a linear system.
+
+   Collective on SLES
+
+   Input Parameters:
++  sles - the SLES context
+-  b - the right hand side
+
+   Output Parameters:
++  x - the approximate solution
+-  its - the number of iterations until termination
+
+   Notes:
+     On return, the parameter "its" contains
++    <its> - the iteration number at which convergence
+       was successfully reached, or
+-    <-its> - the negative of the iteration at which
+        divergence or breakdown was detected.
+
+     Currently works only with the KSPPREONLY method.
+
+   Setting a Nonzero Initial Guess:
+     By default, SLES assumes an initial guess of zero by zeroing
+     the initial value for the solution vector, x. To use a nonzero 
+     initial guess, the user must call
+.vb
+        SLESGetKSP(sles,&ksp);
+        KSPSetInitialGuessNonzero(ksp);
+.ve
+
+   Solving Successive Linear Systems:
+     When solving multiple linear systems of the same size with the
+     same method, several options are available.
+
+     (1) To solve successive linear systems having the SAME
+     preconditioner matrix (i.e., the same data structure with exactly
+     the same matrix elements) but different right-hand-side vectors,
+     the user should simply call SLESSolve() multiple times.  The
+     preconditioner setup operations (e.g., factorization for ILU) will
+     be done during the first call to SLESSolve() only; such operations
+     will NOT be repeated for successive solves.
+
+     (2) To solve successive linear systems that have DIFFERENT
+     preconditioner matrices (i.e., the matrix elements and/or the
+     matrix data structure change), the user MUST call SLESSetOperators()
+     and SLESSolve() for each solve.  See SLESSetOperators() for
+     options that can save work for such cases.
+
+
+.keywords: SLES, solve, linear system
+
+.seealso: SLESCreate(), SLESSetOperators(), SLESGetKSP(), KSPSetTolerances(),
+          KSPDefaultConverged(), KSPSetInitialGuessNonzero(), KSPGetResidualNorm(),
+          KSPSolve()
+@*/
+int SLESSolveTrans(SLES sles,Vec b,Vec x,int *its)
+{
+  int        ierr, flg;
+  KSP        ksp;
+  PC         pc;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,0,"b and x must be different vectors");
+  ksp = sles->ksp; pc = sles->pc;
+  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
+  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+  ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
+  if (!sles->setupcalled) {
+    ierr = SLESSetUp(sles,b,x); CHKERRQ(ierr);
+  }
+  ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
+  if (!slesdoublecount) {PLogEventBegin(SLES_Solve,sles,b,x,0);} slesdoublecount++;
+  ierr = KSPSolveTrans(ksp,its); CHKERRQ(ierr);
+  if (slesdoublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} slesdoublecount--;
   ierr = OptionsHasName(sles->prefix,"-sles_view", &flg); CHKERRQ(ierr); 
   if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRQ(ierr); }
   PetscFunctionReturn(0);
