@@ -68,10 +68,10 @@ petsc/src/stencil/examples/RCS/
 petsc/src/stencil/impls/RCS/
 petsc/src/stencil/src/RCS/
 petsc/src/stencil/utils/RCS
-petsc/src/ra/examples/RCS/
-petsc/src/ra/RCS/
+petsc/src/da/examples/RCS/
+petsc/src/da/RCS/
 petsc/src/src/RCS/
-petsc/src/sys/error/RCS/
+petsc/src/sys/src/RCS/
 petsc/src/vec/examples/RCS/
 petsc/src/vec/impls/RCS/
 petsc/src/vec/src/RCS/
