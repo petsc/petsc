@@ -6,7 +6,7 @@ if __name__ == '__main__':
     import configure
 
     configure_options = [
-    '--with-mpi-dir=/Users/petsc/software/mpich-1.2.5',
+    '--with-mpi-dir=/Users/petsc/software/mpich-1.2.5.2',
     '-PETSC_ARCH=darwin6.8',
     '-PETSC_DIR=/Users/petsc/petsc-test'
     ]
