@@ -53,6 +53,21 @@ def petsc_configure(configure_options):
       break
   if not found and getarch(): configure_options.append('-PETSC_ARCH='+getarch())
 
+  # support a few standard configure option types 
+  for l in range(0,len(sys.argv)-1):
+    name = sys.argv[l]
+    if name.startswith('--enable'):
+      sys.argv[l] = name.replace('--enable','--with')
+      if name.find('=') == -1: sys.argv[l] += '=1'
+    if name.startswith('--disable'):
+      sys.argv[l] = name.replace('--disable','--with')
+      if name.find('=') == -1: sys.argv[l] += '=0'
+      elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
+    if name.startswith('--without'):
+      sys.argv[l] = name.replace('--without','--with')
+      if name.find('=') == -1: sys.argv[l] += '=0'
+      elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
+  
   # Disable threads on RHL9
   if rhl9():
     sys.argv.append('--useThreads=0')

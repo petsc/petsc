@@ -72,8 +72,6 @@
   ---------------------
   Better user interface 
   ---------------------
-  (Priority 0) Add support for configure nonsense like --without --disable --enable ...
-
   (Priority 0) Have make in the root directory stop on error in any compile! Default behavior
 
   (Priority 1) Allow setting precision of printed numbers in ASCII viewers.
