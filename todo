@@ -15,6 +15,8 @@
   -------------
   Optimizations
    ------------
+  (Priority 1) Add to PetscLogInfo() macros PetscLogInfoXXX() that are turned off for nondebug mode
+
   (Priority 1) Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
   the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
 

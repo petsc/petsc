@@ -7,14 +7,23 @@
 PETSC_EXTERN_CXX_BEGIN
 
 EXTERN PetscErrorCode  PetscOptionsHasName(const char[],const char[],PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsHasName(const char b[],PetscTruth *f){return PetscOptionsHasName(PETSC_NULL,b,f);})
 EXTERN PetscErrorCode  PetscOptionsGetInt(const char[],const char [],PetscInt *,PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsGetInt(const char b[],PetscInt *i,PetscTruth *f){return PetscOptionsGetInt(PETSC_NULL,b,i,f);})
 EXTERN PetscErrorCode  PetscOptionsGetLogical(const char[],const char [],PetscTruth *,PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsGetLogical(const char b[],PetscTruth *i,PetscTruth *f){return PetscOptionsGetLogical(PETSC_NULL,b,i,f);})
 EXTERN PetscErrorCode  PetscOptionsGetReal(const char[],const char[],PetscReal *,PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsGetReal(const char b[],PetscReal *i,PetscTruth *f){return PetscOptionsGetReal(PETSC_NULL,b,i,f);})
 EXTERN PetscErrorCode  PetscOptionsGetScalar(const char[],const char[],PetscScalar *,PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsGetScalar(const char b[],PetscScalar i[],PetscTruth *f){return PetscOptionsGetScalar(PETSC_NULL,b,i,f);})
 EXTERN PetscErrorCode  PetscOptionsGetIntArray(const char[],const char[],PetscInt[],PetscInt *,PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsGetIntArray(const char b[],PetscInt i[],PetscInt *ii,PetscTruth *f){return PetscOptionsGetIntArray(PETSC_NULL,b,i,ii,f);})
 EXTERN PetscErrorCode  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsGetRealArray(const char b[],PetscReal i[],PetscInt *ii,PetscTruth *f){return PetscOptionsGetRealArray(PETSC_NULL,b,i,ii,f);})
 EXTERN PetscErrorCode  PetscOptionsGetString(const char[],const char[],char[],size_t,PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsGetString(const char b[],char i[],size_t s,PetscTruth *f){return PetscOptionsGetString(PETSC_NULL,b,i,s,f);})
 EXTERN PetscErrorCode  PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscTruth*);
+PetscPolymorphicFunction(PetscOptionsGetStringArray(const char b[],char *i[],PetscInt *ii,PetscTruth *f){return PetscOptionsGetStringArray(PETSC_NULL,b,i,ii,f);})
 
 EXTERN PetscErrorCode  PetscOptionsSetAlias(const char[],const char[]);
 EXTERN PetscErrorCode  PetscOptionsSetValue(const char[],const char[]);

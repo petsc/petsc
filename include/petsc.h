@@ -83,6 +83,16 @@ typedef int PetscInt;
 #endif  
 
 /*
+    Allows defining simple C++ polymorphic functions that remove certain
+   optional arguments for a simplier user interface.
+*/
+#if defined(__cplusplus)
+#define PetscPolymorphicFunction(A) inline PetscErrorCode A
+#else
+#define PetscPolymorphicFunction(A)
+#endif
+
+/*
     Declare extern C stuff after incuding external header files
 */
 
@@ -799,6 +809,7 @@ EXTERN PetscErrorCode PetscSleep(int);
     Initialization of PETSc
 */
 EXTERN PetscErrorCode  PetscInitialize(int*,char***,const char[],const char[]);
+PetscPolymorphicFunction(PetscInitialize(int *argc,char ***args){return PetscInitialize(argc,args,PETSC_NULL,PETSC_NULL);})
 EXTERN PetscErrorCode  PetscInitializeNoArguments(void);
 EXTERN PetscErrorCode  PetscInitialized(PetscTruth *);
 EXTERN PetscErrorCode  PetscFinalized(PetscTruth *);
@@ -972,7 +983,11 @@ EXTERN PetscErrorCode PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **
 EXTERN PetscErrorCode PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm,PetscMPIInt);
+PetscPolymorphicFunction(PetscSequentialPhaseBegin(MPI_Comm comm){return PetscSequentialPhaseBegin(comm,1);})
+PetscPolymorphicFunction(PetscSequentialPhaseBegin(void){return PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);})
 EXTERN PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm,PetscMPIInt);
+PetscPolymorphicFunction(PetscSequentialPhaseEnd(MPI_Comm comm){return PetscSequentialPhaseEnd(comm,1);})
+PetscPolymorphicFunction(PetscSequentialPhaseEnd(void){return PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);})
 EXTERN PetscErrorCode PetscBarrier(PetscObject);
 EXTERN PetscErrorCode PetscMPIDump(FILE*);
 

@@ -29,13 +29,11 @@ extern PetscErrorCode PetscInitializePackage(char*);
 PetscErrorCode PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 {
   PetscViewer    viewer;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
   *inviewer = 0;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_COOKIE,-1,"PetscViewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);

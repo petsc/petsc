@@ -113,6 +113,7 @@ M*/
 #endif
 
 EXTERN PetscErrorCode PetscViewerCreate(MPI_Comm,PetscViewer*);
+PetscPolymorphicFunction(PetscViewerCreate(PetscViewer *v){return PetscViewerCreate(PETSC_COMM_SELF,v);})
 EXTERN PetscErrorCode PetscViewerSetFromOptions(PetscViewer);
 
 EXTERN PetscErrorCode PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);

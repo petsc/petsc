@@ -132,7 +132,8 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
 #endif
     rp   = aj + ai[row]; ap = aa + ai[row];
     rmax = imax[row]; nrow = ailen[row]; 
-    low = 0;
+    low  = 0;
+    high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(PETSC_USE_DEBUG)  
@@ -146,7 +147,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       }
       if (value == 0.0 && ignorezeroentries && (is == ADD_VALUES)) continue;
 
-      if (col < lastcol) low = 0; high = nrow;
+      if (col < lastcol) low = 0; else high = nrow;
       lastcol = col;
       while (high-low > 5) {
         t = (low+high)/2;
