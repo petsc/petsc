@@ -12,6 +12,7 @@ class UsingCxx (base.Base):
 
     base.Base.__init__(self)
     self.language    = 'Cxx'
+    self.cxxExt      = '.cc'
     self.sourceDB    = sourceDB
     self.project     = project
     self.usingSIDL   = usingSIDL
