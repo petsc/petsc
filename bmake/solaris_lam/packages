@@ -10,27 +10,14 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
 # for information on retrieving them.
 #
-# If your machine has the file /opt/SUNWspro/SC4.0/lib/libsunperf.a you 
-# can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
-# installing BLAS and LAPACK yourself.
-#
-BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/solaris -lflapack -lfblas
+BLASLAPACK_LIB = -xlic_lib=sunperf
 #
 # Location of MPI (Message Passing Interface) software
+# for LAM, with mpicc & mpif77, the includes and libraries are automatically found.
 #
-# Note: if ch_shmem version of mpich is used, replace -lsocket by -lthread
-#
-MPI_HOME       = /home/petsc/software/lam-6.5.1/solaris
-MPI_LIB        = -L${MPI_HOME}/lib -lmpi -llam
-MPI_INCLUDE    = -I${MPI_HOME}/include
+MPI_LIB        =
+MPI_INCLUDE    =
 MPIRUN         = ${PETSC_DIR}/bin/mpirun.lam
-#
-# For the Berkeley am2 device for MPICH use
-#
-#MPI_LIB        = -L/usr/now/mpi/mpich/lib/solaris/am2/ -lmpi -L/usr/now/lib -L/usr/now/am2/lib \
-#                 -lam2 -lglunix -lens -lglobex -lposix4 -lnsl -lsocket -lgen
-#MPI_INCLUDE    = -I/usr/now/mpi/mpich/include 
-#MPIRUN         = glurun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
@@ -43,22 +30,3 @@ X11_INCLUDE    = -I/usr/openwin/include
 X11_LIB        = -L/usr/openwin/lib -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
-#
-#
-# Location of the LUSOL sparse LU factorization code (part of MINOS)
-# developed by Michael Saunders, saunders@stanford.edu at the
-# Systems Optimization Laboratory, Stanford University.
-#  http://www.sbsi-sol-optimize.com/
-# Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
-# depending on how they are named)
-#
-#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
-#LUSOL_LIB =
-#
-# ---------------------------------------------------------------------------------------
-#
-# If you are using shared version of any external libraries you must make this
-# point to the directories where all your shared libraries are stored.
-#
-#C_DYLIBPATH     =
-#F_DYLIBPATH     =
