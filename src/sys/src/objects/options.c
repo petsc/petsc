@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.194 1998/06/19 20:13:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.195 1998/07/10 00:23:03 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -54,7 +54,7 @@ static OptionsTable *options = 0;
     array of length len.  On some machines the program name includes 
     its entire path, so one should generally set len >= 256.
 @*/
-int PetscGetProgramName(char *name,int len)
+int PetscGetProgramName(char name[],int len)
 {
   PetscFunctionBegin;
   if (!options) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must call PetscInitialize() first");
@@ -65,7 +65,7 @@ int PetscGetProgramName(char *name,int len)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetProgramName"
-int PetscSetProgramName(char *name)
+int PetscSetProgramName(const char name[])
 { 
   PetscFunctionBegin;
   options->namegiven = 1;
@@ -78,15 +78,15 @@ int PetscSetProgramName(char *name)
 /*
     Reads options from a file and adds to options database
 */
-int OptionsInsertFile(char *file)
+int OptionsInsertFile(const char file[])
 {
-  char  string[128],*first,*second,*third,*final;
+  char  string[128],fname[256],*first,*second,*third,*final;
   int   len,ierr,i;
   FILE  *fd;
 
   PetscFunctionBegin;
-  PetscFixFilename(file);
-  fd  = fopen(file,"r"); 
+  PetscFixFilename(file,fname);
+  fd  = fopen(fname,"r"); 
   if (fd) {
     while (fgets(string,128,fd)) {
       /* Comments are indicated by #, ! or % in the first column */
@@ -142,25 +142,26 @@ int OptionsInsertFile(char *file)
 
 .seealso: OptionsDestroy_Private(), OptionsPrint()
 */
-int OptionsInsert(int *argc,char ***args,char* file)
+int OptionsInsert(int *argc,char ***args,const char file[])
 {
   int  ierr,rank;
   char pfile[256];
 
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  if (!file) {
-    ierr = PetscGetHomeDirectory(240,pfile); CHKERRQ(ierr);
-    PetscStrcat(pfile,"/.petscrc");
-    file = pfile;
-  }
 
   options->N        = 0;
   options->Naliases = 0;
   options->argc     = (argc) ? *argc : 0;
   options->args     = (args) ? *args : 0;
 
+  if (file) {
   ierr = OptionsInsertFile(file); CHKERRQ(ierr);
+  } else {
+    ierr = PetscGetHomeDirectory(pfile,240); CHKERRQ(ierr);
+    PetscStrcat(pfile,"/.petscrc");
+    ierr = OptionsInsertFile(pfile); CHKERRQ(ierr);
+  }
 
   /* insert environmental options */
   {
@@ -281,7 +282,7 @@ int OptionsPrint(FILE *fd)
 
 .seealso: OptionsAllUsed(), OptionsPrintf()
 @*/
-int OptionsGetAll(char **copts)
+int OptionsGetAll(char *copts[])
 {
   int  i,ierr,len = 1;
   char *coptions;
@@ -364,7 +365,7 @@ int OptionsDestroy(void)
 
 .seealso: OptionsInsert()
 @*/
-int OptionsSetValue(char *name,char *value)
+int OptionsSetValue(const char name[],const char value[])
 {
   int  len, N, n, i;
   char **names;
@@ -444,7 +445,7 @@ int OptionsSetValue(char *name,char *value)
 
 .seealso: OptionsInsert()
 @*/
-int OptionsClearValue(char *name)
+int OptionsClearValue(const char name[])
 {
   int  N, n, i,ierr;
   char **names;
@@ -478,7 +479,7 @@ int OptionsClearValue(char *name)
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsSetAlias"
-int OptionsSetAlias(char *newname,char *oldname)
+int OptionsSetAlias(const char newname[],const char oldname[])
 {
   int len,n = options->Naliases;
 
@@ -500,7 +501,7 @@ int OptionsSetAlias(char *newname,char *oldname)
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsFindPair_Private"
-static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
+static int OptionsFindPair_Private(const char pre[],const char name[],char *value[],int *flg)
 {
   int  i, N,ierr,len;
   char **names,tmp[128];
@@ -550,7 +551,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
 .seealso: OptionsGetInt(), OptionsGetDouble(),OptionsHasName(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsReject(char* name,char *mess)
+int OptionsReject(const char name[],const char mess[])
 {
   int ierr,flag;
 
@@ -583,7 +584,7 @@ int OptionsReject(char* name,char *mess)
 .seealso: OptionsGetInt(), OptionsGetDouble(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsHasName(char* pre,char *name,int *flg)
+int OptionsHasName(const char pre[],const char name[],int *flg)
 {
   char *value;
   int  ierr;
@@ -613,7 +614,7 @@ int OptionsHasName(char* pre,char *name,int *flg)
 .seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
           OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
+int OptionsGetInt(const char pre[],const char name[],int *ivalue,int *flg)
 {
   char *value;
   int  flag,ierr;
@@ -650,7 +651,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
+int OptionsGetDouble(const char pre[],const char name[],double *dvalue,int *flg)
 {
   char *value;
   int  flag,ierr;
@@ -688,7 +689,7 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
+int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
 {
   char *value;
   int  flag,ierr;
@@ -728,7 +729,7 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray()
 @*/
-int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *flg)
+int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], int *nmax,int *flg)
 {
   char *value,*cpy;
   int  flag,n = 0,ierr,len;
@@ -781,7 +782,7 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetDoubleArray()
 @*/
-int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
+int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax,int *flg)
 {
   char *value,*cpy;
   int  flag,n = 0,ierr,len;
@@ -841,7 +842,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
+int OptionsGetString(const char pre[],const char name[],char string[],int len, int *flg)
 {
   char *value;
   int  ierr;
@@ -873,6 +874,9 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
 -  flg - 1 if found, else 0
 
    Notes: 
+   The user should pass in an array of pointers to char, to hold all the
+   strings returned by this function.
+
    The user is responsible for deallocating the strings that are
    returned. The Fortran interface for this routine is not supported.
 
@@ -883,7 +887,7 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
 .seealso: OptionsGetInt(), OptionsGetDouble(),  
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetStringArray(char *pre, char *name, char **strings, int *nmax, int *flg)
+int OptionsGetStringArray(const char pre[],const char name[],char **strings,int *nmax,int *flg)
 {
   char *value;
   char *cpy;
