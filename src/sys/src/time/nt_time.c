@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.74 1997/02/13 00:22:48 balay Exp $";
+static char vcid[] = "$Id: nt_gnu_time.c,v 1.1 1997/02/21 17:30:05 balay Exp balay $";
 #endif
 
 #include <petsc.h>
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: mtr.c,v 1.74 1997/02/13 00:22:48 balay Exp $";
 #include <Windows32/Functions.h>
 #define FACTOR   4294967296.0
 
-double PetscTime_nt_gnu()
+double nt_gnu_time()
 {
   static int    flag = 1;
   int           ierr;
