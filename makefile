@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.182 1997/08/19 19:22:21 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.183 1997/09/04 14:55:42 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -76,6 +76,7 @@ testexamples: chkopts
 testexamples_uni: chkopts
 	-@echo "Beginning to compile and run uniprocessor test examples"
 	-@echo On `date` on `hostname`
+	-@echo Machine characteristics: `uname -a`
 	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
 	-@echo "Using linker: $(CLINKER)"
 	-@echo "------------------------------------------"
@@ -105,6 +106,7 @@ fortran: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscfortran.*
 	-@echo "Beginning to compile Fortran interface library"
 	-@echo On `date` on `hostname`
+	-@echo Machine characteristics: `uname -a`
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
 	-@echo "------------------------------------------"
@@ -134,6 +136,7 @@ fortran: chkpetsc_dir
 testfortran: chkopts
 	-@echo "Beginning to compile and run Fortran test examples"
 	-@echo On `date` on `hostname`
+	-@echo Machine characteristics: `uname -a`
 	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using linker: $(FLINKER)"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
@@ -168,6 +171,7 @@ testfortran: chkopts
 fortran90: chkpetsc_dir fortran
 	-@echo "Beginning to compile Fortran90 interface library"
 	-@echo On `date` on `hostname`
+	-@echo Machine characteristics: `uname -a`
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
 	-@echo "------------------------------------------"
@@ -223,6 +227,7 @@ petscblas: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscblas.*
 	-@echo "Beginning to compile C version of BLAS and LAPACK"
 	-@echo On `date` on `hostname`
+	-@echo Machine characteristics: `uname -a`
 	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
 	-@echo "------------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"

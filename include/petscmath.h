@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.1 1997/08/29 20:00:06 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.2 1997/08/29 20:31:53 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -12,7 +12,12 @@
 #include "petsc.h"
 
 /*
-    Defines operations that are different for complex and real numbers
+
+     Defines operations that are different for complex and real numbers;
+   note that one cannot really mix the use of complex and real in the same 
+   PETSc program. All PETSc objects in one program are built around the object
+   Scalar which is either always a double or a complex.
+
 */
 #if defined(PETSC_COMPLEX)
 #if defined(HAVE_NONSTANDARD_COMPLEX_H)
