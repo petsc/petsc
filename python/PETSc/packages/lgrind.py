@@ -34,6 +34,7 @@ class Configure(PETSc.package.Package):
     self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+installDir)
     self.lgrind = lgrindexe
     self.addMakeMacro('LGRIND',self.lgrind)
+    self.addMakeMacro('LGRIND_DIR',installDir)
     return
 
   def configure(self):
