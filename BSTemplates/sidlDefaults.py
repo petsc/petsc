@@ -91,8 +91,11 @@ class UsingSIDL (maker.Maker):
     extraLibraries['executable'].extend(serverLib)
     for lang in self.serverLanguages+self.clientLanguages:
       extraLibraries[lang].extend(serverLib)
-      if not self.project == runtimeProject and not lang == self.getBaseLanguage():
+      # Matt assumed all languages would have their own private client library
+      if not self.project == runtimeProject and not lang == self.getBaseLanguage() and not lang == 'Matlab':
         using = getattr(compileDefaults, 'Using'+lang.replace('+', 'x'))(self, argDB = self.argDB)
+        print 'Matt'
+        print using.getClientLibrary(runtimeProject, lang, isArchive = 0).getFiles()
         extraLibraries[lang].extend(using.getClientLibrary(runtimeProject, lang, isArchive = 0))
     for package in self.getPackages():
       if not self.project == runtimeProject or not package in self.bootstrapPackages:
