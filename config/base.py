@@ -55,16 +55,19 @@ class Configure:
   # Define and Substitution Support
   def addDefine(self, name, value):
     '''Designate that "name" should be defined to "value" in the configuration header'''
+    self.framework.log.write('Defined '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
     self.defines[name] = value
     return
 
   def addSubstitution(self, name, value):
     '''Designate that "@name@" should be replaced by "value" in all files which experience substitution'''
+    self.framework.log.write('Substituting '+name+' with '+str(value)+' in '+str(self.__module__)+'\n')
     self.subst[name] = value
     return
 
   def addArgumentSubstitution(self, name, arg):
     '''Designate that "@name@" should be replaced by "arg" in all files which experience substitution'''
+    self.framework.log.write('Substituting '+name+' with '+str(arg)+' in '+str(self.__module__)+'\n')
     self.argSubst[name] = arg
     return
 
