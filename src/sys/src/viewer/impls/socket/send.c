@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.39 1996/08/08 14:46:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.40 1996/08/15 12:50:13 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -168,6 +168,11 @@ $                or
 $
 $    ViewerMatlabOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
 $    VecView(Vec vector,Viewer viewer)
+
+   Options Database Keys:
+   For use with the default Matlab viewer, VIEWER_MATLAB_WORLD
+$    -viewer_matlab_machine <machine>
+$    -viewer_matlab_port <port>
 
 .keywords: Viewer, Matlab, open
 
