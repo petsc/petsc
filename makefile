@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.316 2000/08/17 04:49:59 bsmith Exp balay $ 
+# $Id: makefile,v 1.317 2000/09/07 16:54:06 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -319,6 +319,9 @@ allci:
 allco: 
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=co  alltree 
 
+# usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
+allrcslabel: 
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree 
 #
 #   The commands below are for generating ADIC versions of the code;
 # they are not currently used.
