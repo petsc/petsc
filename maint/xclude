@@ -6,7 +6,6 @@ petsc/bmake/rs6000_p4
 petsc/bin/configure
 petsc/bin/config.status
 petsc/src/snes/impls/trdl
-petsc/include/mpiuni.h
 petsc/src/mat/examples/matrices
 petsc/src/grid
 petsc/src/stencil
@@ -16,8 +15,6 @@ petsc/TAGS
 petsc/TAGS_MAKEFILES
 petsc/TAGS_NO_EXAMPLES
 petsc/maint
-petsc/docs/petsc.html
-petsc/docs/onepager.html
 petsc/lib
 petsc/wrappers
 petsc/RCS
