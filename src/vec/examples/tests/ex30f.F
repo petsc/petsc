@@ -1,5 +1,5 @@
 !
-!    "$Id: ex30f.F,v 1.3 2000/09/27 20:06:41 bsmith Exp bsmith $";
+!    "$Id: ex30f.F,v 1.4 2001/01/15 21:45:13 bsmith Exp balay $";
 !
 !  Tests parallel to parallel scatter where a to from index are 
 !  duplicated
@@ -10,8 +10,8 @@
 #include "include/finclude/petscis.h"
 #include "include/finclude/petscvec.h"
 
-      integer ierr, nlocal, n, irank, iprocs, 
-     +     from(10), to(10)
+      integer ierr, nlocal, n, irank, iprocs
+      integer from(10), to(10)
 
       Scalar num
       Vec v1, v2, v3
@@ -66,24 +66,18 @@
       to(7)=7
       to(8)=7
 
-      call ISCreateGeneral(PETSC_COMM_SELF,
-     +     8,from,fromis,ierr)
-      call ISCreateGeneral(PETSC_COMM_SELF,
-     +     8,to,tois,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,8,from,fromis,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,8,to,tois,ierr)
       call VecScatterCreate(v1,fromis,v2,tois,scat1,ierr)
       call VecScatterCreate(v1,fromis,v3,tois,scat2,ierr)
       call ISDestroy(fromis,ierr)
       call ISDestroy(tois,ierr)
       
-      call VecScatterBegin(v1,v2,ADD_VALUES,
-     +     SCATTER_FORWARD,scat1,ierr)
-      call VecScatterEnd(v1,v2,ADD_VALUES,
-     +     SCATTER_FORWARD,scat1,ierr)
+      call VecScatterBegin(v1,v2,ADD_VALUES,SCATTER_FORWARD,scat1,ierr)
+      call VecScatterEnd(v1,v2,ADD_VALUES,SCATTER_FORWARD,scat1,ierr)
       
-      call VecScatterBegin(v1,v3,ADD_VALUES,
-     +     SCATTER_FORWARD,scat2,ierr)
-      call VecScatterEnd(v1,v3,ADD_VALUES,
-     +     SCATTER_FORWARD,scat2,ierr)
+      call VecScatterBegin(v1,v3,ADD_VALUES,SCATTER_FORWARD,scat2,ierr)
+      call VecScatterEnd(v1,v3,ADD_VALUES,SCATTER_FORWARD,scat2,ierr)
       
       if (irank.eq.0) print *, "V1"
       call VecView(v1,PETSC_VIEWER_STDOUT_WORLD,ierr)
