@@ -110,16 +110,17 @@ class GenericTag (FileChanged):
   def __init__(self, tag, ext, sources = None, extraExt = ''):
     FileChanged.__init__(self, sources)
     if type(ext) == types.ListType:
-      self.ext         = map(lambda x: '.'+x, ext)
+      self.ext           = map(lambda x: '.'+x, ext)
     else:
-      self.ext         = ['.'+ext]
+      self.ext           = ['.'+ext]
     if type(extraExt) == types.ListType:
-      self.extraExt    = map(lambda x: '.'+x, extraExt)
+      self.extraExt      = map(lambda x: '.'+x, extraExt)
     else:
-      self.extraExt    = ['.'+extraExt]
-    self.changed.tag   = tag
-    self.unchanged.tag = 'old '+tag
-    self.products      = [self.changed, self.unchanged]
+      self.extraExt      = ['.'+extraExt]
+    self.changed.tag     = tag
+    self.unchanged.tag   = 'old '+tag
+    self.deferredUpdates = fileset.FileSet(tag = 'update '+tag)
+    self.products        = [self.changed, self.unchanged]
 
   def fileExecute(self, source):
     (base, ext) = os.path.splitext(source)
@@ -137,9 +138,24 @@ class GenericTag (FileChanged):
     if len(self.currentSet): self.products.append(self.currentSet)
     return self.products
 
-  def execute(self):
-    self.deferredUpdates = []
-    products = FileChanged.execute(self)
-    for source in self.deferredUpdates:
-      self.updateSourceDB(source)
-    return products
+class Update (Transform):
+  def __init__(self, tags = [], sources = None):
+    Transform.__init__(self, sources)
+    self.tags   = tags
+    if self.tags and not type(self.tags) == types.ListType:
+      self.tags = [self.tags]
+    self.tags = map(lambda tag: 'update '+tag, self.tags)
+    self.products  = []
+
+  def fileExecute(self, source):
+    self.updateSourceDB(source)
+
+  def setExecute(self, set):
+    if self.tags and set.tag in self.tags:
+      Transform.setExecute(self, set)
+    elif set.tag and set.tag[:6] == 'update':
+      Transform.setExecute(self, set)
+    else:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products]
+      self.products.append(set)

@@ -9,7 +9,7 @@ import os
 import types
 
 class Process (action.Action):
-  def __init__(self, products, tag, sources, compiler, compilerFlags, noUpdate = 0):
+  def __init__(self, products, tag, sources, compiler, compilerFlags, updateType = 'immediate'):
     action.Action.__init__(self, compiler, sources, compilerFlags, 1)
     if products:
       self.products    = products
@@ -17,15 +17,20 @@ class Process (action.Action):
       self.products    = fileset.FileSet()
     self.tag           = tag
     self.buildProducts = 0
-    self.noUpdate      = noUpdate
+    self.updateType    = updateType
 
   def shellSetAction(self, set):
     if set.tag == self.tag:
       self.debugPrint(self.program+' processing '+self.debugFileSetStr(set), 3, 'compile')
       action.Action.shellSetAction(self, set)
-      if not self.noUpdate:
+      if self.updateType == 'immediate':
         for file in set:
           self.updateSourceDB(file)
+      elif self.updateType == 'deferred':
+        set.tag = 'update '+set.tag
+        if isinstance(self.products, fileset.FileSet):
+          self.products = [self.products]
+        self.products.append(set)
     elif set.tag == 'old '+self.tag:
       pass
     else:
@@ -137,4 +142,4 @@ class TagEtags (transform.GenericTag):
 
 class CompileEtags (Process):
   def __init__(self, tagsFile, sources = None, compiler = 'etags', compilerFlags = '-a'):
-    Process.__init__(self, tagsFile, 'etags', sources, compiler, compilerFlags+' -f '+tagsFile[0], 1)
+    Process.__init__(self, tagsFile, 'etags', sources, compiler, compilerFlags+' -f '+tagsFile[0], 'deferred')
