@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: examplesindex.tcl,v 1.37 1999/02/01 18:20:53 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.38 1999/02/03 00:19:05 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -521,7 +521,7 @@ proc main { }  {
         }
         set routines_file {}
         set temp [ catch { glob docs/manualpages/*/$routine_name.html} routines_file ]
-        puts "processing docs/manualpages/*/$routine_name.html"
+        #puts "processing docs/manualpages/*/$routine_name.html"
         if { $temp != 0 } {
             set mesg "Skipping update of docs/manualpages/*/$routine_name.html. File doesn't exist"
             puts stderr $mesg
