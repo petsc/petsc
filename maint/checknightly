@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: checknightly,v 1.24 1997/11/02 05:33:41 balay Exp balay $ 
+# $Id: checknightly,v 1.25 1997/12/02 17:02:24 balay Exp balay $ 
 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
@@ -19,9 +19,9 @@ proc CheckNightlyBuilds { } {
             puts $tmpfileid $mesg
         }
     }
-    # Either spnode013 or clyde should exist
-    if { [ string first spnode013 $files ] < 0  && [ string first clyde $files ] < 0  } {
-        set mesg "spnode013/clyde: File does not exist"
+    # Either tri63 or clyde should exist
+    if { [ string first tri63 $files ] < 0  && [ string first clyde $files ] < 0  } {
+        set mesg "tri63/clyde: File does not exist"
         puts $tmpfileid  $mesg
     }
     
