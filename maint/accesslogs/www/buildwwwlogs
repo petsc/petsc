@@ -1,9 +1,8 @@
 #! /bin/csh
+# 
+#   Updates the logfile of PETSc www hits for the last day
 #
-#   Generates the PETSc homepage profile information for the day and copies 
-# yesterdays into a backup file.
-#
-cd /home/bsmith/petscmaint/accesslogs/www
-mv index.html index.`date '+%m%d%y'`
-mv details.html details.`date '+%m%d%y'`
-accesswatch.pl
+set today = `date '+%d/%h/19%y'`
+
+grep petsc /Net/charlotte/www/ncsa_httpd/logs/access_log | grep -v gif | grep $today >> /home/bsmith/petsc/maint/accesslogs/www/accesslog
+
