@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.37 1995/05/10 00:18:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.38 1995/05/12 04:16:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -313,7 +313,7 @@ static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
 }
 
 /* -----------------------------------------------------------------*/
-static int MatCopy_Dense_Private(Mat matin,Mat *newmat)
+static int MatCopyPrivate_Dense(Mat matin,Mat *newmat)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int ierr;
@@ -619,7 +619,7 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatGetSize_Dense,MatGetSize_Dense,0,
        0,0,MatGetArray_Dense,0,0,
        MatGetSubMatrix_Dense,MatGetSubMatrixInPlace_Dense,
-       MatCopy_Dense_Private};
+       MatCopyPrivate_Dense};
 
 /*@
    MatCreateSequentialDense - Creates a sequential dense matrix that 

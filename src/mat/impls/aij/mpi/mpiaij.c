@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.45 1995/05/25 22:47:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.46 1995/05/28 17:38:03 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1025,7 +1025,7 @@ static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 }
 
 extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
-static int MatCopy_MPIAIJ_Private(Mat,Mat *);
+static int MatCopyPrivate_MPIAIJ(Mat,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
@@ -1044,7 +1044,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        0,0,0,0,
        MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
        0,0,
-       0,0,MatConvert_MPIAIJ,0,0,MatCopy_MPIAIJ_Private};
+       0,0,MatConvert_MPIAIJ,0,0,MatCopyPrivate_MPIAIJ};
 
 /*@
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
@@ -1162,7 +1162,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   return 0;
 }
 
-static int MatCopy_MPIAIJ_Private(Mat matin,Mat *newmat)
+static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat)
 {
   Mat        mat;
   Mat_MPIAIJ *aij,*oldmat = (Mat_MPIAIJ *) matin->data;

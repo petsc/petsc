@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.13 1995/05/18 19:23:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.14 1995/05/26 19:25:29 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -642,7 +642,7 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   return 0;
 }
 
-static int MatCopy_BDiag_Private(Mat,Mat *);
+static int MatCopyPrivate_BDiag(Mat,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_BDiag,
@@ -660,7 +660,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        0, 0,
        0, 0, 0,
        MatGetSubMatrix_BDiag, 0,
-       MatCopy_BDiag_Private};
+       MatCopyPrivate_BDiag};
 
 /*@
    MatCreateSequentialBDiag - Creates a sequential block diagonal matrix.
@@ -786,13 +786,13 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   return 0;
 }
 
-static int MatCopy_BDiag_Private(Mat matin,Mat *newmat)
+static int MatCopyPrivate_BDiag(Mat matin,Mat *newmat)
 { 
   Mat_BDiag *old = (Mat_BDiag *) matin->data;
   int       ierr;
 
   *newmat = 0;
-  SETERR(1,"MatCopy_BDiag:  Code not yet finished.");
+  SETERR(1,"MatCopyPrivate_BDiag:  Code not yet finished.");
   if (!old->assembled) SETERR(1,"Cannot copy unassembled matrix");
   ierr = MatCreateSequentialBDiag(matin->comm,old->m,old->n,old->nd,
          old->nb,old->diag,0,newmat); CHKERR(ierr);
