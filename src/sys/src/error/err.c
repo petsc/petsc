@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.70 1997/12/12 19:37:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.71 1998/03/23 21:18:59 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: err.c,v 1.70 1997/12/12 19:37:06 bsmith Exp bsmith $"
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
+#include "pinclude/pviewer.h"
 
 struct EH {
   int    cookie;
@@ -347,30 +348,69 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
 @*/
 int PetscIntView(int N,int* idx,Viewer viewer)
 {
-  int      j,i,n = N/20, p = N % 20,ierr;
-  MPI_Comm comm;
+  int        j,i,n = N/20, p = N % 20,ierr;
+  MPI_Comm   comm;
+  ViewerType vtype;
+  FILE       *file;
 
   PetscFunctionBegin;
-  if (viewer) PetscValidHeader(viewer);
+  if (!viewer) {
+    viewer = VIEWER_STDOUT_SELF;
+  }
+  PetscValidHeader(viewer);
   PetscValidIntPointer(idx);
+  ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
 
-  if (viewer) {
-    ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
-  } else {
-    comm = PETSC_COMM_SELF;
-  }
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
-  for ( i=0; i<n; i++ ) {
-    PetscSynchronizedPrintf(comm,"%d:",20*i);
-    for ( j=0; j<20; j++ ) {
-       PetscSynchronizedPrintf(comm," %d",idx[i*20+j]);
+    for ( i=0; i<n; i++ ) {
+      PetscSynchronizedFPrintf(comm,file,"%d:",20*i);
+      for ( j=0; j<20; j++ ) {
+        PetscSynchronizedFPrintf(comm,file," %d",idx[i*20+j]);
+      }
+      PetscSynchronizedFPrintf(comm,file,"\n");
     }
-    PetscSynchronizedPrintf(comm,"\n");
-  }
-  if (p) {
-    PetscSynchronizedPrintf(comm,"%d:",20*n);
-    for ( i=0; i<p; i++ ) { PetscSynchronizedPrintf(comm," %d",idx[20*n+i]);}
-    PetscSynchronizedPrintf(comm,"\n");
+    if (p) {
+      PetscSynchronizedFPrintf(comm,file,"%d:",20*n);
+      for ( i=0; i<p; i++ ) { PetscSynchronizedFPrintf(comm,file," %d",idx[20*n+i]);}
+      PetscSynchronizedFPrintf(comm,file,"\n");
+    }
+    PetscSynchronizedFlush(comm);
+  } else if (vtype == MATLAB_VIEWER) {
+    int *array,*sizes,rank,size,Ntotal,*displs;
+
+    MPI_Comm_rank(comm,&rank);
+    MPI_Comm_size(comm,&size);
+
+    if (size > 1) {
+      
+      if (rank) {
+        MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);
+        MPI_Gatherv(idx,N,MPI_INT,0,0,0,MPI_INT,0,comm);
+      } else {
+        sizes = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        MPI_Gather(&N,1,MPI_INT,sizes,1,MPI_INT,0,comm);
+        Ntotal    = sizes[0]; 
+        displs    = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        displs[0] = 0;
+        for (i=1; i<size; i++) {
+          Ntotal    += sizes[i];
+          displs[i] =  displs[i-1] + sizes[i-1];
+        }
+        array  = (int *) PetscMalloc(Ntotal*sizeof(int));CHKPTRQ(array);
+        MPI_Gatherv(idx,N,MPI_INT,array,sizes,displs,MPI_INT,0,comm);
+        ierr = ViewerMatlabPutIntArray_Private(viewer,Ntotal,array);CHKERRQ(ierr);
+        PetscFree(sizes);
+        PetscFree(displs);
+        PetscFree(array);
+      }
+    } else {
+      ierr = ViewerMatlabPutIntArray_Private(viewer,N,idx);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ(1,1,"Cannot handle that viewer");
   }
   PetscFunctionReturn(0);
 }
@@ -393,29 +433,67 @@ int PetscIntView(int N,int* idx,Viewer viewer)
 @*/
 int PetscDoubleView(int N,double* idx,Viewer viewer)
 {
-  int      j,i,n = N/5, p = N % 5,ierr;
-  MPI_Comm comm;
+  int        j,i,n = N/5, p = N % 5,ierr;
+  MPI_Comm   comm;
+  ViewerType vtype;
+  FILE       *file;
 
   PetscFunctionBegin;
-  if (viewer) PetscValidHeader(viewer);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeader(viewer);
   PetscValidScalarPointer(idx);
+  ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
 
-  if (viewer) {
-    ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
-  } else {
-    comm = MPI_COMM_SELF;
-  }
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
-  for ( i=0; i<n; i++ ) {
-    for ( j=0; j<5; j++ ) {
-       PetscSynchronizedPrintf(comm," %6.4e",idx[i*5+j]);
+    for ( i=0; i<n; i++ ) {
+      for ( j=0; j<5; j++ ) {
+         PetscSynchronizedFPrintf(comm,file," %6.4e",idx[i*5+j]);
+      }
+      PetscSynchronizedFPrintf(comm,file,"\n");
     }
-    PetscSynchronizedPrintf(comm,"\n");
-  }
-  if (p) {
-    PetscSynchronizedPrintf(comm,"%d:",5*n);
-    for ( i=0; i<p; i++ ) { PetscSynchronizedPrintf(comm," %6.4e",idx[5*n+i]);}
-    PetscSynchronizedPrintf(comm,"\n");
+    if (p) {
+      PetscSynchronizedFPrintf(comm,file,"%d:",5*n);
+      for ( i=0; i<p; i++ ) { PetscSynchronizedFPrintf(comm,file," %6.4e",idx[5*n+i]);}
+      PetscSynchronizedFPrintf(comm,file,"\n");
+    }
+    PetscSynchronizedFlush(comm);
+  } else if (vtype == MATLAB_VIEWER) {
+    int    *sizes,rank,size,Ntotal,*displs;
+    double *array;
+
+    MPI_Comm_rank(comm,&rank);
+    MPI_Comm_size(comm,&size);
+
+    if (size > 1) {
+      
+      if (rank) {
+        MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);
+        MPI_Gatherv(idx,N,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,comm);
+      } else {
+        sizes = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        MPI_Gather(&N,1,MPI_INT,sizes,1,MPI_INT,0,comm);
+        Ntotal    = sizes[0]; 
+        displs    = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        displs[0] = 0;
+        for (i=1; i<size; i++) {
+          Ntotal    += sizes[i];
+          displs[i] =  displs[i-1] + sizes[i-1];
+        }
+        array  = (double *) PetscMalloc(Ntotal*sizeof(double));CHKPTRQ(array);
+        MPI_Gatherv(idx,N,MPI_DOUBLE,array,sizes,displs,MPI_DOUBLE,0,comm);
+        ierr = ViewerMatlabPutArray_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
+        PetscFree(sizes);
+        PetscFree(displs);
+        PetscFree(array);
+      }
+    } else {
+      ierr = ViewerMatlabPutArray_Private(viewer,N,1,idx);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ(1,1,"Cannot handle that viewer");
   }
   PetscFunctionReturn(0);
 }
