@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1999/01/15 23:56:56 balay Exp balay $ 
+# $Id: base.site,v 1.24 1999/01/18 18:48:47 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -7,8 +7,8 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# Location of BLAS and LAPACK.  See ${PETSC_DIR}/readme for information 
-# on retrieving them.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# for information on retrieving them.
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
@@ -42,7 +42,7 @@ X11_LIB        = -lX11
 # below if it is there.
 #
 #BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
+#BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # MPE Libraries
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.6 1998/12/11 21:00:11 balay Exp balay $ 
+# $Id: base.site,v 1.7 1999/01/15 22:13:52 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -31,7 +31,7 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lnsl -lsocket -lgen
 #MPI_INCLUDE    = -I/home/petsc/mpich/include 
 #MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
-MPI_HOME       = /home/MPI/releases/mpich-1.1.2
+MPI_HOME       = /home/petsc/mpich-1.1.2-beta
 MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_p4
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lsocket -lnsl -lnsl -laio
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
@@ -55,7 +55,7 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 #MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
 #MPE_INCLUDE   = -I/home/petsc/mpich/mpe
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-MPE_INCLUDE   = -I${MPI_HOME}/include 
+MPE_INCLUDE   = -I${MPI_HOME}/mpe
 #
 # Optional location of BlockSolve (MPI version)
 #

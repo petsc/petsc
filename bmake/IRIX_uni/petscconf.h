@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.11 1998/05/05 19:57:25 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.12 1998/06/01 03:28:26 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -34,6 +34,7 @@
 
 #define SIZEOF_VOIDP 4
 #define SIZEOF_INT 4
+#define SIZEOF_DOUBLE 8
 
 #define WORDS_BIGENDIAN 1
 

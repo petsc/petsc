@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.34 1999/01/15 20:45:13 balay Exp balay $ 
+# $Id: base.site,v 1.35 1999/01/15 22:00:20 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -40,7 +40,7 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 #MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
 #MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-MPE_INCLUDE   = -I${MPI_HOME}/include 
+MPE_INCLUDE   = -I${MPI_HOME}/mpe 
 #
 # Optional location of BlockSolve (MPI version)
 #

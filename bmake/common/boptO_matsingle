@@ -1,4 +1,4 @@
-# $Id: common.O,v 1.2 1998/12/04 23:33:30 balay Exp $ 
+# $Id: common.O_matsingle,v 1.1 1998/12/24 20:48:18 bsmith Exp bsmith $ 
 
 CC         = ${C_CC}
 FC         = ${C_FC}
@@ -6,6 +6,6 @@ CLINKER    = ${C_CLINKER}
 FLINKER    = ${C_FLINKER}
 SYS_LIB    = ${C_SYS_LIB}
 
-PETSCFLAGS = ${O_PETSCFLAGS}
+PETSCFLAGS = ${O_PETSCFLAGS}  -DUSE_MAT_SINGLE
 COPTFLAGS  = ${O_COPTFLAGS}
 FOPTFLAGS  = ${O_FOPTFLAGS}

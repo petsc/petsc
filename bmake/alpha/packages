@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.37 1998/12/11 19:40:31 balay Exp balay $ 
+# $Id: base.site,v 1.38 1998/12/11 20:58:17 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -59,7 +59,7 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 # Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
+BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #

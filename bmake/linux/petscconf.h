@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.13 1998/10/19 22:14:14 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.14 1998/10/20 15:30:51 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -31,6 +31,7 @@
 #define HAVE_SYS_RESOURCE_H
 #define SIZEOF_VOIDP 4
 #define SIZEOF_INT 4
+#define SIZEOF_DOUBLE 8
 
 #if defined(fixedsobug)
 #define USE_DYNAMIC_LIBRARIES 1

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.14 1998/05/12 18:49:13 bsmith Exp balay $ 
+# $Id: base.site,v 1.15 1998/12/04 22:32:29 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -7,8 +7,8 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# Location of BLAS and LAPACK.  See ${PETSC_DIR}/readme for information
-# on retrieving them.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# for information on retrieving them.
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml as indicated below, it contains
 # both BLAS and Lapack.

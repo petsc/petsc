@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 1998/12/11 19:40:23 balay Exp balay $ 
+# $Id: base.site,v 1.14 1998/12/11 20:58:09 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -7,8 +7,8 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# Location of BLAS and LAPACK.  See ${PETSC_DIR}/readme for information 
-# on retrieving a subset.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# for information on retrieving them
 #
 # BLAS usually comes with SGI and can be accessed with -lblas listed 
 # below for BLAS_LIB. However, the complex BLAS routine izamax() has
@@ -30,7 +30,7 @@ X11_LIB        = -lX11
 # below if it is there.
 #
 #BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
+#BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -BS95
 #
 # Location of MPI (Message Passing Interface) software
 #

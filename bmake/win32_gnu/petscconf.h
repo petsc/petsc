@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.15 1998/06/01 03:28:26 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.16 1998/12/17 21:58:05 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -36,5 +36,6 @@
 #define HAVE_GET_USER_NAME
 #define SIZEOF_VOIDP 4
 #define SIZEOF_INT 4
+#define SIZEOF_DOUBLE 8
 
 #endif
