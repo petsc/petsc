@@ -14,6 +14,7 @@ nolocal=""
 showtimes="yes"
 ctransin="nfs_in"
 ctransout="nfs_out"
+showoutput="no"
 #
 # Process arguments
 while [ $# -gt 0 ] ; do
@@ -37,6 +38,9 @@ while [ $# -gt 0 ] ; do
     ;;
     -myrinet)
     USE_MYRINET=yes
+    ;;
+    -showoutput)
+    showoutput="yes"
     ;;
     -normal)
     USE_MYRINET=no
@@ -206,11 +210,22 @@ export PATH
 DISPLAY=$DISPLAY
 export DISPLAY
 cd $rundir
+if [ $showoutput = "yes" ] ; then
+  pbs_job_num=\`expr \$PBS_JOBID : '\([0-9]*\).*'\`
+  fileo=/var/spool/pbs/spool/\$pbs_job_num.ccsche.OU
+  xterm -e tail -f \$fileo  &
+fi
 mpirun.ch_p4 -np $num $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
 cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 #
 exit 0;
 EOF
+fi
+
+if [ $showoutput = "yes" ] ; then
+true
+else
+  showout=true 
 fi
 
 if [ $shared = "yes" ] ; then
@@ -274,9 +289,6 @@ if [ $showtimes = "yes" ] ; then
   date
 fi
 #
-if [ $showoutput = "yes" ] ; then
-  /my/bin/pdsh -w $node0 xterm -disply $DISPLAY -e tail -f /var/spool/pbs/spool/$pbs_job_id
-fi
 #
   status="R"
   while [ "$status" = "R" ] ; do
