@@ -257,6 +257,14 @@ class Framework(base.Base):
         return 1
     return 0
 
+  def getProjectCompileGraph(self, maker, forceRebuild = 0):
+    '''Return the compile graph for the given project without dependencies'''
+    input        = {None: maker.filesets['sidl']}
+    sidlGraph    = maker.sidlTemplate.getTarget(forceRebuild = forceRebuild)
+    compileGraph = maker.compileTemplate.getTarget()
+    compileGraph.prependGraph(sidlGraph)
+    return (compileGraph, input)
+
   def getCompileGraph(self):
     if 'checkpoint' in self.argDB:
       input        = {}
@@ -266,43 +274,37 @@ class Framework(base.Base):
     else:
       import build.buildGraph
 
-      input        = {None: self.filesets['sidl']}
-      sidlGraph    = self.sidlTemplate.getTarget(forceRebuild = self.missingClients())
-      compileGraph = self.compileTemplate.getTarget()
-      compileGraph.prependGraph(sidlGraph)
+      self.getProjectCompileGraph(self)
       # Add project dependency compile graphs
-      # TODO: Remove all "forward" edges in dependenceGraph (edges which connect further down to already reachable nodes)
       if len(self.dependenceGraph.outEdges[self.project]):
-        import sys
         input = dict(map(lambda r: (r, self.filesets['sidl']), build.buildGraph.BuildGraph.getRoots(compileGraph)))
-        for v in self.dependenceGraph.outEdges[self.project]:
-          try:
-            maker     = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
-            maker.setupProject()
-            maker.setupDependencies()
-            maker.setupSourceDB(maker.project)
-            maker.setupBuild()
-            (depGraph, depInput) = maker.getCompileGraph()
-            compileGraph.prependGraph(depGraph)
-            if None in depInput:
-              for r in build.buildGraph.BuildGraph.getRoots(depGraph): depInput[r] = depInput[None]
-              del depInput[None]
-            input.update(depInput)
-          except ImportError:
-            self.debugPrint('No make module present in '+v.getRoot(), 2, 'build')
+      for p in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
+        try:
+          maker = self.getMakeModule(p.getRoot()).PetscMake(None, self.argDB)
+          maker.setupProject()
+          maker.setupDependencies()
+          maker.setupSourceDB(maker.project)
+          maker.setupBuild()
+          (depGraph, depInput) = self.getProjectCompileGraph(maker, forceRebuild = self.missingClients())
+          compileGraph.prependGraph(depGraph)
+          if None in depInput:
+            for r in build.buildGraph.BuildGraph.getRoots(depGraph): depInput[r] = depInput[None]
+            del depInput[None]
+          input.update(depInput)
+        except ImportError:
+          self.debugPrint('No make module present in '+p.getRoot(), 2, 'build')
     return (compileGraph, input)
 
   def t_sidlCheckpoint(self):
     '''Recompile the SIDL for this project'''
     import build.buildGraph
-    import sys
 
     # Add project dependency compile graphs
     # TODO: Remove all "forward" edges in dependenceGraph (edges which connect further down to already reachable nodes)
     depGraphs = []
     for v in self.dependenceGraph.outEdges[self.project]:
       try:
-        maker = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
+        maker = self.getMakeModule(v.getRoot()).PetscMake(None, self.argDB)
         maker.setupProject()
         maker.setupDependencies()
         maker.setupSourceDB(maker.project)
