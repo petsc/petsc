@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.2 2000/06/22 15:25:58 balay Exp hzhang $*/
+/*$Id: sbaij.c,v 1.3 2000/07/05 20:51:55 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -269,6 +269,8 @@ int MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,Scalar **v)
   }
 
   /*search column A(0:row-1,row) (=A(row,0:row-1)). Could be expensive! */
+  /* this segment is currently removed, so only entries in the upper triangle are obtained */
+#ifdef column_search
   v_i    = *v    + M*bs;
   cols_i = *cols + M*bs;
   for (i=0; i<bn; i++){ /* for each block row */
@@ -286,6 +288,7 @@ int MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,Scalar **v)
       }
     }
   }
+#endif
 
   PetscFunctionReturn(0);
 }
