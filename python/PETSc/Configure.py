@@ -91,6 +91,8 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make',   'Specify make'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None, 'Specify ranlib'))
+    help.addArgument('PETSc', '-with-default-language=<c,c++,c++-complex,0(zero for no default)>', nargs.Arg(None, 'c', 'Specifiy default language of libraries'))
+    help.addArgument('PETSc', '-with-default-optimization=<g,O,0(zero for no default)>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries'))
 
     self.framework.argDB['PETSCFLAGS'] = ''
     self.framework.argDB['COPTFLAGS']  = ''
@@ -714,6 +716,32 @@ acfindx:
     '''Fix up all the things that we currently need to run'''
     # We use the framework in order to remove the PETSC_ namespace
     self.framework.addSubstitution('CC_SHARED_OPT', '')
+
+    # if BOPT is not set determines what libraries to use
+    bopt = self.framework.argDB['with-default-optimization']
+    if self.framework.argDB['with-default-language'] == '0' or self.framework.argDB['with-default-optimization'] == '0':
+      fd = open('bmake/common/bopt_','w')
+      fd.write('PETSC_LANGUAGE  = CONLY\nPETSC_SCALAR    = real\nPETSC_PRECISION = double\n')
+      fd.close()
+    elif not ((bopt == 'O') or (bopt == 'g')):
+      raise RuntimeError('Unknown option given with --with-default-optimization='+self.framework.argDB['with-default-optimization'])
+    else:
+      if self.framework.argDB['with-default-language'] == 'c': pass
+      elif self.framework.argDB['with-default-language'] == 'c++': bopt += '_c++'
+      elif self.framework.argDB['with-default-language'].find('complex') >= 0: bopt += '_complex'
+      else:
+        raise RuntimeError('Unknown option given with --with-default-language='+self.framework.argDB['with-default-language'])
+      fd = open(os.path.join('bmake','common','bopt_'),'w')
+      fd.write('BOPT='+bopt+'\n')
+      fd.write('include ${PETSC_DIR}/bmake/common/bopt_'+bopt+'\n')
+      fd.close()
+
+    # if PETSC_ARCH is not set use one last created with configure
+    fd = open(os.path.join('bmake','variables'),'w')
+    fd.write('PETSC_ARCH='+self.framework.arch+'\n')
+    fd.write('include ${PETSC_DIR}/bmake/'+self.framework.arch+'/variables\n')
+    fd.close()
+
     return
 
   def configureETags(self):
@@ -770,7 +798,7 @@ acfindx:
 
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
-    scriptName = os.path.join('bmake', self.framework.arch, 'configure_'+self.framework.arch+'.py')
+    scriptName = os.path.join('bmake', self.framework.arch, 'configure.py')
     if not os.path.exists(os.path.dirname(scriptName)):
       os.makedirs(os.path.dirname(scriptName))
     f = file(scriptName, 'w')
