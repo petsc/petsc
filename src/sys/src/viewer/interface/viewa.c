@@ -28,6 +28,8 @@
        all objects of a particular type
 .    PETSC_VIEWER_ASCII_INDEX - (for vectors) prints the vector
        element number next to each vector entry
+.    PETSC_VIEWER_ASCII_SYMMODU - print parallel vectors without
+       indicating the processor ranges
 .    PETSC_VIEWER_BINARY_NATIVE - store the object to the binary
       file in its native format (for example, dense
        matrices are stored as dense)
