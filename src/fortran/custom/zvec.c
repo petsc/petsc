@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.9 1996/01/30 12:21:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.10 1996/03/04 21:30:31 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -39,9 +39,17 @@ extern "C" {
 void vecgettype_(Vec vv,VecType *type,char *name,int *__ierr,int len)
 {
   char *tname;
-  if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
+  if (FORTRANNULL(type)) type = PETSC_NULL;
   *__ierr = VecGetType((Vec)MPIR_ToPointer(*(int*)vv),type,&tname);
-  if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
+#if defined(PARCH_t3d)
+  {
+  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+  if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
+  }
+#else
+  if (name != PETSC_NULL_CHAR_Fortran) PetscStrncpy(name,tname,len);
+#endif
+
 }
 
 void vecload_(Viewer bview,Vec *newvec, int *__ierr )

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zda.c,v 1.4 1996/01/30 00:40:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.5 1996/03/04 21:30:31 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -52,9 +52,9 @@ void dagetscatter_(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
 {
   VecScatter l,g,ll;
   *__ierr = DAGetScatter((DA)MPIR_ToPointer(*(int*)(da)),&l,&g,&ll);
-  if (ltog != PETSC_NULL_Fortran) *(int*) ltog = MPIR_FromPointer(l);
-  if (gtol != PETSC_NULL_Fortran) *(int*) gtol = MPIR_FromPointer(g);
-  if (ltol != PETSC_NULL_Fortran) *(int*) ltol = MPIR_FromPointer(ll);
+  if (!FORTRANNULL(ltog)) *(int*) ltog = MPIR_FromPointer(l);
+  if (!FORTRANNULL(gtol)) *(int*) gtol = MPIR_FromPointer(g);
+  if (!FORTRANNULL(ltol)) *(int*) ltol = MPIR_FromPointer(ll);
 }
 
 void dadestroy_(DA da, int *__ierr ){
