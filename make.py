@@ -27,22 +27,20 @@ class PetscMake(bs.BS):
     #  locate python include and library files
     bs.argDB['PYTHON_INCLUDE'] = getpythoninclude()
     if not os.path.exists(getpythoninclude()+'/Numeric'):
-        print "Install requires Numeric Python to be installed"
-        raise RuntimeError,"Install requires Numeric Python to be installed"
+      raise RuntimeError("Install requires Numeric Python to be installed")
     bs.argDB['PYTHON_LIB'] = getpythonlib()
     
     #  get tmp directory; needs to be different for each user
-    if not bs.argDB.has_key('TMPDIR'):
-        bs.argDB['TMPDIR'] = '/tmp/'+os.getlogin()
-    elif bs.argDB['TMPDIR'] == '/tmp':
-        bs.argDB['TMPDIR'] = '/tmp/'+os.getlogin()
+    if not bs.argDB.has_key('TMPDIR') or bs.argDB['TMPDIR'] == '/tmp':
+      try:
+        bs.argDB['TMPDIR'] = os.path.join('/tmp', os.getlogin())
+      except OSError, e:
+        bs.argDB['TMPDIR'] = os.path.join('/tmp', os.getpid())
     if not os.path.exists(bs.argDB['TMPDIR']):
-        try:
-            os.makedirs(bs.argDB['TMPDIR'])
-        except:
-            print "Cannot create tmp directory "+bs.argDB['TMPDIR']
-            raise RuntimeError,"Cannot create tmp directory "+bs.argDB['TMPDIR']
-    print "Using "+bs.argDB['TMPDIR']+" as tmp directory"
+      try:
+        os.makedirs(bs.argDB['TMPDIR'])
+      except:
+        raise RuntimeError("Cannot create tmp directory "+bs.argDB['TMPDIR'])
     
     self.defineHelp()
     self.defineDirectories()
