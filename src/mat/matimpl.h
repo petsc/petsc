@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.38 1995/11/20 04:47:01 bsmith Exp curfman $ */
+/* $Id: matimpl.h,v 1.39 1995/11/22 03:40:16 curfman Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -47,7 +47,7 @@ struct _MatOps {
             (*axpy)(Scalar *,Mat,Mat),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
-            (*getvalues)(Mat,int,int*,int,int*,Scalar**);
+            (*getvalues)(Mat,int,int*,int,int*,Scalar*);
 };
 
 #define FACTOR_LU       1
