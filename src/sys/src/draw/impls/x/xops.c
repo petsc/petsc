@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.74 1997/03/26 01:36:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.75 1997/04/02 21:01:49 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -464,12 +464,12 @@ $  -display <name> : name of machine for the X display
 $  -draw_pause <pause> : sets time (in seconds) that the
 $     program pauses after DrawPause() has been called
 $     (0 is default, -1 implies until user input).
-$  -draw_x_private_colormap: causes PETSc to use a separate
-$     colormap. When another application has changed the
-$     default colormap and PETSc contour plots etc. look
-$     bad, this allows PETSc graphics to look good. You
-$     must put the mouse into the graphics window to see
-$     the correct colors.
+$  -draw_x_shared_colormap: causes PETSc to use a shared
+$     colormap. By default PETSc creates a seperate color 
+$     for its windows, you must put the mouse into the graphics 
+$     window to see  the correct colors. This options forces
+$     PETSc to use the default colormap which will usually result
+$     in bad contour plots.
 
    Note:
    When finished with the drawing context, it should be destroyed

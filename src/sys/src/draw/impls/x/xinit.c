@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.25 1997/02/07 23:29:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.26 1997/02/22 02:27:19 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -217,15 +217,15 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
 int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
                    int nx,int ny,int nc )
 {
-  int ierr,flag;
+  int ierr,flag = 0;
   if (XiOpenDisplay( w, host )) {
     fprintf(stderr,"Trying to open display: %s\n",host);
     SETERRQ(1,0,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n" );
   }
-  ierr = OptionsHasName(PETSC_NULL,"-draw_x_private_colormap",&flag); CHKERRQ(ierr);
-  ierr = XiSetVisual( w, !flag, (Colormap)0, nc ); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&flag); CHKERRQ(ierr);
+  ierr = XiSetVisual( w, flag, (Colormap)0, nc ); CHKERRQ(ierr);
 
   ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 ); CHKERRQ(ierr);
 
