@@ -2,6 +2,9 @@
 import os
 import sys
 
+if not hasattr(sys, 'version_info'):
+  raise RuntimeError('You must have Python version 2.2 or higher to run configure')
+
 def petsc_configure(configure_options):
   # Should be run from the toplevel or from ./config
   pythonDir = os.path.abspath(os.path.join('..', 'python'))
