@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.158 1996/03/18 00:39:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.159 1996/03/19 21:25:53 bsmith Exp balay $";
 #endif
 
 /*
@@ -1020,11 +1020,15 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ *) A->data,*c;
   int          nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
+  int          row,mat_i,*mat_j,tcol,first,step,*mat_ilen;
   register int sum,lensi;
-  int          *irow, *icol, nrows, ncols, *cwork, shift = a->indexshift,*ssmap;
-  int          first,step,*starts,*j_new,*i_new,*aj = a->j, *ai = a->i,ii,*ailen = a->ilen;
-  Scalar       *vwork,*a_new;
+  int          *irow, *icol, nrows, ncols, shift = a->indexshift,*ssmap;
+  int          *starts,*j_new,*i_new,*aj = a->j, *ai = a->i,ii,*ailen = a->ilen;
+  Scalar       *a_new,*mat_a;
   Mat          C;
+
+  ierr = ISSorted(iscol,(PetscTruth*)&i);
+  if (!i) SETERRQ(1,"MatGetSubmatrices_SeqAIJ:IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
@@ -1084,12 +1088,9 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
   }
   else {
     ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
-    ierr = PetscSortInt(ncols,icol); CHKERRQ(ierr);
     smap  = (int *) PetscMalloc((1+oldcols)*sizeof(int)); CHKPTRQ(smap);
     ssmap = smap + shift;
-    cwork = (int *) PetscMalloc((1+nrows+ncols)*sizeof(int)); CHKPTRQ(cwork);
-    lens  = cwork + ncols;
-    vwork = (Scalar *) PetscMalloc((1+ncols)*sizeof(Scalar)); CHKPTRQ(vwork);
+    lens  = (int *) PetscMalloc((1+nrows)*sizeof(int)); CHKPTRQ(lens);
     PetscMemzero(smap,oldcols*sizeof(int));
     for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
     /* determine lens of each row */
@@ -1105,30 +1106,40 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     }
     /* Create and fill new matrix */
     if (scall == MAT_REUSE_MATRIX) {
-      int n_cols,n_rows;
-      ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
-      if (n_rows != nrows || n_cols != ncols) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:");
-      ierr = MatZeroEntries(*B); CHKERRQ(ierr);
+      c = (Mat_SeqAIJ *)((*B)->data);
+
+      if (c->m  != nrows || c->n != ncols) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:");
+      if (PetscMemcmp(c->ilen,lens, c->m *sizeof(int))) {
+        SETERRQ(1,"MatGetSubmatrices_SeqAIJ:Cannot reuse matrix. wrong no of nonzeros");
+      }
+      PetscMemzero(c->ilen,c->m*sizeof(int));
       C = *B;
     }
     else {  
       ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
     }
+    c = (Mat_SeqAIJ *)(C->data);
     for (i=0; i<nrows; i++) {
+      row    = irow[i];
       nznew  = 0;
-      kstart = ai[irow[i]]+shift; 
-      kend   = kstart + a->ilen[irow[i]];
+      kstart = ai[row]+shift; 
+      kend   = kstart + a->ilen[row];
+      mat_i  = c->i[i]+shift;
+      mat_j  = c->j + mat_i; 
+      mat_a  = c->a + mat_i;
+      mat_ilen = c->ilen + i;
       for ( k=kstart; k<kend; k++ ) {
-        if (ssmap[a->j[k]]) {
-          cwork[nznew]   = ssmap[a->j[k]] - 1;
-          vwork[nznew++] = a->a[k];
+        if ((tcol=ssmap[a->j[k]])) {
+          *mat_j++ = tcol - (!shift);
+          *mat_a++ = a->a[k];
+          (*mat_ilen)++;
+
         }
       }
-      ierr = MatSetValues(C,1,&i,nznew,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
     }
     /* Free work space */
     ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
-    PetscFree(smap); PetscFree(cwork); PetscFree(vwork);
+    PetscFree(smap); PetscFree(lens);
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
