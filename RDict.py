@@ -63,8 +63,12 @@ import os
 class RDict(dict):
   '''An RDict is a typed dictionary, which may be hierarchically composed. All elements derive from the
 Arg class, which wraps the usual value.'''
+  # The server will self-shutdown after this many seconds
+  shutdownDelay = 60*60*5
+
   def __init__(self, parentAddr = None, parentDirectory = None, load = 1):
     import atexit
+    import time
     import xdrlib
 
     self.logFile         = None
@@ -72,6 +76,8 @@ Arg class, which wraps the usual value.'''
     self.target          = ['default']
     self.parent          = None
     self.saveTimer       = None
+    self.shutdownTimer   = None
+    self.lastAccess      = time.time()
     self.saveFilename    = 'RDict.db'
     self.addrFilename    = 'RDict.loc'
     self.parentAddr      = parentAddr
@@ -84,6 +90,7 @@ Arg class, which wraps the usual value.'''
     self.connectParent(self.parentAddr, self.parentDirectory)
     if load: self.load()
     atexit.register(self.shutdown)
+    self.writeLogLine('SERVER: Last access '+str(self.lastAccess))
     return
 
   def __getstate__(self):
@@ -354,7 +361,7 @@ Arg class, which wraps the usual value.'''
     if not os.path.isfile(interpreter):
       interpreter = 'python'
     os.chdir(os.path.dirname(addrFilename))
-    self.writeLogLine('CLIENT: Executing "interpreter'+' '+source+' server"')
+    self.writeLogLine('CLIENT: Executing '+interpreter+' '+source+' server"')
     os.spawnvp(os.P_NOWAIT, interpreter, [interpreter, source, 'server'])
     os.chdir(oldDir)
     timeout = 1
@@ -487,6 +494,9 @@ Arg class, which wraps the usual value.'''
 
     class ProcessHandler(SocketServer.StreamRequestHandler):
       def handle(self):
+        import time
+
+        self.server.rdict.lastAccess = time.time()
         self.server.rdict.writeLogLine('SERVER: Started new handler')
         while 1:
           try:
@@ -557,7 +567,8 @@ Arg class, which wraps the usual value.'''
 
     self.isServer = 1
     self.writeServerAddr(server)
- 
+    self.serverShutdown(os.getpid())
+
     server.rdict = self
     self.writeLogLine('SERVER: Started server')
     server.serve_forever()
@@ -611,6 +622,33 @@ Arg class, which wraps the usual value.'''
       self.parent = None
     self.writeLogLine('Shutting down')
     self.logFile.close()
+    return
+
+  def serverShutdown(self, pid, delay = shutdownDelay):
+    if self.shutdownTimer is None:
+      import threading
+
+      self.shutdownTimer = threading.Timer(delay, self.serverShutdown, [pid], {'delay': 0})
+      self.shutdownTimer.setDaemon(1)
+      self.shutdownTimer.start()
+      self.writeLogLine('SERVER: Set shutdown timer for process '+str(pid)+' at '+str(delay)+' seconds')
+    else:
+      try:
+        import signal
+        import time
+
+        idleTime = time.time() - self.lastAccess
+        self.writeLogLine('SERVER: Last access '+str(self.lastAccess))
+        self.writeLogLine('SERVER: Idle time '+str(idleTime))
+        if idleTime < RDict.shutdownDelay:
+          self.writeLogLine('SERVER: Extending shutdown timer for '+str(pid)+' by '+str(RDict.shutdownDelay - idleTime)+' seconds')
+          self.shutdownTimer = None
+          self.serverShutdown(pid, RDict.shutdownDelay - idleTime)
+        else:
+          self.writeLogLine('SERVER: Killing server '+str(pid))
+          os.kill(pid, signal.SIGTERM)
+      except Exception, e:
+        self.writeLogLine('SERVER: Exception killing server: '+str(e))
     return
 
 if __name__ ==  '__main__':
