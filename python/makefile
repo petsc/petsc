@@ -5,7 +5,7 @@ SOURCE = PETSc/Base.c PETSc/PetscViewer.c PETSc/PetscMap.c PETSc/Vec.c PETSc/Mat
 
 build: ${SOURCE:.c=.so}
 
-${SOURCE}: sidl/snes.sidl
+PETSc/Base.c: sidl/snes.sidl
 	/PETSc3/ase/Compiler/driver/python/scandal.py --client=Python -clientDirs={Python:${PWD}} -ior=0 -defaultVisitors="{ASE.Compiler.StubGenerator:[PETSc.Python.StubGenerator],ASE.Compiler.CartilageGenerator:[],ASE.Compiler.IORGenerator:[],ASE.Compiler.SkeletonGenerator:[],ASE.Compiler.ImplementationGenerator:[],ASE.Compiler.Output:[ASE.Compiler.Cxx.Output,ASE.Compiler.Python.Output]}" -outputFiles=1 -packageDirs=[${PWD}/Generator] -packageServerDirs=[${PWD}/Generator/server-python-generator] -generatorPackage=PETSc -includes=[/PETSc3/ase/Runtime/sidl/ase.sidl] sidl/snes.sidl
 
 .c.so:
