@@ -2,11 +2,7 @@
 
 # Note: Intel 7.1 Fortran cannot work with g++ 3.3
 configure_options = [
-  '--with-cc=gcc',
-  '--with-fc=pgf90',
-  '--with-cxx=0',
-  '--download-mpich=1',
-  '--download-mpich-pm=gforker',
+  '--with-mpi-dir=/home/petsc/soft/linux-debian_sarge-gcc-pgf90/mpich-1.2.6',
   '--download-f-blas-lapack=1'
   ]
 
