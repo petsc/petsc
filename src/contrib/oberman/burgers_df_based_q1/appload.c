@@ -80,7 +80,7 @@ int AppCtxSetLocal(AppCtx *appctx)
 
   MPI_Comm_rank(appctx->comm,&rank);
 
-  printf("appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
+  printf("in AppCtxSetLocal, appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
   if (appctx->view.show_griddata) {
     AODataView(ao, VIEWER_STDOUT_SELF);  
   }
@@ -193,6 +193,7 @@ int AppCtxGraphics(AppCtx *appctx)
 
   ierr = OptionsHasName(PETSC_NULL,"-show_grid",&appctx->view.show_grid);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&appctx->view.show_griddata);CHKERRQ(ierr);
+  printf("in AppCtxGraphics, appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
 
   if ((appctx)->view.show_grid) {
     ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
