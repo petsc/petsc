@@ -4,6 +4,7 @@
   logging of memory usage and some error checking 
 */
 #include "petsc.h"           /*I "petsc.h" I*/
+#include "petscsys.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -596,7 +597,7 @@ int PetscTrLogDump(FILE *fp)
 
   perm = (int*)malloc(n*sizeof(int));if (!perm) SETERRQ(1,"Out of memory");
   for (i=0; i<n; i++) perm[i] = i;
-  ierr = PetscSortStrWithPermutation(n,shortfunction,perm);CHKERRQ(ierr);
+  ierr = PetscSortStrWithPermutation(n,(const char **)shortfunction,perm);CHKERRQ(ierr);
 
   ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Memory usage sorted by function\n",rank);CHKERRQ(ierr);
   for (i=0; i<n; i++) {

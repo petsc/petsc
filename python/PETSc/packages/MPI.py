@@ -261,6 +261,14 @@ int checkInit(void) {
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
     yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+
+    # try location of mpicc in path
+    if self.getExecutable('mpicc', getFullPath = 1):
+      dir = os.path.dirname(os.path.dirname(self.mpicc))
+      yield ('Location of mpicc', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+      if not 'with-mpirun' in self.framework.argDB:
+        self.framework.argDB['with-mpirun'] = os.path.join(dir, 'bin', 'mpirun')
+
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None

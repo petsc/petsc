@@ -6,7 +6,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/da/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
-                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c
+                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c
 EXAMPLESF       = 
 MANSEC          = DA
 
@@ -83,6 +83,10 @@ ex17: ex17.o   chkopts
 ex18: ex18.o   chkopts
 	-${CLINKER} -o ex18 ex18.o  ${PETSC_DM_LIB}
 	${RM} -f ex18.o
+
+ex19: ex19.o   chkopts
+	-${CLINKER} -o ex19 ex19.o  ${PETSC_DM_LIB}
+	${RM} -f ex19.o
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \
