@@ -22,7 +22,7 @@ static int KSPSetUp_CR(KSP ksp)
 #define __FUNCT__ "KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
-  int          i = 0, maxit, cerr = 0, ierr;
+  int          i = 0, maxit, ierr;
   MatStructure pflag;
   PetscReal    dp;
   PetscScalar  ai, bi;
@@ -51,8 +51,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   } else { 
     ierr = VecCopy(B,R); CHKERRQ(ierr);          /*   r <- b (x is 0)    */
   }
-  ierr = KSP_PCApply(ksp,ksp->B,R,P); CHKERRQ(ierr);     /*   P <- Br            */
-  ierr = KSP_MatMult(ksp,Amat,P,AP); CHKERRQ(ierr);      /*   AP <- A p          */
+  ierr = KSP_PCApply(ksp,ksp->B,R,P); CHKERRQ(ierr);     /*   P <- B R            */
+  ierr = KSP_MatMult(ksp,Amat,P,AP); CHKERRQ(ierr);      /*   AP <- A P          */
   ierr = VecCopy(P,RT); CHKERRQ(ierr);           /*   rt <- p            */
   ierr = VecCopy(AP,ART); CHKERRQ(ierr);         /*   ART <- AP          */
   ierr   = VecDot(RT,ART,&btop); CHKERRQ(ierr);  /*   (RT,ART)           */
@@ -73,7 +73,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   KSPLogResidualHistory(ksp,dp);
 
   for ( i=0; i<maxit; i++) {
-    ierr   = KSP_PCApply(ksp,ksp->B,AP,Q); CHKERRQ(ierr);/*   q <- B AP          */
+    ierr   = KSP_PCApply(ksp,ksp->B,AP,Q); CHKERRQ(ierr);/*   Q <- B AP          */
                                                   /* Step 3              */
 
     ierr   = VecDot(AP,Q,&apq); CHKERRQ(ierr);  
@@ -81,16 +81,20 @@ static int  KSPSolve_CR(KSP ksp,int *its)
 
     ierr   = VecAXPY(&ai,P,X); CHKERRQ(ierr);    /*   x <- x + ai p      */
     tmp    = -ai; 
-    ierr   = VecAXPY(&tmp,Q,RT); CHKERRQ(ierr);  /*   rt <- rt - ai q    */
-    ierr   = KSP_MatMult(ksp,Amat,RT,ART); CHKERRQ(ierr);/*   RT <-   ART        */
+    ierr   = VecAXPY(&tmp,Q,RT); CHKERRQ(ierr);  /*   RT <- RT - ai Q    */
+    ierr   = KSP_MatMult(ksp,Amat,RT,ART); CHKERRQ(ierr);/*   ART <-   A*RT        */
     bbot = btop;
     ierr   = VecDot(RT,ART,&btop); CHKERRQ(ierr);
 
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-      ierr = VecNorm(RT,NORM_2,&dp); CHKERRQ(ierr);/*   dp <- r'*r         */
+      ierr = VecNorm(RT,NORM_2,&dp); CHKERRQ(ierr);/*   dp <- || RT ||         */
     } else if (ksp->normtype == KSP_NATURAL_NORM) {
       dp = sqrt(PetscAbsScalar(btop));             /* dp = sqrt(R,AR) (fdi)*/
-    } else { dp = 0.0; }
+    } else if (ksp->normtype == KSP_NO_NORM) {
+      dp = 0.0; 
+    } else {
+      SETERRQ1(1,"KSPNormType of %d not supported",(int)ksp->normtype);
+    }
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
@@ -103,12 +107,14 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     if (ksp->reason) break;
 
     bi = btop/bbot;
-    ierr = VecAYPX(&bi,RT,P); CHKERRQ(ierr);     /*   P <- rt + Bi P     */
-    ierr = VecAYPX(&bi,ART,AP); CHKERRQ(ierr);   /*   AP <- Art + Bi AP  */
+    ierr = VecAYPX(&bi,RT,P); CHKERRQ(ierr);     /*   P <- RT + Bi P     */
+    ierr = VecAYPX(&bi,ART,AP); CHKERRQ(ierr);   /*   AP <- ART + Bi AP  */
   }
-  if (i == maxit) i--;
-  if (cerr <= 0) *its = -(i+1);
-  else           *its = i + 1;
+  if (i == maxit) {
+    ksp->reason =  KSP_DIVERGED_ITS;
+    i--;
+  }
+  *its = i + 1;
   PetscFunctionReturn(0);
 }
 
