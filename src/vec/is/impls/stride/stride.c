@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: stride.c,v 1.5 1995/03/06 04:11:48 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -23,7 +23,8 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 static int ISidestroy(PetscObject obj)
 {
   IS is = (IS) obj;
-  FREE(is->data); FREE(is); return 0;
+  FREE(is->data); 
+  PETSCHEADERDESTROY(is); return 0;
 }
 
 static int ISiIndices(IS in,int **idx)
@@ -97,7 +98,7 @@ int ISCreateStrideSequential(int n,int first,int step,IS *is)
   if (n < 0) SETERR(1,"Number of indices must be non-negative");
   if (step == 0) SETERR(1,"Step must be nonzero");
 
-  CREATEHEADER(Nindex, _IS); 
+  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQUENTIAL,MPI_COMM_SELF); 
   sub            = (IndexiStride *) MALLOC(size); CHKPTR(sub);
   sub->n         = n;
   sub->first     = first;
@@ -108,8 +109,6 @@ int ISCreateStrideSequential(int n,int first,int step,IS *is)
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
-  Nindex->cookie  = IS_COOKIE;
-  Nindex->type    = ISSTRIDESEQUENTIAL;
   Nindex->ops     = &myops;
   Nindex->destroy = ISidestroy;
   Nindex->view    = ISgview;

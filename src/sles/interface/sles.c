@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.10 1995/03/06 04:17:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.11 1995/03/10 04:45:08 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"
@@ -63,11 +63,9 @@ int SLESCreate(SLES *outsles)
   int ierr;
   SLES sles;
   *outsles = 0;
-  CREATEHEADER(sles,_SLES);
+  PETSCHEADERCREATE(sles,_SLES,SLES_COOKIE,0,MPI_COMM_WORLD);
   if ((ierr = KSPCreate(&sles->ksp))) SETERR(ierr,0);
   if ((ierr = PCCreate(&sles->pc))) SETERR(ierr,0);
-  sles->cookie      = SLES_COOKIE;
-  sles->type        = 0;
   sles->setupcalled = 0;
   *outsles = sles;
   return 0;
@@ -87,7 +85,7 @@ int SLESDestroy(SLES sles)
   VALIDHEADER(sles,SLES_COOKIE);
   ierr = KSPDestroy(sles->ksp); CHKERR(ierr);
   ierr = PCDestroy(sles->pc); CHKERR(ierr);
-  FREE(sles);
+  PETSCHEADERDESTROY(sles);
   return 0;
 }
 extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);
@@ -170,8 +168,9 @@ int SLESSetOperators(SLES sles,Mat mat,Mat pmat,int flag)
 {
   VALIDHEADER(sles,SLES_COOKIE);
   VALIDHEADER(mat,MAT_COOKIE);
-  VALIDHEADER(pmat,MAT_COOKIE);
+  if (pmat) {VALIDHEADER(pmat,MAT_COOKIE);}
   PCSetOperators(sles->pc,mat,pmat,flag);
+  sles->setupcalled = 0;  /* so that next solve call will call setup */
   return 0;
 }
 

@@ -18,7 +18,9 @@
 #define __VEC_PACKAGE
 #include "is.h"
 
-#define VEC_COOKIE 0x101010
+#define VEC_COOKIE         PETSC_COOKIE+3
+#define VEC_SCATTER_COOKIE PETSC_COOKIE+4
+
 
 typedef struct _Vec*            Vec;
 typedef struct _VecScatterCtx*  VecScatterCtx;

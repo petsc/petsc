@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: vscat.c,v 1.9 1995/03/06 03:59:09 bsmith Exp bsmith $";
 #endif
 
 
@@ -110,7 +110,7 @@ static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv,int mode)
 static int SGtoSGDestroy(PetscObject obj)
 {
   VecScatterCtx ctx = (VecScatterCtx) obj;
-  FREE(ctx->todata); FREE(ctx->fromdata); FREE(ctx);
+  FREE(ctx->todata); FREE(ctx->fromdata); PETSCHEADERDESTROY(ctx);
   return 0;
 }
 
@@ -139,8 +139,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
   int           len; 
 
   /* generate the Scatter context */
-  CREATEHEADER(ctx,_VecScatterCtx);
-  ctx->cookie = VEC_SCATTER_COOKIE;
+  PETSCHEADERCREATE(ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,xin->comm);
 
   if (xin->type == SEQVECTOR && yin->type == SEQVECTOR) {
 
@@ -404,8 +403,7 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 {
   if (!sctx->copy) SETERR(1,"VecScatterCtxCopy: cannot copy this type");
   /* generate the Scatter context */
-  CREATEHEADER(*ctx,_VecScatterCtx);
-  (*ctx)->cookie = VEC_SCATTER_COOKIE;
+  PETSCHEADERCREATE(*ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,sctx->comm);
   return (*sctx->copy)(sctx,*ctx);
 }
 

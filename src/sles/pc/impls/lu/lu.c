@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.7 1995/03/06 20:10:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: direct.c,v 1.8 1995/03/10 04:44:28 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -116,7 +116,8 @@ static int PCiDirectDestroy(PetscObject obj)
   PCiDirect *dir = (PCiDirect*) pc->data;
 
   if (!dir->inplace) MatDestroy(dir->fact);
-  FREE(dir); FREE(pc);
+  FREE(dir); 
+  PETSCHEADERDESTROY(pc);
   return 0;
 }
 

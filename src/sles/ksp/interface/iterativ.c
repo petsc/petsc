@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.7 1995/03/04 16:54:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.8 1995/03/06 03:49:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -185,7 +185,7 @@ int KSPiDefaultDestroy(PetscObject obj)
   KSPiDefaultFreeWork( itP );
 
   /* free the context variables */
-  FREE(itP);
+  PETSCHEADERDESTROY(itP);
   return 0;
 }
 

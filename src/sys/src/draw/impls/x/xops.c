@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.8 1995/03/06 04:29:26 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -8,11 +8,11 @@ static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $
 #define XTRANS(win,xwin,x) \
    (int)(((xwin)->w)*((win)->port_xl + (((x - (win)->coor_xl)*\
                                    ((win)->port_xr - (win)->port_xl))/\
-                                   ((win)->coor_xr - (win)->coor_xl))));
+                                   ((win)->coor_xr - (win)->coor_xl))))
 #define YTRANS(win,xwin,y) \
    (int)(((xwin)->h)*(1.0-(win)->port_yl - (((y - (win)->coor_yl)*\
                                        ((win)->port_yr - (win)->port_yl))/\
-                                       ((win)->coor_yr - (win)->coor_yl))));
+                                       ((win)->coor_yr - (win)->coor_yl))))
 
 /*
     Defines the operations for the X Draw implementation.
@@ -30,7 +30,7 @@ int XiDrawLine(DrawCtx Win, double xl, double yl, double xr, double yr,
   return 0;
 }
 
-int XiDrawPoint(DrawCtx Win,double x,double  y,int c)
+static int XiDrawPoint(DrawCtx Win,double x,double  y,int c)
 {
   int    xx,yy;
   XiWindow* XiWin = (XiWindow*) Win->data;
@@ -41,7 +41,19 @@ int XiDrawPoint(DrawCtx Win,double x,double  y,int c)
   return 0;
 }
 
-int XiDrawText(DrawCtx Win,double x,double  y,int c,char *chrs )
+static int XiDrawRectangle(DrawCtx Win, double xl, double yl, double xr, double yr,
+                int c1, int c2,int c3,int c4)
+{
+  XiWindow* XiWin = (XiWindow*) Win->data;
+  int       x1,y1,w,h, c = (c1 + c2 + c3 + c4)/4;
+  XiSetColor( XiWin, c );
+  x1 = XTRANS(Win,XiWin,xl);   w  = XTRANS(Win,XiWin,xr) - x1; 
+  y1 = YTRANS(Win,XiWin,yr);   h  = YTRANS(Win,XiWin,yl) - y1;
+  XFillRectangle( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y1, w, h);
+  return 0;
+}
+
+static int XiDrawText(DrawCtx Win,double x,double  y,int c,char *chrs )
 {
   int    xx,yy;
   XiWindow* XiWin = (XiWindow*) Win->data;
@@ -53,7 +65,7 @@ int XiDrawText(DrawCtx Win,double x,double  y,int c,char *chrs )
 }
 
 int XiFontFixed( XiWindow*,int, int,XiFont **);
-int XiDrawTextSize(DrawCtx Win,double x,double  y)
+static int XiDrawTextSize(DrawCtx Win,double x,double  y)
 {
   XiWindow* XiWin = (XiWindow*) Win->data;
   int       w,h;
@@ -169,14 +181,15 @@ extern int XiQuickWindow(XiWindow*,char*,char*,int,int,int,int,int);
 static struct _DrawOps DvOps = { XiDB,XiFlush,XiDrawLine,0,XiDrawPoint,0,
                                  XiDrawText,XiDrawTextVertical,
                                  XiDrawTextSize,XiDrawTextGetSize,
-                                 Xiviewport,XiClearWindow,XiSFlush};
+                                 Xiviewport,XiClearWindow,XiSFlush,
+                                 XiDrawRectangle};
 
 int XDestroy(PetscObject obj)
 {
   DrawCtx  ctx = (DrawCtx) obj;
   XiWindow *win = (XiWindow *) ctx->data;
   FREE(win);
-  FREE(ctx);
+  PETSCHEADERDESTROY(ctx);
   return 0;
 }
 
@@ -205,9 +218,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   char     string[128];
 
   *inctx = 0;
-  CREATEHEADER(ctx,_DrawCtx);
-  ctx->cookie  = DRAW_COOKIE;
-  ctx->type    = XWINDOW;
+  PETSCHEADERCREATE(ctx,_DrawCtx,DRAW_COOKIE,XWINDOW,comm);
   ctx->ops     = &DvOps;
   ctx->destroy = XDestroy;
   ctx->view    = 0;

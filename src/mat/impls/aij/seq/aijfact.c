@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: aijfact.c,v 1.9 1995/03/06 04:02:49 bsmith Exp bsmith $";
 #endif
 
 
@@ -166,7 +166,7 @@ int MatiAIJLUFactorNumeric(Mat mat,Mat *infact)
   ierr = ISRestoreIndices(isrow,&r); CHKERR(ierr);
   ierr = ISDestroy(isicol); CHKERR(ierr);
   fact->factor = FACTOR_LU;
- 
+  aijnew->assembled = 1;
   return 0;
 }
 int MatiAIJLUFactor(Mat matin,IS row,IS col)
@@ -201,6 +201,8 @@ int MatiAIJSolve(Mat mat,Vec bb, Vec xx)
   int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
+
+  if (mat->factor != FACTOR_LU) SETERR(1,"Cannot solve with factor");
 
   if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
   if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
@@ -241,6 +243,7 @@ int MatiAIJSolveAdd(Mat mat,Vec bb, Vec yy, Vec xx)
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
+  if (mat->factor != FACTOR_LU) SETERR(1,"Cannot solve with factor");
   if (yy != xx) {ierr = VecCopy(yy,xx); CHKERR(ierr);}
 
   if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
@@ -284,6 +287,7 @@ int MatiAIJSolveTrans(Mat mat,Vec bb, Vec xx)
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
+  if (mat->factor != FACTOR_LU) SETERR(1,"Cannot solve with factor");
   if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
   if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
   tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
@@ -337,6 +341,7 @@ int MatiAIJSolveTransAdd(Mat mat,Vec bb, Vec zz,Vec xx)
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
+  if (mat->factor != FACTOR_LU) SETERR(1,"Cannot solve with factor");
   if (zz != xx) VecCopy(zz,xx);
 
   if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
@@ -383,4 +388,127 @@ int MatiAIJSolveTransAdd(Mat mat,Vec bb, Vec zz,Vec xx)
   FREE(tmp);
   return 0;
 
+}
+/* ----------------------------------------------------------------*/
+int MatiAIJilu(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
+{
+  Matiaij *aij = (Matiaij *) mat->data, *aijnew;
+  IS      isicol;
+  int     *r,*ic, ierr, i, n = aij->m, *ai = aij->i, *aj = aij->j;
+  int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz, *lfill,*ajfill,*ajtmpf;
+  int     *idnew, idx, row,m,fm, nnz, nzi,len;
+ 
+  if (n != aij->n) SETERR(1,"Mat must be square");
+  if (!isrow) {SETERR(1,"Must have row permutation");}
+  if (!iscol) {SETERR(1,"Must have column permutation");}
+
+  if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
+  ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
+
+  /* get new row pointers */
+  ainew = (int *) MALLOC( (n+1)*sizeof(int) ); CHKPTR(ainew);
+  ainew[0] = 1;
+  /* don't know how many column pointers are needed so estimate */
+  jmax = 2*ai[n];
+  ajnew = (int *) MALLOC( (jmax)*sizeof(int) ); CHKPTR(ajnew);
+  /* ajfill is level of fill for each fill entry */
+  ajfill = (int *) MALLOC( (jmax)*sizeof(int) ); CHKPTR(ajfill);
+  /* fill is a linked list of nonzeros in active row */
+  fill = (int *) MALLOC( (n+1)*sizeof(int)); CHKPTR(fill);
+  /* lfill is level for each filled value */
+  lfill = (int *) MALLOC( (n+1)*sizeof(int)); CHKPTR(lfill);
+  /* idnew is location of diagonal in factor */
+  idnew = (int *) MALLOC( (n+1)*sizeof(int)); CHKPTR(idnew);
+  idnew[0] = 1;
+
+  for ( i=0; i<n; i++ ) {
+    /* first copy previous fill into linked list */
+    nnz = nz    = ai[r[i]+1] - ai[r[i]];
+    ajtmp = aj + ai[r[i]] - 1;
+    fill[n] = n;
+    while (nz--) {
+      fm = n;
+      idx = ic[*ajtmp++ - 1];
+      do {
+        m = fm;
+        fm = fill[m];
+      } while (fm < idx);
+      fill[m] = idx;
+      fill[idx] = fm;
+      lfill[idx] = -1;
+    }
+    row = fill[n];
+    while ( row < i ) {
+      ajtmp  = ajnew + idnew[row] - 1;
+      ajtmpf = ajfill + idnew[row] - 1;
+      nz = ainew[row+1] - idnew[row];
+      fm = row;
+      while (nz--) {
+        fm = n;
+        idx = *ajtmp++ - 1;
+        do {
+          m = fm;
+          fm = fill[m];
+        } while (fm < idx);
+        if (fm != idx) {
+          lfill[idx] = *ajtmpf + 1;
+          if (lfill[idx] < levels) {
+            fill[m] = idx;
+            fill[idx] = fm;
+            fm = idx;
+            nnz++;
+          }
+        }
+        ajtmpf++;
+      }
+      row = fill[row];
+    }
+    /* copy new filled row into permanent storage */
+    ainew[i+1] = ainew[i] + nnz;
+    if (ainew[i+1] > jmax+1) {
+      /* allocate a longer ajnew */
+      jmax += nnz*(n-i);
+      ajtmp = (int *) MALLOC( jmax*sizeof(int) );CHKPTR(ajtmp);
+      MEMCPY(ajtmp,ajnew,(ainew[i]-1)*sizeof(int));
+      FREE(ajnew);
+      ajnew = ajtmp;
+      /* allocate a longer ajfill */
+      ajtmp = (int *) MALLOC( jmax*sizeof(int) );CHKPTR(ajtmp);
+      MEMCPY(ajtmp,ajfill,(ainew[i]-1)*sizeof(int));
+      FREE(ajfill);
+      ajfill = ajtmp;
+    }
+    ajtmp  = ajnew + ainew[i] - 1;
+    ajtmpf = ajfill + ainew[i] - 1;
+    fm = fill[n];
+    nzi = 0;
+    while (nnz--) {
+      if (fm < i) nzi++;
+      *ajtmp++  = fm + 1;
+      *ajtmpf++ = lfill[fm];
+      fm = fill[fm];
+    }
+    idnew[i] = ainew[i] + nzi;
+  }
+  FREE(ajfill); 
+  ISDestroy(isicol); FREE(fill); FREE(lfill);
+
+  /* put together the new matrix */
+  ierr = MatCreateSequentialAIJ(n, n, 0, 0, fact); CHKERR(ierr);
+  aijnew = (Matiaij *) (*fact)->data;
+  FREE(aijnew->imax);
+  aijnew->singlemalloc = 0;
+  len = (ainew[n] - 1)*sizeof(Scalar);
+  /* the next line frees the default space generated by the Create() */
+  FREE(aijnew->a); FREE(aijnew->ilen);
+  aijnew->a         = (Scalar *) MALLOC( len ); CHKPTR(aijnew->a);
+  aijnew->j         = ajnew;
+  aijnew->i         = ainew;
+  aijnew->diag      = idnew;
+  aijnew->ilen      = 0;
+  aijnew->imax      = 0;
+  (*fact)->row      = isrow;
+  (*fact)->col      = iscol;
+  (*fact)->factor   = FACTOR_LU;
+  return 0; 
 }

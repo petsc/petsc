@@ -8,10 +8,10 @@
 #include "mat.h"
 
 typedef enum { PCNONE, PCJACOBI, PCSOR, PCDIRECT, PCSHELL, PCBJACOBI, PCMG,
-               PCESOR } PCMETHOD;
+               PCESOR, PCILU } PCMETHOD;
 
 typedef struct _PC* PC;
-#define PC_COOKIE         0x505050
+#define PC_COOKIE    PETSC_COOKIE+9
 
 extern int    PCCreate(PC*);
 extern int    PCSetMethod(PC,PCMETHOD);
@@ -49,6 +49,11 @@ extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 
 extern Mat PCGetMat(PC);
+
+extern int PCDirectSetOrdering(PC,int);
+extern int PCDirectSetUseInplace(PC);
+extern int PCILUSetOrdering(PC,int);
+extern int PCILUSetLevels(PC,int);
 
 #endif
 

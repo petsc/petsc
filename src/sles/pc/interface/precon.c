@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.9 1995/03/06 04:12:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.10 1995/03/10 04:44:19 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -39,7 +39,7 @@ int PCDestroy(PC pc)
   if (pc->destroy) ierr =  (*pc->destroy)((PetscObject)pc);
   else {
     if (pc->data) FREE(pc->data);
-    FREE(pc);
+    PETSCHEADERDESTROY(pc);
   }
   return ierr;
 }
@@ -55,9 +55,7 @@ int PCCreate(PC *newpc)
 {
   PC pc;
   *newpc          = 0;
-  CREATEHEADER(pc,_PC);
-  pc->cookie      = PC_COOKIE;
-  pc->type        = 0;
+  PETSCHEADERCREATE(pc,_PC,PC_COOKIE,PCJACOBI,MPI_COMM_WORLD);
   pc->vec         = 0;
   pc->mat         = 0;
   pc->setupcalled = 0;

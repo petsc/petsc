@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: bvec2.c,v 1.9 1995/03/06 03:55:27 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -36,12 +36,10 @@ int VecCreateSequentialBLAS(int n,Vec *V)
   Vec      v;
   DvVector *s;
   *V             = 0;
-  CREATEHEADER(v,_Vec);
+  PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,SEQVECTOR,MPI_COMM_SELF);
   v->destroy     = VeiDestroyVector;
   v->view        = VeiDVview;
   s              = (DvVector *) MALLOC(size); CHKPTR(s);
-  v->cookie      = VEC_COOKIE;
-  v->type        = SEQVECTOR;
   v->ops         = &DvOps;
   v->data        = (void *) s;
   s->n           = n;

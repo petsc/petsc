@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: send.c,v 1.4 1995/03/06 04:39:59 bsmith Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. 
  
@@ -184,9 +184,7 @@ int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
   int    t;
   if (port <= 0) port = DEFAULTPORT;
   t = call_socket(machine,port);
-  CREATEHEADER(v,_Viewer);
-  v->cookie      = VIEWER_COOKIE;
-  v->type        = MATLAB_VIEWER;
+  PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,MPI_COMM_SELF);
   v->port        = t;
   v->destroy     = MatlabDestroy;
   *lab           = v;

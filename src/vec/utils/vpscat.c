@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.7 1995/03/06 03:59:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.8 1995/03/10 04:43:28 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -291,7 +291,13 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   VecScatterMPI *out_to,*out_from;
   int           len, ny;
 
-  MEMCPY(out,in,sizeof(struct _VecScatterCtx));
+  out->begin     = in->begin;
+  out->end       = in->end;
+  out->beginpipe = in->beginpipe;
+  out->endpipe   = in->endpipe;
+  out->copy      = in->copy;
+  out->destroy   = in->destroy;
+  out->view      = in->view;
 
   /* allocate entire send scatter context */
   out_to           = (VecScatterMPI *) MALLOC( sizeof(VecScatterMPI) );
@@ -476,7 +482,7 @@ static int PtoPScatterDestroy(PetscObject obj)
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
   FREE(gen_to->values); FREE(gen_to);
   FREE(gen_from->values); FREE(gen_from);
-  FREE(ctx);
+  PETSCHEADERDESTROY(ctx);
   return 0;
 }
 

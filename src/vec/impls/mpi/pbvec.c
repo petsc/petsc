@@ -63,10 +63,8 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
   *vv = 0;
 
   size           = sizeof(DvPVector)+n*sizeof(Scalar)+(numtids+1)*sizeof(int);
-  CREATEHEADER(v,_Vec);
+  PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,MPIVECTOR,comm);
   s              = (DvPVector *) MALLOC(size); CHKPTR(s);
-  v->cookie      = VEC_COOKIE;
-  v->type        = MPIVECTOR;
   v->ops         = &DvOps;
   v->data        = (void *) s;
   v->destroy     = VeiPDestroyVector;

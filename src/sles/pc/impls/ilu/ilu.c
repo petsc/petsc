@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.8 1995/03/10 04:44:28 bsmith Exp $";
+static char vcid[] = "$Id: ilu.c,v 1.1 1995/03/10 20:16:43 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -11,11 +11,29 @@ static char vcid[] = "$Id: direct.c,v 1.8 1995/03/10 04:44:28 bsmith Exp $";
 
 typedef struct {
   Mat fact;
-  int ordering,inplace;
-} PCiDirect;
+  int ordering,levels;
+} PCiILU;
 
 /*@
-      PCDirectSetOrdering - Sets the ordering to use for a direct 
+      PCILUSetLevels - Sets the number of levels of fill to use.
+
+  Input Parameters:
+.   pc - the preconditioner context
+.   levels - number of levels 
+@*/
+int PCILUSetLevels(PC pc,int levels)
+{
+  PCiILU *dir;
+  VALIDHEADER(pc,PC_COOKIE);
+  if (levels < 0) SETERR(1,"Number of levels may not be negative");
+  dir = (PCiILU *) pc->data;
+  if (pc->type != PCILU) return 0;
+  dir->levels = levels;
+  return 0;
+}
+
+/*@
+      PCILUSetOrdering - Sets the ordering to use for a direct 
               factorization.
 
   Input Parameters:
@@ -27,53 +45,31 @@ $      ORDER_1WD - One-way Dissection
 $      ORDER_RCM - Reverse Cuthill-McGee
 $      ORDER_QMD - Quotient Minimum Degree
 @*/
-int PCDirectSetOrdering(PC pc,int ordering)
+int PCILUSetOrdering(PC pc,int ordering)
 {
-  PCiDirect *dir;
+  PCiILU *dir;
   VALIDHEADER(pc,PC_COOKIE);
-  dir = (PCiDirect *) pc->data;
-  if (pc->type != PCDIRECT) return 0;
+  dir = (PCiILU *) pc->data;
+  if (pc->type != PCILU) return 0;
   dir->ordering = ordering;
   return 0;
 }
-/*@
-   PCDirectSetUseInplace - Tells system to do an in-place factorization.
-              For some implementations, for instance, dense matrices,
-              this enables the solution of much larger problems. 
 
-   Note:
-   PCDirectSetUseInplace() can only be used with the KSP method KSPPREONLY.
-   This is because the Krylov space methods require an application of the 
-   matrix multiplication, which is not possible here because the matrix has 
-   been factored in-place, replacing the original matrix.
-
-  Input Parameters:
-.   pc - the preconditioner context
-@*/
-int PCDirectSetUseInplace(PC pc)
-{
-  PCiDirect *dir;
-  VALIDHEADER(pc,PC_COOKIE);
-  dir = (PCiDirect *) pc->data;
-  if (pc->type != PCDIRECT) return 0;
-  dir->inplace = 1;
-  return 0;
-}
 static int PCisetfrom(PC pc)
 {
   char      name[10];
-  int       ordering = ORDER_ND;
-  if (OptionsHasName(0,pc->prefix,"-direct_in_place")) {
-    PCDirectSetUseInplace(pc);
-  }
-  if (OptionsGetString(0,pc->prefix,"-direct_ordering",name,10)) {
+  int       ordering = ORDER_ND, levels;
+  if (OptionsGetString(0,pc->prefix,"-ilu_ordering",name,10)) {
     if (!strcmp(name,"nd")) ordering = ORDER_ND;
     else if (!strcmp(name,"natural")) ordering = ORDER_NATURAL;
     else if (!strcmp(name,"1wd")) ordering = ORDER_1WD;
     else if (!strcmp(name,"rcm")) ordering = ORDER_RCM;
     else if (!strcmp(name,"qmd")) ordering = ORDER_QMD;
     else fprintf(stderr,"Unknown order: %s\n",name);
-    PCDirectSetOrdering(pc,ordering);
+    PCILUSetOrdering(pc,ordering);
+  }
+  if (OptionsGetInt(0,pc->prefix,"-ilu_levels",&levels)) {
+    PCILUSetLevels(pc,levels);
   }
   return 0;
 }
@@ -82,61 +78,56 @@ static int PCiprinthelp(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"%sdirect_in_place: do factorization in place\n",p);
-  fprintf(stderr,"%sdirect_ordering name: ordering to reduce fill",p);
+  fprintf(stderr,"%silu_ordering name: ordering to reduce fill",p);
   fprintf(stderr," (nd,natural,1wd,rcm,qmd)\n");
+  fprintf(stderr,"%silu_levels levels: levels of fill",p);
   return 0;
 }
 
-static int PCiDirectSetup(PC pc)
+static int PCiILUSetup(PC pc)
 {
-  IS        row,col;
-  int       ierr;
-  PCiDirect *dir = (PCiDirect *) pc->data;
+  IS     row,col;
+  int    ierr;
+  PCiILU *dir = (PCiILU *) pc->data;
   ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
-  if (dir->inplace) {
-    if ((ierr = MatLUFactor(pc->pmat,row,col))) SETERR(ierr,0);
+  if (!pc->setupcalled) {
+    ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERR(ierr);
   }
-  else {
-    if (!pc->setupcalled) {
-      ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERR(ierr);
-    }
-    else if (!(pc->flag & MAT_SAME_NONZERO_PATTERN)) { 
-      ierr = MatDestroy(dir->fact); CHKERR(ierr);
-      ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERR(ierr);
-    }
-    ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERR(ierr);
+  else if (!(pc->flag & MAT_SAME_NONZERO_PATTERN)) { 
+    ierr = MatDestroy(dir->fact); CHKERR(ierr);
+    ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERR(ierr);
   }
+  ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERR(ierr);
   return 0;
 }
 
-static int PCiDirectDestroy(PetscObject obj)
+static int PCiILUDestroy(PetscObject obj)
 {
   PC        pc   = (PC) obj;
-  PCiDirect *dir = (PCiDirect*) pc->data;
+  PCiILU *dir = (PCiILU*) pc->data;
 
-  if (!dir->inplace) MatDestroy(dir->fact);
-  FREE(dir); FREE(pc);
+  MatDestroy(dir->fact);
+  FREE(dir); 
+  PETSCHEADERDESTROY(pc);
   return 0;
 }
 
-static int PCiDirectApply(PC pc,Vec x,Vec y)
+static int PCiILUApply(PC pc,Vec x,Vec y)
 {
-  PCiDirect *dir = (PCiDirect *) pc->data;
-  if (dir->inplace) return MatSolve(pc->pmat,x,y);
-  else  return MatSolve(dir->fact,x,y);
+  PCiILU *dir = (PCiILU *) pc->data;
+  return MatSolve(dir->fact,x,y);
 }
 
-int PCiDirectCreate(PC pc)
+int PCiILUCreate(PC pc)
 {
-  PCiDirect *dir = NEW(PCiDirect); CHKPTR(dir);
+  PCiILU *dir = NEW(PCiILU); CHKPTR(dir);
   dir->fact     = 0;
   dir->ordering = ORDER_ND;
-  dir->inplace  = 0;
-  pc->destroy   = PCiDirectDestroy;
-  pc->apply     = PCiDirectApply;
-  pc->setup     = PCiDirectSetup;
-  pc->type      = PCDIRECT;
+  dir->levels   = 0;
+  pc->destroy   = PCiILUDestroy;
+  pc->apply     = PCiILUApply;
+  pc->setup     = PCiILUSetup;
+  pc->type      = PCILU;
   pc->data      = (void *) dir;
   pc->setfrom   = PCisetfrom;
   pc->printhelp = PCiprinthelp;

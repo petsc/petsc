@@ -4,7 +4,7 @@
 #include "pc.h"
 #include "ksp.h"
 
-#define SLES_COOKIE 0x70707070
+#define SLES_COOKIE PETSC_COOKIE+10
 
 typedef struct _SLES* SLES;
 

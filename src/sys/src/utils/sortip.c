@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comsort.c,v 1.3 1995/03/06 04:33:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -128,7 +128,7 @@ int SYiDqsort(double *v,int right)
 }
 
 /*@
-   Compute the permutation of values that gives a sorted sequence
+   SYIsortperm - Compute the permutation of values that gives a sorted sequence
 
    Input Parameters:
 .  n  - number of values to sort

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.4 1995/03/06 04:15:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.5 1995/03/10 04:44:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -30,10 +30,13 @@ static int PCiNoneApply(PC ptr,Vec x,Vec y)
   return VecCopy(x,y);
 }
 
+/* this cheats and looks inside KSP to determine if nonzero initial guess*/
+#include "src/ksp/kspimpl.h"
+
 static int PCiPre(PC pc,KSP ksp)
 {
   PCiESOR *jac = (PCiESOR *) pc->data;
-  Vec     b;
+  Vec     b,x;
   int     ierr;
 
   if (pc->mat != pc->pmat) {
@@ -53,6 +56,10 @@ static int PCiPre(PC pc,KSP ksp)
   ierr = VecCopy(b,jac->b); CHKERR(ierr);
 
   /* if nonzero initial guess, modify x */
+  if (!ksp->guess_zero) {
+    KSPGetSolution(ksp,&x);
+    ierr = MatRelax(jac->A,x,jac->omega,SOR_APPLY_UPPER,0.0,1,x); CHKERR(ierr);
+  }
 
   /* modify b by (L + D)^{-1} */
   ierr =   MatRelax(jac->A,b,jac->omega,SOR_ZERO_INITIAL_GUESS | 
@@ -83,7 +90,7 @@ int PCiESORDestroy(PetscObject obj)
   if (jac->b) VecDestroy(jac->b);
   if (jac->shell) MatDestroy(jac->shell);
   FREE(jac);
-  FREE(pc);
+  PETSCHEADERDESTROY(pc);
   return 0;
 }
 

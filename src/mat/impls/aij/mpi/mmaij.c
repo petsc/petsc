@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: mmaij.c,v 1.5 1995/03/06 04:05:15 bsmith Exp bsmith $";
 #endif
 
 
@@ -66,9 +66,11 @@ int MPIAIJSetUpMultiply(Mat mat)
   /* gnerate the scatter context */
   ierr = VecScatterCtxCreate(gvec,from,aij->lvec,to,&aij->Mvctx); CHKERR(ierr);
 
-  FREE(garray);
+  aij->garray = garray;
   ierr = ISDestroy(from); CHKERR(ierr);
   ierr = ISDestroy(to); CHKERR(ierr);
   ierr = VecDestroy(gvec);
   return 0;
 }
+
+

@@ -6,7 +6,7 @@
 #define __IS_PACKAGE
 #include "petsc.h"
 
-#define IS_COOKIE 0x13131313
+#define IS_COOKIE PETSC_COOKIE+2
 
 typedef struct _IS* IS;
 

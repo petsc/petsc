@@ -6,7 +6,7 @@
 #include "mat.h"
 #include "pc.h"
 
-#define KSP_COOKIE         0x202020
+#define KSP_COOKIE  PETSC_COOKIE+8
 
 typedef struct _KSP*     KSP;
 

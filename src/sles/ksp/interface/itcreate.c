@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: itcreate.c,v 1.11 1995/03/06 04:19:40 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -38,9 +38,8 @@ int KSPCreate(KSP *ksp)
 {
   KSP ctx;
   *ksp = 0;
-  CREATEHEADER(ctx,_KSP);
+  PETSCHEADERCREATE(ctx,_KSP,KSP_COOKIE,KSPGMRES,MPI_COMM_WORLD);
   *ksp               = ctx;
-  ctx->cookie        = KSP_COOKIE;
   ctx->view          = _KSPView;
   ctx->prefix        = 0;
 

@@ -5,10 +5,10 @@
 #define __DRAW_PACKAGE
 #include "petsc.h"
 
-#define DRAW_COOKIE 0x101010
+#define DRAW_COOKIE PETSC_COOKIE+6
 
 /* types of draw contexts */
-#define XWINDOW 1
+#define XWINDOW 0
  
 typedef struct _DrawCtx* DrawCtx;
 
@@ -20,50 +20,53 @@ typedef struct _DrawCtx* DrawCtx;
 #define DRAW_CYAN   5
 #define DRAW_BLUE   6
 
-int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,DrawCtx*);
-int DrawDestroy(DrawCtx);
+extern int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,DrawCtx*);
+extern int DrawDestroy(DrawCtx);
 
-int DrawLine(DrawCtx,double,double,double,double,int,int);
-int DrawLineSetWidth(DrawCtx,double);
+extern int DrawLine(DrawCtx,double,double,double,double,int,int);
+extern int DrawLineSetWidth(DrawCtx,double);
 
-int DrawPoint(DrawCtx,double,double,int);
-int DrawPointSetSize(DrawCtx,double);
+extern int DrawPoint(DrawCtx,double,double,int);
+extern int DrawPointSetSize(DrawCtx,double);
 
-int DrawText(DrawCtx,double,double,int,char*);
-int DrawTextVertical(DrawCtx,double,double,int,char*);
-int DrawTextSetSize(DrawCtx,double,double);
-int DrawTextGetSize(DrawCtx,double*,double*);
+extern int DrawRectangle(DrawCtx,double,double,double,double,int,int,int,int);
+extern int DrawTriangle(DrawCtx,double,double,double,double,double,double,int,int,int);
 
-int DrawSetViewPort(DrawCtx,double,double,double,double);
-int DrawSetCoordinates(DrawCtx,double,double,double,double);
-int DrawGetCoordinates(DrawCtx,double*,double*,double*,double*);
+extern int DrawText(DrawCtx,double,double,int,char*);
+extern int DrawTextVertical(DrawCtx,double,double,int,char*);
+extern int DrawTextSetSize(DrawCtx,double,double);
+extern int DrawTextGetSize(DrawCtx,double*,double*);
 
-int DrawSetPause(DrawCtx,int);
-int DrawSetDoubleBuffer(DrawCtx);
-int DrawFlush(DrawCtx);
-int DrawSyncFlush(DrawCtx);
-int DrawClear(DrawCtx);
+extern int DrawSetViewPort(DrawCtx,double,double,double,double);
+extern int DrawSetCoordinates(DrawCtx,double,double,double,double);
+extern int DrawGetCoordinates(DrawCtx,double*,double*,double*,double*);
+
+extern int DrawSetPause(DrawCtx,int);
+extern int DrawSetDoubleBuffer(DrawCtx);
+extern int DrawFlush(DrawCtx);
+extern int DrawSyncFlush(DrawCtx);
+extern int DrawClear(DrawCtx);
 
 /* routines related to drawing Axis and line graphs */
 
 typedef struct _DrawAxisCtx* DrawAxisCtx;
 typedef struct _DrawLGCtx*   DrawLGCtx;
 
-int DrawAxisCreate(DrawCtx,DrawAxisCtx *);
-int DrawAxisDestroy(DrawAxisCtx);
-int DrawAxis(DrawAxisCtx);
-int DrawAxisSetLimits(DrawAxisCtx,double,double,double,double);
-int DrawAxisSetColors(DrawAxisCtx,int,int,int);
-int DrawAxisSetLabels(DrawAxisCtx,char*,char*,char*);
+extern int DrawAxisCreate(DrawCtx,DrawAxisCtx *);
+extern int DrawAxisDestroy(DrawAxisCtx);
+extern int DrawAxis(DrawAxisCtx);
+extern int DrawAxisSetLimits(DrawAxisCtx,double,double,double,double);
+extern int DrawAxisSetColors(DrawAxisCtx,int,int,int);
+extern int DrawAxisSetLabels(DrawAxisCtx,char*,char*,char*);
 
-#define LG_COOKIE 0x17181920
-int DrawLGCreate(DrawCtx,int,DrawLGCtx *);
-int DrawLGDestroy(DrawLGCtx);
-int DrawLGAddPoint(DrawLGCtx,double*,double*);
-int DrawLGAddPoints(DrawLGCtx,int,double**,double**);
-int DrawLG(DrawLGCtx);
-int DrawLGReset(DrawLGCtx);
-int DrawLGGetAxisCtx(DrawLGCtx,DrawAxisCtx *);
-int DrawLGGetDrawCtx(DrawLGCtx,DrawCtx *);
+#define LG_COOKIE PETSC_COOKIE+7
+extern int DrawLGCreate(DrawCtx,int,DrawLGCtx *);
+extern int DrawLGDestroy(DrawLGCtx);
+extern int DrawLGAddPoint(DrawLGCtx,double*,double*);
+extern int DrawLGAddPoints(DrawLGCtx,int,double**,double**);
+extern int DrawLG(DrawLGCtx);
+extern int DrawLGReset(DrawLGCtx);
+extern int DrawLGGetAxisCtx(DrawLGCtx,DrawAxisCtx *);
+extern int DrawLGGetDrawCtx(DrawLGCtx,DrawCtx *);
 
 #endif

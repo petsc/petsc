@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: vector.c,v 1.16 1995/03/06 03:51:58 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -34,9 +34,13 @@ int VecValidVector(Vec v)
 @*/
 int VecDot(Vec x, Vec y, Scalar *val)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->dot)(x,y,val);
+  PETSCLOGBEGIN(VECTOR_DOT,x,y,0,0);
+  ierr = (*x->ops->dot)(x,y,val); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_DOT,x,y,0,0);
+  return 0;
 }
 
 /*@
@@ -52,8 +56,12 @@ int VecDot(Vec x, Vec y, Scalar *val)
 @*/
 int VecNorm(Vec x,double *val)  
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->norm)(x,val);
+  PETSCLOGBEGIN(VECTOR_DOT,x,0,0,0);
+  ierr = (*x->ops->norm)(x,val); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_DOT,x,0,0,0);
+  return 0;
 }
 /*@
      VecASum  - Computes vector one norm.
@@ -68,8 +76,12 @@ int VecNorm(Vec x,double *val)
 @*/
 int VecASum(Vec x,double *val)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->asum)(x,val);
+  PETSCLOGBEGIN(VECTOR_ASUM,x,0,0,0);
+  ierr = (*x->ops->asum)(x,val); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_ASUM,x,0,0,0);
+  return 0;
 }
 
 /*@
@@ -86,8 +98,12 @@ int VecASum(Vec x,double *val)
 @*/
 int VecMax(Vec x,int *p,double *val)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->max)(x,p,val);
+  PETSCLOGBEGIN(VECTOR_MAX,x,0,0,0);
+  ierr = (*x->ops->max)(x,p,val); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_MAX,x,0,0,0);
+  return 0;
 }
 
 /*@
@@ -104,9 +120,13 @@ int VecMax(Vec x,int *p,double *val)
 @*/
 int VecTDot(Vec x,Vec y,Scalar *val) 
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->tdot)(x,y,val);
+  PETSCLOGBEGIN(VECTOR_TDOT,x,y,0,0);
+  ierr = (*x->ops->tdot)(x,y,val); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_TDOT,x,y,0,0);
+  return 0;
 }
 
 /*@
@@ -120,8 +140,12 @@ int VecTDot(Vec x,Vec y,Scalar *val)
 @*/
 int VecScale(Scalar *alpha,Vec x)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->scal)(alpha,x);
+  PETSCLOGBEGIN(VECTOR_SCALE,x,0,0,0);
+  ierr = (*x->ops->scal)(alpha,x); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_SCALE,x,0,0,0);
+  return 0;
 }
 
 /*@
@@ -137,8 +161,12 @@ int VecScale(Scalar *alpha,Vec x)
 @*/
 int VecCopy(Vec x,Vec y)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  return (*x->ops->copy)(x,y);
+  PETSCLOGBEGIN(VECTOR_COPY,x,y,0,0);
+  ierr = (*x->ops->copy)(x,y); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_COPY,x,y,0,0);
+  return 0;
 }
  
 /*@
@@ -154,8 +182,12 @@ int VecCopy(Vec x,Vec y)
 @*/
 int VecSet(Scalar *alpha,Vec x) 
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->set)(alpha,x);
+  PETSCLOGBEGIN(VECTOR_SET,x,0,0,0);
+  ierr = (*x->ops->set)(alpha,x); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_SET,x,0,0,0);
+  return 0;
 } 
 
 /*@
@@ -169,9 +201,13 @@ int VecSet(Scalar *alpha,Vec x)
 @*/
 int VecAXPY(Scalar *alpha,Vec x,Vec y)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); 
   VALIDHEADER(y,VEC_COOKIE);
-  return (*x->ops->axpy)(alpha,x,y);
+  PETSCLOGBEGIN(VECTOR_AXPY,x,y,0,0);
+  ierr = (*x->ops->axpy)(alpha,x,y); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_AXPY,x,y,0,0);
+  return 0;
 } 
 /*@
      VecAYPX  -  Computes y <- x + alpha y.
@@ -183,9 +219,13 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
 @*/
 int VecAYPX(Scalar *alpha,Vec x,Vec y)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->aypx)(alpha,x,y);
+  PETSCLOGBEGIN(VECTOR_AYPX,x,y,0,0);
+  ierr =  (*x->ops->aypx)(alpha,x,y); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_AYPX,x,y,0,0);
+  return 0;
 } 
 /*@
      VecSwap  -  Swaps x and y.
@@ -195,9 +235,13 @@ int VecAYPX(Scalar *alpha,Vec x,Vec y)
 @*/
 int VecSwap(Vec x,Vec y)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE);  VALIDHEADER(y,VEC_COOKIE);
   CHKSAME(x,y);
-  return (*x->ops->swap)(x,y);
+  PETSCLOGBEGIN(VECTOR_SWAP,x,y,0,0);
+  ierr = (*x->ops->swap)(x,y); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_SWAP,x,y,0,0);
+  return 0;
 }
 /*@
      VecWAXPY  -  Computes w <- alpha x + y.
@@ -211,10 +255,14 @@ int VecSwap(Vec x,Vec y)
 @*/
 int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(w,VEC_COOKIE);
   CHKSAME(x,y); CHKSAME(y,w);
-  return (*x->ops->waxpy)(alpha,x,y,w); 
+  PETSCLOGBEGIN(VECTOR_WAXPY,x,y,w,0);
+  ierr =  (*x->ops->waxpy)(alpha,x,y,w); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_WAXPY,x,y,w,0);
+  return 0;
 }
 /*@
      VecPMult  -  Computes the componentwise multiplication w = x*y.
@@ -347,9 +395,12 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 @*/
 int VecBeginAssembly(Vec vec)
 {
+  int ierr;
   VALIDHEADER(vec,VEC_COOKIE);
-  if (vec->ops->beginassm) return (*vec->ops->beginassm)(vec);
-  else return 0;
+  PETSCLOGBEGIN(VECTOR_ASSEMBLY_BEGIN,vec,0,0,0);
+  if (vec->ops->beginassm) {ierr = (*vec->ops->beginassm)(vec); CHKERR(ierr);}
+  PETSCLOGEND(VECTOR_ASSEMBLY_BEGIN,vec,0,0,0);
+  return 0;
 }
 
 /*@
@@ -361,9 +412,12 @@ int VecBeginAssembly(Vec vec)
 @*/
 int VecEndAssembly(Vec vec)
 {
+  int ierr;
   VALIDHEADER(vec,VEC_COOKIE);
-  if (vec->ops->endassm) return (*vec->ops->endassm)(vec);
-  else return 0;
+  PETSCLOGBEGIN(VECTOR_ASSEMBLY_END,vec,0,0,0);
+  if (vec->ops->endassm) {ierr = (*vec->ops->endassm)(vec); CHKERR(ierr);}
+  PETSCLOGEND(VECTOR_ASSEMBLY_END,vec,0,0,0);
+  return 0;
 }
 
 /*@
@@ -380,9 +434,13 @@ int VecEndAssembly(Vec vec)
 @*/
 int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  return (*x->ops->mtdot)(nv,x,y,val);
+  PETSCLOGBEGIN(VECTOR_MTDOT,x,*y,0,0);
+  ierr = (*x->ops->mtdot)(nv,x,y,val); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_MTDOT,x,*y,0,0);
+  return 0;
 }
 /*@
      VecMDot  - Vector multiple dot product. 
@@ -397,9 +455,13 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 @*/
 int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  return (*x->ops->mdot)(nv,x,y,val);
+  PETSCLOGBEGIN(VECTOR_MDOT,x,*y,0,0);
+  ierr = (*x->ops->mdot)(nv,x,y,val); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_MDOT,x,*y,0,0);
+  return 0;
 }
 
 /*@
@@ -413,9 +475,13 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 @*/
 int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 {
+  int ierr;
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(*y,VEC_COOKIE);
   CHKSAME(x,*y);
-  return (*x->ops->maxpy)(nv,alpha,x,y);
+  PETSCLOGBEGIN(VECTOR_MAXPY,x,*y,0,0);
+  ierr = (*x->ops->maxpy)(nv,alpha,x,y); CHKERR(ierr);
+  PETSCLOGEND(VECTOR_MAXPY,x,*y,0,0);
+  return 0;
 } 
 
 /*@
@@ -522,7 +588,7 @@ int VeiDestroyVector(PetscObject obj )
 {
   Vec v = (Vec ) obj;
   FREE(v->data);
-  FREE(v); 
+  PETSCHEADERDESTROY(v); 
   return 0;
 }
  

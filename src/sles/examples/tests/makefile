@@ -10,8 +10,8 @@ OBJSC     =
 WOBJS     = 
 OBJSF     =
 LIBBASE   = libpetscsles
-EXAMPLES  = ex1 ex2 ex3 ex4 ex5 ex6
-EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+EXAMPLES  = ex1 ex2 ex3 ex4 ex5 ex6 ex7
+EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
 SYSLIB    = -L$(LDIR) -lpetscstencil -lpetscgrid \
             -lpetscsles -lpetscksp -lpetscmat \
            -lpetscvec -lpetscsys -lpetscdraw \
@@ -71,11 +71,6 @@ runexamples:
            if (diff ex2_5.out ex2_5.tmp) then true; \
            else echo "Possible problem with ex2_5, diffs above"; fi; \
            $(RM) -f ex2_5.tmp
-	-@$(MPIRUN) -np 2 ex2 -pcmethod eisenstat -kspmonitor >\
-            ex2_6.tmp 2>&1;   \
-           if (diff ex2_6.out ex2_6.tmp) then true; \
-           else echo "Possible problem with ex2_6, diffs above"; fi; \
-           $(RM) -f ex2_6.tmp
 	-@$(MPIRUN) ex3 -kspmonitor -m 5 > ex3_1.tmp 2>&1;   \
            if (diff ex3_1.out ex3_1.tmp) then true; \
            else echo "Possible problem with ex3_1, diffs above"; fi; \
@@ -89,11 +84,6 @@ runexamples:
            if (diff ex3_3.out ex3_3.tmp) then true; \
            else echo "Possible problem with ex3_3, diffs above"; fi; \
            $(RM) -f ex3_3.tmp
-	-@$(MPIRUN) -np 2 ex3 -pcmethod eisenstat -kspmonitor >\
-           ex3_4.tmp 2>&1;   \
-           if (diff ex3_4.out ex3_4.tmp) then true; \
-           else echo "Possible problem with ex3_4, diffs above"; fi; \
-           $(RM) -f ex3_4.tmp
 	-@$(MPIRUN) ex4 -kspmonitor -m 5 > ex4_1.tmp 2>&1;   \
            if (diff ex4_1.out ex4_1.tmp) then true; \
            else echo "Possible problem with ex4_1, diffs above"; fi; \
@@ -117,11 +107,6 @@ runexamples:
            if (diff ex4_5.out ex4_5.tmp) then true; \
            else echo "Possible problem with ex4_5, diffs above"; fi; \
            $(RM) -f ex4_5.tmp
-	-@$(MPIRUN) -np 2 ex4 -pcmethod eisenstat -kspmonitor -m 5  >\
-           ex4_6.tmp 2>&1;   \
-           if (diff ex4_6.out ex4_6.tmp) then true; \
-           else echo "Possible problem with ex4_6, diffs above"; fi; \
-           $(RM) -f ex4_6.tmp
 	-@$(MPIRUN) ex5 -kspmonitor -m 5 >\
            ex5_1.tmp 2>&1;   \
            if (diff ex5_1.out ex5_1.tmp) then true; \
@@ -165,5 +150,9 @@ ex5: ex5.o
 ex6: ex6.o 
 	-$(CLINKER) -o ex6 ex6.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex6.o
+
+ex7: ex7.o 
+	-$(CLINKER) -o ex7 ex7.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex7.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -6,7 +6,7 @@
 #if !defined(_PETSCIMPL)
 #define _PETSCIMPL
 #include "petsc.h"  
-
+#include "plog.h"
 #include <stdio.h>
 
 
@@ -14,7 +14,7 @@
      All Major PETSc Data structures have a common core; this 
    is defined below by PETSCHEADER. 
 
-     CREATEHEADER should be used whenever you create a PETSc structure.
+     PETSCHEADERCREATE should be used whenever you create a PETSc structure.
 
      CHKSAME checks if you PETSc structures are of same type.
 
@@ -23,19 +23,37 @@
 #define PETSCHEADER                     \
   int      cookie;                      \
   int      type;                        \
+  int      id;                          \
   int      (*destroy)(PetscObject);     \
   int      (*view)(PetscObject,Viewer); \
   MPI_Comm comm;                        \
   /*  ... */                            \
 
-#define CREATEHEADER(h,tp)                           \
-      {h = (struct tp *) NEW(struct tp);             \
-       CHKPTR((h));                                  \
-       MEMSET(h,0,sizeof(struct tp));                \
-       (h)->cookie = 0; (h)->type = 0;               \
-       (h)->destroy = (int (*)(PetscObject)) 0;      \
-       (h)->view = (int (*)(PetscObject,Viewer)) 0;  \
-       (h)->comm = MPI_COMM_WORLD;}
+#if defined(PETSC_LOG)
+extern int (*_PHC)(PetscObject);
+extern int (*_PHD)(PetscObject);
+#define PETSCHEADERCREATE(h,tp,cook,t,com)                         \
+      {h = (struct tp *) NEW(struct tp);                           \
+       CHKPTR((h));                                                \
+       MEMSET(h,0,sizeof(struct tp));                              \
+       (h)->cookie = cook;                                         \
+       (h)->type = t;                                              \
+       (h)->comm = com;                                            \
+       if (_PHC) (*_PHC)((PetscObject)h);}
+#define PETSCHEADERDESTROY(h)                                      \
+      {if (_PHD) (*_PHD)((PetscObject)h);                          \
+       FREE(h);}
+#else
+#define PETSCHEADERCREATE(h,tp,cook,t,com)                         \
+      {h = (struct tp *) NEW(struct tp);                           \
+       CHKPTR((h));                                                \
+       MEMSET(h,0,sizeof(struct tp));                              \
+       (h)->cookie = cook;                                         \
+       (h)->type = t;                                              \
+       (h)->comm = com;}                                            
+#define PETSCHEADERDESTROY(h)                                      \
+       {FREE(h);}
+#endif
 
 #define FREEDHEADER -1
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.8 1995/03/10 04:44:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.9 1995/03/17 00:29:15 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -52,6 +52,24 @@ static int StashValues(Stash *stash,int row,int n, int *idxn,
   return 0;
 }
 
+/* local utility routine that creates a mapping from the global column 
+number to the local number in the off-diagonal part of the local 
+storage of the matrix.  This is done in a non scable way since the 
+length of colmap equals the global matrix length. 
+*/
+static int CreateColmap(Mat mat)
+{
+  Matimpiaij *aij = (Matimpiaij *) mat->data;
+  Matiaij    *B = (Matiaij*) aij->B->data;
+  int        n = B->n,i;
+  aij->colmap = (int *) MALLOC( aij->N*sizeof(int) ); CHKPTR(aij->colmap);
+  MEMSET(aij->colmap,0,aij->N*sizeof(int));
+  for ( i=0; i<n; i++ ) {
+    aij->colmap[aij->garray[i]] = i+1;
+  }
+  return 0;
+}
+
 static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
 {
@@ -77,11 +95,16 @@ static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
         }
         else {
           if (aij->assembled) {
-            SETERR(1,"Cannot insert off diagonal block in already\
+            if (!aij->colmap) {ierr = CreateColmap(mat); CHKERR(ierr);}
+            col = aij->colmap[idxn[j]] - 1;
+            if (col < 0) {
+              SETERR(1,"Cannot insert new off diagonal block nonzero in\
+                     already\
                      assembled matrix. Contact petsc-maint@mcs.anl.gov\
                      if your need this feature");
+            }
           }
-          col = idxn[j];
+          else col = idxn[j];
           ierr = MatSetValues(aij->B,1,&row,1,&col,v+i*n+j,addv);CHKERR(ierr);
         }
       }
@@ -230,9 +253,14 @@ static int MatiAIJEndAssemble(Mat mat)
       } 
       else {
         if (aij->assembled) {
-          SETERR(1,"Cannot insert off diagonal block in already\
-                   assembled matrix. Contact petsc-maint@mcs.anl.gov\
-                   if your need this feature");
+          if (!aij->colmap) {ierr = CreateColmap(mat); CHKERR(ierr);}
+          col = aij->colmap[col] - 1;
+          if (col < 0) {
+            SETERR(1,"Cannot insert new off diagonal block nonzero in\
+                     already\
+                     assembled matrix. Contact petsc-maint@mcs.anl.gov\
+                     if your need this feature");
+          }
         }
         MatSetValues(aij->B,1,&row,1,&col,&val,addv);
       }
@@ -254,14 +282,9 @@ static int MatiAIJEndAssemble(Mat mat)
   ierr = MatBeginAssembly(aij->A); CHKERR(ierr);
   ierr = MatEndAssembly(aij->A); CHKERR(ierr);
 
-
-  if (aij->assembled) {
-    /* this is because the present implimentation doesn't support 
-     inserting values off the diagonal block.*/
-    return 0;
+  if (!aij->assembled) {
+    ierr = MPIAIJSetUpMultiply(mat); CHKERR(ierr);
   }
-
-  ierr = MPIAIJSetUpMultiply(mat); CHKERR(ierr);
   ierr = MatBeginAssembly(aij->B); CHKERR(ierr);
   ierr = MatEndAssembly(aij->B); CHKERR(ierr);
 
@@ -501,6 +524,8 @@ static int MatiAIJdestroy(PetscObject obj)
   FREE(aij->rowners); 
   ierr = MatDestroy(aij->A); CHKERR(ierr);
   ierr = MatDestroy(aij->B); CHKERR(ierr);
+  if (aij->colmap) FREE(aij->colmap);
+  if (aij->garray) FREE(aij->garray);
   if (aij->lvec) VecDestroy(aij->lvec);
   if (aij->Mvctx) VecScatterCtxDestroy(aij->Mvctx);
   FREE(aij); PETSCHEADERDESTROY(mat);
@@ -993,6 +1018,8 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
                             sizeof(Scalar))); CHKPTR(aij->stash.array);
   aij->stash.idx = (int *) (aij->stash.array + aij->stash.nmax);
   aij->stash.idy = (int *) (aij->stash.idx + aij->stash.nmax);
+  aij->colmap    = 0;
+  aij->garray    = 0;
 
   /* stuff used for matrix vector multiply */
   aij->lvec      = 0;
@@ -1040,6 +1067,8 @@ static int MatiCopy(Mat matin,Mat *newmat)
   aij->stash.nmax = 0;
   aij->stash.n    = 0;
   aij->stash.array= 0;
+  aij->colmap     = 0;
+  aij->garray     = 0;
   mat->comm       = matin->comm;
   
   ierr =  VecCreate(oldmat->lvec,&aij->lvec); CHKERR(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.10 1995/03/06 04:02:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.11 1995/03/10 04:44:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -87,15 +87,15 @@ static int MatiSDsolve(Mat matin,Vec xx,Vec yy)
   Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   MEMCPY(y,x,mat->m*sizeof(Scalar));
-  /* assume if pivots exist then LU else Cholesky */
-  if (mat->pivots) {
+  if (matin->factor == FACTOR_LU) {
     LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,
               y, &mat->m, &info );
   }
-  else {
+  else if (matin->factor == FACTOR_CHOLESKY){
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
+  else SETERR(1,"Matrix must be factored to solve");
   if (info) SETERR(1,"Bad solve");
   return 0;
 }
@@ -372,7 +372,7 @@ static int MatiSDdestroy(PetscObject obj)
   MatiSD *l = (MatiSD *) mat->data;
   if (l->pivots) FREE(l->pivots);
   FREE(l);
-  FREE(mat);
+  PETSCHEADERDESTROY(mat);
   return 0;
 }
 
@@ -572,14 +572,12 @@ int MatCreateSequentialDense(int m,int n,Mat *newmat)
   Mat mat;
   MatiSD    *l;
   *newmat        = 0;
-  CREATEHEADER(mat,_Mat);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSESEQ,MPI_COMM_SELF);
   l              = (MatiSD *) MALLOC(size); CHKPTR(l);
-  mat->cookie    = MAT_COOKIE;
   mat->ops       = &MatOps;
   mat->destroy   = MatiSDdestroy;
   mat->view      = MatiSDview;
   mat->data      = (void *) l;
-  mat->type      = MATDENSESEQ;
   mat->factor    = 0;
   mat->col       = 0;
   mat->row       = 0;

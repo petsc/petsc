@@ -47,7 +47,8 @@ int main(int argc,char **args)
   if ((ierr = VecNorm(x,&norm))) SETERR(ierr,0);
   printf("Norm of error %g Iterations %d\n",norm,its);
  
-  VecDestroy(x); VecDestroy(u); MatDestroy(A); SLESDestroy(sles);
+  VecDestroy(x); VecDestroy(u); VecDestroy(b);
+  MatDestroy(A); SLESDestroy(sles);
   PetscFinalize();
   return 0;
 }

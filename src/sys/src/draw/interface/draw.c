@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.8 1995/03/06 04:28:49 bsmith Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -265,4 +265,32 @@ int DrawDestroy(DrawCtx ctx)
   VALIDHEADER(ctx,DRAW_COOKIE);
   if (ctx->destroy) return (*ctx->destroy)((PetscObject)ctx);
   return 0;
+}
+/*@
+     DrawRectangle -Draws a rectangle  onto a drawable.
+
+  Input Parameters:
+.   ctx - the drawing context
+.   xl,yl,xr,yr - the coordinates of the lower left, upper right corners
+.   c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
+@*/
+int DrawRectangle(DrawCtx ctx,double xl,double yl,double xr,double yr,
+               int c1, int c2,int c3,int c4)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->rectangle)(ctx,xl,yl,xr,yr,c1,c2,c3,c4);
+}
+/*@
+     DrawTriangle -Draws a triangle  onto a drawable.
+
+  Input Parameters:
+.   ctx - the drawing context
+.   x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
+.   c1,c2,c3 - the colors of the corners in counter clockwise order
+@*/
+int DrawTriangle(DrawCtx ctx,double x1,double y1,double x2,double y2,double x3,double y3,
+               int c1, int c2,int c3)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  return (*ctx->ops->triangle)(ctx,x1,y1,x2,y2,x3,y3,c1,c2,c3);
 }

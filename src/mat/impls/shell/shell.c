@@ -33,7 +33,8 @@ static int MatShellDestroy(PetscObject obj)
   Mat      mat = (Mat) obj;
   MatShell *shell;
   shell = (MatShell *) mat->data;
-  FREE(shell); FREE(mat);
+  FREE(shell); 
+  PETSCHEADERDESTROY(mat);
   return 0;
 }
   
@@ -77,9 +78,8 @@ int MatShellCreate(int m, int n, void *ctx,Mat *mat)
 {
   Mat      newmat;
   MatShell *shell;
-  CREATEHEADER(newmat,_Mat);
+  PETSCHEADERCREATE(newmat,_Mat,MAT_COOKIE,MATSHELL,MPI_COMM_WORLD);
   *mat           = newmat;
-  newmat->cookie = MAT_COOKIE;
   newmat->factor = 0;
   newmat->row    = 0;
   newmat->col    = 0;
