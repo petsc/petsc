@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.55 1999/01/12 23:13:10 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.56 1999/01/27 21:20:24 balay Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -22,7 +22,11 @@ static char vcid[] = "$Id: gcreatev.c,v 1.55 1999/01/12 23:13:10 bsmith Exp bala
    Output Parameter:
 .  type - the vector type name
 
+   Level: intermediate
+
 .keywords: vector, get, type, name
+
+.seealso: VecSetType()
 @*/
 int VecGetType(Vec vec,VecType *type)
 {
@@ -44,6 +48,8 @@ int    VecRegisterAllCalled = 0;
    registered by VecRegister().
 
    Not Collective
+
+   Level: advanced
 
 .keywords: Vec, register, destroy
 
@@ -90,10 +96,16 @@ int VecRegisterDestroy(void)
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     VecCreate(MPI_Comm,int n,int N,Vec *);
-$     VecSetType(Vec,"my_vector_name");
+.vb
+      VecCreate(MPI_Comm,int n,int N,Vec *);
+      VecSetType(Vec,"my_vector_name");
+.ve
    or at runtime via the option
-$     -vec_type my_vector_name
+.vb
+      -vec_type my_vector_name
+.ve
+
+   Level: advanced
 
 .keywords: Vec, register
 
@@ -125,15 +137,23 @@ int VecRegister_Private(const char sname[],const char path[],const char name[],
     Input Parameters:
 +   vec - the vector object
 -   type_name - name of the vector type
- 
+
+    Options Database Key:
+.  -vec_type <type> - Sets the vector type; use -help for a list 
+    of available types
+
     Notes:
-    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
+    See "petsc/include/vec.h" for available vector types (for instance,
+    VEC_SEQ, VEC_MPI, or VEC_SHARED).
+
+     Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
     of the same type as an existing vector.
 
-.keywords: vector, create, initial
+    Level: intermediate
 
-.seealso: VecCreateSeq(), VecCreateMPI(), VecCreateShared(), VecDuplicate(), VecDuplicateVecs(),
-          VecCreate()
+.keywords: vector, set, type
+
+.seealso: VecCreate()
 @*/
 int VecSetType(Vec vec,VecType type_name)
 {

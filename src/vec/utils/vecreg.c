@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecreg.c,v 1.6 1999/01/27 21:20:22 balay Exp bsmith $";
+static char vcid[] = "$Id: vecreg.c,v 1.7 1999/02/01 15:14:50 bsmith Exp curfman $";
 #endif
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
@@ -24,6 +24,8 @@ extern int VecRegisterAllCalled;
   VecRegisterAll - Registers all of the Vec components in the PETSc package.
 
   Not Collective
+
+  Level: advanced
 
 .keywords: Vec, register, all
 
