@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.4 1999/10/06 19:31:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.5 1999/10/06 19:45:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -69,7 +69,7 @@ typedef struct {
 
 extern int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormInterpolation(AppCtx *);
+extern int FormInterpolation(AppCtx *,GridCtx*,GridCtx*);
 
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
@@ -176,7 +176,7 @@ int main( int argc, char **argv )
   ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.grid[1].J); CHKERRA(ierr);
 
   /* Create interpolation between the levels */
-  ierr = FormInterpolation(&user);CHKERRA(ierr);
+  ierr = FormInterpolation(&user,&user.grid[1],&user.grid[0]);CHKERRA(ierr);
   ierr = MGSetInterpolate(pc,FINE_LEVEL,user.grid[0].R);CHKERRA(ierr);
   ierr = MGSetRestriction(pc,FINE_LEVEL,user.grid[0].R);CHKERRA(ierr);
 
@@ -805,36 +805,34 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 #undef __FUNC__
 #define __FUNC__ "FormInterpolation"
 /*
-      Forms the interpolation (and restriction) operator from 
-coarse grid to grid[1].
+      Forms the interpolation (and restriction) operator from a coarse grid g_c to a fine grid g_f
 */
-int FormInterpolation(AppCtx *user)
+int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
 {
-  int      ierr,i,j,i_start,m_fine,j_start,m,n,M,Mx = user->grid[0].mx,My = user->grid[0].my,*idx;
-  int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,m_coarse;
-  int      row,col,i_start_ghost,j_start_ghost,cols[4],mx = user->grid[1].mx, m_c,my = user->grid[1].my;
-  int      c0,c1,c2,c3,nc,ratio = user->ratio,i_end,i_end_ghost,m_c_local,m_fine_local;
+  int      ierr,i,j,i_start,m_f,j_start,m,n,M,Mx = g_c->mx,My = g_c->my,*idx;
+  int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c;
+  int      row,col,i_start_ghost,j_start_ghost,cols[4],mx = g_f->mx, m_c,my = g_f->my;
+  int      c0,c1,c2,c3,nc,ratio = user->ratio,i_end,i_end_ghost,m_c_local,m_f_local;
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   Scalar   v[4],x,y, one = 1.0;
   Mat      mat;
   Vec	   Rscale; 
 
   PetscFunctionBegin;
-  ierr = DAGetCorners(user->grid[1].da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->grid[1].da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->grid[1].da,PETSC_NULL,&idx); CHKERRQ(ierr);
+  ierr = DAGetCorners(g_f->da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(g_f->da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(g_f->da,PETSC_NULL,&idx); CHKERRQ(ierr);
 
-  ierr = DAGetCorners(user->grid[0].da,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->grid[0].da,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->grid[0].da,PETSC_NULL,&idx_c); CHKERRQ(ierr);
+  ierr = DAGetCorners(g_c->da,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(g_c->da,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(g_c->da,PETSC_NULL,&idx_c); CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = VecGetLocalSize(user->grid[1].x,&m_fine_local);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(user->grid[0].x,&m_c_local);CHKERRQ(ierr);
-  ierr = VecGetSize(user->grid[1].x,&m_fine);CHKERRQ(ierr);
-  ierr = VecGetSize(user->grid[0].x,&m_coarse);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m_fine_local,m_c_local,m_fine,m_coarse,
-                         5,0,3,0,&mat);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(g_f->x,&m_f_local);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(g_c->x,&m_c_local);CHKERRQ(ierr);
+  ierr = VecGetSize(g_f->x,&m_f);CHKERRQ(ierr);
+  ierr = VecGetSize(g_c->x,&m_c);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m_f_local,m_c_local,m_f,m_c,5,0,3,0,&mat);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for ( j=j_start; j<j_start+n; j++ ) {
@@ -886,12 +884,12 @@ int FormInterpolation(AppCtx *user)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  ierr = VecDuplicate(user->grid[0].x,&Rscale);CHKERRQ(ierr);
-  ierr = VecSet(&one,user->grid[1].x);CHKERRQ(ierr);
-  ierr = MGRestrict(mat,user->grid[1].x,Rscale);CHKERRQ(ierr);
+  ierr = VecDuplicate(g_c->x,&Rscale);CHKERRQ(ierr);
+  ierr = VecSet(&one,g_f->x);CHKERRQ(ierr);
+  ierr = MGRestrict(mat,g_f->x,Rscale);CHKERRQ(ierr);
   ierr = VecReciprocal(Rscale);CHKERRQ(ierr);
-  user->grid[0].Rscale = Rscale;
-  user->grid[0].R      = mat;
+  g_c->Rscale = Rscale;
+  g_c->R      = mat;
   PetscFunctionReturn(0);;
 }
 
