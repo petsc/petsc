@@ -388,6 +388,16 @@ passwd:  petsc-passwd (couldn't change it to the new one yet)
 
 info : Useful command showq, showbf, llsubmit
 
+Kerberos logging info
+machine : fr1n05.mhpcc.edu
+account : balay
+kerberos passwd: petsc-passwd
+
+Login using the following commands
+kinit -f <--- for kerberos authentication with MAUI
+krlogin  <--- actually log in, after the kerberos authentication is done
+useful command: klist -f
+
 ------------
 
 ICASE/NASA SP2: poseidon.larc.nasa.gov, account: mcinnes (machine dead!!)
