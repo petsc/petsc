@@ -1,5 +1,5 @@
 !
-!  "$Id: fmaxpy.F,v 1.5 1998/07/06 21:58:53 balay Exp balay $";
+!  "$Id: fmaxpy.F,v 1.6 1998/07/13 18:14:13 balay Exp bsmith $";
 !
 !    Fortran kernel for the MAXPY() vector routine
 !
@@ -50,6 +50,25 @@
 
       do 10, i=1,n
         x(i) = x(i) + a1*y1(i) + a2*y2(i)
+ 10   continue
+
+      return 
+      end
+!
+!    Fortran kernel for the z = x * y
+!
+!
+      subroutine Fortranxtimesy(x, y, z, n)
+      implicit none
+#include "include/finclude/petscdef.h"
+
+      Scalar  x(*), y(*), z(*)
+      integer n
+
+      integer i
+
+      do 10, i=1,n
+        z(i) = x(i) * y(i)
  10   continue
 
       return 
