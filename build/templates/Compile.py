@@ -83,34 +83,38 @@ class Template(base.Base):
         vertex.extraLibraries.extend(self.extraLibraries)
     return compileGraph
 
-  def getServerTarget(self, isStatic = 0):
+  def getServerTarget(self, lang, package):
+    using = getattr(self, 'using'+lang.capitalize())
+    return self.setupExtraOptions(lang, using.getServerCompileTarget(package))
+
+  def getServerTargets(self, isStatic = 0):
     '''Return a BuildGraph which will compile the servers specified
        - This is a linear array since all source is independent'''
     target = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.serverLanguages+self.serverLanguages:
       for package in self.packages:
         if (isStatic and not package in self.usingSIDL.staticPackages) or (not isStatic and package in self.usingSIDL.staticPackages): continue
-        using = getattr(self, 'using'+lang.capitalize())
-        graph = self.setupExtraOptions(lang, using.getServerCompileTarget(package))
-        target.appendGraph(graph)
+        target.appendGraph(self.getServerTarget(lang, package))
     return target
 
-  def getClientTarget(self):
+  def getClientTarget(self, lang):
+    using = getattr(self, 'using'+lang.capitalize())
+    return self.setupExtraOptions(lang, using.getClientCompileTarget())
+
+  def getClientTargets(self):
     '''Return a BuildGraph which will compile the clients specified
        - This is a linear array since all source is independent'''
     target = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.clientLanguages+self.clientLanguages:
-      using = getattr(self, 'using'+lang.capitalize())
-      graph = self.setupExtraOptions(lang, using.getClientCompileTarget())
-      target.appendGraph(graph)
+      target.appendGraph(self.getClientTarget(lang))
     return target
 
   def getTarget(self):
     '''Return a BuildGraph which will compile source into object files'''
     target = build.buildGraph.BuildGraph()
-    target.appendGraph(self.getServerTarget(isStatic = 1))
-    target.appendGraph(self.getClientTarget())
-    target.appendGraph(self.getServerTarget())
+    target.appendGraph(self.getServerTargets(isStatic = 1))
+    target.appendGraph(self.getClientTargets())
+    target.appendGraph(self.getServerTargets())
     target.appendGraph(build.buildGraph.BuildGraph([build.fileState.Update(self.sourceDB)]))
     return target
 
