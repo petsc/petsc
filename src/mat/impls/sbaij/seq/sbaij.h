@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.16 2000/10/28 19:24:42 hzhang Exp hzhang $ */
+/* $Id: sbaij.h,v 1.17 2000/10/31 20:24:16 hzhang Exp hzhang $ */
 
 #include "src/mat/matimpl.h"
 
@@ -43,6 +43,8 @@ extern int MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat
 extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat,Mat*);
+extern int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat,Mat*);
