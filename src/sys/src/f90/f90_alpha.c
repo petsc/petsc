@@ -1,4 +1,4 @@
-/*$Id: f90_alpha.c,v 1.2 2000/07/18 20:15:54 balay Exp balay $*/
+/*$Id: f90_alpha.c,v 1.3 2000/07/19 00:48:01 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #if defined(PETSC_HAVE_DECF90)
@@ -243,7 +243,7 @@ int PetscF90Destroy1dArrayPetscFortranAddr(array1d *ptr)
      Dummy function so that compilers won't complain about 
   empty files.
 */
-int F90_win32_Dummy(int dummy)
+int F90_alpha_Dummy(int dummy)
 {
   return 0;
 }
