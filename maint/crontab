@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.95 1998/01/30 21:02:46 balay Exp balay $ 
+# $Id: crontab,v 1.96 1998/02/03 15:10:34 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -12,21 +12,21 @@
 1  23 * * * /bin/rm /home/bsmith/petsc/maint/nightlylogs/*.log
 1  23 * * * /home/bsmith/petsc/maint/removelibs
 #
-30  1 * * * /home/bsmith/petsc/maint/buildtest 1
-30 23 * * * /home/bsmith/petsc/maint/buildtest 2
-30  2 * * * /home/bsmith/petsc/maint/buildtest 3
-30  1 * * * /home/bsmith/petsc/maint/buildtest 4
-30  2 * * * /home/bsmith/petsc/maint/buildtest 5
-30  2 * * * /home/bsmith/petsc/maint/buildtest 6
-30  2 * * * /home/bsmith/petsc/maint/buildtest 8
-30  2 * * * /home/bsmith/petsc/maint/buildtest 9
-30  2 * * * /home/bsmith/petsc/maint/buildtest 10
-30  1 * * * /home/bsmith/petsc/maint/buildtest 11
+#####30  1 * * * /home/bsmith/petsc/maint/buildtest 1
+#####30 23 * * * /home/bsmith/petsc/maint/buildtest 2
+#####30  2 * * * /home/bsmith/petsc/maint/buildtest 3
+#####30  1 * * * /home/bsmith/petsc/maint/buildtest 4
+#####30  2 * * * /home/bsmith/petsc/maint/buildtest 5
+#####30  2 * * * /home/bsmith/petsc/maint/buildtest 6
+#####30  2 * * * /home/bsmith/petsc/maint/buildtest 8
+#####30  2 * * * /home/bsmith/petsc/maint/buildtest 9
+#####30  2 * * * /home/bsmith/petsc/maint/buildtest 10
+#####30  1 * * * /home/bsmith/petsc/maint/buildtest 11
 #
 # This build is a second build on maverick and so is 
 # started a bit late...
 #
-30  4 * * * /home/bsmith/petsc/maint/buildtest 7
+#####30  4 * * * /home/bsmith/petsc/maint/buildtest 7
 #
 #  Checks if all the nightly builds are complete and 
 # sends mail to PETSc developers if there are hanging jobs
