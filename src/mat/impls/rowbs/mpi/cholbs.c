@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.24 1996/01/08 23:48:37 curfman Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.25 1996/01/19 14:24:18 curfman Exp balay $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -43,7 +43,7 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
 }
 
 int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS perm,IS cperm,
-                                      int fill,double f,Mat *newfact)
+                                      double f,int fill,Mat *newfact)
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;

@@ -39,7 +39,7 @@ else
     set M=(eagle       eagle        )
     set B=(g            O_c++         )
     set A=(sun4         sun4          )
-    set J=(fortran      nofortran     )
+    set J=(fortran      fortran     )
 endif
 
 #
