@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.53 1996/08/05 22:59:50 balay Exp curfman $";
+static char vcid[] = "$Id: mpiu.c,v 1.54 1996/08/21 14:17:33 curfman Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -385,6 +385,20 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   if (*tagvalp < 1) SETERRQ(1,"PetscCommDup_Private:Out of tags for object");
   *first_tag = tagvalp[0]--;
   tagvalp[1]++;
+#if defined(PETSC_BOPT_g)
+  if (*comm_out == comm_in) {
+    int size;
+    MPI_Comm_size(*comm_out,&size);
+    if (size > 1) {
+      int tag1 = *first_tag, tag2;
+      MPI_Allreduce(&tag1,&tag2,1,MPI_INT,MPI_BOR,*comm_out);
+      if (tag2 != tag1) {
+        SETERRQ(1,"PetscCommDup_Private:Communicator was used on subset\n\
+                   of processors.");
+      }
+    }
+  }
+#endif
   return 0;
 }
 

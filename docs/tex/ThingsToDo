@@ -10,8 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
  -----------------------------------------------------------------------
 
-  -  add test to PetscCommDup_Private() to verify that all processors are using the
-     same tag.
+  X  add test to PetscCommDup_Private() to verify that all processors
+     are using the same tag, when PETSC_BOPT_g is defined.
 
   X Fix include files for *.f programs (e.g., snes/examples/tests/ex10.f)
 
