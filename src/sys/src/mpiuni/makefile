@@ -2,7 +2,7 @@ PETSC_DIR = ../..
 
 ALL: lib
 
-CFLAGS	 = 
+CFLAGS	 = $(PETSC_INCLUDE)
 SOURCEC	 = mpi.c
 SOURCEF	 = 
 SOURCEH	 = 
