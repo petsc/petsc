@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.11 1995/10/06 13:48:16 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.12 1995/10/06 16:40:17 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -10,25 +10,55 @@ static char vcid[] = "$Id: bdfact.c,v 1.11 1995/10/06 13:48:16 curfman Exp curfm
 /* COMMENT: I have chosen to hide column permutation in the pivots,
    rather than put it in the Mat->col slot.*/
 
-int MatLUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,Mat *fact)
+/* Compute y = y - A*v for square A, stored by columns */
+
+ int BlockMatMult_Private(int n,Scalar *A,Scalar *v,Scalar *y)
+/* static int BlockMatMult_Private(int n,Scalar *A,Scalar *v,Scalar *y) */
 {
+  register Scalar v_i, *Apt = A;
+  int             i, j;
+
+  for (i=0; i<n; i++) {
+    v_i = v[i];
+    for (j=0; j<n; j++) y[j] -= Apt[j] * v_i;
+    Apt += n;
+  }
+ return 0;
+}
+
+int MatLUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,Mat *B)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data, *b;
+  int          ierr;
+
   if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
   if (isrow || iscol) PLogInfo((PetscObject)A,
     "MatLUFactorSymbolic_SeqBDiag: Row and col permutations not supported.\n");
   PLogInfo((PetscObject)A,
     "MatLUFactorSymbolic_SeqBDiag: Currently no fill is computed!\n");
-  return MatConvert(A,MATSAME,fact);
+  ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
+  b = (Mat_SeqBDiag *) (*B)->data;
+  b->solve_work = (Scalar *) PETSCMALLOC((b->n+1)*sizeof(Scalar)); CHKPTRQ(b->solve_work);
+  PLogObjectMemory(*B,(b->n+1)*sizeof(Scalar));
+  return 0;
 }
 
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
-                                  int levels,Mat *fact)
+                                  int levels,Mat *B)
 {
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data, *b;
+  int          ierr;
+
   if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
   if (isrow || iscol) PLogInfo((PetscObject)A,
     "MatILUFactorSymbolic_SeqBDiag: row and col permutations not supported.\n");
   if (levels != 0)
     SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Only ILU(0) is supported");
-  return MatConvert(A,MATSAME,fact);
+  ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
+  b = (Mat_SeqBDiag *) (*B)->data;
+  b->solve_work = (Scalar *) PETSCMALLOC((b->n+1)*sizeof(Scalar)); CHKPTRQ(b->solve_work);
+  PLogObjectMemory(*B,(b->n+1)*sizeof(Scalar));
+  return 0;
 }
 
 int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
@@ -41,9 +71,9 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
   Scalar       *submat, **dv = a->diagv, *dd = dv[mainbd], mult;
 
   if (nb == 1) {
-    dgptr = (int *) PETSCMALLOC((m+n+1)*sizeof(int)); CHKPTRQ(dgptr);
-    PetscZero(dgptr,(m+n+1)*sizeof(int));
-    for ( i=0; i<nd; i++ ) dgptr[diag[i]+m] = i+1;
+    dgptr = (int *) PETSCMALLOC((m+n)*sizeof(int)); CHKPTRQ(dgptr);
+    PetscZero(dgptr,(m+n)*sizeof(int));
+    for ( i=0; i<nd; i++ ) dgptr[diag[i]+n] = i+1;
     for ( k=0; k<m; k++ ) { /* k = pivot_row */
       dd[k] = 1.0/dd[k];
       for ( d=mainbd-1; d>=0; d-- ) {
@@ -58,7 +88,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
                 dgk = k - elim_col;
                 if (dgk > 0) SETERRQ(1,
                    "MatLUFactorNumeric_SeqBDiag:bad elimination column");
-                if (dnum = dgptr[dgk+m]) {
+                if ((dnum = dgptr[dgk+n])) {
                   if (diag[d2] > 0) dv[d2][elim_col] -= mult * dv[dnum-1][k];
                   else              dv[d2][elim_row] -= mult * dv[dnum-1][k];
                 }
@@ -102,6 +132,7 @@ int MatLUFactor_SeqBDiag(Mat A,IS row,IS col,double f)
   if (a->pivots) PETSCFREE(a->pivots);
   PETSCFREE(a->diagv); PETSCFREE(a->diag);
   PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
+  if (a->solve_work) PETSCFREE(a->solve_work);
   PETSCFREE(a);
   PetscMemcpy(A,C,sizeof(struct _Mat));
   PETSCHEADERDESTROY(C);
@@ -113,20 +144,30 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          one = 1, info, i, d, loc, ierr, mainbd = a->mainbd;
-  int          nb = a->nb, m = a->m;
+  int          nb = a->nb, m = a->m, diag;
   Scalar       *x, *y, *dd = a->diagv[mainbd], sum;
   Scalar       *submat;
+  register Scalar *tmp;
 
   if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqBDiag:Not for unfactored matrix.");
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  tmp  = a->solve_work;
 
   if (nb == 1) {
     for (i=0; i<m; i++) {
       sum = x[i];
       for (d=0; d<mainbd; d++) {
         loc = i - a->diag[d];
-        if (loc >= 0) sum -= a->diagv[d][loc] * y[loc];
+        if (loc >= 0) sum -= a->diagv[d][loc] * tmp[loc];
+      }
+      tmp[i] = sum;
+    }
+    for ( i=m-1; i>=0; i-- ) {
+      sum = tmp[i];
+      for (d=mainbd+1; d<a->nd; d++) {
+        diag = a->diag[d];
+        if (i-diag < m) sum -= a->diagv[d][i] * tmp[i-diag];
       }
       y[i] = sum*dd[i];
     }
