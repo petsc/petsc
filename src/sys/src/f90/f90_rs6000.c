@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: f90_IRIX.c,v 1.4 1998/03/12 23:05:50 balay Exp $";
+static char vcid[] = "$Id: f90_rs6000.c,v 1.1 1998/03/23 20:02:45 balay Exp balay $";
 #endif
 
 /*
@@ -34,7 +34,7 @@ int PetscF90Create1dArrayScalar(void *array,int len, array1d *ptr)
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(Scalar);
   ptr->dim[0].lower  = 1;
-  ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult)
+  ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult);
 
   return 0;
 }
@@ -94,7 +94,7 @@ int PetscF90Create2dArrayScalar(void *array,int m,int n, array2d *ptr)
   ptr->dim[0].extent = n;
   ptr->dim[0].mult   = m*sizeof(Scalar);
   ptr->dim[0].lower  = 1;
-  ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult+ptr->dim[1].lower*ptr->dim[1].mult)
+  ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult+ptr->dim[1].lower*ptr->dim[1].mult);
 
   return 0;
 }
@@ -151,7 +151,7 @@ int PetscF90Create1dArrayInt(void *array,int len, array1d *ptr)
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(int);
   ptr->dim[0].lower  = 1;
-  ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult)
+  ptr->sum_d         = -(ptr->dim[0].lower*ptr->dim[0].mult);
 
   return 0;
 }
