@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spnd.c,v 1.5 1995/03/27 22:57:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spnd.c,v 1.6 1995/04/27 20:15:53 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -7,13 +7,6 @@ static char vcid[] = "$Id: spnd.c,v 1.5 1995/03/27 22:57:56 bsmith Exp bsmith $"
 
 /*
     SpOrderND - Find the nested dissection ordering of a given matrix.
-
-    Input Paramter:
-.    Matrix - matrix to find ordering for
-
-    Output Parameters:
-.    perm   - permutation vector (0-origin)
-.    iperm  - inverse permutation vector.  If NULL, ignored.
 */    
 int SpOrderND( int nrow, int *ia, int *ja, int* perm )
 {

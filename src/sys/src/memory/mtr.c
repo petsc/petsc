@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.16 1995/05/28 17:37:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.17 1995/05/29 03:46:02 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -151,7 +151,7 @@ int Trvalid(int line,char *file )
       errs++;
       head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
       fprintf( stderr, 
-  "Block [id=%d(%d)] at address %p is corrupted (probably write past end)\n", 
+  "Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
 	     head->id, head->size, a );
       fprintf( stderr, 
 		"Block allocated in %s[%d]\n", head->fname, head->lineno );
@@ -272,7 +272,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
   if (*nend != COOKIE_VALUE) {
     if (*nend == ALREADY_FREED) {
 	fprintf( stderr, 
-  "Block [id=%d(%d)] at address %p was already freed\n", 
+  "Block [id=%d(%lx)] at address %p was already freed\n", 
 		head->id, head->size, a + sizeof(TrSPACE) );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	if (head->lineno > 0) 
@@ -286,7 +286,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
     else {
 	/* Damaged tail */
 	fprintf( stderr, 
-  "Block [id=%d(%d)] at address %p is corrupted (probably write past end)\n", 
+  "Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
 		head->id, head->size, a );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	fprintf( stderr, 
@@ -313,7 +313,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 
   if (head->next) head->next->prev = head->prev;
   if (TRlevel & TR_FREE)
-    fprintf( stderr, "Freeing %d bytes at %p\n", 
+    fprintf( stderr, "Freeing %lx bytes at %p\n", 
 	             head->size, a + sizeof(TrSPACE) );
   free( a );
   return 0;
@@ -347,7 +347,7 @@ int Trdump( FILE *fp )
   if (fp == 0) fp = stderr;
   head = TRhead;
   while (head) {
-    fprintf( fp, "%d at [%p], id = ", 
+    fprintf( fp, "%lx at [%p], id = ", 
 	     head->size, head + sizeof(TrSPACE) );
     if (head->id >= 0) {
 	head->fname[TR_FNAME_LEN-1] = 0;
@@ -361,7 +361,7 @@ int Trdump( FILE *fp )
     }
     head = head->next;
   }
-  fprintf( fp, "The maximum space allocated was %d bytes [%d]\n", 
+  fprintf( fp, "The maximum space allocated was %lx bytes [%lx]\n", 
 	 TRMaxMem, TRMaxMemId );
   return 0;
 }
@@ -432,7 +432,7 @@ int TrSummary( FILE *fp )
   /* Print the data */
   TRFP = fp;
   twalk( (char *)root, (void (*)(void*,VISIT,int))PrintSum );
-  fprintf( fp, "The maximum space allocated was %d bytes [%d]\n", 
+  fprintf( fp, "The maximum space allocated was %lx bytes [%lx]\n", 
 	 TRMaxMem, TRMaxMemId );
   return 0;
 }

@@ -196,6 +196,16 @@ extern char *mktemp(char*);
 #endif
 #endif
 
+/* --------------------NeXT -----------------------------------*/
+#if defined(PARCH_NeXT)
+
+#if defined(__cplusplus)
+
+#else
+extern char   *mktemp(char *);
+#endif
+#endif
+
 /* -------------------------------------------------------------------------*/
 
 #endif

@@ -124,7 +124,8 @@ int main(int argc,char **args)
 
   /* solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,C,C,0); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,C,C,ALLMAT_DIFFERENT_NONZERO_PATTERN);
+  CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = KSPSetInitialGuessNonzero(ksp); CHKERRA(ierr);
@@ -144,7 +145,6 @@ int main(int argc,char **args)
   ierr = VecNorm(u,&norm); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",norm*h,its);
 
-  sleep(2);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(ustar); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);

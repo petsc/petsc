@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.23 1995/05/14 16:31:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.24 1995/05/18 22:43:46 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -65,7 +65,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
     double    *xx;
     DrawLGGetDrawCtx(lg,&win);
     DrawLGReset(lg);
-    xx = (double *) MALLOC( n*sizeof(double) ); CHKPTR(xx);
+    xx = (double *) MALLOC( (n+1)*sizeof(double) ); CHKPTR(xx);
     for ( i=0; i<n; i++ ) {
       xx[i] = (double) i;
     }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.26 1995/05/23 23:09:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.27 1995/05/28 17:36:59 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -73,7 +73,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
   s->N           = N;
   s->numtids     = numtids;
   s->mytid       = mytid;
-  s->array       = (Scalar *) MALLOC(n*sizeof(Scalar));CHKPTR(s->array);
+  s->array       = (Scalar *) MALLOC((n+1)*sizeof(Scalar));CHKPTR(s->array);
   s->ownership   = (int *) (s + 1);
   s->insertmode  = NOTSETVALUES;
   if (owners) {

@@ -86,6 +86,10 @@ extern int VecGetOwnershipRange(Vec,int*,int*);
 /* utility routines */
 extern int VecReciprocal(Vec);
 
+#if defined(__DRAW_PACKAGE)
+extern int DrawTensorContour(DrawCtx,int,int,double *,double *,Vec);
+#endif
+
 #endif
 
 
