@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.184 1996/08/06 19:37:16 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.185 1996/08/06 23:00:53 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1784,9 +1784,11 @@ int MatDestroyMatrices(int n,Mat **mat)
 {
   int ierr,i;
 
+  PetscValidPointer(mat);
   for ( i=0; i<n; i++ ) {
     ierr = MatDestroy((*mat)[i]); CHKERRQ(ierr);
   }
+  PetscFree(*mat);
   return 0;
 }
 
