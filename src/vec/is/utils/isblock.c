@@ -4,7 +4,7 @@
 #include "petscbt.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "IsCompressIndicesGeneral"
+#define __FUNCT__ "ISCompressIndicesGeneral"
 /*@C
    Input Parameters:
 +  n - the length of the index set
@@ -15,7 +15,7 @@
    Output Parameter:
 .  is_out - the blocked new index set
 @*/
-int IsCompressIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
+int ISCompressIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
 {
   int                ierr,isz,len,i,j,*idx,ival,Nbs;
 #if defined (PETSC_USE_CTABLE)
@@ -85,8 +85,8 @@ int IsCompressIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "IsCompressIndicesSorted"
-int IsCompressIndicesSorted(int n,int bs,int imax,const IS is_in[],IS is_out[])
+#define __FUNCT__ "ISCompressIndicesSorted"
+int ISCompressIndicesSorted(int n,int bs,int imax,const IS is_in[],IS is_out[])
 {
   int          ierr,i,j,k,val,len,*idx,*nidx,*idx_local;
   PetscTruth   flg;
@@ -139,8 +139,8 @@ int IsCompressIndicesSorted(int n,int bs,int imax,const IS is_in[],IS is_out[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "IsExpandIndicesGeneral"
-int IsExpandIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
+#define __FUNCT__ "ISExpandIndicesGeneral"
+int ISExpandIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
 {
   int          ierr,len,i,j,k,*idx,*nidx;
 #if defined (PETSC_USE_CTABLE)

@@ -24,13 +24,13 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS is[],int ov)
   PetscFunctionBegin;
   ierr = PetscMalloc(imax*sizeof(IS),&is_new);CHKERRQ(ierr);
   /* Convert the indices into block format */
-  ierr = IsCompressIndicesGeneral(N,bs,imax,is,is_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesGeneral(N,bs,imax,is,is_new);CHKERRQ(ierr);
   if (ov < 0){ SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPIBAIJ_Once(C,imax,is_new);CHKERRQ(ierr);
   }
   for (i=0; i<imax; i++) {ierr = ISDestroy(is[i]);CHKERRQ(ierr);}
-  ierr = IsExpandIndicesGeneral(N,bs,imax,is_new,is);CHKERRQ(ierr);
+  ierr = ISExpandIndicesGeneral(N,bs,imax,is_new,is);CHKERRQ(ierr);
   for (i=0; i<imax; i++) {ierr = ISDestroy(is_new[i]);CHKERRQ(ierr);}
   ierr = PetscFree(is_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -567,8 +567,8 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],
 
   ierr = PetscMalloc(2*(ismax+1)*sizeof(IS),&isrow_new);CHKERRQ(ierr);
   iscol_new = isrow_new + ismax;
-  ierr = IsCompressIndicesSorted(N,bs,ismax,isrow,isrow_new);CHKERRQ(ierr);
-  ierr = IsCompressIndicesSorted(N,bs,ismax,iscol,iscol_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesSorted(N,bs,ismax,isrow,isrow_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesSorted(N,bs,ismax,iscol,iscol_new);CHKERRQ(ierr);
 
   /* Allocate memory to hold all the submatrices */
   if (scall != MAT_REUSE_MATRIX) {

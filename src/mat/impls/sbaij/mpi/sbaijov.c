@@ -21,13 +21,13 @@ int MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
   PetscFunctionBegin;
   ierr = PetscMalloc(is_max*sizeof(IS),&is_new);CHKERRQ(ierr);
   /* Convert the indices into block format */
-  ierr = IsCompressIndicesGeneral(N,bs,is_max,is,is_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesGeneral(N,bs,is_max,is,is_new);CHKERRQ(ierr);
   if (ov < 0){ SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPISBAIJ_Once(C,is_max,is_new);CHKERRQ(ierr);
   }
   for (i=0; i<is_max; i++) {ierr = ISDestroy(is[i]);CHKERRQ(ierr);}
-  ierr = IsExpandIndicesGeneral(N,bs,is_max,is_new,is);CHKERRQ(ierr);
+  ierr = ISExpandIndicesGeneral(N,bs,is_max,is_new,is);CHKERRQ(ierr);
   for (i=0; i<is_max; i++) {ierr = ISDestroy(is_new[i]);CHKERRQ(ierr);}
   ierr = PetscFree(is_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
