@@ -2670,6 +2670,7 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
   PetscErrorCode ierr;
   PetscTruth     sametype,issame,flg;
   char           convname[256],mtype[256];
+  ISLocalToGlobalMapping ltog,ltogb;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2706,6 +2707,10 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
     ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
     ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+
+    ltog  = mat->mapping;  /* save these maps in case the mat is destroyed by inplace matconvert */
+    ltogb = mat->bmapping;
+
     if (!conv) {
       Mat B;
       ierr = MatCreate(mat->comm,0,0,0,0,&B);CHKERRQ(ierr);
@@ -2727,6 +2732,13 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
       }
     }
     ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
+  }
+  if (ltog) {
+    ierr = MatSetLocalToGlobalMapping(*M,ltog);CHKERRQ(ierr);
+    if (!ltogb){
+      ierr = ISLocalToGlobalMappingBlock(ltog,(*M)->bs,&ltogb);
+    } 
+    ierr = MatSetLocalToGlobalMappingBlock(*M,ltogb);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)*M);CHKERRQ(ierr);
@@ -2777,7 +2789,7 @@ PetscErrorCode MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
     ierr = MatSetLocalToGlobalMapping(*M,mat->mapping);CHKERRQ(ierr);
   }
   if (mat->bmapping) {
-    ierr = MatSetLocalToGlobalMappingBlock(*M,mat->mapping);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMappingBlock(*M,mat->bmapping);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)*M);CHKERRQ(ierr);
