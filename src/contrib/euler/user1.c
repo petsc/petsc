@@ -359,6 +359,7 @@ int main(int argc,char **argv)
     ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
 
     /* Calculate physical quantities of interest */
+
     pprint = 1;
     ierr = pvar_(app->xx,app->p,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
@@ -560,6 +561,10 @@ int UserDestroyEuler(Euler *app)
   ierr = VecScatterDestroy(app->Xbcscatter); CHKERRQ(ierr);
   PetscFree(app->label);
   if (app->is1) PetscFree(app->is1);
+
+  /*
+  This section of code causes seg fault for BOPT=O on Origin2000
+ 
   if (app->bctype != IMPLICIT || app->dump_vrml || app->dump_general || app->post_process) {
     ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
     ierr = DADestroy(app->da1); CHKERRQ(ierr);
@@ -572,8 +577,10 @@ int UserDestroyEuler(Euler *app)
   if (app->bctype == IMPLICIT) {
     PetscFree(app->fbcri1); PetscFree(app->fbcrj1); PetscFree(app->fbcrk1);
   }
+  */
 
   /* Free misc work space for Fortran arrays */
+  /*
   if (app->farray)  PetscFree(app->farray);
   if (app->dt)      PetscFree(app->dt);
   if (app->diag)    PetscFree(app->diag);
@@ -584,6 +591,8 @@ int UserDestroyEuler(Euler *app)
   if (app->sadai)   PetscFree(app->sadai);
   if (app->bl)      PetscFree(app->bl);
   if (app->xc)      PetscFree(app->xc);
+
+  */
 
   PetscFree(app);
   return 0;
