@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.13 2000/07/26 16:21:29 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.14 2000/08/01 16:24:44 hzhang Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -39,15 +39,15 @@ int main(int argc,char **args)
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
         /* PetscTrValid(0,0,0,0); */
-        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
       }
       i = n - 1; col[0]=0; col[1] = n - 2; col[2] = n - 1;
       value[0]= 0.1; value[1]=-1; value[2]=2;
-      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
 
       i = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
       value[0] = 2.0; value[1] = -1.0; value[2]=0.1;
-      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 = sqrt(n); 
@@ -73,23 +73,23 @@ int main(int argc,char **args)
     value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
     for (i=1+block*bs; i<bs-1+block*bs; i++) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
-      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);    
+      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);    
     }
     i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
     value[0]=-1.0; value[1]=4.0;  
-    ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr); 
+    ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr); 
 
     i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs; 
     value[0]=4.0; value[1] = -1.0; 
-    ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);  
+    ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);  
   }
   /* off-diagonal blocks */
   value[0]=-1.0;
   for (i=0; i<(n/bs-1)*bs; i++){
     col[0]=i+bs;
-    ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES);CHKERRA(ierr);
     col[0]=i; row=i+bs;
-    ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
   }
   }
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -97,8 +97,8 @@ int main(int argc,char **args)
 
   /* Test MatView() */  
   /*
-  ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
-  ierr = MatView(sA, VIEWER_DRAW_WORLD); CHKERRA(ierr);
+  ierr = MatView(sA, VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+  ierr = MatView(sA, VIEWER_DRAW_WORLD);CHKERRA(ierr);
   */
   /* Assemble MPIBAIJ matrix A */
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRA(ierr);
@@ -109,15 +109,15 @@ int main(int argc,char **args)
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
         /* PetscTrValid(0,0,0,0); */
-        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
       }
       i = n - 1; col[0]=0; col[1] = n - 2; col[2] = n - 1;
       value[0]= 0.1; value[1]=-1; value[2]=2;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
 
       i = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
       value[0] = 2.0; value[1] = -1.0; value[2]=0.1;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 = sqrt(n); 
@@ -139,23 +139,23 @@ int main(int argc,char **args)
     value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
     for (i=1+block*bs; i<bs-1+block*bs; i++) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);    
+      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);    
     }
     i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
     value[0]=-1.0; value[1]=4.0;  
-    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr); 
+    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr); 
 
     i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs; 
     value[0]=4.0; value[1] = -1.0; 
-    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);  
+    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);  
   }
   /* off-diagonal blocks */
   value[0]=-1.0;
   for (i=0; i<(n/bs-1)*bs; i++){
     col[0]=i+bs;
-    ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRA(ierr);
     col[0]=i; row=i+bs;
-    ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
   }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -179,7 +179,7 @@ int main(int argc,char **args)
   /* vectors */
   /*--------------------*/
   ierr = VecCreateMPI(PETSC_COMM_WORLD,i,n,&x); /* i is obtained from MatGetLocalSize() */
-  CHKERRA(ierr);
+ CHKERRA(ierr);
   ierr = VecDuplicate(x,&y);CHKERRA(ierr); 
   ierr = VecDuplicate(x,&u);CHKERRA(ierr);  
   ierr = VecDuplicate(x,&s1);CHKERRA(ierr);
@@ -224,8 +224,8 @@ int main(int argc,char **args)
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
   ierr = MatDiagonalScale(A,x,x);CHKERRA(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRA(ierr);
-  ierr = MatGetDiagonal(A,s1); CHKERRA(ierr);  
-  ierr = MatGetDiagonal(sA,s2); CHKERRA(ierr);
+  ierr = MatGetDiagonal(A,s1);CHKERRA(ierr);  
+  ierr = MatGetDiagonal(sA,s2);CHKERRA(ierr);
   ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
   ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
   r1 -= r2;
@@ -267,11 +267,11 @@ int main(int argc,char **args)
 
   /* Test MatZeroRows() */
   ierr = ISCreateStride(PETSC_COMM_SELF,2,rstart,2,&isrow);CHKERRA(ierr);   
-  /* ISView(isrow, VIEWER_STDOUT_SELF); CHKERRA(ierr); */
-  ierr = MatZeroRows(sA,isrow,PETSC_NULL); CHKERRA(ierr); 
+  /* ISView(isrow, VIEWER_STDOUT_SELF);CHKERRA(ierr); */
+  ierr = MatZeroRows(sA,isrow,PETSC_NULL);CHKERRA(ierr); 
   ierr = ISDestroy(isrow);CHKERRA(ierr);
-  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr);  */
-  /* ierr = MatView(sA, VIEWER_DRAW_WORLD); CHKERRA(ierr);  */
+  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD);CHKERRA(ierr);  */
+  /* ierr = MatView(sA, VIEWER_DRAW_WORLD);CHKERRA(ierr);  */
   
   ierr = VecDestroy(u);CHKERRA(ierr);  
   ierr = VecDestroy(x);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.52 2000/08/09 23:10:24 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.53 2000/08/13 02:24:48 kaushik Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -112,7 +112,7 @@ int main(int argc,char **args)
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
   tsCtx.print_freq = tsCtx.max_steps; 
-  ierr = OptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRA(ierr);
 
   c_info->alpha  = 3.0;
   c_info->beta   = 15.0;
@@ -555,7 +555,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
     char mat_file[256];
     sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
     ierr = ViewerBinaryOpen(MPI_COMM_WORLD,mat_file,BINARY_CREATE,&viewer);
-    ierr = MatView(jac,viewer); CHKERRQ(ierr);
+    ierr = MatView(jac,viewer);CHKERRQ(ierr);
     ierr = ViewerDestroy(viewer);
     /*ierr = MPI_Abort(MPI_COMM_WORLD,1);*/
   }
