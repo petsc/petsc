@@ -1,10 +1,10 @@
-/*$Id: sbaij.c,v 1.11 2000/07/28 16:03:44 balay Exp hzhang $*/
+/*$Id: sbaij.c,v 1.12 2000/07/28 21:14:06 hzhang Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-#include "petscsys.h"
+#include "petscsys.h"                            /*I "petscmat.h" I*/
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
@@ -1348,8 +1348,9 @@ EXTERN_C_END
     You MUST have set the correct numbers of nonzeros per row in the call to 
   MatCreateSeqBAIJ().
 
-    MUST be called before any calls to MatSetValues();
+    MUST be called before any calls to MatSetValues()
 
+.seealso: MatCreateSeqSBAIJ
 @*/ 
 int MatSeqSBAIJSetColumnIndices(Mat mat,int *indices)
 {

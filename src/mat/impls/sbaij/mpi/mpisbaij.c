@@ -1,6 +1,6 @@
-/*$Id: mpisbaij.c,v 1.8 2000/07/19 20:58:03 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.9 2000/07/20 16:42:52 hzhang Exp balay $*/
 
-#include "src/mat/impls/baij/mpi/mpibaij.h"   
+#include "src/mat/impls/baij/mpi/mpibaij.h"    /*I petscmat.h */
 #include "src/vec/vecimpl.h"
 #include "mpisbaij.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
