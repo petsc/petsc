@@ -2,7 +2,7 @@
 static char vcid[] = "$Id: mapcreate.c,v 1.1 1999/06/21 02:03:50 knepley Exp $";
 #endif
 
-#include "src/vec/vecimpl.h"      /*I "vec.h"  I*/
+#include "src/vec/vecimpl.h"      /*I "petscvec.h"  I*/
 
 
 #undef __FUNCT__  

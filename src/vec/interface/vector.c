@@ -1962,8 +1962,9 @@ int VecRestoreArray(Vec x,PetscScalar *a[])
 
   Collective on Vec
 
-  Input Parameter:
-. vec - The vector
+  Input Parameters:
+. vec   - The vector
+. title - The title
 
   Level: intermediate
 

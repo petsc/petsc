@@ -208,7 +208,7 @@ int EventLogRegister(EventLog eventLog, const char ename[], const char color[], 
 /*---------------------------------------------- Activation Functions -----------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "EventLogActivate"
-/*@
+/*@C
   EventLogActivate - Indicates that a particular event should be logged.
 
   Not Collective
@@ -247,7 +247,7 @@ int EventLogActivate(EventLog eventLog, int event)
 
 #undef __FUNCT__  
 #define __FUNCT__ "EventLogDeactivate"
-/*@
+/*@C
   EventLogDeactivate - Indicates that a particular event should not be logged.
 
   Not Collective
@@ -286,7 +286,7 @@ int EventLogDeactivate(EventLog eventLog, int event)
 
 #undef __FUNCT__  
 #define __FUNCT__ "EventLogActivateClass"
-/*@
+/*@C
   EventLogActivateClass - Activates event logging for a PETSc object class.
 
   Not Collective
@@ -311,7 +311,7 @@ int EventLogActivateClass(EventLog eventLog, int cookie)
 
 #undef __FUNCT__  
 #define __FUNCT__ "EventLogDeactivateClass"
-/*@
+/*@C
   EventLogDeactivateClass - Deactivates event logging for a PETSc object class.
 
   Not Collective
