@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.125 1998/02/18 21:01:14 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.126 1998/03/12 23:19:14 bsmith Exp balay $";
 #endif
 
 /*
@@ -1328,7 +1328,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   PetscHeaderCreate(C,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBAIJ,A->comm,MatDestroy,MatView);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(c);
-  PetscMemcpy(C->ops,&A->ops,sizeof(struct _MatOps));
+  PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));
   C->destroy    = MatDestroy_SeqBAIJ;
   C->view       = MatView_SeqBAIJ;
   C->factor     = A->factor;
