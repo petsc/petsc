@@ -128,23 +128,16 @@ class Configure(config.base.Configure):
         self.framework.log.write('MPI cannot locate Fortran includes, but can find the MPI libraries\n')
         if not self.include:
           # get around bug in g77 on SGI IA64 systems
-          savetmp = self.framework.argDB['CPPFLAGS']
-          self.framework.argDB['CPPFLAGS'] += ' -I/usr/include'
-          if self.checkMPILink('', '          include \'mpif.h\'\n          call MPI_Init(ierr)\n'):
+          self.include.append(os.path.join('/usr', 'include'))
+          if not self.checkMPILink('', '          include \'mpif.h\'\n          call MPI_Init(ierr)\n'):
+            self.include.pop()
             self.popLanguage()
-            self.framework.log.write('Added /usr/include to search path to find MPI includes from Fortran. Succeeded\n')
-            return 1
+            self.framework.log.write('Adding /usr/include to search path did not fix MPI includes from Fortran. Failed\n')
+            return 0
+        else:
           self.popLanguage()
-          self.framework.argDB['CPPFLAGS'] = savetmp
-        return 0  
-      # Also do Satish check for broken mpif90 (MPICH)
-      # 1) bug.F
-      #       program main
-      # #include "include/main.h"
-      #       end
-      # 2) include/main.h
-      # #include "mpif.h"
-      # 3) compile bug.F
+          return 0
+        self.framework.log.write('Added /usr/include to search path to find MPI includes from Fortran. Succeeded\n')
       self.popLanguage()
       self.framework.log.write('MPI can link with Fortran\n')
     return 1
