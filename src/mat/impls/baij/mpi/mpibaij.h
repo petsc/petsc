@@ -1,6 +1,9 @@
-/* $Id: mpiaij.h,v 1.12 1995/12/23 21:57:19 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.1 1996/06/03 19:55:56 balay Exp balay $ */
 
 #include "baij.h"
+
+#if !defined(__MPIBAIJ_H)
+#define __MPIBAIJ_H
 
 typedef struct {
   int           *rowners, *cowners;     /* ranges owned by each processor */
@@ -12,6 +15,9 @@ typedef struct {
                                            B (off-diag part) */
   int           size;                   /* size of communicator */
   int           rank;                   /* rank of proc in communicator */ 
+  int           bs, bs2;                /* block size, bs2 = bs*bs */
+  int           Mbs, Nbs;
+  int           mbs, nbs;
 
   /* The following variables are used for matrix assembly */
 
@@ -37,3 +43,6 @@ typedef struct {
   Scalar        *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 } Mat_MPIBAIJ;
+
+
+#endif
