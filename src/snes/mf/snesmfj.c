@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.66 1998/05/29 22:51:20 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.67 1998/07/08 21:24:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -12,6 +12,7 @@ typedef struct {  /* default context for matrix-free SNES */
   PCNullSpace sp;        /* null space context */
   double      error_rel; /* square root of relative error in computing function */
   double      umin;      /* minimum allowable u'a value relative to |u|_1 */
+  double      currenth;  /* last differencing parameter used */
 } MFCtx_Private;
 
 #undef __FUNC__  
@@ -33,7 +34,8 @@ int SNESMatrixFreeDestroy_Private(Mat mat)
 #define __FUNC__ "SNESMatrixFreeView_Private"
 /*
    SNESMatrixFreeView_Private - Views matrix-free parameters.
- */
+
+*/
 int SNESMatrixFreeView_Private(Mat J,Viewer viewer)
 {
   int           ierr;
@@ -165,7 +167,11 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
 #endif
   h = ctx->error_rel*dot/(norm*norm);
-  
+
+  /* keep a record of the current differencing parameter h */  
+  ctx->currenth = h;
+  PLogInfo(mat,"Current differencing parameter: %g\n",h);
+
   /* Evaluate function at F(u + ha) */
   ierr = VecWAXPY(&h,a,U,w); CHKERRQ(ierr);
   ierr = eval_fct(snes,w,y); CHKERRQ(ierr);
@@ -256,6 +262,39 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)SNESMatrixFreeView_Private); CHKERRQ(ierr);
   PLogObjectParent(*J,mfctx->w);
   PLogObjectParent(snes,*J);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESGetMatrixFreeH"
+/*@
+   SNESGetMatrixFreeH - Gets the last h that was used as the differencing 
+     parameter.
+
+   Not Collective
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Output Paramter:
+.  h - the differencing step size
+
+.keywords: SNES, matrix-free, parameters
+
+.seealso: SNESDefaultMatrixFreeMatCreate()
+@*/
+int SNESGetMatrixFreeH(SNES snes,double *h)
+{
+  MFCtx_Private *ctx;
+  int           ierr;
+  Mat           mat;
+
+  PetscFunctionBegin;
+  ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  if (ctx) {
+    *h = ctx->currenth;
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.71 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.72 1998/07/23 22:50:59 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -56,6 +56,8 @@ extern int SNESAddOptionsChecker(int (*)(SNES));
 
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 extern int SNESSetMatrixFreeParameters(SNES,double,double);
+extern int SNESGetMatrixFreeH(SNES,double *);
+
 extern int SNESGetType(SNES,SNESType*);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultSMonitor(SNES,int,double,void *);
