@@ -1,4 +1,4 @@
-# $Id: base,v 1.26 1998/04/07 16:15:24 balay Exp balay $ 
+# $Id: base,v 1.27 1998/04/09 00:15:10 balay Exp balay $ 
 
 PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
@@ -18,10 +18,6 @@ CLINKER  = gcc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 FLINKER  = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE
-CONF     = -DHAVE_PWD_H -DHAVE_MALLOC_H -DHAVE_STRING_H -DHAVE_X11 \
-           -DHAVE_GETDOMAINNAME \
-           -DHAVE_DRAND48 ${FCONF}\
-           -DHAVE_UNAME -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H -DHAVE_SWAPPED_BYTES 
 
 SYS_LIB  = -lc
 

@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.2 1998/04/09 20:30:10 balay Exp $ */
+/* $Id: petscconf.h,v 1.1 1998/04/09 20:33:29 balay Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -20,7 +20,6 @@
 #define HAVE_SYS_TIME_H 
 #define USE_SHARED_MEMORY
 
-#define HAVE_FORTRAN_UNDERSCORE 
 #define HAVE_FORTRAN_UNDERSCORE 
 #define HAVE_64BITS  
 #define HAVE_IRIXF90

@@ -1,4 +1,4 @@
-# $Id: base,v 1.27 1997/09/17 04:38:47 balay Exp balay $ 
+# $Id: base,v 1.28 1998/03/19 02:01:29 balay Exp balay $ 
 
 PARCH    = t3d
 CC       = cc -DPARCH_t3d -h jump
@@ -19,10 +19,6 @@ FLINKER  = ${FC} ${FOPTFLAGS}
 SYS_LIB  =
 
 FCONF    = -DHAVE_FORTRAN_CAPS -DUSES_FORTRAN_SINGLE
-CONF     = -DHAVE_64BITS -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_MALLOC_H \
-           -DHAVE_64BIT_INT -DHAVE_DRAND48 ${FCONF}\
-           -DUSES_CPTOFCD  -DHAVE_UNISTD_H \
-           -DHAVE_SYS_TIME_H -DHAVE_UNAME 
 
 SHELL    = /bin/sh
 
