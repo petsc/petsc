@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.11 2001/01/17 22:26:26 bsmith Exp balay $ */
+/* $Id: ex18.c,v 1.12 2001/01/23 20:57:12 balay Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -11,9 +11,7 @@ A 2-dim simplified Radiative Transport test problem is used, with analytic Jacob
 The command line\n\
 options are:\n\
   -tleft <tl>, where <tl> indicates the left Diriclet BC \n\
-  -tright <tr>, where <tr> indicates the right Diriclet BC \n\
-  -mx <xv>, where <xv> = number of coarse control volumes in the x-direction\n\
-  -my <yv>, where <yv> = number of coarse control volumes in the y-direction\n";
+  -tright <tr>, where <tr> indicates the right Diriclet BC \n\n";
 
 /*T
    Concepts: SNES^solving a system of nonlinear equations
@@ -64,11 +62,12 @@ extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  DMMG          *dmmg;
-  SNES          snes;                      
-  AppCtx        user;
-  int           nlevels,ierr,its,lits,mx,my;
-  double	litspit;
+  DMMG    *dmmg;
+  SNES    snes;                      
+  AppCtx  user;
+  int     ierr,its,lits;
+  double  litspit;
+  DA      da;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -84,28 +83,22 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRQ(ierr);
 
-  /* set number of levels and grid size on coarsest level */
-  mx              = 5; 
-  my              = 5; 
-  nlevels         = 3;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
-
   /*
       Create the multilevel DA data structure 
   */
-  ierr = DMMGCreate(PETSC_COMM_WORLD,nlevels,&user,&dmmg);CHKERRQ(ierr);
+  ierr = DMMGCreate(PETSC_COMM_WORLD,3,&user,&dmmg);CHKERRQ(ierr);
 
   /*
       Set the DA (grid structure) for the grids.
   */
-  ierr = DMMGSetDA(dmmg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,1,1);CHKERRQ(ierr);
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,5,5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
 
   /*
      Create the nonlinear solver, and tell the DMMG structure to use it
   */
   ierr = DMMGSetSNES(dmmg,FormFunction,FormJacobian);CHKERRQ(ierr);
-
 
   /*
       PreLoadBegin() means that the following section of code is run twice. The first time
@@ -128,7 +121,6 @@ int main(int argc,char **argv)
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
-
 
   return 0;
 }
