@@ -68,7 +68,7 @@ class Configure(config.base.Configure):
   def checkInitialLibraries(self):
     '''Check for libraries required for all linking on an architecture
        - Mac OSX requires an explicit reference to libc for shared linking'''
-    self.framework.argDB['LIBS'] = '-lc'
+    self.framework.argDB['LIBS'] = ''
     return
 
   def isGNU(compiler):
