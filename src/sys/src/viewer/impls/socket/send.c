@@ -86,7 +86,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 
   PetscFunctionBegin;
 #if defined(PETSC_MISSING_SOCKETS)
-  SETERRQ(1,"This system does not support Unix tcp/ip");
+  SETERRQ(PETSC_ERR_SUP_SYS,"This system does not support Unix tcp/ip");
 #else
   if (!(hp=gethostbyname(hostname))) {
     perror("SEND: error gethostbyname: ");   

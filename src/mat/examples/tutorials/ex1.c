@@ -26,7 +26,7 @@ int main(int argc,char **args)
 {
   Mat                   A;                /* matrix */
   PetscViewer           fd;               /* viewer */
-  char                  file[2][128];     /* input file name */
+  char                  file[2][PETSC_MAX_PATH_LEN];     /* input file name */
   IS                    isrow,iscol;      /* row and column permutations */
   int                   ierr;
   const MatOrderingType rtype = MATORDERING_RCM;
@@ -39,9 +39,9 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Must indicate binary file with the -f0 option");
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (flg) PreLoad = PETSC_TRUE;
 
   /* -----------------------------------------------------------

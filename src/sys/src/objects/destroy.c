@@ -116,7 +116,7 @@ int PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
 }
 
 static int         PetscObjectRegisterDestroy_Count = 0;
-static PetscObject PetscObjectRegisterDestroy_Objects[128];
+static PetscObject PetscObjectRegisterDestroy_Objects[256];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectRegisterDestroy"

@@ -13,7 +13,7 @@ Options:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {  
-  char        fin[128],fout[128] ="default.mat";
+  char        fin[PETSC_MAX_PATH_LEN],fout[PETSC_MAX_PATH_LEN] ="default.mat";
   PetscViewer fdin,fdout;               
   Vec         b;   
   MatType     mtype = MATSEQBAIJ;            
@@ -25,11 +25,11 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",fin,127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",fin,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Must indicate binary file with the -fin option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,PETSC_FILE_RDONLY,&fdin);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fout,127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fout,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);CHKERRQ(ierr);}
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,fout,PETSC_FILE_CREATE,&fdout);CHKERRQ(ierr);
 

@@ -14,7 +14,7 @@ int main(int argc,char **args)
   int        nedge,j,k,*edge_cell,*cell_cell,nc,ncp;
   int        i0,i1;
   int        *shift0,*shift1;
-  char       filebase[256],filename[256];
+  char       filebase[PETSC_MAX_PATH_LEN],filename[PETSC_MAX_PATH_LEN];
   FILE       *file;
   AOData     ao;
   PetscReal  *vertex,ddummy;
@@ -22,9 +22,9 @@ int main(int argc,char **args)
   PetscTruth flag;
 
   PetscInitialize(&argc,&args,0,0);
-  ierr = PetscMemzero(filename,256*sizeof(char));CHKERRQ(ierr);
+  ierr = PetscMemzero(filename,PETSC_MAX_PATH_LEN*sizeof(char));CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(0,"-f",filebase,246,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(0,"-f",filebase,PETSC_MAX_PATH_LEN-1,&flag);CHKERRQ(ierr);
   if (!flag) {
     SETERRQ(1,"Must provide filebase name with -f");
   }

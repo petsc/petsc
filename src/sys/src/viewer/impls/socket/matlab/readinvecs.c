@@ -72,7 +72,7 @@ int ReadInVecs(mxArray *plhs[],int t,int dim,int *dims)
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   static int fd = -1,dims[4],dim = 1,dof;
-  char       filename[256],buffer[1024];
+  char       filename[1024],buffer[1024];
   int        err,d2,d3,d4;
   FILE       *file;
 

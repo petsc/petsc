@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   Vec         b;
-  char        fileout[128];
+  char        fileout[PETSC_MAX_PATH_LEN];
   int         i,j,m = 6,n = 6,N = 36,ierr,I,J;
   PetscScalar val,v;
   PetscViewer view;
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_FILE_CREATE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = VecView(b,view);CHKERRQ(ierr);

@@ -95,7 +95,7 @@ EXTERN_C_END
 int MatSNESMFRegister(const char sname[],const char path[],const char name[],int (*function)(MatSNESMFCtx))
 {
   int ierr;
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);

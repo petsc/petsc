@@ -83,7 +83,7 @@ int PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],int len,PetscT
                        The variable PetscDisplay contains the X windows display variable.
 
 */
-static char PetscDisplay[128]; 
+static char PetscDisplay[256]; 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetDisplay" 
@@ -91,7 +91,7 @@ int PetscSetDisplay(void)
 {
   int        size,rank,len,ierr;
   PetscTruth flag;
-  char       *str,display[128];
+  char       *str,display[256];
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);

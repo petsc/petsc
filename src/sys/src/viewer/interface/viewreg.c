@@ -80,11 +80,13 @@ int PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
     viewer->data      = 0;
   }
   /* Get the function pointers for the graphics method requested */
-  if (!PetscViewerList) SETERRQ(1,"No PetscViewer implementations registered");
+  if (!PetscViewerList) {
+    ierr = PetscViewerRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  }
 
   ierr =  PetscFListFind(viewer->comm,PetscViewerList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,"Unknown PetscViewer type given: %s",type);
+  if (!r) SETERRQ1(PETSC_ERR_SUP,"Unknown PetscViewer type given: %s",type);
 
   viewer->data        = 0;
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
@@ -162,7 +164,9 @@ int PetscViewerSetFromOptions(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
 
-  if (!PetscViewerList) SETERRQ(1,"No PetscViewer implementations registered");
+  if (!PetscViewerList) {
+    ierr = PetscViewerRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsBegin(viewer->comm,viewer->prefix,"PetscViewer options","PetscViewer");CHKERRQ(ierr);
     ierr = PetscOptionsList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char *)(viewer->type_name?viewer->type_name:PETSC_VIEWER_ASCII),vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {

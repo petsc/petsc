@@ -376,7 +376,7 @@ M*/
 int PFRegister(const char sname[],const char path[],const char name[],int (*function)(PF,void*))
 {
   int  ierr;
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);

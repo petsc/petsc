@@ -650,13 +650,13 @@ int PetscFinalize(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-trinfo",&flg2);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3);CHKERRQ(ierr);
   if (flg1) {
-    char fname[256];
+    char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
     
     fname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-trdump",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
-      char sname[256];
+      char sname[PETSC_MAX_PATH_LEN];
 
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,"Cannot open log file: %s",sname);
@@ -683,13 +683,13 @@ int PetscFinalize(void)
     ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
   if (flg3) {
-    char fname[256];
+    char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
     
     fname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-trmalloc_log",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
-      char sname[256];
+      char sname[PETSC_MAX_PATH_LEN];
 
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(1,"Cannot open log file: %s",sname);

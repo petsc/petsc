@@ -10,7 +10,7 @@ int PetscViewerDestroy_Draw(PetscViewer v)
 
   PetscFunctionBegin;
   if (vdraw->singleton_made) {
-    SETERRQ(1,"Destroying PetscViewer without first restoring singleton");
+    SETERRQ(PETSC_ERR_ORDER,"Destroying PetscViewer without first restoring singleton");
   }
   for (i=0; i<vdraw->draw_max; i++) {
     if (vdraw->drawaxis[i]) {ierr = PetscDrawAxisDestroy(vdraw->drawaxis[i]);CHKERRQ(ierr);}
@@ -300,7 +300,7 @@ int PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 
   PetscFunctionBegin;
   if (vdraw->singleton_made) {
-    SETERRQ(1,"Trying to get singleton without first restoring previous");
+    SETERRQ(PETSC_ERR_ORDER,"Trying to get singleton without first restoring previous");
   }
 
   /* only processor zero can use the PetscViewer draw singleton */
@@ -328,7 +328,7 @@ int PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 
   PetscFunctionBegin;
   if (!vdraw->singleton_made) {
-    SETERRQ(1,"Trying to restore a singleton that was not gotten");
+    SETERRQ(PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {

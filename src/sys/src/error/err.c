@@ -156,11 +156,15 @@ int PetscPopErrorHandler(void)
 }
  
 static char PetscErrorBaseMessage[1024];
+/*
+       The numerical values for these are defined in include/petscerror.h; any changes
+   there must also be made here
+*/
 static const char *PetscErrorStrings[] = {
   /*55 */ "Out of memory",
           "No support for this operation for this object type",
-          "",
-  /*58 */ "",
+          "No support for this operation on this system",
+  /*58 */ "Operation done in wrong order",
   /*59 */ "Signal received",
   /*60 */ "Nonconforming object sizes",
           "Argument aliasing not permitted",

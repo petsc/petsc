@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;
-  char           file[128];
+  char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   PetscTruth     table,flg;
   KSP            ksp;
@@ -33,7 +33,7 @@ int main(int argc,char **args)
 
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
 

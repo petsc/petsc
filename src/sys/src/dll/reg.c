@@ -9,7 +9,7 @@
 #define __FUNCT__ "PetscFListGetPathAndFunction"
 int PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
-  char work[256],*lfunction,ierr;
+  char work[PETSC_MAX_PATH_LEN],*lfunction,ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(work,name,256);CHKERRQ(ierr);

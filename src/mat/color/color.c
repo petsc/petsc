@@ -223,7 +223,7 @@ PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
 int MatColoringRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatColoringType,ISColoring*))
 {
   int  ierr;
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
@@ -306,7 +306,7 @@ int MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
 {
   PetscTruth flag;
   int        ierr,(*r)(Mat,const MatColoringType,ISColoring *);
-  char       tname[256];
+  char       tname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);

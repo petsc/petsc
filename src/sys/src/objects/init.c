@@ -342,7 +342,7 @@ PetscTruth        PetscOptionsPublish = PETSC_FALSE;
 EXTERN int        PetscLogInfoAllow(PetscTruth,char *);
 EXTERN int        PetscSetUseTrMalloc_Private(void);
 extern PetscTruth petscsetmallocvisited;
-static char       emacsmachinename[128];
+static char       emacsmachinename[256];
 
 int (*PetscExternalVersionFunction)(MPI_Comm) = 0;
 int (*PetscExternalHelpFunction)(MPI_Comm)    = 0;

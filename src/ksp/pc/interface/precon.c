@@ -1419,7 +1419,7 @@ int PCView(PC pc,PetscViewer viewer)
 int PCRegister(const char sname[],const char path[],const char name[],int (*function)(PC))
 {
   int  ierr;
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
 

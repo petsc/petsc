@@ -9,13 +9,13 @@ int main(int argc,char **args)
 {
   Mat         BAIJ,SBAIJ,*subBAIJ,*subSBAIJ;
   PetscViewer viewer;
-  char        file[128];
+  char        file[PETSC_MAX_PATH_LEN];
   PetscTruth  flg;
   int         ierr,n = 2,rank,issize;
   IS          is,iss[2];
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(viewer,MATMPIBAIJ,&BAIJ);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

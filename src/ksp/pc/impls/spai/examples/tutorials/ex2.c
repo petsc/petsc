@@ -25,7 +25,7 @@ int main(int argc,char **args)
   Mat        A;                /* matrix */
   Vec        b;                /* RHS */
   Viewer     viewer;               /* viewer */
-  char       file[128];        /* input file name */
+  char       file[PETSC_MAX_PATH_LEN];        /* input file name */
   int        ierr, flg;
   PetscTruth set;
   MatType    mtype;
@@ -41,7 +41,7 @@ int main(int argc,char **args)
      Determine files from which we read the linear system
      (matrix and right-hand-side vector).
   */
-  ierr = OptionsGetString(PETSC_NULL,"-f0",file,127,&flg); CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f0",file,PETSC_MAX_PATH_LEN-1,&flg); CHKERRA(ierr);
   if (!flg) SETERRQ(1,0,"Must indicate binary file with the -f0 option");
 
 

@@ -31,12 +31,15 @@ PETSC_EXTERN_CXX_BEGIN
 
 /* 
      These are the generic error codes. These error codes are used
-     many different places in the PETSc source code.
+     many different places in the PETSc source code. The string versions are
+     at src/sys/src/error/err.c any changes here must also be made there
 
 */
 #define PETSC_ERR_MEM             55   /* unable to allocate requested memory */
 #define PETSC_ERR_MEM_MALLOC_0    85   /* cannot malloc zero size */
 #define PETSC_ERR_SUP             56   /* no support for requested operation */
+#define PETSC_ERR_SUP_SYS         57   /* no support for requested operation on this computer system */
+#define PETSC_ERR_ORDER           58   /* operation done in wrong order */
 #define PETSC_ERR_SIG             59   /* signal received */
 #define PETSC_ERR_FP              72   /* floating point exception */
 #define PETSC_ERR_COR             74   /* corrupted PETSc object */
@@ -64,10 +67,6 @@ PETSC_EXTERN_CXX_BEGIN
 
 #define PETSC_ERR_MAT_LU_ZRPVT    71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT    81   /* detected a zero pivot during Cholesky factorization */
-
-#define PETSC_ERR_MESH_NULL_ELEM  84   /* Element had no interior */
-
-#define PETSC_ERR_DISC_SING_JAC   83   /* Singular element Jacobian */
 
 #if defined(PETSC_USE_DEBUG)
 

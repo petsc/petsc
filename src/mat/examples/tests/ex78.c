@@ -16,7 +16,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   Vec         b,u,u_tmp;
-  char        Ain[128],bin[128],uin[128]; 
+  char        Ain[PETSC_MAX_PATH_LEN],bin[PETSC_MAX_PATH_LEN],uin[PETSC_MAX_PATH_LEN]; 
   int         i,m,n,nz,ierr,*ib=0,col_i,row_i;
   PetscScalar val_i,*work=0,mone=-1.0;
   PetscReal   *col=0,*row=0,res_norm,*val=0,*bval=0,*uval=0;
@@ -27,7 +27,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix, rhs and exact solution from an ascii file */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,127,&flg_A);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,PETSC_MAX_PATH_LEN-1,&flg_A);CHKERRQ(ierr);
   if (flg_A){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr); 
@@ -51,7 +51,7 @@ int main(int argc,char **args)
     fclose(Afile);
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-bin",bin,127,&flg_b);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-bin",bin,PETSC_MAX_PATH_LEN-1,&flg_b);CHKERRQ(ierr);
   if (flg_b){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRQ(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,bin,"r",&bfile);CHKERRQ(ierr); 
@@ -66,7 +66,7 @@ int main(int argc,char **args)
     fclose(bfile);
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-uin",uin,127,&flg_u);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-uin",uin,PETSC_MAX_PATH_LEN-1,&flg_u);CHKERRQ(ierr);
   if (flg_u){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n");CHKERRQ(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,uin,"r",&ufile);CHKERRQ(ierr); 

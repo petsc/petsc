@@ -24,7 +24,7 @@ int PetscViewerDestroy_ASCII(PetscViewer viewer)
 
   PetscFunctionBegin;
   if (vascii->sviewer) {
-    SETERRQ(1,"ASCII PetscViewer destroyed before restoring singleton PetscViewer");
+    SETERRQ(PETSC_ERR_ORDER,"ASCII PetscViewer destroyed before restoring singleton PetscViewer");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != stdout) {
@@ -260,7 +260,7 @@ int PetscViewerASCIIPopTab(PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (ascii->tab <= 0) SETERRQ(1,"More tabs popped than pushed");
+    if (ascii->tab <= 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"More tabs popped than pushed");
     ascii->tab--;
   }
   PetscFunctionReturn(0);
@@ -350,7 +350,7 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  if (!iascii) SETERRQ(1,"Not ASCII PetscViewer");
+  if (!iascii) SETERRQ(PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
 
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (ascii->bviewer) {ierr = MPI_Comm_rank(ascii->bviewer->comm,&rank);CHKERRQ(ierr);}
@@ -560,7 +560,7 @@ int PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 
   PetscFunctionBegin;
   if (vascii->sviewer) {
-    SETERRQ(1,"Singleton already obtained from PetscViewer and not restored");
+    SETERRQ(PETSC_ERR_ORDER,"Singleton already obtained from PetscViewer and not restored");
   }
   ierr         = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
   ierr         = PetscViewerSetType(*outviewer,PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -597,10 +597,10 @@ int PetscViewerRestoreSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 
   PetscFunctionBegin;
   if (!ascii->sviewer) {
-    SETERRQ(1,"Singleton never obtained from PetscViewer");
+    SETERRQ(PETSC_ERR_ORDER,"Singleton never obtained from PetscViewer");
   }
   if (ascii->sviewer != *outviewer) {
-    SETERRQ(1,"This PetscViewer did not generate singleton");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate singleton");
   }
 
   ascii->sviewer             = 0;
@@ -684,7 +684,7 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  if (!iascii) SETERRQ(1,"Not ASCII PetscViewer");
+  if (!iascii) SETERRQ(PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
 
   comm = viewer->comm;
   fp   = vascii->fd;

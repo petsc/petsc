@@ -25,7 +25,7 @@ int main(int argc,char **args)
   Mat            A,N;                /* matrix */
   Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
-  char           file[128];     /* input file name */
+  char           file[PETSC_MAX_PATH_LEN];     /* input file name */
   int            ierr,its,ierrp,n,m;
   PetscReal      norm;
   PetscScalar    zero = 0.0,none = -1.0;
@@ -37,7 +37,7 @@ int main(int argc,char **args)
      Determine files from which we read the linear system
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop

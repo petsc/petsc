@@ -19,14 +19,14 @@ int main(int argc,char **args)
   PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;
-  KSP           ksp;
-  char           file[128]; 
+  KSP            ksp;
+  char           file[PETSC_MAX_PATH_LEN]; 
   PetscViewer    fd;
   
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
   ierr = VecLoad(fd,PETSC_NULL,&b);CHKERRQ(ierr);

@@ -36,7 +36,7 @@
 int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
 {
   int  i,ierr,rank,rows = n + 2,cols,len;
-  char buffer[2048],display[128],geometry[64];
+  char buffer[2048],display[256],geometry[64];
   FILE *fp;
 
   PetscFunctionBegin;

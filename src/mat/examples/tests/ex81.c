@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscTruth  flg;
   Mat         A;
   Vec         x;
-  char        bfile[512],hbfile[512]; 
+  char        bfile[PETSC_MAX_PATH_LEN],hbfile[PETSC_MAX_PATH_LEN]; 
   PetscViewer fd;
   Mat_SeqAIJ  *a;
   PetscScalar *aa,*xx;
@@ -33,8 +33,8 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(1,"Only runs on one processor");
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",bfile,127,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",hbfile,127,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",bfile,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",hbfile,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,bfile,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);

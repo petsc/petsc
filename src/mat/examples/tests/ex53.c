@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat               A,B,C,At,Bt;
   PetscViewer       fd;
-  char              file[128];
+  char              file[PETSC_MAX_PATH_LEN];
   PetscRandom       rand;
   Vec               xx,yy,s1,s2;
   PetscReal         s1norm,s2norm,rnorm,tol = 1.e-10;
@@ -29,7 +29,7 @@ int main(int argc,char **args)
 #else
 
  /* Check out if MatLoad() works */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"Input file not specified");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATMPIBAIJ,&A);CHKERRQ(ierr);

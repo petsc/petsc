@@ -108,7 +108,7 @@ int PetscViewerSetFilename_HDF4(PetscViewer viewer,const char name[])
    acc = DFACC_CREATE;
    break;
  default:
-   SETERRQ(1,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
+   SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
  }
 
  ierr = MPI_Comm_rank(viewer->comm,&rank);CE;
@@ -143,7 +143,7 @@ int PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int 
  }
  sds_id = SDcreate(vhdf4->sd_id, "Vec", DFNT_FLOAT32, d, dims32);
  if (sds_id < 0) {
-   SETERRQ(1, "SDcreate failed");
+   SETERRQ(PETSC_ERR_LIB,"SDcreate failed");
  }
  SDwritedata(sds_id, zero32, 0, dims32, xf);
  SDendaccess(sds_id);

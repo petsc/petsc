@@ -85,7 +85,7 @@ int PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
   PetscViewer_AMS *vams = (PetscViewer_AMS *)lab->data;
 
   PetscFunctionBegin;
-  if (vams->ams_comm == -1) SETERRQ(1,"AMS communicator name not yet set with PetscViewerAMSSetCommName()");
+  if (vams->ams_comm == -1) SETERRQ(PETSC_ERR_ORDER,"AMS communicator name not yet set with PetscViewerAMSSetCommName()");
   *ams_comm = vams->ams_comm;
   PetscFunctionReturn(0);
 }
@@ -175,7 +175,7 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
 {
   int         ierr,flag,size,rank;
   PetscViewer viewer;
-  char        name[128];
+  char        name[256];
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Ams_keyval == MPI_KEYVAL_INVALID) {
