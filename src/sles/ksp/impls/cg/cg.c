@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.17 1995/05/18 22:44:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.18 1995/06/08 03:07:37 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -77,8 +77,6 @@ int  KSPSolve_CG(KSP itP,int *its)
   else {
       VecNorm(R,&dp);                         /*    dp <- r'*r       */       
       }
-  /* Test for nothing to do */
-  VecNorm(R,&dp);
   if (CONVERGED(itP,dp,0)) {*its =  RCONV(itP,0); return 0;}
   MONITOR(itP,dp,0);
   if (history) history[0] = dp;
