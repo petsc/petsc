@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.12 2000/08/23 16:14:47 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.13 2000/08/23 16:29:32 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -191,10 +191,11 @@ int OptionsInt(char *opt,char *text,int defaultv,int *value,PetscTruth *set)
     amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
     *(int*)amsopt->data = defaultv;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    if (set) *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 #endif
-  ierr = OptionsGetInt(amspub.prefix,text,value,set);CHKERRQ(ierr);
+  ierr = OptionsGetInt(amspub.prefix,opt,value,set);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -217,10 +218,11 @@ int OptionsDouble(char *opt,char *text,double defaultv,double *value,PetscTruth 
     amsopt->data           = (void *)PetscMalloc(sizeof(double));CHKERRQ(ierr);
     *(double*)amsopt->data = defaultv;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    if (set) *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 #endif
-  ierr = OptionsGetDouble(amspub.prefix,text,value,set);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(amspub.prefix,opt,value,set);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -244,10 +246,11 @@ int OptionsName(char *opt,char *text,PetscTruth *flg)
     amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
     *(int*)amsopt->data = 0;
     ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    *flg = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 #endif
-  ierr = OptionsHasName(amspub.prefix,text,flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(amspub.prefix,opt,flg);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -294,10 +297,11 @@ int OptionsList(char *opt,char *ltext,char **text,int ntext,char *defaultv,char 
       mtext      += mlen+1;
     }
     ierr = AMS_Memory_add_field(amspub.amem,ltext,vtext,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    if (set) *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 #endif
-  ierr = OptionsGetString(amspub.prefix,ltext,value,len,set);CHKERRQ(ierr);
+  ierr = OptionsGetString(amspub.prefix,opt,value,len,set);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
