@@ -10,11 +10,8 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-#BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux -lflapack -lblas_INTEL
-BLASLAPACK_LIB = /home/petsc/software/LAPACK/lapack_linux.a  \
-  -L/home/petsc/software/blaslapack/linux -lblas_INTEL
-#BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_def
-#PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
+#BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux -lflapack -lfblas
+BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_def -lpthread
 
 #
 # Location of MPI (Message Passing Interface) software

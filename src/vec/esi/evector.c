@@ -320,7 +320,7 @@ template<class Scalar,class Ordinal> class Petra_ESI_VectorFactory : public virt
       if (!map) SETERRQ(1,"Requires Petra_ESI_IndexSpace");
       v = new Petra_ESI_Vector<Scalar,Ordinal>(*map);
       //      ierr = map->addReference();CHKERRQ(ierr);  /* Petra has bug and does not increase reference count */
-      if (!v) SETERRQ(1,"Unable to create new Petsc_ESI_Vector");
+      if (!v) SETERRQ(1,"Unable to create new Petra_ESI_Vector");
       return 0;
     }; 
 };

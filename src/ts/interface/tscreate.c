@@ -34,7 +34,8 @@ static int TSPublish_Petsc(PetscObject obj)
 #undef  __FUNCT__
 #define __FUNCT__ "TSCreate"
 /*@ 
-  TSCreate - This function creates an empty timestepper. The type can then be set with TSSetType().
+  TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the 
+       type of solver can then be set with TSSetType().
 
   Collective on MPI_Comm
 
@@ -47,7 +48,7 @@ static int TSPublish_Petsc(PetscObject obj)
   Level: beginner
 
 .keywords: TS, create
-.seealso: TSSetType(), TSSetUp(), TSDestroy(), MeshCreate()
+.seealso: TSSetType(), TSSetUp(), TSDestroy(), MeshCreate(), TSSetProblemType()
 @*/
 int TSCreate(MPI_Comm comm, TS *ts) {
   TS  t;
