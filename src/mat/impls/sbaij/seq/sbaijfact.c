@@ -1236,9 +1236,9 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
         i = nexti;         
       }
 
-      /* check for zero pivot and save diagonal element */
       if (PetscRealPart(dk) < zeropivot && b->factor_shift){
-	PetscReal rs = -PetscRealPart(dk);
+	/* calculate a shift that would make this row diagonally dominant */
+	PetscReal rs = PetscAbsScalar(PetscRealPart(dk));
 	jmin      = bi[k]+1; 
 	nz        = bi[k+1] - jmin; 
 	if (nz){
@@ -1248,8 +1248,14 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
 	    rs += PetscAbsScalar(rtmp[*bcol++]);
 	  }
 	}
-	shift_amount = rs;
+	/* if this shift is less than the previous, just up the previous
+	   one by a bit */
+	shift_amount = PetscMax(rs,1.1*shift_amount);
 	chshift  = PETSC_TRUE;
+	/* Unlike in the ILU case there is no exit condition on nshift:
+	   we increase the shift until it converges. There is no guarantee that
+	   this algorithm converges faster or slower, or is better or worse
+	   than the ILU algorithm. */
 	nshift++;
 	break;
       }
