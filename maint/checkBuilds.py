@@ -48,7 +48,9 @@ class BuildChecker:
     'mipsUltrix': [r'[^\n]*(?P<type>Error|Warning): (?P<filename>[^,"\s]+)[,:] (line )?(?P<line>[0-9]+):'],
     ## GCC 3.0.4
     ##   /usr/local/qhull/include/qhull.h:38:5: warning: "__MWERKS__" is not defined
-    'gcc': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning):'],
+    ##   pcregis.c:82: parse error
+    ##   pcregis.c:82:34: operator '&&' has no right operand
+    'gcc': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning|parse error)?'],
     ## Absoft Fortran 90
     ##   ???
     ## Absoft FORTRAN 77 Compiler 3.1.3
@@ -60,24 +62,26 @@ class BuildChecker:
     'pgF90': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning):'],
     ## IBM RS6000
     ##   "vvouch.c", line 19.5: 1506-046 (S) Syntax error.
+    ##   "pcregis.c", line 82.34: 1540-186: (S) The expression is not a valid preprocessor constant expression.
     ## IBM AIX xlc compiler
     ##   "src/swapping.c", line 30.34: 1506-342 (W) "/*" detected in comment.
-    'ibm': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+)\.(?P<column>[0-9]+): (?P<subtype>[0-9]+-[0-9]+) \((?P<type>\w)\)'],
+    'ibm': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+)\.(?P<column>[0-9]+): (?P<subtype>[0-9]+-[0-9]+):? \((?P<type>\w)\)'],
     ## WorkShop Compilers 5.0 98/12/15 C++ 5.0
     ##   "dl.c", line 259: Warning (Anachronism): Cannot cast from void* to int(*)(const char*).
     'solaris': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+): (?P<type>Warning|Error)( \((?P<subtype>\w+)\):)?'],
     ## Cray C compiler error messages
-    ##   ???
+    ##   CC-29 CC: ERROR File = pcregis.c, Line = 82
     'cray':
-    [r'[^\n]*: (?P<type>ERROR|WARNING) ([^,\n]+, )* File = (?P<filename>[^,\n]+), Line = (?P<line>[0-9]+)'],
+    [r'[^\n]*: (?P<type>ERROR|WARNING) File = (?P<filename>[^,\n]+), Line = (?P<line>[0-9]+)'],
     ## Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland
     ##   Error ping.c 15: Unable to open include file 'sys/types.h'
     ##   Warning ping.c 68: Call to function 'func' with no prototype
-    'borland': [r'(?P<type>Error|Warning) (?P<subtype>[EW][0-9]+) (?P<filename>[a-zA-Z]?:?[^:( \t\n]+) (?P<line>[0-9]+)([) \t]|:[^0-9\n])'],
+    'borland': [r'(?P<type>Error|Warning) (?P<subtype>[EW][0-9]+) (?P<filename>[a-zA-Z]?:?[^:(\s]+) (?P<line>[0-9]+)([) \t]|:[^0-9\n])'],
     ## Microsoft C/C++:
     ##   keyboard.c(537) : warning C4005: 'min' : macro redefinition
     ##   d:\tmp\test.c(23) : error C2143: syntax error : missing ';' before 'if'
-    'ms': [r'(?P<filename>([a-zA-Z]:)?[^:(\s-]+)\((?P<line>[0-9]+)\)[ \t]*:[ \t]*(?P<type>warning|error) (?P<subtype>[^:\n]+):'],
+    ##   c:\home\petsc\PETSC-~1\src\sles\pc\INTERF~1\pcregis.c(82) : fatal error C1017: invalid integer constant expression
+    'ms': [r'(?P<filename>([a-zA-Z]:)?[^:(\s]+)\((?P<line>[0-9]+)\)[ \t]*:[ \t]*(?P<type>warning|error|fatal error) (?P<subtype>[^:\n]+):'],
     ## Win32fe, Petsc front end for Windows compilers
     ##   Warning: win32fe Include Path Not Found: /home/balay/petsc-test
     'win32fe': [r'(?P<type>Warning|Error): (?P<filename>win32fe)']
@@ -121,7 +125,9 @@ class BuildChecker:
           except IndexError:
             pass
           try:
-            print 'From '+self.filename+': '+m.group('type')+' in file '+m.group('filename')+' on line '+m.group('line')
+            type = m.group('type')
+            if not type: type = 'Error'
+            print 'From '+self.filename+': '+type+' in file '+m.group('filename')+' on line '+m.group('line')
           except IndexError:
             # For win32fe
             print 'From '+self.filename+': '+m.group('type')+' for '+m.group('filename')
