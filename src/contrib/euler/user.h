@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.33 1997/10/17 04:09:13 curfman Exp curfman $ */
+/* $Id: user.h,v 1.34 1997/10/17 19:46:50 curfman Exp keyes $ */
 
 /* Include file for 3D Euler application code */
 
@@ -403,7 +403,7 @@ extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
 
 extern int  localfortfct_fp_(int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 
 /* Fortran interface definitions */
