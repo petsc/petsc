@@ -32,11 +32,14 @@ typedef struct {
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
   int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
   int (*MatDestroy)(Mat);
+  int (*MatPreallocate)(Mat,int,int,int*,int,int*);
+
   /* Clean up flag for destructor */
   PetscTruth CleanUpDSCPACK;
 } Mat_DSC;
 
 EXTERN int MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatConvert_Base_DSCPACK(Mat,const MatType,Mat*);
 
 /* DSC function */
 #undef __FUNCT__  
@@ -633,6 +636,30 @@ int MatView_DSCPACK(Mat A,PetscViewer viewer) {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
+#define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIDSCPACK"
+int MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+{
+  Mat     A;
+  Mat_DSC *lu;
+  int     ierr;
+
+  PetscFunctionBegin;
+  /*
+    After performing the MPIBAIJ Preallocation, we need to convert the local diagonal block matrix
+    into DSCPACK type so that the block jacobi preconditioner (for example) can use DSCPACK.  I would
+    like this to be done in the MatCreate routine, but the creation of this inner matrix requires
+    block size info so that PETSc can determine the local size properly.  The block size info is set
+    in the preallocation routine.
+  */
+  ierr = (*lu->MatPreallocate)(B,bs,d_nz,d_nnz,o_nz,o_nnz);
+  A    = ((Mat_MPIBAIJ *)B->data)->A;
+  ierr = MatConvert_Base_DSCPACK(A,MATDSCPACK,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_DSCPACK"
 int MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATDSCPACK */
@@ -642,6 +669,7 @@ int MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) {
   MPI_Comm comm;
   Mat      B=*newmat;
   Mat_DSC  *lu;
+  void     (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {
@@ -672,6 +700,14 @@ int MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_seqbaij_C",
                                              "MatConvert_DSCPACK_Base",MatConvert_DSCPACK_Base);CHKERRQ(ierr);
   } else {
+      /* I really don't like needing to know the tag: MatMPIBAIJSetPreallocation_C */
+    ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
+    if (f) {
+      lu->MatPreallocate = (int (*)(Mat,int,int,int*,int,int*))f;
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocation_C",
+                                               "MatMPIBAIJSetPreallocation_MPIDSCPACK",
+                                               MatMPIBAIJSetPreallocation_MPIDSCPACK);CHKERRQ(ierr);
+    }
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_dscpack_C",
                                              "MatConvert_Base_DSCPACK",MatConvert_Base_DSCPACK);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_mpibaij_C",
@@ -733,7 +769,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_DSCPACK"
 int MatCreate_DSCPACK(Mat A) {
   int ierr,size;
-  Mat A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqBAIJ or MPIBAIJ */
@@ -743,9 +778,7 @@ int MatCreate_DSCPACK(Mat A) {
   if (size == 1) {
     ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
   } else {
-    ierr   = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
-    A_diag = ((Mat_MPIBAIJ *)A->data)->A;
-    ierr   = MatConvert_Base_DSCPACK(A_diag,MATDSCPACK,&A_diag);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
   }
   ierr = MatConvert_Base_DSCPACK(A,MATDSCPACK,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -92,6 +92,30 @@ int MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
+#define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJSpooles"
+int MatMPISBAIJSetPreallocation_MPISBAIJSpooles(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+{
+  Mat         A;
+  Mat_Spooles *lu;
+  int         ierr;
+
+  PetscFunctionBegin;
+  /*
+    After performing the MPISBAIJ Preallocation, we need to convert the local diagonal block matrix
+    into Spooles type so that the block jacobi preconditioner (for example) can use Spooles.  I would
+    like this to be done in the MatCreate routine, but the creation of this inner matrix requires
+    block size info so that PETSc can determine the local size properly.  The block size info is set
+    in the preallocation routine.
+  */
+  ierr = (*lu->MatPreallocate)(B,bs,d_nz,d_nnz,o_nz,o_nnz);
+  A    = ((Mat_MPISBAIJ *)B->data)->A;
+  ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPISBAIJ_MPISBAIJSpooles"
 int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert a MATMPISBAIJ matrix */
@@ -99,6 +123,7 @@ int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   int         ierr;
   Mat         B=*newmat;
   Mat_Spooles *lu;
+  void        (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {
@@ -121,11 +146,21 @@ int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   B->ops->assemblyend            = MatAssemblyEnd_MPISBAIJSpooles;
   B->ops->destroy                = MatDestroy_MPISBAIJSpooles;
 
+  /* I really don't like needing to know the tag: MatMPISBAIJSetPreallocation_C */
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
+  if (f) {
+    lu->MatPreallocate = (int (*)(Mat,int,int,int*,int,int*))f;
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
+                                             "MatMPISBAIJSetPreallocation_MPISBAIJSpooles",
+                                             MatMPISBAIJSetPreallocation_MPISBAIJSpooles);CHKERRQ(ierr);
+  }
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaijspooles_mpisbaij_C",
                                            "MatConvert_Spooles_Base",MatConvert_Spooles_Base);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaij_mpisbaijspooles_C",
                                            "MatConvert_MPISBAIJ_MPISBAIJSpooles",
                                            MatConvert_MPISBAIJ_MPISBAIJSpooles);CHKERRQ(ierr);
+
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -186,15 +221,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_MPISBAIJSpooles"
 int MatCreate_MPISBAIJSpooles(Mat A) {
   int ierr;
-  Mat A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of MPISBAIJ */
   /*   and MPISBAIJSpooles types */
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
   ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-  A_diag = ((Mat_MPISBAIJ *)A->data)->A;
-  ierr   = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A_diag,MATSEQSBAIJSPOOLES,&A_diag);CHKERRQ(ierr);
   ierr   = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

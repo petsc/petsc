@@ -53,6 +53,7 @@ typedef struct {
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
   int (*MatDestroy)(Mat);
+  int (*MatPreallocate)(Mat,int,int,int*,int,int*);
 
   MatType    basetype;
   PetscTruth CleanUpSpooles,useQR;

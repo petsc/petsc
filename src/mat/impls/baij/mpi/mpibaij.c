@@ -2038,8 +2038,14 @@ int MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_nz
   b->cstart_bs = b->cstart*bs;
   b->cend_bs   = b->cend*bs;
 
+  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,B->m,B->n,&b->A);CHKERRQ(ierr);
+  ierr = MatSetType(b->A,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
+  PetscLogObjectParent(B,b->A);
+  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,B->m,B->N,&b->B);CHKERRQ(ierr);
+  ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
+  PetscLogObjectParent(B,b->B);
 
   ierr = MatStashCreate_Private(B->comm,bs,&B->bstash);CHKERRQ(ierr);
 
@@ -2126,13 +2132,6 @@ int MatCreate_MPIBAIJ(Mat B)
   b->ht_fact      = 0;
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
-
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,PETSC_DETERMINE,PETSC_DETERMINE,&b->A);CHKERRQ(ierr);
-  ierr = MatSetType(b->A,MATSEQBAIJ);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->A);
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,PETSC_DETERMINE,PETSC_DETERMINE,&b->B);CHKERRQ(ierr);
-  ierr = MatSetType(b->B,MATSEQBAIJ);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->B);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_use_hash_table",&flg);CHKERRQ(ierr);
   if (flg) { 

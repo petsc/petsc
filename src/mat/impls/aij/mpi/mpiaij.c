@@ -1795,10 +1795,10 @@ int MatCreate_MPIAIJ(Mat B)
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
 
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,PETSC_DETERMINE,PETSC_DETERMINE,&b->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,B->m,B->n,&b->A);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->A);
-  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,PETSC_DETERMINE,PETSC_DETERMINE,&b->B);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,B->m,B->N,&b->B);CHKERRQ(ierr);
   ierr = MatSetType(b->B,MATSEQAIJ);CHKERRQ(ierr);
   PetscLogObjectParent(B,b->B);
 

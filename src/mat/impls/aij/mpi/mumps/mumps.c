@@ -43,11 +43,12 @@ typedef struct {
   int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
   int (*MatDestroy)(Mat);
   int (*specialdestroy)(Mat);
+  int (*MatPreallocate)(Mat,int,int,int*,int,int*);
 } Mat_MUMPS;
 
 EXTERN int MatDuplicate_AIJMUMPS(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatDuplicate_SBAIJMUMPS(Mat,MatDuplicateOption,Mat*);
-
+EXTERN int MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,Mat*);
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
   input: 
@@ -838,12 +839,37 @@ int MatAssemblyEnd_SBAIJMUMPS(Mat A,MatAssemblyType mode) {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
+#define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJMUMPS"
+int MatMPISBAIJSetPreallocation_MPISBAIJMUMPS(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+{
+  Mat       A;
+  Mat_MUMPS *mumps;
+  int       ierr;
+
+  PetscFunctionBegin;
+  /*
+    After performing the MPISBAIJ Preallocation, we need to convert the local diagonal block matrix
+    into MUMPS type so that the block jacobi preconditioner (for example) can use MUMPS.  I would
+    like this to be done in the MatCreate routine, but the creation of this inner matrix requires
+    block size info so that PETSc can determine the local size properly.  The block size info is set
+    in the preallocation routine.
+  */
+  ierr = (*mumps->MatPreallocate)(B,bs,d_nz,d_nnz,o_nz,o_nnz);
+  A    = ((Mat_MPISBAIJ *)B->data)->A;
+  ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SBAIJ_SBAIJMUMPS"
 int MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
   int       ierr,size;
   MPI_Comm  comm;
   Mat       B=*newmat;
   Mat_MUMPS *mumps;
+  void      (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {
@@ -877,6 +903,14 @@ int MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_sbaijmumps_seqsbaij_C",
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   } else {
+  /* I really don't like needing to know the tag: MatMPISBAIJSetPreallocation_C */
+    ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
+    if (f) {
+      mumps->MatPreallocate = (int (*)(Mat,int,int,int*,int,int*))f;
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
+                                               "MatMPISBAIJSetPreallocation_MPISBAIJMUMPS",
+                                               MatMPISBAIJSetPreallocation_MPISBAIJMUMPS);CHKERRQ(ierr);
+    }
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaij_sbaijmumps_C",
                                              "MatConvert_SBAIJ_SBAIJMUMPS",MatConvert_SBAIJ_SBAIJMUMPS);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_sbaijmumps_mpisbaij_C",
@@ -948,7 +982,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SBAIJMUMPS"
 int MatCreate_SBAIJMUMPS(Mat A) {
   int ierr,size;
-  Mat A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqSBAIJ or MPISBAIJ */
@@ -959,8 +992,6 @@ int MatCreate_SBAIJMUMPS(Mat A) {
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   } else {
     ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-    A_diag = ((Mat_MPISBAIJ *)A->data)->A;
-    ierr   = MatConvert_SBAIJ_SBAIJMUMPS(A_diag,MATSBAIJMUMPS,&A_diag);CHKERRQ(ierr);
   }
   ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
