@@ -15,9 +15,6 @@ EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
            ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c\
            ex19.c ex20.c ex21.c ex22.c
-SYSLIB   = -L$(LDIR) -lpetscvec -lpetscsys -lpetscdraw\
-           $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
-           $(MPI_LIB) $(SYS_LIB) $(FC_LIB) $(X11_LIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 runexamples:
@@ -104,99 +101,99 @@ runexamples:
            $(RM) -f ex22_1.tmp
 
 ex1: ex1.o
-	-$(CLINKER)  -o ex1 ex1.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER)  -o ex1 ex1.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex1.o
 
 ex2: ex2.o
-	-$(CLINKER) -o ex2 ex2.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex2 ex2.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex2.o
 
 ex3: ex3.o
-	-$(CLINKER) -o ex3 ex3.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex3 ex3.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex3.o
 
 ex4: ex4.o
-	-$(CLINKER) -o ex4 ex4.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex4 ex4.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex4.o
 
 ex5: ex5.o
-	-$(CLINKER) -o ex5 ex5.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex5 ex5.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex5.o
 
 ex6: ex6.o
-	-$(CLINKER) -o ex6 ex6.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex6 ex6.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex6.o
 
 ex7: ex7.o
-	-$(CLINKER) -o ex7 ex7.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex7 ex7.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex7.o
 
 ex8: ex8.o
-	-$(CLINKER) -o ex8 ex8.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex8 ex8.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex8.o
 
 ex9: ex9.o
-	-$(CLINKER) -o ex9 ex9.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex9 ex9.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex9.o
 
 ex10: ex10.o
-	-$(CLINKER) -o ex10 ex10.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex10 ex10.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex10.o
 
 ex11: ex11.o
-	-$(CLINKER) -o ex11 ex11.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex11 ex11.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex11.o
 
 ex12: ex12.o
-	-$(CLINKER) -o ex12 ex12.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex12 ex12.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex12.o
 
 ex13: ex13.o
-	-$(CLINKER) -o ex13 ex13.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex13 ex13.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex13.o
 
 ex14: ex14.o
-	-$(CLINKER) -o ex14 ex14.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex14 ex14.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex14.o
 
 ex15: ex15.o
-	-$(CLINKER) -o ex15 ex15.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex15 ex15.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex15.o
 
 ex16: ex16.o
-	-$(CLINKER) -o ex16 ex16.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex16 ex16.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex16.o
 
 ex17: ex17.o
-	-$(CLINKER) -o ex17 ex17.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex17 ex17.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex17.o
 
 ex18: ex18.o
-	-$(CLINKER) -o ex18 ex18.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex18 ex18.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex18.o
 
 ex19: ex19.o
-	-$(CLINKER) -o ex19 ex19.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex19 ex19.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex19.o
 
 ex20: ex20.o
-	-$(CLINKER) -o ex20 ex20.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex20 ex20.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex20.o
 
 ex21: ex21.o
-	-$(CLINKER) -o ex21 ex21.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex21 ex21.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex21.o
 
 ex22: ex22.o
-	-$(CLINKER) -o ex22 ex22.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex22 ex22.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex22.o
 
 ex23: ex23.o
-	-$(CLINKER) -o ex23 ex23.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex23 ex23.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex23.o
 
 ex24: ex24.o
-	-$(CLINKER) -o ex24 ex24.o $(LIBNAME) $(SYSLIB)
+	-$(CLINKER) -o ex24 ex24.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex24.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
