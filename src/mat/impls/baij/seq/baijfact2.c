@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.49 2001/04/03 14:33:37 bsmith Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.50 2001/04/13 18:40:39 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2231,7 +2231,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
   int         *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
   int         *dloc,idx,row,m,fm,nzf,nzi,len, realloc = 0,dcount = 0;
   int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2,levels,diagonal_fill;
-  PetscTruth  col_identity,row_identity;
+  PetscTruth  col_identity,row_identity,sse_enabled;
   PetscReal   f;
 
   PetscFunctionBegin;
@@ -2456,7 +2456,8 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
         PetscLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
         break; 
       case 4:
-        if (PetscSSEIsEnabled()) {
+        ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+        if (sse_enabled) {
           (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_ICL_SSE;
         } else {
           (*fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
