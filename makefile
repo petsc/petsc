@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.310 2000/07/07 20:25:42 balay Exp bsmith $ 
+# $Id: makefile,v 1.311 2000/08/14 16:19:05 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -418,4 +418,39 @@ noise: info chkpetsc_dir
 	-@chmod g+w  ${PDIR}/libpetscsnes.a
 	-@echo "Completed compiling noise routines"
 	-@echo "========================================="
+
+#	-@${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker
+exercises:
+	-@echo "========================================="
+	-@echo "Generating HTML tutorial exercises"
+	-@rm -f docs/pageform.txt
+	-@echo "title=\"PETSc Exercises\""                >  docs/pageform.txt 
+	-@echo "access_title=Exercise Sections"              >>  docs/pageform.txt 
+	-@echo "access_format=short"                                            >> pageform.txt
+	-@echo "startpage=../exercises/introduction.htm"  >> docs/pageform.txt
+	-@echo "NONE title=\"Introduction\" command=link src=../exercises/introduction.htm" >> docs/pageform.txt
+	-@echo "Generating HTML for individual directories"
+	-@echo "========================================="
+	cd src/vec/examples/tutorials; ${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker
+	cd src/snes/examples/tutorials; ${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker
+	-@echo "Completed HTML for individual directories"
+	-@echo "NONE title=\"<HR>\" " >> docs/pageform.txt; 
+	-@echo "NONE title=\"PETSc Documentation\" command=link src=../index.html target=replace" >> docs/pageform.txt
+	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
+	-@echo "========================================="
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
