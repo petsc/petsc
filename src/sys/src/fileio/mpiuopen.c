@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.24 2000/02/02 20:08:17 bsmith Exp bsmith $*/
+/*$Id: mpiuopen.c,v 1.25 2000/03/23 18:39:18 balay Exp balay $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
@@ -105,7 +105,11 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
   if (!rank) {
     char buf[1024];
     while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
+#if defined (PARCH_win32)
+    SETERRQ(1,1,"Cannot run programs on NT");
+#else
     pclose(fd);
+#endif
   }
   PetscFunctionReturn(0);
 }
