@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.14 1996/03/04 05:16:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.15 1996/03/19 21:27:41 bsmith Exp curfman $";
 #endif
 
 #include "matimpl.h"  /*I   "mat.h"  I*/
@@ -44,15 +44,16 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 }
 
 /*@
-   MatShift - Computes Y =  Y + a I
+   MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity
+   matrix.
 
    Input Parameters:
 .  Y - the matrices
 .  a - the scalar 
 
-.seealso: MatDiagonalShift()
-
 .keywords: matrix, add, shift
+
+.seealso: MatDiagonalShift()
  @*/
 int MatShift(Scalar *a,Mat Y)
 {
@@ -74,17 +75,20 @@ int MatShift(Scalar *a,Mat Y)
 }
 
 /*@
-   MatDiagonalShift - Computes Y =  Y + D. Where D is a diagonal matrix
-        represented as a vector.
+   MatDiagonalShift - Computes Y = Y + D, where D is a diagonal matrix
+   that is represented as a vector.
 
    Input Parameters:
-.  Y - the matrices
+.  Y - the input matrix
 .  D - the diagonal matrix, represented as a vector
 
-.seealso: MatDiagonalShift()
+   Input Parameters:
+.  Y - the shifted ouput matrix
 
-.keywords: matrix, add, shift
- @*/
+.keywords: matrix, add, shift, diagonal
+
+.seealso: MatShift()
+@*/
 int MatDiagonalShift(Mat Y,Vec D)
 {
   int    i,start,end,ierr;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.159 1996/03/31 02:44:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.160 1996/04/02 04:02:04 curfman Exp curfman $";
 #endif
 
 /*
@@ -1118,7 +1118,7 @@ int MatEqual(Mat mat1,Mat mat2,PetscTruth *flg)
 
 .keywords: matrix, scale
 
-.seealso: MatDiagonalShift()
+.seealso: MatDiagonalScale()
 @*/
 int MatDiagonalScale(Mat mat,Vec l,Vec r)
 {
@@ -1136,14 +1136,20 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 } 
 
 /*@
-   MatScale - Scales a matrix by a number.
+    MatScale - Scales all elements of a matrix by a scalar value.
 
-   Input Parameters:
-.  mat - the matrix to be scaled
-.   a  - the number
+    Input Parameters:
+.   mat - the matrix to be scaled
+.   a  - the scalar
+
+    Output Parameter:
+.   mat - the scaled matrix
 
    Note: the name of this routine MUST change.
+
 .keywords: matrix, scale
+
+.seealso: MatDiagonalScale()
 @*/
 int MatScale(Scalar *a,Mat mat)
 {
