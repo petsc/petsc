@@ -594,7 +594,7 @@ class Configure(config.base.Configure):
           if status: self.framework.log.write('ret = '+str(status)+'\n')
           if error: self.framework.log.write('error message = {'+error+'}\n')
           os.remove('conf1.a')
-          raise RuntimeError('Ranlib is not functional')
+          raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
         return
       self.pushLanguage('C')
       if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
