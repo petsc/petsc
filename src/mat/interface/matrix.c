@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.373 2000/05/26 17:41:28 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.374 2000/05/26 17:43:24 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -675,8 +675,12 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for matrix");
   }
 
-  x->mapping = mapping;
-  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  if (x->ops->setlocaltoglobalmapping) {
+    ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
+  } else {
+    x->mapping = mapping;
+    ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -767,10 +771,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,In
   else if (mat->insertmode != addv) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
-  if (!mat->mapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping()");
-  }
-  if (nrow > 2048 || ncol > 2048) {
+  if (!mat->ops->setvalueslocal && (nrow > 2048 || ncol > 2048)) {
     SETERRQ2(PETSC_ERR_SUP,0,"Number column/row indices must be <= 2048: are %d %d",nrow,ncol);
   }
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
@@ -781,9 +782,13 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,In
     mat->assembled     = PETSC_FALSE;
   }
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
-  ierr = ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm);CHKERRQ(ierr); 
-  ierr = (*mat->ops->setvalues)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  if (!mat->ops->setvalueslocal) {
+    ierr = ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm);CHKERRQ(ierr); 
+    ierr = (*mat->ops->setvalues)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  } else {
+    ierr = (*mat->ops->setvalueslocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
+  }
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   PetscFunctionReturn(0);
 }
@@ -2904,12 +2909,15 @@ int MatZeroRowsLocal(Mat mat,IS is,Scalar *diag)
   if (diag) PetscValidScalarPointer(diag);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
-  if (!mat->ops->zerorows) SETERRQ(PETSC_ERR_SUP,0,"");
-  if (!mat->mapping) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Need to provide local to global mapping to matrix first");
 
-  ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
-  ierr = (*mat->ops->zerorows)(mat,newis,diag);CHKERRQ(ierr);
-  ierr = ISDestroy(newis);CHKERRQ(ierr);
+  if (mat->ops->zerorowslocal) {
+    ierr = (*mat->ops->zerorowslocal)(mat,is,diag);CHKERRQ(ierr);
+  } else {
+    if (!mat->mapping) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Need to provide local to global mapping to matrix first");
+    ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
+    ierr = (*mat->ops->zerorows)(mat,newis,diag);CHKERRQ(ierr);
+    ierr = ISDestroy(newis);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
