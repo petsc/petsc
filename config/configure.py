@@ -14,9 +14,37 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
   print '*********************************************************************************'
   sys.exit(4)
   
-def getarch():
-  if os.path.basename(sys.argv[0]).startswith('configure'): return ''
-  else: return os.path.basename(sys.argv[0])[:-3]
+def check_petsc_arch(opts):
+  # Check for PETSC_ARCH in the following order:
+  # 1. command-line (first occurance)
+  # 2. specified in configure_options(in script)
+  # 3. script name (if not configure.py)
+
+  useName = ''
+  for name in opts:
+    if name.startswith('-PETSC_ARCH'):
+      useName = name
+      break
+  # look for duplicates - and remove them
+  dupnames = []
+  if useName:
+    for name in opts:
+      if name.startswith('-PETSC_ARCH') and name != useName:
+        opts.remove(name)
+        dupnames.append(name) 
+  # print warning for duplicates
+  if dupnames:
+    print '*********************************************************************************'
+    print 'Warning: The following duplicate PETSC_ARCH options are removed:', dupnames
+    print 'Warning: Using the option:', useName
+    print '*********************************************************************************'
+  # If not yet specified - use the filename of script
+  if not useName:
+      filename = os.path.basename(sys.argv[0])
+      if not filename.startswith('configure'):
+        useName = '-PETSC_ARCH='+os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        opts.append(useName)
+  return
 
 def chkcygwin():
   if os.path.exists('/usr/bin/cygcheck.exe'):
@@ -43,15 +71,14 @@ def rhl9():
   else:
     return 0
 
-def petsc_configure(configure_options):
-  # If PETSC_ARCH not already defined, check if the script name is different then configure
-  # (if so, use this name). Or else - get a  name of the config/configure_arch.py
-  found = 0
-  for name in configure_options:
-    if name.startswith('-PETSC_ARCH'):
-      found = 1
-      break
-  if not found and getarch(): configure_options.append('-PETSC_ARCH='+getarch())
+def petsc_configure(configure_options): 
+  print '================================================================================='
+  print '             Configuring PETSc to compile on your system                         '
+  print '================================================================================='  
+
+  sys.argv += configure_options
+  # check PETSC_ARCH
+  check_petsc_arch(sys.argv)
 
   # support a few standard configure option types 
   for l in range(0,len(sys.argv)-1):
@@ -107,10 +134,7 @@ def petsc_configure(configure_options):
   import config.framework
   import cPickle
 
-  print '================================================================================='
-  print '             Configuring PETSc to compile on your system                         '
-  print '================================================================================='  
-  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
+  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure'], loadArgDB = 0)
   try:
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)

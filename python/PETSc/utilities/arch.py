@@ -11,8 +11,8 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     desc = ['PETSc:']
-    desc.append('  PETSC_ARCH: '+str(self.framework.argDB['PETSC_ARCH']))
-    desc.append('  PETSC_DIR: '+str(self.framework.argDB['PETSC_DIR']))
+    desc.append('  PETSC_ARCH: '+str(self.arch))
+    desc.append('  PETSC_DIR: '+str(self.dir))
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):
@@ -87,6 +87,14 @@ class Configure(config.base.Configure):
     self.framework.host_vendor = m.group('vendor')
     self.framework.host_os     = m.group('os')
 
+
+    # Warn if PETSC_ARCH doesnt match env variable
+    if 'PETSC_ARCH' in self.framework.argDB and 'PETSC_ARCH' in os.environ and self.framework.argDB['PETSC_ARCH'] != os.environ['PETSC_ARCH']:
+      print '*********************************************************************************'
+      print 'Warning: PETSC_ARCH from environment does not match command-line.'
+      print 'Warning: Using from command-line:', self.framework.argDB['PETSC_ARCH'],',ignoring environment:',os.environ['PETSC_ARCH']
+      print '*********************************************************************************'
+                    
     if 'PETSC_ARCH' in self.framework.argDB:
       self.arch = self.framework.argDB['PETSC_ARCH']
     else:
@@ -108,5 +116,5 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureArchitecture)
     if self.framework.argDB['with-external-packages-dir'].startswith('$'):
-      self.framework.argDB['with-external-packages-dir'] = os.path.join(self.framework.argDB['PETSC_DIR'], 'externalpackages')
+      self.framework.argDB['with-external-packages-dir'] = os.path.join(self.dir, 'externalpackages')
     return

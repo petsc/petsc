@@ -302,10 +302,10 @@ class Configure(config.base.Configure):
   def configure(self):
     if not os.path.samefile(self.arch.dir, os.getcwd()):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.arch.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
-    self.framework.header          = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
-    self.framework.cHeader         = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
-    self.framework.makeMacroHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf'
-    self.framework.makeRuleHeader  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscrules'        
+    self.framework.header          = 'bmake/'+self.arch.arch+'/petscconf.h'
+    self.framework.cHeader         = 'bmake/'+self.arch.arch+'/petscfix.h'
+    self.framework.makeMacroHeader = 'bmake/'+self.arch.arch+'/petscconf'
+    self.framework.makeRuleHeader  = 'bmake/'+self.arch.arch+'/petscrules'        
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
