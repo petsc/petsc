@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.51 1995/08/01 21:33:16 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.52 1995/08/03 18:01:29 bsmith Exp curfman $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -77,7 +77,7 @@ extern int  TrGetMaximumAllocated(double*);
 typedef struct _PetscObject* PetscObject;
 #define PETSC_COOKIE         0x12121212
 #define PETSC_DECIDE         -1
-#define PETSC_DEFAULT        0
+#define PETSC_DEFAULT        -2
 
 typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 
