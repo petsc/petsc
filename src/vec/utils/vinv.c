@@ -1,7 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.13 1995/10/12 04:09:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.14 1995/11/01 19:08:25 bsmith Exp bsmith $";
 #endif
-
+/*
+     Some useful vector utility functions.
+*/
 #include "vec.h"   /*I "vec.h" I*/
 #include "vecimpl.h"
 

@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: vpscat.c,v 1.37 1995/11/02 04:09:28 bsmith Exp $";
+#endif
 
 #include "drawimpl.h"   /*I "draw.h" I*/
 #include "vec.h"        /*I "vec.h" I*/

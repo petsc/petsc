@@ -1,7 +1,11 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.46 1995/11/01 19:08:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.47 1995/11/01 23:14:39 bsmith Exp bsmith $";
 #endif
+
+/*
+   This file contains routines for Parallel vector operations.
+ */
 
 #include "petsc.h"
 #include "inline/dot.h"
@@ -12,12 +16,6 @@ static char vcid[] = "$Id: pbvec.c,v 1.46 1995/11/01 19:08:38 bsmith Exp bsmith 
 #include "../dvec2.c"
 #include "pdvec.c"
 #include "pvec2.c"
-
-/*
-   This file contains routines for Parallel vector operations.
-   Basically, these are just the local routine EXCEPT for the
-   Dot products and norms.
- */
 
 static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 {

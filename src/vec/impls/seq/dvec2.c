@@ -1,5 +1,9 @@
-/* $Id: dvec2.c,v 1.17 1995/10/24 21:41:42 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.18 1995/11/01 19:08:33 bsmith Exp bsmith $ */
 
+/* 
+   Defines some vector operation functions that are shared by 
+  sequential and parallel vectors.
+*/
 #include "inline/dot.h"
 #include "inline/vmult.h"
 #include "inline/setval.h"

@@ -1,9 +1,9 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.36 1995/10/22 04:16:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.37 1995/11/01 23:14:22 bsmith Exp bsmith $";
 #endif
 /*
-       General indices as a list of integers
+     Provides the functions for index sets (IS) defined by a list of integers.
 */
 #include "isimpl.h"
 #include "pinclude/pviewer.h"

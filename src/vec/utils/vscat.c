@@ -1,14 +1,11 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.43 1995/11/01 19:08:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.44 1995/11/01 23:14:28 bsmith Exp bsmith $";
 #endif
 
 /*
-       This code does not use data encapsulation. The reason is the 
-   we need to scatter between different vector types (now chiefly 
-   between sequential and MPI parallel). 
-
-       This code knows about the different implementations
+     Code for creating scatters between vectors. This file 
+  includes the code for scattering between sequential vectors.
 */
 
 #include "is/isimpl.h"

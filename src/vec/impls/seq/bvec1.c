@@ -1,8 +1,9 @@
 
-/* $Id: bvec1.c,v 1.9 1995/09/30 19:26:35 bsmith Exp bsmith $ */
+/* $Id: bvec1.c,v 1.10 1995/11/01 19:08:33 bsmith Exp bsmith $ */
 
 /*
-   Defines the BLAS based vector operations
+   Defines the BLAS based vector operations. Code shared by parallel
+  and sequential vectors.
 */
 
 #include <math.h>

@@ -1,5 +1,8 @@
-/* $Id: pdvec.c,v 1.31 1995/11/01 19:08:38 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.32 1995/11/01 23:14:39 bsmith Exp bsmith $ */
 
+/*
+     Code for some of the parallel vector primatives.
+*/
 #include "pinclude/pviewer.h"
 #include "sysio.h"
 

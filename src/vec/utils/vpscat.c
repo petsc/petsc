@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.35 1995/11/01 19:08:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.36 1995/11/01 23:14:28 bsmith Exp bsmith $";
 #endif
 /*
-    Does the parallel vector scatter 
+    Defines parallel vector scatters.
 */
 
 #include "sys.h"
