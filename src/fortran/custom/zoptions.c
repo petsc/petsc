@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.4 1995/10/26 22:39:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.5 1995/11/23 04:15:38 bsmith Exp bsmith $";
 #endif
 /*
     Fortran stub for PetscInitialize and Options routines. 
@@ -21,27 +21,27 @@ extern MPI_Datatype  MPIU_COMPLEX;
 
 
 #ifdef FORTRANCAPS
-#define optionsgetintarray_    OPTIONSGETINTARRAY
-#define optionssetvalue_       OPTIONSSETVALUE
-#define optionshasname_        OPTIONSHASNAME
-#define optionsgetint_         OPTIONSGETINT
-#define optionsgetdouble_      OPTIONSGETDOUBLE
-#define optionsgetdoublearray_ OPTIONSGETDOUBLEARRAY
-#define petscfinalize_         PETSCFINALIZE
-#define petscsetcommonblock_   PETSCSETCOMMONBLOCK
-#define petscsetbasepointers_  PETSCSETBASEPOINTERS
-#define optionsgetstring_      OPTIONSGETSTRING
+#define optionsgetintarray_           OPTIONSGETINTARRAY
+#define optionssetvalue_              OPTIONSSETVALUE
+#define optionshasname_               OPTIONSHASNAME
+#define optionsgetint_                OPTIONSGETINT
+#define optionsgetdouble_             OPTIONSGETDOUBLE
+#define optionsgetdoublearray_        OPTIONSGETDOUBLEARRAY
+#define petscfinalize_                PETSCFINALIZE
+#define petscsetcommonblock_          PETSCSETCOMMONBLOCK
+#define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
+#define optionsgetstring_             OPTIONSGETSTRING
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define optionssetvalue_       optionssetvalue
-#define optionshasname_        optionshasname
-#define optionsgetint_         optionsgetint
-#define optionsgetdouble_      optionsgetdouble
-#define optionsgetdoublearray_ optionsgetdoublearray
-#define petscfinalize_         petscfinalize
-#define petscsetcommonblock_   petscsetcommonblock
-#define petscsetbasepointers_  petscsetbasepointers
-#define optionsgetstring_      optionsgetstring
-#define optionsgetintarray_    optionsgetintarray
+#define optionssetvalue_              optionssetvalue
+#define optionshasname_               optionshasname
+#define optionsgetint_                optionsgetint
+#define optionsgetdouble_             optionsgetdouble
+#define optionsgetdoublearray_        optionsgetdoublearray
+#define petscfinalize_                petscfinalize
+#define petscsetcommonblock_          petscsetcommonblock
+#define petscsetfortranbasepointers_  petscsetfortranbasepointers
+#define optionsgetstring_             optionsgetstring
+#define optionsgetintarray_           optionsgetintarray
 #endif
 
 
