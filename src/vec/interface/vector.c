@@ -381,13 +381,13 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
-  if (type == NORM_2 && x->normvalid) {
+  /*  if (type == NORM_2 && x->normvalid) {
     *val = x->normcurrent;
-  } else {
+    } else { */
     ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
     ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
     ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
-  }
+    /*  }*/
   /*
      The next block is for incremental debugging
   */
