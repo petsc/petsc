@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.275 1999/03/19 16:29:06 bsmith Exp balay $ 
+# $Id: makefile,v 1.276 1999/03/19 16:34:05 balay Exp curfman $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -12,10 +12,10 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 #
 # Basic targets to build PETSc libraries.
-# all     : builds the c, fortran,f90 libraries
+# all     : builds the c, fortran, and f90 libraries
 all       : info chkpetsc_dir deletelibs build_c build_fortran shared
 #
-#  Prints information about the system and PETSc being compiled
+# Prints information about the system and version of PETSc being compiled
 #
 info:
 	-@echo "=========================================="
@@ -45,9 +45,9 @@ info:
 	-@echo "=========================================="
 
 #
-# Build the PETSc libraries
-# This target also builds fortran interface files, and f90
-# interface files. (except compiling *.F files)
+# Builds the PETSc libraries
+# This target also builds fortran77 and f90 interface
+# files. (except compiling *.F files)
 #
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
@@ -64,7 +64,7 @@ build_c:
 # Builds PETSc Fortran source
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use libf to compile the fortran source files.
-
+#
 build_fortran:
 	-@echo "BEGINNING TO COMPILE FORTRAN SOURCE"
 	-@echo "========================================="
@@ -237,7 +237,7 @@ SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 	     maint/xclude maint/crontab  \
 	     maint/autoftp include/foldinclude/generateincludes
 
-# Builds all the documentation - should be done everynight
+# Builds all the documentation - should be done every night
 alldoc: allmanpages
 	cd docs/tex/manual; ${OMAKE} manual.dvi manual.ps manual.html manual/manual.html
 
