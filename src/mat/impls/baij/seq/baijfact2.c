@@ -2274,19 +2274,15 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
   ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr); 
   {
-    MatScalar     *v;
+    /* x will first be computed in single precision then promoted inplace to double */
+    MatScalar     *v,*t=(MatScalar *)x;
     int           jdx,idt,idx,nz,*vi,i,ai16;
 
-    /* Make space in temp stack for 16 Byte Aligned arrays */
-    float         ssealignedspace[11],*tmps,*tmpx;
-    unsigned long offset = (unsigned long)ssealignedspace % 16;
-    if (offset) offset = (16 - offset)/4;
-    tmps = &ssealignedspace[offset];
-    tmpx = &ssealignedspace[offset+4];
+    /* Forward solve the lower triangular factor. */
 
-  /* forward solve the lower triangular */
+    /* First block is the identity. */
     idx  = 0;
-    x[0] = b[0]; x[1] = b[1]; x[2] = b[2]; x[3] = b[3];
+    CONVERT_DOUBLE4_FLOAT4(t,b);
     v    =  aa + 16*ai[1];
 
     for (i=1; i<n;) {
@@ -2295,19 +2291,16 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
       nz   =  diag[i] - ai[i];
       idx +=  4;
 
-    /* Demote sum from double to float */
-      CONVERT_DOUBLE4_FLOAT4(tmps,&b[idx]);
-      LOAD_PS(tmps,XMM7);
+      /* Demote RHS from double to float. */
+      CONVERT_DOUBLE4_FLOAT4(&t[idx],&b[idx]);
+      LOAD_PS(&t[idx],XMM7);
 
       while (nz--) {
         PREFETCH_NTA(&v[16]);
         jdx = 4*(*vi++);
         
-        /* Demote solution (so far) from double to float */
-        CONVERT_DOUBLE4_FLOAT4(tmpx,&x[jdx]);
-
         /* 4x4 Matrix-Vector product with negative accumulation: */
-        SSE_INLINE_BEGIN_2(tmpx,v)
+        SSE_INLINE_BEGIN_2(&t[jdx],v)
           SSE_LOAD_PS(SSE_ARG_1,FLOAT_0,XMM6)
 
           /* First Column */
@@ -2341,12 +2334,11 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
       }
       v    =  aa + 16*ai[++i];
       PREFETCH_NTA(v);
-      STORE_PS(tmps,XMM7);
-
-      /* Promote result from float to double */
-      CONVERT_FLOAT4_DOUBLE4(&x[idx],tmps);
+      STORE_PS(&t[idx],XMM7);
     }
-    /* backward solve the upper triangular */
+
+    /* Backward solve the upper triangular factor.*/
+
     idt  = 4*(n-1);
     ai16 = 16*diag[n-1];
     v    = aa + ai16 + 16;
@@ -2355,19 +2347,14 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
       vi = aj + diag[i] + 1;
       nz = ai[i+1] - diag[i] - 1;
       
-      /* Demote accumulator from double to float */
-      CONVERT_DOUBLE4_FLOAT4(tmps,&x[idt]);
-      LOAD_PS(tmps,XMM7);
+      LOAD_PS(&t[idt],XMM7);
 
       while (nz--) {
         PREFETCH_NTA(&v[16]);
         idx = 4*(*vi++);
 
-        /* Demote solution (so far) from double to float */
-        CONVERT_DOUBLE4_FLOAT4(tmpx,&x[idx]);
-
         /* 4x4 Matrix-Vector Product with negative accumulation: */
-        SSE_INLINE_BEGIN_2(tmpx,v)
+        SSE_INLINE_BEGIN_2(&t[idx],v)
           SSE_LOAD_PS(SSE_ARG_1,FLOAT_0,XMM6)
 
           /* First Column */
@@ -2405,7 +2392,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
          Scale the result by the diagonal 4x4 block, 
          which was inverted as part of the factorization
       */
-      SSE_INLINE_BEGIN_3(v,tmps,aa+ai16)
+      SSE_INLINE_BEGIN_3(v,&t[idt],aa+ai16)
         /* First Column */
         SSE_COPY_PS(XMM0,XMM7)
         SSE_SHUFFLE(XMM0,XMM0,0x00)
@@ -2434,13 +2421,24 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
         SSE_STORE_PS(SSE_ARG_2,FLOAT_0,XMM0)
       SSE_INLINE_END_3
 
-      /* Promote solution from float to double */
-      CONVERT_FLOAT4_DOUBLE4(&x[idt],tmps);
-
       v    = aa + ai16 + 16;
       idt -= 4;
     }
-  }
+
+    /* Convert t from single precision back to double precision (inplace)*/
+    idt = 4*(n-1);
+    for (i=n-1;i>=0;i--) {
+      /*     CONVERT_FLOAT4_DOUBLE4(&x[idt],&t[idt]); */
+      /* Unfortunately, CONVERT_ will count from 0 to 3 which doesn't work here. */
+      PetscScalar *xtemp=&x[idt];
+      MatScalar   *ttemp=&t[idt];
+      xtemp[3] = (PetscScalar)ttemp[3];
+      xtemp[2] = (PetscScalar)ttemp[2];
+      xtemp[1] = (PetscScalar)ttemp[1];
+      xtemp[0] = (PetscScalar)ttemp[0];
+    }
+
+  } /* End of artificial scope. */
   ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
   PetscLogFlops(2*16*(a->nz) - 4*A->n);
