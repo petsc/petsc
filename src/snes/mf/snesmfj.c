@@ -558,6 +558,10 @@ int MatCreate_MFFD(Mat A)
   int          ierr;
 
   PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = SNESInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
+#endif
+
   PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",A->comm,MatDestroy_MFFD,MatView_MFFD);
   PetscLogObjectCreate(mfctx);
   mfctx->sp              = 0;
