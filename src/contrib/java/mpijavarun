@@ -1,5 +1,7 @@
 #!/bin/sh
-
+#
+#   Runs mpiJava program
+#
 JAVA=/usr/java1.2
 
 working_dir=/nfs/mcs-homes07/petsc/software/mpiJava-1.1
@@ -9,7 +11,7 @@ exec_prefix=${prefix}
 
 if [ $# -lt 1 ]
 then
-  echo "Usage: prunjava [-t] <procnum> <classname> <options>"
+  echo "Usage: mpijavarun [-t] <procnum> <classname> <options>"
   exit 1
 fi
 
@@ -85,24 +87,7 @@ EOF
 
 chmod a+x $CLASSNAME.jig
 
-
-
-if [ $TESTMODE = 1 ]
-then 
-  if [ -f ${working_dir}/lib/libmpijava.so ]
-  then
-    ${working_dir}/src/scripts/prun -t $PNUMBER $CLASSNAME.jig $*  
-  else
-    echo " ${working_dir}/lib/libmpijava.so not found"
-  fi
-else
-  if [ -f ${working_dir}/lib/libmpijava.so ]
-  then
-    ${working_dir}/src/scripts/prun $PNUMBER $CLASSNAME.jig $*  
-  else
-    echo " ${working_dir}/lib/libmpijava.so not found"
-  fi
-fi
+mpirun -np $PNUMBER $CLASSNAME.jig $*
 
 rm -f $CLASSNAME.jig
 
