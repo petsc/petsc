@@ -561,7 +561,7 @@ runex54:
 	  	      echo np $$np bs $$bs matsize $$matsize ov $$ov nd $$nd; fi; \
 		    $(RM) -f ex54_1.tmp ex54_12.tmp;\
 		  done;\
-		  sleep(1); \
+		  sleep 1; \
 		done;\
 	      done;\
 	    done;\
