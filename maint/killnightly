@@ -8,9 +8,10 @@ set dir=`dirname $0`
 
 foreach CONF ($*)
   set SSH=ssh
+  set DASHN=-n
   source $dir/confignightly/$1
 
-  $SSH $USR@$MACH -n "zapall" &
+  $SSH $USR@$MACH $DASHN "$LOC/maint/zapall" &
 end
 wait
 

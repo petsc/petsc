@@ -1,7 +1,7 @@
 #! /bin/csh
 # $Id: copytestlog,v 1.4 2000/03/22 19:58:19 balay Exp $ 
 # 
-# Copies log files from failed builds.
+# Copies log files from all nightly builds.
 #
 
 set dir=`dirname $0`

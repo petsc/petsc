@@ -1,0 +1,6 @@
+#!/bin/csh
+set count=0
+while ($count < 25)
+  zap make; zap src; zap ex; zap if; zap cc; zap CC; zap mat
+  set count=`expr $count + 1`
+end

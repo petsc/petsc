@@ -11,8 +11,7 @@ foreach CONF ($*)
   set DASHN=-n
   source $dir/confignightly/$1
 
-  echo "start build: $MACH $CONF `date`"
+  echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
   $SSH $USR@$MACH $DASHN "$LOC/maint/buildtest $CONF" &
-  echo "end build: $MACH $CONF `date`"
 end
 wait
