@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daghost.c,v 1.1 1996/01/30 04:28:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daghost.c,v 1.2 1996/02/08 18:28:38 bsmith Exp curfman $";
 #endif
  
 /*
@@ -16,8 +16,13 @@ static char vcid[] = "$Id: daghost.c,v 1.1 1996/01/30 04:28:02 bsmith Exp bsmith
 .  da - the distributed array
 
    Output Parameters:
-.  x,y,z - the corner indices. y and z are optional.
-.  m,n,p - widths in the corresponding directions. n and p are optional.
+.  x,y,z - the corner indices
+$    y and z are optional (used for 2D and 3D problems)
+.  m,n,p - widths in the corresponding directions
+$    n and p are optional (used for 2D and 3D problems)
+
+   Note:
+   Any of y, z, n, and p should be set to PETSC_NULL if not needed.
 
 .keywords: distributed array, get, ghost, corners, nodes, local indices
 
