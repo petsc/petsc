@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.269 1998/04/24 01:02:15 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.270 1998/04/28 04:43:09 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4520,31 +4520,31 @@ routines that pass/receive PETSc objects to/from Fortran routines to
 ensure that the objects are properly handled, since Fortran treats PETSc
 objects simply as integers.
 
-To pass a PETSc object from a C routine to a Fortran routine, one must
-first convert the C pointer to a Fortran integer with {\tt
-PetscCObjectToFortranObject(PetscObject,PetscFortranAddr *)}, for example,
-\begin{verbatim}
-   PetscFortranAddr fmat;
-   Mat              mat;
-    ....
-   ierr = PetscCObjectToFortranObject(mat,&fmat);
-   fortranroutine(&fmat,...other arguments);
-\end{verbatim}
-\findex{PetscCObjectToFortranObject()} 
-The Fortran routine can then directly use the received object.
-When calling C from Fortran, the user should perform the 
-pointer conversion within the C routine using
-{\tt PetscFortranObjectToCObject(PetscFortranAddr,PetscObject *)}, for example,
-\findex{PetscFortranObjectToCObject()}
-\begin{verbatim}
-   int cfunction(PetscFortranAddr *fmat,....)
-   Mat mat;
-   ierr = PetscFortranObjectToCObject(*fmat,&mat);
-\end{verbatim}
-See {\tt \$\{PETSC\_DIR\}/src/vec/examples/tests/ex24.c} for a complete
-example demonstrating this interface.  Note that the pointer
-conversion is always done in the C/C++ routines, but not
-in the Fortran routines.
+%To pass a PETSc object from a C routine to a Fortran routine, one must
+%first convert the C pointer to a Fortran integer with {\tt
+%PetscCObjectToFortranObject(PetscObject,PetscFortranAddr *)}, for example,
+%\begin{verbatim}
+%   PetscFortranAddr fmat;
+%   Mat              mat;
+%    ....
+%   ierr = PetscCObjectToFortranObject(mat,&fmat);
+%   fortranroutine(&fmat,...other arguments);
+%\end{verbatim}
+%\findex{PetscCObjectToFortranObject()} 
+%The Fortran routine can then directly use the received object.
+%When calling C from Fortran, the user should perform the 
+%pointer conversion within the C routine using
+%{\tt PetscFortranObjectToCObject(PetscFortranAddr,PetscObject *)}, for example,
+%\findex{PetscFortranObjectToCObject()}
+%\begin{verbatim}
+%   int cfunction(PetscFortranAddr *fmat,....)
+%   Mat mat;
+%   ierr = PetscFortranObjectToCObject(*fmat,&mat);
+%\end{verbatim}
+%See {\tt \$\{PETSC\_DIR\}/src/vec/examples/tests/ex24.c} for a complete
+%example demonstrating this interface.  Note that the pointer
+%conversion is always done in the C/C++ routines, but not
+%in the Fortran routines.
 
 Different machines have
 different methods of naming Fortran routines called from C 
@@ -4586,11 +4586,12 @@ user's main program is written in Fortran; in this case, just calling
 
 In several PETSc C functions, one has the option of passing a 0 (null)
 argument (for example, the fifth argument of {\tt MatCreateSeqAIJ()}).
-From Fortran, users {\em must} pass {\tt PETSC\_NULL} to indicate a
-null argument; \findex{PETSC_NULL} passing 0 from Fortran will crash
-the code.  When passing character strings as routine arguments,
-Fortran programmers should be sure to pass {\tt PETSC\_NULL\_CHARACTER}
-whenever a null character is \findex{PETSC_NULL_CHARACTER} desired.  Note
+From Fortran, users {\em must} pass {\tt PETSC\_NULL_XXX} to indicate a
+null argument (where XXX is {\tt INTEGER}, {\tt DOUBLE}, {\tt CHARACTER},
+or {\tt SCALAR} depending on the type of argument required); 
+\findex{PETSC_NULL_INTEGER} passing \findex{PETSC_NULL_SCALAR} 0 from 
+\findex{PETSC_NULL_DOUBLE} Fortran \findex{PETSC_NULL_CHARACTER}  will crash
+the code.   Note
 that the C convention of passing {\tt PETSC\_NULL} (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
 routine {\tt OptionsGetInt()}, one must use the following command in
@@ -4600,11 +4601,7 @@ Fortran:
 \end{verbatim}
 
 This Fortran requirement is inconsistent with C, where the 
-user can employ {\tt PETSC\_NULL} for all null arguments. The reason
-for this difference is that some machines (e.g., the Cray T3D)
-handle strings in Fortran in a manner different from numerics, so that
-the only way we can provide support for portable code
-is to require the use of {\tt PETSC\_NULL\_CHARACTER}.
+user can employ {\tt PETSC\_NULL} for all null arguments. 
 
 \subsection{Duplicating Multiple Vectors}
 \label{sec:fortvecd}
@@ -4648,16 +4645,6 @@ program, that routine is assumed to be written in C.
 
 \subsection{Compiling and Linking Fortran Programs}
 \label{sec:fortcompile}
-
-Before any PETSc Fortran programs are compiled, the Fortran interface
-library must be built from the PETSc home directory, {\tt \$\{PETSC\_DIR\}},
-with the command
-\begin{verbatim}
-   make BOPT=[g,O,Opg] fortran
-\end{verbatim}
-The Fortran interface library  for a particular architecture and {\tt BOPT} value
-resides in the same directory as the other PETSc libraries, as given by
-{\tt \$\{PETSC\_DIR\}/lib/lib\$\{BOPT\}/\$\{PETSC\_ARCH\}/libpetscfortran.a}.
 
 Figure \ref{fig:make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
@@ -4722,7 +4709,7 @@ include files (as discussed in Section~\ref{sec:fortran_includes})
 are supported as well.
 
 Unfortunately, these routines currently work only on certain machines with 
-certain compilers. They currently work with the SGI, the
+certain compilers. They currently work with the SGI, the Cray T3E, the
 IBM and the NAG Fortran 90 compiler.
 
 \section{Sample Fortran77 Programs}
