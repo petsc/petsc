@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.39 1999/02/08 22:22:33 bsmith Exp balay $ 
+# $Id: base.site,v 1.40 1999/03/24 19:10:46 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -45,6 +45,12 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
 #MPI_LIB         = ${LDIR}/libmpiuni.a
 #MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+#
+# If you are using the DEC implementation of MPI you can use the following
+#
+#MPI_LIB        = -lmpi
+#MPI_INCLUDE    = -DUSES_INT_MPI_COMM
+#MPIRUN         =  dmpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
