@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.100 1998/05/13 18:45:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.101 1998/06/03 20:09:56 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -62,7 +62,8 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
 
    Input Parameter:
 +  ksp - iterative context obtained from KSPCreate()
--  n - size of arrays r and c
+-  n - size of arrays r and c. The number of eigenvalues computed (neig) will, in 
+       general, be less than this.
 
    Output Parameters:
 +  r - real part of computed eigenvalues

@@ -45,8 +45,6 @@ rcheng@oasys.dt.navy.mil
     block row array. Note with BS and n = 125000 the block row is 4 meg which is
     a lot.
 
-  - Add NaN initialization to eigenvalue computations (else what seem to be zero e-values
-    can be just uninitialized yet uncomputed data -- misleading, comment by Frank Elliott).
 
   - add map object to vectors and matrices to replace current local size, ownership range etc.
 
@@ -1028,3 +1026,6 @@ are drawn on top of the contour plots (that's a separate problem).
 
  X Spruce up manpages
 
+ X Added extra argument to KSPComputeEigenvalues()  instead
+     Add NaN initialization to eigenvalue computations (else what seem to be zero e-values
+     can be just uninitialized yet uncomputed data -- misleading, comment by Frank Elliott).
