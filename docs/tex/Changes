@@ -63,6 +63,8 @@ extern int   PetscStrchr(const char[],char,char **);
 extern int   PetscStrrchr(const char[],char,char **);
 extern int   PetscStrstr(const char[],const char[],char **);
 extern int   PetscStrtok(const char[],const char[],char **);    
+extern int   PetscStrlen(const char[],int *);
+added PetscStrallocpy(const char[],char **);
 
    The Fortran versions of the PetscStrxxx() and PetscMemxxx() routines also now 
 have the error flag as the final argument.
