@@ -53,7 +53,7 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # Location where adiC is installed
 #
 ADIC_DEFINES    = 
-ADIC_CC         = adiC -a -d gradient.test
+ADIC_CC         = adiC -a -d gradient
 PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver

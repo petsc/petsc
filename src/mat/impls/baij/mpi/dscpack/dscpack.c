@@ -39,7 +39,9 @@ typedef struct {
 } Mat_DSC;
 
 EXTERN int MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
+EXTERN_C_BEGIN
 EXTERN int MatConvert_Base_DSCPACK(Mat,const MatType,Mat*);
+EXTERN_C_END
 
 /* DSC function */
 #undef __FUNCT__  
@@ -640,7 +642,7 @@ EXTERN_C_BEGIN
 int MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat     A;
-  Mat_DSC *lu;
+  Mat_DSC *lu = (Mat_DSC*)B->spptr;
   int     ierr;
 
   PetscFunctionBegin;
