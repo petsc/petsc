@@ -1,9 +1,10 @@
-/*$Id: zplog.c,v 1.26 2001/01/15 21:49:49 bsmith Exp balay $*/
+/*$Id: zplog.c,v 1.27 2001/01/19 23:22:53 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define plogprintsummary_         PLOGPRINTSUMMARY
 #define petsclogeventbegin_       PETSCLOGEVENTBEGIN
 #define petsclogeventend_         PETSCLOGEVENTEND
 #define petsclogflops_            PETSCLOGFLOPS
@@ -16,6 +17,7 @@
 #define petsclogstageregister_    PETSCLOGSTAGEREGISTER
 #define petsclogstagepush_        PETSCLOGSTAGEPUSH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define plogprintsummary_         plogprintsummary
 #define petsclogeventbegin_       petsclogeventbegin
 #define petsclogeventend_         petsclogeventend
 #define petsclogflops_            petsclogflops
@@ -30,6 +32,18 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL plogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),
+                                      int *ierr PETSC_END_LEN(len))
+{
+#if defined(PETSC_USE_LOG)
+  char *t;
+  FIXCHAR(filename,len,t);
+  *ierr = PLogPrintSummary((MPI_Comm)PetscToPointerComm(*comm),t);
+#endif
+}
+
+
 
 void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {

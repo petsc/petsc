@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.252 2001/01/17 19:44:28 balay Exp bsmith $*/
+/*$Id: plog.c,v 1.253 2001/01/27 22:47:32 bsmith Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1662,7 +1662,7 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
       ierr = MPI_Allreduce(&EventsType[j][i][REDUCTIONS],&rp,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 
       ierr = MPI_Allreduce(&EventsType[j][i][COUNT],&mict,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][COUNT],&mact,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][COUNT],&mact,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
      
       if (maxt) flopr = totff/maxt; else flopr = 0.0;
 
