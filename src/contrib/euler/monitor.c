@@ -103,7 +103,7 @@ int JulianneMonitor(SNES snes,int its,double fnorm,void *dummy)
     }
   }
 
-  /* Print factored matrix */
+  /* Print factored matrix - intended for debugging */
   if (its && app->print_vecs) {
     SLES   sles;
     PC     pc;
@@ -494,4 +494,14 @@ int TECPLOTMonitor(SNES snes,Vec X,Euler *app)
   
   return 0;
 }
-
+/* ------------------------------------------------------------------------------ */
+#include "src/snes/snesimpl.h"
+int EulerConvergenceTest(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
+{
+  if (fnorm <= snes->ttol) {
+    PLogInfo(snes,
+    "SNES:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
+    return 4;
+  }
+  return 0;
+}

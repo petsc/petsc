@@ -37,6 +37,7 @@ Runtime options include:\n\
                                4(data structure test)\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
   -snes_mf_err <err>         : Choose differencing parameter for SNES matrix-free method\n\
+  -epsilon <eps>             : Choose differencing parameter for FD Jacobian approx\n\
   -post                      : Print post-processing info (currently uniproc version only)\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
@@ -184,7 +185,7 @@ int main(int argc,char **argv)
     PLogEventBegin(init3,0,0,0,0);
     time1 = PetscGetTime();
     ierr = julianne_(&solve_with_julianne,0,&app->cfl,
-           &rtol,app->b1,app->b2,
+           &rtol,&app->eps_jac,app->b1,app->b2,
            app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
            app->r,app->ru,app->rv,app->rw,app->e,app->p,
            app->dr,app->dru,app->drv,app->drw,app->de,
@@ -210,7 +211,7 @@ int main(int argc,char **argv)
   PLogEventBegin(init2,0,0,0,0);
   fort_app = PetscFromPointer(app);
   ierr = julianne_(&solve_with_julianne,&fort_app,&app->cfl,
-         &rtol,app->b1,
+         &rtol,&app->eps_jac,app->b1,
          app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
          app->r,app->ru,app->rv,app->rw,app->e,app->p,
          app->dr,app->dru,app->drv,app->drw,app->de,
@@ -538,19 +539,33 @@ int UserDestroyEuler(Euler *app)
  */
 int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *ptr)
 {
-  Euler *app = (Euler *)ptr;
+  Euler   *app = (Euler *)ptr;
   MatType type;                /* matrix format */
-  int     skip;	               /* if (skip) then retain the previous Jacobian */
   int     iter;                /* nonlinear solver iteration number */
   int     fortmat, flg, ierr;
 
-  ierr = PetscCObjectToFortranObject(*pjac,&fortmat); CHKERRQ(ierr);
+  /* For better efficiency, we recompute the Jacobian matrix only every few 
+     nonlinear iterations (as set by the option -jfreq).  The flag 
+     SAME_PRECONDITIONER indicates that in this case the current 
+     preconditioner should be retained */
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+  if (iter>1 && (iter%app->jfreq)) {
+    *flag = SAME_PRECONDITIONER;
+    return 0;
+  }
 
   /* Convert vector.  If using explicit boundary conditions, this passes along
      any changes in X due to their application to the component arrays in the
      Julianne code */
   ierr = UnpackWork(app,app->r,app->ru,app->rv,app->rw,app->e,X); CHKERRQ(ierr);
+
+  /* Form Fortran matrix object */
+  ierr = PetscCObjectToFortranObject(*pjac,&fortmat); CHKERRQ(ierr);
+
+  /* Indicate that we're now using an unfactored matrix.  This is needed only
+     when using in-place ILU(0) preconditioning to allow repeated assembly of
+     the matrix. */
+  ierr = MatSetUnfactored(*pjac); CHKERRQ(ierr);
 
   /* Form Jacobian matrix */
   if (app->bctype == IMPLICIT) {
@@ -559,7 +574,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     if (app->mat_assemble_direct) {
       /* We must zero the diagonal block here, since this is not done within jformdt2 */
       PetscMemzero(app->diag,app->diag_len);
-      ierr = jformdt2_(&skip,&app->epsbc,app->ltog,&app->nloc,&fortmat,app->is1,
+      ierr = jformdt2_(&app->eps_jac,&app->eps_jac_inv,app->ltog,&app->nloc,&fortmat,app->is1,
               app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,app->diag,
               app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
               app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
@@ -576,27 +591,29 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 
     /* Or store the matrix in the intermediate Eagle format for later conversion ... */
     } else {
-      ierr = jformdt_(&skip,&app->epsbc,app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
-              app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,
-              app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-              app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
-              app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-              app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-              app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-              app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
-	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-           app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-           app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-           app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-           app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-           app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+      ierr = jformdt_(&app->eps_jac,&app->eps_jac_inv,
+             app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
+             app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,
+             app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
+             app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
+             app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
+             app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+             app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
+             app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
+             app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
+             app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
+             app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
+             app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
+             app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
+             app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
     }
  } else {
     /* Either assemble the matrix directly (the more efficient route) ... */
     if (app->mat_assemble_direct) {
-      /* We must zero the diagonal block here, since this is not done within jform2 */
+      /* We must zero the diagonal block here, since this is not done within jfor2 */
       PetscMemzero(app->diag,app->diag_len);
-      ierr = jform2_(&skip,app->ltog,&app->nloc,&fortmat,app->diag,
+      ierr = jform2_(&app->eps_jac,&app->eps_jac_inv,
+              app->ltog,&app->nloc,&fortmat,app->diag,
               app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
               app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
               app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
@@ -605,22 +622,14 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 
     /* Or store the matrix in the intermediate Eagle format for later conversion ... */
     } else {
-      ierr = jform_(&skip,app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
+      ierr = jform_(&app->eps_jac,&app->eps_jac_inv,
+              app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
               app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
               app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
               app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
               app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
               app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
     }
-  }
-
-  /* For better efficiency, we recompute the Jacobian matrix only every few 
-     nonlinear iterations (as set by the option -jfreq).
-     The Fortran matrix formation routine sets skip=1 if we  If we do not recompute the Jacobian matrix, then indicate this to the
-     nonlinear solver so that the current preconditioner will be retained */
-  if (skip) {
-    *flag = SAME_PRECONDITIONER;
-    return 0;
   }
 
   /* Convert Jacobian from Eagle format if direct assembly hasn't been done */
@@ -651,8 +660,18 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     ierr = ViewerFileOpenASCII(app->comm,filename,&view); CHKERRQ(ierr);
     ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
     ierr = MatGetType(*pjac,&mtype,PETSC_NULL); CHKERRQ(ierr);
+
+    /*
+      if (mtype == MATSEQAIJ) {
+        ierr = MatViewSeqAIJ_Long(*pjac,view); CHKERRQ(ierr);
+      } else if (mtype == MATSEQBAIJ) {
+        ierr = MatViewSeqBAIJ_Long(*pjac,view); CHKERRQ(ierr);
+      }
+      */
+    /*
     if (mtype == MATMPIAIJ) {ierr = MatViewDFVec_MPIAIJ(*pjac,X,view); CHKERRQ(ierr);}
     else                    {ierr = MatView(*pjac,view); CHKERRQ(ierr);}
+    */
     ierr = ViewerDestroy(view); CHKERRQ(ierr);
     /*    PetscFinalize(); exit(0); */
   }
@@ -1002,19 +1021,19 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
        in C of Fortran points in input (shifted by -2 for explicit formulation) 
        from m6c: Fortran: itl=10, itu=40, ile=25, ktip=6 */
       app->ktip = 4; app->itl = 8; app->itu = 38; app->ile = 23;   
-      app->epsbc = 1.0e-7;
+      app->eps_jac = 1.0e-7;
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
       ni1 = 98; nj1 = 18; nk1 = 18;
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
-      app->epsbc = 1.0e-7;
+      app->eps_jac = 1.0e-7;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
       ni1 = 194; nj1 = 34; nk1 = 34;
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
-      app->epsbc = 1.0e-7;
+      app->eps_jac = 1.0e-7;
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1045,14 +1064,15 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_switch",&app->cfl_switch,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&app->cfl_max,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-f_red",&app->f_reduction,&flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-epsbc",&app->epsbc,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-eps_jac",&app->eps_jac,&flg); CHKERRQ(ierr);
+  app->eps_jac_inv = 1.0/app->eps_jac;
   ierr = OptionsGetDouble(PETSC_NULL,"-angle",&app->angle,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-jfreq",&app->jfreq,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-no_output",&app->no_output); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_assemble_last",&flg); CHKERRQ(ierr);
   if (flg) app->mat_assemble_direct = 0;
-  if (app->mat_assemble_direct) PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix directly: angle of attack = %g, epsbc = %g\n",problem,ni1,nj1,nk1,app->angle,app->epsbc);
-  else PetscPrintf(comm,"Problem %d (%dx%dx%d grid), ssembling PETSc matrix via translation of Eagle format: angle of attack = %g, epsbc = %g\n",problem,ni1,nj1,nk1,app->angle,app->epsbc);
+  if (app->mat_assemble_direct) PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix directly: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
+  else PetscPrintf(comm,"Problem %d (%dx%dx%d grid), ssembling PETSc matrix via translation of Eagle format: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
 
   app->ni1              = ni1;
   app->nj1              = nj1;
