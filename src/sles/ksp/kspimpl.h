@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.37 1998/07/28 15:49:24 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.38 1998/10/09 19:19:56 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -54,9 +54,10 @@ struct _p_KSP {
                                       the solution and rhs, these are 
                                       never touched by the code, only 
                                       passed back to the user */ 
-  double *residual_history;        /* If !0 stores residual at iterations*/
-  int    res_hist_size;            /* Size of residual history array */
-  int    res_act_size;             /* actual amount of data in residual_history */
+  double     *res_hist;            /* If !0 stores residual at iterations*/
+  int        res_hist_len;         /* current size of residual history array */
+  int        res_hist_max;         /* actual amount of data in residual_history */
+  PetscTruth res_hist_reset;       /* reset history to size zero for each new solve */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
   int  (*monitor[MAXKSPMONITORS])(KSP,int,double,void*); /* returns control to user after */
@@ -81,6 +82,10 @@ struct _p_KSP {
   int        its;       /* number of iterations so far computed */
   PetscTruth avoidnorms; /* does not compute residual norms when possible */
 };
+
+#define KSPLogResidualHistory(ksp,norm) \
+    {if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) \
+     ksp->res_hist[ksp->res_hist_len++] = norm;}
 
 #define KSPMonitor(ksp,it,rnorm) \
         { int _ierr,_i,_im = ksp->numbermonitors; \
