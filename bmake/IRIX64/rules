@@ -1,4 +1,4 @@
-# $Id: base,v 1.53 1998/12/17 22:07:19 bsmith Exp bsmith $ 
+# $Id: base,v 1.54 1998/12/21 00:55:11 bsmith Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -23,7 +23,7 @@ G_COPTFLAGS      = -g -trapuv
 G_FOPTFLAGS      = -g -trapuv
 # ----------------------------- BOPT=O options -----------------------------
 O_COPTFLAGS      = -Ofast=ip27
-O_FOPTFLAGS      = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1 -DUSE_MAT_SINGLE
+O_FOPTFLAGS      = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = CC -64 -woff 1164 -woff 1048
