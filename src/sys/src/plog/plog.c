@@ -65,55 +65,6 @@ char          *traceblanks = "                                                  
 char           tracespace[128];
 PetscLogDouble tracetime   = 0.0;
 
-/*------------------------------------------- Performance Info Functions ---------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PerfInfoDestroy"
-/*@C
-  PerfInfoDestroy - This destroys a PerfInfo object.
-
-  Not collective
-
-  Input Parameter:
-. p - The PerfInfo
-
-  Level: beginner
-
-.keywords: log, performance, destroy
-.seealso: StageLogDestroy(), EventLogDestroy()
-@*/
-int PerfInfoDestroy(PerfInfo *p)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(p->name);                                                                              CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "ClassInfoDestroy"
-/*@C
-  ClassInfoDestroy - This destroys a ClassInfo object.
-
-  Not collective
-
-  Input Parameter:
-. c - The ClassInfo
-
-  Level: beginner
-
-.keywords: log, class, destroy
-.seealso: StageLogDestroy(), EventLogDestroy()
-@*/
-int ClassInfoDestroy(ClassInfo *c)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(c->name);                                                                              CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*---------------------------------------------- General Functions --------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogDestroy"
@@ -126,13 +77,12 @@ int ClassInfoDestroy(ClassInfo *c)
   This routine should not usually be used by programmers. Instead employ 
   PetscLogStagePush() and PetscLogStagePop().
 
- Level: developer
+  Level: developer
 
 .keywords: log, destroy
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogStagePush(), PlogStagePop()
 @*/
-int PetscLogDestroy(void)
-{
+int PetscLogDestroy(void) {
   StageLog stageLog;
   int      ierr;
 
@@ -576,34 +526,14 @@ int PetscLogStageGetId(const char name[], int *stage)
           PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           PetscLogEventActivate(), PetscLogEventDeactivate()
 @*/
-int PetscLogEventRegister(int *event, const char name[],int cookie)
-{
+int PetscLogEventRegister(int *event, const char name[],int cookie) {
   StageLog stageLog;
-  int      stage;
   int      ierr;
-  int      mpe_id_begin=0,mpe_id_end,rank=0;
 
   PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_MPE)
-  if (UseMPE) {
-    char     *color;
-    mpe_id_begin = MPE_Log_get_event_number();
-    mpe_id_end   = MPE_Log_get_event_number();
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-    /* Describe state and color only on proc 0 */
-    if (!rank) {
-      ierr         = PetscLogGetRGBColor(&color);CHKERRQ(ierr);
-      MPE_Describe_state(mpe_id_begin,mpe_id_end,(char *)name,color);
-    }
-  }
-#endif
-
   *event = PETSC_DECIDE;
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  for(stage = 0; stage < stageLog->numStages; stage++) {
-    ierr = EventLogRegister(stageLog->eventLog[stage], name, cookie, mpe_id_begin,mpe_id_end,event);CHKERRQ(ierr);
-  }
+  ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
+  ierr = EventRegLogRegister(stageLog->eventLog, name, cookie, event);                                    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -634,8 +564,7 @@ int PetscLogEventRegister(int *event, const char name[],int cookie)
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventDeactivate()
 @*/
-int PetscLogEventActivate(int event)
-{
+int PetscLogEventActivate(int event) {
   StageLog stageLog;
   int      stage;
   int      ierr;
@@ -643,7 +572,7 @@ int PetscLogEventActivate(int event)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
-  ierr = EventLogActivate(stageLog->eventLog[stage], event);                                              CHKERRQ(ierr);
+  ierr = EventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event);                                CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -674,8 +603,7 @@ int PetscLogEventActivate(int event)
 .keywords: log, event, deactivate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate()
 @*/
-int PetscLogEventDeactivate(int event)
-{
+int PetscLogEventDeactivate(int event) {
   StageLog stageLog;
   int      stage;
   int      ierr;
@@ -683,7 +611,7 @@ int PetscLogEventDeactivate(int event)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
-  ierr = EventLogDeactivate(stageLog->eventLog[stage], event);                                            CHKERRQ(ierr);
+  ierr = EventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);                              CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -702,8 +630,7 @@ int PetscLogEventDeactivate(int event)
 .keywords: log, event, activate, class
 .seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-int PetscLogEventActivateClass(int cookie)
-{
+int PetscLogEventActivateClass(int cookie) {
   StageLog stageLog;
   int      stage;
   int      ierr;
@@ -711,7 +638,7 @@ int PetscLogEventActivateClass(int cookie)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
-  ierr = EventLogActivateClass(stageLog->eventLog[stage], cookie);                                        CHKERRQ(ierr);
+  ierr = EventPerfLogActivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, cookie);      CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -730,8 +657,7 @@ int PetscLogEventActivateClass(int cookie)
 .keywords: log, event, deactivate, class
 .seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-int PetscLogEventDeactivateClass(int cookie)
-{
+int PetscLogEventDeactivateClass(int cookie) {
   StageLog stageLog;
   int      stage;
   int      ierr;
@@ -739,7 +665,7 @@ int PetscLogEventDeactivateClass(int cookie)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
-  ierr = EventLogDeactivateClass(stageLog->eventLog[stage], cookie);                                      CHKERRQ(ierr);
+  ierr = EventPerfLogDeactivateClass(stageLog->stageInfo[stage].eventLog, stageLog->eventLog, cookie);    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -913,15 +839,12 @@ M*/
 int PetscLogClassRegister(int *oclass, const char name[])
 {
   StageLog stageLog;
-  int      stage;
   int      ierr;
 
   PetscFunctionBegin;
   *oclass = PETSC_DECIDE;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
-  for(stage = 0; stage < stageLog->numStages; stage++) {
-    ierr = ClassLogRegister(stageLog->classLog[stage], name, oclass);                                     CHKERRQ(ierr);
-  }
+  ierr = ClassRegLogRegister(stageLog->classLog, name, oclass);                                           CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1015,8 +938,8 @@ int PetscLogDump(const char sname[])
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Event log:\n");
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StackTop(stageLog->stack, &curStage);                                                            CHKERRQ(ierr);
-  eventInfo = stageLog->eventLog[curStage]->eventInfo;
-  for(event = 0; event < stageLog->eventLog[curStage]->numEvents; event++) {
+  eventInfo = stageLog->stageInfo[curStage].eventLog->eventInfo;
+  for(event = 0; event < stageLog->stageInfo[curStage].eventLog->numEvents; event++) {
     if (eventInfo[event].time != 0.0) {
       flops = eventInfo[event].flops/eventInfo[event].time;
     } else {
@@ -1068,9 +991,9 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   FILE          *fd   = stdout;
   PetscScalar    zero = 0.0;
   StageLog       stageLog;
-  PerfInfo      *stageInfo = PETSC_NULL;
+  StageInfo     *stageInfo = PETSC_NULL;
   PerfInfo      *eventInfo = PETSC_NULL;
-  ClassInfo     *classInfo;
+  ClassPerfInfo *classInfo;
   char           arch[10], hostname[64], username[16], pname[256], date[64];
   char           *name;
   PetscLogDouble locTotalTime, TotalTime, TotalFlops;
@@ -1213,8 +1136,8 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
     stageInfo = stageLog->stageInfo;
     for(stage = 0; stage < numStages; stage++) {
       if (stage < stageLog->numStages) {
-        localStageUsed[stage]    = stageInfo[stage].active;
-        localStageVisible[stage] = stageInfo[stage].visible;
+        localStageUsed[stage]    = stageInfo[stage].perfInfo.active;
+        localStageVisible[stage] = stageInfo[stage].perfInfo.visible;
       } else {
         localStageUsed[stage]    = PETSC_FALSE;
         localStageVisible[stage] = PETSC_TRUE;
@@ -1232,11 +1155,11 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
     for(stage = 0; stage < numStages; stage++) {
       if (stageUsed[stage] == PETSC_FALSE) continue;
       if (localStageUsed[stage] == PETSC_TRUE) {
-        ierr = MPI_Allreduce(&stageInfo[stage].time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
-        ierr = MPI_Allreduce(&stageInfo[stage].flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
-        ierr = MPI_Allreduce(&stageInfo[stage].numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
-        ierr = MPI_Allreduce(&stageInfo[stage].messageLength, &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
-        ierr = MPI_Allreduce(&stageInfo[stage].numReductions, &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
+        ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+        ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+        ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+        ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.messageLength, &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+        ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.numReductions, &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
         name = stageInfo[stage].name;
       } else {
         ierr = MPI_Allreduce(&zero,                           &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
@@ -1340,11 +1263,11 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
     if (stageVisible[stage] == PETSC_FALSE) continue;
     if (localStageUsed[stage] == PETSC_TRUE) {
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name);        CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&stageInfo[stage].time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&stageInfo[stage].flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&stageInfo[stage].numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&stageInfo[stage].messageLength, &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&stageInfo[stage].numReductions, &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.time,          &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.flops,         &flops,     1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.numMessages,   &mess,      1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.messageLength, &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&stageInfo[stage].perfInfo.numReductions, &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
     } else {
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage);                          CHKERRQ(ierr);
       ierr = MPI_Allreduce(&zero,                           &stageTime, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
@@ -1364,14 +1287,14 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
        Problem: Event visibility is not implemented
     */
     if (localStageUsed[stage] == PETSC_TRUE) {
-      eventInfo      = stageLog->eventLog[stage]->eventInfo;
-      localNumEvents = stageLog->eventLog[stage]->numEvents;
+      eventInfo      = stageLog->stageInfo[stage].eventLog->eventInfo;
+      localNumEvents = stageLog->stageInfo[stage].eventLog->numEvents;
     } else {
       localNumEvents = 0;
     }
     ierr = MPI_Allreduce(&localNumEvents, &numEvents, 1, MPI_INT, MPI_MAX, comm);                         CHKERRQ(ierr);
     for(event = 0; event < numEvents; event++) {
-      if ((localStageUsed[stage] == PETSC_TRUE) && (event < stageLog->eventLog[stage]->numEvents)) {
+      if ((localStageUsed[stage] == PETSC_TRUE) && (event < stageLog->stageInfo[stage].eventLog->numEvents)) {
         if (eventInfo[event].count > 0) {
           flopr = eventInfo[event].flops/eventInfo[event].time;
         } else {
@@ -1388,7 +1311,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
         ierr = MPI_Allreduce(&eventInfo[event].numReductions, &totr,  1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
         ierr = MPI_Allreduce(&eventInfo[event].count,         &minCt, 1, MPI_INT,             MPI_MIN, comm); CHKERRQ(ierr);
         ierr = MPI_Allreduce(&eventInfo[event].count,         &maxCt, 1, MPI_INT,             MPI_MAX, comm); CHKERRQ(ierr);
-        name = eventInfo[event].name;
+        name = stageLog->eventLog->eventInfo[event].name;
       } else {
         flopr = 0.0;
         ierr = MPI_Allreduce(&flopr,                          &minf,  1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm); CHKERRQ(ierr);
@@ -1448,12 +1371,13 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   ierr = PetscFPrintf(comm, fd, "Object Type          Creations   Destructions   Memory  Descendants' Mem.\n"); CHKERRQ(ierr);
   for(stage = 0; stage < numStages; stage++) {
     if (localStageUsed[stage] == PETSC_TRUE) {
-      classInfo = stageLog->classLog[stage]->classInfo;
+      classInfo = stageLog->stageInfo[stage].classLog->classInfo;
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name);        CHKERRQ(ierr);
-      for(oclass = 0; oclass < stageLog->classLog[stage]->numClasses; oclass++) {
+      for(oclass = 0; oclass < stageLog->stageInfo[stage].classLog->numClasses; oclass++) {
         if (classInfo[oclass].creations > 0) {
-          ierr = PetscFPrintf(comm, fd, "%20s %5d          %5d  %9d     %g\n", classInfo[oclass].name, classInfo[oclass].creations,
-                              classInfo[oclass].destructions, (int) classInfo[oclass].mem, classInfo[oclass].descMem);
+          ierr = PetscFPrintf(comm, fd, "%20s %5d          %5d  %9d     %g\n", stageLog->classLog->classInfo[oclass].name,
+                              classInfo[oclass].creations, classInfo[oclass].destructions, (int) classInfo[oclass].mem,
+                              classInfo[oclass].descMem);
                                                                                                           CHKERRQ(ierr);
         }
       }

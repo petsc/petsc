@@ -57,11 +57,11 @@ EXTERN int        PetscLogMPEBegin(void);
 EXTERN int        PetscLogMPEDump(const char[]);
 extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) \
-  if(UseMPE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) \
+  if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
     MPE_Log_event(_stageLog->eventLog[_stageLog->curStage]->eventInfo[e].mpe_id_begin,0,"");
 
 #define PETSC_LOG_EVENT_MPE_END(e) \
-  if(UseMPE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) \
+  if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
     MPE_Log_event(_stageLog->eventLog[_stageLog->curStage]->eventInfo[e].mpe_id_end,0,"");
 
 #else 
@@ -116,10 +116,6 @@ EXTERN int PetscLogEventDeactivateClass(int);
 /* Class functions */
 EXTERN int PetscLogClassRegister(int *, const char []);
 
-/* Default log */
-typedef struct _StageLog *StageLog;
-extern StageLog _stageLog;
-
 /* Global counters */
 extern PetscLogDouble irecv_ct,  isend_ct,  recv_ct,  send_ct;
 extern PetscLogDouble irecv_len, isend_len, recv_len, send_len;
@@ -131,11 +127,16 @@ extern int            PETSC_DUMMY, PETSC_DUMMY_SIZE;
    activation flags in the PetscLogEventBegin/End() macros. If we forced a
    function call each time, we could leave these structures in plog.h
 */
-/* The structure for logging performance */
+/* Default log */
+typedef struct _StageLog *StageLog;
+extern StageLog _stageLog;
+
+/* A simple stack (should replace) */
+typedef struct _IntStack *IntStack;
+
+/* The structures for logging performance */
 typedef struct _PerfInfo {
-  char          *name;          /* The name of this section */
-  int            id;            /* The integer identifying this event */
-  int            cookie;        /* The class id for this section */
+  int            id;            /* The integer identifying this section */
   PetscTruth     active;        /* The flag to activate logging */
   PetscTruth     visible;       /* The flag to print info in summary */
   int            depth;         /* The nesting depth of the event call */
@@ -145,59 +146,88 @@ typedef struct _PerfInfo {
   PetscLogDouble numMessages;   /* The number of messages in this section */
   PetscLogDouble messageLength; /* The total message lengths in this section */
   PetscLogDouble numReductions; /* The number of reductions in this section */
-#if defined (PETSC_HAVE_MPE)
-  int           mpe_id_begin;   /* MPE ids that define the event */
-  int           mpe_id_end; 
-#endif
 } PerfInfo;
 
+typedef struct _ClassPerfInfo {
+  int            id;           /* The integer identifying this class */
+  int            creations;    /* The number of objects of this class created */
+  int            destructions; /* The number of objects of this class destroyed */
+  PetscLogDouble mem;          /* The total memory allocated by objects of this class */
+  PetscLogDouble descMem;      /* The total memory allocated by descendents of these objects */
+} ClassPerfInfo;
+
+/* The structures for logging registration */
+typedef struct _ClassRegInfo {
+  char *name;   /* The class name */
+  int   cookie; /* The integer identifying this class */
+#if defined (PETSC_HAVE_MPE)
+  int   mpe_id_begin; /* MPE IDs that define the event */
+  int   mpe_id_end;
+#endif
+} ClassRegInfo;
+
+typedef struct _EventRegInfo {
+  char *name;   /* The name of this event */
+  int   cookie; /* The class id for this event (should maybe give class ID instead) */
+} EventRegInfo;
+
 /* The structure for logging events */
-typedef struct _EventLog *EventLog;
-struct _EventLog {
-  int       numEvents;   /* The number of registered events */
-  int       maxEvents;   /* The maximum number of events */
-  PerfInfo *eventInfo;   /* The performance information for each event */
-};
 typedef int PetscEvent;
 
-/* The structure for logging class information */
-typedef struct _ClassInfo {
-  char          *name;          /* The class name */
-  int            cookie;        /* The integer identifying this class */
-  int            creations;     /* The number of objects of this class created */
-  int            destructions;  /* The number of objects of this class destroyed */
-  PetscLogDouble mem;           /* The total memory allocated by objects of this class */
-  PetscLogDouble descMem;       /* The total memory allocated by descendents of these objects */
-} ClassInfo;
-
-typedef struct _ClassLog *ClassLog;
-struct _ClassLog {
-  int        numClasses; /* The number of classes registered */
-  int        maxClasses; /* The maximum number of classes */
-  ClassInfo *classInfo;  /* The structure for classs information (cookies are monotonicly increasing) */
+typedef struct _EventRegLog *EventRegLog;
+struct _EventRegLog {
+  int           numEvents; /* The number of registered events */
+  int           maxEvents; /* The maximum number of events */
+  EventRegInfo *eventInfo; /* The registration information for each event */
 };
 
-/* A simple stack (should replace) */
-typedef struct _IntStack *IntStack;
+typedef struct _EventPerfLog *EventPerfLog;
+struct _EventPerfLog {
+  int       numEvents; /* The number of logging events */
+  int       maxEvents; /* The maximum number of events */
+  PerfInfo *eventInfo; /* The performance information for each event */
+};
 
-/* The structure for logging in stages */
+/* The structure for logging class information */
+typedef struct _ClassRegLog *ClassRegLog;
+struct _ClassRegLog {
+  int           numClasses; /* The number of classes registered */
+  int           maxClasses; /* The maximum number of classes */
+  ClassRegInfo *classInfo;  /* The structure for class information (cookies are monotonicly increasing) */
+};
+
+typedef struct _ClassPerfLog *ClassPerfLog;
+struct _ClassPerfLog {
+  int            numClasses; /* The number of logging classes */
+  int            maxClasses; /* The maximum number of classes */
+  ClassPerfInfo *classInfo;  /* The structure for class information (cookies are monotonicly increasing) */
+};
+
+/* The structures for logging in stages */
+typedef struct _StageInfo {
+  char        *name;       /* The stage name */
+  PerfInfo     perfInfo;   /* The stage performance information */
+  EventPerfLog eventLog;   /* The event information for this stage */
+  ClassPerfLog classLog;   /* The class information for this stage */
+} StageInfo;
+
 struct _StageLog {
   /* Size information */
-  int         numStages;    /* The number of registered stages */
-  int         maxStages;    /* The maximum number of stages */
+  int         numStages; /* The number of registered stages */
+  int         maxStages; /* The maximum number of stages */
   /* Runtime information */
-  IntStack    stack;        /* The stack for active stages */
-  int         curStage;     /* The current stage (only used in macros so we don't call StackTop) */
+  IntStack    stack;     /* The stack for active stages */
+  int         curStage;  /* The current stage (only used in macros so we don't call StackTop) */
   /* Stage specific information */
-  PerfInfo   *stageInfo;    /* The performance information for each stage */
-  EventLog   *eventLog;     /* The event log for each stage */
-  ClassLog   *classLog;     /* The class information for each stage */
+  StageInfo  *stageInfo; /* The information for each stage */
+  EventRegLog eventLog;  /* The registered events */
+  ClassRegLog classLog;  /* The registered classes */
 };
 
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0; \
 {\
   int _2_ierr;\
-  if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
+  if (_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
     _2_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);\
     _2_ierr = MPI_Barrier(cm);CHKERRQ(_2_ierr);\
     _2_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);\
@@ -207,7 +237,7 @@ struct _StageLog {
 
 #define PetscLogEventBegin(e,o1,o2,o3,o4) 0; \
 {\
-  if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
+  if (_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
     (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   }\
   PETSC_LOG_EVENT_MPE_BEGIN(e); \
@@ -217,7 +247,7 @@ struct _StageLog {
 
 #define PetscLogEventEnd(e,o1,o2,o3,o4) 0; \
 {\
-  if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventInfo[e].active) {\
+  if (_PetscLogPLE && _stageLog->stageLog[_stageLog->curStage].eventLog->eventInfo[e].active) {\
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   }\
   PETSC_LOG_EVENT_MPE_END(e); \
