@@ -252,13 +252,14 @@ runex6_5:
 	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
 	   else echo "Possible problem with ex6_5, diffs above"; fi; \
 	   $(RM) -f ex6_4.tmp
+# Note: We test these BlockSolve95 examples differently from the usual
+# because the coloring heuristic is machine-dependent; convergence rates
+# may differ slightly on various architectures.
 runex6_6:
-	-@$(MPIRUN) -np 3 ex6  -ksp_gmres_restart 200 \
+	-@$(MPIRUN) -np 3 ex6  -ksp_gmres_restart 100 \
 	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco1_ns \
-	   -mat_mpirowbs -pc_type ilu -pc_ilu_factorpointwise > ex6_6.tmp 2>&1; \
-	   if (diff output/ex6_6.out ex6_6.tmp) then true; \
-	   else echo "Possible problem with ex6_6, diffs above"; fi; \
-	   $(RM) -f ex6_6.tmp
+	   -mat_mpirowbs -pc_type ilu -pc_ilu_factorpointwise 
+	-@echo "This program tested the ILU preconditioner in BlockSolve95."
 runex7:
 	-@$(MPIRUN) -np 2 ex7 -ksp_smonitor > ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
@@ -281,11 +282,11 @@ runex8_2:
 # may differ slightly on various architectures.
 runex8_3:
 	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs -ksp_rtol .000001;\
-	echo "This is program tested the ICC preconditioner in BlockSolve95."
+	-@echo "This program tested the ICC preconditioner in BlockSolve95."
 runex8_4:
 	-@$(MPIRUN) -np 2 ex8 -pc_type ilu -mat_nonsym -mat_mpirowbs \
 	   -ksp_rtol .000001;\
-	echo "This is program tested the ILU preconditioner in BlockSolve95."
+	-@echo "This program tested the ILU preconditioner in BlockSolve95."
 runex10:
 	-@$(MPIRUN) ex10 -mat_bdiag -ksp_smonitor > ex10_1.tmp 2>&1; \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
