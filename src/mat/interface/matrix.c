@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.236 1997/03/31 17:41:31 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.237 1997/04/02 22:40:40 bsmith Exp curfman $";
 #endif
 
 /*
@@ -237,9 +237,13 @@ $     INSERT_VALUES - replaces existing entries with new values
    MatSetValues() uses 0-based row and column numbers in Fortran 
    as well as in C.
 
+   Efficiency Alert:
+   The routine MatSetValuesBlocked() may offer much better efficiency
+   for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
+
 .keywords: matrix, insert, add, set, values
 
-.seealso: MatSetOptions(), MatAssemblyBegin(), MatAssemblyEnd()
+.seealso: MatSetOptions(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked()
 @*/
 int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
 {
@@ -293,7 +297,8 @@ $     INSERT_VALUES - replaces existing entries with new values
 
    Restrictions:
    MatSetValuesBlocked() is currently supported only for the block AIJ
-   matrix format (MATSEQBAIJ and MATMPIBAIJ).
+   matrix format (MATSEQBAIJ and MATMPIBAIJ, which are created via
+   MatCreateSeqBAIJ() and MatCreateMPIBAIJ()).
 
 .keywords: matrix, insert, add, set, values
 
