@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.49 2000/01/18 15:43:29 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.50 2000/02/02 20:07:23 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,12 +13,11 @@
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
-#BLAS_LIB        = -lpetscblas
+SOFT_HOME = /u/u13/acti/bsmith/software
+#BLAS_LIB        = -ldxml 
 #LAPACK_LIB      = 
-BLAS_LIB        = -ldxml 
-LAPACK_LIB      = 
-#BLAS_LIB       = /home/petsc/software/blaslapack/blas_alpha.a ${FC_LIB}
-#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_alpha.a 
+BLAS_LIB       = ${SOFT_HOME}/blaslapack/alpha/blas.a ${FC_LIB}
+LAPACK_LIB     = ${SOFT_HOME}/blaslapack/alpha/lapack.a
 #
 # Location of MPI (Message Passing Interface) software
 #
@@ -26,9 +25,11 @@ LAPACK_LIB      =
 # or if you are using MPIUNI for MPI, add -DPETSC_HAVE_INT_MPI_COMM 
 # to the line MPI_INCLUDE below.
 #
-MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_p4/libmpi.a 
-MPI_INCLUDE    = -I/home/petsc/mpich/include -DPETSC_HAVE_INT_MPI_COMM
-MPIRUN         = /home/petsc/mpich/lib/alpha/ch_p4/mpirun
+MPI_HOME       = $(SOFT_HOME)/mpich-1.1.2
+MPI_BUILD_HOME = ${MPI_HOME}/build/alpha/ch_p4
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include -DPETSC_HAVE_INT_MPI_COMM
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 #
 # The following lines can be used with MPIUNI
 #
