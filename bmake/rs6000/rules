@@ -1,4 +1,4 @@
-# $Id: base,v 1.32 1998/04/26 00:48:55 balay Exp balay $ 
+# $Id: base,v 1.33 1998/04/26 00:56:03 balay Exp balay $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
@@ -61,19 +61,19 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 .F.f:
 	-${RM} $*.f __$*.c
 	-cp $*.F __$*.c
-	-${CC} ${CPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
+	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
 	-${RM} __$*.c
 
 .F.o:
 	-${RM} $*.f __$*.c
 	-cp $*.F __$*.c
-	-${CC} ${CPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
+	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
 	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
 	-${RM} $*.f __$*.c
 
 .F.a:
 	-${RM} $*.f
-	-${CC} ${CPPFLAGS} -E $< | grep -v '^ *#' > $*.f
+	-${CC} ${FCPPFLAGS} -E $< | grep -v '^ *#' > $*.f
 	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.o	$*.f
