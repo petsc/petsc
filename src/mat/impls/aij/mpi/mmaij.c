@@ -200,8 +200,6 @@ static Vec auglydd = 0,auglyoo = 0;   /* work vectors used to scale the two part
 int MatMPIAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 {
   Mat_MPIAIJ  *ina = (Mat_MPIAIJ*) inA->data; /*access private part of matrix */
-  Mat_SeqAIJ  *A = (Mat_SeqAIJ*)ina->A->data;
-  Mat_SeqAIJ  *B = (Mat_SeqAIJ*)ina->B->data;
   int          ierr,i,n,nt,cstart,cend,no,*garray = ina->garray,*lindices;
   int          *r_rmapd,*r_rmapo;
   
