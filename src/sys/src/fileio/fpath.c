@@ -6,6 +6,7 @@
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
