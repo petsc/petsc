@@ -1,11 +1,11 @@
 #!/bin/csh
-# $Id: removelibs,v 1.20 1998/03/13 16:01:46 balay Exp balay $ 
+# $Id: removelibs,v 1.21 1998/03/16 20:33:53 balay Exp balay $ 
 
 # 
 #  Removes PETSc libraries on some nightly build machines
 #
 rsh snowy -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/freebsd*/*"
-rsh maple -n /bin/rm -f "/tmp/balay/petsc/lib/lib*/solaris/*"
+rsh maple -n /bin/rm -f "/tmp/balay/petsc/lib/lib*/solaris*/*"
 rsh violet -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/IRIX/*"
 rsh yukon -n /bin/rm -f "/sandbox/petsc/lib/lib*/IRIX64/*.so*"
 rsh maverick -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/sun4*/*"
