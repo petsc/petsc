@@ -16,9 +16,9 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "TSPrecond_PVode"
-int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,boole jok,
-                    boole *jcurPtr,real _gamma,N_Vector ewt,real h,
-                    real uround,long int *nfePtr,void *P_data,
+int TSPrecond_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,booleantype jok,
+                    booleantype *jcurPtr,realtype _gamma,N_Vector ewt,realtype h,
+                    realtype uround,long int *nfePtr,void *P_data,
                     N_Vector vtemp1,N_Vector vtemp2,N_Vector vtemp3)
 {
   TS           ts = (TS) P_data;
@@ -43,7 +43,7 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,boole jok,
     *jcurPtr = FALSE;
   } else {
     /* make PETSc vector tmpy point to PVODE vector y */
-    ierr = VecPlaceArray(tmpy,&N_VIth(y,0));CHKERRQ(ierr);
+    ierr = VecPlaceArray(tmpy,N_VGetData(y));CHKERRQ(ierr);
 
     /* compute the Jacobian */
     ierr = TSComputeRHSJacobian(ts,ts->ptime,tmpy,&Jac,&Jac,&str);CHKERRQ(ierr);
@@ -75,8 +75,8 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,boole jok,
 */    
 #undef __FUNCT__
 #define __FUNCT__ "TSPSolve_PVode"
-int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
-                   real _gamma,N_Vector ewt,real delta,long int *nfePtr,
+int TSPSolve_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,N_Vector vtemp,
+                   realtype _gamma,N_Vector ewt,realtype delta,long int *nfePtr,
                    N_Vector r,int lr,void *P_data,N_Vector z)
 { 
   TS       ts = (TS) P_data;
@@ -89,8 +89,8 @@ int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
   /*
       Make the PETSc work vectors rr and xx point to the arrays in the PVODE vectors 
   */
-  ierr = VecPlaceArray(rr,&N_VIth(r,0));CHKERRQ(ierr);
-  ierr = VecPlaceArray(xx,&N_VIth(z,0));CHKERRQ(ierr);
+  ierr = VecPlaceArray(rr,N_VGetData(r));CHKERRQ(ierr);
+  ierr = VecPlaceArray(xx,N_VGetData(z));CHKERRQ(ierr);
 
   /* 
       Solve the Px=r and put the result in xx 
@@ -120,11 +120,11 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
   /*
       Make the PETSc work vectors tmpx and tmpy point to the arrays in the PVODE vectors 
   */
-  ierr = VecPlaceArray(tmpx,&N_VIth(y,0));
+  ierr = VecPlaceArray(tmpx,N_VGetData(y));
   if (ierr) {
     (*PetscErrorPrintf)("TSFunction_PVode:Could not place array. Error code %d",ierr);
   }
-  ierr = VecPlaceArray(tmpy,&N_VIth(ydot,0));
+  ierr = VecPlaceArray(tmpy,N_VGetData(ydot));
   if (ierr) {
     (*PetscErrorPrintf)("TSFunction_PVode:Could not place array. Error code %d",ierr);
   }
@@ -156,6 +156,7 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,flag;
   double    t,tout;
+  realtype  *tmp;
 
   PetscFunctionBegin;
   /* initialize the number of steps */
@@ -164,12 +165,13 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 
   /* call CVSpgmr to use GMRES as the linear solver. */
   /* setup the ode integrator with the given preconditioner */
-  CVSpgmr(cvode->mem,LEFT,cvode->gtype,cvode->restart,cvode->linear_tol,TSPrecond_PVode,TSPSolve_PVode,ts);
+  CVSpgmr(cvode->mem,LEFT,cvode->gtype,cvode->restart,cvode->linear_tol,TSPrecond_PVode,TSPSolve_PVode,ts,0,0);
 
   tout = ts->max_time;
   for (i=0; i<max_steps; i++) {
     if (ts->ptime >= tout) break;
-    ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+    ierr = VecGetArray(ts->vec_sol,&tmp);CHKERRQ(ierr);
+    N_VSetData(tmp,cvode->y);
     flag = CVode(cvode->mem,tout,cvode->y,&t,ONE_STEP);
     cvode->nonlinear_solves += cvode->iopt[NNI];
     ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
@@ -177,7 +179,8 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 
     if (t > tout && cvode->exact_final_time) { 
       /* interpolate to final requested time */
-      ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+      ierr = VecGetArray(ts->vec_sol,&tmp);CHKERRQ(ierr);
+      N_VSetData(tmp,cvode->y);
       flag = CVodeDky(cvode->mem,tout,0,cvode->y);
       ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
       if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,"PVODE interpolation to final time failed");	
@@ -190,7 +193,7 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     /*
        copy the solution from cvode->y to cvode->update and sol 
     */
-    ierr = VecPlaceArray(cvode->w1,&N_VIth(cvode->y,0));CHKERRQ(ierr);
+    ierr = VecPlaceArray(cvode->w1,N_VGetData(cvode->y));CHKERRQ(ierr);
     ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
     ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
     
@@ -239,7 +242,8 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 {
   TS_PVode    *cvode = (TS_PVode*)ts->data;
   int         ierr,M,locsize;
-  machEnvType machEnv;
+  M_Env       machEnv;
+  realtype    *tmp;
 
   PetscFunctionBegin;
   ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
@@ -249,11 +253,13 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 
   /* allocate the memory for machEnv */
   /* machEnv = PVInitMPI(ts->comm,locsize,M);  */
-  machEnv = PVecInitMPI(ts->comm, locsize, M, 0, 0);
+  machEnv = M_EnvInit_Parallel(ts->comm, locsize, M, 0, 0);
+
 
   /* allocate the memory for N_Vec y */
   cvode->y         = N_VNew(M,machEnv); 
-  ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+  ierr = VecGetArray(ts->vec_sol,&tmp);CHKERRQ(ierr);
+  N_VSetData(tmp,cvode->y);
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
 
   /* initializing vector update and func */
@@ -275,7 +281,8 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   ierr = PCSetVector(cvode->pc,ts->vec_sol);CHKERRQ(ierr);
 
   /* allocate memory for PVode */
-  ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+  ierr = VecGetArray(ts->vec_sol,&tmp);CHKERRQ(ierr);
+  N_VSetData(tmp,cvode->y);
   cvode->mem = CVodeMalloc(M,TSFunction_PVode,ts->ptime,cvode->y,cvode->cvode_type,
                            NEWTON,SS,&cvode->reltol,&cvode->abstol,ts,NULL,FALSE,cvode->iopt,
                            cvode->ropt,machEnv);CHKERRQ(ierr);

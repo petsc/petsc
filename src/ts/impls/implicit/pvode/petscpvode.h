@@ -16,9 +16,10 @@
    Include files specific for PVODE
 */
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus) 
-#include "llnltyps.h"
+#include "sundialstypes.h"
 #include "cvode.h"
 #include "nvector.h"
+#include "nvector_parallel.h"
 #include "iterativ.h"
 #include "cvspgmr.h"
 
