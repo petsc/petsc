@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.5 2000/07/10 19:37:53 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.6 2000/07/11 03:10:14 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -17,17 +17,23 @@
     Collective on MPI_Comm
 
     Input Parameter:
-.   comm - the processors that will share the grids and solution process
++   comm - the processors that will share the grids and solution process
+.   nlevels - number of multigrid levels 
+-   user - an optional user context
 
     Output Parameters:
 .    - the context
+
+    Notes:
+      To provide a different user context for each level, or to change the 
+    ratio in the grid spacing simply change the DAMG structure after calling this routine
 
     Level: advanced
 
 .seealso DAMGDestroy() 
 
 @*/
-int DAMGCreate(MPI_Comm comm,int nlevels,DAMG **ctx)
+int DAMGCreate(MPI_Comm comm,int nlevels,void *user,DAMG **damg)
 {
   int  ierr,i;
   DAMG *p;
@@ -42,8 +48,9 @@ int DAMGCreate(MPI_Comm comm,int nlevels,DAMG **ctx)
     p[i]->ratioy  = 2;
     p[i]->ratioz  = 2;
     p[i]->comm    = comm;
+    p[i]->user    = user;
   }
-  *ctx = p;
+  *damg = p;
   PetscFunctionReturn(0);
 }
 
@@ -62,27 +69,27 @@ int DAMGCreate(MPI_Comm comm,int nlevels,DAMG **ctx)
 .seealso DAMGCreate()
 
 @*/
-int DAMGDestroy(DAMG *ctx)
+int DAMGDestroy(DAMG *damg)
 {
-  int     ierr,i,nlevels = ctx[0]->nlevels;
+  int     ierr,i,nlevels = damg[0]->nlevels;
 
   PetscFunctionBegin;
   for (i=1; i<nlevels; i++) {
-    if (ctx[i]->R) {ierr = MatDestroy(ctx[i]->R);CHKERRA(ierr);}
+    if (damg[i]->R) {ierr = MatDestroy(damg[i]->R);CHKERRA(ierr);}
   }
   for (i=0; i<nlevels; i++) {
-    if (ctx[i]->da) {ierr = DADestroy(ctx[i]->da);CHKERRQ(ierr);}
-    if (ctx[i]->x)  {ierr = VecDestroy(ctx[i]->x);CHKERRQ(ierr);}
-    if (ctx[i]->b)  {ierr = VecDestroy(ctx[i]->b);CHKERRQ(ierr);}
-    if (ctx[i]->r)  {ierr = VecDestroy(ctx[i]->r);CHKERRQ(ierr);}
-    if (ctx[i]->J)  {ierr = MatDestroy(ctx[i]->J);CHKERRQ(ierr);}
-    if (ctx[i]->B)  {ierr = MatDestroy(ctx[i]->B);CHKERRQ(ierr);}
-    if (ctx[i]->Rscale)  {ierr = VecDestroy(ctx[i]->Rscale);CHKERRQ(ierr);}
-    if (ctx[i]->localX)  {ierr = VecDestroy(ctx[i]->localX);CHKERRQ(ierr);}
-    if (ctx[i]->localF)  {ierr = VecDestroy(ctx[i]->localF);CHKERRQ(ierr);}
-    ierr = PetscFree(ctx[i]);CHKERRQ(ierr);
+    if (damg[i]->da) {ierr = DADestroy(damg[i]->da);CHKERRQ(ierr);}
+    if (damg[i]->x)  {ierr = VecDestroy(damg[i]->x);CHKERRQ(ierr);}
+    if (damg[i]->b)  {ierr = VecDestroy(damg[i]->b);CHKERRQ(ierr);}
+    if (damg[i]->r)  {ierr = VecDestroy(damg[i]->r);CHKERRQ(ierr);}
+    if (damg[i]->B && damg[i]->B != damg[i]->J) {ierr = MatDestroy(damg[i]->B);CHKERRQ(ierr);}
+    if (damg[i]->J)  {ierr = MatDestroy(damg[i]->J);CHKERRQ(ierr);}
+    if (damg[i]->Rscale)  {ierr = VecDestroy(damg[i]->Rscale);CHKERRQ(ierr);}
+    if (damg[i]->localX)  {ierr = VecDestroy(damg[i]->localX);CHKERRQ(ierr);}
+    if (damg[i]->localF)  {ierr = VecDestroy(damg[i]->localF);CHKERRQ(ierr);}
+    ierr = PetscFree(damg[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  ierr = PetscFree(damg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -95,22 +102,25 @@ int DAMGDestroy(DAMG *ctx)
     Collective on DAMG and DA
 
     Input Parameter:
-+   ctx - the context
++   damg - the context
 -   da - the DA for the coarsest grid (this routine creates all the other ones)
 
     Notes:
-      This keeps the passed in DA object (in ctx[0]->da) (without increasing the reference count)
+      This keeps the passed in DA object (in damg[0]->da) (without increasing the reference count)
     so you should not destroy the da passed in later in your code (the DAMGDestroy() will 
     handle that.
+
+      If the user wants a different B (preconditioner matrix) from the Jacobian matrix 
+    they need to create it and set it into the DAMG structure after calling this routine
 
     Level: advanced
 
 .seealso DAMGCreate(), DAMGDestroy
 
 @*/
-int DAMGSetCoarseDA(DAMG *ctx,DA da)
+int DAMGSetCoarseDA(DAMG *damg,DA da)
 {
-  int            ierr,i,j,nlevels = ctx[0]->nlevels,M,N,P,m,n,p,sw,dof,dim,flag,Nt;
+  int            ierr,i,j,nlevels = damg[0]->nlevels,M,N,P,m,n,p,sw,dof,dim,flag,Nt;
   MPI_Comm       comm;
   DAPeriodicType pt;
   DAStencilType  st;
@@ -118,20 +128,22 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
 
   PetscValidHeaderSpecific(da,DA_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(comm,ctx[0]->comm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
     SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the DA");
   }
 
   /* Create DA data structure for all the finer levels */
   ierr       = DAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,&dof,&sw,&pt,&st);CHKERRQ(ierr);
-  ctx[0]->da = da;
+  damg[0]->da = da;
   for (i=1; i<nlevels; i++) {
-    M = ctx[i-1]->ratiox*(M-1) + 1;
-    N = ctx[i-1]->ratioy*(N-1) + 1;
-    P = ctx[i-1]->ratioz*(P-1) + 1;
+    M = damg[i-1]->ratiox*(M-1) + 1;
+    N = damg[i-1]->ratioy*(N-1) + 1;
+    P = damg[i-1]->ratioz*(P-1) + 1;
     if (dim == 3) {
-      ierr = DACreate3d(comm,pt,st,M,N,P,m,n,p,dof,sw,0,0,0,&ctx[i]->da);CHKERRQ(ierr);
+      ierr = DACreate3d(comm,pt,st,M,N,P,m,n,p,dof,sw,0,0,0,&damg[i]->da);CHKERRQ(ierr);
+    } else if (dim == 2) {
+      ierr = DACreate2d(comm,pt,st,M,N,m,n,dof,sw,0,0,&damg[i]->da);CHKERRQ(ierr);
     } else {
       SETERRQ1(1,1,"Cannot handle dimension %d",dim);
     }
@@ -142,9 +154,23 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
     ierr = DAGetFieldName(da,j,&name);CHKERRQ(ierr);
     if (name) {
       for (i=1; i<nlevels; i++) {
-        ierr = DASetFieldName(ctx[i]->da,j,name);CHKERRQ(ierr);
+        ierr = DASetFieldName(damg[i]->da,j,name);CHKERRQ(ierr);
       }
     }
+  }
+
+  /* Create work vectors and matrix for each level */
+  for (i=0; i<nlevels; i++) {
+    ierr = DACreateGlobalVector(damg[i]->da,&damg[i]->x);CHKERRA(ierr);
+    ierr = VecDuplicate(damg[i]->x,&damg[i]->b);CHKERRA(ierr);
+    ierr = VecDuplicate(damg[i]->x,&damg[i]->r);CHKERRA(ierr);
+    ierr = DAGetColoring(damg[i]->da,PETSC_NULL,&damg[i]->J);CHKERRQ(ierr);
+    damg[i]->B = damg[i]->J;
+  }
+
+  /* Create interpolation/restriction between levels */
+  for (i=1; i<nlevels; i++) {
+    ierr = DAGetInterpolation(damg[i-1]->da,damg[i]->da,&damg[i]->R,PETSC_NULL);CHKERRA(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -158,7 +184,7 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
     Collective on DAMG and SLES
 
     Input Parameter:
-+   ctx - the context
++   damg - the context
 .   sles - the linear solver object
 -   func - function to compute linear system matrix on each grid level
 
@@ -167,60 +193,47 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
 .seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA()
 
 @*/
-int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(void*,DA,Mat),void*user)
+int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
 {
-  int        ierr,i,j,nlevels = ctx[0]->nlevels,flag,m,n,p,Nt,dim;
+  int        ierr,i,j,nlevels = damg[0]->nlevels,flag,m,n,p,Nt,dim;
   MPI_Comm   comm;
   PC         pc;
   Vec        xyz,txyz;
-  PetscTruth flg;
+  PetscTruth flg,ismg;
 
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)sles,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(comm,ctx[0]->comm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
     SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the SLES");
   }
 
-  /* Create work vectors and matrix for each level */
-  for (i=0; i<nlevels; i++) {
-    ierr = DACreateGlobalVector(ctx[i]->da,&ctx[i]->x);CHKERRA(ierr);
-    ierr = VecDuplicate(ctx[i]->x,&ctx[i]->b);CHKERRA(ierr);
-    ierr = VecDuplicate(ctx[i]->x,&ctx[i]->r);CHKERRA(ierr);
-    ierr = DAGetColoring(ctx[i]->da,PETSC_NULL,&ctx[i]->J);CHKERRQ(ierr);
-  }
-
-  /* Create interpolation/restriction between levels */
-  for (i=1; i<nlevels; i++) {
-    ierr = DAGetInterpolation(ctx[i-1]->da,ctx[i]->da,&ctx[i]->R,PETSC_NULL);CHKERRA(ierr);
-  }
-
   /* If coarsest grid has coordinate information then interpolate it for finer grids */
-  ierr = DAGetCoordinates(ctx[0]->da,&xyz);CHKERRQ(ierr);
+  ierr = DAGetCoordinates(damg[0]->da,&xyz);CHKERRQ(ierr);
   if (xyz) {
     Mat        Rd;
     Vec        xyztest;
     PetscTruth docoors = PETSC_FALSE;
 
     for (i=1; i<nlevels; i++) {
-      ierr = DAGetCoordinates(ctx[i]->da,&xyztest);CHKERRQ(ierr);
+      ierr = DAGetCoordinates(damg[i]->da,&xyztest);CHKERRQ(ierr);
       if (!xyztest) {
         docoors = PETSC_TRUE; break;
       }
     }
 
     if (docoors) {
-      ierr = DAGetInfo(ctx[0]->da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DAGetInfo(damg[0]->da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
       for (i=1; i<nlevels; i++) {
-        ierr = DAGetCoordinates(ctx[i]->da,&xyztest);CHKERRQ(ierr);
-        ierr = MatMAIJRedimension(ctx[i]->R,dim,&Rd);CHKERRQ(ierr);
-        ierr = DAGetCorners(ctx[i]->da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
+        ierr = DAGetCoordinates(damg[i]->da,&xyztest);CHKERRQ(ierr);
+        ierr = MatMAIJRedimension(damg[i]->R,dim,&Rd);CHKERRQ(ierr);
+        ierr = DAGetCorners(damg[i]->da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
         Nt   = dim*m*n*p;
         ierr = VecCreateMPI(comm,Nt,PETSC_DECIDE,&txyz);CHKERRQ(ierr);
         ierr = MatInterpolate(Rd,xyz,txyz);CHKERRQ(ierr);
         ierr = MatDestroy(Rd);CHKERRQ(ierr);
         if (!xyztest) {
-          ierr = DASetCoordinates(ctx[i]->da,txyz);CHKERRQ(ierr);
+          ierr = DASetCoordinates(damg[i]->da,txyz);CHKERRQ(ierr);
         }
         xyz  = txyz;
       }
@@ -232,33 +245,37 @@ int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(void*,DA,Mat),void*user)
   ierr = MGSetLevels(pc,nlevels);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
-  /* set solvers for each level */
-  for (i=0; i<nlevels; i++) {
-    ierr = MGGetSmoother(pc,i,&ctx[i]->sles);CHKERRA(ierr);
-    ierr = SLESSetFromOptions(ctx[i]->sles);CHKERRA(ierr);
-    ierr = SLESSetOperators(ctx[i]->sles,ctx[i]->J,ctx[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-    ierr = MGSetX(pc,i,ctx[i]->x);CHKERRA(ierr); 
-    ierr = MGSetRhs(pc,i,ctx[i]->b);CHKERRA(ierr); 
-    ierr = MGSetR(pc,i,ctx[i]->r);CHKERRA(ierr); 
-    ierr = MGSetResidual(pc,i,MGDefaultResidual,ctx[i]->J);CHKERRA(ierr);
-  }
+  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  if (ismg) {
 
-  /* Set interpolation/restriction between levels */
-  for (i=1; i<nlevels; i++) {
-    ierr = MGSetInterpolate(pc,i,ctx[i]->R);CHKERRA(ierr); 
-    ierr = MGSetRestriction(pc,i,ctx[i]->R);CHKERRA(ierr); 
-  }
+    /* set solvers for each level */
+    for (i=0; i<nlevels; i++) {
+      ierr = MGGetSmoother(pc,i,&damg[i]->sles);CHKERRA(ierr);
+      ierr = SLESSetFromOptions(damg[i]->sles);CHKERRA(ierr);
+      ierr = SLESSetOperators(damg[i]->sles,damg[i]->J,damg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+      ierr = MGSetX(pc,i,damg[i]->x);CHKERRA(ierr); 
+      ierr = MGSetRhs(pc,i,damg[i]->b);CHKERRA(ierr); 
+      ierr = MGSetR(pc,i,damg[i]->r);CHKERRA(ierr); 
+      ierr = MGSetResidual(pc,i,MGDefaultResidual,damg[i]->J);CHKERRA(ierr);
+    }
 
+    /* Set interpolation/restriction between levels */
+    for (i=1; i<nlevels; i++) {
+      ierr = MGSetInterpolate(pc,i,damg[i]->R);CHKERRA(ierr); 
+      ierr = MGSetRestriction(pc,i,damg[i]->R);CHKERRA(ierr); 
+    }
+  }
+  
   /* set matrix for each level */
   if (func) {
     for (i=0; i<nlevels; i++) {
-      ierr = (*func)(user,ctx[i]->da,ctx[i]->J);CHKERRQ(ierr);
+      ierr = (*func)(damg[i],damg[i]->J);CHKERRQ(ierr);
     }
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-damg_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = DAMGView(ctx,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    ierr = DAMGView(damg,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -271,7 +288,7 @@ int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(void*,DA,Mat),void*user)
     Collective on DAMG and Viewer
 
     Input Parameter:
-+   ctx - the context
++   damg - the context
 -   viewer - the viewer
 
     Level: advanced
@@ -279,15 +296,15 @@ int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(void*,DA,Mat),void*user)
 .seealso DAMGCreate(), DAMGDestroy
 
 @*/
-int DAMGView(DAMG *ctx,Viewer viewer)
+int DAMGView(DAMG *damg,Viewer viewer)
 {
-  int            ierr,i,nlevels = ctx[0]->nlevels,flag;
+  int            ierr,i,nlevels = damg[0]->nlevels,flag;
   MPI_Comm       comm;
   PetscTruth     isascii;
 
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(comm,ctx[0]->comm,&flag);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
   if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
     SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the Viewer");
   }
@@ -297,7 +314,7 @@ int DAMGView(DAMG *ctx,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"DAMG Object with %d levels\n",nlevels);CHKERRQ(ierr);
     for (i=0; i<nlevels; i++) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = DAView(ctx[i]->da,viewer);CHKERRQ(ierr);
+      ierr = DAView(damg[i]->da,viewer);CHKERRQ(ierr);
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else {
