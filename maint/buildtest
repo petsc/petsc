@@ -26,23 +26,23 @@ endif
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set M =(snake     eagle     ryan      elvis          doc       ptera     merlin    )
-  set B =(O         O_complex  g         g_c++         O_c++     g_complex O_complex )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha     sun4_uni  )
-  set J1=(1         1          1         1             1         1         3         )
-  set J2=(0         2          2         2             2         2         4         )
-  set J3=(0         3          3         3             3         3         5         )
-  set J4=(0         0          6         6             6         0         0         )
+  set M =(snake     eagle     ryan      elvis          doc       ptera       merlin    )
+  set B =(O         O_complex  g         g_c++         O_c++     g_complex   O_complex )
+  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha_nolog sun4_uni  )
+  set J1=(1         1          1         1             1         1           3         )
+  set J2=(0         2          2         2             2         2           4         )
+  set J3=(0         3          3         3             3         3           5         )
+  set J4=(0         0          6         6             6         0           0         )
 endif
 if ($day == Mon) then
-  set M =(snake     eagle      puck      elvis         doc       ptera     merlin    )
-  set B =(g         O          O_c++     g             O         g_c++     O         )
-  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha     sun4_uni  )
-  set J1=(0         1          1         1             1         1         3         )
-  set J2=(1         2          2         2             2         2         4         )
-  set J3=(0         3          3         3             3         3         5         )
-  set J4=(0         6          6         6             6         6         6         )
-endif
+  set M =(snake     eagle      puck      elvis         doc       ptera       merlin    )
+  set B =(g         O          O_c++     g             O         g           O         )
+  set A =(hpux      sun4_local IRIX      freebsd_local rs6000_p4 alpha_nolog sun4_uni  )
+  set J1=(0         1          1         1             1         1           3         )
+  set J2=(1         2          2         2             2         2           4         )
+  set J3=(0         3          3         3             3         3           5         )
+  set J4=(0         6          6         6             6         6           6         )
+endif  
 if ($day == Tue) then
   set M =(snake     eagle      puck      elvis         doc       ptera     merlin    )
   set B =(O         g          O_complex O             g         O         g         )
