@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.92 1999/02/09 23:25:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.93 1999/02/09 23:31:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -79,14 +79,12 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   Ytmp          = snes->work[2];
 
   ierr       = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);         /* xnorm = || X || */  
-  PetscAMSTakeAccess(snes);
-  snes->iter = 0;
-  PetscAMSGrantAccess(snes);
 
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F, NORM_2,&fnorm ); CHKERRQ(ierr);             /* fnorm <- || F || */
   PetscAMSTakeAccess(snes);
   snes->norm = fnorm;
+  snes->iter = 0;
   PetscAMSGrantAccess(snes);
   if (history) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
@@ -104,9 +102,6 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
  
   for ( i=0; i<maxits; i++ ) {
-    PetscAMSTakeAccess(snes);
-    snes->iter = i+1;
-    PetscAMSGrantAccess(snes);
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
@@ -161,6 +156,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     if (!breakout) {
       fnorm = gnorm;
       PetscAMSTakeAccess(snes);
+      snes->iter = i+1;
       snes->norm = fnorm;
       PetscAMSGrantAccess(snes);
       if (history && history_len > i+1) history[i+1] = fnorm;
