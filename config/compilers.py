@@ -321,6 +321,8 @@ class Configure(config.base.Configure):
         # work with gcc...
         if arg == '-Y':
           for lib in argIter.next().split(':'):
+            #solaris gnu g77 has this extra P, here, not sure why it means
+            if lib.startswith('P,'):lib = lib[2:]
             flibs.append('-L'+lib)
           continue
         self.framework.log.write( 'Unknown arg '+arg+'\n')
