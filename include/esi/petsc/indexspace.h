@@ -1,7 +1,7 @@
 #ifndef __PETSc_Map_h__
 #define __PETSc_Map_h__
 
-// this contains the PETSc definition of (Petsc)Map
+// this contains the definition of PetscMap
 #include "petscvec.h"
 
 #include "esi/petsc/object.h"

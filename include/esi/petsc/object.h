@@ -9,10 +9,7 @@
 #include "esi/scalarTraits.h"
 #include "esi/Argv.h"
 #include "esi/Object.h"
-
 #include "esi/ESI-MPI.h"
-
-
 #include "esi/config.h"
 #include "esi/MPI_traits.h"
 
@@ -23,8 +20,7 @@ class Object : public virtual esi::Object
 {
   public:
 
-    // Constructors.
-    Object(MPI_Comm icomm) {comm = icomm;};	
+    // Constructor.
     Object()               {comm = 0; pobject = 0; refcnt = 1;};	
 
     // Destructor.
