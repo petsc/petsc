@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.26 1997/10/19 03:18:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.27 1997/10/27 00:45:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -187,9 +187,9 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     mpi_init_(__ierr);
     if (*__ierr) {fprintf(stderr,"PetscInitialize:");return;}
     PetscBeganMPI    = 1;
-    PETSC_COMM_WORLD = MPI_COMM_WORLD;
+    PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
   } else if (!PETSC_COMM_WORLD) {
-    PETSC_COMM_WORLD = MPI_COMM_WORLD;
+    PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
   }
   PetscInitializedCalled = 1;
 
