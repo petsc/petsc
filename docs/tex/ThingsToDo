@@ -9,6 +9,9 @@ Meta priorities:
 
   - Add MatSeqAIJSetColumnIndices() and for SeqBAIJ also.
 
+  - Add support for all KSP methods not to compute the residual norms,
+    or do convergence test.
+
   - Add man pages for SETERRA/SETERRQ, CHKERRA, CHKERRQ
 
   - Support saving SLES etc objects with a binary viewer to read in later
