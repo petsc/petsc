@@ -5,7 +5,7 @@ import sys
 
 #Determine whether we can safely use threads
 import nargs
-useThreads = nargs.Arg.findArgument('-useThreads', sys.argv[1:])
+useThreads = int(nargs.Arg.findArgument('useThreads', sys.argv[1:]))
 if useThreads is None:
   useThreads = 1
 

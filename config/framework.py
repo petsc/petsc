@@ -33,9 +33,25 @@ class Framework(config.base.Configure):
       argDB = initDB
     return argDB
 
-  def setupLogging(self):
+  def setupArguments(self):
+    '''Set initial arguments into the database, and setup initial types'''
+    import help
+
+    self.help = help.Help(self.argDB)
+    self.help.title = 'Python Configure Help'
+
+    self.configureHelp(self.help)
+    for child in self.children:
+      if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
+    return
+
+  def setupLogging(self, clArgs):
     if not hasattr(self, 'log'):
-      self.logName   = self.argDB['log']
+      import nargs
+      logName = nargs.Arg.findArgument('log', clArgs)
+      if logName is None:
+        logName = self.argDB['log']
+      self.logName   = logName
       self.logExists = os.path.exists(self.logName)
       if self.logExists:
         try:
@@ -48,17 +64,8 @@ class Framework(config.base.Configure):
         self.log     = file(self.logName, 'w')
     return self.log
 
-  def setupArguments(self, clArgs = None):
-    '''Set initial arguments into the database, and setup initial types'''
-    import help
-
-    self.help = help.Help(self.argDB)
-    self.help.title = 'Python Configure Help'
-
-    self.configureHelp(self.help)
-    for child in self.children:
-      if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
-
+  def insertArguments(self, clArgs = None):
+    '''Put arguments in from the command line and environment'''
     self.argDB.insertArgs(os.environ)
     self.argDB.insertArgs(clArgs)
     return
@@ -366,8 +373,9 @@ class Framework(config.base.Configure):
     '''Configure the system'''
     self.checkPython()
     # Delay database initialization until children have contributed variable types
-    self.setupArguments(self.clArgs)
-    self.setupLogging()
+    self.setupArguments()
+    self.setupLogging(self.clArgs)
+    self.insertArguments(self.clArgs)
     if self.argDB['help'] or self.argDB['h']:
       self.help.output()
       return
