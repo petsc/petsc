@@ -208,7 +208,7 @@ lint:
                 "function prototype not in scope"; true ;\
            $(RM) -f *.ln ; fi
 
-# Builds Fortran-77 wrappers - not yet available
+# Builds Fortran-77 wrappers
 fortranstubs:
 	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/src/fortran/auto \
           -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix MPIR_\

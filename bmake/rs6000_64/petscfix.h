@@ -231,13 +231,9 @@ extern double atof(char *);
 extern "C" {
 extern char   *mktemp(char *);
 extern char   *getwd(char *);
-extern int     gethostname(char *,int);
-extern int     getdomainname(char *,int);
 extern char   *getenv( char *);
 extern int    atoi(char*);
-extern int    exit(int);
 extern void   perror(const char *);
-extern int    abort();
 extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
