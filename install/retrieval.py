@@ -121,7 +121,6 @@ class Retriever(install.urlMapping.UrlMapping):
       # Try an authorized login first
       try:
         self.testAuthorizedUrl(authUrl)
-        self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+authUrl)
         output = self.bkClone(authUrl, root)
       except RuntimeError:
         pass

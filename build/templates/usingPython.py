@@ -80,10 +80,18 @@ class UsingPython (base.Base):
     self.extraLibraries.append(project.ArgumentPath('PYTHON_EXTRA_LIB'))
     return self.extraLibraries
 
+  def isCompiled(self):
+    '''Returns True is source needs to be compiled in order to execute'''
+    return 0
+
+  def getInterpreterSuffix(self):
+    '''Return the suffix used for interpreter files (.py)'''
+    return '.py'
+
   def getServerLibrary(self, package, proj = None, lang = None):
+    '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
     if proj is None: proj = self.project
     if lang is None: lang = self.language
-    '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
     return project.ProjectPath(os.path.join('lib', 'lib'+proj.getName()+'-'+lang.lower()+'-'+package+'-server.a'), proj.getUrl())
 
   def getGenericCompileTarget(self, action):

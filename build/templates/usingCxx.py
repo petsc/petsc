@@ -51,9 +51,19 @@ class UsingCxx (base.Base):
     self.extraLibraries = []
     return self.extraLibraries
 
-  def getServerLibrary(self, package):
+  def isCompiled(self):
+    '''Returns True is source needs to be compiled in order to execute'''
+    return 1
+
+  def getCompileSuffix(self):
+    '''Return the suffix for compilable files (.cc)'''
+    return '.cc'
+
+  def getServerLibrary(self, package, proj = None, lang = None):
     '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return project.ProjectPath(os.path.join('lib', 'lib'+self.project.getName()+'-'+self.language.lower()+'-'+package+'-server.a'), self.project.getUrl())
+    if proj is None: proj = self.project
+    if lang is None: lang = self.language
+    return project.ProjectPath(os.path.join('lib', 'lib'+proj.getName()+'-'+lang.lower()+'-'+package+'-server.a'), proj.getUrl())
 
   def getExecutableLibrary(self, program):
     '''Executable libraries follow the naming scheme: lib<project>-<lang>-<program>-exec.a'''
