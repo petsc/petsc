@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.127 1998/04/03 23:13:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.128 1998/04/13 17:26:33 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -143,7 +143,6 @@ int VecNorm(Vec x,NormType type,double *val)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidScalarPointer(val);
   PLogEventBegin(VEC_Norm,x,0,0,0);
   ierr = (*x->ops->norm)(x,type,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Norm,x,0,0,0);
