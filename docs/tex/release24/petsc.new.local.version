@@ -1,5 +1,5 @@
 
-To: leaf, gunter, dstevens, canfield, taylor, jichen, meena, freitag, diachin, plassman, bischof, roh, pwu, hovland, adams, kaushik, michalakes, elliott, resiga, murillo, knepley, lixu, jovanovi, keyes, zhang, baxter, jcheng, norris, oberman, loth, yuwu, heroux, lehoucq
+To: leaf, gunter, dstevens, canfield, taylor, jichen, meena, freitag, diachin, plassman, bischof, roh, pwu, hovland, adams, kaushik, michalakes, elliott, resiga, murillo, knepley, lixu, jovanovi, keyes, zhang, baxter, jcheng, norris, oberman, loth, yuwu, heroux, lehoucq, xli
 cc: bsmith, balay, gropp, curfman
 Subject: new local PETSc installation
 
