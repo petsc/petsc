@@ -172,7 +172,7 @@ int VecGetSerializeType(Vec map, VecSerializeType *type)
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-/*@M
+/*MC
   VecRegisterDynamic - Adds a new vector component implementation
 
   Synopsis:
