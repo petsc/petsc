@@ -24,12 +24,12 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # SuperLU-DIST, SuperLU
 #
-SUPERLUDIST_INCLUDE    = -I/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/SRC
-SUPERLU_INCLUDE        = -I/home/petsc/soft/linux-rh73/SuperLU/SRC                       
-SUPERLUDIST_LIB        = /home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/superlu_linux.a
-SUPERLU_LIB            = /home/petsc/soft/linux-rh73/SuperLU/superlu_linux.a
-PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
-PETSC_HAVE_SUPERLU     = -DPETSC_HAVE_SUPERLU                      
+SUPERLU_DIST_INCLUDE    = -I/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/SRC
+SUPERLU_INCLUDE         = -I/home/petsc/soft/linux-rh73/SuperLU/SRC                       
+SUPERLU_DIST_LIB        = /home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/superlu_linux.a
+SUPERLU_LIB             = /home/petsc/soft/linux-rh73/SuperLU/superlu_linux.a
+PETSC_HAVE_SUPERLU_DIST = -DPETSC_HAVE_SUPERLU_DIST
+PETSC_HAVE_SUPERLU      = -DPETSC_HAVE_SUPERLU                      
 #
 # SPOOLES, SPOOLES_MPI
 #
@@ -57,3 +57,4 @@ MATLABCOMMAND   = matlab
 MATLAB_ENGINE_INCLUDE    = -I/software/linux-rh73/com/packages/matlab-r13.1/extern/include -DV5_COMPAT
 MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}/software/linux-rh73/com/packages/matlab-r13.1/extern/lib/glnx86:/homes/hzhang/bin -L/software/linux-rh73/com/packages/matlab-r13.1/extern/lib/glnx86 -leng -lmx -lmat -lut
 PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
+

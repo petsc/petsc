@@ -5,7 +5,9 @@
 */
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 #include "src/vec/vecimpl.h"
-extern int MatSetValues_SeqSBAIJ(Mat,int,const int*,int,const int*,const PetscScalar*,InsertMode);
+
+extern int MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPISBAIJ"

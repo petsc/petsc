@@ -21,19 +21,17 @@
 #
 import urllib
 import os
+import sys
 import ftplib
 import httplib
-from exceptions import *
-from sys import *
-from string import *
-from string import *
+import string
+import urlparse
 from time import *
-from urlparse import *
-from string   import *
+from exceptions import *
+from string import *
+
 
 def parseargs(search_arg,return_nargs,arg_list):
-    import string
-    import sys
     try:
         index = arg_list.index(search_arg)
     except:
@@ -227,8 +225,8 @@ class http_object(url_object):
 class urlget:
 
     def __init__(self,url,filename ='',tmpdir='/tmp'):
-        self.url                                = urlunparse(urlparse(url))
-        self.protocol,self.machine,self.urlpath = urlparse(self.url)[0:3]
+        self.url                                = urlparse.urlunparse(urlparse.urlparse(url))
+        self.protocol,self.machine,self.urlpath = urlparse.urlparse(self.url)[0:3]
         self.compressed = 0
         self.cachefilename = 0
 
@@ -239,7 +237,7 @@ class urlget:
             self.cachefilename = filename
         else:
             self.cache      = 1
-            self.filename   = tmpdir+'/'+replace(join(urlparse(self.url)[0:3],'@'),'/','_')
+            self.filename   = tmpdir+'/'+replace(join(urlparse.urlparse(self.url)[0:3],'@'),'/','_')
             self.compressed = compressed(self.filename)
             if self.compressed == 1:
                 self.cachefilename = basename(self.filename)
@@ -285,27 +283,27 @@ class urlget:
 def main():
 
     # Parse for known options.
-    flg_tmp,val_tmp = parseargs('-tmp',1,argv)
-    flg_hyp,val_hyp = parseargs('-',0,argv)
-    flg_v,val_v = parseargs('-v',0,argv)
+    flg_tmp,val_tmp = parseargs('-tmp',1,sys.argv)
+    flg_hyp,val_hyp = parseargs('-',0,sys.argv)
+    flg_v,val_v = parseargs('-v',0,sys.argv)
 
     if flg_v:
         print 'Version 1.0'
-        exit()
+        sys.exit()
 
-    arg_len = len(argv)
+    arg_len = len(sys.argv)
     if arg_len < 2: 
         print 'Error! Insufficient arguments.'
-        print 'Usage:', argv[0], '[-v] [-tmp tmpdir] [-]  url-filename [local-filename]' 
+        print 'Usage:', sys.argv[0], '[-v] [-tmp tmpdir] [-]  url-filename [local-filename]' 
         sys.exit()
 
     #Default Values
     tmpdir = '/tmp'
     outfilename = ''
-    url = argv[1]
+    url = sys.argv[1]
     
     if arg_len == 3:
-        outfilename =  argv[2]
+        outfilename =  sys.argv[2]
     elif flg_hyp:
         outfilename = os.path.basename(url)
 

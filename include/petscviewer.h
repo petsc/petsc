@@ -43,6 +43,7 @@ typedef char* PetscViewerType;
 #define PETSC_VIEWER_VU           "vu"
 #define PETSC_VIEWER_MATHEMATICA  "mathematica"
 #define PETSC_VIEWER_SILO         "silo"
+#define PETSC_VIEWER_NETCDF       "netcdf"
 
 extern PetscFList PetscViewerList;
 EXTERN int PetscViewerRegisterAll(char *);
@@ -206,6 +207,10 @@ EXTERN int PetscViewerSiloClearName(PetscViewer);
 EXTERN int PetscViewerSiloGetMeshName(PetscViewer, char **);
 EXTERN int PetscViewerSiloSetMeshName(PetscViewer, const char []);
 EXTERN int PetscViewerSiloClearMeshName(PetscViewer);
+
+typedef enum {PETSC_NETCDF_RDONLY,PETSC_NETCDF_RDWR,PETSC_NETCDF_CREATE} PetscViewerNetcdfType;
+EXTERN int PetscViewerNetcdfOpen(MPI_Comm,const char[],PetscViewerNetcdfType,PetscViewer*);
+EXTERN int PetscViewerNetcdfGetID(PetscViewer, int *);
 
 /*
      These are all the default viewers that do not have 

@@ -14,10 +14,10 @@ EXTERN int MatMult_SeqAIJ(Mat,Vec,Vec);
 EXTERN int MatMultAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN int MatSolve_SeqAIJ(Mat,Vec,Vec);
 EXTERN int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
-EXTERN int MatGetRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-EXTERN int MatRestoreRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+EXTERN int MatGetRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN int MatRestoreRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_AIJ_CreateColInode"

@@ -3,8 +3,8 @@
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 
-EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_SeqAIJ"

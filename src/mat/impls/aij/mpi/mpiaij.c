@@ -1521,7 +1521,7 @@ int MatSetUpPreallocation_MPIAIJ(Mat A)
 }
 
 EXTERN int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
-EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS *,int);
+EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS [],int);
 EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);

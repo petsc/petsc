@@ -31,11 +31,13 @@ from parseargs import *
     
 def setupfunctionC(filename):
         import re
-        regtypedef = re.compile('typedef [ ]*struct')
-        regdefine = re.compile('#define')
+        regtypedef  = re.compile('typedef [ ]*struct')
+        regdefine   = re.compile('#define')
         regdefine__ = re.compile('#define [ ]*__FUNCT__')
-        regif = re.compile('#if')
-        regendif = re.compile('#endif')
+        regextern   = re.compile('extern')
+        regEXTERN   = re.compile('EXTERN')
+        regif       = re.compile('#if')
+        regendif    = re.compile('#endif')
 	newfile = filename + ".tmp"
 	f = open(filename)
 	g = open(newfile,"w")
@@ -73,11 +75,16 @@ def setupfunctionC(filename):
                                 line = reg.sub('',line)
                                 print "Extracting structure "+line
                         g.write(struct)
+		# copy over all #define macros
                 fl = regdefine.search(line)
                 if fl:
 		        fl = regdefine__.search(line)
 			if not fl:
                                 g.write(line)
+		# copy over extern statements		
+		if regextern.search(line) or regEXTERN.search(line):
+                        g.write(line)
+			
                 fl = regif.search(line)
                 if fl:
                         g.write(line)
@@ -98,7 +105,7 @@ def getfunctionC(g,filename,functionname):
         g.write("/* Function "+functionname+"*/\n\n")
 	line = f.readline()
 	while line:
-                for i in split('int double PetscReal PetscScalar PassiveReal PassiveScalar'," "):
+		for i in split('int double PetscReal PetscScalar PassiveReal PassiveScalar'," "):
                   reg = re.compile('^[ ]*'+i+'[ ]*'+functionname+'[ ]*\(')
                   fl = reg.search(line)
                   if fl:

@@ -54,9 +54,9 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 # SuperLU
 #
-SUPERLUDIST_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/SuperLU_DIST_2.0/SRC
-SUPERLUDIST_LIB        = -L/soft/apps/packages/petsc-packages/linux-rh72-intel/SuperLU_DIST_2.0 -lsuperlu_linux-rh72-intel
-PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+SUPERLU_DIST_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/SuperLU_DIST_2.0/SRC
+SUPERLU_DIST_LIB        = -L/soft/apps/packages/petsc-packages/linux-rh72-intel/SuperLU_DIST_2.0 -lsuperlu_linux-rh72-intel
+PETSC_HAVE_SUPERLU_DIST = -DPETSC_HAVE_SUPERLU_DIST
 
 #
 # MUMPS (requires SCALAPACK & BLACS)

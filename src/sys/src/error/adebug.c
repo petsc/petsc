@@ -490,8 +490,9 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 @*/
 int PetscStopForDebugger(void)
 {
+  int        ierr,sleeptime=0;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
-  int        ierr,sleeptime=0,ppid,rank;
+  int        ppid,rank;
   char       program[256],hostname[256];
   PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb;
 #endif

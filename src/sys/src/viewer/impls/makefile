@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = socket ascii binary string ams draw vu mathematica silo
+DIRS     = socket ascii binary string ams draw vu mathematica silo netcdf
 LOCDIR   = src/sys/src/viewer/impls/
 MANSEC   = Viewer
 

@@ -59,6 +59,6 @@ SUPERLU_INCLUDE        = -I/usr/local/pkg/acts/SuperLU/SuperLU_2.0/SRC
 SUPERLU_LIB            = /usr/local/pkg/acts/SuperLU/SuperLU_2.0/lib/libsuperlu_2.0.a
 PETSC_HAVE_SUPERLU     = -DPETSC_HAVE_SUPERLU                      
 #
-SUPERLUDIST_INCLUDE    = -I/usr/local/pkg/acts/SuperLU/SuperLU_DIST_1.0/SRC
-SUPERLUDIST_LIB        = /usr/local/pkg/acts/SuperLU/SuperLU_DIST_1.0/lib/libsuperlu_dist_64bit.a
-PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+SUPERLU_DIST_INCLUDE    = -I/usr/local/pkg/acts/SuperLU/SuperLU_DIST_1.0/SRC
+SUPERLU_DIST_LIB        = /usr/local/pkg/acts/SuperLU/SuperLU_DIST_1.0/lib/libsuperlu_dist_64bit.a
+PETSC_HAVE_SUPERLU_DIST = -DPETSC_HAVE_SUPERLU_DIST

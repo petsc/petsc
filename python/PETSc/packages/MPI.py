@@ -25,6 +25,7 @@ class Configure(config.base.Configure):
     help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.ArgDir(None, None, 'The directory containing mpi.h'))
     help.addArgument('MPI', '-with-mpi-lib=<lib>',      nargs.Arg(None, None, 'The MPI library or list of libraries'))
     help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpi-shared',         nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
     return
 
   def executeShellCommand(self, command):
@@ -216,7 +217,7 @@ int checkInit(void) {
     while path:
       dir = os.path.join(path, 'include')
       if os.path.isdir(dir):
-        yield dir
+        yield [dir]
       path = os.path.dirname(path)
     return
 
@@ -242,10 +243,10 @@ int checkInit(void) {
       libs = self.framework.argDB['with-mpi-lib']
       if not isinstance(libs, list): libs = [libs]
       if 'with-mpi-include' in self.framework.argDB:
-        includes = [self.framework.argDB['with-mpi-include']]
+        includes = [[self.framework.argDB['with-mpi-include']]]
       else:
         includes = self.includeGuesses(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs))
-      yield ('User specified library and includes', libs, includes)
+      yield ('User specified library and includes', [libs], includes)
     # Try specified installation root
     if 'with-mpi-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-mpi-dir']
@@ -257,7 +258,7 @@ int checkInit(void) {
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
-    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [os.path.join(dir, 'include')])
+    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
@@ -307,9 +308,10 @@ int checkInit(void) {
       if not self.include: continue
       if not self.executeTest(self.checkWorkingLink): continue
       version = self.executeTest(self.configureVersion)
-      if not self.executeTest(self.checkSharedLibrary):
-        nonsharedMPI.append((name, self.lib, self.include, version))
-        continue
+      if self.framework.argDB['with-mpi-shared']:
+        if not self.executeTest(self.checkSharedLibrary):
+          nonsharedMPI.append((name, self.lib, self.include, version))
+          continue
       self.foundMPI = 1
       functionalMPI.append((name, self.lib, self.include, version))
     # User chooses one or take first (sort by version)

@@ -6,8 +6,6 @@
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-
 EXTERN_C_BEGIN
 #include "dscmain.h"
 EXTERN_C_END
@@ -26,30 +24,37 @@ typedef struct {
   Vec           vec_dsc;
   VecScatter    scat;
   MPI_Comm      comm_dsc;
-} Mat_MPIBAIJ_DSC;
 
-extern int MatDestroy_MPIBAIJ(Mat);
-extern int MatDestroy_SeqBAIJ(Mat);
+  /* A few inheritance details */
+  MatType basetype;
+  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  int (*MatView)(Mat,PetscViewer);
+  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
+  int (*MatDestroy)(Mat);
+  /* Clean up flag for destructor */
+  PetscTruth CleanUpDSCPACK;
+} Mat_DSC;
 
+EXTERN int MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
 /* DSC function */
 #undef __FUNCT__  
 #define __FUNCT__ "isort2"
-void isort2(int size, int *list, int *index)
-{
-                /* in increasing order */
-                /* index will contain indices such that */
-                /* list can be accessed in sorted order */
-   int i, j, x, y;
+void isort2(int size, int *list, int *index) {
+  /* in increasing order */
+  /* index will contain indices such that */
+  /* list can be accessed in sorted order */
+  int i, j, x, y;
+  
+  for (i=0; i<size; i++) index[i] =i;
 
-   for (i=0; i<size; i++) index[i] =i;
-
-   for (i=1; i<size; i++){
-      y= index[i];
-      x=list[index[i]];
-      for (j=i-1; ((j>=0) && (x<list[index[j]])); j--)
-                index[j+1]=index[j];
-      index[j+1]=y;
-   }
+  for (i=1; i<size; i++){
+    y= index[i];
+    x=list[index[i]];
+    for (j=i-1; ((j>=0) && (x<list[index[j]])); j--)
+      index[j+1]=index[j];
+    index[j+1]=y;
+  }
 }/*end isort2*/
 
 #undef __FUNCT__  
@@ -147,51 +152,76 @@ int  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_DSCPACK_Base"
+int MatConvert_DSCPACK_Base(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert an unfactored PETSc-DSCPACK matrix */
+  /* to its base PETSc type, so we will ignore 'MatType type'. */
+  int     ierr;
+  Mat     B=*newmat;
+  Mat_DSC *lu=(Mat_DSC*)A->spptr;
+  
+  PetscFunctionBegin;
+  if (B != A) {
+    /* This routine was inherited so the type is correct. */
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+  /* Reset the original function pointers */
+  B->ops->duplicate              = lu->MatDuplicate;
+  B->ops->view                   = lu->MatView;
+  B->ops->assemblyend            = lu->MatAssemblyEnd;
+  B->ops->choleskyfactorsymbolic = lu->MatCholeskyFactorSymbolic;
+  B->ops->destroy                = lu->MatDestroy;
+
+  ierr = PetscObjectChangeTypeName((PetscObject)B,lu->basetype);CHKERRQ(ierr);
+  ierr = PetscFree(lu);CHKERRQ(ierr); 
+  *newmat = B;
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MPIBAIJ_DSCPACK"
-int MatDestroy_MPIBAIJ_DSCPACK(Mat A)
-{
-  Mat_MPIBAIJ_DSC     *lu=(Mat_MPIBAIJ_DSC*)A->spptr;  
-  int                 ierr, size;
+#define __FUNCT__ "MatDestroy_DSCPACK"
+int MatDestroy_DSCPACK(Mat A) {
+  Mat_DSC *lu=(Mat_DSC*)A->spptr;  
+  int     ierr, size;
     
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
 
-  if (lu->dsc_id != -1) {  
-    if(lu->stat) DSC_DoStats(lu->My_DSC_Solver);    
-    DSC_FreeAll(lu->My_DSC_Solver);   
-    DSC_Close0(lu->My_DSC_Solver);
-
-    ierr = PetscFree(lu->local_cols_old_num);CHKERRQ(ierr); 
-  } 
-  DSC_End(lu->My_DSC_Solver); 
+  if (lu->CleanUpDSCPACK) {
+    if (lu->dsc_id != -1) {  
+      if(lu->stat) DSC_DoStats(lu->My_DSC_Solver);    
+      DSC_FreeAll(lu->My_DSC_Solver);   
+      DSC_Close0(lu->My_DSC_Solver);
+      
+      ierr = PetscFree(lu->local_cols_old_num);CHKERRQ(ierr); 
+    } 
+    DSC_End(lu->My_DSC_Solver); 
  
-  ierr = MPI_Comm_free(&(lu->comm_dsc));CHKERRQ(ierr);
-  ierr = ISDestroy(lu->my_cols);CHKERRQ(ierr);  
-  ierr = PetscFree(lu->replication);CHKERRQ(ierr);
-  ierr = VecDestroy(lu->vec_dsc);CHKERRQ(ierr); 
-  ierr = ISDestroy(lu->iden_dsc);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&(lu->comm_dsc));CHKERRQ(ierr);
+    ierr = ISDestroy(lu->my_cols);CHKERRQ(ierr);  
+    ierr = PetscFree(lu->replication);CHKERRQ(ierr);
+    ierr = VecDestroy(lu->vec_dsc);CHKERRQ(ierr); 
+    ierr = ISDestroy(lu->iden_dsc);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
  
-  if (size >1) ierr = ISDestroy(lu->iden);CHKERRQ(ierr);
-  ierr = PetscFree(lu);CHKERRQ(ierr);  
-
-  if (size == 1){
-    ierr = MatDestroy_SeqBAIJ(A);CHKERRQ(ierr);
-  } else {
-    ierr = MatDestroy_MPIBAIJ(A);CHKERRQ(ierr);
-  } 
+    if (size >1) ierr = ISDestroy(lu->iden);CHKERRQ(ierr);
+  }
   
+  ierr = MatConvert_DSCPACK_Base(A,lu->basetype,&A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_MPIBAIJ_DSCPACK"
-int MatSolve_MPIBAIJ_DSCPACK(Mat A,Vec b,Vec x)
-{
-  Mat_MPIBAIJ_DSC   *lu= (Mat_MPIBAIJ_DSC*)A->spptr;
-  int               ierr;
-  RealNumberType    *solution_vec, *rhs_vec; 
+#define __FUNCT__ "MatSolve_DSCPACK"
+int MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
+  Mat_DSC        *lu= (Mat_DSC*)A->spptr;
+  int            ierr;
+  RealNumberType *solution_vec,*rhs_vec; 
 
   PetscFunctionBegin;
   /* scatter b into seq vec_dsc */  
@@ -227,18 +257,17 @@ int MatSolve_MPIBAIJ_DSCPACK(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK"
-int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
-{
-  Mat_SeqBAIJ       *a_seq;
-  Mat_MPIBAIJ_DSC   *lu=(Mat_MPIBAIJ_DSC*)(*F)->spptr; 
-  Mat               *tseq,A_seq;
-  RealNumberType    *my_a_nonz;
-  int               ierr, M=A->M, Mbs=M/lu->bs, size,
-                    max_mem_estimate, max_single_malloc_blk,
-                    number_of_procs,i,j,next,iold,
-                    *idx,*iidx,*itmp;
-  IS                my_cols_sorted;
+#define __FUNCT__ "MatCholeskyFactorNumeric_DSCPACK"
+int MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
+  Mat_SeqBAIJ    *a_seq;
+  Mat_DSC        *lu=(Mat_DSC*)(*F)->spptr; 
+  Mat            *tseq,A_seq;
+  RealNumberType *my_a_nonz;
+  int            ierr, M=A->M, Mbs=M/lu->bs, size,
+                 max_mem_estimate, max_single_malloc_blk,
+                 number_of_procs,i,j,next,iold,
+                 *idx,*iidx,*itmp;
+  IS             my_cols_sorted;
 	
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
@@ -270,7 +299,6 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
     }
 
     /* DSC_Solver starts */
-    lu->My_DSC_Solver = DSC_Begin();
     DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, lu->comm_dsc ); 
 
     if (lu->dsc_id != -1) {
@@ -399,28 +427,29 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 
 /* Note the Petsc permutation r is ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK"
-int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F)
-{
-  Mat_MPIBAIJ_DSC         *lu;   
-  int                     ierr; 
-  PetscTruth              flg;
-  char                    buff[32], *ftype[] = {"LDLT","LLT"},
-                          *ltype[] = {"LBLAS1","LBLAS2","LBLAS3"},
-                          *dtype[] = {"DBLAS1","DBLAS2"}; 
+#define __FUNCT__ "MatCholeskyFactorSymbolic_DSCPACK"
+int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
+  Mat        B;
+  Mat_DSC    *lu;   
+  int        ierr,bs; 
+  PetscTruth flg;
+  char       buff[32],*ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
 
   PetscFunctionBegin; 
-  ierr = PetscNew(Mat_MPIBAIJ_DSC,&lu);CHKERRQ(ierr); 
 
   /* Create the factorization matrix F */ 
-  ierr = MatGetBlockSize(A,&lu->bs);
-  ierr = MatCreateMPIBAIJ(A->comm,lu->bs,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A,&bs);
+  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATDSCPACK);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(B,bs,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(B,bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     
-  (*F)->spptr                       = (Mat_MPIBAIJ_DSC*)lu;
-  (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK;
-  (*F)->ops->solve                  = MatSolve_MPIBAIJ_DSCPACK;
-  (*F)->ops->destroy                = MatDestroy_MPIBAIJ_DSCPACK;  
-  (*F)->factor                      = FACTOR_CHOLESKY;  
+  lu = (Mat_DSC*)B->spptr;
+  lu->bs = bs;
+
+  B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_DSCPACK;
+  B->ops->solve                  = MatSolve_DSCPACK;
+  B->factor                      = FACTOR_CHOLESKY;  
 
   /* Set the default input options */
   lu->order_code  = 2; 
@@ -506,30 +535,35 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
   PetscOptionsEnd();
   
   lu->flg = DIFFERENT_NONZERO_PATTERN;
+
+  lu->My_DSC_Solver = DSC_Begin();
+  lu->CleanUpDSCPACK = PETSC_TRUE;
+  *F = B;
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseDSCPACK_MPIBAIJ"
-int MatUseDSCPACK_MPIBAIJ(Mat A)
-{
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_DSCPACK"
+int MatAssemblyEnd_DSCPACK(Mat A,MatAssemblyType mode) {
+  int     ierr;
+  Mat_DSC *lu=(Mat_DSC*)A->spptr;
+
   PetscFunctionBegin;
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK;
+  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
+  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMPIBAIJFactorInfo_DSCPACK"
-int MatMPIBAIJFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatFactorInfo_DSCPACK"
+int MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 {
-  Mat_MPIBAIJ_DSC         *lu=(Mat_MPIBAIJ_DSC*)A->spptr;  
-  int                     ierr;
-  char                    *s;
+  Mat_DSC *lu=(Mat_DSC*)A->spptr;  
+  int     ierr;
+  char    *s;
   
   PetscFunctionBegin;   
-  /* check if matrix is dscpack type */
-  if (A->ops->solve != MatSolve_MPIBAIJ_DSCPACK) PetscFunctionReturn(0);
-
   ierr = PetscViewerASCIIPrintf(viewer,"DSCPACK run parameters:\n");CHKERRQ(ierr);
 
   switch (lu->order_code) {
@@ -570,7 +604,7 @@ int MatMPIBAIJFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
     SETERRQ(1,"Unknown local phase BLAS level");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  local phase BLAS level: %s \n",s);CHKERRQ(ierr);
-
+  
   if ( lu->DBLASLevel == DSC_DBLAS1) {
     s = "BLAS1";
   } else if ( lu->DBLASLevel == DSC_DBLAS2){
@@ -582,16 +616,156 @@ int MatMPIBAIJFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#else
+#undef __FUNCT__
+#define __FUNCT__ "MatView_DSCPACK"
+int MatView_DSCPACK(Mat A,PetscViewer viewer) {
+  int               ierr;
+  PetscTruth        isascii;
+  PetscViewerFormat format;
+  Mat_DSC           *lu=(Mat_DSC*)A->spptr;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseDSCPACK_MPIBAIJ"
-int MatUseDSCPACK_MPIBAIJ(Mat A)
-{
   PetscFunctionBegin;
+  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      ierr = MatFactorInfo_DSCPACK(A,viewer);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
-#endif
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_Base_DSCPACK"
+int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert to MATDSCPACK */
+  /* from MATSEQBAIJ if A has a single process communicator */
+  /* or MATMPIBAIJ otherwise, so we will ignore 'MatType type'. */
+  int      ierr,size;
+  MPI_Comm comm;
+  Mat      B=*newmat;
+  Mat_DSC  *lu;
 
+  PetscFunctionBegin;
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
 
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscNew(Mat_DSC,&lu);CHKERRQ(ierr);
+
+  lu->MatView                    = A->ops->view;
+  lu->MatAssemblyEnd             = A->ops->assemblyend;
+  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
+  lu->MatDestroy                 = A->ops->destroy;
+  lu->CleanUpDSCPACK             = PETSC_FALSE;
+
+  B->spptr                       = (void*)lu;
+  B->ops->duplicate              = MatDuplicate_DSCPACK;
+  B->ops->view                   = MatView_DSCPACK;
+  B->ops->assemblyend            = MatAssemblyEnd_DSCPACK;
+  B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
+  B->ops->destroy                = MatDestroy_DSCPACK;
+
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_dscpack_C",
+                                             "MatConvert_Base_DSCPACK",MatConvert_Base_DSCPACK);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_seqbaij_C",
+                                             "MatConvert_DSCPACK_Base",MatConvert_DSCPACK_Base);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_dscpack_C",
+                                             "MatConvert_Base_DSCPACK",MatConvert_Base_DSCPACK);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_mpibaij_C",
+                                             "MatConvert_DSCPACK_Base",MatConvert_DSCPACK_Base);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATDSCPACK);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_DSCPACK"
+int MatDuplicate_DSCPACK(Mat A, MatDuplicateOption op, Mat *M) {
+  int ierr;
+  PetscFunctionBegin;
+  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = MatConvert_Base_DSCPACK(*M,MATDSCPACK,M);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  MATDSCPACK - a matrix type providing direct solvers (Cholesky) for sequential 
+  or distributed matrices via the external package DSCPACK.
+
+  If DSCPACK is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes DSCPACK solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATDSCPACK).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQBAIJ if constructed with a single process communicator,
+  and from MATMPIBAIJ otherwise.  As a result, for sequential matrices, MatSeqBAIJSetPreallocation is 
+  supported, and similarly MatMPIBAIJSetPreallocation is supported for distributed matrices.  It is 
+  recommended that you call both of the above preallocation routines for simplicity.  Also,
+  MatConvert can be called to perform inplace conversion to and from MATSEQBAIJ or MATMPIBAIJ
+  for sequential or distributed matrices respectively.
+
+  Options Database Keys:
++ -mat_type dscpack - sets the matrix type to dscpack during a call to MatSetFromOptions()
+. -mat_dscpack_order <1,2,3> - DSCPACK ordering, 1:ND, 2:Hybrid with Minimum Degree, 3:Hybrid with Minimum Deficiency
+. -mat_dscpack_scheme <1,2> - factorization scheme, 1:standard factorization,  2: factorization with selective inversion
+. -mat_dscpack_factor <LLT,LDLT> - the type of factorization to be performed.
+. -mat_dscpack_MaxMemAllowed <n> - the maximum memory to be used during factorization
+. -mat_dscpack_stats <0,1> - display stats of the factorization and solves during MatDestroy(), 0: no display,  1: display
+. -mat_dscpack_LBLAS <LBLAS1,LBLAS2,LBLAS3> - BLAS level used in the local phase
+- -mat_dscpack_DBLAS <DBLAS1,DBLAS2> - BLAS level used in the distributed phase
+
+   Level: beginner
+
+.seealso: PCCHOLESKY
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_DSCPACK"
+int MatCreate_DSCPACK(Mat A) {
+  int                     ierr,size;
+  MPI_Comm                comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
+  }
+  ierr = MatConvert_Base_DSCPACK(A,MATDSCPACK,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad_DSCPACK"
+int MatLoad_DSCPACK(PetscViewer viewer,MatType type,Mat *A) {
+  int      ierr,size,(*r)(PetscViewer,MatType,Mat*);
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscFListFind(comm,MatLoadList,MATSEQBAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFListFind(comm,MatLoadList,MATMPIBAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  }
+  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END

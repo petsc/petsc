@@ -128,16 +128,18 @@ PCONF         = ${PETSC_HAVE_MPE}         ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_
                 ${PETSC_HAVE_AMS}         ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}     ${PETSC_HAVE_MATLAB_ENGINE} \
                 ${PETSC_HAVE_ADIC}        ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL}   ${PETSC_HAVE_DSCPACK} \
                 ${PETSC_HAVE_RAMG}        ${PETSC_HAVE_MATLAB}     ${PETSC_HAVE_ESSL}    ${PETSC_HAVE_ADIFOR} \
-                ${PETSC_HAVE_SUPERLUDIST} ${PETSC_HAVE_SUPERLU}    ${PETSC_HAVE_SPOOLES} ${PETSC_HAVE_UMFPACK}\
+                ${PETSC_HAVE_SUPERLU_DIST} ${PETSC_HAVE_SUPERLU}    ${PETSC_HAVE_SPOOLES} ${PETSC_HAVE_UMFPACK}\
                 ${PETSC_HAVE_CCA}         ${PETSC_HAVE_TRILINOS}   ${PETSC_HAVE_HYPRE}   ${PETSC_HAVE_MUMPS}\
-                ${PETSC_HAVE_MATHEMATICA} ${PETSC_HAVE_TRIANGLE}   ${PETSC_HAVE_PLAPACK} ${PETSC_HAVE_SAMG}
+                ${PETSC_HAVE_MATHEMATICA} ${PETSC_HAVE_TRIANGLE}   ${PETSC_HAVE_PLAPACK} ${PETSC_HAVE_SAMG} \
+                ${PETSC_HAVE_NETCDF}
 EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB}          ${PARMETIS_LIB} \
                 ${AMS_LIB}                ${SPAI_LIB}              ${X11_LIB}            ${MATLAB_ENGINE_LIB}   \
                                                                    ${LUSOL_LIB}          ${DSCPACK_LIB} \
                 ${RAMG_LIB}               ${TAU_LIB}                                     ${ADIFOR_LIB} \
-                ${SUPERLUDIST_LIB}        ${SUPERLU_LIB}           ${SPOOLES_LIB}        ${UMFPACK_LIB}\
+                ${SUPERLU_DIST_LIB}        ${SUPERLU_LIB}           ${SPOOLES_LIB}        ${UMFPACK_LIB}\
                                           ${TRILINOS_LIB}          ${HYPRE_LIB}          ${MUMPS_LIB}\
-                ${MATHEMATICA_LIB}        ${TRIANGLE_LIB}          ${PLAPACK_LIB}        ${SAMG_LIB}
+                ${MATHEMATICA_LIB}        ${TRIANGLE_LIB}          ${PLAPACK_LIB}        ${SAMG_LIB} \
+                ${NETCDF_LIB}
 #
 #   Directories that depend on each external package
 #
@@ -151,7 +153,7 @@ MATLAB_ENGINE_DIRS = src/vec/utils src/vec/impls/seq src/vec/impls/mpi src/mat/i
 LUSOL_DIRS         = src/mat/impls/aij/seq
 RAMG_DIRS          = src/contrib/lahaye/ramg src/sles/pc/interface
 ADIFOR_DIRS        = 
-SUPERLUDIST_DIRS   = src/mat/impls/aij
+SUPERLU_DIST_DIRS  = src/mat/impls/aij
 SUPERLU_DIRS       = src/mat/impls/aij/seq
 TRIANGLE_DIRS      = src/mesh/impls/triangular/2d
 PLAPACK_DIRS       = src/sys/src/utils src/sles/pc/impls/ml

@@ -3,6 +3,9 @@
      Code for some of the parallel vector primatives.
 */
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#if defined(PETSC_HAVE_NETCDF)
+#include "pnetcdf.h"
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy_MPI"
@@ -202,7 +205,11 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscFree(values);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file && xin->bs > 1) {
-      fprintf(file,"-vecload_block_size %d\n",xin->bs);
+      if (xin->prefix) {
+	fprintf(file,"-%svecload_block_size %d\n",xin->prefix,xin->bs);
+      } else {
+	fprintf(file,"-vecload_block_size %d\n",xin->bs);
+      }
     }
   } else {
     /* send values */
@@ -386,11 +393,43 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Netcdf"
+int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
+{
+#if defined(PETSC_HAVE_NETCDF)
+  int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart;
+  MPI_Comm    comm = xin->comm;  
+  PetscScalar *values,*xarray;
+
+  PetscFunctionBegin;
+#if !defined(PETSC_USE_COMPLEX)
+  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = PetscViewerNetcdfGetID(v,&ncid); CHKERRQ(ierr);
+  if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
+  /* define dimensions */
+  ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",xin->N,&xdim); CHKERRQ(ierr);
+  /* define variables */
+  ierr = ncmpi_def_var(ncid,"PETSc_Vector_MPI",NC_DOUBLE,xdim_num,&xdim,&xin_id); CHKERRQ(ierr);
+  /* leave define mode */
+  ierr = ncmpi_enddef(ncid); CHKERRQ(ierr);
+  /* store the vector */
+  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,&xstart,&n,xarray); CHKERRQ(ierr);
+#else 
+    PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
+#endif
+  PetscFunctionReturn(0);
+#else /* !defined(PETSC_HAVE_NETCDF) */
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
+#endif
+}
+#undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI"
 int VecView_MPI(Vec xin,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,issocket,isbinary,isdraw,ismathematica;
+  PetscTruth isascii,issocket,isbinary,isdraw,ismathematica,isnetcdf;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -398,6 +437,7 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
   if (isascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {
@@ -415,6 +455,8 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
     }
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
+  } else if (isnetcdf) {
+    ierr = VecView_MPI_Netcdf(xin,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }

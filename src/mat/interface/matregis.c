@@ -23,29 +23,32 @@ EXTERN int MatCreate_ESI(Mat);
 EXTERN int MatCreate_PetscESI(Mat);
 #endif
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_SeqAIJ_Spooles(Mat);
-EXTERN int MatCreate_SeqSBAIJ_Spooles(Mat);
-EXTERN int MatCreate_MPIAIJ_Spooles(Mat);
-EXTERN int MatCreate_MPISBAIJ_Spooles(Mat);
+EXTERN int MatCreate_SeqAIJSpooles(Mat);
+EXTERN int MatCreate_SeqSBAIJSpooles(Mat);
+EXTERN int MatCreate_MPIAIJSpooles(Mat);
+EXTERN int MatCreate_MPISBAIJSpooles(Mat);
 #endif
 #if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_SeqAIJ_SuperLU(Mat);
+EXTERN int MatCreate_SuperLU(Mat);
 #endif
-#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_MPIAIJ_SuperLU_DIST(Mat);
+#if defined(PETSC_HAVE_SUPERLU_DIST) && !defined(PETSC_USE_SINGLE)
+EXTERN int MatCreate_SuperLU_DIST(Mat);
 #endif
 #if defined(PETSC_HAVE_UMFPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-EXTERN int MatCreate_SeqAIJ_UMFPACK(Mat);
+EXTERN int MatCreate_UMFPACK(Mat);
 #endif
 #if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
-EXTERN int MatCreate_SeqAIJ_Essl(Mat);
+EXTERN int MatCreate_Essl(Mat);
 #endif
 #if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-EXTERN int MatCreate_SeqAIJ_LUSOL(Mat);
+EXTERN int MatCreate_LUSOL(Mat);
 #endif
 #if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatCreate_AIJ_MUMPS(Mat);
-EXTERN int MatCreate_SBAIJ_MUMPS(Mat);
+EXTERN int MatCreate_AIJMUMPS(Mat);
+EXTERN int MatCreate_SBAIJMUMPS(Mat);
+#endif
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+EXTERN int MatCreate_DSCPACK(Mat);
 #endif
 EXTERN_C_END
   
@@ -106,29 +109,32 @@ int MatRegisterAll(char *path)
   ierr = MatRegisterDynamic(MATPETSCESI,  path,"MatCreate_PetscESI",    MatCreate_PetscESI);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
-  ierr = MatRegisterDynamic(MATSEQAIJSPOOLES,  path,"MatCreate_SeqAIJ_Spooles",  MatCreate_SeqAIJ_Spooles);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatCreate_SeqSBAIJ_Spooles",MatCreate_SeqSBAIJ_Spooles);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJSPOOLES,  path,"MatCreate_MPIAIJ_Spooles",  MatCreate_MPIAIJ_Spooles);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPISBAIJSPOOLES,path,"MatCreate_MPISBAIJ_Spooles",MatCreate_MPISBAIJ_Spooles);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJSPOOLES,  path,"MatCreate_SeqAIJSpooles",  MatCreate_SeqAIJSpooles);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatCreate_SeqSBAIJSpooles",MatCreate_SeqSBAIJSpooles);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIAIJSPOOLES,  path,"MatCreate_MPIAIJSpooles",  MatCreate_MPIAIJSpooles);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPISBAIJSPOOLES,path,"MatCreate_MPISBAIJSpooles",MatCreate_MPISBAIJSpooles);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE)
-  ierr = MatRegisterDynamic(MATSUPERLU,path,"MatCreate_SeqAIJ_SuperLU",MatCreate_SeqAIJ_SuperLU);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSUPERLU,path,"MatCreate_SuperLU",MatCreate_SuperLU);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
-  ierr = MatRegisterDynamic(MATSUPERLU_DIST,path,"MatCreate_MPIAIJ_SuperLU_DIST",MatCreate_MPIAIJ_SuperLU_DIST);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SUPERLU_DIST) && !defined(PETSC_USE_SINGLE)
+  ierr = MatRegisterDynamic(MATSUPERLU_DIST,path,"MatCreate_SuperLU_DIST",MatCreate_SuperLU_DIST);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_UMFPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-  ierr = MatRegisterDynamic(MATUMFPACK,path,"MatCreate_SeqAIJ_UMFPACK",MatCreate_SeqAIJ_UMFPACK);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATUMFPACK,path,"MatCreate_UMFPACK",MatCreate_UMFPACK);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_ESSL) && !defined(__cplusplus)
-  ierr = MatRegisterDynamic(MATESSL,path,"MatCreate_SeqAIJ_Essl",MatCreate_SeqAIJ_Essl);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATESSL,path,"MatCreate_Essl",MatCreate_Essl);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-  ierr = MatRegisterDynamic(MATLUSOL,path,"MatCreate_SeqAIJ_LUSOL",MatCreate_SeqAIJ_LUSOL);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATLUSOL,path,"MatCreate_LUSOL",MatCreate_LUSOL);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
   ierr = MatRegisterDynamic(MATAIJMUMPS,  path,"MatCreate_AIJ_MUMPS",MatCreate_AIJ_MUMPS);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSBAIJMUMPS,path,"MatCreate_SBAIJ_MUMPS",MatCreate_SBAIJ_MUMPS);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+  ierr = MatRegisterDynamic(MATDSCPACK,path,"MatCreate_DSCPACK",MatCreate_DSCPACK);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

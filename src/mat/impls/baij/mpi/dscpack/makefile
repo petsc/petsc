@@ -1,0 +1,21 @@
+# $Id: makefile,v 1.20 2001/08/22 18:00:45 balay Exp $ 
+#requirespackage   'PETSC_HAVE_DSCPACK'
+#requiresprecision double
+#requiresscalar    real
+
+ALL: lib
+
+CFLAGS   = ${DSCPACK_INCLUDE} -DF_NEEDS_UNDSC -DDBL_R_NUM
+FFLAGS   =
+SOURCEC	 = dscpack.c
+SOURCEF	 =
+SOURCEH	 = 
+OBJSC	 = dscpack.o
+OBJSF	 =
+LIBBASE	 = libpetscmat
+DIRS	 = 
+MANSEC	 = Mat
+LOCDIR	 = src/mat/impls/baij/mpi/dscpack/
+
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

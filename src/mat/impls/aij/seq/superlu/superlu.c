@@ -25,6 +25,7 @@ typedef struct {
   PetscTruth   SuperluMatOdering;
 
   /* A few function pointers for inheritance */
+  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
   int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
@@ -32,11 +33,11 @@ typedef struct {
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
   PetscTruth CleanUpSuperLU;
-} Mat_SeqAIJ_SuperLU;
+} Mat_SuperLU;
 
 
-EXTERN int MatSeqAIJFactorInfo_SuperLU(Mat,PetscViewer);
-EXTERN int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatFactorInfo_SuperLU(Mat,PetscViewer);
+EXTERN int MatLUFactorSymbolic_SuperLU(Mat,IS,IS,MatFactorInfo*,Mat*);
 
 EXTERN_C_BEGIN
 EXTERN int MatConvert_SuperLU_SeqAIJ(Mat,MatType,Mat*);
@@ -44,27 +45,42 @@ EXTERN int MatConvert_SeqAIJ_SuperLU(Mat,MatType,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_SeqAIJ_SuperLU"
-int MatDestroy_SeqAIJ_SuperLU(Mat A)
+#define __FUNCT__ "MatDestroy_SuperLU"
+int MatDestroy_SuperLU(Mat A)
 {
-  int                ierr;
-  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
-  int                (*destroy)(Mat)=lu->MatDestroy;
+  int         ierr;
+  Mat_SuperLU *lu = (Mat_SuperLU*)A->spptr;
 
   PetscFunctionBegin;
+  if (lu->CleanUpSuperLU) {
+    /* We have to free the global data or SuperLU crashes (sucky design)*/
+    /* Since we don't know if more solves on other matrices may be done
+       we cannot free the yucky SuperLU global data
+       StatFree(); 
+    */
+    
+    /* Free the SuperLU datastructures */
+    Destroy_CompCol_Permuted(&lu->AC);
+    Destroy_SuperNode_Matrix(&lu->L);
+    Destroy_CompCol_Matrix(&lu->U);
+    ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
+    ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+  }
   ierr = MatConvert_SuperLU_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = (*destroy)(A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ_Spooles"
-int MatView_SeqAIJ_SuperLU(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatView_SuperLU"
+int MatView_SuperLU(Mat A,PetscViewer viewer)
 {
-  int                   ierr;
-  PetscTruth            isascii;
-  PetscViewerFormat     format;
-  Mat_SeqAIJ_SuperLU   *lu=(Mat_SeqAIJ_SuperLU*)(A->spptr);
+  int               ierr;
+  PetscTruth        isascii;
+  PetscViewerFormat format;
+  Mat_SuperLU       *lu=(Mat_SuperLU*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
@@ -73,41 +89,41 @@ int MatView_SeqAIJ_SuperLU(Mat A,PetscViewer viewer)
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-      ierr = MatSeqAIJFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);
+      ierr = MatFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_SuperLU"
-int MatAssemblyEnd_SeqAIJ_SuperLU(Mat A,MatAssemblyType mode) {
-  int                ierr;
-  Mat_SeqAIJ_SuperLU *lu=(Mat_SeqAIJ_SuperLU*)(A->spptr);
+#define __FUNCT__ "MatAssemblyEnd_SuperLU"
+int MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
+  int         ierr;
+  Mat_SuperLU *lu=(Mat_SuperLU*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
 
   lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU;
   PetscFunctionReturn(0);
 }
 
 #include "src/mat/impls/dense/seq/dense.h"
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateNull_SeqAIJ_SuperLU"
-int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
+#define __FUNCT__ "MatCreateNull_SuperLU"
+int MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 {
-  Mat_SeqAIJ_SuperLU  *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
-  int                 numRows = A->m,numCols = A->n;
-  SCformat            *Lstore;
-  int                 numNullCols,size;
+  Mat_SuperLU   *lu = (Mat_SuperLU*)A->spptr;
+  int           numRows = A->m,numCols = A->n;
+  SCformat      *Lstore;
+  int           numNullCols,size;
 #if defined(PETSC_USE_COMPLEX)
-  doublecomplex       *nullVals,*workVals;
+  doublecomplex *nullVals,*workVals;
 #else
-  PetscScalar         *nullVals,*workVals;
+  PetscScalar   *nullVals,*workVals;
 #endif
-  int                 row,newRow,col,newCol,block,b,ierr;
+  int           row,newRow,col,newCol,block,b,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
@@ -168,12 +184,12 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJ_SuperLU"
-int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_SuperLU"
+int MatSolve_SuperLU(Mat A,Vec b,Vec x)
 {
-  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
-  PetscScalar        *array;
-  int                m,ierr;
+  Mat_SuperLU *lu = (Mat_SuperLU*)A->spptr;
+  PetscScalar *array;
+  int         m,ierr;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
@@ -201,13 +217,13 @@ int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 static int StatInitCalled = 0;
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_SuperLU"
-int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
+#define __FUNCT__ "MatLUFactorNumeric_SuperLU"
+int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
 {
-  Mat_SeqAIJ         *aa = (Mat_SeqAIJ*)(A)->data;
-  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)(*F)->spptr;
-  int                *etree,ierr;
-  PetscTruth         flag;
+  Mat_SeqAIJ  *aa = (Mat_SeqAIJ*)(A)->data;
+  Mat_SuperLU *lu = (Mat_SuperLU*)(*F)->spptr;
+  int         *etree,ierr;
+  PetscTruth  flag;
 
   PetscFunctionBegin;
   /* Create the SuperMatrix for A^T:
@@ -283,11 +299,11 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
    Note the r permutation is ignored
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
-int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatLUFactorSymbolic_SuperLU"
+int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat                 B;
-  Mat_SeqAIJ_SuperLU  *lu;
+  Mat_SuperLU  *lu;
   int                 ierr,*ca;
 
   PetscFunctionBegin;
@@ -295,14 +311,15 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   ierr = MatCreate(A->comm,A->m,A->n,PETSC_DETERMINE,PETSC_DETERMINE,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSUPERLU);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
-  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_SuperLU;
-  B->ops->solve           = MatSolve_SeqAIJ_SuperLU;
+
+  B->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
+  B->ops->solve           = MatSolve_SuperLU;
   B->factor               = FACTOR_LU;
   B->assembled            = PETSC_TRUE;  /* required by -sles_view */
   
-  lu = (Mat_SeqAIJ_SuperLU*)(B->spptr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SeqAIJ_SuperLU",
-                                    (void(*)(void))MatCreateNull_SeqAIJ_SuperLU);CHKERRQ(ierr);
+  lu = (Mat_SuperLU*)(B->spptr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",
+                                    (void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 
   /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
   ierr = PetscMalloc(A->n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
@@ -315,7 +332,7 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   lu->SuperluMatOdering = PETSC_FALSE;
 
   lu->pivot_threshold = info->dtcol; 
-  PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
+  PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SuperLU));
 
   lu->flg            = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpSuperLU = PETSC_TRUE;
@@ -326,16 +343,27 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
 /* used by -sles_view */
 #undef __FUNCT__  
-#define __FUNCT__ "MatSeqAIJFactorInfo_SuperLU"
-int MatSeqAIJFactorInfo_SuperLU(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatFactorInfo_SuperLU"
+int MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 {
-  Mat_SeqAIJ_SuperLU      *lu= (Mat_SeqAIJ_SuperLU*)A->spptr;
-  int                     ierr;
+  Mat_SuperLU *lu= (Mat_SuperLU*)A->spptr;
+  int         ierr;
+
   PetscFunctionBegin;
-
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
-  if(lu->SuperluMatOdering) ierr = PetscViewerASCIIPrintf(viewer,"  SuperLU mat ordering: %d\n",lu->ispec);CHKERRQ(ierr);
+  if(lu->SuperluMatOdering) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  SuperLU mat ordering: %d\n",lu->ispec);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_SuperLU"
+int MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
+  int ierr;
+  PetscFunctionBegin;
+  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SuperLU(*M,MATSUPERLU,M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -343,40 +371,25 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
 int MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
+  /* to its base PETSc type, so we will ignore 'MatType type'. */
   int                  ierr;
   Mat                  B=*newmat;
-  Mat_SeqAIJ_SuperLU   *lu=(Mat_SeqAIJ_SuperLU *)A->spptr;
+  Mat_SuperLU   *lu=(Mat_SuperLU *)A->spptr;
 
   PetscFunctionBegin;
   if (B != A) {
-    /* This routine was inherited from SeqAIJ. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  } else {
-    if (lu->CleanUpSuperLU) {
-      /* We have to free the global data or SuperLU crashes (sucky design)*/
-      /* Since we don't know if more solves on other matrices may be done
-         we cannot free the yucky SuperLU global data
-         StatFree(); 
-      */
-  
-      /* Free the SuperLU datastructures */
-      Destroy_CompCol_Permuted(&lu->AC);
-      Destroy_SuperNode_Matrix(&lu->L);
-      Destroy_CompCol_Matrix(&lu->U);
-      ierr = PetscFree(lu->B.Store);CHKERRQ(ierr);
-      ierr = PetscFree(lu->A.Store);CHKERRQ(ierr);
-      ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
-      ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
-    }
-    /* Reset the original function pointers */
-    B->ops->view             = lu->MatView;
-    B->ops->assemblyend      = lu->MatAssemblyEnd;
-    B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
-    B->ops->destroy          = lu->MatDestroy;
-    /* lu is only a function pointer stash unless we've factored the matrix, which we haven't! */
-    ierr = PetscFree(lu);CHKERRQ(ierr);
-    ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   }
+  /* Reset the original function pointers */
+  B->ops->duplicate        = lu->MatDuplicate;
+  B->ops->view             = lu->MatView;
+  B->ops->assemblyend      = lu->MatAssemblyEnd;
+  B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+  B->ops->destroy          = lu->MatDestroy;
+  /* lu is only a function pointer stash unless we've factored the matrix, which we haven't! */
+  ierr = PetscFree(lu);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -386,16 +399,19 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
 int MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,Mat *newmat) {
-  int                ierr;
-  Mat                B=*newmat;
-  Mat_SeqAIJ_SuperLU *lu;
+  /* This routine is only called to convert to MATSUPERLU */
+  /* from MATSEQAIJ, so we will ignore 'MatType type'. */
+  int         ierr;
+  Mat         B=*newmat;
+  Mat_SuperLU *lu;
 
   PetscFunctionBegin;
   if (B != A) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
+  ierr = PetscNew(Mat_SuperLU,&lu);CHKERRQ(ierr);
+  lu->MatDuplicate         = A->ops->duplicate;
   lu->MatView              = A->ops->view;
   lu->MatAssemblyEnd       = A->ops->assemblyend;
   lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
@@ -403,25 +419,52 @@ int MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,Mat *newmat) {
   lu->CleanUpSuperLU       = PETSC_FALSE;
 
   B->spptr                 = (void*)lu;
-  B->ops->view             = MatView_SeqAIJ_SuperLU;
-  B->ops->assemblyend      = MatAssemblyEnd_SeqAIJ_SuperLU;
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
-  B->ops->destroy          = MatDestroy_SeqAIJ_SuperLU;
+  B->ops->duplicate        = MatDuplicate_SuperLU;
+  B->ops->view             = MatView_SuperLU;
+  B->ops->assemblyend      = MatAssemblyEnd_SuperLU;
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU;
+  B->ops->destroy          = MatDestroy_SuperLU;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_C",
                                            "MatConvert_SeqAIJ_SuperLU",MatConvert_SeqAIJ_SuperLU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
                                            "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+  PetscLogInfo(0,"Using SuperLU for SeqAIJ LU factorization and solves.");
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
+/*MC
+  MATSUPERLU - a matrix type providing direct solvers (LU) for sequential matrices 
+  via the external package SuperLU.
+
+  If SuperLU is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes SuperLU solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
+  supported for this matrix type.
+
+  Options Database Keys:
++ -mat_type superlu - sets the matrix type to superlu during a call to MatSetFromOptions()
+- -mat_superlu_ordering <0,1,2,3> - 0: natural ordering, 
+                                    1: MMD applied to A'*A, 
+                                    2: MMD applied to A'+A, 
+                                    3: COLAMD, approximate minimum degree column ordering
+
+   Level: beginner
+
+.seealso: PCLU
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJ_SuperLU"
-int MatCreate_SeqAIJ_SuperLU(Mat A) {
+#define __FUNCT__ "MatCreate_SuperLU"
+int MatCreate_SuperLU(Mat A) {
   int ierr;
 
   PetscFunctionBegin;

@@ -31,6 +31,7 @@ EXTERN int VecDestroy_MPI(Vec);
 EXTERN int VecView_MPI_File(Vec,PetscViewer);
 EXTERN int VecView_MPI_Files(Vec,PetscViewer);
 EXTERN int VecView_MPI_Binary(Vec,PetscViewer);
+EXTERN int VecView_MPI_Netcdf(Vec,PetscViewer);
 EXTERN int VecView_MPI_Draw_LG(Vec,PetscViewer);
 EXTERN int VecView_MPI_Socket(Vec,PetscViewer);
 EXTERN int VecView_MPI(Vec,PetscViewer);
