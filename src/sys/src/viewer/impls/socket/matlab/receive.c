@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: receive.c,v 1.3 1995/03/06 04:38:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: receive.c,v 1.4 1996/12/18 17:04:09 balay Exp balay $";
 #endif
 /*
  
@@ -24,6 +24,8 @@ extern int ReceiveDenseMatrix(Matrix **,int);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "mexFunction"
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
   int    type,t;
@@ -62,6 +64,8 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SYByteSwapInt"
 void SYByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp;
@@ -77,6 +81,8 @@ void SYByteSwapInt(int *buff,int n)
 /*
   SYByteSwapShort - Swap bytes in a short
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SYByteSwapShort"
 void SYByteSwapShort(short *buff,int n)
 {
   int   i,j;
@@ -94,6 +100,8 @@ void SYByteSwapShort(short *buff,int n)
   SYByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SYByteSwapScalar"
 void SYByteSwapScalar(Scalar *buff,int n)
 {
   int    i,j;
@@ -112,6 +120,8 @@ void SYByteSwapScalar(Scalar *buff,int n)
 }
 #endif
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscBinaryRead"
 /*
     PetscBinaryRead - Reads from a binary file.
 
