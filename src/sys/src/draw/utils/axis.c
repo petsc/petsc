@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.6 1995/03/06 04:28:13 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -8,6 +8,7 @@ static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $
  */
 
 #include "petsc.h"
+#include "ptscimpl.h"
 #include "draw.h"
 #include <math.h>
 
@@ -52,6 +53,11 @@ return floor( x - 0.5 );
 int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
 {
   DrawAxisCtx ad;
+  PetscObject vobj = (PetscObject) win;
+
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
+     return DrawOpenNull(vobj->comm,(DrawCtx*)ctx);
+  }
 
   ad            = (DrawAxisCtx) MALLOC(sizeof(struct _DrawAxisCtx)); 
   CHKPTR(ad);

@@ -24,6 +24,9 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
   Vec           W;
   IS            from,to;
   VecScatterCtx ctx;
+  PetscObject   vobj = (PetscObject) win;
+
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
 
   MPI_Comm_rank(win->comm,&mytid);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.31 1995/04/25 19:09:13 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.32 1995/04/27 20:15:32 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -545,10 +545,11 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   int        ierr;
   PetscObject vobj = (PetscObject) viewer;
  
+  if (!aij->assembled) SETERR(1,"MatView_MPIAIJ: must assemble matrix first");
   if (!viewer) { /* so that viewers may be used from debuggers */
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
-  if (!aij->assembled) SETERR(1,"MatView_MPIAIJ: must assemble matrix first");
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   if (vobj->cookie == VIEWER_COOKIE && vobj->type == FILE_VIEWER) {
     FILE *fd = ViewerFileGetPointer_Private(viewer);
     MPE_Seq_begin(mat->comm,1);
