@@ -563,14 +563,10 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data, 
-                 *b = (Mat_SeqAIJ*)B->data,
-                 *c = (Mat_SeqAIJ*)C->data;;
-  int            am=A->m,anzi,*ai=b->i,*aJ=a->j,
-                 *bi=b->i,*bj,bnzi,nextb,bcol,
-                 cn=C->n,cm=C->m,*ci=c->i,*cj=c->j,crow,*cjj;
-  int            i,j,k,flops=0;
-  MatScalar      *aA=a->a,*ba,*ca=c->a,*caj;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
+  int            am=A->m,anzi,*ai=b->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
+  int            cm=C->m,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k,flops=0;
+  MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
  
   PetscFunctionBegin;
   /* clear old values in C */
@@ -584,19 +580,19 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     anzi = ai[i+1] - ai[i];
     for (j=0; j<anzi; j++) { 
       nextb = 0;
-      crow  = *aJ++;
+      crow  = *aj++;
       cjj   = cj + ci[crow];
       caj   = ca + ci[crow];
       /* perform sparse axpy operation.  Note cjj includes bj. */
       for (k=0; nextb<bnzi; k++) {
-        bcol = *(bj+nextb);
-        if (cjj[k] == bcol) { /* ccol == bcol */
-          caj[k] += (*aA)*(*(ba+nextb));
+        /* bcol = *(bj+nextb); */
+        if (cjj[k] == *(bj+nextb)) { /* ccol == bcol */
+          caj[k] += (*aa)*(*(ba+nextb));
           nextb++;
         }
       }
       flops += 2*bnzi;
-      aA++;
+      aa++;
     }
   }
 
@@ -604,6 +600,5 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
