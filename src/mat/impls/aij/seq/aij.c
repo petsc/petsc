@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.363 2001/01/20 03:34:42 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.364 2001/02/27 21:34:59 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -2157,7 +2157,7 @@ int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *engine)
 
   mmat = engGetArray((Engine *)engine,obj->name);
 
-  aij->nz           = mxGetNumberOfElements(mmat);
+  aij->nz           = (mxGetJc(mmat))[mat->m];
   ierr              = PetscMalloc(aij->nz*(sizeof(int)+sizeof(Scalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);
   aij->j            = (int*)(aij->a + aij->nz);
   aij->i            = aij->j + aij->nz;
