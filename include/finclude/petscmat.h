@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.26 1996/09/27 21:56:34 bsmith Exp balay $;
+C  $Id: mat.h,v 1.27 1996/09/27 22:09:16 balay Exp curfman $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -130,122 +130,122 @@ C
 C
 C  MatOperation
 C
-      integer MAT_SET_VALUES
-      integer MAT_GET_ROW
-      integer MAT_RESTORE_ROW
-      integer MAT_MULT
-      integer MAT_MULT_ADD
-      integer MAT_MULT_TRANS
-      integer MAT_MULT_TRANS_ADD
-      integer MAT_SOLVE
-      integer MAT_SOLVE_ADD
-      integer MAT_SOLVE_TRANS
-      integer MAT_SOLVE_TRANS_ADD
-      integer MAT_LUFACTOR
-      integer MAT_CHOLESKYFACTOR
-      integer MAT_RELAX
-      integer MAT_TRANSPOSE
-      integer MAT_GETINFO
-      integer MAT_EQUAL
-      integer MAT_GET_DIAGONAL 
-      integer MAT_DIAGONAL_SCALE
-      integer MAT_NORM
-      integer MAT_ASSEMBLY_BEGIN
-      integer MAT_ASSEMBLY_END
-      integer MAT_COMPRESS
-      integer MAT_SET_OPTION
-      integer MAT_ZERO_ENTRIES
-      integer MAT_ZERO_ROWS
-      integer MAT_LUFACTOR_SYMBOLIC
-      integer MAT_LUFACTOR_NUMERIC
-      integer MAT_CHOLESKY_FACTOR_SYMBOLIC
-      integer MAT_CHOLESKY_FACTOR_NUMERIC
-      integer MAT_GET_SIZE
-      integer MAT_GET_LOCAL_SIZE
-      integer MAT_GET_OWNERSHIP_RANGE
-      integer MAT_ILUFACTOR_SYMBOLIC
-      integer MAT_INCOMPLETECHOLESKYFACTOR_SY
-      integer MAT_GET_ARRAY
-      integer MAT_RESTORE_ARRAY
-      integer MAT_CONVERT
+      integer MATOP_SET_VALUES
+      integer MATOP_GET_ROW
+      integer MATOP_RESTORE_ROW
+      integer MATOP_MULT
+      integer MATOP_MULT_ADD
+      integer MATOP_MULT_TRANS
+      integer MATOP_MULT_TRANS_ADD
+      integer MATOP_SOLVE
+      integer MATOP_SOLVE_ADD
+      integer MATOP_SOLVE_TRANS
+      integer MATOP_SOLVE_TRANS_ADD
+      integer MATOP_LUFACTOR
+      integer MATOP_CHOLESKYFACTOR
+      integer MATOP_RELAX
+      integer MATOP_TRANSPOSE
+      integer MATOP_GETINFO
+      integer MATOP_EQUAL
+      integer MATOP_GET_DIAGONAL 
+      integer MATOP_DIAGONAL_SCALE
+      integer MATOP_NORM
+      integer MATOP_ASSEMBLY_BEGIN
+      integer MATOP_ASSEMBLY_END
+      integer MATOP_COMPRESS
+      integer MATOP_SET_OPTION
+      integer MATOP_ZERO_ENTRIES
+      integer MATOP_ZERO_ROWS
+      integer MATOP_LUFACTOR_SYMBOLIC
+      integer MATOP_LUFACTOR_NUMERIC
+      integer MATOP_CHOLESKY_FACTOR_SYMBOLIC
+      integer MATOP_CHOLESKY_FACTOR_NUMERIC
+      integer MATOP_GET_SIZE
+      integer MATOP_GET_LOCAL_SIZE
+      integer MATOP_GET_OWNERSHIP_RANGE
+      integer MATOP_ILUFACTOR_SYMBOLIC
+      integer MATOP_I_CHOLESKYFACTOR_SY
+      integer MATOP_GET_ARRAY
+      integer MATOP_RESTORE_ARRAY
+      integer MATOP_CONVERT
 
-      integer MAT_CONVERT_SAME_TYPE
-      integer MAT_FORWARD_SOLVE
-      integer MAT_BACKWARD_SOLVE
-      integer MAT_ILUFACTOR
-      integer MAT_INCOMPLETECHOLESKYFACTOR
-      integer MAT_AXPY
-      integer MAT_GET_SUBMATRICES
-      integer MAT_INCREASE_OVERLAP
-      integer MAT_GET_VALUES
-      integer MAT_COPY
-      integer MAT_PRINT_HELP
-      integer MAT_SCALE
-      integer MAT_SHIFT
-      integer MAT_DIAGONAL_SHIFT
-      integer MAT_ILUDT_FACTOR
-      integer MAT_GET_BLOCK_SIZE
+      integer MATOP_CONVERT_SAME_TYPE
+      integer MATOP_FORWARD_SOLVE
+      integer MATOP_BACKWARD_SOLVE
+      integer MATOP_ILUFACTOR
+      integer MATOP_INCOMPLETECHOLESKYFACTOR
+      integer MATOP_AXPY
+      integer MATOP_GET_SUBMATRICES
+      integer MATOP_INCREASE_OVERLAP
+      integer MATOP_GET_VALUES
+      integer MATOP_COPY
+      integer MATOP_PRINT_HELP
+      integer MATOP_SCALE
+      integer MATOP_SHIFT
+      integer MATOP_DIAGONAL_SHIFT
+      integer MATOP_ILUDT_FACTOR
+      integer MATOP_GET_BLOCK_SIZE
 
-      integer MAT_DESTROY
-      integer MAT_VIEW
+      integer MATOP_DESTROY
+      integer MATOP_VIEW
 
-      parameter(MAT_SET_VALUES=0)
-      parameter(MAT_GET_ROW=1)
-      parameter(MAT_RESTORE_ROW=2)
-      parameter(MAT_MULT=3)
-      parameter(MAT_MULT_ADD=4)
-      parameter(MAT_MULT_TRANS=5)
-      parameter(MAT_MULT_TRANS_ADD=6)
-      parameter(MAT_SOLVE=7)
-      parameter(MAT_SOLVE_ADD=8)
-      parameter(MAT_SOLVE_TRANS=9)
-      parameter(MAT_SOLVE_TRANS_ADD=10)
-      parameter(MAT_LUFACTOR=11)
-      parameter(MAT_CHOLESKYFACTOR=12)
-      parameter(MAT_RELAX=13)
-      parameter(MAT_TRANSPOSE=14)
-      parameter(MAT_GETINFO=15)
-      parameter(MAT_EQUAL=16)
-      parameter(MAT_GET_DIAGONAL=17) 
-      parameter(MAT_DIAGONAL_SCALE=18)
-      parameter(MAT_NORM=19)
-      parameter(MAT_ASSEMBLY_BEGIN=20)
-      parameter(MAT_ASSEMBLY_END=21)
-      parameter(MAT_COMPRESS=22)
-      parameter(MAT_SET_OPTION=23)
-      parameter(MAT_ZERO_ENTRIES=24)
-      parameter(MAT_ZERO_ROWS=25)
-      parameter(MAT_LUFACTOR_SYMBOLIC=26)
-      parameter(MAT_LUFACTOR_NUMERIC=27)
-      parameter(MAT_CHOLESKY_FACTOR_SYMBOLIC=28)
-      parameter(MAT_CHOLESKY_FACTOR_NUMERIC=29)
-      parameter(MAT_GET_SIZE=30)
-      parameter(MAT_GET_LOCAL_SIZE=31)
-      parameter(MAT_GET_OWNERSHIP_RANGE=32)
-      parameter(MAT_ILUFACTOR_SYMBOLIC=33)
-      parameter(MAT_INCOMPLETECHOLESKYFACTOR_SY=34)
-      parameter(MAT_GET_ARRAY=35)
-      parameter(MAT_RESTORE_ARRAY=36)
-      parameter(MAT_CONVERT=37)
+      parameter(MATOP_SET_VALUES=0)
+      parameter(MATOP_GET_ROW=1)
+      parameter(MATOP_RESTORE_ROW=2)
+      parameter(MATOP_MULT=3)
+      parameter(MATOP_MULT_ADD=4)
+      parameter(MATOP_MULT_TRANS=5)
+      parameter(MATOP_MULT_TRANS_ADD=6)
+      parameter(MATOP_SOLVE=7)
+      parameter(MATOP_SOLVE_ADD=8)
+      parameter(MATOP_SOLVE_TRANS=9)
+      parameter(MATOP_SOLVE_TRANS_ADD=10)
+      parameter(MATOP_LUFACTOR=11)
+      parameter(MATOP_CHOLESKYFACTOR=12)
+      parameter(MATOP_RELAX=13)
+      parameter(MATOP_TRANSPOSE=14)
+      parameter(MATOP_GETINFO=15)
+      parameter(MATOP_EQUAL=16)
+      parameter(MATOP_GET_DIAGONAL=17) 
+      parameter(MATOP_DIAGONAL_SCALE=18)
+      parameter(MATOP_NORM=19)
+      parameter(MATOP_ASSEMBLY_BEGIN=20)
+      parameter(MATOP_ASSEMBLY_END=21)
+      parameter(MATOP_COMPRESS=22)
+      parameter(MATOP_SET_OPTION=23)
+      parameter(MATOP_ZERO_ENTRIES=24)
+      parameter(MATOP_ZERO_ROWS=25)
+      parameter(MATOP_LUFACTOR_SYMBOLIC=26)
+      parameter(MATOP_LUFACTOR_NUMERIC=27)
+      parameter(MATOP_CHOLESKY_FACTOR_SYMBOLIC=28)
+      parameter(MATOP_CHOLESKY_FACTOR_NUMERIC=29)
+      parameter(MATOP_GET_SIZE=30)
+      parameter(MATOP_GET_LOCAL_SIZE=31)
+      parameter(MATOP_GET_OWNERSHIP_RANGE=32)
+      parameter(MATOP_ILUFACTOR_SYMBOLIC=33)
+      parameter(MATOP_I_CHOLESKYFACTOR_SY=34)
+      parameter(MATOP_GET_ARRAY=35)
+      parameter(MATOP_RESTORE_ARRAY=36)
+      parameter(MATOP_CONVERT=37)
 
-      parameter(MAT_CONVERT_SAME_TYPE=40)
-      parameter(MAT_FORWARD_SOLVE=41)
-      parameter(MAT_BACKWARD_SOLVE=42)
-      parameter(MAT_ILUFACTOR=43)
-      parameter(MAT_INCOMPLETECHOLESKYFACTOR=44)
-      parameter(MAT_AXPY=45)
-      parameter(MAT_GET_SUBMATRICES=46)
-      parameter(MAT_INCREASE_OVERLAP=47)
-      parameter(MAT_GET_VALUES=48)
-      parameter(MAT_COPY=49)
-      parameter(MAT_PRINT_HELP=50)
-      parameter(MAT_SCALE=51)
-      parameter(MAT_SHIFT=52)
-      parameter(MAT_DIAGONAL_SHIFT=53)
-      parameter(MAT_ILUDT_FACTOR=54)
-      parameter(MAT_GET_BLOCK_SIZE=55)
-      parameter(MAT_DESTROY=250)
-      parameter(MAT_VIEW=251)
+      parameter(MATOP_CONVERT_SAME_TYPE=40)
+      parameter(MATOP_FORWARD_SOLVE=41)
+      parameter(MATOP_BACKWARD_SOLVE=42)
+      parameter(MATOP_ILUFACTOR=43)
+      parameter(MATOP_INCOMPLETECHOLESKYFACTOR=44)
+      parameter(MATOP_AXPY=45)
+      parameter(MATOP_GET_SUBMATRICES=46)
+      parameter(MATOP_INCREASE_OVERLAP=47)
+      parameter(MATOP_GET_VALUES=48)
+      parameter(MATOP_COPY=49)
+      parameter(MATOP_PRINT_HELP=50)
+      parameter(MATOP_SCALE=51)
+      parameter(MATOP_SHIFT=52)
+      parameter(MATOP_DIAGONAL_SHIFT=53)
+      parameter(MATOP_ILUDT_FACTOR=54)
+      parameter(MATOP_GET_BLOCK_SIZE=55)
+      parameter(MATOP_DESTROY=250)
+      parameter(MATOP_VIEW=251)
 C
 C  
 C

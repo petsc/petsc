@@ -4,7 +4,7 @@ CFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = petsc.h vec.h snes.h da.h draw.h mat.h ksp.h pc.h sles.h viewer.h is.h \
-           ao.h
+           ao.h mg.h plog.h sys.h ts.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
