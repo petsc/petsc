@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.27 1999/04/16 16:10:54 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.28 1999/05/04 20:36:53 balay Exp balay $";
 #endif
 /*
        Formatted test for TS routines.
@@ -254,7 +254,7 @@ int Solution(double t,Vec solution, void *ctx)
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   ierr = VecGetArray(solution,&localptr);CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
-    localptr[i-mybase] = sin(i*sc1)*ex1 + 3.*sin(i*sc2)*ex2;
+    localptr[i-mybase] = sin(sc1*(double)i)*ex1 + 3.*sin(sc2*(double)i)*ex2;
   }
   ierr = VecRestoreArray(solution,&localptr);CHKERRQ(ierr);
   return 0;
