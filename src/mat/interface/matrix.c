@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.313 1999/01/13 21:40:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.314 1999/01/14 00:21:31 bsmith Exp curfman $";
 #endif
 
 /*
@@ -162,7 +162,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
    The user can call ViewerSetFormat() to specify the output
    format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
    VIEWER_STDOUT_WORLD and ViewerASCIIOpen).  Available formats include
-+    VIEWER_FORMAT_AS CII_DEFAULT - default, prints matrix contents
++    VIEWER_FORMAT_ASCII_DEFAULT - default, prints matrix contents
 .    VIEWER_FORMAT_ASCII_MATLAB - prints matrix contents in Matlab format
 .    VIEWER_FORMAT_ASCII_DENSE - prints entire matrix including zeros
 .    VIEWER_FORMAT_ASCII_COMMON - prints matrix contents, using a sparse 

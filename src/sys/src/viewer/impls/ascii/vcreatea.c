@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vcreatea.c,v 1.1 1999/01/13 04:26:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vcreatea.c,v 1.2 1999/01/13 21:46:02 bsmith Exp curfman $";
 #endif
 
 #include "src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -214,7 +214,7 @@ int VIEWER_STDERR_Destroy(MPI_Comm comm)
 .keywords: Viewer, file, open
 
 .seealso: MatView(), VecView(), ViewerDestroy(), ViewerBinaryOpen(),
-          ViewerASCIIGetPointer()
+          ViewerASCIIGetPointer(), ViewerSetFormat()
 @*/
 int ViewerASCIIOpen(MPI_Comm comm,const char name[],Viewer *lab)
 {
