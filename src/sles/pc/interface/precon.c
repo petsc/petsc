@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.193 2000/05/05 22:16:59 balay Exp bsmith $*/
+/*$Id: precon.c,v 1.194 2000/05/13 20:52:57 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -123,7 +123,8 @@ static int PCPublish_Petsc(PetscObject obj)
 @*/
 int PCCreate(MPI_Comm comm,PC *newpc)
 {
-  PC     pc;
+  PC  pc;
+  int ierr;
 
   PetscFunctionBegin;
   *newpc          = 0;
@@ -152,7 +153,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->modifysubmatrices   = 0;
   pc->modifysubmatricesP  = 0;
   *newpc                  = pc;
-  PetscPublishAll(pc);
+  ierr = PetscPublishAll(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
 }
@@ -1303,3 +1304,4 @@ int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
   ierr = FListAdd(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
