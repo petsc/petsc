@@ -156,6 +156,7 @@ extern void   *malloc(long unsigned int );
 extern int    abort();
 extern void   exit(int);
 extern int    strcasecmp(const char *,const char *);
+extern void   *memalign(size_t, size_t);
 }
 
 #else
@@ -263,6 +264,7 @@ extern void   perror(const char *);
 extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
+extern void   *memalign (size_t, size_t);
 }
 
 #else
