@@ -95,9 +95,6 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   (Priority 2) Change MatLoad() to take a matrix, move sizes out of MatCreate(), add MatSetMaps(), allow setting type before sizes
    Also allow loading matrices with the same nonzero pattern efficiently.
 
-  Add PCShellSetContext()/GetContext() and remove the ctx and ctxrich passed into setapply and setapplyrichardson()
-  indicates limits on context from Fortran. (Make like MatShell())
-
   (Priority 1) Modify PC_MG to allow setters and fold DMMG and ML (and maybe hypre) into it?
 
   Add MatOption POSITIVE_DEFINITE and have KSP default to CG if that plus symmetric set

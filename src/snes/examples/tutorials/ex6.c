@@ -98,7 +98,7 @@ int main(int argc,char **argv)
     ierr = PetscOptionsHasName(PETSC_NULL,"-user_precond",&flg);CHKERRQ(ierr);
     if (flg) { /* user-defined precond */
       ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
-      ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCShellSetApply(pc,MatrixFreePreconditioner);CHKERRQ(ierr);
     } else {ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);}
   }
 
@@ -257,7 +257,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
    preconditioner, which of course is not recommended for general use.
 
    Input Parameters:
-.  ctx - optional user-defined context, as set by PCShellSetApply()
+.  ctx - optional user-defined context, as set by PCShellSetContext()
 .  x - input vector
 
    Output Parameter:
