@@ -1,4 +1,4 @@
-/* $Id: petscarchiverfe.cpp,v 1.9 2001/04/17 21:15:14 buschelm Exp buschelm $ */
+/* $Id: petscarchiverfe.cpp,v 1.10 2001/04/18 01:00:36 buschelm Exp $ */
 #include <stdlib.h>
 #include <process.h>
 #include "petscarchiverfe.h"
@@ -72,11 +72,16 @@ void archiver::FoundFlag(LI &i) {
 }
 
 void archiver::Merge(string &str,list<string> &liststr,LI &i) {
-  int len = str.length();
-  string tryfile = *i;
-  while (((len+tryfile.length()+1)<512) && (++i!=liststr.end())) {
-    str += " " + tryfile;
-    len = str.length();
-    tryfile = *i;
+  string::size_type len=str.length();
+  string::size_type maxlen=512;
+  while (i!=liststr.end()) {
+    string trystr=*i;
+    if ((len+trystr.length()+1) < maxlen) {
+      str += " " + trystr;
+      len = str.length();
+      i++;
+    } else {
+      break;
+    }
   }
 }
