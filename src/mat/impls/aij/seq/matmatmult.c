@@ -79,9 +79,10 @@ int MatMatMult(Mat A,Mat B, Mat *C) {
   /* To facilitate implementations with varying types, QueryFunction is used.*/
   /* It is assumed that implementations will be composed as "MatMatMult_<type of A><type of B>". */
   int  ierr;
+#ifdef OLD
   char funct[80];
   int  (*mult)(Mat,Mat,Mat*);
-
+#endif
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   PetscValidType(A,1);
@@ -99,15 +100,21 @@ int MatMatMult(Mat A,Mat B, Mat *C) {
 
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
 
-  /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
-  /* When other implementations exist, attack the multiple dispatch problem. */
-  ierr = PetscStrcpy(funct,"MatMatMult_seqaijseqaij");CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)B,funct,(PetscVoidFunction)&mult);CHKERRQ(ierr);
-  if (!mult) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
-  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&mult);CHKERRQ(ierr);
-  if (!mult) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
+  ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->matmult)(A,B,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
+  
+  PetscFunctionReturn(0);
+}
 
-  ierr = (*mult)(A,B,C);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_MPIAIJ_MPIAIJ"
+int MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B, Mat *C) {
+  int ierr;
+ 
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Not written yet"); 
+
   PetscFunctionReturn(0);
 }
 
@@ -119,7 +126,6 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B, Mat *C) {
   int (*symbolic)(Mat,Mat,Mat*),(*numeric)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
-
   /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
   /* When other implementations exist, attack the multiple dispatch problem. */
   ierr = PetscStrcpy(symfunct,"MatMatMultSymbolic_seqaijseqaij");CHKERRQ(ierr);
@@ -218,7 +224,6 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   PetscFunctionBegin;
   /* Start timers */
   ierr = PetscLogEventBegin(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
-
   /* Set up */
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
@@ -424,12 +429,14 @@ int RegisterMatMatMultRoutines_Private(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
+#ifdef OLD
   if (!logkey_matmatmult) {
     ierr = PetscLogEventRegister(&logkey_matmatmult,"MatMatMult",MAT_COOKIE);CHKERRQ(ierr);
   }
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMatMult_seqaijseqaij",
                                            "MatMatMult_SeqAIJ_SeqAIJ",
                                            MatMatMult_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
+#endif
   if (!logkey_matmatmult_symbolic) {
     ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMult_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
   }

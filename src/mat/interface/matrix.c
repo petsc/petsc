@@ -17,6 +17,7 @@ int MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Conv
 int MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
 int MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
 int MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
+int MAT_MatMult = 0;
 
 /* nasty global values for MatSetValue() */
 int         MatSetValue_Row = 0, MatSetValue_Column = 0;

@@ -104,7 +104,8 @@ struct _MatOps {
             (*ishermitian)(Mat,PetscTruth*),
             (*isstructurallysymmetric)(Mat,PetscTruth*),
             (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec),
-/*90*/      (*getvecs)(Mat,Vec*,Vec*);
+/*90*/      (*getvecs)(Mat,Vec*,Vec*),
+            (*matmult)(Mat,Mat,Mat*);
 };
 
 /*
