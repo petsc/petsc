@@ -22,7 +22,7 @@ C_CLINKER	   = ecc
 C_FLINKER	   = ecc
 C_CCV		   = ecc -V 2>&1| head -1
 C_FCV              = efc -V 2>&1| head -1
-C_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90 -lpthread
+C_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90 -lintrins -lpthread
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -use_msasm
 G_FOPTFLAGS	   = -g
@@ -38,7 +38,7 @@ CXX_FLINKER_SLFLAG = -Qoption,link,-rpath,
 CXX_CLINKER	   = ecc -Kc++
 CXX_FLINKER	   = ecc -Kc++
 CXX_CCV		   = ecc -Kc++ -Kc++eh -V 2>&1| head -1
-CXX_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90
+CXX_SYS_LIB	   = -lCEPCF90 -lPEPCF90 -lF90 -lintrins -lpthread
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g -use_msasm
 GCXX_FOPTFLAGS	   = -g
