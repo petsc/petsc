@@ -1,5 +1,5 @@
 C
-C  "$Id: fmultadd.F,v 1.1 1997/09/18 01:23:50 balay Exp balay $";
+C  "$Id: fsolve.F,v 1.2 1997/09/18 16:06:42 balay Exp balay $";
 C
 C    Fortran kernel for sparse matrix vector product in AIJ format
 C
@@ -22,7 +22,7 @@ C
          nz   = adiag(i) - ai_i
          sum  = b(i)
          do 30 j=1,nz
-            sum  = sum - aa(ai_i) * x(aj(ai_i))
+            sum  = sum -  aa(ai_i) * x(aj(ai_i))
             ai_i = ai_i + 1
  30      continue
       x(i) = sum
@@ -37,7 +37,7 @@ C
          sum     = x(i)
          do 50 j=1,nz
             adiag_i = adiag_i + 1
-            sum = sum - aa(adiag_i) * x(aj(adiag_i))
+            sum = sum - aa(adiag_i)* x(aj(adiag_i)) 
  50      continue
          x(i)    = sum * aa(adiag(i))
  40   continue
