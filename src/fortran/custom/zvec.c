@@ -159,10 +159,10 @@ void PETSC_STDCALL mapdestroy_(PetscMap *m,int *ierr)
   *ierr = PetscMapDestroy(*m);
 }
 
-void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,PetscScalar *va,InsertMode *mode)
+void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,PetscScalar *va,InsertMode *mode,int *ierr)
 {
   /* cannot use VecSetValue() here since that usesCHKERRQ() which has a return in it */
-  VecSetValues(*v,1,i,va,*mode);
+  *ierr = VecSetValues(*v,1,i,va,*mode);
 }
 
 void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,int *ierr)
