@@ -366,6 +366,7 @@ chk_loc:
 	  echo "*********************** ERROR ************************" ; \
 	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
 	  echo "******************************************************";  false; fi
+	@${MKDIR} -p ${LOC}/docs/manualpages
 
 # Builds all the documentation - should be done every night
 alldoc: alldoc1 alldoc2
