@@ -123,6 +123,7 @@ class Compiler(build.processor.Processor):
     '''Compile all the files in "set" using a module directly'''
     if not len(set): return self.output
     import nargs
+    import sourceDatabase
     import cPickle
     import md5
 
@@ -131,7 +132,7 @@ class Compiler(build.processor.Processor):
     #   These keys could be local, but we can do that if they proliferate too much. It would mean
     #     that each project would have to compile the SIDL once
     flags    = self.getFlags(set)
-    cacheKey = 'cacheKey'+''.join([self.sourceDB[f][0] for f in set]+[md5.new(''.join(flags)).hexdigest()])
+    cacheKey = 'cacheKey'+''.join([sourceDatabase.SourceDB.getChecksum(f) for f in set]+[md5.new(''.join(flags)).hexdigest()])
     if set.tag.startswith('old') and cacheKey in self.argDB:
       self.debugPrint('Loading '+str(set)+' for a '+self.language+' '+self.action+' from argument database', 3, 'compile')
       outputFiles = cPickle.loads(self.argDB[cacheKey])
