@@ -11,7 +11,7 @@
 FC_LIB         = 
 #
 # Location of BLAS and LAPACK.  These are in the Cray library "sci"
-# you may have to have "-lsci" or "/mpp/lib/libsci.a" before the FC_LIB below
+# you may have to have "-lsci" or "/mpp/lib/libsci.a" on the BLAS_LIB line
 #
 BLAS_LIB       = 
 LAPACK_LIB     = 
