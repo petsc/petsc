@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.43 1995/07/09 20:51:01 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.44 1995/07/13 23:04:46 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -30,6 +30,7 @@ int KSPView(KSP ksp,Viewer viewer)
     MPIU_fprintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetMethodName((KSPMethod)ksp->type,&method);
     MPIU_fprintf(ksp->comm,fd,"  method: %s\n",method);
+    if (ksp->view) (*ksp->view)((PetscObject)ksp,viewer);
     if (ksp->guess_zero) MPIU_fprintf(ksp->comm,fd,
       "  maximum iterations=%d, initial guess is zero\n",ksp->max_it);
     else MPIU_fprintf(ksp->comm,fd,"  maximum iterations=%d\n", ksp->max_it);
@@ -81,7 +82,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->residual_history = 0;
   ctx->res_hist_size    = 0;
   ctx->res_act_size     = 0;
-  ctx->usr_monitor= 0;
+  ctx->monitor          = 0;
   ctx->adjust_work_vectors = 0;
   ctx->converged     = KSPDefaultConverged;
   ctx->buildsolution = KSPDefaultBuildSolution;
