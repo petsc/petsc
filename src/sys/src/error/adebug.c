@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.49 1996/08/02 22:25:00 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.50 1996/08/08 14:41:26 bsmith Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -122,7 +122,7 @@ int PetscAttachDebugger()
     else if (!Xterm) {
       args[1] = program; args[2] = pid; args[3] = 0;
       args[0] = Debugger;
-#if defined(PARCH_IRIX)
+#if defined(PARCH_IRIX) || defined(PARCH_IRIX64)  
       if (!PetscStrcmp(Debugger,"dbx")) {
         args[1] = "-p";
         args[2] = pid;
@@ -162,7 +162,7 @@ int PetscAttachDebugger()
         args[0] = "xterm";  args[1] = "-e"; 
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
-#if defined(PARCH_IRIX)
+#if defined(PARCH_IRIX) || defined(PARCH_IRIX64)
         if (!PetscStrcmp(Debugger,"dbx")) {
           args[3] = "-p";
           args[4] = pid;
@@ -198,7 +198,7 @@ int PetscAttachDebugger()
         args[2] = Display;  args[3] = "-e";
         args[4] = Debugger; args[5] = program;
         args[6] = pid;      args[7] = 0;
-#if defined(PARCH_IRIX)
+#if defined(PARCH_IRIX) || defined(PARCH_IRIX64)
         if (!PetscStrcmp(Debugger,"dbx")) {
           args[5] = "-p";
           args[6] = pid;
