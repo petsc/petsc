@@ -16,6 +16,19 @@ class Configure(config.base.Configure):
     self.libraries    = self.framework.require('config.libraries',     self)
     return
 
+  def __str__(self):
+    dirs    = []
+    libFlag = []
+    for lib in self.lapackLibrary+self.blasLibrary:
+      if lib is None: continue
+      dir = os.path.dirname(lib)
+      if not dir in dirs:
+        dirs.append(dir)
+      else:
+        lib = os.path.basename(lib)
+      libFlag.append(self.libraries.getLibArgument(lib))
+    return 'BLAS/LAPACK: '+' '.join(dirs)+' '+' '.join(libFlag)+'\n'
+
   def configureHelp(self, help):
     import nargs
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-dir=<lib>', nargs.ArgDir(None, None, 'Indicate the directory containing BLAS and LAPACK libraries'))
