@@ -396,10 +396,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   /* Done after init due to a bug in MPICH-GM? */
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
 
-  if (!PETSC_COMM_WORLD) {
-    PETSC_COMM_WORLD = MPI_COMM_WORLD;
-  }
-
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);CHKERRQ(ierr);
 
@@ -448,14 +444,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
-
-  /*
-     Initialize PETSC_COMM_SELF and WORLD as a MPI_Comm with the PETSc attribute.
-    
-     We delay until here to do it, since PetscMalloc() may not have been
-     setup before this.
-  */
-  PETSC_COMM_SELF  = MPI_COMM_SELF;
 
   /*
      Load the dynamic libraries (on machines that support them), this registers all
@@ -647,14 +635,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     petsc_history = 0;
   }
 
-
-  /*
-       Destroy PETSC_COMM_SELF/WORLD as a MPI_Comm with the PETSc 
-     attribute.
-  */
   ierr = PetscLogInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscCommDestroy(&PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = PetscCommDestroy(&PETSC_COMM_WORLD);CHKERRQ(ierr); 
 
   /*
        Free all the registered create functions, such as KSPList, VecList, SNESList, etc

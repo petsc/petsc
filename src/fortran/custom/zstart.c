@@ -20,7 +20,6 @@ extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 #define petscinitialize_              PETSCINITIALIZE
 #define petscfinalize_                PETSCFINALIZE
 #define petscend_                     PETSCEND
-#define petscsetcommworld_            PETSCSETCOMMWORLD
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
@@ -28,7 +27,6 @@ extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 #define petscinitialize_              petscinitialize
 #define petscfinalize_                petscfinalize
 #define petscend_                     petscend
-#define petscsetcommworld_            petscsetcommworld
 #define mpi_init_                     mpi_init
 #define iargc_                        iargc
 #define getarg_                       getarg
@@ -380,8 +378,5 @@ void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
   *ierr = PetscEnd();
 }
 
-void PETSC_STDCALL petscsetcommworld_(MPI_Comm *comm,PetscErrorCode *ierr)
-{
-  *ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm(*comm));
-}
+
 EXTERN_C_END

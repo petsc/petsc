@@ -27,8 +27,6 @@ PetscTruth  PETSC_DLLEXPORT PetscInitializeCalled = PETSC_FALSE;
 PetscTruth  PETSC_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
 PetscMPIInt PETSC_DLLEXPORT PetscGlobalRank = -1;
 PetscMPIInt PETSC_DLLEXPORT PetscGlobalSize = -1;
-MPI_Comm    PETSC_DLLEXPORT PETSC_COMM_WORLD = 0;
-MPI_Comm    PETSC_DLLEXPORT PETSC_COMM_SELF  = 0;
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
@@ -122,163 +120,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
 
 /* ------------------------------------------------------------------------------*/
 
-PetscTruth PETSC_DLLEXPORT PetscCompare          = PETSC_FALSE;
-PetscReal  PetscCompareTolerance = 1.e-10;
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCompareInt"
-/*@C
-   PetscCompareInt - Compares integers while running with PETScs incremental
-   debugger.
-
-   Collective on PETSC_COMM_WORLD
-
-   Input Parameter:
-.  d - integer to compare
-
-   Options Database Key:
-.  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
-
-   Level: advanced
-
-.seealso: PetscCompareDouble(), PetscCompareScalar()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscCompareInt(PetscInt d)
-{
-  PetscErrorCode ierr;
-  PetscInt       work = d;
-
-  PetscFunctionBegin;
-  ierr = MPI_Bcast(&work,1,MPIU_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
-  if (d != work) {
-    SETERRQ(PETSC_ERR_PLIB,"Inconsistent integer");
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCompareDouble"
-/*@C
-   PetscCompareDouble - Compares doubles while running with PETScs incremental
-   debugger.
-
-   Collective on PETSC_COMM_WORLD
-
-   Input Parameter:
-.  d - double precision number to compare
-
-   Options Database Key:
-.  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
-
-   Level: advanced
-
-.seealso: PetscCompareInt(), PetscComparseScalar()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscCompareDouble(double d)
-{
-  double         work = d;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Bcast(&work,1,MPIU_REAL,0,MPI_COMM_WORLD);CHKERRQ(ierr);
-  if (!d && !work) PetscFunctionReturn(0);
-  if (PetscAbsReal(work - d)/PetscMax(PetscAbsReal(d),PetscAbsReal(work)) > PetscCompareTolerance) {
-    SETERRQ(PETSC_ERR_PLIB,"Inconsistent double");
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCompareScalar"
-/*@C
-   PetscCompareScalar - Compares scalars while running with PETScs incremental
-   debugger.
-
-   Collective on PETSC_COMM_WORLD
-
-   Input Parameter:
-.  d - scalar to compare
-
-   Options Database Key:
-.  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
-
-   Level: advanced
-
-.seealso: PetscCompareInt(), PetscComparseDouble()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscCompareScalar(PetscScalar d)
-{
-  PetscScalar    work = d;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Bcast(&work,2,MPIU_REAL,0,MPI_COMM_WORLD);CHKERRQ(ierr);
-  if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) PetscFunctionReturn(0);
-  if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) >= PetscCompareTolerance) {
-    SETERRQ(PETSC_ERR_PLIB,"Inconsistent scalar");
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCompareInitialize"
-/*
-    PetscCompareInitialize - If there is a command line option -compare then
-    this routine calls MPI_Init() and sets up two PETSC_COMM_WORLD, one for 
-    each program being compared.
-
-    Note: 
-    Only works with C programs.
-*/
-PetscErrorCode PETSC_DLLEXPORT PetscCompareInitialize(double tol)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size,i,*gflag,mysize;
-  char           pname[PETSC_MAX_PATH_LEN],bname[PETSC_MAX_PATH_LEN];
-  MPI_Group      group_all,group_sub;
-  PetscTruth     work;
-
-  PetscFunctionBegin;
-  ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  PetscCompareTolerance = tol;
-
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscStrcpy(bname,pname);CHKERRQ(ierr);
-  }
-
-  /* broadcase name from first processor to all processors */
-  ierr = MPI_Bcast(bname,PETSC_MAX_PATH_LEN,MPI_CHAR,0,MPI_COMM_WORLD);CHKERRQ(ierr);
-
-  /* determine what processors belong to my group */
-  ierr = PetscStrcmp(pname,bname,&work);CHKERRQ(ierr);
-
-  gflag = (int*)malloc(size*sizeof(PetscMPIInt));
-  ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
-  mysize = 0;
-  for (i=0; i<size; i++) {
-    if ((int) work == gflag[i]) gflag[mysize++] = i;
-  }
-  if (!mysize || mysize == size) {
-    SETERRQ(PETSC_ERR_ARG_IDN,"Need two different programs to compare");
-  }
-
-  /* create a new communicator for each program */
-  ierr = MPI_Comm_group(MPI_COMM_WORLD,&group_all);CHKERRQ(ierr);
-  ierr = MPI_Group_incl(group_all,mysize,gflag,&group_sub);CHKERRQ(ierr);
-  ierr = MPI_Comm_create(MPI_COMM_WORLD,group_sub,&PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&group_all);CHKERRQ(ierr);
-  ierr = MPI_Group_free(&group_sub);CHKERRQ(ierr);
-  free(gflag);
-
-  PetscCompare = PETSC_TRUE;
-  ierr = PetscLogInfo((0,"PetscCompareInitialize:Configured to compare two programs\n"));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* ------------------------------------------------------------------------------------*/
-
- 
 /* 
    This is ugly and probably belongs somewhere else, but I want to 
   be able to put a true MPI abort error handler with command line args.
@@ -643,15 +484,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
   }
 
-  /*
-      Setup advanced compare feature for allowing comparison to two running PETSc programs
-  */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-compare",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-     PetscReal tol = 1.e-12;
-     ierr = PetscOptionsGetReal(PETSC_NULL,"-compare",&tol,&flg1);CHKERRQ(ierr); 
-     ierr = PetscCompareInitialize(tol);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsGetInt(PETSC_NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscSleep(si);CHKERRQ(ierr);

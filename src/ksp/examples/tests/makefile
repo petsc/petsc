@@ -5,7 +5,7 @@ CPPFLAGS  =
 FPPFLAGS  =
 LOCDIR    = src/ksp/examples/tests/
 NOADIC    = true
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex10.c \
+EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c \
 		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex24.c ex25.c ex26.c
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
@@ -15,10 +15,6 @@ include ${PETSC_DIR}/bmake/common/base
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
 	${RM} ex1.o
-
-ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o  ${PETSC_KSP_LIB}
-	${RM} ex2.o
 
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_KSP_LIB}
@@ -136,28 +132,6 @@ runex1_5:
 	   if (${DIFF} output/ex1_5.out ex1_5.tmp) then true; \
 	   else echo "Possible problem with ex1_5, diffs above"; fi; \
 	   ${RM} -f ex1_5.tmp
-runex2:
-	-@${MPIRUN} -np 1 ./ex2 -ksp_gmres_cgs_refinement_type always > ex2_1.tmp 2>&1; \
-	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
-	   else echo "Possible problem with ex2_1, diffs above"; fi; \
-	   ${RM} -f ex2_1.tmp
-runex2_2:
-	-@${MPIRUN} -np 2 ./ex2 -pc_type jacobi -ksp_smonitor -m 5 -ksp_gmres_cgs_refinement_type always > ex2_2.tmp 2>&1; \
-	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
-	   else echo "Possible problem with ex2_2, diffs above"; fi; \
-	   ${RM} -f ex2_2.tmp
-runex2_3:
-	-@${MPIRUN} -np 1 ./ex2 -pc_type sor -pc_sor_symmetric -ksp_smonitor -ksp_gmres_cgs_refinement_type always > \
-	    ex2_3.tmp 2>&1;   \
-	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
-	   else echo "Possible problem with ex2_3, diffs above"; fi; \
-	   ${RM} -f ex2_3.tmp
-runex2_5:
-	-@${MPIRUN} -np 1 ./ex2 -pc_type eisenstat -ksp_smonitor -ksp_gmres_cgs_refinement_type always >\
-	    ex2_5.tmp 2>&1;   \
-	   if (${DIFF} output/ex2_5.out ex2_5.tmp) then true; \
-	   else echo "Possible problem with ex2_5, diffs above"; fi; \
-	   ${RM} -f ex2_5.tmp
 runex3:
 	-@${MPIRUN} -np 1 ./ex3 -pc_type jacobi -ksp_smonitor -m 5 -ksp_gmres_cgs_refinement_type always > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
@@ -369,7 +343,7 @@ runex26_2:
 	   ${RM} -f ex26_2.tmp
 
 TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
-                  ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
+                  ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
 		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                   ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm

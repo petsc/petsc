@@ -268,14 +268,12 @@ M*/
 
    Level: beginner
 
-   Notes: PETSC_COMM_WORLD and MPI_COMM_WORLD are equivalent except that passing MPI_COMM_WORLD
-          into PETSc object constructors will result in using more MPI resources since an MPI_Comm_dup()
-          will be done on it internally. We recommend always using PETSC_COMM_WORLD
+   Notes: PETSC_COMM_WORLD and MPI_COMM_WORLD are equivalent.
 
 .seealso: PETSC_COMM_SELF
 
 M*/
-extern PETSC_DLLEXPORT MPI_Comm PETSC_COMM_WORLD;
+#define PETSC_COMM_WORLD MPI_COMM_WORLD
 
 /*M
     PETSC_COMM_SELF - a duplicate of the MPI_COMM_SELF communicator which represents
@@ -283,19 +281,16 @@ extern PETSC_DLLEXPORT MPI_Comm PETSC_COMM_WORLD;
 
    Level: beginner
 
-   Notes: PETSC_COMM_SELF and MPI_COMM_SELF are equivalent except that passint MPI_COMM_SELF
-          into PETSc object constructors will result in using more MPI resources since an MPI_Comm_dup()
-          will be done on it internally. We recommend always using PETSC_COMM_SELF
+   Notes: PETSC_COMM_SELF and MPI_COMM_SELF are equivalent.
 
 .seealso: PETSC_COMM_WORLD
 
 M*/
-extern PETSC_DLLEXPORT MPI_Comm PETSC_COMM_SELF;
+#define PETSC_COMM_SELF MPI_COMM_SELF
 
 extern PETSC_DLLEXPORT PetscTruth PetscInitializeCalled;
 extern PETSC_DLLEXPORT PetscTruth PetscFinalizeCalled;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetCommWorld(MPI_Comm);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm*);
@@ -1149,14 +1144,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetPointer(PetscObject
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerDestroy(PetscObjectContainer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetUserDestroy(PetscObjectContainer, PetscErrorCode (*)(void*));
-
-/*
-   For incremental debugging
-*/
-extern PetscTruth     PETSC_DLLEXPORT PetscCompare;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCompareDouble(double);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCompareScalar(PetscScalar);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCompareInt(PetscInt);
 
 /*
    For use in debuggers 
