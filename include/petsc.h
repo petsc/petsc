@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.36 1995/07/06 01:58:41 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.37 1995/07/12 04:02:40 curfman Exp curfman $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -132,13 +132,23 @@ extern double _TotalFlops;
    Notes:
    A global counter logs all PETSc flop counts.  The user can use
    PLogFlops() to increment this counter to include flops for the 
-   application code.  Since the PETSc libraries incorporate timing 
-   of phases and operations, PLogFlops() is intended only for monitoring 
-   of application codes.  The options database commands -log, 
-   -log_summary, and -log_all activate PETSc library operation counts.  
-   See the users manual for further details.
+   application code.  
 
-.seealso:  PetscTime()
+   PETSc automatically logs library events if the code has been
+   compiled with -DPETSC_LOG (which is the default), and -log,
+   -log_summary, or -log_all are specified.  PLogFlops() is
+   intended for logging user flops to supplement this PETSc
+   information.
+
+    Example of Usage:
+$     #define USER_EVENT 75
+$     PLogEventRegister(USER_EVENT,"User event");
+$     PLogEventBegin(USER_EVENT,0,0,0,0);
+$     [code segment to monitor]
+$     PLogFlops(user_flops)
+$     PLogEventEnd(USER_EVENT,0,0,0,0);
+
+.seealso:  PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
 
 .keywords:  Petsc, log, flops, floating point operations
 M*/
