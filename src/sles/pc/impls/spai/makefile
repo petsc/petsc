@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1998/06/15 16:29:41 balay Exp balay $ 
+# $Id: makefile,v 1.3 1998/06/15 16:30:08 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -9,8 +9,8 @@ SOURCEF  =
 SOURCEH  =
 OBJSC    = 
 OBJSF    =
-LIBBASE  = libpetsccontrib
+LIBBASE  = libpetscsles
 DIRS     = src
-LOCDIR   = src/contrib/spai/
+LOCDIR   = src/contrib/pc/spai/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

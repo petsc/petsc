@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1999/02/01 23:35:29 balay Exp bsmith $ 
+# $Id: makefile,v 1.24 1999/03/01 04:58:52 bsmith Exp bsmith $ 
 
 ALL: 
 
@@ -88,11 +88,8 @@ runtest:
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
 	-@echo "------------------------------------------------"
 	-@${MPIRUN} -np 1 PLogEvent                    > /dev/null
-	-@${MPIRUN} -np 1 PLogEvent -log               > /dev/null
 	-@${MPIRUN} -np 1 PLogEvent -log_summary       > /dev/null
-	-@${MPIRUN} -np 1 PLogEvent -log_all           > /dev/null
 	-@${MPIRUN} -np 1 PLogEvent -log_mpe           > /dev/null
-	-@${MPIRUN} -np 1 PLogEvent -log_mpe -log      > /dev/null
 	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"

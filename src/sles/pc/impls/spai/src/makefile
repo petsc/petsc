@@ -1,9 +1,8 @@
-# $Id: makefile,v 1.6 1998/06/13 05:22:45 balay Exp balay $ 
+# $Id: makefile,v 1.5 1998/06/15 16:31:07 balay Exp bsmith $ 
 
 ALL: lib
 #
-#    The -I/home/bsmith/libraries/spai_1.1 should point the location you have installed
-#  SPAI.
+#    SPAI_INCLUDE should be defined in bmake/$PETSC_ARCH/base.site
 #
 CFLAGS   = 
 FFLAGS   = 
@@ -13,9 +12,9 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = ispai.o dspai.o
 OBJSF    =
-LIBBASE  = libpetsccontrib
+LIBBASE  = libpetscsles
 DIRS     = 
-LOCDIR   = src/contrib/spai/src
+LOCDIR   = src/contrib/pc/spai/src/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

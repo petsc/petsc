@@ -21,6 +21,7 @@ petsc/bin/petscrun.demo
 petsc/bin/demos
 petsc/bin/petscdemo
 petsc/docs/splitmanual
+petsc/docs/manualpages/sec
 petsc/src/blaslapack
 petsc/src/apps
 petsc/src/usg
@@ -61,9 +62,6 @@ petsc/src/contrib/orderings
 petsc/src/contrib/helmholtz
 petsc/src/contrib/helmholtz_2
 petsc/src/da/examples/tests/scripts
-petsc/docs/www/www.cit
-petsc/docs/www/petsc.cit
-petsc/docs/www/sec
 petsc/bmake/sun4_lam
 petsc/bmake/sun4_uni
 petsc/bmake/sun4_nodebug
@@ -119,7 +117,6 @@ petsc/bmake/t3e/RCS
 petsc/bmake/linux/RCS
 petsc/bmake/hpux/RCS
 petsc/docs/man/RCS
-petsc/docs/www/RCS
 petsc/src/snes/RCS
 petsc/src/snes/impls/RCS
 petsc/src/snes/src/RCS

@@ -1,12 +1,14 @@
-# $Id: makefile,v 1.6 1998/06/12 22:24:48 balay Exp bsmith $ 
-
+# $Id: makefile,v 1.7 1999/04/06 21:27:11 bsmith Exp bsmith $ 
+#
+#   SPAI_LIB should be defined in bmake/$PETSC_ARCH/base.site
+#
 ALL: ex1
 
 CFLAGS 	        =
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
-LOCDIR          = src/contrib/spai/examples/tutorials/
+LOCDIR          = src/contrib/pc/spai/examples/tutorials/
 
 TESTEXAMPLES_1  =
 TESTEXAMPLES_2  =
