@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.36 1995/09/12 03:25:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.37 1995/09/12 14:09:52 curfman Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -76,7 +76,7 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(_cplusplus)
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 extern int PCImplCreate_ILU_MPIRowbs(PC pc);
 extern int PCImplDestroy_ILU_MPIRowbs(PC pc);
 #endif
@@ -90,7 +90,7 @@ static int PCSetUp_ILU(PC pc)
   ierr = MatGetReordering(pc->pmat,ORDER_NATURAL,&ilu->row,&ilu->col); CHKERRQ(ierr);
   if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
   if (!pc->setupcalled) {
-#if defined(HAVE_BLOCKSOLVE) && !defined(_cplusplus)
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
     if (pc->pmat->type == MATMPIROWBS) {
       ilu->ImplCreate = PCImplCreate_ILU_MPIRowbs;
     }
