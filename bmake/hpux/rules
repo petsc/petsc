@@ -55,8 +55,40 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
-
-
+# SHARED LIBRARIES
+# To create PETSc libraires as shared libraries do the following:
+# 1. modify the file base and add "-z" flag for "cc" as in where CC is defined.
+# CC       = cc -DPARCH_hpux -Aa +z
+#
+#2. Add the following target to "base"
+#shared: chkopts
+#	-@echo making shared libraries in $(LDIR) ;\
+#	cd $(LDIR); \
+	$(RM) -rf tmp; \
+#	mkdir tmp; \
+#	cd tmp; \
+#	for LIBNAME in $(SHLIBS) ; \
+#	  do \
+#	    $(AR) x ../$$LIBNAME.a ;\
+#	    $(LD) -b  *.o  -o ../$$LIBNAME.sl ; \
+#	    $(RM) -f * ; \
+#	done ;\
+#	cd ../ ; \
+#	$(RM) -rf tmp 
+#
+#3. To make shared libs do in PETSC_DIR:
+#   make BOPT=g all fortran shared
+#   If the regular libraries are already built, you have to rebuilt them.
+#
+#4. To build an example uisng petsc shared library do:
+#   cd petsc/src/sles/tutorials
+#   make BOPT=g ex5
+#
+#6. To run this example do:
+#   mpirun ex5
+#
+#Note: If you are using blocksolve, shared libraries do not work.
+#      Also, profiling versions and shared libraries do not go together.
 
 
 
