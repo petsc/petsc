@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmcnv.c,v 1.1 1997/01/25 16:58:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmcnv.c,v 1.2 1997/01/27 18:15:31 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -9,6 +9,6 @@ static char vcid[] = "$Id: gmcnv.c,v 1.1 1997/01/25 16:58:32 bsmith Exp bsmith $
 #define __FUNC__ "KSPDefaultConverged_GMRES"
 int KSPDefaultConverged_GMRES(KSP ksp,int n,double rnorm,void *dummy)
 {
-  if ( rnorm <= ksp->ttol ) return(1);
+  if ( rnorm <= ksp->ttol || rnorm != rnorm) return(1);
   else return(0);
 }
