@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.46 1999/03/01 21:10:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.47 1999/03/01 21:18:33 bsmith Exp bsmith $";
 #endif
 
 
@@ -75,9 +75,9 @@ extern int XiSetCmapHue(unsigned char*,unsigned char*,unsigned char*,int);
   share the same gColormap and gCmapping.
 
 */
-static int       gNumcolors = 0;
 static Colormap  gColormap  = 0;
 static PixVal    gCmapping[256];
+       int       gNumcolors = 0;
 #undef __FUNC__  
 #define __FUNC__ "DrawSetUpColormap_Shared"
 int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
@@ -138,10 +138,12 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
 {
   Colormap defaultmap = DefaultColormap( display, screen ); 
   int      ierr,found,i,ncolors,fast;
-  XColor   colordef,ecolordef;
+  XColor   colordef;
   unsigned char *red, *green, *blue;
 
+
   PetscFunctionBegin;
+
   if (colormap) {
     gColormap = colormap;
   } else {
@@ -212,6 +214,8 @@ int DrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colo
   XVisualInfo vinfo;
 
   PetscFunctionBegin;
+
+
   /* 
      This is wrong; it needs to take the value from the visual 
   */
@@ -246,6 +250,9 @@ int DrawSetColormap_X(Draw_X* XiWin,Colormap colormap)
   int ierr;
 
   PetscFunctionBegin;
+  if (XiWin->depth < 8) {
+    SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
+  }
   if (!gColormap) {
     ierr = DrawSetUpColormap_X(XiWin->disp,XiWin->screen,XiWin->vis,colormap);CHKERRQ(ierr);
   }
