@@ -8,7 +8,7 @@
 #include "mat.h"
 
 typedef enum { PCNONE, PCJACOBI, PCSOR, PCDIRECT, PCSHELL, PCBJACOBI, PCMG,
-               PCESOR, PCILU } PCMETHOD;
+               PCESOR, PCILU, PCICC } PCMETHOD;
 
 typedef struct _PC* PC;
 #define PC_COOKIE    PETSC_COOKIE+9
