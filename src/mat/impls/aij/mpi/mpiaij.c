@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.26 1995/04/05 20:31:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.27 1995/04/15 03:28:13 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1090,25 +1090,43 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        0,MatConvert_MPIAIJ };
 
 /*@
+   MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
+   (the default parallel PETSc format).
 
-      MatCreateMPIAIJ - Creates a sparse parallel matrix 
-                                 in AIJ format.
+   Input Parameters:
+.  comm - MPI communicator
+.  m - number of local rows (or PETSC_DECIDE to have calculated)
+.  n - number of local columns (or PETSC_DECIDE to have calculated)
+.  M - number of global rows (or PETSC_DECIDE to have calculated)
+.  N - number of global columns (or PETSC_DECIDE to have calculated)
+.  d_nz - number of nonzeros per row in diagonal portion of matrix
+           (same for all local rows)
+.  d_nzz - number of nonzeros per row in diagonal portion of matrix or null
+           (possibly different for each row).  You must leave room for the 
+           diagonal entry even if it is zero.
+.  o_nz - number of nonzeros per row in off-diagonal portion of matrix
+           (same for all local rows)
+.  o_nzz - number of nonzeros per row in off-diagonal portion of matrix
+           or null (possibly different for each row).
 
-  Input Parameters:
-.   comm - MPI communicator
-.   m,n - number of local rows and columns (or -1 to have calculated)
-.   M,N - global rows and columns (or -1 to have calculated)
-.   d_nz - total number nonzeros in diagonal portion of matrix
-.   d_nzz - number of nonzeros per row in diagonal portion of matrix or null
-.           You must leave room for the diagonal entry even if it is zero.
-.   o_nz - total number nonzeros in off-diagonal portion of matrix
-.   o_nzz - number of nonzeros per row in off-diagonal portion of matrix
-.           or null. You must have at least one nonzero per row.
-
-  Output parameters:
+   Output Parameter:
 .  newmat - the matrix 
 
-  Keywords: matrix, aij, compressed row, sparse, parallel
+   Notes:
+   The AIJ format (also called the Yale sparse matrix format or
+   compressed row storage), is fully compatible with standard Fortran 77
+   storage.  That is, the stored row and column indices begin at 
+   one, not zero.
+
+   The user MUST specify either the local or global matrix dimensions
+   (possibly both).
+
+   The user can set d_nz, d_nnz, o_nz, and o_nnz to zero for PETSc to
+   control dynamic memory allocation.
+
+.keywords: Mat, matrix, aij, compressed row, sparse, parallel
+
+.seealso: MatCreateSequentialAIJ(), MatSetValues()
 @*/
 int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
                  int d_nz,int *d_nnz, int o_nz,int *o_nnz,Mat *newmat)

@@ -55,26 +55,29 @@ static struct _MatOps MatOps = {0,0,
        0,0 };
 
 /*@
-   MatShellCreate - creates a new matrix class for use with your 
-          own private data storage format. This is intended to 
-          provide a simple class to use with KSP. You should 
-          not use this if you plan to make a complete class.
+   MatShellCreate - Creates a new matrix class for use with a user-defined
+   private data storage format. 
 
-  Input Parameters:
-.  m,n - number of rows and columns in matrix
-.  ctx - pointer to your data needed by matrix multiply.
+   Input Parameters:
 .  comm - MPI communicator
+.  m - number of rows
+.  n - number of columns
+.  ctx - pointer to your data needed by matrix-vector multiply
 
-  Output Parameters:
+   Output Parameter:
 .  mat - the matrix
 
-  Keywords: matrix, shell
+   Notes:
+   The shell matrix type is intended to provide a simple class to use
+   with KSP (such as, for use with matrix-free methods). You should not
+   use the shell type if you plan to define a complete matrix class.
 
   Usage:
-.             int (*mult)(void *,Vec,Vec);
-.             MatShellCreate(m,n,ctx,&mat);
-.             MatShellSetMult(mat,mult);
+$   int (*mult)(void *,Vec,Vec);
+$   MatShellCreate(m,n,ctx,&mat);
+$   MatShellSetMult(mat,mult);
 
+.keywords: Mat, matrix, shell
 @*/
 int MatShellCreate(MPI_Comm comm,int m, int n, void *ctx,Mat *mat)
 {
