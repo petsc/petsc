@@ -1,8 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.10 1999/02/17 17:44:54 balay Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.11 1999/02/17 19:14:11 balay Exp balay $";
 #endif
 
-static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
+static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
+This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
 
 #include "mat.h"
 
