@@ -54,6 +54,9 @@ machine mcurie.nersc.gov
 scheduler : cqsub (mpirun also works)
 help : consult@nersc.gov
 1 800 666 3772 select option 3
+
+grmview shows jobs running on pes
+
 ---------------
 
 afs directory at NCSA /afs/ncsa.uiuc.edu/user/barrys
