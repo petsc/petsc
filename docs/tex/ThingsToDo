@@ -19,9 +19,9 @@ Meta priorities:
     to Matt's suggestion.
     
   - Fix fortran stub generator so that it uses
-        (MPI_Comm)PetscToPointerComm( *(int*)(comm) )
+        PetscToPointerComm() for communicators instead of
     instead of
-        (MPI_Comm)PetscToPointer( *(int*)(comm) )
+        PetscToPointer()
     Make Petsc[To/From]PointerComm public instead of private?
 
   - Change PLOgEventBegin() and end to no longer use the 
