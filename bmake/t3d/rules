@@ -1,4 +1,4 @@
-# $Id: base,v 1.32 1998/04/14 19:44:28 bsmith Exp balay $ 
+# $Id: base,v 1.33 1998/04/23 23:14:11 balay Exp balay $ 
 
 PARCH    = t3d
 CC       = cc -h jump
@@ -38,13 +38,13 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 .F.o:
 	-${RM} /tmp/$*.f
 	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-	-${FC} -c ${FOPTFLAGS} /tmp/$*.f -o $*.o
+	-${FC} -c ${FOPTFLAGS} /tmp/$*.f
 	-${RM} /tmp/$*.f
 
 .F.a:
 	-${RM} /tmp/$*.f
 	-${CC} -E ${CPPFLAGS} ${FFLAGS} ${FCONF} $*.F | sed -e 's/^#line/#/g'  > /tmp/$*.f
-	-${FC} -c ${FOPTFLAGS} /tmp/$*.f -o $*.o
+	-${FC} -c ${FOPTFLAGS} /tmp/$*.f
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} /tmp/$*.f
 
