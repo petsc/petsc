@@ -39,5 +39,5 @@
 #
 # Backup the PETSc source dir
 #
-#45 5 * * *  /usr/ucb/rsh eagle /home/bsmith/petsc/maint/buildbackup
+45 5 * * *  /usr/ucb/rsh eagle /home/bsmith/petsc/maint/buildbackup
 #
