@@ -1,12 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.39 1996/01/23 00:17:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.40 1996/01/26 04:32:09 bsmith Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
 #include "isimpl.h"
 #include "pinclude/pviewer.h"
+#include "sys.h"
 
 typedef struct {
   int n,sorted; 
@@ -74,11 +75,30 @@ static int ISView_General(PetscObject obj, Viewer viewer)
   }
   return 0;
 }
-  
+static int ISSort_General(IS is)
+{
+  IS_General *sub = (IS_General *)is->data;
+  int        ierr;
+
+  if (sub->sorted) return 0;
+  ierr = SYIsort(sub->n, sub->idx); CHKERRQ(ierr);
+  sub->sorted = 1;
+  return 0;
+}
+
+static int ISSorted_General(IS is, int* flg)
+{
+  IS_General *sub = (IS_General *)is->data;
+  *flg = sub->sorted;
+  return 0;
+}
+
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetSize_General,
                                ISGetIndices_General,0,
-                               ISInvertPermutation_General};
+                               ISInvertPermutation_General,
+                               ISSort_General,
+                               ISSorted_General };
 /*@C
    ISCreateSeq - Creates a data structure for an index set 
    containing a list of integers.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.35 1996/01/01 22:33:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.36 1996/01/26 04:32:11 bsmith Exp balay $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -99,10 +99,28 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
   return 0;
 }
   
+static int ISSort_Stride(IS is)
+{
+  IS_Stride *sub = (IS_Stride *) is->data;
+  if (sub->step >= 0 ) return 0;
+  sub->first += (sub->n - 1 )*sub->step;
+  sub->step *= -1;
+  return 0;
+}
+
+static int ISSorted_Stride(IS is, int* flg)
+{
+  IS_Stride *sub = (IS_Stride *) is->data;
+  if (sub->step >=0) *flg = 1;
+  else *flg = 0;
+  return 0;
+}
+
 static struct _ISOps myops = { ISGetSize_Stride,
                                ISGetSize_Stride,
                                ISGetIndices_Stride,
-                               ISRestoreIndices_Stride,0};
+                               ISRestoreIndices_Stride,0,
+                               ISSort_Stride, ISSorted_Stride };
 /*@C
    ISCreateStrideSeq - Creates a data structure for an index set 
    containing a list of evenly spaced integers.

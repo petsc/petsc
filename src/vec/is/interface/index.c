@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.22 1995/10/22 04:16:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.23 1995/11/29 22:40:05 curfman Exp balay $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -217,4 +217,41 @@ int ISView(IS is, Viewer viewer)
 {
   PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   return (*is->view)((PetscObject)is,viewer);
+}
+
+/*@
+   ISSort - Sort the indices of an Index set.
+
+   Input Parameters:
+.  is - the index set
+
+.keywords: IS, index set, sort, indices
+
+.seealso: ISSorted()
+@*/
+int ISSort(IS is)
+{
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
+  return (*is->ops.sortindices)(is);
+}
+
+/*@
+   ISSorted - Checks the indices to be sorted 
+
+
+   Input Parameters:
+.  is - the index set
+
+   Output parameters:
+.  flg - 1 if the index set is sorted
+.      - 0 if not
+
+.keywords: IS, index set, sort, indices
+
+.seealso: ISSort()
+@*/
+int ISSorted(IS is, int *flg)
+{
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
+  return (*is->ops.sorted)(is, flg);
 }
