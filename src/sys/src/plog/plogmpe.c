@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.13 1996/09/14 03:35:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.14 1996/11/07 15:12:13 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -305,7 +305,7 @@ int PLogMPEBegin()
 /*@
     PLogEventMPEDeactivate - Indicates that a particular event should not be
        logged using MPE. Note: the event may be either a pre-defined
-       PETSc event (found in include/plog.h) or an event number obtained
+       PETSc event (found in include/petsclog.h) or an event number obtained
        with PLogEventRegister().
 
   Input Parameter:
