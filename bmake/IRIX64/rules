@@ -5,8 +5,8 @@ RM       = rm -f
 RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
-CLINKER  = cc $(COPTFLAGS) -dont_warn_unused
-FLINKER  = f77 $(FOPTFLAGS) -dont_warn_unused
+CLINKER  = cc $(COPTFLAGS) -Wl,-woff,84,-woff,85
+FLINKER  = f77 $(FOPTFLAGS) -Wl,-woff,84,-woff,85
 
 SYS_LIB    = 
 
