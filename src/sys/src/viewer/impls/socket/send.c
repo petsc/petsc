@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.49 1997/02/17 23:20:20 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.50 1997/02/22 02:28:23 bsmith Exp balay $";
 #endif
 
 /* 
@@ -29,6 +29,7 @@ typedef unsigned long   u_long;
 #if defined(PARCH_alpha)
 #include <machine/endian.h>
 #endif
+#if !defined(PARCH_nt)
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -239,4 +240,15 @@ int ViewerDestroyMatlab_Private()
   }
   return 0;
 }
+#else
+#include "viewer.h"
+int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
+{
+	return 0;
+}
+int ViewerDestroyMatlab_Private()
+{
+	return 0;
+}
+#endif
 
