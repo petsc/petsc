@@ -395,6 +395,12 @@ class Framework(base.Base):
       print 'Running bk push on '+p.getRoot()
       self.executeShellCommand('cd '+p.getRoot()+'; bk push')
 
+  def t_pull(self):
+    '''Run bk pull on all the projects'''
+    for p in self.argDB['installedprojects']:
+      print 'Running bk pull on '+p.getRoot()
+      self.executeShellCommand('cd '+p.getRoot()+'; bk pull')
+
   def getHeadRevision(self, proj):
     import install.retrieval
     return install.retrieval.Retriever().bkHeadRevision(proj.getRoot())
