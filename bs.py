@@ -180,6 +180,15 @@ class BS (install.base.Base):
       for package in sidl.getPackages():
         self.project.appendPythonPath(sidl.getServerRootDir(lang, package))
 
+    if 'Matlab' in sidl.clientLanguages:
+      root = sidl.getClientRootDir('Matlab', root = self.project.getRoot())
+      # sidl.getPackages() gives the names of the files, not the SIDL packages
+      import commands
+      packages = os.listdir(root)
+      if len(packages) > 1: packages.remove('SIDL')
+      self.project.appendPackages(packages)
+      self.project.setMatlabPath(root)
+
     p = self.getInstalledProject(self.project.getUrl())
     if p is None:
       argDB['installedprojects'] = argDB['installedprojects']+[self.project]

@@ -9,6 +9,7 @@ class Project:
     self.root = root
     # Updated variables
     self.pythonPath = []
+    self.packages   = []
     return
 
   def __str__(self):
@@ -59,3 +60,19 @@ class Project:
   def getPythonPath(self):
     '''Return the list of paths which must be given to Python for this project to function'''
     return self.pythonPath
+
+  def appendPackages(self, packages):
+    '''Appends package names'''
+    self.packages += packages
+
+  def getPackages(self):
+    '''Gets package names'''
+    return self.packages
+
+  def getMatlabPath(self):
+    '''Return the path for the matlab directory for this project'''
+    return self.matlabPath
+
+  def setMatlabPath(self,path):
+    '''Sets the path for the matlab directory for this project'''
+    self.matlabPath = path
