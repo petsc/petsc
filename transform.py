@@ -52,7 +52,7 @@ class Transform (bs.Maker):
 
   def getIntermediateFileName(self, source, ext = '.o'):
     (dir, file) = os.path.split(source)
-    (base, ext) = os.path.splitext(file)
+    (base, dum) = os.path.splitext(file)
     return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+ext)
 
   def checkChecksumCall(self, command, status, output):

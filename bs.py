@@ -18,6 +18,7 @@ debugSections = []
 class Maker:
   def __init__(self):
     self.setupTmpDir()
+    self.cleanupDir(self.tmpDir)
     self.debugLevel    = debugLevel
     self.debugSections = list(debugSections)
     self.debugIndent   = '  '
@@ -40,12 +41,13 @@ class Maker:
       else:
         os.remove(file)
     
-  def cleanupTmpDir(self):
-    if not os.path.exists(self.tmpDir): os.makedirs(self.tmpDir)
+  def cleanupDir(self, dir, remove = 0):
+    if not os.path.exists(dir): os.makedirs(dir)
     oldDir = os.getcwd()
-    os.chdir(self.tmpDir)
-    map(self.forceRemove, os.listdir(self.tmpDir))
+    os.chdir(dir)
+    map(self.forceRemove, os.listdir(dir))
     os.chdir(oldDir)
+    if remove: os.rmdir(dir)
 
   def debugListStr(self, list):
     if (self.debugLevel > 4) or (len(list) < 4):
@@ -144,3 +146,4 @@ class BS (Maker):
       self.targets[self.args['target']].execute()
     else:
       print 'Invalid target: '+self.args['target']
+    self.cleanupDir(self.tmpDir)

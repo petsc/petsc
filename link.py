@@ -20,8 +20,9 @@ class LinkSharedLibrary (action.Action):
       self.extraLibraries = extraLibraries
     else:
       self.extraLibraries = fileset.FileSet()
-    self.sharedLibs     = fileset.FileSet(tag = 'shared')
+    self.sharedLibs     = fileset.FileSet()
     self.products       = [self.sharedLibs]
+    self.buildProducts  = 0
 
   def getSharedName(self, libName):
     (base, ext) = os.path.splitext(libName)
@@ -30,7 +31,7 @@ class LinkSharedLibrary (action.Action):
   def link(self, source):
     linkDir = os.path.join(self.tmpDir, 'link')
     oldDir  = os.getcwd()
-    os.mkdir(linkDir)
+    self.cleanupDir(linkDir)
     os.chdir(linkDir)
     sharedLibrary = self.getSharedName(source)
     self.sharedLibs.append(sharedLibrary)
@@ -44,39 +45,58 @@ class LinkSharedLibrary (action.Action):
       command += ' -L'+dir+' -l'+base[3:]
     self.executeShellCommand(command)
     self.updateSourceDB(source)
-    map(os.remove, os.listdir(linkDir))
     os.chdir(oldDir)
-    os.rmdir(linkDir)
+    self.cleanupDir(linkDir, remove = 1)
     return self.products
 
   def setExecute(self, set):
     if set.tag == 'lib':
       transform.Transform.setExecute(self, set)
+    elif set.tag == 'old lib':
+      for file in set:
+        self.sharedLibs.append(self.getSharedName(file))
     else:
       self.products.append(set)
+    return self.products
+
+class TagShared (transform.GenericTag):
+  def __init__(self, tag = 'sharedlib', ext = 'so', sources = None, extraExt = ''):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
 
 class LinkExecutable (action.Action):
   def __init__(self, executable, sources = None, linker = 'g++', linkerFlags = '', extraLibraries = None):
     action.Action.__init__(self, self.link, sources, '-o '+executable.getFiles()[0]+' '+linkerFlags, setwiseExecute = 1)
-    self.executable  = executable
-    self.linker      = linker
-    self.linkerFlags = linkerFlags
+    self.executable    = executable
+    self.linker        = linker
+    self.linkerFlags   = linkerFlags
     if extraLibraries:
       self.extraLibraries = extraLibraries
     else:
       self.extraLibraries = fileset.FileSet()
-    self.rebuildAll  = 0
-    self.products    = executable
+    self.rebuildAll    = 0
+    self.products      = executable
+    self.buildProducts = 0
 
   def link(self, set):
-    self.sources.extend(self.extraLibraries)
     command = self.linker+' '+self.flags
     files   = set.getFiles()
     if files:
-      for file in files: command += ' '+file
+      for file in files:
+        command += ' '+file
+      for lib in self.extraLibraries.getFiles():
+        (dir, file) = os.path.split(lib)
+        (base, ext) = os.path.splitext(file)
+        command += ' -L'+dir+' -l'+base[3:]
       output = self.executeShellCommand(command, self.errorHandler)
     for source in files:
       self.updateSourceDB(source)
+    return self.products
+
+  def setAction(self, set):
+    if set.tag == 'sharedlib':
+      action.Action.setAction(self, set)
+    else:
+      self.products.append(set)
     return self.products
 
   def execute(self):
