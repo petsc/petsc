@@ -289,7 +289,7 @@ M*/
     lnk_lvl   - array of size nlnk for storing levels of lnk
     bt        - PetscBT (bitarray) with all bits set to false
 */
-#define PetscLLCreate_PermutedLeveled(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt)\
+#define PetscIncompleteLLCreate(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt)\
   (PetscMalloc(2*nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
 
 /*
@@ -300,7 +300,6 @@ M*/
     level     - level of fill, e.g., ICC(level)
     indices_lvl - level of indices 
     idx_start - starting index of the list
-    perm      - permutation 
     lnk       - linked list(an integer array) that is created
     lnk_lvl   - levels of lnk
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
@@ -310,7 +309,7 @@ M*/
     lnk_lvl   - levels of lnk
     bt        - updated PetscBT (bitarray) 
 */
-#define PetscLLAdd_PermutedLeveled(nidx,indices,level,indices_lvl,idx_start,perm,nlnk,lnk,lnk_lvl,bt) 0;\
+#define PetscIncompleteLLAdd(nidx,indices,level,indices_lvl,idx_start,nlnk,lnk,lnk_lvl,bt) 0;\
 {\
   int _k,_entry,_location,_lnkdata,_incrlev;\
   nlnk = 0;\
@@ -353,7 +352,7 @@ M*/
     lnk_lvl   - level of lnk that is reinitialized 
     bt        - PetscBT (bitarray) with all bits set to false
 */
-#define PetscLLClean_PermutedLeveled(idx_start,lnk_max,nlnk,lnk,lnk_lvl,indices,indices_lvl,bt) 0;\
+#define PetscIncompleteLLClean(idx_start,lnk_max,nlnk,lnk,lnk_lvl,indices,indices_lvl,bt) 0;\
 {\
   int _j,_idx=idx_start;\
   for (_j=0; _j<nlnk; _j++){\
@@ -368,8 +367,8 @@ M*/
 /*
   Free memories used by the list
 */
-#define PetscLLDestroy_PermutedLeveled(lnk,lnk_lvl,bt) \
-(PetscFree(lnk) || PetscBTDestroy(bt))
+#define PetscIncompleteLLDestroy(lnk,bt) \
+  (PetscFree(lnk) || PetscBTDestroy(bt) || (0))
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

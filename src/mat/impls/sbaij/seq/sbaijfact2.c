@@ -1600,7 +1600,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
 
     /* create and initialize a linked list for storing column indices of the active row k */
     nlnk = am + 1;
-    ierr = PetscLLCreate_PermutedLeveled(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+    ierr = PetscIncompleteLLCreate(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
 
     /* initial FreeSpace size is fill*(ai[am]+1) */
     ierr = GetMoreSpace((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
@@ -1618,7 +1618,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
         cols[j] = rip[i]; 
         cols_lvl[j] = -1;  /* initialize level for nonzero entries */
       }
-      ierr = PetscLLAdd_PermutedLeveled(ncols,cols,levels,cols_lvl,am,rip,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+      ierr = PetscIncompleteLLAdd(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
       nzk += nlnk;
 
       /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -1634,7 +1634,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
         i     = jmin - ui[prow];
         cols  = uj_ptr[prow] + i; /* points to the 2nd nzero entry in U(prow,k:am-1) */
         for (j=0; j<ncols; j++) cols_lvl[j] = *(uj_lvl_ptr[prow] + i + j);
-        ierr = PetscLLAdd_PermutedLeveled(ncols,cols,levels,cols_lvl,am,rip,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr); 
+        ierr = PetscIncompleteLLAdd(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr); 
         nzk += nlnk;
 
         /* update il and jl for prow */
@@ -1655,7 +1655,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
       }
 
       /* copy data into free_space and free_space_lvl, then initialize lnk */
-      ierr = PetscLLClean_PermutedLeveled(am,am,nzk,lnk,lnk_lvl,current_space->array,current_space_lvl->array,lnkbt);CHKERRQ(ierr);
+      ierr = PetscIncompleteLLClean(am,am,nzk,lnk,lnk_lvl,current_space->array,current_space_lvl->array,lnkbt);CHKERRQ(ierr);
 
       /* add the k-th row into il and jl */
       if (nzk-1 > 0){
@@ -1692,7 +1692,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
     /* destroy list of free space and other temporary array(s) */
     ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
     ierr = MakeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
-    ierr = PetscLLDestroy_PermutedLeveled(lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+    ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     ierr = DestroySpace(free_space_lvl);CHKERRQ(ierr);
 
     /* put together the new matrix in MATSEQSBAIJ format */
