@@ -396,10 +396,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
+  /*
   b->lu_damping        = info->damping;
   b->lu_zeropivot      = info->zeropivot;
   b->lu_shift          = info->shift;
   b->lu_shift_fraction = info->shift_fraction;
+  */
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
@@ -440,9 +442,16 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscReal      zeropivot=b->lu_zeropivot,rs,d;
   PetscReal      row_shift,shift_fraction,shift_amount,shift_lo=0.,shift_hi=1.,shift_top=0.;
   PetscTruth     lushift;
-  PetscReal      shift_pd=b->lu_shift,shift_nonzero=b->lu_damping;
+  PetscReal      shift_nonzero; /* shift_pd=b->lu_shift, =b->lu_damping; */
+  PetscTruth     shift_pd;
 
   PetscFunctionBegin;
+
+  shift_nonzero  = info->shiftnz;
+  shift_pd       = info->shiftpd;
+  zeropivot      = info->zeropivot;
+  shift_fraction = info->shift_fraction; 
+
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr  = PetscMalloc((n+1)*sizeof(PetscScalar),&rtmp);CHKERRQ(ierr);
@@ -473,7 +482,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
     }
   }
 
-  shift_fraction = b->lu_shift_fraction; 
+  /* shift_fraction = b->lu_shift_fraction; */
   shift_amount   = 0;
   do {
     lushift = PETSC_FALSE;
@@ -915,10 +924,12 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
     b->row              = isrow;
     b->col              = iscol;
     b->icol             = isicol;
+    /*
     b->lu_damping       = info->damping;
     b->lu_zeropivot     = info->zeropivot;
     b->lu_shift         = info->shift;
     b->lu_shift_fraction= info->shift_fraction;
+    */
     ierr                = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
@@ -1092,10 +1103,12 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
      Allocate dloc, solve_work, new a, new j */
   PetscLogObjectMemory(*fact,(ainew[n]-n) * (sizeof(PetscInt)+sizeof(PetscScalar)));
   b->maxnz             = b->nz = ainew[n] ;
+  /*
   b->lu_damping        = info->damping;
   b->lu_shift          = info->shift;
   b->lu_shift_fraction = info->shift_fraction;
   b->lu_zeropivot = info->zeropivot;
+  */
   (*fact)->factor = FACTOR_LU;
   ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
   (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
@@ -1436,10 +1449,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   } else {
     B->info.fill_ratio_needed = 0.0;
   }
-
+  /*
   b->factor_zeropivot      = info->zeropivot;
   b->factor_damping        = info->damping;
   b->factor_shift          = info->shift;
+  */
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
   if (perm_identity){
     B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
