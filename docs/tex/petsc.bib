@@ -1,5 +1,29 @@
+@string(AJ="Astrophysics J.")
+@string{PC="Parallel Computing"}
+@string(AIAAJ="AIAA J.")
+@string(LAA="Linear Algebra and Applications")
+@string(JCP="J. Computational Physics")
+@string(JPDC="J. Parallel and Distributed Computing")
+@string(ANM="Applied Numerical Mathematics")
+@string{SIAPMA="SIAM J. Applied Mathematics"}
+@string{SICOMP="SIAM J. Computing"}
+@string{SIMAX="SIAM J. Matrix Analysis and Applications"}
+@string{SINUM="SIAM J. Numerical Analysis"}
+@string{SIREV="SIAM Review"}
+@string{SISSC="SIAM J. Scientific and Statistical Computing"}
+@string{SISC="SIAM J. Scientific Computing"}
+@string{SIOPT="SIAM J. Optimization"}
+@string(NumMath="Numerische Mathematik")
+@string(MathComp="Mathematics of Computation")
+@string(IJNMF="International J. for Numerical Methods in Fluids")
+@string(Impact="Impact of Computing in Science and Engineering")
+@string(CPC="Computer Physics Communications")
+@string(jota = "J. Optimization Theory and Applications")
+@string(ZaMM = "Zeitschrift f\:{u}r angewandte Mathematik und Mechanik")
+
+
 @incollection{fjp:ima,
-  AUTHOR=    "Lori Frietag and Mark Jones and Paul Plassmann",
+  AUTHOR=    "Lori Freitag and Mark Jones and Paul Plassmann",
   title = "The Scalability of Mesh Improvement Algorithms",
   booktitle = "Algorithms for Parallel Processing",
   publisher = "Springer-Verlag",
@@ -10,17 +34,6 @@
   pages = "185--212"
   }
 
-@inbook{pooma, 
-        Title = "{POOMA}: A FrameWork for Scientific Computing Applications on Parallel
-                Architectures",
-        Author = "J. V. W. Reynders and J. C. Cummings and
-                  P. J. Hinker and M. Tholburn and S. Banerjee,
-                  M. Srikant and S. Karmesin and S. Atlas and K. Keahey and W. F. Humphrey",
-        book = "Parallel Programming using C++",
-        chapter = 14,
-        Year = 1996
-}
- 
 @inproceedings{poet,
         AUTHOR = "Rob Armstrong and Alex Cheung",
         TITLE = "{POET} ({P}arallel {O}bject-Oriented {E}nvironment and {T}oolkit) 
@@ -118,12 +131,6 @@
   note = 	 "http://www.asci.uchicago.edu",
   author =       "R. {Rosner et al.}",
   Institution = "University of Chicago",
-}
-
-@Unpublished{cca-web-page,
-  title = 	 "{C}ommon {C}omponent {A}rchitecture {F}orum {W}eb Page",
-  note = 	 "http://www.acl.lanl.gov/cca-forum",
-  author =       "R. {Armstrong et al.}",
 }
 
 @Unpublished{esi-web-page,
@@ -1605,4 +1612,158 @@ year = {1977}
        PUBLISHER = "SIAM",
        ADDRESS = "Philadelphia, PA",
        YEAR = 1997
+}
+
+% -----------------------------------------------------------------------------------------------
+%  Fun3d-PETSc
+%
+
+@INPROCEEDINGS{AGKKS-SC99,  
+        AUTHOR = "W. K. Anderson and W. D. Gropp and D. K. Kaushik
+                  D. E. Keyes and B. F. Smith",
+        TITLE = "Achieving High Sustained Performance in an 
+                 Unstructured Mesh {CFD} Application",
+        BOOKTITLE = "Proceedings of SC 99",
+        EDITOR = "",
+        PUBLISHER = "",
+        NOTE = "to appear",
+        YEAR = "1999" } 
+@INPROCEEDINGS{GKKS-PCFD99,  
+        AUTHOR = "W. D. Gropp and D. K. Kaushik and 
+                  D. E. Keyes and B. F. Smith",
+        TITLE = "Toward Realistic Performance Bounds for Implicit {CFD} codes",
+        BOOKTITLE = "Proceedings of Parallel 
+                    CFD'99",
+        EDITOR = "A. Ecer et al.",
+        PUBLISHER = "Elsevier",
+        NOTE = "to appear",
+        YEAR = "1999" } 
+@INPROCEEDINGS{KKS97,  
+        AUTHOR = "D. K. Kaushik and D. E. Keyes and B. F. Smith",
+        TITLE = "On the Interaction of Architecture and Algorithm in the 
+                 Domain-Based Parallelization of an Unstructured Grid 
+                 Incompressible Flow Code",
+        BOOKTITLE = "Proceedings of the 10th International Conference on 
+                     Domain Decomposition Methods",
+        EDITOR = "J. Mandel et al.",
+        PAGES = "311--319",
+        PUBLISHER = "Wiley",
+        NOTE = "",
+        YEAR = "1997" } 
+@INPROCEEDINGS{KKS99,  
+        AUTHOR = "D. K. Kaushik and D. E. Keyes and B. F. Smith",
+        TITLE = "{N}ewton-{K}rylov-{S}chwarz Methods for Aerodynamic Problems: Compressible
+                 and Incompressible Flows on Unstructured Grids",
+        BOOKTITLE = "Proceedings of the 11th International Conference on 
+                     Domain Decomposition Methods",
+        EDITOR = "C.-H. Lai et al.",
+        PUBLISHER = "Domain Decomposition Press, Bergen",
+        NOTE = "to appear",
+        YEAR = "1999" } 
+@INCOLLECTION{KKS97_cfd,
+     AUTHOR = "D. E. Keyes and D. K. Kaushik and B. F. Smith",
+     TITLE = "Perspective for CFD on Petsflops Systems",
+     BOOKTITLE = "CFD Review 1998",
+     EDITOR = "M. Hafez and K. Oshima",
+     PUBLISHER = "World Scientific, Singapore",
+     PAGES = "1079--1096",
+     NOTE = "",
+     YEAR = "1998" }
+@INPROCEEDINGS{KEYES99,  
+        AUTHOR = "D. E. Keyes",
+        TITLE = "How Scalable is Domain Decomposition in Practice?",
+        BOOKTITLE = "Proceedings of the 11th International Conference on 
+                     Domain Decomposition Methods",
+        EDITOR = "C.-H. Lai et al.",
+        PUBLISHER = "Domain Decomposition Press, Bergen",
+        NOTE = "to appear",
+        YEAR = "1999" } 
+
+% -------------------------------------------------------------------------
+
+@article{TRANAIR,
+author="D. P. Young and R. G. Melvin and M. B. Bieterman and F. T. Johnson
+and S. S. Samant and J. E. Bussoletti",
+title="A Locally Regined Rectangular Grid Finite Element Method:
+Applications to Computational Fluid Dynamics and Computational Physics",
+journal=JCP,
+year=1991,
+volume=92,
+pages="1--66"
+}
+
+@Article(torczon,
+    Author=      "J.~E.~Dennis and V.~Torczon",
+    Title=       "Direct Search Methods on Parallel Machines",
+    Journal=     SIOPT,
+    Volume=      1,
+    Pages=       "448--474",
+    Year=        1991,
+    Key=         "Torczon !PDS")
+
+@InProceedings{WT91,
+  author    = "D. L. Whitfield and L. K. Taylor",
+  title     = "Discretized {N}ewton-Relaxation Solution of High
+                  Resolution Flux-Difference Split Schemes",
+  booktitle = "Proceedings of the AIAA Tenth Annual Computational Fluid Dynamics Conference",
+  misc      = "AIAA-91-1539",
+  pages     = "134-145",
+  year      = 1991,
+}
+
+@article{EW96, 
+author="S. C. Eisenstat and  H. F. Walker",
+title="Choosing the forcing terms in an inexact {N}ewton method",
+journal=SISC,
+volume=17,
+year=1996, 
+pages="16--32"
+}
+
+@Book{thi93,
+  author = 	 "{Thinking Machines Corporation}",
+  title = 	 "Users Manual for CM-Fortran",
+  publisher = 	 "Thinking Machines Corporation",
+  year = 	 1993
+}
+
+@Book{mortonmayers94,
+  author = 	 "K. W. Morton and D. F. Mayers",
+  title = 	 "Numerical Solution of Partial Differential Equations",
+  publisher = 	 "Press Syndicate of the University of Cambridge",
+  year = 	 1994
+}
+
+@Book{heath97,
+  author = 	 "Michael T. Heath",
+  title = 	 "Scientific Computing: An Introductory Survey",
+  publisher = 	 "McGraw Hill",
+  year = 	 1997
+}
+
+@Article{captools96,
+  author    = "C. S. Ierotheou and S. P Johnson and M. Cross and P. F. Leggett",
+  title     = "Computer Aided Parallelization Tools ({CAPTools}) - Conceptual 
+               Overview and Performance on the Parallelization of Structured Mesh Codes",
+  journal   = "Parallel Computing",
+  volume    = 22,
+  pages     = "197-226",
+  year      = 1996
+}
+
+@Article{hkm98,
+  author    = "M. E. Hayder and D. E. Keyes and P. Mehrotra",
+  title     = "A Comparison of the {PETSc} Library and {HPF} Implementations of 
+               an Archetypal {PDE} Computation",
+  journal   = "Advances in Engineering Software",
+  volume    = 29,
+  pages     = "415-424",
+  year      = 1998
+}
+
+@Unpublished{ benson99,
+  author = "Steven J. Benson and Lois Curfman McInnes and Jorge J. Mor\'{e}",
+  title  = "{GPCG}:  A Case Study in the Performance and Scalability of Optimization Algorithms",
+  note   = "Mathematics and Computer Science Division, Argonne National Laboratory, (in preparation)",
+  year   = 1999
 }
