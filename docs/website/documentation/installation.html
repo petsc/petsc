@@ -69,7 +69,7 @@ bash as the working shell. <a href="#Aditional%20Windows%20Notes:">Microsoft Win
         <li>In the directory you wish PETSc installed: <font color="#ff0000">gunzip -c petsc.tar.gz | tar -xof -</font></li>
         <li><font color="#ff0000">cd petsc-2.2.0</font></li>
         <li>sh/bash shell <br>
-          <font color="#ff0000">export <a href="#PETSC_DIR">PETSC_DIR</a>=`pwd`</font>
+          <font color="#ff0000"><a href="#PETSC_DIR">PETSC_DIR</a>=`pwd`; export PETSC_DIR</font>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the backquote)</font><br>
           csh/tcsh shell<br>
           <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_DIR</a> `pwd`</font></li>
@@ -453,7 +453,7 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
      <li> Select a name for your configuration, we recommend <font color="#ff0000">arch</font>
           followed by <font color="#ff0000">_local</font>. For example, <font color="#ff0000">linux_local</font>
      <li>sh/bash shell <br>
-          <font color="#ff0000">export <a href="#PETSC_DIR">PETSC_ARCH</a>=choosen name</font></br>
+          <font color="#ff0000"><a href="#PETSC_DIR">PETSC_ARCH</a>=choosen name; export PETSC_DIR</font></br>
           csh/tcsh shell<br>
           <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_ARCH</a> chosen name</font></li>
        <li> <font color="#ff0000">mkdir bmake/${PETSC_ARCH}</font></li>
@@ -474,7 +474,7 @@ the configuration files with   Sun compilers<br>
 PETSC_DIR=/home/petsc/petsc-2.1.6<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bin/petscarch -suggest<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; export PETSC_ARCH=solaris_local<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PETSC_ARCH=solaris_local; export PETSC_ARCH<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mkdir bmake/solaris_local<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cp bmake/solaris/* bmake/solaris_local</font><br>
 &nbsp; edit <font color="#008080">bmake/solaris_local/packages</font> - and
