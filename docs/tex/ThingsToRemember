@@ -95,7 +95,7 @@ MCS:
    Cave Power Challenge (yukon)
      user: petsc
      passwd: petsc-passwd
-5. multimedia lab SP2
+5. multimedia lab SP2 (account no longer active??)
     user: balay,curfman,bsmith
 
 ---------
@@ -231,30 +231,21 @@ UT account:
   password: petsc-password
  
 brahma.ticam.utexas.edu 
-  login id: bsmith,sbalay
+  login id: sbalay
   passwd  : petsc-password 
 
 SP2 at TICAM
 hydra01-015 or sp101 to sp115 etc..
 
+LINUX Cluster:
+intel001-016.cpge.utexas.edu 
+  login: satishb
+  passwd: petsc-passwd
 ---------
 
-SGI Power Challenge (IRIX64): 
+SGI Power Challenge at Utah.
 
-1) machine: davinci.nas.nasa.gov
-   login ID: mcinnes
-   password: petsc-password
-   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/
-   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/news.html
-   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/faq.html
-   
-2) NCSA Power Challenge 
-   Machine: sif.ncsa.uiuc.edu loki.ncsa.uiuc.edu  odin
-   Userid: barrys
-   password: petsc-passwd
-   Account (whatever that means?) ryc
-
-3) machine:  inca.usi.utah.edu
+machine:  inca.usi.utah.edu
    login ID:  usilcm
    passwd  :  petsc-passwd
    general info:  http://www.usi.utah.edu 
@@ -265,6 +256,12 @@ SGI Power Challenge (IRIX64):
        version of PETSc
    time left in acount:  http://usi.utah.edu/general/allocations.html
 
+Yet another Origin2000 (Univ of Utah):
+  machines:
+     raptor.chpc.utah.edu is the interactive/graphics machine (32 cpus, 4.0 gB memory)
+     rapture.chpc.utah.edu  is the batch/compute machine (28 cpus, 3.5 gB memory)
+  account: usilcm
+  password : petsc-passwd
 
 
 ---------
@@ -282,7 +279,75 @@ ICASE/NASA paragon: Back in action at Va-Tech :(
       - sample run command:
         pexec "mpirun -np 4 ex8 -log_summary" -sz 4
 
-ICASE/NASA SP2: poseidon.larc.nasa.gov, account: mcinnes
+---------
+ UCLA Solaris:
+  machine : poplar.math.ucla.edu
+  user: bsmith
+  passwd: petsc-passwd
+
+---------
+
+ODU: solaris,irix, (others too?)
+  user: mcinnes
+  passwd: odupasswd
+  solaris: (Ultra-1) pitfall, dustdevil, wave, dew, rose, orca
+
+---------
+
+Notre Dame (rs6000, no xlC installed, must use g++ for C++ versions):
+  machine: light.ame.nd.edu
+  user:    lmcinnes
+  passwd:  petsc-passwd (old1) Could'nt change to the latest.
+
+---------
+
+Cornell Theory Center IBM SP2
+user: bsmith
+passwd:petsc-passwd
+
+Short jobs log into splogin.tc.cornell.edu limited to 20 cpu minutes
+      per 60 minutes
+Long jobs splong.tc.cornell.edu limited to 6CPU hours per day
+
+
+Scheduler use: llsubmit,spsubmit (in ~bsmith/bin)
+http://www.tc.cornell.edu/Resources/
+spstatus
+use kpasswd to change the password
+
+> info from Doug Elias (elias@TC.Cornell.EDU)
+> For our installation, you'll almost certainly want to use both
+> "-qtune=pwr2" and "-qtune=pwr2s" ... the "pwr2s" directs the
+> compiler to tune the executable for running on processors that have
+> smaller cache lines (64b, rather than 128 or 256, as i recall), and
+> this fits the majority of our nodes. 
+
+Other tc.cornell.edu machines
+rs6000: corylus,rhus,populus etc..
+IRIX  : thuja,laburnum,juglans
+
+------------
+ASCI Blue Mountain at LANL:
+  machine:  bluemoutain.acl.lanl.gov (front-end)
+  account:  lmcinnes
+  password: senmento   (we have a restricted list of password choices)
+  info:     http://www.lanl.gov/projects/asci/bluemtn/bluemtn.html
+            including details about job submission, etc.
+
+  account : sbalay (Disabled now)
+  password: smartcard/pin in balays's office
+
+------------
+MAUI SP2
+machine: typhoon.sp2.mhpcc.edu
+account: barrys,balay
+passwd:  petsc-passwd (couldn't change it to the new one yet)
+
+info : Useful command showq, showbf, llsubmit
+
+------------
+
+ICASE/NASA SP2: poseidon.larc.nasa.gov, account: mcinnes (machine dead!!)
    - info: http://parallel.nas.nasa.gov/Parallel/Metacenter/howto.html
    - report of the year-to-date usage for every group you are a member
      of using the command: acct_ytd 
@@ -306,6 +371,14 @@ poe ex1 -mat_baij -optionsleft out.1
     Note: Sometimes the stagein copies do not work - for no apparent reason. 
     Other times, they work fine.  Workaround:  manually copy input files so
     that no staging is needed.
+------------
+   NAS SGI
+   machine: davinci.nas.nasa.gov (Machine dead?)
+   login ID: mcinnes
+   password: petsc-password
+   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/
+   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/news.html
+   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/faq.html
 
 ---------
 
@@ -318,19 +391,12 @@ Paragon account at San Diego
    you must run make with the -e option and have the environmental
    argument PETSC_DIR properly set.
 
-
----------
- UCLA Solaris:
-  machine : poplar.math.ucla.edu
-  user: bsmith
-  passwd: petsc-passwd
-
 ---------
 
 ICASE suns:
   Ultra2 machines with most memory: gar.icase.edu, croaker.icase.edu
 
-  ete08-f.icase.edu
+  ete08-f.icase.edu <<<<<<<<<CANNOT LOGIN PASSWD incorrect >>>>>>>>>>
   elc02.icase.edu
   dolphin.icase.edu
 
@@ -339,14 +405,8 @@ ICASE suns:
 
 ---------
 
-ODU: solaris,irix, (others too?)
-  user: mcinnes
-  passwd: odupasswd
-  solaris: (Ultra-1) pitfall, dustdevil, wave, dew, rose, orca
----------
-
 Linux accounts:
-  machine: ursula.cs.msstate.edu
+  machine: ursula.cs.msstate.edu ( Machine dead?)
   user:    curfman
   passwd:  petsc-passwd
   contact:  Gerhard Lehnerer <gerhard@CS.MsState.Edu> (via Tony Skjellum)
@@ -354,39 +414,6 @@ Linux accounts:
   See petsc-maint mail from Igor Markov (UCLA) for another account 
      on his home PC running Linux.
 
----------
-
-Notre Dame (rs6000, no xlC installed, must use g++ for C++ versions):
-  machine: light.ame.nd.edu
-  user:    lmcinnes
-  passwd:  petsc-passwd
-
----------
-
-Cornell Theory Center IBM SP2
-user: bsmith, balay, curfman
-passwd:petsc-passwd
-
-Short jobs log into splogin.tc.cornell.edu limited to 20 cpu minutes
-      per 60 minutes
-Long jobs splong.tc.cornell.edu limited to 6CPU hours per day
-
-
-Scheduler use: llsubmit,spsubmit (in ~bsmith/bin)
-http://www.tc.cornell.edu/Resources/
-spstatus
-use kpasswd to change the password
-
-> info from Doug Elias (elias@TC.Cornell.EDU)
-> For our installation, you'll almost certainly want to use both
-> "-qtune=pwr2" and "-qtune=pwr2s" ... the "pwr2s" directs the
-> compiler to tune the executable for running on processors that have
-> smaller cache lines (64b, rather than 128 or 256, as i recall), and
-> this fits the majority of our nodes. 
-
-Other tc.cornell.edu machines
-rs6000: corylus,rhus,populus etc..
-IRIX  : thuja,laburnum,juglans
 
 ---------
 Accounts on NAS machines
@@ -416,41 +443,11 @@ time you log into the systems.
 
         (*) This machine is named for Lady Ada Lovelace.
 
-Machines: chuck, scott, lovelace, babbage 
+Machines: chuck, scott, lovelace, babbage  (Not TelnetABLE)
 support@nas.nasa.gov user id bfsmith
 password initially 2faWquno
 
 ----------------------------------------------------------------------
-ASCI Blue Mountain at LANL:
-  machine:  bluemoutain.acl.lanl.gov (front-end)
-  account:  lmcinnes
-  password: senmento   (we have a restricted list of password choices)
-  info:     http://www.lanl.gov/projects/asci/bluemtn/bluemtn.html
-            including details about job submission, etc.
-
-  account : sbalay
-  password: smartcard/pin in balays's office
-
-----------------------------------------------------------------------
-
-Yet another Origin2000 (Univ of Utah):
-  machines:
-     raptor.chpc.utah.edu is the interactive/graphics machine (32 cpus, 4.0 gB memory)
-     rapture.chpc.utah.edu  is the batch/compute machine (28 cpus, 3.5 gB memory)
-  account: usilcm
-  password : petsc-passwd
-
-----------------------------------------------------------------------
-MAUI SP2
-machine: typhoon.sp2.mhpcc.edu
-account: barrys,balay
-passwd:  petsc-passwd
-
-info : Useful command showq, showbf, llsubmit
-
-----------------------------------------------------------------------
-
-
 To kill the running crontab remove bmake/common and bmake/RCS/common,v
 
 
