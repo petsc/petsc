@@ -6,7 +6,7 @@
 #
 #  
 cd $PETSC_DIR/include/FINCLUDE
-rm -f ../finclude/*.h
+/bin/rm -f ../finclude/*.h
 foreach i (*.h) 
   grep -v "define" $i | grep -v "else" | grep -v "endif" | grep -v "real " | grep -v "include" > ../finclude/$i
 end
