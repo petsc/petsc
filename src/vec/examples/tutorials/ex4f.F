@@ -1,5 +1,5 @@
 
-C      "$Id: ex21.F,v 1.8 1996/02/08 18:25:37 bsmith Exp bsmith $";
+C      "$Id: ex21.F,v 1.9 1996/02/13 23:28:24 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -22,7 +22,6 @@ C  and C vectors)
           loc(i) = i-1
           xwork(i) = 10.0*i
   10   continue
-
        call PetscInitialize(ierr)
 
 C Create initial vector and set values
