@@ -4,8 +4,6 @@
 # See also bmake/common for additional commands.
 #
 
-#PETSC_DIR = .
-
 CFLAGS	 =
 SOURCEC	 =
 SOURCEF	 =
@@ -185,14 +183,12 @@ fortran90: chkpetsc_dir fortran
 	-@echo "Completed compiling Fortran90 interface library"
 	-@echo "========================================="
 
-
 ranlib:
 	$(RANLIB) $(PDIR)/*.a
 
 # Deletes PETSc libraries
 deletelibs:
 	-$(RM) -f $(PDIR)/*.a $(PDIR)/complex/* $(PDIR)/c++/*
-
 
 # Deletes man pages (HTML version)
 deletewwwpages:
@@ -212,27 +208,27 @@ deletelatexpages:
 TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h include/FINCLUDE/*.h 
 TAGS_BMAKE_FILES    = bmake/common bmake/*/base*
 TAGS_EXAMPLE_FILES  = src/*/examples/*/*.[c,h,F,f] src/*/examples/*/*/*.[c,h,F,f] \
-	src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]
+                      src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]
 TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
-	docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
-	docs/tex/manual/part1.tex docs/tex/manual/part2.tex
+                      docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
+                      docs/tex/manual/part1.tex docs/tex/manual/part2.tex
 TAGS_SRC_FILES      = src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
-	src/*/utils/*.[c,h] \
-	src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
-	src/gvec/impls/*/*/*/*/*.[c,h] src/contrib/*/*.[c,h] src/contrib/*/src/*.[c,h] \
-	src/fortran/custom/*.[c,h,F]
+                      src/*/utils/*.[c,h] \
+                      src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
+                      src/gvec/impls/*/*/*/*/*.[c,h] src/contrib/*/*.[c,h] \
+                      src/contrib/*/src/*.[c,h] src/fortran/custom/*.[c,h,F]
 TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
-	makefile \
-	src/makefile src/*/makefile src/*/src/makefile \
-	src/*/interface/makefile \
-	src/*/utils/makefile \
-	src/*/impls/makefile src/*/impls/*/makefile src/*/impls/*/*/makefile \
-	src/*/examples/makefile src/*/examples/*/makefile src/*/examples/*/*/makefile \
-	src/gvec/impls/*/*/*/*/makefile src/gvec/impls/*/*/*/makefile \
-	src/fortran/*/makefile \
-	src/contrib/*/makefile src/contrib/*/src/makefile \
-	src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile \
-	docs/makefile
+                      makefile \
+                      src/makefile src/*/makefile src/*/src/makefile \
+                      src/*/interface/makefile \
+                      src/*/utils/makefile \
+                      src/*/impls/makefile src/*/impls/*/makefile src/*/impls/*/*/makefile \
+                      src/*/examples/makefile src/*/examples/*/makefile src/*/examples/*/*/makefile \
+                      src/gvec/impls/*/*/*/*/makefile src/gvec/impls/*/*/*/makefile \
+                      src/fortran/*/makefile \
+                      src/contrib/*/makefile src/contrib/*/src/makefile \
+                      src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile \
+                      docs/makefile
 
 # Builds all etags files
 alletags:
@@ -314,7 +310,7 @@ allwwwpages: deletewwwpages
 	-@chmod g+w docs/www/man*/*
 
 #This is similar to allwwwpages except -www -> -wwwhome
-#The wwwmanpages built thisway can pe placed at PETSc Home Page
+#The wwwmanpages built this way can pe placed at PETSc Home Page
 allwwwhomepages: deletewwwpages
 	-make ACTION=wwwpages_buildcite tree
 	-cd src/fortran/custom; make wwwpages_buildcite
@@ -345,11 +341,14 @@ allco:
 	-@cd src/fortran/custom ; $(OMAKE) BOPT=$(BOPT) co
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=co  tree 
 
+#
+#   The commands below are for generating ADIC versions of the code;
+# they are not currently used.
+#
+CFLAGS   =  $(CPPFLAGS) $(CONF)
 alladicignore:
 	-@$(RM) $(PDIR)/adicignore
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adicignore  tree 
-
-CFLAGS   =  $(CPPFLAGS) $(CONF)
 
 alladic:
 	-@cd include ; \
@@ -362,15 +361,8 @@ alladiclib:
 	-@$(RM) -f  $(PDIR)/*adic.a
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adiclib  tree
 
-# 
-#  We no longer make Unix manpages
-#
-#allunixmanpages:
-#	-make ACTION=manpages tree
-#	-cd src/fortran/custom; make manpages
-#	-cd docs/man; catman -W .
-#	-@chmod g+w docs/man/man*/*
-# Deletes man pages (xman version)
-#deletemanpages:
-#	$(RM) -f $(PETSC_DIR)/Keywords $(PETSC_DIR)/docs/man/man*/*
+
+
+
+
 
