@@ -73,8 +73,8 @@ class Builder(install.urlMapping.UrlMapping):
         self.debugPrint('  No make module present in '+root, 2, 'install')
         continue
       self.debugPrint('Activating dependency '+url, 2, 'install')
-      m.main(['activate'])
       self.buildDependenceGraph(m)
+    maker.main(['activate'])
     return maker.setupDependencies()
 
   def executeOverDependencies(self, proj, target):
