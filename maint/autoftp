@@ -20,7 +20,7 @@
      expect {*Name*}
      send "$user\r"
      expect {*Password:}
-     send "Lad97a9i\r"
+     send "K23p66ai\r"
      expect {*ftp>*}
      # may be moving a large file 
      set timeout 2000
