@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.37 2000/02/02 20:08:45 bsmith Exp balay $*/
+/*$Id: shvec.c,v 1.38 2000/03/26 05:00:12 balay Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -170,11 +170,7 @@ int PetscSharedInitialize(MPI_Comm comm)
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscStrcpy(filename,"/tmp/PETScArenaXXXXXX");CHKERRQ(ierr);
-#if defined(USE_MKSTEMP)
-      mkstemp(filename);
-#else
       mktemp(filename);
-#endif
       ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
     } 
     ierr     = MPI_Bcast(&len,1,MPI_INT,0,comm);CHKERRQ(ierr);
