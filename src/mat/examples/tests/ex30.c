@@ -63,6 +63,8 @@ int main(int argc,char **args)
     ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRQ(ierr);
   } else {
     MatFactorInfo info;
+
+    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     info.levels        = lf;
     info.fill          = 1.0;
     info.diagonal_fill = 0;

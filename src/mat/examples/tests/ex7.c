@@ -40,6 +40,7 @@ int main(int argc,char **args)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
+  ierr = MatFactorInfoInitialize(&luinfo);CHKERRQ(ierr);
   luinfo.fill = 2.0;
   luinfo.dtcol = 0.0; 
   luinfo.damping = 0.0; 

@@ -10,7 +10,7 @@
       return
       end
 
-      subroutine MyErrorHandler(line,fun,file,dir,n,p,mess,ctx,ierr)
+      subroutine MyErrHandler(line,fun,file,dir,n,p,mess,ctx,ierr)
 #include "include/finclude/petsc.h"
       integer line,n,p
       PetscInt ctx
@@ -24,7 +24,7 @@
       program main
 #include "include/finclude/petsc.h"
       PetscErrorCode ierr
-      external       MyErrorHandler
+      external       MyErrHandler
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
@@ -33,7 +33,7 @@
 
       call GenerateErr(ierr)
 
-      call PetscPushErrorHandler(MyErrorHandler,                           &
+      call PetscPushErrorHandler(MyErrHandler,                           &
      &                           PETSC_NULL_INTEGER,ierr)
 
       call GenerateErr(ierr)
