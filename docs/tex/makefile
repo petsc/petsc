@@ -4,10 +4,15 @@ manual.dvi: manual.tex routines.red
 	bibtex manual
 	latex manual
 	makeindex manual
-	sed 's/_/\\_/g' < manual.ind > index.tex
+	echo  \\begin{theindex} > findex.tex
+	echo \\indexspace >> findex.tex
+	grep FUNCTION manual.ind | sed "s/FUNCTION/ /g"  | \
+             sed 's/_/\\_/g' >> findex.tex
+	echo \\end{theindex} >> findex.tex
+	grep -v FUNCTION manual.ind | sed 's/_/\\_/g' > sindex.tex
 	latex manual
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
-                    *.idx index.tex
+                    *.idx findex.tex sindex.tex
 
 manual.ps: 
 	dvips manual
