@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.26 1998/12/17 22:09:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.27 1998/12/21 00:58:17 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -138,7 +138,7 @@ static FList   dlallhead = 0;
 
 
 /*
-   DLRegister - Given a routine and a string id, saves that routine in the
+   FListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
    Synopsis:
@@ -161,7 +161,7 @@ static FList   dlallhead = 0;
 */
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegister_Private"
+#define __FUNC__ "FListAdd_Private"
 int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 {
   FList   entry,ne;
