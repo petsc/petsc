@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.126 1998/05/29 22:49:37 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.127 1998/06/11 19:54:53 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -215,6 +215,58 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(HAVE_AMS)
+#include "alicemem.h"
+extern int ViewerAMSGetAliceComm(Viewer,ALICE_Comm*);
+#endif
+
+#undef __FUNC__  
+#define __FUNC__ "VecView_Seq_Ams"
+static int VecView_Seq_Ams(Vec xin,Viewer viewer)
+{
+#if defined(HAVE_AMS)
+  Vec_Seq              *x = (Vec_Seq *)xin->data;
+  int                  ierr;
+  ALICE_Comm           acomm;
+  ALICE_Memory         amem;
+  PetscObjectContainer container;
+
+  PetscFunctionBegin;
+  
+  /*
+       Note this will not work if VecPlaceArray() has been used to alter
+    the array locations where the vector values are stored.
+  */
+
+  /* check if vector already has an AMS memory associated with it */
+  ierr = PetscObjectQuery((PetscObject)xin,"AMS_Memory",(PetscObject *) &container);
+  if (!container) {
+    /* create the AMS memory for publishing the vector values */
+    ierr = ViewerAMSGetAliceComm(viewer,&acomm);CHKERRQ(ierr);
+    ierr = ALICE_Memory_create(acomm,"vector_values",&amem);CHKERRQ(ierr);
+    ierr = ALICE_Memory_add_field(amem,"values",x->array,x->n,ALICE_DOUBLE,ALICE_READ,
+                                  ALICE_COMMON,ALICE_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr = ALICE_Memory_publish(amem);CHKERRQ(ierr);
+    ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
+    ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr); 
+
+    /* create PETSc container to carry AMS memory object */
+    ierr = PetscObjectContainerCreate(xin->comm,&container);CHKERRQ(ierr);
+    ierr = PetscObjectContainerSetPointer(container,(void *) amem);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)xin,"AMS_Memory",(PetscObject)container);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectContainerGetPointer(container,(void **)&amem);CHKERRQ(ierr);
+    ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
+    ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr);
+  }
+#else
+  PetscFunctionBegin;
+  SETERRQ(1,1,"PETSc compiled without ALICE Memory Snooper");
+#endif
+  PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNC__  
 #define __FUNC__ "VecView_Seq"
@@ -234,6 +286,8 @@ int VecView_Seq(Vec xin,Viewer viewer)
     ierr = ViewerMatlabPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
+  } else if (vtype == AMS_VIEWER) {
+    ierr = VecView_Seq_Ams(xin,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
