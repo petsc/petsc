@@ -60,14 +60,15 @@ class Configure(config.base.Configure):
     import sys
 
     auxDir = None
-    for dir in [os.path.join(self.dir, 'config'), os.path.join(self.dir, 'bin', 'config')] + sys.path:
+    searchDirs = [os.path.join(self.dir, 'config'), os.path.join(self.dir, 'bin', 'config')] + sys.path
+    for dir in searchDirs:
       if os.path.isfile(os.path.join(dir, 'config.sub')):
         auxDir      = dir
         configSub   = os.path.join(auxDir, 'config.sub')
         configGuess = os.path.join(auxDir, 'config.guess')
         break
     if auxDir is None:
-      raise RuntimeError('Unable to locate config.sub in order to determine architecture.Your PETSc directory is incomplete.\n Get PETSc again')
+      raise RuntimeError('Unable to locate config.sub in '+str(searchDirs)+'.\nYour PETSc directory is incomplete.\n Get PETSc again')
     try:
       host   = config.base.Configure.executeShellCommand(self.shell+' '+configGuess, log = self.framework.log)[0]
       output = config.base.Configure.executeShellCommand(self.shell+' '+configSub+' '+host, log = self.framework.log)[0]
