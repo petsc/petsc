@@ -3293,7 +3293,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMat"
 /*@C
-     MatGetLocalMat - Creates a SeqAIJ matrix by taking all its local rows 
+     MatGetLocalMat - Creates a SeqAIJ matrix by taking all its local rows and NON-ZERO columns
 
     Collective on Mat
 
@@ -3367,12 +3367,12 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBrowsOfAcols"
 /*@C
-     MatGetLocalMat - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero col of A 
+     MatGetBrowsOfAcols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero col of A 
 
     Collective on Mat
 
    Input Parameters:
-+    A,B - the matrices
++    A,B - the matrices in mpiaij format
 .    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 -    rowb, colb - index sets of rows and columns of B to extract (or PETSC_NULL)   
 
