@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.256 1997/08/24 23:25:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.257 1997/09/14 03:07:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -322,8 +322,8 @@ $     ADD_VALUES - adds values to any existing entries
 $     INSERT_VALUES - replaces existing entries with new values
 
    Notes:
-   By default the values, v, are row-oriented and unsorted.
-   See MatSetOptions() for other options.
+   By default the values, v, are row-oriented and unsorted. So the layout of 
+   v is the same as for MatSetValues(). See MatSetOptions() for other options.
 
    Calls to MatSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
