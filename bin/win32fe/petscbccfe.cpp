@@ -1,4 +1,4 @@
-/* $Id: petscbccfe.cpp,v 1.12 2001/04/17 21:17:47 buschelm Exp $ */
+/* $Id: petscbccfe.cpp,v 1.15 2001/05/03 11:03:30 buschelm Exp buschelm $ */
 #include <vector>
 #include <stdlib.h>
 #include <Windows.h>
@@ -31,9 +31,9 @@ void bcc::Link(void) {
 
   /* Copy file.o's to /tmp/file.obj's */ 
   int i,max_buffsize;
-  char path[256];
+  char path[MAX_PATH];
   LI f;
-  max_buffsize = 256*sizeof(char);
+  max_buffsize = MAX_PATH*sizeof(char);
   GetTempPath(max_buffsize,path);  /* Win32 Specific */
   vector<string> ext(file.size(),"");
   vector<string> temp(file.size(),"");

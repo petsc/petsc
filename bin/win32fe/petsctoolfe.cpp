@@ -1,4 +1,4 @@
-/* $Id: petsctoolfe.cpp,v 1.9 2001/04/17 21:18:03 buschelm Exp $ */
+/* $Id: petsctoolfe.cpp,v 1.11 2001/05/03 11:03:30 buschelm Exp buschelm $ */
 #include "Windows.h"
 #include "petsctoolfe.h"
 
@@ -132,8 +132,8 @@ void tool::ProtectQuotes(string &name) {
 int tool::GetShortPath(string &name) {
   if (name[0]=='\''||name[0]=='\"')
     name=name.substr(1,name.length()-2);
-  char shortpath[256];
-  int length=256*sizeof(char);
+  char shortpath[MAX_PATH];
+  int length=MAX_PATH*sizeof(char);
   int size = GetShortPathName(name.c_str(),shortpath,length);
   name=(string)shortpath;
   return(size);
