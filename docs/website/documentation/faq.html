@@ -105,6 +105,7 @@
       <li><a href="faq.html#debug-cray">How do I debug on the Cray T3D/T3E?</a></li>
       <li><a href="faq.html#start_in_debugger-doesnotwork">How do I debug if -start_in_debugger
         does not work on my machine?</a></li>
+      <li><a href="faq.html#debug-hang">How can I see where my code is hanging?</a></li>
     </menu>
     <h4><a href="faq.html#Shared Libraries">Shared Libraries</a></h4>
     <menu>
@@ -395,6 +396,12 @@
     <p>- Run with a command such as: run -p4pg dummy </p>
     <p>With MPICH using shmem as the underlying communication layer, the procedure is: </p>
     <p>- dbx ex1 - run -np 3 (other petsc options) . </p>
+    <p><a name="debug-hang"><font color="#FF0000"><strong>How do I see where my code is hanging?</strong>
+    </font></a></p>
+    <p>You can use the -start_in_debugger option to start all processes in the debugger (each
+    will come up in its own xterm). Then use cont (for continue) in each xterm. Once you are sure
+    that the program is hanging, hit control-c in each xterm and then use 'where' to print a stack
+    trace for each process.</p>
     <hr>
     <h3><a name="Shared Libraries">Shared Libraries</a></h3>
     <p><font color="#FF0000"><strong><a name="install-shared">Can I install PETSc libraries as
