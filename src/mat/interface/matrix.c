@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.133 1996/01/26 04:33:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.134 1996/01/26 21:35:02 curfman Exp curfman $";
 #endif
 
 /*
@@ -1042,7 +1042,7 @@ int MatGetDiagonal(Mat mat,Vec v)
 .  mat - the matrix to transpose
 
    Output Parameters:
-.   B - the transpose -  pass in zero for an in-place transpose   
+.  B - the transpose (or pass in PETSC_NULL for an in-place transpose)
 
 .keywords: matrix, transpose
 @*/

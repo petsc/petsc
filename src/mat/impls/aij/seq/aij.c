@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.141 1996/01/26 19:33:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.142 1996/02/01 17:29:14 bsmith Exp curfman $";
 #endif
 
 /*
@@ -910,7 +910,8 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
   int        shift = a->indexshift;
   Scalar     *array = a->a;
 
-  if (!B && m != a->n) SETERRQ(1,"MatTranspose_SeqAIJ:Not for rectangular mat in place");
+  if (B == PETSC_NULL && m != a->n)
+    SETERRQ(1,"MatTranspose_MPIAIJ:Square matrix only for in-place");
   col = (int *) PetscMalloc((1+a->n)*sizeof(int)); CHKPTRQ(col);
   PetscMemzero(col,(1+a->n)*sizeof(int));
   if (shift) {
@@ -931,7 +932,7 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  if (B) {
+  if (B != PETSC_NULL) {
     *B = C;
   } else {
     /* This isn't really an in-place transpose */

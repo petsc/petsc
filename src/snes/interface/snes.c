@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.47 1996/01/29 23:18:03 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.48 1996/01/30 00:44:12 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -526,7 +526,7 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
 .  x - input vector
 
    Output Parameter:
-.  y - function vector or its negative, as set by SNESSetFunction()
+.  y - function vector, as set by SNESSetFunction()
 
    Notes:
    SNESComputeFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
@@ -1444,15 +1444,13 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 }
 
 /*@C
-   SNESGetFunction - Returns the vector where the function is
-   stored.  Actually usually returns the vector where the negative of 
-   the function is stored.
+   SNESGetFunction - Returns the vector where the function is stored.
 
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
-.  r - the function (or its negative)
+.  r - the function
 
    Notes:
    SNESGetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only
@@ -1473,9 +1471,7 @@ int SNESGetFunction(SNES snes,Vec *r)
 }  
 
 /*@C
-   SNESGetGradient - Returns the vector where the gradient is
-   stored.  Actually usually returns the vector where the negative of 
-   the function is stored.
+   SNESGetGradient - Returns the vector where the gradient is stored.
 
    Input Parameter:
 .  snes - the SNES context

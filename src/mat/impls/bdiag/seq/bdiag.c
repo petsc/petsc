@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.86 1996/01/26 04:34:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.87 1996/01/26 14:14:43 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -917,7 +917,7 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  if (matout) {
+  if (matout != PETSC_NULL) {
     *matout = tmat;
   } else {
     /* This isn't really an in-place transpose ... but free data 

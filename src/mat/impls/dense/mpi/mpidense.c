@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.26 1996/01/24 05:45:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.27 1996/01/26 04:33:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -714,7 +714,7 @@ static int MatTranspose_MPIDense(Mat A,Mat *matout)
   int          j, i, ierr;
   Scalar       *v;
 
-  if (!matout && M != N)
+  if (matout == PETSC_NULL && M != N)
     SETERRQ(1,"MatTranspose_MPIDense:Supports square matrix only in-place");
   ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,PETSC_NULL,&B);
          CHKERRQ(ierr);
@@ -729,7 +729,7 @@ static int MatTranspose_MPIDense(Mat A,Mat *matout)
   PetscFree(rwork);
   ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  if (matout) {
+  if (matout != PETSC_NULL) {
     *matout = B;
   } else {
     /* This isn't really an in-place transpose, but free data struct from a */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.118 1996/01/31 17:34:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.119 1996/02/01 17:29:20 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1226,7 +1226,8 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   int        M = a->M, N = a->N,m,*ai,*aj,row,*cols,i,*ct;
   Scalar     *array;
 
-  if (!matout && M != N) SETERRQ(1,"MatTranspose_MPIAIJ:Square only in-place");
+  if (matout == PETSC_NULL && M != N) 
+    SETERRQ(1,"MatTranspose_MPIAIJ:Square matrix only for in-place");
   ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,PETSC_NULL,0,
          PETSC_NULL,&B); CHKERRQ(ierr);
 
@@ -1255,7 +1256,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   PetscFree(ct);
   ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  if (matout) {
+  if (matout != PETSC_NULL) {
     *matout = B;
   } else {
     /* This isn't really an in-place transpose .... but free data structures from a */

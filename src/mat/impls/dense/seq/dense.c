@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.88 1996/01/23 00:18:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.89 1996/01/26 04:33:39 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -536,7 +536,7 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
   Scalar       *v, tmp;
 
   v = mat->v; m = mat->m; n = mat->n;
-  if (!matout) { /* in place transpose */
+  if (matout == PETSC_NULL) { /* in place transpose */
     if (m != n) SETERRQ(1,"MatTranspose_SeqDense:Supports square matrix only in-place");
     for ( j=0; j<m; j++ ) {
       for ( k=0; k<j; k++ ) {

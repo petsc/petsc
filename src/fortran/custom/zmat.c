@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.13 1995/12/13 23:01:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.14 1996/01/30 00:40:19 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -100,6 +100,7 @@ void matgetarray_(Mat mat,Scalar *fa,int *ia, int *__ierr)
 void mattranspose_(Mat mat,Mat *B, int *__ierr )
 {
   Mat mm;
+  if (B == PETSC_NULL_Fortran) B = PETSC_NULL;
   *__ierr = MatTranspose((Mat)MPIR_ToPointer( *(int*)(mat) ),&mm);
   *(int*) B = MPIR_FromPointer(mm);
 }
