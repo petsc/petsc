@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.37 1996/03/19 21:30:28 bsmith Exp curfman $ */
+/* $Id: ksp.h,v 1.38 1996/03/20 02:00:50 curfman Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -35,7 +35,7 @@ extern int KSPSetTolerances(KSP,double,double,double,int);
 extern int KSPSetCalculateResidual(KSP,PetscTruth);
 extern int KSPSetUsePreconditionedResidual(KSP);
 extern int KSPSetInitialGuessNonzero(KSP);
-extern int KSPSetCalculateEigenvalues(KSP);
+extern int KSPSetCalculateSingularvalues(KSP);
 extern int KSPSetRhs(KSP,Vec);
 extern int KSPGetRhs(KSP,Vec *);
 extern int KSPSetSolution(KSP,Vec);
@@ -56,7 +56,7 @@ extern int KSPBuildResidual(KSP, Vec, Vec,Vec *);
 
 extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
-extern int KSPCGGetEigenvalues(KSP, int n,Scalar*,Scalar*);
+extern int KSPComputeExtremeSingularvalues(KSP, Scalar*,Scalar*);
 
 extern int KSPGMRESSetRestart(KSP, int);
 extern int KSPGMRESSetPreAllocateVectors(KSP);
@@ -67,9 +67,10 @@ extern int KSPGMRESIROrthogonalization(KSP,int);
 
 extern int KSPSetFromOptions(KSP);
 
-extern int KSPCGDefaultMonitor(KSP,int,double, void * );
+extern int KSPSingularvalueMonitor(KSP,int,double, void * );
 extern int KSPCGDefaultConverged(KSP,int,double, void *);
 extern int KSPDefaultMonitor(KSP,int,double, void *);
+extern int KSPTrueMonitor(KSP,int,double, void *);
 extern int KSPDefaultSMonitor(KSP,int,double, void *);
 extern int KSPDefaultConverged(KSP,int,double, void *);
 
@@ -93,6 +94,9 @@ extern int KSPCGSetType(KSP,CGType);
 extern int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
 extern int KSPLGMonitor(KSP,int,double,void*);
 extern int KSPLGMonitorDestroy(DrawLG);
+extern int KSPLGTrueMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
+extern int KSPLGTrueMonitor(KSP,int,double,void*);
+extern int KSPLGTrueMonitorDestroy(DrawLG);
 #endif 
 
 #endif

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.68 1996/03/18 00:37:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.69 1996/03/19 21:23:05 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -60,21 +60,42 @@ static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 static int VecView_Seq_File(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      i, n = x->n,ierr;
+  int      i, n = x->n,ierr,format;
   FILE     *fd;
+  char     *outputname;
+
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
-  for (i=0; i<n; i++ ) {
+  ierr = ViewerGetFormat(viewer,&format);
+  if (format == ASCII_FORMAT_MATLAB) {
+    ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+    fprintf(fd,"%s = [\n",outputname);
+    for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
-    if (imag(x->array[i]) != 0.0) {
-      fprintf(fd,"%g + %gi\n",real(x->array[i]),imag(x->array[i]));
-    }
-    else {
-      fprintf(fd,"%g\n",real(x->array[i]));
-    }
+      if (imag(x->array[i]) != 0.0) {
+        fprintf(fd,"%18.16e + %18.16e\n",real(x->array[i]),imag(x->array[i]));
+      }
+      else {
+        fprintf(fd,"%18.16e\n",real(x->array[i]));
+      }
 #else
-    fprintf(fd,"%g\n",x->array[i]);
+      fprintf(fd,"%18.16e\n",x->array[i]);
 #endif
+    }
+    fprintf(fd,"];\n");
+  } else {
+    for (i=0; i<n; i++ ) {
+#if defined(PETSC_COMPLEX)
+      if (imag(x->array[i]) != 0.0) {
+        fprintf(fd,"%g + %gi\n",real(x->array[i]),imag(x->array[i]));
+      }
+      else {
+        fprintf(fd,"%g\n",real(x->array[i]));
+      }
+#else
+      fprintf(fd,"%g\n",x->array[i]);
+#endif
+    }
   }
   fflush(fd);
   return 0;

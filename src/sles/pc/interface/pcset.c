@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.39 1996/03/07 20:41:11 balay Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.40 1996/03/19 21:24:56 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -38,6 +38,8 @@ int PCSetType(PC ctx,PCType type)
 {
   int ierr,(*r)(PC);
   PetscValidHeaderSpecific(ctx,PC_COOKIE);
+  if (ctx->type == (int) type) return 0;
+
   if (ctx->setupcalled) {
     if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
     else {if (ctx->data) PetscFree(ctx->data);}

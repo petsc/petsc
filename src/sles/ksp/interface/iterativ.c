@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.39 1996/03/10 17:26:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.40 1996/03/19 21:23:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,12 +12,12 @@ static char vcid[] = "$Id: iterativ.c,v 1.39 1996/03/10 17:26:57 bsmith Exp bsmi
 #include "kspimpl.h"   /*I "ksp.h" I*/
 
 /*
-  KSPiDefaultFreeWork - Free work vectors
+  KSPDefaultFreeWork - Free work vectors
 
   Input Parameters:
 . ksp  - iterative context
  */
-int KSPiDefaultFreeWork( KSP ksp )
+int KSPDefaultFreeWork( KSP ksp )
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->work)  return VecDestroyVecs(ksp->work,ksp->nwork);
@@ -51,6 +51,45 @@ int KSPCheckDef( KSP ksp )
   return 0;
 }
 
+/*@C
+    KSPSingularvalueMonitor - Default iterative monitor routine for CG;
+    it prints the two norm of the true residual and estimation from
+    the Lanczos method of the extreme eigenvalues of the preconditioned 
+    problem at each iteration.
+ 
+    Input Parameters:
+.   ksp - the iterative context
+.   n  - the iteration
+.   rnorm - the two norm of the residual
+
+.keywords: KSP, CG, default, monitor, extreme, eigenvalues, Lanczos
+
+.seealso: KSPComputeExtremeSingularvalues()
+@*/
+int KSPSingularvalueMonitor(KSP ksp,int n,double rnorm,void *dummy)
+{
+  Scalar emin,emax;
+  double c;
+  int    ierr;
+
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  if (!ksp->calc_sings) {
+    PetscPrintf(ksp->comm,"%d %14.12e \n",n,rnorm);
+  }
+  else {
+    ierr = KSPComputeExtremeSingularvalues(ksp,&emax,&emin); CHKERRQ(ierr);
+#if defined(PETSC_COMPLEX)
+    c = real(emax)/real(emin);
+    PetscPrintf(ksp->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,real(emax),
+                                                                 real(emin),c);
+#else
+    c = emax/emin;
+    PetscPrintf(ksp->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,emax,emin,c);
+#endif
+  }
+  return 0;
+}
+
 /*ARGSUSED*/
 /*@C
    KSPDefaultMonitor - Default code to print the residual norm at each 
@@ -70,6 +109,29 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
   PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
 }
+
+/* 
+   KSPTrueMonitor - Monitors the actual (unscaled) residual.  The
+   default residual monitor for PCICC with BlockSolve prints the scaled 
+   residual.
+
+   Question: Should this routine really be here? 
+ */
+int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
+{
+  int          ierr;
+  Vec          resid,work;
+  double       scnorm;
+  
+
+  ierr = VecDuplicate(ksp->vec_rhs,&work); CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,0,work,&resid); CHKERRQ(ierr);
+  ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
+  VecDestroy(work);
+  PetscPrintf(ksp->comm,"%d Preconditioned %14.12e True %14.12e\n",n,rnorm,scnorm); 
+  return 0;
+}
+
 
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
@@ -205,7 +267,7 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 }
 
 /*
-  KSPiDefaultGetWork - Gets a number of work vectors.
+  KSPDefaultGetWork - Gets a number of work vectors.
 
   Input Parameters:
 . ksp  - iterative context
@@ -214,10 +276,10 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   Notes:
   Call this only if no work vectors have been allocated 
  */
-int  KSPiDefaultGetWork( KSP ksp, int nw )
+int  KSPDefaultGetWork( KSP ksp, int nw )
 {
   int ierr;
-  if (ksp->work) KSPiDefaultFreeWork( ksp );
+  if (ksp->work) KSPDefaultFreeWork( ksp );
   ksp->nwork = nw;
   ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work); CHKERRQ(ierr);
   PLogObjectParents(ksp,nw,ksp->work);
@@ -225,12 +287,12 @@ int  KSPiDefaultGetWork( KSP ksp, int nw )
 }
 
 /*
-  KSPiDefaultAdjustWork - Adjusts work vectors.
+  KSPDefaultAdjustWork - Adjusts work vectors.
 
   Input Parameters:
 . ksp  - iterative context
  */
-int KSPiDefaultAdjustWork( KSP ksp )
+int KSPDefaultAdjustWork( KSP ksp )
 {
   if ( ksp->adjust_work_vectors ) {
     return (ksp->adjust_work_vectors)(ksp, ksp->work,ksp->nwork); 
@@ -239,20 +301,20 @@ int KSPiDefaultAdjustWork( KSP ksp )
 }
 
 /*
-KSPiDefaultDestroy - Destroys a iterative context variable for methods with
+KSPDefaultDestroy - Destroys a iterative context variable for methods with
 no separate context.  Preferred calling sequence KSPDestroy().
 
 Input Parameters: 
 .   ksp - the iterative context
 */
-int KSPiDefaultDestroy(PetscObject obj)
+int KSPDefaultDestroy(PetscObject obj)
 {
   KSP ksp = (KSP) obj;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->data) PetscFree(ksp->data);
 
   /* free work vectors */
-  KSPiDefaultFreeWork( ksp );
+  KSPDefaultFreeWork( ksp );
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.38 1996/03/23 18:33:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.39 1996/03/26 04:45:53 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -21,7 +21,7 @@ int KSPSetUp_Richardson(KSP ksp)
     {SETERRQ(2,"KSPSetUp_Richardson:no symmetric preconditioning for KSPRICHARDSON");}
   ierr = KSPCheckDef(ksp); CHKERRQ(ierr);
   /* get work vectors from user code */
-  return KSPiDefaultGetWork(ksp,2);
+  return KSPDefaultGetWork(ksp,2);
 }
 
 /*@
@@ -144,8 +144,8 @@ int KSPCreate_Richardson(KSP ksp)
   richardsonP->scale          = 1.0;
   ksp->setup                  = KSPSetUp_Richardson;
   ksp->solver                 = KSPSolve_Richardson;
-  ksp->adjustwork             = KSPiDefaultAdjustWork;
-  ksp->destroy                = KSPiDefaultDestroy;
+  ksp->adjustwork             = KSPDefaultAdjustWork;
+  ksp->destroy                = KSPDefaultDestroy;
   ksp->calc_res               = 1;
   ksp->converged              = KSPDefaultConverged;
   ksp->buildsolution          = KSPDefaultBuildSolution;

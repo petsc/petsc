@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.61 1996/03/23 18:33:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.62 1996/03/24 15:08:34 curfman Exp bsmith $";
 #endif
 
 /*
@@ -89,6 +89,12 @@ static int    KSPSetUp_GMRES(KSP ksp )
   gmres->cc_origin  = gmres->rs_origin + rs;
   gmres->ss_origin  = gmres->cc_origin + cc;
 
+  if (ksp->calc_sings) {
+    /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
+    size = (max_k + 2)*(max_k + 8)*sizeof(Scalar);
+    gmres->Rsvd = (Scalar *) PetscMalloc(size);CHKPTRQ(gmres->Rsvd);
+  }
+
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
   gmres->vecs = (Vec *) PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));
@@ -172,34 +178,36 @@ static int GMRESResidual(  KSP ksp,int restart )
     On entry, the value in vector VEC_VV(0) should be the initial residual
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
-int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp )
+int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 {
   double    res_norm, res, rtol;
   Scalar    tmp;
   int       hist_len= ksp->res_hist_size, cerr, ierr;
   double    hapbnd,*nres = ksp->residual_history,tt;
   /* Note that hapend is ignored in the code */
-  int       it, hapend, converged;
+  int       it, hapend;
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   int       max_k = gmres->max_k, max_it = ksp->max_it;
 
   /* Question: on restart, compute the residual?  No; provide a restart 
      driver */
 
-  it = 0;
+  it         = 0;
+  *converged = 0;
 
   /* dest . dest */
-  ierr = VecNorm(VEC_VV(0),NORM_2,&res_norm); CHKERRQ(-ierr);
+  ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm); CHKERRQ(ierr);
   res    = res_norm;
   *RS(0) = res_norm;
 
   /* Do-nothing case: */
   if (res_norm == 0.0) {
     if (itcount) *itcount = 0;
+    *converged = 1;
     return 0;
   }
   /* scale VEC_VV (the initial residual) */
-  tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(-ierr);
+  tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(ierr);
 
   if (!restart) {
     rtol      = ksp->rtol * res_norm;
@@ -207,23 +215,22 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp )
   }
   rtol= ksp->ttol;
   gmres->it = (it-1);  /* For converged */
-  while (!(converged = cerr = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
+  while (!(*converged = cerr = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
            && it < max_k && it + itsSoFar < max_it) {
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
     gmres->it = (it - 1);
-    KSPMonitor(ksp,it + itsSoFar,res);
+    KSPMonitor(ksp,it + itsSoFar,res); 
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
-      /* get more vectors */
-      ierr = GMRESGetNewVectors(  ksp, it+1 );CHKERRQ(-ierr);
+      ierr = GMRESGetNewVectors(  ksp, it+1 );CHKERRQ(ierr);
     }
     ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_VV(it),VEC_VV(1+it),
-                         VEC_TEMP_MATOP); CHKERRQ(-ierr);
+                         VEC_TEMP_MATOP); CHKERRQ(ierr);
 
     /* update hessenberg matrix and do Gram-Schmidt */
     (*gmres->orthog)(  ksp, it );
 
     /* vv(i+1) . vv(i+1) */
-    ierr = VecNorm(VEC_VV(it+1),NORM_2,&tt); CHKERRQ(-ierr);
+    ierr = VecNorm(VEC_VV(it+1),NORM_2,&tt); CHKERRQ(ierr);
     /* save the magnitude */
     *HH(it+1,it)    = tt;
     *HES(it+1,it)   = tt;
@@ -232,20 +239,20 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp )
     hapbnd  = gmres->epsabs * PetscAbsScalar( *HH(it,it) / *RS(it) );
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt > hapbnd) {
-        tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it+1) ); CHKERRQ(-ierr);
+        tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it+1) ); CHKERRQ(ierr);
     }
     else {
         /* We SHOULD probably abort the gmres step
            here.  This happens when the solution is exactly reached. */
       hapend = 1;
     }
-    ierr = GMRESUpdateHessenberg( ksp, it, &res ); CHKERRQ(-ierr);
+    ierr = GMRESUpdateHessenberg( ksp, it, &res ); CHKERRQ(ierr);
     it++;
     gmres->it = (it-1);  /* For converged */
   }
   if (nres && hist_len > it + itsSoFar) nres[it + itsSoFar]   = res; 
   if (nres) 
-    ksp->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it + itsSoFar + 1;
+    ksp->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it+itsSoFar+1;
   gmres->it = it - 1;
   KSPMonitor( ksp,  it + itsSoFar, res );
   if (itcount) *itcount    = it;
@@ -256,20 +263,19 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp )
     preconditioning from the solution
    */
   if (it == 0) {
-    /* exited at the top before doing ANYTHING */
+    *converged = 1;
     return 0;
   }
 
   /* Form the solution (or the solution so far) */
-  ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,it-1); CHKERRQ(-ierr);
+  ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,it-1); CHKERRQ(ierr);
 
-  /* Return correct status (Failed on iteration test (failed to converge)) */
-  return !converged;
+  return 0;
 }
 
 static int KSPSolve_GMRES(KSP ksp,int *outits )
 {
-  int       ierr, restart, its, itcount;
+  int       ierr, restart, its, itcount, converged;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   restart = 0;
@@ -284,20 +290,21 @@ static int KSPSolve_GMRES(KSP ksp,int *outits )
   }
   /* Compute the initial (preconditioned) residual */
   if (!ksp->guess_zero) {
-    if ((ierr=GMRESResidual(  ksp, restart ))) return ierr;
+    ierr = GMRESResidual(  ksp, restart ); CHKERRQ(ierr);
   }
   else {
     ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
   }
     
-  while ((ierr = GMREScycle(  &its, itcount, restart, ksp ))) {
-    if (ierr < 0) SETERRQ(1,0);
-    restart = 1;
+  ierr = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
+  while (!converged) {
+    restart  = 1;
     itcount += its;
-    if ((ierr = GMRESResidual(  ksp, restart ))) return ierr;
+    ierr = GMRESResidual(  ksp, restart); CHKERRQ(ierr);
     if (itcount > ksp->max_it) break;
     /* need another check to make sure that gmres breaks out 
        at precisely the number of iterations chosen */
+    ierr = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
   }
   itcount += its;      /* add in last call to GMREScycle */
   *outits = itcount;  return 0;
@@ -338,6 +345,7 @@ static int KSPDestroy_GMRES(PetscObject obj)
   if (gmres->mwork_alloc) PetscFree( gmres->mwork_alloc );
   if (gmres->nrs) PetscFree( gmres->nrs );
   if (gmres->sol_temp) VecDestroy(gmres->sol_temp);
+  if (gmres->Rsvd) PetscFree(gmres->Rsvd);
   PetscFree( gmres ); 
   return 0;
 }
@@ -433,13 +441,13 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
     thus obtaining the updated value of the residual
   */
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
-  if (tt == 0.0) {SETERRQ(1,"KSPSolve_GMRES:bad A or B operator, are you sure it is !0?");}
+  if (tt == 0.0) {SETERRQ(1,"KSPSolve_GMRES:Your matrix or preconditioner is the null operator");}
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;
   *RS(it+1) = - ( *ss * *RS(it) );
   *RS(it)   = *cc * *RS(it);
   *hh       = *cc * *hh + *ss * *(hh+1);
-  *res = PetscAbsScalar( *RS(it+1) );
+  *res      = PetscAbsScalar( *RS(it+1) );
   return 0;
 }
 /*
@@ -585,6 +593,8 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+extern int KSPComputeExtremeSingularvalues_GMRES(KSP,Scalar *,Scalar *);
+
 int KSPCreate_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres;
@@ -602,6 +612,7 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->adjustwork        = KSPAdjustWork_GMRES;
   ksp->destroy           = KSPDestroy_GMRES;
   ksp->view              = KSPView_GMRES;
+  ksp->computeextremesingularvalues = KSPComputeExtremeSingularvalues_GMRES;
 
   gmres->haptol         = 1.0e-8;
   gmres->epsabs         = 1.0e-8;
@@ -611,6 +622,7 @@ int KSPCreate_GMRES(KSP ksp)
   gmres->nrs            = 0;
   gmres->sol_temp       = 0;
   gmres->max_k          = GMRES_DEFAULT_MAXK;
+  gmres->Rsvd           = 0;
   return 0;
 }
 

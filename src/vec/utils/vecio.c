@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.23 1996/03/18 00:37:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.24 1996/03/19 21:22:50 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -92,6 +92,8 @@ int VecLoad(Viewer viewer,Vec *newvec)
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
   }
   *newvec = vec;
+  VecAssemblyBegin(vec);
+  VecAssemblyEnd(vec);
   PLogEventEnd(VEC_Load,viewer,0,0,0);
   return 0;
 }

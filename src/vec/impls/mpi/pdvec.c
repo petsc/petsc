@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.47 1996/03/18 00:37:46 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.48 1996/03/19 21:23:07 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -57,15 +57,16 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
   return 0;
 }
 
-static int VecView_MPI_Files(Vec xin, Viewer ptr )
+static int VecView_MPI_Files(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank,len, work = x->n,n,j,size,ierr;
+  int         i,rank,len, work = x->n,n,j,size,ierr,format;
   MPI_Status  status;
   FILE        *fd;
   Scalar      *values;
+  char        *outputname;
 
-  ierr = ViewerASCIIGetPointer(ptr,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   /* determine maximum message to arrive */
   MPI_Comm_rank(xin->comm,&rank);
   MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
@@ -73,7 +74,13 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
 
   if (!rank) {
     values = (Scalar *) PetscMalloc( len*sizeof(Scalar) ); CHKPTRQ(values);
-    fprintf(fd,"Processor [%d]\n",rank);
+    ierr = ViewerGetFormat(viewer,&format);
+    if (format == ASCII_FORMAT_MATLAB) {
+      ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+      fprintf(fd,"%s = [\n",outputname);
+    } else {
+      fprintf(fd,"Processor [%d]\n",rank);
+    }
     for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
       if (imag(x->array[i]) != 0.0) {
@@ -91,7 +98,9 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
     for ( j=1; j<size; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
       MPI_Get_count(&status,MPIU_SCALAR,&n);          
-      fprintf(fd,"Processor [%d]\n",j);
+      if (format != ASCII_FORMAT_MATLAB) {
+        fprintf(fd,"Processor [%d]\n",j);
+      }
       for ( i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
         if (imag(values[i]) != 0.0) {
@@ -106,6 +115,9 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
       }          
     }
     PetscFree(values);
+    if (format == ASCII_FORMAT_MATLAB) {
+      fprintf(fd,"];\n");
+    }
     fflush(fd);
   }
   else {
@@ -115,14 +127,14 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
   return 0;
 }
 
-static int VecView_MPI_Binary(Vec xin, Viewer ptr )
+static int VecView_MPI_Binary(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         rank,ierr,len, work = x->n,n,j,size, fdes;
   MPI_Status  status;
   Scalar      *values;
 
-  ierr = ViewerBinaryGetDescriptor(ptr,&fdes); CHKERRQ(ierr);
+  ierr = ViewerBinaryGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
 
   /* determine maximum message to arrive */
   MPI_Comm_rank(xin->comm,&rank);

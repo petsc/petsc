@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.24 1996/03/23 20:41:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.25 1996/03/26 04:46:00 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -275,10 +275,10 @@ static int KSPSetUp_QCG(KSP ksp)
     SETERRQ(2,"KSPSetUp_QCG:no right preconditioning for QCG");}
   else if (ksp->pc_side == PC_LEFT) {
     SETERRQ(2,"KSPSetUp_QCG:no left preconditioning for QCG");}
-  if ((ierr = KSPCheckDef( ksp ))) return ierr;
+  if ((ierr = KSPCheckDef(ksp))) return ierr;
 
   /* Get work vectors from user code */
-  if ((ierr = KSPiDefaultGetWork( ksp, 7 ))) return ierr;
+  if ((ierr = KSPDefaultGetWork(ksp, 7))) return ierr;
   return 0;
 }
 
@@ -287,7 +287,7 @@ static int KSPDestroy_QCG(PetscObject obj)
   KSP ksp = (KSP) obj;
   KSP_QCG *cgP = (KSP_QCG *) ksp->data;
 
-  KSPiDefaultFreeWork( ksp );
+  KSPDefaultFreeWork( ksp );
   
   /* Free the context variable */
   PetscFree(cgP); 
@@ -304,7 +304,7 @@ int KSPCreate_QCG(KSP ksp)
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_QCG;
   ksp->solver               = KSPSolve_QCG;
-  ksp->adjustwork           = KSPiDefaultAdjustWork;
+  ksp->adjustwork           = KSPDefaultAdjustWork;
   ksp->destroy              = KSPDestroy_QCG;
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;

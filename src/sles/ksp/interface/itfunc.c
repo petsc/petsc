@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.47 1996/03/19 21:23:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.48 1996/03/23 18:32:49 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -7,6 +7,37 @@ static char vcid[] = "$Id: itfunc.c,v 1.47 1996/03/19 21:23:32 bsmith Exp bsmith
 #include "petsc.h"
 #include "draw.h"
 #include "kspimpl.h"   /*I "ksp.h" I*/
+
+/*@
+   KSPComputeExtremeSingularvalues - Computes the extreme Singularvalues for 
+      the preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
+
+   Input Parameter:
+.  ksp   - iterative context obtained from KSPCreate()
+
+   Output Parameters:
+.  emin, emax - extreme Singularvalues
+
+    Notes:
+    One must call KSPSetCalculateSingularvalues() before calling KSPSetUp() 
+    in order for this routine to work correctly.  
+
+.keywords: KSP, setup
+
+.seealso: KSPCreate(), KSPSolve(), KSPDestroy()
+@*/
+int KSPComputeExtremeSingularvalues(KSP ksp,Scalar *emax,Scalar *emin)
+{
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  if (!ksp->calc_sings) {
+    SETERRQ(4,"KSPComputeExtremeSingularvalues:Singularvalues not requested before KSPSetUp");
+  }
+
+  if (ksp->computeextremesingularvalues) {
+    return (*ksp->computeextremesingularvalues)(ksp,emax,emin);
+  }
+  return 0;
+}
 
 /*@
    KSPSetUp - Sets up the internal data structures for the
@@ -272,7 +303,7 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 }
 
 /*@
-   KSPSetCalculateEigenvalues - Sets a flag so that the extreme eigenvalues 
+   KSPSetCalculateSingularvalues - Sets a flag so that the extreme Singularvalues 
    will be calculated via a Lanczos or Arnoldi process as the linear system 
    is solved.
 
@@ -285,12 +316,12 @@ $  -ksp_eigen
    Notes:
    Currently this option is not valid for all iterative methods.
 
-.keywords: KSP, set, eigenvalues, calculate, flag
+.keywords: KSP, set, Singularvalues, calculate, flag
 @*/
-int KSPSetCalculateEigenvalues(KSP ksp)
+int KSPSetCalculateSingularvalues(KSP ksp)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->calc_eigs  = 1;
+  ksp->calc_sings  = 1;
   return 0;
 }
 

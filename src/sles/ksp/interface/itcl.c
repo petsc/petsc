@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.64 1996/03/24 16:04:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.65 1996/03/31 16:49:50 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -27,8 +27,10 @@ extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 int KSPSetFromOptions(KSP ksp)
 {
   KSPType   method;
-  int       restart, flg, ierr;
+  int       restart, flg, ierr,loc[4], nmax = 4;
   double    tmp;
+
+  loc[0] = 0; loc[1] = 0; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg);  CHKERRQ(ierr);
@@ -44,6 +46,10 @@ int KSPSetFromOptions(KSP ksp)
   if(flg){
     KSPGMRESSetPreAllocateVectors(ksp);
   }
+  /* -----------------------------------------------------------------------*/
+  /*
+     Prints preconditioned residual norm at each iteration
+  */
   ierr = OptionsHasName(ksp->prefix,"-ksp_monitor", &flg);  CHKERRQ(ierr);
   if (flg) {
     int rank = 0;
@@ -52,12 +58,33 @@ int KSPSetFromOptions(KSP ksp)
       KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0);
     }
   }
+  /*
+     Prints preconditioned and true residual norm at each iteration
+  */
+  ierr = OptionsHasName(ksp->prefix,"-ksp_truemonitor", &flg);  CHKERRQ(ierr);
+  if (flg) {
+    KSPSetMonitor(ksp,KSPTrueMonitor,(void *)0);
+  }
+  /*
+     Prints extreme eigenvalue estimates at each iteration
+  */
+  ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor", &flg);  CHKERRQ(ierr);
+  if (flg) {
+    KSPSetCalculateSingularvalues(ksp);
+    KSPSetMonitor(ksp,KSPSingularvalueMonitor,(void *)0);
+  }
+  /*
+     Prints true residual for BlockSolve95 preconditioners
+  */
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   ierr = OptionsHasName(ksp->prefix,"-ksp_bsmonitor", &flg);  CHKERRQ(ierr);
   if (flg) {
     KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)0);
   }
 #endif
+  /*
+     Prints preconditioned residual norm with fewer digits
+  */
   ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor", &flg); CHKERRQ(ierr); 
   if (flg){
     int rank = 0;
@@ -66,13 +93,10 @@ int KSPSetFromOptions(KSP ksp)
       KSPSetMonitor(ksp,KSPDefaultSMonitor,(void *)0);
     }
   }
-  /* this is not good!
-       1) there is no way to free lg at end of KSP
+  /*
+     Graphically plots preconditioned residual norm
   */
-  {
-  int loc[4], nmax = 4;
-  loc[0] = 0; loc[1] = 0; loc[2] = 300; loc[3] = 300;
-  ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax, &flg);CHKERRQ(ierr);
   if (flg){
     int    rank = 0;
     DrawLG lg;
@@ -84,7 +108,18 @@ int KSPSetFromOptions(KSP ksp)
       ksp->xmonitor = lg; 
     }
   }
+  /*
+     Graphically plots preconditioned and true residual norm
+  */
+  ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xtruemonitor",loc,&nmax,&flg);CHKERRQ(ierr);
+  if (flg){
+    DrawLG lg;
+    ierr = KSPLGTrueMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
+    PLogObjectParent(ksp,(PetscObject) lg);
+    KSPSetMonitor(ksp,KSPLGTrueMonitor,(void *)lg);
+    ksp->xmonitor = lg; 
   }
+  /* -----------------------------------------------------------------------*/
   ierr = OptionsHasName(ksp->prefix,"-ksp_preres",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetUsePreconditionedResidual(ksp); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_left_pc",&flg); CHKERRQ(ierr);
@@ -101,7 +136,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_eigen",&flg); CHKERRQ(ierr);
-  if (flg) { KSPSetCalculateEigenvalues(ksp); }
+  if (flg) { KSPSetCalculateSingularvalues(ksp); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
   if (flg) { KSPCGSetType(ksp,CG_HERMITIAN); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
@@ -150,9 +185,11 @@ int KSPPrintHelp(KSP ksp)
                      p,ksp->max_it);
     PetscPrintf(ksp->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
     PetscPrintf(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
-    PetscPrintf(ksp->comm," %sksp_monitor: at each iteration print residual norm to stdout\n",p);
+    PetscPrintf(ksp->comm," %sksp_monitor: at each iteration print (usually preconditioned) residual norm to stdout\n",p);
     PetscPrintf(ksp->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
-    PetscPrintf(ksp->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
+    PetscPrintf(ksp->comm," %sksp_truemonitor: at each iteration print true residual norm to stdout\n",p);
+    PetscPrintf(ksp->comm," %sksp_xtruemonitor [x,y,w,h]: use X graphics residual convergence monitor with true residual\n",p);
+    PetscPrintf(ksp->comm," %sksp_singmonitor: calculate singularvalues during linear solve\n              only for CG and GMRES",p);
     PetscPrintf(ksp->comm," GMRES options:\n");
     PetscPrintf(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
     PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative GMRES orthogonalization\n",p);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.22 1996/03/23 18:33:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.23 1996/03/26 04:45:58 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -22,7 +22,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
   if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_TFQMR:no symmetric preconditioning for KSPTFQMR");}
   ierr = KSPCheckDef( ksp ); CHKERRQ(ierr);
-  ierr = KSPiDefaultGetWork( ksp,  10 ); CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork( ksp,  10 ); CHKERRQ(ierr);
   return 0;
 }
 
@@ -136,8 +136,8 @@ int KSPCreate_TFQMR(KSP ksp)
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_TFQMR;
   ksp->solver               = KSPSolve_TFQMR;
-  ksp->adjustwork           = KSPiDefaultAdjustWork;
-  ksp->destroy              = KSPiDefaultDestroy;
+  ksp->adjustwork           = KSPDefaultAdjustWork;
+  ksp->destroy              = KSPDefaultDestroy;
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;

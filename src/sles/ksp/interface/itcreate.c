@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.81 1996/03/23 18:32:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.82 1996/04/01 21:07:40 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -102,7 +102,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->divtol        = 1.e4;
 
   ctx->guess_zero          = 1;
-  ctx->calc_eigs           = 0;
+  ctx->calc_sings          = 0;
   ctx->calc_res            = 0;
   ctx->residual_history    = 0;
   ctx->res_hist_size       = 0;

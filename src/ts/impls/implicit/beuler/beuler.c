@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.4 1996/03/23 18:34:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.5 1996/03/26 04:47:36 bsmith Exp bsmith $";
 #endif
 /*
        Code for Time Stepping with implicit backwards Euler.
@@ -10,9 +10,11 @@ static char vcid[] = "$Id: beuler.c,v 1.4 1996/03/23 18:34:51 bsmith Exp bsmith 
 
 
 typedef struct {
-  Vec update;      /* work vector where new solution is formed */
-  Vec func   ;     /* work vector where F(t[i],u[i]) is stored */
-  Vec rhs;         /* work vector for RHS; vec_sol/dt */
+  Vec  update;      /* work vector where new solution is formed */
+  Vec  func;        /* work vector where F(t[i],u[i]) is stored */
+  Vec  rhs;         /* work vector for RHS; vec_sol/dt */
+  int  (*computepseudotimestep)(TS,void*);
+  void *dtctx;
 } TS_BEuler;
 
 /*
@@ -106,6 +108,9 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,Scalar *time)
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
+    if (beuler->computepseudotimestep) {
+      ierr = (*beuler->computepseudotimestep)(ts,beuler->dtctx); CHKERRQ(ierr);
+    }
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update); CHKERRQ(ierr);

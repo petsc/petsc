@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.23 1996/03/10 17:27:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.24 1996/03/19 21:23:48 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -13,100 +13,29 @@ static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
 
 #if !defined(PETSC_COMPLEX)
 
-/*@
-    KSPCGGetEigenvalues - Called after running KSPSolve (with KSPCG),
-    returns the extreme eigenvalues of the preconditioned problem as 
-    calculated by the Lanczos method.
-
-    Input Parameters:
-.   ksp - KSP context
-.   n   - number of iterations of CG run
-    
-    Output Parameters:
-.   emax, emin  - the extreme eigenvalues
-
-    Notes:
-    One must call KSPSetCalculateEigenvalues() before calling KSPSetUp() 
-    in order for this routine to work correctly.  
-
-    KSPCGGetEigenvalues() is called by KSPCGDefaultMonitor().
-
-.keywords: KSP, CG, get, extreme, eigenvalues, Lanczos
-
-.seealso: KSPCGDefaultMonitor()
-@*/
-int KSPCGGetEigenvalues(KSP ksp,int n,Scalar *emax,Scalar *emin)
+int KSPComputeExtremeSingularvalues_CG(KSP ksp,Scalar *emax,Scalar *emin)
 {
-  KSP_CG *cgP;
+  KSP_CG *cgP = (KSP_CG *) ksp->data;
   double *d, *e, *dd, *ee;
-  int    ii,j;
-
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type != KSPCG) {SETERRQ(3,"KSPCGGetEigenvalues:Method not CG");}
-  if (!ksp->calc_eigs) {
-    SETERRQ(4,"KSPCGGetEigenvalues:Eigenvalues not requested in before KSPSetUp");}
+  int    ii,j,n = ksp->its;
 
   if (n == 0) {
     *emax = *emin = 1.0;
     return 0;
   }
-  cgP = (KSP_CG *) ksp->data;
   d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
-
 
   /* copy tridiagonal matrix to work space */
   ii = n;
   for ( j=0; j<ii ; j++) { dd[j] = d[j]; ee[j] = e[j]; }
 
   ccgtql1_private(&ii,dd,ee,&j);
-  if (j != 0) SETERRQ(1,"KSPCGGetEigenvalues:Error from tql1.");  
+  if (j != 0) SETERRQ(1,"KSPComputeExtremeSingularvalues_CG:Error from tql1.");  
   *emin = dd[0]; *emax = dd[ii-1];
   return 0;
 }
 
-/*ARGSUSED*/
-/*@C
-    KSPCGDefaultMonitor - Default iterative monitor routine for CG;
-    it prints the two norm of the true residual and estimation from
-    the Lanczos method of the extreme eigenvalues of the preconditioned 
-    problem at each iteration.
- 
-    Input Parameters:
-.   ksp - the iterative context
-.   n  - the iteration
-.   rnorm - the two norm of the residual
 
-    Note:
-    This monitor routine calls KSPCGGetEigenvalues().
-
-.keywords: KSP, CG, default, monitor, extreme, eigenvalues, Lanczos
-
-.seealso: KSPCGGetEigenvalues()
-@*/
-int KSPCGDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
-{
-  KSP_CG *cgP;
-  double c;
-  int    ierr;
-
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (!ksp->calc_eigs) {
-    PetscPrintf(ksp->comm,"%d %14.12e \n",n,rnorm);
-  }
-  else {
-    cgP = (KSP_CG *) ksp->data;
-    ierr = KSPCGGetEigenvalues(ksp,n,&cgP->emax,&cgP->emin); CHKERRQ(ierr);
-#if defined(PETSC_COMPLEX)
-    c = real(cgP->emax)/real(cgP->emin);
-    PetscPrintf(ksp->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,real(cgP->emax),
-                                                                 real(cgP->emin),c);
-#else
-    c = cgP->emax/cgP->emin;
-    PetscPrintf(ksp->comm,"%d %14.12e %% %g %g %g \n",n,rnorm,cgP->emax,cgP->emin,c);
-#endif
-  }
-  return 0;
-}
 
 /* tql1.f -- translated by f2c (version of 25 March 1992  12:58:56).
    By Barry Smith on March 27, 1994. 
@@ -356,9 +285,9 @@ L20:
 
 #else
 
-int KSPCGGetEigenvalues(KSP ksp,int n,double *emax,double *emin)
+int KSPComputeExtremeSingularvalues_CG(KSP ksp,Scalar *emax,Scalar *emin)
 {
-  fprintf(stderr,"KSPCGGetEigenvalues: No code for complex case \n");
+  fprintf(stderr,"KSPComputeExtremeSingularvalues_CG:No code for complex case\n");
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.16 1996/02/19 03:52:15 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.17 1996/02/27 17:53:25 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -89,6 +89,9 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m))
+#define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGESVD(_cptofcd((a),1), \
+                                            _cptofcd((a),1),(c),(d),(e),\
+                                        (f),(g),(h),(i),(j),(k),(l),(m))
 #define LAtrmv_  STRMV
 #define LAtrsl_  STRSL
 #elif defined(HAVE_FORTRAN_CAPS)
@@ -100,6 +103,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ DGETRS
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
+#define LAgesvd_ DGESVD
 #define BLgemm_  DGEMM
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAormqr_ dormqr
@@ -111,6 +115,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAtrmv_  dtrmv
 #define LAtrsl_  dtrsl
 #define BLgemm_  dgemm
+#define LAgesvd_ dgesvd
 #else
 #define LAormqr_ dormqr_
 #define LAtrtrs_ dtrtrs_
@@ -121,6 +126,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAtrmv_  dtrmv_
 #define LAtrsl_  dtrsl_
 #define BLgemm_  dgemm_
+#define LAgesvd_ dgesvd_
 #endif
 
 #else
@@ -260,6 +266,8 @@ extern void   SPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   SGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 extern void   SGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
+extern void   SGESVD(_fcd,_fcd,int *,int*, Scalar *,int*,Scalar*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,int*);
 #endif
 
 #else
@@ -274,6 +282,8 @@ extern void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 extern void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
+extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,Scalar*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,int*);
 #endif
 
 #if defined(__cplusplus)

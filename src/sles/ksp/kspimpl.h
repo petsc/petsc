@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.19 1996/03/23 18:32:48 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.20 1996/03/26 04:45:40 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -14,7 +14,7 @@ struct _KSP {
   /*------------------------- User parameters--------------------------*/
   int max_it,                      /* maximum number of iterations */
       guess_zero,                  /* flag for whether initial guess is 0 */
-      calc_eigs,                   /* calculate extreme eigenvalues */
+      calc_sings,                  /* calculate extreme Singularvalues */
       calc_res,                    /* calculate residuals at each iteration*/
       use_pres;                    /* use preconditioned residual */
   PCSide pc_side;                  /* flag for left, right, or symmetric 
@@ -26,7 +26,7 @@ struct _KSP {
   double rnorm0;                   /* initial residual norm 
 				      (used for divergence testing) */
 
-  Vec vec_sol, vec_rhs   ;         /* pointer to where user has stashed 
+  Vec vec_sol, vec_rhs;            /* pointer to where user has stashed 
                                       the solution and rhs, these are 
                                       never touched by the code, only 
                                       passed back to the user */ 
@@ -36,10 +36,11 @@ struct _KSP {
 				      */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
-  int  (*monitor)(KSP,int,double,void*); /* returns control to user after
-                                      residual calculation, allows user to, for 
-                                      instance, print residual norm, etc. */
+  int  (*monitor)(KSP,int,double,void*); /* returns control to user after */
+  void *monP;                            /* residual calculation, allows user */
+                              /* to, for instance, print residual norm, etc. */
   int (*converged)(KSP,int,double,void*);
+  void *cnvP; 
   int (*buildsolution)(KSP,Vec,Vec*);  /* Returns a pointer to the solution, or
 				      calculates the solution in a 
 				      user-provided area. */
@@ -57,15 +58,15 @@ struct _KSP {
                                    with a particular iterative solver */
 
   /* ----------------Default work-area management -------------------- */
-  int  nwork;
-  Vec *work;
+  int    nwork;
+  Vec    *work;
 
-  /* ------------Contexts for the user-defined functions-------------- */
-  void *monP,       /* User Monitor */
-       *cnvP;       /* Convergence tester */
-  int setupcalled;
+  int    setupcalled;
 
   DrawLG xmonitor;  /* location for stashing default xmonitor context */
+
+  int    its;       /* number of iterations so far computed */
+  int    (*computeextremesingularvalues)(KSP,Scalar*,Scalar*);
 };
 
 #define KSPMonitor(ksp,it,rnorm) \
@@ -88,13 +89,13 @@ extern int KSPCreate_PREONLY(KSP);
 extern int KSPCreate_CR(KSP);
 extern int KSPCreate_QCG(KSP);
 
-extern int KSPiDefaultAdjustWork(KSP);
+extern int KSPDefaultAdjustWork(KSP);
 extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
-extern int KSPiDefaultDestroy(PetscObject);
+extern int KSPDefaultDestroy(PetscObject);
 extern int KSPCheckDef(KSP);
-extern int KSPiDefaultGetWork(KSP,int);
-extern int KSPiDefaultFreeWork(KSP);
+extern int KSPDefaultGetWork(KSP,int);
+extern int KSPDefaultFreeWork(KSP);
 extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
 extern int KSPUnwindPreconditioner(KSP,Vec,Vec);
 

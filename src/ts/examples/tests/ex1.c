@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.3 1996/03/23 18:34:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.4 1996/03/26 04:47:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   char          tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&size);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
 
   OptionsGetInt(PETSC_NULL,"-M",&M,&flg); appctx.M = M;
   OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);
@@ -184,7 +184,7 @@ int main(int argc,char **argv)
   ViewerStringOpen(MPI_COMM_WORLD,tsinfo,120,&viewer);
   TSView(ts,viewer);
 
-  PetscPrintf(MPI_COMM_WORLD,"%d Procs Final (sum) 2 norm %g max norm %g %s\n",
+  PetscPrintf(MPI_COMM_WORLD,"%d Procs Avg. error 2 norm %g max norm %g %s\n",
               size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);
 
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);

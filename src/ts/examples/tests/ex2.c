@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.1 1996/03/12 04:09:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.2 1996/03/23 18:34:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem";
@@ -68,7 +68,7 @@ int main( int argc, char **argv )
 
   /* Create nonlinear solver */
   ierr = TSCreate(MPI_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
-  ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
+
 
   /* Set various routines */
   ierr = TSSetSolution(ts,x); CHKERRA(ierr);
@@ -77,6 +77,7 @@ int main( int argc, char **argv )
 
   /* Set up nonlinear solver; then execute it */
   ierr = FormInitialGuess(x,&user);
+  ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
   ierr = TSSetFromOptions(ts); CHKERRA(ierr);
   ierr = TSSetUp(ts); CHKERRA(ierr);
   ierr = FormFunction(ts,0.0,x,r,&user);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.26 1996/03/23 18:33:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.27 1996/03/26 04:45:49 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -21,7 +21,7 @@ static int KSPSetUp_CGS(KSP ksp)
   if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_CGS:no symmetric preconditioning for KSPCGS");}
   ierr = KSPCheckDef( ksp ); CHKERRQ(ierr);
-  return KSPiDefaultGetWork( ksp, 8 );
+  return KSPDefaultGetWork( ksp, 8 );
 }
 
 static int  KSPSolve_CGS(KSP ksp,int *its)
@@ -106,8 +106,8 @@ int KSPCreate_CGS(KSP ksp)
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_CGS;
   ksp->solver               = KSPSolve_CGS;
-  ksp->adjustwork           = KSPiDefaultAdjustWork;
-  ksp->destroy              = KSPiDefaultDestroy;
+  ksp->adjustwork           = KSPDefaultAdjustWork;
+  ksp->destroy              = KSPDefaultDestroy;
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.37 1996/03/23 18:33:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.38 1996/03/26 04:45:52 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -18,7 +18,7 @@ int KSPSetUp_Chebychev(KSP ksp)
   if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_Chebychev:no symmetric preconditioning for KSPCHEBYCHEV");}
   ierr = KSPCheckDef(ksp); CHKERRQ(ierr);
-  return KSPiDefaultGetWork( ksp, 3 );
+  return KSPDefaultGetWork( ksp, 3 );
 }
 /*@
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
@@ -176,8 +176,8 @@ int KSPCreate_Chebychev(KSP ksp)
 
   ksp->setup                = KSPSetUp_Chebychev;
   ksp->solver               = KSPSolve_Chebychev;
-  ksp->adjustwork           = KSPiDefaultAdjustWork;
-  ksp->destroy              = KSPiDefaultDestroy;
+  ksp->adjustwork           = KSPDefaultAdjustWork;
+  ksp->destroy              = KSPDefaultDestroy;
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
