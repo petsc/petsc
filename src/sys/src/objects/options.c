@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.111 1996/11/25 19:37:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.112 1996/11/29 23:19:15 curfman Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -658,6 +658,9 @@ int OptionsCheckInitial_Private()
     PLogInfoAllow(PETSC_TRUE); 
     ierr = OptionsGetString(PETSC_NULL,"-log_info",mname,256, &flg1);CHKERRQ(ierr);
     if (flg1) {
+      if (PetscStrstr(mname,"no_vec")) {
+        PLogInfoDeactivateClass(VEC_COOKIE);
+      }
       if (PetscStrstr(mname,"no_mat")) {
         PLogInfoDeactivateClass(MAT_COOKIE);
       }
