@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.238 2001/07/16 04:47:34 buschelm Exp buschelm $*/
+/*$Id: baij.c,v 1.239 2001/07/16 18:15:53 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1160,6 +1160,9 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
     }
   }
 
+  if (row_identity && col_identity) {
+    ierr = MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(inA);
+  }
   ierr = MatLUFactorNumeric(inA,&outA);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
