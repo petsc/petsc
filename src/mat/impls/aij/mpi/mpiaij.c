@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.257 1998/07/14 21:27:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.258 1998/07/22 16:15:35 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1707,11 +1707,13 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 {
   Mat          B;
   Mat_MPIAIJ   *b;
-  int          ierr, i,sum[2],work[2],size;
+  int          ierr, i,sum[2],work[2],size,flag1 = 0, flag2 = 0;
 
   PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
-  if (size == 1) {
+  ierr = OptionsHasName(PETSC_NULL,"-mat_mpiaij",&flag1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_mpi",&flag2); CHKERRQ(ierr);
+  if (!flag1 && !flag2 && size == 1) {
     if (M == PETSC_DECIDE) M = m;
     if (N == PETSC_DECIDE) N = n;
     ierr = MatCreateSeqAIJ(comm,M,N,d_nz,d_nnz,A); CHKERRQ(ierr);
@@ -1721,17 +1723,17 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   *A = 0;
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIAIJ,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
-  B->data       = (void *) (b = PetscNew(Mat_MPIAIJ)); CHKPTRQ(b);
+  B->data            = (void *) (b = PetscNew(Mat_MPIAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAIJ));
   PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
   B->ops->destroy    = MatDestroy_MPIAIJ;
   B->ops->view       = MatView_MPIAIJ;
-  B->factor     = 0;
-  B->assembled  = PETSC_FALSE;
-  B->mapping    = 0;
+  B->factor          = 0;
+  B->assembled       = PETSC_FALSE;
+  B->mapping         = 0;
 
-  B->insertmode = NOT_SET_VALUES;
-  b->size       = size;
+  B->insertmode      = NOT_SET_VALUES;
+  b->size            = size;
   MPI_Comm_rank(comm,&b->rank);
 
   if (m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) {
