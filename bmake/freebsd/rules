@@ -39,3 +39,10 @@ libf: $(LIBNAME)($(OBJSF))
 	$(RM) $*.f
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o
+
+shared: chkopts
+	-@echo making shared libraries in $(LDIR) ;\
+	cd $(LDIR); \
+	for LIBNAME in $(SHLIBS) ; \
+	  do $(LD) -Bshareable -Bforcearchive -o $$LIBNAME.so.1.0 $$LIBNAME.a ; \
+	done
