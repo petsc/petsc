@@ -59,42 +59,42 @@ int main(int argc,char **args)
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecCreate(u,&b); CHKERRA(ierr);
   ierr = VecCreate(b,&x); CHKERRA(ierr);
-  ierr = VecGetLocalSize(x,&ldim); CHKERR(ierr);
-  ierr = VecGetOwnershipRange(x,&low,&high); CHKERR(ierr);
+  ierr = VecGetLocalSize(x,&ldim); CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(x,&low,&high); CHKERRA(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v = one*i + 100*mytid;
-    ierr = VecSetValues(u,1,&iglobal,&v,InsertValues); CHKERR(ierr);
+    ierr = VecSetValues(u,1,&iglobal,&v,InsertValues); CHKERRA(ierr);
   }
-  ierr = VecBeginAssembly(u); CHKERR(ierr);
-  ierr = VecEndAssembly(u); CHKERR(ierr);
+  ierr = VecBeginAssembly(u); CHKERRA(ierr);
+  ierr = VecEndAssembly(u); CHKERRA(ierr);
   
   /* Compute right-hand-side */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
   
   /* Solve linear system */
-  if ((ierr = SLESCreate(MPI_COMM_WORLD,&sles))) SETERRA(ierr,0);
-  if ((ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN)))
+  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN)))
     SETERRA(ierr,0);
-  if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
+  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
   if (OptionsHasName(0,0,"-rowbs_mat")) {
     PC pc; KSP ksp; PCMETHOD pcmethod;
-    ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
-    ierr = SLESGetPC(sles,&pc); CHKERR(ierr);
+    ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
+    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
     ierr = PCGetMethodFromContext(pc,&pcmethod);
     if (pcmethod == PCICC) {
-      ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERR(ierr);
+      ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERRA(ierr);
     }
   }
 #endif
 
-  if ((ierr = SLESSolve(sles,b,x,&its))) SETERRA(ierr,0);
+  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
  
   /* Check error */
-  if ((ierr = VecAXPY(&none,u,x))) SETERRA(ierr,0);
-  if ((ierr = VecNorm(x,&norm))) SETERRA(ierr,0);
+  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
+  ierr = VecNorm(x,&norm); CHKERRA(ierr);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
@@ -116,13 +116,13 @@ int main(int argc,char **args)
 
   /* Compute another right-hand-side; then solve */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
-  if ((ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN)))
+  ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN)))
     SETERRA(ierr,0);
-  if ((ierr = SLESSolve(sles,b,x,&its))) SETERRA(ierr,0);
+  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
   /* Check error */
-  if ((ierr = VecAXPY(&none,u,x))) SETERRA(ierr,0);
-  if ((ierr = VecNorm(x,&norm))) SETERRA(ierr,0);
+  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
+  ierr = VecNorm(x,&norm); CHKERRA(ierr);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Free work space */
