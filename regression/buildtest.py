@@ -93,6 +93,11 @@ class RemoteBuild (base.Base):
     return
 
   def run(self):
+    '''Fork off the build or log copying'''
+    # Launch child
+    if os.fork():
+      # Parent returns
+      return
     if self.argDB['mode'] == 'build':
       self.build()
     elif self.argDB['mode'] == 'log':
