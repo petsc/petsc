@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.243 1998/06/12 21:31:03 balay Exp balay $ 
+# $Id: makefile,v 1.244 1998/06/15 15:11:15 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -29,10 +29,10 @@ info:
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
-	-@echo "Using C compiler: ${CC} ${CFLAGS} ${COPTFLAGS}"
+	-@echo "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}"
 	-@if [ -n "${CCV}" -a "${CCV}" != "unknown" ] ; then \
 	  echo "Compiler version:" `${CCV}` ; fi
-	-@echo "Using Fortran compiler: ${FC} ${FOPTFLAGS}"
+	-@echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}"
 	-@echo "-----------------------------------------"
 	-@grep PETSC_VERSION_NUMBER include/petsc.h | sed "s/........//"
 	-@echo "-----------------------------------------"
@@ -381,10 +381,10 @@ alladicignore:
 
 alladic:
 	-@echo "Beginning to compile ADIC source code in all directories"
-	-@echo "Using ADIC compiler: ${ADIC_CC} ${CFLAGS}"
+	-@echo "Using ADIC compiler: ${ADIC_CC} ${CCPPFLAGS}"
 	-@echo "========================================="
 	-@cd include ; \
-           ${ADIC_CC} -s -f 1 ${CFLAGS} petsc.h 
+           ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petsc.h 
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree 
 	-@cd src/inline ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} adic

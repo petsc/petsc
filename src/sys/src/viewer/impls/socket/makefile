@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.37 1998/06/11 19:57:49 bsmith Exp balay $ 
+# $Id: makefile,v 1.38 1998/06/12 21:45:04 balay Exp balay $ 
 
 ALL: lib 
 
@@ -10,6 +10,8 @@ ALL: lib
 #
 matlabcodes: receive openport closeport launch
 
+CFLAGS    =
+FFLAGS    =
 CPPFLAGS  = ${MATLAB_INCLUDE}
 SOURCEC   = senddense.c send.c sendsparse.c
 SOURCEF   =

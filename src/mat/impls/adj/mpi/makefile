@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.5 1998/06/12 21:10:47 balay Exp balay $ 
+# $Id: makefile,v 1.6 1998/06/12 21:23:38 balay Exp balay $ 
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = mpiadj.c
 SOURCEF  =
 SOURCEH  = mpiadj.h
