@@ -141,7 +141,7 @@ Arg class, which wraps the usual value.'''
     '''Returns the length of both the local and parent dictionaries'''
     length = dict.__len__(self)
     if not self.parent is None:
-      length += self.send()
+      length = length + self.send()
     return length
 
   def getType(self, key):
