@@ -97,10 +97,10 @@ PetscErrorCode PetscDLLibraryGetInfo(void *handle,const char type[],const char *
   PetscErrorCode ierr,(*sfunc)(const char *,const char*,const char *[]);
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_DLSYM)
-  sfunc   = (PetscErrorCode (*)(const char *,const char*,const char *[])) dlsym(handle,"PetscDLLibraryInfo");
-#elif defined(PETSC_HAVE_GETPROCADDRESS)
-  sfunc   = (PetscErrorCode (*)(const char *,const char*,const char *[])) GetProcAddress((HMODULE)handle,"PetscDLLibraryInfo");
+#if defined(PETSC_HAVE_GETPROCADDRESS)
+  sfunc = (PetscErrorCode (*)(const char *,const char*,const char *[])) GetProcAddress((HMODULE)handle,"PetscDLLibraryInfo");
+#else
+  sfunc = (PetscErrorCode (*)(const char *,const char*,const char *[])) dlsym(handle,"PetscDLLibraryInfo");
 #endif
   if (!sfunc) {
     *mess = "No library information in the file\n";
@@ -226,10 +226,10 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **hand
   PetscErrorCode ierr;
   char       *par2;
   PetscTruth foundlibrary;
-  PetscErrorCode (*func)(const char*);
+  PetscErrorCode (*func)(const char*) = NULL;
 
   PetscFunctionBegin;
-
+  *handle = NULL;
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&par2);CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(comm,libname,par2,PETSC_MAX_PATH_LEN,&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
@@ -250,14 +250,14 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **hand
      with dlopen()
   */
   PetscLogInfo(0,"PetscDLLibraryOpen:Opening %s\n",libname);
-#if defined(PETSC_HAVE_DLOPEN)
+#if defined(PETSC_HAVE_LOADLIBRARY)
+  *handle = LoadLibrary(par2);
+#else
 #if defined(PETSC_HAVE_RTLD_GLOBAL)
-  *handle = dlopen(par2,RTLD_LAZY  |  RTLD_GLOBAL); 
+  *handle = dlopen(par2,RTLD_LAZY | RTLD_GLOBAL); 
 #else
   *handle = dlopen(par2,RTLD_LAZY); 
 #endif
-#elif defined(PETSC_HAVE_LOADLIBRARY)
-  *handle = LoadLibrary(par2);
 #endif
   if (!*handle) {
 #if defined(PETSC_HAVE_DLERROR)
@@ -283,10 +283,10 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **hand
 #endif
   }
   /* run the function PetscFListAddDynamic() if it is in the library */
-#if defined(PETSC_HAVE_DLSYM)
-  func  = (PetscErrorCode (*)(const char *)) dlsym(*handle,"PetscDLLibraryRegister");
-#elif defined(PETSC_HAVE_GETPROCADDRESS)
-  func  = (PetscErrorCode (*)(const char *)) GetProcAddress((HMODULE)*handle,"PetscDLLibraryRegister");
+#if defined(PETSC_HAVE_GETPROCADDRESS)
+  func = (PetscErrorCode (*)(const char *)) GetProcAddress((HMODULE)*handle,"PetscDLLibraryRegister");
+#else
+  func = (PetscErrorCode (*)(const char *)) dlsym(*handle,"PetscDLLibraryRegister");
 #endif
   if (func) {
     ierr = (*func)(libname);CHKERRQ(ierr);
@@ -296,10 +296,10 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **hand
     PetscErrorCode (*sfunc)(const char *,const char*,char **);
     char *mess;
 
-#if defined(PETSC_HAVE_DLSYM)
-    sfunc   = (PetscErrorCode (*)(const char *,const char*,char **)) dlsym(*handle,"PetscDLLibraryInfo");
-#elif defined(PETSC_HAVE_GETPROCADDRESS)
+#if defined(PETSC_HAVE_GETPROCADDRESS)
     sfunc   = (PetscErrorCode (*)(const char *,const char*,char **)) GetProcAddress((HMODULE)*handle,"PetscDLLibraryInfo");
+#else
+    sfunc   = (PetscErrorCode (*)(const char *,const char*,char **)) dlsym(*handle,"PetscDLLibraryInfo");
 #endif
     if (sfunc) {
       ierr = (*sfunc)(libname,"Contents",&mess);CHKERRQ(ierr);
@@ -405,10 +405,10 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const 
     PetscLogInfo(0,"PetscDLLibraryAppend:Appending %s to dynamic library search path\n",path);
 
     done:;
-#if defined(PETSC_HAVE_DLSYM)
-    *value   = dlsym(handle,symbol);
-#elif defined(PETSC_HAVE_GETPROCADDRESS)
+#if defined(PETSC_HAVE_GETPROCADDRESS)
     *value   = GetProcAddress((HMODULE)handle,symbol);
+#else
+    *value   = dlsym(handle,symbol);
 #endif
     if (!*value) {
       SETERRQ2(PETSC_ERR_PLIB,"Unable to locate function %s in dynamic library %s",insymbol,path);
@@ -421,10 +421,10 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const 
   */
   } else {
     while (list) {
-#if defined(PETSC_HAVE_DLSYM)
+#if defined(PETSC_HAVE_GETPROCADDRESS)
+      *value = GetProcAddress((HMODULE)list->handle,symbol);
+#else
       *value =  dlsym(list->handle,symbol);
-#elif defined(PETSC_HAVE_GETPROCADDRESS)
-      *value   = GetProcAddress((HMODULE)list->handle,symbol);
 #endif
       if (*value) {
         PetscLogInfo(0,"PetscDLLibrarySym:Loading function %s from dynamic library %s\n",symbol,list->libname);
@@ -433,10 +433,10 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const 
       list = list->next;
     }
     if (!*value) {
-#if defined(PETSC_HAVE_DLSYM)
-      *value =  dlsym(0,symbol);
-#elif defined(PETSC_HAVE_GETPROCADDRESS)
+#if defined(PETSC_HAVE_GETPROCADDRESS)
       *value = GetProcAddress(GetCurrentProcess(),symbol);
+#else
+      *value = dlsym(0,symbol);
 #endif
       if (*value) {
         PetscLogInfo(0,"PetscDLLibrarySym:Loading function %s from object code\n",symbol);

@@ -49,7 +49,7 @@ class Configure(config.base.Configure):
           self.framework.argDB['LIBS'] += ' -lsocket -lnsl'
         
       # Windows requires Ws2_32.lib for socket(), uses stdcall, and declspec prototype decoration
-      if self.libraries.check('Ws2_32.lib','socket',prototype='#include <Winsock2.h>',call='socket(0,0,0);'):
+      if self.libraries.add('Ws2_32.lib','socket',prototype='#include <Winsock2.h>',call='socket(0,0,0);'):
         self.addDefine('HAVE_WINSOCK2_H',1)
         self.addDefine('HAVE_SOCKET', 1)
         if self.checkLink('#include <Winsock2.h>','closesocket(0)'):
