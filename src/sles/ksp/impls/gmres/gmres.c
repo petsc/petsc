@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.148 2000/06/20 04:01:56 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.149 2000/06/23 14:07:48 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -56,6 +56,7 @@ int    KSPSetUp_GMRES(KSP ksp)
   size          = (hh + hes + rs + 2*cc) * sizeof(Scalar);
 
   gmres->hh_origin  = (Scalar*)PetscMalloc(size);CHKPTRQ(gmres->hh_origin);
+  ierr = PetscMemzero(gmres->hh_origin,size);CHKERRQ(ierr);
   PLogObjectMemory(ksp,size);
   gmres->hes_origin = gmres->hh_origin + hh;
   gmres->rs_origin  = gmres->hes_origin + hes;
@@ -200,7 +201,7 @@ int GMREScycle(int *itcount,KSP ksp)
     *HES(it+1,it)   = tt;
 
     /* check for the happy breakdown */
-    hapbnd  = PetscAbsScalar(*HH(it,it) / *RS(it));
+    hapbnd  = PetscAbsScalar(tt / *RS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt > hapbnd) {
       tmp = 1.0/tt; ierr = VecScale(&tmp,VEC_VV(it+1));CHKERRQ(ierr);

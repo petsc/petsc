@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.21 2000/07/03 15:41:06 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.22 2000/07/07 14:42:12 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -119,7 +119,9 @@ static int PCSetUp_Redundant(PC pc)
   } else {
     ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
-
+  ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
+  ierr = PCSetVector(red->pc,red->b);CHKERRQ(ierr);
+  ierr = PCSetUp(red->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
