@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.75 2000/03/29 14:39:31 curfman Exp bsmith $ 
+# $Id: makefile,v 1.76 2000/03/31 21:00:32 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -83,7 +83,7 @@ ex5f: ex5f.o  chkopts
 #  sed below patches this.
 #
 ex5s: chkopts
-	@if [ "${PETSC_ARCH}" != "IRIX64" ]; then echo "Only for SGI machines"; false ; fi
+	@if [ "${PETSC_ARCH}" != "IRIX64" ]; then echo "Only for PETSC_ARCH of IRIX64"; false ; fi
 	-${CC} -pca keep  -WK,-lo=l ${FCONF} ${CFLAGS} -c ex5s.c
 	sed "s/, sqrt/ /g"   ex5s.M | sed "s/, exp/ /g"  > ex5s_tmp.c
 	-${CC} -mp ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -c ex5s_tmp.c
