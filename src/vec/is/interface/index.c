@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.56 1998/04/29 03:34:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.57 1998/05/20 13:46:32 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -214,7 +214,7 @@ $      ...... other code
 $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    See the Fortran chapter of the users manual and 
-   petsc/src/is/examples/[turotials,tests] for details
+   petsc/src/is/examples/[tutorials,tests] for details.
 
 .keywords: IS, index set, get, indices
 
@@ -258,7 +258,7 @@ $      ...... other code
 $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    See the Fortran chapter of the users manual and 
-   petsc/src/is/examples/[turotials,tests] for details
+   petsc/src/is/examples/[tutorials,tests] for details.
 
 .keywords: IS, index set, restore, indices
 
