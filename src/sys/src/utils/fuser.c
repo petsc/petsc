@@ -35,7 +35,7 @@
 #if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetUserName"
-PetscErrorCode PetscGetUserName(char name[],int nlen)
+PetscErrorCode PetscGetUserName(char name[],size_t nlen)
 {
   PetscFunctionBegin;
   GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
@@ -78,7 +78,7 @@ PetscErrorCode PetscGetUserName(char name[],size_t nlen)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetUserName"
-PetscErrorCode PetscGetUserName(char *name,int nlen)
+PetscErrorCode PetscGetUserName(char *name,size_t nlen)
 {
   PetscErrorCode ierr;
 

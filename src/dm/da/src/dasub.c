@@ -24,6 +24,8 @@
    Level: advanced
 
    Notes:
+   All processors that share the DA must call this with the same gp value
+
    This routine is particularly useful to compute boundary conditions
    or other application-specific calculations that require manipulating
    sets of data throughout a logical plane of grid points.
