@@ -162,7 +162,8 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
    Input Parameters:
 .  stencil_type - stencil type either DA_STENCIL_BOX or DA_STENCIL_STAR
 .  M,N - global dimension in each direction of the array
-.  m,n - corresponding local dimensions (or PETSC_DECIDE to have calculated)
+.  m,n - corresponding number of processors in each dimension 
+         (or PETSC_DECIDE to have calculated)
 .  w - number of degress of freedom per node
 .  s - stencil width
 .  wrap - Are you using a periodic domain? Choose from 
