@@ -1,4 +1,4 @@
-/*$Id: tfqmr.c,v 1.51 1999/11/05 14:46:51 bsmith Exp bsmith $*/
+/*$Id: tfqmr.c,v 1.52 1999/11/24 21:54:57 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal
@@ -89,7 +89,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
     ierr = VecAXPY(&tmp,AUQ,R);CHKERRQ(ierr);      /* r <- r - a K (u + q) */
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     for (m=0; m<2; m++) {
-      if (m == 0) {
+      if (!m) {
         w = sqrt(dp*dpold);
       } else {
         w = dp;
@@ -99,7 +99,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
       tau = tau * psi * cm;
       eta = cm * cm * a;
       cf  = psiold * psiold * etaold / a;
-      if (m == 0) {
+      if (!m) {
         ierr = VecAYPX(&cf,U,D);CHKERRQ(ierr);
       } else {
 	ierr = VecAYPX(&cf,Q,D);CHKERRQ(ierr);
